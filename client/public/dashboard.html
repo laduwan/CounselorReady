@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - CounselorReady</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            burgundy: {
+              50: '#fdf5f6', 100: '#fae8eb', 200: '#f5d0d6', 300: '#eba9b5',
+              400: '#dd768a', 500: '#c94d65', 600: '#a83350', 700: '#8b2542',
+              800: '#6b1d34', 900: '#4a1524', 950: '#2d0a14'
+            },
+            forest: {
+              50: '#f3f6f4', 100: '#e3ebe5', 200: '#c8d7cc', 300: '#a1bba8',
+              400: '#759a7f', 500: '#547c5f', 600: '#40634a', 700: '#34503d',
+              800: '#2b4133', 900: '#1f3025', 950: '#121c16'
+            },
+            gold: { 50: '#fefce8', 100: '#fef9c3', 200: '#fef08a', 300: '#fde047', 400: '#facc15', 500: '#d4a012' }
+          },
+          fontFamily: {
+            'display': ['Cormorant Garamond', 'Georgia', 'serif'],
+            'body': ['Lato', 'system-ui', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Lato:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Lato', system-ui, sans-serif; }
+    .font-display { font-family: 'Cormorant Garamond', Georgia, serif; }
+  </style>
+</head>
+<body class="bg-stone-50 min-h-screen">
+  
+  <!-- Header -->
+  <header class="bg-white border-b border-burgundy-100 sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+      <a href="/" class="flex items-center gap-3">
+        <div class="w-10 h-10 bg-forest-700 rounded-xl flex items-center justify-center shadow-md">
+          <span class="text-gold-400 font-display font-bold text-lg" style="text-shadow: -1px -1px 0 #6b1d34, 1px -1px 0 #6b1d34, -1px 1px 0 #6b1d34, 1px 1px 0 #6b1d34;">CR</span>
+        </div>
+        <span class="font-display font-semibold text-xl">
+          <span class="text-burgundy-900">Counselor</span><span class="text-forest-700">Ready</span>
+        </span>
+      </a>
+      
+      <!-- Navigation -->
+      <nav class="hidden md:flex items-center gap-8">
+        <a href="/dashboard.html" class="text-burgundy-800 font-medium border-b-2 border-burgundy-700 pb-1">Dashboard</a>
+        <a href="/courses.html" class="text-forest-600 hover:text-burgundy-700 transition-colors">Courses</a>
+        <a href="/credentials.html" class="text-forest-600 hover:text-burgundy-700 transition-colors">Credentials</a>
+        <a href="/certificates.html" class="text-forest-600 hover:text-burgundy-700 transition-colors">Certificates</a>
+      </nav>
+
+      <!-- User Menu -->
+      <div class="flex items-center gap-4">
+        <button onclick="toggleUserMenu()" class="flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-forest-50 transition-colors">
+          <div class="w-8 h-8 bg-burgundy-100 rounded-full flex items-center justify-center">
+            <span id="userInitial" class="text-burgundy-700 font-semibold text-sm">?</span>
+          </div>
+          <svg class="w-4 h-4 text-forest-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+          </svg>
+        </button>
+        
+        <!-- Dropdown -->
+        <div id="userMenu" class="hidden absolute right-6 top-16 bg-white rounded-xl shadow-xl border border-burgundy-100 py-2 w-48">
+          <a href="/settings.html" class="block px-4 py-2 text-forest-700 hover:bg-forest-50 transition-colors">Settings</a>
+          <a href="/subscription.html" class="block px-4 py-2 text-forest-700 hover:bg-forest-50 transition-colors">Subscription</a>
+          <hr class="my-2 border-burgundy-100">
+          <button onclick="logout()" class="w-full text-left px-4 py-2 text-burgundy-700 hover:bg-burgundy-50 transition-colors">Sign Out</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="max-w-7xl mx-auto px-6 py-8">
+    
+    <!-- Welcome Section -->
+    <div class="mb-8 flex items-start justify-between">
+      <div>
+        <h1 class="font-display text-3xl font-semibold text-burgundy-900 mb-2">
+          Welcome back, <span id="userName">there</span>!
+        </h1>
+        <p class="text-forest-600">Track your continuing education and stay audit-ready.</p>
+      </div>
+      <!-- VIP Consult Button -->
+      <button id="dashboardConsultBtn" onclick="openConsultModal()" class="inline-flex items-center gap-2 bg-gold-500 hover:bg-gold-600 text-white font-semibold px-5 py-3 rounded-xl transition-colors shadow-md">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+        </svg>
+        <span id="consultBtnText">Request Consult</span>
+      </button>
+    </div>
+
+    <!-- Trial Banner (shown if on trial) -->
+    <div id="trialBanner" class="hidden mb-6 bg-gradient-to-r from-gold-100 to-gold-50 border border-gold-300 rounded-xl p-4 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <svg class="w-5 h-5 text-gold-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+        <span class="text-forest-800"><span id="trialDays">7</span> days left in your free trial</span>
+      </div>
+      <a href="/subscription.html" class="text-burgundy-700 font-medium hover:text-burgundy-800 transition-colors">
+        Upgrade Now →
+      </a>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+      <!-- CE Hours -->
+      <div class="bg-white rounded-xl p-5 border border-burgundy-100 shadow-sm">
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-forest-600 text-sm">CE Hours Earned</span>
+          <div class="w-8 h-8 bg-forest-100 rounded-lg flex items-center justify-center">
+            <svg class="w-4 h-4 text-forest-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+          </div>
+        </div>
+        <p class="font-display text-3xl font-semibold text-burgundy-900" id="totalHours">0</p>
+        <p class="text-forest-500 text-sm">This cycle</p>
+      </div>
+
+      <!-- Courses Completed -->
+      <div class="bg-white rounded-xl p-5 border border-burgundy-100 shadow-sm">
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-forest-600 text-sm">Courses Completed</span>
+          <div class="w-8 h-8 bg-burgundy-100 rounded-lg flex items-center justify-center">
+            <svg class="w-4 h-4 text-burgundy-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+          </div>
+        </div>
+        <p class="font-display text-3xl font-semibold text-burgundy-900" id="coursesCompleted">0</p>
+        <p class="text-forest-500 text-sm">All time</p>
+      </div>
+
+      <!-- Certificates -->
+      <div class="bg-white rounded-xl p-5 border border-burgundy-100 shadow-sm">
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-forest-600 text-sm">Certificates Stored</span>
+          <div class="w-8 h-8 bg-gold-100 rounded-lg flex items-center justify-center">
+            <svg class="w-4 h-4 text-gold-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+            </svg>
+          </div>
+        </div>
+        <p class="font-display text-3xl font-semibold text-burgundy-900" id="certificatesCount">0</p>
+        <p class="text-forest-500 text-sm">Uploaded</p>
+      </div>
+
+      <!-- Credentials -->
+      <div class="bg-white rounded-xl p-5 border border-burgundy-100 shadow-sm">
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-forest-600 text-sm">Active Credentials</span>
+          <div class="w-8 h-8 bg-forest-100 rounded-lg flex items-center justify-center">
+            <svg class="w-4 h-4 text-forest-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/>
+            </svg>
+          </div>
+        </div>
+        <p class="font-display text-3xl font-semibold text-burgundy-900" id="credentialsCount">0</p>
+        <p class="text-forest-500 text-sm">Tracked</p>
+      </div>
+    </div>
+
+    <!-- Main Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      
+      <!-- Left Column - Quick Actions -->
+      <div class="lg:col-span-2 space-y-6">
+        
+        <!-- Quick Actions -->
+        <div class="bg-white rounded-xl border border-burgundy-100 shadow-sm p-6">
+          <h2 class="font-display text-xl font-semibold text-burgundy-900 mb-4">Quick Actions</h2>
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <a href="/courses.html" class="flex flex-col items-center p-4 rounded-xl bg-burgundy-50 hover:bg-burgundy-100 transition-colors group">
+              <div class="w-12 h-12 bg-burgundy-700 rounded-xl flex items-center justify-center mb-3 group-hover:scale-105 transition-transform">
+                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                </svg>
+              </div>
+              <span class="text-burgundy-800 font-medium text-sm">Browse Courses</span>
+            </a>
+            
+            <a href="/upload.html" class="flex flex-col items-center p-4 rounded-xl bg-forest-50 hover:bg-forest-100 transition-colors group">
+              <div class="w-12 h-12 bg-forest-700 rounded-xl flex items-center justify-center mb-3 group-hover:scale-105 transition-transform">
+                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+                </svg>
+              </div>
+              <span class="text-forest-800 font-medium text-sm">Upload Certificate</span>
+            </a>
+            
+            <a href="/credentials.html" class="flex flex-col items-center p-4 rounded-xl bg-gold-50 hover:bg-gold-100 transition-colors group">
+              <div class="w-12 h-12 bg-gold-500 rounded-xl flex items-center justify-center mb-3 group-hover:scale-105 transition-transform">
+                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/>
+                </svg>
+              </div>
+              <span class="text-gold-800 font-medium text-sm">Add Credential</span>
+            </a>
+            
+            <a href="/audit.html" class="flex flex-col items-center p-4 rounded-xl bg-stone-100 hover:bg-stone-200 transition-colors group">
+              <div class="w-12 h-12 bg-stone-600 rounded-xl flex items-center justify-center mb-3 group-hover:scale-105 transition-transform">
+                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </svg>
+              </div>
+              <span class="text-stone-700 font-medium text-sm">Generate Audit</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="bg-white rounded-xl border border-burgundy-100 shadow-sm p-6">
+          <h2 class="font-display text-xl font-semibold text-burgundy-900 mb-4">Recent Activity</h2>
+          <div id="activityList" class="space-y-3">
+            <!-- Placeholder -->
+            <div class="flex items-center gap-4 p-3 rounded-lg bg-stone-50">
+              <div class="w-10 h-10 bg-forest-100 rounded-lg flex items-center justify-center">
+                <svg class="w-5 h-5 text-forest-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+              </div>
+              <div class="flex-1">
+                <p class="text-forest-700">Welcome to CounselorReady!</p>
+                <p class="text-forest-500 text-sm">Get started by browsing courses or uploading certificates.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column - Sidebar -->
+      <div class="space-y-6">
+        
+        <!-- CE Progress -->
+        <div class="bg-white rounded-xl border border-burgundy-100 shadow-sm p-6">
+          <h2 class="font-display text-xl font-semibold text-burgundy-900 mb-4">CE Progress</h2>
+          <div id="progressList" class="space-y-4">
+            <!-- Placeholder - will be populated by JS -->
+            <div class="text-center py-6">
+              <div class="w-16 h-16 bg-forest-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                <svg class="w-8 h-8 text-forest-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                </svg>
+              </div>
+              <p class="text-forest-600 text-sm">Add a credential to track CE progress</p>
+              <a href="/credentials.html" class="text-burgundy-700 text-sm font-medium hover:text-burgundy-800">Add Credential →</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Upcoming Renewals -->
+        <div class="bg-white rounded-xl border border-burgundy-100 shadow-sm p-6">
+          <h2 class="font-display text-xl font-semibold text-burgundy-900 mb-4">Upcoming Renewals</h2>
+          <div id="renewalsList" class="space-y-3">
+            <!-- Placeholder -->
+            <div class="text-center py-4">
+              <p class="text-forest-500 text-sm">No upcoming renewals</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Need Help? -->
+        <div class="bg-gradient-to-br from-burgundy-800 to-burgundy-900 rounded-xl p-6 text-white">
+          <h3 class="font-display text-lg font-semibold mb-2">Need Help?</h3>
+          <p class="text-burgundy-200 text-sm mb-4">Questions about CE requirements or using the platform?</p>
+          <a href="mailto:support@counselorready.com" class="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+            </svg>
+            Contact Support
+          </a>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Consultation Request Modal (VIP Only) -->
+  <div id="consultModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md">
+      <div class="p-6 border-b border-gold-200 bg-gradient-to-r from-gold-50 to-white rounded-t-2xl">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-gold-100 rounded-full flex items-center justify-center">
+              <svg class="w-5 h-5 text-gold-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+              </svg>
+            </div>
+            <h2 class="font-display text-xl font-semibold text-gold-800">Request 1:1 Consult</h2>
+          </div>
+          <button onclick="closeConsultModal()" class="text-forest-400 hover:text-forest-600">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+      
+      <div class="p-6">
+        <div id="consultAvailable">
+          <p class="text-forest-600 mb-4">As a VIP member, you get 1 consultation per quarter.</p>
+          
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-forest-700 mb-2">What would you like to discuss? <span class="text-red-500">*</span></label>
+            <textarea id="consultDescription" rows="3" required placeholder="Please describe your questions or concerns..." class="w-full px-4 py-3 border border-forest-200 rounded-xl focus:ring-2 focus:ring-gold-500 focus:border-gold-500 outline-none resize-none"></textarea>
+          </div>
+          
+          <div class="mb-6">
+            <label class="block text-sm font-medium text-forest-700 mb-2">Topic Category</label>
+            <select id="consultTopic" class="w-full px-4 py-3 border border-forest-200 rounded-xl focus:ring-2 focus:ring-gold-500 focus:border-gold-500 outline-none">
+              <option value="multi-state">Multi-State Practice / Telehealth</option>
+              <option value="licensure">Licensure Questions (GA)</option>
+              <option value="supervision">Supervision Requirements</option>
+              <option value="renewal">Renewal / CE Requirements</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          
+          <button onclick="submitConsultRequest()" class="w-full bg-gold-500 hover:bg-gold-600 text-white font-semibold py-3 rounded-xl transition-colors">
+            Request Consultation
+          </button>
+          
+          <p class="text-xs text-forest-500 mt-3 text-center">You'll receive an email with scheduling instructions within 24-48 hours.</p>
+        </div>
+        
+        <div id="consultUnavailable" class="hidden text-center py-4">
+          <div class="w-16 h-16 bg-forest-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg class="w-8 h-8 text-forest-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+          </div>
+          <h3 class="font-semibold text-forest-800 mb-2">Consultation Used This Quarter</h3>
+          <p class="text-forest-600 mb-4">You've already used your Q<span id="currentQuarterNum"></span> consultation.</p>
+          <p class="text-sm text-forest-500">Your next consultation will be available in <strong id="nextQuarterLabel">Q2 2026</strong>.</p>
+        </div>
+        
+        <div id="consultNotVip" class="hidden text-center py-4">
+          <div class="w-16 h-16 bg-gold-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <span class="text-2xl">⭐</span>
+          </div>
+          <h3 class="font-semibold text-gold-800 mb-2">VIP Perk</h3>
+          <p class="text-forest-600 mb-4">1:1 consultations are available to VIP members.</p>
+          <a href="/subscription.html" class="inline-block bg-gold-500 hover:bg-gold-600 text-white font-semibold px-6 py-2 rounded-lg transition-colors">
+            Upgrade to VIP
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="mt-12 py-6 px-4 bg-white border-t border-burgundy-100">
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+      <p class="text-forest-500 text-sm">© 2025 CounselorReady. All rights reserved.</p>
+      <p class="text-forest-400 text-xs">Ga Integrated Therapeutic Perspectives LLC | NBCC ACEP #7760</p>
+    </div>
+  </footer>
+
+  <script>
+    const API_URL = 'https://counselorready-2.onrender.com';
+    let consultStatus = null;
+    
+    // Check auth on load
+    document.addEventListener('DOMContentLoaded', async () => {
+      const token = localStorage.getItem('token');
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      
+      if (!token) {
+        window.location.href = '/login.html';
+        return;
+      }
+      
+      // Set user info
+      if (user.profile?.firstName) {
+        document.getElementById('userName').textContent = user.profile.firstName;
+        document.getElementById('userInitial').textContent = user.profile.firstName.charAt(0).toUpperCase();
+      } else if (user.email) {
+        document.getElementById('userName').textContent = user.email.split('@')[0];
+        document.getElementById('userInitial').textContent = user.email.charAt(0).toUpperCase();
+      }
+      
+      // Check trial status
+      if (user.subscription?.status === 'trial' && user.subscription?.trialEndsAt) {
+        const trialEnd = new Date(user.subscription.trialEndsAt);
+        const now = new Date();
+        const daysLeft = Math.ceil((trialEnd - now) / (1000 * 60 * 60 * 24));
+        
+        if (daysLeft > 0) {
+          document.getElementById('trialBanner').classList.remove('hidden');
+          document.getElementById('trialDays').textContent = daysLeft;
+        }
+      }
+      
+      // Fetch dashboard data
+      try {
+        const response = await fetch(`${API_URL}/api/users/dashboard`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          updateDashboard(data);
+        }
+      } catch (error) {
+        console.log('Could not fetch dashboard data');
+      }
+      
+      // Fetch consult status
+      await loadConsultStatus();
+    });
+    
+    async function loadConsultStatus() {
+      const token = localStorage.getItem('token');
+      try {
+        const response = await fetch(`${API_URL}/api/credentials/consult-status`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (response.ok) {
+          consultStatus = await response.json();
+          updateConsultButton();
+        }
+      } catch (error) {
+        console.log('Could not load consult status');
+      }
+    }
+    
+    function updateConsultButton() {
+      const btn = document.getElementById('dashboardConsultBtn');
+      const btnText = document.getElementById('consultBtnText');
+      if (!btn) return;
+      
+      // If no status loaded yet, keep default button
+      if (!consultStatus) return;
+      
+      // Update button if consult already used this quarter
+      if (consultStatus.usedThisQuarter) {
+        btn.classList.remove('bg-gold-500', 'hover:bg-gold-600');
+        btn.classList.add('bg-forest-200', 'text-forest-600');
+        btnText.textContent = `Consult Used (${consultStatus.currentQuarter})`;
+      }
+    }
+    
+    function openConsultModal() {
+      document.getElementById('consultModal').classList.remove('hidden');
+      
+      const available = document.getElementById('consultAvailable');
+      const unavailable = document.getElementById('consultUnavailable');
+      const notVip = document.getElementById('consultNotVip');
+      
+      available.classList.add('hidden');
+      unavailable.classList.add('hidden');
+      notVip.classList.add('hidden');
+      
+      // If no status loaded, show form by default (let backend validate)
+      if (!consultStatus) {
+        available.classList.remove('hidden');
+        return;
+      }
+      
+      if (consultStatus.reason === 'VIP subscription required') {
+        notVip.classList.remove('hidden');
+      } else if (consultStatus.usedThisQuarter) {
+        unavailable.classList.remove('hidden');
+        const quarter = consultStatus.currentQuarter?.split('-Q')[1] || '1';
+        document.getElementById('currentQuarterNum').textContent = quarter;
+        document.getElementById('nextQuarterLabel').textContent = consultStatus.nextQuarter?.replace('-', ' ') || 'next quarter';
+      } else {
+        available.classList.remove('hidden');
+      }
+    }
+    
+    function closeConsultModal() {
+      document.getElementById('consultModal').classList.add('hidden');
+    }
+    
+    async function submitConsultRequest() {
+      const token = localStorage.getItem('token');
+      const topic = document.getElementById('consultTopic').value;
+      const description = document.getElementById('consultDescription').value.trim();
+      
+      if (!description) {
+        alert('Please describe what you would like to discuss.');
+        document.getElementById('consultDescription').focus();
+        return;
+      }
+      
+      try {
+        const response = await fetch(`${API_URL}/api/credentials/book-consult`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ topic: `${topic}: ${description}` })
+        });
+        
+        if (response.ok) {
+          closeConsultModal();
+          alert('Consultation requested! Check your email for scheduling instructions.');
+          await loadConsultStatus();
+        } else {
+          const error = await response.json();
+          alert(error.error || 'Could not submit request');
+        }
+      } catch (error) {
+        alert('Could not submit request. Please try again.');
+      }
+    }
+    
+    function updateDashboard(data) {
+      if (data.totalHours) document.getElementById('totalHours').textContent = data.totalHours;
+      if (data.coursesCompleted) document.getElementById('coursesCompleted').textContent = data.coursesCompleted;
+      if (data.certificatesCount) document.getElementById('certificatesCount').textContent = data.certificatesCount;
+      if (data.credentialsCount) document.getElementById('credentialsCount').textContent = data.credentialsCount;
+    }
+    
+    function toggleUserMenu() {
+      const menu = document.getElementById('userMenu');
+      menu.classList.toggle('hidden');
+    }
+    
+    // Close menu when clicking outside
+    document.addEventListener('click', (e) => {
+      const menu = document.getElementById('userMenu');
+      const button = e.target.closest('button');
+      if (!button && !menu.classList.contains('hidden')) {
+        menu.classList.add('hidden');
+      }
+    });
+    
+    function logout() {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      window.location.href = '/login.html';
+    }
+  </script>
+
+</body>
+</html>
