@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Course Player - CounselorReady</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            burgundy: {
+              50: '#fdf5f6', 100: '#fae8eb', 200: '#f5d0d6', 300: '#eba9b5',
+              400: '#dd768a', 500: '#c94d65', 600: '#a83350', 700: '#8b2542',
+              800: '#6b1d34', 900: '#4a1524', 950: '#2d0a14'
+            },
+            forest: {
+              50: '#f3f6f4', 100: '#e3ebe5', 200: '#c8d7cc', 300: '#a1bba8',
+              400: '#759a7f', 500: '#547c5f', 600: '#40634a', 700: '#34503d',
+              800: '#2b4133', 900: '#1f3025', 950: '#121c16'
+            },
+            gold: { 50: '#fefce8', 100: '#fef9c3', 200: '#fef08a', 300: '#fde047', 400: '#facc15', 500: '#d4a012' }
+          },
+          fontFamily: {
+            'display': ['Cormorant Garamond', 'Georgia', 'serif'],
+            'body': ['Lato', 'system-ui', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Lato:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Lato', system-ui, sans-serif; }
+    .font-display { font-family: 'Cormorant Garamond', Georgia, serif; }
+    
+    /* Sidebar scrolling */
+    .sidebar-scroll {
+      max-height: calc(100vh - 200px);
+      overflow-y: auto;
+    }
+    
+    /* Lesson content styling */
+    .lesson-content h1 { font-size: 2rem; font-weight: 600; margin-bottom: 1rem; color: #6b1d34; }
+    .lesson-content h2 { font-size: 1.5rem; font-weight: 600; margin-bottom: 0.75rem; color: #6b1d34; margin-top: 1.5rem; }
+    .lesson-content p { margin-bottom: 1rem; line-height: 1.75; color: #2b4133; }
+    .lesson-content ul, .lesson-content ol { margin-bottom: 1rem; margin-left: 1.5rem; color: #2b4133; }
+    .lesson-content li { margin-bottom: 0.5rem; }
+    
+    /* Video container */
+    .video-container {
+      position: relative;
+      padding-bottom: 56.25%; /* 16:9 aspect ratio */
+      height: 0;
+      overflow: hidden;
+    }
+    .video-container iframe {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
+  </style>
+</head>
+<body class="bg-stone-50">
+  
+  <!-- Header -->
+  <header class="bg-white border-b border-burgundy-100 sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+      <a href="/" class="flex items-center gap-3">
+        <div class="w-10 h-10 bg-forest-700 rounded-xl flex items-center justify-center shadow-md">
+          <span class="text-gold-400 font-display font-bold text-lg" style="text-shadow: -1px -1px 0 #6b1d34, 1px -1px 0 #6b1d34, -1px 1px 0 #6b1d34, 1px 1px 0 #6b1d34;">CR</span>
+        </div>
+        <span class="font-display font-semibold text-xl">
+          <span class="text-burgundy-900">Counselor</span><span class="text-forest-700">Ready</span>
+        </span>
+      </a>
+      
+      <div class="flex items-center gap-4">
+        <a href="/courses.html" class="text-forest-600 hover:text-burgundy-700 text-sm">
+          ← Back to Courses
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <div class="flex min-h-screen">
+    
+    <!-- Sidebar - Course Structure -->
+    <aside class="w-80 bg-white border-r border-burgundy-100 hidden lg:block">
+      <div class="p-6">
+        <!-- Course Title -->
+        <div id="courseHeader" class="mb-6">
+          <div class="inline-block w-8 h-8 border-4 border-burgundy-200 border-t-burgundy-700 rounded-full animate-spin"></div>
+        </div>
+        
+        <!-- Progress Bar -->
+        <div id="progressBar" class="mb-6 hidden">
+          <div class="flex items-center justify-between text-sm text-forest-600 mb-2">
+            <span>Progress</span>
+            <span id="progressText">0%</span>
+          </div>
+          <div class="w-full bg-forest-100 rounded-full h-3">
+            <div id="progressFill" class="bg-burgundy-600 h-3 rounded-full transition-all duration-300" style="width: 0%"></div>
+          </div>
+        </div>
+        
+        <!-- Certificate Button - Always visible -->
+        <div id="certificateSection" class="mb-6">
+          <button id="sidebarCertBtn" onclick="downloadCertificate()" class="w-full px-4 py-3 bg-burgundy-800 hover:bg-burgundy-900 text-white font-semibold rounded-lg transition-colors flex items-center justify-center gap-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+            </svg>
+            Download Certificate
+          </button>
+        </div>
+        
+        <!-- Modules & Lessons -->
+        <div id="modulesList" class="sidebar-scroll">
+          <!-- Loaded dynamically -->
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="flex-1">
+      
+      <!-- Loading State -->
+      <div id="loadingState" class="flex items-center justify-center h-screen">
+        <div class="text-center">
+          <div class="inline-block w-12 h-12 border-4 border-burgundy-200 border-t-burgundy-700 rounded-full animate-spin mb-4"></div>
+          <p class="text-forest-600">Loading course...</p>
+        </div>
+      </div>
+
+      <!-- Lesson Content -->
+      <div id="lessonContent" class="hidden">
+        
+        <!-- Lesson Header -->
+        <div class="bg-white border-b border-burgundy-100 px-8 py-6">
+          <div class="max-w-4xl mx-auto">
+            <div class="flex items-center justify-between mb-2">
+              <span id="lessonBadge" class="text-sm text-forest-600"></span>
+              <button id="markCompleteBtn" onclick="markLessonComplete()" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium transition-colors">
+                ✓ Mark Complete
+              </button>
+            </div>
+            <h1 id="lessonTitle" class="font-display text-3xl font-semibold text-burgundy-900 mb-2"></h1>
+            <p id="lessonDuration" class="text-forest-600"></p>
+          </div>
+        </div>
+
+        <!-- Lesson Body -->
+        <div class="px-8 py-8">
+          <div class="max-w-4xl mx-auto">
+            
+            <!-- Video Lesson -->
+            <div id="videoLesson" class="hidden mb-8">
+              <div class="video-container bg-stone-900 rounded-xl overflow-hidden">
+                <iframe id="videoPlayer" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+              </div>
+            </div>
+
+            <!-- Text Lesson -->
+            <div id="textLesson" class="hidden prose prose-lg max-w-none lesson-content bg-white rounded-xl border border-burgundy-100 p-8">
+              <!-- Content loaded dynamically -->
+            </div>
+
+            <!-- Quiz Lesson -->
+            <div id="quizLesson" class="hidden">
+              <div class="bg-gold-50 border border-gold-200 rounded-xl p-6 mb-6">
+                <h3 class="font-display text-xl font-semibold text-burgundy-900 mb-2">Knowledge Check</h3>
+                <p class="text-forest-600">Complete this quiz to continue. Passing score: <span id="passingScore">70</span>%</p>
+              </div>
+              
+              <div id="quizQuestions" class="space-y-6">
+                <!-- Quiz questions loaded dynamically -->
+              </div>
+              
+              <button onclick="submitQuiz()" class="w-full bg-burgundy-800 hover:bg-burgundy-900 text-white font-semibold px-6 py-3 rounded-xl transition-colors mt-6">
+                Submit Quiz
+              </button>
+            </div>
+
+            <!-- Quiz Results -->
+            <div id="quizResults" class="hidden bg-white rounded-xl border border-burgundy-100 p-8">
+              <!-- Results loaded dynamically -->
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Navigation Footer -->
+        <div class="bg-white border-t border-burgundy-100 px-8 py-6 sticky bottom-0">
+          <div class="max-w-4xl mx-auto flex items-center justify-between">
+            <button id="prevBtn" onclick="navigateLesson(-1)" class="flex items-center gap-2 px-6 py-3 bg-forest-100 hover:bg-forest-200 text-forest-800 font-medium rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+              </svg>
+              Previous
+            </button>
+            
+            <button id="nextBtn" onclick="navigateLesson(1)" class="flex items-center gap-2 px-6 py-3 bg-burgundy-800 hover:bg-burgundy-900 text-white font-semibold rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+              Next
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Course Complete -->
+      <div id="courseComplete" class="hidden flex items-center justify-center min-h-screen px-4">
+        <div class="text-center max-w-2xl">
+          <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <svg class="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+          </div>
+          <h2 class="font-display text-3xl font-semibold text-burgundy-900 mb-4">Course Complete!</h2>
+          <p class="text-forest-600 text-lg mb-2">Congratulations on completing this course.</p>
+          <p class="text-forest-500 mb-8" id="ceHoursEarned"></p>
+          
+          <div class="flex flex-col gap-4 items-center">
+            <button onclick="downloadCertificate()" id="downloadCertBtn" class="px-8 py-4 bg-burgundy-800 hover:bg-burgundy-900 text-white font-semibold rounded-xl transition-colors flex items-center gap-2">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+              </svg>
+              Download Certificate (PDF)
+            </button>
+            
+            <div class="flex gap-4">
+              <a href="/courses.html" class="px-6 py-3 bg-forest-100 hover:bg-forest-200 text-forest-800 font-medium rounded-xl transition-colors">
+                Browse More Courses
+              </a>
+              <a href="/certificates.html" class="px-6 py-3 bg-forest-100 hover:bg-forest-200 text-forest-800 font-medium rounded-xl transition-colors">
+                View All Certificates
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+
+  </div>
+
+  <script>
+    const API_URL = 'https://api.counselorready.com';
+    let course = null;
+    let progress = null;
+    let currentModuleIndex = 0;
+    let currentLessonIndex = 0;
+
+    // Get course slug from URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const courseSlug = urlParams.get('slug');
+
+    if (!courseSlug) {
+      alert('No course specified');
+      window.location.href = '/courses.html';
+    }
+
+    // Load course and progress
+    async function loadCourse() {
+      const token = localStorage.getItem('token');
+      
+      if (!token) {
+        alert('Please log in to access this course');
+        window.location.href = '/login.html';
+        return;
+      }
+
+      try {
+        // Get course data
+        const courseResponse = await fetch(`${API_URL}/api/courses/${courseSlug}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (!courseResponse.ok) throw new Error('Failed to load course');
+        
+        const courseData = await courseResponse.json();
+        course = courseData.course;
+        
+        // Check if enrolled
+        if (!courseData.enrollment) {
+          // Try to enroll
+          await enrollInCourse();
+        } else {
+          progress = courseData.enrollment;
+          currentModuleIndex = progress.currentModuleIndex || 0;
+          currentLessonIndex = progress.currentLessonIndex || 0;
+        }
+
+        // Render course
+        renderCourse();
+        renderLesson();
+        
+      } catch (error) {
+        console.error('Load course error:', error);
+        document.getElementById('loadingState').innerHTML = `
+          <div class="text-center">
+            <p class="text-burgundy-600 mb-4">Failed to load course</p>
+            <a href="/courses.html" class="text-forest-600 hover:text-burgundy-700">← Back to Courses</a>
+          </div>
+        `;
+      }
+    }
+
+    async function enrollInCourse() {
+      const token = localStorage.getItem('token');
+      
+      try {
+        const response = await fetch(`${API_URL}/api/courses/${course._id}/enroll`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        if (!response.ok) {
+          const data = await response.json();
+          throw new Error(data.error || 'Failed to enroll');
+        }
+        
+        // Reload page to get enrollment data
+        window.location.reload();
+        
+      } catch (error) {
+        alert('Failed to enroll: ' + error.message);
+        window.location.href = '/courses.html';
+      }
+    }
+
+    function renderCourse() {
+      // Course header
+      document.getElementById('courseHeader').innerHTML = `
+        <h2 class="font-display text-xl font-semibold text-burgundy-900 mb-1">${course.title}</h2>
+        <p class="text-sm text-forest-600">${course.modules.reduce((sum, m) => sum + m.lessons.length, 0)} lessons</p>
+      `;
+      
+      // Progress bar
+      const percent = progress?.percentComplete || 0;
+      document.getElementById('progressBar').classList.remove('hidden');
+      document.getElementById('progressText').textContent = `${percent}%`;
+      document.getElementById('progressFill').style.width = `${percent}%`;
+      
+      // Modules list
+      const modulesHTML = course.modules.map((module, mIndex) => {
+        const lessonsHTML = module.lessons.map((lesson, lIndex) => {
+          const isActive = mIndex === currentModuleIndex && lIndex === currentLessonIndex;
+          const isCompleted = progress?.lessonsCompleted?.some(l => {
+            const completedId = typeof l === 'object' ? l.lessonId : l;
+            return completedId === lesson._id || completedId?.toString() === lesson._id?.toString();
+          });
+          
+          return `
+            <div onclick="goToLesson(${mIndex}, ${lIndex})" 
+                 class="flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer transition-colors ${
+                   isActive ? 'bg-burgundy-50 text-burgundy-900' : 'hover:bg-forest-50 text-forest-700'
+                 }">
+              <div class="w-6 h-6 flex-shrink-0 rounded-full flex items-center justify-center ${
+                isCompleted ? 'bg-green-500 text-white' : 'bg-forest-200 text-forest-600'
+              }">
+                ${isCompleted ? '✓' : lIndex + 1}
+              </div>
+              <span class="text-sm flex-1">${lesson.title}</span>
+              ${lesson.duration ? `<span class="text-xs text-forest-500">${lesson.duration}m</span>` : ''}
+            </div>
+          `;
+        }).join('');
+        
+        return `
+          <div class="mb-4">
+            <div class="font-medium text-forest-800 mb-2 text-sm px-3">Module ${mIndex + 1}: ${module.title}</div>
+            ${lessonsHTML}
+          </div>
+        `;
+      }).join('');
+      
+      document.getElementById('modulesList').innerHTML = modulesHTML;
+      
+      // Hide loading, show content
+      document.getElementById('loadingState').classList.add('hidden');
+      document.getElementById('lessonContent').classList.remove('hidden');
+    }
+
+    function renderLesson() {
+      const module = course.modules[currentModuleIndex];
+      const lesson = module.lessons[currentLessonIndex];
+      
+      if (!lesson) return;
+      
+      // Update header
+      document.getElementById('lessonBadge').textContent = `Module ${currentModuleIndex + 1}, Lesson ${currentLessonIndex + 1}`;
+      document.getElementById('lessonTitle').textContent = lesson.title;
+      document.getElementById('lessonDuration').textContent = lesson.duration ? `${lesson.duration} minutes` : '';
+      
+      // Show/hide mark complete button
+      // lessonsCompleted can be array of IDs or array of objects with lessonId
+      const isCompleted = progress?.lessonsCompleted?.some(l => {
+        const completedId = typeof l === 'object' ? l.lessonId : l;
+        return completedId === lesson._id || completedId?.toString() === lesson._id?.toString();
+      });
+      
+      const markCompleteBtn = document.getElementById('markCompleteBtn');
+      markCompleteBtn.classList.remove('hidden'); // Always show
+      
+      if (isCompleted) {
+        markCompleteBtn.textContent = '✓ Completed';
+        markCompleteBtn.classList.add('bg-green-600');
+        markCompleteBtn.classList.remove('bg-green-600', 'hover:bg-green-700');
+        markCompleteBtn.classList.add('bg-gray-400');
+        markCompleteBtn.disabled = true;
+      } else {
+        markCompleteBtn.textContent = '✓ Mark Complete';
+        markCompleteBtn.classList.remove('bg-gray-400');
+        markCompleteBtn.classList.add('bg-green-600', 'hover:bg-green-700');
+        markCompleteBtn.disabled = false;
+      }
+      
+      // Hide all lesson types
+      document.getElementById('videoLesson').classList.add('hidden');
+      document.getElementById('textLesson').classList.add('hidden');
+      document.getElementById('quizLesson').classList.add('hidden');
+      document.getElementById('quizResults').classList.add('hidden');
+      
+      // Show appropriate lesson type
+      if (lesson.type === 'video') {
+        renderVideoLesson(lesson);
+      } else if (lesson.type === 'text') {
+        renderTextLesson(lesson);
+      } else if (lesson.type === 'quiz') {
+        renderQuizLesson(lesson);
+      }
+      
+      // Update navigation buttons
+      updateNavButtons();
+    }
+
+    function renderVideoLesson(lesson) {
+      document.getElementById('videoLesson').classList.remove('hidden');
+      
+      // Extract video ID from URL (supports YouTube and Vimeo)
+      let embedUrl = '';
+      if (lesson.videoUrl) {
+        if (lesson.videoUrl.includes('youtube.com') || lesson.videoUrl.includes('youtu.be')) {
+          const videoId = lesson.videoUrl.split('v=')[1] || lesson.videoUrl.split('/').pop();
+          embedUrl = `https://www.youtube.com/embed/${videoId}`;
+        } else if (lesson.videoUrl.includes('vimeo.com')) {
+          const videoId = lesson.videoUrl.split('/').pop();
+          embedUrl = `https://player.vimeo.com/video/${videoId}`;
+        } else {
+          embedUrl = lesson.videoUrl;
+        }
+      }
+      
+      document.getElementById('videoPlayer').src = embedUrl;
+    }
+
+    function renderTextLesson(lesson) {
+      document.getElementById('textLesson').classList.remove('hidden');
+      document.getElementById('textLesson').innerHTML = lesson.content || '<p>No content available</p>';
+    }
+
+    function renderQuizLesson(lesson) {
+      document.getElementById('quizLesson').classList.remove('hidden');
+      document.getElementById('passingScore').textContent = course.settings.passingScore || 70;
+      
+      // Sample quiz questions (in real implementation, these would come from the lesson data)
+      const questions = [
+        {
+          question: 'This is a sample quiz question for demonstration purposes.',
+          options: ['Option A', 'Option B', 'Option C', 'Option D'],
+          correct: 0
+        }
+      ];
+      
+      const questionsHTML = questions.map((q, index) => `
+        <div class="bg-white rounded-xl border border-burgundy-100 p-6">
+          <h4 class="font-semibold text-burgundy-900 mb-4">Question ${index + 1}</h4>
+          <p class="text-forest-700 mb-4">${q.question}</p>
+          <div class="space-y-2">
+            ${q.options.map((option, oIndex) => `
+              <label class="flex items-center gap-3 p-3 border border-forest-200 rounded-lg cursor-pointer hover:bg-forest-50 transition-colors">
+                <input type="radio" name="q${index}" value="${oIndex}" class="w-4 h-4 text-burgundy-600">
+                <span class="text-forest-700">${option}</span>
+              </label>
+            `).join('')}
+          </div>
+        </div>
+      `).join('');
+      
+      document.getElementById('quizQuestions').innerHTML = questionsHTML;
+    }
+
+    async function submitQuiz() {
+      const token = localStorage.getItem('token');
+      
+      // Collect answers (simplified for demo)
+      const answers = [];
+      
+      try {
+        const response = await fetch(`${API_URL}/api/courses/${course._id}/lessons/${course.modules[currentModuleIndex].lessons[currentLessonIndex]._id}/quiz`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ answers })
+        });
+        
+        const data = await response.json();
+        
+        // Show results
+        document.getElementById('quizLesson').classList.add('hidden');
+        document.getElementById('quizResults').classList.remove('hidden');
+        
+        const passed = data.result.passed;
+        document.getElementById('quizResults').innerHTML = `
+          <div class="text-center">
+            <div class="w-20 h-20 mx-auto mb-6 rounded-full flex items-center justify-center ${
+              passed ? 'bg-green-100' : 'bg-burgundy-100'
+            }">
+              <svg class="w-10 h-10 ${passed ? 'text-green-600' : 'text-burgundy-600'}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="${
+                  passed ? 'M5 13l4 4L19 7' : 'M6 18L18 6M6 6l12 12'
+                }"/>
+              </svg>
+            </div>
+            <h3 class="font-display text-2xl font-semibold text-burgundy-900 mb-2">
+              ${passed ? 'Passed!' : 'Not Passed'}
+            </h3>
+            <p class="text-lg text-forest-600 mb-2">Score: ${data.result.score}%</p>
+            <p class="text-forest-600 mb-6">Passing score: ${data.result.passingScore}%</p>
+            ${passed ? 
+              '<button onclick="navigateLesson(1)" class="px-6 py-3 bg-burgundy-800 hover:bg-burgundy-900 text-white font-semibold rounded-xl">Continue to Next Lesson</button>' :
+              '<button onclick="renderLesson()" class="px-6 py-3 bg-burgundy-800 hover:bg-burgundy-900 text-white font-semibold rounded-xl">Try Again</button>'
+            }
+          </div>
+        `;
+        
+        // Reload progress
+        await loadCourse();
+        
+      } catch (error) {
+        console.error('Submit quiz error:', error);
+        alert('Failed to submit quiz');
+      }
+    }
+
+    async function markLessonComplete() {
+      const token = localStorage.getItem('token');
+      const lesson = course.modules[currentModuleIndex].lessons[currentLessonIndex];
+      
+      const btn = document.getElementById('markCompleteBtn');
+      btn.disabled = true;
+      btn.textContent = 'Saving...';
+      
+      try {
+        const response = await fetch(`${API_URL}/api/courses/${course._id}/lessons/${lesson._id}/complete`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        if (!response.ok) {
+          throw new Error('Failed to mark complete');
+        }
+        
+        const data = await response.json();
+        
+        // Update local progress
+        if (!progress.lessonsCompleted) {
+          progress.lessonsCompleted = [];
+        }
+        progress.lessonsCompleted.push(lesson._id);
+        progress.percentComplete = data.progress?.percentComplete || progress.percentComplete;
+        progress.status = data.progress?.status || progress.status;
+        
+        // Update button
+        btn.textContent = '✓ Completed';
+        btn.classList.remove('bg-green-600', 'hover:bg-green-700');
+        btn.classList.add('bg-gray-400');
+        
+        // Update sidebar
+        renderCourse();
+        
+        // Check if course is complete
+        if (progress.status === 'completed' || progress.percentComplete >= 100) {
+          setTimeout(() => {
+            showCourseComplete();
+          }, 500);
+        }
+        
+      } catch (error) {
+        console.error('Mark complete error:', error);
+        alert('Failed to mark lesson complete. Please try again.');
+        btn.disabled = false;
+        btn.textContent = '✓ Mark Complete';
+      }
+    }
+
+    function goToLesson(mIndex, lIndex) {
+      currentModuleIndex = mIndex;
+      currentLessonIndex = lIndex;
+      renderLesson();
+      renderCourse(); // Update sidebar highlighting
+    }
+
+    function navigateLesson(direction) {
+      let mIndex = currentModuleIndex;
+      let lIndex = currentLessonIndex + direction;
+      
+      // Check if we need to move to next/previous module
+      if (lIndex < 0) {
+        mIndex--;
+        if (mIndex >= 0) {
+          lIndex = course.modules[mIndex].lessons.length - 1;
+        } else {
+          return; // Already at first lesson
+        }
+      } else if (lIndex >= course.modules[mIndex].lessons.length) {
+        mIndex++;
+        lIndex = 0;
+        
+        if (mIndex >= course.modules.length) {
+          // Course complete!
+          showCourseComplete();
+          return;
+        }
+      }
+      
+      goToLesson(mIndex, lIndex);
+    }
+
+    function updateNavButtons() {
+      const prevBtn = document.getElementById('prevBtn');
+      const nextBtn = document.getElementById('nextBtn');
+      
+      // Disable prev if at first lesson
+      prevBtn.disabled = currentModuleIndex === 0 && currentLessonIndex === 0;
+      
+      // Disable next if at last lesson
+      const isLastModule = currentModuleIndex === course.modules.length - 1;
+      const isLastLesson = currentLessonIndex === course.modules[currentModuleIndex].lessons.length - 1;
+      nextBtn.disabled = isLastModule && isLastLesson;
+    }
+
+    function showCourseComplete() {
+      document.getElementById('lessonContent').classList.add('hidden');
+      document.getElementById('courseComplete').classList.remove('hidden');
+      
+      // Show CE hours earned
+      if (course.ceuHours > 0) {
+        document.getElementById('ceHoursEarned').textContent = 
+          `You earned ${course.ceuHours} CE hours (NBCC ACEP #7760)`;
+      }
+    }
+
+    async function downloadCertificate() {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        alert('Please log in to download your certificate');
+        return;
+      }
+
+      if (!course || !course._id) {
+        alert('Course not loaded yet. Please wait.');
+        return;
+      }
+
+      // Get whichever button exists
+      const btn = document.getElementById('downloadCertBtn') || document.getElementById('sidebarCertBtn');
+      let originalText = '';
+      
+      if (btn) {
+        originalText = btn.innerHTML;
+        btn.innerHTML = '<span class="inline-block w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></span>Generating...';
+        btn.disabled = true;
+      }
+
+      try {
+        console.log('Generating certificate for course:', course._id);
+        
+        const response = await fetch(`${API_URL}/api/certificates/generate/${course._id}`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        console.log('Response status:', response.status);
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error('Error response:', errorText);
+          throw new Error('Failed to generate certificate: ' + errorText);
+        }
+
+        // Download the PDF
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${course.slug}_certificate.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+
+        if (btn) {
+          btn.innerHTML = '✓ Downloaded!';
+          setTimeout(() => {
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+          }, 2000);
+        }
+
+      } catch (error) {
+        console.error('Download certificate error:', error);
+        alert('Failed to download certificate: ' + error.message);
+        if (btn) {
+          btn.innerHTML = originalText;
+          btn.disabled = false;
+        }
+      }
+    }
+
+    // Load course on page load
+    document.addEventListener('DOMContentLoaded', loadCourse);
+  </script>
+
+</body>
+</html>
