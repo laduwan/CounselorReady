@@ -161,7 +161,7 @@ router.post('/credential', protect, upload.single('file'), async (req, res) => {
               text: `Extract the following information from this professional license or credential document. Return ONLY a JSON object with these fields, no other text:
 
 {
-  "holderName": "full name of the license holder",
+  "holderName": "IMPORTANT: The full name of the person this license was issued TO (the licensee/practitioner name, NOT the board or organization name)",
   "name": "credential/license type abbreviation (e.g., LPC, LMFT, NCC, LCSW)",
   "state": "two-letter state code if applicable (e.g., GA, FL, TX)",
   "licenseNumber": "license or certificate number",
@@ -170,6 +170,8 @@ router.post('/credential', protect, upload.single('file'), async (req, res) => {
   "expirationDate": "YYYY-MM-DD format",
   "totalHours": "CE hours required for renewal if shown (number only)"
 }
+
+CRITICAL: holderName is the individual person's name who holds this license - look for phrases like "is hereby granted to", "issued to", "certifies that", or the name printed prominently on the license/certificate.
 
 If you cannot find a field, use null. For state, only use 2-letter abbreviation.
 For dates, convert to YYYY-MM-DD format.
