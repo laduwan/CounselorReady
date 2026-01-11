@@ -1,484 +1,197 @@
 import express from 'express';
-import Course from '../models/Course.js';
-import CredentialTemplate from '../models/CredentialTemplate.js';
+import User from '../models/User.js';
 import { protect } from '../middleware/auth.js';
 
 const router = express.Router();
 
-// Simple admin check - any logged-in user for now
-const isAdmin = (req, res, next) => next();
-
-// POST /api/admin/seed-templates - Seed credential templates
-router.post('/seed-templates', protect, isAdmin, async (req, res) => {
+// @route   GET /api/users/profile
+// @desc    Get user profile
+// @access  Private
+router.get('/profile', protect, async (req, res) => {
   try {
-    // Check if already seeded
-    const existing = await CredentialTemplate.countDocuments();
-    if (existing > 0) {
-      return res.json({ message: `Templates already seeded (${existing} found)`, count: existing });
-    }
-    
-    const templates = [
-      // Georgia
-      {
-        type: 'state_license',
-        name: 'LPC',
-        code: 'LPC',
-        state: 'GA',
-        issuingBody: 'Georgia Composite Board of Professional Counselors, Social Workers, and Marriage & Family Therapists',
-        renewalCycle: 24,
-        totalCEUsRequired: 35,
-        requirements: [
-          { category: 'Ethics', hoursRequired: 5 },
-          { category: 'General', hoursRequired: 30 }
-        ],
-        isActive: true
-      },
-      {
-        type: 'state_license',
-        name: 'LAPC',
-        code: 'LAPC',
-        state: 'GA',
-        issuingBody: 'Georgia Composite Board',
-        renewalCycle: 24,
-        totalCEUsRequired: 35,
-        requirements: [
-          { category: 'Ethics', hoursRequired: 5 },
-          { category: 'General', hoursRequired: 30 }
-        ],
-        isActive: true
-      },
-      {
-        type: 'state_license',
-        name: 'LCSW',
-        code: 'LCSW',
-        state: 'GA',
-        issuingBody: 'Georgia Composite Board',
-        renewalCycle: 24,
-        totalCEUsRequired: 35,
-        requirements: [
-          { category: 'Ethics', hoursRequired: 5 },
-          { category: 'General', hoursRequired: 30 }
-        ],
-        isActive: true
-      },
-      {
-        type: 'state_license',
-        name: 'LMFT',
-        code: 'LMFT',
-        state: 'GA',
-        issuingBody: 'Georgia Composite Board',
-        renewalCycle: 24,
-        totalCEUsRequired: 35,
-        requirements: [
-          { category: 'Ethics', hoursRequired: 5 },
-          { category: 'General', hoursRequired: 30 }
-        ],
-        isActive: true
-      },
-      // Texas
-      {
-        type: 'state_license',
-        name: 'LPC',
-        code: 'LPC',
-        state: 'TX',
-        issuingBody: 'Texas Behavioral Health Executive Council',
-        renewalCycle: 24,
-        totalCEUsRequired: 24,
-        requirements: [
-          { category: 'Ethics', hoursRequired: 3 },
-          { category: 'General', hoursRequired: 21 }
-        ],
-        isActive: true
-      },
-      // Florida
-      {
-        type: 'state_license',
-        name: 'LMHC',
-        code: 'LMHC',
-        state: 'FL',
-        issuingBody: 'Florida Board of Clinical Social Work, Marriage & Family Therapy, and Mental Health Counseling',
-        renewalCycle: 24,
-        totalCEUsRequired: 30,
-        requirements: [
-          { category: 'Ethics', hoursRequired: 3 },
-          { category: 'General', hoursRequired: 27 }
-        ],
-        isActive: true
-      },
-      // South Carolina
-      {
-        type: 'state_license',
-        name: 'LPC',
-        code: 'LPC',
-        state: 'SC',
-        issuingBody: 'South Carolina Board of Examiners for Licensure of Professional Counselors',
-        renewalCycle: 24,
-        totalCEUsRequired: 40,
-        requirements: [
-          { category: 'Ethics', hoursRequired: 6 },
-          { category: 'General', hoursRequired: 34 }
-        ],
-        isActive: true
-      },
-      // Alabama
-      {
-        type: 'state_license',
-        name: 'LPC',
-        code: 'LPC',
-        state: 'AL',
-        issuingBody: 'Alabama Board of Examiners in Counseling',
-        renewalCycle: 24,
-        totalCEUsRequired: 24,
-        requirements: [
-          { category: 'Ethics', hoursRequired: 3 },
-          { category: 'General', hoursRequired: 21 }
-        ],
-        isActive: true
-      },
-      // Tennessee
-      {
-        type: 'state_license',
-        name: 'LPC-MHSP',
-        code: 'LPC-MHSP',
-        state: 'TN',
-        issuingBody: 'Tennessee Board of Licensed Professional Counselors',
-        renewalCycle: 24,
-        totalCEUsRequired: 40,
-        requirements: [
-          { category: 'Ethics', hoursRequired: 3 },
-          { category: 'General', hoursRequired: 37 }
-        ],
-        isActive: true
-      },
-      // North Carolina
-      {
-        type: 'state_license',
-        name: 'LCMHC',
-        code: 'LCMHC',
-        state: 'NC',
-        issuingBody: 'North Carolina Board of Licensed Clinical Mental Health Counselors',
-        renewalCycle: 24,
-        totalCEUsRequired: 40,
-        requirements: [
-          { category: 'Ethics', hoursRequired: 3 },
-          { category: 'General', hoursRequired: 37 }
-        ],
-        isActive: true
-      },
-      // Idaho
-      {
-        type: 'state_license',
-        name: 'LPC',
-        code: 'LPC',
-        state: 'ID',
-        issuingBody: 'Idaho Licensing Board of Professional Counselors and Marriage and Family Therapists',
-        renewalCycle: 24,
-        totalCEUsRequired: 20,
-        requirements: [
-          { category: 'Ethics', hoursRequired: 3 },
-          { category: 'General', hoursRequired: 17 }
-        ],
-        isActive: true
-      },
-      // National Certs
-      {
-        type: 'national_cert',
-        name: 'NCC',
-        code: 'NCC',
-        issuingBody: 'National Board for Certified Counselors (NBCC)',
-        renewalCycle: 60,
-        totalCEUsRequired: 100,
-        requirements: [
-          { category: 'General', hoursRequired: 100 }
-        ],
-        isActive: true
-      },
-      {
-        type: 'national_cert',
-        name: 'ACS',
-        code: 'ACS',
-        issuingBody: 'National Board for Certified Counselors (NBCC)',
-        renewalCycle: 60,
-        totalCEUsRequired: 75,
-        requirements: [
-          { category: 'Supervision', hoursRequired: 25 },
-          { category: 'General', hoursRequired: 50 }
-        ],
-        isActive: true
-      },
-      // Specialty Certs
-      {
-        type: 'specialty_cert',
-        name: 'BC-TMH',
-        code: 'BC-TMH',
-        issuingBody: 'Center for Credentialing & Education (CCE)',
-        renewalCycle: 24,
-        totalCEUsRequired: 20,
-        requirements: [
-          { category: 'Telehealth', hoursRequired: 20 }
-        ],
-        isActive: true
-      },
-      {
-        type: 'specialty_cert',
-        name: 'CCTP',
-        code: 'CCTP',
-        issuingBody: 'International Association of Trauma Professionals (IATP)',
-        renewalCycle: 24,
-        totalCEUsRequired: 20,
-        requirements: [
-          { category: 'Trauma', hoursRequired: 20 }
-        ],
-        isActive: true
-      }
-    ];
-    
-    await CredentialTemplate.insertMany(templates);
-    res.json({ message: `Seeded ${templates.length} credential templates`, count: templates.length });
+    res.json({ user: req.user.toJSON() });
   } catch (error) {
-    console.error('Seed error:', error);
-    res.status(500).json({ error: 'Failed to seed templates' });
+    console.error('Get profile error:', error);
+    res.status(500).json({ error: 'Failed to get profile' });
   }
 });
 
-// GET all courses (including drafts)
-router.get('/courses', protect, isAdmin, async (req, res) => {
+// @route   PUT /api/users/profile
+// @desc    Update user profile
+// @access  Private
+router.put('/profile', protect, async (req, res) => {
   try {
-    const courses = await Course.find({}).sort({ createdAt: -1 });
-    res.json({ courses });
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to get courses' });
-  }
-});
-
-// GET single course
-router.get('/courses/:id', protect, isAdmin, async (req, res) => {
-  try {
-    const course = await Course.findById(req.params.id);
-    if (!course) return res.status(404).json({ error: 'Course not found' });
-    res.json({ course });
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to get course' });
-  }
-});
-
-// CREATE course
-router.post('/courses', protect, isAdmin, async (req, res) => {
-  try {
-    const course = await Course.create(req.body);
-    res.status(201).json({ course });
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to create course' });
-  }
-});
-
-// UPDATE course
-router.put('/courses/:id', protect, isAdmin, async (req, res) => {
-  try {
-    const course = await Course.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    if (!course) return res.status(404).json({ error: 'Course not found' });
-    res.json({ course });
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to update course' });
-  }
-});
-
-// UPDATE specific lesson
-router.put('/courses/:id/lesson', protect, isAdmin, async (req, res) => {
-  try {
-    const { moduleIndex, lessonIndex, lesson } = req.body;
-    const course = await Course.findById(req.params.id);
-    if (!course) return res.status(404).json({ error: 'Course not found' });
+    const { firstName, lastName, state, timezone, phone } = req.body;
     
-    if (course.modules[moduleIndex] && course.modules[moduleIndex].lessons[lessonIndex]) {
-      Object.assign(course.modules[moduleIndex].lessons[lessonIndex], lesson);
-      await course.save();
-      res.json({ course, message: 'Lesson updated' });
-    } else {
-      res.status(404).json({ error: 'Lesson not found' });
-    }
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to update lesson' });
-  }
-});
-
-// ADD module
-router.post('/courses/:id/module', protect, isAdmin, async (req, res) => {
-  try {
-    const course = await Course.findById(req.params.id);
-    if (!course) return res.status(404).json({ error: 'Course not found' });
+    const user = await User.findById(req.user._id);
     
-    course.modules.push({
-      title: req.body.title || 'New Module',
-      description: req.body.description || '',
-      order: course.modules.length + 1,
-      lessons: []
-    });
-    await course.save();
-    res.json({ course });
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to add module' });
-  }
-});
-
-// ADD lesson
-router.post('/courses/:id/module/:moduleIndex/lesson', protect, isAdmin, async (req, res) => {
-  try {
-    const course = await Course.findById(req.params.id);
-    if (!course) return res.status(404).json({ error: 'Course not found' });
+    if (firstName) user.profile.firstName = firstName;
+    if (lastName !== undefined) user.profile.lastName = lastName;
+    if (state) user.profile.state = state.toUpperCase();
+    if (timezone) user.profile.timezone = timezone;
+    if (phone !== undefined) user.profile.phone = phone;
     
-    const moduleIndex = parseInt(req.params.moduleIndex);
-    if (!course.modules[moduleIndex]) return res.status(404).json({ error: 'Module not found' });
-    
-    course.modules[moduleIndex].lessons.push({
-      title: req.body.title || 'New Lesson',
-      type: req.body.type || 'text',
-      content: req.body.content || '',
-      duration: req.body.duration || 10,
-      order: course.modules[moduleIndex].lessons.length + 1,
-      isFree: req.body.isFree || false
-    });
-    await course.save();
-    res.json({ course });
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to add lesson' });
-  }
-});
-
-// DELETE course
-router.delete('/courses/:id', protect, isAdmin, async (req, res) => {
-  try {
-    await Course.findByIdAndDelete(req.params.id);
-    res.json({ message: 'Course deleted' });
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to delete course' });
-  }
-});
-
-// =====================
-// USER MANAGEMENT FOR SUPPORT
-// =====================
-
-import User from '../models/User.js';
-import UserCourseProgress from '../models/UserCourseProgress.js';
-import UserCredential from '../models/UserCredential.js';
-
-// GET single user by ID
-router.get('/users/:id', protect, isAdmin, async (req, res) => {
-  try {
-    const user = await User.findById(req.params.id).select('-password');
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-    res.json(user);
-  } catch (error) {
-    console.error('Get user error:', error);
-    res.status(500).json({ error: 'Failed to get user' });
-  }
-});
-
-// GET user course progress for support
-router.get('/users/:id/progress', protect, isAdmin, async (req, res) => {
-  try {
-    const userId = req.params.id;
-    
-    // Get user details
-    const user = await User.findById(userId).select('name email subscription createdAt primaryState');
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-    
-    // Get all course progress for this user
-    const progress = await UserCourseProgress.find({ userId })
-      .populate('courseId', 'title ceHours modules category')
-      .sort({ updatedAt: -1 });
-    
-    // Format the progress data
-    const courseProgress = progress.map(p => {
-      const course = p.courseId;
-      const totalModules = course?.modules?.length || 0;
-      const completedModules = p.completedLessons?.length || 0;
-      const totalLessons = course?.modules?.reduce((sum, m) => sum + (m.lessons?.length || 0), 0) || 1;
-      const progressPercent = Math.round((completedModules / totalLessons) * 100);
-      
-      return {
-        courseId: course?._id,
-        title: course?.title || 'Unknown Course',
-        category: course?.category || 'General',
-        ceHours: course?.ceHours || 0,
-        totalModules,
-        completedModules: Math.min(completedModules, totalModules),
-        totalLessons,
-        completedLessonsCount: p.completedLessons?.length || 0,
-        progress: Math.min(progressPercent, 100),
-        completed: p.completed,
-        completedAt: p.completedAt,
-        lastAccessed: p.updatedAt,
-        enrolledAt: p.createdAt,
-        currentModule: p.currentModule,
-        currentLesson: p.currentLesson
-      };
-    });
-    
-    // Get user credentials
-    const credentials = await UserCredential.find({ userId }).select('name state expirationDate totalCEUsRequired totalCEUsCompleted licenseNumber');
+    await user.save();
     
     res.json({
-      user: {
-        _id: user._id,
-        name: user.name,
-        email: user.email,
-        registeredAt: user.createdAt,
-        primaryState: user.primaryState,
-        subscription: {
-          plan: user.subscription?.plan || 'free',
-          status: user.subscription?.status || 'active',
-          startDate: user.subscription?.startDate,
-          endDate: user.subscription?.endDate
-        }
-      },
-      courseProgress,
-      credentials,
-      stats: {
-        totalCourses: courseProgress.length,
-        completedCourses: courseProgress.filter(c => c.completed).length,
-        inProgressCourses: courseProgress.filter(c => !c.completed && c.progress > 0).length,
-        notStartedCourses: courseProgress.filter(c => c.progress === 0).length,
-        totalCredentials: credentials.length,
-        totalCEHoursEarned: courseProgress.filter(c => c.completed).reduce((sum, c) => sum + (c.ceHours || 0), 0)
-      }
+      message: 'Profile updated',
+      user: user.toJSON()
     });
   } catch (error) {
-    console.error('Get user progress error:', error);
-    res.status(500).json({ error: 'Failed to get user progress' });
+    console.error('Update profile error:', error);
+    res.status(500).json({ error: 'Failed to update profile' });
   }
 });
 
-// GET all users (for admin user list)
-router.get('/users', protect, isAdmin, async (req, res) => {
+// @route   PUT /api/users/notifications
+// @desc    Update notification preferences
+// @access  Private
+router.put('/notifications', protect, async (req, res) => {
   try {
-    const { search, limit = 50, skip = 0 } = req.query;
+    const { emailReminders, calendarSync, marketingEmails, reminderFrequency } = req.body;
     
-    let query = {};
-    if (search) {
-      query.$or = [
-        { name: { $regex: search, $options: 'i' } },
-        { email: { $regex: search, $options: 'i' } }
-      ];
+    const user = await User.findById(req.user._id);
+    
+    if (emailReminders !== undefined) user.notifications.emailReminders = emailReminders;
+    if (calendarSync !== undefined) user.notifications.calendarSync = calendarSync;
+    if (marketingEmails !== undefined) user.notifications.marketingEmails = marketingEmails;
+    if (reminderFrequency) user.notifications.reminderFrequency = reminderFrequency;
+    
+    await user.save();
+    
+    res.json({
+      message: 'Notification preferences updated',
+      user: user.toJSON()
+    });
+  } catch (error) {
+    console.error('Update notifications error:', error);
+    res.status(500).json({ error: 'Failed to update notifications' });
+  }
+});
+
+// @route   DELETE /api/users/account
+// @desc    Delete user account
+// @access  Private
+router.delete('/account', protect, async (req, res) => {
+  try {
+    const { confirmEmail } = req.body;
+    
+    // Require email confirmation to delete
+    if (confirmEmail !== req.user.email) {
+      return res.status(400).json({ error: 'Please confirm your email to delete account' });
     }
     
-    const users = await User.find(query)
-      .select('name email subscription.plan createdAt')
-      .sort({ createdAt: -1 })
-      .skip(parseInt(skip))
-      .limit(parseInt(limit));
+    // TODO: Cancel Stripe subscription if active
+    // TODO: Delete related data (credentials, certificates, progress)
     
-    const total = await User.countDocuments(query);
+    await User.findByIdAndDelete(req.user._id);
     
-    res.json({ users, total });
+    res.json({ message: 'Account deleted successfully' });
   } catch (error) {
-    console.error('Get users error:', error);
-    res.status(500).json({ error: 'Failed to get users' });
+    console.error('Delete account error:', error);
+    res.status(500).json({ error: 'Failed to delete account' });
+  }
+});
+
+// Import models for dashboard
+import Certificate from '../models/Certificate.js';
+import UserCredential from '../models/UserCredential.js';
+import UserCourseProgress from '../models/UserCourseProgress.js';
+import Course from '../models/Course.js';
+
+// @route   GET /api/users/dashboard
+// @desc    Get dashboard stats and data
+// @access  Private
+router.get('/dashboard', protect, async (req, res) => {
+  try {
+    const userId = req.user._id;
+    
+    // Get certificates
+    const certificates = await Certificate.find({ userId });
+    const certificatesCount = certificates.length;
+    const totalHours = certificates.reduce((sum, c) => sum + (c.ceHours || 0), 0);
+    
+    // Get credentials
+    const credentials = await UserCredential.find({ userId });
+    const credentialsCount = credentials.length;
+    
+    // Get course progress
+    const courseProgress = await UserCourseProgress.find({ userId })
+      .populate('courseId', 'title slug thumbnail ceHours');
+    const coursesCompleted = courseProgress.filter(p => p.completed).length;
+    const inProgressCourses = courseProgress.filter(p => !p.completed && p.status === 'in_progress');
+    
+    // CE Progress per credential
+    const ceProgress = credentials.map(cred => ({
+      id: cred._id,
+      name: cred.name,
+      state: cred.state,
+      completed: cred.totalCEUsCompleted || 0,
+      required: cred.totalCEUsRequired || 0,
+      percent: cred.totalCEUsRequired > 0 
+        ? Math.min(100, Math.round((cred.totalCEUsCompleted || 0) / cred.totalCEUsRequired * 100))
+        : 0,
+      expirationDate: cred.expirationDate
+    }));
+    
+    // Upcoming renewals (within 90 days)
+    const now = new Date();
+    const ninetyDaysFromNow = new Date(now.getTime() + 90 * 24 * 60 * 60 * 1000);
+    const upcomingRenewals = credentials
+      .filter(c => c.expirationDate && new Date(c.expirationDate) <= ninetyDaysFromNow && new Date(c.expirationDate) > now)
+      .map(c => ({
+        id: c._id,
+        name: c.name,
+        state: c.state,
+        expirationDate: c.expirationDate,
+        daysLeft: Math.ceil((new Date(c.expirationDate) - now) / (1000 * 60 * 60 * 24))
+      }))
+      .sort((a, b) => a.daysLeft - b.daysLeft);
+    
+    // Recent activity (last 10 items)
+    const recentCertificates = certificates
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+      .slice(0, 5)
+      .map(c => ({
+        type: 'certificate',
+        title: c.title,
+        date: c.createdAt,
+        ceHours: c.ceHours
+      }));
+    
+    const recentCourseActivity = courseProgress
+      .sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt))
+      .slice(0, 5)
+      .map(p => ({
+        type: p.completed ? 'course_complete' : 'course_progress',
+        title: p.courseId?.title || 'Unknown Course',
+        date: p.updatedAt,
+        progress: p.progressPercent || 0
+      }));
+    
+    const recentActivity = [...recentCertificates, ...recentCourseActivity]
+      .sort((a, b) => new Date(b.date) - new Date(a.date))
+      .slice(0, 10);
+    
+    res.json({
+      totalHours,
+      certificatesCount,
+      credentialsCount,
+      coursesCompleted,
+      inProgressCourses: inProgressCourses.map(p => ({
+        courseId: p.courseId?._id,
+        title: p.courseId?.title,
+        slug: p.courseId?.slug,
+        thumbnail: p.courseId?.thumbnail,
+        progress: p.progressPercent || 0
+      })),
+      ceProgress,
+      upcomingRenewals,
+      recentActivity
+    });
+  } catch (error) {
+    console.error('Dashboard error:', error);
+    res.status(500).json({ error: 'Failed to load dashboard data' });
   }
 });
 
