@@ -52,17 +52,31 @@
 
   <main class="max-w-6xl mx-auto px-6 py-8">
     <!-- Page Header -->
-    <div class="flex items-center justify-between mb-8">
+    <div class="flex items-center justify-between mb-4">
       <div>
         <h1 class="text-3xl font-bold text-forest-900">Messages</h1>
         <p class="text-forest-600 mt-1">Contact support and view your conversations</p>
       </div>
-      <button onclick="openNewMessageModal()" class="inline-flex items-center gap-2 bg-burgundy-800 hover:bg-burgundy-900 text-white font-semibold px-5 py-3 rounded-xl transition-colors shadow-md">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-        </svg>
-        New Message
-      </button>
+      <div class="flex items-center gap-3">
+        <button onclick="syncMessages()" id="syncBtn" class="inline-flex items-center gap-2 bg-forest-100 hover:bg-forest-200 text-forest-700 font-semibold px-4 py-3 rounded-xl transition-colors">
+          <svg id="syncIcon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+          </svg>
+          Sync
+        </button>
+        <button onclick="openNewMessageModal()" class="inline-flex items-center gap-2 bg-burgundy-800 hover:bg-burgundy-900 text-white font-semibold px-5 py-3 rounded-xl transition-colors shadow-md">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+          </svg>
+          New Message
+        </button>
+      </div>
+    </div>
+
+    <!-- Auto-refresh indicator -->
+    <div class="mb-4 flex items-center gap-2 text-sm text-forest-500">
+      <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+      Auto-refresh: <span id="refreshCountdown">30</span>s
     </div>
 
     <div class="grid grid-cols-3 gap-6">
@@ -201,7 +215,59 @@
     document.addEventListener('DOMContentLoaded', () => {
       loadConversations();
       setupEventListeners();
+      startAutoRefresh();
     });
+
+    // Auto-refresh every 30 seconds
+    let refreshInterval;
+    let countdownInterval;
+    let countdown = 30;
+
+    function startAutoRefresh() {
+      countdown = 30;
+      updateCountdown();
+      
+      countdownInterval = setInterval(() => {
+        countdown--;
+        updateCountdown();
+        if (countdown <= 0) {
+          countdown = 30;
+        }
+      }, 1000);
+      
+      refreshInterval = setInterval(() => {
+        syncMessages(true);
+      }, 30000);
+    }
+
+    function updateCountdown() {
+      const el = document.getElementById('refreshCountdown');
+      if (el) el.textContent = countdown;
+    }
+
+    async function syncMessages(silent = false) {
+      const btn = document.getElementById('syncBtn');
+      const icon = document.getElementById('syncIcon');
+      
+      if (!silent) {
+        btn.disabled = true;
+        icon.classList.add('animate-spin');
+      }
+      
+      await loadConversations();
+      if (currentConversationId) {
+        await loadConversation(currentConversationId);
+      }
+      
+      if (!silent) {
+        setTimeout(() => {
+          btn.disabled = false;
+          icon.classList.remove('animate-spin');
+        }, 500);
+      }
+      
+      countdown = 30;
+    }
 
     function setupEventListeners() {
       // Drop zone
