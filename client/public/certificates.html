@@ -486,7 +486,11 @@
     function setupEventListeners() {
       // Drag and drop
       const dropZone = document.getElementById('dropZone');
-      dropZone.addEventListener('click', () => document.getElementById('fileInput').click());
+      dropZone.addEventListener('click', (e) => {
+        // Only trigger file input if clicking on dropZone itself or upload prompt, not buttons
+        if (e.target.closest('button')) return;
+        document.getElementById('fileInput').click();
+      });
       dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('border-burgundy-500', 'bg-burgundy-50'); });
       dropZone.addEventListener('dragleave', () => { dropZone.classList.remove('border-burgundy-500', 'bg-burgundy-50'); });
       dropZone.addEventListener('drop', (e) => {
