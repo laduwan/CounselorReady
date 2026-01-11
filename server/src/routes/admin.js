@@ -355,4 +355,131 @@ router.delete('/courses/:id', protect, isAdmin, async (req, res) => {
   }
 });
 
+// =====================
+// USER MANAGEMENT FOR SUPPORT
+// =====================
+
+import User from '../models/User.js';
+import UserCourseProgress from '../models/UserCourseProgress.js';
+import UserCredential from '../models/UserCredential.js';
+
+// GET single user by ID
+router.get('/users/:id', protect, isAdmin, async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id).select('-password');
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    res.json(user);
+  } catch (error) {
+    console.error('Get user error:', error);
+    res.status(500).json({ error: 'Failed to get user' });
+  }
+});
+
+// GET user course progress for support
+router.get('/users/:id/progress', protect, isAdmin, async (req, res) => {
+  try {
+    const userId = req.params.id;
+    
+    // Get user details
+    const user = await User.findById(userId).select('name email subscription createdAt primaryState');
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    
+    // Get all course progress for this user
+    const progress = await UserCourseProgress.find({ userId })
+      .populate('courseId', 'title ceHours modules category')
+      .sort({ updatedAt: -1 });
+    
+    // Format the progress data
+    const courseProgress = progress.map(p => {
+      const course = p.courseId;
+      const totalModules = course?.modules?.length || 0;
+      const completedModules = p.completedLessons?.length || 0;
+      const totalLessons = course?.modules?.reduce((sum, m) => sum + (m.lessons?.length || 0), 0) || 1;
+      const progressPercent = Math.round((completedModules / totalLessons) * 100);
+      
+      return {
+        courseId: course?._id,
+        title: course?.title || 'Unknown Course',
+        category: course?.category || 'General',
+        ceHours: course?.ceHours || 0,
+        totalModules,
+        completedModules: Math.min(completedModules, totalModules),
+        totalLessons,
+        completedLessonsCount: p.completedLessons?.length || 0,
+        progress: Math.min(progressPercent, 100),
+        completed: p.completed,
+        completedAt: p.completedAt,
+        lastAccessed: p.updatedAt,
+        enrolledAt: p.createdAt,
+        currentModule: p.currentModule,
+        currentLesson: p.currentLesson
+      };
+    });
+    
+    // Get user credentials
+    const credentials = await UserCredential.find({ userId }).select('name state expirationDate totalCEUsRequired totalCEUsCompleted licenseNumber');
+    
+    res.json({
+      user: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        registeredAt: user.createdAt,
+        primaryState: user.primaryState,
+        subscription: {
+          plan: user.subscription?.plan || 'free',
+          status: user.subscription?.status || 'active',
+          startDate: user.subscription?.startDate,
+          endDate: user.subscription?.endDate
+        }
+      },
+      courseProgress,
+      credentials,
+      stats: {
+        totalCourses: courseProgress.length,
+        completedCourses: courseProgress.filter(c => c.completed).length,
+        inProgressCourses: courseProgress.filter(c => !c.completed && c.progress > 0).length,
+        notStartedCourses: courseProgress.filter(c => c.progress === 0).length,
+        totalCredentials: credentials.length,
+        totalCEHoursEarned: courseProgress.filter(c => c.completed).reduce((sum, c) => sum + (c.ceHours || 0), 0)
+      }
+    });
+  } catch (error) {
+    console.error('Get user progress error:', error);
+    res.status(500).json({ error: 'Failed to get user progress' });
+  }
+});
+
+// GET all users (for admin user list)
+router.get('/users', protect, isAdmin, async (req, res) => {
+  try {
+    const { search, limit = 50, skip = 0 } = req.query;
+    
+    let query = {};
+    if (search) {
+      query.$or = [
+        { name: { $regex: search, $options: 'i' } },
+        { email: { $regex: search, $options: 'i' } }
+      ];
+    }
+    
+    const users = await User.find(query)
+      .select('name email subscription.plan createdAt')
+      .sort({ createdAt: -1 })
+      .skip(parseInt(skip))
+      .limit(parseInt(limit));
+    
+    const total = await User.countDocuments(query);
+    
+    res.json({ users, total });
+  } catch (error) {
+    console.error('Get users error:', error);
+    res.status(500).json({ error: 'Failed to get users' });
+  }
+});
+
 export default router;
