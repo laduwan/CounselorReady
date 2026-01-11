@@ -44,6 +44,24 @@ const certificateSchema = new mongoose.Schema({
     type: String,
     trim: true
   },
+  // Approving Body & Applicability
+  approvingBody: {
+    type: String,
+    enum: ['NBCC', 'ACEP', 'ACA', 'NASW', 'APA', 'ASWB', 'AAMFT', 'LPCAGA', 'State Board', 'Other', null],
+    default: null
+  },
+  approvalNumber: {
+    type: String,
+    trim: true
+  },
+  applicability: {
+    type: String,
+    enum: ['national', 'state-specific', null],
+    default: null
+  },
+  applicableStates: [{
+    type: String // State codes: "GA", "FL", etc. Empty = all states (national)
+  }],
   certificateNumber: {
     type: String,
     trim: true,
