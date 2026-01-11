@@ -190,6 +190,57 @@ router.get('/messages', protect, async (req, res) => {
   }
 });
 
+// @route   GET /api/announcements/messages/my-conversations
+// @desc    Get user's conversations
+// @access  Private
+router.get('/messages/my-conversations', protect, async (req, res) => {
+  try {
+    // Get unique conversations for this user
+    const conversations = await Message.aggregate([
+      {
+        $match: {
+          $or: [
+            { fromUser: req.user._id },
+            { toUser: req.user._id }
+          ]
+        }
+      },
+      {
+        $sort: { createdAt: -1 }
+      },
+      {
+        $group: {
+          _id: '$conversationId',
+          lastMessage: { $first: '$$ROOT' },
+          unreadCount: {
+            $sum: {
+              $cond: [
+                { $and: [
+                  { $eq: ['$toUser', req.user._id] },
+                  { $eq: ['$read', false] }
+                ]},
+                1,
+                0
+              ]
+            }
+          }
+        }
+      },
+      {
+        $sort: { 'lastMessage.createdAt': -1 }
+      },
+      {
+        $limit: 50
+      }
+    ]);
+    
+    res.json({ conversations });
+  } catch (error) {
+    console.error('Get conversations error:', error);
+    res.status(500).json({ error: 'Failed to get conversations' });
+  }
+});
+
 // @route   GET /api/announcements/messages/:id
 // @desc    Get single message and mark as read
 // @access  Private
@@ -524,57 +575,6 @@ router.post('/messages/reply/:conversationId', protect, upload.array('attachment
   } catch (error) {
     console.error('Reply error:', error);
     res.status(500).json({ error: 'Failed to send reply' });
-  }
-});
-
-// @route   GET /api/announcements/messages/my-conversations
-// @desc    Get user's conversations
-// @access  Private
-router.get('/messages/my-conversations', protect, async (req, res) => {
-  try {
-    // Get unique conversations for this user
-    const conversations = await Message.aggregate([
-      {
-        $match: {
-          $or: [
-            { fromUser: req.user._id },
-            { toUser: req.user._id }
-          ]
-        }
-      },
-      {
-        $sort: { createdAt: -1 }
-      },
-      {
-        $group: {
-          _id: '$conversationId',
-          lastMessage: { $first: '$$ROOT' },
-          unreadCount: {
-            $sum: {
-              $cond: [
-                { $and: [
-                  { $eq: ['$toUser', req.user._id] },
-                  { $eq: ['$read', false] }
-                ]},
-                1,
-                0
-              ]
-            }
-          }
-        }
-      },
-      {
-        $sort: { 'lastMessage.createdAt': -1 }
-      },
-      {
-        $limit: 50
-      }
-    ]);
-    
-    res.json({ conversations });
-  } catch (error) {
-    console.error('Get conversations error:', error);
-    res.status(500).json({ error: 'Failed to get conversations' });
   }
 });
 
