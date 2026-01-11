@@ -58,6 +58,10 @@
         <a href="/courses.html" class="text-forest-600 hover:text-burgundy-700 transition-colors">Courses</a>
         <a href="/credentials.html" class="text-forest-600 hover:text-burgundy-700 transition-colors">Credentials</a>
         <a href="/certificates.html" class="text-forest-600 hover:text-burgundy-700 transition-colors">Certificates</a>
+        <a href="/messages.html" class="text-forest-600 hover:text-burgundy-700 transition-colors flex items-center gap-1">
+          Messages
+          <span id="unreadBadge" class="hidden bg-burgundy-600 text-white text-xs font-bold px-1.5 py-0.5 rounded-full">0</span>
+        </a>
       </nav>
 
       <!-- User Menu -->
@@ -93,13 +97,21 @@
         </h1>
         <p class="text-forest-600">Track your continuing education and stay audit-ready.</p>
       </div>
-      <!-- VIP Consult Button -->
-      <button id="dashboardConsultBtn" onclick="openConsultModal()" class="inline-flex items-center gap-2 bg-gold-500 hover:bg-gold-600 text-white font-semibold px-5 py-3 rounded-xl transition-colors shadow-md">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
-        </svg>
-        <span id="consultBtnText">Request Consult</span>
-      </button>
+      <div class="flex items-center gap-3">
+        <button onclick="syncDashboard()" id="syncBtn" class="inline-flex items-center gap-2 bg-forest-100 hover:bg-forest-200 text-forest-700 font-semibold px-4 py-2 rounded-xl transition-colors">
+          <svg id="syncIcon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+          </svg>
+          Sync
+        </button>
+        <!-- VIP Consult Button -->
+        <button id="dashboardConsultBtn" onclick="openConsultModal()" class="inline-flex items-center gap-2 bg-gold-500 hover:bg-gold-600 text-white font-semibold px-5 py-3 rounded-xl transition-colors shadow-md">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+          </svg>
+          <span id="consultBtnText">Request Consult</span>
+        </button>
+      </div>
     </div>
 
     <!-- Trial Banner (shown if on trial) -->
@@ -521,10 +533,123 @@
     }
     
     function updateDashboard(data) {
-      if (data.totalHours) document.getElementById('totalHours').textContent = data.totalHours;
-      if (data.coursesCompleted) document.getElementById('coursesCompleted').textContent = data.coursesCompleted;
-      if (data.certificatesCount) document.getElementById('certificatesCount').textContent = data.certificatesCount;
-      if (data.credentialsCount) document.getElementById('credentialsCount').textContent = data.credentialsCount;
+      // Update stats
+      document.getElementById('totalHours').textContent = data.totalHours || 0;
+      document.getElementById('coursesCompleted').textContent = data.coursesCompleted || 0;
+      document.getElementById('certificatesCount').textContent = data.certificatesCount || 0;
+      document.getElementById('credentialsCount').textContent = data.credentialsCount || 0;
+      
+      // Update CE Progress
+      const progressList = document.getElementById('progressList');
+      if (data.ceProgress && data.ceProgress.length > 0) {
+        progressList.innerHTML = data.ceProgress.map(cred => `
+          <div class="space-y-2">
+            <div class="flex justify-between items-center">
+              <span class="text-forest-700 font-medium">${cred.name}${cred.state ? ` (${cred.state})` : ''}</span>
+              <span class="text-forest-600 text-sm">${cred.completed}/${cred.required} hrs</span>
+            </div>
+            <div class="w-full bg-forest-100 rounded-full h-2">
+              <div class="bg-burgundy-600 h-2 rounded-full transition-all" style="width: ${cred.percent}%"></div>
+            </div>
+          </div>
+        `).join('');
+      }
+      
+      // Update Upcoming Renewals
+      const renewalsList = document.getElementById('renewalsList');
+      if (data.upcomingRenewals && data.upcomingRenewals.length > 0) {
+        renewalsList.innerHTML = data.upcomingRenewals.map(r => `
+          <div class="flex items-center justify-between p-3 rounded-lg ${r.daysLeft <= 30 ? 'bg-red-50 border border-red-200' : 'bg-gold-50 border border-gold-200'}">
+            <div>
+              <p class="font-medium ${r.daysLeft <= 30 ? 'text-red-800' : 'text-gold-800'}">${r.name}</p>
+              <p class="text-sm ${r.daysLeft <= 30 ? 'text-red-600' : 'text-gold-600'}">${r.state || ''}</p>
+            </div>
+            <div class="text-right">
+              <p class="font-bold ${r.daysLeft <= 30 ? 'text-red-700' : 'text-gold-700'}">${r.daysLeft} days</p>
+              <p class="text-xs ${r.daysLeft <= 30 ? 'text-red-500' : 'text-gold-500'}">${new Date(r.expirationDate).toLocaleDateString()}</p>
+            </div>
+          </div>
+        `).join('');
+      } else {
+        renewalsList.innerHTML = '<div class="text-center py-4"><p class="text-forest-500 text-sm">No upcoming renewals</p></div>';
+      }
+      
+      // Update Recent Activity
+      const activityList = document.getElementById('activityList');
+      if (data.recentActivity && data.recentActivity.length > 0) {
+        activityList.innerHTML = data.recentActivity.map(a => {
+          let icon, bgColor, textColor;
+          if (a.type === 'certificate') {
+            icon = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>`;
+            bgColor = 'bg-forest-100';
+            textColor = 'text-forest-600';
+          } else if (a.type === 'course_complete') {
+            icon = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>`;
+            bgColor = 'bg-burgundy-100';
+            textColor = 'text-burgundy-600';
+          } else {
+            icon = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>`;
+            bgColor = 'bg-gold-100';
+            textColor = 'text-gold-600';
+          }
+          
+          const timeAgo = getTimeAgo(new Date(a.date));
+          const subtitle = a.type === 'certificate' ? `+${a.ceHours} CE hours` : (a.type === 'course_complete' ? 'Course completed!' : `${a.progress}% complete`);
+          
+          return `
+            <div class="flex items-center gap-4 p-3 rounded-lg bg-stone-50">
+              <div class="w-10 h-10 ${bgColor} rounded-lg flex items-center justify-center">
+                <svg class="w-5 h-5 ${textColor}" fill="none" stroke="currentColor" viewBox="0 0 24 24">${icon}</svg>
+              </div>
+              <div class="flex-1">
+                <p class="text-forest-700">${a.title}</p>
+                <p class="text-forest-500 text-sm">${subtitle}</p>
+              </div>
+              <span class="text-forest-400 text-xs">${timeAgo}</span>
+            </div>
+          `;
+        }).join('');
+      }
+    }
+    
+    function getTimeAgo(date) {
+      const now = new Date();
+      const diff = now - date;
+      const minutes = Math.floor(diff / 60000);
+      const hours = Math.floor(diff / 3600000);
+      const days = Math.floor(diff / 86400000);
+      
+      if (minutes < 60) return `${minutes}m ago`;
+      if (hours < 24) return `${hours}h ago`;
+      if (days < 7) return `${days}d ago`;
+      return date.toLocaleDateString();
+    }
+    
+    async function syncDashboard() {
+      const btn = document.getElementById('syncBtn');
+      const icon = document.getElementById('syncIcon');
+      const token = localStorage.getItem('token');
+      
+      btn.disabled = true;
+      icon.classList.add('animate-spin');
+      
+      try {
+        const response = await fetch(`${API_URL}/api/users/dashboard`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          updateDashboard(data);
+        }
+      } catch (error) {
+        console.log('Could not sync dashboard');
+      }
+      
+      setTimeout(() => {
+        btn.disabled = false;
+        icon.classList.remove('animate-spin');
+      }, 500);
     }
     
     function toggleUserMenu() {
