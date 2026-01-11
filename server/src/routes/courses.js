@@ -1,504 +1,220 @@
 import express from 'express';
 import Course from '../models/Course.js';
-import CredentialTemplate from '../models/CredentialTemplate.js';
-import { protect } from '../middleware/auth.js';
+import UserCourseProgress from '../models/UserCourseProgress.js';
+import { protect, optionalAuth, requireSubscription } from '../middleware/auth.js';
 
 const router = express.Router();
 
-// Simple admin check - any logged-in user for now
-const isAdmin = (req, res, next) => next();
-
-// POST /api/admin/seed-templates - Seed credential templates
-router.post('/seed-templates', protect, isAdmin, async (req, res) => {
+// @route   GET /api/courses
+// @desc    Get all published courses
+// @access  Public
+router.get('/', optionalAuth, async (req, res) => {
   try {
-    // Check if already seeded
-    const existing = await CredentialTemplate.countDocuments();
-    if (existing > 0) {
-      return res.json({ message: `Templates already seeded (${existing} found)`, count: existing });
+    const courses = await Course.find({ status: 'published' })
+      .select('-modules.lessons.content') // Don't send full content in list
+      .sort({ createdAt: -1 });
+    
+    // If user is logged in, add enrollment status and access info
+    if (req.user) {
+      const progress = await UserCourseProgress.find({ userId: req.user._id });
+      const progressMap = {};
+      progress.forEach(p => {
+        progressMap[p.courseId.toString()] = {
+          enrolled: true,
+          status: p.status,
+          percentComplete: p.percentComplete
+        };
+      });
+      
+      const coursesWithProgress = courses.map(course => ({
+        ...course.toJSON(),
+        enrollment: progressMap[course._id.toString()] || { enrolled: false },
+        canAccess: req.user.canAccessCourse(course),
+        requiredTier: course.accessTier || 'free'
+      }));
+      
+      return res.json({ courses: coursesWithProgress });
     }
     
-    const templates = [
-      // Georgia
-      {
-        type: 'state_license',
-        name: 'LPC',
-        code: 'LPC',
-        state: 'GA',
-        issuingBody: 'Georgia Composite Board of Professional Counselors, Social Workers, and Marriage & Family Therapists',
-        renewalCycle: 24,
-        totalCEUsRequired: 35,
-        requirements: [
-          { category: 'Ethics', hoursRequired: 5 },
-          { category: 'General', hoursRequired: 30 }
-        ],
-        isActive: true
-      },
-      {
-        type: 'state_license',
-        name: 'LAPC',
-        code: 'LAPC',
-        state: 'GA',
-        issuingBody: 'Georgia Composite Board',
-        renewalCycle: 24,
-        totalCEUsRequired: 35,
-        requirements: [
-          { category: 'Ethics', hoursRequired: 5 },
-          { category: 'General', hoursRequired: 30 }
-        ],
-        isActive: true
-      },
-      {
-        type: 'state_license',
-        name: 'LCSW',
-        code: 'LCSW',
-        state: 'GA',
-        issuingBody: 'Georgia Composite Board',
-        renewalCycle: 24,
-        totalCEUsRequired: 35,
-        requirements: [
-          { category: 'Ethics', hoursRequired: 5 },
-          { category: 'General', hoursRequired: 30 }
-        ],
-        isActive: true
-      },
-      {
-        type: 'state_license',
-        name: 'LMFT',
-        code: 'LMFT',
-        state: 'GA',
-        issuingBody: 'Georgia Composite Board',
-        renewalCycle: 24,
-        totalCEUsRequired: 35,
-        requirements: [
-          { category: 'Ethics', hoursRequired: 5 },
-          { category: 'General', hoursRequired: 30 }
-        ],
-        isActive: true
-      },
-      // Texas
-      {
-        type: 'state_license',
-        name: 'LPC',
-        code: 'LPC',
-        state: 'TX',
-        issuingBody: 'Texas Behavioral Health Executive Council',
-        renewalCycle: 24,
-        totalCEUsRequired: 24,
-        requirements: [
-          { category: 'Ethics', hoursRequired: 3 },
-          { category: 'General', hoursRequired: 21 }
-        ],
-        isActive: true
-      },
-      // Florida
-      {
-        type: 'state_license',
-        name: 'LMHC',
-        code: 'LMHC',
-        state: 'FL',
-        issuingBody: 'Florida Board of Clinical Social Work, Marriage & Family Therapy, and Mental Health Counseling',
-        renewalCycle: 24,
-        totalCEUsRequired: 30,
-        requirements: [
-          { category: 'Ethics', hoursRequired: 3 },
-          { category: 'General', hoursRequired: 27 }
-        ],
-        isActive: true
-      },
-      // South Carolina
-      {
-        type: 'state_license',
-        name: 'LPC',
-        code: 'LPC',
-        state: 'SC',
-        issuingBody: 'South Carolina Board of Examiners for Licensure of Professional Counselors',
-        renewalCycle: 24,
-        totalCEUsRequired: 40,
-        requirements: [
-          { category: 'Ethics', hoursRequired: 6 },
-          { category: 'General', hoursRequired: 34 }
-        ],
-        isActive: true
-      },
-      // Alabama
-      {
-        type: 'state_license',
-        name: 'LPC',
-        code: 'LPC',
-        state: 'AL',
-        issuingBody: 'Alabama Board of Examiners in Counseling',
-        renewalCycle: 24,
-        totalCEUsRequired: 24,
-        requirements: [
-          { category: 'Ethics', hoursRequired: 3 },
-          { category: 'General', hoursRequired: 21 }
-        ],
-        isActive: true
-      },
-      // Tennessee
-      {
-        type: 'state_license',
-        name: 'LPC-MHSP',
-        code: 'LPC-MHSP',
-        state: 'TN',
-        issuingBody: 'Tennessee Board of Licensed Professional Counselors',
-        renewalCycle: 24,
-        totalCEUsRequired: 40,
-        requirements: [
-          { category: 'Ethics', hoursRequired: 3 },
-          { category: 'General', hoursRequired: 37 }
-        ],
-        isActive: true
-      },
-      // North Carolina
-      {
-        type: 'state_license',
-        name: 'LCMHC',
-        code: 'LCMHC',
-        state: 'NC',
-        issuingBody: 'North Carolina Board of Licensed Clinical Mental Health Counselors',
-        renewalCycle: 24,
-        totalCEUsRequired: 40,
-        requirements: [
-          { category: 'Ethics', hoursRequired: 3 },
-          { category: 'General', hoursRequired: 37 }
-        ],
-        isActive: true
-      },
-      // Idaho
-      {
-        type: 'state_license',
-        name: 'LPC',
-        code: 'LPC',
-        state: 'ID',
-        issuingBody: 'Idaho Licensing Board of Professional Counselors and Marriage and Family Therapists',
-        renewalCycle: 24,
-        totalCEUsRequired: 20,
-        requirements: [
-          { category: 'Ethics', hoursRequired: 3 },
-          { category: 'General', hoursRequired: 17 }
-        ],
-        isActive: true
-      },
-      // National Certs
-      {
-        type: 'national_cert',
-        name: 'NCC',
-        code: 'NCC',
-        issuingBody: 'National Board for Certified Counselors (NBCC)',
-        renewalCycle: 60,
-        totalCEUsRequired: 100,
-        requirements: [
-          { category: 'General', hoursRequired: 100 }
-        ],
-        isActive: true
-      },
-      {
-        type: 'national_cert',
-        name: 'ACS',
-        code: 'ACS',
-        issuingBody: 'National Board for Certified Counselors (NBCC)',
-        renewalCycle: 60,
-        totalCEUsRequired: 75,
-        requirements: [
-          { category: 'Supervision', hoursRequired: 25 },
-          { category: 'General', hoursRequired: 50 }
-        ],
-        isActive: true
-      },
-      // Specialty Certs
-      {
-        type: 'specialty_cert',
-        name: 'BC-TMH',
-        code: 'BC-TMH',
-        issuingBody: 'Center for Credentialing & Education (CCE)',
-        renewalCycle: 24,
-        totalCEUsRequired: 20,
-        requirements: [
-          { category: 'Telehealth', hoursRequired: 20 }
-        ],
-        isActive: true
-      },
-      {
-        type: 'specialty_cert',
-        name: 'CCTP',
-        code: 'CCTP',
-        issuingBody: 'International Association of Trauma Professionals (IATP)',
-        renewalCycle: 24,
-        totalCEUsRequired: 20,
-        requirements: [
-          { category: 'Trauma', hoursRequired: 20 }
-        ],
-        isActive: true
-      }
-    ];
+    // For non-logged in users, show access tier info
+    const coursesWithTier = courses.map(course => ({
+      ...course.toJSON(),
+      requiredTier: course.accessTier || 'free'
+    }));
     
-    await CredentialTemplate.insertMany(templates);
-    res.json({ message: `Seeded ${templates.length} credential templates`, count: templates.length });
+    res.json({ courses: coursesWithTier });
   } catch (error) {
-    console.error('Seed error:', error);
-    res.status(500).json({ error: 'Failed to seed templates' });
-  }
-});
-
-// GET all courses (including drafts)
-router.get('/courses', protect, isAdmin, async (req, res) => {
-  try {
-    const courses = await Course.find({}).sort({ createdAt: -1 });
-    res.json({ courses });
-  } catch (error) {
+    console.error('Get courses error:', error);
     res.status(500).json({ error: 'Failed to get courses' });
   }
 });
 
-// GET single course
-router.get('/courses/:id', protect, isAdmin, async (req, res) => {
+// @route   GET /api/courses/:slug
+// @desc    Get single course by slug
+// @access  Public (limited) / Private (full)
+router.get('/:slug', optionalAuth, async (req, res) => {
   try {
-    const course = await Course.findById(req.params.id);
-    if (!course) return res.status(404).json({ error: 'Course not found' });
-    res.json({ course });
+    const course = await Course.findOne({
+      slug: req.params.slug,
+      status: 'published'
+    });
+    
+    if (!course) {
+      return res.status(404).json({ error: 'Course not found' });
+    }
+    
+    let enrollment = null;
+    let canAccessContent = false;
+    
+    // Check if user is enrolled
+    if (req.user) {
+      const progress = await UserCourseProgress.findOne({
+        userId: req.user._id,
+        courseId: course._id
+      });
+      
+      if (progress) {
+        enrollment = {
+          enrolled: true,
+          status: progress.status,
+          percentComplete: progress.percentComplete,
+          lessonsCompleted: progress.lessonsCompleted.map(l => l.lessonId),
+          currentModuleIndex: progress.currentModuleIndex,
+          currentLessonIndex: progress.currentLessonIndex
+        };
+        
+        // Can access if enrolled and has active subscription (or course is free)
+        canAccessContent = course.accessType === 'free' || req.user.hasActiveSubscription();
+      }
+    }
+    
+    // Filter content based on access
+    const courseData = course.toJSON();
+    
+    if (!canAccessContent) {
+      // Only show free preview lessons
+      courseData.modules = courseData.modules.map(module => ({
+        ...module,
+        lessons: module.lessons.map(lesson => ({
+          ...lesson,
+          content: lesson.isFree ? lesson.content : null,
+          videoUrl: lesson.isFree ? lesson.videoUrl : null,
+          locked: !lesson.isFree
+        }))
+      }));
+    }
+    
+    res.json({
+      course: courseData,
+      enrollment
+    });
   } catch (error) {
+    console.error('Get course error:', error);
     res.status(500).json({ error: 'Failed to get course' });
   }
 });
 
-// CREATE course
-router.post('/courses', protect, isAdmin, async (req, res) => {
+// @route   POST /api/courses/:id/enroll
+// @desc    Enroll in a course
+// @access  Private
+router.post('/:id/enroll', protect, async (req, res) => {
   try {
-    const course = await Course.create(req.body);
-    res.status(201).json({ course });
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to create course' });
-  }
-});
-
-// UPDATE course
-router.put('/courses/:id', protect, isAdmin, async (req, res) => {
-  try {
-    const course = await Course.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    if (!course) return res.status(404).json({ error: 'Course not found' });
-    res.json({ course });
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to update course' });
-  }
-});
-
-// UPDATE specific lesson
-router.put('/courses/:id/lesson', protect, isAdmin, async (req, res) => {
-  try {
-    const { moduleIndex, lessonIndex, lesson } = req.body;
     const course = await Course.findById(req.params.id);
-    if (!course) return res.status(404).json({ error: 'Course not found' });
     
-    if (course.modules[moduleIndex] && course.modules[moduleIndex].lessons[lessonIndex]) {
-      Object.assign(course.modules[moduleIndex].lessons[lessonIndex], lesson);
-      await course.save();
-      res.json({ course, message: 'Lesson updated' });
-    } else {
-      res.status(404).json({ error: 'Lesson not found' });
+    if (!course) {
+      return res.status(404).json({ error: 'Course not found' });
     }
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to update lesson' });
-  }
-});
-
-// ADD module
-router.post('/courses/:id/module', protect, isAdmin, async (req, res) => {
-  try {
-    const course = await Course.findById(req.params.id);
-    if (!course) return res.status(404).json({ error: 'Course not found' });
     
-    course.modules.push({
-      title: req.body.title || 'New Module',
-      description: req.body.description || '',
-      order: course.modules.length + 1,
-      lessons: []
+    // Check if already enrolled
+    const existingProgress = await UserCourseProgress.findOne({
+      userId: req.user._id,
+      courseId: course._id
     });
-    await course.save();
-    res.json({ course });
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to add module' });
-  }
-});
-
-// ADD lesson
-router.post('/courses/:id/module/:moduleIndex/lesson', protect, isAdmin, async (req, res) => {
-  try {
-    const course = await Course.findById(req.params.id);
-    if (!course) return res.status(404).json({ error: 'Course not found' });
     
-    const moduleIndex = parseInt(req.params.moduleIndex);
-    if (!course.modules[moduleIndex]) return res.status(404).json({ error: 'Module not found' });
-    
-    course.modules[moduleIndex].lessons.push({
-      title: req.body.title || 'New Lesson',
-      type: req.body.type || 'text',
-      content: req.body.content || '',
-      duration: req.body.duration || 10,
-      order: course.modules[moduleIndex].lessons.length + 1,
-      isFree: req.body.isFree || false
-    });
-    await course.save();
-    res.json({ course });
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to add lesson' });
-  }
-});
-
-// DELETE course
-router.delete('/courses/:id', protect, isAdmin, async (req, res) => {
-  try {
-    await Course.findByIdAndDelete(req.params.id);
-    res.json({ message: 'Course deleted' });
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to delete course' });
-  }
-});
-
-// =====================
-// USER MANAGEMENT FOR SUPPORT
-// =====================
-
-import User from '../models/User.js';
-import UserCourseProgress from '../models/UserCourseProgress.js';
-import UserCredential from '../models/UserCredential.js';
-
-// GET single user by ID
-router.get('/users/:id', protect, isAdmin, async (req, res) => {
-  try {
-    const user = await User.findById(req.params.id).select('-password');
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-    res.json(user);
-  } catch (error) {
-    console.error('Get user error:', error);
-    res.status(500).json({ error: 'Failed to get user' });
-  }
-});
-
-// GET user course progress for support
-router.get('/users/:id/progress', protect, isAdmin, async (req, res) => {
-  try {
-    const userId = req.params.id;
-    
-    // Get user details
-    const user = await User.findById(userId).select('name email subscription createdAt primaryState');
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' });
+    if (existingProgress) {
+      return res.status(400).json({ error: 'Already enrolled in this course' });
     }
     
-    // Get all course progress for this user
-    const progress = await UserCourseProgress.find({ userId })
-      .populate('courseId', 'title ceHours modules category')
-      .sort({ updatedAt: -1 });
-    
-    // Format the progress data
-    const courseProgress = progress.map(p => {
-      const course = p.courseId;
-      const totalModules = course?.modules?.length || 0;
-      const completedModules = p.completedLessons?.length || 0;
-      const totalLessons = course?.modules?.reduce((sum, m) => sum + (m.lessons?.length || 0), 0) || 1;
-      const progressPercent = Math.round((completedModules / totalLessons) * 100);
+    // Check access requirements based on subscription tier
+    if (!req.user.canAccessCourse(course)) {
+      // Determine what tier is needed
+      const tierNames = { 'professional': 'Professional', 'vip': 'VIP' };
+      const requiredTier = tierNames[course.accessTier] || 'Professional';
       
-      return {
-        courseId: course?._id,
-        title: course?.title || 'Unknown Course',
-        category: course?.category || 'General',
-        ceHours: course?.ceHours || 0,
-        totalModules,
-        completedModules: Math.min(completedModules, totalModules),
-        totalLessons,
-        completedLessonsCount: p.completedLessons?.length || 0,
-        progress: Math.min(progressPercent, 100),
-        completed: p.completed,
-        completedAt: p.completedAt,
-        lastAccessed: p.updatedAt,
-        enrolledAt: p.createdAt,
-        currentModule: p.currentModule,
-        currentLesson: p.currentLesson
-      };
+      return res.status(403).json({
+        error: `${requiredTier} subscription required to access this course`,
+        code: 'SUBSCRIPTION_REQUIRED',
+        requiredTier: course.accessTier,
+        courseHours: course.ceuHours
+      });
+    }
+    
+    // Create enrollment
+    const progress = await UserCourseProgress.create({
+      userId: req.user._id,
+      courseId: course._id,
+      unlockedModules: [course.modules[0]?._id] // Unlock first module
     });
     
-    // Get user credentials
-    const credentials = await UserCredential.find({ userId }).select('name state expirationDate totalCEUsRequired totalCEUsCompleted licenseNumber');
+    // Increment enrollment count
+    course.enrollmentCount += 1;
+    await course.save();
     
-    res.json({
-      user: {
-        _id: user._id,
-        name: user.name,
-        email: user.email,
-        registeredAt: user.createdAt,
-        primaryState: user.primaryState,
-        subscription: {
-          plan: user.subscription?.plan || 'free',
-          status: user.subscription?.status || 'active',
-          startDate: user.subscription?.startDate,
-          endDate: user.subscription?.endDate
-        }
-      },
-      courseProgress,
-      credentials,
-      stats: {
-        totalCourses: courseProgress.length,
-        completedCourses: courseProgress.filter(c => c.completed).length,
-        inProgressCourses: courseProgress.filter(c => !c.completed && c.progress > 0).length,
-        notStartedCourses: courseProgress.filter(c => c.progress === 0).length,
-        totalCredentials: credentials.length,
-        totalCEHoursEarned: courseProgress.filter(c => c.completed).reduce((sum, c) => sum + (c.ceHours || 0), 0)
+    res.status(201).json({
+      message: 'Enrolled successfully',
+      enrollment: {
+        enrolled: true,
+        status: progress.status,
+        percentComplete: progress.percentComplete
       }
     });
   } catch (error) {
-    console.error('Get user progress error:', error);
-    res.status(500).json({ error: 'Failed to get user progress' });
+    console.error('Enroll error:', error);
+    res.status(500).json({ error: 'Failed to enroll' });
   }
 });
 
-// GET all users (for admin user list)
-router.get('/users', protect, isAdmin, async (req, res) => {
+// @route   GET /api/courses/:id/progress
+// @desc    Get user's progress in a course
+// @access  Private
+router.get('/:id/progress', protect, async (req, res) => {
   try {
-    const { search, limit = 50, skip = 0 } = req.query;
-    
-    let query = {};
-    if (search) {
-      query.$or = [
-        { name: { $regex: search, $options: 'i' } },
-        { email: { $regex: search, $options: 'i' } }
-      ];
-    }
-    
-    const users = await User.find(query)
-      .select('name email subscription.plan createdAt')
-      .sort({ createdAt: -1 })
-      .skip(parseInt(skip))
-      .limit(parseInt(limit));
-    
-    const total = await User.countDocuments(query);
-    
-    res.json({ users, total });
-  } catch (error) {
-    console.error('Get users error:', error);
-    res.status(500).json({ error: 'Failed to get users' });
-  }
-});
-
-// RESET user's course progress (admin only)
-router.post('/users/:userId/courses/:courseId/reset', protect, isAdmin, async (req, res) => {
-  try {
-    const { userId, courseId } = req.params;
-    
-    const progress = await UserCourseProgress.findOne({ userId, courseId });
+    const progress = await UserCourseProgress.findOne({
+      userId: req.user._id,
+      courseId: req.params.id
+    });
     
     if (!progress) {
-      return res.status(404).json({ error: 'Course progress not found' });
+      return res.status(404).json({ error: 'Not enrolled in this course' });
     }
     
-    // Reset progress
+    res.json({ progress });
+  } catch (error) {
+    console.error('Get progress error:', error);
+    res.status(500).json({ error: 'Failed to get progress' });
+  }
+});
+
+// @route   POST /api/courses/:id/retake
+// @desc    Reset course progress to retake (user-initiated)
+// @access  Private
+router.post('/:id/retake', protect, async (req, res) => {
+  try {
+    const progress = await UserCourseProgress.findOne({
+      userId: req.user._id,
+      courseId: req.params.id
+    });
+    
+    if (!progress) {
+      return res.status(404).json({ error: 'Not enrolled in this course' });
+    }
+    
+    // Reset progress but keep enrollment
     progress.completedLessons = [];
     progress.quizAttempts = [];
     progress.currentModule = 0;
     progress.currentLesson = 0;
-    progress.status = 'not_started';
+    progress.status = 'in_progress';
     progress.completed = false;
     progress.completedAt = null;
     progress.progressPercent = 0;
@@ -506,12 +222,149 @@ router.post('/users/:userId/courses/:courseId/reset', protect, isAdmin, async (r
     await progress.save();
     
     res.json({ 
-      message: 'Course progress reset successfully',
+      message: 'Course reset successfully. You can now retake the course.',
       progress 
     });
   } catch (error) {
-    console.error('Reset progress error:', error);
-    res.status(500).json({ error: 'Failed to reset course progress' });
+    console.error('Retake course error:', error);
+    res.status(500).json({ error: 'Failed to reset course' });
+  }
+});
+
+// @route   POST /api/courses/:id/lessons/:lessonId/complete
+// @desc    Mark a lesson as complete
+// @access  Private
+router.post('/:id/lessons/:lessonId/complete', protect, async (req, res) => {
+  try {
+    const course = await Course.findById(req.params.id);
+    
+    if (!course) {
+      return res.status(404).json({ error: 'Course not found' });
+    }
+    
+    let progress = await UserCourseProgress.findOne({
+      userId: req.user._id,
+      courseId: course._id
+    });
+    
+    if (!progress) {
+      return res.status(404).json({ error: 'Not enrolled in this course' });
+    }
+    
+    // Mark lesson complete
+    await progress.completeLesson(req.params.lessonId, course);
+    
+    res.json({
+      message: 'Lesson marked complete',
+      progress: {
+        status: progress.status,
+        percentComplete: progress.percentComplete,
+        lessonsCompleted: progress.lessonsCompleted.length
+      }
+    });
+  } catch (error) {
+    console.error('Complete lesson error:', error);
+    res.status(500).json({ error: 'Failed to complete lesson' });
+  }
+});
+
+// @route   POST /api/courses/:id/lessons/:lessonId/quiz
+// @desc    Submit a quiz attempt
+// @access  Private
+router.post('/:id/lessons/:lessonId/quiz', protect, async (req, res) => {
+  try {
+    const { answers } = req.body; // Array of { questionId, selectedAnswer }
+    
+    const course = await Course.findById(req.params.id);
+    if (!course) {
+      return res.status(404).json({ error: 'Course not found' });
+    }
+    
+    // Find the lesson with the quiz
+    let quizLesson = null;
+    for (const module of course.modules) {
+      const lesson = module.lessons.find(l => l._id.toString() === req.params.lessonId);
+      if (lesson && lesson.type === 'quiz') {
+        quizLesson = lesson;
+        break;
+      }
+    }
+    
+    if (!quizLesson) {
+      return res.status(404).json({ error: 'Quiz not found' });
+    }
+    
+    let progress = await UserCourseProgress.findOne({
+      userId: req.user._id,
+      courseId: course._id
+    });
+    
+    if (!progress) {
+      return res.status(404).json({ error: 'Not enrolled in this course' });
+    }
+    
+    // Calculate score (this is simplified - real implementation would grade each question)
+    // For now, just record the attempt
+    const attemptNumber = progress.quizAttempts.filter(
+      a => a.lessonId.toString() === req.params.lessonId
+    ).length + 1;
+    
+    // TODO: Implement actual quiz grading
+    const score = 85; // Placeholder
+    const passed = score >= (course.settings.passingScore || 70);
+    
+    progress.quizAttempts.push({
+      lessonId: req.params.lessonId,
+      attemptNumber,
+      score,
+      passed,
+      completedAt: new Date(),
+      answers: answers || []
+    });
+    
+    // Mark lesson complete if passed
+    if (passed) {
+      await progress.completeLesson(req.params.lessonId, course);
+    } else {
+      await progress.save();
+    }
+    
+    res.json({
+      message: 'Quiz submitted',
+      result: {
+        score,
+        passed,
+        attemptNumber,
+        passingScore: course.settings.passingScore || 70
+      }
+    });
+  } catch (error) {
+    console.error('Submit quiz error:', error);
+    res.status(500).json({ error: 'Failed to submit quiz' });
+  }
+});
+
+// @route   GET /api/courses/enrolled
+// @desc    Get user's enrolled courses
+// @access  Private
+router.get('/user/enrolled', protect, async (req, res) => {
+  try {
+    const progress = await UserCourseProgress.find({ userId: req.user._id })
+      .populate('courseId', 'title slug thumbnail totalLessons')
+      .sort({ lastAccessedAt: -1 });
+    
+    const enrolledCourses = progress.map(p => ({
+      course: p.courseId,
+      status: p.status,
+      percentComplete: p.percentComplete,
+      lastAccessedAt: p.lastAccessedAt,
+      enrolledAt: p.enrolledAt
+    }));
+    
+    res.json({ enrolledCourses });
+  } catch (error) {
+    console.error('Get enrolled courses error:', error);
+    res.status(500).json({ error: 'Failed to get enrolled courses' });
   }
 });
 
