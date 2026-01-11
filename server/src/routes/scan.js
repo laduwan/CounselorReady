@@ -2,6 +2,7 @@ import express from 'express';
 import Anthropic from '@anthropic-ai/sdk';
 import multer from 'multer';
 import { protect } from '../middleware/auth.js';
+import CredentialTemplate from '../models/CredentialTemplate.js';
 
 const router = express.Router();
 
@@ -214,6 +215,50 @@ For license type, use the standard abbreviation (LPC, LMFT, LCSW, NCC, etc).`
       expirationDate: extractedData.expirationDate || null,
       totalHours: extractedData.totalHours ? parseInt(extractedData.totalHours) : null
     };
+
+    // Lookup template to auto-fill CE requirements
+    if (cleanedData.name && cleanedData.state) {
+      try {
+        const template = await CredentialTemplate.findOne({
+          name: { $regex: new RegExp(`^${cleanedData.name}$`, 'i') },
+          state: cleanedData.state.toUpperCase(),
+          isActive: true
+        });
+        
+        if (template) {
+          cleanedData.totalCEUsRequired = template.totalCEUsRequired;
+          cleanedData.renewalCycle = template.renewalCycle;
+          cleanedData.issuingBody = cleanedData.issuingBody || template.issuingBody;
+          cleanedData.requirements = template.requirements;
+          cleanedData.templateId = template._id;
+          console.log(`Found template for ${cleanedData.name} (${cleanedData.state}): ${template.totalCEUsRequired} CE hours`);
+        }
+      } catch (templateError) {
+        console.error('Template lookup error:', templateError);
+      }
+    }
+    
+    // Also try national cert lookup if no state template found
+    if (cleanedData.name && !cleanedData.totalCEUsRequired) {
+      try {
+        const template = await CredentialTemplate.findOne({
+          name: { $regex: new RegExp(`^${cleanedData.name}$`, 'i') },
+          type: { $in: ['national_cert', 'specialty_cert'] },
+          isActive: true
+        });
+        
+        if (template) {
+          cleanedData.totalCEUsRequired = template.totalCEUsRequired;
+          cleanedData.renewalCycle = template.renewalCycle;
+          cleanedData.issuingBody = cleanedData.issuingBody || template.issuingBody;
+          cleanedData.requirements = template.requirements;
+          cleanedData.templateId = template._id;
+          console.log(`Found national template for ${cleanedData.name}: ${template.totalCEUsRequired} CE hours`);
+        }
+      } catch (templateError) {
+        console.error('National template lookup error:', templateError);
+      }
+    }
 
     res.json({ 
       success: true,
