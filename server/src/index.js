@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
+import cron from 'node-cron';
 
 // Route imports
 import scanRoutes from './routes/scan.js';
@@ -17,6 +18,10 @@ import scormRoutes from './routes/scorm.js';
 import ltiRoutes from './routes/lti.js';
 import xapiRoutes from './routes/xapi.js';
 import cebrokerRoutes from './routes/cebroker.js';
+import announcementRoutes from './routes/announcements.js';
+
+// Services
+import { checkAndSendReminders } from './services/reminderService.js';
 
 // Load environment variables
 dotenv.config();
@@ -54,6 +59,7 @@ app.use('/api/scorm', scormRoutes);
 app.use('/api/lti', ltiRoutes);
 app.use('/api/xapi', xapiRoutes);
 app.use('/api/cebroker', cebrokerRoutes);
+app.use('/api/announcements', announcementRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
@@ -79,7 +85,16 @@ const PORT = process.env.PORT || 5000;
 mongoose.connect(process.env.MONGODB_URI)
   .then(() => {
     console.log('✅ Connected to MongoDB');
-    app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+    app.listen(PORT, () => {
+      console.log(`🚀 Server running on port ${PORT}`);
+      
+      // Schedule daily reminder check at 8 AM
+      cron.schedule('0 8 * * *', async () => {
+        console.log('⏰ Running daily credential expiration check...');
+        await checkAndSendReminders();
+      });
+      console.log('📅 Cron job scheduled: Daily reminder check at 8 AM');
+    });
   })
   .catch((err) => {
     console.error('❌ MongoDB connection error:', err);
