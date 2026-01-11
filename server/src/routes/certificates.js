@@ -79,7 +79,7 @@ router.post('/', protect, upload.single('file'), async (req, res) => {
     console.log('Body:', req.body);
     console.log('File:', req.file ? req.file.originalname : 'No file');
     
-    const { title, provider, completionDate, ceHours, category, nbccApproved, acepNumber, notes, credentials } = req.body;
+    const { title, provider, completionDate, ceHours, category, nbccApproved, acepNumber, notes, credentials, approvingBody, approvalNumber, applicability, applicableStates } = req.body;
     
     // Validate required fields
     if (!title || !provider || !completionDate || !ceHours) {
@@ -121,6 +121,16 @@ router.post('/', protect, upload.single('file'), async (req, res) => {
       }
     }
     
+    // Parse applicable states if it's a string
+    let parsedApplicableStates = [];
+    if (applicableStates) {
+      try {
+        parsedApplicableStates = typeof applicableStates === 'string' ? JSON.parse(applicableStates) : applicableStates;
+      } catch (e) {
+        parsedApplicableStates = [];
+      }
+    }
+    
     const certificate = await Certificate.create({
       userId: req.user._id,
       title,
@@ -130,6 +140,10 @@ router.post('/', protect, upload.single('file'), async (req, res) => {
       category: category || 'General',
       nbccApproved: nbccApproved === 'true' || nbccApproved === true,
       acepNumber: acepNumber || null,
+      approvingBody: approvingBody || null,
+      approvalNumber: approvalNumber || null,
+      applicability: applicability || 'national',
+      applicableStates: parsedApplicableStates,
       notes: notes || null,
       credentials: parsedCredentials,
       fileUrl,
