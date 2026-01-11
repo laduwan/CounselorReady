@@ -1,11 +1,137 @@
 import express from 'express';
+import Notification from '../models/Notification.js';
 import { protect } from '../middleware/auth.js';
+import { sendTestReminder, checkAndSendReminders } from '../services/reminderService.js';
 
 const router = express.Router();
 
-// Placeholder - will be fully implemented
-router.get('/', protect, async (req, res) => {
-  res.json({ reminders: [], message: 'Reminder routes coming soon' });
+// @route   GET /api/reminders/notifications
+// @desc    Get user's notifications
+// @access  Private
+router.get('/notifications', protect, async (req, res) => {
+  try {
+    const { limit = 20, unreadOnly = false } = req.query;
+    
+    const query = { userId: req.user._id, dismissed: false };
+    if (unreadOnly === 'true') {
+      query.read = false;
+    }
+    
+    const notifications = await Notification.find(query)
+      .sort({ createdAt: -1 })
+      .limit(parseInt(limit));
+    
+    const unreadCount = await Notification.getUnreadCount(req.user._id);
+    
+    res.json({ 
+      notifications,
+      unreadCount
+    });
+  } catch (error) {
+    console.error('Get notifications error:', error);
+    res.status(500).json({ error: 'Failed to get notifications' });
+  }
+});
+
+// @route   GET /api/reminders/unread-count
+// @desc    Get unread notification count
+// @access  Private
+router.get('/unread-count', protect, async (req, res) => {
+  try {
+    const count = await Notification.getUnreadCount(req.user._id);
+    res.json({ count });
+  } catch (error) {
+    console.error('Get unread count error:', error);
+    res.status(500).json({ error: 'Failed to get unread count' });
+  }
+});
+
+// @route   PUT /api/reminders/notifications/:id/read
+// @desc    Mark notification as read
+// @access  Private
+router.put('/notifications/:id/read', protect, async (req, res) => {
+  try {
+    const notification = await Notification.findOneAndUpdate(
+      { _id: req.params.id, userId: req.user._id },
+      { read: true },
+      { new: true }
+    );
+    
+    if (!notification) {
+      return res.status(404).json({ error: 'Notification not found' });
+    }
+    
+    res.json({ notification });
+  } catch (error) {
+    console.error('Mark read error:', error);
+    res.status(500).json({ error: 'Failed to mark notification as read' });
+  }
+});
+
+// @route   PUT /api/reminders/mark-all-read
+// @desc    Mark all notifications as read
+// @access  Private
+router.put('/mark-all-read', protect, async (req, res) => {
+  try {
+    await Notification.markAllRead(req.user._id);
+    res.json({ message: 'All notifications marked as read' });
+  } catch (error) {
+    console.error('Mark all read error:', error);
+    res.status(500).json({ error: 'Failed to mark all as read' });
+  }
+});
+
+// @route   DELETE /api/reminders/notifications/:id
+// @desc    Dismiss a notification
+// @access  Private
+router.delete('/notifications/:id', protect, async (req, res) => {
+  try {
+    const notification = await Notification.findOneAndUpdate(
+      { _id: req.params.id, userId: req.user._id },
+      { dismissed: true },
+      { new: true }
+    );
+    
+    if (!notification) {
+      return res.status(404).json({ error: 'Notification not found' });
+    }
+    
+    res.json({ message: 'Notification dismissed' });
+  } catch (error) {
+    console.error('Dismiss notification error:', error);
+    res.status(500).json({ error: 'Failed to dismiss notification' });
+  }
+});
+
+// @route   POST /api/reminders/test/:credentialId
+// @desc    Send a test reminder for a credential
+// @access  Private
+router.post('/test/:credentialId', protect, async (req, res) => {
+  try {
+    const result = await sendTestReminder(req.user._id, req.params.credentialId);
+    res.json(result);
+  } catch (error) {
+    console.error('Test reminder error:', error);
+    res.status(500).json({ error: 'Failed to send test reminder' });
+  }
+});
+
+// @route   POST /api/reminders/run-check
+// @desc    Manually run the reminder check (admin only)
+// @access  Private
+router.post('/run-check', protect, async (req, res) => {
+  try {
+    // Check if user is admin
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Admin access required' });
+    }
+    
+    await checkAndSendReminders();
+    res.json({ message: 'Reminder check completed' });
+  } catch (error) {
+    console.error('Run check error:', error);
+    res.status(500).json({ error: 'Failed to run reminder check' });
+  }
 });
 
 export default router;
