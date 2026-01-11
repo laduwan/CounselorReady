@@ -5,6 +5,7 @@ import { protect } from '../middleware/auth.js';
 import Certificate from '../models/Certificate.js';
 import Course from '../models/Course.js';
 import User from '../models/User.js';
+import UserCredential from '../models/UserCredential.js';
 import { generateCertificate, generateCertificateNumber } from '../utils/certificate.js';
 
 const router = express.Router();
@@ -138,6 +139,33 @@ router.post('/', protect, upload.single('file'), async (req, res) => {
     });
     
     console.log('Certificate created:', certificate._id);
+    
+    // Log CEUs to linked credentials
+    if (parsedCredentials && parsedCredentials.length > 0) {
+      for (const credId of parsedCredentials) {
+        try {
+          const credential = await UserCredential.findOne({
+            _id: credId,
+            userId: req.user._id
+          });
+          
+          if (credential) {
+            await credential.addCEU({
+              hours: parseFloat(ceHours),
+              category: category || 'General',
+              description: title,
+              provider: provider,
+              date: new Date(completionDate),
+              certificateId: certificate._id,
+              source: 'external'
+            });
+            console.log(`Logged ${ceHours} CEUs to credential ${credId}`);
+          }
+        } catch (credError) {
+          console.error(`Failed to log CEU to credential ${credId}:`, credError);
+        }
+      }
+    }
     
     res.status(201).json({ 
       message: 'Certificate uploaded successfully',
@@ -363,6 +391,7 @@ router.post('/generate/:courseId', protect, async (req, res) => {
         provider: 'GA Integrated Therapeutic Perspectives LLC',
         completionDate: new Date(),
         ceHours: course.ceuHours || 0,
+        category: course.ceuCategories?.[0]?.category || 'Core',
         nbccApproved: course.ceuEligible || false,
         acepNumber: course.ceuApprovalNumber || '7760',
         certificateNumber: certNumber,
@@ -372,6 +401,30 @@ router.post('/generate/:courseId', protect, async (req, res) => {
         fileType: 'application/pdf',
         source: 'platform'
       });
+      
+      // Auto-log CEUs to all user credentials for this course category
+      const userCredentials = await UserCredential.find({ userId });
+      const courseCategory = course.ceuCategories?.[0]?.category || 'General';
+      
+      for (const credential of userCredentials) {
+        if (credential.totalCEUsRequired > 0) {
+          try {
+            await credential.addCEU({
+              hours: course.ceuHours || 0,
+              category: courseCategory,
+              description: course.title,
+              provider: 'GA Integrated Therapeutic Perspectives LLC',
+              date: new Date(),
+              certificateId: certificate._id,
+              courseId: courseId,
+              source: 'internal'
+            });
+            console.log(`Auto-logged ${course.ceuHours} CEUs to credential ${credential._id}`);
+          } catch (credError) {
+            console.error(`Failed to log CEU to credential ${credential._id}:`, credError);
+          }
+        }
+      }
     } else {
       // Update existing
       certificate.fileUrl = fileUrl || certificate.fileUrl;
