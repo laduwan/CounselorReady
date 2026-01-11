@@ -136,6 +136,33 @@ router.post('/', protect, async (req, res) => {
   }
 });
 
+// @route   GET /api/credentials/consult-status
+// @desc    Get consultation status for current user
+// @access  Private
+router.get('/consult-status', protect, async (req, res) => {
+  try {
+    const canBook = req.user.canBookConsultation();
+    const history = req.user.consultations || [];
+    
+    res.json({
+      canBook: canBook.allowed,
+      reason: canBook.reason,
+      currentQuarter: req.user.getCurrentQuarter(),
+      nextQuarter: req.user.getNextQuarter(),
+      usedThisQuarter: req.user.hasUsedQuarterlyConsult(),
+      history: history.map(c => ({
+        quarter: c.quarter,
+        requestedAt: c.requestedAt,
+        completedAt: c.completedAt,
+        topic: c.topic
+      }))
+    });
+  } catch (error) {
+    console.error('Consult status error:', error);
+    res.status(500).json({ error: 'Failed to get consultation status' });
+  }
+});
+
 // @route   GET /api/credentials/:id
 // @desc    Get single credential
 // @access  Private
@@ -389,33 +416,6 @@ router.post('/book-consult', protect, async (req, res) => {
   } catch (error) {
     console.error('Book consult error:', error);
     res.status(500).json({ error: error.message || 'Failed to book consultation' });
-  }
-});
-
-// @route   GET /api/credentials/consult-status
-// @desc    Get consultation status for current user
-// @access  Private
-router.get('/consult-status', protect, async (req, res) => {
-  try {
-    const canBook = req.user.canBookConsultation();
-    const history = req.user.consultations || [];
-    
-    res.json({
-      canBook: canBook.allowed,
-      reason: canBook.reason,
-      currentQuarter: req.user.getCurrentQuarter(),
-      nextQuarter: req.user.getNextQuarter(),
-      usedThisQuarter: req.user.hasUsedQuarterlyConsult(),
-      history: history.map(c => ({
-        quarter: c.quarter,
-        requestedAt: c.requestedAt,
-        completedAt: c.completedAt,
-        topic: c.topic
-      }))
-    });
-  } catch (error) {
-    console.error('Consult status error:', error);
-    res.status(500).json({ error: 'Failed to get consultation status' });
   }
 });
 
