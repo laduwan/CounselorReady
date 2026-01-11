@@ -926,9 +926,14 @@
               <h5 class="font-medium text-forest-900">${course.title || 'Unknown Course'}</h5>
               <p class="text-xs text-forest-500">${course.category || 'General'} • ${course.ceHours || 0} CE Hours</p>
             </div>
-            <span class="text-sm ${course.completed ? 'text-green-600 bg-green-50' : 'text-yellow-600 bg-yellow-50'} font-medium px-2 py-1 rounded-lg">
-              ${course.completed ? '✅ Completed' : '⏳ In Progress'}
-            </span>
+            <div class="flex items-center gap-2">
+              <span class="text-sm ${course.completed ? 'text-green-600 bg-green-50' : 'text-yellow-600 bg-yellow-50'} font-medium px-2 py-1 rounded-lg">
+                ${course.completed ? '✅ Completed' : '⏳ In Progress'}
+              </span>
+              <button onclick="resetCourseProgress('${currentUserId}', '${course.courseId}')" class="px-2 py-1 bg-red-100 text-red-700 rounded-lg text-xs hover:bg-red-200 transition-colors" title="Reset progress so user can retake">
+                🔄 Reset
+              </button>
+            </div>
           </div>
           <div class="w-full bg-stone-200 rounded-full h-2 mb-3">
             <div class="bg-burgundy-600 h-2 rounded-full transition-all" style="width: ${course.progress || 0}%"></div>
@@ -958,6 +963,28 @@
           ` : ''}
         </div>
       `).join('');
+    }
+
+    async function resetCourseProgress(userId, courseId) {
+      if (!confirm('Reset this user\\'s course progress? They will need to retake the entire course.')) return;
+      
+      try {
+        const response = await fetch(`${API_URL}/api/admin/users/${userId}/courses/${courseId}/reset`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (response.ok) {
+          alert('Course progress reset successfully');
+          loadUserProgress(userId);
+        } else {
+          const data = await response.json();
+          alert(data.error || 'Failed to reset progress');
+        }
+      } catch (error) {
+        console.error('Reset progress error:', error);
+        alert('Failed to reset progress');
+      }
     }
 
     function getPlanColor(plan) {
