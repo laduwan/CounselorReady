@@ -62,6 +62,23 @@ const courseSchema = new mongoose.Schema({
   }],
   ceuApprovalNumber: { type: String },
   
+  // Approving Body & Applicability (for CE tracking)
+  approvingBody: {
+    type: String,
+    enum: ['NBCC', 'ACEP', 'ACA', 'NASW', 'APA', 'ASWB', 'AAMFT', 'LPCAGA', 'State Board', 'Other'],
+    default: 'NBCC'
+  },
+  approvingBodyOther: { type: String }, // If "Other" selected
+  approvalNumber: { type: String }, // ACEP#, provider#, etc.
+  applicability: {
+    type: String,
+    enum: ['national', 'state-specific'],
+    default: 'national'
+  },
+  applicableStates: [{ 
+    type: String // State codes: "GA", "FL", etc. Empty = all states
+  }],
+  
   // Content
   modules: [moduleSchema],
   
