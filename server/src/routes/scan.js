@@ -46,7 +46,7 @@ router.post('/', protect, upload.single('file'), async (req, res) => {
     // Call Claude API to extract certificate data
     const message = await anthropic.messages.create({
       model: 'claude-sonnet-4-20250514',
-      max_tokens: 1024,
+      max_tokens: 1500,
       messages: [
         {
           role: 'user',
@@ -68,10 +68,31 @@ router.post('/', protect, upload.single('file'), async (req, res) => {
   "provider": "organization/provider name",
   "completionDate": "YYYY-MM-DD format",
   "ceHours": number,
-  "nbccApproved": true/false (look for NBCC, ACEP, or Approved Provider mentions),
-  "acepNumber": "ACEP number if visible, otherwise null",
-  "category": "one of: Ethics, Supervision, Telehealth, Cultural Diversity, Trauma, Core, Other"
+  "category": "one of: Ethics, Supervision, Telehealth, Cultural Diversity, Trauma, Core, General, Other",
+  "approvingBody": "The organization that approved/accredited this CE (see list below)",
+  "approvalNumber": "Any approval/provider number visible (ACEP#, provider#, etc.)",
+  "applicability": "national or state-specific (see rules below)",
+  "applicableStates": ["array of state codes if state-specific, empty array if national"]
 }
+
+APPROVING BODY - Look for these and extract exactly:
+- "NBCC" - National Board for Certified Counselors
+- "ACEP" - Approved Continuing Education Provider (NBCC program)
+- "ACA" - American Counseling Association
+- "NASW" - National Association of Social Workers
+- "APA" - American Psychological Association
+- "ASWB" - Association of Social Work Boards
+- "AAMFT" - American Association for Marriage and Family Therapy
+- State boards: "LPCAGA" (Georgia), "Florida Board", "Texas Board", etc.
+- If multiple approvals, list the primary/first one
+
+APPLICABILITY RULES:
+- If approved by NBCC, ACEP, ACA, NASW, APA, ASWB, AAMFT → "national" (applies to all states)
+- If approved by a state board, analyze the content:
+  - If the content discusses STATE-SPECIFIC laws, rules, regulations, or statutes → "state-specific"
+  - If the content is general clinical practice, theory, or skills → "national" (even if state-approved)
+- Look for keywords: "Georgia law", "Florida statutes", "[State] rules" = state-specific
+- General topics like "trauma treatment", "CBT techniques", "ethics principles" = national
 
 If you cannot find a field, use null. For ceHours, extract the number only.`
             }
