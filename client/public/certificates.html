@@ -282,19 +282,85 @@
           </select>
         </div>
 
-        <!-- NBCC Approved -->
-        <div class="flex items-center gap-3 p-4 bg-forest-50 rounded-xl">
-          <input type="checkbox" id="nbccApproved" name="nbccApproved" class="w-5 h-5 text-burgundy-600 border-forest-300 rounded focus:ring-burgundy-500">
-          <label for="nbccApproved" class="text-forest-700">
-            <span class="font-medium">NBCC Approved</span>
-            <span class="text-forest-500 text-sm block">Check if this course was from an NBCC ACEP</span>
-          </label>
+        <!-- Approving Body -->
+        <div>
+          <label for="approvingBody" class="block text-sm font-medium text-forest-700 mb-2">Approving Body *</label>
+          <select id="approvingBody" name="approvingBody" required class="w-full px-4 py-3 border border-forest-200 rounded-xl focus:ring-2 focus:ring-burgundy-500 focus:border-burgundy-500 outline-none" onchange="handleApprovingBodyChange()">
+            <option value="">Select approving body...</option>
+            <optgroup label="National (Applies to All States)">
+              <option value="NBCC">NBCC - National Board for Certified Counselors</option>
+              <option value="ACEP">ACEP - Approved Continuing Education Provider</option>
+              <option value="ACA">ACA - American Counseling Association</option>
+              <option value="NASW">NASW - National Association of Social Workers</option>
+              <option value="APA">APA - American Psychological Association</option>
+              <option value="ASWB">ASWB - Association of Social Work Boards</option>
+              <option value="AAMFT">AAMFT - American Association for Marriage and Family Therapy</option>
+            </optgroup>
+            <optgroup label="State Boards">
+              <option value="LPCAGA">Georgia - LPC Association of GA</option>
+              <option value="State Board">Other State Board</option>
+            </optgroup>
+            <option value="Other">Other</option>
+          </select>
         </div>
 
-        <!-- ACEP Number (shown if NBCC approved) -->
-        <div id="acepField" class="hidden">
-          <label for="acepNumber" class="block text-sm font-medium text-forest-700 mb-2">ACEP Number (optional)</label>
-          <input type="text" id="acepNumber" name="acepNumber" placeholder="e.g., 7760" class="w-full px-4 py-3 border border-forest-200 rounded-xl focus:ring-2 focus:ring-burgundy-500 focus:border-burgundy-500 outline-none">
+        <!-- Approval Number -->
+        <div>
+          <label for="approvalNumber" class="block text-sm font-medium text-forest-700 mb-2">Approval/Provider Number (optional)</label>
+          <input type="text" id="approvalNumber" name="approvalNumber" placeholder="e.g., ACEP #7760, Provider #12345" class="w-full px-4 py-3 border border-forest-200 rounded-xl focus:ring-2 focus:ring-burgundy-500 focus:border-burgundy-500 outline-none">
+        </div>
+
+        <!-- Applicability (for state boards) -->
+        <div id="applicabilitySection" class="hidden">
+          <label class="block text-sm font-medium text-forest-700 mb-2">Course Applicability</label>
+          <div class="space-y-2 p-4 bg-amber-50 border border-amber-200 rounded-xl">
+            <p class="text-amber-800 text-sm mb-3">
+              <strong>Note:</strong> State board approved courses may apply nationally if the content is general clinical practice. 
+              Does this course cover state-specific laws/rules or general practice?
+            </p>
+            <label class="flex items-center gap-3 p-3 bg-white rounded-lg cursor-pointer hover:bg-forest-50 border border-transparent has-[:checked]:border-forest-500">
+              <input type="radio" name="applicability" value="national" class="w-4 h-4 text-forest-600" checked>
+              <div>
+                <span class="font-medium text-forest-800">General Practice (National)</span>
+                <span class="text-forest-500 text-sm block">Applies to all state credentials - covers general clinical skills, theory, techniques</span>
+              </div>
+            </label>
+            <label class="flex items-center gap-3 p-3 bg-white rounded-lg cursor-pointer hover:bg-burgundy-50 border border-transparent has-[:checked]:border-burgundy-500">
+              <input type="radio" name="applicability" value="state-specific" class="w-4 h-4 text-burgundy-600">
+              <div>
+                <span class="font-medium text-burgundy-800">State-Specific</span>
+                <span class="text-burgundy-500 text-sm block">Only applies to specific state(s) - covers state laws, rules, regulations</span>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <!-- State Selection (if state-specific) -->
+        <div id="stateSelectSection" class="hidden">
+          <label class="block text-sm font-medium text-forest-700 mb-2">Which state(s) does this apply to?</label>
+          <select id="applicableStates" name="applicableStates" multiple class="w-full px-4 py-3 border border-forest-200 rounded-xl focus:ring-2 focus:ring-burgundy-500 focus:border-burgundy-500 outline-none" style="min-height: 120px;">
+            <option value="GA">Georgia</option>
+            <option value="FL">Florida</option>
+            <option value="TX">Texas</option>
+            <option value="CA">California</option>
+            <option value="NC">North Carolina</option>
+            <option value="SC">South Carolina</option>
+            <option value="AL">Alabama</option>
+            <option value="TN">Tennessee</option>
+            <option value="NY">New York</option>
+            <option value="PA">Pennsylvania</option>
+          </select>
+          <p class="text-forest-500 text-xs mt-1">Hold Ctrl/Cmd to select multiple states</p>
+        </div>
+
+        <!-- NBCC Approved (legacy - keep for backward compat) -->
+        <div class="hidden">
+          <input type="checkbox" id="nbccApproved" name="nbccApproved">
+        </div>
+
+        <!-- ACEP Number (legacy) -->
+        <div class="hidden">
+          <input type="text" id="acepNumber" name="acepNumber">
         </div>
 
         <!-- Applicable Credentials -->
@@ -438,7 +504,9 @@
               <span class="text-forest-500 text-sm">${new Date(cert.completionDate).toLocaleDateString()}</span>
               <span class="bg-forest-100 text-forest-700 px-2 py-0.5 rounded-full text-xs font-medium">${cert.ceHours} CE Hours</span>
               ${cert.category && cert.category !== 'General' ? `<span class="bg-burgundy-100 text-burgundy-700 px-2 py-0.5 rounded-full text-xs font-medium">${cert.category}</span>` : ''}
-              ${cert.nbccApproved ? '<span class="bg-gold-100 text-gold-700 px-2 py-0.5 rounded-full text-xs font-medium">NBCC</span>' : ''}
+              ${cert.approvingBody ? `<span class="bg-gold-100 text-gold-700 px-2 py-0.5 rounded-full text-xs font-medium">${cert.approvingBody}</span>` : (cert.nbccApproved ? '<span class="bg-gold-100 text-gold-700 px-2 py-0.5 rounded-full text-xs font-medium">NBCC</span>' : '')}
+              ${cert.applicability === 'national' ? '<span class="bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full text-xs font-medium">National</span>' : ''}
+              ${cert.applicability === 'state-specific' && cert.applicableStates?.length ? `<span class="bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full text-xs font-medium">${cert.applicableStates.join(', ')}</span>` : ''}
             </div>
             ${getCredentialBadges(cert)}
           </div>
@@ -499,9 +567,12 @@
         if (e.dataTransfer.files.length) handleFileSelect({ target: { files: e.dataTransfer.files } });
       });
 
-      // NBCC checkbox toggle
-      document.getElementById('nbccApproved').addEventListener('change', (e) => {
-        document.getElementById('acepField').classList.toggle('hidden', !e.target.checked);
+      // Approving body change handler
+      document.getElementById('approvingBody').addEventListener('change', handleApprovingBodyChange);
+
+      // Applicability radio change
+      document.querySelectorAll('input[name="applicability"]').forEach(radio => {
+        radio.addEventListener('change', handleApplicabilityChange);
       });
 
       // Form submit
@@ -534,6 +605,43 @@
       document.getElementById('uploadPrompt').classList.remove('hidden');
       document.getElementById('filePreview').classList.add('hidden');
       document.getElementById('scanningIndicator').classList.add('hidden');
+    }
+
+    function handleApprovingBodyChange() {
+      const approvingBody = document.getElementById('approvingBody').value;
+      const applicabilitySection = document.getElementById('applicabilitySection');
+      
+      // National bodies - no need to show applicability question
+      const nationalBodies = ['NBCC', 'ACEP', 'ACA', 'NASW', 'APA', 'ASWB', 'AAMFT'];
+      
+      if (nationalBodies.includes(approvingBody)) {
+        // Hide applicability section - it's automatically national
+        applicabilitySection.classList.add('hidden');
+        document.querySelector('input[name="applicability"][value="national"]').checked = true;
+        document.getElementById('stateSelectSection').classList.add('hidden');
+        // Set nbccApproved for backward compat
+        if (['NBCC', 'ACEP'].includes(approvingBody)) {
+          document.getElementById('nbccApproved').checked = true;
+        }
+      } else if (approvingBody === 'LPCAGA' || approvingBody === 'State Board' || approvingBody === 'Other') {
+        // Show applicability section - need to determine if state-specific or general
+        applicabilitySection.classList.remove('hidden');
+        document.getElementById('nbccApproved').checked = false;
+      } else {
+        applicabilitySection.classList.add('hidden');
+        document.getElementById('stateSelectSection').classList.add('hidden');
+      }
+    }
+
+    function handleApplicabilityChange() {
+      const applicability = document.querySelector('input[name="applicability"]:checked')?.value;
+      const stateSelectSection = document.getElementById('stateSelectSection');
+      
+      if (applicability === 'state-specific') {
+        stateSelectSection.classList.remove('hidden');
+      } else {
+        stateSelectSection.classList.add('hidden');
+      }
     }
 
     async function updateProfileFromCert(name) {
@@ -623,6 +731,45 @@
             document.getElementById('acepNumber').value = data.extracted.acepNumber;
           }
           
+          // Handle approving body
+          if (data.extracted.approvingBody) {
+            const approvingBodySelect = document.getElementById('approvingBody');
+            const options = Array.from(approvingBodySelect.options);
+            const match = options.find(opt => 
+              opt.value.toUpperCase() === data.extracted.approvingBody.toUpperCase()
+            );
+            if (match) {
+              approvingBodySelect.value = match.value;
+              handleApprovingBodyChange();
+            }
+            // Also set nbccApproved for backward compat
+            if (['NBCC', 'ACEP', 'ACA'].includes(data.extracted.approvingBody.toUpperCase())) {
+              document.getElementById('nbccApproved').checked = true;
+            }
+          }
+          
+          // Handle approval number
+          if (data.extracted.approvalNumber) {
+            document.getElementById('approvalNumber').value = data.extracted.approvalNumber;
+          }
+          
+          // Handle applicability
+          if (data.extracted.applicability) {
+            const applicabilityRadio = document.querySelector(`input[name="applicability"][value="${data.extracted.applicability}"]`);
+            if (applicabilityRadio) {
+              applicabilityRadio.checked = true;
+              handleApplicabilityChange();
+            }
+          }
+          
+          // Handle applicable states
+          if (data.extracted.applicableStates && data.extracted.applicableStates.length > 0) {
+            const stateSelect = document.getElementById('applicableStates');
+            Array.from(stateSelect.options).forEach(opt => {
+              opt.selected = data.extracted.applicableStates.includes(opt.value);
+            });
+          }
+          
           // Auto-check all credentials (user can uncheck if needed)
           document.querySelectorAll('input[name="credentials"]').forEach(cb => {
             cb.checked = true;
@@ -695,6 +842,16 @@
       formData.append('nbccApproved', document.getElementById('nbccApproved').checked);
       formData.append('acepNumber', document.getElementById('acepNumber').value);
       formData.append('notes', document.getElementById('notes').value);
+      
+      // New approving body fields
+      formData.append('approvingBody', document.getElementById('approvingBody').value);
+      formData.append('approvalNumber', document.getElementById('approvalNumber').value);
+      
+      const applicability = document.querySelector('input[name="applicability"]:checked')?.value || 'national';
+      formData.append('applicability', applicability);
+      
+      const applicableStates = Array.from(document.getElementById('applicableStates').selectedOptions).map(opt => opt.value);
+      formData.append('applicableStates', JSON.stringify(applicableStates));
       
       const selectedCredentials = Array.from(document.querySelectorAll('input[name="credentials"]:checked')).map(cb => cb.value);
       formData.append('credentials', JSON.stringify(selectedCredentials));
