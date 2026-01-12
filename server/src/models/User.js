@@ -52,12 +52,12 @@ const userSchema = new mongoose.Schema({
   subscription: {
     status: {
       type: String,
-      enum: ['free', 'trial', 'active', 'canceled', 'expired', 'lifetime'],
+      enum: ['free', 'trial', 'active', 'canceled', 'expired', 'past_due', 'paused', 'lifetime'],
       default: 'free'
     },
     plan: {
       type: String,
-      enum: ['free', 'professional', 'vip', 'annual_vip', 'lifetime'],
+      enum: ['free', 'starter', 'professional', 'vip', 'annual_vip', 'lifetime'],
       default: 'free'
     },
     stripeCustomerId: { type: String },
@@ -65,13 +65,48 @@ const userSchema = new mongoose.Schema({
     currentPeriodStart: { type: Date },
     currentPeriodEnd: { type: Date },
     cancelAtPeriodEnd: { type: Boolean, default: false },
-    trialEndsAt: { type: Date }
+    trialEndsAt: { type: Date },
+    
+    // Payment failure tracking
+    paymentFailedAt: { type: Date },
+    paymentFailureCount: { type: Number, default: 0 }
+  },
+  
+  // Hardship Pause System (VIP perk)
+  hardshipPause: {
+    // Current year's available month (resets each year)
+    available: { type: Number, default: 1 },
+    
+    // Months rolled over from previous years
+    banked: { type: Number, default: 0 },
+    
+    // Lifetime usage count
+    usedTotal: { type: Number, default: 0 },
+    
+    // Usage history
+    history: [{
+      usedDate: { type: Date, default: Date.now },
+      reason: { type: String }, // Optional: why they needed the pause
+      yearBanked: { type: Number } // Which year this month came from
+    }],
+    
+    // When we last rolled over unused months
+    lastRolloverDate: { type: Date },
+    
+    // Year tracking for rollover logic
+    lastRolloverYear: { type: Number },
+    
+    // Currently in a hardship pause?
+    isActive: { type: Boolean, default: false },
+    pauseStartDate: { type: Date },
+    pauseEndDate: { type: Date }
   },
   
   // Notification preferences
   notifications: {
     emailReminders: { type: Boolean, default: true },
-    calendarSync: { type: Boolean, default: false },
+    smsReminders: { type: Boolean, default: false }, // VIP perk
+    calendarSync: { type: Boolean, default: false }, // VIP perk
     marketingEmails: { type: Boolean, default: true },
     reminderFrequency: {
       type: String,
@@ -90,7 +125,11 @@ const userSchema = new mongoose.Schema({
     enum: ['user', 'admin'],
     default: 'user'
   },
-  lastLoginAt: { type: Date }
+  lastLoginAt: { type: Date },
+  
+  // Track membership tenure for loyalty benefits
+  memberSince: { type: Date },
+  voluntaryCancelDate: { type: Date } // Track if they voluntarily canceled
 }, {
   timestamps: true // Adds createdAt and updatedAt
 });
@@ -99,6 +138,7 @@ const userSchema = new mongoose.Schema({
 userSchema.index({ email: 1 });
 userSchema.index({ 'subscription.status': 1 });
 userSchema.index({ 'profile.state': 1 });
+userSchema.index({ 'subscription.paymentFailedAt': 1 });
 
 // Hash password before saving
 userSchema.pre('save', async function(next) {
@@ -116,7 +156,7 @@ userSchema.methods.comparePassword = async function(candidatePassword) {
 
 // Check if subscription is active
 userSchema.methods.hasActiveSubscription = function() {
-  const activeStatuses = ['active', 'trial', 'lifetime'];
+  const activeStatuses = ['active', 'trial', 'lifetime', 'paused'];
   return activeStatuses.includes(this.subscription.status);
 };
 
@@ -124,10 +164,11 @@ userSchema.methods.hasActiveSubscription = function() {
 userSchema.methods.getSubscriptionTier = function() {
   const tierLevels = {
     'free': 0,
-    'professional': 1,
-    'vip': 2,
-    'annual_vip': 2,
-    'lifetime': 3
+    'starter': 1,
+    'professional': 2,
+    'vip': 3,
+    'annual_vip': 3,
+    'lifetime': 4
   };
   if (!this.hasActiveSubscription()) return 0;
   return tierLevels[this.subscription.plan] || 0;
@@ -142,7 +183,7 @@ userSchema.methods.canAccessCourse = function(course) {
   if (course.price && this.purchasedCourses?.includes(course._id)) return true;
   
   // Check subscription tier
-  const tierLevels = { 'free': 0, 'professional': 1, 'vip': 2 };
+  const tierLevels = { 'free': 0, 'starter': 1, 'professional': 2, 'vip': 3 };
   const userTier = this.getSubscriptionTier();
   const requiredTier = tierLevels[course.accessTier] || 0;
   
@@ -170,8 +211,206 @@ userSchema.methods.getMaxStates = function() {
   if (['vip', 'annual_vip', 'lifetime'].includes(this.subscription.plan)) {
     return 999; // Unlimited
   }
-  return 1; // Free and Professional
+  return 1; // Free, Basic, and Professional
 };
+
+// ============================================
+// HARDSHIP PAUSE METHODS
+// ============================================
+
+// Get total available hardship months (current year + banked)
+userSchema.methods.getTotalHardshipMonths = function() {
+  return (this.hardshipPause.available || 0) + (this.hardshipPause.banked || 0);
+};
+
+// Check if user can use hardship pause
+userSchema.methods.canUseHardshipPause = function() {
+  // Must be VIP
+  if (!this.isVip()) {
+    return { allowed: false, reason: 'VIP subscription required' };
+  }
+  
+  // Must have active subscription
+  if (this.subscription.status !== 'active') {
+    return { allowed: false, reason: 'Active subscription required' };
+  }
+  
+  // Must have months available
+  const totalAvailable = this.getTotalHardshipMonths();
+  if (totalAvailable < 1) {
+    return { allowed: false, reason: 'No hardship months available' };
+  }
+  
+  // Can't already be paused
+  if (this.hardshipPause.isActive) {
+    return { allowed: false, reason: 'Already in a hardship pause' };
+  }
+  
+  return { 
+    allowed: true, 
+    monthsAvailable: totalAvailable,
+    bankedMonths: this.hardshipPause.banked || 0
+  };
+};
+
+// Use a hardship pause month
+userSchema.methods.useHardshipPause = function(reason = '') {
+  const canUse = this.canUseHardshipPause();
+  if (!canUse.allowed) {
+    throw new Error(canUse.reason);
+  }
+  
+  // Use banked months first, then current year's
+  let yearBanked;
+  if (this.hardshipPause.banked > 0) {
+    this.hardshipPause.banked -= 1;
+    yearBanked = this.hardshipPause.lastRolloverYear || new Date().getFullYear() - 1;
+  } else {
+    this.hardshipPause.available -= 1;
+    yearBanked = new Date().getFullYear();
+  }
+  
+  // Record usage
+  this.hardshipPause.usedTotal += 1;
+  this.hardshipPause.history.push({
+    usedDate: new Date(),
+    reason,
+    yearBanked
+  });
+  
+  // Set pause status
+  this.hardshipPause.isActive = true;
+  this.hardshipPause.pauseStartDate = new Date();
+  this.hardshipPause.pauseEndDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days
+  this.subscription.status = 'paused';
+  
+  return this.save();
+};
+
+// End hardship pause (called when pause period ends)
+userSchema.methods.endHardshipPause = function() {
+  this.hardshipPause.isActive = false;
+  this.hardshipPause.pauseStartDate = null;
+  this.hardshipPause.pauseEndDate = null;
+  this.subscription.status = 'active';
+  
+  return this.save();
+};
+
+// Annual rollover - call this on subscription anniversary or Jan 1
+userSchema.methods.rolloverHardshipMonth = function() {
+  const currentYear = new Date().getFullYear();
+  
+  // Don't rollover if already done this year
+  if (this.hardshipPause.lastRolloverYear === currentYear) {
+    return false;
+  }
+  
+  // If they didn't use their month, bank it
+  if (this.hardshipPause.available > 0) {
+    this.hardshipPause.banked += this.hardshipPause.available;
+  }
+  
+  // Reset available to 1 for new year
+  this.hardshipPause.available = 1;
+  this.hardshipPause.lastRolloverDate = new Date();
+  this.hardshipPause.lastRolloverYear = currentYear;
+  
+  return this.save();
+};
+
+// Get grace period based on banked months (loyalty reward)
+userSchema.methods.getGracePeriodDays = function() {
+  const banked = this.hardshipPause.banked || 0;
+  
+  if (banked >= 3) return 30;  // 3+ years loyalty = 30 days
+  if (banked >= 1) return 14;  // 1-2 years loyalty = 14 days
+  return 7;                     // New member = 7 days
+};
+
+// Check if still within grace period for failed payment
+userSchema.methods.isWithinGracePeriod = function() {
+  if (!this.subscription.paymentFailedAt) return true;
+  
+  const graceDays = this.getGracePeriodDays();
+  const failedAt = new Date(this.subscription.paymentFailedAt);
+  const graceEnds = new Date(failedAt.getTime() + graceDays * 24 * 60 * 60 * 1000);
+  
+  return new Date() <= graceEnds;
+};
+
+// Get days remaining in grace period
+userSchema.methods.getGracePeriodRemaining = function() {
+  if (!this.subscription.paymentFailedAt) return null;
+  
+  const graceDays = this.getGracePeriodDays();
+  const failedAt = new Date(this.subscription.paymentFailedAt);
+  const graceEnds = new Date(failedAt.getTime() + graceDays * 24 * 60 * 60 * 1000);
+  const remaining = Math.ceil((graceEnds - new Date()) / (1000 * 60 * 60 * 24));
+  
+  return Math.max(0, remaining);
+};
+
+// Handle payment failure
+userSchema.methods.handlePaymentFailure = function() {
+  if (!this.subscription.paymentFailedAt) {
+    this.subscription.paymentFailedAt = new Date();
+  }
+  this.subscription.paymentFailureCount += 1;
+  this.subscription.status = 'past_due';
+  
+  return this.save();
+};
+
+// Handle payment recovered within grace period
+userSchema.methods.handlePaymentRecovered = function() {
+  this.subscription.paymentFailedAt = null;
+  this.subscription.paymentFailureCount = 0;
+  this.subscription.status = 'active';
+  
+  return this.save();
+};
+
+// Handle grace period expired (reset banked months)
+userSchema.methods.handleGracePeriodExpired = function() {
+  // Lost their banked months due to lapsed payment
+  this.hardshipPause.banked = 0;
+  this.hardshipPause.available = 0;
+  this.subscription.status = 'expired';
+  this.subscription.paymentFailedAt = null;
+  
+  return this.save();
+};
+
+// Handle voluntary cancellation (immediate reset)
+userSchema.methods.handleVoluntaryCancel = function() {
+  this.hardshipPause.banked = 0;
+  this.hardshipPause.available = 0;
+  this.subscription.status = 'canceled';
+  this.voluntaryCancelDate = new Date();
+  
+  return this.save();
+};
+
+// Rejoin after cancellation (start fresh)
+userSchema.methods.handleRejoin = function(plan) {
+  this.subscription.plan = plan;
+  this.subscription.status = 'active';
+  this.hardshipPause.available = 1;
+  this.hardshipPause.banked = 0;
+  this.hardshipPause.lastRolloverYear = new Date().getFullYear();
+  this.voluntaryCancelDate = null;
+  
+  if (!this.memberSince) {
+    this.memberSince = new Date();
+  }
+  
+  return this.save();
+};
+
+// ============================================
+// CONSULTATION METHODS
+// ============================================
 
 // Get current quarter string (e.g., "2026-Q1")
 userSchema.methods.getCurrentQuarter = function() {
@@ -186,7 +425,7 @@ userSchema.methods.hasUsedQuarterlyConsult = function() {
   return this.consultations?.some(c => c.quarter === currentQuarter);
 };
 
-// Check if user can book a consultation (VIP perk - 1 per quarter, must be active at time of request)
+// Check if user can book a consultation
 userSchema.methods.canBookConsultation = function() {
   // Must be active VIP
   if (!['vip', 'annual_vip', 'lifetime'].includes(this.subscription.plan)) {
