@@ -97,21 +97,13 @@
         </h1>
         <p class="text-forest-600">Track your continuing education and stay audit-ready.</p>
       </div>
-      <div class="flex items-center gap-3">
-        <button onclick="syncDashboard()" id="syncBtn" class="inline-flex items-center gap-2 bg-forest-100 hover:bg-forest-200 text-forest-700 font-semibold px-4 py-2 rounded-xl transition-colors">
-          <svg id="syncIcon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
-          </svg>
-          Sync
-        </button>
-        <!-- VIP Consult Button -->
-        <button id="dashboardConsultBtn" onclick="openConsultModal()" class="inline-flex items-center gap-2 bg-gold-500 hover:bg-gold-600 text-white font-semibold px-5 py-3 rounded-xl transition-colors shadow-md">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
-          </svg>
-          <span id="consultBtnText">Request Consult</span>
-        </button>
-      </div>
+      <!-- VIP Consult Button -->
+      <button id="dashboardConsultBtn" onclick="openConsultModal()" class="inline-flex items-center gap-2 bg-gold-500 hover:bg-gold-600 text-white font-semibold px-5 py-3 rounded-xl transition-colors shadow-md">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+        </svg>
+        <span id="consultBtnText">Request Consult</span>
+      </button>
     </div>
 
     <!-- Trial Banner (shown if on trial) -->
@@ -285,6 +277,125 @@
           </div>
         </div>
 
+        <!-- Hardship Pause Card - VIP Only -->
+        <div id="hardshipPauseCard" class="hidden bg-white rounded-xl border border-burgundy-100 shadow-sm p-6">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="font-display text-xl font-semibold text-burgundy-900">Hardship Pause</h2>
+            <span class="bg-gold-100 text-gold-700 text-xs font-semibold px-2 py-1 rounded-full">VIP Perk</span>
+          </div>
+          
+          <!-- Available Months Display -->
+          <div class="bg-forest-50 rounded-xl p-4 mb-4">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-forest-600 text-sm mb-1">Available Pause Months</p>
+                <p class="font-display text-4xl font-semibold text-forest-800">
+                  <span id="totalHardshipMonths">0</span>
+                </p>
+              </div>
+              <div class="w-14 h-14 bg-forest-200 rounded-full flex items-center justify-center">
+                <svg class="w-7 h-7 text-forest-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                </svg>
+              </div>
+            </div>
+            
+            <!-- Breakdown -->
+            <div class="mt-3 pt-3 border-t border-forest-200 grid grid-cols-2 gap-4 text-sm">
+              <div>
+                <p class="text-forest-500">This Year</p>
+                <p class="text-forest-800 font-semibold"><span id="availableThisYear">1</span> month</p>
+              </div>
+              <div>
+                <p class="text-forest-500">Banked</p>
+                <p class="text-forest-800 font-semibold"><span id="bankedMonths">0</span> months</p>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Loyalty Badge -->
+          <div id="loyaltyBadge" class="hidden mb-4 bg-gold-50 border border-gold-200 rounded-xl p-3 flex items-center gap-3">
+            <div class="w-10 h-10 bg-gold-200 rounded-full flex items-center justify-center">
+              <svg class="w-5 h-5 text-gold-700" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+              </svg>
+            </div>
+            <div>
+              <p class="text-gold-800 font-semibold text-sm"><span id="loyaltyYears">0</span>+ Year Member</p>
+              <p class="text-gold-600 text-xs"><span id="gracePeriodDays">7</span>-day grace period on payments</p>
+            </div>
+          </div>
+          
+          <!-- Grace Period Warning (shown if payment failed) -->
+          <div id="gracePeriodWarning" class="hidden mb-4 bg-burgundy-50 border border-burgundy-200 rounded-xl p-4">
+            <div class="flex items-start gap-3">
+              <div class="w-8 h-8 bg-burgundy-200 rounded-full flex items-center justify-center flex-shrink-0">
+                <svg class="w-4 h-4 text-burgundy-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                </svg>
+              </div>
+              <div>
+                <p class="text-burgundy-800 font-semibold text-sm">Payment Issue Detected</p>
+                <p class="text-burgundy-600 text-sm mt-1">
+                  You have <span id="graceDaysRemaining" class="font-bold">7</span> days to update your payment method.
+                  <span id="loyaltyGraceNote" class="block mt-1 text-xs text-burgundy-500">Your loyalty earned you extra time.</span>
+                </p>
+                <a href="/subscription.html" class="inline-block mt-2 text-burgundy-700 font-medium text-sm hover:text-burgundy-900 transition-colors">
+                  Update Payment →
+                </a>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Currently Paused State -->
+          <div id="pauseActiveState" class="hidden mb-4 bg-forest-100 border border-forest-300 rounded-xl p-4">
+            <div class="flex items-start gap-3">
+              <div class="w-8 h-8 bg-forest-300 rounded-full flex items-center justify-center flex-shrink-0">
+                <svg class="w-4 h-4 text-forest-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+              </div>
+              <div>
+                <p class="text-forest-800 font-semibold text-sm">Hardship Pause Active</p>
+                <p class="text-forest-600 text-sm mt-1">
+                  Your subscription is paused until <span id="pauseEndDate" class="font-semibold">--</span>.
+                  You still have full access during this time.
+                </p>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Use Pause Button -->
+          <button 
+            id="usePauseBtn" 
+            onclick="openHardshipPauseModal()"
+            class="w-full bg-forest-700 hover:bg-forest-800 text-white font-semibold py-3 px-4 rounded-xl transition-colors flex items-center justify-center gap-2"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            Use Hardship Month
+          </button>
+          
+          <p id="noPauseAvailable" class="hidden text-center text-forest-500 text-sm py-3">
+            No pause months available. Your next month will be added on your renewal date.
+          </p>
+          
+          <!-- Usage History (collapsible) -->
+          <div class="mt-4 pt-4 border-t border-burgundy-100">
+            <button onclick="togglePauseHistory()" class="flex items-center justify-between w-full text-left">
+              <span class="text-forest-600 text-sm font-medium">Pause History</span>
+              <svg id="historyChevron" class="w-4 h-4 text-forest-400 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+              </svg>
+            </button>
+            
+            <div id="pauseHistoryList" class="hidden mt-3 space-y-2">
+              <p id="noPauseHistory" class="text-forest-400 text-sm italic">No pauses used yet.</p>
+            </div>
+          </div>
+        </div>
+
         <!-- Need Help? -->
         <div class="bg-gradient-to-br from-burgundy-800 to-burgundy-900 rounded-xl p-6 text-white">
           <h3 class="font-display text-lg font-semibold mb-2">Need Help?</h3>
@@ -297,6 +408,23 @@
           </a>
         </div>
       </div>
+    </div>
+    
+    <!-- Footer with Provider Badge and Sync -->
+    <div class="mt-8 pt-6 border-t border-burgundy-100 flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <img src="/images/nbcc-provider-badge.jpg" alt="NBCC Approved Continuing Education Provider" class="h-16 w-auto opacity-90">
+        <div class="text-xs text-forest-500">
+          <p class="font-medium">NBCC Approved Provider</p>
+          <p>ACEP #7760</p>
+        </div>
+      </div>
+      <button onclick="syncDashboard()" id="syncBtn" class="inline-flex items-center gap-1.5 text-forest-400 hover:text-forest-600 text-sm transition-colors">
+        <svg id="syncIcon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+        </svg>
+        Refresh Data
+      </button>
     </div>
   </main>
 
@@ -373,6 +501,59 @@
     </div>
   </div>
 
+  <!-- Hardship Pause Modal -->
+  <div id="hardshipPauseModal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="font-display text-2xl font-semibold text-burgundy-900">Use Hardship Month</h3>
+        <button onclick="closeHardshipPauseModal()" class="text-forest-400 hover:text-forest-600 transition-colors">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+      
+      <div class="bg-forest-50 rounded-xl p-4 mb-4">
+        <p class="text-forest-700 text-sm">
+          This will pause your subscription for <span class="font-bold">30 days</span>. 
+          You'll keep full access to all features during this time.
+        </p>
+      </div>
+      
+      <div class="mb-4">
+        <label class="block text-forest-700 text-sm font-medium mb-2">Reason (optional)</label>
+        <textarea 
+          id="pauseReason" 
+          rows="3" 
+          class="w-full border border-burgundy-200 rounded-xl p-3 text-forest-800 focus:outline-none focus:ring-2 focus:ring-forest-500 focus:border-transparent"
+          placeholder="Help us understand how we can better support you..."
+        ></textarea>
+      </div>
+      
+      <div class="bg-gold-50 border border-gold-200 rounded-xl p-3 mb-6">
+        <p class="text-gold-800 text-sm">
+          <span class="font-semibold">After this pause:</span> You'll have 
+          <span id="monthsAfterPause" class="font-bold">0</span> months remaining.
+        </p>
+      </div>
+      
+      <div class="flex gap-3">
+        <button 
+          onclick="closeHardshipPauseModal()" 
+          class="flex-1 bg-stone-100 hover:bg-stone-200 text-forest-700 font-semibold py-3 px-4 rounded-xl transition-colors"
+        >
+          Cancel
+        </button>
+        <button 
+          onclick="confirmHardshipPause()" 
+          class="flex-1 bg-forest-700 hover:bg-forest-800 text-white font-semibold py-3 px-4 rounded-xl transition-colors"
+        >
+          Confirm Pause
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Footer -->
   <footer class="mt-12 py-6 px-4 bg-white border-t border-burgundy-100">
     <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
@@ -381,7 +562,7 @@
     </div>
   </footer>
 
-  <script>
+  <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
     const API_URL = 'https://api.counselorready.com';
     let consultStatus = null;
     
@@ -432,6 +613,9 @@
       
       // Fetch consult status
       await loadConsultStatus();
+      
+      // Fetch hardship pause status (VIP only)
+      await loadHardshipPauseData();
     });
     
     async function loadConsultStatus() {
@@ -667,11 +851,174 @@
     });
     
     function logout() {
-      localStorage.removeItem('token');
+       localStorage.removeItem('token');
       localStorage.removeItem('user');
       window.location.href = '/login.html';
     }
+    
+    // ============================================
+    // HARDSHIP PAUSE FUNCTIONS
+    // ============================================
+    
+    let hardshipData = null;
+    
+    async function loadHardshipPauseData() {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`${API_URL}/api/users/hardship-status`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (!response.ok) return;
+        
+        hardshipData = await response.json();
+        renderHardshipPauseCard(hardshipData);
+      } catch (error) {
+        console.log('Could not load hardship pause data');
+      }
+    }
+    
+    function renderHardshipPauseCard(data) {
+      const card = document.getElementById('hardshipPauseCard');
+      
+      // Only show for VIP users
+      if (!data.isVip) {
+        card.classList.add('hidden');
+        return;
+      }
+      
+      card.classList.remove('hidden');
+      
+      // Update totals
+      document.getElementById('totalHardshipMonths').textContent = data.totalMonths;
+      document.getElementById('availableThisYear').textContent = data.available;
+      document.getElementById('bankedMonths').textContent = data.banked;
+      
+      // Loyalty badge
+      const loyaltyBadge = document.getElementById('loyaltyBadge');
+      if (data.banked >= 1) {
+        loyaltyBadge.classList.remove('hidden');
+        document.getElementById('loyaltyYears').textContent = data.banked;
+        document.getElementById('gracePeriodDays').textContent = data.gracePeriodDays;
+      } else {
+        loyaltyBadge.classList.add('hidden');
+      }
+      
+      // Grace period warning
+      const graceWarning = document.getElementById('gracePeriodWarning');
+      if (data.paymentFailed) {
+        graceWarning.classList.remove('hidden');
+        document.getElementById('graceDaysRemaining').textContent = data.graceDaysRemaining;
+        
+        const loyaltyNote = document.getElementById('loyaltyGraceNote');
+        if (data.gracePeriodDays > 7) {
+          loyaltyNote.classList.remove('hidden');
+        } else {
+          loyaltyNote.classList.add('hidden');
+        }
+      } else {
+        graceWarning.classList.add('hidden');
+      }
+      
+      // Currently paused state
+      const pauseActive = document.getElementById('pauseActiveState');
+      const useBtn = document.getElementById('usePauseBtn');
+      const noAvailable = document.getElementById('noPauseAvailable');
+      
+      if (data.isActive) {
+        pauseActive.classList.remove('hidden');
+        useBtn.classList.add('hidden');
+        noAvailable.classList.add('hidden');
+        document.getElementById('pauseEndDate').textContent = new Date(data.pauseEndDate).toLocaleDateString('en-US', {
+          month: 'long', day: 'numeric', year: 'numeric'
+        });
+      } else if (data.totalMonths > 0) {
+        pauseActive.classList.add('hidden');
+        useBtn.classList.remove('hidden');
+        noAvailable.classList.add('hidden');
+      } else {
+        pauseActive.classList.add('hidden');
+        useBtn.classList.add('hidden');
+        noAvailable.classList.remove('hidden');
+      }
+      
+      // History
+      renderPauseHistory(data.history);
+    }
+    
+    function renderPauseHistory(history) {
+      const list = document.getElementById('pauseHistoryList');
+      const noHistory = document.getElementById('noPauseHistory');
+      
+      if (!history || history.length === 0) {
+        noHistory.classList.remove('hidden');
+        return;
+      }
+      
+      noHistory.classList.add('hidden');
+      
+      const historyHtml = history.map(item => `
+        <div class="flex items-center justify-between text-sm bg-stone-50 rounded-lg p-2">
+          <span class="text-forest-600">${new Date(item.usedDate).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}</span>
+          <span class="text-forest-400 text-xs">${item.reason || 'No reason provided'}</span>
+        </div>
+      `).join('');
+      
+      list.innerHTML = historyHtml + `<p id="noPauseHistory" class="hidden text-forest-400 text-sm italic">No pauses used yet.</p>`;
+    }
+    
+    function togglePauseHistory() {
+      const list = document.getElementById('pauseHistoryList');
+      const chevron = document.getElementById('historyChevron');
+      
+      list.classList.toggle('hidden');
+      chevron.classList.toggle('rotate-180');
+    }
+    
+    function openHardshipPauseModal() {
+      document.getElementById('hardshipPauseModal').classList.remove('hidden');
+      if (hardshipData) {
+        document.getElementById('monthsAfterPause').textContent = hardshipData.totalMonths - 1;
+      }
+    }
+    
+    function closeHardshipPauseModal() {
+      document.getElementById('hardshipPauseModal').classList.add('hidden');
+      document.getElementById('pauseReason').value = '';
+    }
+    
+    async function confirmHardshipPause() {
+      try {
+        const reason = document.getElementById('pauseReason').value;
+        const token = localStorage.getItem('token');
+        
+        const response = await fetch(`${API_URL}/api/users/hardship-pause`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ reason })
+        });
+        
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.message || 'Failed to activate pause');
+        }
+        
+        closeHardshipPauseModal();
+        
+        // Show success message
+        alert('Hardship pause activated! Your subscription is paused for 30 days.');
+        
+        // Reload data
+        loadHardshipPauseData();
+        
+      } catch (error) {
+        console.error('Error activating hardship pause:', error);
+        alert(error.message || 'Could not activate pause. Please try again.');
+      }
+    }
   </script>
-
 </body>
 </html>
