@@ -1,0 +1,1265 @@
+import express from 'express';
+import User from '../models/User.js';
+import Course from '../models/Course.js';
+import Certificate from '../models/Certificate.js';
+import CredentialTemplate from '../models/CredentialTemplate.js';
+import Announcement from '../models/Announcement.js';
+import UserCourseProgress from '../models/UserCourseProgress.js';
+import UserCredential from '../models/UserCredential.js';
+import Anthropic from '@anthropic-ai/sdk';
+import { protect } from '../middleware/auth.js';
+import { getRecentActivity } from '../services/activityTrackingService.js';
+
+const router = express.Router();
+
+// Initialize Anthropic client
+const anthropic = process.env.ANTHROPIC_API_KEY ? new Anthropic({
+  apiKey: process.env.ANTHROPIC_API_KEY
+}) : null;
+
+// Admin middleware - check if user is admin
+const adminOnly = async (req, res, next) => {
+  if (req.user.role !== 'admin') {
+    return res.status(403).json({ error: 'Admin access required' });
+  }
+  next();
+};
+
+// @route   GET /api/admin/stats
+// @desc    Get admin dashboard stats
+// @access  Admin only
+router.get('/stats', protect, adminOnly, async (req, res) => {
+  try {
+    const totalUsers = await User.countDocuments();
+    const activeSubscribers = await User.countDocuments({ 
+      'subscription.status': 'active' 
+    });
+    const totalCourses = await Course.countDocuments({ status: 'published' });
+    const totalCertificates = await Certificate.countDocuments();
+    
+    res.json({
+      totalUsers,
+      activeSubscribers,
+      totalCourses,
+      totalCertificates
+    });
+  } catch (error) {
+    console.error('Admin stats error:', error);
+    res.status(500).json({ error: 'Failed to get stats' });
+  }
+});
+
+// @route   GET /api/admin/activity
+// @desc    Get recent user activity feed
+// @access  Admin only
+router.get('/activity', protect, adminOnly, async (req, res) => {
+  try {
+    const limit = parseInt(req.query.limit) || 50;
+    const type = req.query.type; // Optional filter by activity type
+    
+    // Get activity from admin's feed
+    const admin = await User.findById(req.user._id).select('adminActivityFeed');
+    let activities = admin?.adminActivityFeed || [];
+    
+    // Filter by type if specified
+    if (type) {
+      activities = activities.filter(a => a.type === type);
+    }
+    
+    // Apply limit
+    activities = activities.slice(0, limit);
+    
+    res.json({ 
+      activities,
+      total: admin?.adminActivityFeed?.length || 0
+    });
+  } catch (error) {
+    console.error('Get activity error:', error);
+    res.status(500).json({ error: 'Failed to get activity' });
+  }
+});
+
+// @route   DELETE /api/admin/activity/clear
+// @desc    Clear activity feed
+// @access  Admin only
+router.delete('/activity/clear', protect, adminOnly, async (req, res) => {
+  try {
+    await User.findByIdAndUpdate(req.user._id, { adminActivityFeed: [] });
+    res.json({ message: 'Activity feed cleared' });
+  } catch (error) {
+    console.error('Clear activity error:', error);
+    res.status(500).json({ error: 'Failed to clear activity' });
+  }
+});
+
+// @route   GET /api/admin/users
+// @desc    Get all users (paginated)
+// @access  Admin only
+router.get('/users', protect, adminOnly, async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 20;
+    const skip = (page - 1) * limit;
+    
+    const users = await User.find()
+      .select('-password')
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
+    
+    const total = await User.countDocuments();
+    
+    res.json({
+      users,
+      page,
+      pages: Math.ceil(total / limit),
+      total
+    });
+  } catch (error) {
+    console.error('Get users error:', error);
+    res.status(500).json({ error: 'Failed to get users' });
+  }
+});
+
+// @route   GET /api/admin/users/:userId/progress
+// @desc    Get detailed user info for admin view
+// @access  Admin only
+router.get('/users/:userId/progress', protect, adminOnly, async (req, res) => {
+  try {
+    const userId = req.params.userId;
+    
+    // Get user
+    const user = await User.findById(userId).select('-password');
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    
+    // Get credentials
+    const credentials = await UserCredential.find({ userId })
+      .populate('credentialId', 'name state')
+      .sort({ isPrimary: -1, createdAt: -1 });
+    
+    // Get course progress
+    const enrollments = await UserCourseProgress.find({ userId })
+      .populate('courseId', 'title slug category ceuHours modules')
+      .sort({ lastAccessedAt: -1 });
+    
+    // Calculate stats
+    const completedCourses = enrollments.filter(e => e.status === 'completed').length;
+    const inProgressCourses = enrollments.filter(e => e.status === 'in_progress').length;
+    
+    // Calculate total CE hours earned
+    let totalCEHoursEarned = 0;
+    for (const enrollment of enrollments) {
+      if (enrollment.status === 'completed' && enrollment.courseId?.ceuHours) {
+        totalCEHoursEarned += enrollment.courseId.ceuHours;
+      }
+    }
+    
+    // Format course progress for display
+    const courseProgress = enrollments.map(e => {
+      const course = e.courseId;
+      const totalLessons = course?.modules?.reduce((sum, m) => sum + (m.lessons?.length || 0), 0) || 0;
+      
+      return {
+        enrollmentId: e._id,
+        courseId: course?._id,
+        title: course?.title || 'Unknown Course',
+        category: course?.category || 'General',
+        ceHours: course?.ceuHours || 0,
+        progress: e.percentComplete || 0,
+        status: e.status,
+        completed: e.status === 'completed',
+        completedAt: e.completedAt,
+        enrolledAt: e.enrolledAt,
+        lastAccessed: e.lastAccessedAt,
+        completedLessonsCount: e.lessonsCompleted?.length || 0,
+        totalLessons,
+        adminCompleted: e.adminCompleted,
+        adminNote: e.adminNote
+      };
+    });
+    
+    // Format credentials
+    const formattedCredentials = credentials.map(c => ({
+      id: c._id,
+      name: c.credentialId?.name || c.customName || 'Unknown',
+      state: c.credentialId?.state || c.state || '-',
+      licenseNumber: c.licenseNumber,
+      expirationDate: c.expirationDate,
+      totalCEUsRequired: c.totalCEUsRequired,
+      totalCEUsCompleted: c.totalCEUsCompleted,
+      isPrimary: c.isPrimary
+    }));
+    
+    res.json({
+      user: {
+        id: user._id,
+        name: `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        registeredAt: user.createdAt,
+        subscription: user.subscription,
+        primaryState: user.primaryState || credentials.find(c => c.isPrimary)?.state || '-'
+      },
+      stats: {
+        totalCourses: enrollments.length,
+        completedCourses,
+        inProgressCourses,
+        totalCredentials: credentials.length,
+        totalCEHoursEarned
+      },
+      credentials: formattedCredentials,
+      courseProgress
+    });
+  } catch (error) {
+    console.error('Get user progress error:', error);
+    res.status(500).json({ error: 'Failed to get user progress' });
+  }
+});
+
+// ============================================
+// HARDSHIP PAUSE ADMIN ROUTES
+// ============================================
+
+// @route   GET /api/admin/hardship-metrics
+// @desc    Get hardship pause metrics for admin dashboard
+// @access  Admin only
+router.get('/hardship-metrics', protect, adminOnly, async (req, res) => {
+  try {
+    // Get all VIP users
+    const vipUsers = await User.find({ 'subscription.plan': 'vip' });
+    const totalVipMembers = vipUsers.length;
+    
+    // Active pauses
+    const activePauses = vipUsers.filter(u => u.hardshipPause?.isActive).length;
+    
+    // Pauses used this year
+    const currentYear = new Date().getFullYear();
+    let pausesUsedYTD = 0;
+    let retainedMembers = 0;
+    const recentPauses = [];
+    
+    for (const user of vipUsers) {
+      const history = user.hardshipPause?.history || [];
+      
+      // Count pauses this year
+      const yearPauses = history.filter(h => 
+        new Date(h.usedDate).getFullYear() === currentYear
+      );
+      pausesUsedYTD += yearPauses.length;
+      
+      // Check if they used a pause and are still subscribed
+      if (history.length > 0 && user.subscription?.status === 'active') {
+        retainedMembers++;
+      }
+      
+      // Collect recent pauses for table
+      history.forEach(h => {
+        recentPauses.push({
+          usedDate: h.usedDate,
+          reason: h.reason,
+          bankedAtTime: h.yearBanked ? `${currentYear - h.yearBanked}yr` : '0yr',
+          userEmail: user.email,
+          userInitials: `${user.profile?.firstName?.charAt(0) || ''}${user.profile?.lastName?.charAt(0) || ''}`.toUpperCase() || user.email.charAt(0).toUpperCase(),
+          stillActive: user.hardshipPause?.isActive || false,
+          stillSubscribed: user.subscription?.status === 'active'
+        });
+      });
+    }
+    
+    // Sort and limit recent pauses
+    recentPauses.sort((a, b) => new Date(b.usedDate) - new Date(a.usedDate));
+    const last20Pauses = recentPauses.slice(0, 20);
+    
+    // Revenue calculations
+    const VIP_MONTHLY_PRICE = 49.99;
+    const revenueImpact = activePauses * VIP_MONTHLY_PRICE;
+    
+    const usersWhoUsedPause = vipUsers.filter(u => (u.hardshipPause?.history?.length || 0) > 0);
+    const postPauseRetentionRate = usersWhoUsedPause.length > 0
+      ? Math.round((retainedMembers / usersWhoUsedPause.length) * 100)
+      : 0;
+    const retainedAnnualRevenue = retainedMembers * VIP_MONTHLY_PRICE * 12;
+    
+    // Grace period stats
+    const inGracePeriod = vipUsers.filter(u => 
+      u.subscription?.paymentFailedAt && u.subscription?.status === 'past_due'
+    ).length;
+    
+    // Calculate average grace days based on loyalty
+    let totalGraceDays = 0;
+    let graceDaysCount = 0;
+    for (const user of vipUsers) {
+      if (user.getGracePeriodDays) {
+        totalGraceDays += user.getGracePeriodDays();
+        graceDaysCount++;
+      } else {
+        // Fallback calculation
+        const banked = user.hardshipPause?.banked || 0;
+        const days = banked >= 3 ? 30 : banked >= 1 ? 14 : 7;
+        totalGraceDays += days;
+        graceDaysCount++;
+      }
+    }
+    const avgGraceDays = graceDaysCount > 0 ? Math.round(totalGraceDays / graceDaysCount) : 7;
+    
+    // TODO: Track recovered payments via Stripe webhooks
+    const recoveredPaymentsThisMonth = 0;
+    
+    res.json({
+      totalVipMembers,
+      activePauses,
+      pausesUsedYTD,
+      revenueImpact: Math.round(revenueImpact * 100) / 100,
+      retainedMembers,
+      postPauseRetentionRate,
+      retainedAnnualRevenue: Math.round(retainedAnnualRevenue),
+      inGracePeriod,
+      recoveredPaymentsThisMonth,
+      avgGraceDays,
+      recentPauses: last20Pauses
+    });
+    
+  } catch (error) {
+    console.error('Hardship metrics error:', error);
+    res.status(500).json({ error: 'Failed to get hardship metrics' });
+  }
+});
+
+// @route   GET /api/admin/hardship-export
+// @desc    Export hardship data as CSV
+// @access  Admin only
+router.get('/hardship-export', protect, adminOnly, async (req, res) => {
+  try {
+    const vipUsers = await User.find({ 'subscription.plan': 'vip' });
+    
+    // Build CSV
+    const headers = [
+      'Email',
+      'Name',
+      'Plan',
+      'Status',
+      'Member Since',
+      'Available Months',
+      'Banked Months',
+      'Used Total',
+      'Pause Active',
+      'Grace Period Days',
+      'Last Pause Date',
+      'Last Pause Reason'
+    ];
+    
+    const rows = vipUsers.map(user => {
+      const lastPause = user.hardshipPause?.history?.slice(-1)[0];
+      const graceDays = user.getGracePeriodDays ? user.getGracePeriodDays() : 
+        (user.hardshipPause?.banked >= 3 ? 30 : user.hardshipPause?.banked >= 1 ? 14 : 7);
+      
+      return [
+        user.email,
+        `${user.profile?.firstName || ''} ${user.profile?.lastName || ''}`.trim(),
+        user.subscription?.plan || 'free',
+        user.subscription?.status || 'inactive',
+        user.memberSince || user.createdAt,
+        user.hardshipPause?.available || 0,
+        user.hardshipPause?.banked || 0,
+        user.hardshipPause?.usedTotal || 0,
+        user.hardshipPause?.isActive ? 'Yes' : 'No',
+        graceDays,
+        lastPause?.usedDate || '',
+        lastPause?.reason || ''
+      ];
+    });
+    
+    const csv = [
+      headers.join(','),
+      ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
+    ].join('\n');
+    
+    const filename = `hardship-pauses-${new Date().toISOString().split('T')[0]}.csv`;
+    
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.send(csv);
+    
+  } catch (error) {
+    console.error('Hardship export error:', error);
+    res.status(500).json({ error: 'Failed to export hardship data' });
+  }
+});
+
+// ============================================
+// CREDENTIAL TEMPLATE MONITORING ROUTES
+// ============================================
+
+// @route   GET /api/admin/credential-templates
+// @desc    Get all credential templates with staleness info
+// @access  Admin only
+router.get('/credential-templates', protect, adminOnly, async (req, res) => {
+  try {
+    const { type, staleOnly, state } = req.query;
+    
+    // Build query
+    const query = { isActive: true };
+    if (type) query.type = type;
+    if (state) query.state = state.toUpperCase();
+    
+    const templates = await CredentialTemplate.find(query)
+      .sort({ type: 1, state: 1, code: 1 });
+    
+    // Calculate staleness (over 6 months = stale, over 12 months = critical)
+    const now = new Date();
+    const sixMonthsAgo = new Date(now.setMonth(now.getMonth() - 6));
+    const twelveMonthsAgo = new Date(now.setMonth(now.getMonth() - 6));
+    
+    const templatesWithStatus = templates.map(t => {
+      const lastVerified = t.lastVerified || t.createdAt;
+      let status = 'current';
+      let daysSinceVerified = Math.floor((new Date() - new Date(lastVerified)) / (1000 * 60 * 60 * 24));
+      
+      if (new Date(lastVerified) < twelveMonthsAgo) {
+        status = 'critical';
+      } else if (new Date(lastVerified) < sixMonthsAgo) {
+        status = 'stale';
+      }
+      
+      return {
+        ...t.toObject(),
+        verificationStatus: status,
+        daysSinceVerified
+      };
+    });
+    
+    // Filter stale only if requested
+    const filtered = staleOnly === 'true' 
+      ? templatesWithStatus.filter(t => t.verificationStatus !== 'current')
+      : templatesWithStatus;
+    
+    // Summary stats
+    const stats = {
+      total: templatesWithStatus.length,
+      current: templatesWithStatus.filter(t => t.verificationStatus === 'current').length,
+      stale: templatesWithStatus.filter(t => t.verificationStatus === 'stale').length,
+      critical: templatesWithStatus.filter(t => t.verificationStatus === 'critical').length
+    };
+    
+    res.json({ templates: filtered, stats });
+    
+  } catch (error) {
+    console.error('Get credential templates error:', error);
+    res.status(500).json({ error: 'Failed to get credential templates' });
+  }
+});
+
+// @route   GET /api/admin/credential-templates/:id
+// @desc    Get single credential template
+// @access  Admin only
+router.get('/credential-templates/:id', protect, adminOnly, async (req, res) => {
+  try {
+    const template = await CredentialTemplate.findById(req.params.id);
+    if (!template) {
+      return res.status(404).json({ error: 'Template not found' });
+    }
+    res.json(template);
+  } catch (error) {
+    console.error('Get template error:', error);
+    res.status(500).json({ error: 'Failed to get template' });
+  }
+});
+
+// @route   PUT /api/admin/credential-templates/:id
+// @desc    Update credential template
+// @access  Admin only
+router.put('/credential-templates/:id', protect, adminOnly, async (req, res) => {
+  try {
+    const { 
+      renewalCycle, 
+      totalCEUsRequired, 
+      requirements, 
+      notes,
+      renewalUrl,
+      renewalFee,
+      markVerified 
+    } = req.body;
+    
+    const updateData = {};
+    if (renewalCycle !== undefined) updateData.renewalCycle = renewalCycle;
+    if (totalCEUsRequired !== undefined) updateData.totalCEUsRequired = totalCEUsRequired;
+    if (requirements !== undefined) updateData.requirements = requirements;
+    if (notes !== undefined) updateData.notes = notes;
+    if (renewalUrl !== undefined) updateData.renewalUrl = renewalUrl;
+    if (renewalFee !== undefined) updateData.renewalFee = renewalFee;
+    
+    // Mark as verified if requested
+    if (markVerified) {
+      updateData.lastVerified = new Date();
+    }
+    
+    const template = await CredentialTemplate.findByIdAndUpdate(
+      req.params.id,
+      updateData,
+      { new: true }
+    );
+    
+    if (!template) {
+      return res.status(404).json({ error: 'Template not found' });
+    }
+    
+    res.json({ message: 'Template updated', template });
+    
+  } catch (error) {
+    console.error('Update template error:', error);
+    res.status(500).json({ error: 'Failed to update template' });
+  }
+});
+
+// @route   POST /api/admin/credential-templates/:id/verify
+// @desc    Mark template as verified (no changes)
+// @access  Admin only
+router.post('/credential-templates/:id/verify', protect, adminOnly, async (req, res) => {
+  try {
+    const template = await CredentialTemplate.findByIdAndUpdate(
+      req.params.id,
+      { lastVerified: new Date() },
+      { new: true }
+    );
+    
+    if (!template) {
+      return res.status(404).json({ error: 'Template not found' });
+    }
+    
+    res.json({ message: 'Template marked as verified', template });
+    
+  } catch (error) {
+    console.error('Verify template error:', error);
+    res.status(500).json({ error: 'Failed to verify template' });
+  }
+});
+
+// @route   POST /api/admin/credential-templates/bulk-verify
+// @desc    Mark multiple templates as verified
+// @access  Admin only
+router.post('/credential-templates/bulk-verify', protect, adminOnly, async (req, res) => {
+  try {
+    const { templateIds } = req.body;
+    
+    if (!templateIds || !Array.isArray(templateIds)) {
+      return res.status(400).json({ error: 'templateIds array required' });
+    }
+    
+    const result = await CredentialTemplate.updateMany(
+      { _id: { $in: templateIds } },
+      { lastVerified: new Date() }
+    );
+    
+    res.json({ 
+      message: `${result.modifiedCount} templates marked as verified`,
+      modifiedCount: result.modifiedCount 
+    });
+    
+  } catch (error) {
+    console.error('Bulk verify error:', error);
+    res.status(500).json({ error: 'Failed to bulk verify templates' });
+  }
+});
+
+// @route   POST /api/admin/credential-templates/:id/ai-check
+// @desc    Use AI to check state board website for current requirements
+// @access  Admin only
+router.post('/credential-templates/:id/ai-check', protect, adminOnly, async (req, res) => {
+  try {
+    if (!anthropic) {
+      return res.status(500).json({ error: 'AI service not configured' });
+    }
+    
+    const template = await CredentialTemplate.findById(req.params.id);
+    if (!template) {
+      return res.status(404).json({ error: 'Template not found' });
+    }
+    
+    // Build the prompt for AI verification
+    const currentReqs = template.requirements.map(r => 
+      `${r.category}: ${r.hoursRequired} hours`
+    ).join(', ');
+    
+    const prompt = `You are verifying continuing education requirements for mental health professionals.
+
+Current database entry:
+- Credential: ${template.code} (${template.name})
+- State: ${template.state || 'National'}
+- Issuing Body: ${template.issuingBody}
+- Renewal Cycle: ${template.renewalCycle} months
+- Total CE Required: ${template.totalCEUsRequired} hours
+- Requirements: ${currentReqs}
+- Notes: ${template.notes || 'None'}
+
+Please search for the current CE requirements for this credential from the official state licensing board or certifying body. 
+
+Return your findings in this JSON format:
+{
+  "verified": true/false,
+  "confidence": "high/medium/low",
+  "currentRequirements": {
+    "renewalCycle": number (months),
+    "totalCEUsRequired": number,
+    "requirements": [
+      { "category": "Ethics", "hoursRequired": number },
+      ...
+    ],
+    "notes": "any special requirements or changes"
+  },
+  "changes": [
+    "List any differences from our current data"
+  ],
+  "sourceUrl": "URL of the official source",
+  "lastUpdated": "When the requirements were last updated (if known)",
+  "summary": "Brief summary of findings"
+}
+
+If you cannot verify the requirements, explain why in the summary.`;
+
+    const message = await anthropic.messages.create({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 1500,
+      messages: [{ role: 'user', content: prompt }]
+    });
+    
+    const responseText = message.content[0].text;
+    
+    // Try to parse JSON from response
+    let aiResult;
+    try {
+      const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        aiResult = JSON.parse(jsonMatch[0]);
+      } else {
+        aiResult = { 
+          verified: false, 
+          summary: responseText,
+          confidence: 'low'
+        };
+      }
+    } catch (parseError) {
+      aiResult = { 
+        verified: false, 
+        summary: responseText,
+        confidence: 'low'
+      };
+    }
+    
+    res.json({
+      template: {
+        id: template._id,
+        code: template.code,
+        state: template.state,
+        name: template.name
+      },
+      aiVerification: aiResult
+    });
+    
+  } catch (error) {
+    console.error('AI check error:', error);
+    res.status(500).json({ error: 'Failed to run AI verification' });
+  }
+});
+
+// @route   GET /api/admin/credential-templates/review-schedule
+// @desc    Get recommended review schedule based on state legislative sessions
+// @access  Admin only
+router.get('/credential-templates/review-schedule', protect, adminOnly, async (req, res) => {
+  try {
+    // State legislative session patterns (when rules typically change)
+    const reviewSchedule = {
+      // States with annual sessions - review quarterly
+      quarterly: ['CA', 'NY', 'TX', 'FL', 'IL', 'PA', 'OH', 'GA', 'NC', 'MI', 
+                  'NJ', 'VA', 'WA', 'AZ', 'MA', 'TN', 'IN', 'MO', 'MD', 'WI',
+                  'CO', 'MN', 'SC', 'AL', 'LA', 'KY', 'OR', 'OK', 'CT', 'UT',
+                  'IA', 'NV', 'AR', 'MS', 'KS', 'NM', 'NE', 'WV', 'ID', 'HI',
+                  'NH', 'ME', 'RI', 'DE', 'SD', 'ND', 'AK', 'DC', 'VT', 'WY', 'MT'],
+      // National certs - review semi-annually
+      semiAnnual: ['NCC', 'BC-TMH', 'CCTP', 'RPT', 'ACS'],
+      // Specialty certs - review annually
+      annual: ['EMDR', 'DBT', 'CGP', 'CSAT']
+    };
+    
+    // Get templates needing review this month
+    const templates = await CredentialTemplate.find({ isActive: true });
+    const now = new Date();
+    
+    const needsReviewThisMonth = templates.filter(t => {
+      const lastVerified = new Date(t.lastVerified || t.createdAt);
+      const monthsSince = (now - lastVerified) / (1000 * 60 * 60 * 24 * 30);
+      
+      // Check based on type
+      if (t.type === 'state_license') {
+        return monthsSince >= 3; // Quarterly
+      } else if (t.type === 'national_cert') {
+        return monthsSince >= 6; // Semi-annual
+      } else {
+        return monthsSince >= 12; // Annual
+      }
+    });
+    
+    // Group by priority
+    const critical = needsReviewThisMonth.filter(t => {
+      const lastVerified = new Date(t.lastVerified || t.createdAt);
+      const monthsSince = (now - lastVerified) / (1000 * 60 * 60 * 24 * 30);
+      return monthsSince >= 12;
+    });
+    
+    const upcoming = needsReviewThisMonth.filter(t => {
+      const lastVerified = new Date(t.lastVerified || t.createdAt);
+      const monthsSince = (now - lastVerified) / (1000 * 60 * 60 * 24 * 30);
+      return monthsSince >= 6 && monthsSince < 12;
+    });
+    
+    res.json({
+      reviewSchedule,
+      thisMonth: {
+        total: needsReviewThisMonth.length,
+        critical: critical.map(t => ({
+          id: t._id,
+          code: t.code,
+          state: t.state,
+          name: t.name,
+          lastVerified: t.lastVerified
+        })),
+        upcoming: upcoming.map(t => ({
+          id: t._id,
+          code: t.code,
+          state: t.state,
+          name: t.name,
+          lastVerified: t.lastVerified
+        }))
+      },
+      nextReviewDate: new Date(now.setMonth(now.getMonth() + 1)).toISOString().split('T')[0]
+    });
+    
+  } catch (error) {
+    console.error('Review schedule error:', error);
+    res.status(500).json({ error: 'Failed to get review schedule' });
+  }
+});
+
+// @route   POST /api/admin/credential-templates
+// @desc    Create new credential template
+// @access  Admin only
+router.post('/credential-templates', protect, adminOnly, async (req, res) => {
+  try {
+    const { 
+      type, code, name, state, issuingBody,
+      renewalCycle, totalCEUsRequired, requirements,
+      renewalFee, renewalUrl, notes
+    } = req.body;
+    
+    // Check for duplicate
+    const existing = await CredentialTemplate.findOne({ 
+      code, 
+      state: state?.toUpperCase() || null,
+      type 
+    });
+    
+    if (existing) {
+      return res.status(400).json({ 
+        error: `Template already exists for ${code}${state ? ` (${state})` : ''}` 
+      });
+    }
+    
+    const template = new CredentialTemplate({
+      type,
+      code,
+      name,
+      state: state?.toUpperCase(),
+      issuingBody,
+      renewalCycle,
+      totalCEUsRequired,
+      requirements: requirements || [],
+      renewalFee,
+      renewalUrl,
+      notes,
+      lastVerified: new Date(),
+      isActive: true
+    });
+    
+    await template.save();
+    
+    res.status(201).json({ message: 'Template created', template });
+    
+  } catch (error) {
+    console.error('Create template error:', error);
+    res.status(500).json({ error: 'Failed to create template' });
+  }
+});
+
+// @route   GET /api/admin/credential-export
+// @desc    Export all credential templates as CSV
+// @access  Admin only
+router.get('/credential-export', protect, adminOnly, async (req, res) => {
+  try {
+    const templates = await CredentialTemplate.find({ isActive: true })
+      .sort({ type: 1, state: 1, code: 1 });
+    
+    const headers = [
+      'Type',
+      'Code',
+      'Name',
+      'State',
+      'Issuing Body',
+      'Renewal Cycle (months)',
+      'Total CE Required',
+      'Requirements',
+      'Notes',
+      'Last Verified',
+      'Renewal URL'
+    ];
+    
+    const rows = templates.map(t => [
+      t.type,
+      t.code,
+      t.name,
+      t.state || 'National',
+      t.issuingBody,
+      t.renewalCycle,
+      t.totalCEUsRequired,
+      t.requirements.map(r => `${r.category}:${r.hoursRequired}`).join('; '),
+      t.notes || '',
+      t.lastVerified?.toISOString().split('T')[0] || '',
+      t.renewalUrl || ''
+    ]);
+    
+    const csv = [
+      headers.join(','),
+      ...rows.map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','))
+    ].join('\n');
+    
+    const filename = `credential-templates-${new Date().toISOString().split('T')[0]}.csv`;
+    
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.send(csv);
+    
+  } catch (error) {
+    console.error('Credential export error:', error);
+    res.status(500).json({ error: 'Failed to export credentials' });
+  }
+});
+
+// ============================================
+// BROADCAST / ANNOUNCEMENT ROUTES
+// ============================================
+
+// @route   POST /api/admin/broadcast
+// @desc    Create a broadcast announcement
+// @access  Admin only
+router.post('/broadcast', protect, adminOnly, async (req, res) => {
+  try {
+    const {
+      title,
+      message,
+      type,
+      audience,
+      targetStates,
+      targetCredentials,
+      isPinned,
+      dismissible,
+      sendEmail,
+      endDate,
+      ceChangeDetails
+    } = req.body;
+    
+    // Set icon and color based on type
+    const typeConfig = {
+      info: { icon: 'fa-info-circle', color: 'blue' },
+      update: { icon: 'fa-sync-alt', color: 'green' },
+      maintenance: { icon: 'fa-tools', color: 'amber' },
+      promotion: { icon: 'fa-gift', color: 'purple' },
+      urgent: { icon: 'fa-exclamation-triangle', color: 'red' },
+      ce_change: { icon: 'fa-certificate', color: 'teal' },
+      new_course: { icon: 'fa-graduation-cap', color: 'indigo' }
+    };
+    
+    const config = typeConfig[type] || typeConfig.info;
+    
+    const announcement = new Announcement({
+      title,
+      message,
+      type: type || 'info',
+      icon: config.icon,
+      color: config.color,
+      audience: audience || 'all',
+      targetStates: targetStates || [],
+      targetCredentials: targetCredentials || [],
+      isPinned: isPinned || false,
+      dismissible: dismissible !== false,
+      sendEmail: sendEmail || false,
+      endDate: endDate || null,
+      ceChangeDetails: ceChangeDetails || null,
+      createdBy: req.user._id,
+      isActive: true
+    });
+    
+    await announcement.save();
+    
+    // Count affected users
+    let affectedCount = 0;
+    if (audience === 'all') {
+      affectedCount = await User.countDocuments();
+    } else if (audience === 'by_credential' && (targetStates?.length || targetCredentials?.length)) {
+      // This is a rough estimate
+      const UserCredential = require('../models/UserCredential.js').default;
+      const query = {};
+      if (targetStates?.length) query.state = { $in: targetStates };
+      if (targetCredentials?.length) query.credentialCode = { $in: targetCredentials };
+      const creds = await UserCredential.find(query).distinct('userId');
+      affectedCount = creds.length;
+    }
+    
+    res.status(201).json({
+      message: 'Broadcast created successfully',
+      announcement,
+      affectedUsers: affectedCount
+    });
+    
+  } catch (error) {
+    console.error('Create broadcast error:', error);
+    res.status(500).json({ error: 'Failed to create broadcast' });
+  }
+});
+
+// @route   POST /api/admin/broadcast/ce-change
+// @desc    Create a CE requirement change broadcast
+// @access  Admin only
+router.post('/broadcast/ce-change', protect, adminOnly, async (req, res) => {
+  try {
+    const {
+      credentialCode,
+      state,
+      previousRequirements,
+      newRequirements,
+      effectiveDate,
+      sourceUrl,
+      sendEmail
+    } = req.body;
+    
+    const title = `CE Requirements Updated: ${credentialCode}${state ? ` (${state})` : ''}`;
+    const message = `
+      <p>The continuing education requirements for <strong>${credentialCode}${state ? ` (${state})` : ''}</strong> have been updated.</p>
+      <div style="background: #f8f9fa; padding: 12px; border-radius: 8px; margin: 12px 0;">
+        <p style="margin: 0 0 8px 0;"><strong>Previous:</strong> ${previousRequirements}</p>
+        <p style="margin: 0;"><strong>New:</strong> ${newRequirements}</p>
+      </div>
+      ${effectiveDate ? `<p><strong>Effective:</strong> ${new Date(effectiveDate).toLocaleDateString()}</p>` : ''}
+      ${sourceUrl ? `<p><a href="${sourceUrl}" target="_blank" style="color: #8B2635;">View Official Source →</a></p>` : ''}
+    `;
+    
+    const announcement = new Announcement({
+      title,
+      message,
+      type: 'ce_change',
+      icon: 'fa-certificate',
+      color: 'teal',
+      audience: 'by_credential',
+      targetStates: state ? [state] : [],
+      targetCredentials: credentialCode ? [credentialCode] : [],
+      isPinned: true,
+      dismissible: true,
+      sendEmail: sendEmail || false,
+      endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
+      ceChangeDetails: {
+        credentialCode,
+        state,
+        previousRequirements,
+        newRequirements,
+        effectiveDate,
+        sourceUrl
+      },
+      createdBy: req.user._id,
+      isActive: true
+    });
+    
+    await announcement.save();
+    
+    res.status(201).json({
+      message: 'CE change broadcast created',
+      announcement
+    });
+    
+  } catch (error) {
+    console.error('CE change broadcast error:', error);
+    res.status(500).json({ error: 'Failed to create CE change broadcast' });
+  }
+});
+
+// @route   GET /api/admin/broadcasts
+// @desc    Get all broadcasts (admin view)
+// @access  Admin only
+router.get('/broadcasts', protect, adminOnly, async (req, res) => {
+  try {
+    const broadcasts = await Announcement.find()
+      .sort({ createdAt: -1 })
+      .limit(50)
+      .populate('createdBy', 'email profile.firstName profile.lastName');
+    
+    res.json({ broadcasts });
+  } catch (error) {
+    console.error('Get broadcasts error:', error);
+    res.status(500).json({ error: 'Failed to get broadcasts' });
+  }
+});
+
+// @route   DELETE /api/admin/broadcasts/:id
+// @desc    Delete a broadcast
+// @access  Admin only
+router.delete('/broadcasts/:id', protect, adminOnly, async (req, res) => {
+  try {
+    await Announcement.findByIdAndDelete(req.params.id);
+    res.json({ message: 'Broadcast deleted' });
+  } catch (error) {
+    console.error('Delete broadcast error:', error);
+    res.status(500).json({ error: 'Failed to delete broadcast' });
+  }
+});
+
+// @route   PUT /api/admin/broadcasts/:id/deactivate
+// @desc    Deactivate a broadcast (soft delete)
+// @access  Admin only
+router.put('/broadcasts/:id/deactivate', protect, adminOnly, async (req, res) => {
+  try {
+    await Announcement.findByIdAndUpdate(req.params.id, { isActive: false });
+    res.json({ message: 'Broadcast deactivated' });
+  } catch (error) {
+    console.error('Deactivate broadcast error:', error);
+    res.status(500).json({ error: 'Failed to deactivate broadcast' });
+  }
+});
+
+// ============================================
+// LEARNER MANAGEMENT ROUTES
+// ============================================
+
+// @route   GET /api/admin/users/:userId/enrollments
+// @desc    Get all course enrollments for a user
+// @access  Admin only
+router.get('/users/:userId/enrollments', protect, adminOnly, async (req, res) => {
+  try {
+    const enrollments = await UserCourseProgress.find({ userId: req.params.userId })
+      .populate('courseId', 'title slug ceuHours ceuEligible thumbnail')
+      .sort({ enrolledAt: -1 });
+    
+    // Get all courses for the "enroll in" dropdown
+    const allCourses = await Course.find({ status: 'published' })
+      .select('title slug ceuHours category')
+      .sort({ title: 1 });
+    
+    // Filter out already enrolled courses
+    const enrolledCourseIds = enrollments.map(e => e.courseId?._id?.toString());
+    const availableCourses = allCourses.filter(c => !enrolledCourseIds.includes(c._id.toString()));
+    
+    res.json({ 
+      enrollments,
+      availableCourses
+    });
+  } catch (error) {
+    console.error('Get user enrollments error:', error);
+    res.status(500).json({ error: 'Failed to get enrollments' });
+  }
+});
+
+// @route   POST /api/admin/users/:userId/enroll
+// @desc    Manually enroll a user in a course
+// @access  Admin only
+router.post('/users/:userId/enroll', protect, adminOnly, async (req, res) => {
+  try {
+    const { courseId } = req.body;
+    const userId = req.params.userId;
+    
+    // Check user exists
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    
+    // Check course exists
+    const course = await Course.findById(courseId);
+    if (!course) {
+      return res.status(404).json({ error: 'Course not found' });
+    }
+    
+    // Check if already enrolled
+    const existing = await UserCourseProgress.findOne({ userId, courseId });
+    if (existing) {
+      return res.status(400).json({ error: 'User is already enrolled in this course' });
+    }
+    
+    // Create enrollment
+    const enrollment = new UserCourseProgress({
+      userId,
+      courseId,
+      enrolled: true,
+      enrolledAt: new Date(),
+      status: 'not_started',
+      completedLessons: [],
+      quizAttempts: [],
+      currentModule: 0,
+      currentLesson: 0,
+      progressPercent: 0
+    });
+    
+    await enrollment.save();
+    
+    // Populate course info for response
+    await enrollment.populate('courseId', 'title slug ceuHours');
+    
+    res.json({ 
+      message: `Successfully enrolled ${user.firstName} in ${course.title}`,
+      enrollment
+    });
+  } catch (error) {
+    console.error('Admin enroll error:', error);
+    res.status(500).json({ error: 'Failed to enroll user' });
+  }
+});
+
+// @route   DELETE /api/admin/users/:userId/enrollments/:courseId
+// @desc    Unenroll a user from a course
+// @access  Admin only
+router.delete('/users/:userId/enrollments/:courseId', protect, adminOnly, async (req, res) => {
+  try {
+    const { userId, courseId } = req.params;
+    
+    const enrollment = await UserCourseProgress.findOne({ userId, courseId });
+    if (!enrollment) {
+      return res.status(404).json({ error: 'Enrollment not found' });
+    }
+    
+    await UserCourseProgress.deleteOne({ userId, courseId });
+    
+    res.json({ message: 'User unenrolled successfully' });
+  } catch (error) {
+    console.error('Admin unenroll error:', error);
+    res.status(500).json({ error: 'Failed to unenroll user' });
+  }
+});
+
+// @route   POST /api/admin/users/:userId/enrollments/:courseId/reset
+// @desc    Reset a user's course progress (keep enrolled)
+// @access  Admin only
+router.post('/users/:userId/enrollments/:courseId/reset', protect, adminOnly, async (req, res) => {
+  try {
+    const { userId, courseId } = req.params;
+    
+    const enrollment = await UserCourseProgress.findOne({ userId, courseId });
+    if (!enrollment) {
+      return res.status(404).json({ error: 'Enrollment not found' });
+    }
+    
+    // Reset progress but keep enrollment
+    enrollment.completedLessons = [];
+    enrollment.quizAttempts = [];
+    enrollment.currentModule = 0;
+    enrollment.currentLesson = 0;
+    enrollment.status = 'not_started';
+    enrollment.completed = false;
+    enrollment.completedAt = null;
+    enrollment.progressPercent = 0;
+    
+    await enrollment.save();
+    
+    res.json({ 
+      message: 'Course progress reset successfully',
+      enrollment
+    });
+  } catch (error) {
+    console.error('Admin reset progress error:', error);
+    res.status(500).json({ error: 'Failed to reset progress' });
+  }
+});
+
+// @route   POST /api/admin/users/:userId/enrollments/:courseId/complete
+// @desc    Mark a course as complete for a user (manual completion)
+// @access  Admin only
+router.post('/users/:userId/enrollments/:courseId/complete', protect, adminOnly, async (req, res) => {
+  try {
+    const { userId, courseId } = req.params;
+    const { note } = req.body; // Optional admin note
+    
+    const user = await User.findById(userId);
+    const course = await Course.findById(courseId);
+    
+    if (!user || !course) {
+      return res.status(404).json({ error: 'User or course not found' });
+    }
+    
+    // Find or create enrollment
+    let enrollment = await UserCourseProgress.findOne({ userId, courseId });
+    
+    if (!enrollment) {
+      enrollment = new UserCourseProgress({
+        userId,
+        courseId,
+        enrolled: true,
+        enrolledAt: new Date()
+      });
+    }
+    
+    // Mark as complete
+    enrollment.status = 'completed';
+    enrollment.completed = true;
+    enrollment.completedAt = new Date();
+    enrollment.progressPercent = 100;
+    enrollment.adminCompleted = true;
+    enrollment.adminNote = note || 'Manually completed by admin';
+    enrollment.adminCompletedBy = req.user._id;
+    enrollment.adminCompletedAt = new Date();
+    
+    await enrollment.save();
+    
+    res.json({ 
+      message: `Course marked complete for ${user.firstName} ${user.lastName}`,
+      enrollment
+    });
+  } catch (error) {
+    console.error('Admin complete course error:', error);
+    res.status(500).json({ error: 'Failed to complete course' });
+  }
+});
+
+// @route   GET /api/admin/enrollments/search
+// @desc    Search enrollments across all users
+// @access  Admin only
+router.get('/enrollments/search', protect, adminOnly, async (req, res) => {
+  try {
+    const { courseId, status, page = 1, limit = 20 } = req.query;
+    
+    const query = {};
+    if (courseId) query.courseId = courseId;
+    if (status) query.status = status;
+    
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+    
+    const enrollments = await UserCourseProgress.find(query)
+      .populate('userId', 'firstName lastName email')
+      .populate('courseId', 'title slug ceuHours')
+      .sort({ enrolledAt: -1 })
+      .skip(skip)
+      .limit(parseInt(limit));
+    
+    const total = await UserCourseProgress.countDocuments(query);
+    
+    res.json({
+      enrollments,
+      pagination: {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        total,
+        pages: Math.ceil(total / parseInt(limit))
+      }
+    });
+  } catch (error) {
+    console.error('Search enrollments error:', error);
+    res.status(500).json({ error: 'Failed to search enrollments' });
+  }
+});
+
+export default router;
