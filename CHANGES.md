@@ -1,11 +1,38 @@
 # ✅ CHANGES APPLIED TO THIS PROJECT
 
 **Date:** January 15, 2026  
-**Purpose:** Fix admin panel Edit/Delete buttons, certificate downloads, and course listing
+**Purpose:** Fix admin panel API URL configuration and enable local development
 
 ---
 
-## 🔧 Files Modified (5 files)
+## 🔧 Latest Update (January 15, 2026)
+
+### **Fix: API URL Configuration for All Pages (22 files)**
+
+**What changed:** Updated API_URL to support both localhost and production environments
+
+**Files modified:**
+- **Admin Panel (7 files):** admin-courses.html, admin-users.html, admin-analytics.html, admin-hardship.html, admin-migration.html, admin-messages.html, admin-integrations.html
+- **User Pages (15 files):** audit.html, certificates.html, course-player.html, credentials.html, dashboard.html, forgot-password.html, login.html, messages.html, register.html, reset-password.html, settings.html, subscription.html, update-content.html, verify.html, welcome.html
+
+**Change applied:**
+```javascript
+// Before:
+const API_URL = 'https://api.counselorready.com';
+
+// After:
+const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://api.counselorready.com';
+```
+
+**Why:** 
+- Admin panel and all pages were hardcoded to production API URL
+- This broke local development (API calls would fail with CORS/404 errors)
+- Now automatically detects localhost and uses correct API endpoint
+- Enables seamless local development and testing
+
+---
+
+## 🔧 Previous Updates
 
 ### 1. `server/src/middleware/auth.js`
 **What changed:** Added admin middleware alias at the end
@@ -52,7 +79,7 @@ export const admin = requireAdmin;
 
 ---
 
-### 5. `server/src/models/Course.js` ⭐ NEW FIX
+### 5. `server/src/models/Course.js`
 **What changed:** Added safety checks to virtual fields (lines 200-214)
 - `totalLessons` now checks if modules exists before calling .reduce()
 - `totalDuration` now checks if modules exists before looping
@@ -66,7 +93,7 @@ export const admin = requireAdmin;
 ### Step 1: Push to Git
 ```bash
 git add .
-git commit -m "Fix admin panel, certificates, and course model virtuals"
+git commit -m "Fix admin panel API URL configuration"
 git push origin main
 ```
 
@@ -75,16 +102,22 @@ Render will automatically deploy in ~2 minutes.
 Watch for "Deploy live" message in Render dashboard.
 
 ### Step 3: Test
-1. Go to admin panel
-2. **Courses should now appear** ✅
-3. Click **Edit** on a course → Should work ✅
-4. Click **Delete** on a course → Should work ✅
-5. Complete a course and download certificate → Should work ✅
+1. **Local Development:**
+   - Run `npm start` in server directory
+   - Run `npm run dev` in client directory
+   - Access admin panel at http://localhost:5173/admin-courses.html
+   - All API calls should go to http://localhost:5000 ✅
+
+2. **Production:**
+   - Access admin panel at https://counselorready.com/admin-courses.html
+   - All API calls should go to https://api.counselorready.com ✅
 
 ---
 
 ## ✅ What's Fixed
 
+- ✅ Admin panel works in local development
+- ✅ All pages detect environment and use correct API URL
 - ✅ Certificate downloads for completed courses
 - ✅ Admin courses page shows all courses (no more crash)
 - ✅ Edit button opens course editor
@@ -98,7 +131,8 @@ Watch for "Deploy live" message in Render dashboard.
 - All changes are backward compatible
 - No database migrations required
 - Existing data is not affected
-- Only admin users can access new endpoints
+- Only admin users can access admin endpoints
+- Local development now fully supported
 
 ---
 
