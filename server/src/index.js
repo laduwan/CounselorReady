@@ -22,6 +22,7 @@ import announcementRoutes from './routes/announcements.js';
 import analyticsRoutes from './routes/analytics.js';
 import migrationRoutes from './routes/migration.js';
 import adminSeedRoutes from './routes/adminSeed.js';
+
 // Services
 import { checkAndSendReminders } from './services/reminderService.js';
 import { 
@@ -71,6 +72,7 @@ app.use('/api/cebroker', cebrokerRoutes);
 app.use('/api/announcements', announcementRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/migration', migrationRoutes);
+app.use('/api/admin-seed', adminSeedRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
@@ -207,7 +209,5 @@ mongoose.connect(process.env.MONGODB_URI)
     console.error('❌ MongoDB connection error:', err);
     process.exit(1);
   });
-app.use('/api/analytics', analyticsRoutes);
-app.use('/api/migration', migrationRoutes);
-app.use('/api/admin-seed', adminSeedRoutes);
+
 export default app;
