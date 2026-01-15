@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Help Center - CounselorReady Admin</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            burgundy: { 50: '#fdf5f6', 100: '#fae8eb', 200: '#f5d0d6', 700: '#8b2542', 800: '#6b1d34', 900: '#4a1524' },
+            forest: { 50: '#f3f6f4', 100: '#e3ebe5', 500: '#547c5f', 600: '#40634a', 700: '#34503d', 800: '#2b4133' },
+            hunter: { 100: '#e8f0ea', 200: '#d1e1d5', 500: '#4A7C59', 600: '#3d6649', 700: '#34503d' },
+            honey: { 100: '#fef3d1', 200: '#fde7a3', 400: '#D4A855', 500: '#c99a4a', 600: '#b8893f' }
+          }
+        }
+      }
+    }
+  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Source+Serif+Pro:wght@400;600;700&family=Source+Sans+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body { font-family: 'Source Sans Pro', system-ui, sans-serif; }
+    .font-display { font-family: 'Source Serif Pro', Georgia, serif; }
+    .help-card:hover { transform: translateY(-2px); }
+  </style>
+</head>
+<body class="bg-stone-50 min-h-screen">
+
+  <!-- Admin Header -->
+  <header class="bg-burgundy-800 text-white sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <div class="w-9 h-9 bg-white/10 rounded-lg flex items-center justify-center">
+          <span class="font-display font-bold"><span class="text-honey-400">C</span><span class="text-hunter-500">R</span></span>
+        </div>
+        <div>
+          <span class="font-display font-semibold text-lg">
+            <span class="text-burgundy-200">Counselor</span><span class="text-hunter-500">Ready</span>
+          </span>
+          <span class="ml-2 text-xs bg-honey-400 text-burgundy-900 px-2 py-0.5 rounded-full font-semibold">ADMIN</span>
+        </div>
+      </div>
+      <div class="flex items-center gap-4">
+        <span class="text-burgundy-200 text-sm" id="adminEmail">Admin</span>
+        <a href="/dashboard.html" class="text-burgundy-200 hover:text-white text-sm flex items-center gap-1">
+          <i class="fas fa-arrow-left"></i>
+          Exit Admin
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <div class="flex">
+    <!-- Sidebar -->
+    <aside class="w-64 bg-burgundy-800 min-h-[calc(100vh-52px)] sticky top-[52px] p-4">
+      <nav class="space-y-1">
+        <a href="/admin-analytics.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <i class="fas fa-chart-line w-5"></i>
+          Analytics
+        </a>
+        <a href="/admin-users.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <i class="fas fa-users w-5"></i>
+          Users
+        </a>
+        <a href="/admin-courses.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <i class="fas fa-book w-5"></i>
+          Courses
+        </a>
+        <a href="/admin-messages.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <i class="fas fa-envelope w-5"></i>
+          Messages
+        </a>
+        <a href="/admin-credentials.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <i class="fas fa-id-card w-5"></i>
+          Credentials
+        </a>
+        <a href="/admin-hardship.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <i class="fas fa-hand-holding-heart w-5"></i>
+          Hardship
+        </a>
+        <a href="/admin-integrations.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <i class="fas fa-plug w-5"></i>
+          Integrations
+        </a>
+        <a href="/admin-help.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg bg-burgundy-700 text-white">
+          <i class="fas fa-question-circle w-5"></i>
+          Help Center
+        </a>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 p-8">
+      <div class="max-w-5xl mx-auto">
+        
+        <!-- Page Header -->
+        <div class="text-center mb-12">
+          <h1 class="font-display text-4xl font-bold text-burgundy-900 mb-3">Admin Help Center</h1>
+          <p class="text-lg text-forest-600">Everything you need to manage your CounselorReady platform</p>
+        </div>
+
+        <!-- Search -->
+        <div class="mb-10">
+          <div class="relative max-w-xl mx-auto">
+            <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-forest-400"></i>
+            <input type="text" id="helpSearch" placeholder="Search help articles..." 
+              class="w-full pl-12 pr-4 py-3 border border-forest-200 rounded-xl focus:ring-2 focus:ring-hunter-500 focus:border-hunter-500 text-lg"
+              onkeyup="filterHelp()">
+          </div>
+        </div>
+
+        <!-- Quick Links -->
+        <div class="grid grid-cols-4 gap-4 mb-12">
+          <a href="#user-management" class="help-card bg-white rounded-xl p-4 border border-burgundy-100 text-center hover:shadow-lg transition-all">
+            <div class="w-12 h-12 bg-hunter-100 rounded-full flex items-center justify-center mx-auto mb-3">
+              <i class="fas fa-users text-hunter-600 text-xl"></i>
+            </div>
+            <p class="font-semibold text-forest-900">User Management</p>
+          </a>
+          <a href="#course-management" class="help-card bg-white rounded-xl p-4 border border-burgundy-100 text-center hover:shadow-lg transition-all">
+            <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
+              <i class="fas fa-graduation-cap text-blue-600 text-xl"></i>
+            </div>
+            <p class="font-semibold text-forest-900">Course Management</p>
+          </a>
+          <a href="#integrations" class="help-card bg-white rounded-xl p-4 border border-burgundy-100 text-center hover:shadow-lg transition-all">
+            <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-3">
+              <i class="fas fa-plug text-purple-600 text-xl"></i>
+            </div>
+            <p class="font-semibold text-forest-900">Integrations</p>
+          </a>
+          <a href="#billing" class="help-card bg-white rounded-xl p-4 border border-burgundy-100 text-center hover:shadow-lg transition-all">
+            <div class="w-12 h-12 bg-honey-100 rounded-full flex items-center justify-center mx-auto mb-3">
+              <i class="fas fa-credit-card text-honey-600 text-xl"></i>
+            </div>
+            <p class="font-semibold text-forest-900">Billing & Payments</p>
+          </a>
+        </div>
+
+        <!-- Help Sections -->
+        <div class="space-y-8" id="helpContent">
+          
+          <!-- User Management Section -->
+          <section id="user-management" class="help-section bg-white rounded-xl border border-burgundy-100 overflow-hidden">
+            <div class="bg-hunter-600 text-white px-6 py-4">
+              <h2 class="text-xl font-semibold flex items-center gap-3">
+                <i class="fas fa-users"></i>
+                User Management
+              </h2>
+            </div>
+            <div class="p-6 space-y-6">
+              
+              <div class="help-item">
+                <h3 class="font-semibold text-forest-900 mb-2 flex items-center gap-2">
+                  <i class="fas fa-search text-hunter-500"></i>
+                  Finding Users
+                </h3>
+                <p class="text-forest-600 mb-3">Go to <strong>Admin → Users</strong> to see all registered users. You can:</p>
+                <ul class="list-disc list-inside text-forest-600 space-y-1 ml-4">
+                  <li>Search by name or email</li>
+                  <li>Filter by subscription plan (Free, Starter, Professional, VIP)</li>
+                  <li>Filter by status (Active, Trial, Canceled, Past Due)</li>
+                  <li>Sort by newest, oldest, name, or last login</li>
+                </ul>
+              </div>
+              
+              <div class="help-item border-t border-forest-100 pt-6">
+                <h3 class="font-semibold text-forest-900 mb-2 flex items-center gap-2">
+                  <i class="fas fa-user-edit text-hunter-500"></i>
+                  Editing User Accounts
+                </h3>
+                <p class="text-forest-600 mb-3">Click "View Details" on any user to access management options:</p>
+                <div class="grid grid-cols-2 gap-4">
+                  <div class="bg-forest-50 rounded-lg p-4">
+                    <p class="font-medium text-forest-800 mb-2">Subscription Tab</p>
+                    <ul class="text-sm text-forest-600 space-y-1">
+                      <li>• View current plan and billing dates</li>
+                      <li>• Change subscription tier (bypasses Stripe)</li>
+                      <li>• See Stripe customer ID</li>
+                    </ul>
+                  </div>
+                  <div class="bg-forest-50 rounded-lg p-4">
+                    <p class="font-medium text-forest-800 mb-2">Admin Actions Tab</p>
+                    <ul class="text-sm text-forest-600 space-y-1">
+                      <li>• Send password reset email</li>
+                      <li>• Disable/enable account</li>
+                      <li>• Login as user (impersonate)</li>
+                      <li>• Delete user account</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="help-item border-t border-forest-100 pt-6">
+                <h3 class="font-semibold text-forest-900 mb-2 flex items-center gap-2">
+                  <i class="fas fa-book-reader text-hunter-500"></i>
+                  Managing Learner Enrollments
+                </h3>
+                <p class="text-forest-600 mb-3">In the user's <strong>Courses tab</strong>, you can:</p>
+                <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                  <div class="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <p class="font-medium text-yellow-800">✓ Enroll in Course</p>
+                      <p class="text-yellow-700">Manually add user to any course</p>
+                    </div>
+                    <div>
+                      <p class="font-medium text-yellow-800">✓ Mark Complete</p>
+                      <p class="text-yellow-700">Admin-complete with optional note</p>
+                    </div>
+                    <div>
+                      <p class="font-medium text-yellow-800">↺ Reset Progress</p>
+                      <p class="text-yellow-700">Reset to 0% (keeps enrollment)</p>
+                    </div>
+                    <div>
+                      <p class="font-medium text-yellow-800">✕ Unenroll</p>
+                      <p class="text-yellow-700">Remove from course entirely</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+            </div>
+          </section>
+
+          <!-- Course Management Section -->
+          <section id="course-management" class="help-section bg-white rounded-xl border border-burgundy-100 overflow-hidden">
+            <div class="bg-blue-600 text-white px-6 py-4">
+              <h2 class="text-xl font-semibold flex items-center gap-3">
+                <i class="fas fa-graduation-cap"></i>
+                Course Management
+              </h2>
+            </div>
+            <div class="p-6 space-y-6">
+              
+              <div class="help-item">
+                <h3 class="font-semibold text-forest-900 mb-2 flex items-center gap-2">
+                  <i class="fas fa-plus-circle text-blue-500"></i>
+                  Creating Courses
+                </h3>
+                <p class="text-forest-600 mb-3">Go to <strong>Admin → Courses → Create New Course</strong>:</p>
+                <ol class="list-decimal list-inside text-forest-600 space-y-2 ml-4">
+                  <li>Enter title, description, category, and CE hours</li>
+                  <li>Set access tier (Free, Starter, Professional, VIP)</li>
+                  <li>Add modules with lessons (video, text, quiz)</li>
+                  <li>Configure quiz questions and passing score</li>
+                  <li>Set to "Published" when ready</li>
+                </ol>
+              </div>
+              
+              <div class="help-item border-t border-forest-100 pt-6">
+                <h3 class="font-semibold text-forest-900 mb-2 flex items-center gap-2">
+                  <i class="fas fa-file-import text-blue-500"></i>
+                  Importing External Courses
+                </h3>
+                <p class="text-forest-600 mb-3">From <strong>Admin → Integrations → Imported Courses</strong>:</p>
+                <div class="grid grid-cols-3 gap-4">
+                  <div class="bg-blue-50 rounded-lg p-4 text-center">
+                    <i class="fas fa-link text-blue-600 text-2xl mb-2"></i>
+                    <p class="font-medium text-blue-900">External Link</p>
+                    <p class="text-sm text-blue-700">Link to course hosted elsewhere</p>
+                  </div>
+                  <div class="bg-blue-50 rounded-lg p-4 text-center">
+                    <i class="fas fa-file-archive text-blue-600 text-2xl mb-2"></i>
+                    <p class="font-medium text-blue-900">SCORM Package</p>
+                    <p class="text-sm text-blue-700">Upload SCORM 1.2 zip file</p>
+                  </div>
+                  <div class="bg-blue-50 rounded-lg p-4 text-center">
+                    <i class="fas fa-magic text-blue-600 text-2xl mb-2"></i>
+                    <p class="font-medium text-blue-900">Starter Template</p>
+                    <p class="text-sm text-blue-700">Quick course framework</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="help-item border-t border-forest-100 pt-6">
+                <h3 class="font-semibold text-forest-900 mb-2 flex items-center gap-2">
+                  <i class="fas fa-trash-alt text-blue-500"></i>
+                  Deleting Courses
+                </h3>
+                <p class="text-forest-600">From the Integrations page course table, click the trash icon. <strong>Warning:</strong> This will remove all enrollment data for that course.</p>
+              </div>
+              
+            </div>
+          </section>
+
+          <!-- Integrations Section -->
+          <section id="integrations" class="help-section bg-white rounded-xl border border-burgundy-100 overflow-hidden">
+            <div class="bg-purple-600 text-white px-6 py-4">
+              <h2 class="text-xl font-semibold flex items-center gap-3">
+                <i class="fas fa-plug"></i>
+                Integrations
+              </h2>
+            </div>
+            <div class="p-6 space-y-6">
+              
+              <div class="help-item">
+                <h3 class="font-semibold text-forest-900 mb-2 flex items-center gap-2">
+                  <i class="fas fa-link text-purple-500"></i>
+                  LTI (Learning Tools Interoperability)
+                </h3>
+                <p class="text-forest-600 mb-3">Lets external LMS platforms embed your courses:</p>
+                <ol class="list-decimal list-inside text-forest-600 space-y-1 ml-4">
+                  <li>Go to <strong>Integrations → LTI Connections</strong></li>
+                  <li>Copy the Launch URL and Configuration XML</li>
+                  <li>Set up Consumer Key and Secret</li>
+                  <li>Share with the LMS administrator</li>
+                  <li>They configure their LMS to connect to your platform</li>
+                </ol>
+              </div>
+              
+              <div class="help-item border-t border-forest-100 pt-6">
+                <h3 class="font-semibold text-forest-900 mb-2 flex items-center gap-2">
+                  <i class="fas fa-chart-bar text-purple-500"></i>
+                  xAPI / Tin Can API
+                </h3>
+                <p class="text-forest-600 mb-3">Sends detailed learning data to your Learning Record Store (LRS):</p>
+                <div class="bg-purple-50 rounded-lg p-4">
+                  <p class="text-sm text-purple-700">
+                    <strong>Setup:</strong> Enter your LRS endpoint URL, username, and password in the xAPI tab. 
+                    Test the connection before saving. Once configured, all learning activities (course starts, 
+                    completions, quiz results) are automatically sent to your LRS.
+                  </p>
+                </div>
+              </div>
+              
+              <div class="help-item border-t border-forest-100 pt-6">
+                <h3 class="font-semibold text-forest-900 mb-2 flex items-center gap-2">
+                  <i class="fas fa-certificate text-purple-500"></i>
+                  CE Broker
+                </h3>
+                <p class="text-forest-600 mb-3">Automatically reports CE completions to state boards (FL, GA):</p>
+                <ol class="list-decimal list-inside text-forest-600 space-y-1 ml-4">
+                  <li>Get your Provider ID and API Key from CE Broker</li>
+                  <li>Enter credentials in the CE Broker tab</li>
+                  <li>Enable sandbox mode for testing first</li>
+                  <li>Switch to live mode when ready</li>
+                </ol>
+              </div>
+              
+            </div>
+          </section>
+
+          <!-- Billing Section -->
+          <section id="billing" class="help-section bg-white rounded-xl border border-burgundy-100 overflow-hidden">
+            <div class="bg-honey-500 text-white px-6 py-4">
+              <h2 class="text-xl font-semibold flex items-center gap-3">
+                <i class="fas fa-credit-card"></i>
+                Billing & Payments
+              </h2>
+            </div>
+            <div class="p-6 space-y-6">
+              
+              <div class="help-item">
+                <h3 class="font-semibold text-forest-900 mb-2 flex items-center gap-2">
+                  <i class="fas fa-cog text-honey-500"></i>
+                  Setting Up Stripe
+                </h3>
+                <p class="text-forest-600 mb-3">Configure Stripe payments in your server environment:</p>
+                <div class="bg-stone-900 text-stone-100 rounded-lg p-4 font-mono text-sm">
+                  <pre>STRIPE_SECRET_KEY=sk_live_xxxxx
+STRIPE_WEBHOOK_SECRET=whsec_xxxxx
+STRIPE_PRICE_STARTER=price_xxxxx    # $19.99/mo
+STRIPE_PRICE_PROFESSIONAL=price_xxxxx  # $29.99/mo
+STRIPE_PRICE_VIP=price_xxxxx        # $49.99/mo</pre>
+                </div>
+              </div>
+              
+              <div class="help-item border-t border-forest-100 pt-6">
+                <h3 class="font-semibold text-forest-900 mb-2 flex items-center gap-2">
+                  <i class="fas fa-tags text-honey-500"></i>
+                  Subscription Tiers
+                </h3>
+                <div class="grid grid-cols-4 gap-4">
+                  <div class="bg-gray-50 rounded-lg p-3 text-center">
+                    <p class="font-bold text-gray-900">Free</p>
+                    <p class="text-sm text-gray-600">$0/mo</p>
+                    <p class="text-xs text-gray-500">Limited access</p>
+                  </div>
+                  <div class="bg-blue-50 rounded-lg p-3 text-center">
+                    <p class="font-bold text-blue-900">Starter</p>
+                    <p class="text-sm text-blue-600">$19.99/mo</p>
+                    <p class="text-xs text-blue-500">Core features</p>
+                  </div>
+                  <div class="bg-purple-50 rounded-lg p-3 text-center">
+                    <p class="font-bold text-purple-900">Professional</p>
+                    <p class="text-sm text-purple-600">$29.99/mo</p>
+                    <p class="text-xs text-purple-500">All courses</p>
+                  </div>
+                  <div class="bg-honey-50 rounded-lg p-3 text-center">
+                    <p class="font-bold text-honey-900">VIP</p>
+                    <p class="text-sm text-honey-600">$49.99/mo</p>
+                    <p class="text-xs text-honey-500">All + SMS + Priority</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="help-item border-t border-forest-100 pt-6">
+                <h3 class="font-semibold text-forest-900 mb-2 flex items-center gap-2">
+                  <i class="fas fa-ticket-alt text-honey-500"></i>
+                  Promo Codes
+                </h3>
+                <p class="text-forest-600">Create promo codes in your <a href="https://dashboard.stripe.com/coupons" target="_blank" class="text-burgundy-700 underline">Stripe Dashboard → Coupons</a>. Users enter codes during checkout for discounts.</p>
+              </div>
+              
+            </div>
+          </section>
+
+          <!-- Activity Tracking Section -->
+          <section id="activity" class="help-section bg-white rounded-xl border border-burgundy-100 overflow-hidden">
+            <div class="bg-green-600 text-white px-6 py-4">
+              <h2 class="text-xl font-semibold flex items-center gap-3">
+                <i class="fas fa-stream"></i>
+                Activity Tracking & Notifications
+              </h2>
+            </div>
+            <div class="p-6 space-y-6">
+              
+              <div class="help-item">
+                <h3 class="font-semibold text-forest-900 mb-2 flex items-center gap-2">
+                  <i class="fas fa-bell text-green-500"></i>
+                  Live Activity Feed
+                </h3>
+                <p class="text-forest-600 mb-3">View real-time user activity in <strong>Analytics → Live Activity Feed</strong>:</p>
+                <div class="flex flex-wrap gap-2">
+                  <span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm">🎉 Registrations</span>
+                  <span class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm">📚 Enrollments</span>
+                  <span class="px-3 py-1 bg-teal-100 text-teal-700 rounded-full text-sm">🎯 Quiz Passes</span>
+                  <span class="px-3 py-1 bg-red-100 text-red-700 rounded-full text-sm">❌ Quiz Fails</span>
+                  <span class="px-3 py-1 bg-emerald-100 text-emerald-700 rounded-full text-sm">✅ Completions</span>
+                </div>
+              </div>
+              
+              <div class="help-item border-t border-forest-100 pt-6">
+                <h3 class="font-semibold text-forest-900 mb-2 flex items-center gap-2">
+                  <i class="fas fa-envelope text-green-500"></i>
+                  Email Notifications
+                </h3>
+                <p class="text-forest-600 mb-3">Receive instant email alerts for key events. Set admin emails in your environment:</p>
+                <div class="bg-stone-900 text-stone-100 rounded-lg p-4 font-mono text-sm">
+                  <pre>ADMIN_NOTIFICATION_EMAILS=you@example.com,other@example.com</pre>
+                </div>
+              </div>
+              
+            </div>
+          </section>
+
+          <!-- Hardship & Compassion Section -->
+          <section id="hardship" class="help-section bg-white rounded-xl border border-burgundy-100 overflow-hidden">
+            <div class="bg-burgundy-700 text-white px-6 py-4">
+              <h2 class="text-xl font-semibold flex items-center gap-3">
+                <i class="fas fa-hand-holding-heart"></i>
+                Hardship & Compassion System
+              </h2>
+            </div>
+            <div class="p-6 space-y-6">
+              
+              <div class="help-item">
+                <h3 class="font-semibold text-forest-900 mb-2 flex items-center gap-2">
+                  <i class="fas fa-pause-circle text-burgundy-500"></i>
+                  VIP Hardship Pauses
+                </h3>
+                <p class="text-forest-600 mb-3">VIP members can request subscription pauses during hardships. Review in <strong>Admin → Hardship</strong>:</p>
+                <div class="bg-burgundy-50 rounded-lg p-4">
+                  <p class="text-sm text-burgundy-700">
+                    <strong>3-Tier Compassion System:</strong><br>
+                    • 1st request: 30-day pause<br>
+                    • 2nd request: 14-day pause<br>
+                    • 3rd+ request: 7-day pause<br><br>
+                    You can approve, deny, or adjust the duration. Denials require a reason.
+                  </p>
+                </div>
+              </div>
+              
+            </div>
+          </section>
+
+        </div>
+
+        <!-- Contact Support -->
+        <div class="mt-12 bg-gradient-to-r from-burgundy-700 to-hunter-700 rounded-xl p-8 text-center text-white">
+          <h2 class="font-display text-2xl font-bold mb-3">Still Need Help?</h2>
+          <p class="text-white/80 mb-6">Our support team is here to assist you with any questions.</p>
+          <a href="mailto:support@counselorready.com" class="inline-block bg-white text-burgundy-700 px-6 py-3 rounded-lg font-semibold hover:bg-burgundy-50 transition-colors">
+            <i class="fas fa-envelope mr-2"></i>
+            Contact Support
+          </a>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      if (user.email) {
+        document.getElementById('adminEmail').textContent = user.email;
+      }
+    });
+    
+    function filterHelp() {
+      const search = document.getElementById('helpSearch').value.toLowerCase();
+      const sections = document.querySelectorAll('.help-section');
+      
+      sections.forEach(section => {
+        const text = section.textContent.toLowerCase();
+        if (text.includes(search) || search === '') {
+          section.style.display = 'block';
+        } else {
+          section.style.display = 'none';
+        }
+      });
+    }
+  </script>
+</body>
+</html>
