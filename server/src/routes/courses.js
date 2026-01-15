@@ -2,10 +2,257 @@ import express from 'express';
 import Course from '../models/Course.js';
 import UserCourseProgress from '../models/UserCourseProgress.js';
 import User from '../models/User.js';
-import { protect, optionalAuth, requireSubscription } from '../middleware/auth.js';
+import { protect, optionalAuth, requireSubscription, admin } from '../middleware/auth.js';
 import { logActivity, ACTIVITY_TYPES } from '../services/activityTrackingService.js';
 
 const router = express.Router();
+
+// ============================================
+// ADMIN COURSE MANAGEMENT ENDPOINTS
+// ============================================
+
+// @route   GET /api/admin/courses
+// @desc    Get all courses for admin (including drafts, unpublished)
+// @access  Private/Admin
+router.get('/admin/courses', protect, admin, async (req, res) => {
+  try {
+    const courses = await Course.find({})
+      .sort({ createdAt: -1 });
+    
+    // Add enrollment counts
+    const coursesWithStats = await Promise.all(
+      courses.map(async (course) => {
+        const enrollmentCount = await UserCourseProgress.countDocuments({ 
+          courseId: course._id 
+        });
+        
+        return {
+          ...course.toJSON(),
+          enrollmentCount
+        };
+      })
+    );
+    
+    res.json({ courses: coursesWithStats });
+  } catch (error) {
+    console.error('Admin get courses error:', error);
+    res.status(500).json({ error: 'Failed to get courses' });
+  }
+});
+
+// @route   GET /api/admin/courses/:courseId
+// @desc    Get single course by ID for editing (admin)
+// @access  Private/Admin
+router.get('/admin/courses/:courseId', protect, admin, async (req, res) => {
+  try {
+    const course = await Course.findById(req.params.courseId);
+    
+    if (!course) {
+      return res.status(404).json({ error: 'Course not found' });
+    }
+    
+    // Get enrollment stats
+    const enrollmentCount = await UserCourseProgress.countDocuments({ 
+      courseId: course._id 
+    });
+    
+    const completionCount = await UserCourseProgress.countDocuments({ 
+      courseId: course._id,
+      status: 'completed'
+    });
+    
+    res.json({
+      ...course.toJSON(),
+      stats: {
+        enrollmentCount,
+        completionCount,
+        completionRate: enrollmentCount > 0 
+          ? Math.round((completionCount / enrollmentCount) * 100) 
+          : 0
+      }
+    });
+  } catch (error) {
+    console.error('Admin get course error:', error);
+    res.status(500).json({ error: 'Failed to get course' });
+  }
+});
+
+// @route   POST /api/admin/courses
+// @desc    Create new course
+// @access  Private/Admin
+router.post('/admin/courses', protect, admin, async (req, res) => {
+  try {
+    const courseData = req.body;
+    
+    // Validate required fields
+    if (!courseData.title) {
+      return res.status(400).json({ error: 'Course title is required' });
+    }
+    
+    // Generate slug if not provided
+    if (!courseData.slug) {
+      courseData.slug = courseData.title
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-|-$/g, '');
+    }
+    
+    // Check if slug already exists
+    const existingCourse = await Course.findOne({ slug: courseData.slug });
+    if (existingCourse) {
+      return res.status(400).json({ 
+        error: 'A course with this slug already exists',
+        suggestion: `${courseData.slug}-${Date.now()}`
+      });
+    }
+    
+    const course = await Course.create({
+      ...courseData,
+      createdBy: req.user._id,
+      status: courseData.status || 'draft'
+    });
+    
+    res.status(201).json({ 
+      success: true,
+      course,
+      message: 'Course created successfully'
+    });
+  } catch (error) {
+    console.error('Create course error:', error);
+    res.status(500).json({ error: 'Failed to create course' });
+  }
+});
+
+// @route   PUT /api/admin/courses/:courseId
+// @desc    Update course
+// @access  Private/Admin
+router.put('/admin/courses/:courseId', protect, admin, async (req, res) => {
+  try {
+    const course = await Course.findById(req.params.courseId);
+    
+    if (!course) {
+      return res.status(404).json({ error: 'Course not found' });
+    }
+    
+    const updates = req.body;
+    
+    // If slug is being changed, check for conflicts
+    if (updates.slug && updates.slug !== course.slug) {
+      const existingCourse = await Course.findOne({ 
+        slug: updates.slug,
+        _id: { $ne: course._id }
+      });
+      
+      if (existingCourse) {
+        return res.status(400).json({ 
+          error: 'A course with this slug already exists' 
+        });
+      }
+    }
+    
+    // Update fields
+    Object.keys(updates).forEach(key => {
+      course[key] = updates[key];
+    });
+    
+    course.updatedAt = new Date();
+    await course.save();
+    
+    res.json({ 
+      success: true,
+      course,
+      message: 'Course updated successfully'
+    });
+  } catch (error) {
+    console.error('Update course error:', error);
+    res.status(500).json({ error: 'Failed to update course' });
+  }
+});
+
+// @route   DELETE /api/admin/courses/:courseId
+// @desc    Delete course (and optionally all related data)
+// @access  Private/Admin
+router.delete('/admin/courses/:courseId', protect, admin, async (req, res) => {
+  try {
+    const { deleteCertificates } = req.query;
+    
+    const course = await Course.findById(req.params.courseId);
+    
+    if (!course) {
+      return res.status(404).json({ error: 'Course not found' });
+    }
+    
+    // Count what we're about to delete
+    const progressCount = await UserCourseProgress.countDocuments({ 
+      courseId: course._id 
+    });
+    
+    console.log('Deleting course:', {
+      courseId: course._id,
+      title: course.title,
+      userProgressRecords: progressCount
+    });
+    
+    // Delete all user progress for this course
+    const progressResult = await UserCourseProgress.deleteMany({ 
+      courseId: course._id 
+    });
+    
+    console.log(`Deleted ${progressResult.deletedCount} progress records`);
+    
+    // Delete the course itself
+    await Course.findByIdAndDelete(course._id);
+    console.log('Course deleted successfully');
+    
+    res.json({
+      success: true,
+      message: 'Course deleted successfully',
+      deleted: {
+        course: course.title,
+        userProgress: progressResult.deletedCount
+      }
+    });
+    
+  } catch (error) {
+    console.error('Delete course error:', error);
+    res.status(500).json({ 
+      error: 'Failed to delete course',
+      details: error.message 
+    });
+  }
+});
+
+// @route   PATCH /api/admin/courses/:courseId/publish
+// @desc    Publish or unpublish a course
+// @access  Private/Admin
+router.patch('/admin/courses/:courseId/publish', protect, admin, async (req, res) => {
+  try {
+    const { publish } = req.body; // true or false
+    
+    const course = await Course.findById(req.params.courseId);
+    
+    if (!course) {
+      return res.status(404).json({ error: 'Course not found' });
+    }
+    
+    course.status = publish ? 'published' : 'draft';
+    course.publishedAt = publish ? new Date() : null;
+    await course.save();
+    
+    res.json({ 
+      success: true,
+      course,
+      message: publish ? 'Course published' : 'Course unpublished'
+    });
+  } catch (error) {
+    console.error('Publish course error:', error);
+    res.status(500).json({ error: 'Failed to update course status' });
+  }
+});
+
+// ============================================
+// PUBLIC ROUTES
+// ============================================
 
 // @route   GET /api/courses
 // @desc    Get all published courses
