@@ -199,16 +199,20 @@ courseSchema.index({ accessType: 1 });
 
 // Virtual for total lessons
 courseSchema.virtual('totalLessons').get(function() {
-  return this.modules.reduce((total, mod) => total + mod.lessons.length, 0);
+  if (!this.modules || !Array.isArray(this.modules)) return 0;
+  return this.modules.reduce((total, mod) => total + (mod.lessons?.length || 0), 0);
 });
 
 // Virtual for total duration
 courseSchema.virtual('totalDuration').get(function() {
+  if (!this.modules || !Array.isArray(this.modules)) return 0;
   let total = 0;
   this.modules.forEach(mod => {
-    mod.lessons.forEach(lesson => {
-      if (lesson.duration) total += lesson.duration;
-    });
+    if (mod.lessons && Array.isArray(mod.lessons)) {
+      mod.lessons.forEach(lesson => {
+        if (lesson.duration) total += lesson.duration;
+      });
+    }
   });
   return total;
 });
