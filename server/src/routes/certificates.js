@@ -43,6 +43,36 @@ const uploadToCloudinary = (buffer, options) => {
   });
 };
 
+// Helper function to calculate if course is actually completed
+const calculateCourseCompletion = (course, progress) => {
+  if (!course || !progress) return false;
+  
+  // Get total lessons from course modules
+  let totalLessons = 0;
+  if (course.modules && Array.isArray(course.modules)) {
+    course.modules.forEach(module => {
+      if (module.lessons && Array.isArray(module.lessons)) {
+        totalLessons += module.lessons.length;
+      }
+    });
+  }
+  
+  // If no lessons, can't complete
+  if (totalLessons === 0) return false;
+  
+  // Count completed lessons from progress
+  const completedLessons = progress.lessons?.filter(l => l.completed === true).length || 0;
+  
+  console.log('Course completion check:', {
+    courseId: course._id,
+    totalLessons,
+    completedLessons,
+    isComplete: completedLessons >= totalLessons && totalLessons > 0
+  });
+  
+  return completedLessons >= totalLessons && totalLessons > 0;
+};
+
 // GET /api/certificates - Get all certificates for user
 router.get('/', protect, async (req, res) => {
   try {
@@ -100,12 +130,15 @@ router.get('/check-eligibility/:courseId', protect, async (req, res) => {
       });
     }
     
+    // ✅ FIXED: Calculate actual completion based on lessons
+    const courseCompleted = calculateCourseCompletion(course, progress);
+    
     const requireEvaluation = course.settings?.requireEvaluation !== false;
     const requireAttestation = course.settings?.requireAttestation !== false;
     
     const requirements = {
       enrolled: true,
-      courseCompleted: progress.completed || false,
+      courseCompleted: courseCompleted,
       evaluationRequired: requireEvaluation,
       evaluationCompleted: progress.evaluationCompleted || false,
       attestationRequired: requireAttestation,
@@ -235,38 +268,163 @@ router.post('/', protect, upload.single('file'), async (req, res) => {
           
           if (credential) {
             await credential.addCEU({
-              hours: parseFloat(ceHours),
-              category: category || 'General',
-              description: title,
-              provider: provider,
-              date: new Date(completionDate),
               certificateId: certificate._id,
-              source: 'external'
+              hours: certificate.ceHours,
+              category: certificate.category,
+              date: certificate.completionDate,
+              source: 'manual_upload'
             });
-            console.log(`Logged ${ceHours} CEUs to credential ${credId}`);
+            console.log('Logged CEU to credential:', credId);
           }
         } catch (credError) {
-          console.error(`Failed to log CEU to credential ${credId}:`, credError);
+          console.error('Error logging CEU to credential:', credError);
         }
       }
     }
     
-    res.status(201).json({ 
-      message: 'Certificate uploaded successfully',
-      certificate 
-    });
+    res.status(201).json({ certificate });
   } catch (error) {
-    console.error('Upload certificate error:', error);
-    res.status(500).json({ error: 'Failed to upload certificate' });
+    console.error('Create certificate error:', error);
+    res.status(500).json({ error: 'Failed to create certificate' });
   }
 });
 
-// GET /api/certificates/:id - Get single certificate
+// POST /api/certificates/generate/:courseId - Generate certificate for completed course
+router.post('/generate/:courseId', protect, async (req, res) => {
+  try {
+    const { courseId } = req.params;
+    const userId = req.user._id;
+    
+    console.log('Generate certificate request:', { courseId, userId });
+    
+    // Check if certificate already exists
+    const existingCert = await Certificate.findOne({ 
+      userId, 
+      courseId, 
+      source: 'platform' 
+    });
+    
+    if (existingCert) {
+      return res.status(400).json({ 
+        error: 'Certificate already exists for this course',
+        certificateId: existingCert._id
+      });
+    }
+    
+    // Get course and progress
+    const course = await Course.findById(courseId);
+    if (!course) {
+      return res.status(404).json({ error: 'Course not found' });
+    }
+    
+    const progress = await UserCourseProgress.findOne({ userId, courseId });
+    if (!progress) {
+      return res.status(400).json({ error: 'Not enrolled in this course' });
+    }
+    
+    // ✅ FIXED: Check actual completion based on lessons
+    const courseCompleted = calculateCourseCompletion(course, progress);
+    
+    if (!courseCompleted) {
+      return res.status(400).json({ 
+        error: 'Course not completed. Please complete all lessons first.',
+        progress: {
+          lessonsCompleted: progress.lessons?.filter(l => l.completed).length || 0,
+          totalLessons: course.modules?.reduce((sum, m) => sum + (m.lessons?.length || 0), 0) || 0
+        }
+      });
+    }
+    
+    // Check evaluation requirement
+    const requireEvaluation = course.settings?.requireEvaluation !== false;
+    if (requireEvaluation && !progress.evaluationCompleted) {
+      return res.status(400).json({ error: 'Please complete the course evaluation first' });
+    }
+    
+    // Check attestation requirement
+    const requireAttestation = course.settings?.requireAttestation !== false;
+    if (requireAttestation && !progress.attestationCompleted) {
+      return res.status(400).json({ error: 'Please complete the attestation first' });
+    }
+    
+    // Get user info
+    const user = await User.findById(userId);
+    const fullName = `${user.profile?.firstName || ''} ${user.profile?.lastName || ''}`.trim() || user.email;
+    
+    // Generate certificate number
+    const certificateNumber = await generateCertificateNumber();
+    
+    // Generate certificate PDF
+    const pdfBuffer = await generateCertificate({
+      holderName: fullName,
+      courseName: course.title,
+      completionDate: new Date(),
+      ceHours: course.ceHours,
+      certificateNumber,
+      instructorName: course.instructor?.name || 'CounselorReady',
+      acepNumber: course.acepNumber || 'ACEP #7760'
+    });
+    
+    // Upload to Cloudinary
+    const uploadResult = await uploadToCloudinary(pdfBuffer, {
+      folder: `certificates/${userId}`,
+      resource_type: 'auto',
+      public_id: `platform_cert_${certificateNumber}`,
+      format: 'pdf'
+    });
+    
+    // Create certificate record
+    const certificate = await Certificate.create({
+      userId,
+      courseId,
+      title: course.title,
+      provider: 'CounselorReady',
+      completionDate: new Date(),
+      ceHours: course.ceHours,
+      category: course.category || 'General',
+      nbccApproved: true,
+      acepNumber: course.acepNumber || 'ACEP #7760',
+      certificateNumber,
+      fileUrl: uploadResult.secure_url,
+      fileKey: uploadResult.public_id,
+      fileName: `${course.title}_Certificate.pdf`,
+      fileType: 'application/pdf',
+      source: 'platform'
+    });
+    
+    // Update progress to mark as completed
+    progress.completed = true;
+    progress.completedAt = new Date();
+    await progress.save();
+    
+    console.log('Certificate generated successfully:', certificate._id);
+    
+    // Send completion email
+    try {
+      await sendCourseCompletionEmail(user, course, certificate);
+    } catch (emailError) {
+      console.error('Failed to send completion email:', emailError);
+      // Don't fail the request if email fails
+    }
+    
+    res.status(201).json({ 
+      success: true,
+      certificate,
+      message: 'Certificate generated successfully'
+    });
+    
+  } catch (error) {
+    console.error('Generate certificate error:', error);
+    res.status(500).json({ error: 'Failed to generate certificate' });
+  }
+});
+
+// GET /api/certificates/:id - Get specific certificate
 router.get('/:id', protect, async (req, res) => {
   try {
-    const certificate = await Certificate.findOne({ 
-      _id: req.params.id, 
-      userId: req.user._id 
+    const certificate = await Certificate.findOne({
+      _id: req.params.id,
+      userId: req.user._id
     });
     
     if (!certificate) {
@@ -283,17 +441,18 @@ router.get('/:id', protect, async (req, res) => {
 // PUT /api/certificates/:id - Update certificate
 router.put('/:id', protect, upload.single('file'), async (req, res) => {
   try {
-    const certificate = await Certificate.findOne({ 
-      _id: req.params.id, 
-      userId: req.user._id 
+    const certificate = await Certificate.findOne({
+      _id: req.params.id,
+      userId: req.user._id
     });
     
     if (!certificate) {
       return res.status(404).json({ error: 'Certificate not found' });
     }
     
-    const { title, provider, completionDate, ceHours, category, nbccApproved, acepNumber, notes, credentials } = req.body;
+    const { title, provider, completionDate, ceHours, category, nbccApproved, acepNumber, notes, credentials, approvingBody, approvalNumber, applicability, applicableStates } = req.body;
     
+    // Update fields
     if (title) certificate.title = title;
     if (provider) certificate.provider = provider;
     if (completionDate) certificate.completionDate = new Date(completionDate);
@@ -301,39 +460,55 @@ router.put('/:id', protect, upload.single('file'), async (req, res) => {
     if (category) certificate.category = category;
     if (nbccApproved !== undefined) certificate.nbccApproved = nbccApproved === 'true' || nbccApproved === true;
     if (acepNumber !== undefined) certificate.acepNumber = acepNumber || null;
+    if (approvingBody !== undefined) certificate.approvingBody = approvingBody || null;
+    if (approvalNumber !== undefined) certificate.approvalNumber = approvalNumber || null;
+    if (applicability) certificate.applicability = applicability;
     if (notes !== undefined) certificate.notes = notes || null;
     
+    // Parse and update credentials
     if (credentials) {
       try {
         certificate.credentials = typeof credentials === 'string' ? JSON.parse(credentials) : credentials;
-      } catch (e) {}
+      } catch (e) {
+        certificate.credentials = [];
+      }
     }
     
-    if (req.file) {
-      if (certificate.fileKey) {
-        try {
-          await cloudinary.uploader.destroy(certificate.fileKey);
-        } catch (e) {}
+    // Parse and update applicable states
+    if (applicableStates) {
+      try {
+        certificate.applicableStates = typeof applicableStates === 'string' ? JSON.parse(applicableStates) : applicableStates;
+      } catch (e) {
+        certificate.applicableStates = [];
       }
-      
-      const result = await uploadToCloudinary(req.file.buffer, {
-        folder: `certificates/${req.user._id}`,
-        resource_type: 'auto',
-        public_id: `cert_${Date.now()}`
-      });
-      
-      certificate.fileUrl = result.secure_url;
-      certificate.fileKey = result.public_id;
-      certificate.fileName = req.file.originalname;
-      certificate.fileType = req.file.mimetype;
+    }
+    
+    // Upload new file if provided
+    if (req.file) {
+      try {
+        // Delete old file from Cloudinary if exists
+        if (certificate.fileKey) {
+          await cloudinary.uploader.destroy(certificate.fileKey);
+        }
+        
+        const result = await uploadToCloudinary(req.file.buffer, {
+          folder: `certificates/${req.user._id}`,
+          resource_type: 'auto',
+          public_id: `cert_${Date.now()}`
+        });
+        
+        certificate.fileUrl = result.secure_url;
+        certificate.fileKey = result.public_id;
+        certificate.fileName = req.file.originalname;
+        certificate.fileType = req.file.mimetype;
+      } catch (uploadError) {
+        console.error('Cloudinary upload error:', uploadError);
+      }
     }
     
     await certificate.save();
     
-    res.json({ 
-      message: 'Certificate updated successfully',
-      certificate 
-    });
+    res.json({ certificate });
   } catch (error) {
     console.error('Update certificate error:', error);
     res.status(500).json({ error: 'Failed to update certificate' });
@@ -343,24 +518,50 @@ router.put('/:id', protect, upload.single('file'), async (req, res) => {
 // DELETE /api/certificates/:id - Delete certificate
 router.delete('/:id', protect, async (req, res) => {
   try {
-    const certificate = await Certificate.findOne({ 
-      _id: req.params.id, 
-      userId: req.user._id 
+    const certificate = await Certificate.findOne({
+      _id: req.params.id,
+      userId: req.user._id
     });
     
     if (!certificate) {
       return res.status(404).json({ error: 'Certificate not found' });
     }
     
+    // Don't allow deletion of platform-generated certificates
+    if (certificate.source === 'platform') {
+      return res.status(403).json({ 
+        error: 'Cannot delete platform-generated certificates. Please contact support if you need to revoke this certificate.' 
+      });
+    }
+    
+    // Delete file from Cloudinary if exists
     if (certificate.fileKey) {
       try {
         await cloudinary.uploader.destroy(certificate.fileKey);
-      } catch (e) {
-        console.error('Cloudinary delete error:', e);
+      } catch (cloudError) {
+        console.error('Error deleting from Cloudinary:', cloudError);
       }
     }
     
-    await Certificate.deleteOne({ _id: certificate._id });
+    // Remove CEU logs from linked credentials
+    if (certificate.credentials && certificate.credentials.length > 0) {
+      for (const credId of certificate.credentials) {
+        try {
+          const credential = await UserCredential.findOne({
+            _id: credId,
+            userId: req.user._id
+          });
+          
+          if (credential) {
+            await credential.removeCEU(certificate._id);
+          }
+        } catch (credError) {
+          console.error('Error removing CEU from credential:', credError);
+        }
+      }
+    }
+    
+    await certificate.deleteOne();
     
     res.json({ message: 'Certificate deleted successfully' });
   } catch (error) {
@@ -369,268 +570,49 @@ router.delete('/:id', protect, async (req, res) => {
   }
 });
 
-// POST /api/certificates/generate/:courseId - Generate certificate for course completion
-router.post('/generate/:courseId', protect, async (req, res) => {
+// POST /api/certificates/:id/revoke - Revoke a certificate (admin only)
+router.post('/:id/revoke', protect, async (req, res) => {
   try {
-    const courseId = req.params.courseId;
-    const userId = req.user._id;
-    
-    console.log('Generating certificate for course:', courseId, 'user:', userId);
-    
-    // Get user and course
-    const user = await User.findById(userId);
-    const course = await Course.findById(courseId);
-    
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' });
+    // Check if user is admin
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Only admins can revoke certificates' });
     }
     
-    if (!course) {
-      return res.status(404).json({ error: 'Course not found' });
-    }
+    const { reason } = req.body;
     
-    // Check user's progress - MUST complete evaluation and attestation first
-    const progress = await UserCourseProgress.findOne({ userId, courseId });
-    
-    if (!progress) {
-      return res.status(400).json({ error: 'You are not enrolled in this course' });
-    }
-    
-    // Check if course is completed (all lessons done)
-    if (!progress.completed) {
-      return res.status(400).json({ 
-        error: 'Course not completed',
-        message: 'You must complete all lessons before receiving a certificate'
-      });
-    }
-    
-    // Check if evaluation is required and completed
-    if (course.settings?.requireEvaluation !== false) {
-      if (!progress.evaluationCompleted) {
-        return res.status(400).json({ 
-          error: 'Evaluation required',
-          message: 'You must complete the course evaluation before receiving your certificate'
-        });
-      }
-    }
-    
-    // Check if attestation is required and completed
-    if (course.settings?.requireAttestation !== false) {
-      if (!progress.attestationCompleted) {
-        return res.status(400).json({ 
-          error: 'Attestation required',
-          message: 'You must complete the attestation before receiving your certificate'
-        });
-      }
-    }
-    
-    console.log('User:', user.name, 'Course:', course.title, '- All requirements met');
-    
-    // Check if certificate already exists
-    let certificate = await Certificate.findOne({ 
-      userId, 
-      courseId,
-      source: 'platform'
-    });
-    
-    const certNumber = certificate?.certificateNumber || 
-      generateCertificateNumber(courseId, userId, Date.now());
-    
-    // Extract objectives from course
-    let objectives = [];
-    
-    // First try course-level objectives
-    if (course.objectives && course.objectives.length > 0) {
-      objectives = course.objectives;
-    } 
-    // Then try module-level objectives
-    else if (course.modules && course.modules.length > 0) {
-      course.modules.forEach(module => {
-        if (module.objectives && module.objectives.length > 0) {
-          objectives.push(...module.objectives);
-        }
-      });
-    }
-    
-    // If still no objectives, generate based on course title
-    if (objectives.length === 0) {
-      objectives = [
-        `Identify key concepts and best practices related to ${course.title}`,
-        `Apply learned principles to professional counseling practice`,
-        `Demonstrate understanding through successful completion of course assessment`
-      ];
-    }
-    
-    // Prepare data with safe defaults
-    const certData = {
-      studentName: user.name || user.email || 'Student',
-      courseTitle: course.title || 'Course',
-      courseSubtitle: course.subtitle || '',
-      ceHours: course.ceuHours || 0,
-      ceCategory: course.ceuCategories?.[0]?.category || 'Core',
-      completionDate: new Date(),
-      certificateNumber: certNumber,
-      objectives: objectives.slice(0, 3),
-      verificationCode: null // Will be set after certificate is created
-    };
-    
-    console.log('Certificate data:', certData);
-    
-    // Create or get certificate record FIRST to get verification code
-    if (!certificate) {
-      certificate = await Certificate.create({
-        userId,
-        courseId,
-        title: course.title,
-        provider: 'GA Integrated Therapeutic Perspectives LLC',
-        completionDate: new Date(),
-        ceHours: course.ceuHours || 0,
-        category: course.ceuCategories?.[0]?.category || 'Core',
-        nbccApproved: course.ceuEligible || false,
-        acepNumber: course.ceuApprovalNumber || '7760',
-        certificateNumber: certNumber,
-        fileName: `${course.slug}_certificate.pdf`,
-        fileType: 'application/pdf',
-        source: 'platform'
-      });
-      
-      // Auto-log CEUs to all user credentials for this course category
-      const userCredentials = await UserCredential.find({ userId });
-      const courseCategory = course.ceuCategories?.[0]?.category || 'General';
-      
-      for (const credential of userCredentials) {
-        if (credential.totalCEUsRequired > 0) {
-          try {
-            await credential.addCEU({
-              hours: course.ceuHours || 0,
-              category: courseCategory,
-              description: course.title,
-              provider: 'GA Integrated Therapeutic Perspectives LLC',
-              date: new Date(),
-              certificateId: certificate._id,
-              courseId: courseId,
-              source: 'internal'
-            });
-            console.log(`Auto-logged ${course.ceuHours} CEUs to credential ${credential._id}`);
-          } catch (credError) {
-            console.error(`Failed to log CEU to credential ${credential._id}:`, credError);
-          }
-        }
-      }
-      
-      // Send course completion email (async, don't wait)
-      sendCourseCompletionEmail(userId, courseId, certificate._id)
-        .catch(err => console.error('Failed to send completion email:', err));
-    }
-    
-    // Now add verification code to cert data and generate PDF
-    certData.verificationCode = certificate.verificationCode;
-    
-    // Generate PDF with verification code
-    const pdfBuffer = await generateCertificate(certData);
-    
-    // Upload to Cloudinary
-    let fileUrl = null;
-    let fileKey = null;
-    
-    try {
-      const result = await new Promise((resolve, reject) => {
-        cloudinary.uploader.upload_stream({
-          folder: `certificates/${userId}`,
-          resource_type: 'raw',
-          public_id: `cert_${courseId}_${Date.now()}`,
-          format: 'pdf'
-        }, (error, result) => {
-          if (error) reject(error);
-          else resolve(result);
-        }).end(pdfBuffer);
-      });
-      
-      fileUrl = result.secure_url;
-      fileKey = result.public_id;
-      
-      // Update certificate with file URL
-      certificate.fileUrl = fileUrl;
-      certificate.fileKey = fileKey;
-      await certificate.save();
-    } catch (uploadError) {
-      console.error('Cloudinary upload error:', uploadError);
-    }
-    
-    // Return PDF directly for download
-    res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `attachment; filename="${course.slug}_certificate.pdf"`);
-    res.send(pdfBuffer);
-    
-  } catch (error) {
-    console.error('Generate certificate error:', error);
-    res.status(500).json({ error: 'Failed to generate certificate: ' + error.message });
-  }
-});
-
-// GET /api/certificates/download/:id - Download certificate PDF
-router.get('/download/:id', protect, async (req, res) => {
-  try {
-    const certificate = await Certificate.findOne({
-      _id: req.params.id,
-      userId: req.user._id
-    }).populate('courseId');
-    
+    const certificate = await Certificate.findById(req.params.id);
     if (!certificate) {
       return res.status(404).json({ error: 'Certificate not found' });
     }
     
-    // If we have a stored PDF URL, redirect to it
-    if (certificate.fileUrl) {
-      return res.redirect(certificate.fileUrl);
-    }
+    certificate.isRevoked = true;
+    certificate.revokedAt = new Date();
+    certificate.revokedBy = req.user._id;
+    certificate.revokedReason = reason || 'Revoked by administrator';
     
-    // If it's a platform certificate, regenerate
-    if (certificate.courseId && certificate.source === 'platform') {
-      const user = await User.findById(req.user._id);
-      const course = certificate.courseId;
-      
-      const pdfBuffer = await generateCertificate({
-        studentName: user.name,
-        courseTitle: course.title || certificate.title,
-        courseSubtitle: course.subtitle || '',
-        ceHours: certificate.ceHours || course.ceuHours || 0,
-        ceCategory: course.ceuCategories?.[0]?.category || 'Core',
-        completionDate: certificate.completionDate,
-        certificateNumber: certificate.certificateNumber,
-        objectives: course.objectives || []
-      });
-      
-      res.setHeader('Content-Type', 'application/pdf');
-      res.setHeader('Content-Disposition', `attachment; filename="certificate_${certificate._id}.pdf"`);
-      return res.send(pdfBuffer);
-    }
+    await certificate.save();
     
-    res.status(404).json({ error: 'Certificate file not available' });
-    
+    res.json({ 
+      message: 'Certificate revoked successfully',
+      certificate 
+    });
   } catch (error) {
-    console.error('Download certificate error:', error);
-    res.status(500).json({ error: 'Failed to download certificate' });
+    console.error('Revoke certificate error:', error);
+    res.status(500).json({ error: 'Failed to revoke certificate' });
   }
 });
 
-// ============================================
-// PUBLIC VERIFICATION (No auth required)
-// ============================================
-
-// @route   GET /api/certificates/verify/:code
-// @desc    Verify a certificate by code (public)
-// @access  Public
+// GET /api/certificates/verify/:code - Public verification endpoint
 router.get('/verify/:code', async (req, res) => {
   try {
     const { code } = req.params;
     
     const certificate = await Certificate.findOne({ 
-      verificationCode: code.toUpperCase() 
+      verificationCode: code 
     }).populate('userId', 'profile.firstName profile.lastName');
     
     if (!certificate) {
-      return res.status(404).json({ 
+      return res.json({ 
         valid: false, 
         error: 'Certificate not found. Please check the verification code.' 
       });
