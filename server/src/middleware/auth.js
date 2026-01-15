@@ -90,3 +90,5 @@ export const generateToken = (userId) => {
     { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
   );
 };
+// Alias for admin middleware (used in course routes)
+export const admin = requireAdmin;
