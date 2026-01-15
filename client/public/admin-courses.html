@@ -378,8 +378,23 @@
         const response = await fetch(`${API_URL}/api/admin/courses/${courseId}`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
         const data = await response.json();
-        currentCourse = data.course;
+        
+        // ✅ FIXED: Handle both response formats (data.course or data directly)
+        currentCourse = data.course || data;
+        
+        // Verify we have a valid course object
+        if (!currentCourse || !currentCourse.title) {
+          console.error('Invalid course data:', data);
+          throw new Error('Invalid course data received');
+        }
+        
+        console.log('Loaded course:', currentCourse);
         
         // Populate form
         document.getElementById('courseTitle').value = currentCourse.title || '';
@@ -387,8 +402,8 @@
         document.getElementById('courseSubtitle').value = currentCourse.subtitle || '';
         document.getElementById('courseDescription').value = currentCourse.description || '';
         document.getElementById('courseInstructor').value = currentCourse.instructor || 'GA Integrated Therapeutic Perspectives LLC';
-        document.getElementById('courseCeuHours').value = currentCourse.ceuHours || 0;
-        document.getElementById('courseCeuCategory').value = currentCourse.ceuCategories?.[0]?.category?.toLowerCase() || 'core';
+        document.getElementById('courseCeuHours').value = currentCourse.ceuHours || currentCourse.ceHours || 0;
+        document.getElementById('courseCeuCategory').value = currentCourse.ceuCategories?.[0]?.category?.toLowerCase() || currentCourse.category?.toLowerCase() || 'core';
         document.getElementById('courseAccessTier').value = currentCourse.accessTier || 'free';
         document.getElementById('courseStatus').value = currentCourse.status || 'draft';
         
@@ -397,7 +412,7 @@
         showEditor();
       } catch (error) {
         console.error('Load course error:', error);
-        alert('Failed to load course');
+        alert('Failed to load course: ' + error.message);
       }
     }
 
