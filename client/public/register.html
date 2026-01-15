@@ -206,7 +206,7 @@
   </footer>
 
   <script>
-    const API_URL = 'https://api.counselorready.com';
+    const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://api.counselorready.com';
     
     function togglePassword() {
       const input = document.getElementById('password');

@@ -468,7 +468,7 @@
   </div>
 
   <script>
-    const API_URL = 'https://api.counselorready.com';
+    const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://api.counselorready.com';
     let course = null;
     let progress = null;
     let currentModuleIndex = 0;
