@@ -197,18 +197,22 @@ courseSchema.index({ slug: 1 });
 courseSchema.index({ status: 1 });
 courseSchema.index({ accessType: 1 });
 
-// Virtual for total lessons
+// Virtual for total lessons (with null safety)
 courseSchema.virtual('totalLessons').get(function() {
-  return this.modules.reduce((total, mod) => total + mod.lessons.length, 0);
+  if (!this.modules || !Array.isArray(this.modules)) return 0;
+  return this.modules.reduce((total, mod) => total + (mod.lessons?.length || 0), 0);
 });
 
-// Virtual for total duration
+// Virtual for total duration (with null safety)
 courseSchema.virtual('totalDuration').get(function() {
+  if (!this.modules || !Array.isArray(this.modules)) return 0;
   let total = 0;
   this.modules.forEach(mod => {
-    mod.lessons.forEach(lesson => {
-      if (lesson.duration) total += lesson.duration;
-    });
+    if (mod.lessons && Array.isArray(mod.lessons)) {
+      mod.lessons.forEach(lesson => {
+        if (lesson.duration) total += lesson.duration;
+      });
+    }
   });
   return total;
 });
