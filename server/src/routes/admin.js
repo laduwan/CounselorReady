@@ -1592,52 +1592,124 @@ router.get('/courses', protect, adminOnly, async (req, res) => {
 });
 
 // @route   POST /api/admin/courses
-// @desc    Create a new course
+// @desc    Create a new course (supports AI-generated courses with modules)
 // @access  Admin only
 router.post('/courses', protect, adminOnly, async (req, res) => {
   try {
     const {
       title,
+      subtitle,
       description,
       category,
       ceuHours,
+      ceuCategories,
       isExternal,
       externalUrl,
       importType,
       source,
       status,
-      accessTier
+      accessTier,
+      modules,
+      objectives,
+      instructor,
+      settings,
+      approvingBody,
+      approvalNumber,
+      slug: providedSlug
     } = req.body;
     
     if (!title) {
       return res.status(400).json({ error: 'Course title is required' });
     }
     
-    // Generate slug from title
-    const slug = title.toLowerCase()
+    // Generate slug from title or use provided slug
+    const slug = providedSlug || (title.toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')
-      .replace(/(^-|-$)/g, '');
+      .replace(/(^-|-$)/g, '') + '-' + Date.now().toString(36));
     
-    const course = await Course.create({
+    // Process modules if provided (from AI Course Builder)
+    let processedModules = [];
+    if (modules && Array.isArray(modules)) {
+      processedModules = modules.map((mod, moduleIndex) => ({
+        title: mod.title || `Module ${moduleIndex + 1}`,
+        description: mod.description || '',
+        order: mod.order || moduleIndex + 1,
+        objectives: mod.objectives || [],
+        lessons: (mod.lessons || []).map((lesson, lessonIndex) => ({
+          title: lesson.title || `Lesson ${lessonIndex + 1}`,
+          type: lesson.type || 'text',
+          content: lesson.content || '',
+          videoUrl: lesson.videoUrl || '',
+          duration: lesson.duration || 10,
+          order: lesson.order || lessonIndex + 1,
+          isFree: lesson.isFree || false,
+          resources: lesson.resources || [],
+          transcript: lesson.transcript || '',
+          // Quiz-specific fields
+          questions: lesson.type === 'quiz' ? (lesson.questions || []).map(q => ({
+            question: q.question || '',
+            type: q.type || 'multiple_choice',
+            options: q.options || [],
+            correctAnswer: q.correctAnswer,
+            explanation: q.explanation || '',
+            points: q.points || 1
+          })) : [],
+          shuffleQuestions: lesson.shuffleQuestions || false,
+          shuffleOptions: lesson.shuffleOptions || false,
+          showExplanations: lesson.showExplanations !== false,
+          timeLimit: lesson.timeLimit || null
+        }))
+      }));
+    }
+    
+    // Build course data object
+    const courseData = {
       title,
       slug,
       description: description || '',
+      subtitle: subtitle || '',
       category: category || 'general',
       ceuHours: ceuHours || 0,
+      ceuEligible: ceuHours > 0,
+      ceuCategories: ceuCategories || [],
       isExternal: isExternal || false,
       externalUrl: externalUrl || '',
       importType: importType || 'native',
       source: source || 'native',
       status: status || 'draft',
-      accessTier: accessTier || 'free',
-      modules: [],
+      accessTier: accessTier || 'professional',
+      modules: processedModules,
+      objectives: objectives || [],
+      instructor: instructor || 'CounselorReady',
+      approvingBody: approvingBody || 'NBCC',
+      approvalNumber: approvalNumber || '',
       createdBy: req.user._id
-    });
+    };
+    
+    // Merge settings if provided
+    if (settings && typeof settings === 'object') {
+      courseData.settings = {
+        linearProgression: settings.linearProgression !== false,
+        enforceMinTime: settings.enforceMinTime || false,
+        minTimePercent: settings.minTimePercent || 80,
+        passingScore: settings.passingScore || 70,
+        requireEvaluation: settings.requireEvaluation !== false,
+        requireAttestation: settings.requireAttestation !== false,
+        certificateEnabled: settings.certificateEnabled !== false,
+        allowRetakes: settings.allowRetakes !== false,
+        retakePolicy: settings.retakePolicy || 'unlimited',
+        maxRetakes: settings.maxRetakes || 3
+      };
+    }
+    
+    const course = await Course.create(courseData);
+    
+    console.log(`Course created: "${course.title}" with ${course.modules.length} modules`);
     
     res.status(201).json({ message: 'Course created', course });
   } catch (error) {
     console.error('Create course error:', error);
-    res.status(500).json({ error: 'Failed to create course' });
+    res.status(500).json({ error: 'Failed to create course: ' + error.message });
   }
 });
 
