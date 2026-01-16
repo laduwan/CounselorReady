@@ -126,6 +126,10 @@
           <button onclick="showScormImport()" class="bg-forest-100 hover:bg-forest-200 text-forest-800 font-medium px-4 py-2 rounded-xl">
             📦 Import SCORM
           </button>
+          <button onclick="showAICourseBuilder()" class="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-semibold px-4 py-2 rounded-xl flex items-center gap-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+            Create with AI
+          </button>
           <button onclick="showNewCourseForm()" class="bg-burgundy-800 hover:bg-burgundy-900 text-white font-semibold px-4 py-2 rounded-xl">
             + New Course
           </button>
@@ -152,6 +156,205 @@
           <div class="flex justify-end gap-4">
             <button onclick="closeScormImport()" class="px-6 py-2 text-hunter-600 hover:text-hunter-700">Cancel</button>
             <button onclick="importScorm()" class="bg-burgundy-800 hover:bg-burgundy-900 text-white font-semibold px-6 py-2 rounded-lg">Import</button>
+          </div>
+        </div>
+      </div>
+      
+      <!-- AI Course Builder Modal -->
+      <div id="aiCourseBuilderModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+          
+          <!-- Header -->
+          <div class="bg-gradient-to-r from-purple-600 to-indigo-600 p-6 text-white">
+            <div class="flex justify-between items-center">
+              <div class="flex items-center gap-3">
+                <div class="w-12 h-12 bg-white bg-opacity-20 rounded-xl flex items-center justify-center">
+                  <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                  </svg>
+                </div>
+                <div>
+                  <h2 class="text-2xl font-bold">AI Course Builder</h2>
+                  <p class="text-purple-200 text-sm">Upload your content, Claude builds the course</p>
+                </div>
+              </div>
+              <button onclick="closeAICourseBuilder()" class="text-white hover:text-purple-200 text-3xl leading-none">&times;</button>
+            </div>
+          </div>
+          
+          <!-- Step Indicator -->
+          <div class="bg-purple-50 px-6 py-3 border-b border-purple-100">
+            <div class="flex items-center justify-center gap-4">
+              <div id="step1Indicator" class="flex items-center gap-2">
+                <div class="w-8 h-8 rounded-full bg-purple-600 text-white flex items-center justify-center font-bold text-sm">1</div>
+                <span class="text-sm font-medium text-purple-900">Upload</span>
+              </div>
+              <div class="w-8 h-0.5 bg-purple-200"></div>
+              <div id="step2Indicator" class="flex items-center gap-2 opacity-50">
+                <div class="w-8 h-8 rounded-full bg-purple-200 text-purple-600 flex items-center justify-center font-bold text-sm">2</div>
+                <span class="text-sm font-medium text-purple-400">Review</span>
+              </div>
+              <div class="w-8 h-0.5 bg-purple-200"></div>
+              <div id="step3Indicator" class="flex items-center gap-2 opacity-50">
+                <div class="w-8 h-8 rounded-full bg-purple-200 text-purple-600 flex items-center justify-center font-bold text-sm">3</div>
+                <span class="text-sm font-medium text-purple-400">Save</span>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Content Area -->
+          <div class="flex-1 overflow-y-auto p-6">
+            
+            <!-- Step 1: Upload Content -->
+            <div id="aiBuilderStep1" class="space-y-5">
+              
+              <!-- File Upload -->
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Upload Your Course Material</label>
+                <div id="aiFileDropZone" 
+                     class="border-2 border-dashed border-purple-300 rounded-xl p-6 text-center hover:border-purple-500 hover:bg-purple-50 transition cursor-pointer"
+                     onclick="document.getElementById('aiCourseFileInput').click()"
+                     ondrop="handleAICourseFileDrop(event)" 
+                     ondragover="event.preventDefault(); this.classList.add('border-purple-500', 'bg-purple-50')"
+                     ondragleave="this.classList.remove('border-purple-500', 'bg-purple-50')">
+                  <input type="file" id="aiCourseFileInput" accept=".pdf,.doc,.docx,.txt" class="hidden" onchange="handleAICourseFileSelect(event)">
+                  <svg class="w-10 h-10 text-purple-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                  </svg>
+                  <p class="font-medium text-gray-700">Drop your file here or click to browse</p>
+                  <p class="text-sm text-gray-500 mt-1">PDF, Word, or text files</p>
+                </div>
+                <p id="aiSelectedFileName" class="text-sm text-purple-600 mt-2 hidden"></p>
+              </div>
+              
+              <!-- OR Divider -->
+              <div class="flex items-center gap-4">
+                <div class="flex-1 h-px bg-gray-200"></div>
+                <span class="text-sm text-gray-500">OR</span>
+                <div class="flex-1 h-px bg-gray-200"></div>
+              </div>
+              
+              <!-- Paste Content -->
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Paste Your Content / Outline</label>
+                <textarea id="aiCourseContentInput" rows="5" 
+                          placeholder="Paste your course content, outline, or notes here..."
+                          class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm"></textarea>
+              </div>
+              
+              <!-- Key Points -->
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                  Key Points to Emphasize <span class="font-normal text-gray-400">(optional)</span>
+                </label>
+                <textarea id="aiKeyPointsInput" rows="2" 
+                          placeholder="Specific points or concepts you want emphasized..."
+                          class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm"></textarea>
+              </div>
+              
+              <!-- Settings -->
+              <div class="bg-gray-50 rounded-xl p-4 space-y-4">
+                <div class="grid grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-sm text-gray-600 mb-1">CE Category</label>
+                    <select id="aiCourseCategory" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                      <option value="core">Core / General</option>
+                      <option value="ethics">Ethics</option>
+                      <option value="supervision">Supervision</option>
+                      <option value="telehealth">Telehealth</option>
+                      <option value="cultural">Cultural Diversity</option>
+                      <option value="trauma">Trauma</option>
+                      <option value="substance">Substance Abuse</option>
+                      <option value="crisis">Crisis / Suicide</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="block text-sm text-gray-600 mb-1">Target CE Hours</label>
+                    <input type="number" id="aiCourseCEHours" value="3" min="0.5" max="40" step="0.5"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                  </div>
+                </div>
+                <div class="flex flex-wrap gap-4">
+                  <label class="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" id="aiGenerateQuizzes" checked class="w-4 h-4 text-purple-600 rounded">
+                    <span class="text-sm text-gray-700">Generate quizzes</span>
+                  </label>
+                  <label class="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" id="aiGenerateObjectives" checked class="w-4 h-4 text-purple-600 rounded">
+                    <span class="text-sm text-gray-700">Generate learning objectives</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Step 2: Review -->
+            <div id="aiBuilderStep2" class="hidden space-y-5">
+              <div class="bg-white border border-gray-200 rounded-xl p-4">
+                <h3 class="font-semibold text-gray-800 mb-3">Course Overview</h3>
+                <div class="grid grid-cols-2 gap-3">
+                  <div>
+                    <label class="block text-xs text-gray-500 mb-1">Title</label>
+                    <input type="text" id="aiGenTitle" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                  </div>
+                  <div>
+                    <label class="block text-xs text-gray-500 mb-1">CE Hours</label>
+                    <input type="number" id="aiGenCEHours" step="0.5" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                  </div>
+                </div>
+                <div class="mt-3">
+                  <label class="block text-xs text-gray-500 mb-1">Description</label>
+                  <textarea id="aiGenDescription" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"></textarea>
+                </div>
+                <div class="mt-3">
+                  <label class="block text-xs text-gray-500 mb-1">Learning Objectives</label>
+                  <div id="aiGenObjectives" class="space-y-1"></div>
+                </div>
+              </div>
+              
+              <div class="bg-white border border-gray-200 rounded-xl overflow-hidden">
+                <div class="bg-gray-50 px-4 py-2 border-b border-gray-200">
+                  <h3 class="font-semibold text-gray-800 text-sm">Course Structure</h3>
+                </div>
+                <div id="aiGenModules" class="divide-y divide-gray-100 max-h-[250px] overflow-y-auto"></div>
+              </div>
+              
+              <div id="aiGenQuizSection" class="hidden bg-white border border-purple-200 rounded-xl overflow-hidden">
+                <div class="bg-purple-50 px-4 py-2 border-b border-purple-100 flex justify-between items-center">
+                  <h3 class="font-semibold text-purple-800 text-sm">Generated Quizzes</h3>
+                  <span id="aiGenQuizCount" class="text-xs text-purple-600">0 questions</span>
+                </div>
+                <div id="aiGenQuizzes" class="p-3 max-h-[200px] overflow-y-auto text-sm"></div>
+              </div>
+            </div>
+            
+            <!-- Step 3: Saving -->
+            <div id="aiBuilderStep3" class="hidden text-center py-12">
+              <div class="w-16 h-16 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin mx-auto mb-4"></div>
+              <h3 class="text-xl font-semibold text-gray-800 mb-2">Creating Your Course...</h3>
+              <p class="text-gray-500">This may take a moment</p>
+            </div>
+            
+            <!-- Generating State -->
+            <div id="aiGeneratingState" class="hidden text-center py-12">
+              <div class="w-20 h-20 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin mx-auto mb-6"></div>
+              <h3 class="text-xl font-semibold text-gray-800 mb-2">Claude is building your course...</h3>
+              <p class="text-gray-500 mb-4">Analyzing content and generating structure</p>
+              <div id="aiGenerationStatus" class="text-sm text-purple-600">Extracting content...</div>
+            </div>
+          </div>
+          
+          <!-- Footer -->
+          <div class="bg-gray-50 px-6 py-4 border-t border-gray-200 flex justify-between items-center">
+            <button id="aiBuilderBackBtn" onclick="aiBuilderBack()" class="hidden px-4 py-2 text-gray-600 hover:text-gray-800 flex items-center gap-1">
+              ← Back
+            </button>
+            <div class="flex-1"></div>
+            <div class="flex gap-3">
+              <button onclick="closeAICourseBuilder()" class="px-5 py-2 text-gray-600 hover:text-gray-800">Cancel</button>
+              <button id="aiBuilderNextBtn" onclick="aiBuilderNext()" class="bg-purple-600 hover:bg-purple-700 text-white font-semibold px-5 py-2 rounded-xl flex items-center gap-2">
+                Generate Course ⚡
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -1860,6 +2063,246 @@
     }
     
     function closeQuestionModal() { document.getElementById('questionModal').classList.add('hidden'); editingQuestionIndex = null; }
+    
+    // ============================================
+    // AI COURSE BUILDER FUNCTIONS
+    // ============================================
+    
+    let aiBuilderStep = 1;
+    let aiGeneratedCourse = null;
+    let aiUploadedFile = null;
+    
+    function showAICourseBuilder() {
+      aiBuilderStep = 1;
+      aiGeneratedCourse = null;
+      aiUploadedFile = null;
+      document.getElementById('aiCourseFileInput').value = '';
+      document.getElementById('aiSelectedFileName').classList.add('hidden');
+      document.getElementById('aiCourseContentInput').value = '';
+      document.getElementById('aiKeyPointsInput').value = '';
+      document.getElementById('aiCourseCEHours').value = '3';
+      document.getElementById('aiGenerateQuizzes').checked = true;
+      document.getElementById('aiGenerateObjectives').checked = true;
+      updateAIBuilderUI();
+      document.getElementById('aiCourseBuilderModal').classList.remove('hidden');
+    }
+    
+    function closeAICourseBuilder() {
+      document.getElementById('aiCourseBuilderModal').classList.add('hidden');
+    }
+    
+    function handleAICourseFileSelect(event) {
+      const file = event.target.files[0];
+      if (file) {
+        aiUploadedFile = file;
+        document.getElementById('aiSelectedFileName').textContent = '📄 ' + file.name;
+        document.getElementById('aiSelectedFileName').classList.remove('hidden');
+      }
+    }
+    
+    function handleAICourseFileDrop(event) {
+      event.preventDefault();
+      event.target.classList.remove('border-purple-500', 'bg-purple-50');
+      const file = event.dataTransfer.files[0];
+      if (file) {
+        aiUploadedFile = file;
+        document.getElementById('aiCourseFileInput').files = event.dataTransfer.files;
+        document.getElementById('aiSelectedFileName').textContent = '📄 ' + file.name;
+        document.getElementById('aiSelectedFileName').classList.remove('hidden');
+      }
+    }
+    
+    function updateAIBuilderUI() {
+      document.getElementById('aiBuilderStep1').classList.add('hidden');
+      document.getElementById('aiBuilderStep2').classList.add('hidden');
+      document.getElementById('aiBuilderStep3').classList.add('hidden');
+      document.getElementById('aiGeneratingState').classList.add('hidden');
+      
+      ['step1Indicator', 'step2Indicator', 'step3Indicator'].forEach((id, idx) => {
+        const el = document.getElementById(id);
+        const stepNum = idx + 1;
+        if (stepNum <= aiBuilderStep) {
+          el.classList.remove('opacity-50');
+          el.querySelector('div').classList.remove('bg-purple-200', 'text-purple-600');
+          el.querySelector('div').classList.add('bg-purple-600', 'text-white');
+        } else {
+          el.classList.add('opacity-50');
+          el.querySelector('div').classList.add('bg-purple-200', 'text-purple-600');
+          el.querySelector('div').classList.remove('bg-purple-600', 'text-white');
+        }
+      });
+      
+      document.getElementById('aiBuilderStep' + aiBuilderStep).classList.remove('hidden');
+      
+      const backBtn = document.getElementById('aiBuilderBackBtn');
+      const nextBtn = document.getElementById('aiBuilderNextBtn');
+      
+      if (aiBuilderStep === 1) {
+        backBtn.classList.add('hidden');
+        nextBtn.innerHTML = 'Generate Course ⚡';
+      } else if (aiBuilderStep === 2) {
+        backBtn.classList.remove('hidden');
+        nextBtn.innerHTML = 'Create Course ✓';
+      }
+    }
+    
+    function aiBuilderBack() {
+      if (aiBuilderStep > 1) { aiBuilderStep--; updateAIBuilderUI(); }
+    }
+    
+    async function aiBuilderNext() {
+      if (aiBuilderStep === 1) await generateCourseWithAI();
+      else if (aiBuilderStep === 2) await saveGeneratedCourse();
+    }
+    
+    async function generateCourseWithAI() {
+      const content = document.getElementById('aiCourseContentInput').value.trim();
+      const keyPoints = document.getElementById('aiKeyPointsInput').value.trim();
+      const category = document.getElementById('aiCourseCategory').value;
+      const ceHours = parseFloat(document.getElementById('aiCourseCEHours').value) || 3;
+      const generateQuizzes = document.getElementById('aiGenerateQuizzes').checked;
+      const generateObjectives = document.getElementById('aiGenerateObjectives').checked;
+      
+      if (!aiUploadedFile && !content) {
+        alert('Please upload a file or paste your course content');
+        return;
+      }
+      
+      document.getElementById('aiBuilderStep1').classList.add('hidden');
+      document.getElementById('aiGeneratingState').classList.remove('hidden');
+      
+      const token = localStorage.getItem('token');
+      
+      try {
+        let requestBody = { category, ceHours, generateQuizzes, generateObjectives, keyPoints };
+        
+        if (aiUploadedFile) {
+          const base64 = await fileToBase64(aiUploadedFile);
+          requestBody.fileData = base64;
+          requestBody.fileName = aiUploadedFile.name;
+          requestBody.fileType = aiUploadedFile.type;
+          document.getElementById('aiGenerationStatus').textContent = 'Reading document...';
+        }
+        
+        if (content) requestBody.content = content;
+        
+        document.getElementById('aiGenerationStatus').textContent = 'Claude is analyzing your content...';
+        
+        const response = await fetch(`${API_URL}/api/admin/course/generate`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify(requestBody)
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok && data.course) {
+          aiGeneratedCourse = data.course;
+          renderGeneratedCourse();
+          aiBuilderStep = 2;
+          updateAIBuilderUI();
+        } else {
+          throw new Error(data.error || 'Failed to generate course');
+        }
+      } catch (error) {
+        console.error('Course generation error:', error);
+        alert('Failed to generate course: ' + error.message);
+        document.getElementById('aiGeneratingState').classList.add('hidden');
+        document.getElementById('aiBuilderStep1').classList.remove('hidden');
+      }
+    }
+    
+    function renderGeneratedCourse() {
+      if (!aiGeneratedCourse) return;
+      const c = aiGeneratedCourse;
+      
+      document.getElementById('aiGenTitle').value = c.title || '';
+      document.getElementById('aiGenCEHours').value = c.ceuHours || 3;
+      document.getElementById('aiGenDescription').value = c.description || '';
+      
+      const objEl = document.getElementById('aiGenObjectives');
+      objEl.innerHTML = (c.objectives || []).map((obj, i) => `
+        <div class="flex items-center gap-2">
+          <span class="text-green-500 text-xs">✓</span>
+          <input type="text" value="${escapeHtml(obj)}" onchange="aiGeneratedCourse.objectives[${i}]=this.value" class="flex-1 px-2 py-1 border border-gray-200 rounded text-xs">
+        </div>
+      `).join('') || '<p class="text-gray-400 text-xs">No objectives</p>';
+      
+      const modEl = document.getElementById('aiGenModules');
+      modEl.innerHTML = (c.modules || []).map((m, mi) => `
+        <div class="p-3">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="bg-purple-100 text-purple-700 text-xs font-medium px-2 py-0.5 rounded">M${mi+1}</span>
+            <input type="text" value="${escapeHtml(m.title)}" onchange="aiGeneratedCourse.modules[${mi}].title=this.value" class="flex-1 font-medium px-2 py-1 border border-gray-200 rounded text-sm">
+          </div>
+          <div class="ml-6 space-y-1">
+            ${(m.lessons||[]).map((l, li) => `
+              <div class="flex items-center gap-2 text-xs">
+                <span class="w-5 h-5 rounded-full ${l.type==='quiz'?'bg-green-100 text-green-600':l.type==='video'?'bg-blue-100 text-blue-600':'bg-gray-100 text-gray-500'} flex items-center justify-center">${l.type==='quiz'?'?':l.type==='video'?'▶':'📄'}</span>
+                <input type="text" value="${escapeHtml(l.title)}" onchange="aiGeneratedCourse.modules[${mi}].lessons[${li}].title=this.value" class="flex-1 px-2 py-1 border border-gray-200 rounded">
+                <span class="text-gray-400">${l.duration||10}m</span>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `).join('') || '<p class="p-3 text-gray-400">No modules</p>';
+      
+      let totalQ = 0;
+      (c.modules||[]).forEach(m => (m.lessons||[]).forEach(l => { if(l.type==='quiz' && l.questions) totalQ += l.questions.length; }));
+      
+      document.getElementById('aiGenQuizCount').textContent = totalQ + ' questions';
+      document.getElementById('aiGenQuizSection').classList.toggle('hidden', totalQ === 0);
+      
+      if (totalQ > 0) {
+        let qHtml = '';
+        c.modules.forEach(m => m.lessons.forEach(l => {
+          if (l.type === 'quiz' && l.questions && l.questions.length) {
+            qHtml += `<div class="mb-3"><p class="font-medium text-purple-700 text-xs mb-1">${escapeHtml(l.title)}</p>`;
+            qHtml += l.questions.map((q,qi) => `<div class="ml-3 text-xs text-gray-600">${qi+1}. ${escapeHtml(q.question).substring(0,60)}...</div>`).join('');
+            qHtml += '</div>';
+          }
+        }));
+        document.getElementById('aiGenQuizzes').innerHTML = qHtml;
+      }
+    }
+    
+    async function saveGeneratedCourse() {
+      if (!aiGeneratedCourse) return;
+      
+      aiGeneratedCourse.title = document.getElementById('aiGenTitle').value;
+      aiGeneratedCourse.ceuHours = parseFloat(document.getElementById('aiGenCEHours').value) || 3;
+      aiGeneratedCourse.description = document.getElementById('aiGenDescription').value;
+      aiGeneratedCourse.slug = aiGeneratedCourse.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') + '-' + Date.now().toString(36);
+      
+      aiBuilderStep = 3;
+      updateAIBuilderUI();
+      
+      const token = localStorage.getItem('token');
+      
+      try {
+        const response = await fetch(`${API_URL}/api/admin/courses`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify(aiGeneratedCourse)
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok && data.course) {
+          alert('✅ Course created successfully!');
+          closeAICourseBuilder();
+          loadCourses();
+          setTimeout(() => editCourse(data.course._id), 500);
+        } else {
+          throw new Error(data.error || 'Failed to save course');
+        }
+      } catch (error) {
+        console.error('Save error:', error);
+        alert('Failed to save: ' + error.message);
+        aiBuilderStep = 2;
+        updateAIBuilderUI();
+      }
+    }
   </script>
 
     </main>
