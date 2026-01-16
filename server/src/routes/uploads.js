@@ -6,11 +6,11 @@
 
 import express from 'express';
 import multer from 'multer';
-import { protect, requireAdmin } from '../../middleware/auth.js';
-import { uploadVideo, uploadResource, deleteFile, getFileInfo, getSignedUploadUrl } from '../../utils/r2Storage.js';
-import User from '../../models/User.js';
-import Course from '../../models/Course.js';
-import StorageUsage from '../../models/StorageUsage.js';
+import { protect, requireAdmin } from '../middleware/auth.js';
+import { uploadVideo, uploadResource, deleteFile, getFileInfo, getSignedUploadUrl } from '../utils/r2Storage.js';
+import User from '../models/User.js';
+import Course from '../models/Course.js';
+import StorageUsage from '../models/StorageUsage.js';
 
 const router = express.Router();
 

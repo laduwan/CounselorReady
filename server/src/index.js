@@ -26,7 +26,7 @@ import ltiRoutes from './routes/lti.js';
 import xapiRoutes from './routes/xapi.js';
 import cebrokerRoutes from './routes/cebroker.js';
 import helpRoutes from './routes/help.js';
-import uploadsRoutes from './routes/https:/uploads.js';
+import uploadsRoutes from './routes/uploads.js';
 
 // ES Module fix for __dirname
 const __filename = fileURLToPath(import.meta.url);
