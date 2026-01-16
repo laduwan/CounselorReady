@@ -3,6 +3,7 @@ export default {
   content: [
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
+    "./public/**/*.html",
   ],
   theme: {
     extend: {
@@ -46,10 +47,46 @@ export default {
           800: '#3c454d',
           900: '#34495E', // Secondary - Navy
           950: '#21282f',
+        },
+        // Additional colors for public HTML files
+        burgundy: {
+          50: '#fdf5f6',
+          100: '#fae8eb',
+          200: '#f5d0d6',
+          300: '#eba9b5',
+          400: '#dd768a',
+          500: '#c94d65',
+          600: '#a83350',
+          700: '#8b2542',
+          800: '#6b1d34',
+          900: '#4a1524',
+          950: '#2d0a14'
+        },
+        forest: {
+          50: '#f3f6f4',
+          100: '#e3ebe5',
+          200: '#c8d7cc',
+          300: '#a1bba8',
+          400: '#759a7f',
+          500: '#547c5f',
+          600: '#40634a',
+          700: '#34503d',
+          800: '#2b4133',
+          900: '#1f3025',
+          950: '#121c16'
+        },
+        gold: {
+          50: '#fefce8',
+          100: '#fef9c3',
+          200: '#fef08a',
+          300: '#fde047',
+          400: '#facc15',
+          500: '#d4a012'
         }
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
+        display: ['Cormorant Garamond', 'Georgia', 'serif'],
       }
     },
   },

@@ -1,0 +1,25 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom component styles */
+@layer components {
+  .admin-nav-link {
+    @apply flex items-center gap-3 px-4 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 hover:text-burgundy-700 transition-colors;
+  }
+  
+  .admin-nav-link.active {
+    @apply bg-burgundy-50 text-burgundy-800 font-medium;
+  }
+  
+  .font-display {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+  }
+}
+
+/* Base styles */
+@layer base {
+  body {
+    font-family: 'Lato', system-ui, sans-serif;
+  }
+}

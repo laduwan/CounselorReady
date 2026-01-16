@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "build:css": "npx tailwindcss -i ./src/styles.css -o ./public/styles.css --minify"
   },
   "dependencies": {
     "react": "^18.2.0",
