@@ -2215,4 +2215,230 @@ router.put('/courses/:courseId/module/:moduleIndex/reorder-lessons', protect, ad
   }
 });
 
+// @route   POST /api/admin/quiz/generate
+// @desc    Generate quiz questions using AI from PDF, outline, or content
+// @access  Admin only
+router.post('/quiz/generate', protect, adminOnly, async (req, res) => {
+  try {
+    if (!anthropic) {
+      return res.status(500).json({ error: 'AI service not configured. Set ANTHROPIC_API_KEY in environment.' });
+    }
+    
+    const { mode, pdfData, fileName, outline, content, moduleTitle, questionCount = 5 } = req.body;
+    
+    let prompt = '';
+    let messages = [];
+    
+    if (mode === 'pdf') {
+      if (!pdfData) {
+        return res.status(400).json({ error: 'No PDF data provided' });
+      }
+      
+      prompt = `You are an expert at extracting quiz questions from educational documents for continuing education courses for mental health counselors.
+
+Analyze the provided PDF document and extract all quiz questions you can find. If the document contains a quiz or test, extract the questions, options, correct answers, and any explanations provided.
+
+If the document doesn't contain explicit quiz questions but contains educational content, generate appropriate quiz questions based on the key concepts.
+
+Return the questions in this exact JSON format:
+{
+  "questions": [
+    {
+      "question": "The question text",
+      "type": "multiple_choice",
+      "options": ["Option A", "Option B", "Option C", "Option D"],
+      "correctAnswer": 0,
+      "explanation": "Why this is the correct answer",
+      "points": 1
+    }
+  ]
+}
+
+For question types:
+- "multiple_choice" - single correct answer, correctAnswer is the index (0-based)
+- "multiple_select" - multiple correct answers, correctAnswer is an array of indices
+- "true_false" - correctAnswer is true or false
+
+Important:
+- Generate clinically relevant questions appropriate for licensed professional counselors
+- Include explanations that reinforce learning
+- Ensure questions test understanding, not just memorization
+- Cover key ethical considerations where relevant
+
+Return ONLY valid JSON, no other text.`;
+
+      messages = [{
+        role: 'user',
+        content: [
+          {
+            type: 'document',
+            source: {
+              type: 'base64',
+              media_type: 'application/pdf',
+              data: pdfData
+            }
+          },
+          { type: 'text', text: prompt }
+        ]
+      }];
+      
+    } else if (mode === 'outline') {
+      if (!outline) {
+        return res.status(400).json({ error: 'No outline provided' });
+      }
+      
+      prompt = `You are an expert quiz creator for continuing education courses for mental health counselors.
+
+Based on the following outline or notes, generate comprehensive quiz questions:
+
+${outline}
+
+Create questions that:
+1. Test understanding of key concepts
+2. Are appropriate for licensed professional counselors
+3. Include ethical considerations where relevant
+4. Have clear, unambiguous correct answers
+5. Include helpful explanations
+
+Return the questions in this exact JSON format:
+{
+  "questions": [
+    {
+      "question": "The question text",
+      "type": "multiple_choice",
+      "options": ["Option A", "Option B", "Option C", "Option D"],
+      "correctAnswer": 0,
+      "explanation": "Why this is the correct answer",
+      "points": 1
+    }
+  ]
+}
+
+For question types:
+- "multiple_choice" - single correct answer, correctAnswer is the index (0-based)
+- "multiple_select" - multiple correct answers, correctAnswer is an array of indices
+- "true_false" - correctAnswer is true or false
+
+Return ONLY valid JSON, no other text.`;
+
+      messages = [{ role: 'user', content: prompt }];
+      
+    } else if (mode === 'content') {
+      if (!content) {
+        return res.status(400).json({ error: 'No content provided' });
+      }
+      
+      const contextInfo = moduleTitle ? `Module: ${moduleTitle}\n\n` : '';
+      
+      prompt = `You are an expert quiz creator for continuing education courses for mental health counselors.
+
+Based on the following course content, generate exactly ${questionCount} quiz questions:
+
+${contextInfo}${content}
+
+Create questions that:
+1. Test understanding of the key learning points
+2. Are appropriate for licensed professional counselors  
+3. Include ethical considerations where relevant
+4. Cover the most important concepts from the content
+5. Have clear, unambiguous correct answers
+6. Include helpful explanations that reinforce learning
+
+Vary the question types (multiple choice, true/false, multiple select) for engagement.
+
+Return the questions in this exact JSON format:
+{
+  "questions": [
+    {
+      "question": "The question text",
+      "type": "multiple_choice",
+      "options": ["Option A", "Option B", "Option C", "Option D"],
+      "correctAnswer": 0,
+      "explanation": "Why this is the correct answer",
+      "points": 1
+    }
+  ]
+}
+
+For question types:
+- "multiple_choice" - single correct answer, correctAnswer is the index (0-based)
+- "multiple_select" - multiple correct answers, correctAnswer is an array of indices  
+- "true_false" - correctAnswer is true or false
+
+Return ONLY valid JSON, no other text.`;
+
+      messages = [{ role: 'user', content: prompt }];
+    } else {
+      return res.status(400).json({ error: 'Invalid mode. Use: pdf, outline, or content' });
+    }
+    
+    const response = await anthropic.messages.create({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 4000,
+      messages: messages
+    });
+    
+    const responseText = response.content[0].text;
+    
+    let result;
+    try {
+      const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        result = JSON.parse(jsonMatch[0]);
+      } else {
+        throw new Error('No JSON found in response');
+      }
+    } catch (parseError) {
+      console.error('Failed to parse AI response:', parseError);
+      return res.status(500).json({ error: 'Failed to parse AI response' });
+    }
+    
+    if (!result.questions || !Array.isArray(result.questions)) {
+      return res.status(500).json({ error: 'Invalid response structure from AI' });
+    }
+    
+    // Validate questions
+    const validatedQuestions = result.questions.map((q, idx) => {
+      if (!q.question) q.question = `Question ${idx + 1}`;
+      if (!['multiple_choice', 'multiple_select', 'true_false'].includes(q.type)) q.type = 'multiple_choice';
+      
+      if (q.type !== 'true_false' && (!q.options || q.options.length < 2)) {
+        q.options = ['Option A', 'Option B', 'Option C', 'Option D'];
+        q.correctAnswer = 0;
+      }
+      
+      if (q.type === 'true_false') {
+        q.correctAnswer = q.correctAnswer === true || q.correctAnswer === 'true';
+        q.options = null;
+      } else if (q.type === 'multiple_select') {
+        if (!Array.isArray(q.correctAnswer)) q.correctAnswer = [0];
+      } else {
+        if (typeof q.correctAnswer !== 'number') q.correctAnswer = 0;
+      }
+      
+      q.points = q.points || 1;
+      
+      return {
+        question: q.question,
+        type: q.type,
+        options: q.options,
+        correctAnswer: q.correctAnswer,
+        explanation: q.explanation || '',
+        points: q.points
+      };
+    });
+    
+    res.json({
+      success: true,
+      questions: validatedQuestions,
+      count: validatedQuestions.length,
+      mode: mode
+    });
+    
+  } catch (error) {
+    console.error('Quiz generation error:', error);
+    res.status(500).json({ error: 'Failed to generate quiz: ' + error.message });
+  }
+});
+
 export default router;
