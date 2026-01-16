@@ -1,6 +1,6 @@
 import express from 'express';
 import HelpArticle from '../models/HelpArticle.js';
-import { authenticateToken, requireAdmin } from '../middleware/auth.js';
+import { protect, requireAdmin } from '../middleware/auth.js';
 
 const router = express.Router();
 
@@ -160,7 +160,7 @@ router.post('/article/:slug/feedback', async (req, res) => {
 // ============================================
 
 // Get all articles (admin - includes drafts)
-router.get('/admin/articles', authenticateToken, requireAdmin, async (req, res) => {
+router.get('/admin/articles', protect, requireAdmin, async (req, res) => {
   try {
     const { status, category, audience } = req.query;
     
@@ -186,7 +186,7 @@ router.get('/admin/articles', authenticateToken, requireAdmin, async (req, res) 
 });
 
 // Get single article for editing (admin)
-router.get('/admin/article/:id', authenticateToken, requireAdmin, async (req, res) => {
+router.get('/admin/article/:id', protect, requireAdmin, async (req, res) => {
   try {
     const article = await HelpArticle.findById(req.params.id)
       .populate('relatedArticles', 'title slug category')
@@ -208,7 +208,7 @@ router.get('/admin/article/:id', authenticateToken, requireAdmin, async (req, re
 });
 
 // Create new article (admin)
-router.post('/admin/article', authenticateToken, requireAdmin, async (req, res) => {
+router.post('/admin/article', protect, requireAdmin, async (req, res) => {
   try {
     const {
       title, slug, summary, content, category, audience,
@@ -252,7 +252,7 @@ router.post('/admin/article', authenticateToken, requireAdmin, async (req, res) 
 });
 
 // Update article (admin)
-router.put('/admin/article/:id', authenticateToken, requireAdmin, async (req, res) => {
+router.put('/admin/article/:id', protect, requireAdmin, async (req, res) => {
   try {
     const {
       title, slug, summary, content, category, audience,
@@ -302,7 +302,7 @@ router.put('/admin/article/:id', authenticateToken, requireAdmin, async (req, re
 });
 
 // Delete article (admin)
-router.delete('/admin/article/:id', authenticateToken, requireAdmin, async (req, res) => {
+router.delete('/admin/article/:id', protect, requireAdmin, async (req, res) => {
   try {
     const article = await HelpArticle.findByIdAndDelete(req.params.id);
     
@@ -321,7 +321,7 @@ router.delete('/admin/article/:id', authenticateToken, requireAdmin, async (req,
 });
 
 // Bulk update article order (admin)
-router.post('/admin/articles/reorder', authenticateToken, requireAdmin, async (req, res) => {
+router.post('/admin/articles/reorder', protect, requireAdmin, async (req, res) => {
   try {
     const { updates } = req.body; // Array of { id, order }
     
@@ -340,7 +340,7 @@ router.post('/admin/articles/reorder', authenticateToken, requireAdmin, async (r
 });
 
 // Get article analytics (admin)
-router.get('/admin/analytics', authenticateToken, requireAdmin, async (req, res) => {
+router.get('/admin/analytics', protect, requireAdmin, async (req, res) => {
   try {
     // Most viewed articles
     const topViewed = await HelpArticle.find({ status: 'published' })
@@ -401,7 +401,7 @@ router.get('/admin/analytics', authenticateToken, requireAdmin, async (req, res)
 });
 
 // Seed initial help articles (admin - one time use)
-router.post('/admin/seed', authenticateToken, requireAdmin, async (req, res) => {
+router.post('/admin/seed', protect, requireAdmin, async (req, res) => {
   try {
     const existingCount = await HelpArticle.countDocuments();
     
