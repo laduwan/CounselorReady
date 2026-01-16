@@ -11,15 +11,4 @@
   .admin-nav-link.active {
     @apply bg-burgundy-50 text-burgundy-800 font-medium;
   }
-  
-  .font-display {
-    font-family: 'Cormorant Garamond', Georgia, serif;
-  }
-}
-
-/* Base styles */
-@layer base {
-  body {
-    font-family: 'Lato', system-ui, sans-serif;
-  }
 }
