@@ -548,10 +548,220 @@
             <label class="block text-sm font-medium text-forest-700 mb-1">Video URL (YouTube or Vimeo)</label>
             <input type="text" id="lessonVideoUrl" placeholder="https://youtube.com/watch?v=..." class="w-full px-4 py-2 border border-forest-200 rounded-lg focus:ring-2 focus:ring-burgundy-500 outline-none">
           </div>
+          
+          <!-- Quiz Builder Area -->
+          <div id="quizContentArea" class="hidden space-y-4">
+            
+            <!-- AI Import Panel -->
+            <div class="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl p-4 border border-purple-200">
+              <div class="flex items-center gap-2 mb-3">
+                <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                </svg>
+                <h4 class="font-semibold text-purple-900">AI Quiz Generator</h4>
+                <span class="text-xs bg-purple-200 text-purple-700 px-2 py-0.5 rounded-full ml-auto">Powered by Claude</span>
+              </div>
+              
+              <!-- Tab Buttons -->
+              <div class="flex gap-2 mb-3">
+                <button onclick="setAIMode('pdf')" id="aiModePdf" class="ai-mode-btn px-3 py-1.5 text-sm rounded-lg bg-purple-600 text-white">
+                  📄 From PDF
+                </button>
+                <button onclick="setAIMode('outline')" id="aiModeOutline" class="ai-mode-btn px-3 py-1.5 text-sm rounded-lg bg-white text-purple-700 border border-purple-300">
+                  📝 From Outline
+                </button>
+                <button onclick="setAIMode('content')" id="aiModeContent" class="ai-mode-btn px-3 py-1.5 text-sm rounded-lg bg-white text-purple-700 border border-purple-300">
+                  📚 From Course Content
+                </button>
+              </div>
+              
+              <!-- PDF Upload Mode -->
+              <div id="aiPdfMode" class="ai-mode-content">
+                <div class="border-2 border-dashed border-purple-300 rounded-lg p-4 text-center hover:border-purple-500 hover:bg-purple-50 transition cursor-pointer" 
+                     onclick="document.getElementById('quizPdfUpload').click()"
+                     ondrop="handleQuizPdfDrop(event)" ondragover="event.preventDefault()">
+                  <input type="file" id="quizPdfUpload" accept=".pdf" class="hidden" onchange="handleQuizPdfSelect(event)">
+                  <svg class="w-8 h-8 text-purple-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                  </svg>
+                  <p class="text-sm text-purple-700">Drop PDF with quiz questions or click to browse</p>
+                  <p class="text-xs text-purple-500 mt-1">AI will extract questions, options, and answers</p>
+                </div>
+                <p id="quizPdfFileName" class="text-sm text-purple-600 mt-2 hidden"></p>
+              </div>
+              
+              <!-- Outline Mode -->
+              <div id="aiOutlineMode" class="ai-mode-content hidden">
+                <textarea id="quizOutlineInput" rows="4" 
+                          placeholder="Paste your quiz outline or notes here...&#10;&#10;Example:&#10;- 3 questions on informed consent&#10;- 2 true/false on confidentiality exceptions&#10;- Multiple choice: HIPAA requirements"
+                          class="w-full px-3 py-2 border border-purple-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500"></textarea>
+              </div>
+              
+              <!-- From Course Content Mode -->
+              <div id="aiContentMode" class="ai-mode-content hidden">
+                <div class="bg-white rounded-lg p-3 border border-purple-200">
+                  <p class="text-sm text-purple-700 mb-2">Generate questions from this lesson's content or the entire module.</p>
+                  <div class="flex gap-4">
+                    <label class="flex items-center gap-2 cursor-pointer">
+                      <input type="radio" name="contentScope" value="lesson" checked class="text-purple-600">
+                      <span class="text-sm">This lesson only</span>
+                    </label>
+                    <label class="flex items-center gap-2 cursor-pointer">
+                      <input type="radio" name="contentScope" value="module" class="text-purple-600">
+                      <span class="text-sm">Entire module</span>
+                    </label>
+                  </div>
+                </div>
+                <div class="mt-2 flex items-center gap-2">
+                  <label class="text-sm text-purple-700">Number of questions:</label>
+                  <input type="number" id="aiQuestionCount" value="5" min="1" max="20" 
+                         class="w-20 px-2 py-1 border border-purple-300 rounded text-sm">
+                </div>
+              </div>
+              
+              <!-- Generate Button -->
+              <div class="mt-3 flex items-center gap-3">
+                <button onclick="generateQuizWithAI()" id="aiGenerateBtn" 
+                        class="bg-purple-600 hover:bg-purple-700 text-white font-medium px-4 py-2 rounded-lg text-sm flex items-center gap-2">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                  </svg>
+                  Generate Questions
+                </button>
+                <span id="aiGenerateStatus" class="text-sm text-purple-600 hidden">
+                  <span class="inline-block w-4 h-4 border-2 border-purple-300 border-t-purple-600 rounded-full animate-spin mr-2"></span>
+                  Generating...
+                </span>
+              </div>
+            </div>
+            
+            <!-- Quiz Settings -->
+            <div class="bg-stone-50 rounded-lg p-4 border border-stone-200">
+              <h4 class="font-medium text-forest-800 mb-3">Quiz Settings</h4>
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <label class="flex items-center gap-2 cursor-pointer">
+                  <input type="checkbox" id="quizShuffleQuestions" class="w-4 h-4 text-burgundy-600 rounded">
+                  <span class="text-sm text-forest-700">Shuffle Questions</span>
+                </label>
+                <label class="flex items-center gap-2 cursor-pointer">
+                  <input type="checkbox" id="quizShuffleOptions" class="w-4 h-4 text-burgundy-600 rounded">
+                  <span class="text-sm text-forest-700">Shuffle Options</span>
+                </label>
+                <label class="flex items-center gap-2 cursor-pointer">
+                  <input type="checkbox" id="quizShowExplanations" checked class="w-4 h-4 text-burgundy-600 rounded">
+                  <span class="text-sm text-forest-700">Show Explanations</span>
+                </label>
+                <div class="flex items-center gap-2">
+                  <label class="text-sm text-forest-700">Time Limit:</label>
+                  <input type="number" id="quizTimeLimit" placeholder="∞" min="0" 
+                         class="w-16 px-2 py-1 border border-forest-200 rounded text-sm">
+                  <span class="text-xs text-forest-500">min</span>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Questions List -->
+            <div class="border border-forest-200 rounded-lg">
+              <div class="bg-forest-50 px-4 py-3 border-b border-forest-200 flex justify-between items-center">
+                <h4 class="font-medium text-forest-800">Questions (<span id="questionCount">0</span>)</h4>
+                <button onclick="addQuestion()" class="bg-burgundy-100 hover:bg-burgundy-200 text-burgundy-800 font-medium px-3 py-1.5 rounded-lg text-sm">
+                  + Add Question
+                </button>
+              </div>
+              
+              <div id="questionsContainer" class="divide-y divide-forest-100 max-h-[400px] overflow-y-auto">
+                <div class="p-6 text-center text-forest-500">
+                  <p>No questions yet. Add manually or use AI to generate.</p>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
         <div class="p-6 border-t border-burgundy-100 flex justify-end gap-4">
           <button onclick="closeLessonModal()" class="px-6 py-2 text-hunter-600 hover:text-hunter-700">Cancel</button>
           <button onclick="saveLesson()" class="bg-burgundy-800 hover:bg-burgundy-900 text-white font-semibold px-6 py-2 rounded-lg">Save Lesson</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Question Editor Modal -->
+    <div id="questionModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60] p-4">
+      <div class="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <div class="p-4 border-b border-forest-100 flex justify-between items-center bg-forest-50">
+          <h3 class="font-semibold text-forest-900" id="questionModalTitle">Add Question</h3>
+          <button onclick="closeQuestionModal()" class="text-forest-500 hover:text-burgundy-700 text-xl">&times;</button>
+        </div>
+        
+        <div class="p-6 space-y-4">
+          <!-- Question Type -->
+          <div>
+            <label class="block text-sm font-medium text-forest-700 mb-1">Question Type</label>
+            <select id="questionType" onchange="toggleQuestionType()" 
+                    class="w-full px-3 py-2 border border-forest-200 rounded-lg focus:ring-2 focus:ring-burgundy-500">
+              <option value="multiple_choice">Multiple Choice (single answer)</option>
+              <option value="multiple_select">Multiple Select (multiple answers)</option>
+              <option value="true_false">True / False</option>
+            </select>
+          </div>
+          
+          <!-- Question Text -->
+          <div>
+            <label class="block text-sm font-medium text-forest-700 mb-1">Question</label>
+            <textarea id="questionText" rows="3" 
+                      class="w-full px-3 py-2 border border-forest-200 rounded-lg focus:ring-2 focus:ring-burgundy-500"
+                      placeholder="Enter your question..."></textarea>
+          </div>
+          
+          <!-- Options (for MC/MS) -->
+          <div id="optionsArea">
+            <label class="block text-sm font-medium text-forest-700 mb-2">Answer Options <span class="text-xs text-forest-500">(select correct answer)</span></label>
+            <div id="optionsList" class="space-y-2">
+              <!-- Options rendered here -->
+            </div>
+            <button onclick="addOption()" class="mt-2 text-sm text-burgundy-600 hover:text-burgundy-800 flex items-center gap-1">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+              </svg>
+              Add Option
+            </button>
+          </div>
+          
+          <!-- True/False Selection -->
+          <div id="trueFalseArea" class="hidden">
+            <label class="block text-sm font-medium text-forest-700 mb-2">Correct Answer</label>
+            <div class="flex gap-4">
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="radio" name="tfAnswer" value="true" class="w-4 h-4 text-burgundy-600">
+                <span class="text-forest-700">True</span>
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="radio" name="tfAnswer" value="false" class="w-4 h-4 text-burgundy-600">
+                <span class="text-forest-700">False</span>
+              </label>
+            </div>
+          </div>
+          
+          <!-- Explanation -->
+          <div>
+            <label class="block text-sm font-medium text-forest-700 mb-1">Explanation <span class="text-xs text-forest-500">(shown after answering)</span></label>
+            <textarea id="questionExplanation" rows="2" 
+                      class="w-full px-3 py-2 border border-forest-200 rounded-lg focus:ring-2 focus:ring-burgundy-500"
+                      placeholder="Explain why this is the correct answer..."></textarea>
+          </div>
+          
+          <!-- Points -->
+          <div>
+            <label class="block text-sm font-medium text-forest-700 mb-1">Points</label>
+            <input type="number" id="questionPoints" value="1" min="1" 
+                   class="w-24 px-3 py-2 border border-forest-200 rounded-lg focus:ring-2 focus:ring-burgundy-500">
+          </div>
+        </div>
+        
+        <div class="p-4 border-t border-forest-100 flex justify-end gap-3 bg-stone-50">
+          <button onclick="closeQuestionModal()" class="px-4 py-2 text-forest-600 hover:text-forest-800">Cancel</button>
+          <button onclick="saveQuestion()" class="bg-burgundy-700 hover:bg-burgundy-800 text-white font-medium px-6 py-2 rounded-lg">
+            Save Question
+          </button>
         </div>
       </div>
     </div>
@@ -563,6 +773,13 @@
     let courses = [];
     let currentCourse = null;
     let currentLessonEdit = null;
+    
+    // Quiz builder state
+    let currentQuestions = [];
+    let editingQuestionIndex = null;
+    let currentAIMode = 'pdf';
+    let currentOptions = ['', '', '', ''];
+    let currentCorrectAnswer = null;
 
     // Load all courses
     async function loadCourses() {
@@ -818,30 +1035,64 @@
       document.getElementById('lessonIsFree').checked = lesson.isFree || false;
       document.getElementById('lessonContent').value = lesson.content || '';
       document.getElementById('lessonVideoUrl').value = lesson.videoUrl || '';
+      
+      // Load quiz data if quiz type
+      if (lesson.type === 'quiz') {
+        currentQuestions = lesson.questions ? JSON.parse(JSON.stringify(lesson.questions)) : [];
+        document.getElementById('quizShuffleQuestions').checked = lesson.shuffleQuestions || false;
+        document.getElementById('quizShuffleOptions').checked = lesson.shuffleOptions || false;
+        document.getElementById('quizShowExplanations').checked = lesson.showExplanations !== false;
+        document.getElementById('quizTimeLimit').value = lesson.timeLimit || '';
+      } else {
+        currentQuestions = [];
+      }
 
       toggleContentType();
+      
+      if (lesson.type === 'quiz') {
+        renderQuestions();
+      }
+      
       document.getElementById('lessonModal').classList.remove('hidden');
     }
 
     // Toggle content type
     function toggleContentType() {
       const type = document.getElementById('lessonType').value;
-      document.getElementById('textContentArea').classList.toggle('hidden', type === 'video');
+      document.getElementById('textContentArea').classList.toggle('hidden', type !== 'text');
       document.getElementById('videoContentArea').classList.toggle('hidden', type !== 'video');
+      document.getElementById('quizContentArea').classList.toggle('hidden', type !== 'quiz');
+      
+      // If switching to quiz, load existing questions
+      if (type === 'quiz' && currentLessonEdit) {
+        const lesson = currentCourse.modules[currentLessonEdit.moduleIndex].lessons[currentLessonEdit.lessonIndex];
+        currentQuestions = lesson.questions ? [...lesson.questions] : [];
+        renderQuestions();
+      }
     }
 
     // Save lesson
     async function saveLesson() {
       const token = localStorage.getItem('token');
+      const type = document.getElementById('lessonType').value;
 
       const lesson = {
         title: document.getElementById('lessonTitle').value,
-        type: document.getElementById('lessonType').value,
+        type: type,
         duration: parseInt(document.getElementById('lessonDuration').value) || 10,
         isFree: document.getElementById('lessonIsFree').checked,
         content: document.getElementById('lessonContent').value,
         videoUrl: document.getElementById('lessonVideoUrl').value
       };
+      
+      // Add quiz-specific fields
+      if (type === 'quiz') {
+        lesson.questions = currentQuestions;
+        lesson.shuffleQuestions = document.getElementById('quizShuffleQuestions').checked;
+        lesson.shuffleOptions = document.getElementById('quizShuffleOptions').checked;
+        lesson.showExplanations = document.getElementById('quizShowExplanations').checked;
+        lesson.timeLimit = parseInt(document.getElementById('quizTimeLimit').value) || null;
+      }
 
       try {
         const response = await fetch(`${API_URL}/api/admin/courses/${currentCourse._id}/lesson`, {
@@ -1373,6 +1624,242 @@
     if (user.email) {
       document.getElementById('adminEmail').textContent = user.email;
     }
+    
+    // ============================================
+    // QUIZ BUILDER FUNCTIONS
+    // ============================================
+    
+    function setAIMode(mode) {
+      currentAIMode = mode;
+      document.querySelectorAll('.ai-mode-btn').forEach(btn => {
+        btn.classList.remove('bg-purple-600', 'text-white');
+        btn.classList.add('bg-white', 'text-purple-700', 'border', 'border-purple-300');
+      });
+      const activeBtn = document.getElementById('aiMode' + mode.charAt(0).toUpperCase() + mode.slice(1));
+      if (activeBtn) {
+        activeBtn.classList.remove('bg-white', 'text-purple-700', 'border', 'border-purple-300');
+        activeBtn.classList.add('bg-purple-600', 'text-white');
+      }
+      document.querySelectorAll('.ai-mode-content').forEach(el => el.classList.add('hidden'));
+      const modeEl = document.getElementById('ai' + mode.charAt(0).toUpperCase() + mode.slice(1) + 'Mode');
+      if (modeEl) modeEl.classList.remove('hidden');
+    }
+    
+    function handleQuizPdfSelect(event) {
+      const file = event.target.files[0];
+      if (file) {
+        document.getElementById('quizPdfFileName').textContent = '📄 ' + file.name;
+        document.getElementById('quizPdfFileName').classList.remove('hidden');
+      }
+    }
+    
+    function handleQuizPdfDrop(event) {
+      event.preventDefault();
+      const file = event.dataTransfer.files[0];
+      if (file && file.type === 'application/pdf') {
+        document.getElementById('quizPdfUpload').files = event.dataTransfer.files;
+        document.getElementById('quizPdfFileName').textContent = '📄 ' + file.name;
+        document.getElementById('quizPdfFileName').classList.remove('hidden');
+      }
+    }
+    
+    function fileToBase64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result.split(',')[1]);
+        reader.onerror = error => reject(error);
+      });
+    }
+    
+    async function generateQuizWithAI() {
+      const token = localStorage.getItem('token');
+      const statusEl = document.getElementById('aiGenerateStatus');
+      const btnEl = document.getElementById('aiGenerateBtn');
+      statusEl.classList.remove('hidden');
+      btnEl.disabled = true;
+      
+      try {
+        let requestBody = { mode: currentAIMode };
+        
+        if (currentAIMode === 'pdf') {
+          const fileInput = document.getElementById('quizPdfUpload');
+          if (!fileInput.files[0]) { alert('Please select a PDF file'); statusEl.classList.add('hidden'); btnEl.disabled = false; return; }
+          const file = fileInput.files[0];
+          requestBody.pdfData = await fileToBase64(file);
+          requestBody.fileName = file.name;
+        } else if (currentAIMode === 'outline') {
+          const outline = document.getElementById('quizOutlineInput').value.trim();
+          if (!outline) { alert('Please enter an outline'); statusEl.classList.add('hidden'); btnEl.disabled = false; return; }
+          requestBody.outline = outline;
+        } else if (currentAIMode === 'content') {
+          const scope = document.querySelector('input[name="contentScope"]:checked').value;
+          const questionCount = parseInt(document.getElementById('aiQuestionCount').value) || 5;
+          if (scope === 'lesson') {
+            const content = document.getElementById('lessonContent').value;
+            if (!content) { alert('No lesson content'); statusEl.classList.add('hidden'); btnEl.disabled = false; return; }
+            requestBody.content = content;
+          } else {
+            const module = currentCourse.modules[currentLessonEdit.moduleIndex];
+            requestBody.content = module.lessons.map(l => l.content || '').join('\n\n');
+            requestBody.moduleTitle = module.title;
+          }
+          requestBody.questionCount = questionCount;
+        }
+        
+        const response = await fetch(`${API_URL}/api/admin/quiz/generate`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify(requestBody)
+        });
+        const data = await response.json();
+        
+        if (response.ok && data.questions) {
+          currentQuestions = [...currentQuestions, ...data.questions];
+          renderQuestions();
+          alert(`✅ Generated ${data.questions.length} questions!`);
+          document.getElementById('quizPdfUpload').value = '';
+          document.getElementById('quizPdfFileName').classList.add('hidden');
+          document.getElementById('quizOutlineInput').value = '';
+        } else {
+          alert('Failed: ' + (data.error || 'Unknown error'));
+        }
+      } catch (error) {
+        console.error('AI error:', error);
+        alert('Failed to generate questions');
+      } finally {
+        statusEl.classList.add('hidden');
+        btnEl.disabled = false;
+      }
+    }
+    
+    function renderQuestions() {
+      const container = document.getElementById('questionsContainer');
+      document.getElementById('questionCount').textContent = currentQuestions.length;
+      if (currentQuestions.length === 0) {
+        container.innerHTML = '<div class="p-6 text-center text-forest-500"><p>No questions yet. Add manually or use AI to generate.</p></div>';
+        return;
+      }
+      container.innerHTML = currentQuestions.map((q, idx) => {
+        const typeLabel = { 'multiple_choice': 'MC', 'multiple_select': 'MS', 'true_false': 'T/F' }[q.type] || 'MC';
+        const typeColor = { 'multiple_choice': 'bg-blue-100 text-blue-700', 'multiple_select': 'bg-purple-100 text-purple-700', 'true_false': 'bg-green-100 text-green-700' }[q.type] || 'bg-gray-100';
+        let optHtml = '';
+        if (q.type !== 'true_false' && q.options) {
+          optHtml = '<div class="mt-2 space-y-1">' + q.options.map((opt, oi) => {
+            const isC = q.type === 'multiple_select' ? (Array.isArray(q.correctAnswer) && q.correctAnswer.includes(oi)) : q.correctAnswer === oi;
+            return `<div class="text-sm ${isC ? 'text-green-700 font-medium' : 'text-forest-600'}">${isC ? '✓' : '○'} ${escapeHtml(opt)}</div>`;
+          }).join('') + '</div>';
+        } else if (q.type === 'true_false') {
+          optHtml = `<p class="mt-1 text-sm text-green-700 font-medium">Answer: ${q.correctAnswer ? 'True' : 'False'}</p>`;
+        }
+        return `<div class="p-4 hover:bg-forest-50"><div class="flex items-start justify-between gap-4"><div class="flex-1"><div class="flex items-center gap-2 mb-1"><span class="text-xs font-medium px-2 py-0.5 rounded ${typeColor}">${typeLabel}</span><span class="text-xs text-forest-500">${q.points||1} pt</span></div><p class="text-forest-800 font-medium">${idx+1}. ${escapeHtml(q.question)}</p>${optHtml}${q.explanation ? `<p class="mt-2 text-xs text-forest-500 italic">💡 ${escapeHtml(q.explanation)}</p>` : ''}</div><div class="flex gap-2"><button onclick="editQuestion(${idx})" class="text-burgundy-600 hover:text-burgundy-800 text-sm">Edit</button><button onclick="deleteQuestion(${idx})" class="text-red-600 hover:text-red-800 text-sm">Delete</button></div></div></div>`;
+      }).join('');
+    }
+    
+    function escapeHtml(text) { if (!text) return ''; const d = document.createElement('div'); d.textContent = text; return d.innerHTML; }
+    
+    function addQuestion() {
+      editingQuestionIndex = null;
+      document.getElementById('questionModalTitle').textContent = 'Add Question';
+      document.getElementById('questionType').value = 'multiple_choice';
+      document.getElementById('questionText').value = '';
+      document.getElementById('questionExplanation').value = '';
+      document.getElementById('questionPoints').value = '1';
+      currentOptions = ['', '', '', ''];
+      currentCorrectAnswer = null;
+      toggleQuestionType();
+      document.getElementById('questionModal').classList.remove('hidden');
+    }
+    
+    function editQuestion(index) {
+      editingQuestionIndex = index;
+      const q = currentQuestions[index];
+      document.getElementById('questionModalTitle').textContent = 'Edit Question';
+      document.getElementById('questionType').value = q.type || 'multiple_choice';
+      document.getElementById('questionText').value = q.question || '';
+      document.getElementById('questionExplanation').value = q.explanation || '';
+      document.getElementById('questionPoints').value = q.points || 1;
+      if (q.type === 'true_false') {
+        const r = document.querySelector(`input[name="tfAnswer"][value="${q.correctAnswer}"]`);
+        if (r) r.checked = true;
+        currentOptions = ['', '', '', ''];
+        currentCorrectAnswer = null;
+      } else {
+        currentOptions = q.options ? [...q.options] : ['', '', '', ''];
+        currentCorrectAnswer = q.correctAnswer;
+      }
+      toggleQuestionType();
+      document.getElementById('questionModal').classList.remove('hidden');
+    }
+    
+    function deleteQuestion(index) { if (confirm('Delete this question?')) { currentQuestions.splice(index, 1); renderQuestions(); } }
+    
+    function toggleQuestionType() {
+      const type = document.getElementById('questionType').value;
+      document.getElementById('optionsArea').classList.toggle('hidden', type === 'true_false');
+      document.getElementById('trueFalseArea').classList.toggle('hidden', type !== 'true_false');
+      if (type !== 'true_false') renderOptions();
+    }
+    
+    function renderOptions() {
+      const type = document.getElementById('questionType').value;
+      const isMS = type === 'multiple_select';
+      document.getElementById('optionsList').innerHTML = currentOptions.map((opt, idx) => {
+        const isC = isMS ? (Array.isArray(currentCorrectAnswer) && currentCorrectAnswer.includes(idx)) : currentCorrectAnswer === idx;
+        return `<div class="flex items-center gap-2"><input type="${isMS ? 'checkbox' : 'radio'}" name="correctOption" ${isC ? 'checked' : ''} onchange="setCorrectAnswer(${idx}, this.checked)" class="w-4 h-4 text-burgundy-600"><input type="text" value="${escapeHtml(opt)}" onchange="updateOption(${idx}, this.value)" placeholder="Option ${idx+1}" class="flex-1 px-3 py-1.5 border border-forest-200 rounded text-sm">${currentOptions.length > 2 ? `<button onclick="removeOption(${idx})" class="text-red-500 hover:text-red-700"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>` : ''}</div>`;
+      }).join('');
+    }
+    
+    function updateOption(index, value) { currentOptions[index] = value; }
+    function addOption() { if (currentOptions.length < 8) { currentOptions.push(''); renderOptions(); } }
+    function removeOption(index) {
+      if (currentOptions.length > 2) {
+        currentOptions.splice(index, 1);
+        const type = document.getElementById('questionType').value;
+        if (type === 'multiple_select' && Array.isArray(currentCorrectAnswer)) {
+          currentCorrectAnswer = currentCorrectAnswer.filter(i => i !== index).map(i => i > index ? i - 1 : i);
+        } else if (currentCorrectAnswer === index) { currentCorrectAnswer = null; }
+        else if (currentCorrectAnswer > index) { currentCorrectAnswer--; }
+        renderOptions();
+      }
+    }
+    function setCorrectAnswer(index, isChecked) {
+      const type = document.getElementById('questionType').value;
+      if (type === 'multiple_select') {
+        if (!Array.isArray(currentCorrectAnswer)) currentCorrectAnswer = [];
+        if (isChecked) { if (!currentCorrectAnswer.includes(index)) currentCorrectAnswer.push(index); }
+        else { currentCorrectAnswer = currentCorrectAnswer.filter(i => i !== index); }
+      } else { currentCorrectAnswer = index; }
+    }
+    
+    function saveQuestion() {
+      const type = document.getElementById('questionType').value;
+      const questionText = document.getElementById('questionText').value.trim();
+      if (!questionText) { alert('Please enter a question'); return; }
+      let correctAnswer, options = null;
+      if (type === 'true_false') {
+        const tf = document.querySelector('input[name="tfAnswer"]:checked');
+        if (!tf) { alert('Please select True or False'); return; }
+        correctAnswer = tf.value === 'true';
+      } else {
+        options = currentOptions.filter(o => o.trim());
+        if (options.length < 2) { alert('Add at least 2 options'); return; }
+        if (type === 'multiple_select') {
+          if (!Array.isArray(currentCorrectAnswer) || currentCorrectAnswer.length === 0) { alert('Select at least one correct answer'); return; }
+          correctAnswer = currentCorrectAnswer;
+        } else {
+          if (currentCorrectAnswer === null) { alert('Select the correct answer'); return; }
+          correctAnswer = currentCorrectAnswer;
+        }
+      }
+      const question = { question: questionText, type, options, correctAnswer, explanation: document.getElementById('questionExplanation').value.trim(), points: parseInt(document.getElementById('questionPoints').value) || 1 };
+      if (editingQuestionIndex !== null) { currentQuestions[editingQuestionIndex] = question; }
+      else { currentQuestions.push(question); }
+      renderQuestions();
+      closeQuestionModal();
+    }
+    
+    function closeQuestionModal() { document.getElementById('questionModal').classList.add('hidden'); editingQuestionIndex = null; }
   </script>
 
     </main>
