@@ -1,0 +1,1333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - CounselorReady</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            burgundy: {
+              50: '#fdf5f6', 100: '#fae8eb', 200: '#f5d0d6', 300: '#eba9b5',
+              400: '#dd768a', 500: '#c94d65', 600: '#a83350', 700: '#8B2635',
+              800: '#6b1d34', 900: '#4a1524', 950: '#2d0a14'
+            },
+            forest: {
+              50: '#f3f6f4', 100: '#e3ebe5', 200: '#c8d7cc', 300: '#a1bba8',
+              400: '#759a7f', 500: '#547c5f', 600: '#40634a', 700: '#34503d',
+              800: '#2b4133', 900: '#1f3025', 950: '#121c16'
+            },
+            gold: {
+              50: '#fdf9f0', 100: '#f9f0db', 200: '#f3e0b5', 300: '#eacd86',
+              400: '#D4A855', 500: '#c49545', 600: '#a67936', 700: '#865e2c',
+              800: '#6b4a25', 900: '#4d351b'
+            }
+          },
+          fontFamily: {
+            'display': ['Cormorant Garamond', 'Georgia', 'serif'],
+            'body': ['Lato', 'system-ui', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Lato:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body { font-family: 'Lato', system-ui, sans-serif; }
+    .font-display { font-family: 'Cormorant Garamond', Georgia, serif; }
+    
+    /* Announcement styles */
+    .announcement-card {
+      animation: slideIn 0.3s ease-out;
+    }
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .announcement-ce-change {
+      background: linear-gradient(135deg, #f3f6f4 0%, #e3ebe5 100%);
+      border-color: #34503d;
+    }
+    .announcement-urgent {
+      background: linear-gradient(135deg, #fdf5f6 0%, #fae8eb 100%);
+      border-color: #8B2635;
+    }
+    .announcement-update {
+      background: linear-gradient(135deg, #f3f6f4 0%, #e3ebe5 100%);
+      border-color: #40634a;
+    }
+    .announcement-info {
+      background: linear-gradient(135deg, #fdf9f0 0%, #f9f0db 100%);
+      border-color: #D4A855;
+    }
+    .announcement-new_course {
+      background: linear-gradient(135deg, #fdf9f0 0%, #f9f0db 100%);
+      border-color: #D4A855;
+    }
+  </style>
+</head>
+<body class="bg-stone-50 min-h-screen">
+  
+  <!-- Header -->
+  <header class="bg-white border-b border-hunter-100 sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+      <a href="/" class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl flex items-center justify-center shadow-md" style="background: linear-gradient(135deg, #8b2542, #6b1d34);">
+          <span class="font-display font-bold text-lg" style="position: relative; display: inline-block; width: 22px; height: 22px;"><span style="color: #D4A855; position: absolute; top: -3px; left: 0;">C</span><span style="color: #4A7C59; position: absolute; top: 5px; left: 6px;">R</span></span>
+        </div>
+        <span class="font-display font-semibold text-xl">
+          <span class="text-burgundy-800">Counselor</span><span class="text-hunter-600">Ready</span>
+        </span>
+      </a>
+      
+      <!-- Navigation -->
+      <nav class="hidden md:flex items-center gap-8">
+        <a href="/dashboard.html" class="text-hunter-700 font-medium border-b-2 border-hunter-600 pb-1">Dashboard</a>
+        <a href="/courses.html" class="text-hunter-500 hover:text-hunter-700 transition-colors">Courses</a>
+        <a href="/credentials.html" class="text-hunter-500 hover:text-hunter-700 transition-colors">Credentials</a>
+        <a href="/certificates.html" class="text-hunter-500 hover:text-hunter-700 transition-colors">CE Certificates</a>
+        <a href="/messages.html" class="text-hunter-600 hover:text-hunter-700 transition-colors flex items-center gap-1">
+          Messages
+          <span id="unreadBadge" class="hidden bg-burgundy-600 text-white text-xs font-bold px-1.5 py-0.5 rounded-full">0</span>
+        </a>
+      </nav>
+
+      <!-- User Menu -->
+      <div class="flex items-center gap-4">
+        <button onclick="toggleUserMenu()" class="flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-forest-50 transition-colors">
+          <div class="w-8 h-8 bg-burgundy-100 rounded-full flex items-center justify-center">
+            <span id="userInitial" class="text-burgundy-700 font-semibold text-sm">?</span>
+          </div>
+          <svg class="w-4 h-4 text-forest-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+          </svg>
+        </button>
+        
+        <!-- Dropdown -->
+        <div id="userMenu" class="hidden absolute right-6 top-16 bg-white rounded-xl shadow-xl border border-burgundy-100 py-2 w-48">
+          <a href="/settings.html" class="block px-4 py-2 text-forest-700 hover:bg-forest-50 transition-colors">Settings</a>
+          <a href="/subscription.html" class="block px-4 py-2 text-forest-700 hover:bg-forest-50 transition-colors">Subscription</a>
+          <a id="adminLink" href="/admin-courses.html" class="hidden px-4 py-2 text-burgundy-700 hover:bg-burgundy-50 transition-colors flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            Admin Panel
+          </a>
+          <hr class="my-2 border-burgundy-100">
+          <button onclick="logout()" class="w-full text-left px-4 py-2 text-burgundy-700 hover:bg-burgundy-50 transition-colors">Sign Out</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="max-w-7xl mx-auto px-6 py-8">
+    
+    <!-- Welcome Section -->
+    <div class="mb-8 flex items-start justify-between">
+      <div>
+        <h1 class="font-display text-3xl font-semibold text-burgundy-900 mb-2">
+          Welcome back, <span id="userName">there</span>!
+        </h1>
+        <p class="text-forest-600">Track your continuing education and stay audit-ready.</p>
+      </div>
+      <!-- VIP Consult Button -->
+      <button id="dashboardConsultBtn" onclick="openConsultModal()" class="inline-flex items-center gap-2 bg-gold-500 hover:bg-gold-600 text-white font-semibold px-5 py-3 rounded-xl transition-colors shadow-md">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+        </svg>
+        <span id="consultBtnText">Request Consult</span>
+      </button>
+    </div>
+
+    <!-- Trial Banner (shown if on trial) -->
+    <div id="trialBanner" class="hidden mb-6 bg-gradient-to-r from-gold-100 to-gold-50 border border-gold-300 rounded-xl p-4 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <svg class="w-5 h-5 text-gold-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+        <span class="text-forest-800"><span id="trialDays">7</span> days left in your free trial</span>
+      </div>
+      <a href="/subscription.html" class="text-burgundy-700 font-medium hover:text-burgundy-800 transition-colors">
+        Upgrade Now →
+      </a>
+    </div>
+
+    <!-- Announcements Section -->
+    <div id="announcementsSection" class="hidden mb-6 space-y-3">
+      <!-- Announcements will be inserted here dynamically -->
+    </div>
+
+    <!-- Insurance Expiration Alert -->
+    <div id="insuranceAlert" class="hidden mb-6 bg-gradient-to-r from-gold-50 to-gold-100 border border-gold-300 rounded-xl p-4">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 bg-gold-200 rounded-full flex items-center justify-center">
+            <svg class="w-5 h-5 text-gold-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+            </svg>
+          </div>
+          <div>
+            <p class="font-medium text-forest-900" id="insuranceAlertTitle">Insurance Renewal Coming Up</p>
+            <p class="text-sm text-forest-700" id="insuranceAlertText">Your liability insurance expires in <span id="insuranceDaysLeft">30</span> days</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-3">
+          <a href="/settings.html#insurance" class="text-gold-600 hover:text-gold-700 font-medium text-sm flex items-center gap-1">
+            <span>Compare Rates</span>
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+            </svg>
+          </a>
+          <button onclick="dismissInsuranceAlert()" class="text-gold-400 hover:text-gold-600">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+      <!-- CE Hours -->
+      <div class="bg-white rounded-xl p-5 border border-burgundy-100 shadow-sm">
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-forest-600 text-sm">CE Hours Earned</span>
+          <div class="w-8 h-8 bg-forest-100 rounded-lg flex items-center justify-center">
+            <svg class="w-4 h-4 text-forest-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+          </div>
+        </div>
+        <p class="font-display text-3xl font-semibold text-burgundy-900" id="totalHours">0</p>
+        <p class="text-forest-500 text-sm">This cycle</p>
+      </div>
+
+      <!-- Courses Completed -->
+      <div class="bg-white rounded-xl p-5 border border-burgundy-100 shadow-sm">
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-forest-600 text-sm">Courses Completed</span>
+          <div class="w-8 h-8 bg-burgundy-100 rounded-lg flex items-center justify-center">
+            <svg class="w-4 h-4 text-burgundy-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+          </div>
+        </div>
+        <p class="font-display text-3xl font-semibold text-burgundy-900" id="coursesCompleted">0</p>
+        <p class="text-forest-500 text-sm">All time</p>
+      </div>
+
+      <!-- Certificates -->
+      <div class="bg-white rounded-xl p-5 border border-burgundy-100 shadow-sm">
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-forest-600 text-sm">Certificates Stored</span>
+          <div class="w-8 h-8 bg-gold-100 rounded-lg flex items-center justify-center">
+            <svg class="w-4 h-4 text-gold-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+            </svg>
+          </div>
+        </div>
+        <p class="font-display text-3xl font-semibold text-burgundy-900" id="certificatesCount">0</p>
+        <p class="text-forest-500 text-sm">Uploaded</p>
+      </div>
+
+      <!-- Credentials -->
+      <div class="bg-white rounded-xl p-5 border border-burgundy-100 shadow-sm">
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-forest-600 text-sm">Active Credentials</span>
+          <div class="w-8 h-8 bg-forest-100 rounded-lg flex items-center justify-center">
+            <svg class="w-4 h-4 text-forest-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/>
+            </svg>
+          </div>
+        </div>
+        <p class="font-display text-3xl font-semibold text-burgundy-900" id="credentialsCount">0</p>
+        <p class="text-forest-500 text-sm">Tracked</p>
+      </div>
+    </div>
+
+    <!-- Main Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      
+      <!-- Left Column - Quick Actions -->
+      <div class="lg:col-span-2 space-y-6">
+        
+        <!-- Quick Actions -->
+        <div class="bg-white rounded-xl border border-burgundy-100 shadow-sm p-6">
+          <h2 class="font-display text-xl font-semibold text-burgundy-900 mb-4">Quick Actions</h2>
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <a href="/courses.html" class="flex flex-col items-center p-4 rounded-xl bg-burgundy-50 hover:bg-burgundy-100 transition-colors group">
+              <div class="w-12 h-12 bg-burgundy-700 rounded-xl flex items-center justify-center mb-3 group-hover:scale-105 transition-transform">
+                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                </svg>
+              </div>
+              <span class="text-burgundy-800 font-medium text-sm">Browse Courses</span>
+            </a>
+            
+            <a href="/upload.html" class="flex flex-col items-center p-4 rounded-xl bg-forest-50 hover:bg-forest-100 transition-colors group">
+              <div class="w-12 h-12 rounded-xl flex items-center justify-center" style="background: linear-gradient(135deg, #8b2542, #6b1d34); mb-3 group-hover:scale-105 transition-transform">
+                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+                </svg>
+              </div>
+              <span class="text-forest-800 font-medium text-sm">Upload Certificate</span>
+            </a>
+            
+            <a href="/credentials.html" class="flex flex-col items-center p-4 rounded-xl bg-gold-50 hover:bg-gold-100 transition-colors group">
+              <div class="w-12 h-12 bg-gold-500 rounded-xl flex items-center justify-center mb-3 group-hover:scale-105 transition-transform">
+                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/>
+                </svg>
+              </div>
+              <span class="text-gold-800 font-medium text-sm">Add Credential</span>
+            </a>
+            
+            <a href="/audit.html" class="flex flex-col items-center p-4 rounded-xl bg-stone-100 hover:bg-stone-200 transition-colors group">
+              <div class="w-12 h-12 bg-stone-600 rounded-xl flex items-center justify-center mb-3 group-hover:scale-105 transition-transform">
+                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </svg>
+              </div>
+              <span class="text-stone-700 font-medium text-sm">Generate Audit</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="bg-white rounded-xl border border-burgundy-100 shadow-sm p-6">
+          <h2 class="font-display text-xl font-semibold text-burgundy-900 mb-4">Recent Activity</h2>
+          <div id="activityList" class="space-y-3">
+            <!-- Placeholder -->
+            <div class="flex items-center gap-4 p-3 rounded-lg bg-stone-50">
+              <div class="w-10 h-10 bg-forest-100 rounded-lg flex items-center justify-center">
+                <svg class="w-5 h-5 text-forest-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+              </div>
+              <div class="flex-1">
+                <p class="text-forest-700">Welcome to CounselorReady!</p>
+                <p class="text-forest-500 text-sm">Get started by browsing courses or uploading certificates.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column - Sidebar -->
+      <div class="space-y-6">
+        
+        <!-- CE Progress -->
+        <div class="bg-white rounded-xl border border-burgundy-100 shadow-sm p-6">
+          <h2 class="font-display text-xl font-semibold text-burgundy-900 mb-4">CE Progress</h2>
+          <div id="progressList" class="space-y-4">
+            <!-- Placeholder - will be populated by JS -->
+            <div class="text-center py-6">
+              <div class="w-16 h-16 bg-forest-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                <svg class="w-8 h-8 text-forest-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                </svg>
+              </div>
+              <p class="text-forest-600 text-sm">Add a credential to track CE progress</p>
+              <a href="/credentials.html" class="text-burgundy-700 text-sm font-medium hover:text-burgundy-800">Add Credential →</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Upcoming Renewals -->
+        <div class="bg-white rounded-xl border border-burgundy-100 shadow-sm p-6">
+          <h2 class="font-display text-xl font-semibold text-burgundy-900 mb-4">Upcoming Renewals</h2>
+          <div id="renewalsList" class="space-y-3">
+            <!-- Placeholder -->
+            <div class="text-center py-4">
+              <p class="text-forest-500 text-sm">No upcoming renewals</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Hardship Pause Card - VIP Only -->
+        <div id="hardshipPauseCard" class="hidden bg-white rounded-xl border border-burgundy-100 shadow-sm p-6">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="font-display text-xl font-semibold text-burgundy-900">Hardship Pause</h2>
+            <span class="bg-gold-100 text-gold-700 text-xs font-semibold px-2 py-1 rounded-full">VIP Perk</span>
+          </div>
+          
+          <!-- Available Months Display -->
+          <div class="bg-forest-50 rounded-xl p-4 mb-4">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-forest-600 text-sm mb-1">Available Pause Months</p>
+                <p class="font-display text-4xl font-semibold text-forest-800">
+                  <span id="totalHardshipMonths">0</span>
+                </p>
+              </div>
+              <div class="w-14 h-14 bg-forest-200 rounded-full flex items-center justify-center">
+                <svg class="w-7 h-7 text-forest-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                </svg>
+              </div>
+            </div>
+            
+            <!-- Breakdown -->
+            <div class="mt-3 pt-3 border-t border-forest-200 grid grid-cols-2 gap-4 text-sm">
+              <div>
+                <p class="text-forest-500">This Year</p>
+                <p class="text-forest-800 font-semibold"><span id="availableThisYear">1</span> month</p>
+              </div>
+              <div>
+                <p class="text-forest-500">Banked</p>
+                <p class="text-forest-800 font-semibold"><span id="bankedMonths">0</span> months</p>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Loyalty Badge -->
+          <div id="loyaltyBadge" class="hidden mb-4 bg-gold-50 border border-gold-200 rounded-xl p-3 flex items-center gap-3">
+            <div class="w-10 h-10 bg-gold-200 rounded-full flex items-center justify-center">
+              <svg class="w-5 h-5 text-gold-700" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+              </svg>
+            </div>
+            <div>
+              <p class="text-gold-800 font-semibold text-sm"><span id="loyaltyYears">0</span>+ Year Member</p>
+              <p class="text-gold-600 text-xs"><span id="gracePeriodDays">7</span>-day grace period on payments</p>
+            </div>
+          </div>
+          
+          <!-- Grace Period Warning (shown if payment failed) -->
+          <div id="gracePeriodWarning" class="hidden mb-4 bg-burgundy-50 border border-burgundy-200 rounded-xl p-4">
+            <div class="flex items-start gap-3">
+              <div class="w-8 h-8 bg-burgundy-200 rounded-full flex items-center justify-center flex-shrink-0">
+                <svg class="w-4 h-4 text-burgundy-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                </svg>
+              </div>
+              <div>
+                <p class="text-burgundy-800 font-semibold text-sm">Payment Issue Detected</p>
+                <p class="text-burgundy-600 text-sm mt-1">
+                  You have <span id="graceDaysRemaining" class="font-bold">7</span> days to update your payment method.
+                  <span id="loyaltyGraceNote" class="block mt-1 text-xs text-burgundy-500">Your loyalty earned you extra time.</span>
+                </p>
+                <a href="/subscription.html" class="inline-block mt-2 text-burgundy-700 font-medium text-sm hover:text-burgundy-900 transition-colors">
+                  Update Payment →
+                </a>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Currently Paused State -->
+          <div id="pauseActiveState" class="hidden mb-4 bg-forest-100 border border-forest-300 rounded-xl p-4">
+            <div class="flex items-start gap-3">
+              <div class="w-8 h-8 bg-forest-300 rounded-full flex items-center justify-center flex-shrink-0">
+                <svg class="w-4 h-4 text-forest-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+              </div>
+              <div>
+                <p class="text-forest-800 font-semibold text-sm">Hardship Pause Active</p>
+                <p class="text-forest-600 text-sm mt-1">
+                  Your subscription is paused until <span id="pauseEndDate" class="font-semibold">--</span>.
+                  You still have full access during this time.
+                </p>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Use Pause Button -->
+          <button 
+            id="usePauseBtn" 
+            onclick="openHardshipPauseModal()"
+            class="w-full bg-forest-700 hover:bg-forest-800 text-white font-semibold py-3 px-4 rounded-xl transition-colors flex items-center justify-center gap-2"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            Use Hardship Month
+          </button>
+          
+          <p id="noPauseAvailable" class="hidden text-center text-forest-500 text-sm py-3">
+            No pause months available. Your next month will be added on your renewal date.
+          </p>
+          
+          <!-- Usage History (collapsible) -->
+          <div class="mt-4 pt-4 border-t border-burgundy-100">
+            <button onclick="togglePauseHistory()" class="flex items-center justify-between w-full text-left">
+              <span class="text-forest-600 text-sm font-medium">Pause History</span>
+              <svg id="historyChevron" class="w-4 h-4 text-forest-400 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+              </svg>
+            </button>
+            
+            <div id="pauseHistoryList" class="hidden mt-3 space-y-2">
+              <p id="noPauseHistory" class="text-forest-400 text-sm italic">No pauses used yet.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Need Help? -->
+        <div class="bg-gradient-to-br from-burgundy-800 to-burgundy-900 rounded-xl p-6 text-white">
+          <h3 class="font-display text-lg font-semibold mb-2">Need Help?</h3>
+          <p class="text-burgundy-200 text-sm mb-4">Questions about CE requirements or using the platform?</p>
+          <a href="mailto:support@counselorready.com" class="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+            </svg>
+            Contact Support
+          </a>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Footer with Provider Badge and Sync -->
+    <div class="mt-8 pt-6 border-t border-burgundy-100 flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <img src="/images/nbcc-acep-logo.jpg" alt="NBCC Approved Continuing Education Provider" class="h-16 w-auto">
+        <div class="text-xs text-forest-500">
+          <p class="font-medium">NBCC Approved Provider</p>
+          <p>ACEP #7760</p>
+        </div>
+      </div>
+      <button onclick="syncDashboard()" id="syncBtn" class="inline-flex items-center gap-1.5 text-forest-400 hover:text-forest-600 text-sm transition-colors">
+        <svg id="syncIcon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+        </svg>
+        Refresh Data
+      </button>
+    </div>
+  </main>
+
+  <!-- Consultation Request Modal (VIP Only) -->
+  <div id="consultModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md">
+      <div class="p-6 border-b border-gold-200 bg-gradient-to-r from-gold-50 to-white rounded-t-2xl">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-gold-100 rounded-full flex items-center justify-center">
+              <svg class="w-5 h-5 text-gold-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+              </svg>
+            </div>
+            <h2 class="font-display text-xl font-semibold text-gold-800">Request 1:1 Consult</h2>
+          </div>
+          <button onclick="closeConsultModal()" class="text-forest-400 hover:text-forest-600">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+      
+      <div class="p-6">
+        <div id="consultAvailable">
+          <p class="text-forest-600 mb-4">As a VIP member, you get 1 consultation per quarter.</p>
+          
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-forest-700 mb-2">What would you like to discuss? <span class="text-red-500">*</span></label>
+            <textarea id="consultDescription" rows="3" required placeholder="Please describe your questions or concerns..." class="w-full px-4 py-3 border border-forest-200 rounded-xl focus:ring-2 focus:ring-gold-500 focus:border-gold-500 outline-none resize-none"></textarea>
+          </div>
+          
+          <div class="mb-6">
+            <label class="block text-sm font-medium text-forest-700 mb-2">Topic Category</label>
+            <select id="consultTopic" class="w-full px-4 py-3 border border-forest-200 rounded-xl focus:ring-2 focus:ring-gold-500 focus:border-gold-500 outline-none">
+              <option value="multi-state">Multi-State Practice / Telehealth</option>
+              <option value="licensure">Licensure Questions (GA)</option>
+              <option value="supervision">Supervision Requirements</option>
+              <option value="renewal">Renewal / CE Requirements</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          
+          <button onclick="submitConsultRequest()" class="w-full bg-gold-500 hover:bg-gold-600 text-white font-semibold py-3 rounded-xl transition-colors">
+            Request Consultation
+          </button>
+          
+          <p class="text-xs text-forest-500 mt-3 text-center">You'll receive an email with scheduling instructions within 24-48 hours.</p>
+        </div>
+        
+        <div id="consultUnavailable" class="hidden text-center py-4">
+          <div class="w-16 h-16 bg-forest-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg class="w-8 h-8 text-forest-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+          </div>
+          <h3 class="font-semibold text-forest-800 mb-2">Consultation Used This Quarter</h3>
+          <p class="text-forest-600 mb-4">You've already used your Q<span id="currentQuarterNum"></span> consultation.</p>
+          <p class="text-sm text-forest-500">Your next consultation will be available in <strong id="nextQuarterLabel">Q2 2026</strong>.</p>
+        </div>
+        
+        <div id="consultNotVip" class="hidden text-center py-4">
+          <div class="w-16 h-16 bg-gold-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <span class="text-2xl">⭐</span>
+          </div>
+          <h3 class="font-semibold text-gold-800 mb-2">VIP Perk</h3>
+          <p class="text-forest-600 mb-4">1:1 consultations are available to VIP members.</p>
+          <a href="/subscription.html" class="inline-block bg-gold-500 hover:bg-gold-600 text-white font-semibold px-6 py-2 rounded-lg transition-colors">
+            Upgrade to VIP
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hardship Pause Modal -->
+  <div id="hardshipPauseModal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="font-display text-2xl font-semibold text-burgundy-900">Use Hardship Month</h3>
+        <button onclick="closeHardshipPauseModal()" class="text-forest-400 hover:text-forest-600 transition-colors">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+      
+      <div class="bg-forest-50 rounded-xl p-4 mb-4">
+        <p class="text-forest-700 text-sm">
+          This will pause your subscription for <span class="font-bold">30 days</span>. 
+          You'll keep full access to all features during this time.
+        </p>
+      </div>
+      
+      <div class="mb-4">
+        <label class="block text-forest-700 text-sm font-medium mb-2">Reason (optional)</label>
+        <textarea 
+          id="pauseReason" 
+          rows="3" 
+          class="w-full border border-burgundy-200 rounded-xl p-3 text-forest-800 focus:outline-none focus:ring-2 focus:ring-forest-500 focus:border-transparent"
+          placeholder="Help us understand how we can better support you..."
+        ></textarea>
+      </div>
+      
+      <div class="bg-gold-50 border border-gold-200 rounded-xl p-3 mb-6">
+        <p class="text-gold-800 text-sm">
+          <span class="font-semibold">After this pause:</span> You'll have 
+          <span id="monthsAfterPause" class="font-bold">0</span> months remaining.
+        </p>
+      </div>
+      
+      <div class="flex gap-3">
+        <button 
+          onclick="closeHardshipPauseModal()" 
+          class="flex-1 bg-stone-100 hover:bg-stone-200 text-forest-700 font-semibold py-3 px-4 rounded-xl transition-colors"
+        >
+          Cancel
+        </button>
+        <button 
+          onclick="confirmHardshipPause()" 
+          class="flex-1 bg-forest-700 hover:bg-forest-800 text-white font-semibold py-3 px-4 rounded-xl transition-colors"
+        >
+          Confirm Pause
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="mt-12 py-6 px-4 bg-white border-t border-burgundy-100">
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+      <p class="text-forest-500 text-sm">© 2025 CounselorReady. All rights reserved.</p>
+      <div class="flex items-center gap-4">
+        <a href="/help.html" class="text-forest-500 hover:text-burgundy-700 text-sm">Help</a>
+        <span class="text-forest-300">|</span>
+        <p class="text-forest-400 text-xs">Ga Integrated Therapeutic Perspectives LLC | NBCC ACEP #7760</p>
+      </div>
+    </div>
+  </footer>
+
+  <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+    const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://api.counselorready.com';
+    let consultStatus = null;
+    
+    // Check auth on load
+    document.addEventListener('DOMContentLoaded', async () => {
+      const token = localStorage.getItem('token');
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      
+      if (!token) {
+        window.location.href = '/login.html';
+        return;
+      }
+      
+      // Set user info
+      if (user.profile?.firstName) {
+        document.getElementById('userName').textContent = user.profile.firstName;
+        document.getElementById('userInitial').textContent = user.profile.firstName.charAt(0).toUpperCase();
+      } else if (user.email) {
+        document.getElementById('userName').textContent = user.email.split('@')[0];
+        document.getElementById('userInitial').textContent = user.email.charAt(0).toUpperCase();
+      }
+      
+      // Show admin link if user is admin
+      if (user.role === 'admin') {
+        document.getElementById('adminLink').classList.remove('hidden');
+        document.getElementById('adminLink').classList.add('flex');
+      }
+      
+      // Check trial status
+      if (user.subscription?.status === 'trial' && user.subscription?.trialEndsAt) {
+        const trialEnd = new Date(user.subscription.trialEndsAt);
+        const now = new Date();
+        const daysLeft = Math.ceil((trialEnd - now) / (1000 * 60 * 60 * 24));
+        
+        if (daysLeft > 0) {
+          document.getElementById('trialBanner').classList.remove('hidden');
+          document.getElementById('trialDays').textContent = daysLeft;
+        }
+      }
+      
+      // Fetch dashboard data
+      try {
+        const response = await fetch(`${API_URL}/api/users/dashboard`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          updateDashboard(data);
+        }
+      } catch (error) {
+        console.log('Could not fetch dashboard data');
+      }
+      
+      // Fetch consult status
+      await loadConsultStatus();
+      
+      // Fetch hardship pause status (VIP only)
+      await loadHardshipPauseData();
+      
+      // Load announcements
+      await loadAnnouncements();
+      
+      // Check insurance expiration
+      await checkInsuranceStatus();
+    });
+    
+    async function loadConsultStatus() {
+      const token = localStorage.getItem('token');
+      try {
+        const response = await fetch(`${API_URL}/api/credentials/consult-status`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (response.ok) {
+          consultStatus = await response.json();
+          updateConsultButton();
+        }
+      } catch (error) {
+        console.log('Could not load consult status');
+      }
+    }
+    
+    function updateConsultButton() {
+      const btn = document.getElementById('dashboardConsultBtn');
+      const btnText = document.getElementById('consultBtnText');
+      if (!btn) return;
+      
+      // If no status loaded yet, keep default button
+      if (!consultStatus) return;
+      
+      // Update button if consult already used this quarter
+      if (consultStatus.usedThisQuarter) {
+        btn.classList.remove('bg-gold-500', 'hover:bg-gold-600');
+        btn.classList.add('bg-forest-200', 'text-forest-600');
+        btnText.textContent = `Consult Used (${consultStatus.currentQuarter})`;
+      }
+    }
+    
+    function openConsultModal() {
+      document.getElementById('consultModal').classList.remove('hidden');
+      
+      const available = document.getElementById('consultAvailable');
+      const unavailable = document.getElementById('consultUnavailable');
+      const notVip = document.getElementById('consultNotVip');
+      
+      available.classList.add('hidden');
+      unavailable.classList.add('hidden');
+      notVip.classList.add('hidden');
+      
+      // If no status loaded, show form by default (let backend validate)
+      if (!consultStatus) {
+        available.classList.remove('hidden');
+        return;
+      }
+      
+      if (consultStatus.reason === 'VIP subscription required') {
+        notVip.classList.remove('hidden');
+      } else if (consultStatus.usedThisQuarter) {
+        unavailable.classList.remove('hidden');
+        const quarter = consultStatus.currentQuarter?.split('-Q')[1] || '1';
+        document.getElementById('currentQuarterNum').textContent = quarter;
+        document.getElementById('nextQuarterLabel').textContent = consultStatus.nextQuarter?.replace('-', ' ') || 'next quarter';
+      } else {
+        available.classList.remove('hidden');
+      }
+    }
+    
+    function closeConsultModal() {
+      document.getElementById('consultModal').classList.add('hidden');
+    }
+    
+    async function submitConsultRequest() {
+      const token = localStorage.getItem('token');
+      const topic = document.getElementById('consultTopic').value;
+      const description = document.getElementById('consultDescription').value.trim();
+      
+      if (!description) {
+        alert('Please describe what you would like to discuss.');
+        document.getElementById('consultDescription').focus();
+        return;
+      }
+      
+      try {
+        const response = await fetch(`${API_URL}/api/credentials/book-consult`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ topic: `${topic}: ${description}` })
+        });
+        
+        if (response.ok) {
+          closeConsultModal();
+          alert('Consultation requested! Check your email for scheduling instructions.');
+          await loadConsultStatus();
+        } else {
+          const error = await response.json();
+          alert(error.error || 'Could not submit request');
+        }
+      } catch (error) {
+        alert('Could not submit request. Please try again.');
+      }
+    }
+    
+    function updateDashboard(data) {
+      // Update stats
+      document.getElementById('totalHours').textContent = data.totalHours || 0;
+      document.getElementById('coursesCompleted').textContent = data.coursesCompleted || 0;
+      document.getElementById('certificatesCount').textContent = data.certificatesCount || 0;
+      document.getElementById('credentialsCount').textContent = data.credentialsCount || 0;
+      
+      // Update CE Progress
+      const progressList = document.getElementById('progressList');
+      if (data.ceProgress && data.ceProgress.length > 0) {
+        progressList.innerHTML = data.ceProgress.map(cred => `
+          <div class="space-y-2">
+            <div class="flex justify-between items-center">
+              <span class="text-forest-700 font-medium">${cred.name}${cred.state ? ` (${cred.state})` : ''}</span>
+              <span class="text-forest-600 text-sm">${cred.completed}/${cred.required} hrs</span>
+            </div>
+            <div class="w-full bg-forest-100 rounded-full h-2">
+              <div class="bg-burgundy-600 h-2 rounded-full transition-all" style="width: ${cred.percent}%"></div>
+            </div>
+          </div>
+        `).join('');
+      }
+      
+      // Update Upcoming Renewals
+      const renewalsList = document.getElementById('renewalsList');
+      if (data.upcomingRenewals && data.upcomingRenewals.length > 0) {
+        renewalsList.innerHTML = data.upcomingRenewals.map(r => `
+          <div class="flex items-center justify-between p-3 rounded-lg ${r.daysLeft <= 30 ? 'bg-red-50 border border-red-200' : 'bg-gold-50 border border-gold-200'}">
+            <div>
+              <p class="font-medium ${r.daysLeft <= 30 ? 'text-red-800' : 'text-gold-800'}">${r.name}</p>
+              <p class="text-sm ${r.daysLeft <= 30 ? 'text-red-600' : 'text-gold-600'}">${r.state || ''}</p>
+            </div>
+            <div class="text-right">
+              <p class="font-bold ${r.daysLeft <= 30 ? 'text-red-700' : 'text-gold-700'}">${r.daysLeft} days</p>
+              <p class="text-xs ${r.daysLeft <= 30 ? 'text-red-500' : 'text-gold-500'}">${new Date(r.expirationDate).toLocaleDateString()}</p>
+            </div>
+          </div>
+        `).join('');
+      } else {
+        renewalsList.innerHTML = '<div class="text-center py-4"><p class="text-forest-500 text-sm">No upcoming renewals</p></div>';
+      }
+      
+      // Update Recent Activity
+      const activityList = document.getElementById('activityList');
+      if (data.recentActivity && data.recentActivity.length > 0) {
+        activityList.innerHTML = data.recentActivity.map(a => {
+          let icon, bgColor, textColor;
+          if (a.type === 'certificate') {
+            icon = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>`;
+            bgColor = 'bg-forest-100';
+            textColor = 'text-forest-600';
+          } else if (a.type === 'course_complete') {
+            icon = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>`;
+            bgColor = 'bg-burgundy-100';
+            textColor = 'text-burgundy-600';
+          } else {
+            icon = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>`;
+            bgColor = 'bg-gold-100';
+            textColor = 'text-gold-600';
+          }
+          
+          const timeAgo = getTimeAgo(new Date(a.date));
+          const subtitle = a.type === 'certificate' ? `+${a.ceHours} CE hours` : (a.type === 'course_complete' ? 'Course completed!' : `${a.progress}% complete`);
+          
+          return `
+            <div class="flex items-center gap-4 p-3 rounded-lg bg-stone-50">
+              <div class="w-10 h-10 ${bgColor} rounded-lg flex items-center justify-center">
+                <svg class="w-5 h-5 ${textColor}" fill="none" stroke="currentColor" viewBox="0 0 24 24">${icon}</svg>
+              </div>
+              <div class="flex-1">
+                <p class="text-forest-700">${a.title}</p>
+                <p class="text-forest-500 text-sm">${subtitle}</p>
+              </div>
+              <span class="text-forest-400 text-xs">${timeAgo}</span>
+            </div>
+          `;
+        }).join('');
+      }
+    }
+    
+    function getTimeAgo(date) {
+      const now = new Date();
+      const diff = now - date;
+      const minutes = Math.floor(diff / 60000);
+      const hours = Math.floor(diff / 3600000);
+      const days = Math.floor(diff / 86400000);
+      
+      if (minutes < 60) return `${minutes}m ago`;
+      if (hours < 24) return `${hours}h ago`;
+      if (days < 7) return `${days}d ago`;
+      return date.toLocaleDateString();
+    }
+    
+    async function syncDashboard() {
+      const btn = document.getElementById('syncBtn');
+      const icon = document.getElementById('syncIcon');
+      const token = localStorage.getItem('token');
+      
+      btn.disabled = true;
+      icon.classList.add('animate-spin');
+      
+      try {
+        const response = await fetch(`${API_URL}/api/users/dashboard`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          updateDashboard(data);
+        }
+      } catch (error) {
+        console.log('Could not sync dashboard');
+      }
+      
+      setTimeout(() => {
+        btn.disabled = false;
+        icon.classList.remove('animate-spin');
+      }, 500);
+    }
+    
+    function toggleUserMenu() {
+      const menu = document.getElementById('userMenu');
+      menu.classList.toggle('hidden');
+    }
+    
+    // Close menu when clicking outside
+    document.addEventListener('click', (e) => {
+      const menu = document.getElementById('userMenu');
+      const button = e.target.closest('button');
+      if (!button && !menu.classList.contains('hidden')) {
+        menu.classList.add('hidden');
+      }
+    });
+    
+    function logout() {
+       localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      window.location.href = '/login.html';
+    }
+    
+    // ============================================
+    // HARDSHIP PAUSE FUNCTIONS
+    // ============================================
+    
+    let hardshipData = null;
+    
+    async function loadHardshipPauseData() {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`${API_URL}/api/users/hardship-status`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (!response.ok) return;
+        
+        hardshipData = await response.json();
+        renderHardshipPauseCard(hardshipData);
+      } catch (error) {
+        console.log('Could not load hardship pause data');
+      }
+    }
+    
+    function renderHardshipPauseCard(data) {
+      const card = document.getElementById('hardshipPauseCard');
+      
+      // Only show for VIP users
+      if (!data.isVip) {
+        card.classList.add('hidden');
+        return;
+      }
+      
+      card.classList.remove('hidden');
+      
+      // Update totals
+      document.getElementById('totalHardshipMonths').textContent = data.totalMonths;
+      document.getElementById('availableThisYear').textContent = data.available;
+      document.getElementById('bankedMonths').textContent = data.banked;
+      
+      // Loyalty badge
+      const loyaltyBadge = document.getElementById('loyaltyBadge');
+      if (data.banked >= 1) {
+        loyaltyBadge.classList.remove('hidden');
+        document.getElementById('loyaltyYears').textContent = data.banked;
+        document.getElementById('gracePeriodDays').textContent = data.gracePeriodDays;
+      } else {
+        loyaltyBadge.classList.add('hidden');
+      }
+      
+      // Grace period warning
+      const graceWarning = document.getElementById('gracePeriodWarning');
+      if (data.paymentFailed) {
+        graceWarning.classList.remove('hidden');
+        document.getElementById('graceDaysRemaining').textContent = data.graceDaysRemaining;
+        
+        const loyaltyNote = document.getElementById('loyaltyGraceNote');
+        if (data.gracePeriodDays > 7) {
+          loyaltyNote.classList.remove('hidden');
+        } else {
+          loyaltyNote.classList.add('hidden');
+        }
+      } else {
+        graceWarning.classList.add('hidden');
+      }
+      
+      // Currently paused state
+      const pauseActive = document.getElementById('pauseActiveState');
+      const useBtn = document.getElementById('usePauseBtn');
+      const noAvailable = document.getElementById('noPauseAvailable');
+      
+      if (data.isActive) {
+        pauseActive.classList.remove('hidden');
+        useBtn.classList.add('hidden');
+        noAvailable.classList.add('hidden');
+        document.getElementById('pauseEndDate').textContent = new Date(data.pauseEndDate).toLocaleDateString('en-US', {
+          month: 'long', day: 'numeric', year: 'numeric'
+        });
+      } else if (data.totalMonths > 0) {
+        pauseActive.classList.add('hidden');
+        useBtn.classList.remove('hidden');
+        noAvailable.classList.add('hidden');
+      } else {
+        pauseActive.classList.add('hidden');
+        useBtn.classList.add('hidden');
+        noAvailable.classList.remove('hidden');
+      }
+      
+      // History
+      renderPauseHistory(data.history);
+    }
+    
+    function renderPauseHistory(history) {
+      const list = document.getElementById('pauseHistoryList');
+      const noHistory = document.getElementById('noPauseHistory');
+      
+      if (!history || history.length === 0) {
+        noHistory.classList.remove('hidden');
+        return;
+      }
+      
+      noHistory.classList.add('hidden');
+      
+      const historyHtml = history.map(item => `
+        <div class="flex items-center justify-between text-sm bg-stone-50 rounded-lg p-2">
+          <span class="text-forest-600">${new Date(item.usedDate).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}</span>
+          <span class="text-forest-400 text-xs">${item.reason || 'No reason provided'}</span>
+        </div>
+      `).join('');
+      
+      list.innerHTML = historyHtml + `<p id="noPauseHistory" class="hidden text-forest-400 text-sm italic">No pauses used yet.</p>`;
+    }
+    
+    function togglePauseHistory() {
+      const list = document.getElementById('pauseHistoryList');
+      const chevron = document.getElementById('historyChevron');
+      
+      list.classList.toggle('hidden');
+      chevron.classList.toggle('rotate-180');
+    }
+    
+    function openHardshipPauseModal() {
+      document.getElementById('hardshipPauseModal').classList.remove('hidden');
+      if (hardshipData) {
+        document.getElementById('monthsAfterPause').textContent = hardshipData.totalMonths - 1;
+      }
+    }
+    
+    function closeHardshipPauseModal() {
+      document.getElementById('hardshipPauseModal').classList.add('hidden');
+      document.getElementById('pauseReason').value = '';
+    }
+    
+    async function confirmHardshipPause() {
+      try {
+        const reason = document.getElementById('pauseReason').value;
+        const token = localStorage.getItem('token');
+        
+        const response = await fetch(`${API_URL}/api/users/hardship-pause`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ reason })
+        });
+        
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.message || 'Failed to activate pause');
+        }
+        
+        closeHardshipPauseModal();
+        
+        // Show success message
+        alert('Hardship pause activated! Your subscription is paused for 30 days.');
+        
+        // Reload data
+        loadHardshipPauseData();
+        
+      } catch (error) {
+        console.error('Error activating hardship pause:', error);
+        alert(error.message || 'Could not activate pause. Please try again.');
+      }
+    }
+    
+    // =====================
+    // ANNOUNCEMENTS
+    // =====================
+    
+    async function loadAnnouncements() {
+      const token = localStorage.getItem('token');
+      try {
+        const response = await fetch(`${API_URL}/api/announcements`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          renderAnnouncements(data.announcements || []);
+        }
+      } catch (error) {
+        console.log('Could not load announcements');
+      }
+    }
+    
+    function renderAnnouncements(announcements) {
+      const section = document.getElementById('announcementsSection');
+      
+      // Filter to show only dashboard announcements that haven't been dismissed
+      const visibleAnnouncements = announcements.filter(a => a.showOnDashboard !== false);
+      
+      if (visibleAnnouncements.length === 0) {
+        section.classList.add('hidden');
+        return;
+      }
+      
+      section.classList.remove('hidden');
+      
+      const typeConfig = {
+        info: { icon: 'fa-info-circle', bgClass: 'announcement-info', iconColor: 'text-blue-600' },
+        update: { icon: 'fa-sync-alt', bgClass: 'announcement-update', iconColor: 'text-green-600' },
+        maintenance: { icon: 'fa-tools', bgClass: 'announcement-info', iconColor: 'text-amber-600' },
+        promotion: { icon: 'fa-gift', bgClass: 'announcement-info', iconColor: 'text-purple-600' },
+        urgent: { icon: 'fa-exclamation-triangle', bgClass: 'announcement-urgent', iconColor: 'text-red-600' },
+        ce_change: { icon: 'fa-certificate', bgClass: 'announcement-ce-change', iconColor: 'text-forest-700' },
+        new_course: { icon: 'fa-graduation-cap', bgClass: 'announcement-new_course', iconColor: 'text-indigo-600' }
+      };
+      
+      section.innerHTML = visibleAnnouncements.map(ann => {
+        const config = typeConfig[ann.type] || typeConfig.info;
+        const isPinned = ann.isPinned;
+        const isDismissible = ann.dismissible !== false;
+        
+        return `
+          <div class="announcement-card ${config.bgClass} rounded-xl border-l-4 p-4 shadow-sm relative" data-id="${ann._id}">
+            <div class="flex items-start gap-4">
+              <!-- Icon -->
+              <div class="flex-shrink-0 w-10 h-10 rounded-full bg-white/70 flex items-center justify-center shadow-sm">
+                <i class="fas ${ann.icon || config.icon} ${config.iconColor} text-lg"></i>
+              </div>
+              
+              <!-- Content -->
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 mb-1">
+                  ${isPinned ? '<span class="inline-flex items-center gap-1 text-xs font-medium text-burgundy-700 bg-burgundy-100 px-2 py-0.5 rounded-full"><i class="fas fa-thumbtack text-[10px]"></i> Pinned</span>' : ''}
+                  <span class="text-xs text-forest-500">${formatAnnouncementDate(ann.createdAt)}</span>
+                </div>
+                <h4 class="font-semibold text-forest-900 mb-1">${ann.title}</h4>
+                <div class="text-sm text-forest-700 announcement-content">${ann.message}</div>
+              </div>
+              
+              <!-- Dismiss button -->
+              ${isDismissible ? `
+                <button onclick="dismissAnnouncement('${ann._id}')" class="flex-shrink-0 p-1.5 text-forest-400 hover:text-forest-600 hover:bg-white/50 rounded-lg transition-colors" title="Dismiss">
+                  <i class="fas fa-times"></i>
+                </button>
+              ` : ''}
+            </div>
+            
+            <!-- CE Change specific details -->
+            ${ann.type === 'ce_change' && ann.ceChangeDetails ? `
+              <div class="mt-3 ml-14 flex items-center gap-4 text-sm">
+                ${ann.ceChangeDetails.effectiveDate ? `
+                  <span class="flex items-center gap-1 text-forest-800">
+                    <i class="fas fa-calendar-alt"></i>
+                    Effective: ${new Date(ann.ceChangeDetails.effectiveDate).toLocaleDateString()}
+                  </span>
+                ` : ''}
+                ${ann.ceChangeDetails.sourceUrl ? `
+                  <a href="${ann.ceChangeDetails.sourceUrl}" target="_blank" class="flex items-center gap-1 text-forest-700 hover:text-forest-800 transition-colors">
+                    <i class="fas fa-external-link-alt"></i>
+                    View Source
+                  </a>
+                ` : ''}
+              </div>
+            ` : ''}
+          </div>
+        `;
+      }).join('');
+    }
+    
+    function formatAnnouncementDate(dateStr) {
+      const date = new Date(dateStr);
+      const now = new Date();
+      const diffMs = now - date;
+      const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+      
+      if (diffDays === 0) {
+        const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+        if (diffHours === 0) {
+          const diffMins = Math.floor(diffMs / (1000 * 60));
+          return diffMins <= 1 ? 'Just now' : `${diffMins} minutes ago`;
+        }
+        return diffHours === 1 ? '1 hour ago' : `${diffHours} hours ago`;
+      } else if (diffDays === 1) {
+        return 'Yesterday';
+      } else if (diffDays < 7) {
+        return `${diffDays} days ago`;
+      } else {
+        return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      }
+    }
+    
+    async function dismissAnnouncement(id) {
+      const token = localStorage.getItem('token');
+      try {
+        // Mark as read/dismissed on server
+        await fetch(`${API_URL}/api/announcements/${id}/read`, {
+          method: 'PUT',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        // Remove from UI with animation
+        const card = document.querySelector(`.announcement-card[data-id="${id}"]`);
+        if (card) {
+          card.style.transition = 'opacity 0.3s, transform 0.3s';
+          card.style.opacity = '0';
+          card.style.transform = 'translateX(20px)';
+          setTimeout(() => {
+            card.remove();
+            // Hide section if no more announcements
+            const section = document.getElementById('announcementsSection');
+            if (section.children.length === 0) {
+              section.classList.add('hidden');
+            }
+          }, 300);
+        }
+      } catch (error) {
+        console.log('Could not dismiss announcement');
+      }
+    }
+    
+    // =====================
+    // INSURANCE ALERTS
+    // =====================
+    
+    async function checkInsuranceStatus() {
+      // Check if dismissed today
+      const dismissed = localStorage.getItem('insuranceAlertDismissed');
+      if (dismissed) {
+        const dismissedDate = new Date(dismissed);
+        const now = new Date();
+        // Only show once per day
+        if (dismissedDate.toDateString() === now.toDateString()) {
+          return;
+        }
+      }
+      
+      const token = localStorage.getItem('token');
+      try {
+        const response = await fetch(`${API_URL}/api/users/insurance`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (!response.ok) return;
+        
+        const data = await response.json();
+        
+        // Show alert if expiring soon or expired
+        if (data.status === 'expired') {
+          showInsuranceAlert('Insurance Expired!', 'Your liability insurance has expired. Renew immediately to maintain coverage.', true);
+        } else if (data.status === 'expiring_soon') {
+          showInsuranceAlert('Insurance Renewal Coming Up', `Your liability insurance expires in ${data.daysUntilExpiration} days`, false);
+          document.getElementById('insuranceDaysLeft').textContent = data.daysUntilExpiration;
+        }
+        
+      } catch (error) {
+        console.log('Could not check insurance status');
+      }
+    }
+    
+    function showInsuranceAlert(title, text, isUrgent) {
+      const alert = document.getElementById('insuranceAlert');
+      const titleEl = document.getElementById('insuranceAlertTitle');
+      const textEl = document.getElementById('insuranceAlertText');
+      
+      titleEl.textContent = title;
+      textEl.innerHTML = text;
+      
+      if (isUrgent) {
+        alert.className = 'mb-6 bg-gradient-to-r from-red-50 to-orange-50 border border-red-200 rounded-xl p-4';
+        titleEl.className = 'font-medium text-red-900';
+        textEl.className = 'text-sm text-red-700';
+      }
+      
+      alert.classList.remove('hidden');
+    }
+    
+    function dismissInsuranceAlert() {
+      const alert = document.getElementById('insuranceAlert');
+      alert.style.transition = 'opacity 0.3s, transform 0.3s';
+      alert.style.opacity = '0';
+      alert.style.transform = 'translateY(-10px)';
+      
+      // Remember dismissal
+      localStorage.setItem('insuranceAlertDismissed', new Date().toISOString());
+      
+      setTimeout(() => {
+        alert.classList.add('hidden');
+        alert.style.opacity = '';
+        alert.style.transform = '';
+      }, 300);
+    }
+  </script>
+</body>
+</html>
