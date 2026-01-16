@@ -2441,4 +2441,124 @@ Return ONLY valid JSON, no other text.`;
   }
 });
 
+// @route   POST /api/admin/course/generate
+// @desc    Generate a complete course using AI
+// @access  Admin only
+router.post('/course/generate', protect, adminOnly, async (req, res) => {
+  try {
+    if (!anthropic) {
+      return res.status(500).json({ error: 'AI service not configured' });
+    }
+    
+    const { fileData, fileName, fileType, content, category, ceHours, generateQuizzes, generateObjectives, keyPoints } = req.body;
+    
+    if (!fileData && !content) {
+      return res.status(400).json({ error: 'Provide file or content' });
+    }
+    
+    const catNames = { core: 'Core/General', ethics: 'Ethics', supervision: 'Supervision', telehealth: 'Telehealth', cultural: 'Cultural Diversity', trauma: 'Trauma', substance: 'Substance Abuse', crisis: 'Crisis/Suicide' };
+    const catName = catNames[category] || 'Core/General';
+    
+    let prompt = `You are an expert instructional designer creating CE courses for licensed professional counselors.
+
+Create a complete CE course based on the provided content.
+- Category: ${catName}
+- CE Hours: ${ceHours}
+${keyPoints ? `- Emphasize: ${keyPoints}` : ''}
+
+Return ONLY valid JSON:
+{
+  "title": "Course title",
+  "subtitle": "Brief subtitle",
+  "description": "2-3 paragraph description",
+  "ceuHours": ${ceHours},
+  "ceuCategories": [{"category": "${catName}", "hours": ${ceHours}}],
+  "instructor": "GA Integrated Therapeutic Perspectives LLC",
+  "accessTier": "professional",
+  "status": "draft",
+  ${generateObjectives ? '"objectives": ["Objective 1", "Objective 2", "Objective 3"],' : ''}
+  "modules": [
+    {
+      "title": "Module Title",
+      "description": "Module description",
+      "order": 1,
+      "lessons": [
+        {
+          "title": "Lesson Title",
+          "type": "text",
+          "content": "<h2>Title</h2><p>Full HTML content (500+ words per lesson)</p>",
+          "duration": 15,
+          "order": 1
+        }${generateQuizzes ? `,
+        {
+          "title": "Quiz",
+          "type": "quiz",
+          "duration": 10,
+          "order": 2,
+          "questions": [
+            {"question": "Question?", "type": "multiple_choice", "options": ["A","B","C","D"], "correctAnswer": 0, "explanation": "Why", "points": 1}
+          ],
+          "shuffleQuestions": true,
+          "showExplanations": true
+        }` : ''}
+      ]
+    }
+  ],
+  "settings": {"linearProgression": true, "enforceMinTime": true, "minTimePercent": 80, "passingScore": 70, "requireEvaluation": true, "requireAttestation": true, "certificateEnabled": true},
+  "approvingBody": "NBCC",
+  "approvalNumber": "7760"
+}
+
+Create enough modules/lessons to justify ${ceHours} CE hours. Each text lesson needs substantial content. Include quizzes at end of each module if requested.
+Return ONLY JSON, no markdown.`;
+
+    let messages = [];
+    if (fileData) {
+      let mediaType = fileType || 'application/pdf';
+      messages = [{ role: 'user', content: [{ type: 'document', source: { type: 'base64', media_type: mediaType, data: fileData } }, { type: 'text', text: prompt }] }];
+    } else {
+      messages = [{ role: 'user', content: `Content:\n${content}\n\n${prompt}` }];
+    }
+    
+    const response = await anthropic.messages.create({ model: 'claude-sonnet-4-20250514', max_tokens: 16000, messages });
+    const responseText = response.content[0].text;
+    
+    let course;
+    try {
+      const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+      if (jsonMatch) course = JSON.parse(jsonMatch[0]);
+      else throw new Error('No JSON found');
+    } catch (e) {
+      console.error('Parse error:', e);
+      return res.status(500).json({ error: 'Failed to parse AI response' });
+    }
+    
+    // Validate structure
+    if (!course.title) course.title = 'Untitled Course';
+    if (!course.modules) course.modules = [];
+    course.modules = course.modules.map((m, mi) => {
+      m.order = mi + 1;
+      m.lessons = (m.lessons || []).map((l, li) => {
+        l.order = li + 1;
+        if (!l.type) l.type = 'text';
+        if (!l.duration) l.duration = 10;
+        if (l.type === 'quiz' && l.questions) {
+          l.questions = l.questions.map(q => {
+            if (!q.type) q.type = 'multiple_choice';
+            if (!q.points) q.points = 1;
+            return q;
+          });
+        }
+        return l;
+      });
+      return m;
+    });
+    
+    res.json({ success: true, course });
+  } catch (error) {
+    console.error('Course generation error:', error);
+    res.status(500).json({ error: 'Failed to generate course: ' + error.message });
+  }
+});
+
 export default router;
