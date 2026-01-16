@@ -85,7 +85,7 @@ export default {
         }
       },
       fontFamily: {
-        sans: ['Lato', 'system-ui', 'sans-serif'],
+        sans: ['"Lato"', 'system-ui', 'sans-serif'],
         display: ['"Cormorant Garamond"', 'Georgia', 'serif'],
       }
     },
