@@ -6,10 +6,11 @@
 
 import express from 'express';
 import multer from 'multer';
-import { protect, adminOnly } from '../middleware/auth.js';
-import { uploadVideo, uploadResource, deleteFile, getFileInfo, getSignedUploadUrl } from '../utils/r2Storage.js';
-import User from '../models/User.js';
-import Course from '../models/Course.js';
+import { protect, requireAdmin } from '../../middleware/auth.js';
+import { uploadVideo, uploadResource, deleteFile, getFileInfo, getSignedUploadUrl } from '../../utils/r2Storage.js';
+import User from '../../models/User.js';
+import Course from '../../models/Course.js';
+import StorageUsage from '../../models/StorageUsage.js';
 
 const router = express.Router();
 
@@ -342,51 +343,33 @@ async function checkStorageLimit(providerId, newFileSize) {
   };
 }
 
-// Track storage in database (you'll need a StorageUsage model)
+// Track storage in database
 async function trackStorageUsage(providerId, key, size, type) {
-  // TODO: Create StorageUsage model and save
-  // For now, log it
-  console.log(`Storage tracked: ${providerId} - ${key} - ${formatBytes(size)} - ${type}`);
-  
-  // Example implementation:
-  // await StorageUsage.create({ providerId, key, size, type, createdAt: new Date() });
+  await StorageUsage.create({ 
+    providerId: providerId.toString(), 
+    key, 
+    size, 
+    type 
+  });
 }
 
 // Remove storage tracking when file deleted
 async function removeStorageUsage(providerId, key, size) {
-  console.log(`Storage removed: ${providerId} - ${key} - ${formatBytes(size)}`);
-  
-  // Example implementation:
-  // await StorageUsage.deleteOne({ providerId, key });
+  await StorageUsage.deleteOne({ providerId: providerId.toString(), key });
 }
 
 // Get total storage used by provider
 async function getStorageUsage(providerId) {
-  // TODO: Sum from StorageUsage model
-  // For now, return 0
-  
-  // Example implementation:
-  // const result = await StorageUsage.aggregate([
-  //   { $match: { providerId } },
-  //   { $group: { _id: null, total: { $sum: '$size' } } }
-  // ]);
-  // return result[0]?.total || 0;
-  
-  return 0;
+  const usage = await StorageUsage.getProviderUsage(providerId.toString());
+  return usage.totalBytes;
 }
 
 // Get list of files for provider
 async function getProviderFiles(providerId, type = null, courseId = null) {
-  // TODO: Query from StorageUsage model
-  // For now, return empty array
-  
-  // Example implementation:
-  // const query = { providerId };
-  // if (type) query.type = type;
-  // if (courseId) query.key = { $regex: `/${courseId}/` };
-  // return StorageUsage.find(query).sort({ createdAt: -1 });
-  
-  return [];
+  const query = { providerId: providerId.toString() };
+  if (type) query.type = type;
+  if (courseId) query.key = { $regex: `/${courseId}/` };
+  return StorageUsage.find(query).sort({ createdAt: -1 });
 }
 
 // Format bytes to human readable
