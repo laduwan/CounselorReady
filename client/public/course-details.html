@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Course Details - CounselorReady</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            burgundy: {
+              50: '#fdf5f6', 100: '#fae8eb', 200: '#f5d0d6', 300: '#eba9b5',
+              400: '#dd768a', 500: '#c94d65', 600: '#a83350', 700: '#8b2542',
+              800: '#6b1d34', 900: '#4a1524', 950: '#2d0a14'
+            },
+            forest: {
+              50: '#f3f6f4', 100: '#e3ebe5', 200: '#c8d7cc', 300: '#a1bba8',
+              400: '#759a7f', 500: '#547c5f', 600: '#40634a', 700: '#34503d',
+              800: '#2b4133', 900: '#1f3025', 950: '#121c16'
+            },
+            gold: { 50: '#fefce8', 100: '#fef9c3', 200: '#fef08a', 300: '#fde047', 400: '#facc15', 500: '#d4a012' }
+          },
+          fontFamily: {
+            'display': ['Cormorant Garamond', 'Georgia', 'serif'],
+            'body': ['Lato', 'system-ui', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Lato:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Lato', system-ui, sans-serif; }
+    .font-display { font-family: 'Cormorant Garamond', Georgia, serif; }
+  </style>
+</head>
+<body class="bg-stone-50 min-h-screen">
+  
+  <!-- Header -->
+  <header class="bg-white border-b border-hunter-100 sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+      <a href="/" class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl flex items-center justify-center shadow-md" style="background: linear-gradient(135deg, #8b2542, #6b1d34);">
+          <span class="font-display font-bold text-lg" style="position: relative; display: inline-block; width: 22px; height: 22px;"><span style="color: #D4A855; position: absolute; top: -3px; left: 0;">C</span><span style="color: #4A7C59; position: absolute; top: 5px; left: 6px;">R</span></span>
+        </div>
+        <span class="font-display font-semibold text-xl">
+          <span class="text-burgundy-800">Counselor</span><span class="text-forest-600">Ready</span>
+        </span>
+      </a>
+      
+      <nav class="hidden md:flex items-center gap-8">
+        <a href="/dashboard.html" class="text-forest-600 hover:text-forest-700 transition-colors">Dashboard</a>
+        <a href="/courses.html" class="text-burgundy-800 font-medium">Courses</a>
+        <a href="/credentials.html" class="text-forest-600 hover:text-forest-700 transition-colors">Credentials</a>
+        <a href="/certificates.html" class="text-forest-600 hover:text-forest-700 transition-colors">CE Certificates</a>
+      </nav>
+
+      <div class="flex items-center gap-4">
+        <a href="/courses.html" class="text-forest-600 hover:text-forest-700 text-sm">
+          ← Back to Courses
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Loading State -->
+  <div id="loadingState" class="max-w-7xl mx-auto px-6 py-12">
+    <div class="flex items-center justify-center">
+      <div class="w-10 h-10 border-4 border-burgundy-200 border-t-burgundy-700 rounded-full animate-spin"></div>
+      <span class="ml-4 text-forest-600">Loading course details...</span>
+    </div>
+  </div>
+
+  <!-- Error State -->
+  <div id="errorState" class="hidden max-w-7xl mx-auto px-6 py-12">
+    <div class="bg-red-50 border border-red-200 rounded-xl p-8 text-center">
+      <div class="text-4xl mb-4">😕</div>
+      <h2 class="font-display text-2xl font-semibold text-red-800 mb-2">Course Not Found</h2>
+      <p class="text-red-600 mb-4" id="errorMessage">The requested course could not be found.</p>
+      <a href="/courses.html" class="inline-flex items-center gap-2 bg-burgundy-700 hover:bg-burgundy-800 text-white font-semibold px-6 py-3 rounded-xl transition-colors">
+        Browse All Courses
+      </a>
+    </div>
+  </div>
+
+  <!-- Course Content -->
+  <main id="courseContent" class="hidden max-w-7xl mx-auto px-6 py-8">
+    
+    <!-- Breadcrumb -->
+    <nav class="text-sm mb-6">
+      <ol class="flex items-center gap-2 text-forest-500">
+        <li><a href="/courses.html" class="hover:text-burgundy-700">Courses</a></li>
+        <li>/</li>
+        <li id="breadcrumbCategory" class="text-forest-700">Category</li>
+      </ol>
+    </nav>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      
+      <!-- Main Content Column -->
+      <div class="lg:col-span-2 space-y-6">
+        
+        <!-- Course Header -->
+        <div class="bg-white rounded-xl border border-burgundy-100 shadow-sm overflow-hidden">
+          <!-- Thumbnail -->
+          <div id="courseThumbnailContainer" class="h-64 bg-gradient-to-br from-burgundy-700 to-burgundy-900 flex items-center justify-center">
+            <img id="courseThumbnail" class="hidden w-full h-full object-cover" alt="Course thumbnail">
+            <div id="thumbnailPlaceholder" class="text-center">
+              <div class="text-6xl mb-2">📚</div>
+              <span class="text-burgundy-200 text-sm">Continuing Education</span>
+            </div>
+          </div>
+          
+          <div class="p-6">
+            <!-- Badges -->
+            <div id="complianceBadges" class="flex flex-wrap gap-2 mb-4">
+              <!-- Badges will be inserted here -->
+            </div>
+            
+            <h1 id="courseTitle" class="font-display text-3xl font-bold text-burgundy-900 mb-2">Course Title</h1>
+            <p id="courseSubtitle" class="text-lg text-forest-600 mb-4"></p>
+            
+            <!-- Quick Stats -->
+            <div class="flex flex-wrap gap-4 text-sm text-forest-600 mb-4">
+              <span class="flex items-center gap-1">
+                <svg class="w-5 h-5 text-gold-500" fill="currentColor" viewBox="0 0 20 20"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"/></svg>
+                <span id="courseCEHours">0</span> CE Hours
+              </span>
+              <span class="flex items-center gap-1">
+                <svg class="w-5 h-5 text-forest-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+                <span id="courseModuleCount">0</span> Modules
+              </span>
+              <span class="flex items-center gap-1">
+                <svg class="w-5 h-5 text-forest-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                <span id="courseLessonCount">0</span> Lessons
+              </span>
+              <span id="courseInstructorContainer" class="flex items-center gap-1">
+                <svg class="w-5 h-5 text-forest-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                <span id="courseInstructor">Instructor</span>
+              </span>
+            </div>
+            
+            <!-- Description -->
+            <div class="prose max-w-none">
+              <p id="courseDescription" class="text-forest-700 leading-relaxed"></p>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Learning Objectives -->
+        <div id="objectivesSection" class="hidden bg-white rounded-xl border border-burgundy-100 shadow-sm p-6">
+          <h2 class="font-display text-xl font-semibold text-burgundy-900 mb-4 flex items-center gap-2">
+            <svg class="w-6 h-6 text-forest-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            Learning Objectives
+          </h2>
+          <ul id="objectivesList" class="space-y-3">
+            <!-- Objectives will be inserted here -->
+          </ul>
+        </div>
+        
+        <!-- Course Outline -->
+        <div id="outlineSection" class="bg-white rounded-xl border border-burgundy-100 shadow-sm p-6">
+          <h2 class="font-display text-xl font-semibold text-burgundy-900 mb-4 flex items-center gap-2">
+            <svg class="w-6 h-6 text-forest-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
+            Course Outline
+          </h2>
+          <div id="modulesList" class="space-y-4">
+            <!-- Modules will be inserted here -->
+          </div>
+        </div>
+        
+      </div>
+      
+      <!-- Sidebar -->
+      <div class="lg:col-span-1">
+        <div class="sticky top-24 space-y-6">
+          
+          <!-- Pricing Card -->
+          <div class="bg-white rounded-xl border border-burgundy-100 shadow-lg overflow-hidden">
+            <div class="bg-gradient-to-r from-burgundy-700 to-burgundy-800 p-4 text-center">
+              <span class="text-burgundy-100 text-sm">NBCC Approved Provider #7760</span>
+            </div>
+            
+            <div class="p-6">
+              <!-- Individual Price (if available) -->
+              <div id="individualPriceSection" class="hidden mb-6">
+                <div class="text-center mb-4">
+                  <span class="text-sm text-forest-500">Individual Purchase</span>
+                  <div class="text-4xl font-bold text-burgundy-900">$<span id="individualPrice">0</span></div>
+                  <span class="text-sm text-forest-500">one-time payment</span>
+                </div>
+                <button onclick="purchaseCourse()" class="w-full bg-burgundy-700 hover:bg-burgundy-800 text-white font-semibold py-3 px-6 rounded-xl transition-colors mb-3">
+                  Buy This Course
+                </button>
+                <div class="text-center text-sm text-forest-500">or</div>
+              </div>
+              
+              <!-- Subscription Access -->
+              <div id="subscriptionSection" class="text-center">
+                <div id="subscriptionPriceDisplay" class="mb-4">
+                  <span class="text-sm text-forest-500">Included with</span>
+                  <div class="text-2xl font-bold text-forest-700" id="subscriptionTierName">Professional Plan</div>
+                  <span class="text-sm text-forest-500">$<span id="subscriptionPrice">19</span>/month</span>
+                </div>
+                
+                <button id="startCourseBtn" onclick="startCourse()" class="w-full bg-forest-700 hover:bg-forest-800 text-white font-semibold py-3 px-6 rounded-xl transition-colors mb-3">
+                  Start Course
+                </button>
+                
+                <a href="/subscription.html" id="subscribeLink" class="hidden block w-full bg-gold-400 hover:bg-gold-500 text-burgundy-900 font-semibold py-3 px-6 rounded-xl transition-colors text-center">
+                  Subscribe to Access
+                </a>
+                
+                <p class="text-xs text-forest-500 mt-4">
+                  Get unlimited access to all courses with a subscription
+                </p>
+              </div>
+            </div>
+            
+            <!-- Features -->
+            <div class="border-t border-burgundy-100 p-4 bg-stone-50">
+              <ul class="space-y-2 text-sm text-forest-600">
+                <li class="flex items-center gap-2">
+                  <svg class="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                  Instant CE Certificate
+                </li>
+                <li class="flex items-center gap-2">
+                  <svg class="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                  Self-Paced Learning
+                </li>
+                <li class="flex items-center gap-2">
+                  <svg class="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                  Lifetime Access
+                </li>
+                <li class="flex items-center gap-2">
+                  <svg class="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                  Mobile Friendly
+                </li>
+              </ul>
+            </div>
+          </div>
+          
+          <!-- CE Category Card -->
+          <div id="categoryCard" class="bg-white rounded-xl border border-burgundy-100 shadow-sm p-4">
+            <h3 class="font-semibold text-forest-700 mb-2">CE Category</h3>
+            <div id="categoryBadge" class="inline-flex items-center gap-2 px-3 py-1 bg-forest-100 text-forest-700 rounded-full text-sm">
+              <span id="categoryName">Core</span>
+              <span>•</span>
+              <span id="categoryHours">0</span> Hours
+            </div>
+          </div>
+          
+        </div>
+      </div>
+      
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-burgundy-900 text-white mt-16">
+    <div class="max-w-7xl mx-auto px-6 py-8">
+      <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background: linear-gradient(135deg, #D4A855, #4A7C59);">
+            <span class="font-display font-bold text-sm text-white">CR</span>
+          </div>
+          <span class="font-display text-lg">CounselorReady</span>
+        </div>
+        <div class="text-burgundy-200 text-sm">
+          NBCC Approved Continuing Education Provider #7760
+        </div>
+        <div class="flex gap-6 text-sm text-burgundy-200">
+          <a href="/privacy.html" class="hover:text-white">Privacy</a>
+          <a href="/terms.html" class="hover:text-white">Terms</a>
+          <a href="/help.html" class="hover:text-white">Help</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://api.counselorready.com';
+    
+    let currentCourse = null;
+    let currentUser = null;
+    let userProgress = null;
+    
+    // Get course slug from URL
+    function getCourseSlug() {
+      const params = new URLSearchParams(window.location.search);
+      return params.get('slug');
+    }
+    
+    // Load course details
+    async function loadCourse() {
+      const slug = getCourseSlug();
+      
+      if (!slug) {
+        showError('No course specified');
+        return;
+      }
+      
+      const token = localStorage.getItem('token');
+      
+      try {
+        const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+        
+        const response = await fetch(`${API_URL}/api/courses/${slug}`, { headers });
+        
+        if (!response.ok) {
+          if (response.status === 404) {
+            showError('Course not found');
+          } else {
+            showError('Failed to load course');
+          }
+          return;
+        }
+        
+        const data = await response.json();
+        currentCourse = data.course || data;
+        userProgress = data.progress || null;
+        
+        // Load user info if logged in
+        if (token) {
+          try {
+            const userResponse = await fetch(`${API_URL}/api/auth/me`, { headers });
+            if (userResponse.ok) {
+              const userData = await userResponse.json();
+              currentUser = userData.user || userData;
+            }
+          } catch (e) {
+            console.log('Could not load user info');
+          }
+        }
+        
+        renderCourse();
+        
+      } catch (error) {
+        console.error('Load course error:', error);
+        showError('Failed to load course');
+      }
+    }
+    
+    // Show error state
+    function showError(message) {
+      document.getElementById('loadingState').classList.add('hidden');
+      document.getElementById('courseContent').classList.add('hidden');
+      document.getElementById('errorState').classList.remove('hidden');
+      document.getElementById('errorMessage').textContent = message;
+    }
+    
+    // Render course details
+    function renderCourse() {
+      document.getElementById('loadingState').classList.add('hidden');
+      document.getElementById('errorState').classList.add('hidden');
+      document.getElementById('courseContent').classList.remove('hidden');
+      
+      // Set page title
+      document.title = `${currentCourse.title} - CounselorReady`;
+      
+      // Basic info
+      document.getElementById('courseTitle').textContent = currentCourse.title;
+      document.getElementById('courseSubtitle').textContent = currentCourse.subtitle || '';
+      document.getElementById('courseDescription').textContent = currentCourse.description || '';
+      document.getElementById('courseCEHours').textContent = currentCourse.ceuHours || 0;
+      document.getElementById('courseInstructor').textContent = currentCourse.instructor || 'CounselorReady';
+      
+      // Module and lesson counts
+      const modules = currentCourse.modules || [];
+      const lessonCount = modules.reduce((sum, m) => sum + (m.lessons?.length || 0), 0);
+      document.getElementById('courseModuleCount').textContent = modules.length;
+      document.getElementById('courseLessonCount').textContent = lessonCount;
+      
+      // Thumbnail
+      if (currentCourse.thumbnail) {
+        document.getElementById('courseThumbnail').src = currentCourse.thumbnail;
+        document.getElementById('courseThumbnail').classList.remove('hidden');
+        document.getElementById('thumbnailPlaceholder').classList.add('hidden');
+      }
+      
+      // Category
+      const category = currentCourse.ceuCategories?.[0]?.category || currentCourse.category || 'Core';
+      const categoryHours = currentCourse.ceuCategories?.[0]?.hours || currentCourse.ceuHours || 0;
+      document.getElementById('categoryName').textContent = capitalizeFirst(category);
+      document.getElementById('categoryHours').textContent = categoryHours;
+      document.getElementById('breadcrumbCategory').textContent = capitalizeFirst(category);
+      
+      // Compliance badges
+      renderBadges();
+      
+      // Learning objectives
+      renderObjectives();
+      
+      // Course outline (modules)
+      renderModules();
+      
+      // Pricing
+      renderPricing();
+    }
+    
+    // Render compliance badges
+    function renderBadges() {
+      const container = document.getElementById('complianceBadges');
+      let badges = '';
+      
+      // NBCC badge
+      badges += `<span class="inline-flex items-center gap-1 px-3 py-1 bg-green-100 text-green-800 text-sm font-medium rounded-full">
+        ✓ NBCC Approved
+      </span>`;
+      
+      // State compliance badges
+      const states = currentCourse.stateCompliance || currentCourse.applicableStates || [];
+      states.forEach(state => {
+        badges += `<span class="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-800 text-sm font-medium rounded-full">
+          ✓ Meets ${state} Requirements
+        </span>`;
+      });
+      
+      // CE Category badge
+      const category = currentCourse.ceuCategories?.[0]?.category || currentCourse.category || 'Core';
+      const isPremium = ['ethics', 'telehealth', 'supervision'].includes(category.toLowerCase());
+      if (isPremium) {
+        badges += `<span class="inline-flex items-center gap-1 px-3 py-1 bg-purple-100 text-purple-800 text-sm font-medium rounded-full">
+          ⭐ ${capitalizeFirst(category)}
+        </span>`;
+      }
+      
+      container.innerHTML = badges;
+    }
+    
+    // Render learning objectives
+    function renderObjectives() {
+      const objectives = currentCourse.objectives || [];
+      const section = document.getElementById('objectivesSection');
+      const list = document.getElementById('objectivesList');
+      
+      if (objectives.length === 0) {
+        section.classList.add('hidden');
+        return;
+      }
+      
+      section.classList.remove('hidden');
+      list.innerHTML = objectives.map(obj => `
+        <li class="flex items-start gap-3">
+          <span class="flex-shrink-0 w-6 h-6 rounded-full bg-forest-100 text-forest-600 flex items-center justify-center text-sm">✓</span>
+          <span class="text-forest-700">${escapeHtml(obj)}</span>
+        </li>
+      `).join('');
+    }
+    
+    // Render course modules
+    function renderModules() {
+      const modules = currentCourse.modules || [];
+      const container = document.getElementById('modulesList');
+      
+      if (modules.length === 0) {
+        container.innerHTML = '<p class="text-forest-500">Course content is being prepared...</p>';
+        return;
+      }
+      
+      container.innerHTML = modules.map((mod, mi) => `
+        <div class="border border-forest-200 rounded-lg overflow-hidden">
+          <div class="bg-forest-50 px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <span class="w-8 h-8 rounded-full bg-burgundy-100 text-burgundy-700 flex items-center justify-center font-semibold text-sm">${mi + 1}</span>
+              <h3 class="font-semibold text-forest-800">${escapeHtml(mod.title)}</h3>
+            </div>
+            <span class="text-sm text-forest-500">${mod.lessons?.length || 0} lessons</span>
+          </div>
+          <div class="divide-y divide-forest-100">
+            ${(mod.lessons || []).map((lesson, li) => `
+              <div class="px-4 py-2 flex items-center gap-3 text-sm">
+                <span class="w-6 h-6 rounded-full ${getLessonIcon(lesson.type)} flex items-center justify-center text-xs">
+                  ${getLessonIconSymbol(lesson.type)}
+                </span>
+                <span class="text-forest-700">${escapeHtml(lesson.title)}</span>
+                <span class="ml-auto text-forest-400">${lesson.duration || 10} min</span>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `).join('');
+    }
+    
+    // Render pricing section
+    function renderPricing() {
+      const price = currentCourse.price;
+      const accessTier = currentCourse.accessTier || 'professional';
+      
+      // Individual price section
+      if (price && price > 0) {
+        document.getElementById('individualPriceSection').classList.remove('hidden');
+        document.getElementById('individualPrice').textContent = price;
+      } else {
+        document.getElementById('individualPriceSection').classList.add('hidden');
+      }
+      
+      // Subscription tier
+      const tierNames = {
+        'free': 'Free',
+        'professional': 'Professional Plan',
+        'vip': 'VIP Plan'
+      };
+      const tierPrices = {
+        'free': 0,
+        'professional': 19,
+        'vip': 49
+      };
+      
+      document.getElementById('subscriptionTierName').textContent = tierNames[accessTier] || 'Professional Plan';
+      document.getElementById('subscriptionPrice').textContent = tierPrices[accessTier] || 19;
+      
+      // Check if user has access
+      const hasAccess = checkUserAccess(accessTier);
+      
+      if (hasAccess) {
+        document.getElementById('startCourseBtn').classList.remove('hidden');
+        document.getElementById('subscribeLink').classList.add('hidden');
+        
+        // Update button text based on progress
+        if (userProgress && userProgress.status === 'completed') {
+          document.getElementById('startCourseBtn').textContent = 'Review Course';
+        } else if (userProgress && userProgress.currentLesson > 0) {
+          document.getElementById('startCourseBtn').textContent = 'Continue Course';
+        }
+      } else {
+        if (accessTier === 'free') {
+          document.getElementById('startCourseBtn').classList.remove('hidden');
+          document.getElementById('subscribeLink').classList.add('hidden');
+        } else {
+          document.getElementById('startCourseBtn').classList.add('hidden');
+          document.getElementById('subscribeLink').classList.remove('hidden');
+        }
+      }
+    }
+    
+    // Check if user has access to the course
+    function checkUserAccess(requiredTier) {
+      if (!currentUser) return false;
+      if (requiredTier === 'free') return true;
+      
+      const userTier = currentUser.subscription?.plan || 'free';
+      const userStatus = currentUser.subscription?.status;
+      
+      if (userStatus !== 'active') return false;
+      
+      const tierLevels = { 'free': 0, 'professional': 1, 'vip': 2 };
+      return tierLevels[userTier] >= tierLevels[requiredTier];
+    }
+    
+    // Start/continue course
+    function startCourse() {
+      if (!currentUser) {
+        window.location.href = `/login.html?redirect=${encodeURIComponent(window.location.href)}`;
+        return;
+      }
+      
+      window.location.href = `/course-player.html?slug=${currentCourse.slug}`;
+    }
+    
+    // Purchase course individually
+    function purchaseCourse() {
+      if (!currentUser) {
+        window.location.href = `/login.html?redirect=${encodeURIComponent(window.location.href)}`;
+        return;
+      }
+      
+      // TODO: Implement individual course purchase with Stripe
+      alert('Individual course purchases coming soon! For now, subscribe for unlimited access.');
+      window.location.href = '/subscription.html';
+    }
+    
+    // Helper functions
+    function capitalizeFirst(str) {
+      return str.charAt(0).toUpperCase() + str.slice(1);
+    }
+    
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+    
+    function getLessonIcon(type) {
+      switch(type) {
+        case 'video': return 'bg-blue-100 text-blue-600';
+        case 'quiz': return 'bg-green-100 text-green-600';
+        case 'download': return 'bg-purple-100 text-purple-600';
+        default: return 'bg-forest-100 text-forest-600';
+      }
+    }
+    
+    function getLessonIconSymbol(type) {
+      switch(type) {
+        case 'video': return '▶';
+        case 'quiz': return '?';
+        case 'download': return '↓';
+        default: return '📄';
+      }
+    }
+    
+    // Initialize
+    document.addEventListener('DOMContentLoaded', loadCourse);
+  </script>
+</body>
+</html>
