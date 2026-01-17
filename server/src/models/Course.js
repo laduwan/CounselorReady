@@ -87,6 +87,11 @@ const courseSchema = new mongoose.Schema({
     default: 'paid'
   },
   price: { type: Number }, // One-time price if applicable
+  pricingTier: {
+    type: String,
+    enum: ['standard', 'premium'],
+    default: 'standard'
+  }, // Premium for Ethics, Telehealth, Supervision
   stripePriceId: { type: String },
   accessTier: { 
     type: String, 
@@ -118,6 +123,9 @@ const courseSchema = new mongoose.Schema({
   },
   applicableStates: [{ 
     type: String // State codes: "GA", "FL", etc. Empty = all states
+  }],
+  stateCompliance: [{
+    type: String // State codes this course is compliant with
   }],
   
   // Content
