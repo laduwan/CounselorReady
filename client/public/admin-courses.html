@@ -1101,16 +1101,27 @@
 
     // Suggest price based on CE hours and category
     function suggestPrice() {
-      const ceHours = Math.round(parseFloat(document.getElementById('courseCeuHours').value) || 0);
-      const category = document.getElementById('courseCeuCategory').value;
-      const pricingTier = document.getElementById('coursePricingTier').value;
+      const ceHoursEl = document.getElementById('courseCeuHours');
+      const categoryEl = document.getElementById('courseCeuCategory');
+      const pricingTierEl = document.getElementById('coursePricingTier');
+      const priceInput = document.getElementById('coursePrice');
+      
+      // Safety check - elements might not exist yet
+      if (!ceHoursEl || !categoryEl || !pricingTierEl || !priceInput) {
+        console.log('Price elements not ready yet');
+        return;
+      }
+      
+      const ceHours = Math.round(parseFloat(ceHoursEl.value) || 0);
+      const category = categoryEl.value;
+      const pricingTier = pricingTierEl.value;
       
       // Auto-select premium tier for premium categories
       if (PREMIUM_CATEGORIES.includes(category) && pricingTier !== 'premium') {
-        document.getElementById('coursePricingTier').value = 'premium';
+        pricingTierEl.value = 'premium';
       }
       
-      const isPremium = document.getElementById('coursePricingTier').value === 'premium' || PREMIUM_CATEGORIES.includes(category);
+      const isPremium = pricingTierEl.value === 'premium' || PREMIUM_CATEGORIES.includes(category);
       const priceTable = isPremium ? PREMIUM_PRICES : STANDARD_PRICES;
       
       // Get price for CE hours (cap at 6 for table, extrapolate beyond)
@@ -1126,8 +1137,7 @@
         suggestedPrice = basePrice + (extraHours * (isPremium ? 15 : 10));
       }
       
-      const priceInput = document.getElementById('coursePrice');
-      if (priceInput && suggestedPrice) {
+      if (suggestedPrice) {
         priceInput.value = suggestedPrice;
         priceInput.placeholder = `Suggested: $${suggestedPrice}`;
       }
