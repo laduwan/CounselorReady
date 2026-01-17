@@ -439,11 +439,11 @@
           </div>
           <div>
             <label class="block text-sm font-medium text-forest-700 mb-1">CE Hours</label>
-            <input type="number" id="courseCeuHours" class="w-full px-4 py-2 border border-forest-200 rounded-lg focus:ring-2 focus:ring-burgundy-500 outline-none">
+            <input type="number" id="courseCeuHours" onchange="suggestPrice()" class="w-full px-4 py-2 border border-forest-200 rounded-lg focus:ring-2 focus:ring-burgundy-500 outline-none">
           </div>
           <div>
             <label class="block text-sm font-medium text-forest-700 mb-1">CE Category</label>
-            <select id="courseCeuCategory" class="w-full px-4 py-2 border border-forest-200 rounded-lg focus:ring-2 focus:ring-burgundy-500 outline-none">
+            <select id="courseCeuCategory" onchange="suggestPrice()" class="w-full px-4 py-2 border border-forest-200 rounded-lg focus:ring-2 focus:ring-burgundy-500 outline-none">
               <option value="ethics">Ethics</option>
               <option value="core">Core</option>
               <option value="related">Related</option>
@@ -466,6 +466,42 @@
               <option value="published">Published</option>
               <option value="archived">Archived</option>
             </select>
+          </div>
+          
+          <!-- Individual Purchase Price -->
+          <div>
+            <label class="block text-sm font-medium text-forest-700 mb-1">Individual Price ($)</label>
+            <input type="number" id="coursePrice" step="1" min="0" placeholder="e.g., 49" class="w-full px-4 py-2 border border-forest-200 rounded-lg focus:ring-2 focus:ring-burgundy-500 outline-none">
+            <p class="text-xs text-forest-500 mt-1">Leave blank for subscription-only access</p>
+          </div>
+          
+          <!-- Premium Course Toggle -->
+          <div>
+            <label class="block text-sm font-medium text-forest-700 mb-1">Pricing Tier</label>
+            <select id="coursePricingTier" onchange="suggestPrice()" class="w-full px-4 py-2 border border-forest-200 rounded-lg focus:ring-2 focus:ring-burgundy-500 outline-none">
+              <option value="standard">Standard (Core, Cultural, Trauma, etc.)</option>
+              <option value="premium">Premium (Ethics, Telehealth, Supervision)</option>
+            </select>
+          </div>
+          
+          <!-- State Compliance -->
+          <div class="md:col-span-2">
+            <label class="block text-sm font-medium text-forest-700 mb-1">State Compliance</label>
+            <p class="text-xs text-forest-500 mb-2">Select states whose requirements this course meets (displays badge on course)</p>
+            <div id="stateComplianceCheckboxes" class="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2 p-3 border border-forest-200 rounded-lg bg-forest-50 max-h-40 overflow-y-auto">
+              <!-- States will be populated by JS -->
+            </div>
+          </div>
+          
+          <!-- NBCC Compliance Display -->
+          <div class="md:col-span-2">
+            <label class="block text-sm font-medium text-forest-700 mb-1">Compliance Badges Preview</label>
+            <div id="complianceBadgesPreview" class="flex flex-wrap gap-2 p-3 border border-forest-200 rounded-lg bg-white min-h-[48px]">
+              <span class="inline-flex items-center gap-1 px-3 py-1 bg-green-100 text-green-800 text-sm font-medium rounded-full">
+                ✓ NBCC Approved (Provider #7760)
+              </span>
+              <!-- State badges will be added dynamically -->
+            </div>
           </div>
           
           <!-- Course Thumbnail -->
@@ -1016,6 +1052,100 @@
     let currentOptions = ['', '', '', ''];
     let currentCorrectAnswer = null;
 
+    // US States for compliance checkboxes
+    const US_STATES = [
+      'AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'FL', 'GA',
+      'HI', 'ID', 'IL', 'IN', 'IA', 'KS', 'KY', 'LA', 'ME', 'MD',
+      'MA', 'MI', 'MN', 'MS', 'MO', 'MT', 'NE', 'NV', 'NH', 'NJ',
+      'NM', 'NY', 'NC', 'ND', 'OH', 'OK', 'OR', 'PA', 'RI', 'SC',
+      'SD', 'TN', 'TX', 'UT', 'VT', 'VA', 'WA', 'WV', 'WI', 'WY', 'DC'
+    ];
+
+    // Pricing tables
+    const STANDARD_PRICES = { 1: 19, 2: 35, 3: 49, 4: 59, 5: 69, 6: 79 };
+    const PREMIUM_PRICES = { 1: 25, 2: 45, 3: 59, 4: 75, 5: 89, 6: 99 };
+    const PREMIUM_CATEGORIES = ['ethics', 'telehealth', 'supervision'];
+
+    // Initialize state compliance checkboxes
+    function initStateComplianceCheckboxes() {
+      const container = document.getElementById('stateComplianceCheckboxes');
+      if (!container) return;
+      
+      container.innerHTML = US_STATES.map(state => `
+        <label class="flex items-center gap-1 cursor-pointer">
+          <input type="checkbox" value="${state}" class="state-compliance-checkbox w-4 h-4 text-burgundy-600 rounded" onchange="updateComplianceBadges()">
+          <span class="text-xs text-forest-700">${state}</span>
+        </label>
+      `).join('');
+    }
+
+    // Update compliance badges preview
+    function updateComplianceBadges() {
+      const preview = document.getElementById('complianceBadgesPreview');
+      if (!preview) return;
+      
+      const selectedStates = Array.from(document.querySelectorAll('.state-compliance-checkbox:checked')).map(cb => cb.value);
+      
+      let badges = `<span class="inline-flex items-center gap-1 px-3 py-1 bg-green-100 text-green-800 text-sm font-medium rounded-full">
+        ✓ NBCC Approved (Provider #7760)
+      </span>`;
+      
+      selectedStates.forEach(state => {
+        badges += `<span class="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-800 text-sm font-medium rounded-full">
+          ✓ Meets ${state} Requirements
+        </span>`;
+      });
+      
+      preview.innerHTML = badges;
+    }
+
+    // Suggest price based on CE hours and category
+    function suggestPrice() {
+      const ceHours = Math.round(parseFloat(document.getElementById('courseCeuHours').value) || 0);
+      const category = document.getElementById('courseCeuCategory').value;
+      const pricingTier = document.getElementById('coursePricingTier').value;
+      
+      // Auto-select premium tier for premium categories
+      if (PREMIUM_CATEGORIES.includes(category) && pricingTier !== 'premium') {
+        document.getElementById('coursePricingTier').value = 'premium';
+      }
+      
+      const isPremium = document.getElementById('coursePricingTier').value === 'premium' || PREMIUM_CATEGORIES.includes(category);
+      const priceTable = isPremium ? PREMIUM_PRICES : STANDARD_PRICES;
+      
+      // Get price for CE hours (cap at 6 for table, extrapolate beyond)
+      let suggestedPrice;
+      if (ceHours <= 0) {
+        suggestedPrice = '';
+      } else if (ceHours <= 6) {
+        suggestedPrice = priceTable[ceHours] || priceTable[Math.ceil(ceHours)];
+      } else {
+        // For courses > 6 hours, add $10-15 per additional hour
+        const basePrice = priceTable[6];
+        const extraHours = ceHours - 6;
+        suggestedPrice = basePrice + (extraHours * (isPremium ? 15 : 10));
+      }
+      
+      const priceInput = document.getElementById('coursePrice');
+      if (priceInput && suggestedPrice) {
+        priceInput.value = suggestedPrice;
+        priceInput.placeholder = `Suggested: $${suggestedPrice}`;
+      }
+    }
+
+    // Get selected compliance states
+    function getSelectedComplianceStates() {
+      return Array.from(document.querySelectorAll('.state-compliance-checkbox:checked')).map(cb => cb.value);
+    }
+
+    // Set compliance states (when loading a course)
+    function setComplianceStates(states) {
+      document.querySelectorAll('.state-compliance-checkbox').forEach(cb => {
+        cb.checked = states && states.includes(cb.value);
+      });
+      updateComplianceBadges();
+    }
+
     // Load all courses
     async function loadCourses() {
       const token = localStorage.getItem('token');
@@ -1098,6 +1228,9 @@
         
         console.log('Loaded course:', currentCourse);
         
+        // Initialize state checkboxes if not already done
+        initStateComplianceCheckboxes();
+        
         // Populate form
         document.getElementById('courseTitle').value = currentCourse.title || '';
         document.getElementById('courseSlug').value = currentCourse.slug || '';
@@ -1108,6 +1241,14 @@
         document.getElementById('courseCeuCategory').value = currentCourse.ceuCategories?.[0]?.category?.toLowerCase() || currentCourse.category?.toLowerCase() || 'core';
         document.getElementById('courseAccessTier').value = currentCourse.accessTier || 'free';
         document.getElementById('courseStatus').value = currentCourse.status || 'draft';
+        
+        // Load new pricing fields
+        document.getElementById('coursePrice').value = currentCourse.price || '';
+        document.getElementById('coursePricingTier').value = currentCourse.pricingTier || 
+          (PREMIUM_CATEGORIES.includes(currentCourse.ceuCategories?.[0]?.category?.toLowerCase() || currentCourse.category?.toLowerCase()) ? 'premium' : 'standard');
+        
+        // Load state compliance
+        setComplianceStates(currentCourse.stateCompliance || currentCourse.applicableStates || []);
         
         // Load thumbnail if exists
         document.getElementById('courseThumbnailUrl').value = currentCourse.thumbnail || '';
@@ -1165,6 +1306,8 @@
     async function saveCourseDetails() {
       const token = localStorage.getItem('token');
       
+      const priceValue = document.getElementById('coursePrice').value;
+      
       const updates = {
         title: document.getElementById('courseTitle').value,
         slug: document.getElementById('courseSlug').value,
@@ -1179,7 +1322,12 @@
         ceuEligible: parseInt(document.getElementById('courseCeuHours').value) > 0,
         accessTier: document.getElementById('courseAccessTier').value,
         status: document.getElementById('courseStatus').value,
-        ceuApprovalNumber: '7760'
+        ceuApprovalNumber: '7760',
+        // New pricing fields
+        price: priceValue ? parseFloat(priceValue) : null,
+        pricingTier: document.getElementById('coursePricingTier').value,
+        stateCompliance: getSelectedComplianceStates(),
+        applicableStates: getSelectedComplianceStates() // Also save to applicableStates for compatibility
       };
 
       try {
