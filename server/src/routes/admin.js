@@ -1603,6 +1603,8 @@ router.post('/courses', protect, adminOnly, async (req, res) => {
       category,
       ceuHours,
       ceuCategories,
+      ceuEligible,
+      ceuApprovalNumber,
       isExternal,
       externalUrl,
       importType,
@@ -1615,7 +1617,12 @@ router.post('/courses', protect, adminOnly, async (req, res) => {
       settings,
       approvingBody,
       approvalNumber,
-      slug: providedSlug
+      slug: providedSlug,
+      // New pricing fields
+      price,
+      pricingTier,
+      stateCompliance,
+      applicableStates
     } = req.body;
     
     if (!title) {
@@ -1670,8 +1677,9 @@ router.post('/courses', protect, adminOnly, async (req, res) => {
       subtitle: subtitle || '',
       category: category || 'general',
       ceuHours: ceuHours || 0,
-      ceuEligible: ceuHours > 0,
+      ceuEligible: ceuEligible || ceuHours > 0,
       ceuCategories: ceuCategories || [],
+      ceuApprovalNumber: ceuApprovalNumber || '7760',
       isExternal: isExternal || false,
       externalUrl: externalUrl || '',
       importType: importType || 'native',
@@ -1680,10 +1688,15 @@ router.post('/courses', protect, adminOnly, async (req, res) => {
       accessTier: accessTier || 'professional',
       modules: processedModules,
       objectives: objectives || [],
-      instructor: instructor || 'CounselorReady',
+      instructor: instructor || 'GA Integrated Therapeutic Perspectives LLC',
       approvingBody: approvingBody || 'NBCC',
-      approvalNumber: approvalNumber || '',
-      createdBy: req.user._id
+      approvalNumber: approvalNumber || '7760',
+      createdBy: req.user._id,
+      // New pricing fields
+      price: price || null,
+      pricingTier: pricingTier || 'standard',
+      stateCompliance: stateCompliance || [],
+      applicableStates: applicableStates || stateCompliance || []
     };
     
     // Merge settings if provided
