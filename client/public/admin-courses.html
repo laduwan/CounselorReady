@@ -1308,7 +1308,7 @@
       
       const priceValue = document.getElementById('coursePrice').value;
       
-      const updates = {
+      const courseData = {
         title: document.getElementById('courseTitle').value,
         slug: document.getElementById('courseSlug').value,
         subtitle: document.getElementById('courseSubtitle').value,
@@ -1323,29 +1323,47 @@
         accessTier: document.getElementById('courseAccessTier').value,
         status: document.getElementById('courseStatus').value,
         ceuApprovalNumber: '7760',
-        // New pricing fields
+        // Pricing fields
         price: priceValue ? parseFloat(priceValue) : null,
         pricingTier: document.getElementById('coursePricingTier').value,
         stateCompliance: getSelectedComplianceStates(),
-        applicableStates: getSelectedComplianceStates() // Also save to applicableStates for compatibility
+        applicableStates: getSelectedComplianceStates()
       };
 
       try {
-        const response = await fetch(`${API_URL}/api/admin/courses/${currentCourse._id}`, {
-          method: 'PUT',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(updates)
-        });
+        let response;
+        
+        // If course has an _id, update it (PUT). Otherwise, create it (POST).
+        if (currentCourse._id) {
+          response = await fetch(`${API_URL}/api/admin/courses/${currentCourse._id}`, {
+            method: 'PUT',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(courseData)
+          });
+        } else {
+          // New course - POST to create
+          response = await fetch(`${API_URL}/api/admin/courses`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(courseData)
+          });
+        }
 
         if (response.ok) {
           const data = await response.json();
           currentCourse = data.course;
           alert('Course saved!');
+          // Update the editor title if this was a new course
+          document.getElementById('editorTitle').textContent = 'Edit Course';
         } else {
-          alert('Failed to save course');
+          const errorData = await response.json();
+          alert('Failed to save course: ' + (errorData.error || 'Unknown error'));
         }
       } catch (error) {
         console.error('Save error:', error);
@@ -1524,8 +1542,14 @@
         ceuCategories: [],
         accessTier: 'free',
         status: 'draft',
-        modules: []
+        modules: [],
+        price: null,
+        pricingTier: 'standard',
+        stateCompliance: []
       };
+      
+      // Initialize state compliance checkboxes
+      initStateComplianceCheckboxes();
       
       document.getElementById('courseTitle').value = '';
       document.getElementById('courseSlug').value = '';
@@ -1536,6 +1560,11 @@
       document.getElementById('courseCeuCategory').value = 'core';
       document.getElementById('courseAccessTier').value = 'free';
       document.getElementById('courseStatus').value = 'draft';
+      
+      // Initialize new pricing fields
+      document.getElementById('coursePrice').value = '';
+      document.getElementById('coursePricingTier').value = 'standard';
+      setComplianceStates([]);
       
       document.getElementById('editorTitle').textContent = 'New Course';
       document.getElementById('modulesContainer').innerHTML = '<p class="text-forest-500">Save course details first, then add modules.</p>';
