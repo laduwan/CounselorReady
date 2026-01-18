@@ -120,6 +120,9 @@
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"/></svg>
           Users
         </a>
+        <button onclick="showBulkPricing()" class="bg-green-100 hover:bg-green-200 text-green-800 font-medium px-4 py-2 rounded-xl flex items-center gap-1">
+            💰 Bulk Pricing
+          </button>
         <a href="/admin-migration.html" class="bg-gold-100 hover:bg-gold-200 text-gold-800 font-medium px-4 py-2 rounded-xl flex items-center gap-1">
             🔄 Migration
           </a>
@@ -133,6 +136,125 @@
           <button onclick="showNewCourseForm()" class="bg-burgundy-800 hover:bg-burgundy-900 text-white font-semibold px-4 py-2 rounded-xl">
             + New Course
           </button>
+        </div>
+      </div>
+      
+      <!-- Bulk Pricing Modal -->
+      <div id="bulkPricingModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-xl shadow-xl max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="font-display text-2xl font-semibold text-burgundy-900">💰 Bulk Pricing Tool</h3>
+            <button onclick="closeBulkPricing()" class="text-forest-500 hover:text-burgundy-700 text-2xl">&times;</button>
+          </div>
+          
+          <p class="text-forest-600 mb-4">Set prices for all courses based on CE hours. Only courses without a price will be updated.</p>
+          
+          <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-4">
+            <p class="text-yellow-800 text-sm">⚠️ This will only update courses that don't have a price set yet. Courses with existing prices will be skipped.</p>
+          </div>
+          
+          <div class="space-y-4 mb-6">
+            <h4 class="font-semibold text-forest-700">Standard Courses (Core, Cultural, Trauma, etc.)</h4>
+            <div class="grid grid-cols-3 gap-3">
+              <div>
+                <label class="text-sm text-forest-600">1 CE Hour</label>
+                <div class="flex items-center gap-1">
+                  <span class="text-forest-500">$</span>
+                  <input type="number" id="bulkPrice1hr" value="0" class="w-full px-3 py-2 border border-forest-200 rounded-lg">
+                </div>
+                <p class="text-xs text-forest-400 mt-1">0 = Free</p>
+              </div>
+              <div>
+                <label class="text-sm text-forest-600">2 CE Hours</label>
+                <div class="flex items-center gap-1">
+                  <span class="text-forest-500">$</span>
+                  <input type="number" id="bulkPrice2hr" value="35" class="w-full px-3 py-2 border border-forest-200 rounded-lg">
+                </div>
+              </div>
+              <div>
+                <label class="text-sm text-forest-600">3 CE Hours</label>
+                <div class="flex items-center gap-1">
+                  <span class="text-forest-500">$</span>
+                  <input type="number" id="bulkPrice3hr" value="49" class="w-full px-3 py-2 border border-forest-200 rounded-lg">
+                </div>
+              </div>
+              <div>
+                <label class="text-sm text-forest-600">4 CE Hours</label>
+                <div class="flex items-center gap-1">
+                  <span class="text-forest-500">$</span>
+                  <input type="number" id="bulkPrice4hr" value="59" class="w-full px-3 py-2 border border-forest-200 rounded-lg">
+                </div>
+              </div>
+              <div>
+                <label class="text-sm text-forest-600">5 CE Hours</label>
+                <div class="flex items-center gap-1">
+                  <span class="text-forest-500">$</span>
+                  <input type="number" id="bulkPrice5hr" value="69" class="w-full px-3 py-2 border border-forest-200 rounded-lg">
+                </div>
+              </div>
+              <div>
+                <label class="text-sm text-forest-600">6+ CE Hours</label>
+                <div class="flex items-center gap-1">
+                  <span class="text-forest-500">$</span>
+                  <input type="number" id="bulkPrice6hr" value="79" class="w-full px-3 py-2 border border-forest-200 rounded-lg">
+                </div>
+              </div>
+            </div>
+            
+            <h4 class="font-semibold text-purple-700 mt-6">Premium Courses (Ethics, Telehealth, Supervision)</h4>
+            <div class="grid grid-cols-3 gap-3">
+              <div>
+                <label class="text-sm text-forest-600">1 CE Hour</label>
+                <div class="flex items-center gap-1">
+                  <span class="text-forest-500">$</span>
+                  <input type="number" id="bulkPricePrem1hr" value="25" class="w-full px-3 py-2 border border-forest-200 rounded-lg">
+                </div>
+              </div>
+              <div>
+                <label class="text-sm text-forest-600">2 CE Hours</label>
+                <div class="flex items-center gap-1">
+                  <span class="text-forest-500">$</span>
+                  <input type="number" id="bulkPricePrem2hr" value="45" class="w-full px-3 py-2 border border-forest-200 rounded-lg">
+                </div>
+              </div>
+              <div>
+                <label class="text-sm text-forest-600">3 CE Hours</label>
+                <div class="flex items-center gap-1">
+                  <span class="text-forest-500">$</span>
+                  <input type="number" id="bulkPricePrem3hr" value="59" class="w-full px-3 py-2 border border-forest-200 rounded-lg">
+                </div>
+              </div>
+              <div>
+                <label class="text-sm text-forest-600">4 CE Hours</label>
+                <div class="flex items-center gap-1">
+                  <span class="text-forest-500">$</span>
+                  <input type="number" id="bulkPricePrem4hr" value="75" class="w-full px-3 py-2 border border-forest-200 rounded-lg">
+                </div>
+              </div>
+              <div>
+                <label class="text-sm text-forest-600">5 CE Hours</label>
+                <div class="flex items-center gap-1">
+                  <span class="text-forest-500">$</span>
+                  <input type="number" id="bulkPricePrem5hr" value="89" class="w-full px-3 py-2 border border-forest-200 rounded-lg">
+                </div>
+              </div>
+              <div>
+                <label class="text-sm text-forest-600">6+ CE Hours</label>
+                <div class="flex items-center gap-1">
+                  <span class="text-forest-500">$</span>
+                  <input type="number" id="bulkPricePrem6hr" value="99" class="w-full px-3 py-2 border border-forest-200 rounded-lg">
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div id="bulkPricingStatus" class="hidden mb-4 p-3 rounded-lg"></div>
+          
+          <div class="flex justify-end gap-4">
+            <button onclick="closeBulkPricing()" class="px-6 py-2 text-hunter-600 hover:text-hunter-700">Cancel</button>
+            <button onclick="previewBulkPricing()" class="bg-forest-600 hover:bg-forest-700 text-white font-semibold px-6 py-2 rounded-lg">Preview Changes</button>
+            <button onclick="applyBulkPricing()" class="bg-burgundy-800 hover:bg-burgundy-900 text-white font-semibold px-6 py-2 rounded-lg">Apply Pricing</button>
+          </div>
         </div>
       </div>
       
@@ -1187,13 +1309,20 @@
         return;
       }
 
-      container.innerHTML = courses.map(course => `
+      container.innerHTML = courses.map(course => {
+        const priceDisplay = course.price ? `<span class="text-green-700 font-semibold">$${course.price}</span>` : '<span class="text-gray-400">No price</span>';
+        const categoryDisplay = course.ceuCategories?.[0]?.category || course.category || '';
+        const isPremium = ['ethics', 'telehealth', 'supervision'].includes(categoryDisplay?.toLowerCase());
+        
+        return `
         <div class="bg-white rounded-xl border border-burgundy-100 shadow-sm p-4 flex items-center justify-between">
-          <div>
+          <div class="flex-1">
             <h3 class="font-semibold text-burgundy-900">${course.title}</h3>
             <p class="text-sm text-forest-600">
               ${course.modules?.length || 0} modules • 
-              ${course.ceuHours || 0} CE hours • 
+              ${course.ceuHours || 0} CE hrs • 
+              ${priceDisplay} • 
+              ${isPremium ? '<span class="text-purple-600">Premium</span>' : '<span class="text-gray-500">Standard</span>'} • 
               <span class="px-2 py-0.5 rounded-full text-xs ${course.status === 'published' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}">${course.status}</span>
             </p>
           </div>
@@ -1209,7 +1338,7 @@
             </button>
           </div>
         </div>
-      `).join('');
+      `}).join('');
     }
 
     // Edit course
@@ -1579,6 +1708,131 @@
       document.getElementById('editorTitle').textContent = 'New Course';
       document.getElementById('modulesContainer').innerHTML = '<p class="text-forest-500">Save course details first, then add modules.</p>';
       showEditor();
+    }
+
+    // ============================================
+    // BULK PRICING FUNCTIONS
+    // ============================================
+    
+    function showBulkPricing() {
+      document.getElementById('bulkPricingModal').classList.remove('hidden');
+      document.getElementById('bulkPricingStatus').classList.add('hidden');
+    }
+    
+    function closeBulkPricing() {
+      document.getElementById('bulkPricingModal').classList.add('hidden');
+    }
+    
+    function getBulkPriceForCourse(course) {
+      const ceHours = Math.round(course.ceuHours || 0);
+      const category = course.ceuCategories?.[0]?.category?.toLowerCase() || course.category?.toLowerCase() || 'core';
+      const isPremium = ['ethics', 'telehealth', 'supervision'].includes(category);
+      
+      const prefix = isPremium ? 'bulkPricePrem' : 'bulkPrice';
+      
+      let price = 0;
+      if (ceHours <= 0) {
+        price = 0;
+      } else if (ceHours === 1) {
+        price = parseInt(document.getElementById(`${prefix}1hr`).value) || 0;
+      } else if (ceHours === 2) {
+        price = parseInt(document.getElementById(`${prefix}2hr`).value) || 0;
+      } else if (ceHours === 3) {
+        price = parseInt(document.getElementById(`${prefix}3hr`).value) || 0;
+      } else if (ceHours === 4) {
+        price = parseInt(document.getElementById(`${prefix}4hr`).value) || 0;
+      } else if (ceHours === 5) {
+        price = parseInt(document.getElementById(`${prefix}5hr`).value) || 0;
+      } else {
+        price = parseInt(document.getElementById(`${prefix}6hr`).value) || 0;
+      }
+      
+      return { price, isPremium };
+    }
+    
+    function previewBulkPricing() {
+      const statusDiv = document.getElementById('bulkPricingStatus');
+      
+      // Filter courses that don't have a price
+      const coursesToUpdate = courses.filter(c => !c.price || c.price === 0);
+      
+      if (coursesToUpdate.length === 0) {
+        statusDiv.className = 'mb-4 p-3 rounded-lg bg-yellow-50 text-yellow-800';
+        statusDiv.innerHTML = 'All courses already have prices set. No changes needed.';
+        statusDiv.classList.remove('hidden');
+        return;
+      }
+      
+      let preview = `<strong>${coursesToUpdate.length} courses will be updated:</strong><ul class="mt-2 text-sm max-h-48 overflow-y-auto">`;
+      
+      coursesToUpdate.forEach(course => {
+        const { price, isPremium } = getBulkPriceForCourse(course);
+        const tier = isPremium ? 'Premium' : 'Standard';
+        preview += `<li class="py-1 border-b border-gray-100">${course.title} (${course.ceuHours || 0} hrs, ${tier}) → <strong>$${price}</strong></li>`;
+      });
+      
+      preview += '</ul>';
+      
+      statusDiv.className = 'mb-4 p-3 rounded-lg bg-blue-50 text-blue-800';
+      statusDiv.innerHTML = preview;
+      statusDiv.classList.remove('hidden');
+    }
+    
+    async function applyBulkPricing() {
+      const token = localStorage.getItem('token');
+      const statusDiv = document.getElementById('bulkPricingStatus');
+      
+      // Filter courses that don't have a price
+      const coursesToUpdate = courses.filter(c => !c.price || c.price === 0);
+      
+      if (coursesToUpdate.length === 0) {
+        statusDiv.className = 'mb-4 p-3 rounded-lg bg-yellow-50 text-yellow-800';
+        statusDiv.innerHTML = 'All courses already have prices set. No changes needed.';
+        statusDiv.classList.remove('hidden');
+        return;
+      }
+      
+      if (!confirm(`Update pricing for ${coursesToUpdate.length} courses?`)) return;
+      
+      statusDiv.className = 'mb-4 p-3 rounded-lg bg-blue-50 text-blue-800';
+      statusDiv.innerHTML = `<div class="flex items-center gap-2"><div class="w-5 h-5 border-2 border-blue-300 border-t-blue-700 rounded-full animate-spin"></div> Updating ${coursesToUpdate.length} courses...</div>`;
+      statusDiv.classList.remove('hidden');
+      
+      let updated = 0;
+      let failed = 0;
+      
+      for (const course of coursesToUpdate) {
+        const { price, isPremium } = getBulkPriceForCourse(course);
+        
+        try {
+          const response = await fetch(`${API_URL}/api/admin/courses/${course._id}`, {
+            method: 'PUT',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              price: price || null,
+              pricingTier: isPremium ? 'premium' : 'standard'
+            })
+          });
+          
+          if (response.ok) {
+            updated++;
+          } else {
+            failed++;
+          }
+        } catch (error) {
+          console.error('Update error:', error);
+          failed++;
+        }
+      }
+      
+      statusDiv.className = 'mb-4 p-3 rounded-lg bg-green-50 text-green-800';
+      statusDiv.innerHTML = `✅ Updated ${updated} courses` + (failed > 0 ? ` (${failed} failed)` : '');
+      
+      // Refresh the course list
+      await loadCourses();
     }
 
     // Delete course
