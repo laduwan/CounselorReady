@@ -2608,8 +2608,66 @@ Remember: Output ONLY the JSON object, nothing else.`;
       messages = [{ role: 'user', content: `Content:\n${content}\n\n${prompt}` }];
     }
     
-    const response = await anthropic.messages.create({ model: 'claude-sonnet-4-20250514', max_tokens: 16000, messages });
-    const responseText = response.content[0].text;
+    // Set up SSE headers for streaming
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+    res.flushHeaders();
+    
+    // Send progress update helper
+    const sendProgress = (message, percent) => {
+      res.write(`data: ${JSON.stringify({ type: 'progress', message, percent })}\n\n`);
+    };
+    
+    sendProgress('Starting AI generation...', 5);
+    
+    // Use streaming API
+    let responseText = '';
+    
+    try {
+      const stream = await anthropic.messages.stream({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 16000,
+        messages
+      });
+      
+      sendProgress('Claude is analyzing your content...', 10);
+      
+      let lastProgressUpdate = Date.now();
+      let charCount = 0;
+      
+      for await (const event of stream) {
+        if (event.type === 'content_block_delta' && event.delta?.text) {
+          responseText += event.delta.text;
+          charCount += event.delta.text.length;
+          
+          // Send progress updates every 500ms or 500 chars
+          if (Date.now() - lastProgressUpdate > 500 || charCount > 500) {
+            const estimatedPercent = Math.min(10 + Math.floor(responseText.length / 200), 85);
+            
+            // Detect what's being generated based on content
+            let status = 'Generating course structure...';
+            if (responseText.includes('"modules"')) status = 'Building modules...';
+            if (responseText.includes('"lessons"')) status = 'Creating lessons...';
+            if (responseText.includes('"content"')) status = 'Writing lesson content...';
+            if (responseText.includes('"questions"')) status = 'Generating quiz questions...';
+            if (responseText.includes('"objectives"')) status = 'Defining learning objectives...';
+            
+            sendProgress(status, estimatedPercent);
+            lastProgressUpdate = Date.now();
+            charCount = 0;
+          }
+        }
+      }
+      
+      sendProgress('Parsing generated content...', 90);
+      
+    } catch (streamError) {
+      console.error('Stream error:', streamError);
+      res.write(`data: ${JSON.stringify({ type: 'error', error: 'AI generation failed: ' + streamError.message })}\n\n`);
+      res.end();
+      return;
+    }
     
     console.log('AI Response length:', responseText.length);
     
@@ -2640,13 +2698,14 @@ Remember: Output ONLY the JSON object, nothing else.`;
       // Parse the JSON
       course = JSON.parse(jsonText);
       
+      sendProgress('Validating course structure...', 95);
+      
     } catch (e) {
       console.error('Parse error:', e.message);
       console.error('Response preview:', responseText.substring(0, 1000));
-      return res.status(500).json({ 
-        error: 'Failed to parse AI response. The AI may have returned invalid JSON.',
-        details: e.message
-      });
+      res.write(`data: ${JSON.stringify({ type: 'error', error: 'Failed to parse AI response. The AI may have returned invalid JSON.', details: e.message })}\n\n`);
+      res.end();
+      return;
     }
     
     // Validate structure
@@ -2670,10 +2729,21 @@ Remember: Output ONLY the JSON object, nothing else.`;
       return m;
     });
     
-    res.json({ success: true, course });
+    sendProgress('Course generated successfully!', 100);
+    
+    // Send the final course data
+    res.write(`data: ${JSON.stringify({ type: 'complete', success: true, course })}\n\n`);
+    res.end();
+    
   } catch (error) {
     console.error('Course generation error:', error);
-    res.status(500).json({ error: 'Failed to generate course: ' + error.message });
+    // Check if headers already sent (streaming started)
+    if (res.headersSent) {
+      res.write(`data: ${JSON.stringify({ type: 'error', error: 'Failed to generate course: ' + error.message })}\n\n`);
+      res.end();
+    } else {
+      res.status(500).json({ error: 'Failed to generate course: ' + error.message });
+    }
   }
 });
 
