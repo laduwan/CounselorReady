@@ -2551,17 +2551,19 @@ Create a complete CE course based on the provided content.
 - CE Hours: ${ceHours}
 ${keyPoints ? `- Emphasize: ${keyPoints}` : ''}
 
-Return ONLY valid JSON:
+CRITICAL: Return ONLY a valid JSON object. No markdown, no code blocks, no explanations. Just pure JSON starting with { and ending with }.
+
+Required JSON structure:
 {
   "title": "Course title",
   "subtitle": "Brief subtitle",
   "description": "2-3 paragraph description",
   "ceuHours": ${ceHours},
-  "ceuCategories": [{"category": "${catName}", "hours": ${ceHours}}],
+  "ceuCategories": [{"category": "${category}", "hours": ${ceHours}}],
   "instructor": "GA Integrated Therapeutic Perspectives LLC",
   "accessTier": "professional",
   "status": "draft",
-  ${generateObjectives ? '"objectives": ["Objective 1", "Objective 2", "Objective 3"],' : ''}
+  ${generateObjectives ? '"objectives": ["Objective 1", "Objective 2", "Objective 3", "Objective 4"],' : ''}
   "modules": [
     {
       "title": "Module Title",
@@ -2571,17 +2573,17 @@ Return ONLY valid JSON:
         {
           "title": "Lesson Title",
           "type": "text",
-          "content": "<h2>Title</h2><p>Full HTML content (500+ words per lesson)</p>",
+          "content": "<h2>Title</h2><p>Full HTML content with 500+ words per lesson. Include examples, case studies, and clinical applications.</p>",
           "duration": 15,
           "order": 1
         }${generateQuizzes ? `,
         {
-          "title": "Quiz",
+          "title": "Module Quiz",
           "type": "quiz",
           "duration": 10,
           "order": 2,
           "questions": [
-            {"question": "Question?", "type": "multiple_choice", "options": ["A","B","C","D"], "correctAnswer": 0, "explanation": "Why", "points": 1}
+            {"question": "Question text?", "type": "multiple_choice", "options": ["Option A", "Option B", "Option C", "Option D"], "correctAnswer": 0, "explanation": "Explanation of correct answer", "points": 1}
           ],
           "shuffleQuestions": true,
           "showExplanations": true
@@ -2594,8 +2596,9 @@ Return ONLY valid JSON:
   "approvalNumber": "7760"
 }
 
-Create enough modules/lessons to justify ${ceHours} CE hours. Each text lesson needs substantial content. Include quizzes at end of each module if requested.
-Return ONLY JSON, no markdown.`;
+Create enough modules/lessons to justify ${ceHours} CE hours (roughly 1 module per CE hour). Each text lesson needs substantial educational content (500+ words). Include ${generateQuizzes ? '3-5 quiz questions at the end of each module' : 'no quizzes'}.
+
+Remember: Output ONLY the JSON object, nothing else.`;
 
     let messages = [];
     if (fileData) {
@@ -2608,14 +2611,42 @@ Return ONLY JSON, no markdown.`;
     const response = await anthropic.messages.create({ model: 'claude-sonnet-4-20250514', max_tokens: 16000, messages });
     const responseText = response.content[0].text;
     
+    console.log('AI Response length:', responseText.length);
+    
     let course;
     try {
-      const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-      if (jsonMatch) course = JSON.parse(jsonMatch[0]);
-      else throw new Error('No JSON found');
+      // Try multiple parsing strategies
+      let jsonText = responseText;
+      
+      // Strategy 1: Remove markdown code blocks
+      jsonText = jsonText.replace(/```json\s*/gi, '').replace(/```\s*/g, '');
+      
+      // Strategy 2: Find JSON object boundaries
+      const startIdx = jsonText.indexOf('{');
+      const endIdx = jsonText.lastIndexOf('}');
+      
+      if (startIdx === -1 || endIdx === -1 || endIdx < startIdx) {
+        console.error('No JSON object found in response');
+        console.error('Response preview:', responseText.substring(0, 500));
+        throw new Error('No JSON object found in AI response');
+      }
+      
+      jsonText = jsonText.substring(startIdx, endIdx + 1);
+      
+      // Strategy 3: Fix common JSON issues
+      // Remove trailing commas before } or ]
+      jsonText = jsonText.replace(/,\s*}/g, '}').replace(/,\s*]/g, ']');
+      
+      // Parse the JSON
+      course = JSON.parse(jsonText);
+      
     } catch (e) {
-      console.error('Parse error:', e);
-      return res.status(500).json({ error: 'Failed to parse AI response' });
+      console.error('Parse error:', e.message);
+      console.error('Response preview:', responseText.substring(0, 1000));
+      return res.status(500).json({ 
+        error: 'Failed to parse AI response. The AI may have returned invalid JSON.',
+        details: e.message
+      });
     }
     
     // Validate structure
