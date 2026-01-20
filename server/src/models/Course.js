@@ -108,7 +108,26 @@ const courseSchema = new mongoose.Schema({
   }],
   ceuApprovalNumber: { type: String },
   
-  // Approving Body & Applicability (for CE tracking)
+  // Multi-Approval Body Support (for courses approved by multiple organizations)
+  approvals: [{
+    body: {
+      type: String,
+      enum: ['NBCC', 'GCSCW', 'ACA', 'NASW', 'APA', 'ASWB', 'AAMFT', 'GA-LPC-Board', 'GA-LCSW-Board', 'GA-LMFT-Board', 'State Board', 'Other'],
+      required: true
+    },
+    providerNumber: { type: String }, // e.g., '#7760' for NBCC ACEP
+    providerName: { type: String }, // Display name for the provider
+    status: {
+      type: String,
+      enum: ['approved', 'pending', 'expired', 'not-applied'],
+      default: 'approved'
+    },
+    approvalDate: { type: Date },
+    expirationDate: { type: Date },
+    notes: { type: String } // Any special notes about this approval
+  }],
+  
+  // Legacy fields (retained for backward compatibility - will be deprecated)
   approvingBody: {
     type: String,
     enum: ['NBCC', 'ACEP', 'ACA', 'NASW', 'APA', 'ASWB', 'AAMFT', 'LPCAGA', 'State Board', 'Other'],
@@ -210,7 +229,51 @@ const courseSchema = new mongoose.Schema({
     createdAt: { type: Date, default: Date.now }
   }],
   
-  // Metadata
+  // NBCC Compliance: Reference List (Section J.6.a.5)
+  references: [{
+    title: { type: String, required: true },
+    author: { type: String },
+    year: { type: Number },
+    source: { type: String }, // Journal name, publisher, URL, etc.
+    doi: { type: String },
+    url: { type: String }
+  }],
+  
+  // NBCC Compliance: Presenter/Author Information (Section F)
+  presenter: {
+    name: { type: String },
+    credentials: { type: String }, // e.g., "MA, LPC, CPCS, BC-TMH"
+    degree: { type: String }, // e.g., "Master of Arts in Professional Counseling"
+    institution: { type: String }, // Degree-granting institution
+    licenseNumber: { type: String },
+    licenseState: { type: String },
+    bio: { type: String },
+    presenterCategory: {
+      type: String,
+      enum: ['category1', 'category2', 'category3'],
+      default: 'category1'
+    }, // NBCC presenter qualification category
+    qualificationStatement: { type: String } // Statement of qualification for subject matter
+  },
+  
+  // NBCC Content Area (Section G) - Required for mapping courses to NBCC categories
+  nbccContentArea: {
+    type: String,
+    enum: [
+      'counseling-theory-practice',      // 1. Counseling Theory/Practice
+      'human-growth-development',         // 2. Human Growth and Development
+      'social-cultural-foundations',      // 3. Social and Cultural Foundations
+      'group-dynamics-counseling',        // 4. Group Dynamics and Counseling
+      'career-development-counseling',    // 5. Career Development and Counseling
+      'assessment',                        // 6. Assessment
+      'research-program-evaluation',      // 7. Research and Program Evaluation
+      'professional-identity-practice',   // 8. Professional Identity and Practice Issues
+      'wellness-prevention'               // 9. Wellness and Prevention
+    ]
+  },
+  nbccContentAreaDisplay: { type: String }, // Human-readable content area name
+  
+  // Metadata (legacy field retained for backward compatibility)
   instructor: { type: String, default: 'CounselorReady' },
   status: {
     type: String,
@@ -253,6 +316,49 @@ courseSchema.virtual('totalDuration').get(function() {
 // Ensure virtuals are included in JSON
 courseSchema.set('toJSON', { virtuals: true });
 courseSchema.set('toObject', { virtuals: true });
+
+// Virtual to check if course has NBCC approval
+courseSchema.virtual('hasNBCCApproval').get(function() {
+  if (this.approvals && this.approvals.length > 0) {
+    return this.approvals.some(a => a.body === 'NBCC' && a.status === 'approved');
+  }
+  // Fallback to legacy field
+  return this.approvingBody === 'NBCC' || this.approvingBody === 'ACEP';
+});
+
+// Virtual to get all active approvals
+courseSchema.virtual('activeApprovals').get(function() {
+  if (!this.approvals || this.approvals.length === 0) {
+    // Create legacy approval object for backward compatibility
+    if (this.approvingBody) {
+      return [{
+        body: this.approvingBody === 'ACEP' ? 'NBCC' : this.approvingBody,
+        providerNumber: this.approvalNumber || '#7760',
+        providerName: 'GA Integrated Therapeutic Perspectives LLC',
+        status: 'approved'
+      }];
+    }
+    return [];
+  }
+  return this.approvals.filter(a => a.status === 'approved');
+});
+
+// Virtual to get NBCC approval specifically
+courseSchema.virtual('nbccApproval').get(function() {
+  if (this.approvals && this.approvals.length > 0) {
+    return this.approvals.find(a => a.body === 'NBCC' && a.status === 'approved');
+  }
+  // Fallback to legacy
+  if (this.approvingBody === 'NBCC' || this.approvingBody === 'ACEP') {
+    return {
+      body: 'NBCC',
+      providerNumber: this.approvalNumber || '#7760',
+      providerName: 'GA Integrated Therapeutic Perspectives LLC',
+      status: 'approved'
+    };
+  }
+  return null;
+});
 
 const Course = mongoose.model('Course', courseSchema);
 
