@@ -1,5 +1,6 @@
 import express from 'express';
 import multer from 'multer';
+import Stripe from 'stripe';
 import { v2 as cloudinary } from 'cloudinary';
 import User from '../models/User.js';
 import Course from '../models/Course.js';
@@ -11,6 +12,11 @@ import UserCredential from '../models/UserCredential.js';
 import Anthropic from '@anthropic-ai/sdk';
 import { protect } from '../middleware/auth.js';
 import { getRecentActivity } from '../services/activityTrackingService.js';
+
+// Initialize Stripe
+const stripe = process.env.STRIPE_SECRET_KEY 
+  ? new Stripe(process.env.STRIPE_SECRET_KEY) 
+  : null;
 
 const router = express.Router();
 
@@ -2744,6 +2750,222 @@ Remember: Output ONLY the JSON object, nothing else.`;
     } else {
       res.status(500).json({ error: 'Failed to generate course: ' + error.message });
     }
+  }
+});
+
+// ============================================
+// COUPON MANAGEMENT ROUTES
+// ============================================
+
+// @route   GET /api/admin/coupons
+// @desc    Get all coupons and promotion codes from Stripe
+// @access  Admin only
+router.get('/coupons', protect, adminOnly, async (req, res) => {
+  if (!stripe) {
+    return res.status(503).json({ error: 'Stripe not configured' });
+  }
+  
+  try {
+    // Get all promotion codes (these are what users enter)
+    const promoCodes = await stripe.promotionCodes.list({
+      limit: 100,
+      expand: ['data.coupon']
+    });
+    
+    // Format the data for the frontend
+    const coupons = promoCodes.data.map(promo => ({
+      promoCodeId: promo.id,
+      couponId: promo.coupon.id,
+      code: promo.code,
+      name: promo.coupon.name,
+      active: promo.active,
+      percentOff: promo.coupon.percent_off,
+      amountOff: promo.coupon.amount_off,
+      currency: promo.coupon.currency,
+      duration: promo.coupon.duration,
+      durationMonths: promo.coupon.duration_in_months,
+      maxRedemptions: promo.max_redemptions,
+      timesRedeemed: promo.times_redeemed,
+      expiresAt: promo.expires_at,
+      firstTimeTransaction: promo.restrictions?.first_time_transaction,
+      createdAt: promo.created
+    }));
+    
+    // Calculate stats
+    const stats = {
+      total: coupons.length,
+      active: coupons.filter(c => c.active).length,
+      totalRedemptions: coupons.reduce((sum, c) => sum + (c.timesRedeemed || 0), 0),
+      totalSavings: 0 // Would need to calculate from actual transactions
+    };
+    
+    res.json({ coupons, stats });
+  } catch (error) {
+    console.error('Get coupons error:', error);
+    res.status(500).json({ error: 'Failed to get coupons: ' + error.message });
+  }
+});
+
+// @route   POST /api/admin/coupons
+// @desc    Create a new coupon and promotion code in Stripe
+// @access  Admin only
+router.post('/coupons', protect, adminOnly, async (req, res) => {
+  if (!stripe) {
+    return res.status(503).json({ error: 'Stripe not configured' });
+  }
+  
+  try {
+    const {
+      code,
+      name,
+      discountType,
+      discountValue,
+      duration,
+      durationMonths,
+      maxRedemptions,
+      expiresAt,
+      firstTimeOnly,
+      appliesTo
+    } = req.body;
+    
+    if (!code || !discountValue) {
+      return res.status(400).json({ error: 'Code and discount value are required' });
+    }
+    
+    // Check if promo code already exists
+    const existingCodes = await stripe.promotionCodes.list({
+      code: code.toUpperCase(),
+      limit: 1
+    });
+    
+    if (existingCodes.data.length > 0) {
+      return res.status(400).json({ error: 'A promo code with this code already exists' });
+    }
+    
+    // Create the coupon first (defines the discount)
+    const couponData = {
+      name: name || code.toUpperCase(),
+      duration: duration
+    };
+    
+    if (discountType === 'percent') {
+      couponData.percent_off = discountValue;
+    } else {
+      couponData.amount_off = Math.round(discountValue * 100); // Convert to cents
+      couponData.currency = 'usd';
+    }
+    
+    if (duration === 'repeating') {
+      couponData.duration_in_months = durationMonths || 3;
+    }
+    
+    const coupon = await stripe.coupons.create(couponData);
+    
+    // Create the promotion code (what users enter)
+    const promoCodeData = {
+      coupon: coupon.id,
+      code: code.toUpperCase()
+    };
+    
+    if (maxRedemptions) {
+      promoCodeData.max_redemptions = maxRedemptions;
+    }
+    
+    if (expiresAt) {
+      promoCodeData.expires_at = Math.floor(new Date(expiresAt).getTime() / 1000);
+    }
+    
+    if (firstTimeOnly) {
+      promoCodeData.restrictions = {
+        first_time_transaction: true
+      };
+    }
+    
+    // Note: appliesTo would require product-specific configuration in Stripe
+    // For now, we'll store it as metadata
+    promoCodeData.metadata = {
+      appliesTo: appliesTo || 'all'
+    };
+    
+    const promoCode = await stripe.promotionCodes.create(promoCodeData);
+    
+    res.json({
+      success: true,
+      promoCode: {
+        promoCodeId: promoCode.id,
+        couponId: coupon.id,
+        code: promoCode.code,
+        name: coupon.name,
+        active: promoCode.active
+      }
+    });
+  } catch (error) {
+    console.error('Create coupon error:', error);
+    res.status(500).json({ error: 'Failed to create coupon: ' + error.message });
+  }
+});
+
+// @route   PATCH /api/admin/coupons/:promoCodeId
+// @desc    Activate or deactivate a promotion code
+// @access  Admin only
+router.patch('/coupons/:promoCodeId', protect, adminOnly, async (req, res) => {
+  if (!stripe) {
+    return res.status(503).json({ error: 'Stripe not configured' });
+  }
+  
+  try {
+    const { promoCodeId } = req.params;
+    const { active } = req.body;
+    
+    const promoCode = await stripe.promotionCodes.update(promoCodeId, {
+      active: active
+    });
+    
+    res.json({
+      success: true,
+      promoCode: {
+        promoCodeId: promoCode.id,
+        active: promoCode.active
+      }
+    });
+  } catch (error) {
+    console.error('Update coupon error:', error);
+    res.status(500).json({ error: 'Failed to update coupon: ' + error.message });
+  }
+});
+
+// @route   GET /api/admin/coupons/:promoCodeId/redemptions
+// @desc    Get redemption history for a promotion code
+// @access  Admin only
+router.get('/coupons/:promoCodeId/redemptions', protect, adminOnly, async (req, res) => {
+  if (!stripe) {
+    return res.status(503).json({ error: 'Stripe not configured' });
+  }
+  
+  try {
+    const { promoCodeId } = req.params;
+    
+    // Get invoices that used this promo code
+    const invoices = await stripe.invoices.list({
+      limit: 100,
+      expand: ['data.customer']
+    });
+    
+    // Filter to those with this promo code
+    const redemptions = invoices.data
+      .filter(inv => inv.discount?.promotion_code === promoCodeId)
+      .map(inv => ({
+        invoiceId: inv.id,
+        customerEmail: inv.customer?.email || 'Unknown',
+        amount: inv.total / 100,
+        discount: inv.total_discount_amounts?.[0]?.amount / 100 || 0,
+        date: new Date(inv.created * 1000).toISOString()
+      }));
+    
+    res.json({ redemptions });
+  } catch (error) {
+    console.error('Get redemptions error:', error);
+    res.status(500).json({ error: 'Failed to get redemptions: ' + error.message });
   }
 });
 
