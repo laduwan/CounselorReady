@@ -158,6 +158,29 @@
       </a>
     </div>
 
+    <!-- Founders Banner (shown for migrated users) -->
+    <div id="foundersBanner" class="hidden mb-6 bg-gradient-to-r from-burgundy-50 via-gold-50 to-forest-50 border border-gold-400 rounded-xl p-4 relative overflow-hidden">
+      <div class="absolute top-0 right-0 w-32 h-32 bg-gold-200/30 rounded-full -translate-y-1/2 translate-x-1/2"></div>
+      <div class="relative flex items-center justify-between">
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 bg-gradient-to-br from-gold-400 to-gold-600 rounded-full flex items-center justify-center shadow-lg">
+            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/>
+            </svg>
+          </div>
+          <div>
+            <p class="font-semibold text-burgundy-800">Welcome, Founding Member! 🎉</p>
+            <p class="text-forest-700 text-sm">Use code <span class="font-bold text-burgundy-700 bg-burgundy-100 px-2 py-0.5 rounded">FOUNDERS50</span> for 50% off your subscription. <span class="text-forest-500">Expires July 21, 2026</span></p>
+          </div>
+        </div>
+        <button onclick="dismissFoundersBanner()" class="text-forest-400 hover:text-forest-600 p-2 transition-colors" title="Dismiss">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
     <!-- Announcements Section -->
     <div id="announcementsSection" class="hidden mb-6 space-y-3">
       <!-- Announcements will be inserted here dynamically -->
@@ -474,7 +497,7 @@
         <div class="bg-gradient-to-br from-burgundy-800 to-burgundy-900 rounded-xl p-6 text-white">
           <h3 class="font-display text-lg font-semibold mb-2">Need Help?</h3>
           <p class="text-burgundy-200 text-sm mb-4">Questions about CE requirements or using the platform?</p>
-          <a href="mailto:support@counselorready.com" class="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+          <a href="/cdn-cgi/l/email-protection#d8abada8a8b7aaac98bbb7adb6abbdb4b7aaaabdb9bca1f6bbb7b5" class="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 px-4 py-2 rounded-lg text-sm font-medium transition-colors">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
             </svg>
@@ -640,7 +663,7 @@
     </div>
   </footer>
 
-  <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+  <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
     const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://api.counselorready.com';
     let consultStatus = null;
     
@@ -679,6 +702,11 @@
           document.getElementById('trialBanner').classList.remove('hidden');
           document.getElementById('trialDays').textContent = daysLeft;
         }
+      }
+      
+      // Show founders banner for migrated users
+      if (user.migratedFrom === 'talentlms' && !localStorage.getItem('foundersBannerDismissed')) {
+        document.getElementById('foundersBanner').classList.remove('hidden');
       }
       
       // Fetch dashboard data
@@ -1324,8 +1352,19 @@
       
       setTimeout(() => {
         alert.classList.add('hidden');
-        alert.style.opacity = '';
-        alert.style.transform = '';
+      }, 300);
+    }
+    
+    function dismissFoundersBanner() {
+      const banner = document.getElementById('foundersBanner');
+      banner.style.transition = 'opacity 0.3s, transform 0.3s';
+      banner.style.opacity = '0';
+      banner.style.transform = 'translateY(-10px)';
+      
+      localStorage.setItem('foundersBannerDismissed', 'true');
+      
+      setTimeout(() => {
+        banner.classList.add('hidden');
       }, 300);
     }
   </script>
