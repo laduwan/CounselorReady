@@ -1,6 +1,5 @@
 import express from 'express';
 import multer from 'multer';
-import Stripe from 'stripe';
 import { v2 as cloudinary } from 'cloudinary';
 import User from '../models/User.js';
 import Course from '../models/Course.js';
@@ -12,11 +11,6 @@ import UserCredential from '../models/UserCredential.js';
 import Anthropic from '@anthropic-ai/sdk';
 import { protect } from '../middleware/auth.js';
 import { getRecentActivity } from '../services/activityTrackingService.js';
-
-// Initialize Stripe
-const stripe = process.env.STRIPE_SECRET_KEY 
-  ? new Stripe(process.env.STRIPE_SECRET_KEY) 
-  : null;
 
 const router = express.Router();
 
@@ -1587,7 +1581,7 @@ router.get('/enrollments/search', protect, adminOnly, async (req, res) => {
 router.get('/courses', protect, adminOnly, async (req, res) => {
   try {
     const courses = await Course.find()
-      .select('title slug category ceuHours ceuCategories status enrollmentCount createdAt isExternal externalUrl importType source price pricingTier accessTier modules')
+      .select('title slug category ceuHours status enrollmentCount createdAt isExternal externalUrl importType source')
       .sort({ createdAt: -1 });
     
     res.json({ courses });
@@ -2550,26 +2544,40 @@ router.post('/course/generate', protect, adminOnly, async (req, res) => {
     const catNames = { core: 'Core/General', ethics: 'Ethics', supervision: 'Supervision', telehealth: 'Telehealth', cultural: 'Cultural Diversity', trauma: 'Trauma', substance: 'Substance Abuse', crisis: 'Crisis/Suicide' };
     const catName = catNames[category] || 'Core/General';
     
-    let prompt = `You are an expert instructional designer creating CE courses for licensed professional counselors.
+    // NBCC requirement: 1 CE hour = 6,000 words for text-based home study
+    const totalWordsRequired = ceHours * 6000;
+    const wordsPerLesson = Math.ceil(totalWordsRequired / (ceHours * 2)); // Assuming ~2 lessons per CE hour
+    
+    let prompt = `You are an expert instructional designer creating comprehensive CE courses for licensed professional counselors.
 
-Create a complete CE course based on the provided content.
+Create a COMPLETE, DETAILED CE course based on the provided content.
 - Category: ${catName}
 - CE Hours: ${ceHours}
 ${keyPoints ? `- Emphasize: ${keyPoints}` : ''}
 
-CRITICAL: Return ONLY a valid JSON object. No markdown, no code blocks, no explanations. Just pure JSON starting with { and ending with }.
+NBCC COMPLIANCE REQUIREMENTS:
+- NBCC requires 6,000 words per CE credit hour for text-based courses
+- This ${ceHours} CE hour course MUST contain at least ${totalWordsRequired.toLocaleString()} words total
+- Each lesson should contain approximately ${wordsPerLesson.toLocaleString()} words minimum
+- This is a STRICT requirement - courses with insufficient content do not qualify for CE credit
+
+CRITICAL REQUIREMENTS:
+1. Return ONLY valid JSON - no markdown, no code blocks, no explanations
+2. Each lesson MUST meet the word count requirement with substantive educational content
+3. Content must be educational - include detailed explanations, research, case studies, clinical applications
+4. Format lesson content with proper HTML: <h2>, <h3>, <p>, <ul>, <li>, <strong>, <em>
 
 Required JSON structure:
 {
   "title": "Course title",
   "subtitle": "Brief subtitle",
-  "description": "2-3 paragraph description",
+  "description": "2-3 paragraph course description explaining what learners will gain",
   "ceuHours": ${ceHours},
   "ceuCategories": [{"category": "${category}", "hours": ${ceHours}}],
   "instructor": "GA Integrated Therapeutic Perspectives LLC",
   "accessTier": "professional",
   "status": "draft",
-  ${generateObjectives ? '"objectives": ["Objective 1", "Objective 2", "Objective 3", "Objective 4"],' : ''}
+  ${generateObjectives ? '"objectives": ["Specific learning objective 1", "Specific learning objective 2", "Specific learning objective 3", "Specific learning objective 4"],' : ''}
   "modules": [
     {
       "title": "Module Title",
@@ -2579,17 +2587,17 @@ Required JSON structure:
         {
           "title": "Lesson Title",
           "type": "text",
-          "content": "<h2>Title</h2><p>Full HTML content with 500+ words per lesson. Include examples, case studies, and clinical applications.</p>",
-          "duration": 15,
+          "content": "<h2>Introduction</h2><p>Comprehensive opening that introduces the topic, its relevance to clinical practice, and learning objectives for this lesson. This section should thoroughly orient the reader to what they will learn...</p><h3>Theoretical Foundation</h3><p>Detailed explanation of the theoretical underpinnings, including historical context, key theorists and their contributions, and how these concepts evolved over time...</p><h3>Key Concepts and Definitions</h3><p>In-depth exploration of each key concept with clear definitions, examples, and clinical relevance. Each concept should be explained thoroughly with multiple examples...</p><h3>Clinical Applications</h3><p>Extensive discussion of how to apply these concepts in clinical practice, including specific techniques, interventions, and considerations for different client populations...</p><h3>Case Study</h3><p>Detailed case presentation that illustrates the concepts in action, including client background, presenting concerns, assessment, treatment planning, interventions used, and outcomes...</p><h3>Ethical Considerations</h3><p>Discussion of relevant ethical issues, ACA Code of Ethics references, and guidance for navigating ethical dilemmas related to this topic...</p><h3>Research and Evidence Base</h3><p>Summary of current research findings, evidence-based practices, and areas where more research is needed...</p><h3>Summary and Key Takeaways</h3><p>Comprehensive recap of all main points covered, with emphasis on practical applications and continued learning...</p>",
+          "duration": 30,
           "order": 1
         }${generateQuizzes ? `,
         {
           "title": "Module Quiz",
           "type": "quiz",
-          "duration": 10,
+          "duration": 15,
           "order": 2,
           "questions": [
-            {"question": "Question text?", "type": "multiple_choice", "options": ["Option A", "Option B", "Option C", "Option D"], "correctAnswer": 0, "explanation": "Explanation of correct answer", "points": 1}
+            {"question": "Detailed scenario-based question that tests understanding of the material?", "type": "multiple_choice", "options": ["Option A with clinical detail", "Option B with clinical detail", "Option C with clinical detail", "Option D with clinical detail"], "correctAnswer": 0, "explanation": "Comprehensive explanation of why this answer is correct, referencing specific content from the lesson and explaining why other options are incorrect", "points": 1}
           ],
           "shuffleQuestions": true,
           "showExplanations": true
@@ -2602,9 +2610,27 @@ Required JSON structure:
   "approvalNumber": "7760"
 }
 
-Create enough modules/lessons to justify ${ceHours} CE hours (roughly 1 module per CE hour). Each text lesson needs substantial educational content (500+ words). Include ${generateQuizzes ? '3-5 quiz questions at the end of each module' : 'no quizzes'}.
+CONTENT STRUCTURE REQUIREMENTS:
+- Create ${Math.max(Math.ceil(ceHours), 2)} modules minimum (approximately 1 module per CE hour)
+- Each module should have 2-3 substantive text lessons plus a quiz (if requested)
+- EVERY text lesson must contain ${wordsPerLesson.toLocaleString()}+ words of educational content
+- Total course content must exceed ${totalWordsRequired.toLocaleString()} words to meet NBCC requirements
 
-Remember: Output ONLY the JSON object, nothing else.`;
+CONTENT QUALITY REQUIREMENTS:
+- Write as if creating a professional textbook chapter
+- Include: theoretical foundations, research citations, clinical examples, case studies, ethical considerations
+- Each lesson should cover the topic thoroughly - not summarize it
+- Use professional counseling terminology appropriately
+- Reference the ACA Code of Ethics where relevant
+- Include practical, actionable clinical guidance
+
+${generateQuizzes ? `QUIZ REQUIREMENTS:
+- 5-8 questions per module quiz
+- Mix of knowledge-based and scenario-based questions
+- Questions should assess comprehension and application, not just recall
+- Provide detailed explanations for all answers` : ''}
+
+Generate the complete course now. The content MUST meet NBCC word count requirements. Output ONLY the JSON object.`;
 
     let messages = [];
     if (fileData) {
@@ -2750,222 +2776,6 @@ Remember: Output ONLY the JSON object, nothing else.`;
     } else {
       res.status(500).json({ error: 'Failed to generate course: ' + error.message });
     }
-  }
-});
-
-// ============================================
-// COUPON MANAGEMENT ROUTES
-// ============================================
-
-// @route   GET /api/admin/coupons
-// @desc    Get all coupons and promotion codes from Stripe
-// @access  Admin only
-router.get('/coupons', protect, adminOnly, async (req, res) => {
-  if (!stripe) {
-    return res.status(503).json({ error: 'Stripe not configured' });
-  }
-  
-  try {
-    // Get all promotion codes (these are what users enter)
-    const promoCodes = await stripe.promotionCodes.list({
-      limit: 100,
-      expand: ['data.coupon']
-    });
-    
-    // Format the data for the frontend
-    const coupons = promoCodes.data.map(promo => ({
-      promoCodeId: promo.id,
-      couponId: promo.coupon.id,
-      code: promo.code,
-      name: promo.coupon.name,
-      active: promo.active,
-      percentOff: promo.coupon.percent_off,
-      amountOff: promo.coupon.amount_off,
-      currency: promo.coupon.currency,
-      duration: promo.coupon.duration,
-      durationMonths: promo.coupon.duration_in_months,
-      maxRedemptions: promo.max_redemptions,
-      timesRedeemed: promo.times_redeemed,
-      expiresAt: promo.expires_at,
-      firstTimeTransaction: promo.restrictions?.first_time_transaction,
-      createdAt: promo.created
-    }));
-    
-    // Calculate stats
-    const stats = {
-      total: coupons.length,
-      active: coupons.filter(c => c.active).length,
-      totalRedemptions: coupons.reduce((sum, c) => sum + (c.timesRedeemed || 0), 0),
-      totalSavings: 0 // Would need to calculate from actual transactions
-    };
-    
-    res.json({ coupons, stats });
-  } catch (error) {
-    console.error('Get coupons error:', error);
-    res.status(500).json({ error: 'Failed to get coupons: ' + error.message });
-  }
-});
-
-// @route   POST /api/admin/coupons
-// @desc    Create a new coupon and promotion code in Stripe
-// @access  Admin only
-router.post('/coupons', protect, adminOnly, async (req, res) => {
-  if (!stripe) {
-    return res.status(503).json({ error: 'Stripe not configured' });
-  }
-  
-  try {
-    const {
-      code,
-      name,
-      discountType,
-      discountValue,
-      duration,
-      durationMonths,
-      maxRedemptions,
-      expiresAt,
-      firstTimeOnly,
-      appliesTo
-    } = req.body;
-    
-    if (!code || !discountValue) {
-      return res.status(400).json({ error: 'Code and discount value are required' });
-    }
-    
-    // Check if promo code already exists
-    const existingCodes = await stripe.promotionCodes.list({
-      code: code.toUpperCase(),
-      limit: 1
-    });
-    
-    if (existingCodes.data.length > 0) {
-      return res.status(400).json({ error: 'A promo code with this code already exists' });
-    }
-    
-    // Create the coupon first (defines the discount)
-    const couponData = {
-      name: name || code.toUpperCase(),
-      duration: duration
-    };
-    
-    if (discountType === 'percent') {
-      couponData.percent_off = discountValue;
-    } else {
-      couponData.amount_off = Math.round(discountValue * 100); // Convert to cents
-      couponData.currency = 'usd';
-    }
-    
-    if (duration === 'repeating') {
-      couponData.duration_in_months = durationMonths || 3;
-    }
-    
-    const coupon = await stripe.coupons.create(couponData);
-    
-    // Create the promotion code (what users enter)
-    const promoCodeData = {
-      coupon: coupon.id,
-      code: code.toUpperCase()
-    };
-    
-    if (maxRedemptions) {
-      promoCodeData.max_redemptions = maxRedemptions;
-    }
-    
-    if (expiresAt) {
-      promoCodeData.expires_at = Math.floor(new Date(expiresAt).getTime() / 1000);
-    }
-    
-    if (firstTimeOnly) {
-      promoCodeData.restrictions = {
-        first_time_transaction: true
-      };
-    }
-    
-    // Note: appliesTo would require product-specific configuration in Stripe
-    // For now, we'll store it as metadata
-    promoCodeData.metadata = {
-      appliesTo: appliesTo || 'all'
-    };
-    
-    const promoCode = await stripe.promotionCodes.create(promoCodeData);
-    
-    res.json({
-      success: true,
-      promoCode: {
-        promoCodeId: promoCode.id,
-        couponId: coupon.id,
-        code: promoCode.code,
-        name: coupon.name,
-        active: promoCode.active
-      }
-    });
-  } catch (error) {
-    console.error('Create coupon error:', error);
-    res.status(500).json({ error: 'Failed to create coupon: ' + error.message });
-  }
-});
-
-// @route   PATCH /api/admin/coupons/:promoCodeId
-// @desc    Activate or deactivate a promotion code
-// @access  Admin only
-router.patch('/coupons/:promoCodeId', protect, adminOnly, async (req, res) => {
-  if (!stripe) {
-    return res.status(503).json({ error: 'Stripe not configured' });
-  }
-  
-  try {
-    const { promoCodeId } = req.params;
-    const { active } = req.body;
-    
-    const promoCode = await stripe.promotionCodes.update(promoCodeId, {
-      active: active
-    });
-    
-    res.json({
-      success: true,
-      promoCode: {
-        promoCodeId: promoCode.id,
-        active: promoCode.active
-      }
-    });
-  } catch (error) {
-    console.error('Update coupon error:', error);
-    res.status(500).json({ error: 'Failed to update coupon: ' + error.message });
-  }
-});
-
-// @route   GET /api/admin/coupons/:promoCodeId/redemptions
-// @desc    Get redemption history for a promotion code
-// @access  Admin only
-router.get('/coupons/:promoCodeId/redemptions', protect, adminOnly, async (req, res) => {
-  if (!stripe) {
-    return res.status(503).json({ error: 'Stripe not configured' });
-  }
-  
-  try {
-    const { promoCodeId } = req.params;
-    
-    // Get invoices that used this promo code
-    const invoices = await stripe.invoices.list({
-      limit: 100,
-      expand: ['data.customer']
-    });
-    
-    // Filter to those with this promo code
-    const redemptions = invoices.data
-      .filter(inv => inv.discount?.promotion_code === promoCodeId)
-      .map(inv => ({
-        invoiceId: inv.id,
-        customerEmail: inv.customer?.email || 'Unknown',
-        amount: inv.total / 100,
-        discount: inv.total_discount_amounts?.[0]?.amount / 100 || 0,
-        date: new Date(inv.created * 1000).toISOString()
-      }));
-    
-    res.json({ redemptions });
-  } catch (error) {
-    console.error('Get redemptions error:', error);
-    res.status(500).json({ error: 'Failed to get redemptions: ' + error.message });
   }
 });
 
