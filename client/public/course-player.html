@@ -798,23 +798,26 @@
 
     function renderQuizLesson(lesson) {
       document.getElementById('quizLesson').classList.remove('hidden');
-      document.getElementById('passingScore').textContent = course.settings.passingScore || 70;
+      document.getElementById('passingScore').textContent = course.settings?.passingScore || 70;
       
-      // Sample quiz questions (in real implementation, these would come from the lesson data)
-      const questions = [
-        {
-          question: 'This is a sample quiz question for demonstration purposes.',
-          options: ['Option A', 'Option B', 'Option C', 'Option D'],
-          correct: 0
-        }
-      ];
+      // Use actual questions from lesson data
+      const questions = lesson.questions || [];
+      
+      if (questions.length === 0) {
+        document.getElementById('quizQuestions').innerHTML = `
+          <div class="bg-gold-50 border border-gold-200 rounded-xl p-6 text-center">
+            <p class="text-gold-800">No quiz questions available for this lesson.</p>
+          </div>
+        `;
+        return;
+      }
       
       const questionsHTML = questions.map((q, index) => `
-        <div class="bg-white rounded-xl border border-burgundy-100 p-6">
-          <h4 class="font-semibold text-burgundy-900 mb-4">Question ${index + 1}</h4>
+        <div class="bg-white rounded-xl border border-burgundy-100 p-6" data-question-index="${index}" data-correct="${q.correctAnswer}">
+          <h4 class="font-semibold text-burgundy-900 mb-4">Question ${index + 1} of ${questions.length}</h4>
           <p class="text-forest-700 mb-4">${q.question}</p>
           <div class="space-y-2">
-            ${q.options.map((option, oIndex) => `
+            ${(q.options || []).map((option, oIndex) => `
               <label class="flex items-center gap-3 p-3 border border-forest-200 rounded-lg cursor-pointer hover:bg-forest-50 transition-colors">
                 <input type="radio" name="q${index}" value="${oIndex}" class="w-4 h-4 text-burgundy-600">
                 <span class="text-forest-700">${option}</span>
@@ -829,12 +832,30 @@
 
     async function submitQuiz() {
       const token = localStorage.getItem('token');
+      const lesson = course.modules[currentModuleIndex].lessons[currentLessonIndex];
+      const questions = lesson.questions || [];
       
-      // Collect answers (simplified for demo)
+      // Collect answers from the form
       const answers = [];
+      let unanswered = false;
+      
+      for (let i = 0; i < questions.length; i++) {
+        const selected = document.querySelector(`input[name="q${i}"]:checked`);
+        if (!selected) {
+          unanswered = true;
+          answers.push(null);
+        } else {
+          answers.push(parseInt(selected.value));
+        }
+      }
+      
+      if (unanswered) {
+        alert('Please answer all questions before submitting.');
+        return;
+      }
       
       try {
-        const response = await fetch(`${API_URL}/api/courses/${course._id}/lessons/${course.modules[currentModuleIndex].lessons[currentLessonIndex]._id}/quiz`, {
+        const response = await fetch(`${API_URL}/api/courses/${course._id}/lessons/${lesson._id}/quiz`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${token}`,
