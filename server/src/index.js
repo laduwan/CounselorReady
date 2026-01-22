@@ -26,6 +26,7 @@ import ltiRoutes from './routes/lti.js';
 import xapiRoutes from './routes/xapi.js';
 import cebrokerRoutes from './routes/cebroker.js';
 import helpRoutes from './routes/help.js';
+import bulkUploadRoutes from './routes/bulkUpload.js';
 
 // ES Module fix for __dirname
 const __filename = fileURLToPath(import.meta.url);
@@ -139,6 +140,7 @@ app.use('/api/lti', ltiRoutes);
 app.use('/api/xapi', xapiRoutes);
 app.use('/api/cebroker', cebrokerRoutes);
 app.use('/api/help', helpRoutes);
+app.use('/api/admin/courses', bulkUploadRoutes);
 
 // Serve static files from templates directory (for certificates)
 app.use('/templates', express.static(path.join(__dirname, 'templates')));
