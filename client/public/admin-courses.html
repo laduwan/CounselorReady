@@ -71,10 +71,6 @@
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"/></svg>
           Users
         </a>
-        <a href="/admin-coupons.html" class="admin-nav-link">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/></svg>
-          Coupons
-        </a>
         <a href="/admin-migration.html" class="admin-nav-link">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
           Migration
@@ -902,6 +898,66 @@
           </button>
         </div>
         
+        <!-- Bulk Content Regeneration Tool -->
+        <div id="bulkRegenerateSection" class="hidden bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl border border-purple-200 p-4 mb-4">
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-2">
+              <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+              </svg>
+              <h3 class="font-semibold text-purple-900">AI Content Regeneration</h3>
+              <span class="text-xs bg-purple-200 text-purple-700 px-2 py-0.5 rounded-full">NBCC Compliant</span>
+            </div>
+            <button onclick="toggleBulkRegenerate()" class="text-purple-500 hover:text-purple-700">✕</button>
+          </div>
+          
+          <p class="text-sm text-purple-700 mb-3">Select lessons with insufficient content. AI will expand them to meet NBCC requirements (6,000 words per CE hour).</p>
+          
+          <div class="flex items-center gap-4 mb-3">
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" id="selectAllLessons" onchange="toggleSelectAllLessons()" class="w-4 h-4 text-purple-600 rounded">
+              <span class="text-sm font-medium text-purple-800">Select All Text Lessons</span>
+            </label>
+            <span id="selectedLessonCount" class="text-sm text-purple-600">0 selected</span>
+          </div>
+          
+          <div id="lessonCheckboxList" class="max-h-48 overflow-y-auto bg-white rounded-lg border border-purple-200 p-2 mb-3">
+            <!-- Lesson checkboxes will be populated here -->
+          </div>
+          
+          <div id="regenProgressSection" class="hidden mb-3">
+            <div class="flex items-center gap-2 mb-2">
+              <div class="w-5 h-5 border-2 border-purple-300 border-t-purple-700 rounded-full animate-spin"></div>
+              <span id="regenStatus" class="text-sm text-purple-700">Regenerating content...</span>
+            </div>
+            <div class="w-full bg-purple-100 rounded-full h-2">
+              <div id="regenProgressBar" class="bg-purple-600 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+            </div>
+          </div>
+          
+          <div class="flex gap-2">
+            <button onclick="previewSelectedLessons()" class="bg-white hover:bg-purple-50 text-purple-700 border border-purple-300 font-medium px-4 py-2 rounded-lg text-sm">
+              Preview Selected
+            </button>
+            <button onclick="regenerateSelectedLessons()" class="bg-purple-600 hover:bg-purple-700 text-white font-semibold px-4 py-2 rounded-lg text-sm flex items-center gap-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+              </svg>
+              Regenerate Content
+            </button>
+          </div>
+        </div>
+        
+        <!-- Show/Hide Bulk Regenerate Button -->
+        <div class="mb-4">
+          <button onclick="toggleBulkRegenerate()" id="showBulkRegenBtn" class="text-sm text-purple-600 hover:text-purple-800 flex items-center gap-1">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+            </svg>
+            AI Content Regeneration Tool
+          </button>
+        </div>
+        
         <div id="modulesContainer" class="space-y-4">
           <!-- Modules loaded here -->
         </div>
@@ -1191,6 +1247,8 @@
         </div>
       </div>
     </div>
+
+  </main>
 
   <script>
     const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://api.counselorready.com';
@@ -1775,6 +1833,193 @@
     function getResources() {
       // Filter out empty resources
       return currentResources.filter(r => r.title || r.url);
+    }
+
+    // ============================================
+    // BULK CONTENT REGENERATION FUNCTIONS
+    // ============================================
+    
+    let selectedLessonsForRegen = [];
+    
+    function toggleBulkRegenerate() {
+      const section = document.getElementById('bulkRegenerateSection');
+      const btn = document.getElementById('showBulkRegenBtn');
+      
+      if (section.classList.contains('hidden')) {
+        section.classList.remove('hidden');
+        btn.classList.add('hidden');
+        populateLessonCheckboxes();
+      } else {
+        section.classList.add('hidden');
+        btn.classList.remove('hidden');
+      }
+    }
+    
+    function populateLessonCheckboxes() {
+      const container = document.getElementById('lessonCheckboxList');
+      
+      if (!currentCourse || !currentCourse.modules || currentCourse.modules.length === 0) {
+        container.innerHTML = '<p class="text-gray-500 text-sm p-2">No modules yet. Add modules first.</p>';
+        return;
+      }
+      
+      let html = '';
+      currentCourse.modules.forEach((module, mi) => {
+        html += `<div class="mb-2">
+          <p class="font-medium text-purple-800 text-sm mb-1">${module.title || 'Module ' + (mi + 1)}</p>`;
+        
+        (module.lessons || []).forEach((lesson, li) => {
+          if (lesson.type === 'text') {
+            const wordCount = lesson.content ? lesson.content.replace(/<[^>]*>/g, '').split(/\s+/).length : 0;
+            const isShort = wordCount < 1000;
+            const statusColor = isShort ? 'text-red-600' : 'text-green-600';
+            const statusIcon = isShort ? '⚠️' : '✓';
+            
+            html += `
+              <label class="flex items-center gap-2 py-1 px-2 hover:bg-purple-50 rounded cursor-pointer">
+                <input type="checkbox" class="lesson-regen-checkbox w-4 h-4 text-purple-600 rounded" 
+                       data-module="${mi}" data-lesson="${li}" 
+                       onchange="updateSelectedCount()" ${isShort ? 'checked' : ''}>
+                <span class="text-sm flex-1">${lesson.title || 'Untitled Lesson'}</span>
+                <span class="text-xs ${statusColor}">${statusIcon} ${wordCount.toLocaleString()} words</span>
+              </label>`;
+          }
+        });
+        
+        html += '</div>';
+      });
+      
+      container.innerHTML = html || '<p class="text-gray-500 text-sm p-2">No text lessons found.</p>';
+      updateSelectedCount();
+    }
+    
+    function toggleSelectAllLessons() {
+      const selectAll = document.getElementById('selectAllLessons').checked;
+      document.querySelectorAll('.lesson-regen-checkbox').forEach(cb => {
+        cb.checked = selectAll;
+      });
+      updateSelectedCount();
+    }
+    
+    function updateSelectedCount() {
+      const checked = document.querySelectorAll('.lesson-regen-checkbox:checked').length;
+      document.getElementById('selectedLessonCount').textContent = checked + ' selected';
+      
+      // Update select all checkbox state
+      const total = document.querySelectorAll('.lesson-regen-checkbox').length;
+      document.getElementById('selectAllLessons').checked = checked === total && total > 0;
+    }
+    
+    function getSelectedLessons() {
+      const selected = [];
+      document.querySelectorAll('.lesson-regen-checkbox:checked').forEach(cb => {
+        selected.push({
+          moduleIndex: parseInt(cb.dataset.module),
+          lessonIndex: parseInt(cb.dataset.lesson)
+        });
+      });
+      return selected;
+    }
+    
+    function previewSelectedLessons() {
+      const selected = getSelectedLessons();
+      if (selected.length === 0) {
+        alert('Please select at least one lesson');
+        return;
+      }
+      
+      let preview = 'Selected lessons to regenerate:\n\n';
+      selected.forEach(s => {
+        const module = currentCourse.modules[s.moduleIndex];
+        const lesson = module.lessons[s.lessonIndex];
+        const wordCount = lesson.content ? lesson.content.replace(/<[^>]*>/g, '').split(/\s+/).length : 0;
+        preview += `• ${module.title} > ${lesson.title} (${wordCount} words)\n`;
+      });
+      
+      const ceHours = currentCourse.ceuHours || 3;
+      const targetWords = Math.ceil((ceHours * 6000) / selected.length);
+      preview += `\nTarget: ~${targetWords.toLocaleString()} words per lesson to meet NBCC requirements.`;
+      
+      alert(preview);
+    }
+    
+    async function regenerateSelectedLessons() {
+      const selected = getSelectedLessons();
+      if (selected.length === 0) {
+        alert('Please select at least one lesson');
+        return;
+      }
+      
+      if (!confirm(`Regenerate content for ${selected.length} lesson(s)? This will replace existing content with NBCC-compliant content.`)) {
+        return;
+      }
+      
+      const token = localStorage.getItem('token');
+      const progressSection = document.getElementById('regenProgressSection');
+      const statusEl = document.getElementById('regenStatus');
+      const progressBar = document.getElementById('regenProgressBar');
+      
+      progressSection.classList.remove('hidden');
+      
+      let completed = 0;
+      let failed = 0;
+      
+      for (const s of selected) {
+        const module = currentCourse.modules[s.moduleIndex];
+        const lesson = module.lessons[s.lessonIndex];
+        
+        statusEl.textContent = `Regenerating: ${lesson.title}... (${completed + 1}/${selected.length})`;
+        progressBar.style.width = ((completed / selected.length) * 100) + '%';
+        
+        try {
+          const response = await fetch(`${API_URL}/api/admin/courses/${currentCourse._id}/lesson/regenerate`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              moduleIndex: s.moduleIndex,
+              lessonIndex: s.lessonIndex,
+              lessonTitle: lesson.title,
+              moduleTitle: module.title,
+              courseTitle: currentCourse.title,
+              courseCategory: currentCourse.ceuCategories?.[0]?.category || 'core',
+              ceHours: currentCourse.ceuHours || 3
+            })
+          });
+          
+          if (response.ok) {
+            const data = await response.json();
+            // Update local course data
+            currentCourse.modules[s.moduleIndex].lessons[s.lessonIndex].content = data.content;
+            completed++;
+          } else {
+            const err = await response.json();
+            console.error('Regenerate error:', err);
+            failed++;
+          }
+        } catch (error) {
+          console.error('Regenerate error:', error);
+          failed++;
+        }
+      }
+      
+      progressBar.style.width = '100%';
+      statusEl.textContent = `Complete! ${completed} regenerated, ${failed} failed.`;
+      
+      // Refresh the module display and checkboxes
+      renderModules();
+      setTimeout(() => {
+        populateLessonCheckboxes();
+        progressSection.classList.add('hidden');
+      }, 2000);
+      
+      if (failed === 0) {
+        alert(`✅ Successfully regenerated ${completed} lesson(s) with NBCC-compliant content!`);
+      } else {
+        alert(`Completed with ${failed} error(s). ${completed} lesson(s) regenerated successfully.`);
+      }
     }
 
     // New course
