@@ -21,7 +21,7 @@ const PRICE_IDS = {
 const PLAN_DETAILS = {
   free: { name: 'Free', price: 0, maxCEHours: 4, maxStates: 1 },
   starter: { name: 'Starter', price: 1999, maxCEHours: 999, maxStates: 1 },
-  professional: { name: 'Professional', price: 2999, maxCEHours: 999, maxStates: 3 },
+  professional: { name: 'Professional', price: 2999, maxCEHours: 999, maxStates: 1 },
   vip: { name: 'VIP', price: 4999, maxCEHours: 999, maxStates: 999 }
 };
 
@@ -165,6 +165,158 @@ router.post('/create-checkout-session', protect, async (req, res) => {
   }
 });
 
+// @route   POST /api/payments/create-subscription
+// @desc    Create subscription with inline card payment (supports coupons)
+// @access  Private
+router.post('/create-subscription', protect, async (req, res) => {
+  if (!stripe) {
+    return res.status(503).json({ error: 'Payment system not configured' });
+  }
+  
+  try {
+    const { paymentMethodId, priceId, couponCode } = req.body;
+    
+    if (!paymentMethodId || !priceId) {
+      return res.status(400).json({ error: 'Payment method and price ID required' });
+    }
+    
+    const user = await User.findById(req.user._id);
+    
+    // Determine plan from priceId
+    let plan = null;
+    for (const [key, value] of Object.entries(PRICE_IDS)) {
+      if (value === priceId) {
+        plan = key;
+        break;
+      }
+    }
+    
+    if (!plan) {
+      return res.status(400).json({ error: 'Invalid price ID' });
+    }
+    
+    // Create or get Stripe customer
+    let customerId = user.stripeCustomerId;
+    if (!customerId) {
+      const customer = await stripe.customers.create({
+        email: user.email,
+        name: `${user.profile?.firstName || ''} ${user.profile?.lastName || ''}`.trim() || user.email,
+        metadata: {
+          userId: user._id.toString()
+        }
+      });
+      customerId = customer.id;
+      await User.findByIdAndUpdate(user._id, { stripeCustomerId: customerId });
+    }
+    
+    // Attach payment method to customer
+    await stripe.paymentMethods.attach(paymentMethodId, {
+      customer: customerId
+    });
+    
+    // Set as default payment method
+    await stripe.customers.update(customerId, {
+      invoice_settings: {
+        default_payment_method: paymentMethodId
+      }
+    });
+    
+    // Build subscription options
+    const subscriptionOptions = {
+      customer: customerId,
+      items: [{ price: priceId }],
+      payment_behavior: 'default_incomplete',
+      payment_settings: {
+        payment_method_types: ['card'],
+        save_default_payment_method: 'on_subscription'
+      },
+      expand: ['latest_invoice.payment_intent'],
+      metadata: {
+        userId: user._id.toString(),
+        plan
+      }
+    };
+    
+    // Add coupon if provided
+    if (couponCode) {
+      // Try to find the coupon in Stripe
+      try {
+        const coupons = await stripe.coupons.list({ limit: 100 });
+        const coupon = coupons.data.find(c => 
+          c.name?.toUpperCase() === couponCode.toUpperCase() || 
+          c.id.toUpperCase() === couponCode.toUpperCase()
+        );
+        
+        if (coupon) {
+          subscriptionOptions.coupon = coupon.id;
+        } else {
+          // Try as promotion code
+          const promoCodes = await stripe.promotionCodes.list({
+            code: couponCode.toUpperCase(),
+            active: true,
+            limit: 1
+          });
+          
+          if (promoCodes.data.length > 0) {
+            subscriptionOptions.promotion_code = promoCodes.data[0].id;
+          }
+        }
+      } catch (couponErr) {
+        console.log('Coupon lookup error:', couponErr.message);
+        // Continue without coupon
+      }
+    }
+    
+    // Create the subscription
+    const subscription = await stripe.subscriptions.create(subscriptionOptions);
+    
+    // Check if payment needs confirmation
+    const invoice = subscription.latest_invoice;
+    const paymentIntent = invoice.payment_intent;
+    
+    if (paymentIntent.status === 'requires_action') {
+      return res.json({
+        requiresAction: true,
+        clientSecret: paymentIntent.client_secret,
+        subscriptionId: subscription.id
+      });
+    }
+    
+    if (paymentIntent.status === 'succeeded') {
+      // Update user subscription
+      await User.findByIdAndUpdate(user._id, {
+        stripeSubscriptionId: subscription.id,
+        'subscription.plan': plan,
+        'subscription.status': 'active',
+        'subscription.priceId': priceId,
+        'subscription.currentPeriodStart': new Date(subscription.current_period_start * 1000),
+        'subscription.currentPeriodEnd': new Date(subscription.current_period_end * 1000)
+      });
+      
+      return res.json({
+        success: true,
+        subscription: {
+          id: subscription.id,
+          plan,
+          status: subscription.status
+        }
+      });
+    }
+    
+    return res.status(400).json({ error: 'Payment failed. Please try again.' });
+    
+  } catch (error) {
+    console.error('Create subscription error:', error);
+    
+    // Handle specific Stripe errors
+    if (error.type === 'StripeCardError') {
+      return res.status(400).json({ error: error.message });
+    }
+    
+    res.status(500).json({ error: 'Failed to create subscription' });
+  }
+});
+
 // @route   POST /api/payments/create-portal-session
 // @desc    Create Stripe customer portal session for managing subscription
 // @access  Private
@@ -246,8 +398,42 @@ router.post('/change-plan', protect, async (req, res) => {
   }
 });
 
-// @route   POST /api/payments/cancel
+// @route   POST /api/payments/cancel-subscription
 // @desc    Cancel subscription
+// @access  Private
+router.post('/cancel-subscription', protect, async (req, res) => {
+  if (!stripe) {
+    return res.status(503).json({ error: 'Payment system not configured' });
+  }
+  
+  try {
+    const user = await User.findById(req.user._id);
+    
+    if (!user.stripeSubscriptionId) {
+      return res.status(400).json({ error: 'No active subscription to cancel' });
+    }
+    
+    // Cancel at period end (user keeps access until billing period ends)
+    const subscription = await stripe.subscriptions.update(user.stripeSubscriptionId, {
+      cancel_at_period_end: true
+    });
+    
+    await User.findByIdAndUpdate(user._id, {
+      'subscription.cancelAtPeriodEnd': true
+    });
+    
+    res.json({ 
+      message: 'Subscription will be canceled at the end of the billing period',
+      cancelAt: new Date(subscription.current_period_end * 1000)
+    });
+  } catch (error) {
+    console.error('Cancel subscription error:', error);
+    res.status(500).json({ error: 'Failed to cancel subscription' });
+  }
+});
+
+// @route   POST /api/payments/cancel
+// @desc    Cancel subscription (alias)
 // @access  Private
 router.post('/cancel', protect, async (req, res) => {
   if (!stripe) {
