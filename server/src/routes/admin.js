@@ -2779,4 +2779,128 @@ Generate the complete course now. The content MUST meet NBCC word count requirem
   }
 });
 
+// @route   POST /api/admin/courses/:courseId/lesson/regenerate
+// @desc    Regenerate content for a single lesson using AI
+// @access  Admin only
+router.post('/courses/:courseId/lesson/regenerate', protect, adminOnly, async (req, res) => {
+  try {
+    if (!anthropic) {
+      return res.status(500).json({ error: 'AI service not configured' });
+    }
+    
+    const { courseId } = req.params;
+    const { moduleIndex, lessonIndex, lessonTitle, moduleTitle, courseTitle, courseCategory, ceHours } = req.body;
+    
+    // Get the course
+    const course = await Course.findById(courseId);
+    if (!course) {
+      return res.status(404).json({ error: 'Course not found' });
+    }
+    
+    // Validate indices
+    if (!course.modules[moduleIndex] || !course.modules[moduleIndex].lessons[lessonIndex]) {
+      return res.status(400).json({ error: 'Invalid module or lesson index' });
+    }
+    
+    const lesson = course.modules[moduleIndex].lessons[lessonIndex];
+    
+    // Calculate target word count based on NBCC requirements
+    // 6,000 words per CE hour, distributed across lessons
+    const totalLessons = course.modules.reduce((sum, m) => sum + (m.lessons?.filter(l => l.type === 'text').length || 0), 0);
+    const targetWords = Math.ceil((ceHours * 6000) / Math.max(totalLessons, 1));
+    
+    const catNames = { core: 'Core/General', ethics: 'Ethics', supervision: 'Supervision', telehealth: 'Telehealth', cultural: 'Cultural Diversity', trauma: 'Trauma', substance: 'Substance Abuse', crisis: 'Crisis/Suicide' };
+    const catName = catNames[courseCategory] || 'Core/General';
+    
+    const prompt = `You are an expert instructional designer creating CE content for licensed professional counselors.
+
+Generate COMPREHENSIVE lesson content for the following:
+- Course: ${courseTitle}
+- Module: ${moduleTitle}
+- Lesson: ${lessonTitle}
+- Category: ${catName}
+- Course CE Hours: ${ceHours}
+
+NBCC COMPLIANCE REQUIREMENT:
+This lesson MUST contain at least ${targetWords.toLocaleString()} words of substantive educational content.
+NBCC requires 6,000 words per CE credit hour for text-based courses.
+
+Generate the lesson content in HTML format with the following structure:
+
+<h2>${lessonTitle}</h2>
+
+<h3>Introduction</h3>
+<p>Comprehensive introduction explaining the importance of this topic in clinical practice, what learners will gain, and how it connects to the broader course content. (150-200 words)</p>
+
+<h3>Theoretical Foundation</h3>
+<p>Detailed explanation of the theoretical underpinnings, including historical context, key theorists and their contributions, and how these concepts have evolved. Include specific theories and models relevant to this topic. (300-400 words)</p>
+
+<h3>Key Concepts and Definitions</h3>
+<p>In-depth exploration of each key concept with clear definitions, clinical examples, and practical applications. Each concept should be thoroughly explained. (400-500 words)</p>
+
+<h3>Clinical Applications</h3>
+<p>Extensive discussion of how to apply these concepts in clinical practice. Include specific techniques, interventions, session examples, and considerations for different client populations and settings. (400-500 words)</p>
+
+<h3>Case Study</h3>
+<p>Present a detailed, realistic clinical case that illustrates the concepts. Include: client background and presenting concerns, assessment process, treatment planning, specific interventions used, therapeutic dialogue examples, and outcomes. (400-500 words)</p>
+
+<h3>Ethical Considerations</h3>
+<p>Discussion of relevant ethical issues related to this topic. Reference specific sections of the ACA Code of Ethics. Provide guidance for navigating common ethical dilemmas. (200-300 words)</p>
+
+<h3>Evidence Base and Research</h3>
+<p>Summary of current research findings supporting these practices. Mention key studies, outcomes data, and areas where more research is needed. (200-300 words)</p>
+
+<h3>Practical Guidelines</h3>
+<ul>
+<li><strong>Guideline 1:</strong> Detailed explanation of first practical guideline with examples</li>
+<li><strong>Guideline 2:</strong> Detailed explanation of second practical guideline with examples</li>
+<li><strong>Guideline 3:</strong> Detailed explanation of third practical guideline with examples</li>
+<li><strong>Guideline 4:</strong> Detailed explanation of fourth practical guideline with examples</li>
+<li><strong>Guideline 5:</strong> Detailed explanation of fifth practical guideline with examples</li>
+</ul>
+
+<h3>Summary and Key Takeaways</h3>
+<p>Comprehensive recap of all main points covered, emphasizing practical applications and encouraging continued professional development in this area. (150-200 words)</p>
+
+IMPORTANT: 
+- Write ${targetWords.toLocaleString()}+ words of actual educational content
+- Do NOT write brief summaries - write full, detailed content as if for a professional textbook
+- Use professional counseling terminology
+- Include specific, actionable clinical guidance
+- Return ONLY the HTML content, no markdown code blocks`;
+
+    console.log(`Regenerating lesson: ${lessonTitle} (target: ${targetWords} words)`);
+    
+    const response = await anthropic.messages.create({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 8000,
+      messages: [{ role: 'user', content: prompt }]
+    });
+    
+    let content = response.content[0].text;
+    
+    // Clean up any markdown code blocks
+    content = content.replace(/```html\s*/gi, '').replace(/```\s*/g, '').trim();
+    
+    // Update the lesson content in the database
+    course.modules[moduleIndex].lessons[lessonIndex].content = content;
+    await course.save();
+    
+    // Calculate actual word count
+    const actualWords = content.replace(/<[^>]*>/g, '').split(/\s+/).length;
+    console.log(`Generated ${actualWords} words for lesson: ${lessonTitle}`);
+    
+    res.json({ 
+      success: true, 
+      content,
+      wordCount: actualWords,
+      targetWords
+    });
+    
+  } catch (error) {
+    console.error('Lesson regeneration error:', error);
+    res.status(500).json({ error: 'Failed to regenerate lesson: ' + error.message });
+  }
+});
+
 export default router;
