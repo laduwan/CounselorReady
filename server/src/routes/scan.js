@@ -202,20 +202,29 @@ router.post('/credential', protect, upload.single('file'), async (req, res) => {
 
 {
   "holderName": "IMPORTANT: The full name of the person this license was issued TO (the licensee/practitioner name, NOT the board or organization name)",
-  "name": "credential/license type abbreviation (e.g., LPC, LMFT, NCC, LCSW)",
-  "state": "two-letter state code if applicable (e.g., GA, FL, TX)",
+  "name": "credential/license type abbreviation (e.g., LPC, LMFT, NCC, LCSW, MBTC)",
+  "state": "two-letter state code of the ISSUING state (e.g., GA, FL, TX, ID) - IMPORTANT: This is the state that ISSUED the license, NOT the licensee's home address state",
   "licenseNumber": "license or certificate number",
-  "issuingBody": "issuing organization (e.g., Georgia Composite Board, NBCC)",
+  "issuingBody": "issuing organization (e.g., Georgia Composite Board, NBCC, Idaho Division of Occupational and Professional Licenses)",
   "issueDate": "YYYY-MM-DD format",
   "expirationDate": "YYYY-MM-DD format",
   "totalHours": "CE hours required for renewal if shown (number only)"
 }
 
-CRITICAL: holderName is the individual person's name who holds this license - look for phrases like "is hereby granted to", "issued to", "certifies that", or the name printed prominently on the license/certificate.
+CRITICAL INSTRUCTIONS:
+1. holderName is the individual person's name who holds this license - look for phrases like "is hereby granted to", "issued to", "certifies that", or the name printed prominently on the license/certificate.
+
+2. For STATE: Look at the header/letterhead, the issuing board name, or URL if visible. The state is determined by WHO ISSUED the license, not where the licensee lives. For example:
+   - "Idaho Division of Occupational and Professional Licenses" → state: "ID"
+   - "Georgia Composite Board" → state: "GA"  
+   - URL containing "idaho.gov" → state: "ID"
+   - URL containing "georgia.gov" → state: "GA"
+
+3. For TELEHEALTH licenses: Look for terms like "Telehealth", "Telemental Health", "Mental or Behavioral Telehealth". These are special licenses allowing out-of-state practice INTO a specific state.
 
 If you cannot find a field, use null. For state, only use 2-letter abbreviation.
 For dates, convert to YYYY-MM-DD format.
-For license type, use the standard abbreviation (LPC, LMFT, LCSW, NCC, etc).`
+For license type, use the standard abbreviation (LPC, LMFT, LCSW, NCC, MBTC, etc).`
             }
           ]
         }
