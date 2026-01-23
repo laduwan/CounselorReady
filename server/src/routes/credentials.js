@@ -4,9 +4,9 @@ import path from 'path';
 import fs from 'fs';
 import UserCredential from '../models/UserCredential.js';
 import CredentialTemplate from '../models/CredentialTemplate.js';
-import { protect, requireSubscription } from '../middleware/auth.js';import express from 'express';
-import multer from 'multer';
-import path from 'path';
+import { protect, requireSubscription } from '../middleware/auth.js';
+
+const router = express.Router();
 import fs from 'fs';
 import UserCredential from '../models/UserCredential.js';
 import CredentialTemplate from '../models/CredentialTemplate.js';
