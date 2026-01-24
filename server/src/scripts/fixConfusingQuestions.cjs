@@ -10,7 +10,7 @@ const MONGODB_URI = process.env.MONGODB_URI;
 const questionFixes = [
   {
     coursePattern: /Mastering TeleMental/i,
-    quizPattern: /Module 1 Quiz/i,
+    quizPattern: /Module 2 Quiz/i,
     oldQuestion: "Which of the following is NOT a key requirement under HIPAA for telemental health?",
     newQuestion: "Which of the following IS a key HIPAA requirement for telemental health?",
     newOptions: [
@@ -19,8 +19,64 @@ const questionFixes = [
       "Using any video conferencing tool available",
       "Conducting teletherapy without encryption"
     ],
-    newCorrectAnswer: 1, // "Using encryption..." is correct
+    newCorrectAnswer: 1,
     explanation: "HIPAA requires protecting patient information through encryption and secure storage. The other options represent violations or poor practices."
+  },
+  {
+    coursePattern: /Mirror.*Therapeutic/i,
+    quizPattern: /Course Assessment/i,
+    oldQuestion: "Which is NOT a Bordin alliance component?",
+    newQuestion: "Which of the following IS one of Bordin's three working alliance components?",
+    newOptions: [
+      "Interpretation",
+      "Bond",
+      "Goals",
+      "Tasks"
+    ],
+    newCorrectAnswer: 1, // Bond is a component (along with Goals and Tasks)
+    explanation: "Bordin identified three components of the working alliance: Bond (the emotional connection), Goals (agreement on treatment objectives), and Tasks (agreement on therapeutic activities). Interpretation is a technique, not an alliance component."
+  },
+  {
+    coursePattern: /Mirror.*Therapeutic/i,
+    quizPattern: /Course Assessment/i,
+    oldQuestion: "Which is NOT a Rogers' core condition?",
+    newQuestion: "Which of the following IS one of Carl Rogers' core conditions for therapeutic change?",
+    newOptions: [
+      "Interpretation",
+      "Empathy",
+      "Unconditional Positive Regard",
+      "Genuineness"
+    ],
+    newCorrectAnswer: 1, // Empathy is a core condition
+    explanation: "Rogers identified three core conditions: Empathy, Unconditional Positive Regard (UPR), and Genuineness/Congruence. Interpretation is a psychodynamic technique, not a Rogerian core condition."
+  },
+  {
+    coursePattern: /Elephant.*Trauma/i,
+    quizPattern: /Course Assessment/i,
+    oldQuestion: "Which is NOT one of SAMHSA's Four Rs?",
+    newQuestion: "Which of the following IS one of SAMHSA's Four Rs of trauma-informed care?",
+    newOptions: [
+      "Rescue",
+      "Realize",
+      "Recognize",
+      "Respond"
+    ],
+    newCorrectAnswer: 1, // Realize is one of the Four Rs
+    explanation: "SAMHSA's Four Rs are: Realize (understand trauma's impact), Recognize (identify signs), Respond (apply TIC principles), and Resist Re-traumatization. 'Rescue' is not one of the Four Rs."
+  },
+  {
+    coursePattern: /Stop.*Drop.*Roll.*Crisis/i,
+    quizPattern: /Course Assessment/i,
+    oldQuestion: "Documentation should NOT include:",
+    newQuestion: "Which of the following should be INCLUDED in crisis documentation?",
+    newOptions: [
+      "Personal opinions about the client's character",
+      "Risk assessment findings and clinical reasoning",
+      "Speculation about future behavior",
+      "Judgmental language about client choices"
+    ],
+    newCorrectAnswer: 1,
+    explanation: "Crisis documentation should include objective risk assessment findings, clinical reasoning, interventions used, and safety plan details. Personal opinions, speculation, and judgmental language should be avoided."
   },
   // Add more question fixes here as needed
 ];
