@@ -45,8 +45,10 @@
     }
     
     /* Lesson content styling */
-    .lesson-content h1 { font-size: 2rem; font-weight: 600; margin-bottom: 1rem; color: #6b1d34; }
-    .lesson-content h2 { font-size: 1.5rem; font-weight: 600; margin-bottom: 0.75rem; color: #6b1d34; margin-top: 1.5rem; }
+    .lesson-content h1 { font-size: 2rem; font-weight: 700; margin-bottom: 1rem; color: #6b1d34; }
+    .lesson-content h2 { font-size: 1.75rem; font-weight: 700; margin-bottom: 0.75rem; color: #6b1d34; margin-top: 2rem; border-bottom: 2px solid #d4a853; padding-bottom: 0.5rem; }
+    .lesson-content h3 { font-size: 1.35rem; font-weight: 600; margin-bottom: 0.75rem; color: #4a1426; margin-top: 1.75rem; }
+    .lesson-content h4 { font-size: 1.15rem; font-weight: 600; margin-bottom: 0.5rem; color: #5c1a30; margin-top: 1.5rem; }
     .lesson-content p { margin-bottom: 1rem; line-height: 1.75; color: #2b4133; }
     .lesson-content ul, .lesson-content ol { margin-bottom: 1rem; margin-left: 1.5rem; color: #2b4133; }
     .lesson-content li { margin-bottom: 0.5rem; }
@@ -265,6 +267,11 @@
 
       <!-- Lesson Content -->
       <div id="lessonContent" class="hidden">
+        
+        <!-- Module Header Banner -->
+        <div id="moduleHeader" class="hidden">
+          <img id="moduleHeaderImage" src="" alt="Module Header" class="w-full h-48 object-cover" style="object-position: center;" />
+        </div>
         
         <!-- Lesson Header -->
         <div class="bg-white border-b border-hunter-100 px-8 py-6">
@@ -691,6 +698,17 @@
       
       if (!lesson) return;
       
+      // Update module header from module.headerImage field
+      const moduleHeaderDiv = document.getElementById('moduleHeader');
+      const moduleHeaderImg = document.getElementById('moduleHeaderImage');
+      
+      if (module.headerImage) {
+        moduleHeaderImg.src = module.headerImage;
+        moduleHeaderDiv.classList.remove('hidden');
+      } else {
+        moduleHeaderDiv.classList.add('hidden');
+      }
+      
       // Update header
       document.getElementById('lessonBadge').textContent = `Module ${currentModuleIndex + 1}, Lesson ${currentLessonIndex + 1}`;
       document.getElementById('lessonTitle').textContent = lesson.title;
@@ -970,7 +988,19 @@
           ${reviewHTML}
         `;
         
-        await loadCourse();
+        // Just refresh progress data without re-rendering the lesson
+        try {
+          const progressResponse = await fetch(`${API_URL}/api/courses/${course._id}/progress`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          if (progressResponse.ok) {
+            const progressData = await progressResponse.json();
+            progress = progressData.progress;
+            renderCourse(); // Update sidebar progress only
+          }
+        } catch (e) {
+          console.log('Progress refresh skipped');
+        }
         
       } catch (error) {
         console.error('Submit quiz error:', error);
