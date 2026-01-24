@@ -536,7 +536,7 @@ router.post('/:id/lessons/:lessonId/complete', protect, async (req, res) => {
 // @access  Private
 router.post('/:id/lessons/:lessonId/quiz', protect, async (req, res) => {
   try {
-    const { answers } = req.body; // Array of { questionIndex, selectedAnswer }
+    const { answers } = req.body; // Array of answers in order
     
     const course = await Course.findById(req.params.id);
     if (!course) {
@@ -588,19 +588,36 @@ router.post('/:id/lessons/:lessonId/quiz', protect, async (req, res) => {
         const points = q.points || 1;
         totalPoints += points;
         
-        const userAnswer = answers.find(a => a.questionIndex === idx);
+        // Get user's answer - support both old and new formats
+        const userAnswerObj = answers[idx];
+        let userAnswer = null;
         let isCorrect = false;
         
-        if (userAnswer) {
-          if (q.type === 'multiple_choice' || q.type === 'true_false') {
-            // Single answer comparison
-            isCorrect = userAnswer.selectedAnswer === q.correctAnswer;
-          } else if (q.type === 'multiple_select') {
-            // Array comparison - must match exactly
-            const correct = Array.isArray(q.correctAnswer) ? q.correctAnswer.sort() : [];
-            const selected = Array.isArray(userAnswer.selectedAnswer) ? userAnswer.selectedAnswer.sort() : [];
-            isCorrect = JSON.stringify(correct) === JSON.stringify(selected);
+        if (userAnswerObj !== null && userAnswerObj !== undefined) {
+          // New format: { selectedAnswer: number } or { selectedAnswers: number[] }
+          if (typeof userAnswerObj === 'object') {
+            if ('selectedAnswers' in userAnswerObj) {
+              userAnswer = userAnswerObj.selectedAnswers;
+            } else if ('selectedAnswer' in userAnswerObj) {
+              userAnswer = userAnswerObj.selectedAnswer;
+            }
+          } else {
+            // Old format: just a number
+            userAnswer = userAnswerObj;
           }
+        }
+        
+        // Determine if answer is correct
+        const isMultipleAnswer = q.type === 'multipleAnswer' || Array.isArray(q.correctAnswer);
+        
+        if (isMultipleAnswer) {
+          // Multiple correct answers - must match exactly
+          const correct = Array.isArray(q.correctAnswer) ? [...q.correctAnswer].sort() : [];
+          const selected = Array.isArray(userAnswer) ? [...userAnswer].sort() : [];
+          isCorrect = JSON.stringify(correct) === JSON.stringify(selected);
+        } else {
+          // Single answer
+          isCorrect = userAnswer === q.correctAnswer;
         }
         
         if (isCorrect) {
@@ -609,7 +626,8 @@ router.post('/:id/lessons/:lessonId/quiz', protect, async (req, res) => {
         
         gradedAnswers.push({
           questionIndex: idx,
-          selectedAnswer: userAnswer?.selectedAnswer,
+          question: q.question,
+          userAnswer: userAnswer,
           correctAnswer: q.correctAnswer,
           correct: isCorrect,
           explanation: q.explanation
@@ -617,9 +635,8 @@ router.post('/:id/lessons/:lessonId/quiz', protect, async (req, res) => {
       });
     } else {
       // No questions defined - treat as demo/placeholder quiz
-      // This handles legacy courses without real quiz questions
       totalPoints = 1;
-      earnedPoints = 1; // Auto-pass for demo
+      earnedPoints = 1;
     }
     
     // Calculate percentage score
@@ -636,12 +653,11 @@ router.post('/:id/lessons/:lessonId/quiz', protect, async (req, res) => {
       answers: gradedAnswers
     });
     
-    // Mark lesson complete if passed (first time or any time)
+    // Mark lesson complete if passed
     if (passed) {
       const wasCompleted = progress.status === 'completed';
       await progress.completeLesson(req.params.lessonId, course);
       
-      // Reload progress to check if course just became completed
       const updatedProgress = await UserCourseProgress.findById(progress._id);
       
       // Log quiz passed activity
@@ -699,7 +715,6 @@ router.post('/:id/lessons/:lessonId/quiz', protect, async (req, res) => {
         passingScore: course.settings.passingScore || 70,
         totalQuestions: questions.length,
         correctAnswers: gradedAnswers.filter(a => a.correct).length,
-        // Only show detailed feedback if course allows it
         feedback: quizLesson.showExplanations !== false ? gradedAnswers : undefined
       }
     });
