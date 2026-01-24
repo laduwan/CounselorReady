@@ -800,7 +800,6 @@
       document.getElementById('quizLesson').classList.remove('hidden');
       document.getElementById('passingScore').textContent = course.settings?.passingScore || 70;
       
-      // Use actual questions from lesson data
       const questions = lesson.questions || [];
       
       if (questions.length === 0) {
@@ -812,20 +811,25 @@
         return;
       }
       
-      const questionsHTML = questions.map((q, index) => `
-        <div class="bg-white rounded-xl border border-burgundy-100 p-6" data-question-index="${index}" data-correct="${q.correctAnswer}">
-          <h4 class="font-semibold text-burgundy-900 mb-4">Question ${index + 1} of ${questions.length}</h4>
+      const questionsHTML = questions.map((q, index) => {
+        const isMultipleAnswer = q.type === 'multipleAnswer' || Array.isArray(q.correctAnswer);
+        const inputType = isMultipleAnswer ? 'checkbox' : 'radio';
+        const instruction = isMultipleAnswer ? '<span class="text-sm text-gold-600 ml-2">(Select all that apply)</span>' : '';
+        
+        return `
+        <div class="bg-white rounded-xl border border-burgundy-100 p-6" data-question-index="${index}" data-question-type="${isMultipleAnswer ? 'multiple' : 'single'}">
+          <h4 class="font-semibold text-burgundy-900 mb-4">Question ${index + 1} of ${questions.length}${instruction}</h4>
           <p class="text-forest-700 mb-4">${q.question}</p>
           <div class="space-y-2">
             ${(q.options || []).map((option, oIndex) => `
               <label class="flex items-center gap-3 p-3 border border-forest-200 rounded-lg cursor-pointer hover:bg-forest-50 transition-colors">
-                <input type="radio" name="q${index}" value="${oIndex}" class="w-4 h-4 text-burgundy-600">
+                <input type="${inputType}" name="q${index}" value="${oIndex}" class="w-4 h-4 text-burgundy-600">
                 <span class="text-forest-700">${option}</span>
               </label>
             `).join('')}
           </div>
         </div>
-      `).join('');
+      `}).join('');
       
       document.getElementById('quizQuestions').innerHTML = questionsHTML;
     }
@@ -835,17 +839,30 @@
       const lesson = course.modules[currentModuleIndex].lessons[currentLessonIndex];
       const questions = lesson.questions || [];
       
-      // Collect answers from the form
       const answers = [];
       let unanswered = false;
       
       for (let i = 0; i < questions.length; i++) {
-        const selected = document.querySelector(`input[name="q${i}"]:checked`);
-        if (!selected) {
-          unanswered = true;
-          answers.push(null);
+        const questionDiv = document.querySelector(`[data-question-index="${i}"]`);
+        const isMultiple = questionDiv?.dataset.questionType === 'multiple';
+        
+        if (isMultiple) {
+          const checked = document.querySelectorAll(`input[name="q${i}"]:checked`);
+          if (checked.length === 0) {
+            unanswered = true;
+            answers.push({ selectedAnswers: [] });
+          } else {
+            const selectedAnswers = Array.from(checked).map(c => parseInt(c.value)).sort();
+            answers.push({ selectedAnswers });
+          }
         } else {
-          answers.push(parseInt(selected.value));
+          const selected = document.querySelector(`input[name="q${i}"]:checked`);
+          if (!selected) {
+            unanswered = true;
+            answers.push({ selectedAnswer: null });
+          } else {
+            answers.push({ selectedAnswer: parseInt(selected.value) });
+          }
         }
       }
       
@@ -866,7 +883,6 @@
         
         const data = await response.json();
         
-        // Show results
         document.getElementById('quizLesson').classList.add('hidden');
         document.getElementById('quizResults').classList.remove('hidden');
         
@@ -874,6 +890,44 @@
         const score = data.result.score;
         const bestScore = data.result.bestScore || score;
         const isNewBest = score >= bestScore;
+        const feedback = data.result.feedback || [];
+        
+        // Build review section
+        let reviewHTML = '';
+        if (feedback.length > 0) {
+          reviewHTML = `
+            <div class="mt-8 text-left border-t border-gray-200 pt-6">
+              <h4 class="font-semibold text-burgundy-900 mb-4 text-center">Quiz Review</h4>
+              <div class="space-y-4 max-h-96 overflow-y-auto">
+                ${feedback.map((f, idx) => {
+                  const q = questions[idx];
+                  const isCorrect = f.correct;
+                  const userAnswerText = f.userAnswer !== null && f.userAnswer !== undefined 
+                    ? (Array.isArray(f.userAnswer) ? f.userAnswer.map(a => q.options[a]).join(', ') : q.options[f.userAnswer])
+                    : 'No answer';
+                  const correctAnswerText = Array.isArray(f.correctAnswer)
+                    ? f.correctAnswer.map(a => q.options[a]).join(', ')
+                    : q.options[f.correctAnswer];
+                  
+                  return `
+                    <div class="p-4 rounded-lg border ${isCorrect ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}">
+                      <div class="flex items-start gap-2">
+                        <span class="text-lg mt-1">${isCorrect ? '✓' : '✗'}</span>
+                        <div class="flex-1">
+                          <p class="font-medium text-gray-800 mb-2">${idx + 1}. ${f.question}</p>
+                          <p class="text-sm ${isCorrect ? 'text-green-700' : 'text-red-700'}">
+                            Your answer: ${userAnswerText}
+                          </p>
+                          ${!isCorrect ? `<p class="text-sm text-green-700 mt-1">Correct: ${correctAnswerText}</p>` : ''}
+                        </div>
+                      </div>
+                    </div>
+                  `;
+                }).join('')}
+              </div>
+            </div>
+          `;
+        }
         
         document.getElementById('quizResults').innerHTML = `
           <div class="text-center">
@@ -890,6 +944,7 @@
               ${passed ? 'Passed!' : 'Not Passed'}
             </h3>
             <p class="text-lg text-forest-600 mb-2">Score: ${score}%</p>
+            <p class="text-forest-500 text-sm mb-2">${data.result.correctAnswers || 0} of ${data.result.totalQuestions || questions.length} correct</p>
             ${passed && bestScore > 0 ? `
               <p class="text-forest-500 text-sm mb-2">
                 ${isNewBest ? '🎉 New best score!' : `Best score: ${bestScore}%`}
@@ -912,9 +967,9 @@
               </button>
             `}
           </div>
+          ${reviewHTML}
         `;
         
-        // Reload progress
         await loadCourse();
         
       } catch (error) {
@@ -924,7 +979,6 @@
     }
     
     function retakeQuiz() {
-      // Hide results and show quiz again
       document.getElementById('quizResults').classList.add('hidden');
       const lesson = course.modules[currentModuleIndex].lessons[currentLessonIndex];
       renderQuizLesson(lesson);
