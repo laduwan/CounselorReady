@@ -165,6 +165,8 @@ router.get('/dashboard', protect, async (req, res) => {
       .map(p => ({
         type: p.completed ? 'course_complete' : 'course_progress',
         title: p.courseId?.title || 'Unknown Course',
+        slug: p.courseId?.slug || null,
+        courseId: p.courseId?._id || null,
         date: p.updatedAt,
         progress: p.progressPercent || 0
       }));
