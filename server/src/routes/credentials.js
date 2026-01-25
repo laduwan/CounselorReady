@@ -163,6 +163,47 @@ router.get('/consult-status', protect, async (req, res) => {
   }
 });
 
+// @route   GET /api/credentials/templates/all
+// @desc    Get all credential templates
+// @access  Public
+// NOTE: This must come BEFORE /:id route or Express will match "templates" as an ID
+router.get('/templates/all', async (req, res) => {
+  try {
+    const templates = await CredentialTemplate.find({ isActive: true })
+      .sort({ type: 1, state: 1, code: 1 });
+    
+    // Group by type
+    const grouped = {
+      state_license: templates.filter(t => t.type === 'state_license'),
+      national_cert: templates.filter(t => t.type === 'national_cert'),
+      specialty_cert: templates.filter(t => t.type === 'specialty_cert')
+    };
+    
+    res.json({ templates: grouped });
+  } catch (error) {
+    console.error('Get templates error:', error);
+    res.status(500).json({ error: 'Failed to get templates' });
+  }
+});
+
+// @route   GET /api/credentials/templates/state/:state
+// @desc    Get templates for a specific state
+// @access  Public
+router.get('/templates/state/:state', async (req, res) => {
+  try {
+    const templates = await CredentialTemplate.find({
+      isActive: true,
+      state: req.params.state.toUpperCase()
+    }).sort({ code: 1 });
+    
+    console.log(`Template lookup for ${req.params.state}: found ${templates.length}`);
+    res.json({ templates });
+  } catch (error) {
+    console.error('Get state templates error:', error);
+    res.status(500).json({ error: 'Failed to get templates' });
+  }
+});
+
 // @route   GET /api/credentials/:id
 // @desc    Get single credential
 // @access  Private
@@ -284,45 +325,6 @@ router.post('/:id/log-ceu', protect, async (req, res) => {
   } catch (error) {
     console.error('Log CEU error:', error);
     res.status(500).json({ error: 'Failed to log CEU' });
-  }
-});
-
-// @route   GET /api/credentials/templates
-// @desc    Get all credential templates
-// @access  Public
-router.get('/templates/all', async (req, res) => {
-  try {
-    const templates = await CredentialTemplate.find({ isActive: true })
-      .sort({ type: 1, state: 1, code: 1 });
-    
-    // Group by type
-    const grouped = {
-      state_license: templates.filter(t => t.type === 'state_license'),
-      national_cert: templates.filter(t => t.type === 'national_cert'),
-      specialty_cert: templates.filter(t => t.type === 'specialty_cert')
-    };
-    
-    res.json({ templates: grouped });
-  } catch (error) {
-    console.error('Get templates error:', error);
-    res.status(500).json({ error: 'Failed to get templates' });
-  }
-});
-
-// @route   GET /api/credentials/templates/:state
-// @desc    Get templates for a specific state
-// @access  Public
-router.get('/templates/state/:state', async (req, res) => {
-  try {
-    const templates = await CredentialTemplate.find({
-      isActive: true,
-      state: req.params.state.toUpperCase()
-    }).sort({ code: 1 });
-    
-    res.json({ templates });
-  } catch (error) {
-    console.error('Get state templates error:', error);
-    res.status(500).json({ error: 'Failed to get templates' });
   }
 });
 
