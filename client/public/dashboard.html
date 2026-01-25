@@ -898,6 +898,11 @@
           const timeAgo = getTimeAgo(new Date(a.date));
           const subtitle = a.type === 'certificate' ? `+${a.ceHours} CE hours` : (a.type === 'course_complete' ? 'Course completed!' : `${a.progress}% complete`);
           
+          // Resume button for in-progress courses
+          const resumeBtn = (a.type === 'course_progress' && a.slug) 
+            ? `<a href="/course-player.html?slug=${a.slug}" class="px-3 py-1 bg-burgundy-700 hover:bg-burgundy-800 text-white text-xs font-medium rounded-lg">Resume</a>`
+            : '';
+          
           return `
             <div class="flex items-center gap-4 p-3 rounded-lg bg-stone-50">
               <div class="w-10 h-10 ${bgColor} rounded-lg flex items-center justify-center">
@@ -907,6 +912,7 @@
                 <p class="text-forest-700">${a.title}</p>
                 <p class="text-forest-500 text-sm">${subtitle}</p>
               </div>
+              ${resumeBtn}
               <span class="text-forest-400 text-xs">${timeAgo}</span>
             </div>
           `;
