@@ -41,12 +41,66 @@ const stateNames = {
 };
 const getStateName = (code) => stateNames[code?.toUpperCase()] || code;
 
+// GET /api/scan/test - Test AI scan configuration
+router.get('/test', protect, async (req, res) => {
+  const results = {
+    timestamp: new Date().toISOString(),
+    apiKeyConfigured: false,
+    apiKeyPrefix: null,
+    anthropicConnection: false,
+    anthropicError: null
+  };
+  
+  // Check if API key exists
+  if (process.env.ANTHROPIC_API_KEY) {
+    results.apiKeyConfigured = true;
+    // Show first 8 chars for verification (safe to expose)
+    results.apiKeyPrefix = process.env.ANTHROPIC_API_KEY.substring(0, 8) + '...';
+  }
+  
+  // Try a minimal API call
+  if (results.apiKeyConfigured) {
+    try {
+      const response = await anthropic.messages.create({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 10,
+        messages: [{ role: 'user', content: 'Say "ok"' }]
+      });
+      
+      if (response?.content?.[0]?.text) {
+        results.anthropicConnection = true;
+        results.testResponse = response.content[0].text;
+      }
+    } catch (error) {
+      results.anthropicError = {
+        message: error.message,
+        status: error.status,
+        type: error.error?.type
+      };
+    }
+  }
+  
+  res.json(results);
+});
+
 // POST /api/scan - Scan CE certificate and extract data
 router.post('/', protect, upload.single('file'), async (req, res) => {
   try {
+    // Check if AI service is configured
+    if (!process.env.ANTHROPIC_API_KEY) {
+      console.error('ANTHROPIC_API_KEY not configured');
+      return res.status(503).json({ error: 'AI scanning service not configured. Please contact support.' });
+    }
+    
     if (!req.file) {
       return res.status(400).json({ error: 'No file uploaded' });
     }
+    
+    if (!req.file.buffer || req.file.buffer.length === 0) {
+      return res.status(400).json({ error: 'Empty file uploaded' });
+    }
+    
+    console.log(`Scanning certificate: ${req.file.originalname} (${req.file.mimetype}, ${(req.file.buffer.length / 1024).toFixed(1)}KB)`);
 
     // Convert file to base64
     const base64Data = req.file.buffer.toString('base64');
@@ -88,7 +142,8 @@ router.post('/', protect, upload.single('file'), async (req, res) => {
   "approvingBody": "The organization that approved/accredited this CE (see list below)",
   "approvalNumber": "Any approval/provider number visible (ACEP#, provider#, etc.)",
   "applicability": "national or state-specific (see rules below)",
-  "applicableStates": ["array of state codes if state-specific, empty array if national"]
+  "applicableStates": ["array of state codes if state-specific, empty array if national"],
+  "learnerName": "Full name of the person who completed the training (the certificate recipient)"
 }
 
 APPROVING BODY - Look for these and extract exactly:
@@ -148,7 +203,8 @@ If you cannot find a field, use null. For ceHours, extract the number only.`
       approvingBody: extractedData.approvingBody || null,
       approvalNumber: extractedData.approvalNumber || '',
       applicability: extractedData.applicability || 'national',
-      applicableStates: extractedData.applicableStates || []
+      applicableStates: extractedData.applicableStates || [],
+      learnerName: extractedData.learnerName || null
     };
 
     res.json({ 
@@ -158,7 +214,24 @@ If you cannot find a field, use null. For ceHours, extract the number only.`
 
   } catch (error) {
     console.error('Certificate scan error:', error);
-    res.status(500).json({ error: 'Failed to scan certificate' });
+    console.error('Error details:', error.message, error.status, error.error);
+    
+    // Provide more helpful error messages
+    let errorMessage = 'Failed to scan certificate';
+    if (error.status === 401 || error.message?.includes('API key')) {
+      errorMessage = 'AI service authentication error. Please contact support.';
+    } else if (error.status === 400) {
+      errorMessage = 'Invalid file format. Please upload a PDF, JPG, or PNG.';
+    } else if (error.status === 413 || error.message?.includes('too large')) {
+      errorMessage = 'File too large for scanning. Max 10MB.';
+    } else if (error.message?.includes('network') || error.code === 'ECONNREFUSED') {
+      errorMessage = 'Network error connecting to AI service.';
+    }
+    
+    res.status(500).json({ 
+      error: errorMessage,
+      details: process.env.NODE_ENV !== 'production' ? error.message : undefined
+    });
   }
 });
 
