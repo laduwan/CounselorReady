@@ -202,7 +202,8 @@ router.put('/:id', protect, async (req, res) => {
     
     const allowedUpdates = [
       'name', 'licenseNumber', 'issueDate', 'expirationDate',
-      'remindersEnabled', 'customReminders', 'state', 'issuingBody'
+      'remindersEnabled', 'customReminders', 'state', 'issuingBody',
+      'totalCEUsRequired', 'renewalCycle', 'requirements'
     ];
     
     allowedUpdates.forEach(field => {
