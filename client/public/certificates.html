@@ -826,7 +826,13 @@
           body: formData
         });
         
-        const data = await response.json();
+        let data;
+        try {
+          data = await response.json();
+        } catch (jsonError) {
+          console.error('Failed to parse scan response:', jsonError);
+          data = { error: 'Invalid response from server' };
+        }
         console.log('Scan result:', data);
         
         if (response.ok && data.extracted) {
@@ -929,11 +935,12 @@
           }, 5000);
         } else {
           console.error('Scan failed:', data);
+          const errorDetail = data.error || 'Could not extract all data';
           scanningIndicator.innerHTML = `
             <svg class="w-12 h-12 text-yellow-600 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
             </svg>
-            <p class="text-yellow-700 font-medium">Could not extract all data</p>
+            <p class="text-yellow-700 font-medium">${errorDetail}</p>
             <p class="text-forest-500 text-sm">Please fill in the form manually.</p>
           `;
           setTimeout(() => {
@@ -943,17 +950,19 @@
         }
       } catch (error) {
         console.error('Scan error:', error);
+        const errorMessage = error.message || 'Unknown error occurred';
         scanningIndicator.innerHTML = `
           <svg class="w-12 h-12 text-red-600 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
           </svg>
           <p class="text-red-700 font-medium">Scan failed</p>
-          <p class="text-forest-500 text-sm">Please fill in the form manually.</p>
+          <p class="text-forest-500 text-sm">${errorMessage}</p>
+          <p class="text-forest-400 text-xs mt-2">Please fill in the form manually.</p>
         `;
         setTimeout(() => {
           scanningIndicator.classList.add('hidden');
           filePreview.classList.remove('hidden');
-        }, 3000);
+        }, 4000);
       }
     }
 
