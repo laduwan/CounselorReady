@@ -1,851 +1,1088 @@
-import express from 'express';
-import multer from 'multer';
-import { v2 as cloudinary } from 'cloudinary';
-import { protect } from '../middleware/auth.js';
-import Certificate from '../models/Certificate.js';
-import Course from '../models/Course.js';
-import User from '../models/User.js';
-import UserCredential from '../models/UserCredential.js';
-import UserCourseProgress from '../models/UserCourseProgress.js';
-import { generateCertificate, generateCertificateNumber } from '../utils/certificate.js';
-import { sendCourseCompletionEmail } from '../services/courseEmailService.js';
-
-const router = express.Router();
-
-// Configure Cloudinary
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET
-});
-
-// Configure multer for memory storage
-const upload = multer({
-  storage: multer.memoryStorage(),
-  limits: { fileSize: 10 * 1024 * 1024 },
-  fileFilter: (req, file, cb) => {
-    const allowed = ['application/pdf', 'image/jpeg', 'image/png', 'image/jpg'];
-    if (allowed.includes(file.mimetype)) {
-      cb(null, true);
-    } else {
-      cb(new Error('Invalid file type. Only PDF, JPG, PNG allowed.'), false);
-    }
-  }
-});
-
-// Upload to Cloudinary helper
-const uploadToCloudinary = (buffer, options) => {
-  return new Promise((resolve, reject) => {
-    cloudinary.uploader.upload_stream(options, (error, result) => {
-      if (error) reject(error);
-      else resolve(result);
-    }).end(buffer);
-  });
-};
-
-// Helper function to calculate if course is actually completed
-const calculateCourseCompletion = (course, progress) => {
-  if (!course || !progress) return false;
-  
-  // Get total lessons from course modules
-  let totalLessons = 0;
-  if (course.modules && Array.isArray(course.modules)) {
-    course.modules.forEach(module => {
-      if (module.lessons && Array.isArray(module.lessons)) {
-        totalLessons += module.lessons.length;
-      }
-    });
-  }
-  
-  // If no lessons, can't complete
-  if (totalLessons === 0) return false;
-  
-  // Count completed lessons from progress
-  const completedLessons = progress.lessons?.filter(l => l.completed === true).length || 0;
-  
-  console.log('Course completion check:', {
-    courseId: course._id,
-    totalLessons,
-    completedLessons,
-    isComplete: completedLessons >= totalLessons && totalLessons > 0
-  });
-  
-  return completedLessons >= totalLessons && totalLessons > 0;
-};
-
-// GET /api/certificates - Get all certificates for user
-router.get('/', protect, async (req, res) => {
-  try {
-    const certificates = await Certificate.find({ userId: req.user._id })
-      .sort({ completionDate: -1 });
-    
-    res.json({ certificates });
-  } catch (error) {
-    console.error('Get certificates error:', error);
-    res.status(500).json({ error: 'Failed to get certificates' });
-  }
-});
-
-// GET /api/certificates/stats - Get certificate stats
-router.get('/stats', protect, async (req, res) => {
-  try {
-    const certificates = await Certificate.find({ userId: req.user._id });
-    
-    const stats = {
-      totalCertificates: certificates.length,
-      totalHours: certificates.reduce((sum, c) => sum + (c.ceHours || 0), 0),
-      nbccApproved: certificates.filter(c => c.nbccApproved).length
-    };
-    
-    res.json(stats);
-  } catch (error) {
-    console.error('Get stats error:', error);
-    res.status(500).json({ error: 'Failed to get stats' });
-  }
-});
-
-// GET /api/certificates/check-eligibility/:courseId - Check if user can get certificate
-router.get('/check-eligibility/:courseId', protect, async (req, res) => {
-  try {
-    const { courseId } = req.params;
-    const userId = req.user._id;
-    
-    const course = await Course.findById(courseId);
-    if (!course) {
-      return res.status(404).json({ error: 'Course not found' });
-    }
-    
-    const progress = await UserCourseProgress.findOne({ userId, courseId });
-    
-    if (!progress) {
-      return res.json({
-        eligible: false,
-        reason: 'Not enrolled in this course',
-        requirements: {
-          enrolled: false,
-          courseCompleted: false,
-          evaluationCompleted: false,
-          attestationCompleted: false
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Certificates - CounselorReady</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            burgundy: {
+              50: '#fdf5f6', 100: '#fae8eb', 200: '#f5d0d6', 300: '#eba9b5',
+              400: '#dd768a', 500: '#c94d65', 600: '#a83350', 700: '#8b2542',
+              800: '#6b1d34', 900: '#4a1524', 950: '#2d0a14'
+            },
+            forest: {
+              50: '#f3f6f4', 100: '#e3ebe5', 200: '#c8d7cc', 300: '#a1bba8',
+              400: '#759a7f', 500: '#547c5f', 600: '#40634a', 700: '#34503d',
+              800: '#2b4133', 900: '#1f3025', 950: '#121c16'
+            },
+            gold: { 50: '#fefce8', 100: '#fef9c3', 200: '#fef08a', 300: '#fde047', 400: '#facc15', 500: '#d4a012' }
+          },
+          fontFamily: {
+            'display': ['Cormorant Garamond', 'Georgia', 'serif'],
+            'body': ['Lato', 'system-ui', 'sans-serif']
+          }
         }
-      });
+      }
     }
-    
-    // ✅ FIXED: Calculate actual completion based on lessons
-    const courseCompleted = calculateCourseCompletion(course, progress);
-    
-    const requireEvaluation = course.settings?.requireEvaluation !== false;
-    const requireAttestation = course.settings?.requireAttestation !== false;
-    
-    const requirements = {
-      enrolled: true,
-      courseCompleted: courseCompleted,
-      evaluationRequired: requireEvaluation,
-      evaluationCompleted: progress.evaluationCompleted || false,
-      attestationRequired: requireAttestation,
-      attestationCompleted: progress.attestationCompleted || false
-    };
-    
-    let eligible = true;
-    let reason = null;
-    
-    if (!requirements.courseCompleted) {
-      eligible = false;
-      reason = 'Complete all lessons first';
-    } else if (requireEvaluation && !requirements.evaluationCompleted) {
-      eligible = false;
-      reason = 'Complete the course evaluation first';
-    } else if (requireAttestation && !requirements.attestationCompleted) {
-      eligible = false;
-      reason = 'Complete the attestation first';
-    }
-    
-    // Check if certificate already exists
-    const existingCert = await Certificate.findOne({ userId, courseId, source: 'platform' });
-    
-    res.json({
-      eligible,
-      reason,
-      requirements,
-      hasCertificate: !!existingCert,
-      certificateId: existingCert?._id
-    });
-  } catch (error) {
-    console.error('Check eligibility error:', error);
-    res.status(500).json({ error: 'Failed to check eligibility' });
-  }
-});
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Lato:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Lato', system-ui, sans-serif; }
+    .font-display { font-family: 'Cormorant Garamond', Georgia, serif; }
+  </style>
+</head>
+<body class="bg-stone-50 min-h-screen">
+  
+  <!-- Header -->
+  <header class="bg-white border-b border-hunter-100 sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+      <a href="/" class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl flex items-center justify-center shadow-md" style="background: linear-gradient(135deg, #8b2542, #6b1d34);">
+          <span class="font-display font-bold text-lg" style="position: relative; display: inline-block; width: 22px; height: 22px;"><span style="color: #D4A855; position: absolute; top: -3px; left: 0;">C</span><span style="color: #4A7C59; position: absolute; top: 5px; left: 6px;">R</span></span>
+        </div>
+        <span class="font-display font-semibold text-xl">
+          <span class="text-burgundy-800">Counselor</span><span class="text-hunter-600">Ready</span>
+        </span>
+      </a>
+      
+      <nav class="hidden md:flex items-center gap-8">
+        <a href="/dashboard.html" class="text-hunter-600 hover:text-hunter-700 transition-colors">Dashboard</a>
+        <a href="/courses.html" class="text-hunter-600 hover:text-hunter-700 transition-colors">Courses</a>
+        <a href="/credentials.html" class="text-hunter-600 hover:text-hunter-700 transition-colors">Credentials</a>
+        <a href="/certificates.html" class="text-burgundy-800 font-medium border-b-2 border-burgundy-700 pb-1">CE Certificates</a>
+        <a href="/messages.html" class="text-hunter-600 hover:text-hunter-700 transition-colors">Messages</a>
+      </nav>
 
-// POST /api/certificates - Upload new certificate
-router.post('/', protect, upload.single('file'), async (req, res) => {
-  try {
-    console.log('POST /api/certificates - Request received');
-    console.log('Body:', req.body);
-    console.log('File:', req.file ? req.file.originalname : 'No file');
+      <div class="flex items-center gap-4">
+        <a href="/dashboard.html" class="text-hunter-600 hover:text-hunter-700 text-sm">
+          ← Back to Dashboard
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="max-w-6xl mx-auto px-6 py-8">
     
-    const { title, provider, completionDate, ceHours, category, nbccApproved, acepNumber, notes, credentials, approvingBody, approvalNumber, applicability, applicableStates } = req.body;
+    <!-- Page Header -->
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6 gap-4">
+      <div>
+        <h1 class="font-display text-3xl font-semibold text-burgundy-900 mb-2">CE Certificates</h1>
+        <p class="text-forest-600">Store proof of continuing education credits earned from courses and training.</p>
+      </div>
+      <div class="flex items-center gap-3 flex-wrap">
+        <button onclick="downloadTranscript()" id="transcriptBtn" class="inline-flex items-center gap-2 bg-gold-50 hover:bg-gold-100 text-gold-700 border border-gold-300 font-semibold px-4 py-2 rounded-xl transition-colors">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+          CE Transcript
+        </button>
+        <button onclick="openUploadModal()" class="inline-flex items-center gap-2 bg-burgundy-800 hover:bg-burgundy-900 text-white font-semibold px-5 py-3 rounded-xl transition-colors shadow-md">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+          </svg>
+          Upload CE Certificate
+        </button>
+      </div>
+    </div>
     
-    // Validate required fields
-    if (!title || !provider || !completionDate || !ceHours) {
-      return res.status(400).json({ error: 'Title, provider, completion date, and CE hours are required' });
+    <!-- Subtle Help Hint (dismissible) -->
+    <div id="pageHint" class="mb-6 flex items-center justify-between bg-stone-100 rounded-lg px-4 py-2 text-sm">
+      <p class="text-forest-600">
+        <span class="font-medium">💡 Tip:</span> This page stores CE certificates. For licenses & credentials, visit 
+        <a href="/credentials.html" class="text-burgundy-700 hover:underline font-medium">Credentials</a>.
+      </p>
+      <button onclick="dismissHint()" class="text-forest-400 hover:text-forest-600 ml-4">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Stats Bar -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+      <div class="bg-white rounded-xl p-4 border border-burgundy-100 shadow-sm flex items-center gap-4">
+        <div class="w-12 h-12 bg-forest-100 rounded-xl flex items-center justify-center">
+          <svg class="w-6 h-6 text-forest-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+        </div>
+        <div>
+          <p class="font-display text-2xl font-semibold text-burgundy-900" id="totalCerts">0</p>
+          <p class="text-forest-500 text-sm">Certificates Stored</p>
+        </div>
+      </div>
+      
+      <div class="bg-white rounded-xl p-4 border border-burgundy-100 shadow-sm flex items-center gap-4">
+        <div class="w-12 h-12 bg-burgundy-100 rounded-xl flex items-center justify-center">
+          <svg class="w-6 h-6 text-burgundy-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+        </div>
+        <div>
+          <p class="font-display text-2xl font-semibold text-burgundy-900" id="totalHours">0</p>
+          <p class="text-forest-500 text-sm">Total CE Hours</p>
+        </div>
+      </div>
+      
+      <div class="bg-white rounded-xl p-4 border border-burgundy-100 shadow-sm flex items-center gap-4">
+        <div class="w-12 h-12 bg-gold-100 rounded-xl flex items-center justify-center">
+          <svg class="w-6 h-6 text-gold-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+        </div>
+        <div>
+          <p class="font-display text-2xl font-semibold text-burgundy-900" id="nbccCerts">0</p>
+          <p class="text-forest-500 text-sm">From NBCC ACEPs</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="bg-white rounded-xl border border-burgundy-100 shadow-sm p-4 mb-6 flex flex-col md:flex-row gap-4 items-center justify-between">
+      <div class="flex items-center gap-4 w-full md:w-auto">
+        <div class="relative flex-1 md:w-64">
+          <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-forest-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+          </svg>
+          <input type="text" id="searchInput" placeholder="Search certificates..." class="w-full pl-10 pr-4 py-2 border border-forest-200 rounded-lg focus:ring-2 focus:ring-burgundy-500 focus:border-burgundy-500 outline-none">
+        </div>
+        <select id="filterYear" class="px-4 py-2 border border-forest-200 rounded-lg focus:ring-2 focus:ring-burgundy-500 focus:border-burgundy-500 outline-none">
+          <option value="">All Years</option>
+          <option value="2026">2026</option>
+          <option value="2025">2025</option>
+          <option value="2024">2024</option>
+          <option value="2023">2023</option>
+        </select>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="text-forest-500 text-sm">Sort by:</span>
+        <select id="sortBy" class="px-3 py-2 border border-forest-200 rounded-lg focus:ring-2 focus:ring-burgundy-500 focus:border-burgundy-500 outline-none text-sm">
+          <option value="date-desc">Newest First</option>
+          <option value="date-asc">Oldest First</option>
+          <option value="hours-desc">Most Hours</option>
+          <option value="title-asc">A-Z</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Certificates List -->
+    <div id="certificatesList" class="space-y-4">
+      <!-- Empty State -->
+      <div id="emptyState" class="bg-white rounded-xl border border-burgundy-100 shadow-sm p-12 text-center">
+        <div class="w-20 h-20 bg-forest-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <svg class="w-10 h-10 text-forest-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+        </div>
+        <h3 class="font-display text-xl font-semibold text-burgundy-900 mb-2">No certificates yet</h3>
+        <p class="text-forest-600 mb-6">Upload your first CE certificate to start tracking your continuing education.</p>
+        <button onclick="openUploadModal()" class="inline-flex items-center gap-2 bg-burgundy-800 hover:bg-burgundy-900 text-white font-semibold px-5 py-3 rounded-xl transition-colors">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+          </svg>
+          Upload Your First Certificate
+        </button>
+      </div>
+    </div>
+    
+    <!-- Sync Button -->
+    <div class="mt-6 text-center">
+      <button onclick="syncCertificates()" id="syncBtn" class="inline-flex items-center gap-2 text-forest-600 hover:text-forest-800 font-medium transition-colors">
+        <svg id="syncIcon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+        </svg>
+        Sync
+      </button>
+    </div>
+  </main>
+
+  <!-- Upload Modal -->
+  <div id="uploadModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+      <div class="p-6 border-b border-hunter-100 flex items-center justify-between">
+        <h2 class="font-display text-2xl font-semibold text-burgundy-900">Upload Certificate</h2>
+        <button onclick="closeUploadModal()" class="text-forest-400 hover:text-forest-600 transition-colors">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+      
+      <form id="uploadForm" class="p-6 space-y-5">
+        <!-- File Upload -->
+        <div>
+          <label class="block text-sm font-medium text-forest-700 mb-2">Certificate File</label>
+          
+          <!-- Upload Options -->
+          <div class="flex gap-2 mb-3">
+            <label class="flex-1 cursor-pointer">
+              <input type="file" id="fileInput" accept=".pdf,.jpg,.jpeg,.png" class="hidden" onchange="handleFileSelect(event)">
+              <div class="flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-forest-300 rounded-lg hover:border-forest-500 hover:bg-forest-50 transition-colors">
+                <svg class="w-5 h-5 text-forest-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+                </svg>
+                <span class="text-sm text-forest-700 font-medium">Upload File</span>
+              </div>
+            </label>
+            <label class="flex-1 cursor-pointer">
+              <input type="file" id="cameraInput" accept="image/*" capture="environment" class="hidden" onchange="handleFileSelect(event)">
+              <div class="flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-burgundy-300 rounded-lg hover:border-burgundy-500 hover:bg-burgundy-50 transition-colors">
+                <svg class="w-5 h-5 text-burgundy-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+                </svg>
+                <span class="text-sm text-burgundy-700 font-medium">Take Photo</span>
+              </div>
+            </label>
+          </div>
+          
+          <!-- Drag & Drop Zone -->
+          <div id="dropZone" class="border-2 border-dashed border-forest-200 rounded-xl p-6 text-center hover:border-burgundy-500 transition-colors cursor-pointer">
+            <div id="uploadPrompt">
+              <p class="text-forest-500 text-sm">Or drag & drop here</p>
+            </div>
+            <div id="filePreview" class="hidden">
+              <svg class="w-10 h-10 text-forest-600 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+              <p id="fileName" class="text-forest-700 font-medium"></p>
+              <div class="flex items-center justify-center gap-3 mt-2">
+                <button type="button" onclick="scanCertificate()" id="scanBtn" class="bg-forest-600 hover:bg-forest-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors flex items-center gap-2">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+                  </svg>
+                  <span>AI Scan</span>
+                </button>
+                <button type="button" onclick="clearFile()" class="text-burgundy-600 text-sm hover:text-burgundy-700">Remove</button>
+              </div>
+            </div>
+            <div id="scanningIndicator" class="hidden">
+              <svg class="animate-spin w-10 h-10 text-forest-600 mx-auto mb-2" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              <p class="text-forest-700 font-medium">Scanning certificate...</p>
+              <p class="text-forest-500 text-sm">AI is extracting information</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Course Title -->
+        <div>
+          <label for="courseTitle" class="block text-sm font-medium text-forest-700 mb-2">Course/Training Title *</label>
+          <input type="text" id="courseTitle" name="courseTitle" required placeholder="e.g., Ethics in Clinical Practice" class="w-full px-4 py-3 border border-forest-200 rounded-xl focus:ring-2 focus:ring-burgundy-500 focus:border-burgundy-500 outline-none">
+        </div>
+
+        <!-- Provider -->
+        <div>
+          <label for="provider" class="block text-sm font-medium text-forest-700 mb-2">Provider/Organization *</label>
+          <input type="text" id="provider" name="provider" required placeholder="e.g., PESI, NBCC, State Board" class="w-full px-4 py-3 border border-forest-200 rounded-xl focus:ring-2 focus:ring-burgundy-500 focus:border-burgundy-500 outline-none">
+        </div>
+
+        <!-- Date & Hours Row -->
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label for="completionDate" class="block text-sm font-medium text-forest-700 mb-2">Completion Date *</label>
+            <input type="date" id="completionDate" name="completionDate" required class="w-full px-4 py-3 border border-forest-200 rounded-xl focus:ring-2 focus:ring-burgundy-500 focus:border-burgundy-500 outline-none">
+          </div>
+          <div>
+            <label for="ceHours" class="block text-sm font-medium text-forest-700 mb-2">CE Hours *</label>
+            <input type="number" id="ceHours" name="ceHours" required min="0.5" step="0.5" placeholder="3.0" class="w-full px-4 py-3 border border-forest-200 rounded-xl focus:ring-2 focus:ring-burgundy-500 focus:border-burgundy-500 outline-none">
+          </div>
+        </div>
+
+        <!-- Category -->
+        <div>
+          <label for="category" class="block text-sm font-medium text-forest-700 mb-2">Category *</label>
+          <select id="category" name="category" required class="w-full px-4 py-3 border border-forest-200 rounded-xl focus:ring-2 focus:ring-burgundy-500 focus:border-burgundy-500 outline-none">
+            <option value="General">General / Core</option>
+            <option value="Ethics">Ethics</option>
+            <option value="Supervision">Supervision</option>
+            <option value="Telehealth">Telehealth</option>
+            <option value="Cultural Diversity">Cultural Diversity</option>
+            <option value="Trauma">Trauma</option>
+            <option value="Substance Abuse">Substance Abuse</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+
+        <!-- Approving Body -->
+        <div>
+          <label for="approvingBody" class="block text-sm font-medium text-forest-700 mb-2">Approving Body *</label>
+          <select id="approvingBody" name="approvingBody" required class="w-full px-4 py-3 border border-forest-200 rounded-xl focus:ring-2 focus:ring-burgundy-500 focus:border-burgundy-500 outline-none" onchange="handleApprovingBodyChange()">
+            <option value="">Select approving body...</option>
+            <optgroup label="National (Applies to All States)">
+              <option value="NBCC">NBCC - National Board for Certified Counselors</option>
+              <option value="ACEP">ACEP - Approved Continuing Education Provider</option>
+              <option value="ACA">ACA - American Counseling Association</option>
+              <option value="NASW">NASW - National Association of Social Workers</option>
+              <option value="APA">APA - American Psychological Association</option>
+              <option value="ASWB">ASWB - Association of Social Work Boards</option>
+              <option value="AAMFT">AAMFT - American Association for Marriage and Family Therapy</option>
+            </optgroup>
+            <optgroup label="State Boards">
+              <option value="LPCAGA">Georgia - LPC Association of GA</option>
+              <option value="State Board">Other State Board</option>
+            </optgroup>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+
+        <!-- Approval Number -->
+        <div>
+          <label for="approvalNumber" class="block text-sm font-medium text-forest-700 mb-2">Approval/Provider Number (optional)</label>
+          <input type="text" id="approvalNumber" name="approvalNumber" placeholder="e.g., ACEP #7760, Provider #12345" class="w-full px-4 py-3 border border-forest-200 rounded-xl focus:ring-2 focus:ring-burgundy-500 focus:border-burgundy-500 outline-none">
+        </div>
+
+        <!-- Applicability (for state boards) -->
+        <div id="applicabilitySection" class="hidden">
+          <label class="block text-sm font-medium text-forest-700 mb-2">Course Applicability</label>
+          <div class="space-y-2 p-4 bg-amber-50 border border-amber-200 rounded-xl">
+            <p class="text-amber-800 text-sm mb-3">
+              <strong>Note:</strong> State board approved courses may apply nationally if the content is general clinical practice. 
+              Does this course cover state-specific laws/rules or general practice?
+            </p>
+            <label class="flex items-center gap-3 p-3 bg-white rounded-lg cursor-pointer hover:bg-forest-50 border border-transparent has-[:checked]:border-forest-500">
+              <input type="radio" name="applicability" value="national" class="w-4 h-4 text-forest-600" checked>
+              <div>
+                <span class="font-medium text-forest-800">General Practice (National)</span>
+                <span class="text-forest-500 text-sm block">Applies to all state credentials - covers general clinical skills, theory, techniques</span>
+              </div>
+            </label>
+            <label class="flex items-center gap-3 p-3 bg-white rounded-lg cursor-pointer hover:bg-burgundy-50 border border-transparent has-[:checked]:border-burgundy-500">
+              <input type="radio" name="applicability" value="state-specific" class="w-4 h-4 text-burgundy-600">
+              <div>
+                <span class="font-medium text-burgundy-800">State-Specific</span>
+                <span class="text-burgundy-500 text-sm block">Only applies to specific state(s) - covers state laws, rules, regulations</span>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <!-- State Selection (if state-specific) -->
+        <div id="stateSelectSection" class="hidden">
+          <label class="block text-sm font-medium text-forest-700 mb-2">Which state(s) does this apply to?</label>
+          <select id="applicableStates" name="applicableStates" multiple class="w-full px-4 py-3 border border-forest-200 rounded-xl focus:ring-2 focus:ring-burgundy-500 focus:border-burgundy-500 outline-none" style="min-height: 120px;">
+            <option value="GA">Georgia</option>
+            <option value="FL">Florida</option>
+            <option value="TX">Texas</option>
+            <option value="CA">California</option>
+            <option value="NC">North Carolina</option>
+            <option value="SC">South Carolina</option>
+            <option value="AL">Alabama</option>
+            <option value="TN">Tennessee</option>
+            <option value="NY">New York</option>
+            <option value="PA">Pennsylvania</option>
+          </select>
+          <p class="text-forest-500 text-xs mt-1">Hold Ctrl/Cmd to select multiple states</p>
+        </div>
+
+        <!-- NBCC Approved (legacy - keep for backward compat) -->
+        <div class="hidden">
+          <input type="checkbox" id="nbccApproved" name="nbccApproved">
+        </div>
+
+        <!-- ACEP Number (legacy) -->
+        <div class="hidden">
+          <input type="text" id="acepNumber" name="acepNumber">
+        </div>
+
+        <!-- Applicable Credentials -->
+        <div>
+          <label class="block text-sm font-medium text-forest-700 mb-2">Applicable Credentials</label>
+          <div id="credentialCheckboxes" class="space-y-2">
+            <p class="text-forest-500 text-sm">Add credentials in the Credentials page to see them here.</p>
+          </div>
+        </div>
+
+        <!-- Notes -->
+        <div>
+          <label for="notes" class="block text-sm font-medium text-forest-700 mb-2">Notes (optional)</label>
+          <textarea id="notes" name="notes" rows="2" placeholder="Any additional notes..." class="w-full px-4 py-3 border border-forest-200 rounded-xl focus:ring-2 focus:ring-burgundy-500 focus:border-burgundy-500 outline-none resize-none"></textarea>
+        </div>
+
+        <!-- Error Message -->
+        <div id="uploadError" class="hidden bg-red-50 border border-red-200 rounded-xl p-4 text-red-700 text-sm"></div>
+
+        <!-- Submit -->
+        <div class="flex gap-3 pt-2">
+          <button type="button" onclick="closeUploadModal()" class="flex-1 py-3 border-2 border-forest-300 text-forest-700 font-semibold rounded-xl hover:bg-forest-50 transition-colors">
+            Cancel
+          </button>
+          <button type="submit" class="flex-1 py-3 bg-burgundy-800 hover:bg-burgundy-900 text-white font-semibold rounded-xl transition-colors shadow-md">
+            Upload Certificate
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="mt-12 py-6 px-4 bg-white border-t border-burgundy-100">
+    <div class="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+      <p class="text-forest-500 text-sm">© 2025 CounselorReady. All rights reserved.</p>
+      <p class="text-forest-400 text-xs">Ga Integrated Therapeutic Perspectives LLC | NBCC ACEP #7760</p>
+    </div>
+  </footer>
+
+  <script>
+    const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://api.counselorready.com';
+    let selectedFile = null;
+    let certificates = [];
+    let userCredentials = [];
+
+    // Dismiss hint and remember
+    function dismissHint() {
+      document.getElementById('pageHint').style.display = 'none';
+      localStorage.setItem('certHintDismissed', 'true');
     }
-    
-    let fileUrl = null;
-    let fileKey = null;
-    let fileName = null;
-    let fileType = null;
-    
-    // Upload file to Cloudinary if provided
-    if (req.file) {
+
+    // Check auth and load data
+    document.addEventListener('DOMContentLoaded', async () => {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        window.location.href = '/login.html';
+        return;
+      }
+      
+      // Hide hint if previously dismissed
+      if (localStorage.getItem('certHintDismissed') === 'true') {
+        const hint = document.getElementById('pageHint');
+        if (hint) hint.style.display = 'none';
+      }
+      
+      await loadCertificates();
+      await loadUserCredentials();
+      setupEventListeners();
+    });
+
+    async function loadCertificates() {
+      const token = localStorage.getItem('token');
       try {
-        console.log('Uploading to Cloudinary...');
-        const result = await uploadToCloudinary(req.file.buffer, {
-          folder: `certificates/${req.user._id}`,
-          resource_type: 'auto',
-          public_id: `cert_${Date.now()}`
+        const response = await fetch(`${API_URL}/api/certificates`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (response.ok) {
+          const data = await response.json();
+          certificates = data.certificates || [];
+          renderCertificates();
+          updateStats();
+        }
+      } catch (error) {
+        console.log('Could not load certificates');
+      }
+    }
+
+    async function syncCertificates() {
+      const btn = document.getElementById('syncBtn');
+      const icon = document.getElementById('syncIcon');
+      
+      btn.disabled = true;
+      icon.classList.add('animate-spin');
+      
+      await loadCertificates();
+      await loadUserCredentials();
+      
+      setTimeout(() => {
+        btn.disabled = false;
+        icon.classList.remove('animate-spin');
+      }, 500);
+    }
+
+    async function downloadTranscript() {
+      const btn = document.getElementById('transcriptBtn');
+      const token = localStorage.getItem('token');
+      
+      btn.disabled = true;
+      btn.innerHTML = `
+        <svg class="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" class="opacity-25"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        Generating...
+      `;
+      
+      try {
+        const response = await fetch(`${API_URL}/api/certificates/transcript`, {
+          headers: { 'Authorization': `Bearer ${token}` }
         });
         
-        fileUrl = result.secure_url;
-        fileKey = result.public_id;
-        fileName = req.file.originalname;
-        fileType = req.file.mimetype;
-        console.log('Cloudinary upload success:', fileUrl);
-      } catch (uploadError) {
-        console.error('Cloudinary upload error:', uploadError);
+        if (!response.ok) {
+          const err = await response.json();
+          throw new Error(err.error || 'Failed to generate transcript');
+        }
+        
+        // Download the PDF
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `CE_Transcript_${new Date().toISOString().split('T')[0]}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        a.remove();
+        
+      } catch (error) {
+        alert(error.message || 'Failed to download transcript');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+          CE Transcript
+        `;
       }
     }
-    
-    // Parse credentials if it's a string
-    let parsedCredentials = [];
-    if (credentials) {
+
+    async function loadUserCredentials() {
+      const token = localStorage.getItem('token');
       try {
-        parsedCredentials = typeof credentials === 'string' ? JSON.parse(credentials) : credentials;
-      } catch (e) {
-        parsedCredentials = [];
+        const response = await fetch(`${API_URL}/api/credentials`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (response.ok) {
+          const data = await response.json();
+          userCredentials = data.credentials || [];
+          renderCredentialCheckboxes();
+        }
+      } catch (error) {
+        console.log('Could not load credentials');
       }
     }
+
+    function getCredentialBadges(cert) {
+      if (!cert.credentials || cert.credentials.length === 0) {
+        return '';
+      }
+      
+      const credNames = cert.credentials
+        .map(credId => {
+          const cred = userCredentials.find(c => c._id === credId);
+          return cred ? `${cred.name}${cred.state ? ' (' + cred.state + ')' : ''}` : null;
+        })
+        .filter(Boolean);
+      
+      if (credNames.length === 0) {
+        return '';
+      }
+      
+      return `
+        <div class="flex flex-wrap items-center gap-2 mt-2">
+          <span class="text-xs text-forest-500">Counts toward:</span>
+          ${credNames.map(name => `
+            <span class="bg-burgundy-100 text-burgundy-700 px-2 py-0.5 rounded-full text-xs font-medium">${name}</span>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    function renderCertificates() {
+      const container = document.getElementById('certificatesList');
+      const emptyState = document.getElementById('emptyState');
+      
+      if (certificates.length === 0) {
+        container.innerHTML = '';
+        container.appendChild(emptyState);
+        emptyState.classList.remove('hidden');
+        return;
+      }
+      
+      emptyState.classList.add('hidden');
+      
+      const html = certificates.map(cert => `
+        <div class="bg-white rounded-xl border border-burgundy-100 shadow-sm p-5 flex flex-col md:flex-row md:items-center gap-4 hover:shadow-md transition-shadow">
+          <div class="w-12 h-12 bg-burgundy-100 rounded-xl flex items-center justify-center flex-shrink-0">
+            <svg class="w-6 h-6 text-burgundy-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+            </svg>
+          </div>
+          <div class="flex-1 min-w-0">
+            <h3 class="font-semibold text-burgundy-900 truncate">${cert.title || 'Untitled Certificate'}</h3>
+            <p class="text-forest-600 text-sm">${cert.provider || 'Unknown Provider'}</p>
+            <div class="flex flex-wrap items-center gap-3 mt-2">
+              <span class="text-forest-500 text-sm">${cert.completionDate ? new Date(cert.completionDate).toLocaleDateString() : 'No date'}</span>
+              <span class="bg-forest-100 text-forest-700 px-2 py-0.5 rounded-full text-xs font-medium">${cert.ceHours || 0} CE Hours</span>
+              ${cert.category && cert.category !== 'General' ? `<span class="bg-burgundy-100 text-burgundy-700 px-2 py-0.5 rounded-full text-xs font-medium">${cert.category}</span>` : ''}
+              ${cert.approvingBody ? `<span class="bg-gold-100 text-gold-700 px-2 py-0.5 rounded-full text-xs font-medium">${cert.approvingBody}</span>` : (cert.nbccApproved ? '<span class="bg-gold-100 text-gold-700 px-2 py-0.5 rounded-full text-xs font-medium">NBCC</span>' : '')}
+              ${cert.applicability === 'national' ? '<span class="bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full text-xs font-medium">National</span>' : ''}
+              ${cert.applicability === 'state-specific' && cert.applicableStates?.length ? `<span class="bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full text-xs font-medium">${cert.applicableStates.join(', ')}</span>` : ''}
+            </div>
+            ${cert.verificationCode ? `
+              <div class="mt-2 flex items-center gap-2">
+                <span class="text-xs text-forest-500">Verify:</span>
+                <code class="text-xs font-mono bg-stone-100 text-burgundy-700 px-2 py-0.5 rounded">${cert.verificationCode}</code>
+                <button onclick="copyVerificationCode('${cert.verificationCode}')" class="text-forest-500 hover:text-forest-700" title="Copy">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                  </svg>
+                </button>
+              </div>
+            ` : ''}
+            ${getCredentialBadges(cert)}
+          </div>
+          <div class="flex items-center gap-2">
+            ${cert.fileUrl ? `<a href="${cert.fileUrl}" target="_blank" class="p-2 text-forest-500 hover:text-forest-700 hover:bg-forest-50 rounded-lg transition-colors" title="View">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+              </svg>
+            </a>` : ''}
+            <button onclick="deleteCertificate('${cert._id}')" class="p-2 text-burgundy-400 hover:text-burgundy-600 hover:bg-burgundy-50 rounded-lg transition-colors" title="Delete">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      `).join('');
+      
+      container.innerHTML = html;
+    }
     
-    // Parse applicable states if it's a string
-    let parsedApplicableStates = [];
-    if (applicableStates) {
+    function copyVerificationCode(code) {
+      navigator.clipboard.writeText(code).then(() => {
+        // Show brief toast
+        const toast = document.createElement('div');
+        toast.className = 'fixed bottom-4 right-4 bg-forest-700 text-white px-4 py-2 rounded-lg shadow-lg z-50';
+        toast.textContent = 'Copied!';
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 2000);
+      });
+    }
+
+    function renderCredentialCheckboxes() {
+      const container = document.getElementById('credentialCheckboxes');
+      
+      if (userCredentials.length === 0) {
+        container.innerHTML = '<p class="text-forest-500 text-sm">Add credentials in the Credentials page to see them here.</p>';
+        return;
+      }
+      
+      container.innerHTML = userCredentials.map(cred => `
+        <label class="flex items-center gap-2 cursor-pointer">
+          <input type="checkbox" name="credentials" value="${cred._id}" class="w-4 h-4 text-burgundy-600 border-forest-300 rounded focus:ring-burgundy-500">
+          <span class="text-forest-700">${cred.name} (${cred.state || 'National'})</span>
+        </label>
+      `).join('');
+    }
+
+    function updateStats() {
+      document.getElementById('totalCerts').textContent = certificates.length;
+      document.getElementById('totalHours').textContent = certificates.reduce((sum, c) => sum + (c.ceHours || 0), 0);
+      document.getElementById('nbccCerts').textContent = certificates.filter(c => c.nbccApproved).length;
+    }
+
+    function setupEventListeners() {
+      // Drag and drop
+      const dropZone = document.getElementById('dropZone');
+      dropZone.addEventListener('click', (e) => {
+        // Only trigger file input if clicking on dropZone itself or upload prompt, not buttons
+        if (e.target.closest('button')) return;
+        document.getElementById('fileInput').click();
+      });
+      dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('border-burgundy-500', 'bg-burgundy-50'); });
+      dropZone.addEventListener('dragleave', () => { dropZone.classList.remove('border-burgundy-500', 'bg-burgundy-50'); });
+      dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('border-burgundy-500', 'bg-burgundy-50');
+        if (e.dataTransfer.files.length) handleFileSelect({ target: { files: e.dataTransfer.files } });
+      });
+
+      // Approving body change handler
+      document.getElementById('approvingBody').addEventListener('change', handleApprovingBodyChange);
+
+      // Applicability radio change
+      document.querySelectorAll('input[name="applicability"]').forEach(radio => {
+        radio.addEventListener('change', handleApplicabilityChange);
+      });
+
+      // Form submit
+      document.getElementById('uploadForm').addEventListener('submit', handleUpload);
+
+      // Search and filter
+      document.getElementById('searchInput').addEventListener('input', filterCertificates);
+      document.getElementById('filterYear').addEventListener('change', filterCertificates);
+      document.getElementById('sortBy').addEventListener('change', filterCertificates);
+    }
+
+    function handleFileSelect(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      
+      if (file.size > 10 * 1024 * 1024) {
+        alert('File too large. Max size is 10MB.');
+        return;
+      }
+      
+      selectedFile = file;
+      document.getElementById('uploadPrompt').classList.add('hidden');
+      document.getElementById('filePreview').classList.remove('hidden');
+      document.getElementById('fileName').textContent = file.name;
+    }
+
+    function clearFile() {
+      selectedFile = null;
+      document.getElementById('fileInput').value = '';
+      document.getElementById('uploadPrompt').classList.remove('hidden');
+      document.getElementById('filePreview').classList.add('hidden');
+      document.getElementById('scanningIndicator').classList.add('hidden');
+    }
+
+    function handleApprovingBodyChange() {
+      const approvingBody = document.getElementById('approvingBody').value;
+      const applicabilitySection = document.getElementById('applicabilitySection');
+      
+      // National bodies - no need to show applicability question
+      const nationalBodies = ['NBCC', 'ACEP', 'ACA', 'NASW', 'APA', 'ASWB', 'AAMFT'];
+      
+      if (nationalBodies.includes(approvingBody)) {
+        // Hide applicability section - it's automatically national
+        applicabilitySection.classList.add('hidden');
+        document.querySelector('input[name="applicability"][value="national"]').checked = true;
+        document.getElementById('stateSelectSection').classList.add('hidden');
+        // Set nbccApproved for backward compat
+        if (['NBCC', 'ACEP'].includes(approvingBody)) {
+          document.getElementById('nbccApproved').checked = true;
+        }
+      } else if (approvingBody === 'LPCAGA' || approvingBody === 'State Board' || approvingBody === 'Other') {
+        // Show applicability section - need to determine if state-specific or general
+        applicabilitySection.classList.remove('hidden');
+        document.getElementById('nbccApproved').checked = false;
+      } else {
+        applicabilitySection.classList.add('hidden');
+        document.getElementById('stateSelectSection').classList.add('hidden');
+      }
+    }
+
+    function handleApplicabilityChange() {
+      const applicability = document.querySelector('input[name="applicability"]:checked')?.value;
+      const stateSelectSection = document.getElementById('stateSelectSection');
+      
+      if (applicability === 'state-specific') {
+        stateSelectSection.classList.remove('hidden');
+      } else {
+        stateSelectSection.classList.add('hidden');
+      }
+    }
+
+    async function updateProfileFromCert(name) {
+      if (!name) return;
+      
+      const token = localStorage.getItem('token');
+      const nameParts = name.trim().split(' ');
+      const firstName = nameParts[0] || '';
+      const lastName = nameParts.slice(1).join(' ') || '';
+      
       try {
-        parsedApplicableStates = typeof applicableStates === 'string' ? JSON.parse(applicableStates) : applicableStates;
-      } catch (e) {
-        parsedApplicableStates = [];
+        const response = await fetch(`${API_URL}/api/users/profile`, {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ firstName, lastName })
+        });
+        
+        if (response.ok) {
+          alert(`Profile updated: ${firstName} ${lastName}`);
+        } else {
+          alert('Could not update profile');
+        }
+      } catch (error) {
+        console.error('Profile update error:', error);
       }
     }
-    
-    const certificate = await Certificate.create({
-      userId: req.user._id,
-      title,
-      provider,
-      completionDate: new Date(completionDate),
-      ceHours: parseFloat(ceHours),
-      category: category || 'General',
-      nbccApproved: nbccApproved === 'true' || nbccApproved === true,
-      acepNumber: acepNumber || null,
-      approvingBody: approvingBody || null,
-      approvalNumber: approvalNumber || null,
-      applicability: applicability || 'national',
-      applicableStates: parsedApplicableStates,
-      notes: notes || null,
-      credentials: parsedCredentials,
-      fileUrl,
-      fileKey,
-      fileName,
-      fileType
-    });
-    
-    console.log('Certificate created:', certificate._id);
-    
-    // Log CEUs to linked credentials
-    if (parsedCredentials && parsedCredentials.length > 0) {
-      for (const credId of parsedCredentials) {
+
+    async function scanCertificate() {
+      if (!selectedFile) return;
+      
+      const token = localStorage.getItem('token');
+      const scanBtn = document.getElementById('scanBtn');
+      const filePreview = document.getElementById('filePreview');
+      const scanningIndicator = document.getElementById('scanningIndicator');
+      
+      // Show scanning indicator
+      filePreview.classList.add('hidden');
+      scanningIndicator.classList.remove('hidden');
+      
+      const formData = new FormData();
+      formData.append('file', selectedFile);
+      
+      try {
+        const response = await fetch(`${API_URL}/api/scan`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` },
+          body: formData
+        });
+        
+        let data;
         try {
-          const credential = await UserCredential.findOne({
-            _id: credId,
-            userId: req.user._id
-          });
+          data = await response.json();
+        } catch (jsonError) {
+          console.error('Failed to parse scan response:', jsonError);
+          data = { error: 'Invalid response from server' };
+        }
+        console.log('Scan result:', data);
+        
+        if (response.ok && data.extracted) {
+          // Auto-fill the form fields
+          if (data.extracted.title) {
+            document.getElementById('courseTitle').value = data.extracted.title;
+          }
+          if (data.extracted.provider) {
+            document.getElementById('provider').value = data.extracted.provider;
+          }
+          if (data.extracted.completionDate) {
+            document.getElementById('completionDate').value = data.extracted.completionDate;
+          }
+          if (data.extracted.ceHours) {
+            document.getElementById('ceHours').value = data.extracted.ceHours;
+          }
+          if (data.extracted.category) {
+            const categorySelect = document.getElementById('category');
+            // Find matching option
+            const options = Array.from(categorySelect.options);
+            const match = options.find(opt => 
+              opt.value.toLowerCase() === data.extracted.category.toLowerCase() ||
+              opt.text.toLowerCase().includes(data.extracted.category.toLowerCase())
+            );
+            if (match) {
+              categorySelect.value = match.value;
+            }
+          }
+          if (data.extracted.nbccApproved) {
+            document.getElementById('nbccApproved').checked = true;
+            document.getElementById('acepField').classList.remove('hidden');
+          }
+          if (data.extracted.acepNumber) {
+            document.getElementById('acepNumber').value = data.extracted.acepNumber;
+          }
           
-          if (credential) {
-            await credential.addCEU({
-              certificateId: certificate._id,
-              hours: certificate.ceHours,
-              category: certificate.category,
-              date: certificate.completionDate,
-              source: 'manual_upload'
+          // Handle approving body
+          if (data.extracted.approvingBody) {
+            const approvingBodySelect = document.getElementById('approvingBody');
+            const options = Array.from(approvingBodySelect.options);
+            const match = options.find(opt => 
+              opt.value.toUpperCase() === data.extracted.approvingBody.toUpperCase()
+            );
+            if (match) {
+              approvingBodySelect.value = match.value;
+              handleApprovingBodyChange();
+            }
+            // Also set nbccApproved for backward compat
+            if (['NBCC', 'ACEP', 'ACA'].includes(data.extracted.approvingBody.toUpperCase())) {
+              document.getElementById('nbccApproved').checked = true;
+            }
+          }
+          
+          // Handle approval number
+          if (data.extracted.approvalNumber) {
+            document.getElementById('approvalNumber').value = data.extracted.approvalNumber;
+          }
+          
+          // Handle applicability
+          if (data.extracted.applicability) {
+            const applicabilityRadio = document.querySelector(`input[name="applicability"][value="${data.extracted.applicability}"]`);
+            if (applicabilityRadio) {
+              applicabilityRadio.checked = true;
+              handleApplicabilityChange();
+            }
+          }
+          
+          // Handle applicable states
+          if (data.extracted.applicableStates && data.extracted.applicableStates.length > 0) {
+            const stateSelect = document.getElementById('applicableStates');
+            Array.from(stateSelect.options).forEach(opt => {
+              opt.selected = data.extracted.applicableStates.includes(opt.value);
             });
-            console.log('Logged CEU to credential:', credId);
           }
-        } catch (credError) {
-          console.error('Error logging CEU to credential:', credError);
-        }
-      }
-    }
-    
-    res.status(201).json({ certificate });
-  } catch (error) {
-    console.error('Create certificate error:', error);
-    res.status(500).json({ error: 'Failed to create certificate' });
-  }
-});
-
-// POST /api/certificates/generate/:courseId - Generate certificate for completed course
-router.post('/generate/:courseId', protect, async (req, res) => {
-  try {
-    const { courseId } = req.params;
-    const userId = req.user._id;
-    
-    console.log('Generate certificate request:', { courseId, userId });
-    
-    // Check if certificate already exists
-    const existingCert = await Certificate.findOne({ 
-      userId, 
-      courseId, 
-      source: 'platform' 
-    });
-    
-    if (existingCert) {
-      return res.status(400).json({ 
-        error: 'Certificate already exists for this course',
-        certificateId: existingCert._id
-      });
-    }
-    
-    // Get course and progress
-    const course = await Course.findById(courseId);
-    if (!course) {
-      return res.status(404).json({ error: 'Course not found' });
-    }
-    
-    const progress = await UserCourseProgress.findOne({ userId, courseId });
-    if (!progress) {
-      return res.status(400).json({ error: 'Not enrolled in this course' });
-    }
-    
-    // ✅ FIXED: Check actual completion based on lessons
-    const courseCompleted = calculateCourseCompletion(course, progress);
-    
-    if (!courseCompleted) {
-      return res.status(400).json({ 
-        error: 'Course not completed. Please complete all lessons first.',
-        progress: {
-          lessonsCompleted: progress.lessons?.filter(l => l.completed).length || 0,
-          totalLessons: course.modules?.reduce((sum, m) => sum + (m.lessons?.length || 0), 0) || 0
-        }
-      });
-    }
-    
-    // Check evaluation requirement
-    const requireEvaluation = course.settings?.requireEvaluation !== false;
-    if (requireEvaluation && !progress.evaluationCompleted) {
-      return res.status(400).json({ error: 'Please complete the course evaluation first' });
-    }
-    
-    // Check attestation requirement
-    const requireAttestation = course.settings?.requireAttestation !== false;
-    if (requireAttestation && !progress.attestationCompleted) {
-      return res.status(400).json({ error: 'Please complete the attestation first' });
-    }
-    
-    // Get user info
-    const user = await User.findById(userId);
-    const fullName = `${user.profile?.firstName || ''} ${user.profile?.lastName || ''}`.trim() || user.email;
-    
-    // Generate certificate number
-    const certificateNumber = await generateCertificateNumber();
-    
-    // Generate certificate PDF
-    const pdfBuffer = await generateCertificate({
-      holderName: fullName,
-      courseName: course.title,
-      completionDate: new Date(),
-      ceHours: course.ceHours,
-      certificateNumber,
-      instructorName: course.instructor?.name || 'CounselorReady',
-      acepNumber: course.acepNumber || 'ACEP #7760'
-    });
-    
-    // Upload to Cloudinary
-    const uploadResult = await uploadToCloudinary(pdfBuffer, {
-      folder: `certificates/${userId}`,
-      resource_type: 'auto',
-      public_id: `platform_cert_${certificateNumber}`,
-      format: 'pdf'
-    });
-    
-    // Create certificate record
-    const certificate = await Certificate.create({
-      userId,
-      courseId,
-      title: course.title,
-      provider: 'CounselorReady',
-      completionDate: new Date(),
-      ceHours: course.ceHours,
-      category: course.category || 'General',
-      nbccApproved: true,
-      acepNumber: course.acepNumber || 'ACEP #7760',
-      certificateNumber,
-      fileUrl: uploadResult.secure_url,
-      fileKey: uploadResult.public_id,
-      fileName: `${course.title}_Certificate.pdf`,
-      fileType: 'application/pdf',
-      source: 'platform'
-    });
-    
-    // Update progress to mark as completed
-    progress.completed = true;
-    progress.completedAt = new Date();
-    await progress.save();
-    
-    console.log('Certificate generated successfully:', certificate._id);
-    
-    // Send completion email
-    try {
-      await sendCourseCompletionEmail(user, course, certificate);
-    } catch (emailError) {
-      console.error('Failed to send completion email:', emailError);
-      // Don't fail the request if email fails
-    }
-    
-    res.status(201).json({ 
-      success: true,
-      certificate,
-      message: 'Certificate generated successfully'
-    });
-    
-  } catch (error) {
-    console.error('Generate certificate error:', error);
-    res.status(500).json({ error: 'Failed to generate certificate' });
-  }
-});
-
-// GET /api/certificates/:id - Get specific certificate
-router.get('/:id', protect, async (req, res) => {
-  try {
-    const certificate = await Certificate.findOne({
-      _id: req.params.id,
-      userId: req.user._id
-    });
-    
-    if (!certificate) {
-      return res.status(404).json({ error: 'Certificate not found' });
-    }
-    
-    res.json({ certificate });
-  } catch (error) {
-    console.error('Get certificate error:', error);
-    res.status(500).json({ error: 'Failed to get certificate' });
-  }
-});
-
-// PUT /api/certificates/:id - Update certificate
-router.put('/:id', protect, upload.single('file'), async (req, res) => {
-  try {
-    const certificate = await Certificate.findOne({
-      _id: req.params.id,
-      userId: req.user._id
-    });
-    
-    if (!certificate) {
-      return res.status(404).json({ error: 'Certificate not found' });
-    }
-    
-    const { title, provider, completionDate, ceHours, category, nbccApproved, acepNumber, notes, credentials, approvingBody, approvalNumber, applicability, applicableStates } = req.body;
-    
-    // Update fields
-    if (title) certificate.title = title;
-    if (provider) certificate.provider = provider;
-    if (completionDate) certificate.completionDate = new Date(completionDate);
-    if (ceHours) certificate.ceHours = parseFloat(ceHours);
-    if (category) certificate.category = category;
-    if (nbccApproved !== undefined) certificate.nbccApproved = nbccApproved === 'true' || nbccApproved === true;
-    if (acepNumber !== undefined) certificate.acepNumber = acepNumber || null;
-    if (approvingBody !== undefined) certificate.approvingBody = approvingBody || null;
-    if (approvalNumber !== undefined) certificate.approvalNumber = approvalNumber || null;
-    if (applicability) certificate.applicability = applicability;
-    if (notes !== undefined) certificate.notes = notes || null;
-    
-    // Parse and update credentials
-    if (credentials) {
-      try {
-        certificate.credentials = typeof credentials === 'string' ? JSON.parse(credentials) : credentials;
-      } catch (e) {
-        certificate.credentials = [];
-      }
-    }
-    
-    // Parse and update applicable states
-    if (applicableStates) {
-      try {
-        certificate.applicableStates = typeof applicableStates === 'string' ? JSON.parse(applicableStates) : applicableStates;
-      } catch (e) {
-        certificate.applicableStates = [];
-      }
-    }
-    
-    // Upload new file if provided
-    if (req.file) {
-      try {
-        // Delete old file from Cloudinary if exists
-        if (certificate.fileKey) {
-          await cloudinary.uploader.destroy(certificate.fileKey);
-        }
-        
-        const result = await uploadToCloudinary(req.file.buffer, {
-          folder: `certificates/${req.user._id}`,
-          resource_type: 'auto',
-          public_id: `cert_${Date.now()}`
-        });
-        
-        certificate.fileUrl = result.secure_url;
-        certificate.fileKey = result.public_id;
-        certificate.fileName = req.file.originalname;
-        certificate.fileType = req.file.mimetype;
-      } catch (uploadError) {
-        console.error('Cloudinary upload error:', uploadError);
-      }
-    }
-    
-    await certificate.save();
-    
-    res.json({ certificate });
-  } catch (error) {
-    console.error('Update certificate error:', error);
-    res.status(500).json({ error: 'Failed to update certificate' });
-  }
-});
-
-// DELETE /api/certificates/:id - Delete certificate
-router.delete('/:id', protect, async (req, res) => {
-  try {
-    const certificate = await Certificate.findOne({
-      _id: req.params.id,
-      userId: req.user._id
-    });
-    
-    if (!certificate) {
-      return res.status(404).json({ error: 'Certificate not found' });
-    }
-    
-    // Don't allow deletion of platform-generated certificates
-    if (certificate.source === 'platform') {
-      return res.status(403).json({ 
-        error: 'Cannot delete platform-generated certificates. Please contact support if you need to revoke this certificate.' 
-      });
-    }
-    
-    // Delete file from Cloudinary if exists
-    if (certificate.fileKey) {
-      try {
-        await cloudinary.uploader.destroy(certificate.fileKey);
-      } catch (cloudError) {
-        console.error('Error deleting from Cloudinary:', cloudError);
-      }
-    }
-    
-    // Remove CEU logs from linked credentials
-    if (certificate.credentials && certificate.credentials.length > 0) {
-      for (const credId of certificate.credentials) {
-        try {
-          const credential = await UserCredential.findOne({
-            _id: credId,
-            userId: req.user._id
+          
+          // Auto-check all credentials (user can uncheck if needed)
+          document.querySelectorAll('input[name="credentials"]').forEach(cb => {
+            cb.checked = true;
           });
           
-          if (credential) {
-            await credential.removeCEU(certificate._id);
-          }
-        } catch (credError) {
-          console.error('Error removing CEU from credential:', credError);
+          // Build learner name display
+          const learnerName = data.extracted.learnerName || '';
+          
+          // Show success message briefly
+          scanningIndicator.innerHTML = `
+            <svg class="w-12 h-12 text-green-600 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <p class="text-green-700 font-medium">Scan complete!</p>
+            ${learnerName ? `<p class="text-burgundy-700 font-semibold">${learnerName}</p>` : ''}
+            <p class="text-forest-600 text-sm mt-1">${data.extracted.ceHours || '?'} CE hours${data.extracted.category ? ' (' + data.extracted.category + ')' : ''}</p>
+            ${data.extracted.title ? `<p class="text-forest-500 text-xs">${data.extracted.title}</p>` : ''}
+            <p class="text-forest-400 text-xs mt-2">Please review the form below.</p>
+            ${learnerName ? `<button type="button" onclick="updateProfileFromCert('${learnerName.replace(/'/g, "\\'")}')" class="mt-2 text-xs text-burgundy-600 hover:text-burgundy-800 underline">Update my profile name</button>` : ''}
+          `;
+          
+          setTimeout(() => {
+            scanningIndicator.classList.add('hidden');
+            filePreview.classList.remove('hidden');
+          }, 5000);
+        } else {
+          console.error('Scan failed:', data);
+          const errorDetail = data.error || 'Could not extract all data';
+          scanningIndicator.innerHTML = `
+            <svg class="w-12 h-12 text-yellow-600 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+            </svg>
+            <p class="text-yellow-700 font-medium">${errorDetail}</p>
+            <p class="text-forest-500 text-sm">Please fill in the form manually.</p>
+          `;
+          setTimeout(() => {
+            scanningIndicator.classList.add('hidden');
+            filePreview.classList.remove('hidden');
+          }, 3000);
         }
+      } catch (error) {
+        console.error('Scan error:', error);
+        const errorMessage = error.message || 'Unknown error occurred';
+        scanningIndicator.innerHTML = `
+          <svg class="w-12 h-12 text-red-600 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+          <p class="text-red-700 font-medium">Scan failed</p>
+          <p class="text-forest-500 text-sm">${errorMessage}</p>
+          <p class="text-forest-400 text-xs mt-2">Please fill in the form manually.</p>
+        `;
+        setTimeout(() => {
+          scanningIndicator.classList.add('hidden');
+          filePreview.classList.remove('hidden');
+        }, 4000);
       }
     }
-    
-    await certificate.deleteOne();
-    
-    res.json({ message: 'Certificate deleted successfully' });
-  } catch (error) {
-    console.error('Delete certificate error:', error);
-    res.status(500).json({ error: 'Failed to delete certificate' });
-  }
-});
 
-// POST /api/certificates/:id/revoke - Revoke a certificate (admin only)
-router.post('/:id/revoke', protect, async (req, res) => {
-  try {
-    // Check if user is admin
-    if (req.user.role !== 'admin') {
-      return res.status(403).json({ error: 'Only admins can revoke certificates' });
-    }
-    
-    const { reason } = req.body;
-    
-    const certificate = await Certificate.findById(req.params.id);
-    if (!certificate) {
-      return res.status(404).json({ error: 'Certificate not found' });
-    }
-    
-    certificate.isRevoked = true;
-    certificate.revokedAt = new Date();
-    certificate.revokedBy = req.user._id;
-    certificate.revokedReason = reason || 'Revoked by administrator';
-    
-    await certificate.save();
-    
-    res.json({ 
-      message: 'Certificate revoked successfully',
-      certificate 
-    });
-  } catch (error) {
-    console.error('Revoke certificate error:', error);
-    res.status(500).json({ error: 'Failed to revoke certificate' });
-  }
-});
-
-// GET /api/certificates/verify/:code - Public verification endpoint
-router.get('/verify/:code', async (req, res) => {
-  try {
-    const { code } = req.params;
-    
-    const certificate = await Certificate.findOne({ 
-      verificationCode: code 
-    }).populate('userId', 'profile.firstName profile.lastName');
-    
-    if (!certificate) {
-      return res.json({ 
-        valid: false, 
-        error: 'Certificate not found. Please check the verification code.' 
-      });
-    }
-    
-    if (certificate.isRevoked) {
-      return res.json({
-        valid: false,
-        revoked: true,
-        revokedAt: certificate.revokedAt,
-        reason: certificate.revokedReason || 'This certificate has been revoked.',
-        certificate: {
-          title: certificate.title,
-          holderName: `${certificate.userId?.profile?.firstName || ''} ${certificate.userId?.profile?.lastName || ''}`.trim() || 'N/A'
+    async function handleUpload(e) {
+      e.preventDefault();
+      
+      const token = localStorage.getItem('token');
+      const errorDiv = document.getElementById('uploadError');
+      errorDiv.classList.add('hidden');
+      
+      const formData = new FormData();
+      if (selectedFile) formData.append('file', selectedFile);
+      formData.append('title', document.getElementById('courseTitle').value);
+      formData.append('provider', document.getElementById('provider').value);
+      formData.append('completionDate', document.getElementById('completionDate').value);
+      formData.append('ceHours', document.getElementById('ceHours').value);
+      formData.append('category', document.getElementById('category').value);
+      formData.append('nbccApproved', document.getElementById('nbccApproved').checked);
+      formData.append('acepNumber', document.getElementById('acepNumber').value);
+      formData.append('notes', document.getElementById('notes').value);
+      
+      // New approving body fields
+      formData.append('approvingBody', document.getElementById('approvingBody').value);
+      formData.append('approvalNumber', document.getElementById('approvalNumber').value);
+      
+      const applicability = document.querySelector('input[name="applicability"]:checked')?.value || 'national';
+      formData.append('applicability', applicability);
+      
+      const applicableStates = Array.from(document.getElementById('applicableStates').selectedOptions).map(opt => opt.value);
+      formData.append('applicableStates', JSON.stringify(applicableStates));
+      
+      const selectedCredentials = Array.from(document.querySelectorAll('input[name="credentials"]:checked')).map(cb => cb.value);
+      formData.append('credentials', JSON.stringify(selectedCredentials));
+      
+      try {
+        const response = await fetch(`${API_URL}/api/certificates`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` },
+          body: formData
+        });
+        
+        if (response.ok) {
+          closeUploadModal();
+          await loadCertificates();
+          // Reset form
+          document.getElementById('uploadForm').reset();
+          clearFile();
+        } else {
+          const data = await response.json();
+          errorDiv.textContent = data.error || 'Upload failed';
+          errorDiv.classList.remove('hidden');
         }
-      });
+      } catch (error) {
+        errorDiv.textContent = 'Network error. Please try again.';
+        errorDiv.classList.remove('hidden');
+      }
     }
-    
-    // Return verified certificate info
-    res.json({
-      valid: true,
-      certificate: {
-        verificationCode: certificate.verificationCode,
-        holderName: `${certificate.userId?.profile?.firstName || ''} ${certificate.userId?.profile?.lastName || ''}`.trim() || 'N/A',
-        title: certificate.title,
-        provider: certificate.provider,
-        completionDate: certificate.completionDate,
-        ceHours: certificate.ceHours,
-        category: certificate.category,
-        certificateNumber: certificate.certificateNumber,
-        nbccApproved: certificate.nbccApproved,
-        acepNumber: certificate.acepNumber,
-        approvingBody: certificate.approvingBody,
-        issuedAt: certificate.createdAt
+
+    async function deleteCertificate(id) {
+      if (!confirm('Delete this certificate?')) return;
+      
+      const token = localStorage.getItem('token');
+      try {
+        const response = await fetch(`${API_URL}/api/certificates/${id}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (response.ok) {
+          await loadCertificates();
+        }
+      } catch (error) {
+        alert('Could not delete certificate');
       }
-    });
-  } catch (error) {
-    console.error('Verify certificate error:', error);
-    res.status(500).json({ valid: false, error: 'Verification failed' });
-  }
-});
-
-// ============================================
-// CE TRANSCRIPT
-// ============================================
-
-// @route   GET /api/certificates/transcript
-// @desc    Generate CE transcript PDF with all certificates
-// @access  Private
-router.get('/transcript', protect, async (req, res) => {
-  try {
-    const user = await User.findById(req.user._id);
-    const certificates = await Certificate.find({ 
-      userId: req.user._id,
-      isRevoked: { $ne: true }
-    }).sort({ completionDate: -1 });
-    
-    if (certificates.length === 0) {
-      return res.status(404).json({ error: 'No certificates found' });
     }
-    
-    // Calculate totals by category
-    const categoryTotals = {};
-    let totalHours = 0;
-    
-    certificates.forEach(cert => {
-      const cat = cert.category || 'General';
-      categoryTotals[cat] = (categoryTotals[cat] || 0) + (cert.ceHours || 0);
-      totalHours += cert.ceHours || 0;
-    });
-    
-    // Generate transcript PDF
-    const PDFDocument = (await import('pdfkit')).default;
-    const doc = new PDFDocument({ margin: 50, size: 'LETTER' });
-    
-    const chunks = [];
-    doc.on('data', chunk => chunks.push(chunk));
-    
-    const pdfPromise = new Promise((resolve) => {
-      doc.on('end', () => resolve(Buffer.concat(chunks)));
-    });
-    
-    // Header
-    doc.fontSize(24).font('Helvetica-Bold')
-       .fillColor('#6b1d34')
-       .text('Continuing Education Transcript', { align: 'center' });
-    
-    doc.moveDown(0.5);
-    doc.fontSize(12).font('Helvetica')
-       .fillColor('#34503d')
-       .text('CounselorReady - GA Integrated Therapeutic Perspectives LLC', { align: 'center' });
-    doc.text('NBCC ACEP #7760', { align: 'center' });
-    
-    doc.moveDown();
-    doc.moveTo(50, doc.y).lineTo(562, doc.y).stroke('#e5e5e5');
-    doc.moveDown();
-    
-    // Student Info
-    const fullName = `${user.profile?.firstName || ''} ${user.profile?.lastName || ''}`.trim() || user.email;
-    doc.fontSize(11).font('Helvetica-Bold').fillColor('#2b4133')
-       .text('Student: ', { continued: true })
-       .font('Helvetica').text(fullName);
-    
-    doc.font('Helvetica-Bold').text('Email: ', { continued: true })
-       .font('Helvetica').text(user.email);
-    
-    doc.font('Helvetica-Bold').text('Generated: ', { continued: true })
-       .font('Helvetica').text(new Date().toLocaleDateString('en-US', { 
-         year: 'numeric', month: 'long', day: 'numeric' 
-       }));
-    
-    doc.moveDown();
-    
-    // Summary Box
-    doc.rect(50, doc.y, 512, 60).fillAndStroke('#f5f5f4', '#e5e5e5');
-    const summaryY = doc.y + 10;
-    doc.fillColor('#2b4133').fontSize(14).font('Helvetica-Bold')
-       .text(`Total CE Hours: ${totalHours.toFixed(1)}`, 70, summaryY);
-    
-    doc.fontSize(10).font('Helvetica').fillColor('#547c5f');
-    let catX = 70;
-    let catY = summaryY + 25;
-    Object.entries(categoryTotals).forEach(([cat, hours], i) => {
-      if (i > 0 && i % 4 === 0) {
-        catY += 15;
-        catX = 70;
-      }
-      doc.text(`${cat}: ${hours.toFixed(1)}`, catX, catY, { continued: i % 4 !== 3 });
-      catX += 120;
-    });
-    
-    doc.y = summaryY + 70;
-    doc.moveDown();
-    
-    // Table Header
-    const tableTop = doc.y;
-    doc.rect(50, tableTop, 512, 20).fill('#6b1d34');
-    doc.fillColor('#ffffff').fontSize(9).font('Helvetica-Bold');
-    doc.text('Date', 55, tableTop + 6);
-    doc.text('Course Title', 110, tableTop + 6);
-    doc.text('Provider', 320, tableTop + 6);
-    doc.text('Hours', 420, tableTop + 6);
-    doc.text('Category', 470, tableTop + 6);
-    
-    // Table Rows
-    let rowY = tableTop + 25;
-    doc.fillColor('#2b4133').font('Helvetica').fontSize(8);
-    
-    certificates.forEach((cert, i) => {
-      // Check if we need a new page
-      if (rowY > 700) {
-        doc.addPage();
-        rowY = 50;
-      }
-      
-      // Alternating row colors
-      if (i % 2 === 0) {
-        doc.rect(50, rowY - 3, 512, 18).fill('#fafafa');
-      }
-      
-      doc.fillColor('#2b4133');
-      const dateStr = cert.completionDate 
-        ? new Date(cert.completionDate).toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: '2-digit' })
-        : 'N/A';
-      
-      doc.text(dateStr, 55, rowY, { width: 50 });
-      doc.text(cert.title.substring(0, 40) + (cert.title.length > 40 ? '...' : ''), 110, rowY, { width: 200 });
-      doc.text((cert.provider || 'CounselorReady').substring(0, 20), 320, rowY, { width: 95 });
-      doc.text(cert.ceHours?.toFixed(1) || '0', 420, rowY, { width: 40 });
-      doc.text(cert.category || 'General', 470, rowY, { width: 80 });
-      
-      rowY += 18;
-    });
-    
-    // Footer
-    doc.moveDown(2);
-    doc.fontSize(8).fillColor('#999999')
-       .text('This transcript is an official record of continuing education completed through CounselorReady.', 50, 720, { align: 'center' });
-    doc.text('Verify individual certificates at counselorready.com/verify', { align: 'center' });
-    
-    doc.end();
-    
-    const pdfBuffer = await pdfPromise;
-    
-    res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `attachment; filename="CE_Transcript_${new Date().toISOString().split('T')[0]}.pdf"`);
-    res.send(pdfBuffer);
-    
-  } catch (error) {
-    console.error('Generate transcript error:', error);
-    res.status(500).json({ error: 'Failed to generate transcript' });
-  }
-});
 
-// @route   GET /api/certificates/transcript/json
-// @desc    Get transcript data as JSON (for display)
-// @access  Private
-router.get('/transcript/json', protect, async (req, res) => {
-  try {
-    const certificates = await Certificate.find({ 
-      userId: req.user._id,
-      isRevoked: { $ne: true }
-    }).sort({ completionDate: -1 });
-    
-    // Calculate totals by category
-    const categoryTotals = {};
-    let totalHours = 0;
-    
-    certificates.forEach(cert => {
-      const cat = cert.category || 'General';
-      categoryTotals[cat] = (categoryTotals[cat] || 0) + (cert.ceHours || 0);
-      totalHours += cert.ceHours || 0;
-    });
-    
-    res.json({
-      totalHours,
-      categoryTotals,
-      certificateCount: certificates.length,
-      certificates: certificates.map(c => ({
-        id: c._id,
-        title: c.title,
-        provider: c.provider,
-        completionDate: c.completionDate,
-        ceHours: c.ceHours,
-        category: c.category,
-        verificationCode: c.verificationCode,
-        nbccApproved: c.nbccApproved
-      }))
-    });
-  } catch (error) {
-    console.error('Get transcript JSON error:', error);
-    res.status(500).json({ error: 'Failed to get transcript' });
-  }
-});
+    function filterCertificates() {
+      const search = document.getElementById('searchInput').value.toLowerCase();
+      const year = document.getElementById('filterYear').value;
+      const sort = document.getElementById('sortBy').value;
+      
+      let filtered = [...certificates];
+      
+      if (search) {
+        filtered = filtered.filter(c => 
+          c.title.toLowerCase().includes(search) || 
+          c.provider.toLowerCase().includes(search)
+        );
+      }
+      
+      if (year) {
+        filtered = filtered.filter(c => new Date(c.completionDate).getFullYear().toString() === year);
+      }
+      
+      // Sort
+      switch (sort) {
+        case 'date-desc': filtered.sort((a, b) => new Date(b.completionDate) - new Date(a.completionDate)); break;
+        case 'date-asc': filtered.sort((a, b) => new Date(a.completionDate) - new Date(b.completionDate)); break;
+        case 'hours-desc': filtered.sort((a, b) => b.ceHours - a.ceHours); break;
+        case 'title-asc': filtered.sort((a, b) => a.title.localeCompare(b.title)); break;
+      }
+      
+      certificates = filtered;
+      renderCertificates();
+    }
 
-export default router;
+    function openUploadModal() {
+      document.getElementById('uploadModal').classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeUploadModal() {
+      document.getElementById('uploadModal').classList.add('hidden');
+      document.body.style.overflow = '';
+    }
+
+    // Close modal on escape
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeUploadModal();
+    });
+  </script>
+
+</body>
+</html>
