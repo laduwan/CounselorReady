@@ -8,6 +8,69 @@ import { protect, requireSubscription } from '../middleware/auth.js';
 
 const router = express.Router();
 
+// ============================================
+// CREDENTIAL TYPE MAPPING
+// Maps AI scan results to valid enum values
+// ============================================
+const knownCredentials = {
+  // State Licenses
+  'LPC': 'state_license', 'LPCC': 'state_license', 'LMHC': 'state_license',
+  'LMFT': 'state_license', 'LCSW': 'state_license', 'LCPC': 'state_license',
+  'LPC-MHSP': 'state_license', 'LPCMH': 'state_license', 'LCMHC': 'state_license',
+  
+  // National Certifications (NBCC)
+  'NCC': 'national_cert', 'CCMHC': 'national_cert', 'NCSC': 'national_cert', 'MAC': 'national_cert',
+  
+  // Supervisor Credentials
+  'CPCS': 'specialty_cert', 'ACS': 'specialty_cert',
+  
+  // Addictions & Substance Abuse
+  'CAC': 'specialty_cert', 'CCDP': 'specialty_cert', 'CASAC': 'specialty_cert',
+  
+  // Specialty Certifications (Evergreen & Others)
+  'CCATP': 'specialty_cert', 'C-CATP': 'specialty_cert', 'ASDCS': 'specialty_cert',
+  'ADHD-CCSP': 'specialty_cert', 'C-DBT': 'specialty_cert', 'DBT-C': 'specialty_cert',
+  
+  // Trauma & Specialized
+  'EMDR': 'specialty_cert', 'EMDRIA': 'specialty_cert', 'CGT': 'specialty_cert', 'CGC': 'specialty_cert',
+  
+  // Forensic & Telehealth
+  'CFMHE': 'specialty_cert', 'BC-TMH': 'specialty_cert', 'BCTMH': 'specialty_cert', 'CEAP': 'specialty_cert',
+  
+  // Other Common
+  'CCALP': 'specialty_cert', 'RPT': 'specialty_cert', 'RPT-S': 'specialty_cert', 'CBIS': 'specialty_cert'
+};
+
+const credentialTypeMap = {
+  'training': 'specialty_cert',
+  'certification': 'national_cert',
+  'certificate': 'specialty_cert',
+  'license': 'state_license',
+  'national_certification': 'national_cert'
+};
+
+function determineCredentialType(credentialType, code) {
+  const normalizedCode = code ? code.toUpperCase().trim().replace(/\s+/g, '-') : '';
+  
+  // Check known credentials first
+  if (normalizedCode && knownCredentials[normalizedCode]) {
+    return knownCredentials[normalizedCode];
+  }
+  // Check without dashes
+  const codeNoDash = normalizedCode.replace(/-/g, '');
+  if (knownCredentials[codeNoDash]) {
+    return knownCredentials[codeNoDash];
+  }
+  
+  // Map generic types from AI scan
+  if (credentialType && credentialTypeMap[credentialType.toLowerCase()]) {
+    return credentialTypeMap[credentialType.toLowerCase()];
+  }
+  
+  // Default
+  return credentialType || 'custom';
+}
+
 // @route   GET /api/credentials
 // @desc    Get user's credentials
 // @access  Private
@@ -87,7 +150,7 @@ router.post('/', protect, async (req, res) => {
     
     let credentialData = {
       userId: req.user._id,
-      credentialType: credentialType || 'custom',
+      credentialType: determineCredentialType(credentialType, code),
       name,
       code,
       issuingBody,
@@ -163,47 +226,6 @@ router.get('/consult-status', protect, async (req, res) => {
   }
 });
 
-// @route   GET /api/credentials/templates/all
-// @desc    Get all credential templates
-// @access  Public
-// NOTE: This must come BEFORE /:id route or Express will match "templates" as an ID
-router.get('/templates/all', async (req, res) => {
-  try {
-    const templates = await CredentialTemplate.find({ isActive: true })
-      .sort({ type: 1, state: 1, code: 1 });
-    
-    // Group by type
-    const grouped = {
-      state_license: templates.filter(t => t.type === 'state_license'),
-      national_cert: templates.filter(t => t.type === 'national_cert'),
-      specialty_cert: templates.filter(t => t.type === 'specialty_cert')
-    };
-    
-    res.json({ templates: grouped });
-  } catch (error) {
-    console.error('Get templates error:', error);
-    res.status(500).json({ error: 'Failed to get templates' });
-  }
-});
-
-// @route   GET /api/credentials/templates/state/:state
-// @desc    Get templates for a specific state
-// @access  Public
-router.get('/templates/state/:state', async (req, res) => {
-  try {
-    const templates = await CredentialTemplate.find({
-      isActive: true,
-      state: req.params.state.toUpperCase()
-    }).sort({ code: 1 });
-    
-    console.log(`Template lookup for ${req.params.state}: found ${templates.length}`);
-    res.json({ templates });
-  } catch (error) {
-    console.error('Get state templates error:', error);
-    res.status(500).json({ error: 'Failed to get templates' });
-  }
-});
-
 // @route   GET /api/credentials/:id
 // @desc    Get single credential
 // @access  Private
@@ -243,8 +265,7 @@ router.put('/:id', protect, async (req, res) => {
     
     const allowedUpdates = [
       'name', 'licenseNumber', 'issueDate', 'expirationDate',
-      'remindersEnabled', 'customReminders', 'state', 'issuingBody',
-      'totalCEUsRequired', 'renewalCycle', 'requirements'
+      'remindersEnabled', 'customReminders'
     ];
     
     allowedUpdates.forEach(field => {
@@ -325,6 +346,45 @@ router.post('/:id/log-ceu', protect, async (req, res) => {
   } catch (error) {
     console.error('Log CEU error:', error);
     res.status(500).json({ error: 'Failed to log CEU' });
+  }
+});
+
+// @route   GET /api/credentials/templates
+// @desc    Get all credential templates
+// @access  Public
+router.get('/templates/all', async (req, res) => {
+  try {
+    const templates = await CredentialTemplate.find({ isActive: true })
+      .sort({ type: 1, state: 1, code: 1 });
+    
+    // Group by type
+    const grouped = {
+      state_license: templates.filter(t => t.type === 'state_license'),
+      national_cert: templates.filter(t => t.type === 'national_cert'),
+      specialty_cert: templates.filter(t => t.type === 'specialty_cert')
+    };
+    
+    res.json({ templates: grouped });
+  } catch (error) {
+    console.error('Get templates error:', error);
+    res.status(500).json({ error: 'Failed to get templates' });
+  }
+});
+
+// @route   GET /api/credentials/templates/:state
+// @desc    Get templates for a specific state
+// @access  Public
+router.get('/templates/state/:state', async (req, res) => {
+  try {
+    const templates = await CredentialTemplate.find({
+      isActive: true,
+      state: req.params.state.toUpperCase()
+    }).sort({ code: 1 });
+    
+    res.json({ templates });
+  } catch (error) {
+    console.error('Get state templates error:', error);
+    res.status(500).json({ error: 'Failed to get templates' });
   }
 });
 
