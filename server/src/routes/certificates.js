@@ -394,7 +394,7 @@ router.post('/generate/:courseId', protect, async (req, res) => {
     });
     
     // Update progress to mark as completed
-    progress.completed = true;
+    progress.status = 'completed';
     progress.completedAt = new Date();
     await progress.save();
     
