@@ -1068,6 +1068,30 @@
       }
     }
 
+    // Auto-complete current lesson when navigating away (for content lessons only)
+    async function autoCompleteCurrentLesson() {
+      const lesson = course.modules[currentModuleIndex]?.lessons[currentLessonIndex];
+      if (!lesson || lesson.type === 'quiz') return;
+      if (progress.lessonsCompleted?.includes(lesson._id)) return;
+      
+      const token = localStorage.getItem('token');
+      if (!token) return;
+      
+      try {
+        const response = await fetch(`${API_URL}/api/courses/${course._id}/lessons/${lesson._id}/complete`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
+        });
+        if (response.ok) {
+          const data = await response.json();
+          if (!progress.lessonsCompleted) progress.lessonsCompleted = [];
+          progress.lessonsCompleted.push(lesson._id);
+          progress.percentComplete = data.progress?.percentComplete || progress.percentComplete;
+          progress.status = data.progress?.status || progress.status;
+        }
+      } catch (error) { console.error('Auto-complete error:', error); }
+    }
+
     function goToLesson(mIndex, lIndex) {
       // Check if module is locked (drip)
       if (isModuleLocked(mIndex)) {
@@ -1078,6 +1102,9 @@
       
       // Stop time tracking for previous lesson
       stopTimeTracking();
+      
+      // Auto-complete the lesson we are leaving
+      autoCompleteCurrentLesson();
       
       currentModuleIndex = mIndex;
       currentLessonIndex = lIndex;
@@ -1092,6 +1119,9 @@
     function navigateLesson(direction) {
       // Stop time tracking for current lesson
       stopTimeTracking();
+      
+      // Auto-complete the lesson we are leaving
+      autoCompleteCurrentLesson();
       
       let mIndex = currentModuleIndex;
       let lIndex = currentLessonIndex + direction;
