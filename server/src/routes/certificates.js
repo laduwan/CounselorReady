@@ -400,6 +400,52 @@ router.post('/generate/:courseId', protect, async (req, res) => {
     
     console.log('Certificate generated successfully:', certificate._id);
     
+    // ============================================
+    // AUTO-APPLY CE HOURS TO USER'S CREDENTIALS
+    // ============================================
+    try {
+      // Find all active credentials for this user
+      const userCredentials = await UserCredential.find({ 
+        userId,
+        status: { $in: ['active', 'expiring_soon'] }
+      });
+      
+      if (userCredentials.length > 0) {
+        console.log(`Found ${userCredentials.length} credentials to apply CE hours to`);
+        
+        for (const credential of userCredentials) {
+          try {
+            // Check if this certificate's category matches any requirement
+            const certCategory = certificate.category || 'General';
+            const matchingReq = credential.requirements.find(r => 
+              r.category === certCategory || r.category === 'General'
+            );
+            
+            // Also check if hours are still needed
+            if (credential.totalCEUsCompleted < credential.totalCEUsRequired) {
+              await credential.addCEU({
+                certificateId: certificate._id,
+                courseId: course._id,
+                hours: certificate.ceHours,
+                category: certCategory,
+                description: `${course.title} - CounselorReady Course`,
+                provider: 'CounselorReady',
+                date: certificate.completionDate,
+                source: 'internal'
+              });
+              console.log(`Applied ${certificate.ceHours} CE hours to credential: ${credential.name}`);
+            }
+          } catch (credError) {
+            console.error(`Error applying CEUs to credential ${credential._id}:`, credError);
+            // Continue with other credentials even if one fails
+          }
+        }
+      }
+    } catch (credentialError) {
+      console.error('Error auto-applying CE hours to credentials:', credentialError);
+      // Don't fail the certificate generation if credential update fails
+    }
+
     // Send completion email
     try {
       await sendCourseCompletionEmail(user, course, certificate);
@@ -846,6 +892,144 @@ router.get('/transcript/json', protect, async (req, res) => {
   } catch (error) {
     console.error('Get transcript JSON error:', error);
     res.status(500).json({ error: 'Failed to get transcript' });
+  }
+});
+
+// ============================================
+// SYNC CE HOURS TO CREDENTIALS
+// ============================================
+
+// @route   POST /api/certificates/sync-ce
+// @desc    Sync all user's certificates to their credentials (for existing data)
+// @access  Private
+router.post('/sync-ce', protect, async (req, res) => {
+  try {
+    const userId = req.user._id;
+    
+    // Get all user's certificates
+    const certificates = await Certificate.find({ 
+      userId,
+      isRevoked: { $ne: true }
+    });
+    
+    // Get all user's active credentials
+    const credentials = await UserCredential.find({ 
+      userId,
+      status: { $in: ['active', 'expiring_soon'] }
+    });
+    
+    if (credentials.length === 0) {
+      return res.json({ 
+        message: 'No active credentials found to sync',
+        synced: 0 
+      });
+    }
+    
+    if (certificates.length === 0) {
+      return res.json({ 
+        message: 'No certificates found to sync',
+        synced: 0 
+      });
+    }
+    
+    let totalSynced = 0;
+    const syncResults = [];
+    
+    for (const credential of credentials) {
+      // Clear existing logs to avoid duplicates (optional - remove if you want to preserve)
+      // credential.ceuLogs = [];
+      // credential.totalCEUsCompleted = 0;
+      
+      // Check which certificates haven't been logged to this credential yet
+      const existingCertIds = credential.ceuLogs.map(log => log.certificateId?.toString()).filter(Boolean);
+      
+      for (const cert of certificates) {
+        // Skip if already logged
+        if (existingCertIds.includes(cert._id.toString())) {
+          continue;
+        }
+        
+        // Skip if credential already has enough hours
+        if (credential.totalCEUsCompleted >= credential.totalCEUsRequired) {
+          continue;
+        }
+        
+        try {
+          await credential.addCEU({
+            certificateId: cert._id,
+            courseId: cert.courseId || null,
+            hours: cert.ceHours || 0,
+            category: cert.category || 'General',
+            description: cert.title,
+            provider: cert.provider || 'External',
+            date: cert.completionDate,
+            source: cert.source === 'platform' ? 'internal' : 'external'
+          });
+          
+          totalSynced++;
+          syncResults.push({
+            certificate: cert.title,
+            credential: credential.name,
+            hours: cert.ceHours
+          });
+        } catch (err) {
+          console.error(`Failed to sync cert ${cert._id} to credential ${credential._id}:`, err);
+        }
+      }
+    }
+    
+    res.json({
+      message: `Synced ${totalSynced} certificate(s) to credentials`,
+      synced: totalSynced,
+      details: syncResults,
+      credentials: credentials.map(c => ({
+        name: c.name,
+        totalRequired: c.totalCEUsRequired,
+        totalCompleted: c.totalCEUsCompleted
+      }))
+    });
+    
+  } catch (error) {
+    console.error('Sync CE error:', error);
+    res.status(500).json({ error: 'Failed to sync CE hours' });
+  }
+});
+
+// @route   GET /api/certificates/ce-summary
+// @desc    Get CE hours summary across all credentials
+// @access  Private
+router.get('/ce-summary', protect, async (req, res) => {
+  try {
+    const credentials = await UserCredential.find({ 
+      userId: req.user._id 
+    });
+    
+    const certificates = await Certificate.find({ 
+      userId: req.user._id,
+      isRevoked: { $ne: true }
+    });
+    
+    const totalCertificateHours = certificates.reduce((sum, c) => sum + (c.ceHours || 0), 0);
+    
+    res.json({
+      totalCertificates: certificates.length,
+      totalCertificateHours,
+      credentials: credentials.map(c => ({
+        id: c._id,
+        name: c.name,
+        code: c.code,
+        expirationDate: c.expirationDate,
+        totalRequired: c.totalCEUsRequired,
+        totalCompleted: c.totalCEUsCompleted,
+        remaining: Math.max(0, c.totalCEUsRequired - c.totalCEUsCompleted),
+        percentComplete: c.percentComplete,
+        status: c.status,
+        ceuLogCount: c.ceuLogs?.length || 0
+      }))
+    });
+  } catch (error) {
+    console.error('CE summary error:', error);
+    res.status(500).json({ error: 'Failed to get CE summary' });
   }
 });
 
