@@ -117,9 +117,9 @@ router.get('/dashboard', protect, async (req, res) => {
     
     // Get course progress
     const courseProgress = await UserCourseProgress.find({ userId })
-      .populate('courseId', 'title slug thumbnail ceHours');
-    const coursesCompleted = courseProgress.filter(p => p.completed).length;
-    const inProgressCourses = courseProgress.filter(p => !p.completed && p.status === 'in_progress');
+      .populate('courseId', 'title slug thumbnail ceHours ceuHours');
+    const coursesCompleted = courseProgress.filter(p => p.status === 'completed').length;
+    const inProgressCourses = courseProgress.filter(p => p.status === 'in_progress');
     
     // CE Progress per credential
     const ceProgress = credentials.map(cred => ({
@@ -163,12 +163,12 @@ router.get('/dashboard', protect, async (req, res) => {
       .sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt))
       .slice(0, 5)
       .map(p => ({
-        type: p.completed ? 'course_complete' : 'course_progress',
+        type: p.status === 'completed' ? 'course_complete' : 'course_progress',
         title: p.courseId?.title || 'Unknown Course',
         slug: p.courseId?.slug || null,
         courseId: p.courseId?._id || null,
         date: p.updatedAt,
-        progress: p.progressPercent || 0
+        progress: p.percentComplete || 0
       }));
     
     const recentActivity = [...recentCertificates, ...recentCourseActivity]
