@@ -360,7 +360,7 @@ router.post('/generate/:courseId', protect, async (req, res) => {
       holderName: fullName,
       courseName: course.title,
       completionDate: new Date(),
-      ceHours: course.ceHours,
+      ceHours: course.ceuHours || course.ceHours || 0,
       certificateNumber,
       instructorName: course.instructor?.name || 'CounselorReady',
       acepNumber: course.acepNumber || 'ACEP #7760'
@@ -381,7 +381,7 @@ router.post('/generate/:courseId', protect, async (req, res) => {
       title: course.title,
       provider: 'CounselorReady',
       completionDate: new Date(),
-      ceHours: course.ceHours,
+      ceHours: course.ceuHours || course.ceHours || 0,
       category: course.category || 'General',
       nbccApproved: true,
       acepNumber: course.acepNumber || 'ACEP #7760',
