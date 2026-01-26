@@ -31,7 +31,7 @@ const userCredentialSchema = new mongoose.Schema({
   // Credential info
   credentialType: {
     type: String,
-    enum: ['state_license', 'national_cert', 'specialty_cert', 'custom'],
+    enum: ['state_license', 'national_cert', 'specialty_cert', 'training', 'custom', 'other'],
     required: true
   },
   templateId: {
