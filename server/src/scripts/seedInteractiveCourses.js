@@ -553,6 +553,491 @@ const traumaInformedCareCourse = {
 };
 
 // ============================================================================
+// NEUROBIOLOGY OF TRAUMA COURSE
+// ============================================================================
+const neurobiologyOfTraumaCourse = {
+  title: "The Neurobiology of Trauma",
+  slug: "neurobiology-of-trauma",
+  description: "This course explores the neurobiological foundations of trauma, including how traumatic experiences affect brain structure and function. Participants will learn about the stress response system, memory consolidation, and the neuroplasticity that enables recovery. Essential knowledge for trauma-informed clinical practice.",
+  ceHours: 4,
+  ceProvider: "NBCC ACEP #7760 - CounselorReady",
+  acepNumber: "7760",
+  targetAudience: ["Licensed Professional Counselors", "Psychologists", "Clinical Social Workers", "Trauma Specialists"],
+  categories: ["Trauma", "Neuroscience", "Clinical Practice"],
+  tags: ["neurobiology", "trauma", "brain", "stress response", "HPA axis", "amygdala", "neuroplasticity"],
+  author: "CounselorReady",
+  status: "published",
+  publishedAt: new Date(),
+  
+  sections: [
+    // SECTION 1: Introduction to Neurobiology
+    {
+      title: "Introduction to Trauma Neurobiology",
+      description: "Understanding how trauma affects the brain",
+      order: 1,
+      estimatedTime: 30,
+      contentBlocks: [
+        {
+          type: "sectionDivider",
+          order: 1,
+          sectionNumber: 1,
+          title: "Introduction to Trauma Neurobiology",
+          subtitle: "The Brain-Body Connection"
+        },
+        {
+          type: "text",
+          order: 2,
+          textContent: "<h3>Why Neurobiology Matters in Trauma Treatment</h3><p>Understanding the neurobiology of trauma transforms how we approach treatment. When clinicians understand what happens in the brain during and after traumatic experiences, they can better explain symptoms to clients, select appropriate interventions, and instill hope for recovery through neuroplasticity.</p><p>Trauma is not just a psychological phenomenon—it fundamentally alters brain structure and function. These changes explain many trauma symptoms that might otherwise seem puzzling or irrational.</p>"
+        },
+        {
+          type: "accordion",
+          order: 3,
+          accordionItems: [
+            {
+              title: "The Triune Brain Model",
+              content: "Paul MacLean's model describes three brain regions: the <strong>reptilian brain</strong> (brainstem - survival functions), the <strong>limbic system</strong> (emotions and memory), and the <strong>neocortex</strong> (rational thought). Trauma primarily affects the limbic system while often bypassing the neocortex."
+            },
+            {
+              title: "Key Brain Structures in Trauma",
+              content: "<strong>Amygdala:</strong> The brain's alarm system, detects threats<br><strong>Hippocampus:</strong> Processes and stores memories<br><strong>Prefrontal Cortex:</strong> Executive function, rational thought<br><strong>Hypothalamus:</strong> Regulates stress hormones"
+            },
+            {
+              title: "Why Understanding the Brain Helps Clients",
+              content: "Psychoeducation about neurobiology helps clients: (1) Understand that their symptoms are normal responses to abnormal events, (2) Reduce shame and self-blame, (3) Develop hope through understanding neuroplasticity, (4) Engage more effectively in treatment."
+            }
+          ]
+        },
+        {
+          type: "matching",
+          order: 4,
+          matchingInstructions: "Match each brain structure with its primary function in trauma",
+          matchingPairs: [
+            { term: "Amygdala", definition: "Threat detection and fear response" },
+            { term: "Hippocampus", definition: "Memory processing and consolidation" },
+            { term: "Prefrontal Cortex", definition: "Executive function and rational thought" },
+            { term: "Hypothalamus", definition: "Stress hormone regulation" }
+          ]
+        }
+      ],
+      hasQuiz: true,
+      quizPassThreshold: 0.8,
+      quizQuestions: [
+        {
+          question: "Which brain structure is primarily responsible for detecting threats and triggering the fear response?",
+          type: "multipleChoice",
+          options: [
+            { text: "Hippocampus", isCorrect: false },
+            { text: "Amygdala", isCorrect: true },
+            { text: "Prefrontal Cortex", isCorrect: false },
+            { text: "Cerebellum", isCorrect: false }
+          ],
+          explanation: "The amygdala acts as the brain's alarm system, constantly scanning for threats and initiating the fear response."
+        }
+      ]
+    },
+    
+    // SECTION 2: The Stress Response System
+    {
+      title: "The Stress Response System",
+      description: "HPA axis and the fight-flight-freeze response",
+      order: 2,
+      estimatedTime: 35,
+      contentBlocks: [
+        {
+          type: "sectionDivider",
+          order: 1,
+          sectionNumber: 2,
+          title: "The Stress Response System",
+          subtitle: "HPA Axis and Survival Responses"
+        },
+        {
+          type: "text",
+          order: 2,
+          textContent: "<h3>The HPA Axis</h3><p>The Hypothalamic-Pituitary-Adrenal (HPA) axis is the body's central stress response system. When the amygdala detects a threat, it triggers a cascade of hormonal responses designed to prepare the body for survival.</p>"
+        },
+        {
+          type: "accordion",
+          order: 3,
+          accordionItems: [
+            {
+              title: "The HPA Axis Cascade",
+              content: "1. <strong>Hypothalamus</strong> releases CRH (corticotropin-releasing hormone)<br>2. <strong>Pituitary gland</strong> releases ACTH (adrenocorticotropic hormone)<br>3. <strong>Adrenal glands</strong> release cortisol and adrenaline<br>4. Body prepares for fight, flight, or freeze"
+            },
+            {
+              title: "Fight Response",
+              content: "Characterized by aggression, confrontation, or defensive behaviors. Physical signs include increased muscle tension, clenched fists, jaw tightening, and intense eye contact. The body prepares to combat the threat."
+            },
+            {
+              title: "Flight Response",
+              content: "Characterized by escape behaviors, avoidance, or restlessness. Physical signs include increased heart rate, rapid breathing, fidgeting, and urge to run. The body prepares to flee from danger."
+            },
+            {
+              title: "Freeze Response",
+              content: "Characterized by immobility, dissociation, or shutdown. Physical signs include decreased heart rate, shallow breathing, numbness, and feeling 'stuck.' This response occurs when fight or flight seem impossible."
+            },
+            {
+              title: "Chronic Stress and HPA Dysregulation",
+              content: "Prolonged trauma exposure can dysregulate the HPA axis, leading to: chronically elevated or depleted cortisol levels, heightened startle response, difficulty returning to baseline after stress, and long-term health consequences."
+            }
+          ]
+        },
+        {
+          type: "multipleChoice",
+          order: 4,
+          question: "Which hormone is released by the adrenal glands as part of the stress response?",
+          options: [
+            { text: "Dopamine", isCorrect: false },
+            { text: "Serotonin", isCorrect: false },
+            { text: "Cortisol", isCorrect: true },
+            { text: "Oxytocin", isCorrect: false }
+          ],
+          explanation: "Cortisol, along with adrenaline (epinephrine), is released by the adrenal glands to prepare the body for the stress response."
+        }
+      ],
+      hasQuiz: true,
+      quizPassThreshold: 0.8,
+      quizQuestions: [
+        {
+          question: "What does HPA stand for in the HPA axis?",
+          type: "multipleChoice",
+          options: [
+            { text: "Hypothalamic-Pituitary-Adrenal", isCorrect: true },
+            { text: "Hippocampal-Prefrontal-Amygdala", isCorrect: false },
+            { text: "Hormonal-Physiological-Adaptive", isCorrect: false },
+            { text: "Hyperarousal-Processing-Activation", isCorrect: false }
+          ]
+        },
+        {
+          question: "Which stress response is characterized by immobility and dissociation?",
+          type: "multipleChoice",
+          options: [
+            { text: "Fight", isCorrect: false },
+            { text: "Flight", isCorrect: false },
+            { text: "Freeze", isCorrect: true },
+            { text: "Fawn", isCorrect: false }
+          ]
+        }
+      ]
+    },
+    
+    // SECTION 3: Memory and Trauma
+    {
+      title: "Trauma and Memory",
+      description: "How trauma affects memory processing",
+      order: 3,
+      estimatedTime: 30,
+      contentBlocks: [
+        {
+          type: "sectionDivider",
+          order: 1,
+          sectionNumber: 3,
+          title: "Trauma and Memory",
+          subtitle: "Why Traumatic Memories Are Different"
+        },
+        {
+          type: "text",
+          order: 2,
+          textContent: "<h3>How Trauma Disrupts Memory</h3><p>Traumatic memories are processed differently than ordinary memories. During trauma, the hippocampus (responsible for contextualizing and storing memories) may be impaired by high cortisol levels, while the amygdala (which processes emotional significance) remains hyperactive. This creates fragmented, emotionally intense memories without proper context.</p>"
+        },
+        {
+          type: "accordion",
+          order: 3,
+          accordionItems: [
+            {
+              title: "Explicit vs. Implicit Memory",
+              content: "<strong>Explicit memory:</strong> Conscious, narrative memory with context (time, place, sequence). Often impaired during trauma.<br><strong>Implicit memory:</strong> Unconscious, sensory, and emotional memory. Remains intact during trauma, leading to intrusive sensations and flashbacks."
+            },
+            {
+              title: "Flashbacks and Triggers",
+              content: "Flashbacks occur when implicit traumatic memories are activated without proper contextual information. The person re-experiences sensations, emotions, and images as if the trauma is happening now. Triggers are sensory cues that activate these implicit memories."
+            },
+            {
+              title: "The Role of the Hippocampus",
+              content: "The hippocampus helps place memories in time and context ('that was then, this is now'). High cortisol during trauma can suppress hippocampal function, preventing proper memory consolidation and leaving traumatic memories 'frozen in time.'"
+            },
+            {
+              title: "Memory Reconsolidation",
+              content: "When memories are recalled, they become temporarily malleable and can be modified before being restored. This provides a window for therapeutic intervention, allowing traumatic memories to be processed and integrated with new, adaptive information."
+            }
+          ]
+        },
+        {
+          type: "multiSelect",
+          order: 4,
+          question: "Which of the following are characteristics of traumatic memories? (Select all that apply)",
+          options: [
+            { text: "Fragmented and disorganized", isCorrect: true },
+            { text: "Highly emotional and sensory", isCorrect: true },
+            { text: "Lack of temporal context", isCorrect: true },
+            { text: "Always completely accurate", isCorrect: false }
+          ],
+          explanation: "Traumatic memories are often fragmented, emotionally intense, sensory-based, and lack proper time context due to hippocampal impairment during encoding."
+        }
+      ],
+      hasQuiz: true,
+      quizPassThreshold: 0.8,
+      quizQuestions: [
+        {
+          question: "Which type of memory remains intact during trauma and contributes to flashbacks?",
+          type: "multipleChoice",
+          options: [
+            { text: "Explicit memory", isCorrect: false },
+            { text: "Implicit memory", isCorrect: true },
+            { text: "Working memory", isCorrect: false },
+            { text: "Semantic memory", isCorrect: false }
+          ]
+        }
+      ]
+    },
+    
+    // SECTION 4: Neuroplasticity and Recovery
+    {
+      title: "Neuroplasticity and Recovery",
+      description: "The brain's capacity for change and healing",
+      order: 4,
+      estimatedTime: 30,
+      contentBlocks: [
+        {
+          type: "sectionDivider",
+          order: 1,
+          sectionNumber: 4,
+          title: "Neuroplasticity and Recovery",
+          subtitle: "Hope Through Brain Change"
+        },
+        {
+          type: "text",
+          order: 2,
+          textContent: "<h3>The Brain Can Change</h3><p>Neuroplasticity—the brain's ability to reorganize and form new neural connections—provides the foundation for trauma recovery. The same neural mechanisms that created trauma responses can be harnessed to build new, healthier patterns. This is the biological basis for hope in trauma treatment.</p>"
+        },
+        {
+          type: "accordion",
+          order: 3,
+          accordionItems: [
+            {
+              title: "What is Neuroplasticity?",
+              content: "Neuroplasticity refers to the brain's ability to change its structure and function in response to experience. 'Neurons that fire together, wire together' (Hebb's Law). This means that repeated experiences strengthen neural pathways, while unused pathways weaken over time."
+            },
+            {
+              title: "Implications for Treatment",
+              content: "Evidence-based trauma treatments work by harnessing neuroplasticity: creating new associations with traumatic memories, strengthening prefrontal cortex regulation, building new neural pathways for safety and connection, and gradually reducing amygdala hyperreactivity."
+            },
+            {
+              title: "Bottom-Up and Top-Down Approaches",
+              content: "<strong>Bottom-up:</strong> Work with the body and sensations to calm the nervous system (e.g., EMDR, somatic experiencing, yoga)<br><strong>Top-down:</strong> Use cognitive processes to regulate emotions (e.g., CBT, mindfulness, psychoeducation)"
+            },
+            {
+              title: "The Window of Tolerance",
+              content: "Dan Siegel's concept describing the optimal zone of arousal where a person can function effectively. Trauma narrows this window. Treatment aims to widen the window through gradual exposure and building regulation skills."
+            }
+          ]
+        },
+        {
+          type: "imageText",
+          order: 4,
+          title: "Key Factors in Trauma Recovery",
+          content: "Research shows several factors promote neuroplastic change and recovery:<br>• <strong>Safety:</strong> Both physical and relational safety<br>• <strong>Social connection:</strong> Co-regulation with attuned others<br>• <strong>Repetition:</strong> Consistent practice of new patterns<br>• <strong>Emotional engagement:</strong> Processing at optimal arousal<br>• <strong>Sleep:</strong> Memory consolidation and restoration",
+          imagePosition: "right",
+          highlight: true
+        }
+      ],
+      hasQuiz: true,
+      quizPassThreshold: 0.8,
+      quizQuestions: [
+        {
+          question: "What does Hebb's Law state about neurons?",
+          type: "multipleChoice",
+          options: [
+            { text: "Neurons that fire together, die together", isCorrect: false },
+            { text: "Neurons that fire together, wire together", isCorrect: true },
+            { text: "Neurons cannot change after childhood", isCorrect: false },
+            { text: "Neurons only respond to medication", isCorrect: false }
+          ]
+        },
+        {
+          question: "Which approach to trauma treatment focuses on working with body sensations?",
+          type: "multipleChoice",
+          options: [
+            { text: "Top-down approach", isCorrect: false },
+            { text: "Bottom-up approach", isCorrect: true },
+            { text: "Cognitive approach", isCorrect: false },
+            { text: "Analytical approach", isCorrect: false }
+          ]
+        }
+      ]
+    },
+    
+    // SECTION 5: Clinical Applications
+    {
+      title: "Clinical Applications",
+      description: "Applying neurobiology in practice",
+      order: 5,
+      estimatedTime: 25,
+      contentBlocks: [
+        {
+          type: "sectionDivider",
+          order: 1,
+          sectionNumber: 5,
+          title: "Clinical Applications",
+          subtitle: "Using Neurobiology in Practice"
+        },
+        {
+          type: "text",
+          order: 2,
+          textContent: "<h3>Integrating Neuroscience into Treatment</h3><p>Understanding trauma neurobiology transforms clinical practice. Clinicians can use this knowledge to inform assessment, guide intervention selection, provide psychoeducation, and help clients make sense of their experiences.</p>"
+        },
+        {
+          type: "accordion",
+          order: 3,
+          accordionItems: [
+            {
+              title: "Psychoeducation Strategies",
+              content: "Use simple metaphors and visuals to explain brain processes. The 'hand model of the brain' (Dan Siegel), 'smoke detector' for amygdala, and 'thinking cap' for prefrontal cortex help clients understand their experiences without pathologizing them."
+            },
+            {
+              title: "Regulation Techniques",
+              content: "Teach techniques that directly target the nervous system: deep breathing (activates parasympathetic system), grounding (orients to present safety), bilateral stimulation (facilitates processing), and progressive muscle relaxation (releases tension)."
+            },
+            {
+              title: "Selecting Evidence-Based Treatments",
+              content: "Choose treatments based on neurobiological understanding: EMDR for memory processing, CPT/PE for cognitive restructuring, somatic approaches for body-based symptoms, and neurofeedback for arousal regulation."
+            },
+            {
+              title: "Working with the Window of Tolerance",
+              content: "Monitor client arousal and adjust interventions to keep them within their window. When hyperaroused, use calming techniques. When hypoaroused, use gentle activation. Gradually expand the window over time."
+            }
+          ]
+        },
+        {
+          type: "multiSelect",
+          order: 4,
+          question: "Which techniques directly target the nervous system for regulation? (Select all that apply)",
+          options: [
+            { text: "Deep breathing", isCorrect: true },
+            { text: "Grounding exercises", isCorrect: true },
+            { text: "Progressive muscle relaxation", isCorrect: true },
+            { text: "Dream interpretation", isCorrect: false }
+          ],
+          explanation: "Deep breathing, grounding, and progressive muscle relaxation all directly engage the nervous system to promote regulation."
+        }
+      ],
+      hasQuiz: false
+    }
+  ],
+  
+  // FINAL ASSESSMENT
+  assessment: {
+    title: "Final Assessment: Neurobiology of Trauma",
+    timeLimit: 30,
+    passThreshold: 0.8,
+    attemptsAllowed: 3,
+    shuffleQuestions: true,
+    shuffleOptions: true,
+    questions: [
+      {
+        question: "Which brain structure acts as the brain's 'alarm system' for detecting threats?",
+        type: "multipleChoice",
+        options: [
+          { text: "Hippocampus", isCorrect: false },
+          { text: "Amygdala", isCorrect: true },
+          { text: "Prefrontal Cortex", isCorrect: false },
+          { text: "Cerebellum", isCorrect: false }
+        ]
+      },
+      {
+        question: "What does HPA stand for?",
+        type: "multipleChoice",
+        options: [
+          { text: "Hypothalamic-Pituitary-Adrenal", isCorrect: true },
+          { text: "Hippocampal-Prefrontal-Amygdala", isCorrect: false },
+          { text: "Hormonal-Physiological-Adaptive", isCorrect: false },
+          { text: "Hyperarousal-Processing-Activation", isCorrect: false }
+        ]
+      },
+      {
+        question: "Which hormone is released by the adrenal glands during stress?",
+        type: "multipleChoice",
+        options: [
+          { text: "Dopamine", isCorrect: false },
+          { text: "Serotonin", isCorrect: false },
+          { text: "Cortisol", isCorrect: true },
+          { text: "Melatonin", isCorrect: false }
+        ]
+      },
+      {
+        question: "Which stress response is characterized by immobility and shutdown?",
+        type: "multipleChoice",
+        options: [
+          { text: "Fight", isCorrect: false },
+          { text: "Flight", isCorrect: false },
+          { text: "Freeze", isCorrect: true },
+          { text: "Focus", isCorrect: false }
+        ]
+      },
+      {
+        question: "Which type of memory remains intact during trauma?",
+        type: "multipleChoice",
+        options: [
+          { text: "Explicit memory", isCorrect: false },
+          { text: "Implicit memory", isCorrect: true },
+          { text: "Semantic memory", isCorrect: false },
+          { text: "Procedural memory", isCorrect: false }
+        ]
+      },
+      {
+        question: "What brain structure is responsible for placing memories in context?",
+        type: "multipleChoice",
+        options: [
+          { text: "Amygdala", isCorrect: false },
+          { text: "Hippocampus", isCorrect: true },
+          { text: "Thalamus", isCorrect: false },
+          { text: "Brainstem", isCorrect: false }
+        ]
+      },
+      {
+        question: "What does Hebb's Law state?",
+        type: "multipleChoice",
+        options: [
+          { text: "Neurons that fire together, wire together", isCorrect: true },
+          { text: "Neurons cannot change after age 25", isCorrect: false },
+          { text: "All neurons die with trauma", isCorrect: false },
+          { text: "Neurons only form during sleep", isCorrect: false }
+        ]
+      },
+      {
+        question: "Which approach works directly with body sensations?",
+        type: "multipleChoice",
+        options: [
+          { text: "Top-down approach", isCorrect: false },
+          { text: "Bottom-up approach", isCorrect: true },
+          { text: "Cognitive approach", isCorrect: false },
+          { text: "Behavioral approach", isCorrect: false }
+        ]
+      },
+      {
+        question: "The 'Window of Tolerance' concept describes:",
+        type: "multipleChoice",
+        options: [
+          { text: "The optimal zone of arousal for functioning", isCorrect: true },
+          { text: "How long treatment should last", isCorrect: false },
+          { text: "The waiting period between sessions", isCorrect: false },
+          { text: "The acceptable level of medication", isCorrect: false }
+        ]
+      },
+      {
+        question: "Which are characteristics of traumatic memories? (Select all that apply)",
+        type: "multiSelect",
+        options: [
+          { text: "Fragmented and disorganized", isCorrect: true },
+          { text: "Highly emotional and sensory", isCorrect: true },
+          { text: "Lack of temporal context", isCorrect: true },
+          { text: "Always completely accurate", isCorrect: false }
+        ]
+      }
+    ]
+  }
+};
+
+// ============================================================================
 // ETHICS COURSE (ABBREVIATED - ADD FULL CONTENT)
 // ============================================================================
 const ethicsCourse = {
@@ -770,7 +1255,7 @@ const seedCourses = async () => {
     Course = mongoose.model('InteractiveCourse', CourseSchema);
   }
   
-  const courses = [traumaInformedCareCourse, ethicsCourse, crisisCourse];
+  const courses = [neurobiologyOfTraumaCourse, traumaInformedCareCourse, ethicsCourse, crisisCourse];
   
   console.log('\n🌱 Seeding Interactive Courses...\n');
   
