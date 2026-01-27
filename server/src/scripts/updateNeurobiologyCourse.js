@@ -34,6 +34,58 @@ const neurobiologyCourse = {
   status: "published",
   publishedAt: new Date(),
   
+  // Downloadable bonus resources
+  resources: [
+    {
+      title: "Brain Structures Quick Reference Card",
+      type: "card",
+      url: "/resources/neurobiology/brain-structures-card.pdf",
+      filename: "brain-structures-quick-reference.pdf",
+      size: "245 KB",
+      description: "Printable reference card for key brain structures in trauma"
+    },
+    {
+      title: "Window of Tolerance Worksheet",
+      type: "worksheet",
+      url: "/resources/neurobiology/window-of-tolerance-worksheet.pdf",
+      filename: "window-of-tolerance-worksheet.pdf",
+      size: "312 KB",
+      description: "Client worksheet for tracking regulation states"
+    },
+    {
+      title: "Polyvagal State Assessment Checklist",
+      type: "checklist",
+      url: "/resources/neurobiology/polyvagal-checklist.pdf",
+      filename: "polyvagal-state-checklist.pdf",
+      size: "198 KB",
+      description: "Quick checklist for identifying client nervous system states"
+    },
+    {
+      title: "Grounding Techniques Handout",
+      type: "pdf",
+      url: "/resources/neurobiology/grounding-techniques.pdf",
+      filename: "grounding-techniques-handout.pdf",
+      size: "425 KB",
+      description: "Client handout with 15+ regulation techniques"
+    },
+    {
+      title: "Neurobiology Psychoeducation Script",
+      type: "doc",
+      url: "/resources/neurobiology/psychoeducation-script.pdf",
+      filename: "neurobiology-psychoeducation-script.pdf",
+      size: "156 KB",
+      description: "Word-for-word scripts for explaining brain science to clients"
+    },
+    {
+      title: "Trauma Memory vs Normal Memory Comparison",
+      type: "card",
+      url: "/resources/neurobiology/memory-comparison-card.pdf",
+      filename: "trauma-memory-comparison.pdf",
+      size: "178 KB",
+      description: "Visual comparison chart for client education"
+    }
+  ],
+  
   sections: [
     // =========================================================================
     // SECTION 1: INTRODUCTION TO TRAUMA NEUROBIOLOGY (45 min)
@@ -1159,6 +1211,38 @@ const neurobiologyCourse = {
             { text: "Change the subject to something pleasant", isCorrect: false }
           ],
           explanation: "When a client becomes dysregulated, the priority is helping them return to their window of tolerance before continuing with processing. Pushing through can be retraumatizing, while completely avoiding the material prevents progress."
+        },
+        {
+          type: "resources",
+          order: 7,
+          title: "Clinical Tools & Resources",
+          description: "Download these practical tools to use with your clients",
+          resources: [
+            {
+              title: "Brain Structures Quick Reference Card",
+              type: "card",
+              url: "/resources/neurobiology/brain-structures-card.pdf",
+              size: "245 KB"
+            },
+            {
+              title: "Window of Tolerance Worksheet",
+              type: "worksheet",
+              url: "/resources/neurobiology/window-of-tolerance-worksheet.pdf",
+              size: "312 KB"
+            },
+            {
+              title: "Polyvagal State Assessment Checklist",
+              type: "checklist",
+              url: "/resources/neurobiology/polyvagal-checklist.pdf",
+              size: "198 KB"
+            },
+            {
+              title: "Grounding Techniques Handout",
+              type: "pdf",
+              url: "/resources/neurobiology/grounding-techniques.pdf",
+              size: "425 KB"
+            }
+          ]
         }
       ],
       hasQuiz: true,
@@ -1191,19 +1275,23 @@ const neurobiologyCourse = {
   ],
   
   // =========================================================================
-  // FINAL ASSESSMENT
+  // FINAL ASSESSMENT - 4 questions per section (20 total)
   // =========================================================================
   assessment: {
     title: "Final Assessment: The Neurobiology of Trauma",
-    timeLimit: 30,
+    timeLimit: 45,
     passThreshold: 0.8,
     attemptsAllowed: 3,
     shuffleQuestions: true,
     shuffleOptions: true,
     questions: [
+      // =====================================================================
+      // SECTION 1: Introduction to Trauma Neurobiology (4 questions)
+      // =====================================================================
       {
         question: "Which brain structure acts as the brain's 'alarm system' and is responsible for detecting threats?",
         type: "multipleChoice",
+        section: 1,
         options: [
           { text: "Hippocampus", isCorrect: false },
           { text: "Amygdala", isCorrect: true },
@@ -1213,8 +1301,49 @@ const neurobiologyCourse = {
         explanation: "The amygdala constantly scans for threats and triggers the fight-flight-freeze response."
       },
       {
+        question: "According to the triune brain model, which region is primarily affected by trauma and processes emotions?",
+        type: "multipleChoice",
+        section: 1,
+        options: [
+          { text: "Reptilian brain (brainstem)", isCorrect: false },
+          { text: "Mammalian brain (limbic system)", isCorrect: true },
+          { text: "Neocortex (thinking brain)", isCorrect: false },
+          { text: "Corpus callosum", isCorrect: false }
+        ],
+        explanation: "The limbic system, including the amygdala and hippocampus, is where trauma is primarily processed and stored."
+      },
+      {
+        question: "What happens to the prefrontal cortex during a traumatic event?",
+        type: "multipleChoice",
+        section: 1,
+        options: [
+          { text: "It becomes hyperactive and processes information faster", isCorrect: false },
+          { text: "It goes 'offline' and functioning decreases", isCorrect: true },
+          { text: "It releases cortisol directly into the bloodstream", isCorrect: false },
+          { text: "It strengthens connections with the amygdala", isCorrect: false }
+        ],
+        explanation: "During trauma, the prefrontal cortex goes 'offline' while the limbic system takes over, which is why people can't 'think their way out' of trauma responses."
+      },
+      {
+        question: "Dan Siegel's 'Window of Tolerance' concept describes:",
+        type: "multipleChoice",
+        section: 1,
+        options: [
+          { text: "The amount of trauma a person can experience before developing PTSD", isCorrect: false },
+          { text: "The optimal zone of arousal where a person can function effectively", isCorrect: true },
+          { text: "The time period during which trauma memories can be changed", isCorrect: false },
+          { text: "The brain's capacity to form new neural connections", isCorrect: false }
+        ],
+        explanation: "The Window of Tolerance describes the optimal zone of arousal where a person can think clearly, feel emotions without being overwhelmed, and respond flexibly."
+      },
+
+      // =====================================================================
+      // SECTION 2: The Stress Response System (4 questions)
+      // =====================================================================
+      {
         question: "What does HPA stand for in the HPA axis?",
         type: "multipleChoice",
+        section: 2,
         options: [
           { text: "Hypothalamic-Pituitary-Adrenal", isCorrect: true },
           { text: "Hippocampal-Prefrontal-Amygdala", isCorrect: false },
@@ -1224,93 +1353,196 @@ const neurobiologyCourse = {
         explanation: "The HPA axis (Hypothalamic-Pituitary-Adrenal) is the body's central hormonal stress response system."
       },
       {
-        question: "Which hormone, released during the stress response, can damage the hippocampus when chronically elevated?",
+        question: "Which hormone, released by the adrenal glands during stress, can damage the hippocampus when chronically elevated?",
         type: "multipleChoice",
+        section: 2,
         options: [
           { text: "Dopamine", isCorrect: false },
           { text: "Serotonin", isCorrect: false },
           { text: "Cortisol", isCorrect: true },
           { text: "Oxytocin", isCorrect: false }
         ],
-        explanation: "Chronic cortisol elevation can damage the hippocampus, impairing memory and emotional regulation."
+        explanation: "Cortisol, released during the stress response, can damage the hippocampus when chronically elevated, impairing memory and emotional regulation."
       },
       {
         question: "According to Polyvagal Theory, which response is associated with dissociation and shutdown?",
         type: "multipleChoice",
+        section: 2,
         options: [
-          { text: "Fight response", isCorrect: false },
-          { text: "Flight response", isCorrect: false },
-          { text: "Dorsal vagal (freeze) response", isCorrect: true },
-          { text: "Ventral vagal (social engagement) response", isCorrect: false }
+          { text: "Fight response (sympathetic activation)", isCorrect: false },
+          { text: "Flight response (sympathetic activation)", isCorrect: false },
+          { text: "Dorsal vagal response (freeze/collapse)", isCorrect: true },
+          { text: "Ventral vagal response (social engagement)", isCorrect: false }
         ],
         explanation: "The dorsal vagal response causes immobilization, dissociation, and shutdown when fight or flight seem impossible."
       },
       {
+        question: "Which of the following is a characteristic of the flight response?",
+        type: "multipleChoice",
+        section: 2,
+        options: [
+          { text: "Clenched fists and aggressive posture", isCorrect: false },
+          { text: "Numbness and emotional detachment", isCorrect: false },
+          { text: "Restlessness, fidgeting, and urge to escape", isCorrect: true },
+          { text: "Slowed heart rate and shallow breathing", isCorrect: false }
+        ],
+        explanation: "The flight response is characterized by restlessness, fidgeting, scanning for exits, and an overwhelming urge to escape."
+      },
+
+      // =====================================================================
+      // SECTION 3: Trauma and Memory (4 questions)
+      // =====================================================================
+      {
         question: "Why do traumatic memories often lack temporal context (feeling like 'now' rather than 'then')?",
         type: "multipleChoice",
+        section: 3,
         options: [
           { text: "Because the person doesn't want to remember", isCorrect: false },
           { text: "Because the hippocampus is suppressed during trauma and can't time-stamp memories", isCorrect: true },
-          { text: "Because traumatic events are more recent", isCorrect: false },
-          { text: "Because the amygdala erases time information", isCorrect: false }
+          { text: "Because traumatic events are always more recent", isCorrect: false },
+          { text: "Because the amygdala actively erases time information", isCorrect: false }
         ],
-        explanation: "High cortisol during trauma suppresses hippocampal function, preventing proper contextualization of memories in time."
+        explanation: "High cortisol during trauma suppresses hippocampal function, preventing proper contextualization of memories in time and space."
       },
       {
         question: "Which type of memory remains intact during trauma and is responsible for flashbacks?",
         type: "multipleChoice",
+        section: 3,
         options: [
           { text: "Explicit (declarative) memory", isCorrect: false },
           { text: "Implicit (non-declarative) memory", isCorrect: true },
           { text: "Working memory", isCorrect: false },
           { text: "Semantic memory", isCorrect: false }
         ],
-        explanation: "Implicit memory (emotional, sensory, procedural) remains intact during trauma while explicit memory is impaired."
+        explanation: "Implicit memory (emotional, sensory, procedural) remains intact and is often enhanced during trauma while explicit memory is impaired."
       },
       {
-        question: "What does Hebb's Law ('neurons that fire together, wire together') imply about recovery?",
+        question: "What is memory reconsolidation?",
         type: "multipleChoice",
+        section: 3,
+        options: [
+          { text: "The initial formation of a new memory", isCorrect: false },
+          { text: "Completely erasing traumatic memories from the brain", isCorrect: false },
+          { text: "A window after memory reactivation when it becomes unstable and can be modified", isCorrect: true },
+          { text: "The natural forgetting of memories over time", isCorrect: false }
+        ],
+        explanation: "Memory reconsolidation is the process by which reactivated memories become temporarily unstable and can be modified with new information before being re-stored."
+      },
+      {
+        question: "Triggers for trauma responses are created by which brain structure's learning system?",
+        type: "multipleChoice",
+        section: 3,
+        options: [
+          { text: "Hippocampus", isCorrect: false },
+          { text: "Prefrontal cortex", isCorrect: false },
+          { text: "Amygdala", isCorrect: true },
+          { text: "Cerebellum", isCorrect: false }
+        ],
+        explanation: "Triggers are created by the amygdala's threat-learning system, which operates on association rather than logic, marking any cue associated with trauma as potentially dangerous."
+      },
+
+      // =====================================================================
+      // SECTION 4: Neuroplasticity and Recovery (4 questions)
+      // =====================================================================
+      {
+        question: "What does Hebb's Law ('neurons that fire together, wire together') imply about trauma recovery?",
+        type: "multipleChoice",
+        section: 4,
         options: [
           { text: "Recovery is impossible once neural pathways are formed", isCorrect: false },
           { text: "New experiences can create new neural pathways, enabling change", isCorrect: true },
           { text: "Only medication can change brain wiring", isCorrect: false },
           { text: "Trauma permanently damages all neurons involved", isCorrect: false }
         ],
-        explanation: "Hebb's Law means that repeated new experiences can strengthen adaptive neural pathways, just as trauma strengthened maladaptive ones."
+        explanation: "Hebb's Law means that repeated new experiences can strengthen adaptive neural pathways, just as trauma strengthened maladaptive ones—providing the basis for recovery."
       },
       {
-        question: "Which approach to trauma treatment works 'from the body up' to calm the nervous system?",
+        question: "Which approach to trauma treatment works 'from the body up' rather than 'from the mind down'?",
         type: "multipleChoice",
+        section: 4,
         options: [
           { text: "Top-down approach", isCorrect: false },
           { text: "Bottom-up approach", isCorrect: true },
           { text: "Cognitive-only approach", isCorrect: false },
-          { text: "Verbal processing approach", isCorrect: false }
+          { text: "Psychoanalytic approach", isCorrect: false }
         ],
-        explanation: "Bottom-up approaches work with the body and nervous system directly (body → limbic system → cortex)."
+        explanation: "Bottom-up approaches work with the body and nervous system directly (body → limbic system → cortex), while top-down approaches work from cognition down."
       },
+      {
+        question: "Which of the following is one of the most powerful promoters of neuroplasticity?",
+        type: "multipleChoice",
+        section: 4,
+        options: [
+          { text: "Medication alone", isCorrect: false },
+          { text: "Avoiding all stress", isCorrect: false },
+          { text: "Physical exercise", isCorrect: true },
+          { text: "Social isolation", isCorrect: false }
+        ],
+        explanation: "Exercise is one of the most powerful promoters of neuroplasticity, increasing BDNF (brain-derived neurotrophic factor) and promoting hippocampal neurogenesis."
+      },
+      {
+        question: "Research on trauma therapy has shown that effective treatment produces:",
+        type: "multipleChoice",
+        section: 4,
+        options: [
+          { text: "No measurable changes in the brain", isCorrect: false },
+          { text: "Measurable changes in brain structure and function", isCorrect: true },
+          { text: "Permanent damage to the prefrontal cortex", isCorrect: false },
+          { text: "Increased amygdala reactivity", isCorrect: false }
+        ],
+        explanation: "Studies using brain imaging have documented that effective trauma therapy produces measurable improvements in brain function, including normalized amygdala activity and improved prefrontal cortex functioning."
+      },
+
+      // =====================================================================
+      // SECTION 5: Clinical Applications (4 questions)
+      // =====================================================================
       {
         question: "What is the clinical principle 'regulate first, then process' based on?",
         type: "multipleChoice",
+        section: 5,
         options: [
           { text: "Processing is only effective when the client is within their window of tolerance", isCorrect: true },
           { text: "Clients should always be in a hyperaroused state for processing", isCorrect: false },
           { text: "Regulation is the same as avoidance", isCorrect: false },
           { text: "Processing should happen regardless of nervous system state", isCorrect: false }
         ],
-        explanation: "Trauma processing is most effective and safe when the client is regulated (within their window of tolerance)."
+        explanation: "Trauma processing is most effective and safe when the client is regulated (within their window of tolerance). Trying to process when dysregulated can be retraumatizing."
       },
       {
-        question: "Which of the following factors promotes neuroplasticity and brain healing?",
-        type: "multiSelect",
+        question: "When a client is in a dissociated (hypoaroused) state, which intervention is MOST appropriate?",
+        type: "multipleChoice",
+        section: 5,
         options: [
-          { text: "Regular physical exercise", isCorrect: true },
-          { text: "Chronic stress and isolation", isCorrect: false },
-          { text: "Adequate sleep", isCorrect: true },
-          { text: "Safe social connections", isCorrect: true },
-          { text: "Mindfulness practice", isCorrect: true }
+          { text: "Deep relaxation and guided meditation", isCorrect: false },
+          { text: "Immediately processing traumatic memories", isCorrect: false },
+          { text: "Gentle movement and sensory engagement", isCorrect: true },
+          { text: "Ending the session early", isCorrect: false }
         ],
-        explanation: "Exercise, sleep, safe connections, and mindfulness all promote neuroplasticity. Chronic stress and isolation impair it."
+        explanation: "When hypoaroused/dissociated, gentle activation is needed—movement, sensory engagement, and orienting. Deep relaxation can actually increase dissociation."
+      },
+      {
+        question: "Which metaphor is commonly used to explain amygdala functioning to clients?",
+        type: "multipleChoice",
+        section: 5,
+        options: [
+          { text: "Filing cabinet", isCorrect: false },
+          { text: "Smoke detector", isCorrect: true },
+          { text: "Computer hard drive", isCorrect: false },
+          { text: "Traffic light", isCorrect: false }
+        ],
+        explanation: "The 'smoke detector' metaphor helps clients understand how their amygdala has become overly sensitive: 'Your smoke detector got set too sensitive after a kitchen fire. Now it goes off even when you're just making toast.'"
+      },
+      {
+        question: "Why is psychoeducation about the brain therapeutic for trauma clients?",
+        type: "multipleChoice",
+        section: 5,
+        options: [
+          { text: "It makes clients feel intellectually superior", isCorrect: false },
+          { text: "It reduces shame by normalizing symptoms as brain responses, not character flaws", isCorrect: true },
+          { text: "It replaces the need for other interventions", isCorrect: false },
+          { text: "It increases client dependency on the therapist", isCorrect: false }
+        ],
+        explanation: "Psychoeducation reduces shame ('there's nothing wrong with you—your brain is doing what it was designed to do'), externalizes the problem, and instills hope through understanding neuroplasticity."
       }
     ]
   }
