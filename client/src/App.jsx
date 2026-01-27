@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useParams } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 
 // Pages
@@ -11,10 +11,16 @@ import CourseView from './pages/CourseView';
 import Credentials from './pages/Credentials';
 import Settings from './pages/Settings';
 import InteractiveCourseCatalog from './pages/InteractiveCourseCatalog';
+
+// Components
+import Layout from './components/Layout';
 import CourseViewer from './components/CourseViewer';
 
-// Layout component
-import Layout from './components/Layout';
+// Wrapper to pass slug param to CourseViewer
+function CourseViewerWrapper() {
+  const { slug } = useParams();
+  return <CourseViewer courseSlug={slug} />;
+}
 
 // Protected Route wrapper
 function ProtectedRoute({ children }) {
@@ -74,16 +80,6 @@ function AppRoutes() {
       } />
       <Route path="/courses" element={
         <ProtectedRoute>
-           <Route path="/learn" element={
-        <ProtectedRoute>
-          <Layout><InteractiveCourseCatalog /></Layout>
-        </ProtectedRoute>
-      } />
-      <Route path="/learn/:slug" element={
-        <ProtectedRoute>
-          <CourseViewer />
-        </ProtectedRoute>
-      } />
           <Layout><Courses /></Layout>
         </ProtectedRoute>
       } />
@@ -92,6 +88,19 @@ function AppRoutes() {
           <Layout><CourseView /></Layout>
         </ProtectedRoute>
       } />
+      
+      {/* Interactive Courses */}
+      <Route path="/learn" element={
+        <ProtectedRoute>
+          <Layout><InteractiveCourseCatalog /></Layout>
+        </ProtectedRoute>
+      } />
+      <Route path="/learn/:slug" element={
+        <ProtectedRoute>
+          <CourseViewerWrapper />
+        </ProtectedRoute>
+      } />
+      
       <Route path="/credentials" element={
         <ProtectedRoute>
           <Layout><Credentials /></Layout>
