@@ -18,7 +18,7 @@ import {
 // ============================================================================
 // API SERVICE
 // ============================================================================
-const API_BASE = '/api/courses';
+const API_BASE = '/api/interactive-courses';
 
 const api = {
   async getCourse(slug) {
