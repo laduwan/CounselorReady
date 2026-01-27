@@ -10,6 +10,8 @@ import Courses from './pages/Courses';
 import CourseView from './pages/CourseView';
 import Credentials from './pages/Credentials';
 import Settings from './pages/Settings';
+import InteractiveCourseCatalog from './pages/InteractiveCourseCatalog';
+import CourseViewer from './components/CourseViewer';
 
 // Layout component
 import Layout from './components/Layout';
@@ -72,6 +74,16 @@ function AppRoutes() {
       } />
       <Route path="/courses" element={
         <ProtectedRoute>
+           <Route path="/learn" element={
+        <ProtectedRoute>
+          <Layout><InteractiveCourseCatalog /></Layout>
+        </ProtectedRoute>
+      } />
+      <Route path="/learn/:slug" element={
+        <ProtectedRoute>
+          <CourseViewer />
+        </ProtectedRoute>
+      } />
           <Layout><Courses /></Layout>
         </ProtectedRoute>
       } />
