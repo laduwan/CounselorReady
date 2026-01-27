@@ -1,17 +1,20 @@
-const express = require('express');
+// routes/courseRoutes.js
+// Interactive course routes for CounselorReady
+// =============================================
+
+import express from 'express';
+import mongoose from 'mongoose';
+import { Course, CourseProgress, ContentInteraction } from '../models/InteractiveCourse.js';
+import { protect } from '../middleware/auth.js';
+
 const router = express.Router();
-const mongoose = require('mongoose');
-const { Course, CourseProgress, ContentInteraction } = require('../models/InteractiveCourse');
-const { Certificate } = require('../models/Certificate');
-const { authenticateToken } = require('../middleware/auth');
-const { generateCertificate } = require('../services/certificateService');
 
 // ============================================================================
 // COURSE ROUTES
 // ============================================================================
 
 /**
- * GET /api/courses
+ * GET /api/interactive-courses
  * List all published courses with optional filtering
  */
 router.get('/', async (req, res) => {
@@ -30,7 +33,10 @@ router.get('/', async (req, res) => {
     if (category) query.categories = category;
     if (tag) query.tags = tag;
     if (search) {
-      query.$text = { $search: search };
+      query.$or = [
+        { title: { $regex: search, $options: 'i' } },
+        { description: { $regex: search, $options: 'i' } }
+      ];
     }
 
     const courses = await Course.find(query)
@@ -57,7 +63,7 @@ router.get('/', async (req, res) => {
 });
 
 /**
- * GET /api/courses/:slug
+ * GET /api/interactive-courses/:slug
  * Get full course details by slug
  */
 router.get('/:slug', async (req, res) => {
@@ -79,7 +85,7 @@ router.get('/:slug', async (req, res) => {
 });
 
 /**
- * GET /api/courses/:slug/outline
+ * GET /api/interactive-courses/:slug/outline
  * Get course outline (sections without full content)
  */
 router.get('/:slug/outline', async (req, res) => {
@@ -105,10 +111,10 @@ router.get('/:slug/outline', async (req, res) => {
 // ============================================================================
 
 /**
- * GET /api/courses/:slug/progress
+ * GET /api/interactive-courses/:slug/progress
  * Get user's progress for a specific course
  */
-router.get('/:slug/progress', authenticateToken, async (req, res) => {
+router.get('/:slug/progress', protect, async (req, res) => {
   try {
     const course = await Course.findOne({ slug: req.params.slug });
     if (!course) {
@@ -116,14 +122,14 @@ router.get('/:slug/progress', authenticateToken, async (req, res) => {
     }
 
     let progress = await CourseProgress.findOne({
-      userId: req.user.id,
+      userId: req.user._id,
       courseId: course._id
     });
 
     // If no progress exists, create initial progress
     if (!progress) {
       progress = new CourseProgress({
-        userId: req.user.id,
+        userId: req.user._id,
         courseId: course._id,
         sectionProgress: course.sections.map((section, index) => ({
           sectionId: section._id,
@@ -146,10 +152,10 @@ router.get('/:slug/progress', authenticateToken, async (req, res) => {
 });
 
 /**
- * POST /api/courses/:slug/enroll
+ * POST /api/interactive-courses/:slug/enroll
  * Enroll user in a course
  */
-router.post('/:slug/enroll', authenticateToken, async (req, res) => {
+router.post('/:slug/enroll', protect, async (req, res) => {
   try {
     const course = await Course.findOne({ slug: req.params.slug, status: 'published' });
     if (!course) {
@@ -158,7 +164,7 @@ router.post('/:slug/enroll', authenticateToken, async (req, res) => {
 
     // Check if already enrolled
     let progress = await CourseProgress.findOne({
-      userId: req.user.id,
+      userId: req.user._id,
       courseId: course._id
     });
 
@@ -168,7 +174,7 @@ router.post('/:slug/enroll', authenticateToken, async (req, res) => {
 
     // Create new enrollment
     progress = new CourseProgress({
-      userId: req.user.id,
+      userId: req.user._id,
       courseId: course._id,
       sectionProgress: course.sections.map((section, index) => ({
         sectionId: section._id,
@@ -191,10 +197,10 @@ router.post('/:slug/enroll', authenticateToken, async (req, res) => {
 });
 
 /**
- * PUT /api/courses/:slug/progress/section/:sectionIndex
+ * PUT /api/interactive-courses/:slug/progress/section/:sectionIndex
  * Update section progress
  */
-router.put('/:slug/progress/section/:sectionIndex', authenticateToken, async (req, res) => {
+router.put('/:slug/progress/section/:sectionIndex', protect, async (req, res) => {
   try {
     const { sectionIndex } = req.params;
     const { viewedBlocks, completedBlocks, timeSpent } = req.body;
@@ -205,7 +211,7 @@ router.put('/:slug/progress/section/:sectionIndex', authenticateToken, async (re
     }
 
     const progress = await CourseProgress.findOne({
-      userId: req.user.id,
+      userId: req.user._id,
       courseId: course._id
     });
 
@@ -244,8 +250,8 @@ router.put('/:slug/progress/section/:sectionIndex', authenticateToken, async (re
 
     // Check if section is complete
     const section = course.sections[sectionIndex];
-    const totalBlocks = section.contentBlocks.length;
-    const interactiveBlocks = section.contentBlocks
+    const totalBlocks = section.contentBlocks?.length || 0;
+    const interactiveBlocks = (section.contentBlocks || [])
       .map((b, i) => ['matching', 'multipleChoice', 'multiSelect'].includes(b.type) ? i : -1)
       .filter(i => i >= 0);
     
@@ -263,7 +269,9 @@ router.put('/:slug/progress/section/:sectionIndex', authenticateToken, async (re
     progress.lastAccessedAt = new Date();
 
     // Calculate overall progress
-    progress.overallProgress = progress.calculateOverallProgress();
+    if (progress.calculateOverallProgress) {
+      progress.overallProgress = progress.calculateOverallProgress();
+    }
 
     await progress.save();
     res.json(progress);
@@ -274,10 +282,10 @@ router.put('/:slug/progress/section/:sectionIndex', authenticateToken, async (re
 });
 
 /**
- * POST /api/courses/:slug/progress/section/:sectionIndex/quiz
+ * POST /api/interactive-courses/:slug/progress/section/:sectionIndex/quiz
  * Submit section quiz attempt
  */
-router.post('/:slug/progress/section/:sectionIndex/quiz', authenticateToken, async (req, res) => {
+router.post('/:slug/progress/section/:sectionIndex/quiz', protect, async (req, res) => {
   try {
     const { sectionIndex } = req.params;
     const { answers, timeSpent } = req.body;
@@ -293,7 +301,7 @@ router.post('/:slug/progress/section/:sectionIndex/quiz', authenticateToken, asy
     }
 
     const progress = await CourseProgress.findOne({
-      userId: req.user.id,
+      userId: req.user._id,
       courseId: course._id
     });
 
@@ -306,8 +314,7 @@ router.post('/:slug/progress/section/:sectionIndex/quiz', authenticateToken, asy
     section.quizQuestions.forEach((q, i) => {
       const selectedOption = answers[i];
       if (selectedOption !== undefined) {
-        if (q.type === 'multiSelect') {
-          // For multi-select, check if all correct options are selected and no incorrect
+        if (q.type === 'multiSelect' || q.type === 'multiple_select') {
           const correctIndices = q.options.map((o, idx) => o.isCorrect ? idx : -1).filter(x => x >= 0);
           const selectedIndices = Array.isArray(selectedOption) ? selectedOption : [selectedOption];
           const isCorrect = correctIndices.length === selectedIndices.length &&
@@ -344,8 +351,8 @@ router.post('/:slug/progress/section/:sectionIndex/quiz', authenticateToken, asy
     }
 
     // Check if section is now complete
-    const totalBlocks = section.contentBlocks.length;
-    const interactiveBlocks = section.contentBlocks
+    const totalBlocks = section.contentBlocks?.length || 0;
+    const interactiveBlocks = (section.contentBlocks || [])
       .map((b, i) => ['matching', 'multipleChoice', 'multiSelect'].includes(b.type) ? i : -1)
       .filter(i => i >= 0);
     
@@ -357,7 +364,9 @@ router.post('/:slug/progress/section/:sectionIndex/quiz', authenticateToken, asy
       sectionProgress.completedAt = new Date();
     }
 
-    progress.overallProgress = progress.calculateOverallProgress();
+    if (progress.calculateOverallProgress) {
+      progress.overallProgress = progress.calculateOverallProgress();
+    }
     await progress.save();
 
     res.json({
@@ -376,10 +385,10 @@ router.post('/:slug/progress/section/:sectionIndex/quiz', authenticateToken, asy
 });
 
 /**
- * POST /api/courses/:slug/progress/assessment
+ * POST /api/interactive-courses/:slug/progress/assessment
  * Submit final assessment attempt
  */
-router.post('/:slug/progress/assessment', authenticateToken, async (req, res) => {
+router.post('/:slug/progress/assessment', protect, async (req, res) => {
   try {
     const { answers, timeUsed, questionOrder } = req.body;
 
@@ -389,7 +398,7 @@ router.post('/:slug/progress/assessment', authenticateToken, async (req, res) =>
     }
 
     const progress = await CourseProgress.findOne({
-      userId: req.user.id,
+      userId: req.user._id,
       courseId: course._id
     });
 
@@ -411,7 +420,7 @@ router.post('/:slug/progress/assessment', authenticateToken, async (req, res) =>
       const question = questions[actualIndex];
       
       if (question) {
-        if (question.type === 'multiSelect') {
+        if (question.type === 'multiSelect' || question.type === 'multiple_select') {
           const correctIndices = question.options.map((o, idx) => o.isCorrect ? idx : -1).filter(x => x >= 0);
           const selectedIndices = Array.isArray(selectedOption) ? selectedOption : [selectedOption];
           const isCorrect = correctIndices.length === selectedIndices.length &&
@@ -443,6 +452,8 @@ router.post('/:slug/progress/assessment', authenticateToken, async (req, res) =>
 
     if (passed) {
       progress.assessmentPassed = true;
+      progress.status = 'completed';
+      progress.completedAt = new Date();
     }
 
     // Update best score
@@ -450,33 +461,9 @@ router.post('/:slug/progress/assessment', authenticateToken, async (req, res) =>
       progress.bestAssessmentScore = correctCount;
     }
 
-    // Check if course is complete
-    progress.overallProgress = progress.calculateOverallProgress();
-    
-    if (progress.isEligibleForCertificate() && !progress.certificateId) {
-      progress.status = 'completed';
-      progress.completedAt = new Date();
-      
-      // Generate certificate
-      try {
-        const certificate = await generateCertificate({
-          userId: req.user.id,
-          courseId: course._id,
-          courseTitle: course.title,
-          ceHours: course.ceHours,
-          ceProvider: course.ceProvider,
-          acepNumber: course.acepNumber,
-          completedAt: progress.completedAt,
-          assessmentScore: Math.round(percentage * 100)
-        });
-        
-        progress.certificateId = certificate._id;
-        progress.certificateIssuedAt = new Date();
-        progress.status = 'certified';
-      } catch (certError) {
-        console.error('Error generating certificate:', certError);
-        // Continue without certificate - can be generated later
-      }
+    // Calculate overall progress
+    if (progress.calculateOverallProgress) {
+      progress.overallProgress = progress.calculateOverallProgress();
     }
 
     await progress.save();
@@ -488,7 +475,7 @@ router.post('/:slug/progress/assessment', authenticateToken, async (req, res) =>
       passed,
       attemptsRemaining: progress.assessmentAttemptsRemaining,
       bestScore: progress.bestAssessmentScore,
-      courseCompleted: progress.status === 'completed' || progress.status === 'certified',
+      courseCompleted: progress.status === 'completed',
       certificateId: progress.certificateId
     });
   } catch (error) {
@@ -498,10 +485,10 @@ router.post('/:slug/progress/assessment', authenticateToken, async (req, res) =>
 });
 
 /**
- * POST /api/courses/:slug/progress/interaction
+ * POST /api/interactive-courses/:slug/progress/interaction
  * Log content interaction for analytics
  */
-router.post('/:slug/progress/interaction', authenticateToken, async (req, res) => {
+router.post('/:slug/progress/interaction', protect, async (req, res) => {
   try {
     const { sectionIndex, blockIndex, blockType, action, isCorrect, selectedOptions, score, timeSpent } = req.body;
 
@@ -512,7 +499,7 @@ router.post('/:slug/progress/interaction', authenticateToken, async (req, res) =
 
     // Get attempt number for this block
     const existingAttempts = await ContentInteraction.countDocuments({
-      userId: req.user.id,
+      userId: req.user._id,
       courseId: course._id,
       sectionIndex,
       blockIndex,
@@ -520,7 +507,7 @@ router.post('/:slug/progress/interaction', authenticateToken, async (req, res) =
     });
 
     const interaction = new ContentInteraction({
-      userId: req.user.id,
+      userId: req.user._id,
       courseId: course._id,
       sectionIndex,
       blockIndex,
@@ -542,52 +529,21 @@ router.post('/:slug/progress/interaction', authenticateToken, async (req, res) =
 });
 
 /**
- * GET /api/courses/:slug/progress/certificate
- * Get certificate for completed course
- */
-router.get('/:slug/progress/certificate', authenticateToken, async (req, res) => {
-  try {
-    const course = await Course.findOne({ slug: req.params.slug });
-    if (!course) {
-      return res.status(404).json({ error: 'Course not found' });
-    }
-
-    const progress = await CourseProgress.findOne({
-      userId: req.user.id,
-      courseId: course._id
-    }).populate('certificateId');
-
-    if (!progress || !progress.certificateId) {
-      return res.status(404).json({ error: 'Certificate not found' });
-    }
-
-    res.json(progress.certificateId);
-  } catch (error) {
-    console.error('Error fetching certificate:', error);
-    res.status(500).json({ error: 'Failed to fetch certificate' });
-  }
-});
-
-// ============================================================================
-// USER'S COURSES DASHBOARD
-// ============================================================================
-
-/**
- * GET /api/my-courses
+ * GET /api/interactive-courses/user/my-courses
  * Get all courses user is enrolled in with progress
  */
-router.get('/my-courses', authenticateToken, async (req, res) => {
+router.get('/user/my-courses', protect, async (req, res) => {
   try {
     const { status } = req.query;
 
-    const query = { userId: req.user.id };
+    const query = { userId: req.user._id };
     if (status) query.status = status;
 
-    const progress = await CourseProgress.find(query)
+    const progressList = await CourseProgress.find(query)
       .populate('courseId', 'title slug description thumbnail ceHours totalEstimatedTime')
       .sort({ lastAccessedAt: -1 });
 
-    const courses = progress.map(p => ({
+    const courses = progressList.map(p => ({
       course: p.courseId,
       progress: p.overallProgress,
       status: p.status,
@@ -606,4 +562,4 @@ router.get('/my-courses', authenticateToken, async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;
