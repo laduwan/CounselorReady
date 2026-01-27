@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 // ============================================================================
 // COURSE SCHEMA - Defines course structure with sections and content blocks
@@ -146,7 +146,7 @@ CourseSchema.pre('save', function(next) {
 // Index for searching
 CourseSchema.index({ title: 'text', description: 'text', tags: 'text' });
 
-const Course = mongoose.model('Course', CourseSchema);
+const Course = mongoose.model('InteractiveCourse', CourseSchema);
 
 // ============================================================================
 // COURSE PROGRESS SCHEMA - Tracks user progress through courses
@@ -186,7 +186,7 @@ const SectionProgressSchema = new mongoose.Schema({
 
 const CourseProgressSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  courseId: { type: mongoose.Schema.Types.ObjectId, ref: 'Course', required: true },
+  courseId: { type: mongoose.Schema.Types.ObjectId, ref: 'InteractiveCourse', required: true },
   
   // Section progress
   sectionProgress: [SectionProgressSchema],
@@ -257,14 +257,14 @@ CourseProgressSchema.methods.isEligibleForCertificate = function() {
   return allSectionsCompleted && this.assessmentPassed;
 };
 
-const CourseProgress = mongoose.model('CourseProgress', CourseProgressSchema);
+const CourseProgress = mongoose.model('InteractiveCourseProgress', CourseProgressSchema);
 
 // ============================================================================
 // CONTENT INTERACTION LOG - Detailed tracking for analytics
 // ============================================================================
 const ContentInteractionSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  courseId: { type: mongoose.Schema.Types.ObjectId, ref: 'Course', required: true },
+  courseId: { type: mongoose.Schema.Types.ObjectId, ref: 'InteractiveCourse', required: true },
   sectionIndex: { type: Number, required: true },
   blockIndex: { type: Number, required: true },
   blockType: { type: String, required: true },
@@ -293,8 +293,6 @@ ContentInteractionSchema.index({ courseId: 1, blockType: 1 });
 
 const ContentInteraction = mongoose.model('ContentInteraction', ContentInteractionSchema);
 
-module.exports = {
-  Course,
-  CourseProgress,
-  ContentInteraction
-};
+// ES Module exports
+export { Course, CourseProgress, ContentInteraction };
+export default { Course, CourseProgress, ContentInteraction };
