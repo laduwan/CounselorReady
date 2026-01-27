@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Interactive Courses - CounselorReady</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Lato:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            teal: {
+              50: '#f0fdfa', 100: '#ccfbf1', 200: '#99f6e4', 300: '#5eead4',
+              400: '#2dd4bf', 500: '#14b8a6', 600: '#0d9488', 700: '#0f766e',
+              800: '#115e59', 900: '#134e4a'
+            },
+            emerald: {
+              50: '#ecfdf5', 100: '#d1fae5', 200: '#a7f3d0', 300: '#6ee7b7',
+              400: '#34d399', 500: '#10b981', 600: '#059669', 700: '#047857',
+              800: '#065f46', 900: '#064e3b'
+            }
+          },
+          fontFamily: {
+            'display': ['Cormorant Garamond', 'serif'],
+            'sans': ['Lato', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .animate-spin { animation: spin 1s linear infinite; }
+    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  </style>
+</head>
+<body class="bg-gray-50 font-sans">
+  <!-- Header -->
+  <header class="bg-white shadow-sm border-b border-gray-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center h-16">
+        <a href="/dashboard.html" class="flex items-center gap-2">
+          <div class="w-8 h-8 bg-gradient-to-br from-teal-500 to-emerald-600 rounded-lg flex items-center justify-center">
+            <span class="text-white font-bold text-sm">CR</span>
+          </div>
+          <span class="font-display text-xl font-semibold text-gray-900">CounselorReady</span>
+        </a>
+        <nav class="flex items-center gap-4">
+          <a href="/dashboard.html" class="text-gray-600 hover:text-teal-600 text-sm font-medium">Dashboard</a>
+          <a href="/courses.html" class="text-gray-600 hover:text-teal-600 text-sm font-medium">Courses</a>
+          <a href="/credentials.html" class="text-gray-600 hover:text-teal-600 text-sm font-medium">Credentials</a>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <div class="bg-gradient-to-r from-teal-600 to-emerald-600 text-white py-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <h1 class="text-3xl font-bold font-display">Interactive CE Courses</h1>
+      <p class="mt-2 text-teal-100">Engaging, self-paced continuing education for mental health professionals</p>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div id="loading" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div class="flex items-center justify-center">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600"></div>
+      <span class="ml-3 text-gray-600">Loading courses...</span>
+    </div>
+  </div>
+
+  <!-- Course Grid -->
+  <div id="course-grid" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 hidden">
+    <div id="courses" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+  </div>
+
+  <!-- Error State -->
+  <div id="error" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 hidden">
+    <div class="text-center">
+      <p class="text-red-600" id="error-message">Failed to load courses</p>
+      <button onclick="loadCourses()" class="mt-4 px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700">
+        Try Again
+      </button>
+    </div>
+  </div>
+
+  <!-- Course Card Template -->
+  <template id="course-card-template">
+    <div class="bg-white rounded-xl shadow-sm hover:shadow-lg transition-all cursor-pointer overflow-hidden border border-gray-100 group">
+      <div class="h-40 bg-gradient-to-br from-teal-500 to-emerald-600 relative flex items-center justify-center">
+        <svg class="w-16 h-16 text-white/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+        </svg>
+      </div>
+      <div class="p-5">
+        <h3 class="course-title font-semibold text-gray-900 group-hover:text-teal-600 transition-colors line-clamp-2 mb-2"></h3>
+        <p class="course-description text-sm text-gray-600 line-clamp-2 mb-4"></p>
+        <div class="flex items-center gap-4 text-sm text-gray-500">
+          <div class="flex items-center gap-1">
+            <svg class="w-4 h-4 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <span class="course-ce-hours"></span>
+          </div>
+          <div class="flex items-center gap-1">
+            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <span class="course-time"></span>
+          </div>
+        </div>
+        <div class="course-categories mt-3 flex flex-wrap gap-1"></div>
+        <div class="mt-4 pt-4 border-t border-gray-100 flex items-center justify-between">
+          <span class="text-sm font-medium text-teal-600">Start Course</span>
+          <svg class="w-5 h-5 text-teal-600 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <script>
+    const API_BASE = 'https://api.counselorready.com/api';
+    
+    // Check authentication
+    function checkAuth() {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        window.location.href = '/login.html';
+        return false;
+      }
+      return true;
+    }
+
+    // Load courses
+    async function loadCourses() {
+      if (!checkAuth()) return;
+      
+      document.getElementById('loading').classList.remove('hidden');
+      document.getElementById('course-grid').classList.add('hidden');
+      document.getElementById('error').classList.add('hidden');
+
+      try {
+        const response = await fetch(`${API_BASE}/interactive-courses`, {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
+        });
+        
+        if (!response.ok) throw new Error('Failed to fetch courses');
+        
+        const data = await response.json();
+        renderCourses(data.courses || []);
+        
+        document.getElementById('loading').classList.add('hidden');
+        document.getElementById('course-grid').classList.remove('hidden');
+      } catch (err) {
+        console.error('Error loading courses:', err);
+        document.getElementById('loading').classList.add('hidden');
+        document.getElementById('error').classList.remove('hidden');
+        document.getElementById('error-message').textContent = err.message;
+      }
+    }
+
+    // Render courses
+    function renderCourses(courses) {
+      const container = document.getElementById('courses');
+      const template = document.getElementById('course-card-template');
+      container.innerHTML = '';
+
+      if (courses.length === 0) {
+        container.innerHTML = `
+          <div class="col-span-full text-center py-12">
+            <svg class="w-12 h-12 text-gray-400 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+            </svg>
+            <p class="mt-4 text-gray-600">No interactive courses available yet</p>
+          </div>
+        `;
+        return;
+      }
+
+      courses.forEach(course => {
+        const card = template.content.cloneNode(true);
+        
+        card.querySelector('.course-title').textContent = course.title;
+        card.querySelector('.course-description').textContent = course.description;
+        card.querySelector('.course-ce-hours').textContent = `${course.ceHours} CE Hours`;
+        card.querySelector('.course-time').textContent = `${course.totalEstimatedTime || 60} min`;
+        
+        // Categories
+        const categoriesContainer = card.querySelector('.course-categories');
+        if (course.categories && course.categories.length > 0) {
+          course.categories.slice(0, 2).forEach(cat => {
+            const tag = document.createElement('span');
+            tag.className = 'px-2 py-0.5 bg-teal-50 text-teal-700 text-xs rounded-full';
+            tag.textContent = cat;
+            categoriesContainer.appendChild(tag);
+          });
+        }
+        
+        // Click handler
+        const cardElement = card.querySelector('.bg-white');
+        cardElement.addEventListener('click', () => {
+          window.location.href = `/interactive-course.html?slug=${course.slug}`;
+        });
+        
+        container.appendChild(card);
+      });
+    }
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', loadCourses);
+  </script>
+</body>
+</html>
