@@ -1,154 +1,184 @@
-# CounselorReady
-
-NBCC-Approved CE Platform for Mental Health Professionals (ACEP #7760)
-
-## Features
-
-### For Counselors
-- **CE Course Library** - NBCC-approved continuing education courses
-- **Smart CE Tracking** - AI-powered tracking across all 50 states
-- **Credential Manager** - Track licenses, certifications, renewals
-- **Certificate Vault** - Store & organize all CE certificates
-- **Verification System** - Public certificate verification URLs
-- **CE Transcript** - One-click PDF transcript generation
-
-### For Platform
-- **4-Tier Pricing** - Free, Starter ($19.99), Professional ($29.99), VIP ($49.99)
-- **Hardship Pause** - VIP perk with loyalty-based grace periods
-- **Course Migration** - Import from TalentLMS, JSON, CSV
-- **Analytics Dashboard** - NPS scores, satisfaction tracking, course metrics
-- **SCORM/LTI/xAPI** - Enterprise LMS integrations
-
----
-
-## Quick Start
-
-### Prerequisites
-- Node.js 18+ 
-- MongoDB Atlas account
-- Cloudinary account
-- Resend account
-- Stripe account
-
-### Backend Setup
-
-```bash
-cd server
-npm install
-cp .env.example .env    # Edit with your credentials
-npm run seed            # Load state requirements + sample courses
-npm start               # Starts on port 5000
-```
-
-### Frontend Setup
-
-```bash
-cd client
-npm install
-npm run dev             # Starts on port 5173
-```
-
-### Verify Installation
-
-```bash
-curl http://localhost:5000/health
-# Should return: {"status":"ok","mongodb":"connected",...}
-```
-
----
-
-## Environment Variables
-
-See `server/.env.example` for complete template. Required variables:
-
-| Variable | Description |
-|----------|-------------|
-| `MONGODB_URI` | MongoDB Atlas connection string |
-| `JWT_SECRET` | 64+ character secret key |
-| `CLIENT_URL` | Frontend URL (no trailing slash) |
-| `CLOUDINARY_*` | Cloud name, API key, secret |
-| `RESEND_API_KEY` | Email service API key |
-| `STRIPE_SECRET_KEY` | Stripe API key |
-| `STRIPE_PRICE_*` | Price IDs for each tier |
-
----
-
-## Deployment
-
-### Render (Recommended)
-
+CounselorReady
+NBCC-Approved Continuing Education Platform for Mental Health Professionals ACEP Provider #7760 | GA Integrated Therapeutic Perspectives LLC
+ 
+Overview
+CounselorReady is a full-stack web application that provides continuing education courses, credential tracking, and certificate management for licensed counselors and mental health professionals. The platform is approved by NBCC (National Board for Certified Counselors) and supports CE requirements across all 50 states.
+ 
+Features
+For Counselors
+Feature	Description
+CE Course Library	NBCC-approved courses with video, text, and quiz content
+Course Player	Interactive player with progress tracking, time enforcement, quizzes
+Certificate Generation	Auto-generated PDF certificates upon course completion
+Credential Manager	Track state licenses (LPC, LMHC, etc.) and national certifications (NCC, BC-TMH)
+AI Certificate Scanner	Upload external certificates; AI extracts title, provider, hours, dates
+CE Progress Tracking	Visual progress bars showing hours earned vs. required per credential
+Audit Trail	Generate compliance reports for license renewals
+Public Verification	Shareable URLs to verify certificate authenticity
+For Administrators
+Feature	Description
+Course Builder	Create courses with modules, lessons, quizzes, resources
+User Management	View/edit users, manage subscriptions, grant access
+Analytics Dashboard	NPS scores, course completions, engagement metrics
+Migration Tools	Import from TalentLMS, SCORM packages, JSON/CSV
+Announcement System	Send platform-wide or targeted announcements
+Help Center	Manage FAQs and help articles
+Coupon Management	Create discount codes for subscriptions
+Platform Features
+Feature	Description
+4-Tier Subscriptions	Free, Starter ($19.99), Professional ($29.99), VIP ($49.99)
+Hardship Pause	VIP perk allowing subscription pause during financial hardship
+LTI Integration	Connect with external LMS platforms
+SCORM Support	Import/export SCORM packages
+xAPI Tracking	Learning record store integration
+Email Notifications	Course completions, renewal reminders, announcements
+ 
+Tech Stack Backend
+Runtime: Node.js 18+
+Framework: Express.js
+Database: MongoDB (Atlas)
+ODM: Mongoose
+Authentication: JWT (JSON Web Tokens)
+File Storage: Cloudinary
+Email: Resend
+Payments: Stripe
+PDF Generation: pdf-lib, PDFKit
+AI Integration: Anthropic Claude API (certificate scanning)
+Frontend
+Build Tool: Vite
+Styling: Tailwind CSS
+JavaScript: Vanilla JS (no framework)
+Icons: Heroicons, Lucide
+Deployment
+Hosting: Render.com
+Database: MongoDB Atlas
+CDN: Cloudinary
+ 
+Project Structure
+ 
+Installation
+Prerequisites
+Node.js 18+
+MongoDB Atlas account
+Cloudinary account
+Resend account (email)
+Stripe account (payments)
+Anthropic API key (AI scanning - optional)
+1. Clone Repository
+ 
+2. Backend Setup
+3. Frontend Setup
+ 
+4. Verify Installation
+ 
+Environment Variables
+Create server/.env with the following:
+ 
+API Reference
+Authentication
+ 
+Users
+ 
+Courses
+ 
+Certificates
+ 
+Credentials
+ 
+AI Scanning
+ 
+Admin (requires admin role)
+ 
+ 
+ 
+Data Models
+User
+Profile (name, email, timezone)
+Subscription (tier, status, Stripe IDs)
+Preferences (notifications, CE goals)
+Admin flags
+Course
+Title, description, thumbnail
+Modules → Lessons (video, text, quiz)
+CE hours, categories
+Pricing, access levels
+Analytics (enrollments, completions)
+UserCourseProgress
+User + Course reference
+Lessons completed
+Quiz attempts
+Status (not_started, in_progress, completed)
+Time tracking
+Certificate
+Course reference (if platform-generated)
+Title, provider, CE hours
+Completion date
+Category (Ethics, General, etc.)
+File URL, verification code
+UserCredential
+Type (state_license, national_cert, specialty)
+License/cert number
+Issue/expiration dates
+CE requirements
+Progress tracking
+CredentialTemplate
+State-specific requirements
+CE hours, categories
+Renewal cycle
+Issuing body
+ 
+Deployment (Render)
 1. Push to GitHub
-2. Create Web Service on render.com
-3. Settings:
-   - Root Directory: `server`
-   - Build: `npm install`
-   - Start: `npm start`
-4. Add environment variables
-5. Deploy
-
-See `server/BACKEND-SETUP.md` for detailed instructions.
-
----
-
-## API Documentation
-
-### Core Endpoints
-
-```
-POST /api/auth/register     - Create account
-POST /api/auth/login        - Login
-GET  /api/courses           - List courses
-POST /api/courses/:id/enroll - Enroll in course
-GET  /api/certificates      - List certificates
-GET  /api/certificates/verify/:code - PUBLIC verification
-```
-
-### Admin Endpoints
-
-```
-GET  /api/admin/users       - List all users
-POST /api/admin/courses     - Create course
-GET  /api/migration/export  - Export courses JSON
-POST /api/migration/import/talentlms - Import from TalentLMS
-```
-
-Full API reference in `server/BACKEND-SETUP.md`
-
----
-
-## Project Structure
-
-```
-CounselorReady/
-├── client/                 # Frontend (Vite + Tailwind)
-│   └── public/            # Static HTML pages
-├── server/                # Backend (Express + MongoDB)
-│   ├── src/
-│   │   ├── models/        # Mongoose schemas
-│   │   ├── routes/        # API endpoints
-│   │   ├── services/      # Email, reminders
-│   │   └── utils/         # PDF generation, helpers
-│   ├── BACKEND-SETUP.md   # Detailed backend docs
-│   └── .env.example       # Environment template
-└── README.md
-```
-
----
-
-## Key Technologies
-
-- **Backend**: Node.js, Express, MongoDB, Mongoose
-- **Frontend**: Vanilla JS, Tailwind CSS, Vite
-- **Payments**: Stripe
-- **Email**: Resend
-- **Storage**: Cloudinary
-- **PDF**: pdf-lib
-- **Auth**: JWT
-
----
-
-## Support
-
-GA Integrated Therapeutic Perspectives LLC
-NBCC Approved Continuing Education Provider (ACEP #7760)
-
+ 
+2. Create Render Web Service
+1.	Go to render.com → New → Web Service
+2.	Connect GitHub repository
+3.	Configure:
+Name: CounselorReady-API
+Region: Oregon (US West)
+Branch: main
+Root Directory: server
+Runtime: Node
+Build Command: npm install
+Start Command: npm start
+3. Add Environment Variables
+Add all variables from .env in Render dashboard.
+4. Deploy
+Click "Create Web Service" - auto-deploys on every push.
+5. Static Site (Frontend)
+ 
+Scripts
+Seed Credential Templates
+ 
+Add ACEP Template
+Testing
+Manual Testing
+ 
+Troubleshooting
+Common Issues
+MongoDB connection fails
+Check MONGODB_URI format
+Whitelist IP in Atlas Network Access
+Certificates not generating
+Ensure course has ceuHours field set
+Check Cloudinary credentials
+AI scan not working
+Verify ANTHROPIC_API_KEY is set
+Check file size (max 10MB)
+Stripe webhooks failing
+Verify STRIPE_WEBHOOK_SECRET matches dashboard
+Check endpoint URL is accessible
+Credential templates not loading
+Run node src/scripts/seedCredentialTemplates.js
+Check route order in credentials.js (templates before :id)
+ 
+License
+Proprietary - GA Integrated Therapeutic Perspectives LLC
+ 
+Support
+Website: CounselorReady.com
+Provider: GA Integrated Therapeutic Perspectives LLC
+ 
+Credits
+Built by GA Integrated Therapeutic Perspectives LLC
+NBCC Approved Continuing Education Provider (ACEP #776
