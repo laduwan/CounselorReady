@@ -1,53 +1,127 @@
 import mongoose from 'mongoose';
 
-// Quiz question schema
+// ============================================
+// INTERACTIVE CONTENT BLOCK SCHEMAS (NEW)
+// ============================================
+
+// Accordion items for expandable content
+const accordionItemSchema = new mongoose.Schema({
+  title: { type: String, required: true },
+  content: { type: String, required: true }
+}, { _id: false });
+
+// Matching pairs for drag-and-drop exercises
+const matchingPairSchema = new mongoose.Schema({
+  term: { type: String, required: true },
+  definition: { type: String, required: true }
+}, { _id: false });
+
+// Quiz question schema (enhanced)
 const quizQuestionSchema = new mongoose.Schema({
   question: { type: String, required: true },
   type: { 
     type: String, 
-    enum: ['multiple_choice', 'true_false', 'multiple_select'],
+    enum: ['multiple_choice', 'true_false', 'multiple_select', 'multipleChoice', 'multiSelect', 'trueFalse'],
     default: 'multiple_choice'
   },
-  options: [{ type: String }], // For multiple choice
-  correctAnswer: { type: mongoose.Schema.Types.Mixed }, // Index for MC, boolean for T/F, array for multi-select
-  explanation: { type: String }, // Shown after answering
+  options: [{
+    text: { type: String },
+    isCorrect: { type: Boolean, default: false }
+  }],
+  // Legacy support for old format
+  correctAnswer: { type: mongoose.Schema.Types.Mixed },
+  explanation: { type: String },
   points: { type: Number, default: 1 }
 });
+
+// ============================================
+// LESSON SCHEMA (ENHANCED)
+// ============================================
 
 const lessonSchema = new mongoose.Schema({
   title: { type: String, required: true },
   type: {
     type: String,
-    enum: ['video', 'text', 'quiz', 'download'],
+    enum: [
+      // Original types
+      'video', 'text', 'quiz', 'download',
+      // New interactive types
+      'accordion', 'matching', 'multipleChoice', 'multiSelect', 
+      'imageText', 'sectionDivider', 'timedAssessment'
+    ],
     default: 'text'
   },
   content: { type: String }, // HTML for text, URL for video/download
   videoUrl: { type: String },
   duration: { type: Number }, // Minutes
   order: { type: Number, required: true },
-  isFree: { type: Boolean, default: false }, // Preview lesson?
-  resources: [{ // Downloadable resources/handouts
+  isFree: { type: Boolean, default: false },
+  resources: [{
     title: { type: String },
     url: { type: String },
     type: { type: String, enum: ['pdf', 'doc', 'worksheet', 'slides', 'other'], default: 'pdf' }
   }],
-  transcript: { type: String }, // Plain text transcript for accessibility
+  transcript: { type: String },
   
-  // Quiz-specific fields
+  // ============================================
+  // INTERACTIVE CONTENT FIELDS (NEW)
+  // ============================================
+  
+  // Accordion content
+  accordionItems: [accordionItemSchema],
+  allowMultipleOpen: { type: Boolean, default: true },
+  
+  // Matching exercise
+  matchingPairs: [matchingPairSchema],
+  matchingInstructions: { type: String, default: 'Drag each term to its matching definition' },
+  
+  // Image + Text card
+  image: { type: String },
+  imageAlt: { type: String },
+  imagePosition: { type: String, enum: ['left', 'right'], default: 'left' },
+  highlight: { type: Boolean, default: false },
+  
+  // Section divider
+  sectionNumber: { type: Number },
+  subtitle: { type: String },
+  
+  // Quiz-specific fields (original + enhanced)
   questions: [quizQuestionSchema],
   shuffleQuestions: { type: Boolean, default: false },
   shuffleOptions: { type: Boolean, default: false },
-  showExplanations: { type: Boolean, default: true }, // Show correct answer explanations after quiz
-  timeLimit: { type: Number } // Minutes, null = no limit
+  showExplanations: { type: Boolean, default: true },
+  timeLimit: { type: Number }, // Minutes, null = no limit
+  passThreshold: { type: Number, default: 0.8 }, // 80% to pass
+  
+  // For standalone question lessons (multipleChoice, multiSelect types)
+  question: { type: String },
+  options: [{
+    text: { type: String },
+    isCorrect: { type: Boolean, default: false }
+  }],
+  explanation: { type: String }
 });
+
+// ============================================
+// MODULE SCHEMA
+// ============================================
 
 const moduleSchema = new mongoose.Schema({
   title: { type: String, required: true },
   description: { type: String },
   order: { type: Number, required: true },
-  objectives: [{ type: String }], // Learning objectives for this module
-  lessons: [lessonSchema]
+  objectives: [{ type: String }],
+  lessons: [lessonSchema],
+  
+  // Module-level quiz (optional)
+  hasQuiz: { type: Boolean, default: false },
+  quizQuestions: [quizQuestionSchema],
+  quizPassThreshold: { type: Number, default: 0.8 }
 });
+
+// ============================================
+// COURSE SCHEMA
+// ============================================
 
 const courseSchema = new mongoose.Schema({
   // Basic info
@@ -68,7 +142,7 @@ const courseSchema = new mongoose.Schema({
   externalUrl: { type: String },
   importType: { 
     type: String, 
-    enum: ['native', 'external', 'scorm', 'starter'],
+    enum: ['native', 'external', 'scorm', 'starter', 'interactive'],
     default: 'native'
   },
   source: { 
@@ -78,7 +152,7 @@ const courseSchema = new mongoose.Schema({
   },
   
   // Learning objectives
-  objectives: [{ type: String }], // Course-level learning objectives
+  objectives: [{ type: String }],
   
   // Pricing
   accessType: {
@@ -86,20 +160,20 @@ const courseSchema = new mongoose.Schema({
     enum: ['free', 'paid', 'subscription'],
     default: 'paid'
   },
-  price: { type: Number }, // One-time price if applicable
+  price: { type: Number },
   pricingTier: {
     type: String,
     enum: ['standard', 'premium'],
     default: 'standard'
-  }, // Premium for Ethics, Telehealth, Supervision
+  },
   stripePriceId: { type: String },
   accessTier: { 
     type: String, 
     enum: ['free', 'professional', 'vip'], 
     default: 'free' 
-  }, // Which subscription tier can access
+  },
   
-  // CEU info (for continuing ed courses)
+  // CEU info
   ceuEligible: { type: Boolean, default: false },
   ceuHours: { type: Number },
   ceuCategories: [{
@@ -108,15 +182,15 @@ const courseSchema = new mongoose.Schema({
   }],
   ceuApprovalNumber: { type: String },
   
-  // Multi-Approval Body Support (for courses approved by multiple organizations)
+  // Multi-Approval Body Support
   approvals: [{
     body: {
       type: String,
       enum: ['NBCC', 'GCSCW', 'ACA', 'NASW', 'APA', 'ASWB', 'AAMFT', 'GA-LPC-Board', 'GA-LCSW-Board', 'GA-LMFT-Board', 'State Board', 'Other'],
       required: true
     },
-    providerNumber: { type: String }, // e.g., '#7760' for NBCC ACEP
-    providerName: { type: String }, // Display name for the provider
+    providerNumber: { type: String },
+    providerName: { type: String },
     status: {
       type: String,
       enum: ['approved', 'pending', 'expired', 'not-applied'],
@@ -124,35 +198,50 @@ const courseSchema = new mongoose.Schema({
     },
     approvalDate: { type: Date },
     expirationDate: { type: Date },
-    notes: { type: String } // Any special notes about this approval
+    notes: { type: String }
   }],
   
-  // Legacy fields (retained for backward compatibility - will be deprecated)
+  // Legacy fields (retained for backward compatibility)
   approvingBody: {
     type: String,
     enum: ['NBCC', 'ACEP', 'ACA', 'NASW', 'APA', 'ASWB', 'AAMFT', 'LPCAGA', 'State Board', 'Other'],
     default: 'NBCC'
   },
-  approvingBodyOther: { type: String }, // If "Other" selected
-  approvalNumber: { type: String }, // ACEP#, provider#, etc.
+  approvingBodyOther: { type: String },
+  approvalNumber: { type: String },
   applicability: {
     type: String,
     enum: ['national', 'state-specific'],
     default: 'national'
   },
-  applicableStates: [{ 
-    type: String // State codes: "GA", "FL", etc. Empty = all states
-  }],
-  stateCompliance: [{
-    type: String // State codes this course is compliant with
-  }],
+  applicableStates: [{ type: String }],
+  stateCompliance: [{ type: String }],
   
   // Content
   modules: [moduleSchema],
   
+  // ============================================
+  // FINAL ASSESSMENT (NEW - for interactive courses)
+  // ============================================
+  assessment: {
+    title: { type: String, default: 'Final Assessment' },
+    timeLimit: { type: Number, default: 30 }, // minutes
+    passThreshold: { type: Number, default: 0.8 },
+    attemptsAllowed: { type: Number, default: 3 },
+    shuffleQuestions: { type: Boolean, default: true },
+    shuffleOptions: { type: Boolean, default: true },
+    questions: [quizQuestionSchema],
+    nbccProgramNumber: { type: String }
+  },
+  
+  // Target audience (NEW)
+  targetAudience: [{ type: String }],
+  categories: [{ type: String }],
+  tags: [{ type: String }],
+  
   // Settings
   settings: {
-    linearProgression: { type: Boolean, default: false }, // Must complete lessons in order
+    linearProgression: { type: Boolean, default: false },
     dripEnabled: { type: Boolean, default: false },
     dripSchedule: [{
       moduleId: { type: mongoose.Schema.Types.ObjectId },
@@ -162,27 +251,27 @@ const courseSchema = new mongoose.Schema({
     passingScore: { type: Number, default: 70 },
     
     // Quiz/Test Retake Settings
-    allowRetakes: { type: Boolean, default: true }, // Allow quiz retakes at all
+    allowRetakes: { type: Boolean, default: true },
     retakePolicy: { 
       type: String, 
       enum: ['unlimited', 'limited', 'first_final'], 
       default: 'unlimited' 
     },
-    maxRetakes: { type: Number, default: 3 }, // If 'limited', how many attempts
-    retakeCooldown: { type: Number, default: 0 }, // Hours between retakes (0 = immediate)
+    maxRetakes: { type: Number, default: 3 },
+    retakeCooldown: { type: Number, default: 0 },
     scorePolicy: { 
       type: String, 
       enum: ['highest', 'latest', 'first', 'average'], 
       default: 'highest' 
-    }, // Which score counts
+    },
     
     // Anti-speedrun / Pacing controls
-    enforceMinTime: { type: Boolean, default: false }, // Require minimum time on lessons
-    minTimePercent: { type: Number, default: 80 }, // % of estimated duration required (e.g., 80% of 10min = 8min)
+    enforceMinTime: { type: Boolean, default: false },
+    minTimePercent: { type: Number, default: 80 },
     
     // CE Compliance
-    requireEvaluation: { type: Boolean, default: true }, // Require course evaluation before certificate
-    requireAttestation: { type: Boolean, default: true }, // Require attestation statement
+    requireEvaluation: { type: Boolean, default: true },
+    requireAttestation: { type: Boolean, default: true },
     attestationText: { 
       type: String, 
       default: 'I attest that I personally completed this entire course, including all required activities and assessments, and that I did not receive unauthorized assistance.'
@@ -194,16 +283,16 @@ const courseSchema = new mongoose.Schema({
       type: String, 
       enum: ['alloy', 'echo', 'fable', 'onyx', 'nova', 'shimmer', 'browser'], 
       default: 'nova' 
-    }, // OpenAI voices or browser TTS
-    narrationSpeed: { type: Number, default: 1.0 }, // 0.5 to 2.0
-    autoPlayNarration: { type: Boolean, default: false } // Auto-start when lesson loads
+    },
+    narrationSpeed: { type: Number, default: 1.0 },
+    autoPlayNarration: { type: Boolean, default: false }
   },
   
-  // Course Evaluation Questions (customizable per course)
+  // Course Evaluation Questions
   evaluationQuestions: [{
     question: { type: String },
     type: { type: String, enum: ['rating', 'text', 'yes_no', 'scale_10', 'multiple_choice'], default: 'rating' },
-    options: [{ type: String }], // For multiple_choice type
+    options: [{ type: String }],
     required: { type: Boolean, default: true }
   }],
   
@@ -213,14 +302,14 @@ const courseSchema = new mongoose.Schema({
     uniqueViews: { type: Number, default: 0 },
     enrollments: { type: Number, default: 0 },
     completions: { type: Number, default: 0 },
-    completionRate: { type: Number, default: 0 }, // completions / enrollments * 100
-    avgTimeToComplete: { type: Number, default: 0 }, // Hours
+    completionRate: { type: Number, default: 0 },
+    avgTimeToComplete: { type: Number, default: 0 },
     avgRating: { type: Number, default: 0 },
     totalRatings: { type: Number, default: 0 },
-    recommendRate: { type: Number, default: 0 }, // % who would recommend
+    recommendRate: { type: Number, default: 0 },
   },
   
-  // Individual ratings for calculating averages
+  // Individual ratings
   ratings: [{
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     rating: { type: Number, min: 1, max: 5 },
@@ -229,22 +318,22 @@ const courseSchema = new mongoose.Schema({
     createdAt: { type: Date, default: Date.now }
   }],
   
-  // NBCC Compliance: Reference List (Section J.6.a.5)
+  // NBCC Compliance: Reference List
   references: [{
     title: { type: String, required: true },
     author: { type: String },
     year: { type: Number },
-    source: { type: String }, // Journal name, publisher, URL, etc.
+    source: { type: String },
     doi: { type: String },
     url: { type: String }
   }],
   
-  // NBCC Compliance: Presenter/Author Information (Section F)
+  // NBCC Compliance: Presenter/Author Information
   presenter: {
     name: { type: String },
-    credentials: { type: String }, // e.g., "MA, LPC, CPCS, BC-TMH"
-    degree: { type: String }, // e.g., "Master of Arts in Professional Counseling"
-    institution: { type: String }, // Degree-granting institution
+    credentials: { type: String },
+    degree: { type: String },
+    institution: { type: String },
     licenseNumber: { type: String },
     licenseState: { type: String },
     bio: { type: String },
@@ -252,29 +341,30 @@ const courseSchema = new mongoose.Schema({
       type: String,
       enum: ['category1', 'category2', 'category3'],
       default: 'category1'
-    }, // NBCC presenter qualification category
-    qualificationStatement: { type: String } // Statement of qualification for subject matter
+    },
+    qualificationStatement: { type: String }
   },
   
-  // NBCC Content Area (Section G) - Required for mapping courses to NBCC categories
+  // NBCC Content Area
   nbccContentArea: {
     type: String,
     enum: [
-      'counseling-theory-practice',      // 1. Counseling Theory/Practice
-      'human-growth-development',         // 2. Human Growth and Development
-      'social-cultural-foundations',      // 3. Social and Cultural Foundations
-      'group-dynamics-counseling',        // 4. Group Dynamics and Counseling
-      'career-development-counseling',    // 5. Career Development and Counseling
-      'assessment',                        // 6. Assessment
-      'research-program-evaluation',      // 7. Research and Program Evaluation
-      'professional-identity-practice',   // 8. Professional Identity and Practice Issues
-      'wellness-prevention'               // 9. Wellness and Prevention
+      'counseling-theory-practice',
+      'human-growth-development',
+      'social-cultural-foundations',
+      'group-dynamics-counseling',
+      'career-development-counseling',
+      'assessment',
+      'research-program-evaluation',
+      'professional-identity-practice',
+      'wellness-prevention'
     ]
   },
-  nbccContentAreaDisplay: { type: String }, // Human-readable content area name
+  nbccContentAreaDisplay: { type: String },
   
-  // Metadata (legacy field retained for backward compatibility)
+  // Metadata
   instructor: { type: String, default: 'CounselorReady' },
+  author: { type: String },
   status: {
     type: String,
     enum: ['draft', 'published', 'archived'],
@@ -283,15 +373,28 @@ const courseSchema = new mongoose.Schema({
   publishedAt: { type: Date },
   
   // Stats
-  enrollmentCount: { type: Number, default: 0 }
+  enrollmentCount: { type: Number, default: 0 },
+  
+  // Calculated fields (for interactive courses)
+  totalEstimatedTime: { type: Number }, // minutes
+  totalContentBlocks: { type: Number },
+  totalQuizQuestions: { type: Number }
 }, {
   timestamps: true
 });
 
-// Indexes
+// ============================================
+// INDEXES
+// ============================================
+
 courseSchema.index({ slug: 1 });
 courseSchema.index({ status: 1 });
 courseSchema.index({ accessType: 1 });
+courseSchema.index({ title: 'text', description: 'text', tags: 'text' });
+
+// ============================================
+// VIRTUALS
+// ============================================
 
 // Virtual for total lessons
 courseSchema.virtual('totalLessons').get(function() {
@@ -313,23 +416,17 @@ courseSchema.virtual('totalDuration').get(function() {
   return total;
 });
 
-// Ensure virtuals are included in JSON
-courseSchema.set('toJSON', { virtuals: true });
-courseSchema.set('toObject', { virtuals: true });
-
 // Virtual to check if course has NBCC approval
 courseSchema.virtual('hasNBCCApproval').get(function() {
   if (this.approvals && this.approvals.length > 0) {
     return this.approvals.some(a => a.body === 'NBCC' && a.status === 'approved');
   }
-  // Fallback to legacy field
   return this.approvingBody === 'NBCC' || this.approvingBody === 'ACEP';
 });
 
 // Virtual to get all active approvals
 courseSchema.virtual('activeApprovals').get(function() {
   if (!this.approvals || this.approvals.length === 0) {
-    // Create legacy approval object for backward compatibility
     if (this.approvingBody) {
       return [{
         body: this.approvingBody === 'ACEP' ? 'NBCC' : this.approvingBody,
@@ -348,7 +445,6 @@ courseSchema.virtual('nbccApproval').get(function() {
   if (this.approvals && this.approvals.length > 0) {
     return this.approvals.find(a => a.body === 'NBCC' && a.status === 'approved');
   }
-  // Fallback to legacy
   if (this.approvingBody === 'NBCC' || this.approvingBody === 'ACEP') {
     return {
       body: 'NBCC',
@@ -358,6 +454,61 @@ courseSchema.virtual('nbccApproval').get(function() {
     };
   }
   return null;
+});
+
+// Virtual for interactive lesson count
+courseSchema.virtual('interactiveLessonCount').get(function() {
+  if (!this.modules || !Array.isArray(this.modules)) return 0;
+  let count = 0;
+  this.modules.forEach(mod => {
+    if (mod.lessons && Array.isArray(mod.lessons)) {
+      mod.lessons.forEach(lesson => {
+        if (['accordion', 'matching', 'multipleChoice', 'multiSelect', 'imageText'].includes(lesson.type)) {
+          count++;
+        }
+      });
+    }
+  });
+  return count;
+});
+
+// Ensure virtuals are included in JSON
+courseSchema.set('toJSON', { virtuals: true });
+courseSchema.set('toObject', { virtuals: true });
+
+// ============================================
+// PRE-SAVE HOOKS
+// ============================================
+
+// Calculate totals before saving
+courseSchema.pre('save', function(next) {
+  // Calculate total estimated time
+  let totalTime = 0;
+  let totalBlocks = 0;
+  let totalQuestions = 0;
+  
+  if (this.modules && Array.isArray(this.modules)) {
+    this.modules.forEach(mod => {
+      if (mod.lessons && Array.isArray(mod.lessons)) {
+        mod.lessons.forEach(lesson => {
+          totalBlocks++;
+          if (lesson.duration) totalTime += lesson.duration;
+          if (lesson.questions) totalQuestions += lesson.questions.length;
+        });
+      }
+      if (mod.quizQuestions) totalQuestions += mod.quizQuestions.length;
+    });
+  }
+  
+  if (this.assessment?.questions) {
+    totalQuestions += this.assessment.questions.length;
+  }
+  
+  this.totalEstimatedTime = totalTime;
+  this.totalContentBlocks = totalBlocks;
+  this.totalQuizQuestions = totalQuestions;
+  
+  next();
 });
 
 const Course = mongoose.model('Course', courseSchema);
