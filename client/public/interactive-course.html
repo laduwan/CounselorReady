@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Course Viewer - CounselorReady</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Lato:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            teal: {
+              50: '#f0fdfa', 100: '#ccfbf1', 200: '#99f6e4', 300: '#5eead4',
+              400: '#2dd4bf', 500: '#14b8a6', 600: '#0d9488', 700: '#0f766e',
+              800: '#115e59', 900: '#134e4a'
+            },
+            emerald: {
+              50: '#ecfdf5', 100: '#d1fae5', 200: '#a7f3d0', 300: '#6ee7b7',
+              400: '#34d399', 500: '#10b981', 600: '#059669', 700: '#047857',
+              800: '#065f46', 900: '#064e3b'
+            },
+            slate: {
+              50: '#f8fafc', 100: '#f1f5f9', 200: '#e2e8f0', 300: '#cbd5e1',
+              400: '#94a3b8', 500: '#64748b', 600: '#475569', 700: '#334155',
+              800: '#1e293b', 900: '#0f172a'
+            }
+          },
+          fontFamily: {
+            'display': ['Cormorant Garamond', 'serif'],
+            'sans': ['Lato', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .animate-spin { animation: spin 1s linear infinite; }
+    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    .prose h3 { font-size: 1.25rem; font-weight: 600; margin-bottom: 0.5rem; color: #0f766e; }
+    .prose p { margin-bottom: 1rem; line-height: 1.7; }
+    .prose strong { font-weight: 600; }
+    .accordion-content { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; }
+    .accordion-content.open { max-height: 2000px; }
+  </style>
+</head>
+<body class="bg-slate-50 font-sans min-h-screen">
+  <!-- Loading State -->
+  <div id="loading" class="min-h-screen flex items-center justify-center">
+    <div class="text-center">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600 mx-auto"></div>
+      <p class="mt-4 text-slate-600">Loading course...</p>
+    </div>
+  </div>
+
+  <!-- Error State -->
+  <div id="error" class="min-h-screen flex items-center justify-center hidden">
+    <div class="text-center">
+      <svg class="w-12 h-12 text-red-500 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+      </svg>
+      <h2 class="mt-4 text-xl font-bold text-slate-800">Error Loading Course</h2>
+      <p id="error-message" class="mt-2 text-slate-600"></p>
+      <a href="/interactive-courses.html" class="mt-4 inline-block px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700">
+        Back to Courses
+      </a>
+    </div>
+  </div>
+
+  <!-- Course Viewer -->
+  <div id="course-viewer" class="hidden">
+    <!-- Sidebar -->
+    <aside id="sidebar" class="fixed inset-y-0 left-0 w-72 bg-white border-r border-slate-200 transform -translate-x-full lg:translate-x-0 transition-transform z-40">
+      <div class="flex flex-col h-full">
+        <!-- Course Info -->
+        <div class="p-4 border-b border-slate-200">
+          <a href="/interactive-courses.html" class="flex items-center gap-2 text-slate-600 hover:text-teal-600 text-sm mb-3">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+            </svg>
+            Back to Courses
+          </a>
+          <h2 id="course-title" class="font-semibold text-slate-800 text-sm"></h2>
+          <div class="mt-2 flex items-center gap-2 text-xs text-slate-500">
+            <span id="course-ce-hours"></span>
+            <span>•</span>
+            <span id="course-sections-count"></span>
+          </div>
+        </div>
+        
+        <!-- Progress -->
+        <div class="p-4 border-b border-slate-200">
+          <div class="flex justify-between text-sm mb-1">
+            <span class="text-slate-600">Progress</span>
+            <span id="progress-percent" class="font-medium text-teal-600">0%</span>
+          </div>
+          <div class="h-2 bg-slate-100 rounded-full overflow-hidden">
+            <div id="progress-bar" class="h-full bg-gradient-to-r from-teal-500 to-emerald-500 transition-all" style="width: 0%"></div>
+          </div>
+        </div>
+
+        <!-- Sections -->
+        <nav id="sections-nav" class="flex-1 overflow-y-auto p-4">
+          <ul class="space-y-2"></ul>
+        </nav>
+      </div>
+    </aside>
+
+    <!-- Mobile Menu Button -->
+    <button id="menu-btn" class="lg:hidden fixed top-4 left-4 z-50 p-2 bg-white rounded-lg shadow-md">
+      <svg class="w-6 h-6 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+      </svg>
+    </button>
+
+    <!-- Main Content -->
+    <main class="lg:ml-72">
+      <!-- Top Bar -->
+      <header class="bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between sticky top-0 z-30">
+        <div class="lg:hidden w-10"></div>
+        <h1 id="section-title" class="text-lg font-semibold text-slate-800 text-center flex-1"></h1>
+        <a href="/dashboard.html" class="p-2 text-slate-400 hover:text-slate-600">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+          </svg>
+        </a>
+      </header>
+
+      <!-- Content Area -->
+      <div id="content-area" class="p-6 lg:p-8 max-w-4xl mx-auto"></div>
+
+      <!-- Navigation -->
+      <div class="p-6 lg:p-8 max-w-4xl mx-auto border-t border-slate-200 flex justify-between">
+        <button id="prev-btn" class="flex items-center gap-2 px-4 py-2 text-slate-600 hover:text-teal-600 disabled:opacity-50 disabled:cursor-not-allowed">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+          </svg>
+          Previous
+        </button>
+        <button id="next-btn" class="flex items-center gap-2 px-6 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 disabled:opacity-50 disabled:cursor-not-allowed">
+          Next
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+          </svg>
+        </button>
+      </div>
+    </main>
+
+    <!-- Mobile Overlay -->
+    <div id="overlay" class="fixed inset-0 bg-black/50 z-30 hidden lg:hidden" onclick="toggleSidebar()"></div>
+  </div>
+
+  <script>
+    const API_BASE = 'https://api.counselorready.com/api';
+    let course = null;
+    let currentSectionIndex = 0;
+
+    // Check auth
+    function checkAuth() {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        window.location.href = '/login.html';
+        return false;
+      }
+      return true;
+    }
+
+    // Get slug from URL
+    function getSlug() {
+      const params = new URLSearchParams(window.location.search);
+      return params.get('slug');
+    }
+
+    // Toggle sidebar
+    function toggleSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      const overlay = document.getElementById('overlay');
+      sidebar.classList.toggle('-translate-x-full');
+      overlay.classList.toggle('hidden');
+    }
+
+    // Load course
+    async function loadCourse() {
+      if (!checkAuth()) return;
+      
+      const slug = getSlug();
+      if (!slug) {
+        showError('No course specified');
+        return;
+      }
+
+      try {
+        const response = await fetch(`${API_BASE}/interactive-courses/${slug}`, {
+          headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        });
+        
+        if (!response.ok) throw new Error('Course not found');
+        
+        course = await response.json();
+        renderCourse();
+        
+        document.getElementById('loading').classList.add('hidden');
+        document.getElementById('course-viewer').classList.remove('hidden');
+      } catch (err) {
+        showError(err.message);
+      }
+    }
+
+    // Show error
+    function showError(message) {
+      document.getElementById('loading').classList.add('hidden');
+      document.getElementById('error').classList.remove('hidden');
+      document.getElementById('error-message').textContent = message;
+    }
+
+    // Render course
+    function renderCourse() {
+      document.title = `${course.title} - CounselorReady`;
+      document.getElementById('course-title').textContent = course.title;
+      document.getElementById('course-ce-hours').textContent = `${course.ceHours} CE Hours`;
+      document.getElementById('course-sections-count').textContent = `${course.sections.length} Sections`;
+      
+      renderSectionsNav();
+      renderSection(0);
+    }
+
+    // Render sections nav
+    function renderSectionsNav() {
+      const nav = document.querySelector('#sections-nav ul');
+      nav.innerHTML = '';
+      
+      course.sections.forEach((section, index) => {
+        const li = document.createElement('li');
+        li.innerHTML = `
+          <button onclick="goToSection(${index})" class="section-nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-colors ${index === currentSectionIndex ? 'bg-teal-50 text-teal-700' : 'text-slate-600 hover:bg-slate-50'}">
+            <div class="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 ${index === currentSectionIndex ? 'bg-teal-500 text-white' : 'bg-slate-200 text-slate-500'}">
+              <span class="text-xs font-semibold">${index + 1}</span>
+            </div>
+            <span class="text-sm font-medium">${section.title}</span>
+          </button>
+        `;
+        nav.appendChild(li);
+      });
+
+      // Add assessment button
+      const assessmentLi = document.createElement('li');
+      assessmentLi.className = 'pt-4 mt-4 border-t border-slate-200';
+      assessmentLi.innerHTML = `
+        <button onclick="goToAssessment()" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left text-slate-600 hover:bg-slate-50">
+          <div class="w-6 h-6 rounded-full flex items-center justify-center bg-emerald-100 text-emerald-600">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+          </div>
+          <span class="text-sm font-medium">Final Assessment</span>
+        </button>
+      `;
+      nav.appendChild(assessmentLi);
+    }
+
+    // Go to section
+    function goToSection(index) {
+      currentSectionIndex = index;
+      renderSection(index);
+      renderSectionsNav();
+      toggleSidebar();
+      window.scrollTo(0, 0);
+    }
+
+    // Render section
+    function renderSection(index) {
+      const section = course.sections[index];
+      document.getElementById('section-title').textContent = section.title;
+      
+      const content = document.getElementById('content-area');
+      content.innerHTML = '';
+
+      // Render content blocks
+      section.contentBlocks.forEach(block => {
+        const blockEl = renderContentBlock(block);
+        if (blockEl) content.appendChild(blockEl);
+      });
+
+      // Update navigation buttons
+      document.getElementById('prev-btn').disabled = index === 0;
+      document.getElementById('next-btn').textContent = index === course.sections.length - 1 ? 'Take Assessment' : 'Next';
+      document.getElementById('next-btn').innerHTML = index === course.sections.length - 1 
+        ? 'Take Assessment <svg class="w-5 h-5 inline ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>'
+        : 'Next <svg class="w-5 h-5 inline ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>';
+
+      // Update progress
+      const progress = Math.round(((index + 1) / course.sections.length) * 100);
+      document.getElementById('progress-percent').textContent = `${progress}%`;
+      document.getElementById('progress-bar').style.width = `${progress}%`;
+    }
+
+    // Render content block
+    function renderContentBlock(block) {
+      const div = document.createElement('div');
+      div.className = 'mb-8';
+
+      switch (block.type) {
+        case 'sectionDivider':
+          div.innerHTML = `
+            <div class="text-center py-8">
+              <span class="inline-block px-4 py-1 bg-teal-100 text-teal-700 rounded-full text-sm font-medium mb-3">Section ${block.sectionNumber || ''}</span>
+              <h2 class="text-2xl font-bold text-slate-800 font-display">${block.title || ''}</h2>
+              ${block.subtitle ? `<p class="mt-2 text-slate-500">${block.subtitle}</p>` : ''}
+            </div>
+          `;
+          break;
+
+        case 'text':
+          div.innerHTML = `<div class="prose max-w-none">${block.textContent || ''}</div>`;
+          break;
+
+        case 'accordion':
+          div.innerHTML = `
+            <div class="space-y-3">
+              ${(block.accordionItems || []).map((item, i) => `
+                <div class="border border-slate-200 rounded-lg overflow-hidden">
+                  <button onclick="toggleAccordion(this)" class="w-full flex items-center justify-between p-4 text-left bg-slate-50 hover:bg-slate-100 transition-colors">
+                    <span class="font-medium text-slate-800">${item.title}</span>
+                    <svg class="w-5 h-5 text-slate-400 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                  </button>
+                  <div class="accordion-content">
+                    <div class="p-4 text-slate-600">${item.content}</div>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          `;
+          break;
+
+        case 'imageText':
+          div.innerHTML = `
+            <div class="${block.highlight ? 'bg-teal-50 border border-teal-200 rounded-xl p-6' : ''}">
+              ${block.title ? `<h3 class="text-lg font-semibold text-slate-800 mb-3">${block.title}</h3>` : ''}
+              <div class="text-slate-600">${block.content || ''}</div>
+            </div>
+          `;
+          break;
+
+        case 'multipleChoice':
+        case 'multiSelect':
+          div.innerHTML = `
+            <div class="bg-white border border-slate-200 rounded-xl p-6">
+              <p class="font-medium text-slate-800 mb-4">${block.question || ''}</p>
+              <div class="space-y-2">
+                ${(block.options || []).map((opt, i) => `
+                  <label class="flex items-center gap-3 p-3 border border-slate-200 rounded-lg cursor-pointer hover:bg-slate-50 transition-colors">
+                    <input type="${block.type === 'multiSelect' ? 'checkbox' : 'radio'}" name="q-${Math.random()}" class="w-4 h-4 text-teal-600">
+                    <span class="text-slate-700">${opt.text}</span>
+                  </label>
+                `).join('')}
+              </div>
+              ${block.explanation ? `<p class="mt-4 text-sm text-slate-500 italic">${block.explanation}</p>` : ''}
+            </div>
+          `;
+          break;
+
+        case 'matching':
+          div.innerHTML = `
+            <div class="bg-white border border-slate-200 rounded-xl p-6">
+              <p class="font-medium text-slate-800 mb-4">${block.matchingInstructions || 'Match the terms with their definitions'}</p>
+              <div class="grid md:grid-cols-2 gap-4">
+                <div class="space-y-2">
+                  <p class="text-sm font-medium text-slate-500 mb-2">Terms</p>
+                  ${(block.matchingPairs || []).map(pair => `
+                    <div class="p-3 bg-teal-50 border border-teal-200 rounded-lg text-teal-800">${pair.term}</div>
+                  `).join('')}
+                </div>
+                <div class="space-y-2">
+                  <p class="text-sm font-medium text-slate-500 mb-2">Definitions</p>
+                  ${(block.matchingPairs || []).map(pair => `
+                    <div class="p-3 bg-slate-50 border border-slate-200 rounded-lg text-slate-700">${pair.definition}</div>
+                  `).join('')}
+                </div>
+              </div>
+            </div>
+          `;
+          break;
+
+        default:
+          return null;
+      }
+
+      return div;
+    }
+
+    // Toggle accordion
+    function toggleAccordion(btn) {
+      const content = btn.nextElementSibling;
+      const icon = btn.querySelector('svg');
+      content.classList.toggle('open');
+      icon.classList.toggle('rotate-180');
+    }
+
+    // Go to assessment
+    function goToAssessment() {
+      alert('Assessment feature coming soon! Complete all sections first.');
+    }
+
+    // Navigation handlers
+    document.getElementById('prev-btn').addEventListener('click', () => {
+      if (currentSectionIndex > 0) {
+        goToSection(currentSectionIndex - 1);
+      }
+    });
+
+    document.getElementById('next-btn').addEventListener('click', () => {
+      if (currentSectionIndex < course.sections.length - 1) {
+        goToSection(currentSectionIndex + 1);
+      } else {
+        goToAssessment();
+      }
+    });
+
+    document.getElementById('menu-btn').addEventListener('click', toggleSidebar);
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', loadCourse);
+  </script>
+</body>
+</html>
