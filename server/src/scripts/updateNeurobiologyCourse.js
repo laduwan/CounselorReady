@@ -39,7 +39,7 @@ const neurobiologyCourse = {
     {
       title: "Brain Structures Quick Reference Card",
       type: "card",
-      url: "/resources/neurobiology/brain-structures-card.pdf",
+      url: "https://res.cloudinary.com/dzfscjhdx/raw/upload/resources/neurobiology/brain-structures-card.pdf",
       filename: "brain-structures-quick-reference.pdf",
       size: "245 KB",
       description: "Printable reference card for key brain structures in trauma"
@@ -47,7 +47,7 @@ const neurobiologyCourse = {
     {
       title: "Window of Tolerance Worksheet",
       type: "worksheet",
-      url: "/resources/neurobiology/window-of-tolerance-worksheet.pdf",
+      url: "https://res.cloudinary.com/dzfscjhdx/raw/upload/resources/neurobiology/window-of-tolerance-worksheet.pdf",
       filename: "window-of-tolerance-worksheet.pdf",
       size: "312 KB",
       description: "Client worksheet for tracking regulation states"
@@ -55,7 +55,7 @@ const neurobiologyCourse = {
     {
       title: "Polyvagal State Assessment Checklist",
       type: "checklist",
-      url: "/resources/neurobiology/polyvagal-checklist.pdf",
+      url: "https://res.cloudinary.com/dzfscjhdx/raw/upload/resources/neurobiology/polyvagal-checklist.pdf",
       filename: "polyvagal-state-checklist.pdf",
       size: "198 KB",
       description: "Quick checklist for identifying client nervous system states"
@@ -63,7 +63,7 @@ const neurobiologyCourse = {
     {
       title: "Grounding Techniques Handout",
       type: "pdf",
-      url: "/resources/neurobiology/grounding-techniques.pdf",
+      url: "https://res.cloudinary.com/dzfscjhdx/raw/upload/resources/neurobiology/grounding-techniques.pdf",
       filename: "grounding-techniques-handout.pdf",
       size: "425 KB",
       description: "Client handout with 15+ regulation techniques"
@@ -71,7 +71,7 @@ const neurobiologyCourse = {
     {
       title: "Neurobiology Psychoeducation Script",
       type: "doc",
-      url: "/resources/neurobiology/psychoeducation-script.pdf",
+      url: "https://res.cloudinary.com/dzfscjhdx/raw/upload/resources/neurobiology/psychoeducation-script.pdf",
       filename: "neurobiology-psychoeducation-script.pdf",
       size: "156 KB",
       description: "Word-for-word scripts for explaining brain science to clients"
@@ -79,7 +79,7 @@ const neurobiologyCourse = {
     {
       title: "Trauma Memory vs Normal Memory Comparison",
       type: "card",
-      url: "/resources/neurobiology/memory-comparison-card.pdf",
+      url: "https://res.cloudinary.com/dzfscjhdx/raw/upload/resources/neurobiology/memory-comparison-card.pdf",
       filename: "trauma-memory-comparison.pdf",
       size: "178 KB",
       description: "Visual comparison chart for client education"
@@ -1221,25 +1221,25 @@ const neurobiologyCourse = {
             {
               title: "Brain Structures Quick Reference Card",
               type: "card",
-              url: "/resources/neurobiology/brain-structures-card.pdf",
+              url: "https://res.cloudinary.com/dzfscjhdx/raw/upload/resources/neurobiology/brain-structures-card.pdf",
               size: "245 KB"
             },
             {
               title: "Window of Tolerance Worksheet",
               type: "worksheet",
-              url: "/resources/neurobiology/window-of-tolerance-worksheet.pdf",
+              url: "https://res.cloudinary.com/dzfscjhdx/raw/upload/resources/neurobiology/window-of-tolerance-worksheet.pdf",
               size: "312 KB"
             },
             {
               title: "Polyvagal State Assessment Checklist",
               type: "checklist",
-              url: "/resources/neurobiology/polyvagal-checklist.pdf",
+              url: "https://res.cloudinary.com/dzfscjhdx/raw/upload/resources/neurobiology/polyvagal-checklist.pdf",
               size: "198 KB"
             },
             {
               title: "Grounding Techniques Handout",
               type: "pdf",
-              url: "/resources/neurobiology/grounding-techniques.pdf",
+              url: "https://res.cloudinary.com/dzfscjhdx/raw/upload/resources/neurobiology/grounding-techniques.pdf",
               size: "425 KB"
             }
           ]
