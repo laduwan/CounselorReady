@@ -346,41 +346,65 @@
           break;
 
         case 'multipleChoice':
-        case 'multiSelect':
+          const correctIdx = (block.options || []).findIndex(o => o.isCorrect);
           div.innerHTML = `
             <div class="bg-white border border-slate-200 rounded-xl p-6">
               <p class="font-medium text-slate-800 mb-4">${block.question || ''}</p>
               <div class="space-y-2">
                 ${(block.options || []).map((opt, i) => `
-                  <label class="flex items-center gap-3 p-3 border border-slate-200 rounded-lg cursor-pointer hover:bg-slate-50 transition-colors">
-                    <input type="${block.type === 'multiSelect' ? 'checkbox' : 'radio'}" name="q-${Math.random()}" class="w-4 h-4 text-teal-600">
+                  <label onclick="checkAnswer(this, ${opt.isCorrect}, '${(block.explanation || '').replace(/'/g, "\\'")}');" class="flex items-center gap-3 p-3 border border-slate-200 rounded-lg cursor-pointer hover:bg-slate-50 transition-colors">
+                    <input type="radio" name="q-${Math.random().toString(36).substr(2, 9)}" class="w-4 h-4 text-teal-600">
                     <span class="text-slate-700">${opt.text}</span>
                   </label>
                 `).join('')}
               </div>
-              ${block.explanation ? `<p class="mt-4 text-sm text-slate-500 italic">${block.explanation}</p>` : ''}
+            </div>
+          `;
+          break;
+
+        case 'multiSelect':
+          div.innerHTML = `
+            <div class="bg-white border border-slate-200 rounded-xl p-6">
+              <p class="font-medium text-slate-800 mb-4">${block.question || ''}</p>
+              <div class="space-y-2" id="ms-${Math.random().toString(36).substr(2, 9)}">
+                ${(block.options || []).map((opt, i) => `
+                  <label class="flex items-center gap-3 p-3 border border-slate-200 rounded-lg cursor-pointer hover:bg-slate-50 transition-colors" data-correct="${opt.isCorrect}">
+                    <input type="checkbox" class="w-4 h-4 text-teal-600 rounded">
+                    <span class="text-slate-700">${opt.text}</span>
+                  </label>
+                `).join('')}
+              </div>
+              <button onclick="checkMultiSelect(this, '${(block.explanation || '').replace(/'/g, "\\'")}')" class="mt-4 px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 text-sm">
+                Check Answer
+              </button>
             </div>
           `;
           break;
 
         case 'matching':
+          const matchId = 'match-' + Math.random().toString(36).substr(2, 9);
+          const pairs = block.matchingPairs || [];
+          const shuffledDefs = [...pairs].sort(() => Math.random() - 0.5);
           div.innerHTML = `
             <div class="bg-white border border-slate-200 rounded-xl p-6">
               <p class="font-medium text-slate-800 mb-4">${block.matchingInstructions || 'Match the terms with their definitions'}</p>
-              <div class="grid md:grid-cols-2 gap-4">
-                <div class="space-y-2">
-                  <p class="text-sm font-medium text-slate-500 mb-2">Terms</p>
-                  ${(block.matchingPairs || []).map(pair => `
-                    <div class="p-3 bg-teal-50 border border-teal-200 rounded-lg text-teal-800">${pair.term}</div>
-                  `).join('')}
-                </div>
-                <div class="space-y-2">
-                  <p class="text-sm font-medium text-slate-500 mb-2">Definitions</p>
-                  ${(block.matchingPairs || []).map(pair => `
-                    <div class="p-3 bg-slate-50 border border-slate-200 rounded-lg text-slate-700">${pair.definition}</div>
-                  `).join('')}
-                </div>
+              <div class="space-y-3" id="${matchId}">
+                ${pairs.map((pair, i) => `
+                  <div class="flex items-center gap-4 match-row" data-term="${pair.term}" data-correct="${pair.definition}">
+                    <div class="flex-1 p-3 bg-teal-50 border border-teal-200 rounded-lg text-teal-800 font-medium">${pair.term}</div>
+                    <svg class="w-6 h-6 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                    </svg>
+                    <select class="flex-1 p-3 border border-slate-200 rounded-lg text-slate-700 bg-white" onchange="checkMatch(this)">
+                      <option value="">Select a match...</option>
+                      ${shuffledDefs.map(d => `<option value="${d.definition}">${d.definition}</option>`).join('')}
+                    </select>
+                  </div>
+                `).join('')}
               </div>
+              <button onclick="checkAllMatches('${matchId}')" class="mt-4 px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 text-sm">
+                Check All Matches
+              </button>
             </div>
           `;
           break;
@@ -396,8 +420,138 @@
     function toggleAccordion(btn) {
       const content = btn.nextElementSibling;
       const icon = btn.querySelector('svg');
+      
+      // Close other accordions in same group
+      const parent = btn.closest('.space-y-3');
+      if (parent) {
+        parent.querySelectorAll('.accordion-content.open').forEach(other => {
+          if (other !== content) {
+            other.classList.remove('open');
+            other.previousElementSibling.querySelector('svg').classList.remove('rotate-180');
+          }
+        });
+      }
+      
       content.classList.toggle('open');
       icon.classList.toggle('rotate-180');
+    }
+
+    // Check answer for multiple choice
+    function checkAnswer(btn, isCorrect, explanation) {
+      const container = btn.closest('.bg-white');
+      const options = container.querySelectorAll('label');
+      
+      // Disable all options
+      options.forEach(opt => {
+        opt.style.pointerEvents = 'none';
+        const input = opt.querySelector('input');
+        if (input.checked) {
+          if (isCorrect) {
+            opt.classList.add('bg-green-50', 'border-green-500');
+            opt.innerHTML += ' <span class="ml-auto text-green-600 font-medium">✓ Correct!</span>';
+          } else {
+            opt.classList.add('bg-red-50', 'border-red-500');
+            opt.innerHTML += ' <span class="ml-auto text-red-600 font-medium">✗ Incorrect</span>';
+          }
+        }
+      });
+      
+      // Show explanation
+      if (explanation) {
+        const expDiv = document.createElement('div');
+        expDiv.className = 'mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg text-blue-800 text-sm';
+        expDiv.innerHTML = '<strong>Explanation:</strong> ' + explanation;
+        container.appendChild(expDiv);
+      }
+    }
+
+    // Check individual match
+    function checkMatch(select) {
+      const row = select.closest('.match-row');
+      const correct = row.dataset.correct;
+      const selected = select.value;
+      
+      if (!selected) {
+        select.className = 'flex-1 p-3 border border-slate-200 rounded-lg text-slate-700 bg-white';
+        return;
+      }
+      
+      if (selected === correct) {
+        select.className = 'flex-1 p-3 border-2 border-green-500 rounded-lg text-green-700 bg-green-50';
+      } else {
+        select.className = 'flex-1 p-3 border-2 border-red-500 rounded-lg text-red-700 bg-red-50';
+      }
+    }
+
+    // Check all matches
+    function checkAllMatches(containerId) {
+      const container = document.getElementById(containerId);
+      const rows = container.querySelectorAll('.match-row');
+      let correct = 0;
+      
+      rows.forEach(row => {
+        const select = row.querySelector('select');
+        const correctAnswer = row.dataset.correct;
+        
+        if (select.value === correctAnswer) {
+          correct++;
+          select.className = 'flex-1 p-3 border-2 border-green-500 rounded-lg text-green-700 bg-green-50';
+          select.disabled = true;
+        } else if (select.value) {
+          select.className = 'flex-1 p-3 border-2 border-red-500 rounded-lg text-red-700 bg-red-50';
+        }
+      });
+      
+      const total = rows.length;
+      const resultDiv = container.parentElement.querySelector('.match-result') || document.createElement('div');
+      resultDiv.className = 'match-result mt-4 p-3 rounded-lg text-sm ' + 
+        (correct === total ? 'bg-green-50 border border-green-200 text-green-800' : 'bg-blue-50 border border-blue-200 text-blue-800');
+      resultDiv.innerHTML = `<strong>${correct}/${total} correct!</strong> ${correct === total ? 'Great job!' : 'Keep trying the incorrect ones.'}`;
+      
+      if (!container.parentElement.querySelector('.match-result')) {
+        container.parentElement.insertBefore(resultDiv, container.parentElement.querySelector('button'));
+      }
+    }
+
+    // Check multi-select answers
+    function checkMultiSelect(btn, explanation) {
+      const container = btn.closest('.bg-white');
+      const labels = container.querySelectorAll('label');
+      let allCorrect = true;
+      
+      labels.forEach(label => {
+        const input = label.querySelector('input');
+        const isCorrect = label.dataset.correct === 'true';
+        const isChecked = input.checked;
+        
+        label.style.pointerEvents = 'none';
+        
+        if (isCorrect && isChecked) {
+          label.classList.add('bg-green-50', 'border-green-500');
+          label.innerHTML += ' <span class="ml-auto text-green-600">✓</span>';
+        } else if (isCorrect && !isChecked) {
+          label.classList.add('bg-yellow-50', 'border-yellow-500');
+          label.innerHTML += ' <span class="ml-auto text-yellow-600">← Should select</span>';
+          allCorrect = false;
+        } else if (!isCorrect && isChecked) {
+          label.classList.add('bg-red-50', 'border-red-500');
+          label.innerHTML += ' <span class="ml-auto text-red-600">✗</span>';
+          allCorrect = false;
+        }
+      });
+      
+      btn.disabled = true;
+      btn.classList.add('opacity-50');
+      
+      // Show result
+      const resultDiv = document.createElement('div');
+      resultDiv.className = allCorrect 
+        ? 'mt-4 p-3 bg-green-50 border border-green-200 rounded-lg text-green-800 text-sm'
+        : 'mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg text-blue-800 text-sm';
+      resultDiv.innerHTML = allCorrect 
+        ? '<strong>Correct!</strong> ' + explanation
+        : '<strong>Review the correct answers above.</strong> ' + explanation;
+      container.appendChild(resultDiv);
     }
 
     // Go to assessment
