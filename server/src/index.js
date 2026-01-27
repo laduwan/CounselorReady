@@ -3,6 +3,7 @@ import cors from 'cors';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import path from 'path';
+import { initializeScheduler } from './services/notificationScheduler.js';
 import { fileURLToPath } from 'url';
 
 // Load environment variables
@@ -212,6 +213,9 @@ const PORT = process.env.PORT || 5000;
 const startServer = async () => {
   // Connect to database first
   await connectDB();
+
+  // Initialize notification scheduler
+initializeScheduler();
   
   // Start listening
   app.listen(PORT, () => {
