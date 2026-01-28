@@ -28,7 +28,6 @@ router.get('/overview', protect, adminOnly, async (req, res) => {
       totalCEHours,
       recentCompletions,
       evaluationStats
-   import adminStatsRoutes from './routes/adminStats.js';
     ] = await Promise.all([
       // User counts
       db.collection('users').countDocuments({ isDeleted: { $ne: true } }),
@@ -145,8 +144,7 @@ router.get('/courses', protect, adminOnly, async (req, res) => {
           as: 'interactiveData'
         }
       },
- app.use('/api/admin/stats', adminStatsRoutes);
-    {
+      {
         $project: {
           title: 1,
           slug: 1,
