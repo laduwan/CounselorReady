@@ -34,6 +34,103 @@ const neurobiologyCourse = {
   status: "published",
   publishedAt: new Date(),
   
+  // ACEP REQUIRED: Learning Objectives (measurable outcomes)
+  learningObjectives: [
+    "Identify and describe the key brain structures involved in trauma processing, including the amygdala, hippocampus, and prefrontal cortex",
+    "Explain the physiological mechanisms of the HPA axis and its role in the stress response",
+    "Differentiate between normal memory consolidation and traumatic memory encoding",
+    "Apply knowledge of the Window of Tolerance model to assess client arousal states",
+    "Describe at least three evidence-based interventions that target specific neurobiological processes",
+    "Utilize psychoeducation scripts to explain brain science concepts to clients in accessible language",
+    "Recognize signs of autonomic nervous system dysregulation in clinical presentations"
+  ],
+  
+  // ACEP REQUIRED: Instructor Credentials
+  instructorCredentials: {
+    name: "Kejuiana Johnson, MA, LPC, CPCS, BC-TMH",
+    credentials: "Licensed Professional Counselor, Certified Professional Counselor Supervisor, Board Certified in Telemental Health",
+    organization: "GA Integrated Therapeutic Perspectives LLC",
+    bio: "Kejuiana Johnson is a licensed mental health professional with extensive experience in trauma-informed care and clinical supervision. She is the founder of CounselorReady, an NBCC-approved continuing education provider dedicated to delivering high-quality professional development for mental health clinicians."
+  },
+  
+  // ACEP REQUIRED: Bibliography/References
+  bibliography: [
+    {
+      citation: "Van der Kolk, B. A. (2014). The body keeps the score: Brain, mind, and body in the healing of trauma. Viking.",
+      type: "book"
+    },
+    {
+      citation: "Porges, S. W. (2011). The polyvagal theory: Neurophysiological foundations of emotions, attachment, communication, and self-regulation. W. W. Norton & Company.",
+      type: "book"
+    },
+    {
+      citation: "Siegel, D. J. (2012). The developing mind: How relationships and the brain interact to shape who we are (2nd ed.). Guilford Press.",
+      type: "book"
+    },
+    {
+      citation: "Levine, P. A. (2010). In an unspoken voice: How the body releases trauma and restores goodness. North Atlantic Books.",
+      type: "book"
+    },
+    {
+      citation: "McEwen, B. S. (2007). Physiology and neurobiology of stress and adaptation: Central role of the brain. Physiological Reviews, 87(3), 873-904.",
+      type: "journal"
+    },
+    {
+      citation: "Ogden, P., Minton, K., & Pain, C. (2006). Trauma and the body: A sensorimotor approach to psychotherapy. W. W. Norton & Company.",
+      type: "book"
+    },
+    {
+      citation: "Dana, D. (2018). The polyvagal theory in therapy: Engaging the rhythm of regulation. W. W. Norton & Company.",
+      type: "book"
+    }
+  ],
+  
+  // ACEP REQUIRED: Completion Requirements
+  completionRequirements: {
+    passingScore: 80,
+    mustCompleteAllModules: true,
+    mustPassAssessment: true,
+    mustCompleteEvaluation: true,
+    description: "To receive CE credit, participants must: (1) Complete all course modules, (2) Pass the final assessment with a score of 80% or higher, and (3) Complete the course evaluation."
+  },
+  
+  // Accessibility & Platform Settings
+  settings: {
+    // Progression
+    linearProgression: false,
+    certificateEnabled: true,
+    passingScore: 80,
+    
+    // Quiz/Test Settings
+    allowRetakes: true,
+    retakePolicy: 'unlimited',
+    maxRetakes: 3,
+    scorePolicy: 'highest',
+    
+    // CE Compliance
+    requireEvaluation: true,
+    requireAttestation: true,
+    
+    // Accessibility - Narration / Text-to-Speech
+    narrationEnabled: true,
+    narrationVoice: 'nova',
+    narrationSpeed: 1.0,
+    autoPlayNarration: false,
+    
+    // Accessibility - Translation
+    translationEnabled: true,
+    supportedLanguages: ['en', 'es', 'fr', 'de', 'pt', 'zh', 'ko', 'vi'],
+    defaultLanguage: 'en',
+    
+    // Accessibility - Visual
+    highContrastSupported: true,
+    fontSizeAdjustable: true,
+    
+    // Accessibility - Screen Reader
+    screenReaderOptimized: true,
+    altTextRequired: true
+  },
+  
   // Downloadable bonus resources
   resources: [
     {
@@ -201,6 +298,14 @@ const neurobiologyCourse = {
             { term: "Prefrontal Cortex", definition: "Executive function, emotional regulation, rational thought" },
             { term: "Insula", definition: "Processing internal body sensations (interoception)" }
           ]
+        },
+        {
+          type: "reflection",
+          order: 8,
+          title: "Clinical Reflection: Your Experience with Trauma Neurobiology",
+          prompt: "Think about a client you've worked with who experienced trauma symptoms (hypervigilance, flashbacks, emotional dysregulation, etc.). How might understanding the neurobiological basis of these symptoms change how you explain them to the client? What metaphor or explanation might you use?",
+          placeholder: "Reflect on how you might apply neurobiology psychoeducation in your clinical practice...",
+          minLength: 100
         }
       ],
       hasQuiz: true,
@@ -451,6 +556,14 @@ const neurobiologyCourse = {
             { text: "Shallow breathing or breath holding", isCorrect: true }
           ],
           explanation: "The dorsal vagal response is characterized by immobilization, dissociation, and reduced physiological activity including shallow breathing. It's the body's most primitive survival response, activated when fight or flight seem impossible."
+        },
+        {
+          type: "reflection",
+          order: 7,
+          title: "Clinical Reflection: Recognizing Stress States",
+          prompt: "Consider your own stress responses. Can you identify a time when you experienced fight, flight, or freeze? How did it manifest in your body? How might recognizing your own patterns help you attune to clients' nervous system states in session?",
+          placeholder: "Reflect on your personal experience with stress responses and how this awareness might inform your clinical work...",
+          minLength: 100
         }
       ],
       hasQuiz: true,
@@ -684,6 +797,14 @@ const neurobiologyCourse = {
             { text: "Semantic memory", isCorrect: false }
           ],
           explanation: "Implicit memory, which includes emotional associations, body sensations, and sensory impressions, remains intact and is often enhanced during trauma while the hippocampus-dependent explicit memory system is suppressed."
+        },
+        {
+          type: "reflection",
+          order: 7,
+          title: "Clinical Reflection: Working with Traumatic Memories",
+          prompt: "Think about how understanding the difference between explicit and implicit memory systems might change your approach to trauma work. How might you help a client understand why they have intense body reactions or emotional responses without clear narrative memories? What would you say to normalize their experience?",
+          placeholder: "Reflect on how you might explain traumatic memory to clients and adapt your clinical approach...",
+          minLength: 100
         }
       ],
       hasQuiz: true,
@@ -932,6 +1053,14 @@ const neurobiologyCourse = {
             { text: "Chronic stress", isCorrect: false }
           ],
           explanation: "Exercise, sleep, safe social connections, and mindfulness all promote neuroplasticity. Chronic stress and isolation impair the brain's ability to change and heal."
+        },
+        {
+          type: "reflection",
+          order: 7,
+          title: "Clinical Reflection: Promoting Neuroplasticity",
+          prompt: "How might you incorporate neuroplasticity-promoting factors (exercise, sleep hygiene, social connection, mindfulness) into treatment planning for trauma clients? What barriers might your clients face, and how could you help them overcome these obstacles?",
+          placeholder: "Reflect on practical ways to support neuroplasticity in your clinical work...",
+          minLength: 100
         }
       ],
       hasQuiz: true,
@@ -1243,6 +1372,14 @@ const neurobiologyCourse = {
               size: "425 KB"
             }
           ]
+        },
+        {
+          type: "reflection",
+          order: 8,
+          title: "Clinical Reflection: Integrating Neurobiology into Your Practice",
+          prompt: "As you complete this course, consider: What is the most significant insight about trauma neurobiology that will change your clinical practice? How will you integrate neurobiological concepts into your assessment, psychoeducation, and intervention selection going forward? What's one specific change you'll make in your next session with a trauma client?",
+          placeholder: "Reflect on how this course will influence your trauma-informed practice...",
+          minLength: 150
         }
       ],
       hasQuiz: true,
