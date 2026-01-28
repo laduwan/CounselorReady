@@ -429,42 +429,103 @@ router.get('/admin/overview', protect, async (req, res) => {
     const startDate = req.query.startDate ? new Date(req.query.startDate) : null;
     const endDate = req.query.endDate ? new Date(req.query.endDate) : null;
     
-    // NPS Score
+    // Build date filter
+    const dateFilter = {};
+    if (startDate) dateFilter.$gte = startDate;
+    if (endDate) dateFilter.$lte = endDate;
+    
+    // NPS Score from platform surveys
     const npsData = await PlatformSurvey.calculateNPS(startDate, endDate);
     
-    // Satisfaction averages
+    // Satisfaction averages from platform surveys
     const satisfactionData = await PlatformSurvey.getSatisfactionAverages(startDate, endDate);
     
-    // Course stats
-    const courseStats = await Course.aggregate([
-      { $match: { status: 'published' } },
+    // Get REAL stats from UserCourseProgress
+    const progressFilter = {};
+    if (startDate || endDate) {
+      progressFilter.completedAt = dateFilter;
+    }
+    
+    const progressStats = await UserCourseProgress.aggregate([
+      { $match: progressFilter },
       {
         $group: {
           _id: null,
-          totalCourses: { $sum: 1 },
-          totalEnrollments: { $sum: '$analytics.enrollments' },
-          totalCompletions: { $sum: '$analytics.completions' },
-          avgRating: { $avg: '$analytics.avgRating' },
-          avgCompletionRate: { $avg: '$analytics.completionRate' }
+          totalEnrollments: { $sum: 1 },
+          totalCompletions: { $sum: { $cond: [{ $eq: ['$status', 'completed'] }, 1, 0] } },
+          totalEvaluations: { $sum: { $cond: [{ $eq: ['$evaluationCompleted', true] }, 1, 0] } }
         }
       }
     ]);
     
-    // Top courses
-    const topByEnrollment = await Course.find({ status: 'published' })
-      .select('title analytics.enrollments analytics.avgRating')
-      .sort({ 'analytics.enrollments': -1 })
-      .limit(5);
+    // Get total courses count
+    const totalCourses = await Course.countDocuments({ status: 'published' });
     
+    // Get course ratings from Course.ratings array
+    const ratingStats = await Course.aggregate([
+      { $match: { status: 'published', 'ratings.0': { $exists: true } } },
+      { $unwind: '$ratings' },
+      {
+        $group: {
+          _id: null,
+          totalRatings: { $sum: 1 },
+          avgRating: { $avg: '$ratings.rating' }
+        }
+      }
+    ]);
+    
+    // Combine course stats
+    const courseStats = {
+      totalCourses,
+      totalEnrollments: progressStats[0]?.totalEnrollments || 0,
+      totalCompletions: progressStats[0]?.totalCompletions || 0,
+      totalEvaluations: progressStats[0]?.totalEvaluations || 0,
+      avgRating: ratingStats[0]?.avgRating ? Math.round(ratingStats[0].avgRating * 10) / 10 : 0,
+      totalRatings: ratingStats[0]?.totalRatings || 0,
+      avgCompletionRate: progressStats[0]?.totalEnrollments > 0 
+        ? Math.round((progressStats[0].totalCompletions / progressStats[0].totalEnrollments) * 100) 
+        : 0
+    };
+    
+    // Top courses by enrollment (from UserCourseProgress)
+    const topByEnrollment = await UserCourseProgress.aggregate([
+      {
+        $group: {
+          _id: '$courseId',
+          enrollments: { $sum: 1 }
+        }
+      },
+      { $sort: { enrollments: -1 } },
+      { $limit: 5 },
+      {
+        $lookup: {
+          from: 'courses',
+          localField: '_id',
+          foreignField: '_id',
+          as: 'course'
+        }
+      },
+      { $unwind: '$course' },
+      {
+        $project: {
+          _id: '$course._id',
+          title: '$course.title',
+          'analytics.enrollments': '$enrollments',
+          'analytics.avgRating': '$course.analytics.avgRating'
+        }
+      }
+    ]);
+    
+    // Top courses by rating
     const topByRating = await Course.find({ 
       status: 'published',
-      'analytics.totalRatings': { $gte: 5 } // At least 5 ratings
+      'ratings.0': { $exists: true }
     })
-      .select('title analytics.avgRating analytics.totalRatings')
+      .select('title analytics.avgRating analytics.totalRatings ratings')
       .sort({ 'analytics.avgRating': -1 })
       .limit(5);
     
-    // Recent feedback
+    // Recent feedback from platform surveys
     const recentFeedback = await PlatformSurvey.find({
       $or: [
         { 'responses.whatDoYouLove': { $exists: true, $ne: '' } },
@@ -476,15 +537,26 @@ router.get('/admin/overview', protect, async (req, res) => {
       .sort({ createdAt: -1 })
       .limit(10);
     
+    // Also get recent course evaluations (from UserCourseProgress)
+    const recentEvaluations = await UserCourseProgress.find({
+      evaluationCompleted: true
+    })
+      .populate('userId', 'email profile.firstName profile.lastName')
+      .populate('courseId', 'title')
+      .sort({ evaluationCompletedAt: -1 })
+      .limit(10)
+      .select('userId courseId evaluationResponses evaluationCompletedAt');
+    
     res.json({
       nps: npsData,
       satisfaction: satisfactionData,
-      courses: courseStats[0] || {},
+      courses: courseStats,
       topCourses: {
         byEnrollment: topByEnrollment,
         byRating: topByRating
       },
-      recentFeedback
+      recentFeedback,
+      recentEvaluations
     });
   } catch (error) {
     console.error('Admin overview error:', error);
