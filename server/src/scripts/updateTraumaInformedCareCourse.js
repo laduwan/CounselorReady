@@ -32,6 +32,87 @@ const traumaInformedCareCourse = {
   status: "published",
   publishedAt: new Date(),
 
+  // ACEP REQUIRED: Learning Objectives
+  learningObjectives: [
+    "Define trauma-informed care and describe SAMHSA's six key principles",
+    "Recognize the prevalence and impact of trauma across diverse populations",
+    "Apply strategies to create physical and emotional safety in clinical settings",
+    "Demonstrate techniques for building trustworthiness and transparency with trauma survivors",
+    "Identify approaches that promote client choice, collaboration, and empowerment",
+    "Recognize and respond appropriately to signs of re-traumatization",
+    "Implement culturally responsive trauma-informed practices",
+    "Develop a personal plan for self-care and vicarious trauma prevention"
+  ],
+  
+  // ACEP REQUIRED: Instructor Credentials
+  instructorCredentials: {
+    name: "Kejuiana Johnson, MA, LPC, CPCS, BC-TMH",
+    credentials: "Licensed Professional Counselor, Certified Professional Counselor Supervisor, Board Certified in Telemental Health",
+    organization: "GA Integrated Therapeutic Perspectives LLC",
+    bio: "Kejuiana Johnson is a licensed mental health professional with extensive experience in trauma-informed care and clinical supervision. She is the founder of CounselorReady, an NBCC-approved continuing education provider dedicated to delivering high-quality professional development for mental health clinicians."
+  },
+  
+  // ACEP REQUIRED: Bibliography/References
+  bibliography: [
+    {
+      citation: "Substance Abuse and Mental Health Services Administration. (2014). SAMHSA's concept of trauma and guidance for a trauma-informed approach. HHS Publication No. (SMA) 14-4884.",
+      type: "report"
+    },
+    {
+      citation: "Harris, M., & Fallot, R. D. (Eds.). (2001). Using trauma theory to design service systems. Jossey-Bass.",
+      type: "book"
+    },
+    {
+      citation: "Bloom, S. L., & Farragher, B. (2013). Restoring sanctuary: A new operating system for trauma-informed systems of care. Oxford University Press.",
+      type: "book"
+    },
+    {
+      citation: "Herman, J. L. (2015). Trauma and recovery: The aftermath of violence—from domestic abuse to political terror. Basic Books.",
+      type: "book"
+    },
+    {
+      citation: "Felitti, V. J., et al. (1998). Relationship of childhood abuse and household dysfunction to many of the leading causes of death in adults: The Adverse Childhood Experiences (ACE) Study. American Journal of Preventive Medicine, 14(4), 245-258.",
+      type: "journal"
+    },
+    {
+      citation: "Knight, C. (2015). Trauma-informed social work practice: Practice considerations and challenges. Clinical Social Work Journal, 43(1), 25-37.",
+      type: "journal"
+    }
+  ],
+  
+  // ACEP REQUIRED: Completion Requirements
+  completionRequirements: {
+    passingScore: 80,
+    mustCompleteAllModules: true,
+    mustPassAssessment: true,
+    mustCompleteEvaluation: true,
+    description: "To receive CE credit, participants must: (1) Complete all course modules, (2) Pass the final assessment with a score of 80% or higher, and (3) Complete the course evaluation."
+  },
+  
+  // Accessibility & Platform Settings
+  settings: {
+    linearProgression: false,
+    certificateEnabled: true,
+    passingScore: 80,
+    allowRetakes: true,
+    retakePolicy: 'unlimited',
+    maxRetakes: 3,
+    scorePolicy: 'highest',
+    requireEvaluation: true,
+    requireAttestation: true,
+    narrationEnabled: true,
+    narrationVoice: 'nova',
+    narrationSpeed: 1.0,
+    autoPlayNarration: false,
+    translationEnabled: true,
+    supportedLanguages: ['en', 'es', 'fr', 'de', 'pt', 'zh', 'ko', 'vi'],
+    defaultLanguage: 'en',
+    highContrastSupported: true,
+    fontSizeAdjustable: true,
+    screenReaderOptimized: true,
+    altTextRequired: true
+  },
+
   resources: [
     {
       title: "SAMHSA's 6 Principles Quick Reference",
@@ -95,14 +176,15 @@ const traumaInformedCareCourse = {
           type: "text",
           order: 2,
           textContent: `<h3>What is Trauma?</h3>
-          <p>Trauma results from exposure to an event or series of events that are emotionally disturbing or life-threatening. However, <strong>trauma is defined by the individual's experience</strong>, not just the event itself. Two people can experience the same event with vastly different outcomes based on their perception, support systems, and prior experiences.</p>
+          <p>Trauma results from exposure to an event or series of events that are emotionally disturbing or life-threatening. However, <strong>trauma is defined by the individual's experience</strong>, not just the event itself. Two people can experience the same event with vastly different outcomes based on their perception, support systems, coping resources, and prior experiences.</p>
           <p>SAMHSA's definition emphasizes the <strong>Three E's</strong>:</p>
           <ul>
-            <li><strong>Events:</strong> The actual occurrence(s) — what happened</li>
-            <li><strong>Experience:</strong> How the individual perceives and processes the event — subjective meaning</li>
-            <li><strong>Effects:</strong> The lasting adverse impacts on functioning — how it changes the person</li>
+            <li><strong>Events:</strong> The actual occurrence(s) — what happened. This includes obvious traumas (assault, accidents, disasters) as well as experiences that may not seem traumatic to outsiders but are experienced as overwhelming (medical procedures, sudden loss, witnessing violence).</li>
+            <li><strong>Experience:</strong> How the individual perceives and processes the event — the subjective meaning. The same event affects different people differently based on age, prior trauma, support available, cultural context, and individual meaning-making.</li>
+            <li><strong>Effects:</strong> The lasting adverse impacts on functioning — how it changes the person. These effects may be immediate or delayed, obvious or subtle, and can affect every domain of life including physical health, mental health, relationships, and worldview.</li>
           </ul>
-          <p>This definition is crucial because it centers the survivor's experience rather than external judgments about whether an event "should" be traumatic.</p>`
+          <p>This definition is crucial because it centers the survivor's experience rather than external judgments about whether an event "should" be traumatic. A clinician's assessment of an event's severity is irrelevant—what matters is how the person experienced it.</p>
+          <p><strong>Key Insight:</strong> Trauma is not just about what happened TO a person; it's also about what DIDN'T happen—the absence of protection, comfort, safety, and responsive caregiving when it was needed.</p>`
         },
         {
           type: "imageText",
@@ -127,58 +209,134 @@ const traumaInformedCareCourse = {
           accordionItems: [
             {
               title: "Types of Trauma",
-              content: `<p><strong>Acute Trauma:</strong> Single incident (accident, assault, natural disaster)</p>
-              <p><strong>Chronic Trauma:</strong> Repeated, prolonged exposure (ongoing abuse, domestic violence, war)</p>
-              <p><strong>Complex Trauma:</strong> Multiple traumatic events, often interpersonal and beginning in childhood</p>
-              <p><strong>Developmental Trauma:</strong> Trauma occurring during critical developmental periods, affecting brain development</p>
-              <p><strong>Historical/Intergenerational Trauma:</strong> Trauma passed through generations (colonization, slavery, genocide)</p>
-              <p><strong>Vicarious Trauma:</strong> Trauma experienced by helpers exposed to others' trauma (clinicians, first responders)</p>`
+              content: `<p><strong>Acute Trauma:</strong> Single incident trauma such as an accident, assault, natural disaster, or witnessing violence. While occurring only once, acute trauma can still have profound and lasting effects, particularly if there is loss of life, physical injury, or intense fear for one's life.</p>
+              <p><strong>Chronic Trauma:</strong> Repeated, prolonged exposure to traumatic circumstances such as ongoing abuse, domestic violence, war, or living in a violent community. The continuous nature of chronic trauma means the nervous system never has a chance to fully return to baseline, leading to persistent hypervigilance and altered stress responses.</p>
+              <p><strong>Complex Trauma:</strong> Multiple traumatic events, often interpersonal in nature and beginning in childhood. Complex trauma frequently involves betrayal by caregivers or trusted figures, creating profound impacts on attachment, identity development, emotional regulation, and the capacity for relationships. Diagnoses like Borderline Personality Disorder often have complex trauma at their root.</p>
+              <p><strong>Developmental Trauma:</strong> Trauma occurring during critical developmental periods, particularly early childhood when the brain is rapidly developing. This type of trauma literally shapes brain architecture, affecting stress response systems, emotional regulation circuits, and the capacity for secure attachment. The earlier the trauma, the more pervasive its effects.</p>
+              <p><strong>Historical/Intergenerational Trauma:</strong> Trauma passed through generations, affecting entire communities and cultural groups. Examples include the impacts of colonization on Indigenous peoples, slavery on African Americans, the Holocaust on Jewish communities, and forced displacement on refugees. This trauma is transmitted through family dynamics, epigenetic changes, cultural disruption, and ongoing systemic oppression.</p>
+              <p><strong>Vicarious Trauma (Secondary Traumatic Stress):</strong> Trauma experienced by helpers exposed to others' trauma stories and suffering. Clinicians, first responders, nurses, social workers, and others in helping professions are at risk. Vicarious trauma can cause symptoms similar to PTSD and lead to changes in worldview, such as increased cynicism or loss of faith in humanity.</p>`
             },
             {
-              title: "Adverse Childhood Experiences (ACEs)",
-              content: `<p>The landmark ACE Study identified 10 categories of childhood adversity:</p>
-              <p><strong>Abuse:</strong> Physical, emotional, sexual</p>
-              <p><strong>Neglect:</strong> Physical, emotional</p>
-              <p><strong>Household Dysfunction:</strong> Mental illness, substance abuse, incarceration, domestic violence, divorce</p>
+              title: "Adverse Childhood Experiences (ACEs): The Foundational Research",
+              content: `<p>The landmark ACE Study (Felitti et al., 1998) examined the relationship between childhood trauma and adult health outcomes in over 17,000 participants. This groundbreaking research forever changed our understanding of trauma's long-term impacts.</p>
+              <p><strong>The 10 ACE Categories:</strong></p>
+              <p><em>Abuse:</em></p>
+              <ul>
+                <li>Physical abuse</li>
+                <li>Emotional/psychological abuse</li>
+                <li>Sexual abuse</li>
+              </ul>
+              <p><em>Neglect:</em></p>
+              <ul>
+                <li>Physical neglect</li>
+                <li>Emotional neglect</li>
+              </ul>
+              <p><em>Household Dysfunction:</em></p>
+              <ul>
+                <li>Mental illness in household</li>
+                <li>Substance abuse in household</li>
+                <li>Domestic violence</li>
+                <li>Incarceration of household member</li>
+                <li>Parental separation or divorce</li>
+              </ul>
               <p><strong>Key Findings:</strong></p>
               <ul>
-                <li>ACEs are common — 61% have at least one</li>
-                <li>ACEs cluster — if you have one, you likely have more</li>
-                <li>ACEs are dose-dependent — more ACEs = greater health risks</li>
-                <li>4+ ACEs dramatically increase risk for chronic disease, mental illness, and early death</li>
-              </ul>`
+                <li>ACEs are extremely common—61% of adults report at least one; 16% report four or more</li>
+                <li>ACEs tend to cluster—if you have one, you're likely to have more</li>
+                <li>ACEs have a dose-response relationship—more ACEs = greater health risks</li>
+                <li>Having 4+ ACEs increases risk of depression by 460%, alcoholism by 700%, and suicide attempt by 1,220%</li>
+                <li>ACEs affect physical health too—increased risk of heart disease, cancer, diabetes, autoimmune disorders</li>
+              </ul>
+              <p><strong>Clinical Implication:</strong> High ACE scores don't determine destiny, but they indicate the need for trauma-informed approaches and attention to both mental and physical health.</p>`
             },
             {
-              title: "How Trauma Affects the Brain and Body",
-              content: `<p>Trauma fundamentally changes the brain and nervous system:</p>
-              <p><strong>Brain Changes:</strong></p>
+              title: "The Neurobiology of Trauma: How Trauma Changes the Brain",
+              content: `<p>Trauma literally changes brain structure and function. Understanding these changes helps clinicians and clients alike make sense of trauma symptoms.</p>
+              <p><strong>Key Brain Structures Affected:</strong></p>
+              <p><strong>1. Amygdala (Fear/Threat Detection):</strong></p>
               <ul>
-                <li>Hyperactive amygdala (threat detection always on)</li>
-                <li>Suppressed prefrontal cortex (difficulty with reasoning, regulation)</li>
-                <li>Impaired hippocampus (memory problems, flashbacks)</li>
+                <li>Becomes hyperactive and enlarged after trauma</li>
+                <li>Detects threats (real and perceived) more readily</li>
+                <li>Triggers fight/flight/freeze responses</li>
+                <li>Explains hypervigilance and exaggerated startle response</li>
               </ul>
+              <p><strong>2. Hippocampus (Memory Processing):</strong></p>
+              <ul>
+                <li>Often shrinks with chronic trauma/stress</li>
+                <li>Impaired ability to contextualize memories in time and place</li>
+                <li>Explains why trauma memories feel "timeless" and present</li>
+                <li>Contributes to intrusive memories and flashbacks</li>
+              </ul>
+              <p><strong>3. Prefrontal Cortex (Executive Function):</strong></p>
+              <ul>
+                <li>Reduced activity and connectivity after trauma</li>
+                <li>Impaired decision-making, planning, and impulse control</li>
+                <li>Difficulty modulating emotional responses</li>
+                <li>Explains why trauma survivors may make "bad decisions" under stress</li>
+              </ul>
+              <p><strong>Clinical Implication:</strong> Trauma symptoms are not character flaws or choices—they're the brain's best attempt to protect from danger based on past experience. This knowledge reduces shame and increases self-compassion.</p>`
+            },
+            {
+              title: "The Body Keeps the Score: Somatic Effects of Trauma",
+              content: `<p>As Bessel van der Kolk famously wrote, "the body keeps the score." Trauma is stored not just in memory but in the body itself, leading to a wide range of physical symptoms and conditions.</p>
               <p><strong>Nervous System Dysregulation:</strong></p>
               <ul>
-                <li>Chronic activation of stress response (HPA axis)</li>
-                <li>Difficulty returning to baseline after stress</li>
-                <li>Hypervigilance or shutdown/dissociation</li>
+                <li>Chronic activation of the stress response (HPA axis)</li>
+                <li>Elevated cortisol followed by cortisol depletion</li>
+                <li>Autonomic nervous system dysregulation</li>
+                <li>Difficulty moving between sympathetic (activation) and parasympathetic (rest) states</li>
               </ul>
               <p><strong>Physical Health Impacts:</strong></p>
               <ul>
-                <li>Increased inflammation and chronic disease</li>
+                <li>Increased inflammation throughout the body</li>
                 <li>Compromised immune function</li>
-                <li>Higher rates of heart disease, diabetes, autoimmune disorders</li>
-              </ul>`
+                <li>Higher rates of autoimmune disorders</li>
+                <li>Cardiovascular disease and hypertension</li>
+                <li>Chronic pain conditions (fibromyalgia, chronic fatigue)</li>
+                <li>Gastrointestinal problems (IBS, ulcers)</li>
+                <li>Sleep disorders</li>
+                <li>Headaches and migraines</li>
+              </ul>
+              <p><strong>Somatic Symptoms:</strong></p>
+              <ul>
+                <li>Chronic muscle tension</li>
+                <li>Difficulty breathing or throat constriction</li>
+                <li>Digestive disturbances</li>
+                <li>Unexplained physical sensations</li>
+                <li>Dissociation from bodily experience</li>
+              </ul>
+              <p><strong>Clinical Implication:</strong> Trauma treatment must address the body, not just thoughts and emotions. Body-based approaches (somatic experiencing, yoga, breathwork) are essential components of comprehensive trauma care.</p>`
             },
             {
-              title: "Trauma Responses Are Adaptations, Not Pathology",
-              content: `<p>A trauma-informed perspective reframes symptoms as <strong>survival adaptations</strong>:</p>
-              <p><strong>Hypervigilance</strong> = The brain learned to scan for danger to stay safe</p>
-              <p><strong>Avoidance</strong> = Protection from overwhelming emotions or triggers</p>
-              <p><strong>Dissociation</strong> = The mind's way of escaping unbearable experiences</p>
-              <p><strong>Difficulty trusting</strong> = Learned response when trust was violated</p>
-              <p><strong>Emotional dysregulation</strong> = Nervous system overwhelm, not character flaw</p>
-              <p>This reframe reduces shame and helps clients understand their responses make sense given what they experienced.</p>`
+              title: "Windows of Tolerance: Understanding Arousal States",
+              content: `<p>Dan Siegel's concept of the "Window of Tolerance" describes the zone of arousal within which a person can function effectively. Trauma narrows this window, making it easier to become dysregulated.</p>
+              <p><strong>Within the Window of Tolerance:</strong></p>
+              <ul>
+                <li>Able to think clearly and problem-solve</li>
+                <li>Emotions are manageable</li>
+                <li>Can engage socially and relationally</li>
+                <li>Body feels relatively calm and regulated</li>
+                <li>Present-focused and grounded</li>
+              </ul>
+              <p><strong>Hyperarousal (Above the Window):</strong></p>
+              <ul>
+                <li>Anxiety, panic, racing thoughts</li>
+                <li>Hypervigilance, easily startled</li>
+                <li>Anger, irritability, aggression</li>
+                <li>Physical tension, rapid heartbeat</li>
+                <li>Difficulty sitting still, racing speech</li>
+                <li>Associated with fight or flight response</li>
+              </ul>
+              <p><strong>Hypoarousal (Below the Window):</strong></p>
+              <ul>
+                <li>Numbness, disconnection, dissociation</li>
+                <li>Flat affect, minimal emotional response</li>
+                <li>Fatigue, exhaustion, "shutting down"</li>
+                <li>Difficulty thinking, foggy mind</li>
+                <li>Feeling frozen or collapsed</li>
+                <li>Associated with freeze or collapse response</li>
+              </ul>
+              <p><strong>Trauma Impact:</strong> Trauma survivors often have a very narrow window of tolerance, oscillating rapidly between hyper- and hypoarousal with little middle ground. Treatment aims to widen the window and build capacity to return to regulated states.</p>`
             }
           ]
         },
@@ -206,6 +364,14 @@ const traumaInformedCareCourse = {
             { text: "Vicarious trauma (experienced by helpers)", isCorrect: true }
           ],
           explanation: "Trauma types include acute, chronic, complex, developmental, historical/intergenerational, and vicarious trauma. Each has distinct characteristics and treatment implications."
+        },
+        {
+          type: "reflection",
+          order: 7,
+          title: "Clinical Reflection: Trauma Prevalence in Your Practice",
+          prompt: "Consider your current caseload or clinical population. What types of trauma are most common among your clients? How might the high prevalence of trauma (70% of adults) change how you approach intake assessments and treatment planning?",
+          placeholder: "Reflect on how trauma prevalence impacts your clinical work...",
+          minLength: 100
         }
       ],
       hasQuiz: true,
@@ -280,76 +446,113 @@ const traumaInformedCareCourse = {
                 <li>Validating and non-judgmental responses</li>
                 <li>Freedom from shaming, blaming, or coercion</li>
               </ul>
-              <p><strong>Clinical Application:</strong> Begin each session by checking in about safety. Use language like "I want to make sure you feel safe here. Is there anything I can do to help with that?"</p>`
+              <p><strong>Clinical Application:</strong> Begin each session by checking in about safety. Use language like "I want to make sure you feel safe here. Is there anything I can do to help with that?" Be attentive to subtle signs of discomfort—shifts in body posture, changes in eye contact, voice changes—that may indicate the client is feeling unsafe even if they don't verbalize it.</p>`
             },
             {
               title: "2. TRUSTWORTHINESS AND TRANSPARENCY",
               content: `<p><strong>Building and maintaining trust through honest, consistent communication.</strong></p>
-              <p>Trauma often involves betrayal of trust. Rebuilding trust requires intentional effort and consistency over time.</p>
+              <p>Trauma often involves betrayal of trust—by caregivers, institutions, or society. Survivors may expect to be let down, lied to, or exploited. Rebuilding trust requires intentional effort, consistency over time, and tolerance for the testing that often occurs.</p>
               <p><strong>Key Practices:</strong></p>
               <ul>
-                <li>Be clear about what you can and cannot offer</li>
-                <li>Explain processes, policies, and decisions openly</li>
-                <li>Follow through on commitments</li>
-                <li>Acknowledge mistakes and repair ruptures</li>
-                <li>Maintain appropriate boundaries consistently</li>
+                <li>Be clear about what you can and cannot offer—avoid overpromising</li>
+                <li>Explain processes, policies, and decisions openly—no hidden agendas</li>
+                <li>Follow through on commitments—do what you say you'll do</li>
+                <li>Acknowledge mistakes honestly and work to repair ruptures</li>
+                <li>Maintain appropriate boundaries consistently—predictability builds trust</li>
+                <li>Be transparent about the rationale for clinical decisions</li>
+                <li>Prepare clients for what to expect in treatment</li>
               </ul>
-              <p><strong>Clinical Application:</strong> Explain informed consent thoroughly. Be transparent about session structure, confidentiality limits, and what to expect. If you need to cancel, reschedule, or change something, communicate proactively and honestly.</p>`
+              <p><strong>Clinical Application:</strong> Explain informed consent thoroughly at intake. Be transparent about session structure, confidentiality limits, and what to expect from treatment. If you need to cancel, reschedule, or change something, communicate proactively and honestly. When ruptures occur (and they will), address them directly: "I noticed you seemed upset when I said that. Can we talk about what happened?"</p>
+              <p><strong>Remember:</strong> Trust is built in small moments over time. Every interaction either builds or erodes trust.</p>`
             },
             {
               title: "3. PEER SUPPORT",
               content: `<p><strong>The healing power of shared experience.</strong></p>
-              <p>Connection with others who have "been there" provides unique validation and hope. Peer support demonstrates that recovery is possible.</p>
+              <p>Connection with others who have "been there" provides unique validation, understanding, and hope that professional support cannot fully replicate. Peer support demonstrates that recovery is possible because peers embody living proof.</p>
               <p><strong>Benefits of Peer Support:</strong></p>
               <ul>
-                <li>Reduces isolation and shame</li>
-                <li>Provides hope through lived example</li>
-                <li>Offers practical wisdom from experience</li>
-                <li>Creates community and belonging</li>
+                <li><strong>Reduces isolation and shame:</strong> "I'm not the only one" is profoundly healing</li>
+                <li><strong>Provides hope through lived example:</strong> Seeing others recover makes recovery imaginable</li>
+                <li><strong>Offers practical wisdom from experience:</strong> Strategies that worked for people who really understand</li>
+                <li><strong>Creates community and belonging:</strong> A tribe of people who "get it"</li>
+                <li><strong>Shifts identity:</strong> From "patient" to someone with valuable experience to share</li>
               </ul>
-              <p><strong>Clinical Application:</strong> Consider referring to support groups, peer specialists, or recovery communities. Validate the importance of connection while respecting client choice about disclosure.</p>`
+              <p><strong>Forms of Peer Support:</strong></p>
+              <ul>
+                <li>Support groups (trauma-specific, general mental health)</li>
+                <li>12-step and other recovery programs</li>
+                <li>Peer specialists and peer counselors</li>
+                <li>Online communities and forums</li>
+                <li>Survivor advocacy organizations</li>
+              </ul>
+              <p><strong>Clinical Application:</strong> Assess interest in peer support and make appropriate referrals. Integrate peer support as a complement to professional treatment, not a replacement. Respect client autonomy about when and how much to share their story.</p>`
             },
             {
               title: "4. COLLABORATION AND MUTUALITY",
               content: `<p><strong>Leveling power differences and partnering in the healing process.</strong></p>
-              <p>Trauma often involves power imbalances and loss of control. The therapeutic relationship should model healthy power-sharing.</p>
+              <p>Trauma often involves power imbalances and loss of control. The therapeutic relationship should model healthy power-sharing, not replicate the power dynamics of traumatic relationships.</p>
               <p><strong>Key Practices:</strong></p>
               <ul>
-                <li>Position yourself as partner, not expert</li>
-                <li>Value client expertise about their own life</li>
-                <li>Involve clients in treatment planning</li>
-                <li>Share decision-making genuinely</li>
-                <li>Acknowledge the power inherent in your role</li>
+                <li><strong>Position yourself as partner, not expert:</strong> The client is the expert on their own life</li>
+                <li><strong>Value client expertise:</strong> They know their history, values, and what has and hasn't worked</li>
+                <li><strong>Involve clients in treatment planning:</strong> Collaboratively set goals and choose approaches</li>
+                <li><strong>Share decision-making genuinely:</strong> Not just asking for input then doing what you planned anyway</li>
+                <li><strong>Acknowledge the power inherent in your role:</strong> Don't pretend you're equals—but minimize power differential where possible</li>
+                <li><strong>Be humble:</strong> You don't have all the answers; the client may know things you don't</li>
               </ul>
-              <p><strong>Clinical Application:</strong> Ask "What would be most helpful for you today?" rather than imposing an agenda. When recommending interventions, explain options and invite the client to choose.</p>`
+              <p><strong>Language of Collaboration:</strong></p>
+              <ul>
+                <li>"What would be most helpful for you today?" (vs. "Today we're going to...")</li>
+                <li>"What do you think about...?" (vs. "You should...")</li>
+                <li>"I have some ideas, but I'd like to hear your thoughts first"</li>
+                <li>"Does this make sense to you? Does it fit your experience?"</li>
+              </ul>
+              <p><strong>Clinical Application:</strong> Check in regularly about whether the approach is working. Be genuinely open to feedback and course correction. When recommending interventions, explain options and invite the client to choose based on what fits for them.</p>`
             },
             {
               title: "5. EMPOWERMENT, VOICE, AND CHOICE",
               content: `<p><strong>Restoring agency and self-determination.</strong></p>
-              <p>Trauma takes away choice and control. Treatment should restore both by recognizing strengths and supporting autonomy.</p>
+              <p>Trauma takes away choice and control. Survivors often feel helpless, voiceless, and at the mercy of others. Treatment should restore both by recognizing strengths, supporting autonomy, and maximizing opportunities for choice.</p>
               <p><strong>Key Practices:</strong></p>
               <ul>
-                <li>Recognize and build on client strengths</li>
-                <li>Offer choices whenever possible</li>
-                <li>Support self-advocacy skills</li>
-                <li>Celebrate small victories and progress</li>
-                <li>Avoid doing for clients what they can do themselves</li>
+                <li><strong>Recognize and build on client strengths:</strong> Everyone has survived something; identify the skills that got them here</li>
+                <li><strong>Offer choices whenever possible:</strong> Where to sit, what to discuss, how to proceed, when to take breaks</li>
+                <li><strong>Support self-advocacy skills:</strong> Help clients practice speaking up for themselves</li>
+                <li><strong>Celebrate small victories and progress:</strong> Notice and name growth, even small steps</li>
+                <li><strong>Avoid doing for clients what they can do themselves:</strong> Support autonomy even when it would be faster to do it for them</li>
+                <li><strong>Help clients find their voice:</strong> Encourage expression and support them in being heard</li>
               </ul>
-              <p><strong>Clinical Application:</strong> Instead of "We need to work on your anxiety," try "What feels most important for you to focus on?" Offer choices: "Would you prefer to start with grounding or check in about the week?"</p>`
+              <p><strong>Examples of Offering Choice:</strong></p>
+              <ul>
+                <li>"Would you prefer to start with grounding or check in about the week?"</li>
+                <li>"We could continue with this topic or shift to something else—what feels right?"</li>
+                <li>"Would you like to sit here or over there?"</li>
+                <li>"Is it okay if I ask about that, or would you rather not go there today?"</li>
+              </ul>
+              <p><strong>Clinical Application:</strong> Start by asking what the client wants to work on rather than imposing an agenda. When they seem stuck, ask "What do you need right now?" rather than prescribing a solution. Reflect back their strengths: "You've been through so much and you're still here. What has helped you survive?"</p>`
             },
             {
               title: "6. CULTURAL, HISTORICAL, AND GENDER ISSUES",
-              content: `<p><strong>Recognizing the role of culture and historical context in trauma.</strong></p>
-              <p>Trauma does not occur in a vacuum. Culture shapes how trauma is experienced, expressed, and healed. Historical trauma affects entire communities across generations.</p>
+              content: `<p><strong>Recognizing the role of culture, history, and context in trauma.</strong></p>
+              <p>Trauma does not occur in a vacuum. Culture shapes how trauma is experienced, expressed, coped with, and healed. Historical trauma affects entire communities across generations. Gender influences both exposure to certain traumas and how responses are perceived and treated.</p>
               <p><strong>Key Practices:</strong></p>
               <ul>
-                <li>Recognize your own cultural biases and assumptions</li>
-                <li>Understand how culture affects trauma expression</li>
-                <li>Acknowledge historical and ongoing systemic trauma</li>
-                <li>Adapt approaches to be culturally responsive</li>
-                <li>Avoid pathologizing cultural differences</li>
+                <li><strong>Recognize your own cultural biases:</strong> Your assumptions about "normal" trauma responses may be culturally specific</li>
+                <li><strong>Understand how culture affects trauma expression:</strong> Somatization, spiritual interpretations, collective vs. individual focus</li>
+                <li><strong>Acknowledge historical and ongoing systemic trauma:</strong> Racism, colonization, displacement, persecution</li>
+                <li><strong>Adapt approaches to be culturally responsive:</strong> One size does not fit all</li>
+                <li><strong>Avoid pathologizing cultural differences:</strong> What looks like "symptoms" may be culturally appropriate responses</li>
+                <li><strong>Consider intersectionality:</strong> Multiple identities interact to shape trauma experience</li>
               </ul>
-              <p><strong>Clinical Application:</strong> Ask about cultural background and how it influences the client's understanding of their experiences. Be aware of how historical trauma (racism, colonization, displacement) may compound individual trauma.</p>`
+              <p><strong>Historical Trauma Considerations:</strong></p>
+              <ul>
+                <li>Indigenous peoples: Colonization, forced assimilation, residential schools</li>
+                <li>African Americans: Slavery, Jim Crow, ongoing racism and police violence</li>
+                <li>Holocaust survivors and descendants</li>
+                <li>Refugees and immigrants: Displacement, loss of homeland and culture</li>
+                <li>LGBTQ+ communities: Historical and ongoing discrimination and violence</li>
+              </ul>
+              <p><strong>Clinical Application:</strong> Ask about cultural background and how it influences the client's understanding of their experiences. Be curious rather than assuming. Acknowledge the impact of systemic oppression on mental health. Use culturally adapted evidence-based treatments when available.</p>`
             }
           ]
         },
@@ -390,6 +593,14 @@ const traumaInformedCareCourse = {
             { text: "Collaboration", isCorrect: false }
           ],
           explanation: "Safety (both physical and emotional) is the foundational principle. Without a sense of safety, trauma survivors cannot engage in the healing process."
+        },
+        {
+          type: "reflection",
+          order: 7,
+          title: "Clinical Reflection: Implementing the Six Principles",
+          prompt: "Choose one of SAMHSA's six principles that you feel you could strengthen in your practice. What specific changes would you make to your office environment, intake process, or session structure to better embody this principle?",
+          placeholder: "Reflect on how you can better implement trauma-informed principles...",
+          minLength: 100
         }
       ],
       hasQuiz: true,
@@ -439,9 +650,17 @@ const traumaInformedCareCourse = {
           type: "text",
           order: 2,
           textContent: `<h3>Why Safety Must Come First</h3>
-          <p>Judith Herman's seminal work identified <strong>safety as the first stage of trauma recovery</strong>. Without establishing safety, deeper trauma processing can be harmful and re-traumatizing.</p>
-          <p>For trauma survivors, the nervous system is often stuck in survival mode — constantly scanning for threat. Creating safety helps the nervous system downregulate, enabling access to the "thinking brain" necessary for therapeutic work.</p>
-          <p>Safety is not just about the absence of threat; it's about the <strong>active presence of signals that communicate "you are safe here."</strong></p>`
+          <p>Judith Herman's seminal work identified <strong>safety as the first stage of trauma recovery</strong>. Without establishing safety, deeper trauma processing can be harmful and re-traumatizing. This is not merely a clinical guideline—it reflects fundamental neurobiology.</p>
+          <p>For trauma survivors, the nervous system is often stuck in survival mode—constantly scanning for threat, ready to fight, flee, or freeze. The amygdala is hyperactive, the stress response system is dysregulated, and the prefrontal cortex (necessary for reflection, learning, and change) is suppressed.</p>
+          <p>Creating safety helps the nervous system downregulate from this hypervigilant state, enabling access to the "thinking brain" necessary for therapeutic work. Without this foundation, any intervention risks overwhelming the client rather than healing them.</p>
+          <p><strong>Key Insight:</strong> Safety is not just about the absence of threat; it's about the <strong>active presence of signals that communicate "you are safe here."</strong> In polyvagal terms, we need to activate the client's social engagement system through cues of safety.</p>
+          <p>Safety exists on multiple levels that all require attention:</p>
+          <ul>
+            <li><strong>Physical safety:</strong> The environment, space, and bodies</li>
+            <li><strong>Emotional safety:</strong> Relationships, interactions, and responses</li>
+            <li><strong>Predictability and control:</strong> Knowing what to expect and having choices</li>
+            <li><strong>Relational safety:</strong> The therapeutic relationship itself</li>
+          </ul>`
         },
         {
           type: "accordion",
@@ -449,21 +668,32 @@ const traumaInformedCareCourse = {
           accordionItems: [
             {
               title: "Physical Environment Safety",
-              content: `<p><strong>Office/Space Considerations:</strong></p>
+              content: `<p>The physical environment sends powerful signals about safety that are processed subconsciously. Pay attention to every detail of the space.</p>
+              <p><strong>Office/Space Considerations:</strong></p>
               <ul>
-                <li>Clear sightlines to exits — don't block doors</li>
-                <li>Adequate lighting (not harsh, not too dim)</li>
-                <li>Comfortable seating with options (distance from clinician, where to sit)</li>
-                <li>Minimal clutter and visual chaos</li>
-                <li>Temperature control and comfort</li>
-                <li>Privacy — soundproofing, no interruptions</li>
-                <li>Consider sensory elements (calming colors, plants, minimal strong scents)</li>
+                <li><strong>Clear sightlines to exits:</strong> Never position yourself between the client and the door. Trauma survivors need to know they can leave.</li>
+                <li><strong>Adequate lighting:</strong> Not harsh (anxiety-provoking) or too dim (can feel unsafe or triggering)</li>
+                <li><strong>Comfortable seating with options:</strong> Let clients choose where to sit, how close to you, whether to face you directly</li>
+                <li><strong>Minimal clutter:</strong> Visual chaos can increase anxiety; organized space communicates stability</li>
+                <li><strong>Temperature control:</strong> A cold room activates the stress response</li>
+                <li><strong>Privacy:</strong> Soundproofing so conversations can't be overheard; no interruptions</li>
+                <li><strong>Sensory considerations:</strong> Calming colors, plants, no strong scents (can be triggering)</li>
+                <li><strong>Personal items:</strong> Some personalizing can help clients see you as human and trustworthy</li>
               </ul>
               <p><strong>Waiting Area:</strong></p>
               <ul>
-                <li>Comfortable and welcoming</li>
-                <li>Clear signage and expectations</li>
-                <li>Staff interactions are warm and respectful</li>
+                <li>Comfortable and welcoming atmosphere</li>
+                <li>Clear signage and expectations about process</li>
+                <li>Staff interactions are warm, patient, and respectful</li>
+                <li>Magazines and reading material that aren't triggering</li>
+                <li>Not too crowded or chaotic</li>
+              </ul>
+              <p><strong>Telehealth Considerations:</strong></p>
+              <ul>
+                <li>Ensure client has private space for sessions</li>
+                <li>Discuss what to do if someone walks in</li>
+                <li>Have backup communication method if tech fails</li>
+                <li>Your background should be professional and non-distracting</li>
               </ul>`
             },
             {
@@ -565,6 +795,14 @@ const traumaInformedCareCourse = {
             { text: "Surprising the client to test their reactions", isCorrect: false }
           ],
           explanation: "Physical safety includes clear exits, comfortable options, and appropriate lighting. Blocking exits or surprising clients would undermine safety."
+        },
+        {
+          type: "reflection",
+          order: 6,
+          title: "Clinical Reflection: Assessing Your Environment",
+          prompt: "Walk through your clinical space (physically or mentally). What elements promote safety and comfort? What might inadvertently trigger or re-traumatize clients? Identify one concrete change you could make to enhance the trauma-informed quality of your environment.",
+          placeholder: "Reflect on your clinical environment and potential improvements...",
+          minLength: 100
         }
       ],
       hasQuiz: true,
@@ -614,14 +852,24 @@ const traumaInformedCareCourse = {
           type: "text",
           order: 2,
           textContent: `<h3>What is Re-traumatization?</h3>
-          <p>Re-traumatization occurs when a person who has experienced trauma is exposed to situations that replicate the dynamics, power imbalances, or feelings of the original trauma. It can be triggered by:</p>
+          <p>Re-traumatization occurs when a person who has experienced trauma is exposed to situations that replicate the dynamics, power imbalances, or feelings of the original trauma. Unlike a "trigger" (which reminds someone of trauma), re-traumatization actually causes new psychological injury by repeating the traumatic dynamic.</p>
+          <p><strong>Re-traumatization can be caused by:</strong></p>
           <ul>
-            <li>Direct actions (coercion, violation of boundaries)</li>
-            <li>Environmental factors (institutional settings that feel unsafe)</li>
-            <li>Relational dynamics (power imbalances, betrayal of trust)</li>
-            <li>Clinical practices (forced disclosure, overwhelming processing)</li>
+            <li><strong>Direct actions:</strong> Coercion, violation of boundaries, use of restraints or seclusion, forced treatment</li>
+            <li><strong>Environmental factors:</strong> Institutional settings that feel like captivity, lack of privacy, chaotic or unpredictable environments</li>
+            <li><strong>Relational dynamics:</strong> Power imbalances that mirror abusive relationships, betrayal of trust, minimizing or dismissing experiences</li>
+            <li><strong>Clinical practices:</strong> Forced disclosure of trauma details, overwhelming processing before stabilization, rigid rules without explanation</li>
+            <li><strong>Systemic issues:</strong> Having to retell trauma story repeatedly to different providers, bureaucratic barriers to care, lack of trauma-informed policies</li>
           </ul>
-          <p><strong>The goal of trauma-informed care is not just to treat trauma but to avoid causing additional harm.</strong></p>`
+          <p><strong>Why Re-traumatization is So Harmful:</strong></p>
+          <ul>
+            <li>Reinforces beliefs that the world is unsafe and others cannot be trusted</li>
+            <li>Confirms fears that help-seeking is dangerous</li>
+            <li>Can cause new trauma symptoms or exacerbate existing ones</li>
+            <li>Damages the therapeutic relationship and future willingness to seek help</li>
+            <li>Can lead to dropout from treatment</li>
+          </ul>
+          <p><strong>The Imperative:</strong> Every clinician must be able to recognize practices that risk re-traumatization and have alternatives ready. The goal is not just to treat trauma but to avoid causing additional harm.</p>`
         },
         {
           type: "accordion",
@@ -736,6 +984,14 @@ const traumaInformedCareCourse = {
             { text: "Checking in about the client's comfort level", isCorrect: false }
           ],
           explanation: "Forcing trauma disclosure before a client is ready can replicate the loss of control and violation of boundaries that occurred during the original trauma."
+        },
+        {
+          type: "reflection",
+          order: 6,
+          title: "Clinical Reflection: Avoiding Re-traumatization",
+          prompt: "Think about your current clinical practices. Are there any that might inadvertently re-traumatize clients—even standard practices like requiring detailed intake histories? How might you modify your approach to be more sensitive to the potential for re-traumatization?",
+          placeholder: "Reflect on how you can modify practices to prevent re-traumatization...",
+          minLength: 100
         }
       ],
       hasQuiz: true,
@@ -784,14 +1040,22 @@ const traumaInformedCareCourse = {
         {
           type: "text",
           order: 2,
-          textContent: `<h3>Stabilization Before Processing</h3>
-          <p>Trauma treatment follows a phase-based approach. Judith Herman identified three stages:</p>
+          textContent: `<h3>Stabilization Before Processing: The Phase-Based Approach</h3>
+          <p>Effective trauma treatment follows a phase-based approach. Rushing to trauma processing without adequate stabilization is one of the most common mistakes clinicians make—and one of the most harmful. Judith Herman's three-stage model provides the foundational framework:</p>
           <ol>
-            <li><strong>Stage 1: Safety and Stabilization</strong> — Establishing safety, building coping skills, regulating the nervous system</li>
-            <li><strong>Stage 2: Remembrance and Mourning</strong> — Processing traumatic memories, grief work</li>
-            <li><strong>Stage 3: Reconnection</strong> — Rebuilding life, relationships, and meaning</li>
+            <li><strong>Stage 1: Safety and Stabilization</strong> — Establishing physical and emotional safety, building coping skills and distress tolerance, regulating the nervous system, strengthening the therapeutic alliance, addressing immediate crises, and developing resources for managing trauma-related symptoms.</li>
+            <li><strong>Stage 2: Remembrance and Mourning</strong> — Processing traumatic memories using evidence-based approaches, integrating fragmented experiences, grieving losses associated with trauma, challenging trauma-related beliefs, and developing a coherent trauma narrative.</li>
+            <li><strong>Stage 3: Reconnection</strong> — Rebuilding life and relationships, developing a future orientation, finding meaning and purpose, engaging more fully with the world, and integrating trauma into one's identity without being defined by it.</li>
           </ol>
-          <p><strong>Critical Point:</strong> Many clinicians rush to Stage 2 before adequate Stage 1 work. This can overwhelm clients and cause setbacks. Stabilization is not "just preparation" — it is treatment.</p>`
+          <p><strong>Critical Clinical Point:</strong> Many clinicians—often under pressure from managed care or their own discomfort with "slow" progress—rush to Stage 2 before clients have adequate Stage 1 skills. This frequently leads to:</p>
+          <ul>
+            <li>Overwhelming flooding rather than therapeutic processing</li>
+            <li>Increased symptoms and decompensation</li>
+            <li>Dropout from treatment</li>
+            <li>Reinforcement of beliefs that they "can't handle" their experiences</li>
+            <li>Re-traumatization rather than healing</li>
+          </ul>
+          <p><strong>Remember:</strong> Stabilization is not "just preparation"—it IS treatment. Many clients achieve significant improvement through Stage 1 work alone and may choose not to pursue explicit trauma processing.</p>`
         },
         {
           type: "accordion",
@@ -855,21 +1119,47 @@ const traumaInformedCareCourse = {
             },
             {
               title: "Evidence-Based Trauma Treatments",
-              content: `<p><strong>First-Line Treatments for PTSD (strong research support):</strong></p>
+              content: `<p><strong>First-Line Treatments for PTSD (Strong Research Support):</strong></p>
+              <p><strong>Prolonged Exposure (PE):</strong></p>
               <ul>
-                <li><strong>Prolonged Exposure (PE):</strong> Gradual, repeated exposure to trauma memories and avoided situations</li>
-                <li><strong>Cognitive Processing Therapy (CPT):</strong> Addresses trauma-related beliefs ("stuck points")</li>
-                <li><strong>EMDR:</strong> Bilateral stimulation during trauma memory processing</li>
-                <li><strong>Trauma-Focused CBT:</strong> Especially for children; includes parent component</li>
+                <li>Developed by Edna Foa</li>
+                <li>Based on emotional processing theory</li>
+                <li>Includes imaginal exposure (revisiting trauma memory in session) and in vivo exposure (confronting avoided situations)</li>
+                <li>8-15 sessions typically</li>
+                <li>Strong evidence base, particularly for single-incident trauma</li>
               </ul>
-              <p><strong>Other Approaches with Research Support:</strong></p>
+              <p><strong>Cognitive Processing Therapy (CPT):</strong></p>
               <ul>
-                <li>Narrative Exposure Therapy (NET)</li>
-                <li>Somatic Experiencing (SE)</li>
-                <li>Sensorimotor Psychotherapy</li>
-                <li>Internal Family Systems (IFS)</li>
+                <li>Developed by Patricia Resick</li>
+                <li>Focuses on trauma-related cognitions ("stuck points")</li>
+                <li>Uses worksheets to identify and challenge unhelpful beliefs about safety, trust, power, esteem, and intimacy</li>
+                <li>12 sessions typically</li>
+                <li>Can be done with or without written trauma account</li>
               </ul>
-              <p><strong>Remember:</strong> No single approach works for everyone. Match treatment to client needs, preferences, and readiness.</p>`
+              <p><strong>Eye Movement Desensitization and Reprocessing (EMDR):</strong></p>
+              <ul>
+                <li>Developed by Francine Shapiro</li>
+                <li>Uses bilateral stimulation (eye movements, tapping, or tones) during trauma memory processing</li>
+                <li>Based on Adaptive Information Processing model</li>
+                <li>8-phase protocol</li>
+                <li>Requires specialized training</li>
+              </ul>
+              <p><strong>Trauma-Focused Cognitive Behavioral Therapy (TF-CBT):</strong></p>
+              <ul>
+                <li>Developed specifically for children and adolescents</li>
+                <li>Includes parallel parent component</li>
+                <li>PRACTICE components: Psychoeducation, Relaxation, Affect regulation, Cognitive coping, Trauma narrative, In vivo mastery, Conjoint sessions, Enhancing safety</li>
+                <li>12-25 sessions typically</li>
+              </ul>
+              <p><strong>Other Evidence-Based Approaches:</strong></p>
+              <ul>
+                <li><strong>Narrative Exposure Therapy (NET):</strong> Particularly effective for multiple/complex trauma and refugees</li>
+                <li><strong>Somatic Experiencing (SE):</strong> Body-based approach developed by Peter Levine; focuses on completing incomplete defensive responses</li>
+                <li><strong>Sensorimotor Psychotherapy:</strong> Integrates body-based and cognitive approaches</li>
+                <li><strong>Internal Family Systems (IFS):</strong> Works with "parts" of the self, including traumatized and protective parts</li>
+                <li><strong>Skills Training in Affective and Interpersonal Regulation (STAIR):</strong> Particularly for complex trauma; can be used as precursor to narrative work</li>
+              </ul>
+              <p><strong>Remember:</strong> No single approach works for everyone. Match treatment to client needs, preferences, cultural background, and readiness. Client choice and collaboration are essential.</p>`
             },
             {
               title: "When to Refer",
@@ -946,6 +1236,14 @@ const traumaInformedCareCourse = {
             { text: "Family involvement", isCorrect: false }
           ],
           explanation: "Herman's model emphasizes that Stage 1 (Safety and Stabilization) must be established before moving to Stage 2 (Processing). Skipping this can overwhelm clients."
+        },
+        {
+          type: "reflection",
+          order: 7,
+          title: "Clinical Reflection: Your Trauma-Informed Care Action Plan",
+          prompt: "As you complete this course, identify your top three takeaways that will change your practice. What specific steps will you take in the next week, month, and quarter to implement trauma-informed care more fully? How will you address your own self-care to prevent vicarious trauma?",
+          placeholder: "Reflect on your action plan for implementing trauma-informed care...",
+          minLength: 150
         }
       ],
       hasQuiz: true,
