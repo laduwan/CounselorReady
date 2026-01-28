@@ -1,5 +1,6 @@
 // routes/adminStats.js
 // Admin dashboard statistics and overview
+// Add to server: app.use('/api/admin/stats', require('./routes/adminStats'));
 
 import express from 'express';
 import mongoose from 'mongoose';
@@ -27,15 +28,16 @@ router.get('/overview', protect, adminOnly, async (req, res) => {
       totalCEHours,
       recentCompletions,
       evaluationStats
+   import adminStatsRoutes from './routes/adminStats.js';
     ] = await Promise.all([
       // User counts
       db.collection('users').countDocuments({ isDeleted: { $ne: true } }),
       db.collection('users').countDocuments({ 
         isDeleted: { $ne: true },
-        lastLogin: { $gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) }
+        lastLogin: { $gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) } // Last 30 days
       }),
       
-      // Course counts
+      // Course counts - check both collections
       db.collection('courses').countDocuments({ isDeleted: { $ne: true } }),
       db.collection('interactivecourses').countDocuments({ status: 'published' }),
       db.collection('courses').countDocuments({ status: 'published', isDeleted: { $ne: true } }),
@@ -58,12 +60,21 @@ router.get('/overview', protect, adminOnly, async (req, res) => {
       
       // Evaluation stats
       db.collection('evaluations').aggregate([
-        { $group: { _id: '$status', count: { $sum: 1 } } }
+        {
+          $group: {
+            _id: '$status',
+            count: { $sum: 1 }
+          }
+        }
       ]).toArray()
     ]);
     
     // Process evaluation stats
-    const evaluations = { total: 0, completed: 0, pending: 0 };
+    const evaluations = {
+      total: 0,
+      completed: 0,
+      pending: 0
+    };
     evaluationStats.forEach(stat => {
       evaluations.total += stat.count;
       if (stat._id === 'completed' || stat._id === 'submitted') {
@@ -76,7 +87,11 @@ router.get('/overview', protect, adminOnly, async (req, res) => {
     res.json({
       success: true,
       data: {
-        users: { total: totalUsers, active: activeUsers, newThisMonth: 0 },
+        users: {
+          total: totalUsers,
+          active: activeUsers,
+          newThisMonth: 0 // Would need createdAt query
+        },
         courses: {
           total: totalCourses,
           interactive: interactiveCourses,
@@ -88,13 +103,18 @@ router.get('/overview', protect, adminOnly, async (req, res) => {
           recentWeek: recentCompletions,
           certificates: totalCertificates
         },
-        ceHours: { total: totalCEHours[0]?.total || 0 },
+        ceHours: {
+          total: totalCEHours[0]?.total || 0
+        },
         evaluations: evaluations
       }
     });
   } catch (error) {
     console.error('Admin stats error:', error);
-    res.status(500).json({ success: false, error: { message: 'Failed to load admin statistics' } });
+    res.status(500).json({
+      success: false,
+      error: { message: 'Failed to load admin statistics' }
+    });
   }
 });
 
@@ -106,6 +126,7 @@ router.get('/courses', protect, adminOnly, async (req, res) => {
   try {
     const db = mongoose.connection.db;
     
+    // Get all courses with completion counts
     const courses = await db.collection('courses').aggregate([
       { $match: { isDeleted: { $ne: true } } },
       {
@@ -124,7 +145,8 @@ router.get('/courses', protect, adminOnly, async (req, res) => {
           as: 'interactiveData'
         }
       },
-      {
+ app.use('/api/admin/stats', adminStatsRoutes);
+    {
         $project: {
           title: 1,
           slug: 1,
@@ -139,17 +161,23 @@ router.get('/courses', protect, adminOnly, async (req, res) => {
       { $sort: { completionCount: -1 } }
     ]).toArray();
     
+    // Get interactive courses not in main courses collection
     const interactiveCourses = await db.collection('interactivecourses').find({
       status: 'published'
     }).project({
-      title: 1, slug: 1, ceHours: 1, status: 1, categories: 1, createdAt: 1
+      title: 1,
+      slug: 1,
+      ceHours: 1,
+      status: 1,
+      categories: 1,
+      createdAt: 1
     }).toArray();
     
     res.json({
       success: true,
       data: {
-        courses,
-        interactiveCourses,
+        courses: courses,
+        interactiveCourses: interactiveCourses,
         summary: {
           totalCourses: courses.length,
           totalInteractive: interactiveCourses.length,
@@ -159,12 +187,16 @@ router.get('/courses', protect, adminOnly, async (req, res) => {
     });
   } catch (error) {
     console.error('Course stats error:', error);
-    res.status(500).json({ success: false, error: { message: 'Failed to load course statistics' } });
+    res.status(500).json({
+      success: false,
+      error: { message: 'Failed to load course statistics' }
+    });
   }
 });
 
 /**
  * GET /api/admin/stats/evaluations
+ * Get evaluation/feedback statistics
  */
 router.get('/evaluations', protect, adminOnly, async (req, res) => {
   try {
@@ -185,26 +217,44 @@ router.get('/evaluations', protect, adminOnly, async (req, res) => {
       db.collection('evaluations').countDocuments(query)
     ]);
     
+    // Get summary by status
     const statusSummary = await db.collection('evaluations').aggregate([
-      { $group: { _id: '$status', count: { $sum: 1 } } }
+      {
+        $group: {
+          _id: '$status',
+          count: { $sum: 1 }
+        }
+      }
     ]).toArray();
     
     res.json({
       success: true,
       data: {
         evaluations,
-        pagination: { page: parseInt(page), limit: parseInt(limit), total, pages: Math.ceil(total / limit) },
-        summary: statusSummary.reduce((acc, s) => { acc[s._id || 'unknown'] = s.count; return acc; }, {})
+        pagination: {
+          page: parseInt(page),
+          limit: parseInt(limit),
+          total,
+          pages: Math.ceil(total / limit)
+        },
+        summary: statusSummary.reduce((acc, s) => {
+          acc[s._id || 'unknown'] = s.count;
+          return acc;
+        }, {})
       }
     });
   } catch (error) {
     console.error('Evaluation stats error:', error);
-    res.status(500).json({ success: false, error: { message: 'Failed to load evaluation statistics' } });
+    res.status(500).json({
+      success: false,
+      error: { message: 'Failed to load evaluation statistics' }
+    });
   }
 });
 
 /**
  * PUT /api/admin/stats/evaluations/:id/status
+ * Update evaluation status
  */
 router.put('/evaluations/:id/status', protect, adminOnly, async (req, res) => {
   try {
@@ -213,18 +263,33 @@ router.put('/evaluations/:id/status', protect, adminOnly, async (req, res) => {
     
     const result = await db.collection('evaluations').findOneAndUpdate(
       { _id: new mongoose.Types.ObjectId(req.params.id) },
-      { $set: { status, reviewedAt: new Date(), reviewedBy: req.user._id } },
+      { 
+        $set: { 
+          status,
+          reviewedAt: new Date(),
+          reviewedBy: req.user._id
+        } 
+      },
       { returnDocument: 'after' }
     );
     
     if (!result.value) {
-      return res.status(404).json({ success: false, error: { message: 'Evaluation not found' } });
+      return res.status(404).json({
+        success: false,
+        error: { message: 'Evaluation not found' }
+      });
     }
     
-    res.json({ success: true, data: result.value });
+    res.json({
+      success: true,
+      data: result.value
+    });
   } catch (error) {
     console.error('Update evaluation error:', error);
-    res.status(500).json({ success: false, error: { message: 'Failed to update evaluation' } });
+    res.status(500).json({
+      success: false,
+      error: { message: 'Failed to update evaluation' }
+    });
   }
 });
 
