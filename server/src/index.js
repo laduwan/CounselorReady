@@ -3,7 +3,6 @@ import cors from 'cors';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import path from 'path';
-import { initializeScheduler } from './services/notificationScheduler.js';
 import { fileURLToPath } from 'url';
 
 // Load environment variables
@@ -29,6 +28,10 @@ import interactiveCourseRoutes from './routes/courseRoutes.js';
 import cebrokerRoutes from './routes/cebroker.js';
 import helpRoutes from './routes/help.js';
 import bulkUploadRoutes from './routes/bulkUpload.js';
+import adminStatsRoutes from './routes/adminStats.js';
+
+// Import services
+import { initializeScheduler } from './services/notificationScheduler.js';
 
 // ES Module fix for __dirname
 const __filename = fileURLToPath(import.meta.url);
@@ -144,6 +147,7 @@ app.use('/api/xapi', xapiRoutes);
 app.use('/api/cebroker', cebrokerRoutes);
 app.use('/api/help', helpRoutes);
 app.use('/api/admin/courses', bulkUploadRoutes);
+app.use('/api/admin/stats', adminStatsRoutes);
 
 // Serve static files from templates directory (for certificates)
 app.use('/templates', express.static(path.join(__dirname, 'templates')));
@@ -161,7 +165,9 @@ app.use((req, res, next) => {
       '/health',
       '/api/auth/*',
       '/api/courses/*',
+      '/api/interactive-courses/*',
       '/api/admin/*',
+      '/api/admin/stats/*',
       '/api/users/*',
       '/api/certificates/*',
       '/api/credentials/*',
@@ -213,9 +219,9 @@ const PORT = process.env.PORT || 5000;
 const startServer = async () => {
   // Connect to database first
   await connectDB();
-
+  
   // Initialize notification scheduler
-initializeScheduler();
+  initializeScheduler();
   
   // Start listening
   app.listen(PORT, () => {
@@ -227,6 +233,7 @@ initializeScheduler();
 ║   Port: ${PORT}                                       ║
 ║   Environment: ${(process.env.NODE_ENV || 'development').padEnd(26)}║
 ║   MongoDB: Connected                               ║
+║   Scheduler: Active                                ║
 ║                                                    ║
 ║   Health: http://localhost:${PORT}/health              ║
 ║                                                    ║
