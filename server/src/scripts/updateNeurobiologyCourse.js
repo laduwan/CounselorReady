@@ -231,19 +231,74 @@ const neurobiologyCourse = {
           order: 4,
           accordionItems: [
             {
-              title: "The Triune Brain Model",
-              content: `<p>Paul MacLean's triune brain model, while simplified, provides a useful framework for understanding trauma:</p>
-              <p><strong>1. Reptilian Brain (Brainstem):</strong> Controls survival functions—heart rate, breathing, sleep cycles, and the freeze response. This is the oldest part of our brain, shared with reptiles.</p>
-              <p><strong>2. Mammalian Brain (Limbic System):</strong> Processes emotions, attachment, and memory. Includes the amygdala (threat detection) and hippocampus (memory). This is where trauma is primarily processed and stored.</p>
-              <p><strong>3. Neocortex (Thinking Brain):</strong> Handles rational thought, language, planning, and self-awareness. Trauma often bypasses this region, which is why people can't "think their way out" of trauma responses.</p>
-              <p>During trauma, the limbic system takes over while the neocortex goes "offline"—explaining why traumatic memories are often fragmented and non-verbal.</p>`
+              title: "The Triune Brain Model: Understanding Brain Hierarchy",
+              content: `<p>Paul MacLean's triune brain model, while simplified, provides a useful framework for understanding how trauma affects different levels of brain function and why trauma responses often feel so automatic and overwhelming.</p>
+              <p><strong>1. Reptilian Brain (Brainstem) - "The Survival Brain":</strong></p>
+              <ul>
+                <li>The oldest part of our brain, shared with reptiles (300+ million years old)</li>
+                <li>Controls basic survival functions: heart rate, breathing, body temperature, sleep-wake cycles</li>
+                <li>Houses the freeze response—the most primitive survival mechanism</li>
+                <li>Operates entirely outside conscious awareness</li>
+                <li>Cannot be reasoned with or overridden by willpower</li>
+                <li>When activated, takes precedence over higher brain functions</li>
+              </ul>
+              <p><strong>2. Mammalian Brain (Limbic System) - "The Emotional Brain":</strong></p>
+              <ul>
+                <li>Evolved in early mammals (150+ million years old)</li>
+                <li>Processes emotions, attachment, and emotional memory</li>
+                <li>Houses key trauma structures: amygdala and hippocampus</li>
+                <li>Responsible for fight-or-flight response</li>
+                <li>Where trauma is primarily encoded and triggered</li>
+                <li>Creates emotional significance and salience of experiences</li>
+                <li>Operates faster than conscious thought (milliseconds)</li>
+              </ul>
+              <p><strong>3. Neocortex (Prefrontal Cortex) - "The Thinking Brain":</strong></p>
+              <ul>
+                <li>The newest part evolutionarily (only 2-3 million years old in current form)</li>
+                <li>Handles rational thought, language, planning, and self-awareness</li>
+                <li>Can inhibit lower brain reactions—but only when online</li>
+                <li>Goes "offline" during extreme stress or trauma</li>
+                <li>This is why trauma survivors often can't think clearly during triggers</li>
+              </ul>
+              <p><strong>Clinical Implication:</strong> During trauma and triggers, the limbic system takes over while the neocortex goes offline. This explains why traumatic memories are often fragmented, non-verbal, and sensory-dominated—they were encoded by the limbic system without the organizing influence of the prefrontal cortex. It also explains why telling someone to "just calm down and think rationally" doesn't work—their thinking brain isn't accessible in that moment.</p>`
             },
             {
-              title: "Key Brain Structures in Trauma",
-              content: `<p><strong>Amygdala:</strong> The brain's alarm system. It constantly scans for threats and triggers the fight-flight-freeze response. In trauma survivors, the amygdala often becomes hyperactive, leading to heightened startle responses and hypervigilance.</p>
-              <p><strong>Hippocampus:</strong> The memory processor. It contextualizes experiences in time and space ("that was then, this is now"). High cortisol levels during trauma can shrink the hippocampus and impair its function, leading to flashbacks and intrusive memories.</p>
-              <p><strong>Prefrontal Cortex (PFC):</strong> The executive control center. It regulates emotions, enables rational thinking, and can inhibit the amygdala's alarm response. Trauma can weaken PFC functioning, reducing emotional regulation capacity.</p>
-              <p><strong>Insula:</strong> Processes internal body sensations (interoception). Trauma can alter insular function, leading to either heightened body awareness (hyperarousal) or disconnection from bodily sensations (dissociation).</p>`
+              title: "Key Brain Structures in Trauma: A Deeper Look",
+              content: `<p>Understanding these key brain structures helps clinicians recognize what's happening neurologically and select appropriate interventions.</p>
+              <p><strong>AMYGDALA - The Brain's Smoke Detector:</strong></p>
+              <ul>
+                <li>Small, almond-shaped structure deep in the temporal lobes (one in each hemisphere)</li>
+                <li>Primary function: Detect threats and trigger protective responses</li>
+                <li>Processes incoming sensory information BEFORE the prefrontal cortex—speed over accuracy</li>
+                <li>In trauma survivors: becomes hyperactive and enlarged, triggering false alarms</li>
+                <li>Explains hypervigilance, exaggerated startle, and "overreacting" to minor triggers</li>
+                <li>Cannot distinguish between past and present—a trigger feels like the trauma is happening NOW</li>
+              </ul>
+              <p><strong>HIPPOCAMPUS - The Brain's Filing Cabinet:</strong></p>
+              <ul>
+                <li>Seahorse-shaped structure adjacent to amygdala</li>
+                <li>Primary function: Process and contextualize memories in time and space</li>
+                <li>Stamps memories with "when" and "where"—creating the sense that something is in the past</li>
+                <li>In trauma survivors: Often reduced in volume due to cortisol exposure</li>
+                <li>Impaired hippocampal function explains why trauma memories lack context and feel "timeless"</li>
+                <li>Flashbacks occur because memories weren't properly filed—they're triggered as if happening now</li>
+              </ul>
+              <p><strong>PREFRONTAL CORTEX (PFC) - The Brain's CEO:</strong></p>
+              <ul>
+                <li>Located behind the forehead—the most recently evolved brain region</li>
+                <li>Primary functions: Executive control, planning, decision-making, emotional regulation</li>
+                <li>Can inhibit amygdala activation—"putting the brakes on" fear responses</li>
+                <li>In trauma survivors: Often shows reduced activity and volume</li>
+                <li>Weakened PFC-amygdala connection means less ability to regulate emotions</li>
+                <li>Explains impulsivity, poor decision-making, and emotional dysregulation in trauma survivors</li>
+              </ul>
+              <p><strong>INSULA - The Brain's Body Reader:</strong></p>
+              <ul>
+                <li>Deep cortical structure involved in interoception (awareness of internal body states)</li>
+                <li>Primary function: Process internal body sensations—heartbeat, breathing, gut feelings</li>
+                <li>In trauma survivors: May be overactive (hyperawareness of body sensations) or underactive (dissociation, numbness)</li>
+                <li>Explains both somatic symptoms (feeling trauma in the body) and disconnection from the body</li>
+              </ul>`
             },
             {
               title: "Why Psychoeducation About the Brain Helps Clients",
@@ -357,15 +412,17 @@ const neurobiologyCourse = {
           type: "text",
           order: 2,
           textContent: `<h3>The Body's Alarm System</h3>
-          <p>When the brain detects a threat—real or perceived—it triggers a cascade of neurobiological events designed to ensure survival. This stress response system evolved over millions of years and operates largely outside conscious control.</p>
-          <p>Understanding these systems helps clinicians:</p>
+          <p>When the brain detects a threat—real or perceived—it triggers a cascade of neurobiological events designed to ensure survival. This stress response system evolved over millions of years and operates largely outside conscious control. Understanding these systems is essential for trauma-informed clinical practice.</p>
+          <p><strong>Why Clinicians Need to Understand the Stress Response:</strong></p>
           <ul style="margin-left: 20px; margin-bottom: 16px;">
-            <li>Recognize stress responses in clients (and themselves)</li>
-            <li>Explain why clients can't "just calm down"</li>
-            <li>Select interventions that target specific physiological states</li>
-            <li>Understand the physical health impacts of chronic stress</li>
+            <li><strong>Recognize stress responses:</strong> Identify when clients (and yourself) are in activated states</li>
+            <li><strong>Psychoeducation:</strong> Explain to clients why they can't "just calm down" or "think their way out of it"</li>
+            <li><strong>Intervention selection:</strong> Choose approaches that target specific physiological states</li>
+            <li><strong>Understand health impacts:</strong> Recognize how chronic stress affects physical health</li>
+            <li><strong>Reduce shame:</strong> Help clients understand their responses are normal biology, not weakness</li>
           </ul>
-          <p>The two primary systems involved are the <strong>HPA Axis</strong> (hormonal) and the <strong>Autonomic Nervous System</strong> (neural).</p>`
+          <p>The two primary systems involved are the <strong>HPA Axis</strong> (hormonal/endocrine system, operating over minutes to hours) and the <strong>Autonomic Nervous System</strong> (neural, operating in milliseconds to seconds). Both systems work together to prepare the body for survival, and both can become dysregulated following trauma.</p>
+          <p><strong>Key Insight:</strong> These survival responses happen automatically and unconsciously. The amygdala triggers the stress response before the prefrontal cortex even knows there's a threat. This is why rational arguments ("you're safe now") often fail to calm someone in acute stress—their survival brain is in control.</p>`
         },
         {
           type: "accordion",
@@ -373,38 +430,64 @@ const neurobiologyCourse = {
           accordionItems: [
             {
               title: "The HPA Axis: The Hormonal Stress Response",
-              content: `<p>The Hypothalamic-Pituitary-Adrenal (HPA) axis is the body's central stress response system. Here's the cascade:</p>
-              <p><strong>Step 1 - Hypothalamus:</strong> When the amygdala detects a threat, it signals the hypothalamus, which releases Corticotropin-Releasing Hormone (CRH).</p>
-              <p><strong>Step 2 - Pituitary Gland:</strong> CRH travels to the pituitary gland, triggering release of Adrenocorticotropic Hormone (ACTH).</p>
-              <p><strong>Step 3 - Adrenal Glands:</strong> ACTH travels through the bloodstream to the adrenal glands (on top of the kidneys), which release cortisol and adrenaline (epinephrine).</p>
+              content: `<p>The Hypothalamic-Pituitary-Adrenal (HPA) axis is the body's central stress response system. Understanding this hormonal cascade helps clinicians recognize the physiological underpinnings of trauma symptoms and explains why chronic stress affects physical health.</p>
+              <p><strong>The Cascade (Step by Step):</strong></p>
+              <p><strong>Step 1 - Hypothalamus (The Integrator):</strong> When the amygdala detects a threat, it signals the hypothalamus—the brain's master regulator. The hypothalamus releases Corticotropin-Releasing Hormone (CRH), beginning the stress cascade.</p>
+              <p><strong>Step 2 - Pituitary Gland (The Relay Station):</strong> CRH travels to the pituitary gland (located at the base of the brain), which responds by releasing Adrenocorticotropic Hormone (ACTH) into the bloodstream.</p>
+              <p><strong>Step 3 - Adrenal Glands (The Executors):</strong> ACTH travels through the bloodstream to the adrenal glands (sitting on top of the kidneys). The adrenal glands release cortisol (the primary stress hormone) and adrenaline/epinephrine (for immediate energy mobilization).</p>
               <p><strong>Effects of Cortisol:</strong></p>
               <ul>
-                <li>Increases blood sugar for energy</li>
-                <li>Suppresses immune function (energy conservation)</li>
-                <li>Enhances memory consolidation for survival-relevant information</li>
-                <li>At high levels, impairs hippocampal function</li>
+                <li><strong>Increases blood sugar:</strong> Provides energy for fight or flight</li>
+                <li><strong>Suppresses immune function:</strong> Conserves energy for immediate survival (problematic when chronic)</li>
+                <li><strong>Enhances memory consolidation:</strong> For survival-relevant information</li>
+                <li><strong>At high levels, impairs hippocampal function:</strong> Explains memory problems during and after trauma</li>
+                <li><strong>Increases inflammation:</strong> Contributing to chronic health problems</li>
+                <li><strong>Disrupts sleep:</strong> Through altered cortisol rhythms</li>
               </ul>
-              <p><strong>Negative Feedback Loop:</strong> Normally, high cortisol signals the hypothalamus to stop producing CRH, turning off the stress response. In chronic trauma, this feedback loop can become dysregulated.</p>`
+              <p><strong>The Negative Feedback Loop:</strong></p>
+              <p>Normally, high cortisol signals the hypothalamus to stop producing CRH, creating a negative feedback loop that turns off the stress response once the threat has passed. However, in chronic trauma, this feedback loop can become dysregulated—either staying constantly activated or becoming blunted and unresponsive.</p>
+              <p><strong>Clinical Implications:</strong></p>
+              <ul>
+                <li>Explains physical health problems in trauma survivors (inflammation, immune dysfunction)</li>
+                <li>Helps clients understand why they feel physically exhausted</li>
+                <li>Supports importance of stress reduction in trauma treatment</li>
+                <li>Explains why trauma affects sleep patterns</li>
+              </ul>`
             },
             {
-              title: "The Autonomic Nervous System",
-              content: `<p>The autonomic nervous system (ANS) operates automatically, controlling heart rate, breathing, digestion, and arousal. It has two main branches:</p>
-              <p><strong>Sympathetic Nervous System (SNS) - "Gas Pedal":</strong></p>
+              title: "The Autonomic Nervous System: The Body's Automatic Pilot",
+              content: `<p>The autonomic nervous system (ANS) operates automatically, controlling heart rate, breathing, digestion, and arousal level. Unlike the HPA axis (which operates over minutes), the ANS responds in milliseconds—making it the body's first responder to threat.</p>
+              <p><strong>Sympathetic Nervous System (SNS) - "The Gas Pedal":</strong></p>
               <ul>
                 <li>Activates the fight-or-flight response</li>
+                <li>Prepares body for action and energy expenditure</li>
                 <li>Increases heart rate and blood pressure</li>
-                <li>Dilates pupils and bronchi</li>
-                <li>Diverts blood to muscles</li>
-                <li>Releases adrenaline and noradrenaline</li>
+                <li>Dilates pupils (better distance vision) and bronchi (more oxygen)</li>
+                <li>Diverts blood from digestion to muscles</li>
+                <li>Releases adrenaline and noradrenaline for quick energy</li>
+                <li>Inhibits digestion, sexual arousal, and immune function</li>
+                <li>Creates feelings of anxiety, agitation, readiness for action</li>
               </ul>
-              <p><strong>Parasympathetic Nervous System (PNS) - "Brake Pedal":</strong></p>
+              <p><strong>Parasympathetic Nervous System (PNS) - "The Brake Pedal":</strong></p>
               <ul>
                 <li>Promotes rest-and-digest functions</li>
-                <li>Slows heart rate</li>
-                <li>Stimulates digestion</li>
-                <li>Conserves energy</li>
+                <li>Activated when we feel safe and connected</li>
+                <li>Slows heart rate and lowers blood pressure</li>
+                <li>Stimulates digestion and immune function</li>
+                <li>Conserves energy and promotes recovery</li>
+                <li>Enables social engagement, intimacy, and connection</li>
+                <li>Creates feelings of calm, relaxation, groundedness</li>
               </ul>
-              <p>Healthy functioning involves flexible shifting between these states. Trauma can cause the system to get "stuck" in one state or oscillate between extremes.</p>`
+              <p><strong>Healthy Functioning vs. Trauma Dysregulation:</strong></p>
+              <p>In healthy functioning, the ANS flexibly shifts between sympathetic activation (when needed) and parasympathetic recovery. Like a car, you use the gas when you need to move and the brake when you need to slow down.</p>
+              <p>After trauma, this system often becomes dysregulated:</p>
+              <ul>
+                <li>Gas pedal stuck ON: Chronic sympathetic activation (hypervigilance, anxiety, can't relax)</li>
+                <li>Gas and brake fighting: Oscillating between activation and collapse</li>
+                <li>Brake stuck ON: Chronic parasympathetic dominance (numbness, fatigue, dissociation)</li>
+                <li>Difficulty shifting: Can't appropriately activate OR calm down</li>
+              </ul>
+              <p><strong>Clinical Implication:</strong> Many trauma interventions target ANS regulation—helping clients learn to activate the parasympathetic system (grounding, breathing) and recognize when they're stuck in sympathetic activation.</p>`
             },
             {
               title: "Polyvagal Theory: The Three-State Model",
@@ -599,7 +682,7 @@ const neurobiologyCourse = {
     // =========================================================================
     {
       title: "Trauma and Memory",
-      description: "How trauma disrupts memory processing and why traumatic memories are different",
+      description: "How trauma disrupts memory processing, why traumatic memories are different from ordinary memories, and the clinical implications for assessment and treatment",
       order: 3,
       estimatedTime: 45,
       thumbnail: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400",
@@ -615,15 +698,18 @@ const neurobiologyCourse = {
           type: "text",
           order: 2,
           textContent: `<h3>The Unique Nature of Traumatic Memory</h3>
-          <p>Traumatic memories are fundamentally different from ordinary memories. Understanding these differences is crucial for effective trauma treatment and helps clients understand why they experience flashbacks, intrusive memories, and triggers.</p>
-          <p>During trauma, the normal memory consolidation process is disrupted. The high levels of stress hormones and the overwhelming nature of the experience cause memories to be encoded in fragmented, sensory-dominated ways rather than as coherent narratives with clear temporal context.</p>
-          <p>This is why trauma survivors often:</p>
+          <p>Traumatic memories are fundamentally different from ordinary memories in their structure, storage, and retrieval. Understanding these differences is crucial for effective trauma treatment and helps clients understand why they experience flashbacks, intrusive memories, and triggers.</p>
+          <p>During trauma, the normal memory consolidation process is disrupted. The overwhelming flood of stress hormones (cortisol and adrenaline), the suppression of the hippocampus, and the hyperactivation of the amygdala cause memories to be encoded in fragmented, sensory-dominated ways rather than as coherent narratives with clear temporal context.</p>
+          <p><strong>This is why trauma survivors often:</strong></p>
           <ul style="margin-left: 20px; margin-bottom: 16px;">
-            <li>Experience vivid sensory flashbacks (smells, sounds, images)</li>
-            <li>Have difficulty putting their experience into words</li>
-            <li>Feel like the trauma is happening "right now" when triggered</li>
-            <li>Have fragmented or incomplete memories of traumatic events</li>
-          </ul>`
+            <li>Experience vivid sensory flashbacks (smells, sounds, images, body sensations) that feel like reliving the trauma</li>
+            <li>Have difficulty putting their experience into words—the memory doesn't have a verbal narrative</li>
+            <li>Feel like the trauma is happening "right now" when triggered—the memory lacks temporal context</li>
+            <li>Have fragmented or incomplete memories of traumatic events—some parts crystal clear, others missing</li>
+            <li>Are triggered by seemingly unrelated stimuli that were associated with the trauma</li>
+            <li>Experience intrusive memories without consciously trying to remember</li>
+          </ul>
+          <p><strong>Key Clinical Insight:</strong> Trauma treatment involves helping the brain properly process and integrate traumatic memories—moving them from fragmentary, implicit, "stuck" memories to processed, contextualized memories that are clearly in the past. This is why trauma processing therapies (EMDR, PE, CPT) work: they facilitate the memory consolidation that was disrupted during the original trauma.</p>`
         },
         {
           type: "accordion",
@@ -676,40 +762,58 @@ const neurobiologyCourse = {
               <p><strong>Result:</strong> Traumatic memories are stored as fragmented sensory and emotional impressions without proper temporal context or narrative coherence.</p>`
             },
             {
-              title: "Flashbacks and Intrusive Memories",
-              content: `<p>Flashbacks are one of the hallmark symptoms of PTSD and result directly from how traumatic memories are stored.</p>
+              title: "Flashbacks and Intrusive Memories: Understanding the Experience",
+              content: `<p>Flashbacks are one of the hallmark symptoms of PTSD and result directly from how traumatic memories are stored. Understanding flashbacks neurobiologically helps clinicians and clients make sense of these often terrifying experiences.</p>
               <p><strong>What Happens During a Flashback:</strong></p>
-              <ul>
-                <li>A trigger (sensory cue associated with the trauma) activates implicit memory</li>
-                <li>The amygdala fires as if the threat is present NOW</li>
-                <li>The body responds with stress hormones and physiological arousal</li>
-                <li>Without hippocampal context, the experience feels current, not past</li>
-                <li>The person re-experiences sensations, emotions, and images as if the trauma is happening again</li>
-              </ul>
+              <ol>
+                <li><strong>Trigger activation:</strong> A sensory cue (smell, sound, visual) associated with the trauma is detected by the amygdala</li>
+                <li><strong>Amygdala fires:</strong> The alarm system activates as if the threat is present NOW</li>
+                <li><strong>Stress response cascade:</strong> The body floods with stress hormones—adrenaline, cortisol—preparing for danger</li>
+                <li><strong>Hippocampus offline:</strong> Without hippocampal context, the brain cannot recognize this as a memory</li>
+                <li><strong>Re-experiencing:</strong> The person experiences sensations, emotions, and images as if the trauma is happening in the present moment</li>
+                <li><strong>Autonomic arousal:</strong> Heart rate increases, breathing changes, muscles tense—the body is responding to a threat that isn't there</li>
+              </ol>
               <p><strong>Types of Flashbacks:</strong></p>
               <ul>
-                <li><strong>Visual:</strong> Seeing images from the trauma</li>
-                <li><strong>Auditory:</strong> Hearing sounds associated with the trauma</li>
-                <li><strong>Somatic:</strong> Body sensations from the trauma (pain, pressure, etc.)</li>
-                <li><strong>Emotional:</strong> Intense emotions without clear memory content</li>
-                <li><strong>Full re-experiencing:</strong> Complete sensory re-living of the event</li>
+                <li><strong>Visual:</strong> Seeing images from the trauma—sometimes full scenes, sometimes fragments</li>
+                <li><strong>Auditory:</strong> Hearing sounds associated with the trauma—voices, screams, crashes</li>
+                <li><strong>Somatic:</strong> Body sensations from the trauma—pain, pressure, choking, being held down</li>
+                <li><strong>Emotional:</strong> Intense emotions without clear memory content—terror, rage, shame appearing "out of nowhere"</li>
+                <li><strong>Olfactory:</strong> Smelling scents associated with the trauma—often the most powerful triggers</li>
+                <li><strong>Full re-experiencing:</strong> Complete multi-sensory re-living of the event, sometimes with loss of awareness of present surroundings</li>
               </ul>
-              <p><strong>Clinical Note:</strong> Flashbacks are not "just memories"—they involve genuine physiological re-activation. The body doesn't know the difference between remembering danger and experiencing danger.</p>`
+              <p><strong>Critical Clinical Point:</strong> Flashbacks are not "just memories" or imagination—they involve genuine physiological re-activation. The body doesn't know the difference between remembering danger and experiencing danger. This is why telling someone having a flashback to "just calm down" or "it's not real" is ineffective—to their nervous system, it IS real.</p>
+              <p><strong>Helping Clients During Flashbacks:</strong></p>
+              <ul>
+                <li>Help them orient to the present moment (look around the room, feel the chair)</li>
+                <li>Use grounding techniques (cold water, strong sensations)</li>
+                <li>Speak calmly and slowly—provide external co-regulation</li>
+                <li>Remind them gently where they are and that they're safe</li>
+              </ul>`
             },
             {
-              title: "Triggers and Trauma Reminders",
-              content: `<p>Triggers are stimuli that activate implicit traumatic memories. They can be anything the brain associated with the traumatic event:</p>
+              title: "Triggers and Trauma Reminders: The Amygdala's Alarm System",
+              content: `<p>Triggers are stimuli that activate implicit traumatic memories. Understanding how triggers work neurobiologically helps clinicians explain this phenomenon to clients and guides treatment planning.</p>
               <p><strong>Common Trigger Categories:</strong></p>
               <ul>
-                <li><strong>Sensory:</strong> Smells, sounds, sights, textures, tastes</li>
-                <li><strong>Environmental:</strong> Locations, weather, time of day/year</li>
-                <li><strong>Interpersonal:</strong> Certain types of people, behaviors, tones of voice</li>
-                <li><strong>Internal:</strong> Body sensations, emotions, thoughts</li>
-                <li><strong>Temporal:</strong> Anniversaries, holidays, seasons</li>
+                <li><strong>Sensory:</strong> Smells (cologne, smoke, alcohol), sounds (sirens, yelling, certain music), sights (facial expressions, body types, objects), textures (fabrics, restraints), tastes (alcohol, certain foods)</li>
+                <li><strong>Environmental:</strong> Locations (hospitals, basements, parking garages), weather (storms, darkness), time of day/year (night, winter), physical spaces (small rooms, crowds)</li>
+                <li><strong>Interpersonal:</strong> Certain types of people (authority figures, men/women), behaviors (raised voices, sudden movements), tones of voice (anger, patronizing), facial expressions (anger, disappointment)</li>
+                <li><strong>Internal:</strong> Body sensations (rapid heartbeat, feeling hot), emotions (helplessness, shame), thoughts (certain topics, memories), physical positions (lying down, being approached from behind)</li>
+                <li><strong>Temporal:</strong> Anniversaries (trauma date, holidays associated with trauma), seasons (when trauma occurred), life stages (children reaching the age of trauma)</li>
               </ul>
               <p><strong>Why Triggers Seem Irrational:</strong></p>
-              <p>Triggers are created by the amygdala's threat-learning system, which operates on association rather than logic. If a particular cologne was worn by a perpetrator, ANY similar scent may trigger a fear response—even when worn by a safe person.</p>
-              <p><strong>Generalization:</strong> Over time, triggers can generalize. A survivor initially triggered by one person's voice may become triggered by all deep male voices. This generalization is a protective mechanism that has gone too far.</p>`
+              <p>Triggers are created by the amygdala's threat-learning system, which operates on ASSOCIATION rather than logic. The amygdala doesn't analyze whether something is actually dangerous—it simply notes what was present during danger and flags all similar stimuli as potential threats. If a particular cologne was worn by a perpetrator, ANY similar scent may trigger a fear response—even when worn by a completely safe person in a completely safe situation.</p>
+              <p><strong>Trigger Generalization:</strong></p>
+              <p>Over time, triggers can generalize to related stimuli. A survivor initially triggered by one person's voice may become triggered by all deep male voices. A person traumatized in one location may become triggered by all similar locations. This generalization is a protective mechanism—the brain is trying to keep the person safe by erring on the side of caution—but it can become debilitating when triggers multiply.</p>
+              <p><strong>Clinical Implications:</strong></p>
+              <ul>
+                <li>Help clients identify their specific triggers through careful exploration</li>
+                <li>Explain the neurobiology—triggers are not "craziness" but the amygdala doing its job</li>
+                <li>Develop trigger management strategies (grounding, coping plans)</li>
+                <li>Consider whether to work on trigger desensitization (exposure approaches)</li>
+                <li>Be aware that triggers can emerge over time—new triggers may develop as memories are processed</li>
+              </ul>`
             },
             {
               title: "The Role of the Hippocampus in Healing",
@@ -856,9 +960,17 @@ const neurobiologyCourse = {
           type: "text",
           order: 2,
           textContent: `<h3>The Brain Can Change</h3>
-          <p>Perhaps the most important message from neuroscience is this: <strong>the brain can change throughout life</strong>. This capacity for change—neuroplasticity—provides the biological foundation for trauma recovery.</p>
-          <p>The same neural mechanisms that created trauma responses can be harnessed to build new, healthier patterns. Understanding neuroplasticity transforms treatment from "managing symptoms" to "rewiring the brain for resilience."</p>
-          <p>For trauma survivors who often feel broken or permanently damaged, the message that their brain can heal is profoundly hopeful.</p>`
+          <p>Perhaps the most important message from neuroscience is this: <strong>the brain can change throughout life</strong>. This capacity for change—neuroplasticity—provides the biological foundation for trauma recovery and is the reason why therapy works.</p>
+          <p>For decades, scientists believed that the adult brain was essentially fixed—that after a certain age, the neural architecture was set and couldn't be significantly altered. We now know this is wrong. The brain continues to form new connections, grow new neurons (particularly in the hippocampus), and reorganize itself throughout the lifespan.</p>
+          <p><strong>What This Means for Trauma Recovery:</strong></p>
+          <ul style="margin-left: 20px; margin-bottom: 16px;">
+            <li>The neural pathways created by trauma are not permanent—they can be changed</li>
+            <li>The same mechanisms that created trauma responses can create new, healthier patterns</li>
+            <li>Recovery is not just "managing symptoms"—it's literally rewiring the brain</li>
+            <li>Brain changes can be measured with neuroimaging, providing objective evidence of healing</li>
+          </ul>
+          <p>For trauma survivors who often feel broken, damaged, or permanently changed, the message of neuroplasticity is profoundly hopeful: <strong>Your brain can heal. The changes that trauma caused can be reversed. Recovery is not just possible—it's biologically supported.</strong></p>
+          <p>This knowledge also changes how we frame treatment. We're not just teaching coping skills or providing support (though these matter). We're actually facilitating biological change in the brain's structure and function.</p>`
         },
         {
           type: "accordion",
@@ -1020,12 +1132,13 @@ const neurobiologyCourse = {
           image: "https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=600",
           imageAlt: "Person meditating at sunrise",
           imagePosition: "right",
-          title: "The Message of Hope",
-          content: `<p>The neuroscience of trauma carries a profound message of hope:</p>
+          title: "The Message of Hope: Neuroscience Validates Recovery",
+          content: `<p>The neuroscience of trauma carries a profound message of hope that clinicians can share with clients:</p>
           <p><strong>"Your brain changed in response to what happened to you. It can change again in response to new experiences."</strong></p>
-          <p>This is not just reassurance—it's biological fact. Every moment of safety, every regulated connection, every new coping skill is literally rewiring the brain.</p>
-          <p>Recovery is not about forgetting or "getting over it." It's about building new neural pathways that allow the past to be the past while living fully in the present.</p>
-          <p>The brain that learned to survive trauma can learn to thrive beyond it.</p>`,
+          <p>This is not just reassurance or positive thinking—it's biological fact supported by decades of research. Neuroimaging studies have shown that effective trauma therapy produces measurable changes in brain structure and function. The hyperactive amygdala calms down. The suppressed prefrontal cortex comes back online. The shrunken hippocampus can regrow neurons. The disrupted connections between brain regions can be rewired.</p>
+          <p>Every moment of safety, every regulated connection with another person, every new coping skill practiced, every time a trauma survivor stays present instead of dissociating—all of these experiences are literally rewiring the brain at the cellular level.</p>
+          <p>Recovery is not about forgetting the trauma or "getting over it." It's about building new neural pathways that allow the past to be the past while living fully in the present. The trauma memories don't disappear, but they lose their power to hijack the present moment.</p>
+          <p><strong>The brain that learned to survive trauma can learn to thrive beyond it.</strong></p>`,
           highlight: true
         },
         {
@@ -1128,50 +1241,69 @@ const neurobiologyCourse = {
           accordionItems: [
             {
               title: "Neurobiologically-Informed Assessment",
-              content: `<p>Add a neurobiological lens to your trauma assessment:</p>
+              content: `<p>Adding a neurobiological lens to your trauma assessment enhances your understanding and guides intervention selection. Here's how to integrate neuroscience into clinical assessment:</p>
               <p><strong>Observe Physiological State:</strong></p>
               <ul>
-                <li>Is the client hyperaroused, hypoaroused, or regulated?</li>
-                <li>What happens to their state when discussing trauma?</li>
-                <li>How quickly can they return to regulation?</li>
-                <li>What are their window of tolerance patterns?</li>
+                <li>Is the client currently hyperaroused (anxious, agitated, racing thoughts), hypoaroused (flat, disconnected, foggy), or regulated?</li>
+                <li>What happens to their physiological state when discussing trauma-related material?</li>
+                <li>How quickly can they return to regulation after becoming activated?</li>
+                <li>What are their window of tolerance patterns—is it very narrow, or do they have some flexibility?</li>
+                <li>Do they tend more toward hyperarousal or hypoarousal, or do they oscillate between both?</li>
               </ul>
               <p><strong>Assess Nervous System Functioning:</strong></p>
               <ul>
-                <li>Sleep patterns (HPA axis, cortisol rhythm)</li>
-                <li>Startle response (amygdala reactivity)</li>
-                <li>Concentration/memory issues (hippocampus, PFC)</li>
-                <li>Emotional regulation capacity (PFC-amygdala connection)</li>
-                <li>Body awareness/disconnection (insula functioning)</li>
+                <li><strong>Sleep patterns:</strong> Difficulty falling asleep (hyperarousal), early morning waking (cortisol dysregulation), nightmares (inadequate memory processing)</li>
+                <li><strong>Startle response:</strong> Exaggerated startle indicates hyperactive amygdala and heightened threat detection</li>
+                <li><strong>Concentration and memory:</strong> Difficulty concentrating and memory problems suggest prefrontal cortex and hippocampus impairment</li>
+                <li><strong>Emotional regulation:</strong> Inability to modulate emotions indicates weakened PFC-amygdala connectivity</li>
+                <li><strong>Body awareness:</strong> Disconnection from body sensations suggests insula dysfunction and possible dissociation</li>
+                <li><strong>Chronic pain or somatic complaints:</strong> May indicate somatization and nervous system dysregulation</li>
               </ul>
               <p><strong>Identify Triggers and Patterns:</strong></p>
               <ul>
-                <li>What activates trauma responses?</li>
-                <li>What helps them return to regulation?</li>
-                <li>What is their predominant survival response (fight/flight/freeze)?</li>
+                <li>What sensory stimuli, situations, or internal states activate trauma responses?</li>
+                <li>What helps the client return to regulation—and do they know how to use these strategies?</li>
+                <li>What is their predominant survival response (fight/flight/freeze/fawn)?</li>
+                <li>Are triggers primarily external (sensory) or internal (emotions, body sensations)?</li>
               </ul>
-              <p><strong>Assessment Tools:</strong> Consider using the PCL-5 (PTSD symptoms), ACE questionnaire (childhood adversity), and the Shutdown Dissociation Scale (dorsal vagal responses).</p>`
+              <p><strong>Useful Assessment Tools:</strong></p>
+              <ul>
+                <li>PCL-5: PTSD symptom severity</li>
+                <li>ACE Questionnaire: Childhood adversity history</li>
+                <li>Shutdown Dissociation Scale: Dorsal vagal/dissociative responses</li>
+                <li>Difficulties in Emotion Regulation Scale (DERS): Emotional regulation capacity</li>
+              </ul>`
             },
             {
               title: "Psychoeducation Strategies That Work",
-              content: `<p>Effective psychoeducation normalizes symptoms and instills hope:</p>
+              content: `<p>Effective psychoeducation normalizes symptoms, reduces shame, and instills hope. When clients understand WHY they're experiencing what they're experiencing, everything shifts.</p>
               <p><strong>Key Messages to Convey:</strong></p>
               <ul>
-                <li>"Your symptoms are normal responses to abnormal events"</li>
-                <li>"There's nothing wrong with you—your brain is doing exactly what it was designed to do"</li>
-                <li>"Your brain changed in response to trauma, and it can change again"</li>
-                <li>"Healing is possible—we have the science to prove it"</li>
+                <li>"Your symptoms are normal responses to abnormal events—there's nothing wrong with you"</li>
+                <li>"Your brain is doing exactly what it was designed to do—protect you from danger"</li>
+                <li>"Your brain changed in response to trauma, and it can change again through treatment"</li>
+                <li>"Healing is possible—we have decades of research and proven treatments"</li>
+                <li>"You survived because your brain protected you—these same systems can now learn that you're safe"</li>
               </ul>
-              <p><strong>Effective Metaphors:</strong></p>
+              <p><strong>Effective Metaphors (Match to Client's Experience and Learning Style):</strong></p>
               <ul>
-                <li><strong>Smoke Detector (Amygdala):</strong> "Your smoke detector got set too sensitive"</li>
-                <li><strong>Filing Cabinet (Hippocampus):</strong> "Trauma memories didn't get properly filed"</li>
-                <li><strong>Hand Model (Brain):</strong> Dan Siegel's hand model for "flipping your lid"</li>
-                <li><strong>Gas/Brake (ANS):</strong> "Your gas pedal is stuck, or brake is locked"</li>
-                <li><strong>Window (Tolerance):</strong> "Trauma narrowed your window—we're going to widen it"</li>
+                <li><strong>Smoke Detector (Amygdala):</strong> "Your brain's smoke detector got set too sensitive after the trauma. Now it goes off when someone's just making toast—not because there's a fire. We can recalibrate it."</li>
+                <li><strong>Filing Cabinet (Hippocampus):</strong> "Normal memories get filed in the 'past' folder. Trauma memories got stuck on your desk, unfiled, so they feel like they're happening now. Treatment helps file them where they belong."</li>
+                <li><strong>Hand Model (Brain - Dan Siegel):</strong> Make a fist with thumb inside representing limbic brain, fingers over top representing prefrontal cortex. "When you flip your lid" (fingers up), "your thinking brain goes offline and your emotional brain takes over."</li>
+                <li><strong>Gas Pedal/Brake (ANS):</strong> "Your nervous system has a gas pedal (fight/flight) and a brake (rest). After trauma, sometimes the gas gets stuck, or the brake locks up. We're going to tune up your system."</li>
+                <li><strong>Window of Tolerance:</strong> "We all have a window where we can think, feel, and function. Trauma narrowed your window—so things that might not bother others push you outside your window. We're going to widen it."</li>
+                <li><strong>Car Alarm (Triggers):</strong> "Your alarm system got programmed during the trauma. Now it goes off whenever it detects something that reminds it of danger—even if you're completely safe."</li>
               </ul>
-              <p><strong>Timing:</strong> Introduce psychoeducation early in treatment. It often provides immediate relief and increases engagement.</p>
-              <p><strong>Resources:</strong> Consider providing handouts or recommending books like "The Body Keeps the Score" (van der Kolk) or "Waking the Tiger" (Levine) for clients who want to learn more.</p>`
+              <p><strong>Timing and Delivery:</strong></p>
+              <ul>
+                <li>Introduce psychoeducation early in treatment—it often provides immediate relief</li>
+                <li>Keep explanations simple and jargon-free</li>
+                <li>Check understanding—have clients explain it back to you</li>
+                <li>Connect concepts to their specific experience</li>
+                <li>Return to these concepts throughout treatment as relevant</li>
+                <li>Consider providing handouts or recommending books for interested clients</li>
+              </ul>
+              <p><strong>Recommended Resources for Clients:</strong> "The Body Keeps the Score" (van der Kolk), "Waking the Tiger" (Levine), "Trauma and Recovery" (Herman)</p>`
             },
             {
               title: "Matching Interventions to Neurobiological State",
