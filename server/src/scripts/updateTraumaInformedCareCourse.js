@@ -20,7 +20,7 @@ const connectDB = async () => {
 const traumaInformedCareCourse = {
   title: "Trauma-Informed Care: Foundations for Clinical Practice",
   slug: "trauma-informed-care",
-  description: "This comprehensive 4-hour course provides mental health professionals with foundational knowledge and practical skills to implement trauma-informed care. Based on SAMHSA's six key principles, learn to recognize trauma's impact, create safe therapeutic environments, avoid re-traumatization, and apply evidence-based interventions that promote healing and recovery.",
+  description: "This comprehensive 4-hour course provides mental health professionals with foundational knowledge and practical skills to implement trauma-informed care across clinical settings. Based on SAMHSA's six key principles (Safety, Trustworthiness, Peer Support, Collaboration, Empowerment, and Cultural Sensitivity), participants will learn to recognize trauma's neurobiological impact, create physically and emotionally safe therapeutic environments, avoid re-traumatization through careful clinical practice, and apply evidence-based stabilization and intervention strategies that promote healing and recovery. The course integrates current neuroscience research with practical clinical applications, including detailed guidance on assessment, session structure, grounding techniques, and phase-based treatment approaches.",
   thumbnail: "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=800",
   ceHours: 4,
   ceProvider: "NBCC ACEP #7760 - CounselorReady",
@@ -34,14 +34,14 @@ const traumaInformedCareCourse = {
 
   // ACEP REQUIRED: Learning Objectives
   learningObjectives: [
-    "Define trauma-informed care and describe SAMHSA's six key principles",
-    "Recognize the prevalence and impact of trauma across diverse populations",
-    "Apply strategies to create physical and emotional safety in clinical settings",
-    "Demonstrate techniques for building trustworthiness and transparency with trauma survivors",
-    "Identify approaches that promote client choice, collaboration, and empowerment",
-    "Recognize and respond appropriately to signs of re-traumatization",
-    "Implement culturally responsive trauma-informed practices",
-    "Develop a personal plan for self-care and vicarious trauma prevention"
+    "Define trauma-informed care and describe SAMHSA's six key principles for implementation across clinical settings",
+    "Recognize the prevalence and neurobiological impact of trauma across diverse populations using current research",
+    "Apply practical strategies to create physical and emotional safety in clinical environments",
+    "Demonstrate techniques for building trustworthiness and transparency with trauma survivors over time",
+    "Identify common clinical practices that may inadvertently re-traumatize clients and implement alternatives",
+    "Utilize stabilization techniques including grounding, breathing, and containment to help clients regulate",
+    "Explain the phase-based approach to trauma treatment and assess readiness for processing",
+    "Develop personalized self-care strategies to prevent and address vicarious traumatization in your practice"
   ],
   
   // ACEP REQUIRED: Instructor Credentials
@@ -49,7 +49,7 @@ const traumaInformedCareCourse = {
     name: "Kejuiana Johnson, MA, LPC, CPCS, BC-TMH",
     credentials: "Licensed Professional Counselor, Certified Professional Counselor Supervisor, Board Certified in Telemental Health",
     organization: "GA Integrated Therapeutic Perspectives LLC",
-    bio: "Kejuiana Johnson is a licensed mental health professional with extensive experience in trauma-informed care and clinical supervision. She is the founder of CounselorReady, an NBCC-approved continuing education provider dedicated to delivering high-quality professional development for mental health clinicians."
+    bio: "Kejuiana Johnson is a licensed mental health professional with extensive experience in trauma-informed care, clinical supervision, and professional development for counselors. She is the founder of CounselorReady, an NBCC-approved continuing education provider (ACEP #7760) dedicated to delivering high-quality, evidence-based professional development for mental health clinicians. With a background spanning direct clinical practice, supervision, and educational technology, she brings a unique perspective that bridges theoretical knowledge with practical application. Her approach to trauma-informed care emphasizes the integration of neuroscience research with compassionate, client-centered practice."
   },
   
   // ACEP REQUIRED: Bibliography/References
@@ -77,12 +77,37 @@ const traumaInformedCareCourse = {
     {
       citation: "Knight, C. (2015). Trauma-informed social work practice: Practice considerations and challenges. Clinical Social Work Journal, 43(1), 25-37.",
       type: "journal"
+    },
+    {
+      citation: "van der Kolk, B. A. (2014). The body keeps the score: Brain, mind, and body in the healing of trauma. Viking Press.",
+      type: "book"
+    },
+    {
+      citation: "Porges, S. W. (2011). The polyvagal theory: Neurophysiological foundations of emotions, attachment, communication, and self-regulation. W. W. Norton & Company.",
+      type: "book"
+    },
+    {
+      citation: "Siegel, D. J. (2012). The developing mind: How relationships and the brain interact to shape who we are (2nd ed.). Guilford Press.",
+      type: "book"
+    },
+    {
+      citation: "Courtois, C. A., & Ford, J. D. (Eds.). (2009). Treating complex traumatic stress disorders: An evidence-based guide. Guilford Press.",
+      type: "book"
+    },
+    {
+      citation: "Pearlman, L. A., & Saakvitne, K. W. (1995). Trauma and the therapist: Countertransference and vicarious traumatization in psychotherapy with incest survivors. W. W. Norton & Company.",
+      type: "book"
+    },
+    {
+      citation: "Briere, J., & Scott, C. (2014). Principles of trauma therapy: A guide to symptoms, evaluation, and treatment (2nd ed.). SAGE Publications.",
+      type: "book"
     }
   ],
   
   // ACEP REQUIRED: Completion Requirements
   completionRequirements: {
     passingScore: 80,
+    requirements: "To receive CE credit for this trauma-informed care course, participants must: (1) Complete all five course modules in their entirety, (2) Pass the final assessment with a score of 80% or higher, and (3) Complete the course evaluation form with feedback on the content and learning experience.",
     mustCompleteAllModules: true,
     mustPassAssessment: true,
     mustCompleteEvaluation: true,
@@ -193,14 +218,17 @@ const traumaInformedCareCourse = {
           imageAlt: "Diverse group in supportive setting",
           imagePosition: "right",
           title: "The Prevalence of Trauma",
-          content: `<p>Trauma exposure is far more common than many clinicians realize:</p>
+          content: `<p>Trauma exposure is far more common than many clinicians realize. Consider these statistics:</p>
           <ul>
-            <li><strong>70% of adults</strong> worldwide have experienced at least one traumatic event</li>
-            <li><strong>1 in 4 children</strong> experience abuse or neglect</li>
-            <li><strong>90% of public mental health clients</strong> have trauma histories</li>
+            <li><strong>70% of adults</strong> worldwide have experienced at least one traumatic event in their lifetime</li>
+            <li><strong>1 in 4 children</strong> experience abuse or neglect before age 18</li>
+            <li><strong>90% of public mental health clients</strong> have significant trauma histories</li>
             <li><strong>61% of adults</strong> report at least one Adverse Childhood Experience (ACE)</li>
+            <li><strong>1 in 5 women</strong> and <strong>1 in 71 men</strong> have experienced rape at some point in their lives</li>
+            <li><strong>8% of the population</strong> will develop PTSD at some point—but many more experience sub-threshold symptoms</li>
           </ul>
-          <p>These statistics underscore why <em>every</em> clinical interaction should be trauma-informed — we must assume trauma may be present even when not disclosed.</p>`,
+          <p>These statistics underscore a critical point: <strong>every clinical interaction should be trauma-informed</strong>. We must assume trauma may be present even when not disclosed. Many survivors never tell anyone about their experiences—not because they weren't affected, but because of shame, fear, or lack of opportunity.</p>
+          <p>This is why trauma-informed care is not a specialty—it's a universal approach that should inform all clinical practice.</p>`,
           highlight: true
         },
         {
@@ -421,8 +449,17 @@ const traumaInformedCareCourse = {
           type: "text",
           order: 2,
           textContent: `<h3>The Foundation of Trauma-Informed Practice</h3>
-          <p>In 2014, SAMHSA (Substance Abuse and Mental Health Services Administration) published six key principles that guide trauma-informed approaches. These principles apply across settings — clinical practice, schools, healthcare, criminal justice, and organizations.</p>
-          <p>These principles are not techniques or interventions, but rather a <strong>lens through which all interactions and decisions are filtered</strong>. They represent a fundamental shift in how we think about and respond to people who have experienced trauma.</p>`
+          <p>In 2014, SAMHSA (Substance Abuse and Mental Health Services Administration) published six key principles that guide trauma-informed approaches. These principles have become the gold standard for implementing trauma-informed care across settings—clinical practice, schools, healthcare, criminal justice, child welfare, and organizational development.</p>
+          <p>These principles are not techniques or interventions in themselves. Rather, they represent a <strong>fundamental shift in perspective</strong>—a lens through which all interactions, policies, and decisions are filtered. Implementing trauma-informed care means asking at every turn: "How does this align with these six principles? Could this practice inadvertently harm someone with a trauma history?"</p>
+          <p><strong>Why These Principles Matter:</strong></p>
+          <ul style="margin-left: 20px; margin-bottom: 16px;">
+            <li>They address the core wounds of trauma: loss of safety, trust, control, and connection</li>
+            <li>They prevent re-traumatization by identifying and eliminating harmful practices</li>
+            <li>They create environments where healing can occur</li>
+            <li>They apply universally—to individuals, organizations, and systems</li>
+            <li>They can be implemented regardless of resources or setting</li>
+          </ul>
+          <p>As you learn each principle, consider: How well does your current practice embody this principle? What small changes could make a significant difference? Remember that trauma-informed care is a journey, not a destination—continuous improvement is the goal.</p>`
         },
         {
           type: "accordion",
@@ -431,22 +468,28 @@ const traumaInformedCareCourse = {
             {
               title: "1. SAFETY",
               content: `<p><strong>The foundational principle upon which all others rest.</strong></p>
-              <p>Safety encompasses both physical and emotional/psychological security. Trauma survivors often have compromised ability to detect safety vs. danger, so we must be intentional about creating safety.</p>
+              <p>Safety encompasses both physical and emotional/psychological security. Without safety, no meaningful therapeutic work can occur. Trauma survivors often have compromised ability to accurately detect safety versus danger—their nervous system is calibrated for threat, not security. This means we must be intentional and explicit about creating safety rather than assuming it exists.</p>
               <p><strong>Physical Safety includes:</strong></p>
               <ul>
-                <li>Safe, welcoming physical environment</li>
-                <li>Clear exits, good lighting, comfortable seating</li>
-                <li>Privacy protections</li>
-                <li>Predictable routines and schedules</li>
+                <li>Safe, welcoming, clean physical environment</li>
+                <li>Clear exits and sightlines—the client should never feel trapped</li>
+                <li>Good lighting that isn't harsh—dim lighting can feel unsafe</li>
+                <li>Comfortable seating with options for where to sit</li>
+                <li>Temperature control and comfort</li>
+                <li>Privacy protections—soundproofing, no interruptions</li>
+                <li>Predictable routines and schedules—knowing what to expect</li>
+                <li>Clear signage and wayfinding</li>
               </ul>
               <p><strong>Emotional Safety includes:</strong></p>
               <ul>
-                <li>Consistent, reliable relationships</li>
-                <li>Clear boundaries and expectations</li>
-                <li>Validating and non-judgmental responses</li>
-                <li>Freedom from shaming, blaming, or coercion</li>
+                <li>Consistent, reliable relationships—the clinician shows up the same way each session</li>
+                <li>Clear boundaries and expectations—both parties know the rules</li>
+                <li>Validating and non-judgmental responses—feelings are accepted without criticism</li>
+                <li>Freedom from shaming, blaming, or coercion—no one is made to feel bad about themselves</li>
+                <li>Respect for autonomy—the client's decisions are honored</li>
+                <li>Cultural sensitivity and humility—differences are respected</li>
               </ul>
-              <p><strong>Clinical Application:</strong> Begin each session by checking in about safety. Use language like "I want to make sure you feel safe here. Is there anything I can do to help with that?" Be attentive to subtle signs of discomfort—shifts in body posture, changes in eye contact, voice changes—that may indicate the client is feeling unsafe even if they don't verbalize it.</p>`
+              <p><strong>Clinical Application:</strong> Begin each session by checking in about safety. Use language like "I want to make sure you feel safe here. Is there anything I can do to help with that?" Be attentive to subtle signs of discomfort—shifts in body posture, changes in eye contact, voice changes, fidgeting—that may indicate the client is feeling unsafe even if they don't verbalize it. Create a "safety signal" the client can use if they need a break or feel overwhelmed.</p>`
             },
             {
               title: "2. TRUSTWORTHINESS AND TRANSPARENCY",
@@ -715,57 +758,81 @@ const traumaInformedCareCourse = {
               <p><strong>Remember:</strong> You are a "neuroception of safety" — your regulated presence signals safety to the client's nervous system.</p>`
             },
             {
-              title: "Predictability and Structure",
-              content: `<p>Trauma often involves chaos and unpredictability. Structure provides containment:</p>
+              title: "Predictability and Structure: Creating Containment",
+              content: `<p>Trauma often involves chaos, unpredictability, and loss of control. Structure and predictability in therapy provide containment—a sense that things are organized, reliable, and manageable.</p>
+              <p><strong>Elements of Predictability:</strong></p>
               <ul>
-                <li>Consistent session times and length</li>
-                <li>Clear session structure (beginning, middle, end)</li>
-                <li>Transparent about what to expect</li>
-                <li>Advance notice of changes (vacations, schedule changes)</li>
-                <li>Reliable follow-through on commitments</li>
+                <li>Consistent session times and length—same day, same time, same duration</li>
+                <li>Clear session structure—clients know what to expect</li>
+                <li>Transparent processes—no surprises or hidden agendas</li>
+                <li>Advance notice of changes—vacations, schedule changes, policy updates communicated ahead of time</li>
+                <li>Reliable follow-through—you do what you say you'll do</li>
+                <li>Same physical setup—chair positions, lighting, materials consistently arranged</li>
               </ul>
               <p><strong>Sample Session Structure:</strong></p>
               <ol>
-                <li>Check-in and grounding</li>
-                <li>Review/connect to previous session</li>
-                <li>Main work of session</li>
-                <li>Processing/integration time</li>
-                <li>Grounding and closure</li>
-              </ol>`
-            },
-            {
-              title: "Collaborative Safety Planning",
-              content: `<p>Involve clients in creating their own safety:</p>
+                <li><strong>Opening/Check-in:</strong> How are they arriving? What's happened since last session? Brief grounding if needed</li>
+                <li><strong>Bridge:</strong> Connect to previous session—"Last time we discussed..." Creates continuity</li>
+                <li><strong>Main work:</strong> The core focus of today's session—skills building, processing, problem-solving</li>
+                <li><strong>Processing:</strong> What came up? What does client take away? Integration time</li>
+                <li><strong>Closure/Grounding:</strong> Don't end in the middle of difficult material. Ground, contain, plan for the week</li>
+              </ol>
+              <p><strong>Why Structure Matters:</strong></p>
               <ul>
-                <li>"What helps you feel safe?"</li>
-                <li>"Is there anything about this space that feels uncomfortable?"</li>
-                <li>"What would you like me to do if you become overwhelmed?"</li>
-                <li>"What's your signal if you need to pause?"</li>
+                <li>Creates sense of safety and control</li>
+                <li>Reduces anxiety about "what will happen"</li>
+                <li>Models healthy boundaries and containment</li>
+                <li>Prevents sessions from becoming chaotic or overwhelming</li>
+                <li>Helps clients learn to structure their own lives</li>
               </ul>
-              <p><strong>Create Safety Plans Together:</strong></p>
-              <ul>
-                <li>Identify early warning signs of distress</li>
-                <li>List coping strategies that work</li>
-                <li>Identify support people to contact</li>
-                <li>Plan for crisis situations</li>
-              </ul>`
+              <p><strong>Tip:</strong> Verbalize the structure: "We have about 15 minutes left today, so let's start winding down and think about what you want to hold onto from today."</p>`
             },
             {
-              title: "Managing Therapeutic Pace",
-              content: `<p><strong>"Window of Tolerance" Awareness:</strong></p>
-              <p>Keep work within the client's capacity. Signs of leaving the window:</p>
+              title: "Collaborative Safety Planning: Empowering Clients",
+              content: `<p>Safety planning should be a collaborative process that empowers clients to create their own safety rather than having it imposed on them. This collaboration itself is therapeutic—countering the loss of control that characterized their trauma.</p>
+              <p><strong>Questions to Explore:</strong></p>
               <ul>
-                <li><strong>Hyperarousal:</strong> Agitation, rapid speech, anxiety, anger</li>
-                <li><strong>Hypoarousal:</strong> Shutdown, dissociation, flat affect, disconnection</li>
+                <li>"What helps you feel safe?" (Listen for what actually works for THIS person)</li>
+                <li>"Is there anything about this space that feels uncomfortable?" (Be willing to adjust)</li>
+                <li>"What would you like me to do if you become overwhelmed in session?" (Create a plan in advance)</li>
+                <li>"What's your signal if you need to pause or stop?" (Establish a clear communication method)</li>
+                <li>"What does feeling 'safe' mean to you?" (Definitions vary by person and culture)</li>
+                <li>"What helps you feel grounded when you're triggered at home?"</li>
+              </ul>
+              <p><strong>Creating Safety Plans Together:</strong></p>
+              <ul>
+                <li><strong>Identify early warning signs:</strong> What are the first indications they're becoming activated? What body sensations, thoughts, or behaviors signal distress?</li>
+                <li><strong>List coping strategies that work:</strong> What has helped before? What are they willing to try?</li>
+                <li><strong>Identify support people:</strong> Who can they contact? What would they say?</li>
+                <li><strong>Plan for crisis:</strong> What to do if things escalate beyond coping skills? Crisis line numbers, emergency contacts, when to seek emergency care.</li>
+                <li><strong>Create environmental safety:</strong> Means restriction, safe spaces, items that help them ground.</li>
+              </ul>
+              <p><strong>Document the Plan:</strong> Write it down—the client should have a copy. Review and update regularly. This becomes their roadmap for managing distress.</p>`
+            },
+            {
+              title: "Managing Therapeutic Pace: Working Within the Window",
+              content: `<p>One of the most important trauma-informed skills is pacing—keeping the work within the client's window of tolerance so they can process without being overwhelmed. Too fast leads to flooding; too slow may never address the trauma.</p>
+              <p><strong>Window of Tolerance Awareness:</strong></p>
+              <p>The window of tolerance is the zone where a person can think, feel, and function effectively. Keep therapeutic work within this window. Signs of leaving the window:</p>
+              <ul>
+                <li><strong>Hyperarousal (above window):</strong> Agitation, rapid speech, racing thoughts, anxiety, anger, inability to sit still, hypervigilance</li>
+                <li><strong>Hypoarousal (below window):</strong> Shutdown, dissociation, flat affect, disconnection, glazed eyes, slowed responses, numbness</li>
               </ul>
               <p><strong>Pacing Strategies:</strong></p>
               <ul>
-                <li>Titration — small doses of difficult material</li>
-                <li>Pendulation — moving between distress and resource</li>
-                <li>Grounding before, during, and after difficult content</li>
-                <li>"Slow is fast" — rushing increases risk of overwhelm</li>
+                <li><strong>Titration:</strong> Work with small doses of difficult material rather than diving into the deep end. Process a piece, ground, process another piece.</li>
+                <li><strong>Pendulation:</strong> Intentionally move between distress and resource. Touch the difficult material, then return to safety. This builds capacity over time.</li>
+                <li><strong>Grounding:</strong> Ground before, during, and after difficult content. Never let a client leave highly activated.</li>
+                <li><strong>Check-ins:</strong> Regularly ask "How are you doing?" "What are you noticing in your body?" "Do we need to slow down?"</li>
+                <li><strong>"Slow is fast":</strong> Rushing to process trauma often backfires. Slower, safer work gets better results in the long run.</li>
+                <li><strong>Respect client limits:</strong> If they say "I can't go there today," believe them.</li>
               </ul>
-              <p><strong>Key Principle:</strong> "If in doubt, ground it out."</p>`
+              <p><strong>Key Principles:</strong></p>
+              <ul>
+                <li>"If in doubt, ground it out."</li>
+                <li>A session that ends calmly is better than one that processes "more" but leaves the client destabilized.</li>
+                <li>Build tolerance gradually—today's edge becomes tomorrow's baseline.</li>
+              </ul>`
             }
           ]
         },
@@ -775,12 +842,23 @@ const traumaInformedCareCourse = {
           image: "https://images.unsplash.com/photo-1497366811353-6870744d04b2?w=600",
           imageAlt: "Calming therapy office environment",
           imagePosition: "right",
-          title: "The Language of Safety",
-          content: `<p>Words matter. Trauma-informed language:</p>
+          title: "The Language of Safety: Words That Heal",
+          content: `<p>Words matter deeply to trauma survivors. The language we use can either reinforce safety or trigger defensive responses. Trauma-informed language communicates respect, collaboration, and care.</p>
+          <p><strong>Reframes for Common Situations:</strong></p>
           <p><strong>Instead of:</strong> "Why did you..." → <strong>Try:</strong> "Help me understand what happened..."</p>
-          <p><strong>Instead of:</strong> "You need to..." → <strong>Try:</strong> "What would feel helpful?"</p>
+          <p><strong>Instead of:</strong> "You need to..." → <strong>Try:</strong> "What would feel helpful?" or "One option might be..."</p>
           <p><strong>Instead of:</strong> "Calm down" → <strong>Try:</strong> "I'm here with you. Let's breathe together."</p>
-          <p><strong>Instead of:</strong> "That shouldn't bother you" → <strong>Try:</strong> "It makes sense this is hard."</p>`,
+          <p><strong>Instead of:</strong> "That shouldn't bother you" → <strong>Try:</strong> "It makes sense this is hard given what you've been through."</p>
+          <p><strong>Instead of:</strong> "You always..." → <strong>Try:</strong> "I've noticed a pattern that..."</p>
+          <p><strong>Instead of:</strong> "But..." (negating) → <strong>Try:</strong> "And..." (adding)</p>
+          <p><strong>Phrases That Communicate Safety:</strong></p>
+          <ul>
+            <li>"You're safe here."</li>
+            <li>"Take all the time you need."</li>
+            <li>"There's no wrong way to feel about this."</li>
+            <li>"What would be most helpful right now?"</li>
+            <li>"We can slow down or stop whenever you need."</li>
+          </ul>`,
           highlight: true
         },
         {
@@ -877,82 +955,138 @@ const traumaInformedCareCourse = {
           accordionItems: [
             {
               title: "Common Clinical Pitfalls",
-              content: `<p><strong>Practices that can re-traumatize:</strong></p>
+              content: `<p><strong>Practices that can re-traumatize clients:</strong></p>
               <ul>
-                <li><strong>Forcing trauma disclosure:</strong> Pressuring clients to share before they're ready</li>
-                <li><strong>Overwhelm:</strong> Processing too much too fast without adequate stabilization</li>
-                <li><strong>Rigid rules:</strong> Inflexible policies that don't account for trauma needs</li>
-                <li><strong>Power imbalances:</strong> Authoritarian stance, making decisions without client input</li>
-                <li><strong>Boundary violations:</strong> Inappropriate self-disclosure, dual relationships</li>
-                <li><strong>Dismissing/minimizing:</strong> "That wasn't that bad" or "You should be over it by now"</li>
-                <li><strong>Blaming:</strong> Questions like "Why didn't you leave?" or "What were you wearing?"</li>
+                <li><strong>Forcing trauma disclosure:</strong> Pressuring clients to share trauma details before they're ready. The client may comply due to power dynamics but at significant psychological cost.</li>
+                <li><strong>Overwhelm:</strong> Processing too much material too fast without adequate stabilization. This can flood the client and cause decompensation rather than healing.</li>
+                <li><strong>Rigid rules and policies:</strong> Inflexible policies that don't account for trauma needs—strict no-contact policies, rigid attendance requirements, punitive responses to "non-compliance."</li>
+                <li><strong>Power imbalances:</strong> Authoritarian stance, making decisions without client input, not explaining rationale for treatment choices.</li>
+                <li><strong>Boundary violations:</strong> Inappropriate self-disclosure, dual relationships, physical touch without consent, using the therapeutic relationship for clinician's emotional needs.</li>
+                <li><strong>Dismissing or minimizing:</strong> Statements like "That wasn't that bad" or "You should be over it by now" or "Other people have been through worse."</li>
+                <li><strong>Blaming:</strong> Questions like "Why didn't you leave?" or "What were you wearing?" or "Why did you put yourself in that situation?"</li>
+                <li><strong>Pathologizing survival strategies:</strong> Labeling trauma responses as "manipulative," "attention-seeking," or "character flaws."</li>
+                <li><strong>Surprise interventions:</strong> Introducing exposure or processing without preparation, warning, or consent.</li>
+              </ul>
+              <p><strong>Common Phrases That Can Re-traumatize:</strong></p>
+              <ul>
+                <li>"Everything happens for a reason"</li>
+                <li>"What doesn't kill you makes you stronger"</li>
+                <li>"You need to forgive and move on"</li>
+                <li>"Try not to think about it"</li>
+                <li>"It could have been worse"</li>
               </ul>`
             },
             {
               title: "Institutional Re-traumatization",
-              content: `<p>Systems and institutions can replicate trauma dynamics:</p>
+              content: `<p>Systems and institutions can replicate trauma dynamics, even when individual staff members have good intentions. Understanding institutional re-traumatization is essential for advocacy and systemic change.</p>
+              <p><strong>Common Institutional Practices That Re-traumatize:</strong></p>
               <ul>
-                <li><strong>Loss of control:</strong> Rigid schedules, no choice in treatment</li>
-                <li><strong>Loss of privacy:</strong> Forced disclosure, lack of confidentiality</li>
-                <li><strong>Power imbalances:</strong> Hierarchical systems, punitive responses</li>
-                <li><strong>Unpredictability:</strong> Inconsistent staff, sudden changes</li>
-                <li><strong>Isolation:</strong> Separation from support systems</li>
-                <li><strong>Physical restraint:</strong> Can replicate abuse dynamics</li>
+                <li><strong>Loss of control:</strong> Rigid schedules, no choice in treatment, mandatory participation, rules without explanation</li>
+                <li><strong>Loss of privacy:</strong> Forced disclosure of trauma details to multiple people, group intake processes, lack of confidentiality</li>
+                <li><strong>Power imbalances:</strong> Hierarchical systems where clients have no voice, punitive responses to "non-compliance," staff who use authority coercively</li>
+                <li><strong>Unpredictability:</strong> Inconsistent staff, sudden rule changes, unclear expectations, arbitrary consequences</li>
+                <li><strong>Isolation:</strong> Separation from support systems, limited contact with family, restriction of communication</li>
+                <li><strong>Physical interventions:</strong> Use of restraints, seclusion, or forced medication—practices that can directly replicate abuse dynamics</li>
+                <li><strong>Bureaucratic barriers:</strong> Complex paperwork, long wait times, having to "prove" trauma to access services</li>
               </ul>
-              <p><strong>Advocacy Role:</strong> Trauma-informed clinicians advocate for system change, not just individual treatment.</p>`
+              <p><strong>Populations at Particular Risk:</strong></p>
+              <ul>
+                <li>Psychiatric inpatient patients</li>
+                <li>Incarcerated individuals</li>
+                <li>Children in foster care or residential treatment</li>
+                <li>People in homeless shelters</li>
+                <li>Individuals seeking asylum or immigration services</li>
+                <li>Emergency room patients</li>
+              </ul>
+              <p><strong>The Advocacy Role:</strong> Trauma-informed clinicians must advocate for systemic change, not just individual treatment. This means speaking up when policies or practices are harmful, participating in organizational change efforts, and using your professional voice to influence systems.</p>
+              <p><strong>Questions to Ask:</strong> "How would this policy feel to someone who has been abused or traumatized? Does this practice give people choice and control? What message does this send about whether we trust and respect the people we serve?"</p>`
             },
             {
               title: "Assessment Without Re-traumatization",
-              content: `<p><strong>Trauma-Informed Assessment Principles:</strong></p>
+              content: `<p>Assessment is often where re-traumatization first occurs. Traditional intake processes can require premature detailed disclosure, feel like interrogation, and trigger trauma responses. Here's how to assess trauma history while minimizing harm:</p>
+              <p><strong>Trauma-Informed Assessment Principles:</strong></p>
               <ul>
-                <li>Explain why you're asking and how information will be used</li>
-                <li>Offer choice: "You can share as much or as little as you'd like"</li>
-                <li>Don't require detailed trauma narratives initially</li>
-                <li>Watch for signs of overwhelm and pause if needed</li>
-                <li>Normalize responses: "Many people find this difficult to talk about"</li>
+                <li><strong>Explain why you're asking:</strong> "I'm asking about difficult experiences because it helps me understand how to best support you"</li>
+                <li><strong>Explain how information will be used:</strong> "This information is confidential and helps me tailor treatment to your needs"</li>
+                <li><strong>Offer choice:</strong> "You can share as much or as little as you'd like. You don't have to tell me everything today."</li>
+                <li><strong>Don't require detailed trauma narratives initially:</strong> You need to know trauma exists, not all the details</li>
+                <li><strong>Watch for signs of overwhelm:</strong> If the client is becoming activated, pause and offer grounding</li>
+                <li><strong>Normalize responses:</strong> "Many people find this difficult to talk about, and that's completely understandable"</li>
+                <li><strong>Respect "no":</strong> If someone doesn't want to discuss something, honor that boundary</li>
               </ul>
-              <p><strong>Sample Language:</strong></p>
-              <p>"I'd like to understand more about what brings you here. You don't need to share any details you're not comfortable with — we can go at whatever pace feels right for you."</p>`
+              <p><strong>Sample Language for Trauma Screening:</strong></p>
+              <p>"I'd like to understand more about what brings you here. Many people who seek counseling have experienced difficult or painful events in their past. You don't need to share any details you're not comfortable with—we can go at whatever pace feels right for you."</p>
+              <p>"Sometimes our past experiences affect how we feel and function today. Have you had experiences that were frightening, overwhelming, or that still bother you? You don't need to describe them—just knowing they're there helps me understand."</p>
+              <p><strong>Validated Screening Tools:</strong></p>
+              <ul>
+                <li><strong>ACE Questionnaire:</strong> Simple yes/no format, can be self-administered</li>
+                <li><strong>PC-PTSD-5:</strong> Brief 5-item screen for PTSD symptoms</li>
+                <li><strong>Life Events Checklist (LEC-5):</strong> Comprehensive trauma exposure inventory</li>
+                <li><strong>Trauma Symptom Inventory (TSI-2):</strong> More detailed symptom assessment</li>
+              </ul>
+              <p><strong>Remember:</strong> The goal of initial assessment is to know whether trauma is relevant, not to gather complete details. Detailed trauma processing comes later, after stabilization and rapport are established.</p>`
             },
             {
-              title: "When Mistakes Happen",
-              content: `<p>Even skilled clinicians sometimes inadvertently cause harm. What matters is how you respond:</p>
-              <p><strong>If you notice a client becoming distressed:</strong></p>
+              title: "When Mistakes Happen: Repair and Recovery",
+              content: `<p>Even skilled, trauma-informed clinicians sometimes inadvertently cause harm. What matters is how you recognize and respond to these ruptures. In fact, repair after rupture can actually strengthen the therapeutic relationship—modeling that relationships can survive mistakes.</p>
+              <p><strong>Recognizing That a Rupture Has Occurred:</strong></p>
+              <ul>
+                <li>Client suddenly becomes distant, withdrawn, or shut down</li>
+                <li>Client becomes agitated, defensive, or angry</li>
+                <li>Client dissociates or "checks out"</li>
+                <li>Client changes the subject abruptly</li>
+                <li>Client misses the next session or wants to terminate</li>
+                <li>You have a gut feeling that something went wrong</li>
+              </ul>
+              <p><strong>If You Notice a Client Becoming Distressed:</strong></p>
               <ol>
-                <li>Pause immediately</li>
-                <li>Acknowledge: "I notice this seems really hard right now"</li>
-                <li>Offer grounding: "Let's take a breath together"</li>
-                <li>Check in: "What do you need right now?"</li>
-                <li>Don't push forward — follow the client's lead</li>
+                <li><strong>Pause immediately:</strong> Stop whatever you were doing or saying</li>
+                <li><strong>Acknowledge:</strong> "I notice something shifted just now. It seems like this is really hard."</li>
+                <li><strong>Offer grounding:</strong> "Let's take a breath together" or "Can you feel your feet on the floor?"</li>
+                <li><strong>Check in:</strong> "What do you need right now?"</li>
+                <li><strong>Don't push forward:</strong> Follow the client's lead about whether to continue</li>
+                <li><strong>Offer to take a break:</strong> "We can pause here if you need to"</li>
               </ol>
-              <p><strong>After a rupture:</strong></p>
+              <p><strong>Repairing a Rupture:</strong></p>
               <ul>
-                <li>Name what happened honestly</li>
-                <li>Take responsibility (without excessive apologizing)</li>
-                <li>Ask what would help repair the relationship</li>
-                <li>Adjust your approach going forward</li>
-              </ul>`
+                <li><strong>Name what happened honestly:</strong> "I think I pushed too hard there" or "I asked something that felt intrusive"</li>
+                <li><strong>Take responsibility:</strong> Acknowledge your role without excessive apologizing—"I'm sorry, that was my mistake"</li>
+                <li><strong>Validate their response:</strong> "It makes sense you felt [angry/scared/shut down] when I did that"</li>
+                <li><strong>Ask what would help:</strong> "What would help repair this between us?"</li>
+                <li><strong>Adjust your approach:</strong> "I'll do that differently going forward"</li>
+                <li><strong>Follow through:</strong> Actually change your behavior based on what you learned</li>
+              </ul>
+              <p><strong>Why Repair Matters:</strong> For many trauma survivors, ruptures in relationships led to abandonment or further harm. Demonstrating that a relationship can survive a rupture—that mistakes can be acknowledged and repaired—is profoundly healing. It contradicts the expectation that conflict means the end of safety.</p>`
             },
             {
-              title: "The Importance of Clinician Self-Care",
-              content: `<p>A dysregulated clinician cannot provide regulated, safe care. Vicarious trauma is real.</p>
-              <p><strong>Signs of Vicarious Trauma:</strong></p>
+              title: "The Importance of Clinician Self-Care: Protecting the Caregiver",
+              content: `<p>A dysregulated clinician cannot provide regulated, safe care. Vicarious trauma (also called secondary traumatic stress) is real, common, and can end careers. Self-care is not optional or selfish—it's professionally and ethically necessary.</p>
+              <p><strong>Signs of Vicarious Trauma (Pay Attention!):</strong></p>
               <ul>
-                <li>Intrusive thoughts about clients' trauma</li>
-                <li>Increased cynicism or hopelessness</li>
-                <li>Emotional numbing or over-identification</li>
-                <li>Boundary difficulties</li>
-                <li>Physical symptoms, sleep problems</li>
+                <li>Intrusive thoughts about clients' trauma—images, stories replaying in your mind</li>
+                <li>Nightmares or disturbed sleep after hearing trauma material</li>
+                <li>Increased cynicism, hopelessness, or loss of faith in humanity</li>
+                <li>Emotional numbing—feeling less than you used to, difficulty connecting</li>
+                <li>Over-identification with clients—blurred boundaries, taking on their emotions</li>
+                <li>Hypervigilance in your own life—increased startle response, scanning for danger</li>
+                <li>Boundary difficulties—overworking, difficulty saying no, rescuing clients</li>
+                <li>Physical symptoms—headaches, GI problems, chronic fatigue, frequent illness</li>
+                <li>Increased substance use or other numbing behaviors</li>
+                <li>Avoidance of trauma material—dreading certain clients, avoiding topics</li>
+                <li>Changes in worldview—seeing danger everywhere, loss of trust in others</li>
               </ul>
               <p><strong>Prevention Strategies:</strong></p>
               <ul>
-                <li>Regular clinical supervision</li>
-                <li>Balanced caseload</li>
-                <li>Personal therapy as needed</li>
-                <li>Physical self-care (sleep, exercise, nutrition)</li>
-                <li>Connection outside of work</li>
-                <li>Ongoing professional development</li>
-              </ul>`
+                <li><strong>Regular clinical supervision:</strong> Essential for processing difficult cases and getting support—not just administrative oversight</li>
+                <li><strong>Balanced caseload:</strong> Limit the proportion of trauma-intensive clients; diversify your practice</li>
+                <li><strong>Personal therapy:</strong> Work through your own trauma history and current stress—you can't take clients where you haven't gone</li>
+                <li><strong>Physical self-care:</strong> Sleep, exercise, nutrition—the basics matter enormously</li>
+                <li><strong>Connection outside of work:</strong> Maintain relationships and activities that have nothing to do with trauma</li>
+                <li><strong>Boundaries with work:</strong> Limit after-hours contact, take real vacations, leave work at work</li>
+                <li><strong>Ongoing professional development:</strong> Learning helps maintain engagement and effectiveness</li>
+                <li><strong>Meaning-making:</strong> Stay connected to why this work matters</li>
+              </ul>
+              <p><strong>Remember:</strong> You cannot pour from an empty cup. Taking care of yourself is taking care of your clients.</p>`
             }
           ]
         },
@@ -962,15 +1096,23 @@ const traumaInformedCareCourse = {
           image: "https://images.unsplash.com/photo-1544027993-37dbfe43562a?w=600",
           imageAlt: "Supportive therapeutic interaction",
           imagePosition: "left",
-          title: "Universal Precautions",
-          content: `<p>Because trauma is so prevalent, adopt <strong>"universal precautions"</strong> — assume every client may have trauma history, even if not disclosed:</p>
+          title: "Universal Precautions: Assume Trauma May Be Present",
+          content: `<p>Because trauma is so prevalent (affecting 70%+ of adults), adopt <strong>"universal precautions"</strong>—treat everyone as if they may have a trauma history, even if not disclosed. This approach:</p>
           <ul>
-            <li>Always ask permission before touching or interventions</li>
-            <li>Explain what you're doing and why</li>
-            <li>Offer choices whenever possible</li>
-            <li>Watch for signs of distress and respond</li>
-            <li>Create safety by default, not just when trauma is known</li>
-          </ul>`,
+            <li>Ensures trauma-sensitive care for ALL clients, not just those who disclose</li>
+            <li>Reduces the risk of inadvertent re-traumatization</li>
+            <li>Creates environments where disclosure feels safer (if the client chooses)</li>
+            <li>Applies good clinical practices universally</li>
+          </ul>
+          <p><strong>Key Universal Precaution Practices:</strong></p>
+          <ul>
+            <li><strong>Always ask permission</strong> before physical touch, invasive questions, or potentially triggering interventions</li>
+            <li><strong>Explain what you're doing and why</strong>—no surprises or hidden agendas</li>
+            <li><strong>Offer choices</strong> whenever possible—where to sit, what to discuss, how to proceed</li>
+            <li><strong>Watch for signs of distress</strong> and respond promptly with grounding and support</li>
+            <li><strong>Create safety by default</strong>, not just when trauma is known or suspected</li>
+          </ul>
+          <p><strong>Remember:</strong> Many survivors never disclose—not because they weren't affected, but because of shame, fear, or lack of opportunity. Universal precautions protect everyone.</p>`,
           highlight: true
         },
         {
@@ -1062,60 +1204,119 @@ const traumaInformedCareCourse = {
           order: 3,
           accordionItems: [
             {
-              title: "Stabilization Skills: Grounding",
-              content: `<p><strong>Grounding techniques</strong> help clients return to the present moment when triggered or overwhelmed:</p>
-              <p><strong>5-4-3-2-1 Sensory Grounding:</strong></p>
+              title: "Stabilization Skills: Grounding - Returning to the Present",
+              content: `<p><strong>Grounding techniques</strong> help clients return to the present moment when triggered, overwhelmed, or dissociated. They work by engaging the senses and activating the prefrontal cortex, which helps modulate the amygdala's alarm response.</p>
+              <p><strong>5-4-3-2-1 Sensory Grounding (Most Widely Used):</strong></p>
               <ul>
-                <li>5 things you can see</li>
-                <li>4 things you can touch/feel</li>
-                <li>3 things you can hear</li>
-                <li>2 things you can smell</li>
-                <li>1 thing you can taste</li>
+                <li><strong>5 things you can see:</strong> Look around and name five specific things</li>
+                <li><strong>4 things you can touch/feel:</strong> Notice textures, temperatures, pressure</li>
+                <li><strong>3 things you can hear:</strong> Listen for sounds near and far</li>
+                <li><strong>2 things you can smell:</strong> Notice any scents in the environment</li>
+                <li><strong>1 thing you can taste:</strong> Notice the taste in your mouth</li>
               </ul>
-              <p><strong>Physical Grounding:</strong></p>
+              <p>Why it works: Engages all senses, requires cognitive effort that competes with trauma processing, orients to the present environment.</p>
+              <p><strong>Physical Grounding Techniques:</strong></p>
               <ul>
-                <li>Feet firmly on floor</li>
-                <li>Notice contact with chair</li>
-                <li>Hold something cold or textured</li>
-                <li>Splash water on face</li>
+                <li>Feet firmly on floor—press down, notice the pressure and support</li>
+                <li>Notice contact with chair—feel your back, legs, arms against the surface</li>
+                <li>Hold something cold (ice cube, cold water bottle) or textured (stress ball, rough fabric)</li>
+                <li>Splash cold water on face or wrists—activates the dive reflex</li>
+                <li>Press palms together firmly—creates sensory input</li>
+                <li>Stomp feet or walk around—movement helps discharge activation</li>
+                <li>Cross arms and tap alternating shoulders (butterfly hug)</li>
               </ul>
-              <p><strong>Cognitive Grounding:</strong></p>
+              <p><strong>Cognitive Grounding Techniques:</strong></p>
               <ul>
-                <li>State name, date, location</li>
-                <li>Count backwards from 100 by 7s</li>
-                <li>Name categories (5 colors, 5 animals)</li>
+                <li>State name, date, current location out loud</li>
+                <li>Count backwards from 100 by 7s (requires concentration)</li>
+                <li>Name categories: 5 colors you can see, 5 types of animals, 5 states</li>
+                <li>Describe your environment in detail as if to someone who can't see it</li>
+                <li>Mental math or word games</li>
+              </ul>
+              <p><strong>Teaching Grounding to Clients:</strong></p>
+              <ul>
+                <li>Practice when calm first—don't wait for crisis to learn skills</li>
+                <li>Identify which techniques work best for each individual</li>
+                <li>Create a personalized grounding "menu" for quick reference</li>
+                <li>Practice regularly to build automatic responses</li>
               </ul>`
             },
             {
-              title: "Stabilization Skills: Breathing",
-              content: `<p><strong>Breathing techniques</strong> directly regulate the nervous system:</p>
-              <p><strong>Extended Exhale:</strong> Breathe in for 4 counts, out for 6-8. Longer exhale activates parasympathetic system.</p>
-              <p><strong>Box Breathing:</strong> In for 4, hold for 4, out for 4, hold for 4. Repeat.</p>
-              <p><strong>Diaphragmatic Breathing:</strong> Hand on belly, breathe so belly rises (not chest).</p>
-              <p><strong>Important Notes:</strong></p>
+              title: "Stabilization Skills: Breathing - Regulating the Nervous System",
+              content: `<p><strong>Breathing techniques</strong> directly regulate the autonomic nervous system. The breath is unique in that it's both automatic AND under voluntary control—making it a powerful doorway to nervous system regulation.</p>
+              <p><strong>Why Breathing Works:</strong></p>
               <ul>
-                <li>Some trauma survivors find breath focus triggering</li>
+                <li>Extended exhale activates the parasympathetic nervous system (vagus nerve)</li>
+                <li>Slow, deep breathing signals safety to the brain</li>
+                <li>Focusing on breath interrupts rumination and worry</li>
+                <li>Can be done anywhere, anytime, without anyone noticing</li>
+              </ul>
+              <p><strong>Extended Exhale (Most Effective for Calming):</strong></p>
+              <ul>
+                <li>Breathe in for 4 counts</li>
+                <li>Breathe out for 6-8 counts (longer exhale is key)</li>
+                <li>The longer exhale activates the parasympathetic system</li>
+                <li>Repeat 5-10 times</li>
+              </ul>
+              <p><strong>Box Breathing (Good for Focus):</strong></p>
+              <ul>
+                <li>Breathe in for 4 counts</li>
+                <li>Hold for 4 counts</li>
+                <li>Breathe out for 4 counts</li>
+                <li>Hold for 4 counts</li>
+                <li>Repeat the "box" pattern</li>
+              </ul>
+              <p><strong>Diaphragmatic Breathing (Belly Breathing):</strong></p>
+              <ul>
+                <li>Place hand on belly</li>
+                <li>Breathe so belly rises (not chest)</li>
+                <li>This ensures deeper breaths engaging the diaphragm</li>
+                <li>Chest breathing is associated with stress; belly breathing with calm</li>
+              </ul>
+              <p><strong>Important Cautions:</strong></p>
+              <ul>
+                <li>Some trauma survivors find breath focus triggering—particularly those with strangulation, suffocation, or drowning experiences</li>
+                <li>Focusing on the body can increase dissociation for some clients</li>
                 <li>Always offer alternatives if breathing exercises increase distress</li>
-                <li>Start with gentle, brief practice and build up</li>
-              </ul>`
+                <li>Start with gentle, brief practice and build up gradually</li>
+                <li>External focus (count objects while breathing) can help if internal focus is too intense</li>
+              </ul>
+              <p><strong>Teaching Tip:</strong> Practice breathing exercises WITH the client in session. Model slow, calm breathing. Your regulated breathing can help co-regulate their nervous system.</p>`
             },
             {
-              title: "Stabilization Skills: Containment",
-              content: `<p><strong>Containment</strong> techniques help manage overwhelming material between sessions:</p>
-              <p><strong>Container Exercise:</strong></p>
+              title: "Stabilization Skills: Containment - Managing Overwhelming Material",
+              content: `<p><strong>Containment</strong> techniques help clients manage overwhelming traumatic material between sessions. They provide a sense of control over intrusive thoughts, memories, and emotions—which is crucial since trauma often involves loss of control.</p>
+              <p><strong>The Container Exercise (Classic Technique):</strong></p>
               <ol>
-                <li>Imagine a container that can hold anything — any size, material, with a secure lid</li>
-                <li>When distressing material arises, visualize placing it in the container</li>
-                <li>Close and lock the container</li>
-                <li>Know you can open it when you choose (in therapy, when supported)</li>
+                <li><strong>Create the container:</strong> Ask the client to imagine a container that can hold anything—any size, any material, with a secure lid or lock. It could be a vault, safe, treasure chest, spaceship, or anything that feels secure to them.</li>
+                <li><strong>Use the container:</strong> When distressing material arises (between sessions or at the end of a difficult session), visualize placing the disturbing thoughts, images, or feelings into the container.</li>
+                <li><strong>Secure the container:</strong> Close and lock the container. Some clients add additional security features (guards, force fields, etc.).</li>
+                <li><strong>Know you can return:</strong> The material isn't gone—it's safely stored. You can open the container when you choose (in therapy, when you have support).</li>
               </ol>
-              <p><strong>Variations:</strong></p>
+              <p><strong>Variations (Offer Options to Find Best Fit):</strong></p>
               <ul>
-                <li>Vault, safe, treasure chest</li>
-                <li>Cloud that floats away</li>
-                <li>River carrying material downstream</li>
+                <li><strong>Vault or safe:</strong> Heavy, secure, with combination lock</li>
+                <li><strong>Cloud:</strong> Place the material on a cloud and watch it float away</li>
+                <li><strong>River:</strong> Put the material on a leaf and watch the river carry it downstream</li>
+                <li><strong>Movie theater:</strong> Put the memory on a screen and pause/rewind/fast-forward as needed</li>
+                <li><strong>Computer file:</strong> Save and close the file, put it in a password-protected folder</li>
+                <li><strong>Drawer or cabinet:</strong> Simple, everyday containment</li>
               </ul>
-              <p><strong>Purpose:</strong> Provides sense of control over traumatic material. "I don't have to deal with this right now."</p>`
+              <p><strong>Purpose and Benefits:</strong></p>
+              <ul>
+                <li>Provides sense of control over traumatic material: "I don't have to deal with this right now"</li>
+                <li>Reduces flooding between sessions</li>
+                <li>Allows clients to engage with daily life without constant intrusion</li>
+                <li>Creates boundary between therapy work and regular life</li>
+                <li>Builds confidence in ability to manage overwhelming material</li>
+              </ul>
+              <p><strong>Teaching Tips:</strong></p>
+              <ul>
+                <li>Practice when calm, not during overwhelming moments</li>
+                <li>Help client develop their own personalized container with rich sensory details</li>
+                <li>Use at the end of difficult sessions: "Let's put this away before you leave"</li>
+                <li>Remind clients between sessions that they have this tool</li>
+              </ul>`
             },
             {
               title: "Evidence-Based Trauma Treatments",
@@ -1162,16 +1363,71 @@ const traumaInformedCareCourse = {
               <p><strong>Remember:</strong> No single approach works for everyone. Match treatment to client needs, preferences, cultural background, and readiness. Client choice and collaboration are essential.</p>`
             },
             {
-              title: "When to Refer",
-              content: `<p><strong>Consider referral or consultation when:</strong></p>
+              title: "When to Refer: Knowing Your Limits",
+              content: `<p>Effective trauma-informed care includes knowing when a client's needs exceed your expertise, training, or capacity. Referring is not failure—it's ensuring the client gets the best possible care.</p>
+              <p><strong>Consider Referral or Consultation When:</strong></p>
               <ul>
-                <li>Complex trauma requiring specialized treatment you're not trained in</li>
-                <li>Client needs higher level of care (intensive outpatient, residential)</li>
-                <li>Comorbid conditions requiring expertise (dissociative disorders, substance use)</li>
-                <li>Lack of progress despite appropriate intervention</li>
-                <li>Your own reactions are interfering with treatment</li>
+                <li><strong>Complex trauma requiring specialized treatment:</strong> Dissociative disorders, severe attachment trauma, ritual abuse—these require specialized training you may not have</li>
+                <li><strong>Higher level of care needed:</strong> When outpatient isn't sufficient—intensive outpatient, partial hospitalization, residential treatment, or inpatient may be indicated</li>
+                <li><strong>Comorbid conditions requiring expertise:</strong> Severe eating disorders, active substance dependence, bipolar disorder, psychotic symptoms—may need specialized or coordinated care</li>
+                <li><strong>Medical issues:</strong> Unexplained physical symptoms, medication needs, neurological concerns</li>
+                <li><strong>Lack of progress:</strong> Despite appropriate intervention, client isn't improving—fresh eyes may help</li>
+                <li><strong>Your own reactions are interfering:</strong> Countertransference, vicarious trauma, or personal triggers are affecting the work</li>
+                <li><strong>Safety concerns you can't manage:</strong> Suicidality or violence risk beyond your competence</li>
+                <li><strong>Client needs something outside your scope:</strong> Specific modality like EMDR or neurofeedback you don't provide</li>
               </ul>
-              <p><strong>Referring is not failure</strong> — it's ensuring the client gets the best care. Maintain the relationship during transition when possible.</p>`
+              <p><strong>How to Refer Well:</strong></p>
+              <ul>
+                <li>Frame as getting the client the BEST care, not as rejection or abandonment</li>
+                <li>Have specific referral resources ready—don't leave the client to figure it out alone</li>
+                <li>Offer to help with the transition (warm handoff, shared session, coordination)</li>
+                <li>If possible, maintain the relationship during transition rather than abrupt termination</li>
+                <li>Be honest about your reasons in a way that doesn't shame the client</li>
+              </ul>
+              <p><strong>Sample Language:</strong> "I want to make sure you're getting the best possible care for what you're dealing with. I think you would benefit from working with someone who specializes in [X]. I'd like to help connect you with someone, and I can stay involved during the transition if that would be helpful."</p>
+              <p><strong>Remember:</strong> Referring when appropriate is a sign of clinical wisdom and ethical practice—not failure.</p>`
+            },
+            {
+              title: "Psychoeducation: A Key Trauma-Informed Intervention",
+              content: `<p>Psychoeducation about trauma is itself a powerful intervention. Helping clients understand what happened to their brain and body normalizes their experience and reduces shame.</p>
+              <p><strong>Key Topics for Client Psychoeducation:</strong></p>
+              <ul>
+                <li><strong>The brain's survival response:</strong> Explain how the amygdala and stress response work, why they can't just "think their way out" of trauma responses</li>
+                <li><strong>Window of tolerance:</strong> Help clients recognize their states and early warning signs of dysregulation</li>
+                <li><strong>Triggers:</strong> Explain how triggers work neurobiologically—why something "unrelated" can cause intense reactions</li>
+                <li><strong>The body keeps the score:</strong> Why trauma affects physical health and why body-based interventions matter</li>
+                <li><strong>Neuroplasticity and hope:</strong> The brain can change—recovery is possible</li>
+              </ul>
+              <p><strong>How to Deliver Psychoeducation:</strong></p>
+              <ul>
+                <li>Use simple language, not clinical jargon</li>
+                <li>Use metaphors and analogies (smoke alarm for amygdala, etc.)</li>
+                <li>Offer handouts and resources for review between sessions</li>
+                <li>Check understanding—have them explain it back</li>
+                <li>Connect to their specific experience</li>
+              </ul>
+              <p><strong>Sample Script:</strong> "Your brain learned to protect you from danger, and it got really good at it. But now, even when you're safe, that alarm system keeps going off because it was set to be super-sensitive. That's not weakness—that's your brain doing exactly what it was designed to do. The good news is we can recalibrate that alarm system."</p>`
+            },
+            {
+              title: "Co-Regulation: The Clinician's Nervous System as Tool",
+              content: `<p>Trauma affects the nervous system, and nervous systems are social—they influence each other. Your regulated presence can help regulate your client.</p>
+              <p><strong>How Co-Regulation Works:</strong></p>
+              <ul>
+                <li>Nervous systems are designed to sync with each other (social baseline theory)</li>
+                <li>A calm, regulated person can help an activated person calm down</li>
+                <li>This happens largely outside conscious awareness, through facial expressions, voice tone, body posture</li>
+                <li>It's how parents soothe infants—and it works for adults too</li>
+              </ul>
+              <p><strong>Practical Applications:</strong></p>
+              <ul>
+                <li><strong>Monitor your own state:</strong> You can't co-regulate if you're dysregulated</li>
+                <li><strong>Use a calm, low voice:</strong> High pitch signals danger</li>
+                <li><strong>Slow your breathing:</strong> Clients may unconsciously match your rhythm</li>
+                <li><strong>Relax your body:</strong> Tension in you creates tension in them</li>
+                <li><strong>Make eye contact (if culturally appropriate):</strong> Signals social engagement</li>
+                <li><strong>Be present:</strong> Your full attention communicates safety</li>
+              </ul>
+              <p><strong>Key Insight:</strong> Before you can teach self-regulation, you must provide co-regulation. Many trauma survivors never had a safe co-regulating presence—the therapy relationship may be their first experience of this.</p>`
             }
           ]
         },
