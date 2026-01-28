@@ -929,7 +929,7 @@ Return your findings in this JSON format:
 If you cannot verify the requirements, explain why in the summary.`;
 
     const message = await anthropic.messages.create({
-      model: 'claude-sonnet-4-20250514',
+      model: 'claude-3-5-sonnet-20241022',
       max_tokens: 1500,
       messages: [{ role: 'user', content: prompt }]
     });
@@ -2658,7 +2658,7 @@ Generate the complete course now. The content MUST meet NBCC word count requirem
     
     try {
       const stream = await anthropic.messages.stream({
-        model: 'claude-sonnet-4-20250514',
+        model: 'claude-3-5-sonnet-20241022',
         max_tokens: 16000,
         messages
       });
