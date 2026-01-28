@@ -2458,7 +2458,7 @@ Return ONLY valid JSON, no other text.`;
     }
     
     const response = await anthropic.messages.create({
-      model: 'claude-sonnet-4-20250514',
+      model: 'claude-3-5-sonnet-20241022',
       max_tokens: 4000,
       messages: messages
     });
@@ -2872,7 +2872,7 @@ IMPORTANT:
     console.log(`Regenerating lesson: ${lessonTitle} (target: ${targetWords} words)`);
     
     const response = await anthropic.messages.create({
-      model: 'claude-sonnet-4-20250514',
+      model: 'claude-3-5-sonnet-20241022',
       max_tokens: 8000,
       messages: [{ role: 'user', content: prompt }]
     });
