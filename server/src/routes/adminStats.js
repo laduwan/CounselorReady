@@ -3,19 +3,26 @@
 
 import express from 'express';
 import mongoose from 'mongoose';
-import { protect, adminOnly } from '../middleware/auth.js';
+import { protect } from '../middleware/auth.js';
 
 const router = express.Router();
 
+// Admin check middleware (defined here since auth.js may not export it)
+const adminOnly = (req, res, next) => {
+  if (req.user && req.user.role === 'admin') {
+    next();
+  } else {
+    res.status(403).json({ success: false, error: { message: 'Admin access required' } });
+  }
+};
+
 /**
  * GET /api/admin/stats/overview
- * Get comprehensive admin dashboard statistics
  */
 router.get('/overview', protect, adminOnly, async (req, res) => {
   try {
     const db = mongoose.connection.db;
     
-    // Get all counts in parallel
     const [
       totalUsers,
       activeUsers,
@@ -28,41 +35,29 @@ router.get('/overview', protect, adminOnly, async (req, res) => {
       recentCompletions,
       evaluationStats
     ] = await Promise.all([
-      // User counts
       db.collection('users').countDocuments({ isDeleted: { $ne: true } }),
       db.collection('users').countDocuments({ 
         isDeleted: { $ne: true },
         lastLogin: { $gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) }
       }),
-      
-      // Course counts
       db.collection('courses').countDocuments({ isDeleted: { $ne: true } }),
       db.collection('interactivecourses').countDocuments({ status: 'published' }),
       db.collection('courses').countDocuments({ status: 'published', isDeleted: { $ne: true } }),
-      
-      // Completion counts
       db.collection('celogs').countDocuments({ status: 'completed' }),
       db.collection('certificates').countDocuments({}),
-      
-      // Total CE hours logged
       db.collection('celogs').aggregate([
         { $match: { status: 'completed' } },
         { $group: { _id: null, total: { $sum: '$ceHours' } } }
       ]).toArray(),
-      
-      // Recent completions (last 7 days)
       db.collection('celogs').countDocuments({
         status: 'completed',
         completionDate: { $gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) }
       }),
-      
-      // Evaluation stats
       db.collection('evaluations').aggregate([
         { $group: { _id: '$status', count: { $sum: 1 } } }
       ]).toArray()
     ]);
     
-    // Process evaluation stats
     const evaluations = { total: 0, completed: 0, pending: 0 };
     evaluationStats.forEach(stat => {
       evaluations.total += stat.count;
@@ -89,7 +84,7 @@ router.get('/overview', protect, adminOnly, async (req, res) => {
           certificates: totalCertificates
         },
         ceHours: { total: totalCEHours[0]?.total || 0 },
-        evaluations: evaluations
+        evaluations
       }
     });
   } catch (error) {
@@ -100,7 +95,6 @@ router.get('/overview', protect, adminOnly, async (req, res) => {
 
 /**
  * GET /api/admin/stats/courses
- * Get detailed course statistics
  */
 router.get('/courses', protect, adminOnly, async (req, res) => {
   try {
@@ -117,23 +111,9 @@ router.get('/courses', protect, adminOnly, async (req, res) => {
         }
       },
       {
-        $lookup: {
-          from: 'interactivecourses',
-          localField: 'slug',
-          foreignField: 'slug',
-          as: 'interactiveData'
-        }
-      },
-      {
         $project: {
-          title: 1,
-          slug: 1,
-          ceHours: 1,
-          status: 1,
-          categories: 1,
-          createdAt: 1,
-          completionCount: { $size: '$completions' },
-          isInteractive: { $gt: [{ $size: '$interactiveData' }, 0] }
+          title: 1, slug: 1, ceHours: 1, status: 1, categories: 1, createdAt: 1,
+          completionCount: { $size: '$completions' }
         }
       },
       { $sort: { completionCount: -1 } }
@@ -141,9 +121,7 @@ router.get('/courses', protect, adminOnly, async (req, res) => {
     
     const interactiveCourses = await db.collection('interactivecourses').find({
       status: 'published'
-    }).project({
-      title: 1, slug: 1, ceHours: 1, status: 1, categories: 1, createdAt: 1
-    }).toArray();
+    }).project({ title: 1, slug: 1, ceHours: 1, status: 1, createdAt: 1 }).toArray();
     
     res.json({
       success: true,
@@ -176,12 +154,7 @@ router.get('/evaluations', protect, adminOnly, async (req, res) => {
     if (courseId) query.course = new mongoose.Types.ObjectId(courseId);
     
     const [evaluations, total] = await Promise.all([
-      db.collection('evaluations')
-        .find(query)
-        .sort({ createdAt: -1 })
-        .skip((page - 1) * limit)
-        .limit(parseInt(limit))
-        .toArray(),
+      db.collection('evaluations').find(query).sort({ createdAt: -1 }).skip((page - 1) * limit).limit(parseInt(limit)).toArray(),
       db.collection('evaluations').countDocuments(query)
     ]);
     
@@ -200,31 +173,6 @@ router.get('/evaluations', protect, adminOnly, async (req, res) => {
   } catch (error) {
     console.error('Evaluation stats error:', error);
     res.status(500).json({ success: false, error: { message: 'Failed to load evaluation statistics' } });
-  }
-});
-
-/**
- * PUT /api/admin/stats/evaluations/:id/status
- */
-router.put('/evaluations/:id/status', protect, adminOnly, async (req, res) => {
-  try {
-    const { status } = req.body;
-    const db = mongoose.connection.db;
-    
-    const result = await db.collection('evaluations').findOneAndUpdate(
-      { _id: new mongoose.Types.ObjectId(req.params.id) },
-      { $set: { status, reviewedAt: new Date(), reviewedBy: req.user._id } },
-      { returnDocument: 'after' }
-    );
-    
-    if (!result.value) {
-      return res.status(404).json({ success: false, error: { message: 'Evaluation not found' } });
-    }
-    
-    res.json({ success: true, data: result.value });
-  } catch (error) {
-    console.error('Update evaluation error:', error);
-    res.status(500).json({ success: false, error: { message: 'Failed to update evaluation' } });
   }
 });
 
