@@ -7,7 +7,7 @@ import { protect } from '../middleware/auth.js';
 
 const router = express.Router();
 
-// Admin check middleware (defined here since auth.js may not export it)
+// Admin check middleware
 const adminOnly = (req, res, next) => {
   if (req.user && req.user.role === 'admin') {
     next();
@@ -53,20 +53,23 @@ router.get('/overview', protect, adminOnly, async (req, res) => {
         status: 'completed',
         completionDate: { $gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) }
       }),
-      db.collection('evaluations').aggregate([
-        { $group: { _id: '$status', count: { $sum: 1 } } }
+      // Query evaluations from usercourseprogresses
+      db.collection('usercourseprogresses').aggregate([
+        {
+          $group: {
+            _id: null,
+            completed: { $sum: { $cond: [{ $eq: ['$evaluationCompleted', true] }, 1, 0] } },
+            pending: { $sum: { $cond: [{ $and: [{ $eq: ['$status', 'completed'] }, { $ne: ['$evaluationCompleted', true] }] }, 1, 0] } }
+          }
+        }
       ]).toArray()
     ]);
     
-    const evaluations = { total: 0, completed: 0, pending: 0 };
-    evaluationStats.forEach(stat => {
-      evaluations.total += stat.count;
-      if (stat._id === 'completed' || stat._id === 'submitted') {
-        evaluations.completed += stat.count;
-      } else {
-        evaluations.pending += stat.count;
-      }
-    });
+    const evaluations = { 
+      total: (evaluationStats[0]?.completed || 0) + (evaluationStats[0]?.pending || 0), 
+      completed: evaluationStats[0]?.completed || 0, 
+      pending: evaluationStats[0]?.pending || 0 
+    };
     
     res.json({
       success: true,
@@ -147,27 +150,62 @@ router.get('/courses', protect, adminOnly, async (req, res) => {
 router.get('/evaluations', protect, adminOnly, async (req, res) => {
   try {
     const db = mongoose.connection.db;
-    const { status, courseId, page = 1, limit = 50 } = req.query;
-    
-    const query = {};
-    if (status) query.status = status;
-    if (courseId) query.course = new mongoose.Types.ObjectId(courseId);
+    const { page = 1, limit = 50 } = req.query;
     
     const [evaluations, total] = await Promise.all([
-      db.collection('evaluations').find(query).sort({ createdAt: -1 }).skip((page - 1) * limit).limit(parseInt(limit)).toArray(),
-      db.collection('evaluations').countDocuments(query)
+      db.collection('usercourseprogresses').aggregate([
+        { $match: { evaluationCompleted: true } },
+        { $sort: { evaluationCompletedAt: -1 } },
+        { $skip: (parseInt(page) - 1) * parseInt(limit) },
+        { $limit: parseInt(limit) },
+        {
+          $lookup: {
+            from: 'users',
+            localField: 'userId',
+            foreignField: '_id',
+            as: 'user'
+          }
+        },
+        {
+          $lookup: {
+            from: 'courses',
+            localField: 'courseId',
+            foreignField: '_id',
+            as: 'course'
+          }
+        },
+        { $unwind: { path: '$user', preserveNullAndEmptyArrays: true } },
+        { $unwind: { path: '$course', preserveNullAndEmptyArrays: true } },
+        {
+          $project: {
+            _id: 1,
+            evaluationResponses: 1,
+            evaluationCompletedAt: 1,
+            'user.email': 1,
+            'user.profile.firstName': 1,
+            'course.title': 1
+          }
+        }
+      ]).toArray(),
+      db.collection('usercourseprogresses').countDocuments({ evaluationCompleted: true })
     ]);
     
-    const statusSummary = await db.collection('evaluations').aggregate([
-      { $group: { _id: '$status', count: { $sum: 1 } } }
+    const summary = await db.collection('usercourseprogresses').aggregate([
+      {
+        $group: {
+          _id: null,
+          completed: { $sum: { $cond: [{ $eq: ['$evaluationCompleted', true] }, 1, 0] } },
+          pending: { $sum: { $cond: [{ $and: [{ $eq: ['$status', 'completed'] }, { $ne: ['$evaluationCompleted', true] }] }, 1, 0] } }
+        }
+      }
     ]).toArray();
     
     res.json({
       success: true,
       data: {
         evaluations,
-        pagination: { page: parseInt(page), limit: parseInt(limit), total, pages: Math.ceil(total / limit) },
-        summary: statusSummary.reduce((acc, s) => { acc[s._id || 'unknown'] = s.count; return acc; }, {})
+        pagination: { page: parseInt(page), limit: parseInt(limit), total, pages: Math.ceil(total / parseInt(limit)) },
+        summary: { completed: summary[0]?.completed || 0, pending: summary[0]?.pending || 0 }
       }
     });
   } catch (error) {
