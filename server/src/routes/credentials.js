@@ -228,7 +228,7 @@ router.get('/consult-status', protect, async (req, res) => {
 });
 
 // @route   POST /api/credentials/sync
-// @desc    Recalculate CE hours from linked certificates
+// @desc    Recalculate CE hours from linked certificates AND platform certificates
 // @access  Private
 router.post('/sync', protect, async (req, res) => {
   try {
@@ -237,59 +237,128 @@ router.post('/sync', protect, async (req, res) => {
     // Get all user credentials
     const credentials = await UserCredential.find({ userId });
     
-    // Get all user certificates
-    const certificates = await Certificate.find({ userId });
+    // Get all user certificates (both uploaded and platform-generated)
+    const certificates = await Certificate.find({ 
+      userId,
+      isRevoked: { $ne: true }
+    });
     
     console.log(`Syncing ${credentials.length} credentials with ${certificates.length} certificates`);
     
+    if (credentials.length === 0) {
+      return res.json({
+        message: 'No credentials to sync. Add your licenses and certifications first.',
+        updated: 0,
+        total: 0
+      });
+    }
+    
+    if (certificates.length === 0) {
+      return res.json({
+        message: 'No certificates found to sync',
+        updated: 0,
+        total: credentials.length
+      });
+    }
+    
     let updated = 0;
+    const syncResults = [];
     
     for (const credential of credentials) {
-      // Find certificates linked to this credential
-      const linkedCerts = certificates.filter(cert => 
-        cert.credentials && cert.credentials.some(credId => 
-          credId.toString() === credential._id.toString()
-        )
-      );
+      let credentialUpdated = false;
       
-      if (linkedCerts.length > 0) {
-        console.log(`Found ${linkedCerts.length} certificates linked to ${credential.name}`);
-        
-        // Clear existing logs from external uploads (keep course completions)
-        credential.ceuLogs = credential.ceuLogs.filter(log => 
-          log.source !== 'external'
+      // Get certificates that should apply to this credential:
+      // 1. Explicitly linked via credentials array
+      // 2. Platform-generated certificates (source: 'platform')
+      // 3. All certificates if we want to auto-apply
+      for (const cert of certificates) {
+        const isExplicitlyLinked = cert.credentials && cert.credentials.some(credId => 
+          credId.toString() === credential._id.toString()
         );
+        const isPlatformCert = cert.source === 'platform';
         
-        // Re-add from linked certificates
-        for (const cert of linkedCerts) {
-          // Check if this certificate is already in ceuLogs
-          const alreadyLogged = credential.ceuLogs.some(log => 
-            log.certificateId && log.certificateId.toString() === cert._id.toString()
-          );
-          
-          if (!alreadyLogged) {
-            credential.ceuLogs.push({
-              date: cert.completionDate,
-              hours: cert.ceHours,
-              category: cert.category || 'General',
-              source: 'external',
-              certificateId: cert._id,
-              description: cert.title,
-              provider: cert.provider
-            });
-            console.log(`  Added ${cert.ceHours} hrs from "${cert.title}"`);
-          }
+        // Skip if not applicable
+        // For explicitly linked certs - always apply
+        // For platform certs - apply to active credentials
+        if (!isExplicitlyLinked && !isPlatformCert) {
+          continue;
         }
         
+        // Check if this certificate is already in ceuLogs
+        const alreadyLogged = credential.ceuLogs.some(log => 
+          log.certificateId && log.certificateId.toString() === cert._id.toString()
+        );
+        
+        if (alreadyLogged) {
+          continue;
+        }
+        
+        // Add to ceuLogs
+        credential.ceuLogs.push({
+          date: cert.completionDate,
+          hours: cert.ceHours || 0,
+          category: cert.category || 'General',
+          source: isPlatformCert ? 'internal' : 'external',
+          certificateId: cert._id,
+          courseId: cert.courseId || null,
+          description: cert.title,
+          provider: cert.provider || 'CounselorReady'
+        });
+        
+        console.log(`  Added ${cert.ceHours} hrs from "${cert.title}" to ${credential.name}`);
+        syncResults.push({
+          certificate: cert.title,
+          credential: credential.name,
+          hours: cert.ceHours
+        });
+        credentialUpdated = true;
+      }
+      
+      if (credentialUpdated) {
         // Recalculate totalCEUsCompleted
         credential.totalCEUsCompleted = credential.ceuLogs.reduce((sum, log) => sum + (log.hours || 0), 0);
         
-        // Update requirement progress
+        // Update requirement progress - CASE INSENSITIVE
         for (const reqItem of credential.requirements) {
           const categoryLogs = credential.ceuLogs.filter(log => 
             log.category?.toLowerCase() === reqItem.category?.toLowerCase()
           );
-          reqItem.hoursCompleted = categoryLogs.reduce((sum, log) => sum + (log.hours || 0), 0);
+          reqItem.hoursCompleted = Math.min(
+            reqItem.hoursRequired,
+            categoryLogs.reduce((sum, log) => sum + (log.hours || 0), 0)
+          );
+        }
+        
+        // Handle overflow to General category
+        const generalReq = credential.requirements.find(r => r.category?.toLowerCase() === 'general');
+        if (generalReq) {
+          // Sum up all hours not in specific categories
+          const specificCategories = credential.requirements
+            .filter(r => r.category?.toLowerCase() !== 'general')
+            .map(r => r.category?.toLowerCase());
+          
+          const generalLogs = credential.ceuLogs.filter(log => 
+            !specificCategories.includes(log.category?.toLowerCase())
+          );
+          
+          // Also add overflow from specific categories that are maxed out
+          let overflowHours = 0;
+          for (const req of credential.requirements) {
+            if (req.category?.toLowerCase() !== 'general') {
+              const catLogs = credential.ceuLogs.filter(log => 
+                log.category?.toLowerCase() === req.category?.toLowerCase()
+              );
+              const catTotal = catLogs.reduce((sum, log) => sum + (log.hours || 0), 0);
+              if (catTotal > req.hoursRequired) {
+                overflowHours += catTotal - req.hoursRequired;
+              }
+            }
+          }
+          
+          generalReq.hoursCompleted = Math.min(
+            generalReq.hoursRequired,
+            generalLogs.reduce((sum, log) => sum + (log.hours || 0), 0) + overflowHours
+          );
         }
         
         await credential.save();
@@ -298,13 +367,71 @@ router.post('/sync', protect, async (req, res) => {
     }
     
     res.json({ 
-      message: `Synced ${updated} credentials`,
+      message: updated > 0 
+        ? `Synced ${syncResults.length} certificate(s) to ${updated} credential(s)`
+        : 'All credentials are up to date',
       updated,
-      total: credentials.length
+      total: credentials.length,
+      details: syncResults,
+      credentials: credentials.map(c => ({
+        name: c.name,
+        totalRequired: c.totalCEUsRequired,
+        totalCompleted: c.totalCEUsCompleted,
+        requirements: c.requirements
+      }))
     });
   } catch (error) {
     console.error('Sync credentials error:', error);
     res.status(500).json({ error: 'Failed to sync credentials' });
+  }
+});
+
+// @route   POST /api/credentials/recalculate
+// @desc    Force recalculate all credential progress from ceuLogs (data repair)
+// @access  Private
+router.post('/recalculate', protect, async (req, res) => {
+  try {
+    const userId = req.user._id;
+    
+    // Get all user credentials
+    const credentials = await UserCredential.find({ userId });
+    
+    console.log(`Recalculating progress for ${credentials.length} credentials`);
+    
+    const results = [];
+    
+    for (const credential of credentials) {
+      const before = {
+        totalCompleted: credential.totalCEUsCompleted,
+        requirements: credential.requirements.map(r => ({ ...r.toObject() }))
+      };
+      
+      // Recalculate from ceuLogs
+      credential.recalculateProgress();
+      await credential.save();
+      
+      results.push({
+        name: credential.name,
+        before: before.totalCompleted,
+        after: credential.totalCEUsCompleted,
+        ceuLogCount: credential.ceuLogs?.length || 0,
+        requirements: credential.requirements.map(r => ({
+          category: r.category,
+          required: r.hoursRequired,
+          completed: r.hoursCompleted
+        }))
+      });
+      
+      console.log(`Recalculated ${credential.name}: ${before.totalCompleted} -> ${credential.totalCEUsCompleted}`);
+    }
+    
+    res.json({
+      message: `Recalculated ${credentials.length} credential(s)`,
+      results
+    });
+  } catch (error) {
+    console.error('Recalculate error:', error);
+    res.status(500).json({ error: 'Failed to recalculate credentials' });
   }
 });
 
