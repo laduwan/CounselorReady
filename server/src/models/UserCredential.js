@@ -121,20 +121,38 @@ userCredentialSchema.methods.updateStatus = function() {
 userCredentialSchema.methods.addCEU = async function(ceuData) {
   const { hours, category, source, courseId, certificateId, description, provider, date } = ceuData;
   
+  // Normalize category for consistency
+  const normalizedCategory = category || 'General';
+  
+  // Check if this certificate is already logged (prevent duplicates)
+  if (certificateId) {
+    const alreadyLogged = this.ceuLogs.some(log => 
+      log.certificateId && log.certificateId.toString() === certificateId.toString()
+    );
+    if (alreadyLogged) {
+      console.log(`Certificate ${certificateId} already logged to credential ${this._id}`);
+      return this; // Return without saving duplicate
+    }
+  }
+  
   // Add to log
   this.ceuLogs.push({
     date: date || new Date(),
     hours,
-    category,
+    category: normalizedCategory,
     source: source || 'external',
     courseId,
     certificateId,
-    description,
+    description: description || 'CE Hours',
     provider
   });
   
-  // Update category progress
-  const requirement = this.requirements.find(r => r.category === category);
+  // Update category progress - CASE INSENSITIVE matching
+  const categoryLower = normalizedCategory.toLowerCase();
+  const requirement = this.requirements.find(r => 
+    r.category?.toLowerCase() === categoryLower
+  );
+  
   if (requirement) {
     requirement.hoursCompleted = Math.min(
       requirement.hoursRequired,
@@ -143,12 +161,18 @@ userCredentialSchema.methods.addCEU = async function(ceuData) {
   }
   
   // Also add to "General" if it exists and category wasn't general
-  if (category !== 'General') {
-    const generalReq = this.requirements.find(r => r.category === 'General');
+  // This handles overflow from specific categories into general requirements
+  if (categoryLower !== 'general') {
+    const generalReq = this.requirements.find(r => 
+      r.category?.toLowerCase() === 'general'
+    );
     if (generalReq && generalReq.hoursCompleted < generalReq.hoursRequired) {
-      // Only add excess hours to general
-      const catReq = this.requirements.find(r => r.category === category);
+      // Check if the specific category is now full
+      const catReq = this.requirements.find(r => 
+        r.category?.toLowerCase() === categoryLower
+      );
       if (catReq && catReq.hoursCompleted >= catReq.hoursRequired) {
+        // Calculate excess hours that can go to general
         const excess = (catReq.hoursCompleted + hours) - catReq.hoursRequired;
         if (excess > 0) {
           generalReq.hoursCompleted = Math.min(
@@ -156,12 +180,18 @@ userCredentialSchema.methods.addCEU = async function(ceuData) {
             generalReq.hoursCompleted + excess
           );
         }
+      } else if (!catReq) {
+        // No specific requirement for this category, add to general
+        generalReq.hoursCompleted = Math.min(
+          generalReq.hoursRequired,
+          generalReq.hoursCompleted + hours
+        );
       }
     }
   }
   
   // Update total
-  this.totalCEUsCompleted = this.ceuLogs.reduce((sum, log) => sum + log.hours, 0);
+  this.totalCEUsCompleted = this.ceuLogs.reduce((sum, log) => sum + (log.hours || 0), 0);
   
   return this.save();
 };
@@ -174,6 +204,71 @@ userCredentialSchema.methods.getRemainingHours = function() {
     completed: req.hoursCompleted,
     remaining: Math.max(0, req.hoursRequired - req.hoursCompleted)
   }));
+};
+
+// Recalculate all progress from ceuLogs (useful for data repair)
+userCredentialSchema.methods.recalculateProgress = function() {
+  // Reset all requirement progress
+  for (const req of this.requirements) {
+    req.hoursCompleted = 0;
+  }
+  
+  // Recalculate from ceuLogs
+  for (const log of this.ceuLogs) {
+    const categoryLower = (log.category || 'general').toLowerCase();
+    
+    // Find matching requirement (case-insensitive)
+    const requirement = this.requirements.find(r => 
+      r.category?.toLowerCase() === categoryLower
+    );
+    
+    if (requirement) {
+      requirement.hoursCompleted = Math.min(
+        requirement.hoursRequired,
+        requirement.hoursCompleted + (log.hours || 0)
+      );
+    }
+  }
+  
+  // Handle categories that don't match specific requirements - add to General
+  const generalReq = this.requirements.find(r => r.category?.toLowerCase() === 'general');
+  if (generalReq) {
+    const specificCategories = this.requirements
+      .filter(r => r.category?.toLowerCase() !== 'general')
+      .map(r => r.category?.toLowerCase());
+    
+    // Add hours from non-matching categories to General
+    for (const log of this.ceuLogs) {
+      const categoryLower = (log.category || 'general').toLowerCase();
+      if (!specificCategories.includes(categoryLower) && categoryLower !== 'general') {
+        generalReq.hoursCompleted = Math.min(
+          generalReq.hoursRequired,
+          generalReq.hoursCompleted + (log.hours || 0)
+        );
+      }
+    }
+    
+    // Also add overflow from maxed-out categories
+    for (const req of this.requirements) {
+      if (req.category?.toLowerCase() !== 'general') {
+        const catLogs = this.ceuLogs.filter(log => 
+          (log.category || 'general').toLowerCase() === req.category?.toLowerCase()
+        );
+        const catTotal = catLogs.reduce((sum, log) => sum + (log.hours || 0), 0);
+        if (catTotal > req.hoursRequired) {
+          generalReq.hoursCompleted = Math.min(
+            generalReq.hoursRequired,
+            generalReq.hoursCompleted + (catTotal - req.hoursRequired)
+          );
+        }
+      }
+    }
+  }
+  
+  // Update total
+  this.totalCEUsCompleted = this.ceuLogs.reduce((sum, log) => sum + (log.hours || 0), 0);
+  
+  return this;
 };
 
 // Ensure virtuals in JSON
