@@ -4,6 +4,8 @@ import jwt from 'jsonwebtoken';
 import Course from '../models/Course.js';
 import User from '../models/User.js';
 import UserCourseProgress from '../models/UserCourseProgress.js';
+import LtiConsumer from '../models/LtiConsumer.js';
+import { protect } from '../middleware/auth.js';
 import { 
   verifyOAuthSignature, 
   parseLTILaunch, 
@@ -15,16 +17,29 @@ import {
 
 const router = express.Router();
 
-// Store LTI consumers (in production, use database)
-const LTI_CONSUMERS = new Map();
+// Initialize default consumer from env (if not already in DB)
+const initDefaultConsumer = async () => {
+  if (process.env.LTI_CONSUMER_KEY && process.env.LTI_CONSUMER_SECRET) {
+    try {
+      await LtiConsumer.findOneAndUpdate(
+        { key: process.env.LTI_CONSUMER_KEY },
+        { 
+          key: process.env.LTI_CONSUMER_KEY,
+          secret: process.env.LTI_CONSUMER_SECRET,
+          name: 'Default Consumer (from env)',
+          active: true
+        },
+        { upsert: true, new: true }
+      );
+      console.log('✅ LTI default consumer initialized from environment');
+    } catch (err) {
+      console.error('Failed to init default LTI consumer:', err.message);
+    }
+  }
+};
 
-// Initialize default consumer from env
-if (process.env.LTI_CONSUMER_KEY && process.env.LTI_CONSUMER_SECRET) {
-  LTI_CONSUMERS.set(process.env.LTI_CONSUMER_KEY, {
-    secret: process.env.LTI_CONSUMER_SECRET,
-    name: 'Default Consumer'
-  });
-}
+// Run on startup (after DB connection)
+setTimeout(initDefaultConsumer, 5000);
 
 // @route   POST /api/lti/launch
 // @route   POST /api/lti/launch/:courseSlug
@@ -39,18 +54,21 @@ router.post('/launch/:courseSlug?', express.urlencoded({ extended: true }), asyn
       return res.status(400).send('Invalid LTI message type');
     }
 
-    // Get consumer
-    const consumer = LTI_CONSUMERS.get(ltiData.consumerKey);
+    // Get consumer from database
+    const consumer = await LtiConsumer.getByKey(ltiData.consumerKey);
     if (!consumer) {
       return res.status(401).send('Unknown consumer key');
     }
 
     // Verify OAuth signature
-    const launchUrl = `${process.env.BASE_URL || 'https://counselorready-2.onrender.com'}/api/lti/launch${req.params.courseSlug ? '/' + req.params.courseSlug : ''}`;
+    const launchUrl = `${process.env.BASE_URL || 'https://api.counselorready.com'}/api/lti/launch${req.params.courseSlug ? '/' + req.params.courseSlug : ''}`;
     
     if (!verifyOAuthSignature(req.body, consumer.secret, launchUrl)) {
       return res.status(401).send('Invalid OAuth signature');
     }
+
+    // Record the launch
+    await consumer.recordLaunch();
 
     // Find or create user
     let user = await User.findOne({ email: ltiData.userEmail });
@@ -72,6 +90,14 @@ router.post('/launch/:courseSlug?', express.urlencoded({ extended: true }), asyn
     
     if (courseSlug) {
       course = await Course.findOne({ slug: courseSlug, status: 'published' });
+      
+      // Check if consumer is allowed to access this course
+      if (course && consumer.allowedCourses && consumer.allowedCourses.length > 0) {
+        const isAllowed = consumer.allowedCourses.some(id => id.toString() === course._id.toString());
+        if (!isAllowed) {
+          return res.status(403).send('Consumer not authorized for this course');
+        }
+      }
     }
 
     // Generate session token
@@ -147,7 +173,7 @@ router.post('/grade', async (req, res) => {
       return res.status(400).json({ error: 'No LTI session found' });
     }
 
-    const consumer = LTI_CONSUMERS.get(user.ltiSession.consumerKey);
+    const consumer = await LtiConsumer.getByKey(user.ltiSession.consumerKey);
     if (!consumer) {
       return res.status(400).json({ error: 'Consumer not found' });
     }
@@ -175,7 +201,7 @@ router.post('/grade', async (req, res) => {
 // @desc    Get LTI configuration for tool consumers
 // @access  Public
 router.get('/config', (req, res) => {
-  const baseUrl = process.env.BASE_URL || 'https://counselorready-2.onrender.com';
+  const baseUrl = process.env.BASE_URL || 'https://api.counselorready.com';
   const config = getLTIConfig(baseUrl, req.query.course);
   res.json(config);
 });
@@ -184,7 +210,7 @@ router.get('/config', (req, res) => {
 // @desc    Get LTI cartridge XML for easy installation
 // @access  Public
 router.get('/cartridge', (req, res) => {
-  const baseUrl = process.env.BASE_URL || 'https://counselorready-2.onrender.com';
+  const baseUrl = process.env.BASE_URL || 'https://api.counselorready.com';
   const xml = generateLTICartridge(baseUrl);
   res.setHeader('Content-Type', 'application/xml');
   res.send(xml);
@@ -199,7 +225,7 @@ router.get('/courses', async (req, res) => {
       .select('slug title subtitle description ceuHours ceuCategories thumbnail')
       .sort({ title: 1 });
 
-    const baseUrl = process.env.BASE_URL || 'https://counselorready-2.onrender.com';
+    const baseUrl = process.env.BASE_URL || 'https://api.counselorready.com';
     
     const ltiCourses = courses.map(course => ({
       id: course._id,
@@ -221,22 +247,55 @@ router.get('/courses', async (req, res) => {
   }
 });
 
+// ============================================
+// ADMIN ROUTES - Manage LTI Consumers
+// ============================================
+
+// Admin middleware
+const adminOnly = async (req, res, next) => {
+  if (req.user.role !== 'admin') {
+    return res.status(403).json({ error: 'Admin access required' });
+  }
+  next();
+};
+
 // @route   POST /api/lti/consumers
-// @desc    Register a new LTI consumer (admin only)
-// @access  Private/Admin
-router.post('/consumers', async (req, res) => {
+// @desc    Register a new LTI consumer
+// @access  Admin only
+router.post('/consumers', protect, adminOnly, async (req, res) => {
   try {
-    const { name, key, secret } = req.body;
+    const { name, key, secret, description, contactEmail, allowedCourses } = req.body;
 
     if (!name || !key || !secret) {
       return res.status(400).json({ error: 'Name, key, and secret required' });
     }
 
-    LTI_CONSUMERS.set(key, { secret, name });
+    // Check for duplicate key
+    const existing = await LtiConsumer.findOne({ key });
+    if (existing) {
+      return res.status(400).json({ error: 'Consumer with this key already exists' });
+    }
+
+    const consumer = await LtiConsumer.create({
+      name,
+      key,
+      secret,
+      description: description || '',
+      contactEmail: contactEmail || '',
+      allowedCourses: allowedCourses || [],
+      createdBy: req.user._id,
+      active: true
+    });
 
     res.json({ 
       message: 'Consumer registered',
-      consumer: { name, key }
+      consumer: { 
+        id: consumer._id,
+        name: consumer.name, 
+        key: consumer.key,
+        active: consumer.active,
+        createdAt: consumer.createdAt
+      }
     });
 
   } catch (error) {
@@ -246,14 +305,158 @@ router.post('/consumers', async (req, res) => {
 });
 
 // @route   GET /api/lti/consumers
-// @desc    List LTI consumers (admin only)
-// @access  Private/Admin
-router.get('/consumers', (req, res) => {
-  const consumers = [];
-  LTI_CONSUMERS.forEach((value, key) => {
-    consumers.push({ key, name: value.name });
-  });
-  res.json({ consumers });
+// @desc    List all LTI consumers
+// @access  Admin only
+router.get('/consumers', protect, adminOnly, async (req, res) => {
+  try {
+    const consumers = await LtiConsumer.find()
+      .select('-secret') // Don't expose secrets in list
+      .populate('allowedCourses', 'title slug')
+      .populate('createdBy', 'email profile.firstName profile.lastName')
+      .sort({ createdAt: -1 });
+
+    res.json({ consumers });
+
+  } catch (error) {
+    console.error('List consumers error:', error);
+    res.status(500).json({ error: 'Failed to list consumers' });
+  }
+});
+
+// @route   GET /api/lti/consumers/:id
+// @desc    Get single consumer (includes secret)
+// @access  Admin only
+router.get('/consumers/:id', protect, adminOnly, async (req, res) => {
+  try {
+    const consumer = await LtiConsumer.findById(req.params.id)
+      .populate('allowedCourses', 'title slug')
+      .populate('createdBy', 'email profile.firstName profile.lastName');
+
+    if (!consumer) {
+      return res.status(404).json({ error: 'Consumer not found' });
+    }
+
+    res.json({ consumer });
+
+  } catch (error) {
+    console.error('Get consumer error:', error);
+    res.status(500).json({ error: 'Failed to get consumer' });
+  }
+});
+
+// @route   PUT /api/lti/consumers/:id
+// @desc    Update an LTI consumer
+// @access  Admin only
+router.put('/consumers/:id', protect, adminOnly, async (req, res) => {
+  try {
+    const { name, secret, description, contactEmail, allowedCourses, active } = req.body;
+
+    const consumer = await LtiConsumer.findById(req.params.id);
+    if (!consumer) {
+      return res.status(404).json({ error: 'Consumer not found' });
+    }
+
+    // Update fields
+    if (name) consumer.name = name;
+    if (secret) consumer.secret = secret;
+    if (description !== undefined) consumer.description = description;
+    if (contactEmail !== undefined) consumer.contactEmail = contactEmail;
+    if (allowedCourses !== undefined) consumer.allowedCourses = allowedCourses;
+    if (active !== undefined) consumer.active = active;
+
+    await consumer.save();
+
+    res.json({ 
+      message: 'Consumer updated',
+      consumer: {
+        id: consumer._id,
+        name: consumer.name,
+        key: consumer.key,
+        active: consumer.active
+      }
+    });
+
+  } catch (error) {
+    console.error('Update consumer error:', error);
+    res.status(500).json({ error: 'Failed to update consumer' });
+  }
+});
+
+// @route   DELETE /api/lti/consumers/:id
+// @desc    Delete an LTI consumer
+// @access  Admin only
+router.delete('/consumers/:id', protect, adminOnly, async (req, res) => {
+  try {
+    const consumer = await LtiConsumer.findByIdAndDelete(req.params.id);
+    
+    if (!consumer) {
+      return res.status(404).json({ error: 'Consumer not found' });
+    }
+
+    res.json({ message: 'Consumer deleted', key: consumer.key });
+
+  } catch (error) {
+    console.error('Delete consumer error:', error);
+    res.status(500).json({ error: 'Failed to delete consumer' });
+  }
+});
+
+// @route   POST /api/lti/consumers/:id/regenerate-secret
+// @desc    Generate a new secret for a consumer
+// @access  Admin only
+router.post('/consumers/:id/regenerate-secret', protect, adminOnly, async (req, res) => {
+  try {
+    const consumer = await LtiConsumer.findById(req.params.id);
+    
+    if (!consumer) {
+      return res.status(404).json({ error: 'Consumer not found' });
+    }
+
+    // Generate new secret
+    const newSecret = crypto.randomBytes(32).toString('hex');
+    consumer.secret = newSecret;
+    await consumer.save();
+
+    res.json({ 
+      message: 'Secret regenerated',
+      secret: newSecret // Return once so admin can copy it
+    });
+
+  } catch (error) {
+    console.error('Regenerate secret error:', error);
+    res.status(500).json({ error: 'Failed to regenerate secret' });
+  }
+});
+
+// @route   GET /api/lti/consumers/:id/stats
+// @desc    Get usage stats for a consumer
+// @access  Admin only
+router.get('/consumers/:id/stats', protect, adminOnly, async (req, res) => {
+  try {
+    const consumer = await LtiConsumer.findById(req.params.id);
+    
+    if (!consumer) {
+      return res.status(404).json({ error: 'Consumer not found' });
+    }
+
+    // Count users created via this consumer
+    const usersCount = await User.countDocuments({ 
+      ltiConsumer: { $regex: consumer.key, $options: 'i' } 
+    });
+
+    res.json({
+      key: consumer.key,
+      name: consumer.name,
+      launchCount: consumer.launchCount,
+      lastLaunchAt: consumer.lastLaunchAt,
+      usersCreated: usersCount,
+      createdAt: consumer.createdAt
+    });
+
+  } catch (error) {
+    console.error('Consumer stats error:', error);
+    res.status(500).json({ error: 'Failed to get stats' });
+  }
 });
 
 export default router;
