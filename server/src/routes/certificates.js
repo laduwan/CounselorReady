@@ -271,11 +271,13 @@ router.post('/', protect, upload.single('file'), async (req, res) => {
             await credential.addCEU({
               certificateId: certificate._id,
               hours: certificate.ceHours,
-              category: certificate.category,
+              category: certificate.category || 'General',
               date: certificate.completionDate,
+              description: certificate.title,
+              provider: certificate.provider || 'External Provider',
               source: 'external'
             });
-            console.log('Logged CEU to credential:', credId);
+            console.log(`Logged ${certificate.ceHours} CE hours to credential ${credential.name}`);
           }
         } catch (credError) {
           console.error('Error logging CEU to credential:', credError);
@@ -403,6 +405,7 @@ router.post('/generate/:courseId', protect, async (req, res) => {
     // ============================================
     // AUTO-APPLY CE HOURS TO USER'S CREDENTIALS
     // ============================================
+    const linkedCredentials = [];
     try {
       // Find all active credentials for this user
       const userCredentials = await UserCredential.find({ 
@@ -415,30 +418,34 @@ router.post('/generate/:courseId', protect, async (req, res) => {
         
         for (const credential of userCredentials) {
           try {
-            // Check if this certificate's category matches any requirement
-            const certCategory = certificate.category || 'General';
-            const matchingReq = credential.requirements.find(r => 
-              r.category === certCategory || r.category === 'General'
-            );
+            // Use addCEU method which handles:
+            // - Duplicate prevention
+            // - Case-insensitive category matching
+            // - Overflow to General category
+            await credential.addCEU({
+              certificateId: certificate._id,
+              courseId: course._id,
+              hours: certificate.ceHours,
+              category: certificate.category || 'General',
+              description: `${course.title} - CounselorReady Course`,
+              provider: 'CounselorReady',
+              date: certificate.completionDate,
+              source: 'internal'
+            });
             
-            // Also check if hours are still needed
-            if (credential.totalCEUsCompleted < credential.totalCEUsRequired) {
-              await credential.addCEU({
-                certificateId: certificate._id,
-                courseId: course._id,
-                hours: certificate.ceHours,
-                category: certCategory,
-                description: `${course.title} - CounselorReady Course`,
-                provider: 'CounselorReady',
-                date: certificate.completionDate,
-                source: 'internal'
-              });
-              console.log(`Applied ${certificate.ceHours} CE hours to credential: ${credential.name}`);
-            }
+            linkedCredentials.push(credential._id);
+            console.log(`Applied ${certificate.ceHours} CE hours to credential: ${credential.name}`);
           } catch (credError) {
             console.error(`Error applying CEUs to credential ${credential._id}:`, credError);
             // Continue with other credentials even if one fails
           }
+        }
+        
+        // Link credentials to certificate for bidirectional reference
+        if (linkedCredentials.length > 0) {
+          certificate.credentials = linkedCredentials;
+          await certificate.save();
+          console.log(`Linked certificate to ${linkedCredentials.length} credential(s)`);
         }
       }
     } catch (credentialError) {
