@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Course Preview - CounselorReady Admin</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Source+Sans+Pro:wght@300;400;600;700&display=swap');
+    .font-display { font-family: 'Playfair Display', serif; }
+    .font-body { font-family: 'Source Sans Pro', sans-serif; }
+    .lesson-content h2 { font-size: 1.5rem; font-weight: 600; color: #5c1e35; margin: 1.5rem 0 1rem; }
+    .lesson-content h3 { font-size: 1.25rem; font-weight: 600; color: #2d4a3e; margin: 1.25rem 0 0.75rem; }
+    .lesson-content p { margin-bottom: 1rem; line-height: 1.7; }
+    .lesson-content ul, .lesson-content ol { margin: 1rem 0; padding-left: 1.5rem; }
+    .lesson-content li { margin-bottom: 0.5rem; }
+    .lesson-content strong { font-weight: 600; }
+  </style>
+</head>
+<body class="font-body bg-stone-50 min-h-screen">
+  <!-- Header -->
+  <header class="bg-gradient-to-r from-burgundy-900 to-burgundy-800 text-white py-4 px-6 sticky top-0 z-50 shadow-lg" style="background: linear-gradient(to right, #5c1e35, #722f4a);">
+    <div class="max-w-7xl mx-auto flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <a href="admin-courses.html" class="text-white/80 hover:text-white flex items-center gap-2">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+          </svg>
+          Back to Courses
+        </a>
+      </div>
+      <h1 class="font-display text-xl font-semibold">Course Preview</h1>
+      <div class="flex items-center gap-3">
+        <span id="statusBadge" class="px-3 py-1 rounded-full text-sm font-medium bg-yellow-500/20 text-yellow-200">Draft</span>
+        <button onclick="editCourse()" class="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-sm font-medium transition-colors">
+          Edit Course
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Loading State -->
+  <div id="loadingState" class="flex items-center justify-center min-h-[60vh]">
+    <div class="text-center">
+      <div class="w-12 h-12 border-4 border-burgundy-200 border-t-burgundy-600 rounded-full animate-spin mx-auto mb-4"></div>
+      <p class="text-forest-600">Loading course...</p>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <main id="mainContent" class="hidden max-w-7xl mx-auto px-6 py-8">
+    <!-- Course Header Card -->
+    <div class="bg-white rounded-2xl shadow-sm border border-stone-200 overflow-hidden mb-8">
+      <div class="md:flex">
+        <div id="courseThumbnail" class="md:w-80 h-48 md:h-auto bg-gradient-to-br from-burgundy-100 to-forest-100 flex items-center justify-center">
+          <svg class="w-16 h-16 text-burgundy-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+          </svg>
+        </div>
+        <div class="flex-1 p-6 md:p-8">
+          <div class="flex flex-wrap gap-2 mb-3">
+            <span id="categoryBadge" class="px-3 py-1 bg-burgundy-100 text-burgundy-700 rounded-full text-sm font-medium">Core</span>
+            <span id="ceuBadge" class="px-3 py-1 bg-forest-100 text-forest-700 rounded-full text-sm font-medium">3 CE Hours</span>
+            <span id="tierBadge" class="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm font-medium">Professional</span>
+          </div>
+          <h1 id="courseTitle" class="font-display text-2xl md:text-3xl font-bold text-burgundy-900 mb-2">Course Title</h1>
+          <p id="courseSubtitle" class="text-lg text-forest-600 mb-4">Course subtitle goes here</p>
+          <p id="courseDescription" class="text-forest-700 leading-relaxed mb-6">Course description...</p>
+          
+          <!-- Stats Row -->
+          <div class="flex flex-wrap gap-6 text-sm">
+            <div class="flex items-center gap-2 text-forest-600">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+              </svg>
+              <span id="moduleCount">0 Modules</span>
+            </div>
+            <div class="flex items-center gap-2 text-forest-600">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+              </svg>
+              <span id="lessonCount">0 Lessons</span>
+            </div>
+            <div class="flex items-center gap-2 text-forest-600">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+              <span id="quizCount">0 Quizzes</span>
+            </div>
+            <div class="flex items-center gap-2 text-forest-600">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/>
+              </svg>
+              <span id="wordCount">0 Words</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Learning Objectives -->
+    <div id="objectivesSection" class="bg-white rounded-2xl shadow-sm border border-stone-200 p-6 mb-8 hidden">
+      <h2 class="font-display text-xl font-semibold text-burgundy-900 mb-4 flex items-center gap-2">
+        <svg class="w-6 h-6 text-forest-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+        Learning Objectives
+      </h2>
+      <ul id="objectivesList" class="space-y-2"></ul>
+    </div>
+
+    <!-- Course Structure -->
+    <div class="bg-white rounded-2xl shadow-sm border border-stone-200 p-6 mb-8">
+      <h2 class="font-display text-xl font-semibold text-burgundy-900 mb-6 flex items-center gap-2">
+        <svg class="w-6 h-6 text-forest-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
+        </svg>
+        Course Structure
+      </h2>
+      <div id="moduleList" class="space-y-4"></div>
+    </div>
+
+    <!-- Selected Lesson Preview -->
+    <div id="lessonPreviewSection" class="bg-white rounded-2xl shadow-sm border border-stone-200 overflow-hidden hidden">
+      <div class="bg-gradient-to-r from-forest-50 to-burgundy-50 px-6 py-4 border-b border-stone-200">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm text-forest-600 mb-1" id="lessonModule">Module 1</p>
+            <h3 id="lessonTitle" class="font-display text-xl font-semibold text-burgundy-900">Lesson Title</h3>
+          </div>
+          <div class="flex items-center gap-4 text-sm text-forest-600">
+            <span id="lessonType" class="px-3 py-1 bg-white rounded-full">Text</span>
+            <span id="lessonWordCount">0 words</span>
+            <button onclick="closeLessonPreview()" class="p-2 hover:bg-white rounded-lg transition-colors">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div id="lessonContent" class="p-6 md:p-8 lesson-content max-h-[70vh] overflow-y-auto">
+        <!-- Lesson content will be inserted here -->
+      </div>
+    </div>
+
+    <!-- Quiz Preview -->
+    <div id="quizPreviewSection" class="bg-white rounded-2xl shadow-sm border border-stone-200 overflow-hidden hidden">
+      <div class="bg-gradient-to-r from-purple-50 to-indigo-50 px-6 py-4 border-b border-stone-200">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm text-purple-600 mb-1" id="quizModule">Module 1</p>
+            <h3 id="quizTitle" class="font-display text-xl font-semibold text-purple-900">Quiz Title</h3>
+          </div>
+          <div class="flex items-center gap-4">
+            <span id="questionCount" class="text-sm text-purple-600">0 questions</span>
+            <button onclick="closeQuizPreview()" class="p-2 hover:bg-white rounded-lg transition-colors">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div id="quizQuestions" class="p-6 md:p-8 space-y-6 max-h-[70vh] overflow-y-auto">
+        <!-- Quiz questions will be inserted here -->
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const API_URL = window.location.hostname === 'localhost' 
+      ? 'http://localhost:5000' 
+      : 'https://api.counselorready.com';
+    
+    let course = null;
+
+    // Get course ID from URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const courseId = urlParams.get('id');
+
+    if (!courseId) {
+      alert('No course ID provided');
+      window.location.href = 'admin-courses.html';
+    }
+
+    // Load course on page load
+    document.addEventListener('DOMContentLoaded', loadCourse);
+
+    async function loadCourse() {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        window.location.href = 'login.html';
+        return;
+      }
+
+      try {
+        const response = await fetch(`${API_URL}/api/admin/courses/${courseId}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (!response.ok) throw new Error('Failed to load course');
+
+        course = await response.json();
+        renderCourse();
+
+      } catch (error) {
+        console.error('Load error:', error);
+        alert('Failed to load course: ' + error.message);
+      }
+    }
+
+    function renderCourse() {
+      document.getElementById('loadingState').classList.add('hidden');
+      document.getElementById('mainContent').classList.remove('hidden');
+
+      // Header info
+      document.getElementById('courseTitle').textContent = course.title || 'Untitled Course';
+      document.getElementById('courseSubtitle').textContent = course.subtitle || '';
+      document.getElementById('courseDescription').textContent = course.description || 'No description';
+
+      // Status badge
+      const statusBadge = document.getElementById('statusBadge');
+      if (course.status === 'published') {
+        statusBadge.textContent = 'Published';
+        statusBadge.className = 'px-3 py-1 rounded-full text-sm font-medium bg-green-500/20 text-green-200';
+      } else {
+        statusBadge.textContent = 'Draft';
+        statusBadge.className = 'px-3 py-1 rounded-full text-sm font-medium bg-yellow-500/20 text-yellow-200';
+      }
+
+      // Category badge
+      const category = course.ceuCategories?.[0]?.category || 'core';
+      const categoryNames = {
+        core: 'Core/General', ethics: 'Ethics', supervision: 'Supervision',
+        telehealth: 'Telehealth', cultural: 'Cultural Diversity', trauma: 'Trauma',
+        substance: 'Substance Abuse', crisis: 'Crisis/Suicide'
+      };
+      document.getElementById('categoryBadge').textContent = categoryNames[category] || category;
+
+      // CE Hours
+      document.getElementById('ceuBadge').textContent = `${course.ceuHours || 0} CE Hours`;
+
+      // Access tier
+      const tierNames = { free: 'Free', basic: 'Basic', professional: 'Professional', vip: 'VIP' };
+      document.getElementById('tierBadge').textContent = tierNames[course.accessTier] || course.accessTier || 'Professional';
+
+      // Thumbnail
+      if (course.thumbnail) {
+        document.getElementById('courseThumbnail').innerHTML = `<img src="${course.thumbnail}" alt="Course thumbnail" class="w-full h-full object-cover">`;
+      }
+
+      // Stats
+      const modules = course.modules || [];
+      let lessonCount = 0;
+      let quizCount = 0;
+      let totalWords = 0;
+
+      modules.forEach(m => {
+        (m.lessons || []).forEach(l => {
+          if (l.type === 'quiz') {
+            quizCount++;
+          } else {
+            lessonCount++;
+            if (l.content) {
+              totalWords += l.content.replace(/<[^>]*>/g, ' ').split(/\s+/).filter(w => w).length;
+            }
+          }
+        });
+      });
+
+      document.getElementById('moduleCount').textContent = `${modules.length} Module${modules.length !== 1 ? 's' : ''}`;
+      document.getElementById('lessonCount').textContent = `${lessonCount} Lesson${lessonCount !== 1 ? 's' : ''}`;
+      document.getElementById('quizCount').textContent = `${quizCount} Quiz${quizCount !== 1 ? 'zes' : ''}`;
+      document.getElementById('wordCount').textContent = `${totalWords.toLocaleString()} Words`;
+
+      // Learning Objectives
+      if (course.objectives && course.objectives.length > 0) {
+        document.getElementById('objectivesSection').classList.remove('hidden');
+        document.getElementById('objectivesList').innerHTML = course.objectives.map(obj => `
+          <li class="flex items-start gap-3">
+            <svg class="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+            <span class="text-forest-700">${escapeHtml(obj)}</span>
+          </li>
+        `).join('');
+      }
+
+      // Module List
+      renderModules();
+    }
+
+    function renderModules() {
+      const modules = course.modules || [];
+      const container = document.getElementById('moduleList');
+
+      if (modules.length === 0) {
+        container.innerHTML = '<p class="text-forest-500 text-center py-8">No modules in this course yet.</p>';
+        return;
+      }
+
+      container.innerHTML = modules.map((module, mIdx) => {
+        const lessons = module.lessons || [];
+        const textLessons = lessons.filter(l => l.type !== 'quiz');
+        const quizzes = lessons.filter(l => l.type === 'quiz');
+        
+        let moduleWords = 0;
+        textLessons.forEach(l => {
+          if (l.content) {
+            moduleWords += l.content.replace(/<[^>]*>/g, ' ').split(/\s+/).filter(w => w).length;
+          }
+        });
+
+        return `
+          <div class="border border-stone-200 rounded-xl overflow-hidden">
+            <div class="bg-stone-50 px-5 py-4 border-b border-stone-200">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                  <span class="w-8 h-8 bg-burgundy-100 text-burgundy-700 rounded-lg flex items-center justify-center font-semibold text-sm">
+                    ${mIdx + 1}
+                  </span>
+                  <div>
+                    <h3 class="font-semibold text-burgundy-900">${escapeHtml(module.title || 'Untitled Module')}</h3>
+                    <p class="text-sm text-forest-600">${module.description || ''}</p>
+                  </div>
+                </div>
+                <div class="text-sm text-forest-500">
+                  ${textLessons.length} lesson${textLessons.length !== 1 ? 's' : ''} • 
+                  ${quizzes.length} quiz${quizzes.length !== 1 ? 'zes' : ''} • 
+                  ${moduleWords.toLocaleString()} words
+                </div>
+              </div>
+            </div>
+            <div class="divide-y divide-stone-100">
+              ${lessons.map((lesson, lIdx) => {
+                const isQuiz = lesson.type === 'quiz';
+                const wordCount = isQuiz ? 0 : (lesson.content?.replace(/<[^>]*>/g, ' ').split(/\s+/).filter(w => w).length || 0);
+                
+                return `
+                  <div class="px-5 py-3 flex items-center justify-between hover:bg-stone-50 cursor-pointer transition-colors"
+                       onclick="${isQuiz ? `previewQuiz(${mIdx}, ${lIdx})` : `previewLesson(${mIdx}, ${lIdx})`}">
+                    <div class="flex items-center gap-3">
+                      ${isQuiz ? `
+                        <span class="w-8 h-8 bg-purple-100 text-purple-600 rounded-lg flex items-center justify-center">
+                          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                          </svg>
+                        </span>
+                      ` : `
+                        <span class="w-8 h-8 bg-forest-100 text-forest-600 rounded-lg flex items-center justify-center text-sm font-medium">
+                          ${lIdx + 1}
+                        </span>
+                      `}
+                      <div>
+                        <p class="font-medium text-forest-800">${escapeHtml(lesson.title || 'Untitled')}</p>
+                        <p class="text-sm text-forest-500">
+                          ${isQuiz ? `${(lesson.questions || []).length} questions` : `${wordCount.toLocaleString()} words`}
+                        </p>
+                      </div>
+                    </div>
+                    <svg class="w-5 h-5 text-forest-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                    </svg>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function previewLesson(moduleIndex, lessonIndex) {
+      const module = course.modules[moduleIndex];
+      const lesson = module.lessons[lessonIndex];
+
+      document.getElementById('quizPreviewSection').classList.add('hidden');
+      document.getElementById('lessonPreviewSection').classList.remove('hidden');
+
+      document.getElementById('lessonModule').textContent = `Module ${moduleIndex + 1}: ${module.title}`;
+      document.getElementById('lessonTitle').textContent = lesson.title || 'Untitled Lesson';
+      document.getElementById('lessonType').textContent = lesson.type || 'Text';
+      
+      const wordCount = lesson.content?.replace(/<[^>]*>/g, ' ').split(/\s+/).filter(w => w).length || 0;
+      document.getElementById('lessonWordCount').textContent = `${wordCount.toLocaleString()} words`;
+
+      document.getElementById('lessonContent').innerHTML = lesson.content || '<p class="text-forest-500">No content</p>';
+
+      // Scroll to preview
+      document.getElementById('lessonPreviewSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function previewQuiz(moduleIndex, lessonIndex) {
+      const module = course.modules[moduleIndex];
+      const lesson = module.lessons[lessonIndex];
+      const questions = lesson.questions || [];
+
+      document.getElementById('lessonPreviewSection').classList.add('hidden');
+      document.getElementById('quizPreviewSection').classList.remove('hidden');
+
+      document.getElementById('quizModule').textContent = `Module ${moduleIndex + 1}: ${module.title}`;
+      document.getElementById('quizTitle').textContent = lesson.title || 'Quiz';
+      document.getElementById('questionCount').textContent = `${questions.length} question${questions.length !== 1 ? 's' : ''}`;
+
+      document.getElementById('quizQuestions').innerHTML = questions.map((q, qIdx) => `
+        <div class="border border-purple-100 rounded-xl p-5">
+          <p class="font-medium text-purple-900 mb-4">${qIdx + 1}. ${escapeHtml(q.question || '')}</p>
+          <div class="space-y-2 mb-4">
+            ${(q.options || []).map((opt, oIdx) => `
+              <div class="flex items-center gap-3 p-3 rounded-lg ${oIdx === q.correctAnswer ? 'bg-green-50 border border-green-200' : 'bg-stone-50'}">
+                <span class="w-6 h-6 rounded-full ${oIdx === q.correctAnswer ? 'bg-green-500 text-white' : 'bg-stone-200 text-stone-600'} flex items-center justify-center text-sm font-medium">
+                  ${String.fromCharCode(65 + oIdx)}
+                </span>
+                <span class="${oIdx === q.correctAnswer ? 'text-green-800 font-medium' : 'text-forest-700'}">${escapeHtml(opt)}</span>
+                ${oIdx === q.correctAnswer ? '<span class="ml-auto text-green-600 text-sm">✓ Correct</span>' : ''}
+              </div>
+            `).join('')}
+          </div>
+          ${q.explanation ? `
+            <div class="bg-blue-50 border border-blue-100 rounded-lg p-4">
+              <p class="text-sm text-blue-800"><strong>Explanation:</strong> ${escapeHtml(q.explanation)}</p>
+            </div>
+          ` : ''}
+        </div>
+      `).join('');
+
+      // Scroll to preview
+      document.getElementById('quizPreviewSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function closeLessonPreview() {
+      document.getElementById('lessonPreviewSection').classList.add('hidden');
+    }
+
+    function closeQuizPreview() {
+      document.getElementById('quizPreviewSection').classList.add('hidden');
+    }
+
+    function editCourse() {
+      window.location.href = `admin-courses.html?edit=${courseId}`;
+    }
+
+    function escapeHtml(text) {
+      if (!text) return '';
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+  </script>
+</body>
+</html>
