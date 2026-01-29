@@ -273,7 +273,7 @@ router.post('/', protect, upload.single('file'), async (req, res) => {
               hours: certificate.ceHours,
               category: certificate.category,
               date: certificate.completionDate,
-              source: 'manual_upload'
+              source: 'external'
             });
             console.log('Logged CEU to credential:', credId);
           }
