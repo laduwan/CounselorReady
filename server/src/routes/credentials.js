@@ -255,9 +255,9 @@ router.post('/sync', protect, async (req, res) => {
       if (linkedCerts.length > 0) {
         console.log(`Found ${linkedCerts.length} certificates linked to ${credential.name}`);
         
-        // Clear existing logs from manual uploads (keep course completions)
+        // Clear existing logs from external uploads (keep course completions)
         credential.ceuLogs = credential.ceuLogs.filter(log => 
-          log.source !== 'manual_upload' && log.source !== 'external'
+          log.source !== 'external'
         );
         
         // Re-add from linked certificates
@@ -272,7 +272,7 @@ router.post('/sync', protect, async (req, res) => {
               date: cert.completionDate,
               hours: cert.ceHours,
               category: cert.category || 'General',
-              source: 'manual_upload',
+              source: 'external',
               certificateId: cert._id,
               description: cert.title,
               provider: cert.provider
