@@ -1416,6 +1416,9 @@
             </p>
           </div>
           <div class="flex gap-2">
+            <button onclick="previewCourse('${course._id}')" class="bg-purple-100 hover:bg-purple-200 text-purple-800 font-medium px-3 py-2 rounded-lg text-sm" title="Preview">
+              👁️
+            </button>
             <button onclick="duplicateCourse('${course._id}')" class="bg-gold-100 hover:bg-gold-200 text-gold-800 font-medium px-3 py-2 rounded-lg text-sm" title="Duplicate">
               📋
             </button>
@@ -1428,6 +1431,11 @@
           </div>
         </div>
       `}).join('');
+    }
+
+    // Preview course in new tab
+    function previewCourse(courseId) {
+      window.open(`admin-course-preview.html?id=${courseId}`, '_blank');
     }
 
     // Edit course
@@ -3209,10 +3217,15 @@
         const data = await response.json();
         
         if (response.ok && data.course) {
-          alert('✅ Course created successfully!');
           closeAICourseBuilder();
           loadCourses();
-          setTimeout(() => editCourse(data.course._id), 500);
+          // Offer to preview or edit
+          const action = confirm('✅ Course created successfully!\n\nClick OK to preview the course layout\nClick Cancel to edit the course');
+          if (action) {
+            previewCourse(data.course._id);
+          } else {
+            setTimeout(() => editCourse(data.course._id), 300);
+          }
         } else {
           throw new Error(data.error || 'Failed to save course');
         }
