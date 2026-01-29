@@ -271,33 +271,44 @@ router.post('/credential', protect, upload.single('file'), async (req, res) => {
             },
             {
               type: 'text',
-              text: `Extract the following information from this professional license or credential document. Return ONLY a JSON object with these fields, no other text:
+              text: `Extract information from this mental health professional license or credential. Return ONLY a JSON object:
 
 {
-  "holderName": "IMPORTANT: The full name of the person this license was issued TO (the licensee/practitioner name, NOT the board or organization name)",
-  "name": "credential/license type abbreviation (e.g., LPC, LMFT, NCC, LCSW, MBTC)",
-  "state": "two-letter state code of the ISSUING state (e.g., GA, FL, TX, ID) - IMPORTANT: This is the state that ISSUED the license, NOT the licensee's home address state",
+  "holderName": "full name of the person this was issued TO",
+  "credentialCode": "credential abbreviation (LPC, LMFT, NCC, LCSW, CPCS, ACS, BC-TMH, etc.)",
+  "credentialType": "one of: state_license, national_cert, specialty_cert",
+  "state": "two-letter state code if state-specific (GA, FL, TX, etc.), null if national",
   "licenseNumber": "license or certificate number",
-  "issuingBody": "issuing organization (e.g., Georgia Composite Board, NBCC, Idaho Division of Occupational and Professional Licenses)",
+  "issuingBody": "issuing organization name",
   "issueDate": "YYYY-MM-DD format",
-  "expirationDate": "YYYY-MM-DD format",
-  "totalHours": "CE hours required for renewal if shown (number only)"
+  "expirationDate": "YYYY-MM-DD format"
 }
 
-CRITICAL INSTRUCTIONS:
-1. holderName is the individual person's name who holds this license - look for phrases like "is hereby granted to", "issued to", "certifies that", or the name printed prominently on the license/certificate.
+CREDENTIAL TYPE CLASSIFICATION:
+1. "state_license" - Licenses issued by STATE BOARDS that allow you to practice:
+   - LPC, LAPC (Licensed Professional Counselor)
+   - LMFT, LAMFT (Licensed Marriage & Family Therapist)
+   - LCSW, LMSW (Licensed Clinical Social Worker)
+   - Issued by: "Georgia Composite Board", "Idaho Division of Professional Licenses", state .gov domains
+   - ALWAYS has a state
 
-2. For STATE: Look at the header/letterhead, the issuing board name, or URL if visible. The state is determined by WHO ISSUED the license, not where the licensee lives. For example:
-   - "Idaho Division of Occupational and Professional Licenses" → state: "ID"
-   - "Georgia Composite Board" → state: "GA"  
-   - URL containing "idaho.gov" → state: "ID"
-   - URL containing "georgia.gov" → state: "GA"
+2. "national_cert" - Certifications from NATIONAL organizations (not state-specific):
+   - NCC (National Certified Counselor)
+   - ACS (Approved Clinical Supervisor)
+   - MAC (Master Addictions Counselor)
+   - Issued by: NBCC, NAADAC
+   - state should be NULL
 
-3. For TELEHEALTH licenses: Look for terms like "Telehealth", "Telemental Health", "Mental or Behavioral Telehealth". These are special licenses allowing out-of-state practice INTO a specific state.
+3. "specialty_cert" - Additional credentials for specific competencies:
+   - CPCS (Certified Professional Counselor Supervisor) - Georgia specific
+   - BC-TMH (Board Certified Telemental Health) - National
+   - EMDR Certified - National
+   - CCTP (Certified Clinical Trauma Professional) - National
+   - May or may not have state association - check the document
 
-If you cannot find a field, use null. For state, only use 2-letter abbreviation.
-For dates, convert to YYYY-MM-DD format.
-For license type, use the standard abbreviation (LPC, LMFT, LCSW, NCC, MBTC, etc).`
+IMPORTANT: Look at WHO issued the document to determine type. Each credential has its OWN CE requirements separate from state license requirements.
+
+If you cannot find a field, use null. Convert dates to YYYY-MM-DD format.`
             }
           ]
         }
@@ -325,60 +336,121 @@ For license type, use the standard abbreviation (LPC, LMFT, LCSW, NCC, MBTC, etc
       });
     }
 
-    // Clean up the data
+    // Clean up the data - handle both old and new field names
     const cleanedData = {
       holderName: extractedData.holderName || null,
-      name: extractedData.name || '',
+      name: extractedData.credentialCode || extractedData.name || '',
+      credentialType: extractedData.credentialType || null,
       state: extractedData.state || null,
       licenseNumber: extractedData.licenseNumber || '',
       issuingBody: extractedData.issuingBody || '',
       issueDate: extractedData.issueDate || null,
-      expirationDate: extractedData.expirationDate || null,
-      totalHours: extractedData.totalHours ? parseInt(extractedData.totalHours) : null
+      expirationDate: extractedData.expirationDate || null
     };
 
-    // Lookup template to auto-fill CE requirements
-    if (cleanedData.name && cleanedData.state) {
+    // Smart template lookup based on credential type
+    let template = null;
+    
+    // 1. For state licenses - match by code + state
+    if (cleanedData.credentialType === 'state_license' && cleanedData.state) {
       try {
-        const template = await CredentialTemplate.findOne({
-          name: { $regex: new RegExp(`^${cleanedData.name}$`, 'i') },
+        template = await CredentialTemplate.findOne({
+          $or: [
+            { code: { $regex: new RegExp(`^${cleanedData.name}$`, 'i') } },
+            { name: { $regex: new RegExp(cleanedData.name, 'i') } }
+          ],
           state: cleanedData.state.toUpperCase(),
+          type: 'state_license',
           isActive: true
         });
-        
         if (template) {
-          cleanedData.totalCEUsRequired = template.totalCEUsRequired;
-          cleanedData.renewalCycle = template.renewalCycle;
-          cleanedData.issuingBody = cleanedData.issuingBody || template.issuingBody;
-          cleanedData.requirements = template.requirements;
-          cleanedData.templateId = template._id;
-          console.log(`Found template for ${cleanedData.name} (${cleanedData.state}): ${template.totalCEUsRequired} CE hours`);
+          console.log(`Found state license template: ${template.code} (${template.state})`);
         }
-      } catch (templateError) {
-        console.error('Template lookup error:', templateError);
+      } catch (err) {
+        console.error('State license lookup error:', err);
       }
     }
     
-    // Also try national cert lookup if no state template found
-    if (cleanedData.name && !cleanedData.totalCEUsRequired) {
+    // 2. For national certs - match by code, type = national_cert
+    if (!template && (cleanedData.credentialType === 'national_cert' || !cleanedData.state)) {
       try {
-        const template = await CredentialTemplate.findOne({
-          name: { $regex: new RegExp(`^${cleanedData.name}$`, 'i') },
-          type: { $in: ['national_cert', 'specialty_cert'] },
+        template = await CredentialTemplate.findOne({
+          $or: [
+            { code: { $regex: new RegExp(`^${cleanedData.name}$`, 'i') } },
+            { name: { $regex: new RegExp(cleanedData.name, 'i') } }
+          ],
+          type: 'national_cert',
           isActive: true
         });
-        
         if (template) {
-          cleanedData.totalCEUsRequired = template.totalCEUsRequired;
-          cleanedData.renewalCycle = template.renewalCycle;
-          cleanedData.issuingBody = cleanedData.issuingBody || template.issuingBody;
-          cleanedData.requirements = template.requirements;
-          cleanedData.templateId = template._id;
-          console.log(`Found national template for ${cleanedData.name}: ${template.totalCEUsRequired} CE hours`);
+          console.log(`Found national cert template: ${template.code}`);
         }
-      } catch (templateError) {
-        console.error('National template lookup error:', templateError);
+      } catch (err) {
+        console.error('National cert lookup error:', err);
       }
+    }
+    
+    // 3. For specialty certs - match by code, may have state association
+    if (!template && cleanedData.credentialType === 'specialty_cert') {
+      try {
+        // First try with state if provided
+        if (cleanedData.state) {
+          template = await CredentialTemplate.findOne({
+            $or: [
+              { code: { $regex: new RegExp(`^${cleanedData.name}$`, 'i') } },
+              { name: { $regex: new RegExp(cleanedData.name, 'i') } }
+            ],
+            state: cleanedData.state.toUpperCase(),
+            type: 'specialty_cert',
+            isActive: true
+          });
+        }
+        // Fall back to any specialty cert with this code
+        if (!template) {
+          template = await CredentialTemplate.findOne({
+            $or: [
+              { code: { $regex: new RegExp(`^${cleanedData.name}$`, 'i') } },
+              { name: { $regex: new RegExp(cleanedData.name, 'i') } }
+            ],
+            type: 'specialty_cert',
+            isActive: true
+          });
+        }
+        if (template) {
+          console.log(`Found specialty cert template: ${template.code}`);
+        }
+      } catch (err) {
+        console.error('Specialty cert lookup error:', err);
+      }
+    }
+    
+    // 4. Final fallback - try any matching template by code
+    if (!template && cleanedData.name) {
+      try {
+        template = await CredentialTemplate.findOne({
+          $or: [
+            { code: { $regex: new RegExp(`^${cleanedData.name}$`, 'i') } },
+            { name: { $regex: new RegExp(cleanedData.name, 'i') } }
+          ],
+          isActive: true
+        });
+        if (template) {
+          console.log(`Found fallback template: ${template.code} (${template.type})`);
+        }
+      } catch (err) {
+        console.error('Fallback lookup error:', err);
+      }
+    }
+    
+    // Apply template data if found
+    if (template) {
+      cleanedData.totalCEUsRequired = template.totalCEUsRequired;
+      cleanedData.renewalCycle = template.renewalCycle;
+      cleanedData.issuingBody = cleanedData.issuingBody || template.issuingBody;
+      cleanedData.requirements = template.requirements;
+      cleanedData.templateId = template._id;
+      cleanedData.templateName = template.name;
+      cleanedData.templateType = template.type;
     }
 
     // If no template found, flag for user verification and provide search suggestion
