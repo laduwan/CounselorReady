@@ -4,6 +4,7 @@ import path from 'path';
 import fs from 'fs';
 import UserCredential from '../models/UserCredential.js';
 import CredentialTemplate from '../models/CredentialTemplate.js';
+import Certificate from '../models/Certificate.js';
 import { protect, requireSubscription } from '../middleware/auth.js';
 
 const router = express.Router();
@@ -574,6 +575,87 @@ router.delete('/:id/document', protect, async (req, res) => {
   } catch (error) {
     console.error('Delete document error:', error);
     res.status(500).json({ error: 'Failed to delete document' });
+  }
+});
+
+// @route   POST /api/credentials/sync
+// @desc    Recalculate CE hours from linked certificates
+// @access  Private
+router.post('/sync', protect, async (req, res) => {
+  try {
+    const userId = req.user._id;
+    
+    // Get all user credentials
+    const credentials = await UserCredential.find({ userId });
+    
+    // Get all user certificates
+    const certificates = await Certificate.find({ userId });
+    
+    console.log(`Syncing ${credentials.length} credentials with ${certificates.length} certificates`);
+    
+    let updated = 0;
+    
+    for (const credential of credentials) {
+      // Find certificates linked to this credential
+      const linkedCerts = certificates.filter(cert => 
+        cert.credentials && cert.credentials.some(credId => 
+          credId.toString() === credential._id.toString()
+        )
+      );
+      
+      if (linkedCerts.length > 0) {
+        console.log(`Found ${linkedCerts.length} certificates linked to ${credential.name}`);
+        
+        // Clear existing logs from manual uploads (keep course completions)
+        credential.ceuLogs = credential.ceuLogs.filter(log => 
+          log.source !== 'manual_upload' && log.source !== 'external'
+        );
+        
+        // Re-add from linked certificates
+        for (const cert of linkedCerts) {
+          // Check if this certificate is already in ceuLogs
+          const alreadyLogged = credential.ceuLogs.some(log => 
+            log.certificateId && log.certificateId.toString() === cert._id.toString()
+          );
+          
+          if (!alreadyLogged) {
+            credential.ceuLogs.push({
+              date: cert.completionDate,
+              hours: cert.ceHours,
+              category: cert.category || 'General',
+              source: 'manual_upload',
+              certificateId: cert._id,
+              description: cert.title,
+              provider: cert.provider
+            });
+            console.log(`  Added ${cert.ceHours} hrs from "${cert.title}"`);
+          }
+        }
+        
+        // Recalculate totalCEUsCompleted
+        credential.totalCEUsCompleted = credential.ceuLogs.reduce((sum, log) => sum + (log.hours || 0), 0);
+        
+        // Update requirement progress
+        for (const req of credential.requirements) {
+          const categoryLogs = credential.ceuLogs.filter(log => 
+            log.category?.toLowerCase() === req.category?.toLowerCase()
+          );
+          req.hoursCompleted = categoryLogs.reduce((sum, log) => sum + (log.hours || 0), 0);
+        }
+        
+        await credential.save();
+        updated++;
+      }
+    }
+    
+    res.json({ 
+      message: `Synced ${updated} credentials`,
+      updated,
+      total: credentials.length
+    });
+  } catch (error) {
+    console.error('Sync credentials error:', error);
+    res.status(500).json({ error: 'Failed to sync credentials' });
   }
 });
 
