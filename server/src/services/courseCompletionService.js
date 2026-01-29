@@ -5,6 +5,7 @@
 import Certificate from '../models/Certificate.js';
 import { Course, CourseProgress } from '../models/InteractiveCourse.js';
 import User from '../models/User.js';
+import UserCredential from '../models/UserCredential.js';
 import { generateCertificatePDF } from '../utils/certificate.js';
 import { sendCertificateEmail } from './courseEmailService.js';
 
@@ -59,14 +60,17 @@ export async function processCourseCompletion({ userId, courseId, assessmentScor
     // 5. Create certificate record
     const certificate = new Certificate({
       certificateNumber,
-      user: userId,
-      course: courseId,
+      userId: userId,
+      courseId: courseId,
+      title: course.title,
+      provider: 'CounselorReady',
+      category: course.category || 'General',
       completionDate: progress.completedAt || new Date(),
       ceHours: course.ceuHours || course.ceHours,
-      nbccProgramNumber: course.ceuApprovalNumber,
-      providerNumber: course.approvalNumber || '7760',
-      pdfUrl: pdfResult.url,
-      cloudinaryPublicId: pdfResult.publicId
+      nbccApproved: true,
+      acepNumber: course.ceuApprovalNumber || 'ACEP #7760',
+      fileUrl: pdfResult.url,
+      source: 'platform'
     });
 
     await certificate.save();
@@ -76,6 +80,46 @@ export async function processCourseCompletion({ userId, courseId, assessmentScor
     progress.certificateIssuedAt = new Date();
     progress.status = 'certified';
     await progress.save();
+
+    // 6.5. AUTO-APPLY CE HOURS TO USER'S CREDENTIALS
+    try {
+      const userCredentials = await UserCredential.find({ 
+        userId,
+        status: { $in: ['active', 'expiring_soon'] }
+      });
+      
+      if (userCredentials.length > 0) {
+        console.log(`Auto-applying CE hours to ${userCredentials.length} credentials`);
+        const linkedCredentials = [];
+        
+        for (const credential of userCredentials) {
+          try {
+            await credential.addCEU({
+              certificateId: certificate._id,
+              courseId: courseId,
+              hours: certificate.ceHours,
+              category: certificate.category || 'General',
+              description: `${course.title} - CounselorReady Course`,
+              provider: 'CounselorReady',
+              date: certificate.completionDate,
+              source: 'internal'
+            });
+            linkedCredentials.push(credential._id);
+            console.log(`Applied ${certificate.ceHours} CE hours to credential: ${credential.name}`);
+          } catch (credError) {
+            console.error(`Error applying CEUs to credential ${credential._id}:`, credError);
+          }
+        }
+        
+        // Link credentials to certificate
+        if (linkedCredentials.length > 0) {
+          certificate.credentials = linkedCredentials;
+          await certificate.save();
+        }
+      }
+    } catch (credentialError) {
+      console.error('Error auto-applying CE hours:', credentialError);
+    }
 
     // 7. Send email notification (async - don't wait)
     sendCompletionEmail(user, course, certificate, pdfResult.url).catch(err => {
