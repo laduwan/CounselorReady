@@ -5,20 +5,17 @@
  * - Mastering TeleMental Health (Georgia)
  * - Ethical Uses of AI in Mental Health Counseling
  * 
- * Unpublishes all other standard courses in the courses collection
- * 
  * Run with: node src/scripts/unpublishIncompleteCourses.js
  */
 
-require('dotenv').config();
-const mongoose = require('mongoose');
-const Course = require('../models/Course');
+import 'dotenv/config';
+import mongoose from 'mongoose';
+import Course from '../models/Course.js';
 
 // Courses to KEEP published (complete courses)
 const KEEP_PUBLISHED = [
   'mastering-telemental-health-georgia',
   'ethical-uses-of-ai-in-mental-health-counseling',
-  // Add slug variations in case they differ
   'telemental-health-georgia',
   'ai-ethics-mental-health',
   'ethical-ai-mental-health'
