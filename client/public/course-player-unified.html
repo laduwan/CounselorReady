@@ -1,0 +1,1403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Loading Course... - CounselorReady</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --burgundy-50: #fdf5f6;
+      --burgundy-100: #fae8eb;
+      --burgundy-200: #f5d0d6;
+      --burgundy-500: #c94d65;
+      --burgundy-600: #a83350;
+      --burgundy-700: #8b2542;
+      --burgundy-800: #6b1d34;
+      --burgundy-900: #4a1524;
+      --forest-50: #f3f6f4;
+      --forest-100: #e3ebe5;
+      --forest-500: #547c5f;
+      --forest-600: #40634a;
+      --forest-700: #34503d;
+      --gold-100: #fef9c3;
+      --gold-400: #facc15;
+      --gold-500: #d4a012;
+      --stone-50: #fafaf9;
+      --stone-100: #f5f5f4;
+      --stone-200: #e7e5e4;
+      --stone-300: #d6d3d1;
+      --stone-500: #78716c;
+      --stone-600: #57534e;
+      --stone-700: #44403c;
+      --stone-800: #292524;
+      --stone-900: #1c1917;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    .skip-link {
+      position: absolute;
+      top: -100px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--burgundy-700);
+      color: white;
+      padding: 1rem 2rem;
+      border-radius: 0 0 8px 8px;
+      z-index: 9999;
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .skip-link:focus { top: 0; }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    *:focus { outline: none; }
+    *:focus-visible {
+      outline: 3px solid var(--burgundy-600);
+      outline-offset: 2px;
+    }
+
+    button, a, [role="button"], input, select, textarea, label { min-height: 44px; }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: linear-gradient(135deg, var(--stone-50) 0%, var(--burgundy-50) 100%);
+      min-height: 100vh;
+      color: var(--stone-800);
+      line-height: 1.6;
+    }
+
+    /* Header */
+    .header {
+      background: white;
+      border-bottom: 1px solid var(--stone-200);
+      padding: 1rem 1.5rem;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .header-content {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      text-decoration: none;
+      padding: 0.25rem;
+      border-radius: 8px;
+    }
+    .logo-icon {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, var(--burgundy-700), var(--burgundy-800));
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Fraunces', serif;
+      font-weight: 700;
+      font-size: 14px;
+      color: white;
+    }
+    .logo-text { font-family: 'Fraunces', serif; font-size: 1.25rem; font-weight: 600; }
+    .logo-text span:first-child { color: var(--burgundy-800); }
+    .logo-text span:last-child { color: var(--forest-600); }
+    .header-actions { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--stone-600);
+      text-decoration: none;
+      font-size: 0.875rem;
+      padding: 0.625rem 1rem;
+      border-radius: 8px;
+      transition: background 0.2s;
+    }
+    .back-btn:hover { background: var(--stone-100); color: var(--burgundy-700); }
+
+    /* Layout */
+    .main-layout {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      max-width: 1400px;
+      margin: 0 auto;
+      min-height: calc(100vh - 73px);
+    }
+    @media (max-width: 1024px) {
+      .main-layout { grid-template-columns: 1fr; }
+      .sidebar { display: none; }
+      .sidebar.open {
+        display: block;
+        position: fixed;
+        left: 0;
+        top: 73px;
+        height: calc(100vh - 73px);
+        width: 320px;
+        z-index: 50;
+      }
+      .sidebar-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        top: 73px;
+        background: rgba(0,0,0,0.5);
+        z-index: 40;
+      }
+      .sidebar-overlay.open { display: block; }
+    }
+
+    .mobile-menu-btn {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      width: 44px;
+      height: 44px;
+      background: var(--stone-100);
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    @media (max-width: 1024px) { .mobile-menu-btn { display: flex; } }
+
+    /* Sidebar */
+    .sidebar {
+      background: white;
+      border-right: 1px solid var(--stone-200);
+      padding: 1.5rem;
+      overflow-y: auto;
+      position: sticky;
+      top: 73px;
+      height: calc(100vh - 73px);
+    }
+    .course-info { margin-bottom: 1.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--stone-200); }
+    .course-title {
+      font-family: 'Fraunces', serif;
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--burgundy-800);
+      margin-bottom: 0.5rem;
+    }
+    .course-meta { display: flex; gap: 1rem; font-size: 0.813rem; color: var(--stone-500); flex-wrap: wrap; }
+    .course-meta span { display: flex; align-items: center; gap: 0.25rem; }
+
+    .progress-section { margin-bottom: 1.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--stone-200); }
+    .progress-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem; }
+    .progress-label { font-size: 0.875rem; font-weight: 500; color: var(--stone-700); }
+    .progress-value { font-size: 0.875rem; font-weight: 600; color: var(--burgundy-700); }
+    .progress-bar-bg { height: 8px; background: var(--stone-100); border-radius: 100px; overflow: hidden; }
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--burgundy-600), var(--forest-500));
+      border-radius: 100px;
+      transition: width 0.5s ease;
+    }
+
+    .section-nav { display: flex; flex-direction: column; gap: 0.5rem; }
+    .section-nav-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--stone-500);
+      margin-bottom: 0.5rem;
+    }
+    .section-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.875rem 1rem;
+      background: var(--stone-50);
+      border-radius: 12px;
+      cursor: pointer;
+      border: 2px solid transparent;
+      text-align: left;
+      width: 100%;
+      font-family: inherit;
+      font-size: inherit;
+      transition: background 0.2s, border-color 0.2s;
+    }
+    .section-item:hover { background: var(--burgundy-50); }
+    .section-item[aria-current="true"] {
+      background: white;
+      border-color: var(--burgundy-600);
+      box-shadow: 0 2px 8px rgba(139,37,66,0.15);
+    }
+    .section-item[data-completed="true"] { background: var(--forest-50); }
+    .section-number {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      font-weight: 600;
+      background: var(--stone-200);
+      color: var(--stone-600);
+      flex-shrink: 0;
+    }
+    .section-item[aria-current="true"] .section-number { background: var(--burgundy-600); color: white; }
+    .section-item[data-completed="true"] .section-number { background: var(--forest-500); color: white; }
+    .section-item-title { font-size: 0.875rem; font-weight: 500; color: var(--stone-700); }
+
+    /* Content Area */
+    .content-area { padding: 2rem; max-width: 900px; }
+    @media (max-width: 640px) { .content-area { padding: 1rem; } }
+
+    /* Loading State */
+    .loading-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 400px;
+      text-align: center;
+    }
+    .loading-spinner {
+      width: 48px;
+      height: 48px;
+      border: 4px solid var(--stone-200);
+      border-top-color: var(--burgundy-600);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 1rem;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-text { color: var(--stone-500); font-size: 1rem; }
+
+    /* Error State */
+    .error-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 400px;
+      text-align: center;
+      padding: 2rem;
+    }
+    .error-icon { font-size: 3rem; margin-bottom: 1rem; }
+    .error-title { font-family: 'Fraunces', serif; font-size: 1.5rem; color: var(--stone-800); margin-bottom: 0.5rem; }
+    .error-message { color: var(--stone-500); margin-bottom: 1.5rem; }
+    .error-btn {
+      padding: 0.75rem 1.5rem;
+      background: var(--burgundy-700);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+    }
+
+    /* Section Divider */
+    .section-divider {
+      text-align: center;
+      margin-bottom: 3rem;
+      padding: 2rem 0;
+    }
+    .section-badge {
+      display: inline-block;
+      padding: 0.5rem 1.25rem;
+      background: var(--burgundy-700);
+      color: white;
+      border-radius: 100px;
+      font-size: 0.813rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+    }
+    .section-divider h2 {
+      font-family: 'Fraunces', serif;
+      font-size: 2.25rem;
+      font-weight: 600;
+      color: var(--stone-800);
+      margin-bottom: 0.5rem;
+    }
+    @media (max-width: 640px) { .section-divider h2 { font-size: 1.75rem; } }
+    .section-divider p { font-size: 1.125rem; color: var(--stone-500); }
+
+    /* Content Blocks */
+    .content-block { margin-bottom: 2rem; }
+
+    /* Text Block */
+    .text-block {
+      background: white;
+      border-radius: 16px;
+      padding: 2rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      border: 1px solid var(--stone-200);
+    }
+    .text-block h3 {
+      font-family: 'Fraunces', serif;
+      font-size: 1.375rem;
+      font-weight: 600;
+      color: var(--burgundy-800);
+      margin-bottom: 1rem;
+    }
+    .text-block p { color: var(--stone-600); margin-bottom: 1rem; }
+    .text-block p:last-child { margin-bottom: 0; }
+    .text-block ul, .text-block ol { margin: 1rem 0; padding-left: 1.5rem; color: var(--stone-600); }
+    .text-block li { margin-bottom: 0.5rem; }
+    .text-block strong { color: var(--stone-800); font-weight: 600; }
+
+    /* Image Text Block */
+    .image-text-block {
+      background: white;
+      border-radius: 16px;
+      padding: 2rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      border: 1px solid var(--stone-200);
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      align-items: start;
+    }
+    .image-text-block.highlight { background: linear-gradient(135deg, var(--burgundy-50), var(--forest-50)); }
+    .image-text-block.image-right { direction: ltr; }
+    .image-text-block.image-left .image-text-image { order: -1; }
+    @media (max-width: 768px) {
+      .image-text-block { grid-template-columns: 1fr; }
+      .image-text-block.image-left .image-text-image { order: 0; }
+    }
+    .image-text-image {
+      width: 100%;
+      border-radius: 12px;
+      object-fit: cover;
+      max-height: 300px;
+    }
+    .image-text-content h3 {
+      font-family: 'Fraunces', serif;
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--burgundy-800);
+      margin-bottom: 1rem;
+    }
+    .image-text-content p { color: var(--stone-600); margin-bottom: 1rem; }
+    .image-text-content ul, .image-text-content ol { margin: 1rem 0; padding-left: 1.5rem; color: var(--stone-600); }
+    .image-text-content li { margin-bottom: 0.5rem; }
+    .image-text-content strong { color: var(--stone-800); }
+
+    /* Accordion */
+    .accordion-container { display: flex; flex-direction: column; gap: 0.75rem; }
+    .accordion-item {
+      background: white;
+      border: 1px solid var(--stone-200);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .accordion-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 1.25rem;
+      cursor: pointer;
+      transition: background 0.2s;
+      background: none;
+      border: none;
+      width: 100%;
+      text-align: left;
+      font-family: inherit;
+    }
+    .accordion-header:hover { background: var(--stone-50); }
+    .accordion-title { font-weight: 600; color: var(--stone-800); font-size: 1rem; flex: 1; }
+    .accordion-icon {
+      width: 24px;
+      height: 24px;
+      color: var(--stone-400);
+      transition: transform 0.3s;
+      flex-shrink: 0;
+    }
+    .accordion-header[aria-expanded="true"] .accordion-icon { transform: rotate(180deg); }
+    .accordion-content { display: none; }
+    .accordion-content.open { display: block; }
+    .accordion-body {
+      padding: 0 1.25rem 1.25rem;
+      color: var(--stone-600);
+      font-size: 0.938rem;
+      line-height: 1.6;
+    }
+    .accordion-body p { margin-bottom: 1rem; }
+    .accordion-body ul, .accordion-body ol { margin: 1rem 0; padding-left: 1.5rem; }
+    .accordion-body li { margin-bottom: 0.5rem; }
+    .accordion-body strong { color: var(--stone-800); }
+
+    /* Quiz Blocks (multipleChoice & multiSelect) */
+    .quiz-block {
+      background: white;
+      border-radius: 16px;
+      padding: 2rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      border: 1px solid var(--stone-200);
+    }
+    .quiz-question {
+      font-family: 'Fraunces', serif;
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--stone-800);
+      margin-bottom: 1.5rem;
+    }
+    .quiz-type-label {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      background: var(--burgundy-100);
+      color: var(--burgundy-700);
+      border-radius: 100px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+    }
+    .quiz-fieldset { border: none; padding: 0; margin: 0; }
+    .quiz-options { display: flex; flex-direction: column; gap: 0.75rem; }
+    .quiz-option {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem 1.25rem;
+      background: var(--stone-50);
+      border: 2px solid transparent;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s;
+    }
+    .quiz-option:hover { background: var(--burgundy-50); border-color: var(--burgundy-200); }
+    .quiz-option:focus-within { outline: 3px solid var(--burgundy-600); outline-offset: 2px; }
+    .quiz-option.selected { background: var(--burgundy-50); border-color: var(--burgundy-500); }
+    .quiz-option.correct { background: var(--forest-50); border-color: var(--forest-500); }
+    .quiz-option.incorrect { background: #fef2f2; border-color: #ef4444; }
+    .quiz-option input { width: 20px; height: 20px; accent-color: var(--burgundy-600); flex-shrink: 0; }
+    .quiz-option-text { font-size: 0.938rem; color: var(--stone-700); }
+    .quiz-submit-btn {
+      margin-top: 1.5rem;
+      padding: 0.875rem 1.5rem;
+      background: var(--burgundy-700);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .quiz-submit-btn:hover { background: var(--burgundy-800); }
+    .quiz-submit-btn:disabled { background: var(--stone-300); cursor: not-allowed; }
+    .quiz-feedback {
+      margin-top: 1.5rem;
+      padding: 1rem 1.25rem;
+      border-radius: 12px;
+      font-size: 0.938rem;
+    }
+    .quiz-feedback.correct { background: var(--forest-50); border: 1px solid var(--forest-200); color: var(--forest-700); }
+    .quiz-feedback.incorrect { background: #fef2f2; border: 1px solid #fecaca; color: #dc2626; }
+    .quiz-feedback strong { display: block; margin-bottom: 0.5rem; }
+
+    /* Matching Block */
+    .matching-container {
+      background: white;
+      border-radius: 16px;
+      padding: 2rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      border: 1px solid var(--stone-200);
+    }
+    .matching-title {
+      font-family: 'Fraunces', serif;
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--stone-800);
+      margin-bottom: 0.5rem;
+    }
+    .matching-instructions { font-size: 0.938rem; color: var(--stone-500); margin-bottom: 1.5rem; }
+    .matching-pairs { display: flex; flex-direction: column; gap: 1rem; }
+    .matching-pair {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 1rem;
+      align-items: center;
+    }
+    @media (max-width: 640px) {
+      .matching-pair { grid-template-columns: 1fr; gap: 0.5rem; }
+      .matching-arrow { display: none; }
+    }
+    .matching-term {
+      background: var(--burgundy-50);
+      border: 2px solid var(--burgundy-200);
+      border-radius: 12px;
+      padding: 1rem 1.25rem;
+      font-weight: 500;
+      color: var(--burgundy-800);
+    }
+    .matching-arrow { color: var(--stone-300); font-size: 1.25rem; }
+    .matching-select {
+      width: 100%;
+      padding: 1rem 1.25rem;
+      border: 2px solid var(--stone-200);
+      border-radius: 12px;
+      background: white;
+      font-size: 0.938rem;
+      color: var(--stone-700);
+      cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%2378716c' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 1rem center;
+      padding-right: 3rem;
+    }
+    .matching-select.correct { border-color: var(--forest-500); background-color: var(--forest-50); }
+    .matching-select.incorrect { border-color: #ef4444; background-color: #fef2f2; }
+    .check-btn {
+      margin-top: 1.5rem;
+      width: 100%;
+      padding: 1rem;
+      background: var(--burgundy-700);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .check-btn:hover { background: var(--burgundy-800); }
+    .results-summary {
+      margin-top: 1rem;
+      padding: 1rem 1.25rem;
+      border-radius: 12px;
+      font-size: 0.938rem;
+    }
+    .results-summary.success { background: var(--forest-50); border: 1px solid var(--forest-200); color: var(--forest-700); }
+    .results-summary.partial { background: var(--gold-100); border: 1px solid var(--gold-400); color: #92400e; }
+
+    /* Reflection Block */
+    .reflection-block {
+      background: linear-gradient(135deg, var(--burgundy-50), var(--forest-50));
+      border-radius: 16px;
+      padding: 2rem;
+      border: 1px solid var(--stone-200);
+    }
+    .reflection-title {
+      font-family: 'Fraunces', serif;
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--stone-800);
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .reflection-prompt { font-size: 0.938rem; color: var(--stone-600); margin-bottom: 1rem; line-height: 1.6; }
+    .reflection-textarea {
+      width: 100%;
+      min-height: 150px;
+      padding: 1rem;
+      border: 2px solid var(--stone-200);
+      border-radius: 12px;
+      font-family: inherit;
+      font-size: 0.938rem;
+      resize: vertical;
+      background: white;
+    }
+    .reflection-textarea:focus { border-color: var(--burgundy-500); }
+    .reflection-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 0.75rem; }
+    .reflection-char-count { font-size: 0.813rem; color: var(--stone-500); }
+    .reflection-save-btn {
+      padding: 0.625rem 1.25rem;
+      background: var(--forest-600);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .reflection-save-btn:hover { background: var(--forest-700); }
+
+    /* Resources Block */
+    .resources-block {
+      background: white;
+      border-radius: 16px;
+      padding: 2rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      border: 1px solid var(--stone-200);
+    }
+    .resources-title {
+      font-family: 'Fraunces', serif;
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--stone-800);
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .resources-description { font-size: 0.938rem; color: var(--stone-500); margin-bottom: 1.5rem; }
+    .resources-list { display: flex; flex-direction: column; gap: 0.75rem; }
+    .resource-item {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem;
+      background: var(--stone-50);
+      border-radius: 12px;
+      text-decoration: none;
+      transition: background 0.2s;
+    }
+    .resource-item:hover { background: var(--burgundy-50); }
+    .resource-icon {
+      width: 40px;
+      height: 40px;
+      background: var(--burgundy-100);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--burgundy-700);
+    }
+    .resource-info { flex: 1; }
+    .resource-name { font-weight: 600; color: var(--stone-800); font-size: 0.938rem; }
+    .resource-meta { font-size: 0.813rem; color: var(--stone-500); }
+    .resource-download { color: var(--burgundy-600); font-weight: 600; font-size: 0.875rem; }
+
+    /* Navigation Footer */
+    .nav-footer {
+      padding: 1.5rem 2rem;
+      background: white;
+      border-top: 1px solid var(--stone-200);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+      position: sticky;
+      bottom: 0;
+    }
+    .nav-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.875rem 1.5rem;
+      border-radius: 12px;
+      font-size: 0.938rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+      border: none;
+      text-decoration: none;
+    }
+    .nav-btn-prev { background: var(--stone-100); color: var(--stone-600); }
+    .nav-btn-prev:hover { background: var(--stone-200); }
+    .nav-btn-prev:disabled { opacity: 0.5; cursor: not-allowed; }
+    .nav-btn-next { background: var(--burgundy-700); color: white; }
+    .nav-btn-next:hover { background: var(--burgundy-800); }
+
+    /* Completion Modal */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 1rem;
+    }
+    .modal-overlay.show { display: flex; }
+    .modal-card {
+      background: white;
+      border-radius: 24px;
+      padding: 3rem;
+      text-align: center;
+      max-width: 400px;
+      width: 100%;
+    }
+    .modal-icon {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 1.5rem;
+      background: linear-gradient(135deg, var(--gold-100), var(--gold-400));
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.5rem;
+    }
+    .modal-title { font-family: 'Fraunces', serif; font-size: 1.75rem; font-weight: 700; color: var(--stone-800); margin-bottom: 0.5rem; }
+    .modal-subtitle { font-size: 1rem; color: var(--stone-500); margin-bottom: 1.5rem; }
+    .modal-btn {
+      padding: 1rem 2rem;
+      background: var(--burgundy-700);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .modal-btn:hover { background: var(--burgundy-800); }
+  </style>
+</head>
+<body>
+  <a href="#main-content" class="skip-link">Skip to main content</a>
+  <div id="liveRegion" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+
+  <header class="header" role="banner">
+    <div class="header-content">
+      <a href="/dashboard.html" class="logo" aria-label="CounselorReady - Go to Dashboard">
+        <div class="logo-icon" aria-hidden="true">CR</div>
+        <div class="logo-text"><span>Counselor</span><span>Ready</span></div>
+      </a>
+      <div class="header-actions">
+        <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Open course navigation" aria-expanded="false">
+          <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+        </button>
+        <a href="/courses.html" class="back-btn">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7"/></svg>
+          Back to Courses
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <div class="main-layout">
+    <aside class="sidebar" id="sidebar" role="complementary" aria-label="Course navigation">
+      <div id="sidebarContent">
+        <!-- Populated by JS -->
+      </div>
+    </aside>
+
+    <main id="main-content" tabindex="-1">
+      <div class="content-area" id="contentArea">
+        <div class="loading-container" id="loadingState">
+          <div class="loading-spinner"></div>
+          <p class="loading-text">Loading course...</p>
+        </div>
+        <div class="error-container" id="errorState" style="display: none;">
+          <div class="error-icon">⚠️</div>
+          <h2 class="error-title">Course Not Found</h2>
+          <p class="error-message" id="errorMessage">We couldn't load this course.</p>
+          <a href="/courses.html" class="error-btn">Browse Courses</a>
+        </div>
+        <div id="courseContent" style="display: none;"></div>
+      </div>
+
+      <nav class="nav-footer" aria-label="Section navigation" id="navFooter" style="display: none;">
+        <button class="nav-btn nav-btn-prev" id="prevBtn" disabled>
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7"/></svg>
+          Previous Section
+        </button>
+        <button class="nav-btn nav-btn-next" id="nextBtn">
+          Next Section
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+        </button>
+      </nav>
+    </main>
+  </div>
+
+  <div class="modal-overlay" id="completionModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal-card">
+      <div class="modal-icon">🎉</div>
+      <h2 id="modalTitle" class="modal-title">Section Complete!</h2>
+      <p class="modal-subtitle" id="modalSubtitle">Great work on this section!</p>
+      <button class="modal-btn" id="modalBtn">Continue</button>
+    </div>
+  </div>
+
+  <script>
+    // === STATE ===
+    let course = null;
+    let currentSectionIndex = 0;
+    let completedSections = new Set();
+    let quizAnswers = {}; // Track quiz submissions
+
+    const API_BASE = window.location.hostname === 'localhost' 
+      ? 'http://localhost:5000/api' 
+      : '/api';
+
+    // === UTILITY ===
+    function announce(message) {
+      const region = document.getElementById('liveRegion');
+      region.textContent = message;
+      setTimeout(() => region.textContent = '', 1000);
+    }
+
+    function getSlugFromURL() {
+      const params = new URLSearchParams(window.location.search);
+      return params.get('slug') || params.get('course');
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    // === FETCH COURSE ===
+    async function loadCourse() {
+      const slug = getSlugFromURL();
+      if (!slug) {
+        showError('No course specified. Please select a course from the catalog.');
+        return;
+      }
+
+      try {
+        const response = await fetch(`${API_BASE}/interactive-courses/${slug}`);
+        if (!response.ok) {
+          throw new Error('Course not found');
+        }
+        course = await response.json();
+        document.title = `${course.title} - CounselorReady`;
+        renderSidebar();
+        renderSection(0);
+        document.getElementById('loadingState').style.display = 'none';
+        document.getElementById('courseContent').style.display = 'block';
+        document.getElementById('navFooter').style.display = 'flex';
+      } catch (error) {
+        console.error('Error loading course:', error);
+        showError('We couldn\'t load this course. It may not exist or there was a network error.');
+      }
+    }
+
+    function showError(message) {
+      document.getElementById('loadingState').style.display = 'none';
+      document.getElementById('errorMessage').textContent = message;
+      document.getElementById('errorState').style.display = 'flex';
+    }
+
+    // === RENDER SIDEBAR ===
+    function renderSidebar() {
+      const container = document.getElementById('sidebarContent');
+      const progress = Math.round((completedSections.size / course.sections.length) * 100);
+
+      container.innerHTML = `
+        <div class="course-info">
+          <h1 class="course-title">${escapeHtml(course.title)}</h1>
+          <div class="course-meta">
+            <span>
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+              ${course.ceCredits || 1} CE Hour${course.ceCredits !== 1 ? 's' : ''}
+            </span>
+            <span>
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+              ${course.sections.length} Section${course.sections.length !== 1 ? 's' : ''}
+            </span>
+          </div>
+        </div>
+
+        <div class="progress-section">
+          <div class="progress-header">
+            <span class="progress-label">Progress</span>
+            <span class="progress-value">${progress}%</span>
+          </div>
+          <div class="progress-bar-bg" role="progressbar" aria-valuenow="${progress}" aria-valuemin="0" aria-valuemax="100">
+            <div class="progress-bar-fill" style="width: ${progress}%"></div>
+          </div>
+        </div>
+
+        <nav aria-label="Course sections">
+          <p class="section-nav-label">Sections</p>
+          <div class="section-nav" role="list">
+            ${course.sections.map((section, idx) => {
+              const isCompleted = completedSections.has(idx);
+              const isCurrent = idx === currentSectionIndex;
+              const divider = section.contentBlocks?.find(b => b.type === 'sectionDivider');
+              const title = divider?.title || section.title || `Section ${idx + 1}`;
+              return `
+                <button class="section-item" role="listitem" 
+                  data-completed="${isCompleted}" 
+                  aria-current="${isCurrent}"
+                  onclick="goToSection(${idx})">
+                  <div class="section-number">${isCompleted ? '✓' : idx + 1}</div>
+                  <span class="section-item-title">${escapeHtml(title)}</span>
+                  ${isCompleted ? '<span class="sr-only">(Completed)</span>' : ''}
+                  ${isCurrent ? '<span class="sr-only">(Current)</span>' : ''}
+                </button>
+              `;
+            }).join('')}
+          </div>
+        </nav>
+      `;
+    }
+
+    // === RENDER SECTION ===
+    function renderSection(index) {
+      currentSectionIndex = index;
+      const section = course.sections[index];
+      const container = document.getElementById('courseContent');
+      
+      // Sort content blocks by order
+      const blocks = [...(section.contentBlocks || [])].sort((a, b) => (a.order || 0) - (b.order || 0));
+      
+      container.innerHTML = blocks.map((block, blockIdx) => renderContentBlock(block, blockIdx)).join('');
+      
+      // Update navigation buttons
+      document.getElementById('prevBtn').disabled = index === 0;
+      const isLastSection = index === course.sections.length - 1;
+      document.getElementById('nextBtn').textContent = isLastSection ? 'Complete Course' : 'Next Section';
+      
+      // Update sidebar
+      renderSidebar();
+      
+      // Scroll to top
+      document.getElementById('main-content').scrollTo(0, 0);
+      window.scrollTo(0, 0);
+      
+      announce(`Now viewing section ${index + 1}: ${section.title || ''}`);
+    }
+
+    // === RENDER CONTENT BLOCKS ===
+    function renderContentBlock(block, blockIdx) {
+      const id = `block-${blockIdx}`;
+      
+      switch (block.type) {
+        case 'sectionDivider':
+          return renderSectionDivider(block);
+        case 'text':
+          return renderTextBlock(block);
+        case 'imageText':
+          return renderImageTextBlock(block);
+        case 'accordion':
+          return renderAccordion(block, id);
+        case 'multipleChoice':
+          return renderMultipleChoice(block, id);
+        case 'multiSelect':
+          return renderMultiSelect(block, id);
+        case 'matching':
+          return renderMatching(block, id);
+        case 'reflection':
+          return renderReflection(block, id);
+        case 'resources':
+          return renderResources(block);
+        default:
+          console.warn('Unknown block type:', block.type);
+          return '';
+      }
+    }
+
+    function renderSectionDivider(block) {
+      return `
+        <header class="section-divider">
+          <div class="section-badge">Section ${block.sectionNumber || ''}</div>
+          <h2>${escapeHtml(block.title || '')}</h2>
+          ${block.subtitle ? `<p>${escapeHtml(block.subtitle)}</p>` : ''}
+        </header>
+      `;
+    }
+
+    function renderTextBlock(block) {
+      return `
+        <section class="content-block">
+          <div class="text-block">
+            ${block.textContent || ''}
+          </div>
+        </section>
+      `;
+    }
+
+    function renderImageTextBlock(block) {
+      const positionClass = block.imagePosition === 'left' ? 'image-left' : 'image-right';
+      const highlightClass = block.highlight ? 'highlight' : '';
+      return `
+        <section class="content-block">
+          <div class="image-text-block ${positionClass} ${highlightClass}">
+            <img src="${escapeHtml(block.image || '')}" alt="${escapeHtml(block.imageAlt || '')}" class="image-text-image" loading="lazy">
+            <div class="image-text-content">
+              ${block.title ? `<h3>${escapeHtml(block.title)}</h3>` : ''}
+              ${block.content || ''}
+            </div>
+          </div>
+        </section>
+      `;
+    }
+
+    function renderAccordion(block, id) {
+      const items = block.accordionItems || [];
+      return `
+        <section class="content-block">
+          <div class="accordion-container">
+            ${items.map((item, i) => `
+              <div class="accordion-item">
+                <button class="accordion-header" 
+                  aria-expanded="false" 
+                  aria-controls="${id}-panel-${i}"
+                  onclick="toggleAccordion(this)">
+                  <span class="accordion-title">${escapeHtml(item.title || '')}</span>
+                  <svg class="accordion-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7"/></svg>
+                </button>
+                <div class="accordion-content" id="${id}-panel-${i}">
+                  <div class="accordion-body">${item.content || ''}</div>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </section>
+      `;
+    }
+
+    function renderMultipleChoice(block, id) {
+      const options = block.options || [];
+      return `
+        <section class="content-block">
+          <div class="quiz-block" data-quiz-id="${id}" data-type="single">
+            <div class="quiz-type-label">Knowledge Check</div>
+            <h3 class="quiz-question">${escapeHtml(block.question || '')}</h3>
+            <fieldset class="quiz-fieldset">
+              <legend class="sr-only">Select the correct answer</legend>
+              <div class="quiz-options">
+                ${options.map((opt, i) => `
+                  <label class="quiz-option">
+                    <input type="radio" name="${id}" value="${i}" data-correct="${opt.isCorrect}">
+                    <span class="quiz-option-text">${escapeHtml(opt.text || '')}</span>
+                  </label>
+                `).join('')}
+              </div>
+            </fieldset>
+            <button class="quiz-submit-btn" onclick="submitQuiz('${id}', 'single')">Check Answer</button>
+            <div class="quiz-feedback-area" id="${id}-feedback" aria-live="polite"></div>
+            ${block.explanation ? `<div class="quiz-explanation" style="display:none;">${escapeHtml(block.explanation)}</div>` : ''}
+          </div>
+        </section>
+      `;
+    }
+
+    function renderMultiSelect(block, id) {
+      const options = block.options || [];
+      return `
+        <section class="content-block">
+          <div class="quiz-block" data-quiz-id="${id}" data-type="multi">
+            <div class="quiz-type-label">Select All That Apply</div>
+            <h3 class="quiz-question">${escapeHtml(block.question || '')}</h3>
+            <fieldset class="quiz-fieldset">
+              <legend class="sr-only">Select all correct answers</legend>
+              <div class="quiz-options">
+                ${options.map((opt, i) => `
+                  <label class="quiz-option">
+                    <input type="checkbox" name="${id}" value="${i}" data-correct="${opt.isCorrect}">
+                    <span class="quiz-option-text">${escapeHtml(opt.text || '')}</span>
+                  </label>
+                `).join('')}
+              </div>
+            </fieldset>
+            <button class="quiz-submit-btn" onclick="submitQuiz('${id}', 'multi')">Check Answers</button>
+            <div class="quiz-feedback-area" id="${id}-feedback" aria-live="polite"></div>
+            ${block.explanation ? `<div class="quiz-explanation" style="display:none;">${escapeHtml(block.explanation)}</div>` : ''}
+          </div>
+        </section>
+      `;
+    }
+
+    function renderMatching(block, id) {
+      const pairs = block.matchingPairs || [];
+      // Shuffle definitions for the dropdown
+      const shuffledDefs = [...pairs].sort(() => Math.random() - 0.5);
+      
+      return `
+        <section class="content-block">
+          <div class="matching-container" data-matching-id="${id}">
+            <h3 class="matching-title">Matching Activity</h3>
+            <p class="matching-instructions">${escapeHtml(block.matchingInstructions || 'Match each term with its definition')}</p>
+            <div class="matching-pairs">
+              ${pairs.map((pair, i) => `
+                <div class="matching-pair">
+                  <div class="matching-term" id="${id}-term-${i}">${escapeHtml(pair.term)}</div>
+                  <span class="matching-arrow" aria-hidden="true">→</span>
+                  <label for="${id}-select-${i}" class="sr-only">Match for ${escapeHtml(pair.term)}</label>
+                  <select id="${id}-select-${i}" class="matching-select" data-answer="${escapeHtml(pair.definition)}">
+                    <option value="">Select a match...</option>
+                    ${shuffledDefs.map(d => `<option value="${escapeHtml(d.definition)}">${escapeHtml(d.definition)}</option>`).join('')}
+                  </select>
+                </div>
+              `).join('')}
+            </div>
+            <button class="check-btn" onclick="checkMatching('${id}')">Check Answers</button>
+            <div id="${id}-results" aria-live="polite"></div>
+          </div>
+        </section>
+      `;
+    }
+
+    function renderReflection(block, id) {
+      return `
+        <section class="content-block">
+          <div class="reflection-block">
+            <h3 class="reflection-title">
+              <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+              ${escapeHtml(block.title || 'Reflection')}
+            </h3>
+            <p class="reflection-prompt">${escapeHtml(block.prompt || '')}</p>
+            <label for="${id}-textarea" class="sr-only">Your reflection</label>
+            <textarea 
+              id="${id}-textarea" 
+              class="reflection-textarea" 
+              placeholder="${escapeHtml(block.placeholder || 'Share your thoughts...')}"
+              oninput="updateCharCount('${id}', ${block.minLength || 0})"
+            ></textarea>
+            <div class="reflection-footer">
+              <span class="reflection-char-count" id="${id}-char-count">0 characters${block.minLength ? ` (min ${block.minLength})` : ''}</span>
+              <button class="reflection-save-btn" onclick="saveReflection('${id}')">Save Response</button>
+            </div>
+          </div>
+        </section>
+      `;
+    }
+
+    function renderResources(block) {
+      const resources = block.resources || [];
+      return `
+        <section class="content-block">
+          <div class="resources-block">
+            <h3 class="resources-title">
+              <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>
+              ${escapeHtml(block.title || 'Resources')}
+            </h3>
+            ${block.description ? `<p class="resources-description">${escapeHtml(block.description)}</p>` : ''}
+            <div class="resources-list">
+              ${resources.map(res => `
+                <a href="${escapeHtml(res.url || '#')}" class="resource-item" target="_blank" rel="noopener">
+                  <div class="resource-icon">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>
+                  </div>
+                  <div class="resource-info">
+                    <div class="resource-name">${escapeHtml(res.title || 'Resource')}</div>
+                    <div class="resource-meta">${escapeHtml(res.type || 'PDF')} • ${escapeHtml(res.size || '')}</div>
+                  </div>
+                  <span class="resource-download">Download →</span>
+                </a>
+              `).join('')}
+            </div>
+          </div>
+        </section>
+      `;
+    }
+
+    // === INTERACTIVITY ===
+    function toggleAccordion(btn) {
+      const isExpanded = btn.getAttribute('aria-expanded') === 'true';
+      // Close all in this container
+      const container = btn.closest('.accordion-container');
+      container.querySelectorAll('.accordion-header').forEach(h => {
+        h.setAttribute('aria-expanded', 'false');
+        document.getElementById(h.getAttribute('aria-controls'))?.classList.remove('open');
+      });
+      // Toggle clicked
+      if (!isExpanded) {
+        btn.setAttribute('aria-expanded', 'true');
+        document.getElementById(btn.getAttribute('aria-controls'))?.classList.add('open');
+        announce(btn.querySelector('.accordion-title').textContent + ' expanded');
+      }
+    }
+
+    function submitQuiz(id, type) {
+      const block = document.querySelector(`[data-quiz-id="${id}"]`);
+      const options = block.querySelectorAll('.quiz-option');
+      const feedbackArea = document.getElementById(`${id}-feedback`);
+      const explanationEl = block.querySelector('.quiz-explanation');
+      const explanation = explanationEl ? explanationEl.textContent : '';
+      
+      let allCorrect = true;
+      
+      options.forEach(opt => {
+        const input = opt.querySelector('input');
+        const isCorrect = input.dataset.correct === 'true';
+        const isSelected = input.checked;
+        
+        opt.classList.remove('selected', 'correct', 'incorrect');
+        
+        if (type === 'single') {
+          if (isSelected) {
+            opt.classList.add(isCorrect ? 'correct' : 'incorrect');
+            if (!isCorrect) allCorrect = false;
+          } else if (isCorrect) {
+            opt.classList.add('correct'); // Show the correct answer
+          }
+        } else {
+          // Multi-select: must select all correct AND no incorrect
+          if (isSelected && !isCorrect) {
+            opt.classList.add('incorrect');
+            allCorrect = false;
+          } else if (isSelected && isCorrect) {
+            opt.classList.add('correct');
+          } else if (!isSelected && isCorrect) {
+            opt.classList.add('correct');
+            allCorrect = false;
+          }
+        }
+        
+        input.disabled = true;
+      });
+      
+      block.querySelector('.quiz-submit-btn').disabled = true;
+      
+      feedbackArea.innerHTML = `
+        <div class="quiz-feedback ${allCorrect ? 'correct' : 'incorrect'}">
+          <strong>${allCorrect ? '✓ Correct!' : '✗ Not quite'}</strong>
+          ${explanation}
+        </div>
+      `;
+      
+      announce(allCorrect ? 'Correct answer!' : 'Incorrect. Review the explanation.');
+    }
+
+    function checkMatching(id) {
+      const container = document.querySelector(`[data-matching-id="${id}"]`);
+      const selects = container.querySelectorAll('.matching-select');
+      const resultsDiv = document.getElementById(`${id}-results`);
+      
+      let correct = 0;
+      selects.forEach(sel => {
+        sel.classList.remove('correct', 'incorrect');
+        if (sel.value === sel.dataset.answer) {
+          sel.classList.add('correct');
+          correct++;
+        } else if (sel.value) {
+          sel.classList.add('incorrect');
+        }
+      });
+      
+      const total = selects.length;
+      if (correct === total) {
+        resultsDiv.innerHTML = '<div class="results-summary success"><strong>🎉 Perfect!</strong> All matches correct!</div>';
+        announce('Perfect! All matches correct!');
+      } else {
+        resultsDiv.innerHTML = `<div class="results-summary partial"><strong>${correct}/${total} correct.</strong> Try again!</div>`;
+        announce(`${correct} out of ${total} correct.`);
+      }
+    }
+
+    function updateCharCount(id, minLength) {
+      const textarea = document.getElementById(`${id}-textarea`);
+      const countEl = document.getElementById(`${id}-char-count`);
+      const count = textarea.value.length;
+      countEl.textContent = `${count} characters${minLength ? ` (min ${minLength})` : ''}`;
+    }
+
+    function saveReflection(id) {
+      const textarea = document.getElementById(`${id}-textarea`);
+      const value = textarea.value.trim();
+      if (!value) {
+        announce('Please enter a response before saving.');
+        return;
+      }
+      // In production, save to database
+      console.log('Saving reflection:', { id, value, courseSlug: course.slug, sectionIndex: currentSectionIndex });
+      announce('Reflection saved!');
+      // Visual feedback
+      const btn = document.querySelector(`#${id}-textarea`).closest('.reflection-block').querySelector('.reflection-save-btn');
+      btn.textContent = '✓ Saved';
+      btn.style.background = 'var(--forest-600)';
+      setTimeout(() => {
+        btn.textContent = 'Save Response';
+        btn.style.background = '';
+      }, 2000);
+    }
+
+    // === NAVIGATION ===
+    function goToSection(index) {
+      if (index >= 0 && index < course.sections.length) {
+        renderSection(index);
+        closeMobileMenu();
+      }
+    }
+
+    document.getElementById('prevBtn').addEventListener('click', () => {
+      if (currentSectionIndex > 0) {
+        goToSection(currentSectionIndex - 1);
+      }
+    });
+
+    document.getElementById('nextBtn').addEventListener('click', () => {
+      // Mark current section complete
+      completedSections.add(currentSectionIndex);
+      
+      if (currentSectionIndex < course.sections.length - 1) {
+        // Show completion modal then advance
+        showCompletionModal(() => goToSection(currentSectionIndex + 1));
+      } else {
+        // Course complete!
+        showCourseCompleteModal();
+      }
+    });
+
+    function showCompletionModal(onContinue) {
+      const modal = document.getElementById('completionModal');
+      const section = course.sections[currentSectionIndex];
+      const divider = section.contentBlocks?.find(b => b.type === 'sectionDivider');
+      const title = divider?.title || section.title || `Section ${currentSectionIndex + 1}`;
+      
+      document.getElementById('modalTitle').textContent = 'Section Complete!';
+      document.getElementById('modalSubtitle').textContent = `You've finished: ${title}`;
+      document.getElementById('modalBtn').textContent = 'Continue';
+      document.getElementById('modalBtn').onclick = () => {
+        modal.classList.remove('show');
+        onContinue();
+      };
+      modal.classList.add('show');
+      document.getElementById('modalBtn').focus();
+      announce('Section complete!');
+    }
+
+    function showCourseCompleteModal() {
+      const modal = document.getElementById('completionModal');
+      document.getElementById('modalTitle').textContent = '🎓 Course Complete!';
+      document.getElementById('modalSubtitle').textContent = `Congratulations! You've completed ${course.title}`;
+      document.getElementById('modalBtn').textContent = 'View Certificate';
+      document.getElementById('modalBtn').onclick = () => {
+        // In production: redirect to certificate or assessment
+        window.location.href = `/courses.html`;
+      };
+      modal.classList.add('show');
+      document.getElementById('modalBtn').focus();
+      announce('Congratulations! Course complete!');
+    }
+
+    // === MOBILE MENU ===
+    const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+    const sidebar = document.getElementById('sidebar');
+    const sidebarOverlay = document.getElementById('sidebarOverlay');
+
+    mobileMenuBtn?.addEventListener('click', () => {
+      const isOpen = sidebar.classList.toggle('open');
+      sidebarOverlay.classList.toggle('open', isOpen);
+      mobileMenuBtn.setAttribute('aria-expanded', isOpen);
+    });
+
+    sidebarOverlay?.addEventListener('click', closeMobileMenu);
+
+    function closeMobileMenu() {
+      sidebar.classList.remove('open');
+      sidebarOverlay.classList.remove('open');
+      mobileMenuBtn.setAttribute('aria-expanded', 'false');
+    }
+
+    // === INIT ===
+    loadCourse();
+  </script>
+</body>
+</html>
