@@ -6,7 +6,7 @@ import mongoose from 'mongoose';
 const ContentBlockSchema = new mongoose.Schema({
   type: {
     type: String,
-    enum: ['accordion', 'matching', 'multipleChoice', 'multiSelect', 'imageText', 'sectionDivider', 'text', 'video'],
+    enum: ['accordion', 'matching', 'multipleChoice', 'multiSelect', 'imageText', 'sectionDivider', 'text', 'video', 'reflection', 'resources'],
     required: true
   },
   order: { type: Number, required: true },
@@ -49,7 +49,17 @@ const ContentBlockSchema = new mongoose.Schema({
   
   // Video
   videoUrl: String,
-  videoDuration: Number // in seconds
+  videoDuration: Number, // in seconds
+  
+  // Reflection
+  minLength: Number,
+  
+  // Resources
+  resources: [{
+    title: String,
+    url: String,
+    type: String
+  }]
 });
 
 const SectionSchema = new mongoose.Schema({
@@ -87,6 +97,9 @@ const CourseSchema = new mongoose.Schema({
   ceProvider: { type: String, default: 'NBCC ACEP #7760' },
   acepNumber: { type: String, default: '7760' },
   
+  // Learning objectives (ACEP required)
+  objectives: [String],
+  
   // Course content
   sections: [SectionSchema],
   
@@ -115,7 +128,21 @@ const CourseSchema = new mongoose.Schema({
   tags: [String],
   
   // Requirements
-  prerequisites: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Course' }],
+  prerequisites: [{ type: mongoose.Schema.Types.ObjectId, ref: 'InteractiveCourse' }],
+  
+  // Presenter/Author info (ACEP required)
+  presenter: {
+    name: String,
+    credentials: String,
+    degree: String,
+    licenseNumber: String,
+    licenseState: String,
+    qualificationStatement: String,
+    category: { type: String, enum: ['category1', 'category2', 'category3'] } // ACEP categories
+  },
+  
+  // References (ACEP required)
+  references: [String],
   
   // Metadata
   author: String,
@@ -207,6 +234,23 @@ const CourseProgressSchema = new mongoose.Schema({
   bestAssessmentScore: Number,
   assessmentAttemptsRemaining: Number,
   
+  // =====================================
+  // NEW: Evaluation tracking
+  // =====================================
+  evaluationSubmitted: { type: Boolean, default: false },
+  evaluationSubmittedAt: Date,
+  evaluationId: { type: mongoose.Schema.Types.ObjectId, ref: 'Evaluation' },
+  
+  // =====================================
+  // NEW: Attestation tracking
+  // =====================================
+  attestationAgreed: { type: Boolean, default: false },
+  attestationAgreedAt: Date,
+  attestationText: { 
+    type: String, 
+    default: 'I attest that I personally completed this entire course, including all required activities and assessments, and that I did not receive unauthorized assistance. I understand that falsifying this attestation may result in revocation of CE credits.'
+  },
+  
   // Overall progress
   overallProgress: { type: Number, default: 0 }, // 0-100 percentage
   status: { 
@@ -241,20 +285,27 @@ CourseProgressSchema.methods.calculateOverallProgress = function() {
   const completedSections = this.sectionProgress.filter(s => s.status === 'completed').length;
   const totalSections = this.sectionProgress.length;
   
-  // Weight: 80% sections, 20% final assessment
-  const sectionWeight = 0.8;
+  // Weight: 60% sections, 20% assessment, 10% evaluation, 10% attestation
+  const sectionWeight = 0.6;
   const assessmentWeight = 0.2;
+  const evaluationWeight = 0.1;
+  const attestationWeight = 0.1;
   
   const sectionProgress = (completedSections / totalSections) * 100 * sectionWeight;
   const assessmentProgress = this.assessmentPassed ? 100 * assessmentWeight : 0;
+  const evaluationProgress = this.evaluationSubmitted ? 100 * evaluationWeight : 0;
+  const attestationProgress = this.attestationAgreed ? 100 * attestationWeight : 0;
   
-  return Math.round(sectionProgress + assessmentProgress);
+  return Math.round(sectionProgress + assessmentProgress + evaluationProgress + attestationProgress);
 };
 
 // Method to check if eligible for certificate
 CourseProgressSchema.methods.isEligibleForCertificate = function() {
   const allSectionsCompleted = this.sectionProgress.every(s => s.status === 'completed');
-  return allSectionsCompleted && this.assessmentPassed;
+  return allSectionsCompleted && 
+         this.assessmentPassed && 
+         this.evaluationSubmitted && 
+         this.attestationAgreed;
 };
 
 const CourseProgress = mongoose.model('InteractiveCourseProgress', CourseProgressSchema);
