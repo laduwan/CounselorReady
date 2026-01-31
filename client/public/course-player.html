@@ -1,198 +1,141 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Course Viewer - CounselorReady</title>
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <title>Interactive Courses - CounselorReady</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Lato:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <script>
     tailwind.config = {
       theme: {
         extend: {
           colors: {
             burgundy: {
-              50: '#fdf2f4', 100: '#fce7eb', 200: '#f9d0d9', 300: '#f4a9ba',
-              400: '#ec7a95', 500: '#e04d72', 600: '#cb2d5d', 700: '#a3234d',
-              800: '#8b2046', 900: '#7a1f42'
+              50: '#fdf5f6', 100: '#fae8eb', 200: '#f5d0d6', 300: '#eba9b5',
+              400: '#dd768a', 500: '#c94d65', 600: '#a83350', 700: '#8b2542',
+              800: '#6b1d34', 900: '#4a1524', 950: '#2d0a14'
             },
             forest: {
-              50: '#f3f6f4', 100: '#e4ebe6', 200: '#c9d7ce', 300: '#a3baab',
-              400: '#789683', 500: '#577a64', 600: '#44614f', 700: '#384e41',
-              800: '#2f4036', 900: '#28352e'
+              50: '#f3f6f4', 100: '#e3ebe5', 200: '#c8d7cc', 300: '#a1bba8',
+              400: '#759a7f', 500: '#547c5f', 600: '#40634a', 700: '#34503d',
+              800: '#2b4133', 900: '#1f3025', 950: '#121c16'
             },
-            moss: {
-              50: '#f6f7f4', 100: '#e8ebe3', 200: '#d2d8c9', 300: '#b3bda4',
-              400: '#94a17e', 500: '#778561', 600: '#5d6a4c', 700: '#49533d',
-              800: '#3c4434', 900: '#34392e'
-            },
-            hunter: {
-              50: '#f2f7f4', 100: '#dfeae3', 200: '#c1d5c9', 300: '#96b7a3',
-              400: '#689179', 500: '#4a7660', 600: '#395d4b', 700: '#2f4b3d',
-              800: '#283d33', 900: '#22332b'
-            },
-            slate: {
-              50: '#f8fafc', 100: '#f1f5f9', 200: '#e2e8f0', 300: '#cbd5e1',
-              400: '#94a3b8', 500: '#64748b', 600: '#475569', 700: '#334155',
-              800: '#1e293b', 900: '#0f172a'
-            }
+            gold: { 50: '#fefce8', 100: '#fef9c3', 200: '#fef08a', 300: '#fde047', 400: '#facc15', 500: '#d4a012' }
           },
           fontFamily: {
-            'display': ['Cormorant Garamond', 'serif'],
-            'sans': ['Lato', 'sans-serif']
+            'display': ['Cormorant Garamond', 'Georgia', 'serif'],
+            'body': ['Lato', 'system-ui', 'sans-serif']
           }
         }
       }
     }
   </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Lato:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    .animate-spin { animation: spin 1s linear infinite; }
-    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-    .prose h3 { font-size: 1.25rem; font-weight: 600; margin-bottom: 0.75rem; margin-top: 1.5rem; color: #7a1f42; }
-    .prose p { margin-bottom: 1rem; line-height: 1.75; color: #475569; }
-    .prose strong { font-weight: 600; color: #1e293b; }
-    .prose ul, .prose ol { margin: 1rem 0; padding-left: 1.5rem; }
-    .prose li { margin-bottom: 0.5rem; line-height: 1.6; color: #475569; }
-    .prose ul li { list-style-type: disc; }
-    .prose ol li { list-style-type: decimal; }
-    .prose em { font-style: italic; color: #64748b; }
-    .accordion-content { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; }
-    .accordion-content.open { max-height: 5000px; }
-    .accordion-content p { margin-bottom: 0.75rem; }
-    .accordion-content ul { margin: 0.75rem 0; padding-left: 1.25rem; }
-    .accordion-content li { margin-bottom: 0.375rem; list-style-type: disc; }
-    .accordion-content strong { color: #7a1f42; }
+    body { font-family: 'Lato', system-ui, sans-serif; }
+    .font-display { font-family: 'Cormorant Garamond', Georgia, serif; }
+    .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
   </style>
 </head>
-<body class="bg-slate-50 font-sans min-h-screen">
-  <!-- Loading State -->
-  <div id="loading" class="min-h-screen flex items-center justify-center">
-    <div class="text-center">
-      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-burgundy-700 mx-auto"></div>
-      <p class="mt-4 text-slate-600">Loading course...</p>
-    </div>
-  </div>
-
-  <!-- Error State -->
-  <div id="error" class="min-h-screen flex items-center justify-center hidden">
-    <div class="text-center">
-      <svg class="w-12 h-12 text-red-500 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
-      </svg>
-      <h2 class="mt-4 text-xl font-bold text-slate-800">Error Loading Course</h2>
-      <p id="error-message" class="mt-2 text-slate-600"></p>
-      <a href="/interactive-courses.html" class="mt-4 inline-block px-4 py-2 bg-burgundy-700 text-white rounded-lg hover:bg-burgundy-800">
-        Back to Courses
+<body class="bg-stone-50 min-h-screen">
+  
+  <!-- Header -->
+  <header class="bg-white border-b border-hunter-100 sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+      <a href="/" class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl flex items-center justify-center shadow-md" style="background: linear-gradient(135deg, #8b2542, #6b1d34);">
+          <span class="font-display font-bold text-lg" style="position: relative; display: inline-block; width: 22px; height: 22px;"><span style="color: #D4A855; position: absolute; top: -3px; left: 0;">C</span><span style="color: #4A7C59; position: absolute; top: 5px; left: 6px;">R</span></span>
+        </div>
+        <span class="font-display font-semibold text-xl">
+          <span class="text-burgundy-800">Counselor</span><span class="text-forest-600">Ready</span>
+        </span>
       </a>
-    </div>
-  </div>
+      
+      <nav class="hidden md:flex items-center gap-8">
+        <a href="/dashboard.html" class="text-forest-600 hover:text-forest-700 transition-colors">Dashboard</a>
+        <a href="/courses.html" class="text-forest-600 hover:text-forest-700 transition-colors">Courses</a>
+        <a href="/credentials.html" class="text-forest-600 hover:text-forest-700 transition-colors">Credentials</a>
+        <a href="/certificates.html" class="text-forest-600 hover:text-forest-700 transition-colors">CE Certificates</a>
+        <a href="/messages.html" class="text-forest-600 hover:text-forest-700 transition-colors">Messages</a>
+      </nav>
 
-  <!-- Course Viewer -->
-  <div id="course-viewer" class="hidden">
-    <!-- Sidebar -->
-    <aside id="sidebar" class="fixed inset-y-0 left-0 w-72 bg-white border-r border-slate-200 transform -translate-x-full lg:translate-x-0 transition-transform z-40">
-      <div class="flex flex-col h-full">
-        <!-- Course Info -->
-        <div class="p-4 border-b border-slate-200">
-          <a href="/interactive-courses.html" class="flex items-center gap-2 text-slate-600 hover:text-burgundy-700 text-sm mb-3">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-            </svg>
-            Back to Courses
-          </a>
-          <h2 id="course-title" class="font-semibold text-slate-800 text-sm"></h2>
-          <div class="mt-2 flex items-center gap-2 text-xs text-slate-500">
-            <span id="course-ce-hours"></span>
-            <span>•</span>
-            <span id="course-sections-count"></span>
-          </div>
-        </div>
-        
-        <!-- Progress -->
-        <div class="p-4 border-b border-slate-200">
-          <div class="flex justify-between text-sm mb-1">
-            <span class="text-slate-600">Progress</span>
-            <span id="progress-percent" class="font-medium text-burgundy-700">0%</span>
-          </div>
-          <div class="h-2 bg-slate-100 rounded-full overflow-hidden">
-            <div id="progress-bar" class="h-full bg-gradient-to-r from-burgundy-600 to-forest-600 transition-all" style="width: 0%"></div>
-          </div>
-        </div>
-
-        <!-- Sections -->
-        <nav id="sections-nav" class="flex-1 overflow-y-auto p-4">
-          <ul class="space-y-2"></ul>
-        </nav>
-
-        <!-- Resources Section -->
-        <div id="resources-section" class="border-t border-slate-200 p-4 hidden">
-          <button onclick="toggleResources()" class="w-full flex items-center justify-between text-sm font-medium text-slate-700 mb-3">
-            <span class="flex items-center gap-2">
-              <svg class="w-5 h-5 text-burgundy-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-              </svg>
-              Bonus Resources
-            </span>
-            <svg id="resources-chevron" class="w-4 h-4 text-slate-400 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-            </svg>
-          </button>
-          <div id="resources-list" class="space-y-2 hidden"></div>
-        </div>
-      </div>
-    </aside>
-
-    <!-- Mobile Menu Button -->
-    <button id="menu-btn" class="lg:hidden fixed top-4 left-4 z-50 p-2 bg-white rounded-lg shadow-md">
-      <svg class="w-6 h-6 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-      </svg>
-    </button>
-
-    <!-- Main Content -->
-    <main class="lg:ml-72">
-      <!-- Top Bar -->
-      <header class="bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between sticky top-0 z-30">
-        <div class="lg:hidden w-10"></div>
-        <h1 id="section-title" class="text-lg font-semibold text-slate-800 text-center flex-1"></h1>
-        <a href="/dashboard.html" class="p-2 text-slate-400 hover:text-slate-600">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
-          </svg>
+      <div class="flex items-center gap-4">
+        <a href="/dashboard.html" class="text-forest-600 hover:text-forest-700 text-sm">
+          ← Back to Dashboard
         </a>
-      </header>
-
-      <!-- Content Area -->
-      <div id="content-area" class="p-6 lg:p-8 max-w-4xl mx-auto"></div>
-
-      <!-- Navigation -->
-      <div class="p-6 lg:p-8 max-w-4xl mx-auto border-t border-slate-200 flex justify-between">
-        <button id="prev-btn" class="flex items-center gap-2 px-4 py-2 text-slate-600 hover:text-burgundy-700 disabled:opacity-50 disabled:cursor-not-allowed">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-          </svg>
-          Previous
-        </button>
-        <button id="next-btn" class="flex items-center gap-2 px-6 py-2 bg-burgundy-700 text-white rounded-lg hover:bg-burgundy-800 disabled:opacity-50 disabled:cursor-not-allowed">
-          Next
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-          </svg>
-        </button>
       </div>
-    </main>
+    </div>
+  </header>
 
-    <!-- Mobile Overlay -->
-    <div id="overlay" class="fixed inset-0 bg-black/50 z-30 hidden lg:hidden" onclick="toggleSidebar()"></div>
-  </div>
+  <!-- Main Content -->
+  <main class="max-w-7xl mx-auto px-6 py-8">
+    
+    <!-- Page Header -->
+    <div class="flex items-center justify-between mb-8">
+      <div>
+        <h1 class="font-display text-3xl font-semibold text-burgundy-900 mb-2">Interactive CE Courses</h1>
+        <p class="text-forest-600">Engaging, self-paced continuing education for mental health professionals.</p>
+      </div>
+      <button onclick="loadCourses()" id="syncBtn" class="inline-flex items-center gap-2 bg-forest-100 hover:bg-forest-200 text-forest-700 font-semibold px-4 py-2 rounded-xl transition-colors">
+        <svg id="syncIcon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+        </svg>
+        Refresh
+      </button>
+    </div>
+
+    <!-- Filters & Search -->
+    <div class="bg-white rounded-xl border border-burgundy-100 shadow-sm p-6 mb-6">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <!-- Search -->
+        <div class="md:col-span-2">
+          <label for="search" class="block text-sm font-medium text-forest-700 mb-2">Search Courses</label>
+          <input type="text" id="search" placeholder="Search by title or topic..." onkeyup="filterCourses()" class="w-full px-4 py-3 border border-forest-200 rounded-xl focus:ring-2 focus:ring-burgundy-500 focus:border-burgundy-500 outline-none">
+        </div>
+
+        <!-- Filter by Category -->
+        <div>
+          <label for="filterCategory" class="block text-sm font-medium text-forest-700 mb-2">Category</label>
+          <select id="filterCategory" onchange="filterCourses()" class="w-full px-4 py-3 border border-forest-200 rounded-xl focus:ring-2 focus:ring-burgundy-500 focus:border-burgundy-500 outline-none">
+            <option value="">All Categories</option>
+            <option value="ethics">Ethics</option>
+            <option value="clinical">Clinical Skills</option>
+            <option value="trauma">Trauma</option>
+            <option value="crisis">Crisis Intervention</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Course Grid -->
+    <div id="coursesList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <!-- Loading State -->
+      <div class="md:col-span-3 text-center py-12">
+        <div class="inline-block w-8 h-8 border-4 border-burgundy-200 border-t-burgundy-700 rounded-full animate-spin"></div>
+        <p class="text-forest-500 mt-4">Loading courses...</p>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div id="emptyState" class="hidden bg-white rounded-xl border border-burgundy-100 shadow-sm p-12 text-center">
+      <div class="w-20 h-20 bg-forest-100 rounded-full flex items-center justify-center mx-auto mb-4">
+        <svg class="w-10 h-10 text-forest-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+        </svg>
+      </div>
+      <h3 class="font-display text-xl font-semibold text-burgundy-900 mb-2">No courses found</h3>
+      <p class="text-forest-600">Try adjusting your filters or check back soon for new courses.</p>
+    </div>
+  </main>
 
   <script>
     const API_BASE = 'https://api.counselorready.com/api';
-    let course = null;
-    let currentSectionIndex = 0;
-
-    // Check auth
+    let allCourses = [];
+    
+    // Check authentication
     function checkAuth() {
       const token = localStorage.getItem('token');
       if (!token) {
@@ -202,539 +145,139 @@
       return true;
     }
 
-    // Get slug from URL
-    function getSlug() {
-      const params = new URLSearchParams(window.location.search);
-      return params.get('slug');
-    }
-
-    // Toggle sidebar
-    function toggleSidebar() {
-      const sidebar = document.getElementById('sidebar');
-      const overlay = document.getElementById('overlay');
-      sidebar.classList.toggle('-translate-x-full');
-      overlay.classList.toggle('hidden');
-    }
-
-    // Load course
-    async function loadCourse() {
+    // Load courses
+    async function loadCourses() {
       if (!checkAuth()) return;
       
-      const slug = getSlug();
-      if (!slug) {
-        showError('No course specified');
-        return;
-      }
+      const syncIcon = document.getElementById('syncIcon');
+      syncIcon?.classList.add('animate-spin');
 
       try {
-        const response = await fetch(`${API_BASE}/interactive-courses/${slug}`, {
-          headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        const response = await fetch(`${API_BASE}/interactive-courses`, {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
         });
         
-        if (!response.ok) throw new Error('Course not found');
+        if (!response.ok) throw new Error('Failed to fetch courses');
         
-        course = await response.json();
-        renderCourse();
-        
-        document.getElementById('loading').classList.add('hidden');
-        document.getElementById('course-viewer').classList.remove('hidden');
+        const data = await response.json();
+        allCourses = data.courses || [];
+        renderCourses(allCourses);
       } catch (err) {
-        showError(err.message);
-      }
-    }
-
-    // Show error
-    function showError(message) {
-      document.getElementById('loading').classList.add('hidden');
-      document.getElementById('error').classList.remove('hidden');
-      document.getElementById('error-message').textContent = message;
-    }
-
-    // Toggle resources panel
-    function toggleResources() {
-      const list = document.getElementById('resources-list');
-      const chevron = document.getElementById('resources-chevron');
-      list.classList.toggle('hidden');
-      chevron.classList.toggle('rotate-180');
-    }
-
-    // Render resources in sidebar
-    function renderResources() {
-      const resources = course.resources || [];
-      const section = document.getElementById('resources-section');
-      const list = document.getElementById('resources-list');
-      
-      if (resources.length === 0) {
-        section.classList.add('hidden');
-        return;
-      }
-      
-      section.classList.remove('hidden');
-      list.innerHTML = resources.map(res => `
-        <a href="${res.url}" target="_blank" download="${res.filename || ''}" 
-           class="flex items-center gap-3 p-2 rounded-lg hover:bg-burgundy-50 transition-colors group">
-          <div class="w-8 h-8 rounded-lg ${getResourceBgColor(res.type)} flex items-center justify-center flex-shrink-0">
-            ${getResourceIcon(res.type)}
+        console.error('Error loading courses:', err);
+        document.getElementById('coursesList').innerHTML = `
+          <div class="md:col-span-3 text-center py-12">
+            <p class="text-burgundy-600">Failed to load courses. Please try again.</p>
           </div>
-          <div class="flex-1 min-w-0">
-            <p class="text-sm font-medium text-slate-700 group-hover:text-burgundy-700 truncate">${res.title}</p>
-            <p class="text-xs text-slate-500">${res.type.toUpperCase()} • ${res.size || 'Download'}</p>
-          </div>
-          <svg class="w-4 h-4 text-slate-400 group-hover:text-burgundy-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
-          </svg>
-        </a>
-      `).join('');
-    }
-
-    // Get resource icon based on type
-    function getResourceIcon(type) {
-      const icons = {
-        pdf: '<svg class="w-4 h-4 text-red-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd"/></svg>',
-        doc: '<svg class="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd"/></svg>',
-        checklist: '<svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>',
-        card: '<svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>',
-        worksheet: '<svg class="w-4 h-4 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>',
-        audio: '<svg class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/></svg>',
-        video: '<svg class="w-4 h-4 text-pink-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>'
-      };
-      return icons[type] || icons.pdf;
-    }
-
-    // Get resource background color
-    function getResourceBgColor(type) {
-      const colors = {
-        pdf: 'bg-red-100',
-        doc: 'bg-blue-100',
-        checklist: 'bg-green-100',
-        card: 'bg-purple-100',
-        worksheet: 'bg-orange-100',
-        audio: 'bg-indigo-100',
-        video: 'bg-pink-100'
-      };
-      return colors[type] || 'bg-gray-100';
-    }
-
-    // Render course
-    function renderCourse() {
-      document.title = `${course.title} - CounselorReady`;
-      document.getElementById('course-title').textContent = course.title;
-      document.getElementById('course-ce-hours').textContent = `${course.ceHours} CE Hours`;
-      document.getElementById('course-sections-count').textContent = `${course.sections.length} Sections`;
-      
-      renderSectionsNav();
-      renderResources();
-      renderSection(0);
-    }
-
-    // Render sections nav
-    function renderSectionsNav() {
-      const nav = document.querySelector('#sections-nav ul');
-      nav.innerHTML = '';
-      
-      course.sections.forEach((section, index) => {
-        const li = document.createElement('li');
-        li.innerHTML = `
-          <button onclick="goToSection(${index})" class="section-nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-colors ${index === currentSectionIndex ? 'bg-burgundy-50 text-burgundy-800' : 'text-slate-600 hover:bg-slate-50'}">
-            <div class="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 ${index === currentSectionIndex ? 'bg-burgundy-600 text-white' : 'bg-slate-200 text-slate-500'}">
-              <span class="text-xs font-semibold">${index + 1}</span>
-            </div>
-            <span class="text-sm font-medium">${section.title}</span>
-          </button>
         `;
-        nav.appendChild(li);
-      });
-
-      // Add assessment button
-      const assessmentLi = document.createElement('li');
-      assessmentLi.className = 'pt-4 mt-4 border-t border-slate-200';
-      assessmentLi.innerHTML = `
-        <button onclick="goToAssessment()" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left text-slate-600 hover:bg-slate-50">
-          <div class="w-6 h-6 rounded-full flex items-center justify-center bg-emerald-100 text-forest-700">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-            </svg>
-          </div>
-          <span class="text-sm font-medium">Final Assessment</span>
-        </button>
-      `;
-      nav.appendChild(assessmentLi);
-    }
-
-    // Go to section
-    function goToSection(index) {
-      currentSectionIndex = index;
-      renderSection(index);
-      renderSectionsNav();
-      toggleSidebar();
-      window.scrollTo(0, 0);
-    }
-
-    // Render section
-    function renderSection(index) {
-      const section = course.sections[index];
-      document.getElementById('section-title').textContent = section.title;
-      
-      const content = document.getElementById('content-area');
-      content.innerHTML = '';
-
-      // Render content blocks
-      section.contentBlocks.forEach(block => {
-        const blockEl = renderContentBlock(block);
-        if (blockEl) content.appendChild(blockEl);
-      });
-
-      // Update navigation buttons
-      document.getElementById('prev-btn').disabled = index === 0;
-      document.getElementById('next-btn').textContent = index === course.sections.length - 1 ? 'Take Assessment' : 'Next';
-      document.getElementById('next-btn').innerHTML = index === course.sections.length - 1 
-        ? 'Take Assessment <svg class="w-5 h-5 inline ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>'
-        : 'Next <svg class="w-5 h-5 inline ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>';
-
-      // Update progress
-      const progress = Math.round(((index + 1) / course.sections.length) * 100);
-      document.getElementById('progress-percent').textContent = `${progress}%`;
-      document.getElementById('progress-bar').style.width = `${progress}%`;
-    }
-
-    // Render content block
-    function renderContentBlock(block) {
-      const div = document.createElement('div');
-      div.className = 'mb-8';
-
-      switch (block.type) {
-        case 'sectionDivider':
-          div.innerHTML = `
-            <div class="text-center py-10 mb-6">
-              <span class="inline-block px-5 py-1.5 bg-burgundy-600 text-white rounded-full text-sm font-medium mb-4 shadow-sm">Section ${block.sectionNumber || ''}</span>
-              <h2 class="text-3xl font-bold text-slate-800 font-display mb-2">${block.title || ''}</h2>
-              ${block.subtitle ? `<p class="text-lg text-slate-500 max-w-2xl mx-auto">${block.subtitle}</p>` : ''}
-            </div>
-          `;
-          break;
-
-        case 'text':
-          div.innerHTML = `<div class="prose prose-slate max-w-none prose-headings:text-burgundy-800 prose-h3:text-xl prose-h3:mt-6 prose-h3:mb-3 prose-p:text-slate-600 prose-p:leading-relaxed prose-li:text-slate-600 prose-strong:text-slate-800 prose-ul:my-4 prose-li:my-1">${block.textContent || ''}</div>`;
-          break;
-
-        case 'accordion':
-          div.innerHTML = `
-            <div class="space-y-3">
-              ${(block.accordionItems || []).map((item, i) => `
-                <div class="border border-slate-200 rounded-lg overflow-hidden">
-                  <button onclick="toggleAccordion(this)" class="w-full flex items-center justify-between p-4 text-left bg-slate-50 hover:bg-slate-100 transition-colors">
-                    <span class="font-medium text-slate-800">${item.title}</span>
-                    <svg class="w-5 h-5 text-slate-400 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                    </svg>
-                  </button>
-                  <div class="accordion-content">
-                    <div class="p-4 text-slate-600">${item.content}</div>
-                  </div>
-                </div>
-              `).join('')}
-            </div>
-          `;
-          break;
-
-        case 'imageText':
-          const imagePos = block.imagePosition || 'left';
-          const hasImage = block.image && block.image.trim() !== '';
-          
-          if (hasImage) {
-            div.innerHTML = `
-              <div class="${block.highlight ? 'bg-gradient-to-br from-burgundy-50 to-forest-50 border border-burgundy-200 rounded-xl p-6' : 'bg-white border border-slate-200 rounded-xl p-6'}">
-                ${block.title ? `<h3 class="text-xl font-semibold text-burgundy-800 mb-4">${block.title}</h3>` : ''}
-                <div class="flex flex-col ${imagePos === 'right' ? 'md:flex-row-reverse' : 'md:flex-row'} gap-6">
-                  <div class="md:w-2/5 flex-shrink-0">
-                    <img src="${block.image}" alt="${block.imageAlt || block.title || 'Course image'}" 
-                         class="w-full h-48 md:h-64 object-cover rounded-lg shadow-md" 
-                         onerror="this.style.display='none'">
-                  </div>
-                  <div class="md:w-3/5 text-slate-600 leading-relaxed prose prose-sm max-w-none">${block.content || ''}</div>
-                </div>
-              </div>
-            `;
-          } else {
-            div.innerHTML = `
-              <div class="${block.highlight ? 'bg-gradient-to-br from-burgundy-50 to-forest-50 border border-burgundy-200 rounded-xl p-6' : 'bg-white border border-slate-100 rounded-xl p-6'}">
-                ${block.title ? `<h3 class="text-xl font-semibold text-burgundy-800 mb-3">${block.title}</h3>` : ''}
-                <div class="text-slate-600 leading-relaxed prose prose-sm max-w-none">${block.content || ''}</div>
-              </div>
-            `;
-          }
-          break;
-
-        case 'multipleChoice':
-          const correctIdx = (block.options || []).findIndex(o => o.isCorrect);
-          div.innerHTML = `
-            <div class="bg-white border border-slate-200 rounded-xl p-6">
-              <p class="font-medium text-slate-800 mb-4">${block.question || ''}</p>
-              <div class="space-y-2">
-                ${(block.options || []).map((opt, i) => `
-                  <label onclick="checkAnswer(this, ${opt.isCorrect}, '${(block.explanation || '').replace(/'/g, "\\'")}');" class="flex items-center gap-3 p-3 border border-slate-200 rounded-lg cursor-pointer hover:bg-slate-50 transition-colors">
-                    <input type="radio" name="q-${Math.random().toString(36).substr(2, 9)}" class="w-4 h-4 text-burgundy-700">
-                    <span class="text-slate-700">${opt.text}</span>
-                  </label>
-                `).join('')}
-              </div>
-            </div>
-          `;
-          break;
-
-        case 'multiSelect':
-          div.innerHTML = `
-            <div class="bg-white border border-slate-200 rounded-xl p-6">
-              <p class="font-medium text-slate-800 mb-4">${block.question || ''}</p>
-              <div class="space-y-2" id="ms-${Math.random().toString(36).substr(2, 9)}">
-                ${(block.options || []).map((opt, i) => `
-                  <label class="flex items-center gap-3 p-3 border border-slate-200 rounded-lg cursor-pointer hover:bg-slate-50 transition-colors" data-correct="${opt.isCorrect}">
-                    <input type="checkbox" class="w-4 h-4 text-burgundy-700 rounded">
-                    <span class="text-slate-700">${opt.text}</span>
-                  </label>
-                `).join('')}
-              </div>
-              <button onclick="checkMultiSelect(this, '${(block.explanation || '').replace(/'/g, "\\'")}')" class="mt-4 px-4 py-2 bg-burgundy-700 text-white rounded-lg hover:bg-burgundy-800 text-sm">
-                Check Answer
-              </button>
-            </div>
-          `;
-          break;
-
-        case 'matching':
-          const matchId = 'match-' + Math.random().toString(36).substr(2, 9);
-          const pairs = block.matchingPairs || [];
-          const shuffledDefs = [...pairs].sort(() => Math.random() - 0.5);
-          div.innerHTML = `
-            <div class="bg-white border border-slate-200 rounded-xl p-6">
-              <p class="font-medium text-slate-800 mb-4">${block.matchingInstructions || 'Match the terms with their definitions'}</p>
-              <div class="space-y-3" id="${matchId}">
-                ${pairs.map((pair, i) => `
-                  <div class="flex items-center gap-4 match-row" data-term="${pair.term}" data-correct="${pair.definition}">
-                    <div class="flex-1 p-3 bg-burgundy-50 border border-burgundy-200 rounded-lg text-burgundy-800 font-medium">${pair.term}</div>
-                    <svg class="w-6 h-6 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
-                    </svg>
-                    <select class="flex-1 p-3 border border-slate-200 rounded-lg text-slate-700 bg-white" onchange="checkMatch(this)">
-                      <option value="">Select a match...</option>
-                      ${shuffledDefs.map(d => `<option value="${d.definition}">${d.definition}</option>`).join('')}
-                    </select>
-                  </div>
-                `).join('')}
-              </div>
-              <button onclick="checkAllMatches('${matchId}')" class="mt-4 px-4 py-2 bg-burgundy-700 text-white rounded-lg hover:bg-burgundy-800 text-sm">
-                Check All Matches
-              </button>
-            </div>
-          `;
-          break;
-
-        case 'resources':
-        case 'downloads':
-          const dlResources = block.resources || [];
-          div.innerHTML = `
-            <div class="bg-gradient-to-br from-forest-50 to-moss-50 border border-forest-200 rounded-xl p-6">
-              <div class="flex items-center gap-3 mb-4">
-                <div class="w-10 h-10 rounded-lg bg-forest-600 flex items-center justify-center">
-                  <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                  </svg>
-                </div>
-                <div>
-                  <h3 class="text-lg font-semibold text-forest-800">${block.title || 'Bonus Resources'}</h3>
-                  <p class="text-sm text-forest-600">${block.description || 'Download these helpful resources'}</p>
-                </div>
-              </div>
-              <div class="grid gap-3 sm:grid-cols-2">
-                ${dlResources.map(res => `
-                  <a href="${res.url}" target="_blank" download="${res.filename || ''}" 
-                     class="flex items-center gap-3 p-4 bg-white rounded-lg border border-forest-200 hover:border-forest-400 hover:shadow-md transition-all group">
-                    <div class="w-10 h-10 rounded-lg ${getResourceBgColor(res.type)} flex items-center justify-center flex-shrink-0">
-                      ${getResourceIcon(res.type)}
-                    </div>
-                    <div class="flex-1 min-w-0">
-                      <p class="font-medium text-slate-800 group-hover:text-forest-700">${res.title}</p>
-                      <p class="text-xs text-slate-500">${res.type.toUpperCase()} ${res.size ? '• ' + res.size : ''}</p>
-                    </div>
-                    <svg class="w-5 h-5 text-slate-400 group-hover:text-forest-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
-                    </svg>
-                  </a>
-                `).join('')}
-              </div>
-            </div>
-          `;
-          break;
-
-        default:
-          return null;
-      }
-
-      return div;
-    }
-
-    // Toggle accordion
-    function toggleAccordion(btn) {
-      const content = btn.nextElementSibling;
-      const icon = btn.querySelector('svg');
-      
-      // Close other accordions in same group
-      const parent = btn.closest('.space-y-3');
-      if (parent) {
-        parent.querySelectorAll('.accordion-content.open').forEach(other => {
-          if (other !== content) {
-            other.classList.remove('open');
-            other.previousElementSibling.querySelector('svg').classList.remove('rotate-180');
-          }
-        });
-      }
-      
-      content.classList.toggle('open');
-      icon.classList.toggle('rotate-180');
-    }
-
-    // Check answer for multiple choice
-    function checkAnswer(btn, isCorrect, explanation) {
-      const container = btn.closest('.bg-white');
-      const options = container.querySelectorAll('label');
-      
-      // Disable all options
-      options.forEach(opt => {
-        opt.style.pointerEvents = 'none';
-        const input = opt.querySelector('input');
-        if (input.checked) {
-          if (isCorrect) {
-            opt.classList.add('bg-green-50', 'border-green-500');
-            opt.innerHTML += ' <span class="ml-auto text-green-600 font-medium">✓ Correct!</span>';
-          } else {
-            opt.classList.add('bg-red-50', 'border-red-500');
-            opt.innerHTML += ' <span class="ml-auto text-red-600 font-medium">✗ Incorrect</span>';
-          }
-        }
-      });
-      
-      // Show explanation
-      if (explanation) {
-        const expDiv = document.createElement('div');
-        expDiv.className = 'mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg text-blue-800 text-sm';
-        expDiv.innerHTML = '<strong>Explanation:</strong> ' + explanation;
-        container.appendChild(expDiv);
+      } finally {
+        setTimeout(() => {
+          syncIcon?.classList.remove('animate-spin');
+        }, 500);
       }
     }
 
-    // Check individual match
-    function checkMatch(select) {
-      const row = select.closest('.match-row');
-      const correct = row.dataset.correct;
-      const selected = select.value;
+    // Render courses
+    function renderCourses(courses) {
+      const container = document.getElementById('coursesList');
+      const emptyState = document.getElementById('emptyState');
       
-      if (!selected) {
-        select.className = 'flex-1 p-3 border border-slate-200 rounded-lg text-slate-700 bg-white';
+      if (courses.length === 0) {
+        container.classList.add('hidden');
+        emptyState.classList.remove('hidden');
         return;
       }
       
-      if (selected === correct) {
-        select.className = 'flex-1 p-3 border-2 border-green-500 rounded-lg text-green-700 bg-green-50';
-      } else {
-        select.className = 'flex-1 p-3 border-2 border-red-500 rounded-lg text-red-700 bg-red-50';
-      }
+      container.classList.remove('hidden');
+      emptyState.classList.add('hidden');
+      
+      const html = courses.map(course => {
+        const estimatedTime = course.totalEstimatedTime || (course.ceHours * 60) || 60;
+        
+        return `
+          <div class="bg-white rounded-xl border border-burgundy-100 shadow-sm overflow-hidden hover:shadow-lg transition-shadow cursor-pointer" onclick="window.location.href='/course-player.html?slug=${course.slug}'">
+            <!-- Thumbnail -->
+            <div class="h-48 bg-gradient-to-br from-burgundy-100 to-forest-100 flex items-center justify-center">
+              ${course.thumbnail ? 
+                `<img src="${course.thumbnail}" alt="${course.title}" class="w-full h-full object-cover">` :
+                `<svg class="w-16 h-16 text-burgundy-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                </svg>`
+              }
+            </div>
+
+            <!-- Content -->
+            <div class="p-5">
+              <!-- Title -->
+              <h3 class="font-display text-xl font-semibold text-burgundy-900 mb-2 line-clamp-2">${course.title}</h3>
+              
+              <!-- Description -->
+              <p class="text-forest-500 text-sm mb-4 line-clamp-2">${course.description || ''}</p>
+
+              <!-- Meta Info -->
+              <div class="flex flex-wrap items-center gap-2 mb-4">
+                <span class="bg-gold-100 text-gold-700 px-2 py-1 rounded-full text-xs font-medium">
+                  ${course.ceHours || 1} CE Hours
+                </span>
+                
+                <span class="bg-forest-100 text-forest-700 px-2 py-1 rounded-full text-xs font-medium">
+                  ${estimatedTime} min
+                </span>
+                
+                ${course.acepNumber ? `
+                  <span class="bg-burgundy-100 text-burgundy-700 px-2 py-1 rounded-full text-xs font-medium">
+                    CE #${course.acepNumber}
+                  </span>
+                ` : ''}
+              </div>
+
+              <!-- Categories -->
+              ${course.categories && course.categories.length > 0 ? `
+                <div class="flex flex-wrap gap-1 mb-4">
+                  ${course.categories.slice(0, 2).map(cat => `
+                    <span class="px-2 py-0.5 bg-stone-100 text-stone-600 text-xs rounded-full">${cat}</span>
+                  `).join('')}
+                </div>
+              ` : ''}
+
+              <!-- Action Button -->
+              <div class="flex items-center justify-between pt-4 border-t border-burgundy-100">
+                <span class="text-sm font-medium text-burgundy-700">Start Course</span>
+                <svg class="w-5 h-5 text-burgundy-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                </svg>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+      
+      container.innerHTML = html;
     }
 
-    // Check all matches
-    function checkAllMatches(containerId) {
-      const container = document.getElementById(containerId);
-      const rows = container.querySelectorAll('.match-row');
-      let correct = 0;
+    // Filter courses
+    function filterCourses() {
+      const search = document.getElementById('search').value.toLowerCase();
+      const category = document.getElementById('filterCategory').value.toLowerCase();
       
-      rows.forEach(row => {
-        const select = row.querySelector('select');
-        const correctAnswer = row.dataset.correct;
+      let filtered = allCourses.filter(course => {
+        const matchesSearch = !search || 
+          course.title?.toLowerCase().includes(search) ||
+          course.description?.toLowerCase().includes(search);
         
-        if (select.value === correctAnswer) {
-          correct++;
-          select.className = 'flex-1 p-3 border-2 border-green-500 rounded-lg text-green-700 bg-green-50';
-          select.disabled = true;
-        } else if (select.value) {
-          select.className = 'flex-1 p-3 border-2 border-red-500 rounded-lg text-red-700 bg-red-50';
-        }
+        const matchesCategory = !category || 
+          course.categories?.some(cat => cat.toLowerCase().includes(category));
+        
+        return matchesSearch && matchesCategory;
       });
       
-      const total = rows.length;
-      const resultDiv = container.parentElement.querySelector('.match-result') || document.createElement('div');
-      resultDiv.className = 'match-result mt-4 p-3 rounded-lg text-sm ' + 
-        (correct === total ? 'bg-green-50 border border-green-200 text-green-800' : 'bg-blue-50 border border-blue-200 text-blue-800');
-      resultDiv.innerHTML = `<strong>${correct}/${total} correct!</strong> ${correct === total ? 'Great job!' : 'Keep trying the incorrect ones.'}`;
-      
-      if (!container.parentElement.querySelector('.match-result')) {
-        container.parentElement.insertBefore(resultDiv, container.parentElement.querySelector('button'));
-      }
+      renderCourses(filtered);
     }
-
-    // Check multi-select answers
-    function checkMultiSelect(btn, explanation) {
-      const container = btn.closest('.bg-white');
-      const labels = container.querySelectorAll('label');
-      let allCorrect = true;
-      
-      labels.forEach(label => {
-        const input = label.querySelector('input');
-        const isCorrect = label.dataset.correct === 'true';
-        const isChecked = input.checked;
-        
-        label.style.pointerEvents = 'none';
-        
-        if (isCorrect && isChecked) {
-          label.classList.add('bg-green-50', 'border-green-500');
-          label.innerHTML += ' <span class="ml-auto text-green-600">✓</span>';
-        } else if (isCorrect && !isChecked) {
-          label.classList.add('bg-yellow-50', 'border-yellow-500');
-          label.innerHTML += ' <span class="ml-auto text-yellow-600">← Should select</span>';
-          allCorrect = false;
-        } else if (!isCorrect && isChecked) {
-          label.classList.add('bg-red-50', 'border-red-500');
-          label.innerHTML += ' <span class="ml-auto text-red-600">✗</span>';
-          allCorrect = false;
-        }
-      });
-      
-      btn.disabled = true;
-      btn.classList.add('opacity-50');
-      
-      // Show result
-      const resultDiv = document.createElement('div');
-      resultDiv.className = allCorrect 
-        ? 'mt-4 p-3 bg-green-50 border border-green-200 rounded-lg text-green-800 text-sm'
-        : 'mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg text-blue-800 text-sm';
-      resultDiv.innerHTML = allCorrect 
-        ? '<strong>Correct!</strong> ' + explanation
-        : '<strong>Review the correct answers above.</strong> ' + explanation;
-      container.appendChild(resultDiv);
-    }
-
-    // Go to assessment
-    function goToAssessment() {
-      alert('Assessment feature coming soon! Complete all sections first.');
-    }
-
-    // Navigation handlers
-    document.getElementById('prev-btn').addEventListener('click', () => {
-      if (currentSectionIndex > 0) {
-        goToSection(currentSectionIndex - 1);
-      }
-    });
-
-    document.getElementById('next-btn').addEventListener('click', () => {
-      if (currentSectionIndex < course.sections.length - 1) {
-        goToSection(currentSectionIndex + 1);
-      } else {
-        goToAssessment();
-      }
-    });
-
-    document.getElementById('menu-btn').addEventListener('click', toggleSidebar);
 
     // Initialize
-    document.addEventListener('DOMContentLoaded', loadCourse);
+    document.addEventListener('DOMContentLoaded', loadCourses);
   </script>
+
 </body>
 </html>
