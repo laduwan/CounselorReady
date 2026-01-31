@@ -839,12 +839,36 @@
           <h4 class="font-semibold text-burgundy-900 mb-4">Question ${index + 1} of ${questions.length}${instruction}</h4>
           <p class="text-forest-700 mb-4">${q.question}</p>
           <div class="space-y-2">
-            ${(q.options || []).map((option, oIndex) => `
+            ${(q.options || []).map((option, oIndex) => {
+              // Debug: log the actual option structure
+              console.log('Quiz option', oIndex, ':', option, 'Type:', typeof option);
+              
+              // Handle all possible option formats
+              let optionText = 'Option ' + (oIndex + 1);  // Default fallback
+              if (typeof option === 'string' && option) {
+                optionText = option;
+              } else if (option && typeof option === 'object') {
+                // Try common property names
+                optionText = option.text || option.label || option.value || option.answer || option.content || option.option || option.choice;
+                // If still no text, check if there's any string property
+                if (!optionText) {
+                  const keys = Object.keys(option);
+                  console.log('Option keys:', keys);
+                  for (const key of keys) {
+                    if (typeof option[key] === 'string' && option[key] && key !== 'isCorrect' && key !== '_id') {
+                      optionText = option[key];
+                      break;
+                    }
+                  }
+                }
+                if (!optionText) optionText = 'Option ' + (oIndex + 1);
+              }
+              return `
               <label class="flex items-center gap-3 p-3 border border-forest-200 rounded-lg cursor-pointer hover:bg-forest-50 transition-colors">
                 <input type="${inputType}" name="q${index}" value="${oIndex}" class="w-4 h-4 text-burgundy-600">
-                <span class="text-forest-700">${typeof option === 'object' ? option.text : option}</span>
+                <span class="text-forest-700">${optionText}</span>
               </label>
-            `).join('')}
+            `}).join('')}
           </div>
         </div>
       `}).join('');
@@ -920,7 +944,22 @@
                 ${feedback.map((f, idx) => {
                   const q = questions[idx];
                   const isCorrect = f.correct;
-                  const getOptionText = (opt) => typeof opt === 'object' ? opt.text : opt;
+                  const getOptionText = (opt) => {
+                    if (!opt && opt !== 0) return 'N/A';
+                    if (typeof opt === 'string') return opt;
+                    if (typeof opt === 'object') {
+                      const text = opt.text || opt.label || opt.value || opt.answer || opt.content || opt.option || opt.choice;
+                      if (text) return text;
+                      // Find any string property
+                      for (const key of Object.keys(opt)) {
+                        if (typeof opt[key] === 'string' && opt[key] && key !== 'isCorrect' && key !== '_id') {
+                          return opt[key];
+                        }
+                      }
+                      return 'Option';
+                    }
+                    return String(opt);
+                  };
                   const userAnswerText = f.userAnswer !== null && f.userAnswer !== undefined 
                     ? (Array.isArray(f.userAnswer) ? f.userAnswer.map(a => getOptionText(q.options[a])).join(', ') : getOptionText(q.options[f.userAnswer]))
                     : 'No answer';
