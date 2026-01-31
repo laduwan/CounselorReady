@@ -29,7 +29,6 @@ import helpRoutes from './routes/help.js';
 import bulkUploadRoutes from './routes/bulkUpload.js';
 import adminStatsRoutes from './routes/adminStats.js';
 import interactiveCourseRoutes from './routes/interactiveCourseRoutes.js';
-app.use('/api/interactive-courses', interactiveCourseRoutes);
 
 // Import services
 import { initializeScheduler } from './services/notificationScheduler.js';
@@ -55,14 +54,13 @@ const allowedOrigins = [
 
 app.use(cors({
   origin: function(origin, callback) {
-    // Allow requests with no origin (mobile apps, curl, etc.)
     if (!origin) return callback(null, true);
     
     if (allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
       console.log('Blocked by CORS:', origin);
-      callback(null, true); // Allow anyway for development - tighten in production
+      callback(null, true);
     }
   },
   credentials: true,
@@ -71,7 +69,6 @@ app.use(cors({
 }));
 
 // Body parsing middleware
-// Stripe webhook needs raw body, so we handle it before json parsing
 app.use('/api/payments/webhook', express.raw({ type: 'application/json' }));
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
@@ -90,13 +87,11 @@ if (process.env.NODE_ENV !== 'production') {
 
 const connectDB = async () => {
   try {
-    const conn = await mongoose.connect(process.env.MONGODB_URI, {
-      // These options are no longer needed in Mongoose 6+, but kept for compatibility
-    });
-    console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
+    const conn = await mongoose.connect(process.env.MONGODB_URI, {});
+    console.log(`MongoDB Connected: ${conn.connection.host}`);
     return conn;
   } catch (error) {
-    console.error('❌ MongoDB connection error:', error.message);
+    console.error('MongoDB connection error:', error.message);
     process.exit(1);
   }
 };
@@ -150,7 +145,7 @@ app.use('/api/help', helpRoutes);
 app.use('/api/admin/courses', bulkUploadRoutes);
 app.use('/api/admin/stats', adminStatsRoutes);
 
-// Serve static files from templates directory (for certificates)
+// Serve static files from templates directory
 app.use('/templates', express.static(path.join(__dirname, 'templates')));
 
 // ===========================================
@@ -183,19 +178,16 @@ app.use((req, res, next) => {
 app.use((err, req, res, next) => {
   console.error('Error:', err);
   
-  // Mongoose validation error
   if (err.name === 'ValidationError') {
     const messages = Object.values(err.errors).map(e => e.message);
     return res.status(400).json({ error: 'Validation Error', details: messages });
   }
   
-  // Mongoose duplicate key error
   if (err.code === 11000) {
     const field = Object.keys(err.keyValue)[0];
     return res.status(400).json({ error: `Duplicate value for ${field}` });
   }
   
-  // JWT errors
   if (err.name === 'JsonWebTokenError') {
     return res.status(401).json({ error: 'Invalid token' });
   }
@@ -204,7 +196,6 @@ app.use((err, req, res, next) => {
     return res.status(401).json({ error: 'Token expired' });
   }
   
-  // Default error
   res.status(err.status || 500).json({
     error: err.message || 'Internal Server Error',
     ...(process.env.NODE_ENV !== 'production' && { stack: err.stack })
@@ -218,28 +209,11 @@ app.use((err, req, res, next) => {
 const PORT = process.env.PORT || 5000;
 
 const startServer = async () => {
-  // Connect to database first
   await connectDB();
-  
-  // Initialize notification scheduler
   initializeScheduler();
   
-  // Start listening
   app.listen(PORT, () => {
-    console.log(`
-╔════════════════════════════════════════════════════╗
-║                                                    ║
-║   🎓 CounselorReady API Server                     ║
-║                                                    ║
-║   Port: ${PORT}                                       ║
-║   Environment: ${(process.env.NODE_ENV || 'development').padEnd(26)}║
-║   MongoDB: Connected                               ║
-║   Scheduler: Active                                ║
-║                                                    ║
-║   Health: http://localhost:${PORT}/health              ║
-║                                                    ║
-╚════════════════════════════════════════════════════╝
-    `);
+    console.log(`CounselorReady API Server running on port ${PORT}`);
   });
 };
 
