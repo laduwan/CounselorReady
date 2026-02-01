@@ -1,5 +1,5 @@
-// convert-videos-to-text.js
-// Run with: node src/scripts/convert-videos-to-text.js
+// convert-videos-to-text.cjs
+// Run with: node src/server/src/scripts/convert-videos-to-text.cjs
 // This converts all video lessons to text lessons with professional CE content
 
 const mongoose = require('mongoose');
@@ -174,1917 +174,390 @@ Client: "I've been applying for jobs for three months and haven't gotten a singl
 Therapist: "That sounds really discouraging—three months of effort without any positive response."</p>
 
 <h3>Reflection of Meaning</h3>
-<p>The deepest level connects feelings to personal values, beliefs, or identity. This type of reflection often uses a formula: "You feel ___ because ___."</p>
+<p>The deepest level connects feelings to underlying values, beliefs, or significance. This helps clients explore what their experiences mean to them.</p>
 <p><strong>Example:</strong><br>
 Client: "I've been applying for jobs for three months and haven't gotten a single interview."<br>
-Therapist: "You're feeling defeated because this makes you question whether your skills are valued in the job market."</p>
+Therapist: "It sounds like this job search is starting to shake your confidence in yourself professionally."</p>
 
-<h3>Tips for Effective Reflection</h3>
+<h3>Skills for Effective Reflection</h3>
 <ul>
-  <li>Use tentative language ("It sounds like..." "I'm sensing...")</li>
-  <li>Expand the client's feeling vocabulary</li>
-  <li>Match the intensity of the emotion</li>
-  <li>Welcome correction—it deepens understanding</li>
-</ul>
-`,
-
-  'Summarizing in Counseling': `
-<h2>Clarification and Summarization Skills</h2>
-<p>While reflection captures moment-to-moment content, clarification and summarization help organize and synthesize larger chunks of information, promoting client insight and ensuring mutual understanding.</p>
-
-<h3>Clarification</h3>
-<p>Clarification requests help when something is unclear, ambiguous, or potentially contradictory. Effective clarification:</p>
-<ul>
-  <li>Is genuinely curious, not challenging</li>
-  <li>Uses open-ended questions</li>
-  <li>Invites elaboration</li>
-</ul>
-
-<p><strong>Examples:</strong></p>
-<ul>
-  <li>"Help me understand what you mean by 'disconnected'..."</li>
-  <li>"When you say he 'doesn't listen,' what does that look like?"</li>
-  <li>"I want to make sure I'm following—can you tell me more about that?"</li>
-</ul>
-
-<h3>Summarization</h3>
-<p>Summaries pull together themes, highlight patterns, and create coherence from complex material. They serve multiple purposes:</p>
-<ul>
-  <li><strong>Beginning of session:</strong> "Last time we talked about..."</li>
-  <li><strong>Transitioning:</strong> "So we've covered X, and now you're bringing up Y..."</li>
-  <li><strong>End of session:</strong> "To pull together what we discussed today..."</li>
-  <li><strong>Highlighting themes:</strong> "I'm noticing a pattern—several times you've mentioned..."</li>
-</ul>
-
-<h3>Elements of Effective Summary</h3>
-<ul>
-  <li>Include both content and feeling</li>
-  <li>Identify recurring themes</li>
-  <li>Note connections the client may not have made</li>
-  <li>Use the client's language when possible</li>
-  <li>End with an open door: "Did I capture that accurately?"</li>
-</ul>
-
-<h3>When to Use Each Skill</h3>
-<p><strong>Clarify</strong> when: confused, sensing a contradiction, client uses vague language.<br>
-<strong>Summarize</strong> when: transitioning topics, ending sessions, highlighting patterns, client seems lost in details.</p>
-`,
-
-  // ===== MINDFULNESS =====
-  'What is Mindfulness?': `
-<h2>Foundations of Mindfulness</h2>
-<p>Mindfulness has become a ubiquitous term in mental health, yet its meaning is often misunderstood. Jon Kabat-Zinn, who pioneered the integration of mindfulness into Western medicine, offers a clear definition:</p>
-
-<blockquote><p><strong>"Mindfulness is awareness that arises through paying attention, on purpose, in the present moment, non-judgmentally."</strong> — Jon Kabat-Zinn (2013)</p></blockquote>
-
-<h3>Key Components</h3>
-<p><strong>Paying attention:</strong> Mindfulness involves deliberately directing attention rather than operating on autopilot. We spend much of our lives lost in thought about the past or future.</p>
-
-<p><strong>On purpose:</strong> This is intentional awareness, not accidental. We choose to notice our present experience rather than being swept away by mental activity.</p>
-
-<p><strong>Present moment:</strong> The focus is on what's happening now—not ruminating about the past or worrying about the future.</p>
-
-<p><strong>Non-judgmentally:</strong> Perhaps most challenging, mindfulness involves observing experience without labeling it as good or bad. We notice thoughts, feelings, and sensations as they are.</p>
-
-<h3>What Mindfulness Is NOT</h3>
-<ul>
-  <li>Not about emptying the mind of thoughts</li>
-  <li>Not relaxation (though it may result in relaxation)</li>
-  <li>Not escapism or avoidance</li>
-  <li>Not a religious practice (though it has Buddhist roots)</li>
-  <li>Not about achieving a special state</li>
-</ul>
-
-<h3>The Two Main Components</h3>
-<p>Bishop et al. (2004) proposed a two-component model:</p>
-<ol>
-  <li><strong>Self-regulation of attention:</strong> Maintaining focus on immediate experience</li>
-  <li><strong>Orientation to experience:</strong> Approaching present experience with curiosity, openness, and acceptance</li>
-</ol>
-
-<h3>Clinical Relevance</h3>
-<p>Mindfulness is not just a technique but a way of relating to experience. For clients, it offers a alternative to automatic reactivity—creating space between stimulus and response.</p>
-`,
-
-  'Mindfulness for Anxiety and Depression': `
-<h2>The Evidence Base for Mindfulness</h2>
-<p>Mindfulness-based interventions have accumulated substantial research support over the past four decades. Understanding this evidence helps clinicians make informed recommendations and set appropriate expectations.</p>
-
-<h3>Key Research Findings</h3>
-
-<p><strong>Mindfulness-Based Stress Reduction (MBSR):</strong></p>
-<ul>
-  <li>Meta-analyses show moderate effect sizes for anxiety (d = 0.63) and depression (d = 0.59)</li>
-  <li>Effective for chronic pain management</li>
-  <li>Reduces psychological distress in medical populations</li>
-</ul>
-
-<p><strong>Mindfulness-Based Cognitive Therapy (MBCT):</strong></p>
-<ul>
-  <li>Significantly reduces relapse rates in recurrent depression (Segal et al., 2013)</li>
-  <li>NICE guidelines recommend MBCT for preventing depressive relapse</li>
-  <li>Particularly effective for those with 3+ previous episodes</li>
-</ul>
-
-<h3>Proposed Mechanisms of Change</h3>
-<p>How does mindfulness produce therapeutic effects? Research suggests several pathways:</p>
-
-<ul>
-  <li><strong>Decentering:</strong> Ability to observe thoughts as mental events rather than facts</li>
-  <li><strong>Exposure:</strong> Learning to tolerate uncomfortable experiences without avoidance</li>
-  <li><strong>Reduced rumination:</strong> Breaking cycles of repetitive negative thinking</li>
-  <li><strong>Improved attention regulation:</strong> Greater ability to direct and sustain attention</li>
-  <li><strong>Self-compassion:</strong> Relating to oneself with kindness rather than criticism</li>
-</ul>
-
-<h3>Neurobiological Correlates</h3>
-<p>Imaging studies show mindfulness practice is associated with:</p>
-<ul>
-  <li>Increased gray matter in prefrontal cortex and hippocampus</li>
-  <li>Reduced amygdala reactivity</li>
-  <li>Improved prefrontal-amygdala connectivity</li>
-</ul>
-
-<h3>Clinical Considerations</h3>
-<p>Mindfulness is not a panacea. It may be contraindicated or require adaptation for clients with active trauma, psychosis, or severe dissociation. Always assess appropriateness for individual clients.</p>
-`,
-
-  'Simple Mindfulness Exercises': `
-<h2>Practical Mindfulness Techniques for Clinical Use</h2>
-<p>The following exercises can be taught to clients or used by clinicians for their own self-care. Start with brief practices and gradually increase duration as comfort develops.</p>
-
-<h3>Three-Minute Breathing Space</h3>
-<p>This MBCT exercise provides a brief mindfulness reset that can be used anywhere:</p>
-<ol>
-  <li><strong>Awareness (1 minute):</strong> "What's happening right now? What thoughts are here? What feelings? What body sensations?"</li>
-  <li><strong>Gathering (1 minute):</strong> Narrow attention to the breath. Notice the physical sensations of breathing.</li>
-  <li><strong>Expanding (1 minute):</strong> Widen attention to include the whole body. Carry this awareness into the next activity.</li>
-</ol>
-
-<h3>STOP Practice</h3>
-<p>A quick mindfulness interruption for stressful moments:</p>
-<ul>
-  <li><strong>S</strong> – Stop what you're doing</li>
-  <li><strong>T</strong> – Take a breath</li>
-  <li><strong>O</strong> – Observe your experience (thoughts, feelings, body)</li>
-  <li><strong>P</strong> – Proceed with awareness</li>
-</ul>
-
-<h3>Body Scan (Abbreviated)</h3>
-<p>Guide attention systematically through the body:</p>
-<ul>
-  <li>Start with feet—notice sensations without trying to change anything</li>
-  <li>Move slowly upward: legs, hips, abdomen, chest, arms, shoulders, neck, face</li>
-  <li>Notice areas of tension, comfort, or neutrality</li>
-  <li>If the mind wanders, gently return to the body region</li>
-</ul>
-
-<h3>Mindful Grounding (5-4-3-2-1)</h3>
-<p>Particularly useful for anxiety, this engages the senses:</p>
-<ul>
-  <li>5 things you can see</li>
-  <li>4 things you can hear</li>
-  <li>3 things you can touch/feel</li>
-  <li>2 things you can smell</li>
-  <li>1 thing you can taste</li>
-</ul>
-
-<h3>Integration Tips</h3>
-<ul>
-  <li>Practice yourself before teaching clients</li>
-  <li>Start with brief exercises (1-3 minutes)</li>
-  <li>Normalize wandering minds—that's part of the practice</li>
-  <li>Link to specific triggers or times of day</li>
-</ul>
-`,
-
-  // ===== THERAPEUTIC RAPPORT =====
-  'The Therapeutic Alliance': `
-<h2>The Therapeutic Alliance: What Research Tells Us</h2>
-<p>The therapeutic alliance is consistently one of the strongest predictors of treatment outcome across all theoretical orientations. Understanding its components helps clinicians intentionally cultivate this essential factor.</p>
-
-<h3>Bordin's Working Alliance Model</h3>
-<p>Edward Bordin (1979) proposed three interrelated components:</p>
-
-<p><strong>1. Goals:</strong> Agreement between therapist and client on the targets of treatment. Are you working toward the same outcomes?</p>
-
-<p><strong>2. Tasks:</strong> Agreement on what activities will be used to achieve those goals. Does the client see the value in what you're asking them to do?</p>
-
-<p><strong>3. Bond:</strong> The quality of the interpersonal relationship—trust, warmth, and mutual regard.</p>
-
-<h3>Research Findings</h3>
-<p>The alliance-outcome relationship is remarkably robust:</p>
-<ul>
-  <li>Meta-analyses consistently find r = 0.28 correlation with outcome (Norcross & Lambert, 2018)</li>
-  <li>This effect holds across theoretical orientations</li>
-  <li>Early alliance (sessions 1-3) predicts outcome</li>
-  <li>The client's perception of alliance matters more than the therapist's</li>
-</ul>
-
-<h3>What Makes Alliance Therapeutic?</h3>
-<p>A strong alliance may work by:</p>
-<ul>
-  <li>Providing a corrective emotional experience</li>
-  <li>Increasing hope and expectancy</li>
-  <li>Enhancing motivation and engagement</li>
-  <li>Creating safety for difficult emotional work</li>
-</ul>
-
-<h3>Therapist Variables That Enhance Alliance</h3>
-<p>Research identifies these therapist qualities as alliance-enhancing:</p>
-<ul>
-  <li>Empathy and warmth</li>
-  <li>Genuineness and authenticity</li>
-  <li>Flexibility in approach</li>
-  <li>Ability to repair ruptures</li>
-  <li>Collaboration versus authoritarianism</li>
-</ul>
-
-<h3>Common Alliance Threats</h3>
-<ul>
-  <li>Goal disagreement (often unspoken)</li>
-  <li>Perceived judgment or lack of understanding</li>
-  <li>Technical interventions without sufficient bond</li>
-  <li>Cultural misattunement</li>
-</ul>
-`,
-
-  'First Session Tips': `
-<h2>Building Rapport from the First Moments</h2>
-<p>The first session sets the tone for the entire therapeutic relationship. Research suggests that early alliance formation predicts treatment outcomes, making intentional attention to rapport from the very beginning essential.</p>
-
-<h3>Before the Session</h3>
-<ul>
-  <li>Review intake information thoroughly</li>
-  <li>Prepare the physical space (comfortable seating, tissues, clock placement)</li>
-  <li>Center yourself—your own state affects the client</li>
-  <li>Consider cultural factors that may influence engagement</li>
-</ul>
-
-<h3>The First Moments</h3>
-<p>First impressions form quickly. Consider:</p>
-<ul>
-  <li>Greet warmly but not effusively</li>
-  <li>Use the name the client prefers</li>
-  <li>Attend to comfort (seating choice, temperature)</li>
-  <li>Notice and address apparent anxiety</li>
-</ul>
-
-<h3>Structuring the First Session</h3>
-<p>Balance information gathering with relationship building:</p>
-
-<p><strong>1. Orient the client:</strong> Explain what will happen in the session. Uncertainty increases anxiety.</p>
-
-<p><strong>2. Understand their perspective:</strong> "What brings you in?" invites their narrative. Listen before assessing.</p>
-
-<p><strong>3. Collaborative goal-setting:</strong> "What would you like to be different?" validates their agency.</p>
-
-<p><strong>4. Instill realistic hope:</strong> "These are the kinds of issues I work with regularly" reduces shame and isolation.</p>
-
-<p><strong>5. Discuss practical matters:</strong> Confidentiality, fees, cancellation policy, between-session contact.</p>
-
-<h3>Red Flags to Address</h3>
-<ul>
-  <li>Mandated clients may need acknowledgment of ambivalence</li>
-  <li>Previous negative therapy experiences warrant discussion</li>
-  <li>Significant others who "made them come" signal motivation issues</li>
-</ul>
-
-<h3>Ending the First Session</h3>
-<ul>
-  <li>Summarize what you heard</li>
-  <li>Provide preliminary formulation (if appropriate)</li>
-  <li>Explain proposed treatment approach</li>
-  <li>Schedule next session and discuss homework</li>
-  <li>Check in: "How was this session for you?"</li>
-</ul>
-`,
-
-  'Repairing Alliance Ruptures': `
-<h2>Alliance Ruptures and Repair</h2>
-<p>Even the best therapeutic relationships experience strains and ruptures. Research by Safran and Muran (2000) demonstrates that successfully repaired ruptures can actually strengthen the alliance and become therapeutic in themselves.</p>
-
-<h3>What is a Rupture?</h3>
-<p>A rupture is a tension or breakdown in the collaborative relationship. Ruptures range from minor misunderstandings to major breaches of trust.</p>
-
-<h3>Two Types of Ruptures</h3>
-<p><strong>Withdrawal ruptures:</strong> The client disengages, becomes compliant but disconnected, or avoids certain topics. Signs include:</p>
-<ul>
-  <li>Shortened responses</li>
-  <li>Averted eye contact</li>
-  <li>Topic changes</li>
-  <li>Excessive agreement</li>
-</ul>
-
-<p><strong>Confrontation ruptures:</strong> The client expresses dissatisfaction, criticism, or hostility. Signs include:</p>
-<ul>
-  <li>Direct complaints about therapy</li>
-  <li>Challenges to therapist competence</li>
-  <li>Expressions of anger</li>
-  <li>Attempts to control the session</li>
-</ul>
-
-<h3>Recognizing Ruptures</h3>
-<p>Rupture markers to notice:</p>
-<ul>
-  <li>Sudden topic changes</li>
-  <li>Disagreement about goals or tasks</li>
-  <li>Subtle negativity or sarcasm</li>
-  <li>Your own feelings of defensiveness or confusion</li>
-</ul>
-
-<h3>The Repair Process</h3>
-<p><strong>1. Notice and attend:</strong> Don't ignore or dismiss the rupture. Name what you're observing.</p>
-
-<p><strong>2. Take responsibility:</strong> Acknowledge your contribution without excessive apology.</p>
-
-<p><strong>3. Explore the client's experience:</strong> "Help me understand what happened for you when I said..."</p>
-
-<p><strong>4. Validate their reaction:</strong> Their response makes sense from their perspective.</p>
-
-<p><strong>5. Negotiate:</strong> Adjust approach based on what you learn.</p>
-
-<h3>Why Repair Matters</h3>
-<p>Successful rupture repair can provide a corrective emotional experience—the client learns that relationships can survive conflict and that their needs can be heard and accommodated.</p>
-`,
-
-  // ===== PSYCHIATRIC MEDICATIONS =====
-  'Antidepressants Explained': `
-<h2>Antidepressants: A Non-Prescriber's Guide</h2>
-<p>While counselors don't prescribe medications, understanding common antidepressants helps us support clients, recognize side effects, and collaborate effectively with prescribers.</p>
-
-<h3>SSRIs (Selective Serotonin Reuptake Inhibitors)</h3>
-<p>The most commonly prescribed antidepressants. They work by increasing serotonin availability in the brain.</p>
-<p><strong>Common SSRIs:</strong> fluoxetine (Prozac), sertraline (Zoloft), escitalopram (Lexapro), paroxetine (Paxil), citalopram (Celexa)</p>
-<p><strong>Common side effects:</strong></p>
-<ul>
-  <li>GI upset (usually temporary)</li>
-  <li>Sexual dysfunction</li>
-  <li>Sleep changes</li>
-  <li>Initial anxiety increase (first 1-2 weeks)</li>
-</ul>
-<p><strong>Timeline:</strong> Full effects typically take 4-6 weeks. Clients often notice side effects before benefits.</p>
-
-<h3>SNRIs (Serotonin-Norepinephrine Reuptake Inhibitors)</h3>
-<p>Work on both serotonin and norepinephrine systems.</p>
-<p><strong>Common SNRIs:</strong> venlafaxine (Effexor), duloxetine (Cymbalta), desvenlafaxine (Pristiq)</p>
-<p><strong>Often used for:</strong> Depression with fatigue, chronic pain conditions, anxiety disorders</p>
-<p><strong>Note:</strong> Discontinuation syndrome can be more pronounced than SSRIs</p>
-
-<h3>Other Antidepressants</h3>
-<p><strong>Bupropion (Wellbutrin):</strong> Works on dopamine and norepinephrine. Notable for minimal sexual side effects and potential appetite suppression. Can increase anxiety initially.</p>
-<p><strong>Mirtazapine (Remeron):</strong> Often helps with sleep and appetite. Can cause sedation and weight gain.</p>
-<p><strong>Trazodone:</strong> Often prescribed off-label for sleep at lower doses.</p>
-
-<h3>What Clients Should Know</h3>
-<ul>
-  <li>Medications work gradually—don't expect immediate results</li>
-  <li>Side effects often diminish after 2-4 weeks</li>
-  <li>Don't stop abruptly—taper under medical supervision</li>
-  <li>Medications work best combined with therapy</li>
-</ul>
-`,
-
-  'Anxiety Medications Overview': `
-<h2>Medications for Anxiety and Related Conditions</h2>
-<p>This overview covers medications commonly prescribed for anxiety, bipolar disorder, and psychotic symptoms—knowledge that helps counselors understand clients' medication regimens and collaborate with prescribers.</p>
-
-<h3>Benzodiazepines</h3>
-<p>Fast-acting anti-anxiety medications that enhance GABA activity.</p>
-<p><strong>Common examples:</strong> alprazolam (Xanax), lorazepam (Ativan), clonazepam (Klonopin), diazepam (Valium)</p>
-<p><strong>Used for:</strong> Acute anxiety, panic attacks, short-term anxiety management</p>
-<p><strong>Concerns:</strong></p>
-<ul>
-  <li>Dependence potential with prolonged use</li>
-  <li>Cognitive impairment</li>
-  <li>Withdrawal can be serious/dangerous</li>
-  <li>May interfere with exposure therapy effectiveness</li>
-</ul>
-
-<h3>Buspirone (Buspar)</h3>
-<p>Non-addictive anti-anxiety medication. Takes 2-4 weeks to work. Often used for generalized anxiety when benzodiazepine risks are a concern.</p>
-
-<h3>Mood Stabilizers</h3>
-<p>Used primarily for bipolar disorder.</p>
-<p><strong>Lithium:</strong> The gold standard for bipolar. Requires blood level monitoring. Signs of toxicity: tremor, confusion, GI upset.</p>
-<p><strong>Anticonvulsants:</strong> valproate (Depakote), lamotrigine (Lamictal), carbamazepine (Tegretol)</p>
-
-<h3>Antipsychotics</h3>
-<p><strong>Typical (first-generation):</strong> haloperidol (Haldol), chlorpromazine (Thorazine). More extrapyramidal side effects.</p>
-<p><strong>Atypical (second-generation):</strong> risperidone (Risperdal), quetiapine (Seroquel), aripiprazole (Abilify), olanzapine (Zyprexa)</p>
-<p><strong>Common uses:</strong> Schizophrenia, bipolar disorder, augmentation for depression, severe anxiety</p>
-<p><strong>Side effects to watch:</strong> Metabolic changes, movement disorders, sedation</p>
-
-<h3>Clinical Implications</h3>
-<ul>
-  <li>Know what medications your clients take</li>
-  <li>Recognize side effects that may affect therapy</li>
-  <li>Encourage medication compliance as part of treatment</li>
-  <li>Communicate concerns to prescribers (with consent)</li>
-</ul>
-`,
-
-  'Working with Prescribers': `
-<h2>Collaborating with Prescribers: Scope and Communication</h2>
-<p>Effective collaboration between counselors and prescribers improves client outcomes. This requires understanding scope boundaries while maintaining open communication.</p>
-
-<h3>Understanding Scope of Practice</h3>
-<p>Counselors should NEVER:</p>
-<ul>
-  <li>Recommend specific medications</li>
-  <li>Suggest dosage changes</li>
-  <li>Advise stopping medications</li>
-  <li>Undermine the prescriber's recommendations</li>
-</ul>
-
-<p>Counselors CAN:</p>
-<ul>
-  <li>Educate clients about medication classes generally</li>
-  <li>Encourage questions for their prescriber</li>
-  <li>Support medication compliance</li>
-  <li>Observe and report symptoms or side effects</li>
-  <li>Communicate clinical observations to prescribers</li>
-</ul>
-
-<h3>When to Communicate with Prescribers</h3>
-<ul>
-  <li>Significant symptom changes (improvement or worsening)</li>
-  <li>Suspected side effects</li>
-  <li>Medication non-compliance</li>
-  <li>Suicidal ideation</li>
-  <li>Substance use affecting treatment</li>
-</ul>
-
-<h3>Effective Communication</h3>
-<p><strong>Getting consent:</strong> Always obtain written release before contacting prescribers.</p>
-<p><strong>What to include in communication:</strong></p>
-<ul>
-  <li>Current symptoms and functioning</li>
-  <li>Changes you've observed</li>
-  <li>Specific behaviors (not diagnoses)</li>
-  <li>Questions or concerns</li>
-</ul>
-
-<h3>Supporting Medication Decisions</h3>
-<p>When clients are ambivalent about medications:</p>
-<ul>
-  <li>Explore concerns without judgment</li>
-  <li>Provide accurate general information</li>
-  <li>Encourage conversation with prescriber</li>
-  <li>Respect client autonomy</li>
-  <li>Address stigma if present</li>
-</ul>
-
-<h3>Building Referral Relationships</h3>
-<p>Develop relationships with local psychiatrists and nurse practitioners. Good working relationships improve communication and client care.</p>
-`,
-
-  // ===== CBT TOOLBOX =====
-  'Understanding the ABC Model': `
-<h2>The ABC Model: Foundation of Cognitive Therapy</h2>
-<p>The ABC model, originally developed by Albert Ellis and refined by Aaron Beck, provides a framework for understanding how thoughts influence emotional and behavioral responses to events.</p>
-
-<h3>The Three Components</h3>
-
-<p><strong>A - Activating Event:</strong> The situation or trigger that occurred. This is the objective event, stripped of interpretation.</p>
-
-<p><strong>B - Beliefs:</strong> The thoughts, interpretations, and meaning we assign to the event. This includes automatic thoughts, assumptions, and core beliefs.</p>
-
-<p><strong>C - Consequences:</strong> The emotional, behavioral, and physiological responses that result from our beliefs about the event.</p>
-
-<h3>The Key Insight</h3>
-<p>It's not the event itself (A) that directly causes our emotional responses (C). Rather, our beliefs and interpretations (B) about the event determine our reactions.</p>
-<p><strong>This means:</strong> By changing how we think about events, we can change how we feel and respond.</p>
-
-<h3>Clinical Example</h3>
-<p><strong>Situation:</strong> Friend doesn't return text message</p>
-<table border="1" cellpadding="8">
-  <tr><th>Thought (B)</th><th>Feeling (C)</th></tr>
-  <tr><td>"She's angry at me"</td><td>Anxiety, worry</td></tr>
-  <tr><td>"She's probably just busy"</td><td>Neutral, mild curiosity</td></tr>
-  <tr><td>"Nobody cares about me"</td><td>Sadness, loneliness</td></tr>
-</table>
-
-<h3>Teaching the ABC Model</h3>
-<ol>
-  <li>Start with a recent emotional experience</li>
-  <li>Identify the Consequence (emotion) first—it's most salient</li>
-  <li>Work backward to the Activating event</li>
-  <li>Discover the Beliefs connecting them</li>
-  <li>Help client see the thought-feeling connection</li>
-</ol>
-
-<h3>Expanding to ABCDE</h3>
-<p>Ellis added two more components for intervention:</p>
-<p><strong>D - Disputation:</strong> Challenging and examining the beliefs</p>
-<p><strong>E - New Effect:</strong> The new emotional and behavioral consequences</p>
-`,
-
-  'The 12 Major Cognitive Distortions': `
-<h2>Cognitive Distortions: Patterns of Problematic Thinking</h2>
-<p>Cognitive distortions are systematic errors in thinking that maintain negative emotions and problematic behaviors. Learning to identify these patterns is a core CBT skill.</p>
-
-<h3>1. All-or-Nothing Thinking</h3>
-<p>Seeing things in black-and-white categories with no middle ground. "If I'm not perfect, I'm a total failure."</p>
-
-<h3>2. Catastrophizing</h3>
-<p>Expecting the worst possible outcome. "If I make a mistake in this presentation, my career is over."</p>
-
-<h3>3. Mind Reading</h3>
-<p>Assuming you know what others are thinking without evidence. "Everyone at the party thought I was boring."</p>
-
-<h3>4. Fortune Telling</h3>
-<p>Predicting negative future outcomes as if they're certain. "This relationship will definitely fail."</p>
-
-<h3>5. Emotional Reasoning</h3>
-<p>Using feelings as evidence of truth. "I feel like a failure, therefore I am one."</p>
-
-<h3>6. Should Statements</h3>
-<p>Rigid rules about how things must be. "I should always be able to handle everything on my own."</p>
-
-<h3>7. Labeling</h3>
-<p>Attaching a negative label to self or others based on one event. "I made a mistake; I'm an idiot."</p>
-
-<h3>8. Discounting the Positive</h3>
-<p>Dismissing positive experiences or qualities. "That compliment doesn't count—they were just being nice."</p>
-
-<h3>9. Mental Filter</h3>
-<p>Focusing exclusively on negative details while ignoring positives. One criticism overshadows ten compliments.</p>
-
-<h3>10. Overgeneralization</h3>
-<p>Drawing broad conclusions from single events. "This date went badly. I'll never find anyone."</p>
-
-<h3>11. Personalization</h3>
-<p>Taking excessive responsibility for external events. "My friend is in a bad mood—it must be something I did."</p>
-
-<h3>12. Magnification/Minimization</h3>
-<p>Exaggerating negatives and shrinking positives. Blowing mistakes out of proportion while minimizing successes.</p>
-
-<h3>Using This Information</h3>
-<p>Help clients identify their "favorites"—most people tend toward certain patterns. Recognition is the first step toward change.</p>
-`,
-
-  'The Art of Guided Discovery': `
-<h2>Socratic Questioning: The Art of Guided Discovery</h2>
-<p>Socratic questioning is a cornerstone of CBT that helps clients examine their thoughts through collaborative inquiry rather than direct confrontation. The goal is for clients to discover new perspectives themselves.</p>
-
-<h3>Core Principles</h3>
-<ul>
-  <li><strong>Curiosity over confrontation:</strong> Questions come from genuine interest, not challenging</li>
-  <li><strong>Client as expert:</strong> You're helping them access their own wisdom</li>
-  <li><strong>Collaborative empiricism:</strong> Together examining evidence</li>
-  <li><strong>Discovery over instruction:</strong> Insights are more powerful when self-generated</li>
-</ul>
-
-<h3>Types of Socratic Questions</h3>
-
-<p><strong>Evidence-Gathering Questions:</strong></p>
-<ul>
-  <li>"What evidence supports this thought?"</li>
-  <li>"What evidence might go against it?"</li>
-  <li>"Have there been times when this wasn't true?"</li>
-</ul>
-
-<p><strong>Alternative Perspective Questions:</strong></p>
-<ul>
-  <li>"Is there another way to look at this?"</li>
-  <li>"What might someone else think in this situation?"</li>
-  <li>"What would you tell a friend who had this thought?"</li>
-</ul>
-
-<p><strong>Implication Questions:</strong></p>
-<ul>
-  <li>"If this thought is true, what does that mean to you?"</li>
-  <li>"What's the worst that could happen? How would you cope?"</li>
-  <li>"What's the best that could happen?"</li>
-</ul>
-
-<p><strong>Utility Questions:</strong></p>
-<ul>
-  <li>"How is this thought helping you?"</li>
-  <li>"What's the effect of thinking this way?"</li>
-  <li>"Does believing this help you reach your goals?"</li>
+  <li><strong>Use tentative language:</strong> "It sounds like..." "I'm hearing that..." "It seems as though..."</li>
+  <li><strong>Match intensity:</strong> Don't over- or under-state the emotion</li>
+  <li><strong>Vary your vocabulary:</strong> Expand beyond "frustrated" and "angry"</li>
+  <li><strong>Check accuracy:</strong> Allow space for clients to correct your reflection</li>
 </ul>
 
 <h3>Common Mistakes</h3>
 <ul>
-  <li>Leading questions with obvious "right" answers</li>
-  <li>Too many questions too fast</li>
-  <li>Abandoning inquiry and lecturing instead</li>
-  <li>Asking questions that feel like cross-examination</li>
+  <li>Parroting exact words instead of paraphrasing</li>
+  <li>Adding interpretation or advice</li>
+  <li>Reflecting too frequently (feels mechanical)</li>
+  <li>Missing the emotional tone entirely</li>
 </ul>
-
-<h3>The Art</h3>
-<p>Effective Socratic questioning requires attunement—knowing when to press and when to hold back, and following the client's discovery process rather than pushing toward your predetermined conclusion.</p>
 `,
 
-  'Behavioral Activation for Depression': `
-<h2>Behavioral Activation: Breaking the Depression Cycle</h2>
-<p>Behavioral Activation (BA) is a highly effective treatment for depression that focuses on increasing engagement with meaningful, valued activities to interrupt the cycle of withdrawal and avoidance that maintains depression.</p>
+  'Open vs Closed Questions': `
+<h2>Strategic Use of Questions in Therapy</h2>
+<p>Questions are powerful therapeutic tools—but their impact depends on how they're crafted and when they're used. Understanding the distinction between open and closed questions allows for more intentional, effective inquiry.</p>
 
-<h3>The Depression Spiral</h3>
-<p>Depression creates a self-perpetuating cycle:</p>
+<h3>Closed Questions</h3>
+<p>Closed questions can be answered with a single word or short phrase, typically "yes," "no," or a specific fact.</p>
+<p><strong>Examples:</strong></p>
+<ul>
+  <li>"Did you take your medication today?"</li>
+  <li>"How old were you when that happened?"</li>
+  <li>"Are you feeling anxious right now?"</li>
+</ul>
+<p><strong>When to use:</strong></p>
+<ul>
+  <li>Gathering specific information quickly</li>
+  <li>Clarifying details</li>
+  <li>Risk assessment ("Are you having thoughts of suicide?")</li>
+  <li>When client is overwhelmed and needs structure</li>
+</ul>
+
+<h3>Open Questions</h3>
+<p>Open questions invite elaboration and cannot be answered with a single word. They typically begin with "what," "how," "tell me about," or "describe."</p>
+<p><strong>Examples:</strong></p>
+<ul>
+  <li>"What was that experience like for you?"</li>
+  <li>"How did you respond when that happened?"</li>
+  <li>"Tell me more about your relationship with your mother."</li>
+</ul>
+<p><strong>When to use:</strong></p>
+<ul>
+  <li>Exploring experiences in depth</li>
+  <li>Understanding the client's perspective</li>
+  <li>Building rapport and inviting disclosure</li>
+  <li>Encouraging reflection</li>
+</ul>
+
+<h3>The "Why" Question Caution</h3>
+<p>"Why" questions can feel accusatory or put clients on the defensive ("Why did you do that?"). Consider alternatives:</p>
+<ul>
+  <li>Instead of "Why did you skip your appointment?" try "What got in the way of making it to your appointment?"</li>
+  <li>Instead of "Why do you feel that way?" try "What contributes to that feeling?"</li>
+</ul>
+
+<h3>Balancing Question Types</h3>
+<p>Effective therapy uses both types strategically. Too many closed questions creates an interrogation feel; too many open questions can feel unfocused. Match your questions to the therapeutic moment.</p>
+`,
+
+  'Summarization Techniques': `
+<h2>The Art of Therapeutic Summarization</h2>
+<p>Summarization is more than a recap—it's a powerful intervention that organizes information, highlights themes, and helps clients see their experiences from a new perspective.</p>
+
+<h3>Types of Summaries</h3>
+
+<p><strong>Collecting summary:</strong> Gathers information shared over the past few minutes</p>
+<p>"Let me make sure I'm tracking with you. You've described feeling overwhelmed at work, tensions with your partner about finances, and your sleep has been suffering. Did I capture that accurately?"</p>
+
+<p><strong>Linking summary:</strong> Connects themes across the session or across time</p>
+<p>"I'm noticing a pattern—both the situation with your boss and the conflict with your sister seem to involve times when you didn't speak up for yourself, and then felt resentful afterward."</p>
+
+<p><strong>Transitional summary:</strong> Closes one topic and opens another</p>
+<p>"We've spent some time exploring your childhood experiences. Before we shift to talking about current relationships, is there anything else about that period you want to add?"</p>
+
+<p><strong>Closing summary:</strong> Wraps up a session</p>
+<p>"Today we talked about your progress with the anxiety techniques, worked through that disagreement with your roommate, and identified some goals for the week ahead."</p>
+
+<h3>Functions of Summarization</h3>
+<ul>
+  <li>Demonstrates active listening</li>
+  <li>Allows clients to hear their own story reflected back</li>
+  <li>Identifies patterns and themes</li>
+  <li>Provides natural transition points</li>
+  <li>Ensures mutual understanding</li>
+  <li>Helps clients organize fragmented experiences</li>
+</ul>
+
+<h3>Tips for Effective Summaries</h3>
+<ul>
+  <li>Be concise—capture essence, not every detail</li>
+  <li>Use the client's own key words and phrases</li>
+  <li>Invite correction: "Did I get that right?"</li>
+  <li>Include both content and feeling</li>
+  <li>Look for what the client might not have stated explicitly</li>
+</ul>
+`,
+
+  // ===== COGNITIVE BEHAVIORAL THERAPY =====
+  'CBT Overview': `
+<h2>Foundations of Cognitive Behavioral Therapy</h2>
+<p>Cognitive Behavioral Therapy (CBT) is one of the most extensively researched and empirically supported psychotherapeutic approaches. Understanding its theoretical foundations is essential for effective implementation.</p>
+
+<h3>The Cognitive Model</h3>
+<p>Aaron Beck's cognitive model proposes that our emotional and behavioral responses are not caused directly by events, but by our interpretations of those events. The pathway is:</p>
+<p><strong>Situation → Thoughts → Emotions → Behaviors</strong></p>
+<p>This means that two people can experience the same event but have entirely different emotional responses based on how they interpret it.</p>
+
+<h3>Core Concepts</h3>
+<p><strong>Automatic Thoughts:</strong> Rapid, spontaneous cognitions that occur in response to situations. Often negative, distorted, and accepted as true without examination.</p>
+<p><strong>Cognitive Distortions:</strong> Systematic errors in thinking that maintain negative beliefs (e.g., all-or-nothing thinking, catastrophizing, mind reading).</p>
+<p><strong>Core Beliefs:</strong> Deep, fundamental beliefs about self, others, and the world that develop early in life and filter our experiences.</p>
+<p><strong>Intermediate Beliefs:</strong> Rules, attitudes, and assumptions that connect core beliefs to automatic thoughts ("If I make a mistake, people will reject me").</p>
+
+<h3>The CBT Triangle</h3>
+<p>Thoughts, emotions, and behaviors are interconnected—changes in one affect the others. CBT intervenes at all three points:</p>
+<ul>
+  <li><strong>Cognitive interventions:</strong> Identifying and restructuring unhelpful thoughts</li>
+  <li><strong>Behavioral interventions:</strong> Changing behaviors to generate new experiences and data</li>
+  <li><strong>Emotional interventions:</strong> Developing awareness and tolerance of emotions</li>
+</ul>
+
+<h3>Structure of CBT</h3>
+<p>CBT is typically:</p>
+<ul>
+  <li>Time-limited (12-20 sessions for many conditions)</li>
+  <li>Structured (agenda-setting, homework)</li>
+  <li>Collaborative (therapist and client work together)</li>
+  <li>Present-focused (while understanding historical origins)</li>
+  <li>Psychoeducational (teaching skills for independent use)</li>
+</ul>
+`,
+
+  'Identifying Automatic Thoughts': `
+<h2>Catching Automatic Thoughts</h2>
+<p>Automatic thoughts are the running commentary in our minds—rapid, habitual interpretations of events that often go unnoticed yet powerfully influence our emotions. Learning to identify them is a foundational CBT skill.</p>
+
+<h3>Characteristics of Automatic Thoughts</h3>
+<ul>
+  <li><strong>Automatic:</strong> They pop up without effort or intention</li>
+  <li><strong>Rapid:</strong> They occur quickly, often in shorthand</li>
+  <li><strong>Believable:</strong> They feel true in the moment</li>
+  <li><strong>Often distorted:</strong> They frequently contain cognitive errors</li>
+  <li><strong>Habitual:</strong> The same thought patterns repeat across situations</li>
+</ul>
+
+<h3>How to Identify Automatic Thoughts</h3>
+<p><strong>Notice emotional shifts:</strong> Strong emotions are cues that an automatic thought just occurred. Ask: "What just went through my mind?"</p>
+<p><strong>Use the downward arrow:</strong> When you identify a thought, ask "If that were true, what would it mean?" to uncover deeper thoughts.</p>
+<p><strong>Imagery:</strong> Sometimes thoughts come as images rather than words. Ask about mental pictures.</p>
+
+<h3>Questions to Elicit Automatic Thoughts</h3>
+<ul>
+  <li>"What was going through your mind just then?"</li>
+  <li>"What were you thinking when you started feeling anxious?"</li>
+  <li>"Did you have any images or memories pop up?"</li>
+  <li>"What's the worst part of this situation for you?"</li>
+  <li>"What does this situation mean to you?"</li>
+</ul>
+
+<h3>Common Forms of Automatic Thoughts</h3>
+<ul>
+  <li>Words or sentences ("I'm such an idiot")</li>
+  <li>Images (seeing yourself failing)</li>
+  <li>Memories (flashback to past failure)</li>
+  <li>Meanings ("This proves I can't handle anything")</li>
+</ul>
+
+<h3>The Thought Record</h3>
+<p>A structured tool for capturing automatic thoughts includes:</p>
 <ol>
-  <li>Low mood → withdrawal from activities</li>
-  <li>Withdrawal → loss of positive reinforcement</li>
-  <li>Loss of reinforcement → worsening mood</li>
-  <li>Worsening mood → more withdrawal</li>
+  <li>Situation: What happened?</li>
+  <li>Emotions: What did you feel? (0-100 intensity)</li>
+  <li>Automatic thoughts: What went through your mind?</li>
+  <li>Evidence for/against the thought</li>
+  <li>Alternative thought</li>
+  <li>Outcome: New emotion rating</li>
+</ol>
+`,
+
+  'Cognitive Restructuring': `
+<h2>Cognitive Restructuring Techniques</h2>
+<p>Cognitive restructuring is the process of identifying, evaluating, and modifying unhelpful thoughts. It's not about positive thinking—it's about accurate, balanced thinking.</p>
+
+<h3>The Process</h3>
+<ol>
+  <li><strong>Identify</strong> the automatic thought</li>
+  <li><strong>Evaluate</strong> the evidence for and against</li>
+  <li><strong>Generate</strong> alternative perspectives</li>
+  <li><strong>Re-rate</strong> emotions after restructuring</li>
 </ol>
 
-<h3>The BA Approach</h3>
-<p>Rather than waiting to "feel like it," BA encourages action first—understanding that mood often follows behavior rather than preceding it.</p>
-<p><strong>Key principle:</strong> "Action before motivation"</p>
-
-<h3>Core Components</h3>
-
-<p><strong>1. Activity Monitoring:</strong> Track current activities and their connection to mood. What are you doing? How do you feel during and after?</p>
-
-<p><strong>2. Values Assessment:</strong> Identify what matters to the client. Activities should connect to values, not just obligations.</p>
-
-<p><strong>3. Activity Scheduling:</strong> Plan specific activities in advance. Include:</p>
+<h3>Socratic Questioning</h3>
+<p>Rather than telling clients their thoughts are wrong, use questions to guide discovery:</p>
 <ul>
-  <li>Pleasurable activities (enjoyment)</li>
-  <li>Mastery activities (accomplishment)</li>
-  <li>Values-based activities (meaning)</li>
+  <li>"What's the evidence for this thought?"</li>
+  <li>"What's the evidence against it?"</li>
+  <li>"Is there another way to look at this?"</li>
+  <li>"What would you tell a friend in this situation?"</li>
+  <li>"What's the most realistic outcome?"</li>
+  <li>"If the worst happened, how would you cope?"</li>
 </ul>
 
-<p><strong>4. Gradual Steps:</strong> Start small. A depressed person won't go from staying in bed to running a marathon. Break activities into manageable steps.</p>
-
-<h3>Addressing Barriers</h3>
-<p>Common barriers and responses:</p>
+<h3>Common Cognitive Distortions</h3>
 <ul>
-  <li><em>"I won't enjoy it"</em> → Rate predicted vs. actual pleasure</li>
-  <li><em>"I'm too tired"</em> → Activity often increases energy</li>
-  <li><em>"I'll do it when I feel better"</em> → Mood follows action</li>
+  <li><strong>All-or-nothing thinking:</strong> Seeing things in black-and-white categories</li>
+  <li><strong>Catastrophizing:</strong> Expecting the worst possible outcome</li>
+  <li><strong>Mind reading:</strong> Assuming you know what others think</li>
+  <li><strong>Fortune telling:</strong> Predicting negative outcomes</li>
+  <li><strong>Emotional reasoning:</strong> "I feel it, so it must be true"</li>
+  <li><strong>Should statements:</strong> Rigid rules about how things must be</li>
+  <li><strong>Personalization:</strong> Taking excessive responsibility for external events</li>
+  <li><strong>Discounting the positive:</strong> Dismissing positive experiences</li>
 </ul>
 
-<h3>Evidence Base</h3>
-<p>BA is as effective as full CBT for depression and may be easier to implement. It's particularly useful when cognitive work is difficult due to severity of depression.</p>
+<h3>Important Considerations</h3>
+<ul>
+  <li>Some negative thoughts are accurate—validate when appropriate</li>
+  <li>The goal is flexibility, not forced positivity</li>
+  <li>Behavioral experiments often work better than verbal restructuring alone</li>
+  <li>Meet clients where they are—don't push restructuring prematurely</li>
+</ul>
+`,
+
+  'Behavioral Activation': `
+<h2>Behavioral Activation for Depression</h2>
+<p>Behavioral Activation (BA) is an evidence-based treatment for depression that focuses on increasing engagement with rewarding activities. It's based on the understanding that depression involves a cycle of withdrawal and reduced positive reinforcement.</p>
+
+<h3>The Depression Cycle</h3>
+<p>Depression creates a self-reinforcing pattern:</p>
+<ol>
+  <li>Low mood leads to withdrawal from activities</li>
+  <li>Withdrawal reduces opportunities for pleasure and mastery</li>
+  <li>Reduced reinforcement deepens depression</li>
+  <li>Deeper depression increases withdrawal</li>
+</ol>
+<p>Behavioral activation breaks this cycle by reintroducing activity regardless of mood.</p>
+
+<h3>Key Principles</h3>
+<p><strong>Action before motivation:</strong> Don't wait to "feel like" doing something. Action often precedes motivation, not the other way around.</p>
+<p><strong>Outside-in approach:</strong> Change behavior first; mood follows. This contrasts with the cognitive approach of changing thoughts first.</p>
+<p><strong>Focus on values:</strong> Activities should connect to what matters to the client, not just be "pleasant."</p>
+
+<h3>Implementation Steps</h3>
+<ol>
+  <li><strong>Activity monitoring:</strong> Track current activities and mood</li>
+  <li><strong>Values assessment:</strong> Identify what matters to the client</li>
+  <li><strong>Activity scheduling:</strong> Plan specific activities in advance</li>
+  <li><strong>Graded task assignment:</strong> Break large tasks into manageable steps</li>
+  <li><strong>Problem-solving barriers:</strong> Address obstacles to activation</li>
+</ol>
+
+<h3>Types of Activities</h3>
+<ul>
+  <li><strong>Pleasure:</strong> Activities that are enjoyable</li>
+  <li><strong>Mastery:</strong> Activities that provide accomplishment</li>
+  <li><strong>Values-based:</strong> Activities aligned with personal values</li>
+</ul>
+
+<h3>Common Challenges</h3>
+<ul>
+  <li>"I don't enjoy anything anymore" → Start small; enjoyment may follow</li>
+  <li>"I don't have energy" → Schedule rest AND activity; build gradually</li>
+  <li>"What's the point?" → Connect activities to values and meaning</li>
+</ul>
+`,
+
+  // ===== EXPOSURE THERAPY FOR ANXIETY =====
+  'Understanding Anxiety Disorders': `
+<h2>Foundations of Anxiety Disorders</h2>
+<p>Effective treatment of anxiety disorders requires understanding their common mechanisms. While presentations vary, anxiety disorders share core features that inform evidence-based intervention.</p>
+
+<h3>The Nature of Anxiety</h3>
+<p>Anxiety is a normal, adaptive response to perceived threat. It becomes a disorder when:</p>
+<ul>
+  <li>The fear is disproportionate to actual danger</li>
+  <li>It persists beyond developmentally appropriate periods</li>
+  <li>It causes significant distress or impairment</li>
+</ul>
+
+<h3>The Anxiety Equation</h3>
+<p><strong>Anxiety = Overestimation of threat × Underestimation of coping</strong></p>
+<p>Anxious individuals tend to:</p>
+<ul>
+  <li>Overestimate the probability of negative outcomes</li>
+  <li>Overestimate the severity of negative outcomes</li>
+  <li>Underestimate their ability to cope</li>
+  <li>Underestimate available resources and support</li>
+</ul>
+
+<h3>The Role of Avoidance</h3>
+<p>Avoidance is the central maintaining factor in anxiety disorders:</p>
+<ul>
+  <li>Provides immediate relief (negative reinforcement)</li>
+  <li>Prevents disconfirmation of feared outcomes</li>
+  <li>Maintains or strengthens fear associations</li>
+  <li>Generalizes over time to more situations</li>
+  <li>Erodes confidence in ability to cope</li>
+</ul>
+
+<h3>Safety Behaviors</h3>
+<p>Subtle avoidance within feared situations:</p>
+<ul>
+  <li>Carrying medications "just in case"</li>
+  <li>Sitting near exits</li>
+  <li>Avoiding eye contact</li>
+  <li>Excessive preparation or reassurance-seeking</li>
+</ul>
+<p>Safety behaviors prevent full exposure and maintain the belief that catastrophe was narrowly avoided.</p>
+
+<h3>Common Anxiety Disorders</h3>
+<ul>
+  <li>Generalized Anxiety Disorder (GAD)</li>
+  <li>Social Anxiety Disorder</li>
+  <li>Panic Disorder with/without Agoraphobia</li>
+  <li>Specific Phobias</li>
+  <li>Obsessive-Compulsive Disorder (OCD)</li>
+  <li>Post-Traumatic Stress Disorder (PTSD)</li>
+</ul>
 `,
 
   'Exposure Therapy Principles': `
-<h2>Exposure Therapy: Principles and Practice</h2>
-<p>Exposure therapy is among the most effective treatments for anxiety disorders, phobias, OCD, and PTSD. Understanding its mechanisms and implementation is essential for treating anxiety.</p>
+<h2>The Science of Exposure</h2>
+<p>Exposure therapy is the gold-standard treatment for anxiety disorders, with decades of research supporting its efficacy. Understanding its mechanisms helps clinicians implement it effectively.</p>
 
-<h3>The Theory: Why Exposure Works</h3>
-
-<p><strong>Habituation:</strong> With repeated, prolonged exposure, the fear response naturally decreases. Anxiety cannot maintain peak intensity indefinitely.</p>
-
-<p><strong>Inhibitory Learning:</strong> More recent theory emphasizes that exposure creates new learning that inhibits (but doesn't erase) the fear memory. Clients learn "I can handle this" and "Nothing terrible happens."</p>
-
-<p><strong>Self-Efficacy:</strong> Successful exposure builds confidence in ability to cope with feared situations.</p>
-
-<h3>Building a Fear Hierarchy</h3>
-<ol>
-  <li>Identify all feared situations related to the target fear</li>
-  <li>Rate each on a Subjective Units of Distress Scale (SUDS: 0-100)</li>
-  <li>Order from least to most distressing</li>
-  <li>Ensure gradual steps—no more than 10-15 SUDS between items</li>
-</ol>
-
-<h3>Conducting Effective Exposures</h3>
+<h3>How Exposure Works</h3>
+<p>Traditional models emphasized habituation—anxiety naturally decreases with prolonged exposure. Current understanding emphasizes <strong>inhibitory learning</strong>:</p>
 <ul>
-  <li><strong>Duration:</strong> Long enough for fear to decrease (usually 30-60+ minutes)</li>
-  <li><strong>Repetition:</strong> Repeat until the item no longer provokes significant anxiety</li>
-  <li><strong>No safety behaviors:</strong> Eliminate subtle avoidances that prevent full learning</li>
-  <li><strong>Expectancy violation:</strong> Focus on what was learned ("What did you expect vs. what happened?")</li>
+  <li>Exposure creates new learning that inhibits (but doesn't erase) the original fear</li>
+  <li>The client learns that feared outcomes don't occur OR that they can cope</li>
+  <li>This new learning competes with the original fear association</li>
 </ul>
+
+<h3>Key Principles</h3>
+<p><strong>Expectancy violation:</strong> The most important element is violating what the client expected to happen.</p>
+<p><strong>Variability:</strong> Vary the conditions of exposure (different times, places, states) to enhance generalization.</p>
+<p><strong>Removal of safety behaviors:</strong> Safety behaviors prevent full learning; they must be eliminated.</p>
+<p><strong>Deepened extinction:</strong> Combine multiple feared stimuli for enhanced learning.</p>
 
 <h3>Types of Exposure</h3>
 <ul>
   <li><strong>In vivo:</strong> Real-life exposure to feared situations</li>
   <li><strong>Imaginal:</strong> Vividly imagining feared scenarios</li>
-  <li><strong>Interoceptive:</strong> Exposure to feared bodily sensations</li>
+  <li><strong>Interoceptive:</strong> Exposure to feared bodily sensations (e.g., for panic)</li>
   <li><strong>Virtual reality:</strong> Technology-assisted exposure</li>
 </ul>
 
-<h3>Critical Don'ts</h3>
-<ul>
-  <li>Don't escape during peak anxiety—complete the exposure</li>
-  <li>Don't use distraction during exposure</li>
-  <li>Don't reassure repeatedly—it becomes a safety behavior</li>
-  <li>Don't move too fast and overwhelm the client</li>
-</ul>
-`,
-
-  'The Thought Record': `
-<h2>The Thought Record: Systematic Cognitive Restructuring</h2>
-<p>The thought record is CBT's signature tool for examining and modifying unhelpful thoughts. The 7-column version provides comprehensive structure for cognitive restructuring.</p>
-
-<h3>The Seven Columns</h3>
-
-<p><strong>1. Situation:</strong> What happened? Where? When? Who was there? Describe objectively without interpretation.</p>
-
-<p><strong>2. Automatic Thoughts:</strong> What went through your mind? What images? What does this mean about you, others, the future?</p>
-
-<p><strong>3. Emotions:</strong> What did you feel? Rate intensity 0-100%. Include physical sensations.</p>
-
-<p><strong>4. Evidence Supporting the Thought:</strong> What facts support this thought? Not feelings or interpretations—observable evidence.</p>
-
-<p><strong>5. Evidence Against the Thought:</strong> What facts contradict this thought? What would others say? Have there been exceptions?</p>
-
-<p><strong>6. Alternative/Balanced Thought:</strong> Based on all evidence, what's a more balanced way to see this? Not positive thinking—realistic thinking.</p>
-
-<p><strong>7. Outcome:</strong> Re-rate emotions. What will you do differently?</p>
-
-<h3>Teaching the Thought Record</h3>
-<ol>
-  <li>Start with recent, mildly distressing situations</li>
-  <li>Complete first few records collaboratively in session</li>
-  <li>Model the process with your own example</li>
-  <li>Focus on identifying hot thoughts (highest emotion connection)</li>
-  <li>Emphasize evidence-gathering, not positive thinking</li>
-</ol>
-
-<h3>Common Pitfalls</h3>
-<ul>
-  <li>Confusing thoughts and feelings (teach the difference)</li>
-  <li>Not identifying the hot thought</li>
-  <li>Going through motions without genuine examination</li>
-  <li>Creating overly positive alternatives that don't feel believable</li>
-</ul>
-
-<h3>When to Use</h3>
-<p>Thought records work best for clear, identifiable negative thoughts. They may be less useful for rumination, worry, or vague emotional states where other interventions (behavioral activation, mindfulness) may be more appropriate.</p>
-`,
-
-  'Session Structure and Key Principles': `
-<h2>Structuring Effective CBT Sessions</h2>
-<p>CBT sessions follow a consistent structure that maximizes efficiency, maintains focus, and reinforces learning. This structure supports both the therapeutic relationship and technical interventions.</p>
-
-<h3>Standard Session Structure</h3>
-
-<p><strong>1. Check-in and Mood Review (5 min)</strong></p>
-<ul>
-  <li>Brief symptom assessment</li>
-  <li>Review of mood monitoring</li>
-  <li>Notable events since last session</li>
-</ul>
-
-<p><strong>2. Bridge from Previous Session (5 min)</strong></p>
-<ul>
-  <li>Review key points from last session</li>
-  <li>Connection to today's work</li>
-</ul>
-
-<p><strong>3. Homework Review (10 min)</strong></p>
-<ul>
-  <li>Review completed assignments</li>
-  <li>Troubleshoot difficulties</li>
-  <li>Reinforce effort and learning</li>
-  <li>If not completed—explore barriers collaboratively</li>
-</ul>
-
-<p><strong>4. Set Agenda (5 min)</strong></p>
-<ul>
-  <li>Client input: "What's most important to focus on today?"</li>
-  <li>Therapist input: Based on treatment plan</li>
-  <li>Prioritize if too many items</li>
-  <li>Estimate time for each item</li>
-</ul>
-
-<p><strong>5. Main Content (20-25 min)</strong></p>
-<ul>
-  <li>Work on agenda items</li>
-  <li>Teach skills, apply to specific situations</li>
-  <li>Use Socratic questioning</li>
-  <li>Summarize learning periodically</li>
-</ul>
-
-<p><strong>6. Assign Homework (5 min)</strong></p>
-<ul>
-  <li>Collaborative planning</li>
-  <li>Written down clearly</li>
-  <li>Connected to session content</li>
-  <li>Anticipate and problem-solve barriers</li>
-</ul>
-
-<p><strong>7. Session Summary and Feedback (5 min)</strong></p>
-<ul>
-  <li>"What was most helpful/important today?"</li>
-  <li>Summarize key takeaways</li>
-  <li>Check for questions or concerns</li>
-  <li>Brief feedback: "How was the session for you?"</li>
-</ul>
-
-<h3>Key Principles</h3>
-<ul>
-  <li><strong>Collaboration:</strong> Never impose—always negotiate</li>
-  <li><strong>Empiricism:</strong> Test beliefs like hypotheses</li>
-  <li><strong>Present focus:</strong> Here-and-now problems with future orientation</li>
-  <li><strong>Active:</strong> Both therapist and client are actively engaged</li>
-</ul>
-`,
-
-  // ===== DBT =====
-  'What is DBT?': `
-<h2>Introduction to Dialectical Behavior Therapy</h2>
-<p>Dialectical Behavior Therapy (DBT) was developed by Marsha Linehan in the 1980s originally for chronically suicidal individuals with borderline personality disorder. It has since been adapted for numerous populations and problems.</p>
-
-<h3>The Biosocial Model</h3>
-<p>DBT proposes that emotional dysregulation develops through the transaction between:</p>
-<p><strong>Biology:</strong> Innate emotional sensitivity and reactivity. Some people are born with nervous systems that are more reactive to emotional stimuli and slower to return to baseline.</p>
-<p><strong>Environment:</strong> Invalidating environments that communicate that one's emotional responses are wrong, inappropriate, or should be changed. This can include abuse, neglect, or simply poor fit between temperament and caregiving environment.</p>
-<p>The result: A person who experiences emotions intensely but never learned skills to manage them effectively.</p>
-
-<h3>Dialectical Philosophy</h3>
-<p>The "dialectical" in DBT refers to the synthesis of opposites:</p>
-<ul>
-  <li><strong>Acceptance AND Change:</strong> Accepting yourself as you are while also working to change</li>
-  <li><strong>Validation AND Problem-Solving:</strong> Both are necessary</li>
-  <li><strong>Doing your best AND doing better:</strong> These are not contradictory</li>
-</ul>
-<p>The core dialectic: "You are doing the best you can, AND you need to try harder and do better."</p>
-
-<h3>Standard DBT Components</h3>
-<ol>
-  <li><strong>Individual therapy:</strong> Weekly sessions focusing on behavioral targets</li>
-  <li><strong>Skills training group:</strong> Usually weekly, teaching the four skill modules</li>
-  <li><strong>Phone coaching:</strong> Between-session support for applying skills</li>
-  <li><strong>Consultation team:</strong> Therapists meeting to support each other</li>
-</ol>
-
-<h3>The Four Skill Modules</h3>
-<ul>
-  <li>Mindfulness</li>
-  <li>Distress Tolerance</li>
-  <li>Emotion Regulation</li>
-  <li>Interpersonal Effectiveness</li>
-</ul>
-`,
-
-  'DBT Mindfulness Skills': `
-<h2>DBT Mindfulness: The Foundation</h2>
-<p>Mindfulness is considered the core skill in DBT, underlying all other modules. DBT breaks mindfulness into concrete, teachable skills: the "What" skills and the "How" skills.</p>
-
-<h3>Wise Mind</h3>
-<p>DBT proposes three states of mind:</p>
-<p><strong>Reasonable Mind:</strong> Intellectual, rational, task-focused. Cool, logical thinking without attention to emotions.</p>
-<p><strong>Emotion Mind:</strong> Thinking controlled by emotional state. Logic and facts are distorted by how we feel.</p>
-<p><strong>Wise Mind:</strong> The synthesis—accessing intuitive knowing that integrates both emotion and reason. Often accessed through stillness, breath, or focusing inward.</p>
-
-<h3>The "What" Skills: What You Do</h3>
-
-<p><strong>Observe:</strong> Notice your experience without words. Just notice sensations, thoughts, emotions—like watching clouds pass. Don't push away or hold on.</p>
-
-<p><strong>Describe:</strong> Put words on your experience. "I'm having the thought that..." "I notice tension in my shoulders." Label without judgment.</p>
-
-<p><strong>Participate:</strong> Fully engage in the current activity. Throw yourself completely into what you're doing. Be present without self-consciousness.</p>
-
-<h3>The "How" Skills: How You Do It</h3>
-
-<p><strong>Non-judgmentally:</strong> Describe facts, not evaluations. Instead of "good" or "bad," use "effective" or "ineffective." Notice judging and let it go.</p>
-
-<p><strong>One-mindfully:</strong> Do one thing at a time. When eating, just eat. When walking, just walk. When your attention wanders, gently return.</p>
-
-<p><strong>Effectively:</strong> Do what works. Focus on your goals. Let go of "should" and act skillfully in the current situation. Play by the rules that work.</p>
-
-<h3>Practice Points</h3>
-<ul>
-  <li>Mindfulness is a practice, not a state to achieve</li>
-  <li>Start with brief, frequent practice</li>
-  <li>Apply to everyday activities (mindful eating, walking)</li>
-  <li>Use to prepare for difficult skills or situations</li>
-</ul>
-`,
-
-  'TIPP Skills for Crisis': `
-<h2>TIPP: Changing Body Chemistry Fast</h2>
-<p>When emotions are extremely intense (SUDS 70+), cognitive strategies often don't work because the thinking brain is offline. TIPP skills use physiological mechanisms to quickly reduce emotional intensity.</p>
-
-<h3>T - Temperature</h3>
-<p>Cold activates the "dive reflex," which slows heart rate and redirects blood flow. Options:</p>
-<ul>
-  <li>Hold ice cubes or ice pack</li>
-  <li>Splash cold water on face</li>
-  <li>Submerge face in cold water (most effective)</li>
-</ul>
-<p><strong>Caution:</strong> Avoid with heart conditions. Don't use water that's too cold for too long.</p>
-
-<h3>I - Intense Exercise</h3>
-<p>Brief, intense aerobic exercise (10-20 minutes) burns off stress hormones and shifts physiology. Options:</p>
-<ul>
-  <li>Running in place</li>
-  <li>Jumping jacks</li>
-  <li>Fast walking up stairs</li>
-  <li>Any activity that gets heart rate up</li>
-</ul>
-
-<h3>P - Paced Breathing</h3>
-<p>Slow, deep breathing activates the parasympathetic nervous system. Key:</p>
-<ul>
-  <li>Exhale longer than inhale (e.g., 4 counts in, 6-8 counts out)</li>
-  <li>Breathe from diaphragm</li>
-  <li>Slow pace (5-6 breaths per minute)</li>
-</ul>
-
-<h3>P - Paired Muscle Relaxation</h3>
-<p>Combines muscle tension-release with breathing:</p>
-<ol>
-  <li>While breathing in, tense muscles (not to the point of pain)</li>
-  <li>Notice the tension</li>
-  <li>While breathing out, say "relax" and release all tension</li>
-  <li>Notice the difference between tension and relaxation</li>
-</ol>
-
-<h3>When to Use TIPP</h3>
-<ul>
-  <li>Emotions are overwhelming (high intensity)</li>
-  <li>Risk of impulsive behavior</li>
-  <li>Can't think clearly enough for other skills</li>
-  <li>Need to bring emotional temperature down quickly</li>
-</ul>
-`,
-
-  'Crisis Survival Skills': `
-<h2>DBT Crisis Survival Skills</h2>
-<p>Crisis survival skills are designed for moments when you cannot solve the problem and must get through without making things worse. These are short-term strategies, not long-term solutions.</p>
-
-<h3>ACCEPTS: Distraction Skills</h3>
-<p><strong>A</strong> - Activities: Engage in absorbing activities (hobbies, exercise, cleaning)</p>
-<p><strong>C</strong> - Contributing: Do something for someone else (volunteer, help a neighbor)</p>
-<p><strong>C</strong> - Comparisons: Compare to times you felt worse, or to others less fortunate</p>
-<p><strong>E</strong> - Emotions: Generate different emotions (funny movie, upbeat music)</p>
-<p><strong>P</strong> - Pushing away: Mentally push the situation away temporarily</p>
-<p><strong>T</strong> - Thoughts: Fill your mind with other thoughts (counting, puzzles)</p>
-<p><strong>S</strong> - Sensations: Intense sensations that grab attention (ice, spicy food)</p>
-
-<h3>Self-Soothing with the Five Senses</h3>
-<p>Comfort yourself through sensory experience:</p>
-<ul>
-  <li><strong>Vision:</strong> Nature, art, photos of loved ones</li>
-  <li><strong>Hearing:</strong> Music, nature sounds, silence</li>
-  <li><strong>Smell:</strong> Candles, fresh air, favorite scents</li>
-  <li><strong>Taste:</strong> Comfort food, tea, favorite flavors</li>
-  <li><strong>Touch:</strong> Soft textures, warm bath, massage</li>
-</ul>
-
-<h3>IMPROVE the Moment</h3>
-<p><strong>I</strong> - Imagery: Imagine a peaceful scene or coping well</p>
-<p><strong>M</strong> - Meaning: Find or create meaning in the situation</p>
-<p><strong>P</strong> - Prayer: Connect with something greater (doesn't require religion)</p>
-<p><strong>R</strong> - Relaxation: Muscle relaxation, breathing, yoga</p>
-<p><strong>O</strong> - One thing in the moment: Focus only on present task</p>
-<p><strong>V</strong> - Vacation: Brief mental or physical vacation from the situation</p>
-<p><strong>E</strong> - Encouragement: Coach yourself with coping statements</p>
-
-<h3>Radical Acceptance</h3>
-<p>Accepting reality as it is, not as you wish it were. Radical acceptance is not approval or giving up—it's acknowledging what IS so you can respond effectively.</p>
-`,
-
-  'Emotion Regulation Strategies': `
-<h2>DBT Emotion Regulation Skills</h2>
-<p>Emotion regulation skills help reduce vulnerability to negative emotions and change unwanted emotions when they occur.</p>
-
-<h3>ABC PLEASE: Reducing Vulnerability</h3>
-
-<p><strong>A</strong> - Accumulate positives: Increase pleasant events, build a life worth living</p>
-<p><strong>B</strong> - Build mastery: Do things that create a sense of competence</p>
-<p><strong>C</strong> - Cope ahead: Plan in advance for difficult situations</p>
-
-<p><strong>P</strong>hysical i<strong>L</strong>lness: Treat physical problems<br>
-<strong>E</strong>ating: Eat balanced meals<br>
-<strong>A</strong>void mood-altering substances<br>
-<strong>S</strong>leep: Get adequate sleep<br>
-<strong>E</strong>xercise: Move your body daily</p>
-
-<h3>Check the Facts</h3>
-<p>Before acting on an emotion, examine whether it fits the facts:</p>
-<ol>
-  <li>What event triggered the emotion?</li>
-  <li>What are my interpretations/assumptions?</li>
-  <li>Am I assuming a threat? What's the actual probability?</li>
-  <li>What's the catastrophe? Would I cope?</li>
-  <li>Does the emotion (and its intensity) fit the facts?</li>
-</ol>
-
-<h3>Opposite Action</h3>
-<p>When an emotion doesn't fit the facts OR acting on it isn't effective, do the opposite of the action urge:</p>
-<table border="1" cellpadding="8">
-  <tr><th>Emotion</th><th>Action Urge</th><th>Opposite Action</th></tr>
-  <tr><td>Fear</td><td>Avoid</td><td>Approach</td></tr>
-  <tr><td>Anger</td><td>Attack</td><td>Gently avoid, be kind</td></tr>
-  <tr><td>Sadness</td><td>Withdraw</td><td>Get active, approach</td></tr>
-  <tr><td>Shame</td><td>Hide</td><td>Disclose (if appropriate)</td></tr>
-  <tr><td>Guilt</td><td>Apologize, avoid</td><td>If unjustified: opposite; if justified: repair</td></tr>
-</table>
-
-<h3>Key Points</h3>
-<ul>
-  <li>All emotions have a function—even painful ones</li>
-  <li>Change emotions by changing thoughts, body chemistry, or actions</li>
-  <li>Sometimes acceptance is more appropriate than change</li>
-</ul>
-`,
-
-  'DEAR MAN Skills': `
-<h2>DEAR MAN: Interpersonal Effectiveness</h2>
-<p>DEAR MAN is a DBT skill for making requests or saying no while maintaining relationships and self-respect. It provides a structure for assertive communication.</p>
-
-<h3>DEAR MAN Explained</h3>
-
-<p><strong>D - Describe</strong><br>
-Describe the situation factually, without judgment. Stick to observable facts.<br>
-<em>"When you said you'd call and didn't..."</em></p>
-
-<p><strong>E - Express</strong><br>
-Express your feelings and opinions. Use "I" statements.<br>
-<em>"I felt worried and disappointed..."</em></p>
-
-<p><strong>A - Assert</strong><br>
-Assert your wants or needs clearly. Don't expect others to read your mind.<br>
-<em>"I would like you to text me if your plans change..."</em></p>
-
-<p><strong>R - Reinforce</strong><br>
-Reinforce by explaining positive consequences or mutual benefit.<br>
-<em>"That would help me feel more secure in our relationship..."</em></p>
-
-<p><strong>M - Mindful</strong><br>
-Stay focused on your objective. Don't get distracted by other topics. Repeat your request if needed (broken record).</p>
-
-<p><strong>A - Appear Confident</strong><br>
-Use a confident tone and body language, even if you don't feel confident. No apologizing for making a reasonable request.</p>
-
-<p><strong>N - Negotiate</strong><br>
-Be willing to give to get. Ask for alternative solutions. What can you offer?</p>
-
-<h3>Balancing Three Goals</h3>
-<p>In any interpersonal interaction, consider three goals:</p>
-<ol>
-  <li><strong>Objective effectiveness:</strong> Getting what you want (DEAR MAN)</li>
-  <li><strong>Relationship effectiveness:</strong> Maintaining the relationship (GIVE)</li>
-  <li><strong>Self-respect effectiveness:</strong> Maintaining self-respect (FAST)</li>
-</ol>
-<p>Sometimes you prioritize one over others. Decide which matters most in each situation.</p>
-
-<h3>Common Challenges</h3>
-<ul>
-  <li>Too aggressive: Prioritizing objective over relationship</li>
-  <li>Too passive: Sacrificing objective for relationship or fear of conflict</li>
-  <li>Unclear requests: Expecting mind-reading</li>
-</ul>
-`,
-
-  // ===== MOTIVATIONAL INTERVIEWING =====
-  'What is Motivational Interviewing?': `
-<h2>The Spirit and Principles of Motivational Interviewing</h2>
-<p>Motivational Interviewing (MI) is a collaborative, person-centered approach for strengthening motivation and commitment to change. Developed by William Miller and Stephen Rollnick, MI was originally designed for addiction but is now used across many behavior change contexts.</p>
-
-<h3>The Spirit of MI</h3>
-<p>More than techniques, MI is defined by its spirit—the underlying mindset and way of being with clients:</p>
-
-<p><strong>Partnership:</strong> MI is done "with" and "for" clients, never "to" or "on" them. The counselor is not the expert on the client's life.</p>
-
-<p><strong>Acceptance:</strong> Includes accurate empathy, autonomy support, affirmation, and absolute worth. Acceptance does not mean approval of all behaviors.</p>
-
-<p><strong>Compassion:</strong> Actively promoting the client's welfare and giving priority to their needs.</p>
-
-<p><strong>Evocation:</strong> The resources and motivation for change already exist within the client. The counselor's role is to draw them out, not install them.</p>
-
-<h3>The Righting Reflex</h3>
-<p>Humans have a natural tendency to want to fix problems and tell people what to do—the "righting reflex." In MI, this is counterproductive because:</p>
-<ul>
-  <li>It puts the client in a passive role</li>
-  <li>It often evokes resistance and "sustain talk"</li>
-  <li>The client argues against change instead of for it</li>
-</ul>
-
-<h3>Ambivalence is Normal</h3>
-<p>MI recognizes that ambivalence about change is normal, not pathological. Most people considering change have reasons for changing AND reasons for staying the same. The counselor's task is to help resolve this ambivalence in the direction of change.</p>
-
-<h3>Key Concepts</h3>
-<ul>
-  <li><strong>Change talk:</strong> Client statements favoring change</li>
-  <li><strong>Sustain talk:</strong> Client statements favoring status quo</li>
-  <li><strong>Discord:</strong> Ruptures in the working relationship</li>
-</ul>
-`,
-
-  'MI Good Example': `
-<h2>The Four Processes of Motivational Interviewing</h2>
-<p>MI unfolds through four overlapping processes. While they often occur in this order, they are not rigid stages—the counselor may move back and forth as needed.</p>
-
-<h3>1. Engaging</h3>
-<p>Establishing a helpful connection and working relationship. Without engagement, the other processes cannot occur effectively.</p>
-<p><strong>Key elements:</strong></p>
-<ul>
-  <li>Using OARS skills (Open questions, Affirmations, Reflections, Summaries)</li>
-  <li>Understanding the client's perspective</li>
-  <li>Building rapport and trust</li>
-  <li>Demonstrating respect and genuine interest</li>
-</ul>
-
-<h3>2. Focusing</h3>
-<p>Developing and maintaining a specific direction in the conversation toward change.</p>
-<p><strong>Key elements:</strong></p>
-<ul>
-  <li>Identifying clear change goal(s)</li>
-  <li>Negotiating agenda when multiple concerns exist</li>
-  <li>Maintaining direction without being directive</li>
-  <li>Collaborative goal clarification</li>
-</ul>
-
-<h3>3. Evoking</h3>
-<p>Eliciting the client's own motivations for change. This is the heart of MI.</p>
-<p><strong>Key elements:</strong></p>
-<ul>
-  <li>Recognizing change talk</li>
-  <li>Responding to strengthen change talk</li>
-  <li>Strategically asking evocative questions</li>
-  <li>Exploring importance, confidence, and readiness</li>
-</ul>
-
-<h3>4. Planning</h3>
-<p>Developing commitment to change and formulating a concrete plan of action. Occurs when the client is ready.</p>
-<p><strong>Signs of readiness:</strong></p>
-<ul>
-  <li>Increased change talk, decreased sustain talk</li>
-  <li>Resolve—client seems ready</li>
-  <li>Questions about change</li>
-  <li>Envisioning the future</li>
-</ul>
-<p><strong>Key elements:</strong></p>
-<ul>
-  <li>Summarizing change talk</li>
-  <li>Asking key questions ("What's next?")</li>
-  <li>Developing a change plan collaboratively</li>
-  <li>Supporting commitment</li>
-</ul>
-`,
-
-  'OARS Skills in MI': `
-<h2>OARS: The Core Skills of Motivational Interviewing</h2>
-<p>OARS represents the fundamental communication skills used throughout MI. These skills support engagement and help elicit and strengthen change talk.</p>
-
-<h3>O - Open Questions</h3>
-<p>Questions that cannot be answered with yes/no and invite elaboration, reflection, and exploration.</p>
-<p><strong>Examples:</strong></p>
-<ul>
-  <li>"What brings you in today?"</li>
-  <li>"How has this affected your life?"</li>
-  <li>"What would you like to be different?"</li>
-  <li>"What concerns do you have about your drinking?"</li>
-</ul>
-<p><strong>Avoid:</strong> Questions starting with "why" (can feel judgmental) and multiple questions at once.</p>
-
-<h3>A - Affirmations</h3>
-<p>Statements recognizing client strengths, efforts, and values. Genuine, not patronizing.</p>
-<p><strong>Examples:</strong></p>
-<ul>
-  <li>"You've shown real courage in facing this."</li>
-  <li>"Despite everything, you keep showing up."</li>
-  <li>"Your children clearly matter a lot to you."</li>
-</ul>
-<p><strong>Note:</strong> Affirm character and effort, not just outcomes. Avoid empty praise.</p>
-
-<h3>R - Reflections</h3>
-<p>The primary skill in MI. Reflective statements (not questions) that convey understanding and invite continued exploration.</p>
-<p><strong>Types of reflections:</strong></p>
-<ul>
-  <li><strong>Simple:</strong> Repeating or rephrasing what client said</li>
-  <li><strong>Complex:</strong> Adding meaning, feeling, or continuing the thought</li>
-  <li><strong>Amplified:</strong> Slightly overstating (to evoke correction)</li>
-  <li><strong>Double-sided:</strong> Reflecting both sides of ambivalence</li>
-</ul>
-<p><strong>Key:</strong> Aim for at least 2 reflections for every question (2:1 ratio minimum).</p>
-
-<h3>S - Summaries</h3>
-<p>Longer reflections that collect and link what the client has said. Three types:</p>
-<ul>
-  <li><strong>Collecting:</strong> Gathering related content ("Let me see if I've got this...")</li>
-  <li><strong>Linking:</strong> Connecting present statements to earlier material</li>
-  <li><strong>Transitioning:</strong> Summarizing before moving to a new topic or planning</li>
-</ul>
-<p><strong>Strategic summaries:</strong> When summarizing ambivalence, end with change talk to leave it lingering.</p>
-`,
-
-  'Recognizing and Responding to Change Talk': `
-<h2>Change Talk and Sustain Talk</h2>
-<p>In MI, the counselor's task is to recognize, evoke, and strengthen change talk while softening sustain talk. Change talk predicts behavior change—the more a person talks themselves into change, the more likely they are to change.</p>
-
-<h3>DARN-CAT: Types of Change Talk</h3>
-<p><strong>Preparatory change talk (DARN):</strong></p>
-<ul>
-  <li><strong>D</strong>esire: "I want to..." "I wish I could..."</li>
-  <li><strong>A</strong>bility: "I could..." "I might be able to..."</li>
-  <li><strong>R</strong>easons: "I would feel better if..." "It would help me..."</li>
-  <li><strong>N</strong>eed: "I have to..." "I must..." "I need to..."</li>
-</ul>
-
-<p><strong>Mobilizing change talk (CAT):</strong></p>
-<ul>
-  <li><strong>C</strong>ommitment: "I will..." "I'm going to..."</li>
-  <li><strong>A</strong>ctivation: "I'm willing to..." "I'm ready to..."</li>
-  <li><strong>T</strong>aking steps: "I started..." "I already..."</li>
-</ul>
-
-<h3>Responding to Change Talk</h3>
-<p>When you hear change talk, use EARS:</p>
-<ul>
-  <li><strong>E</strong>laborate: Ask for more detail ("Tell me more about that")</li>
-  <li><strong>A</strong>ffirm: Recognize the statement ("That took insight to recognize")</li>
-  <li><strong>R</strong>eflect: Mirror it back, perhaps with emphasis</li>
-  <li><strong>S</strong>ummarize: Collect change talk and offer it back</li>
-</ul>
-
-<h3>Sustain Talk</h3>
-<p>Arguments for maintaining the status quo. Not "resistance"—it's normal in ambivalence.</p>
-<p><strong>Examples:</strong> "But I like drinking" "I can't imagine life without cigarettes" "It's not that bad"</p>
-<p><strong>Responding to sustain talk:</strong></p>
-<ul>
-  <li>Simple reflection (acknowledge without amplifying)</li>
-  <li>Double-sided reflection (reflect sustain, then change talk)</li>
-  <li>Come alongside ("This is really hard")</li>
-  <li>Emphasize autonomy ("Only you can decide")</li>
-</ul>
-
-<h3>Key Principle</h3>
-<p>What you pay attention to grows. Respond generously to change talk; respond minimally to sustain talk.</p>
-`,
-
-  'MI with a Resistant Client': `
-<h2>Rolling with Discord</h2>
-<p>In MI, "resistance" is reframed as "discord"—a signal that something in the interaction needs attention. Discord is about the relationship, not the client's character.</p>
-
-<h3>Signs of Discord</h3>
-<ul>
-  <li>Arguing, challenging, dismissing</li>
-  <li>Interrupting the counselor</li>
-  <li>Disengagement, inattention</li>
-  <li>Ignoring or discounting</li>
-</ul>
-
-<h3>Sources of Discord</h3>
-<p>Discord often signals:</p>
-<ul>
-  <li>Counselor is pushing too hard or too fast</li>
-  <li>Client doesn't feel understood</li>
-  <li>Goals are misaligned</li>
-  <li>Client's autonomy feels threatened</li>
-  <li>The righting reflex has been triggered</li>
-</ul>
-
-<h3>Strategies for Responding to Discord</h3>
-
-<p><strong>Reflect:</strong> Simply acknowledge what the client is saying without defensiveness.</p>
-
-<p><strong>Apologize:</strong> If you've pushed too hard: "I'm sorry, I got ahead of you there."</p>
-
-<p><strong>Emphasize autonomy:</strong> "You're the only one who can decide this." "No one can make you change."</p>
-
-<p><strong>Shift focus:</strong> Move away from the stuck point to something else.</p>
-
-<p><strong>Reframe:</strong> Offer a new perspective on what they've said.</p>
-
-<p><strong>Come alongside:</strong> Join with the resistance: "You're right—this is hard, and nobody can make you do it."</p>
-
-<p><strong>Agree with a twist:</strong> Agree, then add a perspective.</p>
-
-<h3>Prevention</h3>
-<p>The best strategy is prevention:</p>
-<ul>
-  <li>Avoid the righting reflex</li>
-  <li>Ask permission before giving information</li>
-  <li>Honor autonomy throughout</li>
-  <li>Stay curious rather than challenging</li>
-</ul>
-
-<h3>Key Mindset</h3>
-<p>Discord is feedback, not opposition. It tells you to try something different, not try harder with the same approach.</p>
-`,
-
-  'MI Full Session Demo': `
-<h2>Integrating MI: A Practical Framework</h2>
-<p>This lesson synthesizes the MI concepts into a practical framework for conducting MI conversations from beginning to end.</p>
-
-<h3>Opening the Conversation</h3>
-<p>Start with open questions and reflective listening:</p>
-<ul>
-  <li>"What brings you in today?"</li>
-  <li>"Tell me what's been going on."</li>
-  <li>Follow with reflections, not more questions</li>
-  <li>Build understanding before agenda-setting</li>
-</ul>
-
-<h3>Exploring Ambivalence</h3>
-<p>Use the decisional balance to explore both sides:</p>
-<ul>
-  <li>"What do you like about [the behavior]?"</li>
-  <li>"What concerns do you have?"</li>
-  <li>"How does this fit with what matters to you?"</li>
-</ul>
-<p>Reflect both sides, ending with change talk when possible.</p>
-
-<h3>Assessing Importance and Confidence</h3>
-<p>Use scaling questions:</p>
-<ul>
-  <li>"On a scale of 0-10, how important is it for you to make this change?"</li>
-  <li>"On a scale of 0-10, how confident are you that you could make this change?"</li>
-  <li>Follow-up: "Why are you at a [X] and not a lower number?"</li>
-</ul>
-
-<h3>Evoking Change Talk</h3>
-<p>When ready, strategically evoke change talk:</p>
-<ul>
-  <li>"What would be the good things about making this change?"</li>
-  <li>"What would you like your life to look like?"</li>
-  <li>"If you decided to change, how would you do it?"</li>
-</ul>
-
-<h3>Moving Toward Planning</h3>
-<p>When change talk is strong and sustain talk has diminished:</p>
-<ul>
-  <li>Summarize the change talk you've heard</li>
-  <li>Ask a key question: "So what's next for you?"</li>
-  <li>Develop a change plan collaboratively</li>
-  <li>Anticipate barriers and problem-solve</li>
-</ul>
-
-<h3>Common Integration Challenges</h3>
-<ul>
-  <li>Rushing to planning before readiness</li>
-  <li>Forgetting the spirit (partnership, autonomy)</li>
-  <li>Too many questions, not enough reflections</li>
-  <li>Providing solutions instead of evoking them</li>
-</ul>
-`,
-
-  // ===== TRAUMA =====
-  'What is Trauma?': `
-<h2>Understanding Trauma: Definition and Types</h2>
-<p>Trauma is not defined by the event itself, but by the individual's response to an overwhelming experience. Understanding this distinction is essential for trauma-informed practice.</p>
-
-<h3>Defining Trauma</h3>
-<p>Trauma occurs when an experience overwhelms a person's capacity to cope, leaving them feeling helpless, terrified, or out of control. The Substance Abuse and Mental Health Services Administration (SAMHSA) defines it as:</p>
-<blockquote>"An event, series of events, or set of circumstances experienced by an individual as physically or emotionally harmful or threatening and that has lasting adverse effects on the individual's functioning and well-being."</blockquote>
-
-<h3>Types of Trauma</h3>
-
-<p><strong>Single-incident trauma:</strong> A one-time overwhelming event (accident, assault, natural disaster)</p>
-
-<p><strong>Complex/developmental trauma:</strong> Repeated, chronic trauma, often in childhood and within caregiving relationships. Results in broader impact on development, attachment, and identity.</p>
-
-<p><strong>Intergenerational trauma:</strong> Trauma effects transmitted across generations through parenting, genetics, and family/cultural patterns.</p>
-
-<p><strong>Collective/historical trauma:</strong> Shared traumatic experiences affecting communities or cultural groups (genocide, slavery, colonization).</p>
-
-<h3>Why Responses Vary</h3>
-<p>The same event affects different people differently based on:</p>
-<ul>
-  <li>Prior trauma history</li>
-  <li>Age and developmental stage</li>
-  <li>Presence of supportive relationships</li>
-  <li>Duration and severity of exposure</li>
-  <li>Degree of betrayal involved</li>
-  <li>Biological factors and temperament</li>
-  <li>Cultural factors and meaning-making</li>
-</ul>
-
-<h3>Clinical Implications</h3>
-<ul>
-  <li>Don't assume what is or isn't traumatic—ask</li>
-  <li>Focus on impact, not just events</li>
-  <li>Recognize that trauma is common (most adults report at least one traumatic experience)</li>
-  <li>Understand that responses to trauma are adaptive, not pathological</li>
-</ul>
-`,
-
-  'How Trauma Gets Stuck in the Body': `
-<h2>The Neurobiology of Trauma</h2>
-<p>Understanding how trauma affects the brain and body helps explain symptoms and guides treatment. This knowledge also helps clients make sense of their experiences and reduce shame.</p>
-
-<h3>Key Brain Structures</h3>
-
-<p><strong>Amygdala:</strong> The brain's "alarm system" that detects threat and initiates the stress response. In trauma survivors, the amygdala is often hyperactive, triggering fear responses even to non-threatening stimuli.</p>
-
-<p><strong>Prefrontal Cortex:</strong> The "thinking brain" responsible for reasoning, planning, and regulating emotions. During extreme stress, prefrontal function decreases—explaining why people can't "think their way" out of a trauma response.</p>
-
-<p><strong>Hippocampus:</strong> Critical for memory consolidation and providing context. Trauma can impair hippocampal function, leading to fragmented memories without clear time/place context. This explains why trauma memories can feel like they're happening NOW.</p>
-
-<h3>The Stress Response</h3>
-<p>When threat is detected, the sympathetic nervous system activates:</p>
-<ul>
-  <li><strong>Fight:</strong> Mobilizing to confront the threat (anger, aggression)</li>
-  <li><strong>Flight:</strong> Mobilizing to escape (anxiety, running)</li>
-  <li><strong>Freeze:</strong> When fight/flight isn't possible—immobility, dissociation</li>
-</ul>
-
-<h3>Why Trauma Gets "Stuck"</h3>
-<p>In normal stress, the threat passes and the nervous system returns to baseline. In trauma:</p>
-<ul>
-  <li>The nervous system remains activated</li>
-  <li>Memories aren't fully processed</li>
-  <li>The body continues to respond as if danger is present</li>
-  <li>Triggers activate the same survival responses</li>
-</ul>
-<p>As Bessel van der Kolk famously wrote: "The body keeps the score."</p>
-
-<h3>Implications for Treatment</h3>
-<ul>
-  <li>Cognitive approaches alone may be insufficient</li>
-  <li>Body-based interventions have important role</li>
-  <li>Stabilization must precede processing</li>
-  <li>Psychoeducation helps normalize responses</li>
-</ul>
-`,
-
-  'The Window of Tolerance': `
-<h2>The Window of Tolerance</h2>
-<p>The "window of tolerance" concept, developed by Dan Siegel, describes the optimal zone of arousal in which a person can function effectively. Understanding this framework is essential for trauma treatment.</p>
-
-<h3>The Three Zones</h3>
-
-<p><strong>Hyperarousal (above the window):</strong></p>
-<ul>
-  <li>Fight/flight activation</li>
-  <li>Racing thoughts, anxiety, panic</li>
-  <li>Hypervigilance, irritability</li>
-  <li>Difficulty concentrating</li>
-  <li>Physical symptoms: rapid heart rate, tension, sweating</li>
-</ul>
-
-<p><strong>Window of Tolerance (optimal zone):</strong></p>
-<ul>
-  <li>Able to think and feel simultaneously</li>
-  <li>Can process information effectively</li>
-  <li>Can tolerate and respond to emotions</li>
-  <li>Can engage in relationships and daily tasks</li>
-</ul>
-
-<p><strong>Hypoarousal (below the window):</strong></p>
-<ul>
-  <li>Freeze/shutdown response</li>
-  <li>Numbness, flatness, disconnection</li>
-  <li>Difficulty thinking, foggy</li>
-  <li>Fatigue, collapse, dissociation</li>
-  <li>Physical symptoms: low energy, slow heart rate</li>
-</ul>
-
-<h3>Trauma's Effect on the Window</h3>
-<p>Trauma often narrows the window of tolerance, making it:</p>
-<ul>
-  <li>Easier to be triggered into dysregulation</li>
-  <li>Harder to return to baseline</li>
-  <li>More time spent outside the optimal zone</li>
-</ul>
-
-<h3>Clinical Applications</h3>
-<ol>
-  <li><strong>Psychoeducation:</strong> Help clients understand their responses</li>
-  <li><strong>Self-monitoring:</strong> Build awareness of current arousal state</li>
-  <li><strong>Regulation skills:</strong> Practice returning to the window</li>
-  <li><strong>Gradual expansion:</strong> Slowly widen the window through titrated exposure</li>
-</ol>
-
-<h3>Treatment Guideline</h3>
-<p>Effective trauma processing requires staying within the window. If the client is outside the window, return to stabilization before continuing processing work.</p>
-`,
-
-  'Complex PTSD Overview': `
-<h2>PTSD vs. Complex PTSD</h2>
-<p>While PTSD is well-established, Complex PTSD (C-PTSD) recognizes the broader impact of prolonged, repeated trauma, especially when it occurs in the context of relationships.</p>
-
-<h3>Standard PTSD Symptoms</h3>
-<p>PTSD is characterized by four symptom clusters:</p>
-<ol>
-  <li><strong>Intrusion:</strong> Unwanted memories, flashbacks, nightmares</li>
-  <li><strong>Avoidance:</strong> Avoiding reminders of the trauma</li>
-  <li><strong>Negative cognitions/mood:</strong> Negative beliefs about self/world, emotional numbing</li>
-  <li><strong>Hyperarousal:</strong> Startle response, hypervigilance, sleep difficulties</li>
-</ol>
-
-<h3>Additional Features in Complex PTSD</h3>
-<p>C-PTSD includes the above plus:</p>
-
-<p><strong>Disturbances in self-organization (DSO):</strong></p>
-<ul>
-  <li><strong>Affect dysregulation:</strong> Difficulty modulating emotions; explosive anger or emotional numbing</li>
-  <li><strong>Negative self-concept:</strong> Pervasive shame, worthlessness, feeling permanently damaged</li>
-  <li><strong>Interpersonal difficulties:</strong> Trouble maintaining relationships, feeling disconnected from others</li>
-</ul>
-
-<h3>Presentations That May Mask Trauma</h3>
-<p>C-PTSD can present as:</p>
-<ul>
-  <li>Borderline personality disorder</li>
-  <li>Treatment-resistant depression or anxiety</li>
-  <li>Somatic complaints</li>
-  <li>Dissociative disorders</li>
-  <li>Substance use disorders</li>
-  <li>Attachment difficulties</li>
-</ul>
-
-<h3>Trauma-Informed Assessment</h3>
-<p>Always assess for trauma history, recognizing that:</p>
-<ul>
-  <li>Clients may not spontaneously disclose</li>
-  <li>They may not identify experiences as "trauma"</li>
-  <li>Shame may prevent disclosure</li>
-  <li>Memories may be fragmented or unavailable</li>
-</ul>
-
-<h3>Treatment Implications</h3>
-<p>C-PTSD typically requires:</p>
-<ul>
-  <li>Longer treatment</li>
-  <li>Greater emphasis on safety and stabilization</li>
-  <li>Focus on affect regulation and interpersonal skills</li>
-  <li>Attention to the therapeutic relationship as a corrective experience</li>
-</ul>
-`,
-
-  'Grounding Techniques for PTSD': `
-<h2>Grounding Techniques for Trauma</h2>
-<p>Grounding techniques help clients orient to the present moment when experiencing dissociation, flashbacks, or overwhelming emotions. They create safety by anchoring awareness in the here and now.</p>
-
-<h3>5-4-3-2-1 Sensory Grounding</h3>
-<p>Engage the five senses systematically:</p>
-<ul>
-  <li><strong>5</strong> things you can SEE (name them aloud)</li>
-  <li><strong>4</strong> things you can HEAR</li>
-  <li><strong>3</strong> things you can TOUCH (and feel the textures)</li>
-  <li><strong>2</strong> things you can SMELL</li>
-  <li><strong>1</strong> thing you can TASTE</li>
-</ul>
-<p>This engages the sensory cortex and orients the brain to present reality.</p>
-
-<h3>Body-Based Grounding</h3>
-<ul>
-  <li><strong>Feet on floor:</strong> Press feet firmly into the ground; notice the contact</li>
-  <li><strong>Hand awareness:</strong> Press hands together firmly; notice temperature, pressure</li>
-  <li><strong>Body scan:</strong> Systematically notice each body part from feet to head</li>
-  <li><strong>Cold water:</strong> Hold ice or splash cold water on face/wrists</li>
-</ul>
-
-<h3>Orientation to Present</h3>
-<p>Verbal reminders of present safety:</p>
-<ul>
-  <li>"Where are you right now? What room?"</li>
-  <li>"What is today's date?"</li>
-  <li>"Name three things you see in this room"</li>
-  <li>"That was then. This is now. You are safe."</li>
-</ul>
-
-<h3>Cognitive Grounding</h3>
-<ul>
-  <li>Count backward from 100 by 7s</li>
-  <li>Name categories (states, animals, colors)</li>
-  <li>Describe an everyday task in detail</li>
-  <li>Recite something memorized (poem, lyrics, prayer)</li>
-</ul>
-
-<h3>Teaching Grounding to Clients</h3>
-<ol>
-  <li>Explain the purpose (present-moment orientation)</li>
-  <li>Practice together when client is calm</li>
-  <li>Identify which techniques resonate</li>
-  <li>Create a personal "grounding menu"</li>
-  <li>Practice regularly, not just in crisis</li>
-</ol>
-`,
-
-  'Safe Place Visualization': `
-<h2>Building Internal Resources: Safe Place Visualization</h2>
-<p>Safe place (or calm place) visualization helps clients develop an internal resource for self-soothing and stabilization. This is a foundational skill in many trauma treatment approaches, including EMDR.</p>
-
-<h3>Purpose</h3>
-<ul>
-  <li>Create an internal refuge from distress</li>
-  <li>Build capacity for self-regulation</li>
-  <li>Provide a "container" during trauma processing</li>
-  <li>Establish positive associative networks</li>
-</ul>
-
-<h3>Guiding the Visualization</h3>
-
-<p><strong>1. Introduction:</strong> "We're going to create an internal place of safety and calm that you can visit whenever you need to feel more settled."</p>
-
-<p><strong>2. Invite imagery:</strong> "Think of a place—real or imagined—where you feel completely safe, peaceful, and calm. It might be a place you've been, somewhere you've seen, or a place you create entirely in your imagination."</p>
-
-<p><strong>3. Engage the senses:</strong></p>
-<ul>
-  <li>"What do you see in this place?"</li>
-  <li>"What sounds do you hear?"</li>
-  <li>"What can you smell?"</li>
-  <li>"What's the temperature? What do you feel on your skin?"</li>
-  <li>"Notice how your body feels in this place."</li>
-</ul>
-
-<p><strong>4. Enhance positive affect:</strong> "Notice the feelings of peace and safety. Where do you feel that in your body? Let those feelings grow and spread."</p>
-
-<p><strong>5. Create a cue word:</strong> "Is there a word that captures this feeling? [pause] When you say that word, you can return to this place."</p>
-
-<p><strong>6. Practice accessing:</strong> Have the client practice bringing up the image and noticing the shift in body state.</p>
-
-<h3>Important Considerations</h3>
-<ul>
-  <li>Some trauma survivors cannot imagine a safe place—adapt to "calm" or "peaceful"</li>
-  <li>Avoid places associated with trauma</li>
-  <li>It's okay if people appear in the visualization, but assess for safety</li>
-  <li>Practice regularly to strengthen the resource</li>
-</ul>
-`,
-
-  'Phases of Trauma Treatment': `
-<h2>Phases of Trauma Treatment and Pacing</h2>
-<p>Effective trauma treatment follows a phase-based approach. Moving through phases at the client's pace—neither too fast nor too slow—is essential for safe and effective treatment.</p>
-
-<h3>The Three-Phase Model</h3>
-<p>Based on the work of Judith Herman and others:</p>
-
-<p><strong>Phase 1: Safety and Stabilization</strong></p>
-<ul>
-  <li>Establish physical safety</li>
-  <li>Build the therapeutic relationship</li>
-  <li>Develop affect regulation skills</li>
-  <li>Create internal resources</li>
-  <li>Address current crises and self-harm</li>
-  <li>Psychoeducation about trauma</li>
-</ul>
-
-<p><strong>Phase 2: Trauma Processing</strong></p>
-<ul>
-  <li>Process traumatic memories</li>
-  <li>Integrate fragmented experiences</li>
-  <li>Work with meaning and beliefs</li>
-  <li>Various approaches: EMDR, CPT, PE, etc.</li>
-</ul>
-
-<p><strong>Phase 3: Reconnection and Integration</strong></p>
-<ul>
-  <li>Reconnect with life, others, purpose</li>
-  <li>Build or rebuild relationships</li>
-  <li>Develop new identity beyond trauma</li>
-  <li>Post-traumatic growth</li>
-</ul>
-
-<h3>Signs of Readiness for Processing (Phase 2)</h3>
-<ul>
-  <li>Adequate stabilization and coping skills</li>
-  <li>Strong therapeutic alliance</li>
-  <li>Relative life stability</li>
-  <li>No active self-harm or suicidality</li>
-  <li>Ability to tolerate distress without dissociating</li>
-  <li>Client desire and consent to proceed</li>
-</ul>
-
-<h3>Signs of Moving Too Fast</h3>
-<ul>
-  <li>Increased symptoms between sessions</li>
-  <li>Dissociation during or after sessions</li>
-  <li>Regression in functioning</li>
-  <li>Avoidance of therapy</li>
-  <li>Increased substance use or self-harm</li>
-</ul>
-
-<h3>The Art of Pacing</h3>
-<p>Effective pacing means:</p>
-<ul>
-  <li>Titrating exposure to trauma material</li>
-  <li>Pendulating between activation and regulation</li>
-  <li>Returning to stabilization when needed</li>
-  <li>Following the client's window of tolerance</li>
-</ul>
-`,
-
-  // ===== ANXIETY TREATMENT =====
-  'Anxiety Disorders Overview': `
-<h2>Anxiety Disorders: Types and Presentations</h2>
-<p>Anxiety disorders are the most common mental health conditions, affecting approximately 30% of adults at some point. Understanding the distinct presentations helps guide assessment and treatment.</p>
-
-<h3>Generalized Anxiety Disorder (GAD)</h3>
-<p>Characterized by excessive worry about multiple areas of life for at least 6 months.</p>
-<ul>
-  <li>Worry is difficult to control</li>
-  <li>Physical symptoms: restlessness, fatigue, muscle tension, sleep problems</li>
-  <li>"What-if" thinking across many domains</li>
-</ul>
-
-<h3>Panic Disorder</h3>
-<p>Recurrent, unexpected panic attacks with fear of future attacks.</p>
-<ul>
-  <li>Sudden onset of intense fear</li>
-  <li>Physical symptoms: heart pounding, sweating, trembling, shortness of breath</li>
-  <li>Fear of dying, losing control, or "going crazy"</li>
-  <li>Often develops into agoraphobia</li>
-</ul>
-
-<h3>Social Anxiety Disorder</h3>
-<p>Marked fear of social situations where one might be judged or embarrassed.</p>
-<ul>
-  <li>Fear of negative evaluation</li>
-  <li>Avoidance of social or performance situations</li>
-  <li>Physical symptoms in social settings</li>
-</ul>
-
-<h3>Specific Phobias</h3>
-<p>Intense fear of specific objects or situations.</p>
-<ul>
-  <li>Common: animals, heights, flying, blood/injection, enclosed spaces</li>
-  <li>Avoidance or endurance with extreme distress</li>
-  <li>Recognition that fear is excessive</li>
-</ul>
-
-<h3>Obsessive-Compulsive Disorder (OCD)</h3>
-<p>Now in its own diagnostic category, characterized by:</p>
-<ul>
-  <li>Obsessions: intrusive, unwanted thoughts causing distress</li>
-  <li>Compulsions: repetitive behaviors aimed at reducing distress</li>
-  <li>Common themes: contamination, harm, symmetry, religious/moral concerns</li>
-</ul>
-
-<h3>Key Assessment Points</h3>
-<ul>
-  <li>Distinguish from normal worry/fear (interference, distress level)</li>
-  <li>Assess avoidance patterns</li>
-  <li>Identify safety behaviors</li>
-  <li>Screen for comorbidities (depression, substance use)</li>
-  <li>Consider medical causes</li>
-</ul>
-`,
-
-  'How Anxiety Maintains Itself': `
-<h2>The Anxiety Maintenance Cycle</h2>
-<p>Understanding how anxiety perpetuates itself is essential for treatment planning. Anxiety is maintained not by the presence of triggers, but by the behaviors we use to manage it.</p>
-
-<h3>The Core Cycle</h3>
-<ol>
-  <li><strong>Trigger:</strong> Situation or thought perceived as threatening</li>
-  <li><strong>Anxiety response:</strong> Physical, cognitive, and emotional distress</li>
-  <li><strong>Avoidance or safety behavior:</strong> Escape, avoid, or use safety strategies</li>
-  <li><strong>Temporary relief:</strong> Anxiety decreases in the short term</li>
-  <li><strong>Negative reinforcement:</strong> Behavior is strengthened by relief</li>
-  <li><strong>Maintained anxiety:</strong> No learning occurs; anxiety persists</li>
-</ol>
-
-<h3>Avoidance</h3>
-<p>The obvious maintenance factor. When we avoid what we fear:</p>
-<ul>
-  <li>We never learn the feared outcome doesn't happen (or is manageable)</li>
-  <li>The world of feared situations often expands</li>
-  <li>Life becomes increasingly restricted</li>
-</ul>
-
-<h3>Safety Behaviors</h3>
-<p>More subtle than avoidance—these are what we do to "get through" feared situations while protecting ourselves from feared outcomes.</p>
-<p><strong>Examples:</strong></p>
-<ul>
-  <li>Carrying "emergency" medication (even if never used)</li>
-  <li>Only going places with a "safe person"</li>
-  <li>Over-preparing for presentations</li>
-  <li>Sitting near exits</li>
-  <li>Avoiding eye contact in social situations</li>
-</ul>
-<p><strong>Problem:</strong> Safety behaviors prevent disconfirmation. The person credits the behavior, not their own coping capacity.</p>
-
-<h3>Cognitive Factors</h3>
-<ul>
-  <li><strong>Overestimation of threat:</strong> "It will definitely happen"</li>
-  <li><strong>Catastrophizing:</strong> "It will be unbearable"</li>
-  <li><strong>Underestimation of coping:</strong> "I won't be able to handle it"</li>
-  <li><strong>Selective attention:</strong> Scanning for threat confirms it's everywhere</li>
-</ul>
-
-<h3>Treatment Implication</h3>
-<p>Effective anxiety treatment targets the maintenance cycle by eliminating avoidance and safety behaviors through exposure.</p>
-`,
-
-  'CBT for Anxiety - Cognitive Restructuring': `
-<h2>Cognitive Restructuring for Anxiety</h2>
-<p>Cognitive restructuring helps clients identify, evaluate, and modify the anxious thoughts that drive anxiety. The goal is not positive thinking, but more accurate, balanced thinking.</p>
-
-<h3>Common Anxious Thinking Patterns</h3>
-<ul>
-  <li><strong>Probability overestimation:</strong> "It will definitely happen"</li>
-  <li><strong>Catastrophizing:</strong> "It would be awful/unbearable"</li>
-  <li><strong>Mind reading:</strong> "Everyone will notice I'm anxious"</li>
-  <li><strong>Fortune telling:</strong> "I know I'll fail"</li>
-</ul>
-
-<h3>The Two Key Questions</h3>
-<p>For any anxious thought, explore:</p>
-<ol>
-  <li><strong>"How likely is it?"</strong> (Probability estimate)
-    <ul>
-      <li>What's the evidence for and against?</li>
-      <li>What has happened in similar situations?</li>
-      <li>What would a friend say about this prediction?</li>
-    </ul>
-  </li>
-  <li><strong>"How bad would it really be?"</strong> (Decatastrophizing)
-    <ul>
-      <li>What's the worst, best, and most likely outcome?</li>
-      <li>Could I cope? How?</li>
-      <li>Would it still matter in a week/month/year?</li>
-    </ul>
-  </li>
-</ol>
-
-<h3>Socratic Questions for Anxious Thoughts</h3>
-<ul>
-  <li>"What evidence supports this worry?"</li>
-  <li>"What evidence contradicts it?"</li>
-  <li>"How many times have you predicted this, and how often did it happen?"</li>
-  <li>"If it did happen, what would you do?"</li>
-  <li>"What's the most realistic outcome?"</li>
-  <li>"What would you tell a friend who had this thought?"</li>
-</ul>
-
-<h3>Creating Coping Statements</h3>
-<p>Develop realistic alternatives:</p>
-<ul>
-  <li>"Anxiety is uncomfortable but not dangerous."</li>
-  <li>"I've handled this before; I can handle it again."</li>
-  <li>"This feeling will pass."</li>
-  <li>"I don't have to be perfect to be okay."</li>
-</ul>
-
-<h3>Integration with Exposure</h3>
-<p>Cognitive work alone is often insufficient. Use restructuring to prepare for exposure, then let exposure provide the experiential learning that truly shifts beliefs.</p>
-`,
-
-  'Progressive Muscle Relaxation': `
-<h2>Progressive Muscle Relaxation (PMR)</h2>
-<p>PMR is an evidence-based technique that reduces physical tension associated with anxiety by systematically tensing and releasing muscle groups. It was developed by Edmund Jacobson in the 1930s.</p>
-
-<h3>How PMR Works</h3>
-<ul>
-  <li>Teaches discrimination between tension and relaxation</li>
-  <li>Activates the parasympathetic nervous system</li>
-  <li>Incompatible with the anxiety response</li>
-  <li>Provides a sense of control over physical state</li>
-</ul>
-
-<h3>Important Distinction</h3>
-<p>PMR is a <strong>skill to build</strong>, not an avoidance strategy. The goal is to:</p>
-<ul>
-  <li>Increase body awareness</li>
-  <li>Develop the ability to release tension at will</li>
-  <li>Use as preparation for exposure, not escape from anxiety</li>
-</ul>
-
-<h3>Basic PMR Procedure</h3>
-<p>For each muscle group:</p>
-<ol>
-  <li>Tense muscles for 5-7 seconds (not to the point of pain)</li>
-  <li>Notice the tension</li>
-  <li>Release quickly and completely</li>
-  <li>Notice the relaxation for 15-20 seconds</li>
-  <li>Note the contrast between tension and relaxation</li>
-</ol>
-
-<h3>Muscle Group Sequence</h3>
-<ol>
-  <li>Dominant hand and forearm (make a fist)</li>
-  <li>Dominant bicep</li>
-  <li>Non-dominant hand and forearm</li>
-  <li>Non-dominant bicep</li>
-  <li>Forehead (raise eyebrows)</li>
-  <li>Eyes and cheeks (squeeze eyes shut)</li>
-  <li>Mouth and jaw (clench teeth, press lips)</li>
-  <li>Neck (press chin to chest)</li>
-  <li>Shoulders (shrug up toward ears)</li>
-  <li>Chest (take deep breath, hold)</li>
-  <li>Abdomen (tighten stomach muscles)</li>
-  <li>Thighs (press legs together)</li>
-  <li>Calves (point toes)</li>
-  <li>Feet (curl toes)</li>
-</ol>
-
-<h3>Teaching Tips</h3>
-<ul>
-  <li>Practice in session first</li>
-  <li>Full sequence takes 15-20 minutes initially</li>
-  <li>Can be shortened with practice</li>
-  <li>Daily practice builds the skill</li>
-  <li>Contraindicated with some medical conditions (check first)</li>
+<h3>The Exposure Hierarchy</h3>
+<p>A list of feared situations ranked from least to most anxiety-provoking (using SUDS: Subjective Units of Distress Scale, 0-100).</p>
+<p>Begin with items that provoke moderate anxiety (SUDS 40-50), ensuring early success while still providing meaningful exposure.</p>
+
+<h3>Dosing Exposure</h3>
+<ul>
+  <li><strong>Duration:</strong> Long enough for learning (typically 30-45+ minutes)</li>
+  <li><strong>Frequency:</strong> More frequent = better outcomes (massed > spaced)</li>
+  <li><strong>Intensity:</strong> Start moderate, progress upward</li>
 </ul>
 `,
 
   'Diaphragmatic Breathing': `
 <h2>Diaphragmatic Breathing for Anxiety</h2>
-<p>Slow, diaphragmatic breathing activates the parasympathetic nervous system and can reduce anxiety symptoms. Like PMR, it should be taught as a skill, not an escape from anxiety.</p>
+<p>Diaphragmatic breathing activates the parasympathetic nervous system, counteracting the fight-or-flight response. It's a foundational skill for anxiety management—but must be used correctly.</p>
 
-<h3>Why Breathing Matters</h3>
-<p>During anxiety:</p>
+<h3>The Physiology</h3>
+<p>Slow, deep breathing stimulates the vagus nerve, which:</p>
 <ul>
-  <li>Breathing becomes rapid and shallow (chest breathing)</li>
-  <li>This can trigger or worsen physical symptoms</li>
-  <li>May lead to hyperventilation</li>
-  <li>Maintains the fight-or-flight response</li>
-</ul>
-
-<p>Slow diaphragmatic breathing:</p>
-<ul>
-  <li>Stimulates the vagus nerve</li>
-  <li>Activates the parasympathetic response</li>
-  <li>Reduces heart rate and blood pressure</li>
-  <li>Signals safety to the brain</li>
+  <li>Decreases heart rate</li>
+  <li>Lowers blood pressure</li>
+  <li>Reduces cortisol levels</li>
+  <li>Activates the relaxation response</li>
 </ul>
 
 <h3>Teaching Diaphragmatic Breathing</h3>
-<p><strong>Position:</strong> Seated or lying down comfortably</p>
-<p><strong>Hand placement:</strong> One hand on chest, one on abdomen</p>
+<p><strong>Position:</strong> Sitting or lying comfortably</p>
+<p><strong>Hand placement:</strong> One hand on chest, one on belly</p>
 <p><strong>Goal:</strong> Belly hand rises; chest hand stays relatively still</p>
 
 <p><strong>Basic technique:</strong></p>
@@ -2112,14 +585,8 @@ Be willing to give to get. Ask for alternative solutions. What can you offer?</p
   <li>Expecting immediate results</li>
 </ul>
 
-<h3>Integration</h3>
-<p>Use diaphragmatic breathing:</p>
-<ul>
-  <li>As regular practice (daily, multiple times)</li>
-  <li>Before potentially anxious situations</li>
-  <li>During exposure to help stay in the window of tolerance</li>
-  <li>NOT as escape from anxiety or avoidance of exposure</li>
-</ul>
+<h3>Important Caution</h3>
+<p>Breathing techniques should NOT be used as avoidance or escape from anxiety during exposure therapy. They are a coping tool for general stress management, not a safety behavior during exposures.</p>
 `,
 
   'How to Do Exposure Therapy': `
@@ -2180,11 +647,1524 @@ Be willing to give to get. Ask for alternative solutions. What can you offer?</p
 
 <h3>Key Success Factors</h3>
 <ul>
-  <li>Sufficient duration (long enough for habituation)</li>
+  <li>Sufficient duration (long enough for learning)</li>
   <li>Repetition (multiple trials)</li>
   <li>No safety behaviors</li>
   <li>Variability (different contexts)</li>
   <li>Expectancy violation (focusing on what was learned)</li>
+</ul>
+`,
+
+  // ===== SUICIDE ASSESSMENT AND SAFETY PLANNING =====
+  'Suicide: Facts and Myths': `
+<h2>Understanding Suicide: Separating Fact from Fiction</h2>
+<p>Effective suicide assessment begins with accurate knowledge. Many widely held beliefs about suicide are myths that can interfere with identification and intervention.</p>
+
+<h3>Common Myths vs. Facts</h3>
+
+<p><strong>Myth:</strong> Asking about suicide plants the idea or increases risk.<br>
+<strong>Fact:</strong> Research consistently shows that asking about suicide does NOT increase risk. In fact, asking directly can provide relief and open the door to help-seeking.</p>
+
+<p><strong>Myth:</strong> People who talk about suicide are just seeking attention.<br>
+<strong>Fact:</strong> Most people who die by suicide have communicated their intent in some way. All suicide talk should be taken seriously.</p>
+
+<p><strong>Myth:</strong> Suicide happens without warning.<br>
+<strong>Fact:</strong> Most suicidal individuals give warning signs. The challenge is recognizing and responding to them.</p>
+
+<p><strong>Myth:</strong> Once someone is suicidal, they will always be suicidal.<br>
+<strong>Fact:</strong> Suicidal crises are often time-limited. With appropriate intervention, most people recover and do not go on to die by suicide.</p>
+
+<p><strong>Myth:</strong> Only people with mental illness die by suicide.<br>
+<strong>Fact:</strong> While mental illness is a risk factor, not everyone who dies by suicide has a diagnosable condition. Life circumstances, access to means, and acute stressors all play roles.</p>
+
+<h3>Key Statistics</h3>
+<ul>
+  <li>Suicide is the 10th leading cause of death in the United States</li>
+  <li>For every suicide death, there are approximately 25 attempts</li>
+  <li>90% of people who survive a suicide attempt do not go on to die by suicide</li>
+  <li>Access to lethal means is a critical risk factor</li>
+</ul>
+
+<h3>The Importance of Accurate Knowledge</h3>
+<p>Clinicians who hold myths about suicide may fail to ask about it, minimize disclosures, or miss opportunities for intervention. Evidence-based practice requires replacing myths with facts.</p>
+`,
+
+  'How to Ask About Suicide': `
+<h2>Directly Asking About Suicide</h2>
+<p>Asking about suicide is a core clinical skill. Research shows that direct, compassionate inquiry is safe and necessary for accurate assessment.</p>
+
+<h3>When to Ask</h3>
+<p>Consider asking about suicide when clients present with:</p>
+<ul>
+  <li>Depression or hopelessness</li>
+  <li>Recent significant losses</li>
+  <li>Substance use problems</li>
+  <li>History of trauma</li>
+  <li>Previous suicide attempts</li>
+  <li>Statements about being a burden or wanting to escape</li>
+  <li>Giving away possessions</li>
+  <li>Sudden calmness after a period of depression</li>
+</ul>
+
+<h3>How to Ask: A Graduated Approach</h3>
+<p><strong>Step 1: Normalize and transition</strong></p>
+<p>"When people are feeling as overwhelmed as you've described, they sometimes have thoughts of suicide. Has that been happening for you?"</p>
+
+<p><strong>Step 2: Ask directly</strong></p>
+<p>"Are you having thoughts of suicide?" or "Are you thinking about killing yourself?"</p>
+<p>Use clear, direct language. Avoid euphemisms like "hurt yourself" which can be misunderstood.</p>
+
+<p><strong>Step 3: Explore the thoughts</strong></p>
+<ul>
+  <li>Frequency: "How often do these thoughts come?"</li>
+  <li>Intensity: "How strong are these thoughts?"</li>
+  <li>Duration: "How long do they last?"</li>
+  <li>Plan: "Have you thought about how you would do it?"</li>
+  <li>Access: "Do you have access to [method]?"</li>
+  <li>Intent: "Do you intend to act on these thoughts?"</li>
+</ul>
+
+<h3>Responding to Disclosure</h3>
+<ul>
+  <li>Stay calm and maintain connection</li>
+  <li>Thank them for trusting you with this information</li>
+  <li>Express concern without panic</li>
+  <li>Move into collaborative safety planning</li>
+</ul>
+
+<h3>What NOT to Do</h3>
+<ul>
+  <li>Don't promise unconditional confidentiality</li>
+  <li>Don't express shock or judgment</li>
+  <li>Don't minimize ("You have so much to live for")</li>
+  <li>Don't debate whether suicide is right or wrong</li>
+</ul>
+`,
+
+  'Columbia Protocol (C-SSRS)': `
+<h2>The Columbia Suicide Severity Rating Scale</h2>
+<p>The Columbia Protocol (C-SSRS) is an evidence-based tool for assessing suicide risk. It is widely used in clinical, research, and community settings and is recommended by the FDA, CDC, and numerous professional organizations.</p>
+
+<h3>Structure of the C-SSRS</h3>
+<p>The C-SSRS assesses two main domains:</p>
+
+<p><strong>1. Suicidal Ideation (5 types, increasing severity):</strong></p>
+<ol>
+  <li>Wish to be dead</li>
+  <li>Non-specific active suicidal thoughts</li>
+  <li>Active suicidal ideation with any methods (not plan) without intent to act</li>
+  <li>Active suicidal ideation with some intent to act, without specific plan</li>
+  <li>Active suicidal ideation with specific plan and intent</li>
+</ol>
+
+<p><strong>2. Suicidal Behavior (4 types):</strong></p>
+<ul>
+  <li>Actual attempt</li>
+  <li>Interrupted attempt</li>
+  <li>Aborted attempt</li>
+  <li>Preparatory acts or behavior</li>
+</ul>
+
+<h3>Intensity of Ideation</h3>
+<p>For the most severe ideation endorsed, assess:</p>
+<ul>
+  <li>Frequency</li>
+  <li>Duration</li>
+  <li>Controllability</li>
+  <li>Deterrents</li>
+  <li>Reasons for ideation</li>
+</ul>
+
+<h3>Using the C-SSRS in Practice</h3>
+<ul>
+  <li>Available in multiple versions (screening, baseline, since last visit)</li>
+  <li>Can be administered by trained non-clinicians</li>
+  <li>Takes approximately 5-10 minutes</li>
+  <li>Free to use with training</li>
+</ul>
+
+<h3>Interpreting Results</h3>
+<p>Higher scores on ideation and any suicidal behavior indicate higher risk. However, the C-SSRS is a tool to inform clinical judgment, not replace it. Consider results alongside other risk and protective factors.</p>
+
+<h3>Training Requirements</h3>
+<p>Free training is available at cssrs.columbia.edu. Training covers administration, scoring, and integration into clinical workflows.</p>
+`,
+
+  'Stanley-Brown Safety Planning Intervention': `
+<h2>The Stanley-Brown Safety Planning Intervention</h2>
+<p>The Safety Planning Intervention (SPI), developed by Barbara Stanley and Gregory Brown, is a brief, evidence-based intervention that has been shown to reduce suicide attempts and increase treatment engagement.</p>
+
+<h3>What Is a Safety Plan?</h3>
+<p>A safety plan is a prioritized, written list of coping strategies and resources that individuals can use during a suicidal crisis. It is developed collaboratively between the clinician and client.</p>
+
+<h3>The Six Steps</h3>
+
+<p><strong>Step 1: Warning Signs</strong></p>
+<p>Identify personal warning signs that a crisis may be developing (thoughts, feelings, behaviors, situations). Example: "Isolating myself, thinking I'm a burden, drinking alone."</p>
+
+<p><strong>Step 2: Internal Coping Strategies</strong></p>
+<p>Things the person can do alone to distract from suicidal thoughts without contacting others. Example: "Go for a walk, play guitar, take a shower."</p>
+
+<p><strong>Step 3: Social Contacts for Distraction</strong></p>
+<p>People and social settings that provide distraction (not necessarily disclosing the crisis). Example: "Call my brother, go to the coffee shop."</p>
+
+<p><strong>Step 4: People to Ask for Help</strong></p>
+<p>Specific people the individual can tell they are in crisis and ask for help. Include contact information.</p>
+
+<p><strong>Step 5: Professionals and Agencies</strong></p>
+<p>Professional resources including therapist, crisis lines (988), emergency services. Include specific names and numbers.</p>
+
+<p><strong>Step 6: Making the Environment Safe</strong></p>
+<p>Reducing access to lethal means, especially the identified method. This is critical and often overlooked.</p>
+
+<h3>Implementation Tips</h3>
+<ul>
+  <li>Complete collaboratively, not prescribed</li>
+  <li>Be specific (names, numbers, concrete strategies)</li>
+  <li>Keep it brief (fits on a wallet card)</li>
+  <li>Review and update regularly</li>
+  <li>Client keeps a copy; clinician documents</li>
+</ul>
+`,
+
+  'Reducing Access to Lethal Means': `
+<h2>Lethal Means Counseling</h2>
+<p>Reducing access to lethal means is one of the most effective suicide prevention strategies. Research consistently shows that limiting access to a suicidal person's intended method saves lives.</p>
+
+<h3>Why Means Restriction Works</h3>
+<ul>
+  <li>Suicidal crises are often brief and impulsive</li>
+  <li>Many suicide attempts occur within minutes of the decision</li>
+  <li>If the chosen method is unavailable, most people do not substitute another method</li>
+  <li>90% of attempt survivors do not go on to die by suicide</li>
+</ul>
+
+<h3>The CALM Approach</h3>
+<p>Counseling on Access to Lethal Means (CALM) provides a framework:</p>
+
+<p><strong>C - Consider whether to ask about access</strong></p>
+<p>Ask about means access for anyone with suicidal ideation or risk factors.</p>
+
+<p><strong>A - Ask about access</strong></p>
+<p>"Do you have access to firearms/medications/other means?" Be specific to methods they've mentioned or that are common.</p>
+
+<p><strong>L - Listen and respond</strong></p>
+<p>Understand their relationship to the means. For firearms, recognize cultural and personal significance.</p>
+
+<p><strong>M - Make a plan to reduce access</strong></p>
+<p>Collaborate on temporary restriction during the crisis period.</p>
+
+<h3>Methods of Means Restriction</h3>
+
+<p><strong>Firearms:</strong></p>
+<ul>
+  <li>Voluntary, temporary off-site storage (friend, family, gun shop, police)</li>
+  <li>Gun safes with combination held by trusted person</li>
+  <li>Trigger locks, cable locks</li>
+  <li>Separate storage of ammunition</li>
+</ul>
+
+<p><strong>Medications:</strong></p>
+<ul>
+  <li>Limit quantities prescribed</li>
+  <li>Trusted person holds medications</li>
+  <li>Locked medication boxes</li>
+  <li>Safe disposal of unused medications</li>
+</ul>
+
+<h3>Having the Conversation</h3>
+<p>Approach with curiosity, not judgment. Frame as temporary, collaborative, and part of safety planning. Document the conversation and plan.</p>
+`,
+
+  'Managing Suicidal Clients': `
+<h2>Ongoing Management of Suicidal Clients</h2>
+<p>Managing suicidal clients extends beyond crisis intervention. Effective ongoing care requires systematic approaches, clear documentation, and attention to clinician well-being.</p>
+
+<h3>Treatment Framework</h3>
+
+<p><strong>Phase 1: Acute Crisis</strong></p>
+<ul>
+  <li>Ensure immediate safety</li>
+  <li>Complete safety plan</li>
+  <li>Means restriction</li>
+  <li>Increase session frequency</li>
+  <li>Coordinate with supports</li>
+</ul>
+
+<p><strong>Phase 2: Active Treatment</strong></p>
+<ul>
+  <li>Address underlying conditions (depression, trauma, substance use)</li>
+  <li>Build reasons for living</li>
+  <li>Develop distress tolerance skills</li>
+  <li>Regular safety plan review</li>
+  <li>Monitor warning signs</li>
+</ul>
+
+<p><strong>Phase 3: Maintenance</strong></p>
+<ul>
+  <li>Relapse prevention</li>
+  <li>Update safety plans for new circumstances</li>
+  <li>Gradual reduction in session frequency</li>
+  <li>Clear re-entry pathway if crisis recurs</li>
+</ul>
+
+<h3>Documentation Best Practices</h3>
+<ul>
+  <li>Document all suicide assessments, including negative screens</li>
+  <li>Record risk factors, protective factors, and clinical reasoning</li>
+  <li>Note safety plan completion and updates</li>
+  <li>Document means restriction conversations</li>
+  <li>Record consultation with colleagues</li>
+</ul>
+
+<h3>When to Consult or Refer</h3>
+<ul>
+  <li>Uncertainty about level of care needed</li>
+  <li>Client not improving or escalating</li>
+  <li>Need for medication evaluation</li>
+  <li>Countertransference interfering with care</li>
+</ul>
+
+<h3>Clinician Self-Care</h3>
+<p>Working with suicidal clients takes a toll. Essential practices include regular supervision, peer support, personal therapy, and realistic expectations about outcomes.</p>
+`,
+
+  // ===== CULTURAL HUMILITY =====
+  'What is Cultural Humility?': `
+<h2>Cultural Humility: A Lifelong Commitment</h2>
+<p>Cultural humility represents a shift from the concept of cultural competence. While competence implies a destination that can be reached, humility recognizes that learning about diverse cultures is a lifelong process.</p>
+
+<h3>Defining Cultural Humility</h3>
+<p>Tervalon and Murray-Garcia (1998) introduced cultural humility as encompassing three key dimensions:</p>
+<ul>
+  <li><strong>Lifelong learning and self-reflection:</strong> Continuously examining one's own cultural background and biases</li>
+  <li><strong>Recognizing power imbalances:</strong> Acknowledging the inherent power differential in clinical relationships</li>
+  <li><strong>Institutional accountability:</strong> Working to address systemic inequities</li>
+</ul>
+
+<h3>Cultural Humility vs. Cultural Competence</h3>
+<ul>
+  <li><strong>Cultural Competence:</strong> Destination / Expert stance / Knowledge acquisition / Learning about "them"</li>
+  <li><strong>Cultural Humility:</strong> Journey / Learner stance / Self-reflection / Examining ourselves</li>
+</ul>
+
+<h3>The Three Pillars</h3>
+
+<p><strong>1. Self-Awareness</strong></p>
+<p>Understanding your own cultural identity, privileges, biases, and blind spots. This is ongoing work, not a one-time achievement.</p>
+
+<p><strong>2. Respectful Partnerships</strong></p>
+<p>Approaching clients as experts on their own experience. The client is the teacher about their culture; you are the learner.</p>
+
+<p><strong>3. Systemic Advocacy</strong></p>
+<p>Working to change systems that perpetuate inequity, not just individual interactions.</p>
+
+<h3>Why Cultural Humility Matters</h3>
+<p>Mental health disparities persist across racial, ethnic, and cultural groups. Cultural humility improves therapeutic alliance, treatment engagement, and outcomes for diverse populations.</p>
+`,
+
+  'Understanding Implicit Bias': `
+<h2>Implicit Bias in Clinical Practice</h2>
+<p>Implicit biases are unconscious attitudes or stereotypes that affect our understanding, actions, and decisions. All humans have them—the question is how we respond to that reality.</p>
+
+<h3>What Is Implicit Bias?</h3>
+<p>Implicit biases are:</p>
+<ul>
+  <li>Unconscious and automatic</li>
+  <li>Different from explicit beliefs we consciously hold</li>
+  <li>Shaped by cultural exposure and lived experience</li>
+  <li>Measurable (e.g., Implicit Association Test)</li>
+  <li>Changeable with awareness and effort</li>
+</ul>
+
+<h3>How Implicit Bias Affects Clinical Work</h3>
+<p>Research shows implicit bias can influence:</p>
+<ul>
+  <li>Diagnostic decisions</li>
+  <li>Treatment recommendations</li>
+  <li>Pain assessment and management</li>
+  <li>Perception of client credibility</li>
+  <li>Therapeutic alliance quality</li>
+  <li>Session dynamics and engagement</li>
+</ul>
+
+<h3>Common Examples in Mental Health</h3>
+<ul>
+  <li>Underdiagnosing depression in Black men</li>
+  <li>Overdiagnosing psychotic disorders in people of color</li>
+  <li>Attributing symptoms to culture rather than pathology (or vice versa)</li>
+  <li>Assumptions about family dynamics based on ethnicity</li>
+</ul>
+
+<h3>Strategies for Addressing Implicit Bias</h3>
+
+<p><strong>Awareness:</strong> Take the Implicit Association Test (IAT) to understand your biases</p>
+
+<p><strong>Slow down:</strong> Implicit bias is more influential under time pressure</p>
+
+<p><strong>Individuation:</strong> Focus on the individual, not group membership</p>
+
+<p><strong>Counter-stereotyping:</strong> Actively seek examples that counter stereotypes</p>
+
+<p><strong>Perspective-taking:</strong> Imagine experiences from the client's perspective</p>
+
+<p><strong>Accountability:</strong> Seek feedback, consultation, and supervision</p>
+`,
+
+  'Intersectionality and Mental Health': `
+<h2>Intersectionality in Clinical Practice</h2>
+<p>Intersectionality, a term coined by Kimberlé Crenshaw, describes how multiple social identities (race, gender, class, sexuality, disability, etc.) intersect to create unique experiences of privilege and oppression.</p>
+
+<h3>Understanding Intersectionality</h3>
+<p>Key principles:</p>
+<ul>
+  <li>Identities do not exist in isolation—they interact and compound</li>
+  <li>A Black woman's experience is not simply "Black + woman" but something unique</li>
+  <li>Systems of oppression (racism, sexism, classism) are interconnected</li>
+  <li>Both privilege and marginalization can coexist in one person</li>
+</ul>
+
+<h3>Clinical Relevance</h3>
+<p>Intersectionality affects:</p>
+<ul>
+  <li><strong>Access to care:</strong> Multiple barriers compound (cost, transportation, stigma)</li>
+  <li><strong>Help-seeking:</strong> Cultural messages about mental health vary</li>
+  <li><strong>Presentation:</strong> Symptoms are expressed through cultural frameworks</li>
+  <li><strong>Stressors:</strong> Discrimination at multiple intersections compounds stress</li>
+  <li><strong>Protective factors:</strong> Community support may vary by identity</li>
+</ul>
+
+<h3>Application in Therapy</h3>
+
+<p><strong>Assessment:</strong> Explore multiple dimensions of identity and their interactions</p>
+
+<p><strong>Case conceptualization:</strong> Consider how intersecting identities shape the presenting problem</p>
+
+<p><strong>Treatment planning:</strong> Address stressors related to marginalization while building on culturally-specific strengths</p>
+
+<p><strong>Therapeutic relationship:</strong> Acknowledge identity differences and similarities between you and the client</p>
+
+<h3>Avoiding Pitfalls</h3>
+<ul>
+  <li>Don't assume which identity is most salient—ask</li>
+  <li>Avoid reducing clients to their identities</li>
+  <li>Recognize within-group diversity</li>
+  <li>Hold space for the complexity of lived experience</li>
+</ul>
+`,
+
+  'Microaggressions in Therapy': `
+<h2>Understanding and Addressing Microaggressions</h2>
+<p>Microaggressions are brief, commonplace exchanges that communicate hostile, derogatory, or negative messages to members of marginalized groups. They can occur in therapy—including from the therapist.</p>
+
+<h3>Types of Microaggressions</h3>
+
+<p><strong>Microassaults:</strong> Explicit, intentional discrimination (less common in therapy settings)</p>
+
+<p><strong>Microinsults:</strong> Subtle communications that demean a person's identity</p>
+<ul>
+  <li>"You're so articulate" (implying surprise)</li>
+  <li>"Where are you really from?"</li>
+  <li>Assuming a client's partner's gender</li>
+</ul>
+
+<p><strong>Microinvalidations:</strong> Communications that exclude or dismiss</p>
+<ul>
+  <li>"I don't see color"</li>
+  <li>"Everyone struggles; it's not about race"</li>
+  <li>Assuming a presenting problem is unrelated to discrimination</li>
+</ul>
+
+<h3>Impact on Clients</h3>
+<p>Research shows microaggressions:</p>
+<ul>
+  <li>Damage therapeutic alliance</li>
+  <li>Increase dropout from therapy</li>
+  <li>Cause cumulative psychological harm</li>
+  <li>Recreate dynamics from the client's broader life</li>
+</ul>
+
+<h3>When You Commit a Microaggression</h3>
+<ol>
+  <li>Notice (client's response, your own words)</li>
+  <li>Pause and take responsibility</li>
+  <li>Apologize genuinely (not defensively)</li>
+  <li>Learn and change behavior</li>
+  <li>Process in supervision</li>
+</ol>
+
+<h3>When Clients Report Microaggressions</h3>
+<ul>
+  <li>Validate the experience</li>
+  <li>Explore impact without minimizing</li>
+  <li>Avoid "devil's advocate" responses</li>
+  <li>Support the client's response and coping</li>
+  <li>Connect to systemic context when appropriate</li>
+</ul>
+`,
+
+  'Culturally Responsive Therapy': `
+<h2>Culturally Responsive Therapy</h2>
+<p>Culturally responsive therapy adapts evidence-based practices to honor clients' cultural contexts while maintaining therapeutic effectiveness.</p>
+
+<h3>Core Elements</h3>
+
+<p><strong>1. Therapist Cultural Self-Awareness</strong></p>
+<p>Know your own cultural background, values, and biases. Recognize how your identity affects the therapeutic relationship.</p>
+
+<p><strong>2. Knowledge of Client's Cultural Context</strong></p>
+<p>Learn about—but don't stereotype—cultural backgrounds. The client is the expert on their own experience.</p>
+
+<p><strong>3. Culturally Appropriate Skills</strong></p>
+<p>Adapt interventions, communication styles, and treatment goals to fit cultural values.</p>
+
+<h3>Adapting Evidence-Based Practices</h3>
+<p>Cultural adaptation involves modifying:</p>
+<ul>
+  <li><strong>Language:</strong> Translation, idioms, metaphors</li>
+  <li><strong>Content:</strong> Culturally relevant examples and scenarios</li>
+  <li><strong>Concepts:</strong> Frame interventions in culturally resonant terms</li>
+  <li><strong>Goals:</strong> Align with cultural values (e.g., collectivism vs. individualism)</li>
+  <li><strong>Methods:</strong> Include culturally appropriate practices (e.g., family involvement, spiritual resources)</li>
+</ul>
+
+<h3>Assessment Considerations</h3>
+<ul>
+  <li>Use culturally validated assessment tools when available</li>
+  <li>Consider cultural context when interpreting results</li>
+  <li>Assess cultural explanatory models of illness</li>
+  <li>Evaluate acculturation and cultural identity</li>
+</ul>
+
+<h3>Building Culturally Responsive Alliance</h3>
+<ul>
+  <li>Address culture early and explicitly</li>
+  <li>Ask about cultural identity and its importance</li>
+  <li>Invite feedback about cultural fit of treatment</li>
+  <li>Be willing to adapt your approach</li>
+</ul>
+`,
+
+  'Working with Interpreters': `
+<h2>Effective Use of Interpreters in Therapy</h2>
+<p>When working with clients whose primary language differs from yours, interpreters can bridge communication gaps—but this triad relationship requires specific skills.</p>
+
+<h3>Types of Interpretation</h3>
+
+<p><strong>Simultaneous:</strong> Interpreter speaks at same time as speaker (used in conferences)</p>
+
+<p><strong>Consecutive:</strong> Speaker pauses for interpretation (preferred in therapy)</p>
+
+<p><strong>Sight translation:</strong> Written documents translated verbally</p>
+
+<h3>Choosing an Interpreter</h3>
+
+<p><strong>Professional interpreters (preferred):</strong></p>
+<ul>
+  <li>Trained in mental health terminology</li>
+  <li>Bound by confidentiality</li>
+  <li>Understand role boundaries</li>
+</ul>
+
+<p><strong>Avoid using:</strong></p>
+<ul>
+  <li>Children (role reversal, inappropriate content exposure)</li>
+  <li>Family members (dual relationships, confidentiality issues)</li>
+  <li>Untrained bilingual staff (accuracy and boundary concerns)</li>
+</ul>
+
+<h3>Pre-Session Briefing</h3>
+<p>Before seeing the client, meet with the interpreter to discuss:</p>
+<ul>
+  <li>General nature of the session</li>
+  <li>Your expectations for their role</li>
+  <li>How to handle emotional content</li>
+  <li>Confidentiality requirements</li>
+  <li>Positioning in the room</li>
+</ul>
+
+<h3>During the Session</h3>
+<ul>
+  <li>Speak directly to the client, not the interpreter</li>
+  <li>Use first person ("How are you feeling?" not "Ask her how she's feeling")</li>
+  <li>Keep statements brief for accurate interpretation</li>
+  <li>Avoid jargon and idioms</li>
+  <li>Allow time for interpretation</li>
+  <li>Watch client's nonverbal responses</li>
+</ul>
+
+<h3>Post-Session Debriefing</h3>
+<p>Check in with the interpreter about cultural observations, emotional impact, and any concerns about accuracy or the process.</p>
+`,
+
+  // ===== CLINICAL DOCUMENTATION =====
+  'Why Documentation Matters': `
+<h2>The Importance of Clinical Documentation</h2>
+<p>Documentation is often viewed as a burden, but effective documentation serves critical functions that protect clients, clinicians, and the integrity of treatment.</p>
+
+<h3>Purposes of Documentation</h3>
+
+<p><strong>Clinical continuity:</strong></p>
+<ul>
+  <li>Tracks client progress over time</li>
+  <li>Informs treatment planning</li>
+  <li>Facilitates care coordination</li>
+  <li>Enables covering clinicians to provide appropriate care</li>
+</ul>
+
+<p><strong>Legal protection:</strong></p>
+<ul>
+  <li>Demonstrates standard of care</li>
+  <li>Documents clinical decision-making</li>
+  <li>Provides evidence if care is questioned</li>
+  <li>"If it isn't documented, it didn't happen"</li>
+</ul>
+
+<p><strong>Communication:</strong></p>
+<ul>
+  <li>Between treatment team members</li>
+  <li>To referral sources</li>
+  <li>For utilization review</li>
+  <li>In response to records requests</li>
+</ul>
+
+<p><strong>Reimbursement:</strong></p>
+<ul>
+  <li>Supports medical necessity</li>
+  <li>Justifies level of care</li>
+  <li>Required for insurance payment</li>
+</ul>
+
+<h3>Principles of Good Documentation</h3>
+<ul>
+  <li><strong>Timely:</strong> Complete notes promptly while details are fresh</li>
+  <li><strong>Accurate:</strong> Reflect what actually occurred</li>
+  <li><strong>Objective:</strong> Focus on observable behaviors, use client quotes</li>
+  <li><strong>Relevant:</strong> Include clinically significant information</li>
+  <li><strong>Concise:</strong> Avoid unnecessary detail</li>
+  <li><strong>Professional:</strong> Write as if anyone might read it</li>
+</ul>
+
+<h3>The Documentation Mindset</h3>
+<p>Think of documentation not as paperwork but as a clinical tool. Good notes help you think about the case and track the work over time.</p>
+`,
+
+  'Writing Progress Notes - SOAP Format': `
+<h2>The SOAP Format for Progress Notes</h2>
+<p>SOAP notes provide a structured format that organizes clinical information consistently and comprehensively.</p>
+
+<h3>S - Subjective</h3>
+<p>What the client reports—their perspective, symptoms, concerns.</p>
+<ul>
+  <li>Chief complaint or focus of session</li>
+  <li>Client's reported symptoms, mood, experiences</li>
+  <li>Direct quotes when illustrative</li>
+  <li>Progress on homework or between-session events</li>
+</ul>
+<p><em>Example: "Client reports feeling 'more hopeful' this week. States she used coping skills during a conflict with her mother and 'it actually worked.' Denies SI/HI."</em></p>
+
+<h3>O - Objective</h3>
+<p>What you observe—factual, behavioral, measurable.</p>
+<ul>
+  <li>Appearance, behavior, affect</li>
+  <li>Mental status observations</li>
+  <li>Assessment scores if administered</li>
+  <li>Interventions used in session</li>
+</ul>
+<p><em>Example: "Client was casually dressed and well-groomed. Affect was brighter than previous sessions, with congruent mood. Engaged actively in cognitive restructuring exercise."</em></p>
+
+<h3>A - Assessment</h3>
+<p>Your clinical interpretation and judgment.</p>
+<ul>
+  <li>Progress toward treatment goals</li>
+  <li>Current functioning and risk level</li>
+  <li>Clinical impressions</li>
+  <li>Changes to diagnosis if applicable</li>
+</ul>
+<p><em>Example: "Client demonstrates improved distress tolerance and is meeting treatment goals. Risk remains low. Depression symptoms decreasing."</em></p>
+
+<h3>P - Plan</h3>
+<p>What happens next.</p>
+<ul>
+  <li>Next session date/frequency</li>
+  <li>Homework assignments</li>
+  <li>Treatment plan updates</li>
+  <li>Referrals or coordination needed</li>
+</ul>
+<p><em>Example: "Continue weekly sessions. Client will practice STOPP technique daily. Will reassess PHQ-9 next session. Continue current treatment plan."</em></p>
+`,
+
+  'Effective Treatment Planning': `
+<h2>Creating Effective Treatment Plans</h2>
+<p>A treatment plan is a roadmap for therapy—documenting what you're treating, how you're treating it, and how you'll know when you're done.</p>
+
+<h3>Components of a Treatment Plan</h3>
+
+<p><strong>1. Problem List</strong></p>
+<p>Specific, behaviorally-defined problems that will be addressed in treatment. Link to diagnosis when applicable.</p>
+<p><em>Example: "Depressed mood with associated sleep disturbance, anhedonia, and difficulty concentrating, impacting work performance."</em></p>
+
+<p><strong>2. Goals</strong></p>
+<p>Broad statements of desired outcomes. Should reflect client's priorities.</p>
+<p><em>Example: "Reduce depression symptoms and improve daily functioning."</em></p>
+
+<p><strong>3. Objectives</strong></p>
+<p>SMART objectives: Specific, Measurable, Achievable, Relevant, Time-bound</p>
+<p><em>Example: "Client will report PHQ-9 score below 10 within 12 weeks."</em></p>
+<p><em>"Client will return to sleeping 7 hours/night within 8 weeks."</em></p>
+
+<p><strong>4. Interventions</strong></p>
+<p>Specific therapeutic techniques you will use.</p>
+<p><em>Example: "Cognitive restructuring for negative automatic thoughts. Behavioral activation to increase pleasant activities. Sleep hygiene psychoeducation."</em></p>
+
+<h3>Best Practices</h3>
+<ul>
+  <li>Develop collaboratively with the client</li>
+  <li>Use the client's language when possible</li>
+  <li>Review and update regularly (typically every 90 days)</li>
+  <li>Document progress toward objectives in session notes</li>
+  <li>Adjust when goals are met or treatment needs change</li>
+</ul>
+
+<h3>Common Pitfalls</h3>
+<ul>
+  <li>Vague goals ("Feel better")</li>
+  <li>Unmeasurable objectives</li>
+  <li>Plans that don't match what you actually do in sessions</li>
+  <li>Failing to update when circumstances change</li>
+</ul>
+`,
+
+  'Documenting Suicidal Ideation': `
+<h2>Documentation for Suicidal Clients</h2>
+<p>When working with suicidal clients, documentation is especially critical. Thorough records protect clients by ensuring continuity of care and protect clinicians by demonstrating sound clinical decision-making.</p>
+
+<h3>What to Document</h3>
+
+<p><strong>Risk Assessment:</strong></p>
+<ul>
+  <li>Method of assessment (interview, standardized tool)</li>
+  <li>Specific risk factors present</li>
+  <li>Protective factors identified</li>
+  <li>Ideation (frequency, intensity, duration, plan, intent, access to means)</li>
+  <li>History of attempts</li>
+  <li>Current stressors</li>
+</ul>
+
+<p><strong>Clinical Decision-Making:</strong></p>
+<ul>
+  <li>Your assessment of risk level (low, moderate, high)</li>
+  <li>Rationale for your conclusions</li>
+  <li>Consultation obtained (with whom, their input)</li>
+  <li>Options considered and why chosen/rejected</li>
+</ul>
+
+<p><strong>Interventions:</strong></p>
+<ul>
+  <li>Safety plan completed (include copy in record)</li>
+  <li>Means restriction discussion and outcome</li>
+  <li>Crisis resources provided</li>
+  <li>Contacts made (family, supports, other providers)</li>
+  <li>Level of care decisions and rationale</li>
+</ul>
+
+<h3>Sample Documentation Language</h3>
+<p><em>"Conducted suicide risk assessment. Client endorsed passive SI without plan or intent. Denied history of attempts. Protective factors include supportive spouse, religious beliefs against suicide, and future-oriented thinking regarding daughter's graduation. C-SSRS score indicates low-moderate risk. Collaboratively developed safety plan (copy in chart). Discussed means restriction; client agreed to have spouse secure medications. Client contracted to use safety plan if thoughts intensify and to attend scheduled session Thursday. No hospitalization indicated at this time. Will reassess at next session. Consulted with Dr. Smith who concurred with outpatient management."</em></p>
+
+<h3>Key Principles</h3>
+<ul>
+  <li>Document every contact with a suicidal client</li>
+  <li>Show your clinical reasoning, not just conclusions</li>
+  <li>Document even when client denies SI ("denies SI/HI")</li>
+  <li>Update safety plans in writing</li>
+</ul>
+`,
+
+  'Reducing Documentation Burden': `
+<h2>Efficient Documentation Strategies</h2>
+<p>Documentation burden is a leading cause of clinician burnout. Developing efficient practices preserves clinical quality while reducing time spent on paperwork.</p>
+
+<h3>Time Management Strategies</h3>
+
+<p><strong>Write notes immediately:</strong></p>
+<ul>
+  <li>Complete notes between sessions when possible</li>
+  <li>Details fade quickly—waiting increases time needed</li>
+  <li>Build in 10 minutes between sessions for documentation</li>
+</ul>
+
+<p><strong>Use templates wisely:</strong></p>
+<ul>
+  <li>Create templates for common note types</li>
+  <li>Customize for each client rather than starting blank</li>
+  <li>But avoid cookie-cutter notes that don't reflect the individual</li>
+</ul>
+
+<p><strong>Dictation and voice-to-text:</strong></p>
+<ul>
+  <li>Speaking is faster than typing for many clinicians</li>
+  <li>Review for accuracy before signing</li>
+</ul>
+
+<h3>Writing Efficiently</h3>
+
+<p><strong>Focus on what matters:</strong></p>
+<ul>
+  <li>Include clinically significant information</li>
+  <li>Skip redundant details</li>
+  <li>Reference rather than repeat (e.g., "Safety plan reviewed—no changes")</li>
+</ul>
+
+<p><strong>Use concise language:</strong></p>
+<ul>
+  <li>Avoid filler phrases</li>
+  <li>Use standard abbreviations appropriately</li>
+  <li>Write in phrases, not complete sentences when appropriate</li>
+</ul>
+
+<p><strong>Know your requirements:</strong></p>
+<ul>
+  <li>Understand what payers and regulators actually require</li>
+  <li>Don't over-document beyond what's needed</li>
+  <li>Different note types have different requirements</li>
+</ul>
+
+<h3>Batch Processing</h3>
+<p>If notes must be completed later, dedicate protected time blocks rather than fragmenting documentation throughout the day.</p>
+
+<h3>Signs of Problem Documentation Practices</h3>
+<ul>
+  <li>Regularly completing notes days later</li>
+  <li>Copy-forwarding without meaningful updates</li>
+  <li>Spending more than 10-15 minutes per progress note</li>
+  <li>Dreading documentation</li>
+</ul>
+`,
+
+  'Psychotherapy Notes Under HIPAA': `
+<h2>Psychotherapy Notes: Special Protections Under HIPAA</h2>
+<p>HIPAA provides special protection for "psychotherapy notes"—but this term has a specific legal meaning that is often misunderstood.</p>
+
+<h3>What ARE Psychotherapy Notes?</h3>
+<p>Under HIPAA, psychotherapy notes are defined as notes that:</p>
+<ul>
+  <li>Document or analyze the contents of conversation during counseling sessions</li>
+  <li>Are separated from the rest of the medical record</li>
+  <li>Are kept by the clinician for their own use</li>
+</ul>
+
+<p>They typically include:</p>
+<ul>
+  <li>Therapist's impressions, hypotheses, and observations</li>
+  <li>Process notes about the therapeutic relationship</li>
+  <li>Details of therapeutic conversations</li>
+</ul>
+
+<h3>What are NOT Psychotherapy Notes?</h3>
+<p>These are part of the regular medical record (not specially protected):</p>
+<ul>
+  <li>Medication management and prescription records</li>
+  <li>Session start/stop times</li>
+  <li>Treatment modalities and frequencies</li>
+  <li>Results of clinical tests</li>
+  <li>Diagnosis, functional status, treatment plan</li>
+  <li>Symptoms, prognosis, progress</li>
+  <li>Standard progress notes (including SOAP notes)</li>
+</ul>
+
+<h3>Special Protections</h3>
+<p>Psychotherapy notes (properly defined) require separate authorization for release and cannot be disclosed:</p>
+<ul>
+  <li>For treatment purposes without authorization</li>
+  <li>For payment or healthcare operations without authorization</li>
+  <li>Most other HIPAA exceptions don't apply</li>
+</ul>
+
+<h3>Practical Implications</h3>
+<ul>
+  <li>If you keep psychotherapy notes, store them separately</li>
+  <li>Your regular progress notes are NOT psychotherapy notes under HIPAA</li>
+  <li>Most clinicians don't keep separate psychotherapy notes</li>
+  <li>When records are subpoenaed, psychotherapy notes may be protectable</li>
+</ul>
+
+<h3>State Laws May Differ</h3>
+<p>Some states have additional protections for mental health records beyond HIPAA. Know your state's requirements.</p>
+`,
+
+  // ===== NAVIGATING ETHICAL DILEMMAS =====
+  'Ethics vs. Law in Therapy': `
+<h2>When Ethics and Law Diverge</h2>
+<p>Ethical practice and legal compliance usually align, but not always. Understanding the relationship between ethics and law helps clinicians navigate complex situations.</p>
+
+<h3>The Relationship Between Ethics and Law</h3>
+
+<p><strong>Four possible scenarios:</strong></p>
+<ol>
+  <li><strong>Ethical AND Legal:</strong> Most clinical situations (treat competently, maintain confidentiality)</li>
+  <li><strong>Ethical but Illegal:</strong> Rare, but possible (e.g., civil disobedience situations)</li>
+  <li><strong>Legal but Unethical:</strong> Law permits but ethics prohibit (e.g., some dual relationships)</li>
+  <li><strong>Unethical AND Illegal:</strong> Clear violations (e.g., sexual contact with clients)</li>
+</ol>
+
+<h3>Key Distinctions</h3>
+
+<p><strong>Laws:</strong></p>
+<ul>
+  <li>Set minimum standards</li>
+  <li>Enforced by government</li>
+  <li>Consequences include fines, imprisonment</li>
+  <li>Vary by jurisdiction</li>
+</ul>
+
+<p><strong>Ethics:</strong></p>
+<ul>
+  <li>Often exceed legal requirements</li>
+  <li>Enforced by professional bodies</li>
+  <li>Consequences include sanctions, license revocation</li>
+  <li>Vary by profession</li>
+</ul>
+
+<h3>When They Conflict</h3>
+<p>General guidance when ethics and law conflict:</p>
+<ul>
+  <li>Ethics codes acknowledge conflicts may occur</li>
+  <li>Make known your commitment to ethics</li>
+  <li>Work to resolve the conflict responsibly</li>
+  <li>Document your reasoning and actions</li>
+  <li>Consult with colleagues, ethics boards, attorneys</li>
+</ul>
+
+<h3>Aspirational vs. Mandatory Standards</h3>
+<p>Ethics codes contain both:</p>
+<ul>
+  <li><strong>Mandatory standards:</strong> Minimum requirements ("Counselors shall...")</li>
+  <li><strong>Aspirational principles:</strong> Ideals to strive for ("Counselors aspire to...")</li>
+</ul>
+<p>When facing dilemmas, both inform decision-making.</p>
+`,
+
+  'Systematic Decision-Making': `
+<h2>Ethical Decision-Making Models</h2>
+<p>When facing ethical dilemmas, systematic approaches lead to better outcomes than intuition alone. Multiple models exist; the key is using a consistent process.</p>
+
+<h3>A Practical Decision-Making Framework</h3>
+
+<p><strong>Step 1: Identify the problem</strong></p>
+<ul>
+  <li>What is the ethical question or dilemma?</li>
+  <li>Who are the stakeholders affected?</li>
+  <li>What values or principles are in tension?</li>
+</ul>
+
+<p><strong>Step 2: Consult resources</strong></p>
+<ul>
+  <li>Professional ethics codes (ACA, APA, NASW, AAMFT)</li>
+  <li>State licensing board regulations</li>
+  <li>Relevant laws (HIPAA, state statutes)</li>
+  <li>Agency policies</li>
+  <li>Professional literature</li>
+</ul>
+
+<p><strong>Step 3: Consider possible courses of action</strong></p>
+<ul>
+  <li>Generate multiple options, not just two</li>
+  <li>Include "do nothing" as an option to evaluate</li>
+  <li>Be creative—there may be solutions you haven't considered</li>
+</ul>
+
+<p><strong>Step 4: Evaluate options</strong></p>
+<p>For each option, consider:</p>
+<ul>
+  <li>Consequences for all stakeholders</li>
+  <li>Consistency with ethical principles</li>
+  <li>Legal implications</li>
+  <li>Would you be comfortable if this decision were public?</li>
+</ul>
+
+<p><strong>Step 5: Consult</strong></p>
+<ul>
+  <li>Supervisors, colleagues, ethics committees</li>
+  <li>Professional liability insurance carrier</li>
+  <li>Document consultation obtained</li>
+</ul>
+
+<p><strong>Step 6: Decide and act</strong></p>
+<p>Choose the best course of action based on your analysis.</p>
+
+<p><strong>Step 7: Document and evaluate</strong></p>
+<p>Record your reasoning and the outcome. Reflect on what you learned.</p>
+`,
+
+  'Confidentiality and Its Limits': `
+<h2>Confidentiality: Foundations and Exceptions</h2>
+<p>Confidentiality is foundational to therapeutic work—but it is not absolute. Understanding both the rule and its exceptions is essential for ethical practice.</p>
+
+<h3>Why Confidentiality Matters</h3>
+<ul>
+  <li>Creates safety for disclosure</li>
+  <li>Essential for therapeutic alliance</li>
+  <li>Protects client dignity and autonomy</li>
+  <li>Required by ethics codes and law</li>
+</ul>
+
+<h3>Legal Protections</h3>
+<ul>
+  <li><strong>HIPAA:</strong> Federal floor for privacy protection</li>
+  <li><strong>State laws:</strong> May provide additional protections</li>
+  <li><strong>Privileged communication:</strong> Protection in legal proceedings (varies by state and profession)</li>
+</ul>
+
+<h3>Exceptions to Confidentiality</h3>
+
+<p><strong>Mandated reporting:</strong></p>
+<ul>
+  <li>Child abuse/neglect (all states)</li>
+  <li>Elder/vulnerable adult abuse (most states)</li>
+  <li>Requirements vary by state—know yours</li>
+</ul>
+
+<p><strong>Duty to warn/protect:</strong></p>
+<ul>
+  <li>When client poses imminent danger to identifiable third party</li>
+  <li>Varies significantly by state (duty vs. permission)</li>
+  <li>May include duty to warn, duty to protect, or both</li>
+</ul>
+
+<p><strong>Client consent:</strong></p>
+<ul>
+  <li>Properly authorized releases</li>
+  <li>Must be informed, voluntary, competent</li>
+</ul>
+
+<p><strong>Court orders:</strong></p>
+<ul>
+  <li>Valid subpoenas (consult before complying)</li>
+  <li>Court-ordered evaluations</li>
+</ul>
+
+<p><strong>Other exceptions:</strong></p>
+<ul>
+  <li>Billing/insurance (minimum necessary)</li>
+  <li>Supervision and consultation</li>
+  <li>Emergencies</li>
+</ul>
+
+<h3>Informed Consent About Confidentiality</h3>
+<p>At the outset of treatment, explain both the protection and its limits. Documentation should reflect this discussion.</p>
+`,
+
+  'Managing Boundaries in Therapy': `
+<h2>Professional Boundaries in Clinical Practice</h2>
+<p>Boundaries define the frame of the therapeutic relationship—protecting both clients and clinicians while creating conditions for effective treatment.</p>
+
+<h3>Types of Boundaries</h3>
+
+<p><strong>Role boundaries:</strong> Maintaining the therapist role vs. friend, advisor, rescuer</p>
+
+<p><strong>Time boundaries:</strong> Session length, availability, punctuality</p>
+
+<p><strong>Location boundaries:</strong> Where therapy occurs</p>
+
+<p><strong>Physical boundaries:</strong> Touch, personal space</p>
+
+<p><strong>Self-disclosure boundaries:</strong> What personal information to share</p>
+
+<p><strong>Financial boundaries:</strong> Fees, gifts, bartering</p>
+
+<p><strong>Digital boundaries:</strong> Social media, email, texting</p>
+
+<h3>Boundary Crossings vs. Violations</h3>
+
+<p><strong>Boundary crossing:</strong> A departure from standard practice that may or may not be harmful. May be therapeutic in some contexts.</p>
+
+<p><strong>Boundary violation:</strong> A departure that harms or exploits the client. Always unethical.</p>
+
+<p><em>Example: Attending a client's graduation (crossing) vs. dating a client (violation)</em></p>
+
+<h3>Slippery Slope</h3>
+<p>Boundary violations rarely happen suddenly. Watch for progressive erosion:</p>
+<ul>
+  <li>Small crossings become routine</li>
+  <li>Special treatment for certain clients</li>
+  <li>Keeping secrets from supervisors</li>
+  <li>Increased self-disclosure</li>
+  <li>Extending sessions without clinical rationale</li>
+</ul>
+
+<h3>Dual Relationships</h3>
+<p>When clinician has another relationship with client (teacher, friend, business partner):</p>
+<ul>
+  <li>Some are always prohibited (sexual, exploitative)</li>
+  <li>Some are unavoidable (small communities, specialized populations)</li>
+  <li>Key: Will it impair objectivity or harm the client?</li>
+</ul>
+
+<h3>Navigating Boundary Decisions</h3>
+<ul>
+  <li>Whose needs are being met?</li>
+  <li>Would I do this with all clients?</li>
+  <li>How would I feel if a colleague knew?</li>
+  <li>What would happen if this became known publicly?</li>
+</ul>
+`,
+
+  'Navigating Conflicts': `
+<h2>Managing Ethical Conflicts and Complaints</h2>
+<p>Even careful clinicians encounter conflicts, disagreements, and occasionally complaints. Handling these situations well protects clients and careers.</p>
+
+<h3>Types of Conflicts</h3>
+
+<p><strong>With clients:</strong></p>
+<ul>
+  <li>Disagreements about treatment approach</li>
+  <li>Ruptures in therapeutic alliance</li>
+  <li>Boundary issues raised by client</li>
+  <li>Fee disputes</li>
+</ul>
+
+<p><strong>With colleagues:</strong></p>
+<ul>
+  <li>Disagreements about client care</li>
+  <li>Concerns about colleague's ethics</li>
+  <li>Turf issues and referrals</li>
+</ul>
+
+<p><strong>With systems:</strong></p>
+<ul>
+  <li>Insurance company denials</li>
+  <li>Agency policies that conflict with ethics</li>
+  <li>Court or legal system demands</li>
+</ul>
+
+<h3>When You Observe Colleague Misconduct</h3>
+<p>Ethics codes require action when colleague conduct harms clients:</p>
+<ol>
+  <li>First, try informal resolution when appropriate</li>
+  <li>If unresolved or serious, report to licensing board or ethics committee</li>
+  <li>Document your observations and actions</li>
+  <li>Do not ignore serious violations</li>
+</ol>
+
+<h3>Responding to Complaints Against You</h3>
+<ul>
+  <li>Notify your malpractice carrier immediately</li>
+  <li>Do not contact the complainant</li>
+  <li>Do not alter records</li>
+  <li>Gather documentation</li>
+  <li>Respond thoughtfully and thoroughly</li>
+  <li>Cooperate with the investigation</li>
+  <li>Seek support—complaints are stressful</li>
+</ul>
+
+<h3>Prevention</h3>
+<ul>
+  <li>Clear informed consent</li>
+  <li>Thorough documentation</li>
+  <li>Regular consultation</li>
+  <li>Attention to boundaries</li>
+  <li>Address ruptures when they occur</li>
+  <li>Professional liability insurance</li>
+</ul>
+`,
+
+  'Self-Care as Ethical Obligation': `
+<h2>Self-Care: An Ethical Imperative</h2>
+<p>Self-care isn't just good advice—it's an ethical obligation. Impaired clinicians cannot provide competent care, making attention to our own wellbeing essential to ethical practice.</p>
+
+<h3>The Ethics Code Mandate</h3>
+<p>The ACA Code of Ethics states clinicians must "monitor themselves for signs of impairment" and "refrain from offering or providing professional services when their physical, mental, or emotional problems are likely to harm a client or others."</p>
+
+<h3>Impairment vs. Distress</h3>
+<p><strong>Distress:</strong> Normal response to challenging work; manageable; doesn't significantly impair function</p>
+<p><strong>Impairment:</strong> Functioning is significantly compromised; affects quality of care; requires intervention</p>
+
+<h3>Warning Signs of Impairment</h3>
+<ul>
+  <li>Chronic fatigue or exhaustion</li>
+  <li>Boundary violations or near-misses</li>
+  <li>Increased errors, missed appointments</li>
+  <li>Cynicism about clients or the work</li>
+  <li>Isolation from colleagues</li>
+  <li>Substance use changes</li>
+  <li>Personal relationships deteriorating</li>
+  <li>Physical health problems ignored</li>
+</ul>
+
+<h3>Self-Care Domains</h3>
+
+<p><strong>Physical:</strong> Sleep, exercise, nutrition, medical care</p>
+<p><strong>Emotional:</strong> Personal therapy, support systems, processing difficult work</p>
+<p><strong>Professional:</strong> Supervision, consultation, continuing education, manageable caseload</p>
+<p><strong>Relational:</strong> Meaningful connections outside work</p>
+<p><strong>Spiritual/Meaning:</strong> Connection to purpose, values, larger meaning</p>
+
+<h3>When Impairment Occurs</h3>
+<ul>
+  <li>Acknowledge the problem</li>
+  <li>Seek appropriate help (therapy, treatment programs)</li>
+  <li>Reduce caseload or take leave if needed</li>
+  <li>Consult with colleagues or licensing board</li>
+  <li>Most boards have diversion programs to support recovery</li>
+</ul>
+
+<h3>Building Sustainable Practice</h3>
+<p>Self-care isn't something to do after burnout—it's how you prevent it. Build sustainable practices from the beginning of your career.</p>
+`,
+
+  // ===== TELEHEALTH BEST PRACTICES =====
+  'Introduction to Telehealth Therapy': `
+<h2>Foundations of Telehealth Practice</h2>
+<p>Telehealth has transformed from an occasional alternative to a mainstream modality. Understanding its foundations prepares clinicians for effective virtual practice.</p>
+
+<h3>Defining Telehealth</h3>
+<p>Telehealth encompasses:</p>
+<ul>
+  <li><strong>Synchronous:</strong> Real-time video sessions (most common for therapy)</li>
+  <li><strong>Asynchronous:</strong> Store-and-forward communications (messaging, email)</li>
+  <li><strong>Remote monitoring:</strong> Apps, wearables tracking symptoms</li>
+  <li><strong>Mobile health (mHealth):</strong> Health apps and tools</li>
+</ul>
+
+<h3>Benefits of Telehealth</h3>
+<ul>
+  <li>Increased access (rural, mobility-limited, busy schedules)</li>
+  <li>Reduced barriers (transportation, childcare, stigma)</li>
+  <li>Continuity during disruptions (weather, illness, travel)</li>
+  <li>Comfort of home environment for some clients</li>
+  <li>Observation of client's natural environment</li>
+</ul>
+
+<h3>Limitations and Considerations</h3>
+<ul>
+  <li>Technology barriers for some populations</li>
+  <li>Privacy concerns in shared living spaces</li>
+  <li>Reduced nonverbal cues</li>
+  <li>Crisis management complexity</li>
+  <li>Not appropriate for all clients or conditions</li>
+</ul>
+
+<h3>Research Support</h3>
+<p>Evidence supports telehealth effectiveness for:</p>
+<ul>
+  <li>Depression and anxiety (comparable to in-person)</li>
+  <li>PTSD (including evidence-based treatments like CPT, PE)</li>
+  <li>Substance use disorders</li>
+  <li>Many other conditions</li>
+</ul>
+<p>Therapeutic alliance can be established effectively via video.</p>
+
+<h3>Professional Competence</h3>
+<p>Telehealth requires specific competencies beyond clinical skill:</p>
+<ul>
+  <li>Technology proficiency</li>
+  <li>Adapted clinical skills for virtual environment</li>
+  <li>Knowledge of relevant laws and ethics</li>
+  <li>Crisis protocols for remote situations</li>
+</ul>
+`,
+
+  'Setting Up for Telehealth Sessions': `
+<h2>Technical and Environmental Setup</h2>
+<p>Professional telehealth requires attention to technology, environment, and backup plans. Proper setup enables smooth sessions and models professionalism.</p>
+
+<h3>Technology Requirements</h3>
+
+<p><strong>Platform:</strong></p>
+<ul>
+  <li>HIPAA-compliant with Business Associate Agreement (BAA)</li>
+  <li>Encrypted, secure connection</li>
+  <li>Features: waiting room, screen share, virtual backgrounds</li>
+  <li>Common options: Doxy.me, SimplePractice, Zoom for Healthcare, Thera-LINK</li>
+</ul>
+
+<p><strong>Hardware:</strong></p>
+<ul>
+  <li>Computer with camera (laptop or external webcam)</li>
+  <li>Quality microphone (built-in may be sufficient; external improves quality)</li>
+  <li>Reliable internet (minimum 10 Mbps; wired connection preferred)</li>
+  <li>Phone as backup communication method</li>
+</ul>
+
+<h3>Environment Setup</h3>
+
+<p><strong>Lighting:</strong></p>
+<ul>
+  <li>Light source in front of you, not behind</li>
+  <li>Avoid harsh shadows or backlighting</li>
+  <li>Natural light is ideal; ring lights work well</li>
+</ul>
+
+<p><strong>Background:</strong></p>
+<ul>
+  <li>Professional, uncluttered space</li>
+  <li>Neutral or appropriate virtual background</li>
+  <li>Remove distracting or unprofessional items</li>
+</ul>
+
+<p><strong>Audio:</strong></p>
+<ul>
+  <li>Quiet, private space</li>
+  <li>Sound machine outside door if needed</li>
+  <li>Close windows, silence phones</li>
+</ul>
+
+<p><strong>Camera position:</strong></p>
+<ul>
+  <li>Eye level (use books to raise laptop if needed)</li>
+  <li>Framing: head and shoulders visible</li>
+  <li>Close enough to see facial expressions</li>
+</ul>
+
+<h3>Client Preparation</h3>
+<p>Send clients instructions covering:</p>
+<ul>
+  <li>How to access the platform</li>
+  <li>Technical requirements</li>
+  <li>Environmental recommendations (private space, charged device)</li>
+  <li>What to do if connection fails</li>
+</ul>
+`,
+
+  'Building Rapport Online': `
+<h2>Establishing Therapeutic Alliance Virtually</h2>
+<p>Building rapport through a screen requires intentional adaptation of in-person skills. Research shows strong alliance is achievable in telehealth with deliberate attention.</p>
+
+<h3>Adapting Nonverbal Communication</h3>
+
+<p><strong>Eye contact:</strong></p>
+<ul>
+  <li>Look at the camera, not the screen, for "eye contact"</li>
+  <li>This feels unnatural—practice helps</li>
+  <li>Balance camera gaze with observing the client</li>
+</ul>
+
+<p><strong>Facial expressions:</strong></p>
+<ul>
+  <li>May need to be slightly exaggerated for the camera</li>
+  <li>Nod and smile more visibly</li>
+  <li>Your face is what the client sees most</li>
+</ul>
+
+<p><strong>Gestures:</strong></p>
+<ul>
+  <li>Stay in frame when gesturing</li>
+  <li>Hand gestures can emphasize warmth</li>
+</ul>
+
+<h3>Verbal Adaptations</h3>
+
+<p><strong>Increased verbal feedback:</strong></p>
+<ul>
+  <li>More "mm-hmm," "yes," "I see"</li>
+  <li>Summarize and reflect more frequently</li>
+  <li>Compensate for reduced nonverbal cues</li>
+</ul>
+
+<p><strong>Pace:</strong></p>
+<ul>
+  <li>Slightly slower to account for lag</li>
+  <li>Pause before responding</li>
+  <li>Check for understanding more often</li>
+</ul>
+
+<h3>Addressing the Medium Directly</h3>
+<ul>
+  <li>Acknowledge the virtual format</li>
+  <li>"How is it to meet this way?"</li>
+  <li>Normalize any awkwardness</li>
+  <li>Invite feedback about the experience</li>
+</ul>
+
+<h3>Managing Technology Disruptions</h3>
+<p>When glitches occur:</p>
+<ul>
+  <li>Stay calm and model patience</li>
+  <li>Have a clear protocol ("If we disconnect, I'll call you")</li>
+  <li>Process the disruption therapeutically if relevant</li>
+</ul>
+
+<h3>Creating Connection</h3>
+<ul>
+  <li>Begin with brief check-in about the technology/environment</li>
+  <li>End with clear plan for next session</li>
+  <li>Consider "warm" touches (commenting on background, asking about their space)</li>
+</ul>
+`,
+
+  'Adapting Therapy for Telehealth': `
+<h2>Clinical Adaptations for Virtual Practice</h2>
+<p>Evidence-based therapies can be effectively delivered via telehealth with appropriate adaptations. The core therapeutic elements remain; the delivery methods adjust.</p>
+
+<h3>Assessment Considerations</h3>
+<ul>
+  <li>Standard assessment tools work in telehealth</li>
+  <li>Can use screen share for visual materials</li>
+  <li>Mental status exam requires verbal inquiry about what you can't observe</li>
+  <li>Note environmental observations (client's space, who else is present)</li>
+</ul>
+
+<h3>Adapting Common Modalities</h3>
+
+<p><strong>CBT:</strong></p>
+<ul>
+  <li>Screen share for thought records, worksheets</li>
+  <li>Collaborative document editing</li>
+  <li>Assign digital homework via patient portal</li>
+  <li>Virtual whiteboard for diagrams</li>
+</ul>
+
+<p><strong>Exposure therapy:</strong></p>
+<ul>
+  <li>In-vivo exposure can happen in client's environment</li>
+  <li>Virtual reality exposure options</li>
+  <li>Imaginal exposure works well via video</li>
+  <li>Some exposures easier to coach remotely</li>
+</ul>
+
+<p><strong>Mindfulness/relaxation:</strong></p>
+<ul>
+  <li>Guide practices with client in comfortable home setting</li>
+  <li>Client may feel safer practicing at home</li>
+  <li>Can incorporate client's environment (grounding with objects at hand)</li>
+</ul>
+
+<h3>Working with Children and Families</h3>
+<ul>
+  <li>Shorter sessions may be needed</li>
+  <li>Engage parents in setup and support</li>
+  <li>Interactive tools, games, drawing apps</li>
+  <li>Movement breaks built into session</li>
+</ul>
+
+<h3>Group Therapy Adaptations</h3>
+<ul>
+  <li>Establish clear norms for virtual participation</li>
+  <li>Gallery view to see all participants</li>
+  <li>Use chat, reactions, breakout rooms</li>
+  <li>Structured turn-taking may be helpful</li>
+</ul>
+
+<h3>Documentation</h3>
+<ul>
+  <li>Note modality (telehealth, video)</li>
+  <li>Document client location each session</li>
+  <li>Note anyone else present in client's space</li>
+  <li>Record any technical issues</li>
+</ul>
+`,
+
+  'Crisis Management in Telehealth': `
+<h2>Managing Crises in Virtual Sessions</h2>
+<p>Crisis situations require additional planning in telehealth because you cannot physically intervene. Preparation and clear protocols are essential.</p>
+
+<h3>Pre-Session Preparation</h3>
+
+<p><strong>Every session, confirm:</strong></p>
+<ul>
+  <li>Client's physical location (address)</li>
+  <li>Local emergency resources for that location</li>
+  <li>Emergency contact information</li>
+  <li>Phone number to reach client if disconnected</li>
+</ul>
+
+<p><strong>In your files, maintain:</strong></p>
+<ul>
+  <li>Emergency protocol document</li>
+  <li>Local crisis line numbers for client's area</li>
+  <li>Nearest emergency room to client</li>
+  <li>Contact information for client's supports</li>
+</ul>
+
+<h3>Warning Signs in Telehealth</h3>
+<p>Watch for:</p>
+<ul>
+  <li>Client appears intoxicated or altered</li>
+  <li>Visible weapons or dangerous items</li>
+  <li>Signs of self-harm on camera</li>
+  <li>Statements of intent to harm self or others</li>
+  <li>Third party enters who appears threatening</li>
+  <li>Client becomes unresponsive</li>
+</ul>
+
+<h3>During a Crisis</h3>
+<ol>
+  <li>Stay calm; your presence is stabilizing</li>
+  <li>Assess safety using standard protocols</li>
+  <li>Keep the video connection if possible</li>
+  <li>If needed, call emergency services to client's location</li>
+  <li>Stay on the line until help arrives if possible</li>
+  <li>Contact emergency contact as appropriate</li>
+</ol>
+
+<h3>When to Decline Telehealth</h3>
+<p>Consider in-person or higher level of care when:</p>
+<ul>
+  <li>Active suicidality with plan/intent/access</li>
+  <li>Acute psychosis or severe dissociation</li>
+  <li>Unable to establish safe environment</li>
+  <li>Technology barriers prevent reliable connection</li>
+  <li>Crisis services in client's area are inadequate</li>
+</ul>
+
+<h3>Post-Crisis Documentation</h3>
+<p>Document thoroughly: what occurred, your assessment, interventions, outcome, and follow-up plan.</p>
+`,
+
+  'Legal and Ethical Issues in Telehealth': `
+<h2>Legal and Ethical Considerations</h2>
+<p>Telehealth introduces specific legal and ethical considerations that extend beyond in-person practice. Staying current with evolving regulations is essential.</p>
+
+<h3>Licensure and Jurisdiction</h3>
+
+<p><strong>The fundamental rule:</strong> You must be licensed where the CLIENT is located, not where you are.</p>
+
+<ul>
+  <li>Verify client's location each session</li>
+  <li>Understand requirements for each state where clients reside</li>
+  <li>Interstate compacts (PSYPACT, ASWB Mobility) may allow practice across states</li>
+  <li>Some states have temporary practice provisions</li>
+</ul>
+
+<h3>Informed Consent for Telehealth</h3>
+<p>Telehealth-specific consent should address:</p>
+<ul>
+  <li>Description of telehealth and how it differs from in-person</li>
+  <li>Potential benefits and risks of telehealth</li>
+  <li>Confidentiality in the digital environment</li>
+  <li>Technology requirements and responsibilities</li>
+  <li>Emergency procedures when not in the same location</li>
+  <li>Policies for technical failure</li>
+  <li>Recording policy (if any)</li>
+  <li>Alternatives to telehealth</li>
+</ul>
+
+<h3>HIPAA and Technology</h3>
+<ul>
+  <li>Use only HIPAA-compliant platforms with BAA</li>
+  <li>Ensure encrypted connections</li>
+  <li>Avoid consumer-grade tools (regular Zoom, FaceTime, Skype) for clinical sessions</li>
+  <li>Secure your own network and devices</li>
+  <li>Have policies for data security, device loss</li>
+</ul>
+
+<h3>Documentation Requirements</h3>
+<p>In addition to standard documentation:</p>
+<ul>
+  <li>Modality used (video, phone)</li>
+  <li>Client location at time of session</li>
+  <li>Verification of identity (especially initial sessions)</li>
+  <li>Anyone else present in client's space</li>
+  <li>Technical issues that occurred</li>
+</ul>
+
+<h3>Staying Current</h3>
+<p>Telehealth regulations continue to evolve. Monitor:</p>
+<ul>
+  <li>Your state licensing board</li>
+  <li>Professional associations</li>
+  <li>CMS/Medicare rules if applicable</li>
+  <li>Payer-specific requirements</li>
 </ul>
 `
 };
