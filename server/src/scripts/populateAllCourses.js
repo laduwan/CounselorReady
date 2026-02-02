@@ -453,6 +453,15 @@ function countWords(text) {
   return clean ? clean.split(/\s+/).length : 0;
 }
 
+function slugify(title) {
+  return title
+    .toLowerCase()
+    .replace(/['']/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .substring(0, 100);
+}
+
 // ─── Database Operations ───
 
 async function upsertCourse(db, courseData) {
@@ -511,6 +520,7 @@ async function upsertCourse(db, courseData) {
     // Create new course
     const newCourse = {
       ...courseData,
+      slug: slugify(courseData.title),
       createdAt: new Date(),
       updatedAt: new Date(),
       isPublished: false,
@@ -562,18 +572,24 @@ async function main() {
     
     console.log(`  📄 Processing: ${file}`);
     
-    const courseData = parseMarkdownCourse(content, file);
-    
-    console.log(`     Title:    ${courseData.title}`);
-    console.log(`     CE Hours: ${courseData.ceHours}`);
-    console.log(`     Modules:  ${courseData.modules.length}`);
-    console.log(`     Quiz Qs:  ${courseData.assessment.questions.length}`);
-    console.log(`     Words:    ${courseData._wordCount.toLocaleString()} / ${courseData._requiredWords.toLocaleString()} ${courseData._meetsWordCount ? '✅' : '⚠️'}`);
-    
-    const result = await upsertCourse(db, courseData);
-    results.push(result);
-    
-    console.log(`     ➡️  ${result.action.toUpperCase()} (${result.id})\n`);
+    try {
+      const courseData = parseMarkdownCourse(content, file);
+      
+      console.log(`     Title:    ${courseData.title}`);
+      console.log(`     CE Hours: ${courseData.ceHours}`);
+      console.log(`     Modules:  ${courseData.modules.length}`);
+      console.log(`     Quiz Qs:  ${courseData.assessment.questions.length}`);
+      console.log(`     Words:    ${courseData._wordCount.toLocaleString()} / ${courseData._requiredWords.toLocaleString()} ${courseData._meetsWordCount ? '✅' : '⚠️'}`);
+      
+      const result = await upsertCourse(db, courseData);
+      results.push(result);
+      
+      console.log(`     ➡️  ${result.action.toUpperCase()} (${result.id})\n`);
+    } catch (err) {
+      console.log(`     ❌ ERROR: ${err.message}`);
+      results.push({ action: 'error', title: file, id: null });
+      console.log('');
+    }
   }
 
   // Summary
