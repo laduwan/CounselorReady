@@ -535,7 +535,7 @@ async function upsertCourse(db, courseData) {
 // ─── Main ───
 
 async function main() {
-  const mdDir = path.join(__dirname, 'courseMarkdown');
+  const mdDir = path.join(__script_dirname, 'courseMarkdown');
   
   if (!fs.existsSync(mdDir)) {
     console.error(`\n  ❌ Directory not found: ${mdDir}`);
