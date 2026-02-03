@@ -23,6 +23,7 @@ if (!MONGODB_URI) {
 // Minimal Course schema (matches your existing model)
 const courseSchema = new mongoose.Schema({
   title: String,
+  slug: { type: String, unique: true },
   code: { type: String, unique: true },
   description: String,
   ceHours: Number,
@@ -35,6 +36,14 @@ const courseSchema = new mongoose.Schema({
   modules: [{ title: String, order: Number, contentBlocks: [mongoose.Schema.Types.Mixed] }],
   assessment: { passingScore: Number, questions: [mongoose.Schema.Types.Mixed] }
 }, { timestamps: true });
+
+// Helper to generate slug from title
+function generateSlug(title) {
+  return title
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '');
+}
 
 const Course = mongoose.models.Course || mongoose.model('Course', courseSchema);
 
@@ -257,6 +266,9 @@ async function seed() {
     console.log('Connected!\n');
 
     for (const c of courses) {
+      // Generate slug from title
+      c.slug = generateSlug(c.title);
+      
       const exists = await Course.findOne({ code: c.code });
       if (exists) {
         await Course.findOneAndUpdate({ code: c.code }, { ...c, updatedAt: new Date() });
