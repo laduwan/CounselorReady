@@ -9,7 +9,16 @@
 
 import express from 'express';
 import Anthropic from '@anthropic-ai/sdk';
-import { protect, adminOnly } from '../middleware/auth.js';
+import { protect } from '../middleware/auth.js';
+
+// Admin-only middleware (inline)
+const adminOnly = (req, res, next) => {
+  if (req.user && req.user.role === 'admin') {
+    next();
+  } else {
+    res.status(403).json({ error: 'Admin access required' });
+  }
+};
 
 const router = express.Router();
 
