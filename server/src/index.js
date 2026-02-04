@@ -27,6 +27,7 @@ import xapiRoutes from './routes/xapi.js';
 import cebrokerRoutes from './routes/cebroker.js';
 import helpRoutes from './routes/help.js';
 import bulkUploadRoutes from './routes/bulkUpload.js';
+import courseBuilderRoutes from './routes/courseBuilder.js';
 import adminStatsRoutes from './routes/adminStats.js';
 import interactiveCourseRoutes from './routes/interactiveCourseRoutes.js';
 
@@ -145,6 +146,7 @@ app.use('/api/cebroker', cebrokerRoutes);
 app.use('/api/help', helpRoutes);
 app.use('/api/admin/courses', bulkUploadRoutes);
 app.use('/api/admin/stats', adminStatsRoutes);
+app.use('/api/admin/course-builder', courseBuilderRoutes);
 
 // Serve static files from templates directory
 app.use('/templates', express.static(path.join(__dirname, 'templates')));
