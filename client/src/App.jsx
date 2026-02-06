@@ -15,6 +15,7 @@ import InteractiveCourseCatalog from './pages/InteractiveCourseCatalog';
 // Components
 import Layout from './components/Layout';
 import CourseViewer from './components/CourseViewer';
+import CourseBuilder from './components/CourseBuilder';
 
 // Wrapper to pass slug param to CourseViewer
 function CourseViewerWrapper() {
@@ -109,6 +110,13 @@ function AppRoutes() {
       <Route path="/settings" element={
         <ProtectedRoute>
           <Layout><Settings /></Layout>
+        </ProtectedRoute>
+      } />
+      
+      {/* Admin routes */}
+      <Route path="/admin/course-builder" element={
+        <ProtectedRoute>
+          <CourseBuilder />
         </ProtectedRoute>
       } />
       
