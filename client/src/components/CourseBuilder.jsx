@@ -1466,7 +1466,7 @@ function AIGenerator({ onGenerated }) {
 // IMPORT TAB
 // ═══════════════════════════════════════════════════════════
 function parseMarkdownToCourse(content, filename) {
-  const title = filename.replace(/\.(md|txt|markdown)$/i, "").replace(/[_-]/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+  const title = filename.replace(/\.(md|txt|markdown|docx|pdf)$/i, "").replace(/[_-]/g, " ").replace(/\b\w/g, c => c.toUpperCase());
   const objectives = [];
   const objMatch = content.match(/learning objectives[\s\S]*?(?=\n##|\n---)/i);
   if (objMatch) {
@@ -1482,19 +1482,40 @@ function parseMarkdownToCourse(content, filename) {
     headers.push({ num: parseInt(m[1]), title: m[2].trim(), index: m.index });
   }
 
+  // Also try plain text patterns like "Module 1:" or "SECTION 1:"
   if (headers.length === 0) {
-    modules.push({
-      id: uid(), number: 1, title: "Module 1: Course Content",
-      blocks: [{ id: uid(), type: "text", content: content.substring(0, 5000) }],
-      knowledgeChecks: 0, estimatedWords: countWords(content),
-    });
+    const plainRegex = /^(?:MODULE|SECTION|CHAPTER)\s*(\d+)[:\s]*(.+)$/gim;
+    while ((m = plainRegex.exec(content)) !== null) {
+      headers.push({ num: parseInt(m[1]), title: m[2].trim(), index: m.index });
+    }
+  }
+
+  if (headers.length === 0) {
+    // Split by double newlines into chunks for large content
+    const chunks = content.split(/\n{3,}/).filter(c => c.trim().length > 100);
+    if (chunks.length > 1) {
+      chunks.forEach((chunk, i) => {
+        const firstLine = chunk.trim().split("\n")[0].substring(0, 80);
+        modules.push({
+          id: uid(), number: i + 1, title: `Module ${i + 1}: ${firstLine}`,
+          blocks: [{ id: uid(), type: "text", content: chunk.trim() }],
+          knowledgeChecks: 0, estimatedWords: countWords(chunk),
+        });
+      });
+    } else {
+      modules.push({
+        id: uid(), number: 1, title: "Module 1: Course Content",
+        blocks: [{ id: uid(), type: "text", content: content.substring(0, 10000) }],
+        knowledgeChecks: 0, estimatedWords: countWords(content),
+      });
+    }
   } else {
     headers.forEach((hdr, i) => {
       const nextIdx = headers[i + 1]?.index || content.length;
       const section = content.substring(hdr.index, nextIdx);
       const blocks = [
         { id: uid(), type: "sectionDivider", title: `Module ${hdr.num}: ${hdr.title}`, sectionNumber: hdr.num },
-        { id: uid(), type: "text", content: section.replace(/^#{1,3}.+$/gm, "").trim().substring(0, 5000) },
+        { id: uid(), type: "text", content: section.replace(/^#{1,3}.+$/gm, "").trim().substring(0, 10000) },
       ];
       modules.push({
         id: uid(), number: hdr.num, title: `Module ${hdr.num}: ${hdr.title}`,
@@ -1510,21 +1531,68 @@ function parseMarkdownToCourse(content, filename) {
   return { title, ceHours, level: "Intermediate", category: "Clinical Practice", objectives, modules, targetAudience: ["LPCs", "LMHCs", "LCSWs", "LMFTs"], assessment: { questions: [], passThreshold: 0.80 }, acepProvider: { name: "GA Integrated Therapeutic Perspectives LLC", number: "7760" } };
 }
 
+async function extractTextFromDocx(file) {
+  const mammoth = await import("mammoth");
+  const arrayBuffer = await file.arrayBuffer();
+  const result = await mammoth.extractRawText({ arrayBuffer });
+  return result.value;
+}
+
+async function extractTextFromPdf(file) {
+  const pdfjsLib = await import("pdfjs-dist");
+  pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`;
+  const arrayBuffer = await file.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+  let text = "";
+  for (let i = 1; i <= pdf.numPages; i++) {
+    const page = await pdf.getPage(i);
+    const content = await page.getTextContent();
+    text += content.items.map(item => item.str).join(" ") + "\n\n";
+  }
+  return text;
+}
+
 function ImportTab({ onImported }) {
   const [dragOver, setDragOver] = useState(false);
   const [imported, setImported] = useState(null);
   const [preview, setPreview] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
   const fileRef = useRef();
 
-  const handleFile = (file) => {
+  const handleFile = async (file) => {
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const content = e.target.result;
+    setLoading(true);
+    setError(null);
+
+    try {
+      let content = "";
+      const ext = file.name.split(".").pop().toLowerCase();
+
+      if (ext === "docx") {
+        content = await extractTextFromDocx(file);
+      } else if (ext === "pdf") {
+        content = await extractTextFromPdf(file);
+      } else {
+        content = await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = (e) => resolve(e.target.result);
+          reader.onerror = () => reject(new Error("Failed to read file"));
+          reader.readAsText(file);
+        });
+      }
+
+      if (!content || content.trim().length < 50) {
+        throw new Error("File appears to be empty or could not be parsed");
+      }
+
       const parsed = parseMarkdownToCourse(content, file.name);
       setPreview(parsed);
-    };
-    reader.readAsText(file);
+    } catch (err) {
+      setError(err.message || "Failed to parse file");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const confirmImport = () => {
@@ -1546,7 +1614,7 @@ function ImportTab({ onImported }) {
         </div>
         <div style={S.cardBody}>
           <p style={{ color: C.textMuted, fontSize: 14, marginBottom: 20, lineHeight: 1.6 }}>
-            Import course content from Markdown (.md) or text (.txt) files. The parser will detect modules, knowledge checks, learning objectives, and assessment items automatically, structuring them into the CounselorReady content block format.
+            Import course content from Word documents, PDFs, Markdown, or text files. The parser will detect modules, knowledge checks, learning objectives, and assessment items automatically, structuring them into the CounselorReady content block format.
           </p>
 
           <div onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
@@ -1554,21 +1622,40 @@ function ImportTab({ onImported }) {
             onDrop={(e) => { e.preventDefault(); setDragOver(false); handleFile(e.dataTransfer.files[0]); }}
             onClick={() => fileRef.current?.click()}
             style={{ border: `2px dashed ${dragOver ? C.burgundy : C.border}`, borderRadius: 12, padding: 48, textAlign: "center", cursor: "pointer", background: dragOver ? C.burgundyFaded : C.bg, transition: "all 0.2s" }}>
-            <input ref={fileRef} type="file" accept=".md,.txt,.markdown" style={{ display: "none" }} onChange={(e) => handleFile(e.target.files[0])} />
-            <FileUp size={36} color={dragOver ? C.burgundy : C.textLight} style={{ margin: "0 auto 12px", display: "block" }} />
-            <p style={{ fontWeight: 600, fontSize: 15, color: C.navy, margin: "0 0 4px" }}>Drop your file here or click to browse</p>
-            <p style={{ fontSize: 13, color: C.textMuted, margin: 0 }}>Supports .md, .txt, .markdown files</p>
+            <input ref={fileRef} type="file" accept=".md,.txt,.markdown,.docx,.pdf" style={{ display: "none" }} onChange={(e) => handleFile(e.target.files[0])} />
+            {loading ? (
+              <div>
+                <Loader2 size={36} color={C.burgundy} style={{ animation: "spin 1s linear infinite", margin: "0 auto", display: "block" }} />
+                <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
+                <p style={{ fontWeight: 600, fontSize: 15, color: C.navy, margin: "12px 0 4px" }}>Parsing document...</p>
+                <p style={{ fontSize: 13, color: C.textMuted, margin: 0 }}>Extracting text and detecting structure</p>
+              </div>
+            ) : (
+              <div>
+                <FileUp size={36} color={dragOver ? C.burgundy : C.textLight} style={{ margin: "0 auto 12px", display: "block" }} />
+                <p style={{ fontWeight: 600, fontSize: 15, color: C.navy, margin: "0 0 4px" }}>Drop your file here or click to browse</p>
+                <p style={{ fontSize: 13, color: C.textMuted, margin: 0 }}>Supports .docx, .pdf, .md, .txt files</p>
+              </div>
+            )}
           </div>
 
-          <div style={{ ...S.grid2, marginTop: 20 }}>
+          {error && (
+            <div style={{ marginTop: 12, padding: "10px 14px", background: C.dangerFaded, borderRadius: 8, color: C.danger, fontSize: 13 }}>
+              ⚠ {error}
+            </div>
+          )}
+
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 12, marginTop: 20 }}>
             {[
-              { icon: "📝", title: "Markdown (.md)", desc: "Module headers (## MODULE 1), knowledge checks, learning objectives, final assessments" },
-              { icon: "📄", title: "Plain Text (.txt)", desc: "Structured text with clear section headings and numbered questions" },
+              { icon: "📄", title: "Word (.docx)", desc: "Full document parsing with headers and sections" },
+              { icon: "📕", title: "PDF (.pdf)", desc: "Text extraction from PDF documents" },
+              { icon: "📝", title: "Markdown (.md)", desc: "Module headers, objectives, assessments" },
+              { icon: "📃", title: "Plain Text (.txt)", desc: "Structured text with section headings" },
             ].map(f => (
-              <div key={f.title} style={{ background: C.greenFaded, borderRadius: 10, padding: 16, border: `1px solid ${C.green}22` }}>
-                <span style={{ fontSize: 24 }}>{f.icon}</span>
-                <div style={{ fontWeight: 700, fontSize: 14, color: C.navy, marginTop: 6 }}>{f.title}</div>
-                <div style={{ fontSize: 12, color: C.textMuted, marginTop: 4, lineHeight: 1.5 }}>{f.desc}</div>
+              <div key={f.title} style={{ background: C.greenFaded, borderRadius: 10, padding: 14, border: `1px solid ${C.green}22` }}>
+                <span style={{ fontSize: 22 }}>{f.icon}</span>
+                <div style={{ fontWeight: 700, fontSize: 13, color: C.navy, marginTop: 4 }}>{f.title}</div>
+                <div style={{ fontSize: 11, color: C.textMuted, marginTop: 2, lineHeight: 1.4 }}>{f.desc}</div>
               </div>
             ))}
           </div>
