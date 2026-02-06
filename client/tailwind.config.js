@@ -7,50 +7,79 @@ export default {
   theme: {
     extend: {
       colors: {
-        // CounselorReady Brand Colors
+        // Primary Brand Colors
+        burgundy: {
+          100: '#FAE8EB',
+          200: '#F5D0D6',
+          500: '#C94D65',
+          700: '#8B2542',
+          800: '#6B1D34', // Primary burgundy
+          900: '#4A1524',
+        },
+        forest: {
+          100: '#E3EBE5',
+          200: '#C8D7CC',
+          400: '#759A7F',
+          500: '#547C5F',
+          600: '#40634A', // Primary forest green
+          700: '#34503D',
+        },
+        honey: {
+          400: '#D4A855', // Primary honey/gold
+          500: '#C69840',
+          600: '#B8872C',
+        },
+        stone: {
+          50: '#FAFAF9',
+          100: '#F5F5F4',
+          200: '#E7E5E4',
+        },
+        // Alternative color scales (for React components)
         moss: {
-          50: '#f4f6f4',
-          100: '#e4e9e4',
-          200: '#c9d3c9',
-          300: '#a3b3a3',
-          400: '#7a8f7a',
-          500: '#5a725a',
-          600: '#4B5D4B', // Primary - Deep Moss
-          700: '#3d4b3d',
-          800: '#333f33',
-          900: '#2b342b',
-          950: '#161c16',
+          100: '#E8EDE8',
+          200: '#D1DBD1',
+          400: '#8FA78F',
+          500: '#6A856A',
+          600: '#4B5D4B', // Primary moss
+          700: '#3A4A3A',
         },
         dustyrose: {
-          50: '#fdf5f6',
-          100: '#fbeaec',
-          200: '#f7d5da',
-          300: '#f0b3bc',
-          400: '#e58594',
-          500: '#d45d72',
-          600: '#7D4E57', // Accent - Dusty Rose/Burgundy
-          700: '#6b3d47',
-          800: '#5a3540',
-          900: '#4d303a',
-          950: '#2a171d',
+          100: '#F4ECEE',
+          200: '#E9D9DD',
+          400: '#B8969D',
+          500: '#9A7A82',
+          600: '#7D4E57', // Primary dusty rose
+          700: '#5E3A42',
         },
-        navy: {
-          50: '#f4f6f7',
-          100: '#e3e7ea',
-          200: '#c9d1d8',
-          300: '#a4b1bd',
-          400: '#778a9a',
-          500: '#5c6f7f',
-          600: '#4e5d6b',
-          700: '#444f5a',
-          800: '#3c454d',
-          900: '#34495E', // Secondary - Navy
-          950: '#21282f',
-        }
+        hunter: {
+          100: '#E4EBE6',
+          200: '#C9D7CD',
+          400: '#7F9E87',
+          500: '#5F8268',
+          600: '#4A7C59', // Alternative green
+          700: '#395F45',
+        },
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
-      }
+        display: ['Cormorant Garamond', 'Georgia', 'serif'],
+        sans: ['Lato', 'system-ui', 'sans-serif'],
+        body: ['Lato', 'system-ui', 'sans-serif'],
+        inter: ['Inter', 'system-ui', 'sans-serif'],
+      },
+      fontSize: {
+        'display-xl': ['4rem', { lineHeight: '1.1', fontWeight: '600' }],
+        'display-lg': ['3rem', { lineHeight: '1.2', fontWeight: '600' }],
+        'display-md': ['2.5rem', { lineHeight: '1.2', fontWeight: '500' }],
+      },
+      boxShadow: {
+        'sm': '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
+        'md': '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+        'lg': '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
+      },
+      borderRadius: {
+        'xl': '1rem',
+        '2xl': '1.5rem',
+      },
     },
   },
   plugins: [],
