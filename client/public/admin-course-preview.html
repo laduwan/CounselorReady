@@ -15,6 +15,10 @@
     .lesson-content ul, .lesson-content ol { margin: 1rem 0; padding-left: 1.5rem; }
     .lesson-content li { margin-bottom: 0.5rem; }
     .lesson-content strong { font-weight: 600; }
+    .lesson-content img { max-width: 100%; height: auto; border-radius: 0.5rem; }
+    .lesson-content table { max-width: 100%; overflow-x: auto; display: block; }
+    .lesson-content iframe { max-width: 100%; }
+    .lesson-content pre { max-width: 100%; overflow-x: auto; }
   </style>
 </head>
 <body class="font-body bg-stone-50 min-h-screen">
@@ -139,8 +143,10 @@
           </div>
         </div>
       </div>
-      <div id="lessonContent" class="p-6 md:p-8 lesson-content max-h-[70vh] overflow-y-auto">
-        <!-- Lesson content will be inserted here -->
+      <div class="p-6 md:p-8 max-h-[70vh] overflow-y-auto">
+        <div id="lessonContent" class="lesson-content max-w-3xl mx-auto">
+          <!-- Lesson content will be inserted here -->
+        </div>
       </div>
     </div>
 
@@ -162,8 +168,10 @@
           </div>
         </div>
       </div>
-      <div id="quizQuestions" class="p-6 md:p-8 space-y-6 max-h-[70vh] overflow-y-auto">
-        <!-- Quiz questions will be inserted here -->
+      <div class="p-6 md:p-8 max-h-[70vh] overflow-y-auto">
+        <div id="quizQuestions" class="space-y-6 max-w-3xl mx-auto">
+          <!-- Quiz questions will be inserted here -->
+        </div>
       </div>
     </div>
   </main>
