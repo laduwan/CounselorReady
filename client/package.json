@@ -9,12 +9,14 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "react-router-dom": "^6.21.1",
+    "@anthropic-ai/sdk": "^0.24.0",
     "axios": "^1.6.2",
     "lucide-react": "^0.294.0",
-    "@anthropic-ai/sdk": "^0.24.0"
+    "mammoth": "^1.11.0",
+    "pdfjs-dist": "^5.4.624",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.21.1"
   },
   "devDependencies": {
     "@types/react": "^18.2.43",
