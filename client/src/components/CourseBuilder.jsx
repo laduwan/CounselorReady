@@ -1407,136 +1407,173 @@ function AIGenerator({ onGenerated }) {
     }, 2500);
   };
 
-  const generateContent = () => {
+  const generateContent = async () => {
     setGeneratingContent(true);
     setProgress(0);
+    setProgressMsg("Preparing generation...");
 
     const API_BASE = import.meta.env.VITE_API_URL || "https://api.counselorready.com/api";
     const token = localStorage.getItem("token");
+    const moduleCount = outline.modules.length;
 
-    // Build content from outline + uploaded content
-    const contentPayload = outline._uploadedContent || outline.modules.map(m =>
-      `## ${m.title}\n${m.sourceContent || ""}`
-    ).join("\n\n") || outline.title;
+    // Generate MODULE BY MODULE — each call ~30-60 sec, not 7+ min
+    const generatedModules = [];
+    let allQuestions = [];
+    let totalWordsGenerated = 0;
 
-    const body = {
-      content: contentPayload,
-      category: outline.category === "Ethics" ? "ethics" : outline.category === "Crisis" ? "crisis" : "core",
+    for (let mi = 0; mi < moduleCount; mi++) {
+      const mod = outline.modules[mi];
+      const pct = Math.round((mi / moduleCount) * 95);
+      setProgress(pct);
+      setProgressMsg(`Module ${mi + 1} of ${moduleCount}: ${mod.title.split(":").pop().trim()}...`);
+
+      // Get source content for this module if uploaded
+      const sourceContent = mod.sourceContent ||
+        (outline._uploadedContent
+          ? outline._uploadedContent.substring(
+              mi * Math.floor(outline._uploadedContent.length / moduleCount),
+              (mi + 1) * Math.floor(outline._uploadedContent.length / moduleCount)
+            )
+          : "");
+
+      const body = {
+        courseTitle: outline.title,
+        moduleTitle: mod.title,
+        moduleNumber: mi + 1,
+        totalModules: moduleCount,
+        ceHours: outline.ceHours,
+        category: outline.category === "Ethics" ? "ethics" : outline.category === "Crisis" ? "crisis" : "core",
+        sourceContent: sourceContent.substring(0, 3000),
+        additionalNotes: additionalNotes || "",
+        generateQuiz: true,
+      };
+
+      try {
+        const res = await fetch(`${API_BASE}/admin/module/generate`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+          body: JSON.stringify(body),
+        });
+
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          console.error(`Module ${mi + 1} failed:`, errData.error);
+          generatedModules.push({
+            id: uid(), number: mi + 1, title: mod.title,
+            blocks: [
+              { id: uid(), type: "sectionDivider", title: mod.title, sectionNumber: mi + 1, subtitle: "" },
+              { id: uid(), type: "text", content: `<p><strong>⚠ Generation failed:</strong> ${errData.error || "API error"}</p><p>Add content manually or retry this module.</p>` },
+            ],
+            knowledgeChecks: 0, estimatedWords: 0,
+          });
+          continue;
+        }
+
+        const data = await res.json();
+
+        if (data.success && data.module) {
+          const blocks = [];
+          blocks.push({ id: uid(), type: "sectionDivider", title: mod.title, sectionNumber: mi + 1, subtitle: data.module.description || "" });
+
+          // Add content as text block(s) — split if very long
+          if (data.module.content) {
+            const content = data.module.content;
+            if (content.length > 15000) {
+              // Split at a heading boundary near the middle
+              const mid = Math.floor(content.length / 2);
+              const splitPoint = content.indexOf("<h3>", mid);
+              if (splitPoint > 0) {
+                blocks.push({ id: uid(), type: "text", content: content.substring(0, splitPoint) });
+                blocks.push({ id: uid(), type: "text", content: content.substring(splitPoint) });
+              } else {
+                blocks.push({ id: uid(), type: "text", content });
+              }
+            } else {
+              blocks.push({ id: uid(), type: "text", content });
+            }
+          }
+
+          // Add quiz questions as interactive blocks
+          if (data.module.questions && data.module.questions.length > 0) {
+            data.module.questions.forEach(q => {
+              if (q.type === "multiple_select") {
+                blocks.push({ id: uid(), type: "multiSelect", question: q.question, options: (q.options || []).map((opt, oi) => ({
+                  text: opt, isCorrect: Array.isArray(q.correctAnswer) ? q.correctAnswer.includes(oi) : oi === q.correctAnswer
+                })), explanation: q.explanation || "" });
+              } else if (q.type === "true_false") {
+                blocks.push({ id: uid(), type: "multipleChoice", question: q.question, options: [
+                  { text: "True", isCorrect: q.correctAnswer === true },
+                  { text: "False", isCorrect: q.correctAnswer === false },
+                ], explanation: q.explanation || "" });
+              } else {
+                blocks.push({ id: uid(), type: "multipleChoice", question: q.question, options: (q.options || []).map((opt, oi) => ({
+                  text: opt, isCorrect: oi === q.correctAnswer
+                })), explanation: q.explanation || "" });
+              }
+              allQuestions.push(q);
+            });
+          }
+
+          // Add a reflection prompt
+          blocks.push({ id: uid(), type: "reflection", question: `Reflect on what you learned about ${mod.title.split(":").pop().trim()}. How will you apply these concepts in your clinical practice? Describe a specific situation.`, minLength: 100 });
+
+          const wordCount = data.module.wordCount || blocks.reduce((s, b) => s + countBlockWords(b), 0);
+          totalWordsGenerated += wordCount;
+
+          generatedModules.push({
+            id: uid(), number: mi + 1, title: mod.title,
+            blocks,
+            knowledgeChecks: blocks.filter(b => ["multipleChoice", "multiSelect", "matching"].includes(b.type)).length,
+            estimatedWords: wordCount,
+          });
+
+          setProgressMsg(`Module ${mi + 1} done — ${wordCount.toLocaleString()} words ✓`);
+        } else {
+          throw new Error(data.error || "Unexpected response format");
+        }
+      } catch (err) {
+        console.error(`Module ${mi + 1} error:`, err);
+        generatedModules.push({
+          id: uid(), number: mi + 1, title: mod.title,
+          blocks: [
+            { id: uid(), type: "sectionDivider", title: mod.title, sectionNumber: mi + 1, subtitle: "" },
+            { id: uid(), type: "text", content: `<p><strong>⚠ Error:</strong> ${err.message}</p><p>Add content manually or retry.</p>` },
+          ],
+          knowledgeChecks: 0, estimatedWords: 0,
+        });
+      }
+    }
+
+    // Assemble final course
+    setProgress(98);
+    setProgressMsg("Assembling course...");
+
+    const finalCourse = {
+      title: outline.title,
+      description: outline.description,
       ceHours: outline.ceHours,
-      generateQuizzes: true,
-      generateObjectives: true,
-      keyPoints: additionalNotes || undefined,
+      level: outline.level,
+      category: outline.category,
+      targetAudience: outline.targetAudience,
+      objectives: outline.objectives,
+      assessment: { questions: allQuestions, passThreshold: 0.80 },
+      acepProvider: { name: "GA Integrated Therapeutic Perspectives LLC", number: "7760" },
+      modules: generatedModules,
     };
 
-    const eventSource = fetch(`${API_BASE}/admin/course/generate`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`,
-      },
-      body: JSON.stringify(body),
-    });
+    const successCount = generatedModules.filter(m => (m.estimatedWords || 0) > 100).length;
 
-    eventSource.then(async (res) => {
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({ error: "API error" }));
-        alert("Generation failed: " + (err.error || res.statusText));
-        setGeneratingContent(false);
-        return;
-      }
+    setGeneratingContent(false);
+    setProgress(100);
 
-      const reader = res.body.getReader();
-      const decoder = new TextDecoder();
-      let buffer = "";
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        buffer += decoder.decode(value, { stream: true });
-
-        const lines = buffer.split("\n\n");
-        buffer = lines.pop() || "";
-
-        for (const line of lines) {
-          if (!line.startsWith("data: ")) continue;
-          try {
-            const data = JSON.parse(line.slice(6));
-
-            if (data.type === "progress") {
-              setProgress(data.percent || 0);
-              setProgressMsg(data.message || "Generating...");
-            } else if (data.type === "complete" && data.course) {
-              // Convert backend course format to CourseBuilder format
-              const course = data.course;
-              const converted = {
-                title: course.title || outline.title,
-                description: course.description || outline.description,
-                ceHours: course.ceuHours || outline.ceHours,
-                level: outline.level,
-                category: outline.category,
-                targetAudience: outline.targetAudience,
-                objectives: course.objectives || outline.objectives,
-                assessment: { questions: [], passThreshold: 0.80 },
-                acepProvider: { name: "GA Integrated Therapeutic Perspectives LLC", number: "7760" },
-                modules: (course.modules || []).map((mod, mi) => {
-                  const blocks = [];
-                  blocks.push({ id: uid(), type: "sectionDivider", title: mod.title, sectionNumber: mi + 1, subtitle: mod.description || "" });
-
-                  (mod.lessons || []).forEach(lesson => {
-                    if (lesson.type === "text" && lesson.content) {
-                      blocks.push({ id: uid(), type: "text", content: lesson.content });
-                    } else if (lesson.type === "quiz" && lesson.questions) {
-                      lesson.questions.forEach(q => {
-                        if (q.type === "multiple_select") {
-                          blocks.push({ id: uid(), type: "multiSelect", question: q.question, options: (q.options || []).map((opt, oi) => ({
-                            text: opt, isCorrect: Array.isArray(q.correctAnswer) ? q.correctAnswer.includes(oi) : oi === q.correctAnswer
-                          })), explanation: q.explanation || "" });
-                        } else {
-                          blocks.push({ id: uid(), type: "multipleChoice", question: q.question, options: (q.options || []).map((opt, oi) => ({
-                            text: opt, isCorrect: oi === q.correctAnswer
-                          })), explanation: q.explanation || "" });
-                        }
-                      });
-                    }
-                  });
-
-                  return {
-                    id: uid(), number: mi + 1, title: mod.title || `Module ${mi + 1}`,
-                    blocks, knowledgeChecks: blocks.filter(b => ["multipleChoice", "multiSelect", "matching"].includes(b.type)).length,
-                    estimatedWords: blocks.reduce((s, b) => s + countBlockWords(b), 0),
-                  };
-                }),
-              };
-
-              // Also collect quiz questions for assessment
-              (course.modules || []).forEach(mod => {
-                (mod.lessons || []).forEach(lesson => {
-                  if (lesson.type === "quiz" && lesson.questions) {
-                    converted.assessment.questions.push(...lesson.questions);
-                  }
-                });
-              });
-
-              setGeneratingContent(false);
-              setProgress(100);
-              setStep("content");
-              if (onGenerated) onGenerated(converted);
-            } else if (data.type === "error") {
-              alert("AI Error: " + (data.error || "Unknown error"));
-              setGeneratingContent(false);
-            }
-          } catch (e) { /* ignore parse errors in stream */ }
-        }
-      }
-
-      // If we finished reading but never got a "complete" event
-      if (generatingContent) {
-        setGeneratingContent(false);
-      }
-    }).catch(err => {
-      alert("Connection error: " + err.message);
-      setGeneratingContent(false);
-    });
+    if (successCount === 0) {
+      alert("⚠ All modules failed to generate. Check that ANTHROPIC_API_KEY is set in Render environment variables and try again.");
+    } else {
+      const target = outline.ceHours * 6000;
+      setProgressMsg(`Generated ${totalWordsGenerated.toLocaleString()} / ${target.toLocaleString()} target words across ${successCount}/${moduleCount} modules`);
+      setStep("content");
+      if (onGenerated) onGenerated(finalCourse);
+    }
   };
 
   return (
