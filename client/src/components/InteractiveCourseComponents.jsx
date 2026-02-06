@@ -1,3 +1,7 @@
+// DROP INTO: /client/src/components/InteractiveCourseComponents.jsx
+// CounselorReady Brand: Burgundy #6B1D34 | Green #4A7C59 | Gold #D4A855 | Navy #34495E
+// ALL 16 LEARNER BLOCK TYPES
+
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { 
   ChevronDown, ChevronUp, Check, X, GripVertical, 
@@ -6,105 +10,68 @@ import {
 } from 'lucide-react';
 
 // ============================================================================
-// COLOR PALETTE - CounselorReady Brand
+// BRAND PALETTE
 // ============================================================================
-const colors = {
-  teal: {
-    50: '#F0FDFA',
-    100: '#CCFBF1',
-    200: '#99F6E4',
-    500: '#14B8A6',
-    600: '#0D9488',
-    700: '#0F766E',
-    800: '#115E59',
-  },
-  emerald: {
-    50: '#ECFDF5',
-    100: '#D1FAE5',
-    500: '#10B981',
-    600: '#059669',
-  },
-  red: {
-    50: '#FEF2F2',
-    100: '#FEE2E2',
-    500: '#EF4444',
-    600: '#DC2626',
-  },
-  amber: {
-    50: '#FFFBEB',
-    100: '#FEF3C7',
-    500: '#F59E0B',
-    600: '#D97706',
-  },
-  slate: {
-    50: '#F8FAFC',
-    100: '#F1F5F9',
-    200: '#E2E8F0',
-    300: '#CBD5E1',
-    400: '#94A3B8',
-    500: '#64748B',
-    600: '#475569',
-    700: '#334155',
-    800: '#1E293B',
-    900: '#0F172A',
-  }
+const B = {
+  burgundy: '#6B1D34',
+  burgundyLt: '#8B2D4A',
+  burgundyBg: 'rgba(107,29,52,0.08)',
+  green: '#4A7C59',
+  greenLt: '#5A9469',
+  greenBg: 'rgba(74,124,89,0.08)',
+  gold: '#D4A855',
+  goldLt: '#E4BE75',
+  goldBg: 'rgba(212,168,85,0.12)',
+  navy: '#34495E',
+  navyLt: '#4A6178',
+  navyBg: 'rgba(52,73,94,0.06)',
+  bg: '#FAFAF8',
+  card: '#FFFFFF',
+  border: '#E8E4DF',
+  borderLt: '#F0EDE8',
+  text: '#2C2C2C',
+  muted: '#6B7280',
+  light: '#9CA3AF',
+  ok: '#059669',
+  okBg: 'rgba(5,150,105,0.08)',
+  err: '#DC2626',
+  errBg: 'rgba(220,38,38,0.08)',
 };
 
-// ============================================================================
-// 1. EXPANDABLE ACCORDION COMPONENT
-// ============================================================================
-export function Accordion({ items, allowMultiple = false }) {
-  const [openItems, setOpenItems] = useState(new Set());
+// Shared button reset
+const btnReset = { border: 'none', cursor: 'pointer', fontFamily: 'inherit' };
 
-  const toggleItem = (index) => {
-    setOpenItems(prev => {
-      const newSet = new Set(allowMultiple ? prev : []);
-      if (prev.has(index)) {
-        newSet.delete(index);
-      } else {
-        newSet.add(index);
-      }
-      return newSet;
+// ============================================================================
+// 1. ACCORDION
+// ============================================================================
+export function Accordion({ items, allowMultiple = false, onComplete }) {
+  const [open, setOpen] = useState(new Set());
+  const toggle = (i) => {
+    setOpen(prev => {
+      const n = new Set(allowMultiple ? prev : []);
+      prev.has(i) ? n.delete(i) : n.add(i);
+      if (n.size === items.length && onComplete) onComplete();
+      return n;
     });
   };
-
   return (
-    <div className="space-y-3">
-      {items.map((item, index) => (
-        <div 
-          key={index}
-          className="border border-slate-200 rounded-xl overflow-hidden bg-white shadow-sm hover:shadow-md transition-shadow"
-        >
-          <button
-            onClick={() => toggleItem(index)}
-            className="w-full px-5 py-4 flex items-center justify-between text-left bg-gradient-to-r from-teal-50 to-white hover:from-teal-100 transition-colors"
-          >
-            <div className="flex items-center gap-3">
-              <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${
-                openItems.has(index) ? 'bg-teal-600 text-white' : 'bg-teal-100 text-teal-600'
-              }`}>
-                <BookOpen className="w-4 h-4" />
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+      {items.map((item, i) => (
+        <div key={i} style={{ border: `1px solid ${B.border}`, borderRadius: 12, overflow: 'hidden', background: B.card, boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
+          <button onClick={() => toggle(i)} style={{ ...btnReset, width: '100%', padding: '16px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', textAlign: 'left', background: open.has(i) ? B.burgundyBg : B.bg }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <div style={{ width: 32, height: 32, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: open.has(i) ? B.burgundy : B.burgundyBg, color: open.has(i) ? '#fff' : B.burgundy }}>
+                <BookOpen size={16} />
               </div>
-              <span className="font-semibold text-slate-800">{item.title}</span>
+              <span style={{ fontWeight: 600, color: B.navy, fontSize: 15 }}>{item.title}</span>
             </div>
-            <div className={`transform transition-transform duration-300 ${openItems.has(index) ? 'rotate-180' : ''}`}>
-              <ChevronDown className="w-5 h-5 text-slate-500" />
-            </div>
+            <ChevronDown size={20} style={{ color: B.muted, transform: open.has(i) ? 'rotate(180deg)' : 'none', transition: 'transform 0.3s' }} />
           </button>
-          
-          <div className={`overflow-hidden transition-all duration-300 ease-in-out ${
-            openItems.has(index) ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'
-          }`}>
-            <div className="px-5 py-4 bg-white border-t border-slate-100">
-              <div className="prose prose-slate max-w-none">
-                {typeof item.content === 'string' ? (
-                  <p className="text-slate-600 leading-relaxed">{item.content}</p>
-                ) : (
-                  item.content
-                )}
-              </div>
+          {open.has(i) && (
+            <div style={{ padding: '16px 20px', borderTop: `1px solid ${B.borderLt}` }}>
+              {typeof item.content === 'string' ? <p style={{ color: B.muted, lineHeight: 1.7, margin: 0, fontSize: 14 }}>{item.content}</p> : item.content}
             </div>
-          </div>
+          )}
         </div>
       ))}
     </div>
@@ -112,172 +79,64 @@ export function Accordion({ items, allowMultiple = false }) {
 }
 
 // ============================================================================
-// 2. DRAG-AND-DROP MATCHING EXERCISE
+// 2. MATCHING EXERCISE
 // ============================================================================
-export function MatchingExercise({ 
-  pairs, // Array of { term, definition }
-  instructions = "Drag each term to its matching definition",
-  onComplete 
-}) {
+export function MatchingExercise({ pairs, instructions = "Drag each term to its matching definition", onComplete }) {
   const [terms, setTerms] = useState([]);
-  const [definitions, setDefinitions] = useState([]);
+  const [defs, setDefs] = useState([]);
   const [matches, setMatches] = useState({});
-  const [draggedItem, setDraggedItem] = useState(null);
-  const [isComplete, setIsComplete] = useState(false);
-  const [showResults, setShowResults] = useState(false);
+  const [dragged, setDragged] = useState(null);
+  const [done, setDone] = useState(false);
+  const [show, setShow] = useState(false);
   const [score, setScore] = useState(0);
 
   useEffect(() => {
-    // Shuffle both arrays independently
-    const shuffledTerms = [...pairs].sort(() => Math.random() - 0.5);
-    const shuffledDefs = [...pairs].sort(() => Math.random() - 0.5);
-    setTerms(shuffledTerms.map((p, i) => ({ ...p, id: `term-${i}` })));
-    setDefinitions(shuffledDefs.map((p, i) => ({ ...p, id: `def-${i}` })));
+    setTerms([...pairs].sort(() => Math.random() - 0.5).map((p, i) => ({ ...p, id: `t${i}` })));
+    setDefs([...pairs].sort(() => Math.random() - 0.5).map((p, i) => ({ ...p, id: `d${i}` })));
   }, [pairs]);
 
-  const handleDragStart = (e, item) => {
-    setDraggedItem(item);
-    e.dataTransfer.effectAllowed = 'move';
+  const check = () => {
+    let c = 0; defs.forEach(d => { if (matches[d.id]?.term === d.term) c++; });
+    setScore(c); setShow(true); setDone(true); if (onComplete) onComplete(c, pairs.length);
   };
-
-  const handleDragOver = (e) => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = 'move';
-  };
-
-  const handleDrop = (e, definition) => {
-    e.preventDefault();
-    if (draggedItem && !matches[definition.id]) {
-      setMatches(prev => ({
-        ...prev,
-        [definition.id]: draggedItem
-      }));
-    }
-    setDraggedItem(null);
-  };
-
-  const removeMatch = (defId) => {
-    setMatches(prev => {
-      const newMatches = { ...prev };
-      delete newMatches[defId];
-      return newMatches;
-    });
-  };
-
-  const checkAnswers = () => {
-    let correct = 0;
-    definitions.forEach(def => {
-      const matchedTerm = matches[def.id];
-      if (matchedTerm && matchedTerm.term === def.term) {
-        correct++;
-      }
-    });
-    setScore(correct);
-    setShowResults(true);
-    setIsComplete(true);
-    if (onComplete) {
-      onComplete(correct, pairs.length);
-    }
-  };
-
-  const reset = () => {
-    setMatches({});
-    setShowResults(false);
-    setIsComplete(false);
-    setScore(0);
-  };
-
-  const matchedTermIds = Object.values(matches).map(t => t?.id);
-  const availableTerms = terms.filter(t => !matchedTermIds.includes(t.id));
+  const reset = () => { setMatches({}); setShow(false); setDone(false); setScore(0); };
+  const used = Object.values(matches).map(t => t?.id);
+  const avail = terms.filter(t => !used.includes(t.id));
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 shadow-lg overflow-hidden">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-teal-600 to-teal-500 px-6 py-4">
-        <h3 className="text-white font-bold text-lg flex items-center gap-2">
-          <GripVertical className="w-5 h-5" />
-          Matching Exercise
-        </h3>
-        <p className="text-teal-100 text-sm mt-1">{instructions}</p>
+    <div style={{ background: B.card, borderRadius: 16, border: `1px solid ${B.border}`, overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
+      <div style={{ background: `linear-gradient(135deg, ${B.green}, ${B.greenLt})`, padding: '16px 24px' }}>
+        <h3 style={{ color: '#fff', fontWeight: 700, fontSize: 17, margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}><GripVertical size={20} /> Matching Exercise</h3>
+        <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: 13, marginTop: 4 }}>{instructions}</p>
       </div>
-
-      <div className="p-6">
-        <div className="grid md:grid-cols-2 gap-6">
-          {/* Terms Column */}
+      <div style={{ padding: 24 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
           <div>
-            <h4 className="font-semibold text-slate-700 mb-3 flex items-center gap-2">
-              <span className="w-6 h-6 rounded-full bg-teal-100 text-teal-600 flex items-center justify-center text-sm">T</span>
-              Terms
-            </h4>
-            <div className="space-y-2">
-              {availableTerms.map((item) => (
-                <div
-                  key={item.id}
-                  draggable={!isComplete}
-                  onDragStart={(e) => handleDragStart(e, item)}
-                  className={`px-4 py-3 bg-teal-50 border-2 border-teal-200 rounded-lg cursor-grab 
-                    active:cursor-grabbing hover:bg-teal-100 hover:border-teal-300 transition-all
-                    ${isComplete ? 'opacity-50 cursor-not-allowed' : ''}`}
-                >
-                  <span className="font-medium text-teal-800">{item.term}</span>
+            <h4 style={{ fontWeight: 600, color: B.navy, marginBottom: 12, fontSize: 14 }}>Terms</h4>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {avail.map(t => (
+                <div key={t.id} draggable={!done} onDragStart={(e) => { setDragged(t); e.dataTransfer.effectAllowed = 'move'; }}
+                  style={{ padding: '12px 16px', background: B.greenBg, border: `2px solid ${B.green}33`, borderRadius: 10, cursor: done ? 'default' : 'grab', fontWeight: 500, color: B.green, fontSize: 14, opacity: done ? 0.5 : 1 }}>
+                  {t.term}
                 </div>
               ))}
-              {availableTerms.length === 0 && !showResults && (
-                <p className="text-slate-400 text-sm italic py-2">All terms matched!</p>
-              )}
+              {avail.length === 0 && !show && <p style={{ color: B.light, fontSize: 13, fontStyle: 'italic' }}>All terms matched!</p>}
             </div>
           </div>
-
-          {/* Definitions Column */}
           <div>
-            <h4 className="font-semibold text-slate-700 mb-3 flex items-center gap-2">
-              <span className="w-6 h-6 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-sm">D</span>
-              Definitions
-            </h4>
-            <div className="space-y-2">
-              {definitions.map((def) => {
-                const matchedTerm = matches[def.id];
-                const isCorrect = showResults && matchedTerm?.term === def.term;
-                const isIncorrect = showResults && matchedTerm && matchedTerm.term !== def.term;
-                
+            <h4 style={{ fontWeight: 600, color: B.navy, marginBottom: 12, fontSize: 14 }}>Definitions</h4>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {defs.map(d => {
+                const m = matches[d.id]; const ok = show && m?.term === d.term; const bad = show && m && m.term !== d.term;
                 return (
-                  <div
-                    key={def.id}
-                    onDragOver={handleDragOver}
-                    onDrop={(e) => handleDrop(e, def)}
-                    className={`min-h-[60px] px-4 py-3 rounded-lg border-2 border-dashed transition-all
-                      ${matchedTerm 
-                        ? isCorrect 
-                          ? 'bg-emerald-50 border-emerald-400' 
-                          : isIncorrect 
-                            ? 'bg-red-50 border-red-400' 
-                            : 'bg-amber-50 border-amber-300'
-                        : 'bg-slate-50 border-slate-300 hover:border-teal-400 hover:bg-teal-50'
-                      }`}
-                  >
-                    <p className="text-sm text-slate-600 mb-2">{def.definition}</p>
-                    {matchedTerm && (
-                      <div className={`flex items-center justify-between px-3 py-1.5 rounded-md ${
-                        isCorrect ? 'bg-emerald-100' : isIncorrect ? 'bg-red-100' : 'bg-amber-100'
-                      }`}>
-                        <span className={`font-medium text-sm ${
-                          isCorrect ? 'text-emerald-700' : isIncorrect ? 'text-red-700' : 'text-amber-700'
-                        }`}>
-                          {matchedTerm.term}
-                        </span>
-                        {!isComplete && (
-                          <button 
-                            onClick={() => removeMatch(def.id)}
-                            className="text-slate-400 hover:text-red-500"
-                          >
-                            <X className="w-4 h-4" />
-                          </button>
-                        )}
-                        {showResults && (
-                          isCorrect 
-                            ? <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                            : <X className="w-4 h-4 text-red-600" />
-                        )}
+                  <div key={d.id} onDragOver={(e) => e.preventDefault()} onDrop={(e) => { e.preventDefault(); if (dragged && !matches[d.id]) setMatches(p => ({ ...p, [d.id]: dragged })); setDragged(null); }}
+                    style={{ minHeight: 60, padding: '12px 16px', borderRadius: 10, border: `2px dashed ${m ? (ok ? B.ok : bad ? B.err : B.gold) : B.border}`, background: m ? (ok ? B.okBg : bad ? B.errBg : B.goldBg) : B.navyBg }}>
+                    <p style={{ fontSize: 13, color: B.muted, marginBottom: m ? 8 : 0 }}>{d.definition}</p>
+                    {m && (
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 12px', borderRadius: 6, background: ok ? 'rgba(5,150,105,0.12)' : bad ? 'rgba(220,38,38,0.12)' : B.goldBg }}>
+                        <span style={{ fontWeight: 600, fontSize: 13, color: ok ? B.ok : bad ? B.err : '#92400E' }}>{m.term}</span>
+                        {!done && <button onClick={() => setMatches(p => { const n = {...p}; delete n[d.id]; return n; })} style={{ ...btnReset, background: 'none', color: B.light, padding: 2 }}><X size={16} /></button>}
+                        {show && (ok ? <CheckCircle2 size={16} color={B.ok} /> : <X size={16} color={B.err} />)}
                       </div>
                     )}
                   </div>
@@ -286,172 +145,18 @@ export function MatchingExercise({
             </div>
           </div>
         </div>
-
-        {/* Actions & Results */}
-        <div className="mt-6 pt-4 border-t border-slate-200">
-          {showResults ? (
-            <div className="flex items-center justify-between">
-              <div className={`flex items-center gap-3 px-4 py-2 rounded-lg ${
-                score === pairs.length ? 'bg-emerald-100' : score >= pairs.length * 0.8 ? 'bg-amber-100' : 'bg-red-100'
-              }`}>
-                <Award className={`w-5 h-5 ${
-                  score === pairs.length ? 'text-emerald-600' : score >= pairs.length * 0.8 ? 'text-amber-600' : 'text-red-600'
-                }`} />
-                <span className="font-semibold">
-                  Score: {score}/{pairs.length} ({Math.round(score/pairs.length*100)}%)
-                </span>
+        <div style={{ marginTop: 24, paddingTop: 16, borderTop: `1px solid ${B.border}`, display: 'flex', justifyContent: show ? 'space-between' : 'flex-end', alignItems: 'center' }}>
+          {show ? (
+            <>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 16px', borderRadius: 10, background: score === pairs.length ? B.okBg : B.goldBg }}>
+                <Award size={20} color={score === pairs.length ? B.ok : B.gold} /><span style={{ fontWeight: 700 }}>Score: {score}/{pairs.length} ({Math.round(score/pairs.length*100)}%)</span>
               </div>
-              <button
-                onClick={reset}
-                className="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-lg text-slate-700 transition-colors"
-              >
-                <RotateCcw className="w-4 h-4" />
-                Try Again
-              </button>
-            </div>
+              <button onClick={reset} style={{ ...btnReset, display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px', background: B.navyBg, borderRadius: 10, fontWeight: 600, color: B.navy }}><RotateCcw size={16} /> Try Again</button>
+            </>
           ) : (
-            <div className="flex justify-end">
-              <button
-                onClick={checkAnswers}
-                disabled={Object.keys(matches).length !== definitions.length}
-                className={`flex items-center gap-2 px-6 py-2.5 rounded-lg font-semibold transition-all ${
-                  Object.keys(matches).length === definitions.length
-                    ? 'bg-teal-600 hover:bg-teal-700 text-white'
-                    : 'bg-slate-200 text-slate-400 cursor-not-allowed'
-                }`}
-              >
-                <Check className="w-4 h-4" />
-                Check Answers
-              </button>
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ============================================================================
-// 3. MULTIPLE CHOICE QUESTION
-// ============================================================================
-export function MultipleChoice({
-  question,
-  options, // Array of { text, isCorrect }
-  explanation,
-  onAnswer
-}) {
-  const [selected, setSelected] = useState(null);
-  const [submitted, setSubmitted] = useState(false);
-  const isCorrect = selected !== null && options[selected]?.isCorrect;
-
-  const handleSubmit = () => {
-    setSubmitted(true);
-    if (onAnswer) {
-      onAnswer(isCorrect);
-    }
-  };
-
-  const reset = () => {
-    setSelected(null);
-    setSubmitted(false);
-  };
-
-  return (
-    <div className="bg-white rounded-2xl border border-slate-200 shadow-lg overflow-hidden">
-      <div className="bg-gradient-to-r from-slate-800 to-slate-700 px-6 py-4">
-        <h3 className="text-white font-bold text-lg">Question</h3>
-      </div>
-      
-      <div className="p-6">
-        <p className="text-lg text-slate-800 font-medium mb-6">{question}</p>
-        
-        <div className="space-y-3">
-          {options.map((option, index) => {
-            const isSelected = selected === index;
-            const showCorrect = submitted && option.isCorrect;
-            const showIncorrect = submitted && isSelected && !option.isCorrect;
-            
-            return (
-              <button
-                key={index}
-                onClick={() => !submitted && setSelected(index)}
-                disabled={submitted}
-                className={`w-full text-left px-5 py-4 rounded-xl border-2 transition-all flex items-center gap-4 ${
-                  showCorrect
-                    ? 'bg-emerald-50 border-emerald-400'
-                    : showIncorrect
-                      ? 'bg-red-50 border-red-400'
-                      : isSelected
-                        ? 'bg-teal-50 border-teal-400'
-                        : 'bg-slate-50 border-slate-200 hover:border-teal-300 hover:bg-teal-50'
-                } ${submitted ? 'cursor-default' : 'cursor-pointer'}`}
-              >
-                <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
-                  showCorrect
-                    ? 'bg-emerald-500 border-emerald-500 text-white'
-                    : showIncorrect
-                      ? 'bg-red-500 border-red-500 text-white'
-                      : isSelected
-                        ? 'bg-teal-500 border-teal-500 text-white'
-                        : 'border-slate-300'
-                }`}>
-                  {showCorrect ? (
-                    <Check className="w-4 h-4" />
-                  ) : showIncorrect ? (
-                    <X className="w-4 h-4" />
-                  ) : (
-                    <span className="text-sm font-semibold text-slate-500">
-                      {String.fromCharCode(65 + index)}
-                    </span>
-                  )}
-                </div>
-                <span className={`font-medium ${
-                  showCorrect ? 'text-emerald-700' : showIncorrect ? 'text-red-700' : 'text-slate-700'
-                }`}>
-                  {option.text}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-
-        {submitted && explanation && (
-          <div className={`mt-6 p-4 rounded-xl ${isCorrect ? 'bg-emerald-50' : 'bg-amber-50'}`}>
-            <div className="flex items-start gap-3">
-              <Info className={`w-5 h-5 mt-0.5 ${isCorrect ? 'text-emerald-600' : 'text-amber-600'}`} />
-              <div>
-                <p className={`font-semibold ${isCorrect ? 'text-emerald-700' : 'text-amber-700'}`}>
-                  {isCorrect ? 'Correct!' : 'Explanation'}
-                </p>
-                <p className={`text-sm mt-1 ${isCorrect ? 'text-emerald-600' : 'text-amber-600'}`}>
-                  {explanation}
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        <div className="mt-6 pt-4 border-t border-slate-200 flex justify-end gap-3">
-          {submitted ? (
-            <button
-              onClick={reset}
-              className="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-lg text-slate-700 transition-colors"
-            >
-              <RotateCcw className="w-4 h-4" />
-              Try Again
-            </button>
-          ) : (
-            <button
-              onClick={handleSubmit}
-              disabled={selected === null}
-              className={`flex items-center gap-2 px-6 py-2.5 rounded-lg font-semibold transition-all ${
-                selected !== null
-                  ? 'bg-teal-600 hover:bg-teal-700 text-white'
-                  : 'bg-slate-200 text-slate-400 cursor-not-allowed'
-              }`}
-            >
-              Submit Answer
-              <ArrowRight className="w-4 h-4" />
+            <button onClick={check} disabled={Object.keys(matches).length !== defs.length}
+              style={{ ...btnReset, display: 'flex', alignItems: 'center', gap: 8, padding: '10px 24px', borderRadius: 10, fontWeight: 700, fontSize: 14, background: Object.keys(matches).length === defs.length ? B.green : B.border, color: Object.keys(matches).length === defs.length ? '#fff' : B.light }}>
+              <Check size={16} /> Check Answers
             </button>
           )}
         </div>
@@ -461,161 +166,107 @@ export function MultipleChoice({
 }
 
 // ============================================================================
-// 4. MULTI-SELECT QUESTION
+// 3. MULTIPLE CHOICE
 // ============================================================================
-export function MultiSelect({
-  question,
-  options, // Array of { text, isCorrect }
-  explanation,
-  onAnswer
-}) {
-  const [selected, setSelected] = useState(new Set());
-  const [submitted, setSubmitted] = useState(false);
-
-  const toggleOption = (index) => {
-    if (submitted) return;
-    setSelected(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(index)) {
-        newSet.delete(index);
-      } else {
-        newSet.add(index);
-      }
-      return newSet;
-    });
-  };
-
-  const handleSubmit = () => {
-    setSubmitted(true);
-    const correctAnswers = options.map((o, i) => o.isCorrect ? i : -1).filter(i => i >= 0);
-    const selectedArray = Array.from(selected);
-    const isFullyCorrect = 
-      correctAnswers.length === selectedArray.length &&
-      correctAnswers.every(i => selected.has(i));
-    
-    if (onAnswer) {
-      onAnswer(isFullyCorrect);
-    }
-  };
-
-  const reset = () => {
-    setSelected(new Set());
-    setSubmitted(false);
-  };
-
-  const correctCount = options.filter((o, i) => o.isCorrect && selected.has(i)).length;
-  const totalCorrect = options.filter(o => o.isCorrect).length;
-  const incorrectSelected = options.filter((o, i) => !o.isCorrect && selected.has(i)).length;
-
+export function MultipleChoice({ question, options, explanation, onAnswer }) {
+  const [sel, setSel] = useState(null);
+  const [sub, setSub] = useState(false);
+  const ok = sel !== null && options[sel]?.isCorrect;
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 shadow-lg overflow-hidden">
-      <div className="bg-gradient-to-r from-slate-800 to-slate-700 px-6 py-4">
-        <h3 className="text-white font-bold text-lg">Select All That Apply</h3>
+    <div style={{ background: B.card, borderRadius: 16, border: `1px solid ${B.border}`, overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
+      <div style={{ background: `linear-gradient(135deg, ${B.navy}, ${B.navyLt})`, padding: '16px 24px' }}>
+        <h3 style={{ color: '#fff', fontWeight: 700, fontSize: 17, margin: 0 }}>Question</h3>
       </div>
-      
-      <div className="p-6">
-        <p className="text-lg text-slate-800 font-medium mb-2">{question}</p>
-        <p className="text-sm text-slate-500 mb-6">Select all correct answers</p>
-        
-        <div className="space-y-3">
-          {options.map((option, index) => {
-            const isSelected = selected.has(index);
-            const showCorrect = submitted && option.isCorrect;
-            const showIncorrect = submitted && isSelected && !option.isCorrect;
-            const missedCorrect = submitted && option.isCorrect && !isSelected;
-            
+      <div style={{ padding: 24 }}>
+        <p style={{ fontSize: 17, color: B.navy, fontWeight: 600, marginBottom: 24 }}>{question}</p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {options.map((o, i) => {
+            const s = sel === i; const gc = sub && o.isCorrect; const bc = sub && s && !o.isCorrect;
             return (
-              <button
-                key={index}
-                onClick={() => toggleOption(index)}
-                disabled={submitted}
-                className={`w-full text-left px-5 py-4 rounded-xl border-2 transition-all flex items-center gap-4 ${
-                  showCorrect && isSelected
-                    ? 'bg-emerald-50 border-emerald-400'
-                    : showIncorrect
-                      ? 'bg-red-50 border-red-400'
-                      : missedCorrect
-                        ? 'bg-amber-50 border-amber-400'
-                        : isSelected
-                          ? 'bg-teal-50 border-teal-400'
-                          : 'bg-slate-50 border-slate-200 hover:border-teal-300 hover:bg-teal-50'
-                } ${submitted ? 'cursor-default' : 'cursor-pointer'}`}
-              >
-                <div className={`w-6 h-6 rounded-md border-2 flex items-center justify-center flex-shrink-0 ${
-                  showCorrect && isSelected
-                    ? 'bg-emerald-500 border-emerald-500 text-white'
-                    : showIncorrect
-                      ? 'bg-red-500 border-red-500 text-white'
-                      : missedCorrect
-                        ? 'bg-amber-500 border-amber-500 text-white'
-                        : isSelected
-                          ? 'bg-teal-500 border-teal-500 text-white'
-                          : 'border-slate-300'
-                }`}>
-                  {(isSelected || missedCorrect) && <Check className="w-4 h-4" />}
+              <button key={i} onClick={() => !sub && setSel(i)} disabled={sub}
+                style={{ ...btnReset, width: '100%', textAlign: 'left', padding: '16px 20px', borderRadius: 12, border: `2px solid ${gc ? B.ok : bc ? B.err : s ? B.green : B.border}`, background: gc ? B.okBg : bc ? B.errBg : s ? B.greenBg : B.bg, display: 'flex', alignItems: 'center', gap: 14 }}>
+                <div style={{ width: 32, height: 32, borderRadius: '50%', border: `2px solid ${gc ? B.ok : bc ? B.err : s ? B.green : B.border}`, background: gc ? B.ok : bc ? B.err : s ? B.green : 'transparent', color: (gc||bc||s) ? '#fff' : B.muted, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  {gc ? <Check size={16} /> : bc ? <X size={16} /> : <span style={{ fontSize: 14, fontWeight: 600 }}>{String.fromCharCode(65+i)}</span>}
                 </div>
-                <span className={`font-medium ${
-                  showCorrect && isSelected ? 'text-emerald-700' 
-                    : showIncorrect ? 'text-red-700' 
-                    : missedCorrect ? 'text-amber-700'
-                    : 'text-slate-700'
-                }`}>
-                  {option.text}
-                </span>
+                <span style={{ fontWeight: 500, color: gc ? B.ok : bc ? B.err : B.text }}>{o.text}</span>
               </button>
             );
           })}
         </div>
-
-        {submitted && (
-          <div className={`mt-6 p-4 rounded-xl ${
-            correctCount === totalCorrect && incorrectSelected === 0 ? 'bg-emerald-50' : 'bg-amber-50'
-          }`}>
-            <div className="flex items-start gap-3">
-              <Info className={`w-5 h-5 mt-0.5 ${
-                correctCount === totalCorrect && incorrectSelected === 0 ? 'text-emerald-600' : 'text-amber-600'
-              }`} />
-              <div>
-                <p className={`font-semibold ${
-                  correctCount === totalCorrect && incorrectSelected === 0 ? 'text-emerald-700' : 'text-amber-700'
-                }`}>
-                  {correctCount === totalCorrect && incorrectSelected === 0 
-                    ? 'Perfect!' 
-                    : `${correctCount}/${totalCorrect} correct answers selected`}
-                </p>
-                {explanation && (
-                  <p className={`text-sm mt-1 ${
-                    correctCount === totalCorrect && incorrectSelected === 0 ? 'text-emerald-600' : 'text-amber-600'
-                  }`}>
-                    {explanation}
-                  </p>
-                )}
-              </div>
+        {sub && explanation && (
+          <div style={{ marginTop: 24, padding: 16, borderRadius: 12, background: ok ? B.okBg : B.goldBg, display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+            <Info size={20} style={{ color: ok ? B.ok : B.gold, marginTop: 2, flexShrink: 0 }} />
+            <div>
+              <p style={{ fontWeight: 700, color: ok ? B.ok : '#92400E', margin: 0 }}>{ok ? 'Correct!' : 'Explanation'}</p>
+              <p style={{ fontSize: 13, color: ok ? B.ok : '#92400E', marginTop: 4 }}>{explanation}</p>
             </div>
           </div>
         )}
-
-        <div className="mt-6 pt-4 border-t border-slate-200 flex justify-end gap-3">
-          {submitted ? (
-            <button
-              onClick={reset}
-              className="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-lg text-slate-700 transition-colors"
-            >
-              <RotateCcw className="w-4 h-4" />
-              Try Again
-            </button>
+        <div style={{ marginTop: 24, paddingTop: 16, borderTop: `1px solid ${B.border}`, display: 'flex', justifyContent: 'flex-end' }}>
+          {sub ? (
+            <button onClick={() => { setSel(null); setSub(false); }} style={{ ...btnReset, display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px', background: B.navyBg, borderRadius: 10, fontWeight: 600, color: B.navy }}><RotateCcw size={16} /> Try Again</button>
           ) : (
-            <button
-              onClick={handleSubmit}
-              disabled={selected.size === 0}
-              className={`flex items-center gap-2 px-6 py-2.5 rounded-lg font-semibold transition-all ${
-                selected.size > 0
-                  ? 'bg-teal-600 hover:bg-teal-700 text-white'
-                  : 'bg-slate-200 text-slate-400 cursor-not-allowed'
-              }`}
-            >
-              Submit Answer
-              <ArrowRight className="w-4 h-4" />
+            <button onClick={() => { setSub(true); if (onAnswer) onAnswer(ok); }} disabled={sel === null}
+              style={{ ...btnReset, display: 'flex', alignItems: 'center', gap: 8, padding: '10px 24px', borderRadius: 10, fontWeight: 700, fontSize: 14, background: sel !== null ? B.green : B.border, color: sel !== null ? '#fff' : B.light }}>
+              Submit Answer <ArrowRight size={16} />
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================================
+// 4. MULTI-SELECT
+// ============================================================================
+export function MultiSelect({ question, options, explanation, onAnswer }) {
+  const [sel, setSel] = useState(new Set());
+  const [sub, setSub] = useState(false);
+  const toggle = (i) => { if (sub) return; setSel(p => { const n = new Set(p); n.has(i) ? n.delete(i) : n.add(i); return n; }); };
+  const cc = options.filter((o,i) => o.isCorrect && sel.has(i)).length;
+  const tc = options.filter(o => o.isCorrect).length;
+  const ic = options.filter((o,i) => !o.isCorrect && sel.has(i)).length;
+  const perfect = cc === tc && ic === 0;
+
+  return (
+    <div style={{ background: B.card, borderRadius: 16, border: `1px solid ${B.border}`, overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
+      <div style={{ background: `linear-gradient(135deg, ${B.navy}, ${B.navyLt})`, padding: '16px 24px' }}>
+        <h3 style={{ color: '#fff', fontWeight: 700, fontSize: 17, margin: 0 }}>Select All That Apply</h3>
+      </div>
+      <div style={{ padding: 24 }}>
+        <p style={{ fontSize: 17, color: B.navy, fontWeight: 600, marginBottom: 8 }}>{question}</p>
+        <p style={{ fontSize: 13, color: B.muted, marginBottom: 24 }}>Select all correct answers</p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {options.map((o, i) => {
+            const s = sel.has(i); const gc = sub && o.isCorrect && s; const bc = sub && !o.isCorrect && s; const miss = sub && o.isCorrect && !s;
+            return (
+              <button key={i} onClick={() => toggle(i)} disabled={sub}
+                style={{ ...btnReset, width: '100%', textAlign: 'left', padding: '16px 20px', borderRadius: 12, border: `2px solid ${gc ? B.ok : bc ? B.err : miss ? B.gold : s ? B.green : B.border}`, background: gc ? B.okBg : bc ? B.errBg : miss ? B.goldBg : s ? B.greenBg : B.bg, display: 'flex', alignItems: 'center', gap: 14 }}>
+                <div style={{ width: 24, height: 24, borderRadius: 6, border: `2px solid ${gc ? B.ok : bc ? B.err : miss ? B.gold : s ? B.green : B.border}`, background: gc ? B.ok : bc ? B.err : miss ? B.gold : s ? B.green : 'transparent', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  {(s || miss) && <Check size={14} />}
+                </div>
+                <span style={{ fontWeight: 500, color: gc ? B.ok : bc ? B.err : miss ? '#92400E' : B.text }}>{o.text}</span>
+              </button>
+            );
+          })}
+        </div>
+        {sub && (
+          <div style={{ marginTop: 24, padding: 16, borderRadius: 12, background: perfect ? B.okBg : B.goldBg, display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+            <Info size={20} style={{ color: perfect ? B.ok : B.gold, marginTop: 2, flexShrink: 0 }} />
+            <div>
+              <p style={{ fontWeight: 700, color: perfect ? B.ok : '#92400E', margin: 0 }}>{perfect ? 'Perfect!' : `${cc}/${tc} correct`}</p>
+              {explanation && <p style={{ fontSize: 13, color: perfect ? B.ok : '#92400E', marginTop: 4 }}>{explanation}</p>}
+            </div>
+          </div>
+        )}
+        <div style={{ marginTop: 24, paddingTop: 16, borderTop: `1px solid ${B.border}`, display: 'flex', justifyContent: 'flex-end' }}>
+          {sub ? (
+            <button onClick={() => { setSel(new Set()); setSub(false); }} style={{ ...btnReset, display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px', background: B.navyBg, borderRadius: 10, fontWeight: 600, color: B.navy }}><RotateCcw size={16} /> Try Again</button>
+          ) : (
+            <button onClick={() => { setSub(true); if (onAnswer) onAnswer(perfect); }} disabled={sel.size === 0}
+              style={{ ...btnReset, display: 'flex', alignItems: 'center', gap: 8, padding: '10px 24px', borderRadius: 10, fontWeight: 700, fontSize: 14, background: sel.size > 0 ? B.green : B.border, color: sel.size > 0 ? '#fff' : B.light }}>
+              Submit Answer <ArrowRight size={16} />
             </button>
           )}
         </div>
@@ -627,47 +278,18 @@ export function MultiSelect({
 // ============================================================================
 // 5. IMAGE + TEXT CARD
 // ============================================================================
-export function ImageTextCard({ 
-  image, 
-  imageAlt, 
-  title, 
-  content, 
-  imagePosition = 'left',
-  highlight = false 
-}) {
+export function ImageTextCard({ image, imageAlt, title, content, imagePosition = 'left', highlight = false }) {
   return (
-    <div className={`bg-white rounded-2xl border shadow-lg overflow-hidden ${
-      highlight ? 'border-teal-400 ring-2 ring-teal-100' : 'border-slate-200'
-    }`}>
-      <div className={`flex flex-col ${imagePosition === 'right' ? 'md:flex-row-reverse' : 'md:flex-row'}`}>
-        {/* Image */}
-        <div className="md:w-2/5 relative">
-          <div className="aspect-video md:aspect-auto md:h-full bg-gradient-to-br from-teal-100 to-slate-100 flex items-center justify-center">
-            {image ? (
-              <img 
-                src={image} 
-                alt={imageAlt || title} 
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <div className="text-center p-6">
-                <BookOpen className="w-12 h-12 text-teal-300 mx-auto" />
-                <p className="text-sm text-slate-400 mt-2">Course Content</p>
-              </div>
-            )}
-          </div>
+    <div style={{ background: B.card, borderRadius: 16, overflow: 'hidden', border: `${highlight ? 2 : 1}px solid ${highlight ? B.green : B.border}`, boxShadow: highlight ? `0 0 0 3px ${B.greenBg}` : '0 2px 8px rgba(0,0,0,0.06)' }}>
+      <div style={{ display: 'flex', flexDirection: imagePosition === 'right' ? 'row-reverse' : 'row' }}>
+        <div style={{ width: '40%', minHeight: 180, background: `linear-gradient(135deg, ${B.greenBg}, ${B.navyBg})`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          {image ? <img src={image} alt={imageAlt || title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : (
+            <div style={{ textAlign: 'center', padding: 24 }}><BookOpen size={48} color={B.green + '44'} /><p style={{ fontSize: 12, color: B.light, marginTop: 8 }}>Course Content</p></div>
+          )}
         </div>
-        
-        {/* Content */}
-        <div className="md:w-3/5 p-6">
-          <h3 className="text-xl font-bold text-slate-800 mb-3">{title}</h3>
-          <div className="prose prose-slate max-w-none">
-            {typeof content === 'string' ? (
-              <p className="text-slate-600 leading-relaxed">{content}</p>
-            ) : (
-              content
-            )}
-          </div>
+        <div style={{ flex: 1, padding: 24 }}>
+          <h3 style={{ fontSize: 19, fontWeight: 700, color: B.navy, marginBottom: 12 }}>{title}</h3>
+          {typeof content === 'string' ? <p style={{ color: B.muted, lineHeight: 1.7, fontSize: 14 }}>{content}</p> : content}
         </div>
       </div>
     </div>
@@ -677,36 +299,17 @@ export function ImageTextCard({
 // ============================================================================
 // 6. SECTION DIVIDER
 // ============================================================================
-export function SectionDivider({ 
-  title, 
-  subtitle, 
-  sectionNumber, 
-  icon: Icon = BookOpen 
-}) {
+export function SectionDivider({ title, subtitle, sectionNumber }) {
   return (
-    <div className="relative py-12">
-      {/* Decorative line */}
-      <div className="absolute inset-0 flex items-center">
-        <div className="w-full border-t-2 border-slate-200"></div>
-      </div>
-      
-      {/* Content */}
-      <div className="relative flex justify-center">
-        <div className="bg-gradient-to-r from-teal-600 to-teal-500 rounded-2xl px-8 py-6 shadow-xl">
-          <div className="flex items-center gap-4">
-            {sectionNumber && (
-              <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center">
-                <span className="text-2xl font-bold text-white">{sectionNumber}</span>
-              </div>
-            )}
+    <div style={{ position: 'relative', padding: '48px 0' }}>
+      <div style={{ position: 'absolute', top: '50%', left: 0, right: 0, height: 2, background: B.border }}></div>
+      <div style={{ position: 'relative', display: 'flex', justifyContent: 'center' }}>
+        <div style={{ background: `linear-gradient(135deg, ${B.burgundy}, ${B.burgundyLt})`, borderRadius: 16, padding: '20px 32px', boxShadow: '0 4px 16px rgba(107,29,52,0.2)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+            {sectionNumber && <div style={{ width: 48, height: 48, borderRadius: '50%', background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><span style={{ fontSize: 22, fontWeight: 800, color: '#fff' }}>{sectionNumber}</span></div>}
             <div>
-              <div className="flex items-center gap-2">
-                <Icon className="w-5 h-5 text-teal-200" />
-                <h2 className="text-xl font-bold text-white">{title}</h2>
-              </div>
-              {subtitle && (
-                <p className="text-teal-100 text-sm mt-1">{subtitle}</p>
-              )}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}><BookOpen size={20} color="rgba(255,255,255,0.6)" /><h2 style={{ fontSize: 19, fontWeight: 700, color: '#fff', margin: 0 }}>{title}</h2></div>
+              {subtitle && <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: 13, marginTop: 4 }}>{subtitle}</p>}
             </div>
           </div>
         </div>
@@ -718,281 +321,100 @@ export function SectionDivider({
 // ============================================================================
 // 7. TIMED ASSESSMENT
 // ============================================================================
-export function TimedAssessment({
-  title = "Final Assessment",
-  questions, // Array of { question, options: [{ text, isCorrect }], explanation }
-  timeLimit = 30, // minutes
-  passThreshold = 0.8,
-  onComplete
-}) {
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [answers, setAnswers] = useState({});
-  const [timeRemaining, setTimeRemaining] = useState(timeLimit * 60);
-  const [isStarted, setIsStarted] = useState(false);
-  const [isComplete, setIsComplete] = useState(false);
-  const [isPaused, setIsPaused] = useState(false);
-  const timerRef = useRef(null);
+export function TimedAssessment({ title = "Final Assessment", questions, timeLimit = 30, passThreshold = 0.8, onComplete }) {
+  const [cq, setCq] = useState(0);
+  const [ans, setAns] = useState({});
+  const [time, setTime] = useState(timeLimit * 60);
+  const [started, setStarted] = useState(false);
+  const [done, setDone] = useState(false);
+  const ref = useRef(null);
 
   useEffect(() => {
-    if (isStarted && !isComplete && !isPaused && timeRemaining > 0) {
-      timerRef.current = setInterval(() => {
-        setTimeRemaining(prev => {
-          if (prev <= 1) {
-            clearInterval(timerRef.current);
-            finishAssessment();
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-    }
-    return () => clearInterval(timerRef.current);
-  }, [isStarted, isComplete, isPaused]);
+    if (started && !done && time > 0) { ref.current = setInterval(() => setTime(p => { if (p <= 1) { clearInterval(ref.current); finish(); return 0; } return p - 1; }), 1000); }
+    return () => clearInterval(ref.current);
+  }, [started, done]);
 
-  const formatTime = (seconds) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  const fmt = (s) => `${Math.floor(s/60)}:${(s%60).toString().padStart(2,'0')}`;
+  const getScore = () => questions.reduce((c, q, i) => ans[i] !== undefined && q.options[ans[i]]?.isCorrect ? c + 1 : c, 0);
+
+  const finish = () => {
+    setDone(true); clearInterval(ref.current);
+    const s = getScore();
+    if (onComplete) onComplete({ score: s, total: questions.length, percentage: s / questions.length, passed: s / questions.length >= passThreshold, timeUsed: timeLimit * 60 - time });
   };
 
-  const selectAnswer = (questionIndex, optionIndex) => {
-    setAnswers(prev => ({
-      ...prev,
-      [questionIndex]: optionIndex
-    }));
-  };
+  if (!started) return (
+    <div style={{ background: B.card, borderRadius: 16, border: `1px solid ${B.border}`, overflow: 'hidden' }}>
+      <div style={{ background: `linear-gradient(135deg, ${B.burgundy}, ${B.burgundyLt})`, padding: '16px 24px' }}><h3 style={{ color: '#fff', fontWeight: 700, fontSize: 19, margin: 0 }}>{title}</h3></div>
+      <div style={{ padding: 32, textAlign: 'center' }}>
+        <div style={{ width: 80, height: 80, borderRadius: '50%', background: B.burgundyBg, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px' }}><Clock size={40} color={B.burgundy} /></div>
+        <h4 style={{ fontSize: 22, fontWeight: 700, color: B.navy, marginBottom: 8 }}>Ready to Begin?</h4>
+        <p style={{ color: B.muted }}><strong>{questions.length}</strong> questions · <strong>{timeLimit}</strong> min · <strong>{Math.round(passThreshold * 100)}%</strong> to pass</p>
+        <button onClick={() => setStarted(true)} style={{ ...btnReset, marginTop: 24, padding: '12px 32px', background: B.burgundy, color: '#fff', borderRadius: 12, fontWeight: 700, fontSize: 15, display: 'inline-flex', alignItems: 'center', gap: 8 }}><Play size={20} /> Start Assessment</button>
+      </div>
+    </div>
+  );
 
-  const finishAssessment = () => {
-    setIsComplete(true);
-    clearInterval(timerRef.current);
-    
-    const correctCount = questions.reduce((count, q, i) => {
-      const selectedOption = answers[i];
-      if (selectedOption !== undefined && q.options[selectedOption]?.isCorrect) {
-        return count + 1;
-      }
-      return count;
-    }, 0);
-
-    if (onComplete) {
-      onComplete({
-        score: correctCount,
-        total: questions.length,
-        percentage: correctCount / questions.length,
-        passed: correctCount / questions.length >= passThreshold,
-        timeUsed: timeLimit * 60 - timeRemaining
-      });
-    }
-  };
-
-  const getScore = () => {
-    return questions.reduce((count, q, i) => {
-      const selectedOption = answers[i];
-      if (selectedOption !== undefined && q.options[selectedOption]?.isCorrect) {
-        return count + 1;
-      }
-      return count;
-    }, 0);
-  };
-
-  if (!isStarted) {
+  if (done) {
+    const s = getScore(); const pct = s / questions.length; const passed = pct >= passThreshold;
     return (
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-lg overflow-hidden">
-        <div className="bg-gradient-to-r from-slate-800 to-slate-700 px-6 py-4">
-          <h3 className="text-white font-bold text-xl">{title}</h3>
-        </div>
-        <div className="p-8 text-center">
-          <div className="w-20 h-20 rounded-full bg-teal-100 flex items-center justify-center mx-auto mb-6">
-            <Clock className="w-10 h-10 text-teal-600" />
+      <div style={{ background: B.card, borderRadius: 16, border: `1px solid ${B.border}`, overflow: 'hidden' }}>
+        <div style={{ background: passed ? B.green : B.err, padding: '16px 24px' }}><h3 style={{ color: '#fff', fontWeight: 700, fontSize: 19, margin: 0 }}>Assessment Complete</h3></div>
+        <div style={{ padding: 32, textAlign: 'center' }}>
+          <div style={{ width: 96, height: 96, borderRadius: '50%', background: passed ? B.okBg : B.errBg, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px' }}>
+            {passed ? <Award size={48} color={B.ok} /> : <AlertCircle size={48} color={B.err} />}
           </div>
-          <h4 className="text-2xl font-bold text-slate-800 mb-2">Ready to Begin?</h4>
-          <div className="text-slate-600 space-y-2 mb-8">
-            <p><strong>{questions.length}</strong> questions</p>
-            <p><strong>{timeLimit}</strong> minutes time limit</p>
-            <p><strong>{Math.round(passThreshold * 100)}%</strong> required to pass</p>
+          <h4 style={{ fontSize: 28, fontWeight: 800, color: passed ? B.ok : B.err }}>{passed ? 'Congratulations!' : 'Not Quite'}</h4>
+          <p style={{ color: B.muted }}>{passed ? 'You passed!' : `You need ${Math.round(passThreshold*100)}% to pass.`}</p>
+          <div style={{ background: B.navyBg, borderRadius: 12, padding: 24, margin: '24px 0' }}>
+            <div style={{ fontSize: 44, fontWeight: 800, color: B.navy }}>{Math.round(pct * 100)}%</div>
+            <p style={{ color: B.muted }}>{s} of {questions.length} correct</p>
           </div>
-          <button
-            onClick={() => setIsStarted(true)}
-            className="px-8 py-3 bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-xl transition-colors flex items-center gap-2 mx-auto"
-          >
-            <Play className="w-5 h-5" />
-            Start Assessment
-          </button>
+          {!passed && <button onClick={() => { setDone(false); setStarted(false); setCq(0); setAns({}); setTime(timeLimit*60); }} style={{ ...btnReset, display: 'inline-flex', alignItems: 'center', gap: 6, padding: '10px 24px', background: B.navyBg, borderRadius: 10, fontWeight: 600, color: B.navy }}><RotateCcw size={16} /> Retry</button>}
         </div>
       </div>
     );
   }
 
-  if (isComplete) {
-    const score = getScore();
-    const percentage = score / questions.length;
-    const passed = percentage >= passThreshold;
-
-    return (
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-lg overflow-hidden">
-        <div className={`px-6 py-4 ${passed ? 'bg-gradient-to-r from-emerald-600 to-emerald-500' : 'bg-gradient-to-r from-red-600 to-red-500'}`}>
-          <h3 className="text-white font-bold text-xl">Assessment Complete</h3>
-        </div>
-        <div className="p-8 text-center">
-          <div className={`w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6 ${
-            passed ? 'bg-emerald-100' : 'bg-red-100'
-          }`}>
-            {passed ? (
-              <Award className="w-12 h-12 text-emerald-600" />
-            ) : (
-              <AlertCircle className="w-12 h-12 text-red-600" />
-            )}
-          </div>
-          <h4 className={`text-3xl font-bold mb-2 ${passed ? 'text-emerald-600' : 'text-red-600'}`}>
-            {passed ? 'Congratulations!' : 'Not Quite'}
-          </h4>
-          <p className="text-slate-600 mb-6">
-            {passed ? 'You passed the assessment!' : `You need ${Math.round(passThreshold * 100)}% to pass.`}
-          </p>
-          
-          <div className="bg-slate-50 rounded-xl p-6 mb-6">
-            <div className="text-5xl font-bold text-slate-800 mb-2">
-              {Math.round(percentage * 100)}%
-            </div>
-            <p className="text-slate-500">
-              {score} of {questions.length} correct
-            </p>
-          </div>
-
-          {!passed && (
-            <button
-              onClick={() => {
-                setIsComplete(false);
-                setIsStarted(false);
-                setCurrentQuestion(0);
-                setAnswers({});
-                setTimeRemaining(timeLimit * 60);
-              }}
-              className="px-6 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-lg transition-colors flex items-center gap-2 mx-auto"
-            >
-              <RotateCcw className="w-4 h-4" />
-              Retry Assessment
-            </button>
-          )}
-        </div>
-      </div>
-    );
-  }
-
-  const question = questions[currentQuestion];
-  const timeWarning = timeRemaining < 300; // Less than 5 minutes
-
+  const q = questions[cq]; const warn = time < 300;
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 shadow-lg overflow-hidden">
-      {/* Header with timer */}
-      <div className="bg-gradient-to-r from-slate-800 to-slate-700 px-6 py-4 flex items-center justify-between">
-        <h3 className="text-white font-bold text-lg">{title}</h3>
-        <div className={`flex items-center gap-2 px-4 py-2 rounded-lg ${
-          timeWarning ? 'bg-red-500/20 text-red-300' : 'bg-white/10 text-white'
-        }`}>
-          <Clock className="w-4 h-4" />
-          <span className="font-mono font-bold">{formatTime(timeRemaining)}</span>
-        </div>
+    <div style={{ background: B.card, borderRadius: 16, border: `1px solid ${B.border}`, overflow: 'hidden' }}>
+      <div style={{ background: `linear-gradient(135deg, ${B.burgundy}, ${B.burgundyLt})`, padding: '16px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <h3 style={{ color: '#fff', fontWeight: 700, fontSize: 17, margin: 0 }}>{title}</h3>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 14px', borderRadius: 8, background: warn ? 'rgba(220,38,38,0.3)' : 'rgba(255,255,255,0.15)', color: warn ? '#FCA5A5' : '#fff' }}><Clock size={16} /><span style={{ fontFamily: 'monospace', fontWeight: 700 }}>{fmt(time)}</span></div>
       </div>
-
-      {/* Progress bar */}
-      <div className="h-1 bg-slate-200">
-        <div 
-          className="h-full bg-teal-500 transition-all"
-          style={{ width: `${(Object.keys(answers).length / questions.length) * 100}%` }}
-        />
-      </div>
-
-      <div className="p-6">
-        {/* Question counter */}
-        <div className="flex items-center justify-between mb-6">
-          <span className="text-sm text-slate-500">
-            Question {currentQuestion + 1} of {questions.length}
-          </span>
-          <span className="text-sm text-slate-500">
-            {Object.keys(answers).length} answered
-          </span>
+      <div style={{ height: 3, background: B.border }}><div style={{ height: '100%', background: B.green, width: `${(Object.keys(ans).length / questions.length) * 100}%`, transition: 'width 0.3s' }} /></div>
+      <div style={{ padding: 24 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 24 }}>
+          <span style={{ fontSize: 13, color: B.muted }}>Question {cq + 1} of {questions.length}</span>
+          <span style={{ fontSize: 13, color: B.muted }}>{Object.keys(ans).length} answered</span>
         </div>
-
-        {/* Question */}
-        <p className="text-lg text-slate-800 font-medium mb-6">{question.question}</p>
-
-        {/* Options */}
-        <div className="space-y-3 mb-8">
-          {question.options.map((option, index) => {
-            const isSelected = answers[currentQuestion] === index;
-            
+        <p style={{ fontSize: 17, color: B.navy, fontWeight: 600, marginBottom: 24 }}>{q.question}</p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 24 }}>
+          {q.options.map((o, i) => {
+            const s = ans[cq] === i;
             return (
-              <button
-                key={index}
-                onClick={() => selectAnswer(currentQuestion, index)}
-                className={`w-full text-left px-5 py-4 rounded-xl border-2 transition-all flex items-center gap-4 ${
-                  isSelected
-                    ? 'bg-teal-50 border-teal-400'
-                    : 'bg-slate-50 border-slate-200 hover:border-teal-300 hover:bg-teal-50'
-                }`}
-              >
-                <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
-                  isSelected
-                    ? 'bg-teal-500 border-teal-500 text-white'
-                    : 'border-slate-300'
-                }`}>
-                  <span className="text-sm font-semibold">
-                    {isSelected ? <Check className="w-4 h-4" /> : String.fromCharCode(65 + index)}
-                  </span>
+              <button key={i} onClick={() => setAns(p => ({...p, [cq]: i}))}
+                style={{ ...btnReset, width: '100%', textAlign: 'left', padding: '16px 20px', borderRadius: 12, border: `2px solid ${s ? B.green : B.border}`, background: s ? B.greenBg : B.bg, display: 'flex', alignItems: 'center', gap: 14 }}>
+                <div style={{ width: 32, height: 32, borderRadius: '50%', border: `2px solid ${s ? B.green : B.border}`, background: s ? B.green : 'transparent', color: s ? '#fff' : B.muted, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  {s ? <Check size={16} /> : <span style={{ fontSize: 14, fontWeight: 600 }}>{String.fromCharCode(65+i)}</span>}
                 </div>
-                <span className="font-medium text-slate-700">{option.text}</span>
+                <span style={{ fontWeight: 500, color: B.text }}>{o.text}</span>
               </button>
             );
           })}
         </div>
-
-        {/* Navigation */}
-        <div className="flex items-center justify-between pt-4 border-t border-slate-200">
-          <button
-            onClick={() => setCurrentQuestion(prev => Math.max(0, prev - 1))}
-            disabled={currentQuestion === 0}
-            className={`px-4 py-2 rounded-lg transition-colors ${
-              currentQuestion === 0
-                ? 'text-slate-300 cursor-not-allowed'
-                : 'text-slate-600 hover:bg-slate-100'
-            }`}
-          >
-            Previous
-          </button>
-
-          <div className="flex gap-1">
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: 16, borderTop: `1px solid ${B.border}` }}>
+          <button onClick={() => setCq(p => Math.max(0, p-1))} disabled={cq===0} style={{ ...btnReset, padding: '8px 16px', color: cq===0 ? B.light : B.navy, fontWeight: 500, background: 'none' }}>Previous</button>
+          <div style={{ display: 'flex', gap: 4 }}>
             {questions.map((_, i) => (
-              <button
-                key={i}
-                onClick={() => setCurrentQuestion(i)}
-                className={`w-8 h-8 rounded-full text-xs font-semibold transition-colors ${
-                  i === currentQuestion
-                    ? 'bg-teal-600 text-white'
-                    : answers[i] !== undefined
-                      ? 'bg-teal-100 text-teal-600'
-                      : 'bg-slate-100 text-slate-400 hover:bg-slate-200'
-                }`}
-              >
-                {i + 1}
-              </button>
+              <button key={i} onClick={() => setCq(i)} style={{ ...btnReset, width: 32, height: 32, borderRadius: '50%', fontWeight: 700, fontSize: 12, background: i === cq ? B.burgundy : ans[i] !== undefined ? B.burgundyBg : B.navyBg, color: i === cq ? '#fff' : ans[i] !== undefined ? B.burgundy : B.light }}>{i+1}</button>
             ))}
           </div>
-
-          {currentQuestion === questions.length - 1 ? (
-            <button
-              onClick={finishAssessment}
-              className="px-6 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg transition-colors"
-            >
-              Finish
-            </button>
+          {cq === questions.length - 1 ? (
+            <button onClick={finish} style={{ ...btnReset, padding: '10px 24px', background: B.green, color: '#fff', borderRadius: 10, fontWeight: 700 }}>Finish</button>
           ) : (
-            <button
-              onClick={() => setCurrentQuestion(prev => Math.min(questions.length - 1, prev + 1))}
-              className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
-            >
-              Next
-            </button>
+            <button onClick={() => setCq(p => Math.min(questions.length-1, p+1))} style={{ ...btnReset, padding: '8px 16px', color: B.navy, fontWeight: 500, background: 'none' }}>Next</button>
           )}
         </div>
       </div>
@@ -1003,80 +425,29 @@ export function TimedAssessment({
 // ============================================================================
 // 8. PROGRESS TRACKER
 // ============================================================================
-export function ProgressTracker({
-  sections, // Array of { title, completed, current }
-  currentSection,
-  completedSections,
-  totalTimeEstimate = "4 hours"
-}) {
-  const completionPercentage = Math.round((completedSections.length / sections.length) * 100);
-
+export function ProgressTracker({ sections, currentSection, completedSections, totalTimeEstimate = "4 hours" }) {
+  const pct = Math.round((completedSections.length / sections.length) * 100);
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 shadow-lg overflow-hidden">
-      <div className="bg-gradient-to-r from-teal-600 to-teal-500 px-6 py-4">
-        <div className="flex items-center justify-between">
-          <h3 className="text-white font-bold text-lg">Course Progress</h3>
-          <span className="text-teal-100 text-sm">{totalTimeEstimate}</span>
-        </div>
+    <div style={{ background: B.card, borderRadius: 16, border: `1px solid ${B.border}`, overflow: 'hidden' }}>
+      <div style={{ background: `linear-gradient(135deg, ${B.green}, ${B.greenLt})`, padding: '16px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <h3 style={{ color: '#fff', fontWeight: 700, fontSize: 17, margin: 0 }}>Course Progress</h3>
+        <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: 13 }}>{totalTimeEstimate}</span>
       </div>
-
-      <div className="p-6">
-        {/* Progress bar */}
-        <div className="mb-6">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-slate-600">Overall Progress</span>
-            <span className="text-sm font-bold text-teal-600">{completionPercentage}%</span>
-          </div>
-          <div className="h-3 bg-slate-100 rounded-full overflow-hidden">
-            <div 
-              className="h-full bg-gradient-to-r from-teal-500 to-emerald-500 rounded-full transition-all duration-500"
-              style={{ width: `${completionPercentage}%` }}
-            />
-          </div>
+      <div style={{ padding: 24 }}>
+        <div style={{ marginBottom: 24 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}><span style={{ fontSize: 13, fontWeight: 500, color: B.muted }}>Overall Progress</span><span style={{ fontSize: 13, fontWeight: 700, color: B.green }}>{pct}%</span></div>
+          <div style={{ height: 10, background: B.navyBg, borderRadius: 6, overflow: 'hidden' }}><div style={{ height: '100%', background: `linear-gradient(90deg, ${B.green}, ${B.greenLt})`, borderRadius: 6, width: `${pct}%`, transition: 'width 0.5s' }} /></div>
         </div>
-
-        {/* Section list */}
-        <div className="space-y-2">
-          {sections.map((section, index) => {
-            const isCompleted = completedSections.includes(index);
-            const isCurrent = currentSection === index;
-            
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+          {sections.map((s, i) => {
+            const d = completedSections.includes(i); const c = currentSection === i;
             return (
-              <div
-                key={index}
-                className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-colors ${
-                  isCurrent
-                    ? 'bg-teal-50 border border-teal-200'
-                    : isCompleted
-                      ? 'bg-emerald-50'
-                      : 'bg-slate-50'
-                }`}
-              >
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
-                  isCompleted
-                    ? 'bg-emerald-500 text-white'
-                    : isCurrent
-                      ? 'bg-teal-500 text-white'
-                      : 'bg-slate-200 text-slate-500'
-                }`}>
-                  {isCompleted ? (
-                    <Check className="w-4 h-4" />
-                  ) : (
-                    <span className="text-sm font-semibold">{index + 1}</span>
-                  )}
+              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', borderRadius: 12, background: c ? B.greenBg : d ? B.okBg : B.navyBg, border: c ? `1px solid ${B.green}33` : '1px solid transparent' }}>
+                <div style={{ width: 32, height: 32, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, background: d ? B.ok : c ? B.green : B.border, color: (d||c) ? '#fff' : B.muted }}>
+                  {d ? <Check size={16} /> : <span style={{ fontSize: 13, fontWeight: 700 }}>{i+1}</span>}
                 </div>
-                <div className="flex-1">
-                  <span className={`font-medium ${
-                    isCurrent ? 'text-teal-700' : isCompleted ? 'text-emerald-700' : 'text-slate-600'
-                  }`}>
-                    {section.title}
-                  </span>
-                </div>
-                {isCurrent && (
-                  <span className="text-xs font-semibold text-teal-600 bg-teal-100 px-2 py-1 rounded-full">
-                    In Progress
-                  </span>
-                )}
+                <span style={{ flex: 1, fontWeight: 500, color: c ? B.green : d ? B.ok : B.muted, fontSize: 14 }}>{s.title}</span>
+                {c && <span style={{ fontSize: 11, fontWeight: 700, color: B.green, background: B.greenBg, padding: '4px 10px', borderRadius: 20 }}>In Progress</span>}
               </div>
             );
           })}
@@ -1087,176 +458,419 @@ export function ProgressTracker({
 }
 
 // ============================================================================
-// DEMO COMPONENT - Shows all components in action
+// 9. CARD SORT
 // ============================================================================
-export default function InteractiveCourseDemo() {
-  const [completedSections, setCompletedSections] = useState([0, 1]);
-  
-  const accordionItems = [
-    { 
-      title: "Safety", 
-      content: "Ensuring physical and emotional safety for clients is the foundation of Trauma-Informed Care. This includes creating a welcoming environment and validating clients' experiences." 
-    },
-    { 
-      title: "Trustworthiness and Transparency", 
-      content: "Building trust with clients through transparency in operations and decision-making processes is essential for effective therapeutic relationships." 
-    },
-    { 
-      title: "Peer Support", 
-      content: "Utilizing peer support and mutual self-help as integral to the organizational and service delivery approach enhances recovery outcomes." 
-    },
-  ];
+export function CardSort({ categories = [], cards = [], instructions = "Sort each card into the correct category", explanation, onComplete }) {
+  const [placed, setPlaced] = useState({});
+  const [sub, setSub] = useState(false);
+  const [res, setRes] = useState(null);
+  const [drag, setDrag] = useState(null);
+  const unplaced = cards.filter(c => !placed[c.id]);
+  const allIn = Object.keys(placed).length === cards.length;
+  const catCol = [B.green, B.burgundy, B.gold, B.navy];
 
-  const matchingPairs = [
-    { term: "Acute Trauma", definition: "Results from a single incident" },
-    { term: "Chronic Trauma", definition: "Repeated and prolonged exposure to stressful events" },
-    { term: "Complex Trauma", definition: "Exposure to multiple traumatic events, often interpersonal" },
-  ];
-
-  const multipleChoiceQuestion = {
-    question: "Which principle of Trauma-Informed Care emphasizes the importance of creating a safe environment?",
-    options: [
-      { text: "Collaboration", isCorrect: false },
-      { text: "Safety", isCorrect: true },
-      { text: "Trustworthiness", isCorrect: false },
-      { text: "Empowerment", isCorrect: false },
-    ],
-    explanation: "Safety is the foundational principle that ensures physical and emotional safety for all clients, which is essential before any other therapeutic work can begin."
+  const check = () => {
+    let c = 0; cards.forEach(x => { if (placed[x.id] === x.correctCategory) c++; });
+    setRes({ correct: c, total: cards.length, score: Math.round((c / cards.length) * 100) });
+    setSub(true); if (onComplete) onComplete(c, cards.length);
   };
-
-  const multiSelectQuestion = {
-    question: "Which of the following are core components of Trauma-Informed Care?",
-    options: [
-      { text: "Empowerment", isCorrect: true },
-      { text: "Trustworthiness", isCorrect: true },
-      { text: "Safety", isCorrect: true },
-      { text: "Isolation", isCorrect: false },
-    ],
-    explanation: "Empowerment, Trustworthiness, and Safety are three of SAMHSA's six key principles of TIC. Isolation is the opposite of what TIC promotes."
-  };
-
-  const assessmentQuestions = [
-    {
-      question: "What percentage of adults have experienced at least one traumatic event according to WHO?",
-      options: [
-        { text: "50%", isCorrect: false },
-        { text: "60%", isCorrect: false },
-        { text: "70%", isCorrect: true },
-        { text: "80%", isCorrect: false },
-      ]
-    },
-    {
-      question: "Which type of trauma involves exposure to multiple traumatic events?",
-      options: [
-        { text: "Acute Trauma", isCorrect: false },
-        { text: "Chronic Trauma", isCorrect: false },
-        { text: "Complex Trauma", isCorrect: true },
-        { text: "Simple Trauma", isCorrect: false },
-      ]
-    },
-    {
-      question: "Which organization provides the six key principles for TIC?",
-      options: [
-        { text: "APA", isCorrect: false },
-        { text: "CDC", isCorrect: false },
-        { text: "SAMHSA", isCorrect: true },
-        { text: "WHO", isCorrect: false },
-      ]
-    },
-  ];
-
-  const courseSections = [
-    { title: "Introduction to Trauma-Informed Care" },
-    { title: "Core Components of TIC" },
-    { title: "Applying TIC in Clinical Settings" },
-    { title: "Prevalence and Impact of Trauma" },
-    { title: "TIC Principles (Interactive)" },
-    { title: "Challenges and Considerations" },
-    { title: "Key Trauma Assessments" },
-    { title: "Conclusion" },
-    { title: "Final Assessment" },
-  ];
+  const reset = () => { setPlaced({}); setSub(false); setRes(null); };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-teal-50 py-12 px-4">
-      <div className="max-w-4xl mx-auto space-y-12">
-        {/* Header */}
-        <div className="text-center">
-          <h1 className="text-4xl font-bold text-slate-800 mb-2">
-            CounselorReady Interactive Components
-          </h1>
-          <p className="text-slate-600">
-            Preview of all 8 interactive course features
-          </p>
+    <div style={{ background: B.card, borderRadius: 16, border: `1px solid ${B.border}`, overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
+      <div style={{ background: `linear-gradient(135deg, ${B.green}, ${B.greenLt})`, padding: '16px 24px' }}>
+        <h3 style={{ color: '#fff', fontWeight: 700, fontSize: 17, margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}><GripVertical size={20} /> Card Sort Activity</h3>
+        <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: 13, marginTop: 4 }}>{instructions}</p>
+      </div>
+      <div style={{ padding: 24 }}>
+        {unplaced.length > 0 && (
+          <div style={{ marginBottom: 20 }}>
+            <h4 style={{ fontWeight: 700, color: B.navy, fontSize: 12, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 10 }}>Cards to Sort</h4>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+              {unplaced.map(c => (
+                <div key={c.id} draggable={!sub} onDragStart={() => setDrag(c)}
+                  style={{ padding: '10px 16px', background: B.navyBg, border: `2px solid ${B.border}`, borderRadius: 10, cursor: 'grab', fontWeight: 500, fontSize: 13, color: B.navy }}>{c.text}</div>
+              ))}
+            </div>
+          </div>
+        )}
+        <div style={{ display: 'grid', gridTemplateColumns: `repeat(${Math.min(categories.length, 3)}, 1fr)`, gap: 16 }}>
+          {categories.map((cat, i) => {
+            const here = cards.filter(c => placed[c.id] === cat);
+            return (
+              <div key={cat} onDragOver={(e) => { if (!sub) e.preventDefault(); }} onDrop={() => { if (drag && !sub) { setPlaced(p => ({...p, [drag.id]: cat})); setDrag(null); } }}
+                style={{ minHeight: 120, borderRadius: 12, border: `2px dashed ${sub ? B.border : B.green + '66'}`, padding: 16, background: B.bg }}>
+                <h4 style={{ fontWeight: 700, fontSize: 13, color: B.navy, marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span style={{ width: 10, height: 10, borderRadius: '50%', background: catCol[i % catCol.length] }}></span>{cat}
+                  <span style={{ marginLeft: 'auto', fontSize: 11, color: B.light }}>{here.length}</span>
+                </h4>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  {here.map(c => {
+                    const ok = sub && c.correctCategory === cat; const bad = sub && c.correctCategory !== cat;
+                    return (
+                      <div key={c.id} style={{ padding: '8px 12px', borderRadius: 8, fontSize: 13, fontWeight: 500, display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: ok ? B.okBg : bad ? B.errBg : B.card, color: ok ? B.ok : bad ? B.err : B.text, border: `1px solid ${ok ? B.ok + '33' : bad ? B.err + '33' : B.border}` }}>
+                        <span>{c.text}</span>
+                        {!sub && <button onClick={() => setPlaced(p => { const n = {...p}; delete n[c.id]; return n; })} style={{ ...btnReset, background: 'none', color: B.light, padding: 0 }}><X size={14} /></button>}
+                        {ok && <CheckCircle2 size={14} color={B.ok} />}
+                        {bad && <X size={14} color={B.err} />}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })}
         </div>
-
-        {/* Progress Tracker */}
-        <section>
-          <h2 className="text-xl font-bold text-slate-700 mb-4">8. Progress Tracker</h2>
-          <ProgressTracker
-            sections={courseSections}
-            currentSection={2}
-            completedSections={completedSections}
-            totalTimeEstimate="4 CE Hours"
-          />
-        </section>
-
-        {/* Section Divider */}
-        <section>
-          <h2 className="text-xl font-bold text-slate-700 mb-4">6. Section Divider</h2>
-          <SectionDivider
-            sectionNumber={3}
-            title="Applying TIC in Clinical Settings"
-            subtitle="Assessment tools and treatment planning"
-          />
-        </section>
-
-        {/* Accordion */}
-        <section>
-          <h2 className="text-xl font-bold text-slate-700 mb-4">1. Expandable Accordion</h2>
-          <Accordion items={accordionItems} allowMultiple={true} />
-        </section>
-
-        {/* Image + Text Card */}
-        <section>
-          <h2 className="text-xl font-bold text-slate-700 mb-4">5. Image + Text Card</h2>
-          <ImageTextCard
-            title="Understanding Trauma Responses"
-            content="Trauma can alter brain structures like the amygdala, hippocampus, and prefrontal cortex, leading to changes in stress response, memory, and emotional regulation. Understanding these biological effects is crucial for effective clinical practice."
-            highlight={true}
-          />
-        </section>
-
-        {/* Multiple Choice */}
-        <section>
-          <h2 className="text-xl font-bold text-slate-700 mb-4">3. Multiple Choice Question</h2>
-          <MultipleChoice {...multipleChoiceQuestion} />
-        </section>
-
-        {/* Multi-Select */}
-        <section>
-          <h2 className="text-xl font-bold text-slate-700 mb-4">4. Multi-Select Question</h2>
-          <MultiSelect {...multiSelectQuestion} />
-        </section>
-
-        {/* Matching Exercise */}
-        <section>
-          <h2 className="text-xl font-bold text-slate-700 mb-4">2. Drag-and-Drop Matching</h2>
-          <MatchingExercise pairs={matchingPairs} />
-        </section>
-
-        {/* Timed Assessment */}
-        <section>
-          <h2 className="text-xl font-bold text-slate-700 mb-4">7. Timed Assessment</h2>
-          <TimedAssessment
-            title="Module Quiz"
-            questions={assessmentQuestions}
-            timeLimit={5}
-            passThreshold={0.8}
-            onComplete={(results) => console.log('Assessment complete:', results)}
-          />
-        </section>
+        <div style={{ marginTop: 24, paddingTop: 16, borderTop: `1px solid ${B.border}`, display: 'flex', justifyContent: sub ? 'space-between' : 'flex-end', alignItems: 'center' }}>
+          {sub && res ? (
+            <>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 16px', borderRadius: 10, background: res.score >= 80 ? B.okBg : B.goldBg }}><Award size={20} color={res.score >= 80 ? B.ok : B.gold} /><span style={{ fontWeight: 700 }}>{res.correct}/{res.total} ({res.score}%)</span></div>
+              <button onClick={reset} style={{ ...btnReset, display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px', background: B.navyBg, borderRadius: 10, fontWeight: 600, color: B.navy }}><RotateCcw size={16} /> Try Again</button>
+            </>
+          ) : (
+            <button onClick={check} disabled={!allIn} style={{ ...btnReset, display: 'flex', alignItems: 'center', gap: 8, padding: '10px 24px', borderRadius: 10, fontWeight: 700, background: allIn ? B.green : B.border, color: allIn ? '#fff' : B.light }}><Check size={16} /> Check Answers</button>
+          )}
+        </div>
       </div>
     </div>
+  );
+}
+
+// ============================================================================
+// 10. SEQUENCING
+// ============================================================================
+export function Sequencing({ steps = [], instructions = "Arrange the steps in the correct order", explanation, onComplete }) {
+  const shuf = (a) => { const r = [...a]; for (let i = r.length-1; i > 0; i--) { const j = Math.floor(Math.random()*(i+1)); [r[i],r[j]]=[r[j],r[i]]; } return r; };
+  const [items, setItems] = useState(() => shuf(steps));
+  const [sub, setSub] = useState(false);
+  const [res, setRes] = useState(null);
+  const [di, setDi] = useState(null);
+  const [oi, setOi] = useState(null);
+
+  const drop = (t) => { if (di===null||di===t) return; const n=[...items]; const [m]=n.splice(di,1); n.splice(t,0,m); setItems(n); setDi(null); setOi(null); };
+  const mv = (f,t) => { if(t<0||t>=items.length)return; const n=[...items]; const[m]=n.splice(f,1); n.splice(t,0,m); setItems(n); };
+  const check = () => { let c=0; const d=items.map((x,i)=>{ const ok=x.order===i+1; if(ok)c++; return{...x,isCorrect:ok}; }); setRes({correct:c,total:items.length,score:Math.round(c/items.length*100),details:d}); setSub(true); if(onComplete)onComplete(c,items.length); };
+  const reset = () => { setItems(shuf(steps)); setSub(false); setRes(null); };
+
+  return (
+    <div style={{ background: B.card, borderRadius: 16, border: `1px solid ${B.border}`, overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
+      <div style={{ background: `linear-gradient(135deg, ${B.navy}, ${B.navyLt})`, padding: '16px 24px' }}>
+        <h3 style={{ color: '#fff', fontWeight: 700, fontSize: 17, margin: 0 }}>📋 Sequencing Activity</h3>
+        <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 13, marginTop: 4 }}>{instructions}</p>
+      </div>
+      <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 6 }}>
+        {items.map((x, i) => {
+          const over = oi === i; const d = sub && res ? res.details[i] : null;
+          return (
+            <div key={x.id} draggable={!sub} onDragStart={() => setDi(i)} onDragOver={(e)=>{if(!sub){e.preventDefault();setOi(i);}}} onDragLeave={()=>setOi(null)} onDrop={()=>{if(!sub)drop(i);}} onDragEnd={()=>{setDi(null);setOi(null);}}
+              style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', borderRadius: 12, userSelect: 'none', border: `2px solid ${sub?(d?.isCorrect?B.ok+'66':B.err+'66'):over?B.gold:B.border}`, background: sub?(d?.isCorrect?B.okBg:B.errBg):over?B.goldBg:B.bg, cursor: sub?'default':'grab' }}>
+              <div style={{ width: 32, height: 32, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: sub?(d?.isCorrect?B.ok:B.err):B.navy, color: '#fff', fontWeight: 800, fontSize: 14, flexShrink: 0 }}>{sub?(d?.isCorrect?'✓':x.order):i+1}</div>
+              {!sub && <GripVertical size={14} color={B.light} style={{flexShrink:0}} />}
+              <span style={{ flex: 1, fontSize: 14, fontWeight: 500, color: B.text }}>{x.text}</span>
+              {!sub && <div style={{display:'flex',flexDirection:'column',gap:2}}>
+                <button onClick={()=>mv(i,i-1)} style={{...btnReset,background:'none',opacity:i===0?0.3:1,padding:2,lineHeight:1,fontSize:12}}>▲</button>
+                <button onClick={()=>mv(i,i+1)} style={{...btnReset,background:'none',opacity:i===items.length-1?0.3:1,padding:2,lineHeight:1,fontSize:12}}>▼</button>
+              </div>}
+              {sub && !d?.isCorrect && <span style={{fontSize:12,color:B.err,fontWeight:600}}>Correct: #{x.order}</span>}
+            </div>
+          );
+        })}
+        <div style={{ marginTop: 16, paddingTop: 16, borderTop: `1px solid ${B.border}`, display: 'flex', justifyContent: 'space-between' }}>
+          {sub ? (
+            <>
+              <div style={{display:'flex',alignItems:'center',gap:10,padding:'8px 16px',borderRadius:10,background:res.score>=80?B.okBg:B.goldBg}}><Award size={20} color={res.score>=80?B.ok:B.gold} /><span style={{fontWeight:700}}>{res.correct}/{res.total} ({res.score}%)</span></div>
+              <button onClick={reset} style={{...btnReset,display:'flex',alignItems:'center',gap:6,padding:'8px 16px',background:B.navyBg,borderRadius:10,fontWeight:600,color:B.navy}}><RotateCcw size={16} /> Try Again</button>
+            </>
+          ) : (
+            <>
+              <button onClick={reset} style={{...btnReset,padding:'8px 16px',background:B.navyBg,borderRadius:10,color:B.muted,fontSize:13}}>↺ Shuffle</button>
+              <button onClick={check} style={{...btnReset,display:'flex',alignItems:'center',gap:8,padding:'10px 24px',borderRadius:10,fontWeight:700,background:B.green,color:'#fff'}}><Check size={16} /> Check Order</button>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================================
+// 11. HOTSPOT
+// ============================================================================
+export function Hotspot({ hotspots = [], hotspotImage, imageDescription, instructions = "Click each point to explore", onComplete }) {
+  const [rev, setRev] = useState({});
+  const [active, setActive] = useState(null);
+  const allDone = Object.keys(rev).length === hotspots.length;
+  useEffect(() => { if (allDone && onComplete) onComplete(hotspots.length); }, [allDone]);
+  const tog = (id) => { setRev(p => ({...p, [id]: true})); setActive(active === id ? null : id); };
+  const info = hotspots.find(h => h.id === active);
+  const cols = [B.burgundy, B.green, B.gold, B.navy, '#6366F1', '#8B5CF6'];
+
+  return (
+    <div style={{ background: B.card, borderRadius: 16, border: `1px solid ${B.border}`, overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
+      <div style={{ background: `linear-gradient(135deg, ${B.burgundy}, ${B.burgundyLt})`, padding: '16px 24px' }}>
+        <h3 style={{ color: '#fff', fontWeight: 700, fontSize: 17, margin: 0 }}>🎯 Hotspot Activity</h3>
+        <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: 13, marginTop: 4 }}>{instructions}</p>
+        <span style={{ display: 'inline-block', marginTop: 8, background: 'rgba(255,255,255,0.2)', color: '#fff', borderRadius: 20, padding: '3px 12px', fontSize: 12, fontWeight: 600 }}>{Object.keys(rev).length}/{hotspots.length} discovered</span>
+      </div>
+      <div style={{ padding: 24 }}>
+        <div style={{ position: 'relative', borderRadius: 12, overflow: 'hidden', minHeight: 300, background: B.navyBg }}>
+          {hotspotImage?.url ? <img src={hotspotImage.url} alt={hotspotImage.alt || imageDescription || 'Diagram'} style={{ width: '100%', display: 'block' }} /> :
+           imageDescription ? <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 300, padding: 32 }}><p style={{ color: B.light, fontSize: 13, fontStyle: 'italic', textAlign: 'center' }}>{imageDescription}</p></div> :
+           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 300 }}><BookOpen size={64} color={B.border} /></div>}
+          {hotspots.map((s, i) => {
+            const a = active === s.id; const r = rev[s.id]; const c = s.color || cols[i % cols.length];
+            return (
+              <button key={s.id} onClick={() => tog(s.id)} style={{ ...btnReset, position: 'absolute', left: `${s.x}%`, top: `${s.y}%`, transform: 'translate(-50%,-50%)', width: a?44:32, height: a?44:32, borderRadius: '50%', background: a?c:r?c+'CC':c+'44', border: `3px solid ${c}`, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: a?`0 0 0 6px ${c}33, 0 4px 12px rgba(0,0,0,0.15)`:'0 2px 6px rgba(0,0,0,0.1)', zIndex: a?10:1, transition: 'all 0.2s' }}
+                aria-label={`Explore: ${s.label}`}><span style={{ color: a||r?'#fff':c, fontWeight: 800, fontSize: a?16:12 }}>{r?'✓':'?'}</span></button>
+            );
+          })}
+          <div style={{ position: 'absolute', bottom: 8, left: 8, display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+            {hotspots.map((s, i) => {
+              const c = s.color || cols[i % cols.length];
+              return <button key={s.id} onClick={() => tog(s.id)} style={{ ...btnReset, fontSize: 11, fontWeight: 600, padding: '4px 8px', borderRadius: 6, background: active===s.id?c:'#ffffffDD', color: active===s.id?'#fff':c, border: `1px solid ${c}66`, opacity: rev[s.id]?1:0.7 }}>{rev[s.id]?'✓ ':''}{s.label}</button>;
+            })}
+          </div>
+        </div>
+        {info && <div style={{ marginTop: 16, borderRadius: 12, padding: 16, background: B.navyBg, border: `1px solid ${B.border}` }}><h4 style={{ fontWeight: 700, color: B.navy, marginBottom: 4 }}>{info.label}</h4><p style={{ fontSize: 14, color: B.muted, lineHeight: 1.6, margin: 0 }}>{info.info}</p></div>}
+        {allDone && <div style={{ marginTop: 16, background: B.okBg, border: `1px solid ${B.ok}33`, borderRadius: 12, padding: 12, display: 'flex', alignItems: 'center', gap: 8 }}><CheckCircle2 size={20} color={B.ok} /><span style={{ color: B.ok, fontSize: 14, fontWeight: 600 }}>All regions explored! Activity complete.</span></div>}
+      </div>
+    </div>
+  );
+}
+
+// ============================================================================
+// 12. TIMELINE
+// ============================================================================
+export function Timeline({ events = [], instructions = "Arrange events in chronological order", onComplete }) {
+  const shuf = (a) => { const r = [...a]; for (let i = r.length-1; i > 0; i--) { const j = Math.floor(Math.random()*(i+1)); [r[i],r[j]]=[r[j],r[i]]; } return r; };
+  const [items, setItems] = useState(() => shuf(events));
+  const [sub, setSub] = useState(false);
+  const [res, setRes] = useState(null);
+  const [di, setDi] = useState(null);
+  const [oi, setOi] = useState(null);
+
+  const drop = (t) => { if(di===null||di===t)return; const n=[...items]; const[m]=n.splice(di,1); n.splice(t,0,m); setItems(n); setDi(null); setOi(null); };
+  const check = () => { let c=0; const d=items.map((x,i)=>{ const ok=x.order===i+1; if(ok)c++; return{...x,isCorrect:ok}; }); setRes({correct:c,total:items.length,score:Math.round(c/items.length*100),details:d}); setSub(true); if(onComplete)onComplete(c,items.length); };
+  const reset = () => { setItems(shuf(events)); setSub(false); setRes(null); };
+
+  return (
+    <div style={{ background: B.card, borderRadius: 16, border: `1px solid ${B.border}`, overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
+      <div style={{ background: `linear-gradient(135deg, ${B.green}, ${B.greenLt})`, padding: '16px 24px' }}>
+        <h3 style={{ color: '#fff', fontWeight: 700, fontSize: 17, margin: 0 }}>📅 Timeline Activity</h3>
+        <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: 13, marginTop: 4 }}>{instructions}</p>
+      </div>
+      <div style={{ padding: 24 }}>
+        <div style={{ position: 'relative', paddingLeft: 48 }}>
+          <div style={{ position: 'absolute', left: 20, top: 0, bottom: 0, width: 2, background: B.border }}></div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {items.map((x, i) => {
+              const over = oi === i; const d = sub && res ? res.details[i] : null;
+              return (
+                <div key={x.id} draggable={!sub} onDragStart={()=>setDi(i)} onDragOver={(e)=>{if(!sub){e.preventDefault();setOi(i);}}} onDragLeave={()=>setOi(null)} onDrop={()=>{if(!sub)drop(i);}} onDragEnd={()=>{setDi(null);setOi(null);}}
+                  style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', borderRadius: 12, border: `2px solid ${sub?(d?.isCorrect?B.ok+'66':B.err+'66'):over?B.gold:B.border}`, background: sub?(d?.isCorrect?B.okBg:B.errBg):over?B.goldBg:B.card, cursor: sub?'default':'grab' }}>
+                  <div style={{ position: 'absolute', left: -34, width: 14, height: 14, borderRadius: '50%', background: sub?(d?.isCorrect?B.ok:B.err):B.green, border: '2px solid #fff', boxShadow: `0 0 0 2px ${B.border}` }}></div>
+                  <span style={{ fontFamily: 'monospace', fontSize: 13, fontWeight: 700, minWidth: 50, color: sub?(d?.isCorrect?B.ok:B.err):B.burgundy }}>{x.year}</span>
+                  <span style={{ flex: 1, fontSize: 14, fontWeight: 500, color: B.text }}>{x.text}</span>
+                  {sub && d?.isCorrect && <CheckCircle2 size={14} color={B.ok} />}
+                  {sub && !d?.isCorrect && <span style={{ fontSize: 12, color: B.err, fontWeight: 600 }}>#{x.order}</span>}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+        <div style={{ marginTop: 24, paddingTop: 16, borderTop: `1px solid ${B.border}`, display: 'flex', justifyContent: 'space-between' }}>
+          {sub ? (
+            <>
+              <div style={{display:'flex',alignItems:'center',gap:10,padding:'8px 16px',borderRadius:10,background:res.score>=80?B.okBg:B.goldBg}}><Award size={20} color={res.score>=80?B.ok:B.gold} /><span style={{fontWeight:700}}>{res.correct}/{res.total} correct</span></div>
+              <button onClick={reset} style={{...btnReset,display:'flex',alignItems:'center',gap:6,padding:'8px 16px',background:B.navyBg,borderRadius:10,fontWeight:600,color:B.navy}}><RotateCcw size={16} /> Try Again</button>
+            </>
+          ) : (
+            <>
+              <button onClick={reset} style={{...btnReset,padding:'8px 16px',background:B.navyBg,borderRadius:10,color:B.muted,fontSize:13}}>↺ Shuffle</button>
+              <button onClick={check} style={{...btnReset,display:'flex',alignItems:'center',gap:8,padding:'10px 24px',borderRadius:10,fontWeight:700,background:B.green,color:'#fff'}}><Check size={16} /> Check Order</button>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================================
+// 13. SCENARIO TREE
+// ============================================================================
+export function ScenarioTree({ scenarioTitle, startNode, nodes = {}, onComplete }) {
+  const [cur, setCur] = useState(startNode);
+  const [hist, setHist] = useState([]);
+  const node = nodes[cur];
+  if (!node) return <div style={{ padding: 16, color: B.err }}>Missing node: {cur}</div>;
+
+  const choose = (next) => { setHist(p => [...p, cur]); setCur(next); if (nodes[next]?.isEnd && onComplete) onComplete(true); };
+  const back = () => { if (!hist.length) return; setCur(hist[hist.length-1]); setHist(h => h.slice(0,-1)); };
+  const restart = () => { setCur(startNode); setHist([]); };
+
+  return (
+    <div style={{ background: B.card, borderRadius: 16, border: `1px solid ${B.border}`, overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
+      <div style={{ background: `linear-gradient(135deg, ${B.burgundy}, ${B.burgundyLt})`, padding: '16px 24px' }}>
+        <h3 style={{ color: '#fff', fontWeight: 700, fontSize: 17, margin: 0 }}>🔀 {scenarioTitle || 'Clinical Scenario'}</h3>
+        <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 13, marginTop: 4 }}>Step {hist.length + 1}</p>
+      </div>
+      <div style={{ padding: 24 }}>
+        {node.feedback?.message && (
+          <div style={{ marginBottom: 16, padding: 16, borderRadius: 12, background: node.feedback.type==='positive'?B.okBg:node.feedback.type==='caution'?B.goldBg:B.navyBg, border: `1px solid ${node.feedback.type==='positive'?B.ok+'33':node.feedback.type==='caution'?B.gold+'33':B.border}`, display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+            {node.feedback.type==='positive' ? <CheckCircle2 size={20} color={B.ok} style={{marginTop:2,flexShrink:0}} /> : node.feedback.type==='caution' ? <AlertCircle size={20} color={B.gold} style={{marginTop:2,flexShrink:0}} /> : <Info size={20} color={B.muted} style={{marginTop:2,flexShrink:0}} />}
+            <p style={{ fontSize: 14, color: B.text, margin: 0, lineHeight: 1.6 }}>{node.feedback.message}</p>
+          </div>
+        )}
+        <p style={{ color: B.navy, lineHeight: 1.7, marginBottom: 24, fontSize: 15 }}>{node.text}</p>
+        {node.isEnd ? (
+          <div style={{ padding: 24, borderRadius: 12, textAlign: 'center', background: node.feedback?.type==='positive'?B.okBg:B.goldBg }}>
+            <Award size={40} color={node.feedback?.type==='positive'?B.ok:B.gold} style={{ margin: '0 auto 8px' }} />
+            <p style={{ fontWeight: 700, color: B.navy, marginBottom: 4 }}>Scenario Complete</p>
+            <p style={{ fontSize: 13, color: B.muted }}>You've completed this clinical scenario.</p>
+            <button onClick={restart} style={{ ...btnReset, marginTop: 16, display: 'inline-flex', alignItems: 'center', gap: 6, padding: '8px 20px', background: B.card, border: `1px solid ${B.border}`, borderRadius: 10, fontWeight: 600, color: B.navy }}><RotateCcw size={16} /> Try a Different Path</button>
+          </div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <p style={{ fontSize: 12, fontWeight: 700, color: B.light, textTransform: 'uppercase', letterSpacing: 1 }}>Choose your response:</p>
+            {(node.choices || []).map((ch, i) => (
+              <button key={i} onClick={() => choose(ch.next)}
+                style={{ ...btnReset, width: '100%', textAlign: 'left', padding: '16px 20px', borderRadius: 12, border: `2px solid ${B.border}`, background: B.bg, display: 'flex', alignItems: 'center', gap: 12 }}>
+                <div style={{ width: 32, height: 32, borderRadius: '50%', background: B.greenBg, color: B.green, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontWeight: 700, fontSize: 14 }}>{String.fromCharCode(65+i)}</div>
+                <span style={{ flex: 1, fontWeight: 500, color: B.text }}>{ch.text}</span>
+                <ArrowRight size={16} color={B.light} />
+              </button>
+            ))}
+          </div>
+        )}
+        {hist.length > 0 && !node.isEnd && (
+          <div style={{ marginTop: 16, paddingTop: 16, borderTop: `1px solid ${B.border}` }}>
+            <button onClick={back} style={{ ...btnReset, fontSize: 13, color: B.muted, background: 'none' }}>← Go Back</button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ============================================================================
+// 14. FLASHCARD DECK
+// ============================================================================
+export function FlashcardDeck({ flashcards = [], instructions, onComplete }) {
+  const [idx, setIdx] = useState(0);
+  const [flip, setFlip] = useState(false);
+  const [seen, setSeen] = useState(new Set());
+  const allDone = seen.size === flashcards.length;
+  const card = flashcards[idx];
+  useEffect(() => { if (allDone && onComplete) onComplete(flashcards.length); }, [allDone]);
+  const doFlip = () => { setFlip(!flip); if (!flip) setSeen(p => new Set([...p, idx])); };
+  if (!card) return null;
+
+  return (
+    <div style={{ background: B.card, borderRadius: 16, border: `1px solid ${B.border}`, overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
+      <div style={{ background: `linear-gradient(135deg, ${B.gold}, ${B.goldLt})`, padding: '16px 24px' }}>
+        <h3 style={{ color: '#fff', fontWeight: 700, fontSize: 17, margin: 0 }}>🃏 Flashcard Deck</h3>
+        {instructions && <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: 13, marginTop: 4 }}>{instructions}</p>}
+        <span style={{ display: 'inline-block', marginTop: 8, background: 'rgba(255,255,255,0.25)', color: '#fff', borderRadius: 20, padding: '3px 12px', fontSize: 12, fontWeight: 600 }}>{seen.size}/{flashcards.length} reviewed</span>
+      </div>
+      <div style={{ padding: 24 }}>
+        <div onClick={doFlip} style={{ minHeight: 220, borderRadius: 12, border: `2px solid ${B.border}`, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 32, position: 'relative', background: flip ? B.okBg : B.bg, transition: 'background 0.3s' }}>
+          <div style={{ textAlign: 'center' }}>
+            <p style={{ fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 12, color: flip ? B.ok : B.light }}>{flip ? 'Answer' : 'Term'} · Card {idx + 1} of {flashcards.length}</p>
+            <p style={{ fontSize: 18, fontWeight: 600, color: flip ? B.ok : B.navy, lineHeight: 1.5 }}>{flip ? card.back : card.front}</p>
+            <p style={{ fontSize: 12, color: B.light, marginTop: 16 }}>Click to {flip ? 'see term' : 'reveal answer'}</p>
+          </div>
+          {seen.has(idx) && <div style={{ position: 'absolute', top: 12, right: 12 }}><CheckCircle2 size={20} color={B.ok + '88'} /></div>}
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 16 }}>
+          <button onClick={() => { setFlip(false); setIdx(p => (p-1+flashcards.length)%flashcards.length); }} style={{ ...btnReset, padding: '8px 16px', color: B.navy, fontWeight: 500, background: 'none' }}>← Previous</button>
+          <div style={{ display: 'flex', gap: 4 }}>
+            {flashcards.map((_, i) => <button key={i} onClick={() => { setFlip(false); setIdx(i); }} style={{ ...btnReset, width: 10, height: 10, borderRadius: '50%', padding: 0, background: i === idx ? B.burgundy : seen.has(i) ? B.ok + '66' : B.border }} />)}
+          </div>
+          <button onClick={() => { setFlip(false); setIdx(p => (p+1)%flashcards.length); }} style={{ ...btnReset, padding: '8px 16px', color: B.navy, fontWeight: 500, background: 'none' }}>Next →</button>
+        </div>
+        {allDone && <div style={{ marginTop: 16, background: B.okBg, border: `1px solid ${B.ok}33`, borderRadius: 12, padding: 12, display: 'flex', alignItems: 'center', gap: 8 }}><CheckCircle2 size={20} color={B.ok} /><span style={{ color: B.ok, fontSize: 14, fontWeight: 600 }}>All cards reviewed! Activity complete.</span></div>}
+      </div>
+    </div>
+  );
+}
+
+// ============================================================================
+// 15. VIDEO EMBED
+// ============================================================================
+export function VideoEmbed({ videoUrl, videoTitle, videoDuration, markers = [], onComplete }) {
+  const [watched, setWatched] = useState(new Set());
+  const [active, setActive] = useState(null);
+  const allDone = watched.size === markers.length;
+  useEffect(() => { if (allDone && markers.length > 0 && onComplete) onComplete(markers.length); }, [allDone]);
+  const click = (m) => { setWatched(p => new Set([...p, m.id])); setActive(active === m.id ? null : m.id); };
+  const aData = markers.find(m => m.id === active);
+
+  return (
+    <div style={{ background: B.card, borderRadius: 16, border: `1px solid ${B.border}`, overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
+      <div style={{ background: `linear-gradient(135deg, ${B.navy}, #1E293B)`, padding: '16px 24px' }}>
+        <h3 style={{ color: '#fff', fontWeight: 700, fontSize: 17, margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}><Play size={20} /> {videoTitle || 'Video Content'}</h3>
+        {videoDuration && <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 13, marginTop: 4 }}>Duration: {videoDuration}</p>}
+      </div>
+      <div style={{ padding: 24 }}>
+        <div style={{ background: '#0F172A', borderRadius: 12, overflow: 'hidden', marginBottom: 16 }}>
+          {videoUrl ? (
+            <div style={{ aspectRatio: '16/9' }}><iframe src={videoUrl} style={{ width: '100%', height: '100%', border: 'none' }} allowFullScreen title={videoTitle || 'Video'} /></div>
+          ) : (
+            <div style={{ aspectRatio: '16/9', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div style={{ width: 60, height: 60, borderRadius: '50%', background: 'rgba(255,255,255,0.1)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}><Play size={28} color="rgba(255,255,255,0.6)" /></div>
+            </div>
+          )}
+          {markers.length > 0 && (
+            <div style={{ padding: '8px 16px', background: '#1E293B' }}>
+              <div style={{ position: 'relative', height: 6, background: 'rgba(255,255,255,0.1)', borderRadius: 3 }}>
+                {markers.map((m, i) => {
+                  const pct = markers.length > 1 ? (i / (markers.length - 1)) * 100 : 50;
+                  return <button key={m.id} onClick={() => click(m)} style={{ ...btnReset, position: 'absolute', left: `${pct}%`, top: '50%', transform: 'translate(-50%,-50%)', width: active===m.id?14:10, height: active===m.id?14:10, borderRadius: '50%', border: active===m.id?'2px solid #fff':'none', padding: 0, background: watched.has(m.id)?B.gold:'rgba(255,255,255,0.4)' }} title={`${m.time} — ${m.label}`} />;
+                })}
+              </div>
+            </div>
+          )}
+        </div>
+        {markers.length > 0 && (
+          <div style={{ marginBottom: 16 }}>
+            <p style={{ fontSize: 12, fontWeight: 700, color: B.light, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 10 }}>Key Moments</p>
+            {markers.map(m => (
+              <button key={m.id} onClick={() => click(m)} style={{ ...btnReset, width: '100%', display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px', marginBottom: 4, borderRadius: 8, textAlign: 'left', background: active===m.id?B.goldBg:'transparent' }}>
+                <span style={{ fontFamily: 'monospace', fontSize: 13, fontWeight: 700, color: B.burgundy, minWidth: 42 }}>{m.time}</span>
+                <span style={{ flex: 1, fontSize: 13, fontWeight: 500, color: B.text }}>{m.label}</span>
+                {watched.has(m.id) && <CheckCircle2 size={14} color={B.ok} />}
+                {m.prompt && !watched.has(m.id) && <span style={{ fontSize: 11, color: B.gold, fontWeight: 600 }}>💬</span>}
+              </button>
+            ))}
+          </div>
+        )}
+        {aData?.prompt && (
+          <div style={{ padding: 16, borderRadius: 12, background: B.goldBg, border: `1px solid ${B.gold}33`, marginBottom: 16 }}>
+            <p style={{ fontSize: 12, fontWeight: 700, color: '#92400E', marginBottom: 4 }}>💬 Discussion Prompt — {aData.time}</p>
+            <p style={{ fontSize: 14, color: B.text, lineHeight: 1.6, margin: 0 }}>{aData.prompt}</p>
+          </div>
+        )}
+        {allDone && markers.length > 0 && <div style={{ background: B.okBg, border: `1px solid ${B.ok}33`, borderRadius: 12, padding: 12, display: 'flex', alignItems: 'center', gap: 8 }}><CheckCircle2 size={20} color={B.ok} /><span style={{ color: B.ok, fontSize: 14, fontWeight: 600 }}>All key moments reviewed!</span></div>}
+      </div>
+    </div>
+  );
+}
+
+// ============================================================================
+// 16. STANDALONE IMAGE
+// ============================================================================
+export function ImageBlock({ imageUrl, imageAltText, imageCaption, imageSize = 'large', imageAlignment = 'center', onComplete }) {
+  useEffect(() => { if (onComplete) onComplete(); }, []);
+  const w = { small: '40%', medium: '60%', large: '85%', full: '100%' }[imageSize] || '85%';
+  return (
+    <figure style={{ margin: '24px 0', textAlign: imageAlignment }}>
+      {imageUrl ? (
+        <img src={imageUrl} alt={imageAltText || imageCaption || 'Course image'} style={{ width: w, maxWidth: '100%', borderRadius: 12, boxShadow: '0 2px 8px rgba(0,0,0,0.08)', display: 'inline-block' }} loading="lazy" />
+      ) : (
+        <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: B.navyBg, borderRadius: 12, padding: 48, width: w }}><BookOpen size={48} color={B.border} /></div>
+      )}
+      {imageCaption && <figcaption style={{ marginTop: 8, fontSize: 13, color: B.muted, fontStyle: 'italic', maxWidth: w, display: 'inline-block' }}>{imageCaption}</figcaption>}
+    </figure>
   );
 }
