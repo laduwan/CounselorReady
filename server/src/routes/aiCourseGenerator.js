@@ -1,7 +1,7 @@
 // routes/aiCourseGenerator.js
 import express from 'express';
 import Anthropic from '@anthropic-ai/sdk';
-import { protect, adminOnly } from '../middleware/auth.js';
+import { protect } from '../middleware/auth.js';
 
 const router = express.Router();
 
@@ -9,6 +9,15 @@ const router = express.Router();
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
 });
+
+// Middleware to check if user is admin
+const requireAdmin = (req, res, next) => {
+  if (req.user && req.user.role === 'admin') {
+    next();
+  } else {
+    res.status(403).json({ error: 'Admin access required' });
+  }
+};
 
 // Helper to generate module titles
 function getModuleTitle(topic, index) {
@@ -30,7 +39,7 @@ function getModuleTitle(topic, index) {
 // @route   POST /api/ai-course-generator/generate
 // @desc    Generate course outline and content using Claude
 // @access  Private/Admin
-router.post('/generate', protect, adminOnly, async (req, res) => {
+router.post('/generate', protect, requireAdmin, async (req, res) => {
   try {
     const { topic, ceHours, level, category, uploadedContent } = req.body;
 
