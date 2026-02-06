@@ -132,10 +132,6 @@
           <button onclick="showScormImport()" class="bg-forest-100 hover:bg-forest-200 text-forest-800 font-medium px-4 py-2 rounded-xl">
             📦 Import SCORM
           </button>
-          <button onclick="showAICourseBuilder()" class="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-semibold px-4 py-2 rounded-xl flex items-center gap-2">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-            Create with AI
-          </button>
           <button onclick="showNewCourseForm()" class="bg-burgundy-800 hover:bg-burgundy-900 text-white font-semibold px-4 py-2 rounded-xl">
             + New Course
           </button>
@@ -3109,18 +3105,9 @@
     let aiUploadedFile = null;
     
     function showAICourseBuilder() {
-      aiBuilderStep = 1;
-      aiGeneratedCourse = null;
-      aiUploadedFile = null;
-      document.getElementById('aiCourseFileInput').value = '';
-      document.getElementById('aiSelectedFileName').classList.add('hidden');
-      document.getElementById('aiCourseContentInput').value = '';
-      document.getElementById('aiKeyPointsInput').value = '';
-      document.getElementById('aiCourseCEHours').value = '3';
-      document.getElementById('aiGenerateQuizzes').checked = true;
-      document.getElementById('aiGenerateObjectives').checked = true;
-      updateAIBuilderUI();
-      document.getElementById('aiCourseBuilderModal').classList.remove('hidden');
+      // DISABLED: Use the full Course Builder instead
+      window.location.href = '/admin/course-builder';
+      return;
     }
     
     function closeAICourseBuilder() {
