@@ -8,7 +8,7 @@ import express from 'express';
 import multer from 'multer';
 import cloudinary from 'cloudinary';
 import { Readable } from 'stream';
-import { protect, adminOnly } from '../middleware/auth.js';
+import { protect, requireAdmin } from '../middleware/auth.js';
 
 const router = express.Router();
 
@@ -27,7 +27,7 @@ const upload = multer({
   }
 });
 
-router.post('/upload', protect, adminOnly, upload.single('image'), async (req, res) => {
+router.post('/upload', protect, requireAdmin, upload.single('image'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ success: false, error: { message: 'No image file provided' } });
     const folder = req.body.folder || 'counselorready/course-content';
@@ -61,14 +61,14 @@ router.post('/upload', protect, adminOnly, upload.single('image'), async (req, r
   }
 });
 
-router.delete('/:publicId(*)', protect, adminOnly, async (req, res) => {
+router.delete('/:publicId(*)', protect, requireAdmin, async (req, res) => {
   try {
     const result = await cloudinary.v2.uploader.destroy(req.params.publicId, { resource_type: 'image' });
     res.json({ success: result.result === 'ok' });
   } catch (error) { res.status(500).json({ success: false, error: error.message }); }
 });
 
-router.get('/browse', protect, adminOnly, async (req, res) => {
+router.get('/browse', protect, requireAdmin, async (req, res) => {
   try {
     const folder = req.query.folder || 'counselorready/course-content';
     const result = await cloudinary.v2.search.expression(`folder:${folder}`).sort_by('created_at', 'desc').max_results(50).execute();
