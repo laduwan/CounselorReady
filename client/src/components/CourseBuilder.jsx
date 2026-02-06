@@ -1154,6 +1154,53 @@ function getModuleTitle(topic, index) {
   return templates[index % templates.length];
 }
 
+function generateBlocksFromSource(mod, moduleIndex, outline) {
+  const src = mod.sourceContent || "";
+  // Split source content into paragraphs
+  const paragraphs = src.split(/\n{2,}/).filter(p => p.trim().length > 20);
+  const blocks = [];
+
+  // Section divider
+  blocks.push({ id: uid(), type: "sectionDivider", ...BLOCK_DEFAULTS.sectionDivider, title: mod.title, sectionNumber: mod.number });
+
+  // Create text blocks from source paragraphs (chunk into ~500 word segments)
+  let currentChunk = "";
+  paragraphs.forEach((p, i) => {
+    currentChunk += (currentChunk ? "\n\n" : "") + `<p>${p.trim()}</p>`;
+    if (countWords(currentChunk) > 500 || i === paragraphs.length - 1) {
+      blocks.push({ id: uid(), type: "text", content: currentChunk });
+      currentChunk = "";
+    }
+  });
+
+  // If very little content was parsed, add placeholder
+  if (blocks.length <= 1) {
+    blocks.push({ id: uid(), type: "text", content: `<h2>${mod.title}</h2><p>${src.substring(0, 3000)}</p>` });
+  }
+
+  // Add knowledge checks
+  const modTopic = mod.title.split(":").pop().trim();
+  blocks.push({ id: uid(), type: "multipleChoice", question: `Which of the following best describes a key concept from this module on ${modTopic}?`, options: [
+    { text: "A theoretical framework without empirical support", isCorrect: false },
+    { text: "An evidence-based approach grounded in current research", isCorrect: true },
+    { text: "A technique applicable only in group therapy settings", isCorrect: false },
+    { text: "An administrative process for clinical documentation", isCorrect: false },
+  ], explanation: `Evidence-based approaches grounded in current research are central to ${modTopic}.` });
+
+  blocks.push({ id: uid(), type: "reflection", question: `Based on what you've learned about ${modTopic}, how could you apply these concepts in your clinical practice? Describe a specific scenario.`, minLength: 100 });
+
+  if (mod.knowledgeChecks >= 3) {
+    blocks.push({ id: uid(), type: "multiSelect", question: `Select ALL that apply to best practices in ${modTopic}:`, options: [
+      { text: "Consideration of client cultural background", isCorrect: true },
+      { text: "Reliance solely on clinician intuition", isCorrect: false },
+      { text: "Integration of current research findings", isCorrect: true },
+      { text: "Adherence to ethical guidelines", isCorrect: true },
+    ], explanation: "Best practices require cultural consideration, research integration, and ethical adherence." });
+  }
+
+  return blocks;
+}
+
 function generateModuleBlocks(mod, moduleIndex, outline) {
   return [
     { id: uid(), type: "sectionDivider", ...BLOCK_DEFAULTS.sectionDivider, title: mod.title, sectionNumber: mod.number },
@@ -1191,6 +1238,127 @@ function AIGenerator({ onGenerated }) {
   const [outline, setOutline] = useState(null);
   const [progress, setProgress] = useState(0);
   const [generatingContent, setGeneratingContent] = useState(false);
+  const [uploadingOutline, setUploadingOutline] = useState(false);
+  const [uploadedFileName, setUploadedFileName] = useState(null);
+  const outlineFileRef = useRef();
+
+  // Parse uploaded file into outline
+  const handleOutlineUpload = async (file) => {
+    if (!file) return;
+    setUploadingOutline(true);
+
+    try {
+      let content = "";
+      const ext = file.name.split(".").pop().toLowerCase();
+
+      if (ext === "docx") {
+        content = await extractTextFromDocx(file);
+      } else if (ext === "pdf") {
+        content = await extractTextFromPdf(file);
+      } else {
+        content = await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = (e) => resolve(e.target.result);
+          reader.onerror = () => reject(new Error("Failed to read file"));
+          reader.readAsText(file);
+        });
+      }
+
+      if (!content || content.trim().length < 50) {
+        throw new Error("File appears empty");
+      }
+
+      // Extract title from filename
+      const fileTitle = file.name.replace(/\.(md|txt|markdown|docx|pdf)$/i, "").replace(/[_-]/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+      if (!topic.trim()) setTopic(fileTitle);
+
+      // Try to detect module/section headers
+      const detectedModules = [];
+      const patterns = [
+        /^#{1,2}\s*(?:MODULE|SECTION|CHAPTER)\s*(\d+)[:\s]*(.+)$/gim,
+        /^(?:MODULE|SECTION|CHAPTER)\s*(\d+)[:\s]*(.+)$/gim,
+        /^#{1,2}\s+(.+)$/gm,
+      ];
+
+      for (const pattern of patterns) {
+        let match;
+        while ((match = pattern.exec(content)) !== null) {
+          const title = (match[2] || match[1]).trim();
+          if (title.length > 3 && title.length < 200) {
+            detectedModules.push(title);
+          }
+        }
+        if (detectedModules.length >= 2) break;
+      }
+
+      // Get word count and content chunks per module
+      const contentChunks = [];
+      if (detectedModules.length >= 2) {
+        // Split content by detected headers
+        for (let i = 0; i < detectedModules.length; i++) {
+          const startIdx = content.indexOf(detectedModules[i]);
+          const endIdx = i < detectedModules.length - 1 ? content.indexOf(detectedModules[i + 1]) : content.length;
+          if (startIdx >= 0) {
+            contentChunks.push(content.substring(startIdx, endIdx > startIdx ? endIdx : content.length));
+          }
+        }
+      }
+
+      const totalWords = countWords(content);
+      const estimatedCE = Math.max(1, Math.round(totalWords / 6000));
+      setCeHours(Math.min(6, estimatedCE));
+
+      // Build modules from detected headers or create defaults
+      const moduleCount = detectedModules.length >= 2 ? detectedModules.length : Math.max(4, estimatedCE * 2);
+      const modules = Array.from({ length: moduleCount }, (_, i) => ({
+        id: uid(),
+        number: i + 1,
+        title: detectedModules[i] ? `Module ${i + 1}: ${detectedModules[i]}` : `Module ${i + 1}: ${getModuleTitle(fileTitle, i)}`,
+        estimatedWords: contentChunks[i] ? countWords(contentChunks[i]) : Math.ceil((ceHours * 6000) / moduleCount),
+        knowledgeChecks: 3,
+        blocks: [],
+        expanded: false,
+        sourceContent: contentChunks[i] || "",
+      }));
+
+      // Extract objectives if found
+      const objectives = [];
+      const objMatch = content.match(/(?:learning objectives|course objectives|objectives)[\s\S]*?(?=\n#{1,2}|\n---|\n\n\n)/i);
+      if (objMatch) {
+        const lines = objMatch[0].match(/^\s*(?:\d+[\.\)]\s+|[-•]\s+).+$/gm) || [];
+        lines.slice(0, 6).forEach(l => objectives.push(l.replace(/^\s*(?:\d+[\.\)]\s+|[-•]\s+)/, "").replace(/\*\*/g, "").trim()));
+      }
+
+      setOutline({
+        title: topic.trim() || `${fileTitle}: Evidence-Based Approaches for Mental Health Professionals`,
+        description: `This comprehensive ${estimatedCE}-hour continuing education course is based on uploaded content covering ${fileTitle.toLowerCase()}. Content will be expanded to meet ACEP standards with knowledge checks, interactive elements, and assessment items.`,
+        ceHours: Math.min(6, estimatedCE),
+        level,
+        category,
+        targetAudience: ["LPCs", "LMHCs", "LCSWs", "LMFTs", "Psychologists", "Psychiatric NPs"],
+        objectives: objectives.length > 0 ? objectives : [
+          `Define key concepts and frameworks related to ${(topic || fileTitle).toLowerCase()}`,
+          `Identify assessment tools and clinical indicators`,
+          `Apply evidence-based intervention strategies in clinical practice`,
+          `Evaluate ethical considerations and professional boundaries`,
+          `Develop a personalized implementation plan for integrating new knowledge`,
+        ],
+        modules,
+        totalEstimatedWords: Math.max(totalWords, estimatedCE * 6000),
+        references: 15,
+        assessment: { questions: [], passThreshold: 0.80 },
+        acepProvider: { name: "GA Integrated Therapeutic Perspectives LLC", number: "7760" },
+        _uploadedContent: content,
+      });
+
+      setUploadedFileName(file.name);
+      setStep("outline");
+    } catch (err) {
+      alert("Error parsing file: " + (err.message || "Unknown error"));
+    } finally {
+      setUploadingOutline(false);
+    }
+  };
 
   const generateOutline = () => {
     setStep("generating");
@@ -1251,9 +1419,13 @@ function AIGenerator({ onGenerated }) {
       setProgress(100);
       const courseData = {
         ...outline,
+        _uploadedContent: undefined,
         modules: outline.modules.map((mod, mi) => ({
           ...mod,
-          blocks: generateModuleBlocks(mod, mi, outline),
+          sourceContent: undefined,
+          blocks: mod.sourceContent
+            ? generateBlocksFromSource(mod, mi, outline)
+            : generateModuleBlocks(mod, mi, outline),
         })),
       };
       setGeneratingContent(false);
@@ -1276,8 +1448,48 @@ function AIGenerator({ onGenerated }) {
             </div>
             <div style={S.cardBody}>
               <p style={{ color: C.textMuted, fontSize: 14, marginBottom: 20, lineHeight: 1.6 }}>
-                Enter a topic and parameters. The AI will generate an ACEP-compliant course outline with modules, knowledge checks, and assessment items meeting the 6,000+ words/CE hour standard.
+                Enter a topic and parameters below, or <strong>upload an existing outline</strong> (.docx, .pdf, .md, .txt) to have the AI flesh it out into a full ACEP-compliant course.
               </p>
+
+              {/* Upload Outline Zone */}
+              <div style={{ marginBottom: 20 }}>
+                <label style={S.label}>Upload Outline (Optional)</label>
+                <input ref={outlineFileRef} type="file" accept=".docx,.pdf,.md,.txt,.markdown" style={{ display: "none" }}
+                  onChange={(e) => handleOutlineUpload(e.target.files?.[0])} />
+                <div
+                  onDragOver={(e) => { e.preventDefault(); e.currentTarget.style.borderColor = C.burgundy; e.currentTarget.style.background = C.burgundyFaded; }}
+                  onDragLeave={(e) => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.background = C.bg; }}
+                  onDrop={(e) => { e.preventDefault(); e.currentTarget.style.borderColor = C.border; e.currentTarget.style.background = C.bg; handleOutlineUpload(e.dataTransfer.files?.[0]); }}
+                  onClick={() => outlineFileRef.current?.click()}
+                  style={{ border: `2px dashed ${C.border}`, borderRadius: 10, padding: uploadingOutline ? 24 : 18, textAlign: "center", cursor: "pointer", background: C.bg, transition: "all 0.2s" }}>
+                  {uploadingOutline ? (
+                    <div>
+                      <Loader2 size={24} color={C.burgundy} style={{ animation: "spin 1s linear infinite", display: "inline-block" }} />
+                      <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
+                      <p style={{ fontWeight: 600, fontSize: 13, color: C.navy, margin: "8px 0 0" }}>Parsing document...</p>
+                    </div>
+                  ) : (
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 12 }}>
+                      <FileUp size={22} color={C.textLight} />
+                      <div style={{ textAlign: "left" }}>
+                        <div style={{ fontWeight: 600, fontSize: 13, color: C.navy }}>Drop your outline here or click to browse</div>
+                        <div style={{ fontSize: 11, color: C.textMuted }}>.docx, .pdf, .md, .txt — We'll detect modules and build the course structure</div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+                {uploadedFileName && (
+                  <div style={{ marginTop: 6, fontSize: 12, color: C.green, display: "flex", alignItems: "center", gap: 6 }}>
+                    <Check size={14} /> Loaded: {uploadedFileName}
+                  </div>
+                )}
+              </div>
+
+              <div style={{ position: "relative", textAlign: "center", margin: "0 0 20px" }}>
+                <div style={{ borderTop: `1px solid ${C.border}`, position: "absolute", top: "50%", left: 0, right: 0 }} />
+                <span style={{ background: C.card, padding: "0 16px", fontSize: 12, color: C.textMuted, position: "relative", fontWeight: 600 }}>OR ENTER MANUALLY</span>
+              </div>
+
               <div style={{ marginBottom: 16 }}>
                 <label style={S.label}>Course Topic *</label>
                 <input style={S.input} placeholder="e.g., Trauma-Informed Care and PTSD Treatment" value={topic} onChange={e => setTopic(e.target.value)} />
@@ -1357,6 +1569,7 @@ function AIGenerator({ onGenerated }) {
               <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                 <BookOpen size={20} color={C.green} />
                 <span style={{ fontWeight: 700, fontSize: 16 }}>Course Outline</span>
+                {uploadedFileName && <span style={S.badge(C.burgundy)}>📄 From: {uploadedFileName}</span>}
               </div>
               <div style={{ display: "flex", gap: 8 }}>
                 <button style={S.btnSecondary} onClick={() => setStep("input")}>
