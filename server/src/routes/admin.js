@@ -2659,7 +2659,7 @@ Generate the complete course now. The content MUST meet NBCC word count requirem
     try {
       const stream = await anthropic.messages.stream({
         model: 'claude-sonnet-4-20250514',
-        max_tokens: 16000,
+        max_tokens: 64000,
         messages
       });
       
@@ -2734,8 +2734,103 @@ Generate the complete course now. The content MUST meet NBCC word count requirem
       
     } catch (e) {
       console.error('Parse error:', e.message);
-      console.error('Response preview:', responseText.substring(0, 1000));
-      res.write(`data: ${JSON.stringify({ type: 'error', error: 'Failed to parse AI response. The AI may have returned invalid JSON.', details: e.message })}\n\n`);
+      console.error('Response length:', responseText.length);
+      
+      // SALVAGE: Extract whatever content we can from the broken JSON
+      sendProgress('JSON parse failed — salvaging content...', 92);
+      
+      try {
+        // Extract title
+        const titleMatch = responseText.match(/"title"\s*:\s*"([^"]+)"/);
+        const descMatch = responseText.match(/"description"\s*:\s*"((?:[^"\\]|\\.)*)"/);
+        const objectivesMatches = [...responseText.matchAll(/"objectives"\s*:\s*\[([\s\S]*?)\]/g)];
+        
+        // Extract all HTML content blocks from the response
+        const contentBlocks = [];
+        const contentRegex = /"content"\s*:\s*"((?:[^"\\]|\\["\\\/bfnrt]|\\u[0-9a-fA-F]{4})*)"/g;
+        let match;
+        while ((match = contentRegex.exec(responseText)) !== null) {
+          let content = match[1];
+          // Unescape JSON string
+          content = content.replace(/\\n/g, '\n').replace(/\\"/g, '"').replace(/\\\\/g, '\\');
+          if (content.length > 100) {
+            contentBlocks.push(content);
+          }
+        }
+        
+        // Extract module titles
+        const moduleTitles = [];
+        const titleRegex = /"title"\s*:\s*"([^"]+)"/g;
+        let titleMatch2;
+        while ((titleMatch2 = titleRegex.exec(responseText)) !== null) {
+          const t = titleMatch2[1];
+          if (t.length > 5 && t.length < 200 && !moduleTitles.includes(t)) {
+            moduleTitles.push(t);
+          }
+        }
+        
+        // Extract any quiz questions we can find
+        const questionMatches = [...responseText.matchAll(/"question"\s*:\s*"((?:[^"\\]|\\.)*)"/g)];
+        
+        if (contentBlocks.length > 0) {
+          // Build a salvaged course from extracted content
+          const salvaged = {
+            title: titleMatch ? titleMatch[1] : 'Salvaged Course',
+            description: descMatch ? descMatch[1].replace(/\\n/g, '\n').replace(/\\"/g, '"') : 'Course content was partially generated. Some content may be incomplete.',
+            modules: contentBlocks.map((content, i) => ({
+              title: moduleTitles[i + 1] || `Module ${i + 1}`,
+              description: '',
+              order: i + 1,
+              lessons: [{
+                title: moduleTitles[i + 1] || `Module ${i + 1} Content`,
+                type: 'text',
+                content: content,
+                duration: 30,
+                order: 1
+              }]
+            }))
+          };
+          
+          // Parse objectives if found
+          if (objectivesMatches.length > 0) {
+            const objText = objectivesMatches[0][1];
+            const objs = [...objText.matchAll(/"((?:[^"\\]|\\.)*)"/g)].map(m => m[1].replace(/\\"/g, '"'));
+            if (objs.length > 0) salvaged.objectives = objs;
+          }
+          
+          const totalWords = contentBlocks.reduce((sum, c) => sum + c.replace(/<[^>]*>/g, '').split(/\s+/).length, 0);
+          console.log(`SALVAGED: ${contentBlocks.length} content blocks, ~${totalWords} words from failed JSON parse`);
+          
+          sendProgress(`Salvaged ${contentBlocks.length} modules (~${totalWords.toLocaleString()} words) from partial response`, 100);
+          res.write(`data: ${JSON.stringify({ type: 'complete', success: true, course: salvaged, partial: true })}\n\n`);
+          res.end();
+          return;
+        }
+        
+        // Last resort: extract raw HTML tags
+        const rawHtml = responseText.match(/<h[23]>[\s\S]+/);
+        if (rawHtml && rawHtml[0].length > 500) {
+          const salvaged = {
+            title: titleMatch ? titleMatch[1] : 'Salvaged Course',
+            description: 'Content was partially generated from raw output.',
+            modules: [{
+              title: 'Generated Content',
+              order: 1,
+              lessons: [{ title: 'Content', type: 'text', content: rawHtml[0].substring(0, 50000), duration: 30, order: 1 }]
+            }]
+          };
+          
+          sendProgress('Salvaged raw content from partial response', 100);
+          res.write(`data: ${JSON.stringify({ type: 'complete', success: true, course: salvaged, partial: true })}\n\n`);
+          res.end();
+          return;
+        }
+      } catch (salvageError) {
+        console.error('Salvage also failed:', salvageError.message);
+      }
+      
+      // Only show total failure if salvage also failed
+      res.write(`data: ${JSON.stringify({ type: 'error', error: 'Failed to parse AI response and could not salvage content.', responseLength: responseText.length })}\n\n`);
       res.end();
       return;
     }
@@ -2900,6 +2995,200 @@ IMPORTANT:
   } catch (error) {
     console.error('Lesson regeneration error:', error);
     res.status(500).json({ error: 'Failed to regenerate lesson: ' + error.message });
+  }
+});
+
+// @route   POST /api/admin/module/generate
+// @desc    Generate content for a SINGLE module (used by CourseBuilder module-by-module generation)
+// @access  Admin only
+router.post('/module/generate', protect, adminOnly, async (req, res) => {
+  try {
+    if (!anthropic) {
+      return res.status(500).json({ error: 'AI service not configured. Set ANTHROPIC_API_KEY in environment.' });
+    }
+
+    const { 
+      courseTitle, 
+      moduleTitle, 
+      moduleNumber, 
+      totalModules, 
+      ceHours, 
+      category, 
+      sourceContent, 
+      additionalNotes,
+      generateQuiz 
+    } = req.body;
+
+    if (!moduleTitle) {
+      return res.status(400).json({ error: 'moduleTitle is required' });
+    }
+
+    const catNames = { core: 'Core/General', ethics: 'Ethics', supervision: 'Supervision', telehealth: 'Telehealth', cultural: 'Cultural Diversity', trauma: 'Trauma', substance: 'Substance Abuse', crisis: 'Crisis/Suicide' };
+    const catName = catNames[category] || 'Core/General';
+
+    // Calculate word target for this module
+    const totalWords = (ceHours || 3) * 6000;
+    const wordsForModule = Math.ceil(totalWords / (totalModules || 6));
+
+    const prompt = `You are an expert instructional designer creating continuing education content for licensed professional counselors.
+
+Generate COMPLETE, DETAILED content for ONE MODULE of a CE course.
+
+COURSE: ${courseTitle || 'Mental Health Counseling CE Course'}
+MODULE ${moduleNumber || 1} of ${totalModules || 6}: ${moduleTitle}
+CATEGORY: ${catName}
+TOTAL COURSE CE HOURS: ${ceHours || 3}
+
+${sourceContent ? `SOURCE CONTENT TO EXPAND:\n${sourceContent.substring(0, 3000)}\n` : ''}
+${additionalNotes ? `ADDITIONAL NOTES: ${additionalNotes}\n` : ''}
+
+CRITICAL WORD COUNT REQUIREMENT:
+This module MUST contain at least ${wordsForModule.toLocaleString()} words of educational content.
+NBCC requires 6,000 words per CE credit hour. Do NOT write brief summaries - write FULL textbook-quality content.
+
+Return ONLY valid JSON in this exact structure:
+{
+  "title": "${moduleTitle}",
+  "description": "2-3 sentence module description",
+  "content": "<h2>${moduleTitle}</h2><h3>Introduction</h3><p>Comprehensive opening (200+ words)...</p><h3>Theoretical Foundation</h3><p>Detailed theory section (400+ words)...</p><h3>Key Concepts</h3><p>In-depth concepts with definitions (500+ words)...</p><h3>Clinical Applications</h3><p>Practical techniques and interventions (500+ words)...</p><h3>Case Study</h3><p>Detailed clinical case illustration (400+ words)...</p><h3>Ethical Considerations</h3><p>ACA Code references and guidance (300+ words)...</p><h3>Evidence Base</h3><p>Research findings and citations (300+ words)...</p><h3>Summary</h3><p>Key takeaways (150+ words)...</p>"${generateQuiz !== false ? `,
+  "questions": [
+    {
+      "question": "Detailed scenario-based question?",
+      "type": "multiple_choice",
+      "options": ["Option A", "Option B", "Option C", "Option D"],
+      "correctAnswer": 0,
+      "explanation": "Why this is correct with content reference",
+      "points": 1
+    }
+  ]` : ''}
+}
+
+CONTENT REQUIREMENTS:
+- Write ${wordsForModule.toLocaleString()}+ words of actual educational content in the "content" field
+- Use HTML formatting: <h2>, <h3>, <p>, <ul>, <li>, <strong>, <em>
+- Write as if for a professional textbook chapter
+- Include specific clinical examples, techniques, and interventions
+- Reference the ACA Code of Ethics where relevant
+- Include research citations in the text (author, year format)
+${generateQuiz !== false ? `- Generate 3-5 quiz questions that test comprehension and application
+- Mix question types: multiple_choice, multiple_select, true_false
+- Include detailed explanations for all answers` : ''}
+
+Return ONLY the JSON object, no markdown code blocks.`;
+
+    console.log(`Generating module ${moduleNumber}/${totalModules}: ${moduleTitle} (target: ${wordsForModule} words)`);
+
+    const response = await anthropic.messages.create({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 16000,
+      messages: [{ role: 'user', content: prompt }]
+    });
+
+    const responseText = response.content[0].text;
+
+    let moduleData;
+    try {
+      let jsonText = responseText.replace(/```json\s*/gi, '').replace(/```\s*/g, '');
+      const startIdx = jsonText.indexOf('{');
+      const endIdx = jsonText.lastIndexOf('}');
+      if (startIdx === -1 || endIdx === -1 || endIdx < startIdx) {
+        throw new Error('No JSON found in response');
+      }
+      jsonText = jsonText.substring(startIdx, endIdx + 1);
+      jsonText = jsonText.replace(/,\s*}/g, '}').replace(/,\s*]/g, ']');
+      moduleData = JSON.parse(jsonText);
+    } catch (parseError) {
+      console.error('Module parse error:', parseError.message);
+      console.error('Response length:', responseText.length);
+      
+      // AGGRESSIVE SALVAGE: Extract whatever we can
+      // Strategy 1: Find the "content" field value even from broken JSON
+      const contentFieldMatch = responseText.match(/"content"\s*:\s*"((?:[^"\\]|\\["\\\/bfnrt]|\\u[0-9a-fA-F]{4})*)/);
+      if (contentFieldMatch && contentFieldMatch[1].length > 200) {
+        let salvaged = contentFieldMatch[1];
+        salvaged = salvaged.replace(/\\n/g, '\n').replace(/\\"/g, '"').replace(/\\\\/g, '\\').replace(/\\t/g, '\t');
+        // Clean up any trailing broken JSON
+        salvaged = salvaged.replace(/",?\s*"(questions|title|description)"[\s\S]*$/, '');
+        
+        // Extract questions if they exist before the break
+        const questions = [];
+        const qMatches = [...responseText.matchAll(/"question"\s*:\s*"((?:[^"\\]|\\.)*)"/g)];
+        const oMatches = [...responseText.matchAll(/"options"\s*:\s*\[((?:[^\]]*?))\]/g)];
+        const cMatches = [...responseText.matchAll(/"correctAnswer"\s*:\s*(\d+)/g)];
+        const eMatches = [...responseText.matchAll(/"explanation"\s*:\s*"((?:[^"\\]|\\.)*)"/g)];
+        
+        for (let qi = 0; qi < qMatches.length; qi++) {
+          const opts = oMatches[qi] ? [...oMatches[qi][1].matchAll(/"((?:[^"\\]|\\.)*)"/g)].map(m => m[1].replace(/\\"/g, '"')) : [];
+          if (opts.length >= 2) {
+            questions.push({
+              question: qMatches[qi][1].replace(/\\"/g, '"'),
+              type: 'multiple_choice',
+              options: opts,
+              correctAnswer: cMatches[qi] ? parseInt(cMatches[qi][1]) : 0,
+              explanation: eMatches[qi] ? eMatches[qi][1].replace(/\\"/g, '"') : '',
+              points: 1
+            });
+          }
+        }
+        
+        console.log(`SALVAGED from broken JSON: ~${salvaged.replace(/<[^>]*>/g, '').split(/\s+/).length} words, ${questions.length} questions`);
+        
+        moduleData = {
+          title: moduleTitle,
+          description: 'Content salvaged from partial AI response',
+          content: salvaged,
+          questions
+        };
+      } else {
+        // Strategy 2: Find raw HTML content
+        const contentMatch = responseText.match(/<h[23]>[\s\S]+/);
+        if (contentMatch) {
+          moduleData = {
+            title: moduleTitle,
+            description: '',
+            content: contentMatch[0].replace(/```\s*$/g, '').replace(/"[,\s]*$/, ''),
+            questions: []
+          };
+        } else {
+          // Strategy 3: Just use everything after the first <p> or <h tag
+          const anyHtml = responseText.match(/<(?:p|h\d|ul|ol|div)[^>]*>[\s\S]{200,}/);
+          if (anyHtml) {
+            moduleData = {
+              title: moduleTitle,
+              description: '',
+              content: anyHtml[0],
+              questions: []
+            };
+          } else {
+            return res.status(500).json({ 
+              error: 'Failed to parse AI response for this module', 
+              salvageAttempted: true,
+              responseLength: responseText.length 
+            });
+          }
+        }
+      }
+    }
+
+    // Count actual words
+    const actualWords = (moduleData.content || '').replace(/<[^>]*>/g, '').split(/\s+/).filter(w => w.length > 0).length;
+    console.log(`Module ${moduleNumber} generated: ${actualWords} words, ${(moduleData.questions || []).length} questions`);
+
+    res.json({
+      success: true,
+      module: {
+        title: moduleData.title || moduleTitle,
+        description: moduleData.description || '',
+        content: moduleData.content || '',
+        questions: moduleData.questions || [],
+        wordCount: actualWords,
+        targetWords: wordsForModule
+      }
+    });
+
+  } catch (error) {
+    console.error('Module generation error:', error);
+    res.status(500).json({ error: 'Failed to generate module: ' + error.message });
   }
 });
 
