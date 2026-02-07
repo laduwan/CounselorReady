@@ -28,6 +28,7 @@ import interactiveCourseRoutes from './routes/courseRoutes.js';
 import cebrokerRoutes from './routes/cebroker.js';
 import helpRoutes from './routes/help.js';
 import bulkUploadRoutes from './routes/bulkUpload.js';
+import aiRoutes from './routes/ai.js';
 import aiCourseGeneratorRoutes from './routes/aiCourseGenerator.js'; // ← NEW
 
 // Import services
@@ -145,6 +146,7 @@ app.use('/api/scorm', scormRoutes);
 app.use('/api/lti', ltiRoutes);
 app.use('/api/xapi', xapiRoutes);
 app.use('/api/cebroker', cebrokerRoutes);
+app.use('/api/ai', aiRoutes);
 app.use('/api/help', helpRoutes);
 app.use('/api/admin/courses', bulkUploadRoutes);
 app.use('/api/ai-course-generator', aiCourseGeneratorRoutes); // ← NEW
