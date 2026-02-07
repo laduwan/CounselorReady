@@ -114,7 +114,7 @@ async function callClaude(prompt, systemPrompt, maxTokens = 4096) {
 // General purpose AI generation endpoint
 // Body: { prompt, systemPrompt?, maxTokens? }
 
-router.post('/generate', protect, adminOnly, async (req, res) => {
+router.post('/generate', protect, isAdmin, async (req, res) => {
   try {
     const { prompt, systemPrompt, maxTokens } = req.body;
 
@@ -143,7 +143,7 @@ router.post('/generate', protect, adminOnly, async (req, res) => {
 // Generate a course outline from topic + parameters
 // Body: { topic, ceHours, level, category, additionalNotes?, uploadedContent? }
 
-router.post('/outline', protect, adminOnly, async (req, res) => {
+router.post('/outline', protect, isAdmin, async (req, res) => {
   try {
     const { topic, ceHours, level, category, additionalNotes, uploadedContent } = req.body;
 
@@ -248,7 +248,7 @@ Generate exactly ${moduleCount} modules with descriptive titles specific to "${t
 // Generate content blocks for a single module
 // Body: { module: { title, estimatedWords, knowledgeChecks, objectives }, courseTitle, courseTopic, moduleIndex }
 
-router.post('/content', protect, adminOnly, async (req, res) => {
+router.post('/content', protect, isAdmin, async (req, res) => {
   try {
     const { module: mod, courseTitle, courseTopic, moduleIndex, sourceContent } = req.body;
 
@@ -334,7 +334,7 @@ Make all knowledge check questions clinically relevant with plausible distractor
 // Per-block AI actions (expand, simplify, generate quiz, etc.)
 // Body: { action, block, context? }
 
-router.post('/block-action', protect, adminOnly, async (req, res) => {
+router.post('/block-action', protect, isAdmin, async (req, res) => {
   try {
     const { action, block, context } = req.body;
 
