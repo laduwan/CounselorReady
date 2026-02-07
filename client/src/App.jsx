@@ -3,6 +3,7 @@
 // Replace your existing App.jsx with this.
 // Pages marked "TODO" use AdminPlaceholder until you migrate the HTML pages to React.
 
+import { useRef } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useParams } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 
@@ -27,16 +28,62 @@ import AdminLayout from './components/AdminLayout';
 // Renders the old HTML page in an iframe so nothing breaks.
 // Replace each one with a real React component when ready.
 function AdminIframe({ page, title }) {
+  const iframeRef = useRef(null);
+
+  const handleIframeLoad = () => {
+    try {
+      const doc = iframeRef.current?.contentDocument;
+      if (!doc) return;
+
+      const style = doc.createElement('style');
+      style.textContent = `
+        aside, [class*="sidebar"], [class*="sidenav"], [class*="side-nav"] { display: none !important; }
+        body > header, body > nav, [class*="navbar"], [class*="topbar"], [class*="top-bar"], .admin-header { display: none !important; }
+        footer, [class*="footer"] { display: none !important; }
+        main, [class*="main-content"], [class*="content-area"], [class*="page-content"], .admin-content, [role="main"] {
+          margin-left: 0 !important; margin-top: 0 !important;
+          width: 100% !important; max-width: 100% !important; padding: 20px !important;
+        }
+        body { padding: 0 !important; margin: 0 !important; overflow-x: hidden; }
+      `;
+      doc.head.appendChild(style);
+
+      // JS cleanup for fixed/absolute positioned sidebars and headers
+      doc.querySelectorAll('div, aside, nav, header').forEach(el => {
+        const rect = el.getBoundingClientRect();
+        const cs = doc.defaultView.getComputedStyle(el);
+        const pos = cs.position;
+        if ((pos === 'fixed' || pos === 'absolute' || pos === 'sticky') &&
+            rect.width > 50 && rect.width < 300 && rect.height > 300 && rect.left < 10) {
+          el.style.display = 'none';
+        }
+        if ((pos === 'fixed' || pos === 'sticky') &&
+            rect.top < 5 && rect.width > 400 && rect.height < 120) {
+          el.style.display = 'none';
+        }
+      });
+
+      const main = doc.querySelector('main') || doc.querySelector('[role="main"]') ||
+                   doc.querySelector('[class*="content"]');
+      if (main) {
+        main.style.marginLeft = '0';
+        main.style.marginTop = '0';
+        main.style.width = '100%';
+      }
+    } catch (e) {
+      console.warn('Could not clean up iframe:', e);
+    }
+  };
+
   return (
     <AdminLayout title={title}>
       <div style={{ margin: "-24px -28px -40px", height: "calc(100vh - 56px)" }}>
         <iframe
-          src={`/${page}.html`}
+          ref={iframeRef}
+          src={`/${page}.html?embedded=1`}
           title={title}
-          style={{
-            width: "100%", height: "100%", border: "none",
-            background: "#F7F5F2",
-          }}
+          onLoad={handleIframeLoad}
+          style={{ width: "100%", height: "100%", border: "none", background: "#F7F5F2" }}
         />
       </div>
     </AdminLayout>
