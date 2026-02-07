@@ -14,7 +14,7 @@
 // ===================================================
 
 import express from 'express';
-import { protect, adminOnly } from '../middleware/auth.js';
+import { protect, isAdmin } from '../middleware/auth.js';
 
 const router = express.Router();
 
