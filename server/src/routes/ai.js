@@ -14,7 +14,10 @@
 // ===================================================
 
 import express from 'express';
-import { protect, adminOnly } from '../middleware/auth.js';const router = express.Router();
+import { protect, adminOnly } from '../middleware/auth.js';
+
+const router = express.Router();
+
 // ─── CONFIG ────────────────────────────────────────────────────
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
 const ANTHROPIC_MODEL = process.env.ANTHROPIC_MODEL || 'claude-sonnet-4-5-20250929';
@@ -111,7 +114,7 @@ async function callClaude(prompt, systemPrompt, maxTokens = 4096) {
 // General purpose AI generation endpoint
 // Body: { prompt, systemPrompt?, maxTokens? }
 
-router.post('/generate', authenticate, requireAdmin, async (req, res) => {
+router.post('/generate', protect, adminOnly, async (req, res) => {
   try {
     const { prompt, systemPrompt, maxTokens } = req.body;
 
@@ -140,7 +143,7 @@ router.post('/generate', authenticate, requireAdmin, async (req, res) => {
 // Generate a course outline from topic + parameters
 // Body: { topic, ceHours, level, category, additionalNotes?, uploadedContent? }
 
-router.post('/outline', authenticate, requireAdmin, async (req, res) => {
+router.post('/outline', protect, adminOnly, async (req, res) => {
   try {
     const { topic, ceHours, level, category, additionalNotes, uploadedContent } = req.body;
 
@@ -245,7 +248,7 @@ Generate exactly ${moduleCount} modules with descriptive titles specific to "${t
 // Generate content blocks for a single module
 // Body: { module: { title, estimatedWords, knowledgeChecks, objectives }, courseTitle, courseTopic, moduleIndex }
 
-router.post('/content', authenticate, requireAdmin, async (req, res) => {
+router.post('/content', protect, adminOnly, async (req, res) => {
   try {
     const { module: mod, courseTitle, courseTopic, moduleIndex, sourceContent } = req.body;
 
@@ -331,7 +334,7 @@ Make all knowledge check questions clinically relevant with plausible distractor
 // Per-block AI actions (expand, simplify, generate quiz, etc.)
 // Body: { action, block, context? }
 
-router.post('/block-action', authenticate, requireAdmin, async (req, res) => {
+router.post('/block-action', protect, adminOnly, async (req, res) => {
   try {
     const { action, block, context } = req.body;
 
@@ -403,7 +406,7 @@ router.post('/block-action', authenticate, requireAdmin, async (req, res) => {
 // ─── GET /api/ai/status ────────────────────────────────────────
 // Health check — is the AI configured and reachable?
 
-router.get('/status', authenticate, async (req, res) => {
+router.get('/status', protect, async (req, res) => {
   res.json({
     configured: !!ANTHROPIC_API_KEY,
     model: ANTHROPIC_MODEL,
