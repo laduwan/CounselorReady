@@ -14,9 +14,7 @@
 // ===================================================
 
 import express from 'express';
-import { protect, adminOnly } from '../middleware/auth.js';
-const router = express.Router();
-
+import { protect, adminOnly } from '../middleware/auth.js';const router = express.Router();
 // ─── CONFIG ────────────────────────────────────────────────────
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
 const ANTHROPIC_MODEL = process.env.ANTHROPIC_MODEL || 'claude-sonnet-4-5-20250929';
