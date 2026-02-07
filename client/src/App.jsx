@@ -1,3 +1,8 @@
+// UPDATED App.jsx — Admin routes wrapped in AdminLayout
+// ====================================================
+// Replace your existing App.jsx with this.
+// Pages marked "TODO" use AdminPlaceholder until you migrate the HTML pages to React.
+
 import { BrowserRouter, Routes, Route, Navigate, useParams } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 
@@ -16,110 +21,159 @@ import InteractiveCourseCatalog from './pages/InteractiveCourseCatalog';
 import Layout from './components/Layout';
 import CourseViewer from './components/CourseViewer';
 import CourseBuilder from './components/CourseBuilder';
+import AdminLayout from './components/AdminLayout';
 
-// Wrapper to pass slug param to CourseViewer
+// ─── Placeholder for admin pages not yet migrated from HTML ───
+// Renders the old HTML page in an iframe so nothing breaks.
+// Replace each one with a real React component when ready.
+function AdminIframe({ page, title }) {
+  return (
+    <AdminLayout title={title}>
+      <div style={{ margin: "-24px -28px -40px", height: "calc(100vh - 56px)" }}>
+        <iframe
+          src={`/${page}.html`}
+          title={title}
+          style={{
+            width: "100%", height: "100%", border: "none",
+            background: "#F7F5F2",
+          }}
+        />
+      </div>
+    </AdminLayout>
+  );
+}
+
+// ─── Admin Dashboard (simple overview — build out later) ──────
+function AdminDashboard() {
+  const stats = [
+    { label: "Total Users", value: "—", color: "#4A7C59", icon: "👥" },
+    { label: "Active Courses", value: "—", color: "#6B1D34", icon: "📚" },
+    { label: "Certificates Issued", value: "—", color: "#D4A855", icon: "🏅" },
+    { label: "CE Hours Delivered", value: "—", color: "#34495E", icon: "⏱" },
+  ];
+
+  return (
+    <AdminLayout title="Dashboard" subtitle="Overview">
+      <div style={{ marginBottom: 24 }}>
+        <h1 style={{ fontSize: 24, fontWeight: 700, color: "#2C2C2C", margin: "0 0 4px" }}>
+          Admin Dashboard
+        </h1>
+        <p style={{ fontSize: 14, color: "#6B7280", margin: 0 }}>
+          Welcome back. Here's what's happening on CounselorReady.
+        </p>
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 16, marginBottom: 32 }}>
+        {stats.map(s => (
+          <div key={s.label} style={{
+            background: "#fff", borderRadius: 12, padding: "20px 20px",
+            border: "1px solid #E8E4DF",
+            boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+          }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+              <span style={{ fontSize: 13, color: "#6B7280", fontWeight: 500 }}>{s.label}</span>
+              <span style={{ fontSize: 20 }}>{s.icon}</span>
+            </div>
+            <div style={{ fontSize: 28, fontWeight: 800, color: s.color, letterSpacing: "-0.02em" }}>
+              {s.value}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div style={{
+        background: "#fff", borderRadius: 12, padding: 24,
+        border: "1px solid #E8E4DF", textAlign: "center", color: "#6B7280",
+      }}>
+        <p style={{ fontSize: 14, margin: "0 0 8px" }}>
+          Dashboard stats will populate from your API endpoints.
+        </p>
+        <p style={{ fontSize: 12, margin: 0, opacity: 0.7 }}>
+          Wire up <code>GET /api/admin/stats</code> to see live data here.
+        </p>
+      </div>
+    </AdminLayout>
+  );
+}
+
+// ─── Route wrappers ───────────────────────────────────────────
 function CourseViewerWrapper() {
   const { slug } = useParams();
   return <CourseViewer courseSlug={slug} />;
 }
 
-// Protected Route wrapper
 function ProtectedRoute({ children }) {
   const { isAuthenticated, loading } = useAuth();
-  
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-moss-600"></div>
-      </div>
-    );
-  }
-  
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
-  }
-  
+  if (loading) return <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-moss-600" /></div>;
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
   return children;
 }
 
-// Public Route wrapper (redirect if already logged in)
+function AdminRoute({ children }) {
+  const { isAuthenticated, loading, user } = useAuth();
+  if (loading) return <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-moss-600" /></div>;
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
+  if (user?.role !== 'admin') return <Navigate to="/dashboard" replace />;
+  return children;
+}
+
 function PublicRoute({ children }) {
   const { isAuthenticated, loading } = useAuth();
-  
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-moss-600"></div>
-      </div>
-    );
-  }
-  
-  if (isAuthenticated) {
-    return <Navigate to="/dashboard" replace />;
-  }
-  
+  if (loading) return <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-moss-600" /></div>;
+  if (isAuthenticated) return <Navigate to="/dashboard" replace />;
   return children;
 }
 
+// ─── App Routes ───────────────────────────────────────────────
 function AppRoutes() {
   return (
     <Routes>
-      {/* Public routes */}
+      {/* ── Public ── */}
       <Route path="/" element={<Landing />} />
-      <Route path="/login" element={
-        <PublicRoute><Login /></PublicRoute>
-      } />
-      <Route path="/register" element={
-        <PublicRoute><Register /></PublicRoute>
-      } />
-      
-      {/* Protected routes */}
-      <Route path="/dashboard" element={
-        <ProtectedRoute>
-          <Layout><Dashboard /></Layout>
-        </ProtectedRoute>
-      } />
-      <Route path="/courses" element={
-        <ProtectedRoute>
-          <Layout><Courses /></Layout>
-        </ProtectedRoute>
-      } />
-      <Route path="/courses/:slug" element={
-        <ProtectedRoute>
-          <Layout><CourseView /></Layout>
-        </ProtectedRoute>
-      } />
-      
-      {/* Interactive Courses */}
-      <Route path="/learn" element={
-        <ProtectedRoute>
-          <Layout><InteractiveCourseCatalog /></Layout>
-        </ProtectedRoute>
-      } />
-      <Route path="/learn/:slug" element={
-        <ProtectedRoute>
-          <CourseViewerWrapper />
-        </ProtectedRoute>
-      } />
-      
-      <Route path="/credentials" element={
-        <ProtectedRoute>
-          <Layout><Credentials /></Layout>
-        </ProtectedRoute>
-      } />
-      <Route path="/settings" element={
-        <ProtectedRoute>
-          <Layout><Settings /></Layout>
-        </ProtectedRoute>
-      } />
-      
-      {/* Admin routes */}
+      <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
+      <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
+
+      {/* ── User (protected) ── */}
+      <Route path="/dashboard" element={<ProtectedRoute><Layout><Dashboard /></Layout></ProtectedRoute>} />
+      <Route path="/courses" element={<ProtectedRoute><Layout><Courses /></Layout></ProtectedRoute>} />
+      <Route path="/courses/:slug" element={<ProtectedRoute><Layout><CourseView /></Layout></ProtectedRoute>} />
+      <Route path="/learn" element={<ProtectedRoute><Layout><InteractiveCourseCatalog /></Layout></ProtectedRoute>} />
+      <Route path="/learn/:slug" element={<ProtectedRoute><CourseViewerWrapper /></ProtectedRoute>} />
+      <Route path="/credentials" element={<ProtectedRoute><Layout><Credentials /></Layout></ProtectedRoute>} />
+      <Route path="/settings" element={<ProtectedRoute><Layout><Settings /></Layout></ProtectedRoute>} />
+
+      {/* ── Admin ── */}
+      {/* Dashboard */}
+      <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
+
+      {/* Content */}
+      <Route path="/admin/courses" element={<AdminRoute><AdminIframe page="admin-courses" title="Courses" /></AdminRoute>} />
       <Route path="/admin/course-builder" element={
-        <ProtectedRoute>
-          <CourseBuilder />
-        </ProtectedRoute>
+        <AdminRoute>
+          <AdminLayout title="Course Builder" subtitle="17 Block Types">
+            <CourseBuilder />
+          </AdminLayout>
+        </AdminRoute>
       } />
-      
+      <Route path="/admin/course-preview" element={<AdminRoute><AdminIframe page="admin-course-preview" title="Course Preview" /></AdminRoute>} />
+      <Route path="/admin/import" element={<AdminRoute><AdminIframe page="admin-import" title="Import Content" /></AdminRoute>} />
+      <Route path="/admin/video-upload" element={<AdminRoute><AdminIframe page="admin-video-upload" title="Video Upload" /></AdminRoute>} />
+
+      {/* People */}
+      <Route path="/admin/users" element={<AdminRoute><AdminIframe page="admin-users" title="Users" /></AdminRoute>} />
+      <Route path="/admin/messages" element={<AdminRoute><AdminIframe page="admin-messages" title="Messages" /></AdminRoute>} />
+      <Route path="/admin/hardship" element={<AdminRoute><AdminIframe page="admin-hardship" title="Hardship Applications" /></AdminRoute>} />
+
+      {/* Credentials */}
+      <Route path="/admin/credentials" element={<AdminRoute><AdminIframe page="admin-credentials" title="CE Credentials" /></AdminRoute>} />
+      <Route path="/admin/analytics" element={<AdminRoute><AdminIframe page="admin-analytics" title="Analytics" /></AdminRoute>} />
+
+      {/* Platform */}
+      <Route path="/admin/coupons" element={<AdminRoute><AdminIframe page="admin-coupons" title="Coupons & Billing" /></AdminRoute>} />
+      <Route path="/admin/help" element={<AdminRoute><AdminIframe page="admin-help" title="Help Center" /></AdminRoute>} />
+      <Route path="/admin/integrations" element={<AdminRoute><AdminIframe page="admin-integrations" title="Integrations" /></AdminRoute>} />
+      <Route path="/admin/migration" element={<AdminRoute><AdminIframe page="admin-migration" title="LMS Migration" /></AdminRoute>} />
+
       {/* Catch all */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
