@@ -1,0 +1,142 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply font-body text-forest-700 bg-stone-50;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display text-burgundy-800;
+  }
+}
+
+@layer components {
+  /* Primary Button */
+  .btn-primary {
+    @apply bg-forest-600 hover:bg-forest-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200;
+  }
+  
+  /* Secondary Button */
+  .btn-secondary {
+    @apply bg-white hover:bg-gray-50 text-forest-600 border border-forest-600 font-medium py-2 px-4 rounded-lg transition-colors duration-200;
+  }
+  
+  /* Tertiary Button */
+  .btn-tertiary {
+    @apply bg-burgundy-800 hover:bg-burgundy-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200;
+  }
+  
+  /* Card Container */
+  .card {
+    @apply bg-white rounded-xl shadow-sm border border-forest-200 p-6;
+  }
+  
+  /* Input Field */
+  .input-field {
+    @apply w-full px-4 py-2 border border-forest-200 rounded-lg focus:ring-2 focus:ring-burgundy-500 focus:border-burgundy-500 outline-none transition-all duration-200;
+  }
+  
+  /* Label */
+  .label {
+    @apply block text-sm font-medium text-forest-700 mb-2;
+  }
+  
+  /* Badge */
+  .badge {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-sm font-medium;
+  }
+  
+  .badge-success {
+    @apply bg-forest-100 text-forest-700;
+  }
+  
+  .badge-warning {
+    @apply bg-honey-400 text-burgundy-900;
+  }
+  
+  .badge-info {
+    @apply bg-burgundy-100 text-burgundy-800;
+  }
+  
+  /* Loading Spinner */
+  .spinner {
+    @apply animate-spin h-8 w-8 border-4 border-burgundy-200 border-t-burgundy-700 rounded-full;
+  }
+  
+  /* Page Container */
+  .page-container {
+    @apply min-h-screen bg-stone-50;
+  }
+  
+  /* Content Wrapper */
+  .content-wrapper {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8;
+  }
+  
+  /* Header/Nav */
+  .header-nav {
+    @apply bg-white border-b border-burgundy-100 sticky top-0 z-50;
+  }
+  
+  /* Grid Container */
+  .grid-container {
+    @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6;
+  }
+  
+  /* Link Styles */
+  .link-primary {
+    @apply text-forest-600 hover:text-forest-700 font-medium underline-offset-4 hover:underline transition-colors duration-200;
+  }
+  
+  .link-secondary {
+    @apply text-burgundy-800 hover:text-burgundy-700 font-medium underline-offset-4 hover:underline transition-colors duration-200;
+  }
+  
+  /* Progress Bar */
+  .progress-bar {
+    @apply w-full bg-forest-100 rounded-full h-2 overflow-hidden;
+  }
+  
+  .progress-fill {
+    @apply bg-forest-600 h-full transition-all duration-300 ease-out;
+  }
+  
+  /* Alert/Notice */
+  .alert {
+    @apply p-4 rounded-lg border;
+  }
+  
+  .alert-success {
+    @apply bg-forest-100 border-forest-200 text-forest-700;
+  }
+  
+  .alert-warning {
+    @apply bg-honey-400 bg-opacity-20 border-honey-400 text-burgundy-900;
+  }
+  
+  .alert-error {
+    @apply bg-burgundy-100 border-burgundy-200 text-burgundy-800;
+  }
+  
+  .alert-info {
+    @apply bg-stone-100 border-stone-200 text-forest-700;
+  }
+}
+
+@layer utilities {
+  /* Text gradient for logo */
+  .text-gradient-logo {
+    @apply bg-gradient-to-r from-burgundy-700 to-burgundy-800 bg-clip-text text-transparent;
+  }
+  
+  /* Focus ring utility */
+  .focus-ring {
+    @apply focus:ring-2 focus:ring-burgundy-500 focus:ring-offset-2 outline-none;
+  }
+}
