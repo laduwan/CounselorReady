@@ -2263,12 +2263,148 @@ export default function CourseBuilderV2() {
     acepProvider: { name: "GA Integrated Therapeutic Perspectives LLC", number: "7760" },
   });
 
+  // --- Load / Save state ---
+  const [loadedCourseId, setLoadedCourseId] = useState(null);
+  const [showLoadModal, setShowLoadModal] = useState(false);
+  const [courseList, setCourseList] = useState([]);
+  const [loadingList, setLoadingList] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [saveMsg, setSaveMsg] = useState(null);
+  const [loadSearch, setLoadSearch] = useState("");
+
+  const API_URL = import.meta.env.VITE_API_URL || "https://api.counselorready.com";
+  const getToken = () => localStorage.getItem("token");
+
+  // Fetch course list for Load modal
+  const fetchCourseList = async () => {
+    setLoadingList(true);
+    try {
+      const res = await fetch(`${API_URL}/api/admin/courses`, {
+        headers: { Authorization: `Bearer ${getToken()}` },
+      });
+      if (!res.ok) throw new Error("Failed to fetch courses");
+      const data = await res.json();
+      // API may return { courses: [...] } or just [...]
+      const courses = Array.isArray(data) ? data : (data.courses || []);
+      setCourseList(courses);
+    } catch (err) {
+      console.error("Load courses error:", err);
+      alert("Failed to load course list: " + err.message);
+    }
+    setLoadingList(false);
+  };
+
+  // Load a specific course by ID
+  const loadCourse = async (id) => {
+    try {
+      const res = await fetch(`${API_URL}/api/admin/courses/${id}`, {
+        headers: { Authorization: `Bearer ${getToken()}` },
+      });
+      if (!res.ok) throw new Error("Failed to load course");
+      const course = await res.json();
+
+      // Convert to CourseBuilder format
+      const builderData = {
+        title: course.title || "Untitled",
+        subtitle: course.subtitle || "",
+        description: course.description || "",
+        ceHours: course.ceHours || course.ceuCategories?.total || 1,
+        level: course.level || "Intermediate",
+        category: course.category || "Clinical Practice",
+        courseCode: course.courseCode || "",
+        objectives: course.objectives || [],
+        targetAudience: course.targetAudience || ["LPCs", "LMHCs", "LCSWs", "LMFTs"],
+        modules: (course.modules || []).map((mod, i) => ({
+          id: mod._id || uid(),
+          number: mod.number || i + 1,
+          title: mod.title || `Module ${i + 1}`,
+          description: mod.description || "",
+          blocks: (mod.blocks || mod.lessons || []).map(b => ({
+            id: b._id || b.id || uid(),
+            type: b.type || "text",
+            ...b,
+          })),
+          knowledgeChecks: mod.knowledgeChecks || 3,
+        })),
+        assessment: course.assessment || { questions: [], passThreshold: 0.80 },
+        acepProvider: { name: "GA Integrated Therapeutic Perspectives LLC", number: "7760" },
+        status: course.status || "draft",
+      };
+
+      setCourseData(builderData);
+      setLoadedCourseId(id);
+      setShowLoadModal(false);
+      setActiveTab(1); // Jump to Content Editor
+      setSaveMsg({ type: "ok", text: `Loaded: ${builderData.title}` });
+      setTimeout(() => setSaveMsg(null), 3000);
+    } catch (err) {
+      console.error("Load course error:", err);
+      alert("Failed to load course: " + err.message);
+    }
+  };
+
+  // Save course back to API
+  const saveCourse = async () => {
+    if (!loadedCourseId) {
+      alert("No course loaded from the database. Use 'Load Course' first, or use 'Export JSON' for new courses.");
+      return;
+    }
+    setSaving(true);
+    try {
+      const payload = {
+        title: courseData.title,
+        subtitle: courseData.subtitle,
+        description: courseData.description,
+        ceHours: courseData.ceHours,
+        level: courseData.level,
+        category: courseData.category,
+        courseCode: courseData.courseCode,
+        objectives: courseData.objectives,
+        targetAudience: courseData.targetAudience,
+        modules: courseData.modules.map((mod, i) => ({
+          ...mod,
+          number: i + 1,
+        })),
+        assessment: courseData.assessment,
+      };
+
+      const res = await fetch(`${API_URL}/api/admin/courses/${loadedCourseId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${getToken()}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.message || errData.error || `HTTP ${res.status}`);
+      }
+
+      setSaveMsg({ type: "ok", text: "Saved!" });
+      setTimeout(() => setSaveMsg(null), 3000);
+    } catch (err) {
+      console.error("Save error:", err);
+      setSaveMsg({ type: "err", text: "Save failed: " + err.message });
+      setTimeout(() => setSaveMsg(null), 5000);
+    }
+    setSaving(false);
+  };
+
+  // Filter course list for search
+  const filteredCourses = courseList.filter(c => {
+    const q = loadSearch.toLowerCase();
+    return !q || (c.title || "").toLowerCase().includes(q)
+      || (c.courseCode || "").toLowerCase().includes(q);
+  });
+
   const tabs = [
-    { label: "AI Generator", icon: "-" },
-    { label: "Content Editor", icon: "-" },
-    { label: "ACEP Checker", icon: "-" },
-    { label: "Import", icon: "-" },
-    { label: "Block Types", icon: "S" },
+    { label: "AI Generator", icon: "AI" },
+    { label: "Content Editor", icon: "ED" },
+    { label: "ACEP Checker", icon: "AC" },
+    { label: "Import", icon: "IM" },
+    { label: "Block Types", icon: "BT" },
   ];
 
   return (
@@ -2279,17 +2415,169 @@ export default function CourseBuilderV2() {
       <div style={S.header}>
         <div>
           <div style={{ color: "#fff", fontSize: 20, fontWeight: 700, letterSpacing: "-0.02em" }}>CounselorReady Course Builder</div>
-          <div style={{ color: "rgba(255,255,255,0.55)", fontSize: 13, marginTop: 2 }}>NBCC ACEP #7760 | 17 Block Types * Cloudinary Images</div>
+          <div style={{ color: "rgba(255,255,255,0.55)", fontSize: 13, marginTop: 2 }}>
+            {loadedCourseId
+              ? `Editing: ${courseData.title} (${courseData.courseCode || loadedCourseId})`
+              : "NBCC ACEP #7760 | 17 Block Types | Cloudinary Images"
+            }
+          </div>
         </div>
-        <div style={{ display: "flex", gap: 10 }}>
+        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+          {/* Save status */}
+          {saveMsg && (
+            <span style={{
+              fontSize: 12, fontWeight: 600, padding: "4px 12px", borderRadius: 6,
+              background: saveMsg.type === "ok" ? "rgba(74,124,89,0.3)" : "rgba(220,38,38,0.3)",
+              color: "#fff",
+            }}>
+              {saveMsg.text}
+            </span>
+          )}
+
+          {/* Load Course */}
+          <button
+            onClick={() => { setShowLoadModal(true); fetchCourseList(); }}
+            style={{ ...S.btnSecondary, borderColor: "rgba(255,255,255,0.3)", color: "#fff", fontSize: 12, gap: 4 }}>
+            Load Course
+          </button>
+
+          {/* Save to DB */}
+          <button
+            onClick={saveCourse}
+            disabled={saving || !loadedCourseId}
+            style={{
+              ...S.btnPrimary, fontSize: 12, gap: 4,
+              opacity: (!loadedCourseId || saving) ? 0.5 : 1,
+              background: loadedCourseId ? C.green : C.textMuted,
+            }}>
+            {saving ? "Saving..." : "Save to DB"}
+          </button>
+
+          {/* Export JSON */}
           <button style={{ ...S.btnSecondary, borderColor: "rgba(255,255,255,0.2)", color: "#fff", fontSize: 12 }} onClick={() => {
             const json = JSON.stringify(courseData, null, 2);
             const blob = new Blob([json], { type: "application/json" });
             const a = document.createElement("a"); a.href = URL.createObjectURL(blob);
             a.download = `${courseData.title?.replace(/[^a-z0-9]/gi, "_") || "course"}.json`; a.click();
-          }}> Export JSON</button>
+          }}>Export JSON</button>
         </div>
       </div>
+
+      {/* ===== LOAD COURSE MODAL ===== */}
+      {showLoadModal && (
+        <div style={{
+          position: "fixed", inset: 0, zIndex: 9999,
+          background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center",
+        }}
+        onClick={() => setShowLoadModal(false)}>
+          <div style={{
+            background: "#fff", borderRadius: 16, width: "90%", maxWidth: 720, maxHeight: "80vh",
+            display: "flex", flexDirection: "column", boxShadow: "0 20px 60px rgba(0,0,0,0.3)",
+          }}
+          onClick={(e) => e.stopPropagation()}>
+
+            {/* Modal header */}
+            <div style={{ padding: "20px 24px", borderBottom: `1px solid ${C.border}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div>
+                <div style={{ fontSize: 18, fontWeight: 700, color: C.navy }}>Load Existing Course</div>
+                <div style={{ fontSize: 12, color: C.textMuted, marginTop: 2 }}>
+                  {courseList.length} courses in database
+                </div>
+              </div>
+              <button onClick={() => setShowLoadModal(false)}
+                style={{ background: "none", border: "none", fontSize: 20, cursor: "pointer", color: C.textMuted, padding: 4 }}>
+                x
+              </button>
+            </div>
+
+            {/* Search */}
+            <div style={{ padding: "12px 24px", borderBottom: `1px solid ${C.borderLight}` }}>
+              <input
+                type="text"
+                placeholder="Search by title or course code..."
+                value={loadSearch}
+                onChange={(e) => setLoadSearch(e.target.value)}
+                autoFocus
+                style={{ ...S.input, width: "100%", fontSize: 14, padding: "10px 14px" }}
+              />
+            </div>
+
+            {/* Course list */}
+            <div style={{ flex: 1, overflowY: "auto", padding: "8px 16px" }}>
+              {loadingList ? (
+                <div style={{ textAlign: "center", padding: 40, color: C.textMuted }}>Loading courses...</div>
+              ) : filteredCourses.length === 0 ? (
+                <div style={{ textAlign: "center", padding: 40, color: C.textMuted }}>
+                  {loadSearch ? "No courses match your search" : "No courses found"}
+                </div>
+              ) : (
+                filteredCourses.map((c) => {
+                  const moduleCount = (c.modules || []).length;
+                  const isLoaded = loadedCourseId === (c._id || c.id);
+                  return (
+                    <div key={c._id || c.id}
+                      onClick={() => loadCourse(c._id || c.id)}
+                      style={{
+                        display: "flex", alignItems: "center", gap: 14, padding: "12px 14px",
+                        borderRadius: 10, cursor: "pointer", marginBottom: 4,
+                        border: `1px solid ${isLoaded ? C.burgundy : "transparent"}`,
+                        background: isLoaded ? C.burgundyFaded : "transparent",
+                        transition: "all 0.15s",
+                      }}
+                      onMouseEnter={(e) => { if (!isLoaded) e.currentTarget.style.background = C.greenFaded; }}
+                      onMouseLeave={(e) => { if (!isLoaded) e.currentTarget.style.background = "transparent"; }}>
+
+                      {/* Status dot */}
+                      <span style={{
+                        width: 10, height: 10, borderRadius: "50%", flexShrink: 0,
+                        background: c.status === "published" ? C.green : C.gold,
+                      }} />
+
+                      {/* Course info */}
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontWeight: 600, fontSize: 14, color: C.navy, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                          {c.title || "Untitled"}
+                        </div>
+                        <div style={{ display: "flex", gap: 10, fontSize: 11, color: C.textMuted, marginTop: 3 }}>
+                          {c.courseCode && <span style={{ fontWeight: 600, color: C.burgundy }}>{c.courseCode}</span>}
+                          <span>{c.ceHours || "?"} CE hrs</span>
+                          <span>{moduleCount} module{moduleCount !== 1 ? "s" : ""}</span>
+                          <span>{c.category || ""}</span>
+                        </div>
+                      </div>
+
+                      {/* Status badge */}
+                      <span style={{
+                        fontSize: 10, fontWeight: 700, padding: "3px 8px", borderRadius: 4,
+                        background: c.status === "published" ? C.greenFaded : C.goldFaded,
+                        color: c.status === "published" ? C.green : C.amber,
+                        textTransform: "uppercase",
+                      }}>
+                        {c.status || "draft"}
+                      </span>
+
+                      {isLoaded && (
+                        <span style={{ fontSize: 10, fontWeight: 700, color: C.burgundy }}>LOADED</span>
+                      )}
+                    </div>
+                  );
+                })
+              )}
+            </div>
+
+            {/* Modal footer */}
+            <div style={{ padding: "12px 24px", borderTop: `1px solid ${C.border}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <span style={{ fontSize: 11, color: C.textMuted }}>
+                Click a course to load it into the editor. Changes are saved with "Save to DB".
+              </span>
+              <button onClick={() => setShowLoadModal(false)}
+                style={{ ...S.btnSecondary, fontSize: 12, padding: "6px 16px" }}>
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Tab Bar */}
       <div style={S.tabBar}>
