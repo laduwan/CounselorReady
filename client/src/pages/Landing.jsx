@@ -8,12 +8,12 @@ export default function Landing() {
       <header className="border-b border-gray-100">
         <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-moss-600 rounded-lg flex items-center justify-center">
+            <div className="w-8 h-8 bg-hunter-600 rounded-lg flex items-center justify-center">
               <svg viewBox="0 0 24 24" className="w-5 h-5 text-white" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M12 3v12M8 9l4-6 4 6M6 21h12" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             </div>
-            <span className="font-semibold text-moss-600 text-lg">CounselorReady</span>
+            <span className="font-semibold text-hunter-600 text-lg">CounselorReady</span>
           </div>
           <div className="flex items-center gap-4">
             <Link to="/login" className="text-gray-600 hover:text-gray-900 text-sm font-medium">
@@ -57,8 +57,8 @@ export default function Landing() {
           <div className="grid md:grid-cols-3 gap-8">
             {/* Feature 1 */}
             <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-              <div className="w-12 h-12 bg-moss-100 rounded-lg flex items-center justify-center mb-4">
-                <BookOpen className="w-6 h-6 text-moss-600" />
+              <div className="w-12 h-12 bg-hunter-100 rounded-lg flex items-center justify-center mb-4">
+                <BookOpen className="w-6 h-6 text-hunter-600" />
               </div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">
                 Practical Courses
@@ -71,8 +71,8 @@ export default function Landing() {
 
             {/* Feature 2 */}
             <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-              <div className="w-12 h-12 bg-dustyrose-100 rounded-lg flex items-center justify-center mb-4">
-                <Award className="w-6 h-6 text-dustyrose-600" />
+              <div className="w-12 h-12 bg-burgundy-100 rounded-lg flex items-center justify-center mb-4">
+                <Award className="w-6 h-6 text-burgundy-800" />
               </div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">
                 Credential Tracker
@@ -121,7 +121,7 @@ export default function Landing() {
                   'Upload certificates from any provider'
                 ].map((item, i) => (
                   <li key={i} className="flex items-center gap-3">
-                    <CheckCircle className="w-5 h-5 text-moss-600 flex-shrink-0" />
+                    <CheckCircle className="w-5 h-5 text-hunter-600 flex-shrink-0" />
                     <span className="text-gray-700">{item}</span>
                   </li>
                 ))}
@@ -142,10 +142,10 @@ export default function Landing() {
                 <div className="mb-2">
                   <div className="flex justify-between text-sm mb-1">
                     <span className="text-gray-600">Progress</span>
-                    <span className="text-moss-600 font-medium">20/35 CEUs</span>
+                    <span className="text-hunter-600 font-medium">20/35 CEUs</span>
                   </div>
                   <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                    <div className="h-full bg-moss-500 rounded-full" style={{ width: '57%' }}></div>
+                    <div className="h-full bg-hunter-500 rounded-full" style={{ width: '57%' }}></div>
                   </div>
                 </div>
               </div>
@@ -162,10 +162,10 @@ export default function Landing() {
                 <div className="mb-2">
                   <div className="flex justify-between text-sm mb-1">
                     <span className="text-gray-600">Progress</span>
-                    <span className="text-moss-600 font-medium">45/100 CEUs</span>
+                    <span className="text-hunter-600 font-medium">45/100 CEUs</span>
                   </div>
                   <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                    <div className="h-full bg-moss-500 rounded-full" style={{ width: '45%' }}></div>
+                    <div className="h-full bg-hunter-500 rounded-full" style={{ width: '45%' }}></div>
                   </div>
                 </div>
               </div>
@@ -191,15 +191,15 @@ export default function Landing() {
               <p className="text-3xl font-bold text-gray-900 mb-4">$0</p>
               <ul className="space-y-2 text-left mb-6">
                 <li className="flex items-center gap-2 text-gray-600">
-                  <CheckCircle className="w-4 h-4 text-moss-600" />
+                  <CheckCircle className="w-4 h-4 text-hunter-600" />
                   NCMHCE Study Starter course
                 </li>
                 <li className="flex items-center gap-2 text-gray-600">
-                  <CheckCircle className="w-4 h-4 text-moss-600" />
+                  <CheckCircle className="w-4 h-4 text-hunter-600" />
                   1 credential tracking
                 </li>
                 <li className="flex items-center gap-2 text-gray-600">
-                  <CheckCircle className="w-4 h-4 text-moss-600" />
+                  <CheckCircle className="w-4 h-4 text-hunter-600" />
                   Basic progress tracking
                 </li>
               </ul>
@@ -209,8 +209,8 @@ export default function Landing() {
             </div>
 
             {/* Pro */}
-            <div className="bg-white rounded-xl p-6 border-2 border-moss-600 relative">
-              <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-moss-600 text-white text-xs font-medium rounded-full">
+            <div className="bg-white rounded-xl p-6 border-2 border-hunter-600 relative">
+              <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-hunter-600 text-white text-xs font-medium rounded-full">
                 Most Popular
               </span>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">Pro</h3>
@@ -218,23 +218,23 @@ export default function Landing() {
               <p className="text-sm text-gray-500 mb-4">or $149/year (save 35%)</p>
               <ul className="space-y-2 text-left mb-6">
                 <li className="flex items-center gap-2 text-gray-600">
-                  <CheckCircle className="w-4 h-4 text-moss-600" />
+                  <CheckCircle className="w-4 h-4 text-hunter-600" />
                   All courses included
                 </li>
                 <li className="flex items-center gap-2 text-gray-600">
-                  <CheckCircle className="w-4 h-4 text-moss-600" />
+                  <CheckCircle className="w-4 h-4 text-hunter-600" />
                   Unlimited credentials
                 </li>
                 <li className="flex items-center gap-2 text-gray-600">
-                  <CheckCircle className="w-4 h-4 text-moss-600" />
+                  <CheckCircle className="w-4 h-4 text-hunter-600" />
                   Email & calendar reminders
                 </li>
                 <li className="flex items-center gap-2 text-gray-600">
-                  <CheckCircle className="w-4 h-4 text-moss-600" />
+                  <CheckCircle className="w-4 h-4 text-hunter-600" />
                   Certificate storage
                 </li>
                 <li className="flex items-center gap-2 text-gray-600">
-                  <CheckCircle className="w-4 h-4 text-moss-600" />
+                  <CheckCircle className="w-4 h-4 text-hunter-600" />
                   CEU tracking across credentials
                 </li>
               </ul>
@@ -247,15 +247,15 @@ export default function Landing() {
       </section>
 
       {/* CTA */}
-      <section className="py-20 px-4 bg-moss-600">
+      <section className="py-20 px-4 bg-hunter-600">
         <div className="max-w-3xl mx-auto text-center">
           <h2 className="text-3xl font-bold text-white mb-6">
             Ready to Build Your Clinical Confidence?
           </h2>
-          <p className="text-lg text-moss-100 mb-8">
+          <p className="text-lg text-hunter-100 mb-8">
             Join counselors who are taking control of their professional development.
           </p>
-          <Link to="/register" className="inline-flex items-center gap-2 bg-white text-moss-600 font-semibold px-8 py-3 rounded-lg hover:bg-moss-50 transition-colors">
+          <Link to="/register" className="inline-flex items-center gap-2 bg-white text-hunter-600 font-semibold px-8 py-3 rounded-lg hover:bg-hunter-100 transition-colors">
             Start Free Trial <ArrowRight className="w-5 h-5" />
           </Link>
         </div>
@@ -266,7 +266,7 @@ export default function Landing() {
         <div className="max-w-6xl mx-auto">
           <div className="flex flex-col md:flex-row justify-between items-center gap-6">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-moss-600 rounded-lg flex items-center justify-center">
+              <div className="w-8 h-8 bg-hunter-600 rounded-lg flex items-center justify-center">
                 <svg viewBox="0 0 24 24" className="w-5 h-5 text-white" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M12 3v12M8 9l4-6 4 6M6 21h12" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
