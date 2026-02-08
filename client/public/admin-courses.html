@@ -1,0 +1,3441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Course Admin - CounselorReady</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            burgundy: {
+              50: '#fdf5f6', 100: '#fae8eb', 200: '#f5d0d6', 300: '#eba9b5',
+              400: '#dd768a', 500: '#c94d65', 600: '#a83350', 700: '#8b2542',
+              800: '#6b1d34', 900: '#4a1524', 950: '#2d0a14'
+            },
+            forest: {
+              50: '#f3f6f4', 100: '#e3ebe5', 200: '#c8d7cc', 300: '#a1bba8',
+              400: '#759a7f', 500: '#547c5f', 600: '#40634a', 700: '#34503d',
+              800: '#2b4133', 900: '#1f3025', 950: '#121c16'
+            },
+            gold: { 50: '#fefce8', 100: '#fef9c3', 200: '#fef08a', 300: '#fde047', 400: '#facc15', 500: '#d4a012' }
+          }
+        }
+      }
+    }
+  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Lato:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Lato', system-ui, sans-serif; }
+    .font-display { font-family: 'Cormorant Garamond', Georgia, serif; }
+    .admin-nav-link { @apply flex items-center gap-3 px-4 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 hover:text-burgundy-700 transition-colors; }
+    .admin-nav-link.active { @apply bg-burgundy-50 text-burgundy-800 font-medium; }
+  </style>
+</head>
+<body class="bg-stone-50 min-h-screen">
+  
+  <!-- Admin Header -->
+  <header class="bg-burgundy-900 text-white sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <div class="w-9 h-9 bg-forest-700 rounded-lg flex items-center justify-center">
+          <span class="text-gold-400 font-display font-bold">CR</span>
+        </div>
+        <div>
+          <span class="font-display font-semibold text-lg text-burgundy-800">CounselorReady</span>
+          <span class="ml-2 text-xs bg-gold-500 text-burgundy-900 px-2 py-0.5 rounded-full font-semibold">ADMIN</span>
+        </div>
+      </div>
+      <div class="flex items-center gap-4">
+        <span class="text-burgundy-200 text-sm" id="adminEmail">Admin</span>
+        <a href="/admin-courses.html" class="text-burgundy-200 hover:text-white text-sm flex items-center gap-1">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+          Back to Admin
+        </a>
+        <a href="/dashboard.html" class="text-burgundy-200 hover:text-white text-sm flex items-center gap-1">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+          Exit to Dashboard
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <div class="flex">
+    <!-- Sidebar -->
+    <aside class="w-64 bg-white border-r border-burgundy-100 min-h-[calc(100vh-52px)] sticky top-[52px] p-4">
+      <nav class="space-y-1">
+        <a href="/admin-courses.html" class="admin-nav-link active">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+          Courses
+        </a>
+        <a href="/admin/course-builder" class="admin-nav-link">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z"/></svg>
+          Course Builder
+        </a>
+        <a href="/admin-users.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 hover:text-burgundy-700 transition-colors">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"/></svg>
+          Users
+        </a>
+        <a href="/admin-migration.html" class="admin-nav-link">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+          Migration
+        </a>
+        <a href="/admin-messages.html" class="admin-nav-link">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
+          Messages
+        </a>
+        <a href="/admin-hardship.html" class="admin-nav-link">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+          Hardship Requests
+        </a>
+        <a href="/admin-analytics.html" class="admin-nav-link">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+          Analytics
+        </a>
+        <a href="/admin-integrations.html" class="admin-nav-link">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z"/></svg>
+          Integrations
+        </a>
+      <a href="/admin-help.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <i class="fas fa-question-circle w-5"></i>
+          Help Center
+        </a>
+      </nav>
+      
+      <div class="mt-8 pt-4 border-t border-forest-100">
+        <p class="text-xs text-forest-400 px-4">Quick Links</p>
+        <div class="mt-2 space-y-1">
+          <a href="/audit.html" class="admin-nav-link text-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            Audit Reports
+          </a>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 p-8">
+    
+    <!-- Course List View -->
+    <div id="courseListView">
+      <div class="flex justify-between items-center mb-6">
+        <h1 class="font-display text-3xl font-semibold text-burgundy-900">Manage Courses</h1>
+        <div class="flex gap-2">
+          <a href="/admin-users.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 hover:text-burgundy-700 transition-colors">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"/></svg>
+          Users
+        </a>
+        <button onclick="showBulkPricing()" class="bg-green-100 hover:bg-green-200 text-green-800 font-medium px-4 py-2 rounded-xl flex items-center gap-1">
+            💰 Bulk Pricing
+          </button>
+        <a href="/admin-migration.html" class="bg-gold-100 hover:bg-gold-200 text-gold-800 font-medium px-4 py-2 rounded-xl flex items-center gap-1">
+            🔄 Migration
+          </a>
+          <a href="/admin-bulk-upload.html" class="bg-indigo-100 hover:bg-indigo-200 text-indigo-800 font-medium px-4 py-2 rounded-xl flex items-center gap-1">
+            📄 Bulk PDF Upload
+          </a>
+          <button onclick="showScormImport()" class="bg-forest-100 hover:bg-forest-200 text-forest-800 font-medium px-4 py-2 rounded-xl">
+            📦 Import SCORM
+          </button>
+          <button onclick="showNewCourseForm()" class="bg-burgundy-800 hover:bg-burgundy-900 text-white font-semibold px-4 py-2 rounded-xl">
+            + New Course
+          </button>
+        </div>
+      </div>
+      
+      <!-- Search and Bulk Actions Bar -->
+      <div class="flex flex-wrap items-center gap-4 mb-6 bg-white p-4 rounded-xl border border-burgundy-100">
+        <!-- Search -->
+        <div class="flex-1 min-w-[250px]">
+          <div class="relative">
+            <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-forest-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+            </svg>
+            <input type="text" id="courseSearch" placeholder="Search courses by title..." 
+                   oninput="filterCourses()" 
+                   class="w-full pl-10 pr-4 py-2 border border-forest-200 rounded-lg focus:ring-2 focus:ring-burgundy-300 focus:border-burgundy-400">
+          </div>
+        </div>
+        
+        <!-- Status Filter -->
+        <div class="flex items-center gap-2">
+          <label class="text-sm text-forest-600">Status:</label>
+          <select id="statusFilter" onchange="filterCourses()" class="px-3 py-2 border border-forest-200 rounded-lg text-sm">
+            <option value="all">All</option>
+            <option value="published">Published</option>
+            <option value="draft">Draft</option>
+            <option value="archived">Archived</option>
+          </select>
+        </div>
+        
+        <!-- Bulk Actions -->
+        <div class="flex items-center gap-2 border-l border-forest-200 pl-4">
+          <span class="text-sm text-forest-600">Bulk:</span>
+          <button onclick="bulkPublishAll()" class="bg-green-100 hover:bg-green-200 text-green-800 font-medium px-3 py-2 rounded-lg text-sm flex items-center gap-1">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+            Publish All
+          </button>
+          <button onclick="bulkUnpublishAll()" class="bg-yellow-100 hover:bg-yellow-200 text-yellow-800 font-medium px-3 py-2 rounded-lg text-sm flex items-center gap-1">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
+            Unpublish All
+          </button>
+        </div>
+        
+        <!-- Course Count -->
+        <div class="text-sm text-forest-500">
+          <span id="courseCount">0</span> courses
+        </div>
+      </div>
+      
+      <!-- Bulk Pricing Modal -->
+      <div id="bulkPricingModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-xl shadow-xl max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="font-display text-2xl font-semibold text-burgundy-900">💰 Bulk Pricing Tool</h3>
+            <button onclick="closeBulkPricing()" class="text-forest-500 hover:text-burgundy-700 text-2xl">&times;</button>
+          </div>
+          
+          <p class="text-forest-600 mb-4">Set prices for all courses based on CE hours. Only courses without a price will be updated.</p>
+          
+          <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-4">
+            <p class="text-yellow-800 text-sm">⚠️ This will only update courses that don't have a price set yet. Courses with existing prices will be skipped.</p>
+          </div>
+          
+          <div class="space-y-4 mb-6">
+            <h4 class="font-semibold text-forest-700">Standard Courses (Core, Cultural, Trauma, etc.)</h4>
+            <div class="grid grid-cols-3 gap-3">
+              <div>
+                <label class="text-sm text-forest-600">1 CE Hour</label>
+                <div class="flex items-center gap-1">
+                  <span class="text-forest-500">$</span>
+                  <input type="number" id="bulkPrice1hr" value="0" class="w-full px-3 py-2 border border-forest-200 rounded-lg">
+                </div>
+                <p class="text-xs text-forest-400 mt-1">0 = Free</p>
+              </div>
+              <div>
+                <label class="text-sm text-forest-600">2 CE Hours</label>
+                <div class="flex items-center gap-1">
+                  <span class="text-forest-500">$</span>
+                  <input type="number" id="bulkPrice2hr" value="35" class="w-full px-3 py-2 border border-forest-200 rounded-lg">
+                </div>
+              </div>
+              <div>
+                <label class="text-sm text-forest-600">3 CE Hours</label>
+                <div class="flex items-center gap-1">
+                  <span class="text-forest-500">$</span>
+                  <input type="number" id="bulkPrice3hr" value="49" class="w-full px-3 py-2 border border-forest-200 rounded-lg">
+                </div>
+              </div>
+              <div>
+                <label class="text-sm text-forest-600">4 CE Hours</label>
+                <div class="flex items-center gap-1">
+                  <span class="text-forest-500">$</span>
+                  <input type="number" id="bulkPrice4hr" value="59" class="w-full px-3 py-2 border border-forest-200 rounded-lg">
+                </div>
+              </div>
+              <div>
+                <label class="text-sm text-forest-600">5 CE Hours</label>
+                <div class="flex items-center gap-1">
+                  <span class="text-forest-500">$</span>
+                  <input type="number" id="bulkPrice5hr" value="69" class="w-full px-3 py-2 border border-forest-200 rounded-lg">
+                </div>
+              </div>
+              <div>
+                <label class="text-sm text-forest-600">6+ CE Hours</label>
+                <div class="flex items-center gap-1">
+                  <span class="text-forest-500">$</span>
+                  <input type="number" id="bulkPrice6hr" value="79" class="w-full px-3 py-2 border border-forest-200 rounded-lg">
+                </div>
+              </div>
+            </div>
+            
+            <h4 class="font-semibold text-purple-700 mt-6">Premium Courses (Ethics, Telehealth, Supervision)</h4>
+            <div class="grid grid-cols-3 gap-3">
+              <div>
+                <label class="text-sm text-forest-600">1 CE Hour</label>
+                <div class="flex items-center gap-1">
+                  <span class="text-forest-500">$</span>
+                  <input type="number" id="bulkPricePrem1hr" value="25" class="w-full px-3 py-2 border border-forest-200 rounded-lg">
+                </div>
+              </div>
+              <div>
+                <label class="text-sm text-forest-600">2 CE Hours</label>
+                <div class="flex items-center gap-1">
+                  <span class="text-forest-500">$</span>
+                  <input type="number" id="bulkPricePrem2hr" value="45" class="w-full px-3 py-2 border border-forest-200 rounded-lg">
+                </div>
+              </div>
+              <div>
+                <label class="text-sm text-forest-600">3 CE Hours</label>
+                <div class="flex items-center gap-1">
+                  <span class="text-forest-500">$</span>
+                  <input type="number" id="bulkPricePrem3hr" value="59" class="w-full px-3 py-2 border border-forest-200 rounded-lg">
+                </div>
+              </div>
+              <div>
+                <label class="text-sm text-forest-600">4 CE Hours</label>
+                <div class="flex items-center gap-1">
+                  <span class="text-forest-500">$</span>
+                  <input type="number" id="bulkPricePrem4hr" value="75" class="w-full px-3 py-2 border border-forest-200 rounded-lg">
+                </div>
+              </div>
+              <div>
+                <label class="text-sm text-forest-600">5 CE Hours</label>
+                <div class="flex items-center gap-1">
+                  <span class="text-forest-500">$</span>
+                  <input type="number" id="bulkPricePrem5hr" value="89" class="w-full px-3 py-2 border border-forest-200 rounded-lg">
+                </div>
+              </div>
+              <div>
+                <label class="text-sm text-forest-600">6+ CE Hours</label>
+                <div class="flex items-center gap-1">
+                  <span class="text-forest-500">$</span>
+                  <input type="number" id="bulkPricePrem6hr" value="99" class="w-full px-3 py-2 border border-forest-200 rounded-lg">
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div id="bulkPricingStatus" class="hidden mb-4 p-3 rounded-lg"></div>
+          
+          <div class="flex justify-end gap-4">
+            <button onclick="closeBulkPricing()" class="px-6 py-2 text-hunter-600 hover:text-hunter-700">Cancel</button>
+            <button onclick="previewBulkPricing()" class="bg-forest-600 hover:bg-forest-700 text-white font-semibold px-6 py-2 rounded-lg">Preview Changes</button>
+            <button onclick="applyBulkPricing()" class="bg-burgundy-800 hover:bg-burgundy-900 text-white font-semibold px-6 py-2 rounded-lg">Apply Pricing</button>
+          </div>
+        </div>
+      </div>
+      
+      <!-- SCORM Import Modal -->
+      <div id="scormImportModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-xl shadow-xl max-w-lg w-full p-6">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="font-display text-2xl font-semibold text-burgundy-900">Import SCORM Package</h3>
+            <button onclick="closeScormImport()" class="text-forest-500 hover:text-burgundy-700 text-2xl">&times;</button>
+          </div>
+          <div class="mb-4">
+            <p class="text-forest-600 mb-4">Upload a SCORM 1.2 or 2004 package (.zip file)</p>
+            <input type="file" id="scormFile" accept=".zip" class="w-full px-4 py-2 border border-forest-200 rounded-lg">
+          </div>
+          <div id="scormImportStatus" class="mb-4 hidden">
+            <div class="flex items-center gap-2 text-forest-600">
+              <div class="w-5 h-5 border-2 border-forest-300 border-t-forest-700 rounded-full animate-spin"></div>
+              <span>Importing...</span>
+            </div>
+          </div>
+          <div class="flex justify-end gap-4">
+            <button onclick="closeScormImport()" class="px-6 py-2 text-hunter-600 hover:text-hunter-700">Cancel</button>
+            <button onclick="importScorm()" class="bg-burgundy-800 hover:bg-burgundy-900 text-white font-semibold px-6 py-2 rounded-lg">Import</button>
+          </div>
+        </div>
+      </div>
+      
+      <!-- AI Course Builder Modal -->
+      <div id="aiCourseBuilderModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+          
+          <!-- Header -->
+          <div class="bg-gradient-to-r from-purple-600 to-indigo-600 p-6 text-white">
+            <div class="flex justify-between items-center">
+              <div class="flex items-center gap-3">
+                <div class="w-12 h-12 bg-white bg-opacity-20 rounded-xl flex items-center justify-center">
+                  <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                  </svg>
+                </div>
+                <div>
+                  <h2 class="text-2xl font-bold">AI Course Builder</h2>
+                  <p class="text-purple-200 text-sm">Upload your content, Claude builds the course</p>
+                </div>
+              </div>
+              <button onclick="closeAICourseBuilder()" class="text-white hover:text-purple-200 text-3xl leading-none">&times;</button>
+            </div>
+          </div>
+          
+          <!-- Step Indicator -->
+          <div class="bg-purple-50 px-6 py-3 border-b border-purple-100">
+            <div class="flex items-center justify-center gap-4">
+              <div id="step1Indicator" class="flex items-center gap-2">
+                <div class="w-8 h-8 rounded-full bg-purple-600 text-white flex items-center justify-center font-bold text-sm">1</div>
+                <span class="text-sm font-medium text-purple-900">Upload</span>
+              </div>
+              <div class="w-8 h-0.5 bg-purple-200"></div>
+              <div id="step2Indicator" class="flex items-center gap-2 opacity-50">
+                <div class="w-8 h-8 rounded-full bg-purple-200 text-purple-600 flex items-center justify-center font-bold text-sm">2</div>
+                <span class="text-sm font-medium text-purple-400">Review</span>
+              </div>
+              <div class="w-8 h-0.5 bg-purple-200"></div>
+              <div id="step3Indicator" class="flex items-center gap-2 opacity-50">
+                <div class="w-8 h-8 rounded-full bg-purple-200 text-purple-600 flex items-center justify-center font-bold text-sm">3</div>
+                <span class="text-sm font-medium text-purple-400">Save</span>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Content Area -->
+          <div class="flex-1 overflow-y-auto p-6">
+            
+            <!-- Step 1: Upload Content -->
+            <div id="aiBuilderStep1" class="space-y-5">
+              
+              <!-- File Upload -->
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Upload Your Course Material</label>
+                <div id="aiFileDropZone" 
+                     class="border-2 border-dashed border-purple-300 rounded-xl p-6 text-center hover:border-purple-500 hover:bg-purple-50 transition cursor-pointer"
+                     onclick="document.getElementById('aiCourseFileInput').click()"
+                     ondrop="handleAICourseFileDrop(event)" 
+                     ondragover="event.preventDefault(); this.classList.add('border-purple-500', 'bg-purple-50')"
+                     ondragleave="this.classList.remove('border-purple-500', 'bg-purple-50')">
+                  <input type="file" id="aiCourseFileInput" accept=".pdf,.doc,.docx,.txt" class="hidden" onchange="handleAICourseFileSelect(event)">
+                  <svg class="w-10 h-10 text-purple-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                  </svg>
+                  <p class="font-medium text-gray-700">Drop your file here or click to browse</p>
+                  <p class="text-sm text-gray-500 mt-1">PDF, Word, or text files</p>
+                </div>
+                <p id="aiSelectedFileName" class="text-sm text-purple-600 mt-2 hidden"></p>
+              </div>
+              
+              <!-- OR Divider -->
+              <div class="flex items-center gap-4">
+                <div class="flex-1 h-px bg-gray-200"></div>
+                <span class="text-sm text-gray-500">OR</span>
+                <div class="flex-1 h-px bg-gray-200"></div>
+              </div>
+              
+              <!-- Paste Content -->
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Paste Your Content / Outline</label>
+                <textarea id="aiCourseContentInput" rows="5" 
+                          placeholder="Paste your course content, outline, or notes here..."
+                          class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm"></textarea>
+              </div>
+              
+              <!-- Key Points -->
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                  Key Points to Emphasize <span class="font-normal text-gray-400">(optional)</span>
+                </label>
+                <textarea id="aiKeyPointsInput" rows="2" 
+                          placeholder="Specific points or concepts you want emphasized..."
+                          class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm"></textarea>
+              </div>
+              
+              <!-- Settings -->
+              <div class="bg-gray-50 rounded-xl p-4 space-y-4">
+                <div class="grid grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-sm text-gray-600 mb-1">CE Category</label>
+                    <select id="aiCourseCategory" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                      <option value="core">Core / General</option>
+                      <option value="ethics">Ethics</option>
+                      <option value="supervision">Supervision</option>
+                      <option value="telehealth">Telehealth</option>
+                      <option value="cultural">Cultural Diversity</option>
+                      <option value="trauma">Trauma</option>
+                      <option value="substance">Substance Abuse</option>
+                      <option value="crisis">Crisis / Suicide</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="block text-sm text-gray-600 mb-1">Target CE Hours</label>
+                    <input type="number" id="aiCourseCEHours" value="3" min="0.5" max="40" step="0.5"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                  </div>
+                </div>
+                <div class="flex flex-wrap gap-4">
+                  <label class="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" id="aiGenerateQuizzes" checked class="w-4 h-4 text-purple-600 rounded">
+                    <span class="text-sm text-gray-700">Generate quizzes</span>
+                  </label>
+                  <label class="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" id="aiGenerateObjectives" checked class="w-4 h-4 text-purple-600 rounded">
+                    <span class="text-sm text-gray-700">Generate learning objectives</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Step 2: Review -->
+            <div id="aiBuilderStep2" class="hidden space-y-5">
+              <div class="bg-white border border-gray-200 rounded-xl p-4">
+                <h3 class="font-semibold text-gray-800 mb-3">Course Overview</h3>
+                <div class="grid grid-cols-2 gap-3">
+                  <div>
+                    <label class="block text-xs text-gray-500 mb-1">Title</label>
+                    <input type="text" id="aiGenTitle" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                  </div>
+                  <div>
+                    <label class="block text-xs text-gray-500 mb-1">CE Hours</label>
+                    <input type="number" id="aiGenCEHours" step="0.5" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                  </div>
+                </div>
+                <div class="mt-3">
+                  <label class="block text-xs text-gray-500 mb-1">Description</label>
+                  <textarea id="aiGenDescription" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"></textarea>
+                </div>
+                <div class="mt-3">
+                  <label class="block text-xs text-gray-500 mb-1">Learning Objectives</label>
+                  <div id="aiGenObjectives" class="space-y-1"></div>
+                </div>
+              </div>
+              
+              <div class="bg-white border border-gray-200 rounded-xl overflow-hidden">
+                <div class="bg-gray-50 px-4 py-2 border-b border-gray-200">
+                  <h3 class="font-semibold text-gray-800 text-sm">Course Structure</h3>
+                </div>
+                <div id="aiGenModules" class="divide-y divide-gray-100 max-h-[250px] overflow-y-auto"></div>
+              </div>
+              
+              <div id="aiGenQuizSection" class="hidden bg-white border border-purple-200 rounded-xl overflow-hidden">
+                <div class="bg-purple-50 px-4 py-2 border-b border-purple-100 flex justify-between items-center">
+                  <h3 class="font-semibold text-purple-800 text-sm">Generated Quizzes</h3>
+                  <span id="aiGenQuizCount" class="text-xs text-purple-600">0 questions</span>
+                </div>
+                <div id="aiGenQuizzes" class="p-3 max-h-[200px] overflow-y-auto text-sm"></div>
+              </div>
+            </div>
+            
+            <!-- Step 3: Saving -->
+            <div id="aiBuilderStep3" class="hidden text-center py-12">
+              <div class="w-16 h-16 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin mx-auto mb-4"></div>
+              <h3 class="text-xl font-semibold text-gray-800 mb-2">Creating Your Course...</h3>
+              <p class="text-gray-500">This may take a moment</p>
+            </div>
+            
+            <!-- Generating State -->
+            <div id="aiGeneratingState" class="hidden text-center py-12">
+              <div class="w-20 h-20 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin mx-auto mb-6"></div>
+              <h3 class="text-xl font-semibold text-gray-800 mb-2">Claude is building your course...</h3>
+              <p class="text-gray-500 mb-2">Analyzing content and generating structure</p>
+              
+              <!-- Progress Bar -->
+              <div class="w-64 mx-auto bg-purple-100 rounded-full h-3 mb-4 overflow-hidden">
+                <div id="aiProgressBar" class="bg-gradient-to-r from-purple-500 to-indigo-500 h-full rounded-full transition-all duration-300" style="width: 5%"></div>
+              </div>
+              
+              <div id="aiGenerationStatus" class="text-sm text-purple-600 font-medium">Starting...</div>
+            </div>
+          </div>
+          
+          <!-- Footer -->
+          <div class="bg-gray-50 px-6 py-4 border-t border-gray-200 flex justify-between items-center">
+            <button id="aiBuilderBackBtn" onclick="aiBuilderBack()" class="hidden px-4 py-2 text-gray-600 hover:text-gray-800 flex items-center gap-1">
+              ← Back
+            </button>
+            <div class="flex-1"></div>
+            <div class="flex gap-3">
+              <button id="aiRegenerateBtn" onclick="confirmRegenerate()" class="hidden px-4 py-2 text-purple-600 hover:text-purple-800 border border-purple-300 hover:border-purple-400 rounded-xl flex items-center gap-1">
+                🔄 Regenerate
+              </button>
+              <button onclick="closeAICourseBuilder()" class="px-5 py-2 text-gray-600 hover:text-gray-800">Cancel</button>
+              <button id="aiBuilderNextBtn" onclick="aiBuilderNext()" class="bg-purple-600 hover:bg-purple-700 text-white font-semibold px-5 py-2 rounded-xl flex items-center gap-2">
+                Generate Course ⚡
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Regenerate Confirmation Modal -->
+      <div id="regenerateConfirmModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60] p-4">
+        <div class="bg-white rounded-xl shadow-xl max-w-md w-full p-6">
+          <div class="text-center mb-4">
+            <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-3">
+              <span class="text-2xl">🔄</span>
+            </div>
+            <h3 class="text-xl font-semibold text-gray-800">Regenerate Course?</h3>
+          </div>
+          <p class="text-gray-600 text-center mb-4">
+            Each regeneration uses AI credits. You can also manually edit the generated content above instead.
+          </p>
+          <div id="dontShowAgainContainer" class="hidden mb-4">
+            <label class="flex items-center justify-center gap-2 cursor-pointer text-sm text-gray-500">
+              <input type="checkbox" id="dontShowAgainCheckbox" class="w-4 h-4 text-purple-600 rounded">
+              <span>Don't show this warning again</span>
+            </label>
+          </div>
+          <div class="flex gap-3 justify-center">
+            <button onclick="closeRegenerateModal()" class="px-5 py-2 text-gray-600 hover:text-gray-800 border border-gray-300 rounded-xl">
+              Cancel
+            </button>
+            <button onclick="executeRegenerate()" class="bg-purple-600 hover:bg-purple-700 text-white font-semibold px-5 py-2 rounded-xl">
+              Regenerate Anyway
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      <div id="courseList" class="space-y-4">
+        <div class="text-center py-12">
+          <div class="inline-block w-8 h-8 border-4 border-burgundy-200 border-t-burgundy-700 rounded-full animate-spin"></div>
+          <p class="text-forest-500 mt-4">Loading courses...</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Course Editor View -->
+    <div id="courseEditorView" class="hidden">
+      <div class="flex justify-between items-center mb-6">
+        <h1 class="font-display text-3xl font-semibold text-burgundy-900">
+          <span id="editorTitle">Edit Course</span>
+        </h1>
+        <div class="flex gap-4">
+          <button onclick="exportScorm()" class="bg-forest-100 hover:bg-forest-200 text-forest-800 font-medium px-4 py-2 rounded-lg">
+            📦 Export SCORM
+          </button>
+          <button onclick="backToList()" class="text-hunter-600 hover:text-hunter-700">← Back to Courses</button>
+        </div>
+      </div>
+      
+      <!-- Course Details -->
+      <div class="bg-white rounded-xl border border-burgundy-100 shadow-sm p-6 mb-6">
+        <h2 class="font-semibold text-burgundy-900 mb-4">Course Details</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-forest-700 mb-1">Title</label>
+            <input type="text" id="courseTitle" class="w-full px-4 py-2 border border-forest-200 rounded-lg focus:ring-2 focus:ring-burgundy-500 outline-none">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-forest-700 mb-1">Slug (URL)</label>
+            <input type="text" id="courseSlug" class="w-full px-4 py-2 border border-forest-200 rounded-lg focus:ring-2 focus:ring-burgundy-500 outline-none">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-forest-700 mb-1">Subtitle</label>
+            <input type="text" id="courseSubtitle" class="w-full px-4 py-2 border border-forest-200 rounded-lg focus:ring-2 focus:ring-burgundy-500 outline-none">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-forest-700 mb-1">Instructor</label>
+            <input type="text" id="courseInstructor" class="w-full px-4 py-2 border border-forest-200 rounded-lg focus:ring-2 focus:ring-burgundy-500 outline-none" value="GA Integrated Therapeutic Perspectives LLC">
+          </div>
+          <div class="md:col-span-2">
+            <label class="block text-sm font-medium text-forest-700 mb-1">Description</label>
+            <textarea id="courseDescription" rows="3" class="w-full px-4 py-2 border border-forest-200 rounded-lg focus:ring-2 focus:ring-burgundy-500 outline-none"></textarea>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-forest-700 mb-1">CE Hours</label>
+            <input type="number" id="courseCeuHours" onchange="suggestPrice()" class="w-full px-4 py-2 border border-forest-200 rounded-lg focus:ring-2 focus:ring-burgundy-500 outline-none">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-forest-700 mb-1">CE Category</label>
+            <select id="courseCeuCategory" onchange="suggestPrice()" class="w-full px-4 py-2 border border-forest-200 rounded-lg focus:ring-2 focus:ring-burgundy-500 outline-none">
+              <option value="ethics">Ethics</option>
+              <option value="core">Core</option>
+              <option value="related">Related</option>
+              <option value="supervision">Supervision</option>
+              <option value="telehealth">Telehealth</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-forest-700 mb-1">Access Tier</label>
+            <select id="courseAccessTier" class="w-full px-4 py-2 border border-forest-200 rounded-lg focus:ring-2 focus:ring-burgundy-500 outline-none">
+              <option value="free">Free (All Users)</option>
+              <option value="professional">Professional ($19/mo) - Up to 6 hrs</option>
+              <option value="vip">VIP ($49/mo) - 7+ hrs / Specialty</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-forest-700 mb-1">Status</label>
+            <select id="courseStatus" class="w-full px-4 py-2 border border-forest-200 rounded-lg focus:ring-2 focus:ring-burgundy-500 outline-none">
+              <option value="draft">Draft</option>
+              <option value="published">Published</option>
+              <option value="archived">Archived</option>
+            </select>
+          </div>
+          
+          <!-- Individual Purchase Price -->
+          <div>
+            <label class="block text-sm font-medium text-forest-700 mb-1">Individual Price ($)</label>
+            <input type="number" id="coursePrice" step="1" min="0" placeholder="e.g., 49" class="w-full px-4 py-2 border border-forest-200 rounded-lg focus:ring-2 focus:ring-burgundy-500 outline-none">
+            <p class="text-xs text-forest-500 mt-1">Leave blank for subscription-only access</p>
+          </div>
+          
+          <!-- Premium Course Toggle -->
+          <div>
+            <label class="block text-sm font-medium text-forest-700 mb-1">Pricing Tier</label>
+            <select id="coursePricingTier" onchange="suggestPrice()" class="w-full px-4 py-2 border border-forest-200 rounded-lg focus:ring-2 focus:ring-burgundy-500 outline-none">
+              <option value="standard">Standard (Core, Cultural, Trauma, etc.)</option>
+              <option value="premium">Premium (Ethics, Telehealth, Supervision)</option>
+            </select>
+          </div>
+          
+          <!-- State Compliance -->
+          <div class="md:col-span-2">
+            <label class="block text-sm font-medium text-forest-700 mb-1">State Compliance</label>
+            <p class="text-xs text-forest-500 mb-2">Select states whose requirements this course meets (displays badge on course)</p>
+            <div id="stateComplianceCheckboxes" class="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2 p-3 border border-forest-200 rounded-lg bg-forest-50 max-h-40 overflow-y-auto">
+              <!-- States will be populated by JS -->
+            </div>
+          </div>
+          
+          <!-- NBCC Compliance Display -->
+          <div class="md:col-span-2">
+            <label class="block text-sm font-medium text-forest-700 mb-1">Compliance Badges Preview</label>
+            <div id="complianceBadgesPreview" class="flex flex-wrap gap-2 p-3 border border-forest-200 rounded-lg bg-white min-h-[48px]">
+              <span class="inline-flex items-center gap-1 px-3 py-1 bg-green-100 text-green-800 text-sm font-medium rounded-full">
+                ✓ NBCC Approved (Provider #7760)
+              </span>
+              <!-- State badges will be added dynamically -->
+            </div>
+          </div>
+          
+          <!-- Course Thumbnail -->
+          <div class="md:col-span-2">
+            <label class="block text-sm font-medium text-forest-700 mb-1">Course Thumbnail</label>
+            <div class="flex items-start gap-4">
+              <div id="thumbnailPreview" class="w-48 h-32 bg-forest-100 rounded-lg flex items-center justify-center overflow-hidden border-2 border-dashed border-forest-300">
+                <span class="text-forest-400 text-sm">No image</span>
+              </div>
+              <div class="flex-1">
+                <input type="file" id="courseThumbnail" accept="image/*" onchange="previewThumbnail(event)" class="w-full px-4 py-2 border border-forest-200 rounded-lg focus:ring-2 focus:ring-burgundy-500 outline-none">
+                <p class="text-xs text-forest-500 mt-1">Upload JPG, PNG, or WebP. Recommended: 800x450px</p>
+                <div class="mt-2 flex gap-2">
+                  <button type="button" onclick="uploadThumbnail()" class="bg-burgundy-100 hover:bg-burgundy-200 text-burgundy-800 font-medium px-4 py-1.5 rounded-lg text-sm">
+                    📤 Upload Image
+                  </button>
+                  <button type="button" onclick="removeThumbnail()" class="bg-red-100 hover:bg-red-200 text-red-700 font-medium px-4 py-1.5 rounded-lg text-sm">
+                    🗑️ Remove
+                  </button>
+                </div>
+                <div id="uploadStatus" class="mt-2 text-sm hidden"></div>
+              </div>
+            </div>
+            <input type="hidden" id="courseThumbnailUrl">
+          </div>
+        </div>
+        <div class="mt-4">
+          <button onclick="saveCourseDetails()" class="bg-forest-700 hover:bg-forest-800 text-white font-semibold px-6 py-2 rounded-lg">
+            Save Course Details
+          </button>
+        </div>
+      </div>
+
+      <!-- Course Settings -->
+      <div class="bg-white rounded-xl border border-burgundy-100 shadow-sm p-6 mb-6">
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="font-semibold text-burgundy-900">Course Settings</h2>
+          <button type="button" onclick="toggleSettingsPanel()" class="text-sm text-forest-600 hover:text-burgundy-700">
+            <span id="settingsToggleText">▼ Expand</span>
+          </button>
+        </div>
+        
+        <div id="settingsPanel" class="hidden">
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            <!-- Progression Settings -->
+            <div class="bg-forest-50 rounded-lg p-4">
+              <h3 class="text-sm font-semibold text-forest-800 uppercase tracking-wide mb-4">📚 Progression</h3>
+              
+              <div class="space-y-3">
+                <label class="flex items-start gap-3 cursor-pointer">
+                  <input type="checkbox" id="settingLinearProgression" class="w-5 h-5 mt-0.5 text-burgundy-600 rounded">
+                  <div>
+                    <span class="font-medium text-forest-800">Linear Progression</span>
+                    <p class="text-xs text-forest-500">Must complete lessons in order</p>
+                  </div>
+                </label>
+                
+                <label class="flex items-start gap-3 cursor-pointer">
+                  <input type="checkbox" id="settingEnforceMinTime" onchange="toggleMinTimeSettings()" class="w-5 h-5 mt-0.5 text-burgundy-600 rounded">
+                  <div>
+                    <span class="font-medium text-forest-800">Enforce Minimum Time</span>
+                    <p class="text-xs text-forest-500">Prevent speed-clicking</p>
+                  </div>
+                </label>
+                
+                <div id="minTimeSettings" class="ml-8 hidden">
+                  <label class="text-sm text-forest-700">Required % of duration</label>
+                  <div class="flex items-center gap-2 mt-1">
+                    <input type="number" id="settingMinTimePercent" value="80" min="50" max="100" class="w-20 px-2 py-1 border border-forest-200 rounded text-sm">
+                    <span class="text-sm text-forest-500">%</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Quiz/Test Settings -->
+            <div class="bg-burgundy-50 rounded-lg p-4">
+              <h3 class="text-sm font-semibold text-burgundy-800 uppercase tracking-wide mb-4">📝 Quiz Settings</h3>
+              
+              <div class="space-y-3">
+                <div>
+                  <label class="text-sm font-medium text-forest-700">Passing Score</label>
+                  <div class="flex items-center gap-2 mt-1">
+                    <input type="number" id="settingPassingScore" value="70" min="0" max="100" class="w-20 px-2 py-1 border border-forest-200 rounded text-sm">
+                    <span class="text-sm text-forest-500">%</span>
+                  </div>
+                </div>
+                
+                <div>
+                  <label class="text-sm font-medium text-forest-700">Retake Policy</label>
+                  <select id="settingRetakePolicy" onchange="toggleRetakeSettings()" class="w-full mt-1 px-3 py-1.5 border border-forest-200 rounded text-sm">
+                    <option value="unlimited">Unlimited Retakes</option>
+                    <option value="limited">Limited Retakes</option>
+                    <option value="first_final">First Score is Final</option>
+                  </select>
+                </div>
+                
+                <div id="retakeLimitSettings" class="hidden">
+                  <label class="text-sm text-forest-700">Max Attempts</label>
+                  <input type="number" id="settingMaxRetakes" value="3" min="1" max="10" class="w-20 px-2 py-1 border border-forest-200 rounded text-sm mt-1">
+                </div>
+                
+                <div id="retakeCooldownSettings" class="hidden">
+                  <label class="text-sm text-forest-700">Cooldown Between Retakes</label>
+                  <div class="flex items-center gap-2 mt-1">
+                    <input type="number" id="settingRetakeCooldown" value="0" min="0" class="w-20 px-2 py-1 border border-forest-200 rounded text-sm">
+                    <span class="text-sm text-forest-500">hours</span>
+                  </div>
+                </div>
+                
+                <div>
+                  <label class="text-sm font-medium text-forest-700">Score Policy</label>
+                  <select id="settingScorePolicy" class="w-full mt-1 px-3 py-1.5 border border-forest-200 rounded text-sm">
+                    <option value="highest">Use Highest Score</option>
+                    <option value="latest">Use Latest Score</option>
+                    <option value="first">Use First Score</option>
+                    <option value="average">Use Average Score</option>
+                  </select>
+                  <p class="text-xs text-forest-500 mt-1">Which score counts for certificate</p>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Drip Content Settings -->
+            <div class="bg-gold-50 rounded-lg p-4">
+              <h3 class="text-sm font-semibold text-gold-800 uppercase tracking-wide mb-4">📅 Drip Content</h3>
+              
+              <div class="space-y-3">
+                <label class="flex items-start gap-3 cursor-pointer">
+                  <input type="checkbox" id="settingDripEnabled" onchange="toggleDripSettings()" class="w-5 h-5 mt-0.5 text-burgundy-600 rounded">
+                  <div>
+                    <span class="font-medium text-forest-800">Enable Drip Schedule</span>
+                    <p class="text-xs text-forest-500">Release modules over time</p>
+                  </div>
+                </label>
+                
+                <div id="dripScheduleSettings" class="hidden space-y-2">
+                  <p class="text-xs text-forest-600">Set days after enrollment for each module:</p>
+                  <div id="dripScheduleContainer">
+                    <!-- Populated when course loads -->
+                    <p class="text-xs text-forest-400 italic">Save course with modules first</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Narration Settings -->
+            <div class="bg-purple-50 rounded-lg p-4">
+              <h3 class="text-sm font-semibold text-purple-800 uppercase tracking-wide mb-4">🎙️ Narration</h3>
+              
+              <div class="space-y-3">
+                <label class="flex items-start gap-3 cursor-pointer">
+                  <input type="checkbox" id="settingNarrationEnabled" onchange="toggleNarrationSettings()" class="w-5 h-5 mt-0.5 text-burgundy-600 rounded">
+                  <div>
+                    <span class="font-medium text-forest-800">Enable Narration</span>
+                    <p class="text-xs text-forest-500">AI reads lesson content aloud</p>
+                  </div>
+                </label>
+                
+                <div id="narrationSettings" class="hidden space-y-3">
+                  <div>
+                    <label class="text-sm font-medium text-forest-700">Voice</label>
+                    <select id="settingNarrationVoice" class="w-full mt-1 px-3 py-1.5 border border-forest-200 rounded text-sm">
+                      <option value="browser">Browser Default (Free)</option>
+                      <optgroup label="OpenAI Voices (Requires API Key)">
+                        <option value="nova">Nova (Female, warm)</option>
+                        <option value="alloy">Alloy (Neutral)</option>
+                        <option value="echo">Echo (Male)</option>
+                        <option value="fable">Fable (British)</option>
+                        <option value="onyx">Onyx (Male, deep)</option>
+                        <option value="shimmer">Shimmer (Female, bright)</option>
+                      </optgroup>
+                    </select>
+                  </div>
+                  
+                  <div>
+                    <label class="text-sm font-medium text-forest-700">Speed</label>
+                    <div class="flex items-center gap-2 mt-1">
+                      <input type="range" id="settingNarrationSpeed" min="0.5" max="2" step="0.1" value="1" class="flex-1">
+                      <span id="speedDisplay" class="text-sm text-forest-600 w-12">1.0x</span>
+                    </div>
+                  </div>
+                  
+                  <label class="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" id="settingAutoPlayNarration" class="w-4 h-4 text-burgundy-600 rounded">
+                    <span class="text-sm text-forest-700">Auto-play when lesson loads</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+            
+            <!-- CE Compliance Settings -->
+            <div class="bg-blue-50 rounded-lg p-4">
+              <h3 class="text-sm font-semibold text-blue-800 uppercase tracking-wide mb-4">🎓 CE Compliance</h3>
+              
+              <div class="space-y-3">
+                <label class="flex items-start gap-3 cursor-pointer">
+                  <input type="checkbox" id="settingRequireEvaluation" checked class="w-5 h-5 mt-0.5 text-burgundy-600 rounded">
+                  <div>
+                    <span class="font-medium text-forest-800">Require Evaluation</span>
+                    <p class="text-xs text-forest-500">Course survey before certificate</p>
+                  </div>
+                </label>
+                
+                <label class="flex items-start gap-3 cursor-pointer">
+                  <input type="checkbox" id="settingRequireAttestation" checked class="w-5 h-5 mt-0.5 text-burgundy-600 rounded">
+                  <div>
+                    <span class="font-medium text-forest-800">Require Attestation</span>
+                    <p class="text-xs text-forest-500">Learner confirms completion</p>
+                  </div>
+                </label>
+                
+                <label class="flex items-start gap-3 cursor-pointer">
+                  <input type="checkbox" id="settingCertificateEnabled" checked class="w-5 h-5 mt-0.5 text-burgundy-600 rounded">
+                  <div>
+                    <span class="font-medium text-forest-800">Generate Certificate</span>
+                    <p class="text-xs text-forest-500">Issue CE certificate on completion</p>
+                  </div>
+                </label>
+              </div>
+            </div>
+            
+            <!-- Approving Body -->
+            <div class="bg-stone-100 rounded-lg p-4">
+              <h3 class="text-sm font-semibold text-stone-700 uppercase tracking-wide mb-4">🏛️ Approval</h3>
+              
+              <div class="space-y-3">
+                <div>
+                  <label class="text-sm font-medium text-forest-700">Approving Body</label>
+                  <select id="settingApprovingBody" class="w-full mt-1 px-3 py-1.5 border border-forest-200 rounded text-sm">
+                    <option value="NBCC">NBCC</option>
+                    <option value="ACA">ACA</option>
+                    <option value="NASW">NASW</option>
+                    <option value="APA">APA</option>
+                    <option value="ASWB">ASWB</option>
+                    <option value="AAMFT">AAMFT</option>
+                    <option value="State Board">State Board</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+                
+                <div>
+                  <label class="text-sm font-medium text-forest-700">Approval Number</label>
+                  <input type="text" id="settingApprovalNumber" placeholder="ACEP #7760" class="w-full mt-1 px-3 py-1.5 border border-forest-200 rounded text-sm">
+                </div>
+              </div>
+            </div>
+            
+          </div>
+          
+          <div class="mt-4 pt-4 border-t border-forest-200">
+            <button onclick="saveCourseSettings()" class="bg-burgundy-700 hover:bg-burgundy-800 text-white font-semibold px-6 py-2 rounded-lg">
+              💾 Save All Settings
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modules & Lessons -->
+      <div class="bg-white rounded-xl border border-burgundy-100 shadow-sm p-6">
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="font-semibold text-burgundy-900">Modules & Lessons</h2>
+          <button onclick="addModule()" class="bg-burgundy-100 hover:bg-burgundy-200 text-burgundy-800 font-medium px-4 py-2 rounded-lg text-sm">
+            + Add Module
+          </button>
+        </div>
+        
+        <!-- Bulk Content Regeneration Tool -->
+        <div id="bulkRegenerateSection" class="hidden bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl border border-purple-200 p-4 mb-4">
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-2">
+              <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+              </svg>
+              <h3 class="font-semibold text-purple-900">AI Content Regeneration</h3>
+              <span class="text-xs bg-purple-200 text-purple-700 px-2 py-0.5 rounded-full">NBCC Compliant</span>
+            </div>
+            <button onclick="toggleBulkRegenerate()" class="text-purple-500 hover:text-purple-700">✕</button>
+          </div>
+          
+          <p class="text-sm text-purple-700 mb-3">Select lessons with insufficient content. AI will expand them to meet NBCC requirements (6,000 words per CE hour).</p>
+          
+          <div class="flex items-center gap-4 mb-3">
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" id="selectAllLessons" onchange="toggleSelectAllLessons()" class="w-4 h-4 text-purple-600 rounded">
+              <span class="text-sm font-medium text-purple-800">Select All Text Lessons</span>
+            </label>
+            <span id="selectedLessonCount" class="text-sm text-purple-600">0 selected</span>
+          </div>
+          
+          <div id="lessonCheckboxList" class="max-h-48 overflow-y-auto bg-white rounded-lg border border-purple-200 p-2 mb-3">
+            <!-- Lesson checkboxes will be populated here -->
+          </div>
+          
+          <div id="regenProgressSection" class="hidden mb-3">
+            <div class="flex items-center gap-2 mb-2">
+              <div class="w-5 h-5 border-2 border-purple-300 border-t-purple-700 rounded-full animate-spin"></div>
+              <span id="regenStatus" class="text-sm text-purple-700">Regenerating content...</span>
+            </div>
+            <div class="w-full bg-purple-100 rounded-full h-2">
+              <div id="regenProgressBar" class="bg-purple-600 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+            </div>
+          </div>
+          
+          <div class="flex gap-2">
+            <button onclick="previewSelectedLessons()" class="bg-white hover:bg-purple-50 text-purple-700 border border-purple-300 font-medium px-4 py-2 rounded-lg text-sm">
+              Preview Selected
+            </button>
+            <button onclick="regenerateSelectedLessons()" class="bg-purple-600 hover:bg-purple-700 text-white font-semibold px-4 py-2 rounded-lg text-sm flex items-center gap-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+              </svg>
+              Regenerate Content
+            </button>
+          </div>
+        </div>
+        
+        <!-- Show/Hide Bulk Regenerate Button -->
+        <div class="mb-4">
+          <button onclick="toggleBulkRegenerate()" id="showBulkRegenBtn" class="text-sm text-purple-600 hover:text-purple-800 flex items-center gap-1">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+            </svg>
+            AI Content Regeneration Tool
+          </button>
+        </div>
+        
+        <div id="modulesContainer" class="space-y-4">
+          <!-- Modules loaded here -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Lesson Editor Modal -->
+    <div id="lessonModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div class="bg-white rounded-xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+        <div class="p-6 border-b border-hunter-100">
+          <div class="flex justify-between items-center">
+            <h3 class="font-display text-2xl font-semibold text-burgundy-900">Edit Lesson</h3>
+            <button onclick="closeLessonModal()" class="text-forest-500 hover:text-burgundy-700 text-2xl">&times;</button>
+          </div>
+        </div>
+        <div class="p-6 space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-forest-700 mb-1">Lesson Title</label>
+            <input type="text" id="lessonTitle" class="w-full px-4 py-2 border border-forest-200 rounded-lg focus:ring-2 focus:ring-burgundy-500 outline-none">
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-forest-700 mb-1">Type</label>
+              <select id="lessonType" onchange="toggleContentType()" class="w-full px-4 py-2 border border-forest-200 rounded-lg focus:ring-2 focus:ring-burgundy-500 outline-none">
+                <option value="text">Text</option>
+                <option value="video">Video</option>
+                <option value="quiz">Quiz</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-forest-700 mb-1">Duration (minutes)</label>
+              <input type="number" id="lessonDuration" class="w-full px-4 py-2 border border-forest-200 rounded-lg focus:ring-2 focus:ring-burgundy-500 outline-none">
+            </div>
+          </div>
+          <div>
+            <label class="flex items-center gap-2">
+              <input type="checkbox" id="lessonIsFree" class="w-4 h-4 text-burgundy-600 rounded">
+              <span class="text-sm text-forest-700">Free Preview (visible to non-enrolled users)</span>
+            </label>
+          </div>
+          <div id="textContentArea">
+            <label class="block text-sm font-medium text-forest-700 mb-1">Content (HTML supported)</label>
+            <textarea id="lessonContent" rows="15" class="w-full px-4 py-2 border border-forest-200 rounded-lg focus:ring-2 focus:ring-burgundy-500 outline-none font-mono text-sm"></textarea>
+            <p class="text-xs text-forest-500 mt-1">Use HTML tags: &lt;h2&gt;, &lt;h3&gt;, &lt;p&gt;, &lt;ul&gt;, &lt;li&gt;, &lt;strong&gt;</p>
+          </div>
+          <div id="videoContentArea" class="hidden">
+            <label class="block text-sm font-medium text-forest-700 mb-1">Video URL (YouTube or Vimeo)</label>
+            <input type="text" id="lessonVideoUrl" placeholder="https://youtube.com/watch?v=..." class="w-full px-4 py-2 border border-forest-200 rounded-lg focus:ring-2 focus:ring-burgundy-500 outline-none">
+          </div>
+          
+          <!-- Quiz Builder Area -->
+          <div id="quizContentArea" class="hidden space-y-4">
+            
+            <!-- AI Import Panel -->
+            <div class="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl p-4 border border-purple-200">
+              <div class="flex items-center gap-2 mb-3">
+                <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                </svg>
+                <h4 class="font-semibold text-purple-900">AI Quiz Generator</h4>
+                <span class="text-xs bg-purple-200 text-purple-700 px-2 py-0.5 rounded-full ml-auto">Powered by Claude</span>
+              </div>
+              
+              <!-- Tab Buttons -->
+              <div class="flex gap-2 mb-3">
+                <button onclick="setAIMode('pdf')" id="aiModePdf" class="ai-mode-btn px-3 py-1.5 text-sm rounded-lg bg-purple-600 text-white">
+                  📄 From PDF
+                </button>
+                <button onclick="setAIMode('outline')" id="aiModeOutline" class="ai-mode-btn px-3 py-1.5 text-sm rounded-lg bg-white text-purple-700 border border-purple-300">
+                  📝 From Outline
+                </button>
+                <button onclick="setAIMode('content')" id="aiModeContent" class="ai-mode-btn px-3 py-1.5 text-sm rounded-lg bg-white text-purple-700 border border-purple-300">
+                  📚 From Course Content
+                </button>
+              </div>
+              
+              <!-- PDF Upload Mode -->
+              <div id="aiPdfMode" class="ai-mode-content">
+                <div class="border-2 border-dashed border-purple-300 rounded-lg p-4 text-center hover:border-purple-500 hover:bg-purple-50 transition cursor-pointer" 
+                     onclick="document.getElementById('quizPdfUpload').click()"
+                     ondrop="handleQuizPdfDrop(event)" ondragover="event.preventDefault()">
+                  <input type="file" id="quizPdfUpload" accept=".pdf" class="hidden" onchange="handleQuizPdfSelect(event)">
+                  <svg class="w-8 h-8 text-purple-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                  </svg>
+                  <p class="text-sm text-purple-700">Drop PDF with quiz questions or click to browse</p>
+                  <p class="text-xs text-purple-500 mt-1">AI will extract questions, options, and answers</p>
+                </div>
+                <p id="quizPdfFileName" class="text-sm text-purple-600 mt-2 hidden"></p>
+              </div>
+              
+              <!-- Outline Mode -->
+              <div id="aiOutlineMode" class="ai-mode-content hidden">
+                <textarea id="quizOutlineInput" rows="4" 
+                          placeholder="Paste your quiz outline or notes here...&#10;&#10;Example:&#10;- 3 questions on informed consent&#10;- 2 true/false on confidentiality exceptions&#10;- Multiple choice: HIPAA requirements"
+                          class="w-full px-3 py-2 border border-purple-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500"></textarea>
+              </div>
+              
+              <!-- From Course Content Mode -->
+              <div id="aiContentMode" class="ai-mode-content hidden">
+                <div class="bg-white rounded-lg p-3 border border-purple-200">
+                  <p class="text-sm text-purple-700 mb-2">Generate questions from this lesson's content or the entire module.</p>
+                  <div class="flex gap-4">
+                    <label class="flex items-center gap-2 cursor-pointer">
+                      <input type="radio" name="contentScope" value="lesson" checked class="text-purple-600">
+                      <span class="text-sm">This lesson only</span>
+                    </label>
+                    <label class="flex items-center gap-2 cursor-pointer">
+                      <input type="radio" name="contentScope" value="module" class="text-purple-600">
+                      <span class="text-sm">Entire module</span>
+                    </label>
+                  </div>
+                </div>
+                <div class="mt-2 flex items-center gap-2">
+                  <label class="text-sm text-purple-700">Number of questions:</label>
+                  <input type="number" id="aiQuestionCount" value="5" min="1" max="20" 
+                         class="w-20 px-2 py-1 border border-purple-300 rounded text-sm">
+                </div>
+              </div>
+              
+              <!-- Generate Button -->
+              <div class="mt-3 flex items-center gap-3">
+                <button onclick="generateQuizWithAI()" id="aiGenerateBtn" 
+                        class="bg-purple-600 hover:bg-purple-700 text-white font-medium px-4 py-2 rounded-lg text-sm flex items-center gap-2">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                  </svg>
+                  Generate Questions
+                </button>
+                <span id="aiGenerateStatus" class="text-sm text-purple-600 hidden">
+                  <span class="inline-block w-4 h-4 border-2 border-purple-300 border-t-purple-600 rounded-full animate-spin mr-2"></span>
+                  Generating...
+                </span>
+              </div>
+            </div>
+            
+            <!-- Quiz Settings -->
+            <div class="bg-stone-50 rounded-lg p-4 border border-stone-200">
+              <h4 class="font-medium text-forest-800 mb-3">Quiz Settings</h4>
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <label class="flex items-center gap-2 cursor-pointer">
+                  <input type="checkbox" id="quizShuffleQuestions" class="w-4 h-4 text-burgundy-600 rounded">
+                  <span class="text-sm text-forest-700">Shuffle Questions</span>
+                </label>
+                <label class="flex items-center gap-2 cursor-pointer">
+                  <input type="checkbox" id="quizShuffleOptions" class="w-4 h-4 text-burgundy-600 rounded">
+                  <span class="text-sm text-forest-700">Shuffle Options</span>
+                </label>
+                <label class="flex items-center gap-2 cursor-pointer">
+                  <input type="checkbox" id="quizShowExplanations" checked class="w-4 h-4 text-burgundy-600 rounded">
+                  <span class="text-sm text-forest-700">Show Explanations</span>
+                </label>
+                <div class="flex items-center gap-2">
+                  <label class="text-sm text-forest-700">Time Limit:</label>
+                  <input type="number" id="quizTimeLimit" placeholder="∞" min="0" 
+                         class="w-16 px-2 py-1 border border-forest-200 rounded text-sm">
+                  <span class="text-xs text-forest-500">min</span>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Questions List -->
+            <div class="border border-forest-200 rounded-lg">
+              <div class="bg-forest-50 px-4 py-3 border-b border-forest-200 flex justify-between items-center">
+                <h4 class="font-medium text-forest-800">Questions (<span id="questionCount">0</span>)</h4>
+                <button onclick="addQuestion()" class="bg-burgundy-100 hover:bg-burgundy-200 text-burgundy-800 font-medium px-3 py-1.5 rounded-lg text-sm">
+                  + Add Question
+                </button>
+              </div>
+              
+              <div id="questionsContainer" class="divide-y divide-forest-100 max-h-[400px] overflow-y-auto">
+                <div class="p-6 text-center text-forest-500">
+                  <p>No questions yet. Add manually or use AI to generate.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Supplemental Resources Section (shown for all lesson types) -->
+        <div class="p-6 border-t border-forest-100">
+          <div class="flex items-center justify-between mb-3">
+            <h4 class="font-medium text-forest-800 flex items-center gap-2">
+              📎 Supplemental Resources
+              <span class="text-xs bg-forest-100 text-forest-600 px-2 py-0.5 rounded-full">Optional</span>
+            </h4>
+            <button onclick="addResource()" class="bg-forest-100 hover:bg-forest-200 text-forest-800 font-medium px-3 py-1.5 rounded-lg text-sm">
+              + Add Resource
+            </button>
+          </div>
+          <p class="text-sm text-forest-500 mb-3">Add downloadable files, links, or references for learners.</p>
+          
+          <div id="resourcesContainer" class="space-y-2">
+            <!-- Resources will be added here -->
+          </div>
+          
+          <div id="noResourcesMessage" class="text-center text-forest-400 text-sm py-4 border border-dashed border-forest-200 rounded-lg">
+            No resources added yet. Click "+ Add Resource" to add PDFs, links, or references.
+          </div>
+        </div>
+        
+        <div class="p-6 border-t border-burgundy-100 flex justify-end gap-4">
+          <button onclick="closeLessonModal()" class="px-6 py-2 text-hunter-600 hover:text-hunter-700">Cancel</button>
+          <button onclick="saveLesson()" class="bg-burgundy-800 hover:bg-burgundy-900 text-white font-semibold px-6 py-2 rounded-lg">Save Lesson</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Question Editor Modal -->
+    <div id="questionModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60] p-4">
+      <div class="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <div class="p-4 border-b border-forest-100 flex justify-between items-center bg-forest-50">
+          <h3 class="font-semibold text-forest-900" id="questionModalTitle">Add Question</h3>
+          <button onclick="closeQuestionModal()" class="text-forest-500 hover:text-burgundy-700 text-xl">&times;</button>
+        </div>
+        
+        <div class="p-6 space-y-4">
+          <!-- Question Type -->
+          <div>
+            <label class="block text-sm font-medium text-forest-700 mb-1">Question Type</label>
+            <select id="questionType" onchange="toggleQuestionType()" 
+                    class="w-full px-3 py-2 border border-forest-200 rounded-lg focus:ring-2 focus:ring-burgundy-500">
+              <option value="multiple_choice">Multiple Choice (single answer)</option>
+              <option value="multiple_select">Multiple Select (multiple answers)</option>
+              <option value="true_false">True / False</option>
+            </select>
+          </div>
+          
+          <!-- Question Text -->
+          <div>
+            <label class="block text-sm font-medium text-forest-700 mb-1">Question</label>
+            <textarea id="questionText" rows="3" 
+                      class="w-full px-3 py-2 border border-forest-200 rounded-lg focus:ring-2 focus:ring-burgundy-500"
+                      placeholder="Enter your question..."></textarea>
+          </div>
+          
+          <!-- Options (for MC/MS) -->
+          <div id="optionsArea">
+            <label class="block text-sm font-medium text-forest-700 mb-2">Answer Options <span class="text-xs text-forest-500">(select correct answer)</span></label>
+            <div id="optionsList" class="space-y-2">
+              <!-- Options rendered here -->
+            </div>
+            <button onclick="addOption()" class="mt-2 text-sm text-burgundy-600 hover:text-burgundy-800 flex items-center gap-1">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+              </svg>
+              Add Option
+            </button>
+          </div>
+          
+          <!-- True/False Selection -->
+          <div id="trueFalseArea" class="hidden">
+            <label class="block text-sm font-medium text-forest-700 mb-2">Correct Answer</label>
+            <div class="flex gap-4">
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="radio" name="tfAnswer" value="true" class="w-4 h-4 text-burgundy-600">
+                <span class="text-forest-700">True</span>
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="radio" name="tfAnswer" value="false" class="w-4 h-4 text-burgundy-600">
+                <span class="text-forest-700">False</span>
+              </label>
+            </div>
+          </div>
+          
+          <!-- Explanation -->
+          <div>
+            <label class="block text-sm font-medium text-forest-700 mb-1">Explanation <span class="text-xs text-forest-500">(shown after answering)</span></label>
+            <textarea id="questionExplanation" rows="2" 
+                      class="w-full px-3 py-2 border border-forest-200 rounded-lg focus:ring-2 focus:ring-burgundy-500"
+                      placeholder="Explain why this is the correct answer..."></textarea>
+          </div>
+          
+          <!-- Points -->
+          <div>
+            <label class="block text-sm font-medium text-forest-700 mb-1">Points</label>
+            <input type="number" id="questionPoints" value="1" min="1" 
+                   class="w-24 px-3 py-2 border border-forest-200 rounded-lg focus:ring-2 focus:ring-burgundy-500">
+          </div>
+        </div>
+        
+        <div class="p-4 border-t border-forest-100 flex justify-end gap-3 bg-stone-50">
+          <button onclick="closeQuestionModal()" class="px-4 py-2 text-forest-600 hover:text-forest-800">Cancel</button>
+          <button onclick="saveQuestion()" class="bg-burgundy-700 hover:bg-burgundy-800 text-white font-medium px-6 py-2 rounded-lg">
+            Save Question
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://api.counselorready.com';
+    let courses = [];
+    let currentCourse = null;
+    let currentLessonEdit = null;
+    
+    // Quiz builder state
+    let currentQuestions = [];
+    let editingQuestionIndex = null;
+    let currentAIMode = 'pdf';
+    let currentOptions = ['', '', '', ''];
+    let currentCorrectAnswer = null;
+
+    // US States for compliance checkboxes
+    const US_STATES = [
+      'AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'FL', 'GA',
+      'HI', 'ID', 'IL', 'IN', 'IA', 'KS', 'KY', 'LA', 'ME', 'MD',
+      'MA', 'MI', 'MN', 'MS', 'MO', 'MT', 'NE', 'NV', 'NH', 'NJ',
+      'NM', 'NY', 'NC', 'ND', 'OH', 'OK', 'OR', 'PA', 'RI', 'SC',
+      'SD', 'TN', 'TX', 'UT', 'VT', 'VA', 'WA', 'WV', 'WI', 'WY', 'DC'
+    ];
+
+    // Pricing tables
+    const STANDARD_PRICES = { 1: 19, 2: 35, 3: 49, 4: 59, 5: 69, 6: 79 };
+    const PREMIUM_PRICES = { 1: 25, 2: 45, 3: 59, 4: 75, 5: 89, 6: 99 };
+    const PREMIUM_CATEGORIES = ['ethics', 'telehealth', 'supervision'];
+
+    // Initialize state compliance checkboxes
+    function initStateComplianceCheckboxes() {
+      const container = document.getElementById('stateComplianceCheckboxes');
+      if (!container) return;
+      
+      container.innerHTML = US_STATES.map(state => `
+        <label class="flex items-center gap-1 cursor-pointer">
+          <input type="checkbox" value="${state}" class="state-compliance-checkbox w-4 h-4 text-burgundy-600 rounded" onchange="updateComplianceBadges()">
+          <span class="text-xs text-forest-700">${state}</span>
+        </label>
+      `).join('');
+    }
+
+    // Update compliance badges preview
+    function updateComplianceBadges() {
+      const preview = document.getElementById('complianceBadgesPreview');
+      if (!preview) return;
+      
+      const selectedStates = Array.from(document.querySelectorAll('.state-compliance-checkbox:checked')).map(cb => cb.value);
+      
+      let badges = `<span class="inline-flex items-center gap-1 px-3 py-1 bg-green-100 text-green-800 text-sm font-medium rounded-full">
+        ✓ NBCC Approved (Provider #7760)
+      </span>`;
+      
+      selectedStates.forEach(state => {
+        badges += `<span class="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-800 text-sm font-medium rounded-full">
+          ✓ Meets ${state} Requirements
+        </span>`;
+      });
+      
+      preview.innerHTML = badges;
+    }
+
+    // Suggest price based on CE hours and category
+    function suggestPrice() {
+      const ceHoursEl = document.getElementById('courseCeuHours');
+      const categoryEl = document.getElementById('courseCeuCategory');
+      const pricingTierEl = document.getElementById('coursePricingTier');
+      const priceInput = document.getElementById('coursePrice');
+      
+      // Safety check - elements might not exist yet
+      if (!ceHoursEl || !categoryEl || !pricingTierEl || !priceInput) {
+        console.log('Price elements not ready yet');
+        return;
+      }
+      
+      const ceHours = Math.round(parseFloat(ceHoursEl.value) || 0);
+      const category = categoryEl.value;
+      const pricingTier = pricingTierEl.value;
+      
+      // Auto-select premium tier for premium categories
+      if (PREMIUM_CATEGORIES.includes(category) && pricingTier !== 'premium') {
+        pricingTierEl.value = 'premium';
+      }
+      
+      const isPremium = pricingTierEl.value === 'premium' || PREMIUM_CATEGORIES.includes(category);
+      const priceTable = isPremium ? PREMIUM_PRICES : STANDARD_PRICES;
+      
+      // Get price for CE hours (cap at 6 for table, extrapolate beyond)
+      let suggestedPrice;
+      if (ceHours <= 0) {
+        suggestedPrice = '';
+      } else if (ceHours <= 6) {
+        suggestedPrice = priceTable[ceHours] || priceTable[Math.ceil(ceHours)];
+      } else {
+        // For courses > 6 hours, add $10-15 per additional hour
+        const basePrice = priceTable[6];
+        const extraHours = ceHours - 6;
+        suggestedPrice = basePrice + (extraHours * (isPremium ? 15 : 10));
+      }
+      
+      if (suggestedPrice) {
+        priceInput.value = suggestedPrice;
+        priceInput.placeholder = `Suggested: $${suggestedPrice}`;
+      }
+    }
+
+    // Get selected compliance states
+    function getSelectedComplianceStates() {
+      return Array.from(document.querySelectorAll('.state-compliance-checkbox:checked')).map(cb => cb.value);
+    }
+
+    // Set compliance states (when loading a course)
+    function setComplianceStates(states) {
+      document.querySelectorAll('.state-compliance-checkbox').forEach(cb => {
+        cb.checked = states && states.includes(cb.value);
+      });
+      updateComplianceBadges();
+    }
+
+    // Load all courses
+    async function loadCourses() {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        alert('Please log in first');
+        window.location.href = '/login.html';
+        return;
+      }
+
+      try {
+        const response = await fetch(`${API_URL}/api/admin/courses`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await response.json();
+        courses = data.courses || [];
+        renderCourseList();
+      } catch (error) {
+        console.error('Load courses error:', error);
+        document.getElementById('courseList').innerHTML = '<p class="text-burgundy-600">Failed to load courses</p>';
+      }
+    }
+
+    // Render course list
+    function renderCourseList() {
+      document.getElementById('courseCount').textContent = courses.length;
+      
+      // Apply any existing filters
+      filterCourses();
+    }
+
+    // Filter courses based on search and status
+    function filterCourses() {
+      const searchTerm = document.getElementById('courseSearch').value.toLowerCase().trim();
+      const statusFilter = document.getElementById('statusFilter').value;
+      
+      const filtered = courses.filter(course => {
+        const matchesSearch = !searchTerm || 
+          course.title?.toLowerCase().includes(searchTerm) ||
+          course.slug?.toLowerCase().includes(searchTerm) ||
+          course.description?.toLowerCase().includes(searchTerm);
+        
+        const matchesStatus = statusFilter === 'all' || course.status === statusFilter;
+        
+        return matchesSearch && matchesStatus;
+      });
+      
+      renderFilteredCourseList(filtered);
+    }
+    
+    // Render filtered course list
+    function renderFilteredCourseList(filteredCourses) {
+      const container = document.getElementById('courseList');
+      document.getElementById('courseCount').textContent = filteredCourses.length;
+      
+      if (filteredCourses.length === 0) {
+        container.innerHTML = '<p class="text-forest-600 py-8 text-center">No courses match your search criteria.</p>';
+        return;
+      }
+
+      container.innerHTML = filteredCourses.map(course => {
+        const priceDisplay = course.price ? `<span class="text-green-700 font-semibold">$${course.price}</span>` : '<span class="text-gray-400">No price</span>';
+        const categoryDisplay = course.ceuCategories?.[0]?.category || course.category || '';
+        const isPremium = ['ethics', 'telehealth', 'supervision'].includes(categoryDisplay?.toLowerCase());
+        
+        return `
+        <div class="bg-white rounded-xl border border-burgundy-100 shadow-sm p-4 flex items-center justify-between">
+          <div class="flex-1">
+            <h3 class="font-semibold text-burgundy-900">${course.title}</h3>
+            <p class="text-sm text-forest-600">
+              ${course.modules?.length || 0} modules • 
+              ${course.ceuHours || 0} CE hrs • 
+              ${priceDisplay} • 
+              ${isPremium ? '<span class="text-purple-600">Premium</span>' : '<span class="text-gray-500">Standard</span>'} • 
+              <span class="px-2 py-0.5 rounded-full text-xs ${course.status === 'published' ? 'bg-green-100 text-green-700' : course.status === 'archived' ? 'bg-gray-100 text-gray-600' : 'bg-yellow-100 text-yellow-700'}">${course.status}</span>
+            </p>
+          </div>
+          <div class="flex gap-2">
+            <button onclick="togglePublish('${course._id}', '${course.status}')" 
+                    class="${course.status === 'published' ? 'bg-yellow-100 hover:bg-yellow-200 text-yellow-800' : 'bg-green-100 hover:bg-green-200 text-green-800'} font-medium px-3 py-2 rounded-lg text-sm" 
+                    title="${course.status === 'published' ? 'Unpublish' : 'Publish'}">
+              ${course.status === 'published' ? '📤' : '📥'}
+            </button>
+            <button onclick="previewCourse('${course._id}')" class="bg-purple-100 hover:bg-purple-200 text-purple-800 font-medium px-3 py-2 rounded-lg text-sm" title="Preview">
+              👁️
+            </button>
+            <button onclick="duplicateCourse('${course._id}')" class="bg-gold-100 hover:bg-gold-200 text-gold-800 font-medium px-3 py-2 rounded-lg text-sm" title="Duplicate">
+              📋
+            </button>
+            <button onclick="editCourse('${course._id}')" class="bg-forest-100 hover:bg-forest-200 text-forest-800 font-medium px-4 py-2 rounded-lg text-sm">
+              Edit
+            </button>
+            <button onclick="deleteCourse('${course._id}')" class="bg-burgundy-100 hover:bg-burgundy-200 text-burgundy-800 font-medium px-4 py-2 rounded-lg text-sm">
+              Delete
+            </button>
+          </div>
+        </div>
+      `}).join('');
+    }
+    
+    // Toggle single course publish status
+    async function togglePublish(courseId, currentStatus) {
+      const newStatus = currentStatus === 'published' ? 'draft' : 'published';
+      const token = localStorage.getItem('token');
+      
+      try {
+        const response = await fetch(`${API_URL}/api/admin/courses/${courseId}`, {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ status: newStatus })
+        });
+        
+        if (response.ok) {
+          await loadCourses();
+        } else {
+          throw new Error('Failed to update status');
+        }
+      } catch (error) {
+        console.error('Toggle publish error:', error);
+        alert('Failed to update course status');
+      }
+    }
+    
+    // Bulk publish all draft courses
+    async function bulkPublishAll() {
+      const draftCourses = courses.filter(c => c.status !== 'published');
+      
+      if (draftCourses.length === 0) {
+        alert('All courses are already published!');
+        return;
+      }
+      
+      if (!confirm(`Publish ${draftCourses.length} course(s)?\n\nThis will make them visible to students.`)) {
+        return;
+      }
+      
+      const token = localStorage.getItem('token');
+      let successCount = 0;
+      let failCount = 0;
+      
+      for (const course of draftCourses) {
+        try {
+          const response = await fetch(`${API_URL}/api/admin/courses/${course._id}`, {
+            method: 'PUT',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ status: 'published' })
+          });
+          
+          if (response.ok) {
+            successCount++;
+          } else {
+            failCount++;
+          }
+        } catch (error) {
+          failCount++;
+        }
+      }
+      
+      await loadCourses();
+      alert(`✅ Published: ${successCount}\n❌ Failed: ${failCount}`);
+    }
+    
+    // Bulk unpublish all published courses
+    async function bulkUnpublishAll() {
+      const publishedCourses = courses.filter(c => c.status === 'published');
+      
+      if (publishedCourses.length === 0) {
+        alert('No published courses to unpublish!');
+        return;
+      }
+      
+      if (!confirm(`Unpublish ${publishedCourses.length} course(s)?\n\n⚠️ This will hide them from students.`)) {
+        return;
+      }
+      
+      const token = localStorage.getItem('token');
+      let successCount = 0;
+      let failCount = 0;
+      
+      for (const course of publishedCourses) {
+        try {
+          const response = await fetch(`${API_URL}/api/admin/courses/${course._id}`, {
+            method: 'PUT',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ status: 'draft' })
+          });
+          
+          if (response.ok) {
+            successCount++;
+          } else {
+            failCount++;
+          }
+        } catch (error) {
+          failCount++;
+        }
+      }
+      
+      await loadCourses();
+      alert(`✅ Unpublished: ${successCount}\n❌ Failed: ${failCount}`);
+    }
+
+    // Preview course in new tab
+    function previewCourse(courseId) {
+      window.open(`admin-course-preview.html?id=${courseId}`, '_blank');
+    }
+
+    // Edit course
+    async function editCourse(courseId) {
+      const token = localStorage.getItem('token');
+      
+      try {
+        const response = await fetch(`${API_URL}/api/admin/courses/${courseId}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        // ✅ FIXED: Handle both response formats (data.course or data directly)
+        currentCourse = data.course || data;
+        
+        // Verify we have a valid course object
+        if (!currentCourse || !currentCourse.title) {
+          console.error('Invalid course data:', data);
+          throw new Error('Invalid course data received');
+        }
+        
+        console.log('Loaded course:', currentCourse);
+        
+        // Initialize state checkboxes if not already done
+        initStateComplianceCheckboxes();
+        
+        // Populate form
+        document.getElementById('courseTitle').value = currentCourse.title || '';
+        document.getElementById('courseSlug').value = currentCourse.slug || '';
+        document.getElementById('courseSubtitle').value = currentCourse.subtitle || '';
+        document.getElementById('courseDescription').value = currentCourse.description || '';
+        document.getElementById('courseInstructor').value = currentCourse.instructor || 'GA Integrated Therapeutic Perspectives LLC';
+        document.getElementById('courseCeuHours').value = currentCourse.ceuHours || currentCourse.ceHours || 0;
+        document.getElementById('courseCeuCategory').value = currentCourse.ceuCategories?.[0]?.category?.toLowerCase() || currentCourse.category?.toLowerCase() || 'core';
+        document.getElementById('courseAccessTier').value = currentCourse.accessTier || 'free';
+        document.getElementById('courseStatus').value = currentCourse.status || 'draft';
+        
+        // Load new pricing fields
+        document.getElementById('coursePrice').value = currentCourse.price || '';
+        document.getElementById('coursePricingTier').value = currentCourse.pricingTier || 
+          (PREMIUM_CATEGORIES.includes(currentCourse.ceuCategories?.[0]?.category?.toLowerCase() || currentCourse.category?.toLowerCase()) ? 'premium' : 'standard');
+        
+        // Load state compliance
+        setComplianceStates(currentCourse.stateCompliance || currentCourse.applicableStates || []);
+        
+        // Load thumbnail if exists
+        document.getElementById('courseThumbnailUrl').value = currentCourse.thumbnail || '';
+        updateThumbnailPreview(currentCourse.thumbnail);
+        
+        document.getElementById('editorTitle').textContent = 'Edit Course';
+        renderModules();
+        showEditor();
+      } catch (error) {
+        console.error('Load course error:', error);
+        alert('Failed to load course: ' + error.message);
+      }
+    }
+
+    // Render modules
+    function renderModules() {
+      const container = document.getElementById('modulesContainer');
+      
+      if (!currentCourse.modules || currentCourse.modules.length === 0) {
+        container.innerHTML = '<p class="text-forest-500">No modules yet. Add your first module!</p>';
+        return;
+      }
+
+      container.innerHTML = currentCourse.modules.map((module, mIndex) => `
+        <div class="border border-forest-200 rounded-lg overflow-hidden">
+          <div class="bg-forest-50 px-4 py-3 flex items-center justify-between">
+            <div>
+              <span class="text-xs text-forest-500">Module ${mIndex + 1}</span>
+              <h4 class="font-semibold text-forest-800">${module.title}</h4>
+            </div>
+            <button onclick="addLesson(${mIndex})" class="text-sm text-burgundy-700 hover:text-burgundy-900">+ Add Lesson</button>
+          </div>
+          <div class="divide-y divide-forest-100">
+            ${module.lessons?.map((lesson, lIndex) => `
+              <div class="px-4 py-3 flex items-center justify-between hover:bg-forest-50">
+                <div class="flex items-center gap-3">
+                  <span class="w-6 h-6 rounded-full bg-forest-200 text-forest-700 text-xs flex items-center justify-center">${lIndex + 1}</span>
+                  <div>
+                    <p class="font-medium text-forest-800">${lesson.title}</p>
+                    <p class="text-xs text-forest-500">
+                      ${lesson.type} • ${lesson.duration || 0}min
+                      ${lesson.isFree ? ' • <span class="text-green-600">Free</span>' : ''}
+                    </p>
+                  </div>
+                </div>
+                <button onclick="editLesson(${mIndex}, ${lIndex})" class="text-sm text-burgundy-700 hover:text-burgundy-900">Edit</button>
+              </div>
+            `).join('') || '<p class="px-4 py-3 text-forest-500 text-sm">No lessons yet</p>'}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Save course details
+    async function saveCourseDetails() {
+      const token = localStorage.getItem('token');
+      
+      const priceValue = document.getElementById('coursePrice').value;
+      
+      const courseData = {
+        title: document.getElementById('courseTitle').value,
+        slug: document.getElementById('courseSlug').value,
+        subtitle: document.getElementById('courseSubtitle').value,
+        description: document.getElementById('courseDescription').value,
+        instructor: document.getElementById('courseInstructor').value,
+        ceuHours: parseInt(document.getElementById('courseCeuHours').value) || 0,
+        ceuCategories: [{
+          category: document.getElementById('courseCeuCategory').value,
+          hours: parseInt(document.getElementById('courseCeuHours').value) || 0
+        }],
+        ceuEligible: parseInt(document.getElementById('courseCeuHours').value) > 0,
+        accessTier: document.getElementById('courseAccessTier').value,
+        status: document.getElementById('courseStatus').value,
+        ceuApprovalNumber: '7760',
+        // Pricing fields
+        price: priceValue ? parseFloat(priceValue) : null,
+        pricingTier: document.getElementById('coursePricingTier').value,
+        stateCompliance: getSelectedComplianceStates(),
+        applicableStates: getSelectedComplianceStates()
+      };
+
+      try {
+        let response;
+        
+        // If course has an _id, update it (PUT). Otherwise, create it (POST).
+        if (currentCourse._id) {
+          response = await fetch(`${API_URL}/api/admin/courses/${currentCourse._id}`, {
+            method: 'PUT',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(courseData)
+          });
+        } else {
+          // New course - POST to create
+          response = await fetch(`${API_URL}/api/admin/courses`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(courseData)
+          });
+        }
+
+        if (response.ok) {
+          const data = await response.json();
+          currentCourse = data.course;
+          alert('Course saved!');
+          // Update the editor title if this was a new course
+          document.getElementById('editorTitle').textContent = 'Edit Course';
+        } else {
+          const errorData = await response.json();
+          alert('Failed to save course: ' + (errorData.error || 'Unknown error'));
+        }
+      } catch (error) {
+        console.error('Save error:', error);
+        alert('Failed to save course');
+      }
+    }
+
+    // Add module
+    async function addModule() {
+      const title = prompt('Module title:');
+      if (!title) return;
+
+      const token = localStorage.getItem('token');
+
+      try {
+        const response = await fetch(`${API_URL}/api/admin/courses/${currentCourse._id}/module`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ title })
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          currentCourse = data.course;
+          renderModules();
+        }
+      } catch (error) {
+        console.error('Add module error:', error);
+      }
+    }
+
+    // Add lesson
+    async function addLesson(moduleIndex) {
+      const token = localStorage.getItem('token');
+
+      try {
+        const response = await fetch(`${API_URL}/api/admin/courses/${currentCourse._id}/module/${moduleIndex}/lesson`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ title: 'New Lesson' })
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          currentCourse = data.course;
+          renderModules();
+          // Open editor for new lesson
+          const newLessonIndex = currentCourse.modules[moduleIndex].lessons.length - 1;
+          editLesson(moduleIndex, newLessonIndex);
+        }
+      } catch (error) {
+        console.error('Add lesson error:', error);
+      }
+    }
+
+    // Edit lesson
+    function editLesson(moduleIndex, lessonIndex) {
+      const lesson = currentCourse.modules[moduleIndex].lessons[lessonIndex];
+      currentLessonEdit = { moduleIndex, lessonIndex };
+
+      document.getElementById('lessonTitle').value = lesson.title || '';
+      document.getElementById('lessonType').value = lesson.type || 'text';
+      document.getElementById('lessonDuration').value = lesson.duration || 10;
+      document.getElementById('lessonIsFree').checked = lesson.isFree || false;
+      document.getElementById('lessonContent').value = lesson.content || '';
+      document.getElementById('lessonVideoUrl').value = lesson.videoUrl || '';
+      
+      // Load supplemental resources
+      loadResources(lesson.resources || []);
+      
+      // Load quiz data if quiz type
+      if (lesson.type === 'quiz') {
+        currentQuestions = lesson.questions ? JSON.parse(JSON.stringify(lesson.questions)) : [];
+        document.getElementById('quizShuffleQuestions').checked = lesson.shuffleQuestions || false;
+        document.getElementById('quizShuffleOptions').checked = lesson.shuffleOptions || false;
+        document.getElementById('quizShowExplanations').checked = lesson.showExplanations !== false;
+        document.getElementById('quizTimeLimit').value = lesson.timeLimit || '';
+      } else {
+        currentQuestions = [];
+      }
+
+      toggleContentType();
+      
+      if (lesson.type === 'quiz') {
+        renderQuestions();
+      }
+      
+      document.getElementById('lessonModal').classList.remove('hidden');
+    }
+
+    // Toggle content type
+    function toggleContentType() {
+      const type = document.getElementById('lessonType').value;
+      document.getElementById('textContentArea').classList.toggle('hidden', type !== 'text');
+      document.getElementById('videoContentArea').classList.toggle('hidden', type !== 'video');
+      document.getElementById('quizContentArea').classList.toggle('hidden', type !== 'quiz');
+      
+      // If switching to quiz, load existing questions
+      if (type === 'quiz' && currentLessonEdit) {
+        const lesson = currentCourse.modules[currentLessonEdit.moduleIndex].lessons[currentLessonEdit.lessonIndex];
+        currentQuestions = lesson.questions ? [...lesson.questions] : [];
+        renderQuestions();
+      }
+    }
+
+    // Save lesson
+    async function saveLesson() {
+      const token = localStorage.getItem('token');
+      const type = document.getElementById('lessonType').value;
+
+      const lesson = {
+        title: document.getElementById('lessonTitle').value,
+        type: type,
+        duration: parseInt(document.getElementById('lessonDuration').value) || 10,
+        isFree: document.getElementById('lessonIsFree').checked,
+        content: document.getElementById('lessonContent').value,
+        videoUrl: document.getElementById('lessonVideoUrl').value,
+        resources: getResources()
+      };
+      
+      // Add quiz-specific fields
+      if (type === 'quiz') {
+        lesson.questions = currentQuestions;
+        lesson.shuffleQuestions = document.getElementById('quizShuffleQuestions').checked;
+        lesson.shuffleOptions = document.getElementById('quizShuffleOptions').checked;
+        lesson.showExplanations = document.getElementById('quizShowExplanations').checked;
+        lesson.timeLimit = parseInt(document.getElementById('quizTimeLimit').value) || null;
+      }
+
+      try {
+        const response = await fetch(`${API_URL}/api/admin/courses/${currentCourse._id}/lesson`, {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            moduleIndex: currentLessonEdit.moduleIndex,
+            lessonIndex: currentLessonEdit.lessonIndex,
+            lesson
+          })
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          currentCourse = data.course;
+          renderModules();
+          closeLessonModal();
+          alert('Lesson saved!');
+        } else {
+          alert('Failed to save lesson');
+        }
+      } catch (error) {
+        console.error('Save lesson error:', error);
+        alert('Failed to save lesson');
+      }
+    }
+
+    // Close lesson modal
+    function closeLessonModal() {
+      document.getElementById('lessonModal').classList.add('hidden');
+      currentLessonEdit = null;
+    }
+
+    // ============================================
+    // SUPPLEMENTAL RESOURCES FUNCTIONS
+    // ============================================
+    
+    let currentResources = [];
+    
+    function renderResources() {
+      const container = document.getElementById('resourcesContainer');
+      const noMessage = document.getElementById('noResourcesMessage');
+      
+      if (currentResources.length === 0) {
+        container.innerHTML = '';
+        noMessage.classList.remove('hidden');
+        return;
+      }
+      
+      noMessage.classList.add('hidden');
+      container.innerHTML = currentResources.map((resource, index) => `
+        <div class="flex items-center gap-3 bg-forest-50 rounded-lg p-3">
+          <select onchange="updateResourceType(${index}, this.value)" class="px-2 py-1 border border-forest-200 rounded text-sm">
+            <option value="link" ${resource.type === 'link' ? 'selected' : ''}>🔗 Link</option>
+            <option value="pdf" ${resource.type === 'pdf' ? 'selected' : ''}>📄 PDF</option>
+            <option value="doc" ${resource.type === 'doc' ? 'selected' : ''}>📝 Document</option>
+            <option value="video" ${resource.type === 'video' ? 'selected' : ''}>🎬 Video</option>
+            <option value="reference" ${resource.type === 'reference' ? 'selected' : ''}>📚 Reference</option>
+          </select>
+          <input type="text" value="${resource.title || ''}" placeholder="Resource title" 
+                 onchange="updateResourceTitle(${index}, this.value)"
+                 class="flex-1 px-3 py-1.5 border border-forest-200 rounded text-sm">
+          <input type="text" value="${resource.url || ''}" placeholder="URL or reference text" 
+                 onchange="updateResourceUrl(${index}, this.value)"
+                 class="flex-1 px-3 py-1.5 border border-forest-200 rounded text-sm">
+          <button onclick="removeResource(${index})" class="text-red-500 hover:text-red-700 px-2" title="Remove">✕</button>
+        </div>
+      `).join('');
+    }
+    
+    function addResource() {
+      currentResources.push({
+        type: 'link',
+        title: '',
+        url: ''
+      });
+      renderResources();
+    }
+    
+    function removeResource(index) {
+      currentResources.splice(index, 1);
+      renderResources();
+    }
+    
+    function updateResourceType(index, type) {
+      currentResources[index].type = type;
+    }
+    
+    function updateResourceTitle(index, title) {
+      currentResources[index].title = title;
+    }
+    
+    function updateResourceUrl(index, url) {
+      currentResources[index].url = url;
+    }
+    
+    function loadResources(resources) {
+      currentResources = resources || [];
+      renderResources();
+    }
+    
+    function getResources() {
+      // Filter out empty resources
+      return currentResources.filter(r => r.title || r.url);
+    }
+
+    // ============================================
+    // BULK CONTENT REGENERATION FUNCTIONS
+    // ============================================
+    
+    let selectedLessonsForRegen = [];
+    
+    function toggleBulkRegenerate() {
+      const section = document.getElementById('bulkRegenerateSection');
+      const btn = document.getElementById('showBulkRegenBtn');
+      
+      if (section.classList.contains('hidden')) {
+        section.classList.remove('hidden');
+        btn.classList.add('hidden');
+        populateLessonCheckboxes();
+      } else {
+        section.classList.add('hidden');
+        btn.classList.remove('hidden');
+      }
+    }
+    
+    function populateLessonCheckboxes() {
+      const container = document.getElementById('lessonCheckboxList');
+      
+      if (!currentCourse || !currentCourse.modules || currentCourse.modules.length === 0) {
+        container.innerHTML = '<p class="text-gray-500 text-sm p-2">No modules yet. Add modules first.</p>';
+        return;
+      }
+      
+      let html = '';
+      currentCourse.modules.forEach((module, mi) => {
+        html += `<div class="mb-2">
+          <p class="font-medium text-purple-800 text-sm mb-1">${module.title || 'Module ' + (mi + 1)}</p>`;
+        
+        (module.lessons || []).forEach((lesson, li) => {
+          if (lesson.type === 'text') {
+            const wordCount = lesson.content ? lesson.content.replace(/<[^>]*>/g, '').split(/\s+/).length : 0;
+            const isShort = wordCount < 1000;
+            const statusColor = isShort ? 'text-red-600' : 'text-green-600';
+            const statusIcon = isShort ? '⚠️' : '✓';
+            
+            html += `
+              <label class="flex items-center gap-2 py-1 px-2 hover:bg-purple-50 rounded cursor-pointer">
+                <input type="checkbox" class="lesson-regen-checkbox w-4 h-4 text-purple-600 rounded" 
+                       data-module="${mi}" data-lesson="${li}" 
+                       onchange="updateSelectedCount()" ${isShort ? 'checked' : ''}>
+                <span class="text-sm flex-1">${lesson.title || 'Untitled Lesson'}</span>
+                <span class="text-xs ${statusColor}">${statusIcon} ${wordCount.toLocaleString()} words</span>
+              </label>`;
+          }
+        });
+        
+        html += '</div>';
+      });
+      
+      container.innerHTML = html || '<p class="text-gray-500 text-sm p-2">No text lessons found.</p>';
+      updateSelectedCount();
+    }
+    
+    function toggleSelectAllLessons() {
+      const selectAll = document.getElementById('selectAllLessons').checked;
+      document.querySelectorAll('.lesson-regen-checkbox').forEach(cb => {
+        cb.checked = selectAll;
+      });
+      updateSelectedCount();
+    }
+    
+    function updateSelectedCount() {
+      const checked = document.querySelectorAll('.lesson-regen-checkbox:checked').length;
+      document.getElementById('selectedLessonCount').textContent = checked + ' selected';
+      
+      // Update select all checkbox state
+      const total = document.querySelectorAll('.lesson-regen-checkbox').length;
+      document.getElementById('selectAllLessons').checked = checked === total && total > 0;
+    }
+    
+    function getSelectedLessons() {
+      const selected = [];
+      document.querySelectorAll('.lesson-regen-checkbox:checked').forEach(cb => {
+        selected.push({
+          moduleIndex: parseInt(cb.dataset.module),
+          lessonIndex: parseInt(cb.dataset.lesson)
+        });
+      });
+      return selected;
+    }
+    
+    function previewSelectedLessons() {
+      const selected = getSelectedLessons();
+      if (selected.length === 0) {
+        alert('Please select at least one lesson');
+        return;
+      }
+      
+      let preview = 'Selected lessons to regenerate:\n\n';
+      selected.forEach(s => {
+        const module = currentCourse.modules[s.moduleIndex];
+        const lesson = module.lessons[s.lessonIndex];
+        const wordCount = lesson.content ? lesson.content.replace(/<[^>]*>/g, '').split(/\s+/).length : 0;
+        preview += `• ${module.title} > ${lesson.title} (${wordCount} words)\n`;
+      });
+      
+      const ceHours = currentCourse.ceuHours || 3;
+      const targetWords = Math.ceil((ceHours * 6000) / selected.length);
+      preview += `\nTarget: ~${targetWords.toLocaleString()} words per lesson to meet NBCC requirements.`;
+      
+      alert(preview);
+    }
+    
+    async function regenerateSelectedLessons() {
+      const selected = getSelectedLessons();
+      if (selected.length === 0) {
+        alert('Please select at least one lesson');
+        return;
+      }
+      
+      if (!confirm(`Regenerate content for ${selected.length} lesson(s)? This will replace existing content with NBCC-compliant content.`)) {
+        return;
+      }
+      
+      const token = localStorage.getItem('token');
+      const progressSection = document.getElementById('regenProgressSection');
+      const statusEl = document.getElementById('regenStatus');
+      const progressBar = document.getElementById('regenProgressBar');
+      
+      progressSection.classList.remove('hidden');
+      
+      let completed = 0;
+      let failed = 0;
+      
+      for (const s of selected) {
+        const module = currentCourse.modules[s.moduleIndex];
+        const lesson = module.lessons[s.lessonIndex];
+        
+        statusEl.textContent = `Regenerating: ${lesson.title}... (${completed + 1}/${selected.length})`;
+        progressBar.style.width = ((completed / selected.length) * 100) + '%';
+        
+        try {
+          const response = await fetch(`${API_URL}/api/admin/courses/${currentCourse._id}/lesson/regenerate`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              moduleIndex: s.moduleIndex,
+              lessonIndex: s.lessonIndex,
+              lessonTitle: lesson.title,
+              moduleTitle: module.title,
+              courseTitle: currentCourse.title,
+              courseCategory: currentCourse.ceuCategories?.[0]?.category || 'core',
+              ceHours: currentCourse.ceuHours || 3
+            })
+          });
+          
+          if (response.ok) {
+            const data = await response.json();
+            // Update local course data
+            currentCourse.modules[s.moduleIndex].lessons[s.lessonIndex].content = data.content;
+            completed++;
+          } else {
+            const err = await response.json();
+            console.error('Regenerate error:', err);
+            failed++;
+          }
+        } catch (error) {
+          console.error('Regenerate error:', error);
+          failed++;
+        }
+      }
+      
+      progressBar.style.width = '100%';
+      statusEl.textContent = `Complete! ${completed} regenerated, ${failed} failed.`;
+      
+      // Refresh the module display and checkboxes
+      renderModules();
+      setTimeout(() => {
+        populateLessonCheckboxes();
+        progressSection.classList.add('hidden');
+      }, 2000);
+      
+      if (failed === 0) {
+        alert(`✅ Successfully regenerated ${completed} lesson(s) with NBCC-compliant content!`);
+      } else {
+        alert(`Completed with ${failed} error(s). ${completed} lesson(s) regenerated successfully.`);
+      }
+    }
+
+    // New course
+    function showNewCourseForm() {
+      currentCourse = {
+        title: '',
+        slug: '',
+        subtitle: '',
+        description: '',
+        instructor: 'GA Integrated Therapeutic Perspectives LLC',
+        ceuHours: 0,
+        ceuCategories: [],
+        accessTier: 'free',
+        status: 'draft',
+        modules: [],
+        price: null,
+        pricingTier: 'standard',
+        stateCompliance: []
+      };
+      
+      // Initialize state compliance checkboxes
+      initStateComplianceCheckboxes();
+      
+      document.getElementById('courseTitle').value = '';
+      document.getElementById('courseSlug').value = '';
+      document.getElementById('courseSubtitle').value = '';
+      document.getElementById('courseDescription').value = '';
+      document.getElementById('courseInstructor').value = 'GA Integrated Therapeutic Perspectives LLC';
+      document.getElementById('courseCeuHours').value = '';
+      document.getElementById('courseCeuCategory').value = 'core';
+      document.getElementById('courseAccessTier').value = 'free';
+      document.getElementById('courseStatus').value = 'draft';
+      
+      // Initialize new pricing fields
+      document.getElementById('coursePrice').value = '';
+      document.getElementById('coursePricingTier').value = 'standard';
+      setComplianceStates([]);
+      
+      document.getElementById('editorTitle').textContent = 'New Course';
+      document.getElementById('modulesContainer').innerHTML = '<p class="text-forest-500">Save course details first, then add modules.</p>';
+      showEditor();
+    }
+
+    // ============================================
+    // BULK PRICING FUNCTIONS
+    // ============================================
+    
+    function showBulkPricing() {
+      document.getElementById('bulkPricingModal').classList.remove('hidden');
+      document.getElementById('bulkPricingStatus').classList.add('hidden');
+    }
+    
+    function closeBulkPricing() {
+      document.getElementById('bulkPricingModal').classList.add('hidden');
+    }
+    
+    function getBulkPriceForCourse(course) {
+      const ceHours = Math.round(course.ceuHours || 0);
+      const category = course.ceuCategories?.[0]?.category?.toLowerCase() || course.category?.toLowerCase() || 'core';
+      const isPremium = ['ethics', 'telehealth', 'supervision'].includes(category);
+      
+      const prefix = isPremium ? 'bulkPricePrem' : 'bulkPrice';
+      
+      let price = 0;
+      if (ceHours <= 0) {
+        price = 0;
+      } else if (ceHours === 1) {
+        price = parseInt(document.getElementById(`${prefix}1hr`).value) || 0;
+      } else if (ceHours === 2) {
+        price = parseInt(document.getElementById(`${prefix}2hr`).value) || 0;
+      } else if (ceHours === 3) {
+        price = parseInt(document.getElementById(`${prefix}3hr`).value) || 0;
+      } else if (ceHours === 4) {
+        price = parseInt(document.getElementById(`${prefix}4hr`).value) || 0;
+      } else if (ceHours === 5) {
+        price = parseInt(document.getElementById(`${prefix}5hr`).value) || 0;
+      } else {
+        price = parseInt(document.getElementById(`${prefix}6hr`).value) || 0;
+      }
+      
+      return { price, isPremium };
+    }
+    
+    function previewBulkPricing() {
+      const statusDiv = document.getElementById('bulkPricingStatus');
+      
+      // Filter courses that don't have a price
+      const coursesToUpdate = courses.filter(c => !c.price || c.price === 0);
+      
+      if (coursesToUpdate.length === 0) {
+        statusDiv.className = 'mb-4 p-3 rounded-lg bg-yellow-50 text-yellow-800';
+        statusDiv.innerHTML = 'All courses already have prices set. No changes needed.';
+        statusDiv.classList.remove('hidden');
+        return;
+      }
+      
+      let preview = `<strong>${coursesToUpdate.length} courses will be updated:</strong><ul class="mt-2 text-sm max-h-48 overflow-y-auto">`;
+      
+      coursesToUpdate.forEach(course => {
+        const { price, isPremium } = getBulkPriceForCourse(course);
+        const tier = isPremium ? 'Premium' : 'Standard';
+        preview += `<li class="py-1 border-b border-gray-100">${course.title} (${course.ceuHours || 0} hrs, ${tier}) → <strong>$${price}</strong></li>`;
+      });
+      
+      preview += '</ul>';
+      
+      statusDiv.className = 'mb-4 p-3 rounded-lg bg-blue-50 text-blue-800';
+      statusDiv.innerHTML = preview;
+      statusDiv.classList.remove('hidden');
+    }
+    
+    async function applyBulkPricing() {
+      const token = localStorage.getItem('token');
+      const statusDiv = document.getElementById('bulkPricingStatus');
+      
+      // Filter courses that don't have a price
+      const coursesToUpdate = courses.filter(c => !c.price || c.price === 0);
+      
+      if (coursesToUpdate.length === 0) {
+        statusDiv.className = 'mb-4 p-3 rounded-lg bg-yellow-50 text-yellow-800';
+        statusDiv.innerHTML = 'All courses already have prices set. No changes needed.';
+        statusDiv.classList.remove('hidden');
+        return;
+      }
+      
+      if (!confirm(`Update pricing for ${coursesToUpdate.length} courses?`)) return;
+      
+      statusDiv.className = 'mb-4 p-3 rounded-lg bg-blue-50 text-blue-800';
+      statusDiv.innerHTML = `<div class="flex items-center gap-2"><div class="w-5 h-5 border-2 border-blue-300 border-t-blue-700 rounded-full animate-spin"></div> Updating ${coursesToUpdate.length} courses...</div>`;
+      statusDiv.classList.remove('hidden');
+      
+      let updated = 0;
+      let failed = 0;
+      
+      for (const course of coursesToUpdate) {
+        const { price, isPremium } = getBulkPriceForCourse(course);
+        
+        try {
+          const response = await fetch(`${API_URL}/api/admin/courses/${course._id}`, {
+            method: 'PUT',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              price: price || null,
+              pricingTier: isPremium ? 'premium' : 'standard'
+            })
+          });
+          
+          if (response.ok) {
+            updated++;
+          } else {
+            failed++;
+          }
+        } catch (error) {
+          console.error('Update error:', error);
+          failed++;
+        }
+      }
+      
+      statusDiv.className = 'mb-4 p-3 rounded-lg bg-green-50 text-green-800';
+      statusDiv.innerHTML = `✅ Updated ${updated} courses` + (failed > 0 ? ` (${failed} failed)` : '');
+      
+      // Refresh the course list
+      await loadCourses();
+    }
+
+    // Delete course
+    async function deleteCourse(courseId) {
+      if (!confirm('Are you sure you want to delete this course?')) return;
+
+      const token = localStorage.getItem('token');
+
+      try {
+        await fetch(`${API_URL}/api/admin/courses/${courseId}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        await loadCourses();
+      } catch (error) {
+        console.error('Delete error:', error);
+      }
+    }
+
+    // Duplicate course
+    async function duplicateCourse(courseId) {
+      if (!confirm('Create a copy of this course?')) return;
+
+      const token = localStorage.getItem('token');
+
+      try {
+        const response = await fetch(`${API_URL}/api/migration/duplicate/${courseId}`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+          alert(`Course duplicated: "${data.course.title}"`);
+          await loadCourses();
+          // Optionally open the duplicated course for editing
+          if (confirm('Edit the duplicated course now?')) {
+            editCourse(data.course.id);
+          }
+        } else {
+          alert('Duplication failed: ' + (data.error || 'Unknown error'));
+        }
+      } catch (error) {
+        console.error('Duplicate error:', error);
+        alert('Failed to duplicate course');
+      }
+    }
+
+    // View toggles
+    function showEditor() {
+      document.getElementById('courseListView').classList.add('hidden');
+      document.getElementById('courseEditorView').classList.remove('hidden');
+    }
+
+    function backToList() {
+      document.getElementById('courseEditorView').classList.add('hidden');
+      document.getElementById('courseListView').classList.remove('hidden');
+      loadCourses();
+    }
+
+    // SCORM Import/Export Functions
+    function showScormImport() {
+      document.getElementById('scormImportModal').classList.remove('hidden');
+    }
+
+    function closeScormImport() {
+      document.getElementById('scormImportModal').classList.add('hidden');
+      document.getElementById('scormFile').value = '';
+      document.getElementById('scormImportStatus').classList.add('hidden');
+    }
+
+    async function importScorm() {
+      const fileInput = document.getElementById('scormFile');
+      const file = fileInput.files[0];
+      
+      if (!file) {
+        alert('Please select a SCORM package (.zip file)');
+        return;
+      }
+
+      if (!file.name.endsWith('.zip')) {
+        alert('Please select a .zip file');
+        return;
+      }
+
+      const token = localStorage.getItem('token');
+      const formData = new FormData();
+      formData.append('scormPackage', file);
+
+      document.getElementById('scormImportStatus').classList.remove('hidden');
+
+      try {
+        const response = await fetch(`${API_URL}/api/scorm/import`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          },
+          body: formData
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          alert('SCORM package imported successfully! The course has been created as a draft.');
+          closeScormImport();
+          loadCourses();
+          // Open the new course for editing
+          if (data.course && data.course._id) {
+            editCourse(data.course._id);
+          }
+        } else {
+          alert('Import failed: ' + (data.error || 'Unknown error'));
+        }
+      } catch (error) {
+        console.error('SCORM import error:', error);
+        alert('Failed to import SCORM package');
+      }
+
+      document.getElementById('scormImportStatus').classList.add('hidden');
+    }
+
+    async function exportScorm() {
+      if (!currentCourse || !currentCourse._id) {
+        alert('Please save the course first');
+        return;
+      }
+
+      const token = localStorage.getItem('token');
+
+      try {
+        const response = await fetch(`${API_URL}/api/scorm/export/${currentCourse._id}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (response.ok) {
+          // Download the zip file
+          const blob = await response.blob();
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `${currentCourse.slug || 'course'}_scorm.zip`;
+          document.body.appendChild(a);
+          a.click();
+          window.URL.revokeObjectURL(url);
+          document.body.removeChild(a);
+          alert('SCORM package exported successfully!');
+        } else {
+          const data = await response.json();
+          alert('Export failed: ' + (data.error || 'Unknown error'));
+        }
+      } catch (error) {
+        console.error('SCORM export error:', error);
+        alert('Failed to export SCORM package');
+      }
+    }
+
+    // ==========================================
+    // THUMBNAIL UPLOAD FUNCTIONS
+    // ==========================================
+    
+    // Preview selected thumbnail before upload
+    function previewThumbnail(event) {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const preview = document.getElementById('thumbnailPreview');
+          preview.innerHTML = `<img src="${e.target.result}" class="w-full h-full object-cover">`;
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+    
+    // Update thumbnail preview from URL
+    function updateThumbnailPreview(url) {
+      const preview = document.getElementById('thumbnailPreview');
+      if (url) {
+        preview.innerHTML = `<img src="${url}" class="w-full h-full object-cover">`;
+      } else {
+        preview.innerHTML = '<span class="text-forest-400 text-sm">No image</span>';
+      }
+    }
+    
+    // Upload thumbnail to server
+    async function uploadThumbnail() {
+      const fileInput = document.getElementById('courseThumbnail');
+      const file = fileInput.files[0];
+      
+      if (!file) {
+        alert('Please select an image first');
+        return;
+      }
+      
+      if (!currentCourse || !currentCourse._id) {
+        alert('Please save the course first before uploading an image');
+        return;
+      }
+      
+      const statusEl = document.getElementById('uploadStatus');
+      statusEl.classList.remove('hidden');
+      statusEl.className = 'mt-2 text-sm text-forest-600';
+      statusEl.innerHTML = '⏳ Uploading...';
+      
+      const token = localStorage.getItem('token');
+      const formData = new FormData();
+      formData.append('thumbnail', file);
+      
+      try {
+        const response = await fetch(`${API_URL}/api/admin/courses/${currentCourse._id}/thumbnail`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          },
+          body: formData
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+          document.getElementById('courseThumbnailUrl').value = data.thumbnailUrl;
+          currentCourse.thumbnail = data.thumbnailUrl;
+          statusEl.className = 'mt-2 text-sm text-green-600';
+          statusEl.innerHTML = '✅ Image uploaded successfully!';
+          setTimeout(() => statusEl.classList.add('hidden'), 3000);
+        } else {
+          statusEl.className = 'mt-2 text-sm text-red-600';
+          statusEl.innerHTML = '❌ Upload failed: ' + (data.error || 'Unknown error');
+        }
+      } catch (error) {
+        console.error('Upload error:', error);
+        statusEl.className = 'mt-2 text-sm text-red-600';
+        statusEl.innerHTML = '❌ Upload failed: ' + error.message;
+      }
+    }
+    
+    // Remove thumbnail
+    async function removeThumbnail() {
+      if (!currentCourse || !currentCourse._id) return;
+      
+      if (!confirm('Remove the course thumbnail?')) return;
+      
+      const token = localStorage.getItem('token');
+      
+      try {
+        const response = await fetch(`${API_URL}/api/admin/courses/${currentCourse._id}`, {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ thumbnail: '' })
+        });
+        
+        if (response.ok) {
+          document.getElementById('courseThumbnailUrl').value = '';
+          document.getElementById('courseThumbnail').value = '';
+          currentCourse.thumbnail = '';
+          updateThumbnailPreview(null);
+          alert('Thumbnail removed');
+        }
+      } catch (error) {
+        console.error('Remove thumbnail error:', error);
+        alert('Failed to remove thumbnail');
+      }
+    }
+
+    // ==========================================
+    // COURSE SETTINGS FUNCTIONS
+    // ==========================================
+    
+    function toggleSettingsPanel() {
+      const panel = document.getElementById('settingsPanel');
+      const toggleText = document.getElementById('settingsToggleText');
+      
+      if (panel.classList.contains('hidden')) {
+        panel.classList.remove('hidden');
+        toggleText.textContent = '▲ Collapse';
+        loadSettingsIntoForm();
+      } else {
+        panel.classList.add('hidden');
+        toggleText.textContent = '▼ Expand';
+      }
+    }
+    
+    function toggleMinTimeSettings() {
+      const enabled = document.getElementById('settingEnforceMinTime').checked;
+      document.getElementById('minTimeSettings').classList.toggle('hidden', !enabled);
+    }
+    
+    function toggleRetakeSettings() {
+      const policy = document.getElementById('settingRetakePolicy').value;
+      document.getElementById('retakeLimitSettings').classList.toggle('hidden', policy !== 'limited');
+      document.getElementById('retakeCooldownSettings').classList.toggle('hidden', policy === 'first_final');
+    }
+    
+    function toggleDripSettings() {
+      const enabled = document.getElementById('settingDripEnabled').checked;
+      document.getElementById('dripScheduleSettings').classList.toggle('hidden', !enabled);
+      if (enabled) {
+        renderDripSchedule();
+      }
+    }
+    
+    function toggleNarrationSettings() {
+      const enabled = document.getElementById('settingNarrationEnabled').checked;
+      document.getElementById('narrationSettings').classList.toggle('hidden', !enabled);
+    }
+    
+    // Update speed display
+    document.addEventListener('DOMContentLoaded', () => {
+      const speedSlider = document.getElementById('settingNarrationSpeed');
+      if (speedSlider) {
+        speedSlider.addEventListener('input', (e) => {
+          document.getElementById('speedDisplay').textContent = e.target.value + 'x';
+        });
+      }
+    });
+    
+    function renderDripSchedule() {
+      const container = document.getElementById('dripScheduleContainer');
+      
+      if (!currentCourse || !currentCourse.modules || currentCourse.modules.length === 0) {
+        container.innerHTML = '<p class="text-xs text-forest-400 italic">Add modules first, then configure drip schedule</p>';
+        return;
+      }
+      
+      const dripSchedule = currentCourse.settings?.dripSchedule || [];
+      
+      container.innerHTML = currentCourse.modules.map((module, idx) => {
+        const existing = dripSchedule.find(d => d.moduleId === module._id);
+        const days = existing?.daysAfterEnrollment || (idx * 7); // Default: 7 days apart
+        
+        return `
+          <div class="flex items-center gap-2 mb-2">
+            <span class="text-xs text-forest-600 flex-1">Module ${idx + 1}: ${module.title.substring(0, 20)}...</span>
+            <input type="number" data-module-id="${module._id}" data-module-index="${idx}" 
+                   value="${days}" min="0" 
+                   class="drip-day-input w-16 px-2 py-1 border border-forest-200 rounded text-sm text-center">
+            <span class="text-xs text-forest-500">days</span>
+          </div>
+        `;
+      }).join('');
+    }
+    
+    function loadSettingsIntoForm() {
+      if (!currentCourse) return;
+      
+      const s = currentCourse.settings || {};
+      
+      // Progression
+      document.getElementById('settingLinearProgression').checked = s.linearProgression || false;
+      document.getElementById('settingEnforceMinTime').checked = s.enforceMinTime || false;
+      document.getElementById('settingMinTimePercent').value = s.minTimePercent || 80;
+      toggleMinTimeSettings();
+      
+      // Quiz settings
+      document.getElementById('settingPassingScore').value = s.passingScore || 70;
+      document.getElementById('settingRetakePolicy').value = s.retakePolicy || 'unlimited';
+      document.getElementById('settingMaxRetakes').value = s.maxRetakes || 3;
+      document.getElementById('settingRetakeCooldown').value = s.retakeCooldown || 0;
+      document.getElementById('settingScorePolicy').value = s.scorePolicy || 'highest';
+      toggleRetakeSettings();
+      
+      // Drip
+      document.getElementById('settingDripEnabled').checked = s.dripEnabled || false;
+      toggleDripSettings();
+      
+      // Narration
+      document.getElementById('settingNarrationEnabled').checked = s.narrationEnabled || false;
+      document.getElementById('settingNarrationVoice').value = s.narrationVoice || 'browser';
+      document.getElementById('settingNarrationSpeed').value = s.narrationSpeed || 1.0;
+      document.getElementById('speedDisplay').textContent = (s.narrationSpeed || 1.0) + 'x';
+      document.getElementById('settingAutoPlayNarration').checked = s.autoPlayNarration || false;
+      toggleNarrationSettings();
+      
+      // CE Compliance
+      document.getElementById('settingRequireEvaluation').checked = s.requireEvaluation !== false;
+      document.getElementById('settingRequireAttestation').checked = s.requireAttestation !== false;
+      document.getElementById('settingCertificateEnabled').checked = s.certificateEnabled !== false;
+      
+      // Approving body
+      document.getElementById('settingApprovingBody').value = currentCourse.approvingBody || 'NBCC';
+      document.getElementById('settingApprovalNumber').value = currentCourse.approvalNumber || currentCourse.ceuApprovalNumber || '';
+    }
+    
+    async function saveCourseSettings() {
+      if (!currentCourse || !currentCourse._id) {
+        alert('Please save the course first');
+        return;
+      }
+      
+      const token = localStorage.getItem('token');
+      
+      // Gather drip schedule
+      const dripSchedule = [];
+      document.querySelectorAll('.drip-day-input').forEach(input => {
+        dripSchedule.push({
+          moduleId: input.dataset.moduleId,
+          daysAfterEnrollment: parseInt(input.value) || 0
+        });
+      });
+      
+      const settings = {
+        linearProgression: document.getElementById('settingLinearProgression').checked,
+        enforceMinTime: document.getElementById('settingEnforceMinTime').checked,
+        minTimePercent: parseInt(document.getElementById('settingMinTimePercent').value) || 80,
+        
+        passingScore: parseInt(document.getElementById('settingPassingScore').value) || 70,
+        retakePolicy: document.getElementById('settingRetakePolicy').value,
+        allowRetakes: document.getElementById('settingRetakePolicy').value !== 'first_final',
+        maxRetakes: parseInt(document.getElementById('settingMaxRetakes').value) || 3,
+        retakeCooldown: parseInt(document.getElementById('settingRetakeCooldown').value) || 0,
+        scorePolicy: document.getElementById('settingScorePolicy').value,
+        
+        dripEnabled: document.getElementById('settingDripEnabled').checked,
+        dripSchedule: dripSchedule,
+        
+        narrationEnabled: document.getElementById('settingNarrationEnabled').checked,
+        narrationVoice: document.getElementById('settingNarrationVoice').value,
+        narrationSpeed: parseFloat(document.getElementById('settingNarrationSpeed').value) || 1.0,
+        autoPlayNarration: document.getElementById('settingAutoPlayNarration').checked,
+        
+        requireEvaluation: document.getElementById('settingRequireEvaluation').checked,
+        requireAttestation: document.getElementById('settingRequireAttestation').checked,
+        certificateEnabled: document.getElementById('settingCertificateEnabled').checked
+      };
+      
+      const updates = {
+        settings,
+        approvingBody: document.getElementById('settingApprovingBody').value,
+        approvalNumber: document.getElementById('settingApprovalNumber').value
+      };
+      
+      try {
+        const response = await fetch(`${API_URL}/api/admin/courses/${currentCourse._id}`, {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(updates)
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          currentCourse = data.course;
+          alert('✅ Settings saved!');
+        } else {
+          alert('Failed to save settings');
+        }
+      } catch (error) {
+        console.error('Save settings error:', error);
+        alert('Failed to save settings');
+      }
+    }
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', async () => {
+      await loadCourses();
+      
+      // Check for ?edit= parameter to auto-open editor
+      const urlParams = new URLSearchParams(window.location.search);
+      const editId = urlParams.get('edit');
+      if (editId) {
+        // Clear the URL param without reload
+        window.history.replaceState({}, '', 'admin-courses.html');
+        // Open the editor for this course
+        await editCourse(editId);
+      }
+    });
+    
+    // Load admin email
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    if (user.email) {
+      document.getElementById('adminEmail').textContent = user.email;
+    }
+    
+    // ============================================
+    // QUIZ BUILDER FUNCTIONS
+    // ============================================
+    
+    function setAIMode(mode) {
+      currentAIMode = mode;
+      document.querySelectorAll('.ai-mode-btn').forEach(btn => {
+        btn.classList.remove('bg-purple-600', 'text-white');
+        btn.classList.add('bg-white', 'text-purple-700', 'border', 'border-purple-300');
+      });
+      const activeBtn = document.getElementById('aiMode' + mode.charAt(0).toUpperCase() + mode.slice(1));
+      if (activeBtn) {
+        activeBtn.classList.remove('bg-white', 'text-purple-700', 'border', 'border-purple-300');
+        activeBtn.classList.add('bg-purple-600', 'text-white');
+      }
+      document.querySelectorAll('.ai-mode-content').forEach(el => el.classList.add('hidden'));
+      const modeEl = document.getElementById('ai' + mode.charAt(0).toUpperCase() + mode.slice(1) + 'Mode');
+      if (modeEl) modeEl.classList.remove('hidden');
+    }
+    
+    function handleQuizPdfSelect(event) {
+      const file = event.target.files[0];
+      if (file) {
+        document.getElementById('quizPdfFileName').textContent = '📄 ' + file.name;
+        document.getElementById('quizPdfFileName').classList.remove('hidden');
+      }
+    }
+    
+    function handleQuizPdfDrop(event) {
+      event.preventDefault();
+      const file = event.dataTransfer.files[0];
+      if (file && file.type === 'application/pdf') {
+        document.getElementById('quizPdfUpload').files = event.dataTransfer.files;
+        document.getElementById('quizPdfFileName').textContent = '📄 ' + file.name;
+        document.getElementById('quizPdfFileName').classList.remove('hidden');
+      }
+    }
+    
+    function fileToBase64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result.split(',')[1]);
+        reader.onerror = error => reject(error);
+      });
+    }
+    
+    async function generateQuizWithAI() {
+      const token = localStorage.getItem('token');
+      const statusEl = document.getElementById('aiGenerateStatus');
+      const btnEl = document.getElementById('aiGenerateBtn');
+      statusEl.classList.remove('hidden');
+      btnEl.disabled = true;
+      
+      try {
+        let requestBody = { mode: currentAIMode };
+        
+        if (currentAIMode === 'pdf') {
+          const fileInput = document.getElementById('quizPdfUpload');
+          if (!fileInput.files[0]) { alert('Please select a PDF file'); statusEl.classList.add('hidden'); btnEl.disabled = false; return; }
+          const file = fileInput.files[0];
+          requestBody.pdfData = await fileToBase64(file);
+          requestBody.fileName = file.name;
+        } else if (currentAIMode === 'outline') {
+          const outline = document.getElementById('quizOutlineInput').value.trim();
+          if (!outline) { alert('Please enter an outline'); statusEl.classList.add('hidden'); btnEl.disabled = false; return; }
+          requestBody.outline = outline;
+        } else if (currentAIMode === 'content') {
+          const scope = document.querySelector('input[name="contentScope"]:checked').value;
+          const questionCount = parseInt(document.getElementById('aiQuestionCount').value) || 5;
+          if (scope === 'lesson') {
+            const content = document.getElementById('lessonContent').value;
+            if (!content) { alert('No lesson content'); statusEl.classList.add('hidden'); btnEl.disabled = false; return; }
+            requestBody.content = content;
+          } else {
+            const module = currentCourse.modules[currentLessonEdit.moduleIndex];
+            requestBody.content = module.lessons.map(l => l.content || '').join('\n\n');
+            requestBody.moduleTitle = module.title;
+          }
+          requestBody.questionCount = questionCount;
+        }
+        
+        const response = await fetch(`${API_URL}/api/admin/quiz/generate`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify(requestBody)
+        });
+        const data = await response.json();
+        
+        if (response.ok && data.questions) {
+          currentQuestions = [...currentQuestions, ...data.questions];
+          renderQuestions();
+          alert(`✅ Generated ${data.questions.length} questions!`);
+          document.getElementById('quizPdfUpload').value = '';
+          document.getElementById('quizPdfFileName').classList.add('hidden');
+          document.getElementById('quizOutlineInput').value = '';
+        } else {
+          alert('Failed: ' + (data.error || 'Unknown error'));
+        }
+      } catch (error) {
+        console.error('AI error:', error);
+        alert('Failed to generate questions');
+      } finally {
+        statusEl.classList.add('hidden');
+        btnEl.disabled = false;
+      }
+    }
+    
+    function renderQuestions() {
+      const container = document.getElementById('questionsContainer');
+      document.getElementById('questionCount').textContent = currentQuestions.length;
+      if (currentQuestions.length === 0) {
+        container.innerHTML = '<div class="p-6 text-center text-forest-500"><p>No questions yet. Add manually or use AI to generate.</p></div>';
+        return;
+      }
+      container.innerHTML = currentQuestions.map((q, idx) => {
+        const typeLabel = { 'multiple_choice': 'MC', 'multiple_select': 'MS', 'true_false': 'T/F' }[q.type] || 'MC';
+        const typeColor = { 'multiple_choice': 'bg-blue-100 text-blue-700', 'multiple_select': 'bg-purple-100 text-purple-700', 'true_false': 'bg-green-100 text-green-700' }[q.type] || 'bg-gray-100';
+        let optHtml = '';
+        if (q.type !== 'true_false' && q.options) {
+          optHtml = '<div class="mt-2 space-y-1">' + q.options.map((opt, oi) => {
+            const isC = q.type === 'multiple_select' ? (Array.isArray(q.correctAnswer) && q.correctAnswer.includes(oi)) : q.correctAnswer === oi;
+            return `<div class="text-sm ${isC ? 'text-green-700 font-medium' : 'text-forest-600'}">${isC ? '✓' : '○'} ${escapeHtml(opt)}</div>`;
+          }).join('') + '</div>';
+        } else if (q.type === 'true_false') {
+          optHtml = `<p class="mt-1 text-sm text-green-700 font-medium">Answer: ${q.correctAnswer ? 'True' : 'False'}</p>`;
+        }
+        return `<div class="p-4 hover:bg-forest-50"><div class="flex items-start justify-between gap-4"><div class="flex-1"><div class="flex items-center gap-2 mb-1"><span class="text-xs font-medium px-2 py-0.5 rounded ${typeColor}">${typeLabel}</span><span class="text-xs text-forest-500">${q.points||1} pt</span></div><p class="text-forest-800 font-medium">${idx+1}. ${escapeHtml(q.question)}</p>${optHtml}${q.explanation ? `<p class="mt-2 text-xs text-forest-500 italic">💡 ${escapeHtml(q.explanation)}</p>` : ''}</div><div class="flex gap-2"><button onclick="editQuestion(${idx})" class="text-burgundy-600 hover:text-burgundy-800 text-sm">Edit</button><button onclick="deleteQuestion(${idx})" class="text-red-600 hover:text-red-800 text-sm">Delete</button></div></div></div>`;
+      }).join('');
+    }
+    
+    function escapeHtml(text) { if (!text) return ''; const d = document.createElement('div'); d.textContent = text; return d.innerHTML; }
+    
+    function addQuestion() {
+      editingQuestionIndex = null;
+      document.getElementById('questionModalTitle').textContent = 'Add Question';
+      document.getElementById('questionType').value = 'multiple_choice';
+      document.getElementById('questionText').value = '';
+      document.getElementById('questionExplanation').value = '';
+      document.getElementById('questionPoints').value = '1';
+      currentOptions = ['', '', '', ''];
+      currentCorrectAnswer = null;
+      toggleQuestionType();
+      document.getElementById('questionModal').classList.remove('hidden');
+    }
+    
+    function editQuestion(index) {
+      editingQuestionIndex = index;
+      const q = currentQuestions[index];
+      document.getElementById('questionModalTitle').textContent = 'Edit Question';
+      document.getElementById('questionType').value = q.type || 'multiple_choice';
+      document.getElementById('questionText').value = q.question || '';
+      document.getElementById('questionExplanation').value = q.explanation || '';
+      document.getElementById('questionPoints').value = q.points || 1;
+      if (q.type === 'true_false') {
+        const r = document.querySelector(`input[name="tfAnswer"][value="${q.correctAnswer}"]`);
+        if (r) r.checked = true;
+        currentOptions = ['', '', '', ''];
+        currentCorrectAnswer = null;
+      } else {
+        currentOptions = q.options ? [...q.options] : ['', '', '', ''];
+        currentCorrectAnswer = q.correctAnswer;
+      }
+      toggleQuestionType();
+      document.getElementById('questionModal').classList.remove('hidden');
+    }
+    
+    function deleteQuestion(index) { if (confirm('Delete this question?')) { currentQuestions.splice(index, 1); renderQuestions(); } }
+    
+    function toggleQuestionType() {
+      const type = document.getElementById('questionType').value;
+      document.getElementById('optionsArea').classList.toggle('hidden', type === 'true_false');
+      document.getElementById('trueFalseArea').classList.toggle('hidden', type !== 'true_false');
+      if (type !== 'true_false') renderOptions();
+    }
+    
+    function renderOptions() {
+      const type = document.getElementById('questionType').value;
+      const isMS = type === 'multiple_select';
+      document.getElementById('optionsList').innerHTML = currentOptions.map((opt, idx) => {
+        const isC = isMS ? (Array.isArray(currentCorrectAnswer) && currentCorrectAnswer.includes(idx)) : currentCorrectAnswer === idx;
+        return `<div class="flex items-center gap-2"><input type="${isMS ? 'checkbox' : 'radio'}" name="correctOption" ${isC ? 'checked' : ''} onchange="setCorrectAnswer(${idx}, this.checked)" class="w-4 h-4 text-burgundy-600"><input type="text" value="${escapeHtml(opt)}" onchange="updateOption(${idx}, this.value)" placeholder="Option ${idx+1}" class="flex-1 px-3 py-1.5 border border-forest-200 rounded text-sm">${currentOptions.length > 2 ? `<button onclick="removeOption(${idx})" class="text-red-500 hover:text-red-700"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>` : ''}</div>`;
+      }).join('');
+    }
+    
+    function updateOption(index, value) { currentOptions[index] = value; }
+    function addOption() { if (currentOptions.length < 8) { currentOptions.push(''); renderOptions(); } }
+    function removeOption(index) {
+      if (currentOptions.length > 2) {
+        currentOptions.splice(index, 1);
+        const type = document.getElementById('questionType').value;
+        if (type === 'multiple_select' && Array.isArray(currentCorrectAnswer)) {
+          currentCorrectAnswer = currentCorrectAnswer.filter(i => i !== index).map(i => i > index ? i - 1 : i);
+        } else if (currentCorrectAnswer === index) { currentCorrectAnswer = null; }
+        else if (currentCorrectAnswer > index) { currentCorrectAnswer--; }
+        renderOptions();
+      }
+    }
+    function setCorrectAnswer(index, isChecked) {
+      const type = document.getElementById('questionType').value;
+      if (type === 'multiple_select') {
+        if (!Array.isArray(currentCorrectAnswer)) currentCorrectAnswer = [];
+        if (isChecked) { if (!currentCorrectAnswer.includes(index)) currentCorrectAnswer.push(index); }
+        else { currentCorrectAnswer = currentCorrectAnswer.filter(i => i !== index); }
+      } else { currentCorrectAnswer = index; }
+    }
+    
+    function saveQuestion() {
+      const type = document.getElementById('questionType').value;
+      const questionText = document.getElementById('questionText').value.trim();
+      if (!questionText) { alert('Please enter a question'); return; }
+      let correctAnswer, options = null;
+      if (type === 'true_false') {
+        const tf = document.querySelector('input[name="tfAnswer"]:checked');
+        if (!tf) { alert('Please select True or False'); return; }
+        correctAnswer = tf.value === 'true';
+      } else {
+        options = currentOptions.filter(o => o.trim());
+        if (options.length < 2) { alert('Add at least 2 options'); return; }
+        if (type === 'multiple_select') {
+          if (!Array.isArray(currentCorrectAnswer) || currentCorrectAnswer.length === 0) { alert('Select at least one correct answer'); return; }
+          correctAnswer = currentCorrectAnswer;
+        } else {
+          if (currentCorrectAnswer === null) { alert('Select the correct answer'); return; }
+          correctAnswer = currentCorrectAnswer;
+        }
+      }
+      const question = { question: questionText, type, options, correctAnswer, explanation: document.getElementById('questionExplanation').value.trim(), points: parseInt(document.getElementById('questionPoints').value) || 1 };
+      if (editingQuestionIndex !== null) { currentQuestions[editingQuestionIndex] = question; }
+      else { currentQuestions.push(question); }
+      renderQuestions();
+      closeQuestionModal();
+    }
+    
+    function closeQuestionModal() { document.getElementById('questionModal').classList.add('hidden'); editingQuestionIndex = null; }
+    
+    // ============================================
+    // AI COURSE BUILDER FUNCTIONS
+    // ============================================
+    
+    let aiBuilderStep = 1;
+    let aiGeneratedCourse = null;
+    let aiUploadedFile = null;
+    
+    function showAICourseBuilder() {
+      // DISABLED: Use the full Course Builder instead
+      window.location.href = '/admin/course-builder';
+      return;
+    }
+    
+    function closeAICourseBuilder() {
+      document.getElementById('aiCourseBuilderModal').classList.add('hidden');
+    }
+    
+    function handleAICourseFileSelect(event) {
+      const file = event.target.files[0];
+      if (file) {
+        aiUploadedFile = file;
+        document.getElementById('aiSelectedFileName').textContent = '📄 ' + file.name;
+        document.getElementById('aiSelectedFileName').classList.remove('hidden');
+      }
+    }
+    
+    function handleAICourseFileDrop(event) {
+      event.preventDefault();
+      event.target.classList.remove('border-purple-500', 'bg-purple-50');
+      const file = event.dataTransfer.files[0];
+      if (file) {
+        aiUploadedFile = file;
+        document.getElementById('aiCourseFileInput').files = event.dataTransfer.files;
+        document.getElementById('aiSelectedFileName').textContent = '📄 ' + file.name;
+        document.getElementById('aiSelectedFileName').classList.remove('hidden');
+      }
+    }
+    
+    function updateAIBuilderUI() {
+      document.getElementById('aiBuilderStep1').classList.add('hidden');
+      document.getElementById('aiBuilderStep2').classList.add('hidden');
+      document.getElementById('aiBuilderStep3').classList.add('hidden');
+      document.getElementById('aiGeneratingState').classList.add('hidden');
+      
+      ['step1Indicator', 'step2Indicator', 'step3Indicator'].forEach((id, idx) => {
+        const el = document.getElementById(id);
+        const stepNum = idx + 1;
+        if (stepNum <= aiBuilderStep) {
+          el.classList.remove('opacity-50');
+          el.querySelector('div').classList.remove('bg-purple-200', 'text-purple-600');
+          el.querySelector('div').classList.add('bg-purple-600', 'text-white');
+        } else {
+          el.classList.add('opacity-50');
+          el.querySelector('div').classList.add('bg-purple-200', 'text-purple-600');
+          el.querySelector('div').classList.remove('bg-purple-600', 'text-white');
+        }
+      });
+      
+      document.getElementById('aiBuilderStep' + aiBuilderStep).classList.remove('hidden');
+      
+      const backBtn = document.getElementById('aiBuilderBackBtn');
+      const nextBtn = document.getElementById('aiBuilderNextBtn');
+      
+      if (aiBuilderStep === 1) {
+        backBtn.classList.add('hidden');
+        nextBtn.innerHTML = 'Generate Course ⚡';
+        document.getElementById('aiRegenerateBtn').classList.add('hidden');
+      } else if (aiBuilderStep === 2) {
+        backBtn.classList.remove('hidden');
+        nextBtn.innerHTML = 'Create Course ✓';
+        document.getElementById('aiRegenerateBtn').classList.remove('hidden');
+      }
+    }
+    
+    function aiBuilderBack() {
+      if (aiBuilderStep > 1) { aiBuilderStep--; updateAIBuilderUI(); }
+    }
+    
+    // Regenerate confirmation logic
+    function confirmRegenerate() {
+      const skipWarning = localStorage.getItem('aiRegenSkipWarning') === 'true';
+      if (skipWarning) {
+        executeRegenerate();
+        return;
+      }
+      
+      // Track how many times we've shown the warning
+      let warningCount = parseInt(localStorage.getItem('aiRegenWarningCount') || '0');
+      warningCount++;
+      localStorage.setItem('aiRegenWarningCount', warningCount.toString());
+      
+      // Show "don't show again" checkbox after 3 times
+      if (warningCount >= 3) {
+        document.getElementById('dontShowAgainContainer').classList.remove('hidden');
+      } else {
+        document.getElementById('dontShowAgainContainer').classList.add('hidden');
+      }
+      
+      document.getElementById('regenerateConfirmModal').classList.remove('hidden');
+    }
+    
+    function closeRegenerateModal() {
+      document.getElementById('regenerateConfirmModal').classList.add('hidden');
+    }
+    
+    function executeRegenerate() {
+      // Check if "don't show again" was checked
+      if (document.getElementById('dontShowAgainCheckbox').checked) {
+        localStorage.setItem('aiRegenSkipWarning', 'true');
+      }
+      
+      closeRegenerateModal();
+      
+      // Go back to step 1 but keep the uploaded file
+      aiBuilderStep = 1;
+      aiGeneratedCourse = null;
+      // Note: aiUploadedFile is preserved so they don't have to re-upload
+      updateAIBuilderUI();
+    }
+    
+    async function aiBuilderNext() {
+      if (aiBuilderStep === 1) await generateCourseWithAI();
+      else if (aiBuilderStep === 2) await saveGeneratedCourse();
+    }
+    
+    async function generateCourseWithAI() {
+      const content = document.getElementById('aiCourseContentInput').value.trim();
+      const keyPoints = document.getElementById('aiKeyPointsInput').value.trim();
+      const category = document.getElementById('aiCourseCategory').value;
+      const ceHours = parseFloat(document.getElementById('aiCourseCEHours').value) || 3;
+      const generateQuizzes = document.getElementById('aiGenerateQuizzes').checked;
+      const generateObjectives = document.getElementById('aiGenerateObjectives').checked;
+      
+      if (!aiUploadedFile && !content) {
+        alert('Please upload a file or paste your course content');
+        return;
+      }
+      
+      document.getElementById('aiBuilderStep1').classList.add('hidden');
+      document.getElementById('aiGeneratingState').classList.remove('hidden');
+      
+      const token = localStorage.getItem('token');
+      const statusEl = document.getElementById('aiGenerationStatus');
+      const progressBar = document.getElementById('aiProgressBar');
+      
+      try {
+        let requestBody = { category, ceHours, generateQuizzes, generateObjectives, keyPoints };
+        
+        if (aiUploadedFile) {
+          const base64 = await fileToBase64(aiUploadedFile);
+          requestBody.fileData = base64;
+          requestBody.fileName = aiUploadedFile.name;
+          requestBody.fileType = aiUploadedFile.type;
+          statusEl.textContent = 'Reading document...';
+        }
+        
+        if (content) requestBody.content = content;
+        
+        statusEl.textContent = 'Starting AI generation...';
+        
+        // Use fetch with streaming
+        const response = await fetch(`${API_URL}/api/admin/course/generate`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify(requestBody)
+        });
+        
+        // Check if it's a streaming response
+        const contentType = response.headers.get('content-type');
+        
+        if (contentType && contentType.includes('text/event-stream')) {
+          // Handle SSE streaming response
+          const reader = response.body.getReader();
+          const decoder = new TextDecoder();
+          let buffer = '';
+          
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            
+            buffer += decoder.decode(value, { stream: true });
+            
+            // Process complete SSE messages
+            const lines = buffer.split('\n');
+            buffer = lines.pop(); // Keep incomplete line in buffer
+            
+            for (const line of lines) {
+              if (line.startsWith('data: ')) {
+                try {
+                  const data = JSON.parse(line.slice(6));
+                  
+                  if (data.type === 'progress') {
+                    statusEl.textContent = data.message;
+                    if (progressBar) {
+                      progressBar.style.width = data.percent + '%';
+                    }
+                  } else if (data.type === 'complete') {
+                    aiGeneratedCourse = data.course;
+                    renderGeneratedCourse();
+                    aiBuilderStep = 2;
+                    updateAIBuilderUI();
+                    return;
+                  } else if (data.type === 'error') {
+                    throw new Error(data.error || 'Generation failed');
+                  }
+                } catch (parseErr) {
+                  console.log('SSE parse skip:', line);
+                }
+              }
+            }
+          }
+        } else {
+          // Fallback to regular JSON response
+          const data = await response.json();
+          
+          if (response.ok && data.course) {
+            aiGeneratedCourse = data.course;
+            renderGeneratedCourse();
+            aiBuilderStep = 2;
+            updateAIBuilderUI();
+          } else {
+            throw new Error(data.error || 'Failed to generate course');
+          }
+        }
+      } catch (error) {
+        console.error('Course generation error:', error);
+        alert('Failed to generate course: ' + error.message);
+        document.getElementById('aiGeneratingState').classList.add('hidden');
+        document.getElementById('aiBuilderStep1').classList.remove('hidden');
+      }
+    }
+    
+    function renderGeneratedCourse() {
+      if (!aiGeneratedCourse) return;
+      const c = aiGeneratedCourse;
+      
+      document.getElementById('aiGenTitle').value = c.title || '';
+      document.getElementById('aiGenCEHours').value = c.ceuHours || 3;
+      document.getElementById('aiGenDescription').value = c.description || '';
+      
+      const objEl = document.getElementById('aiGenObjectives');
+      objEl.innerHTML = (c.objectives || []).map((obj, i) => `
+        <div class="flex items-center gap-2">
+          <span class="text-green-500 text-xs">✓</span>
+          <input type="text" value="${escapeHtml(obj)}" onchange="aiGeneratedCourse.objectives[${i}]=this.value" class="flex-1 px-2 py-1 border border-gray-200 rounded text-xs">
+        </div>
+      `).join('') || '<p class="text-gray-400 text-xs">No objectives</p>';
+      
+      const modEl = document.getElementById('aiGenModules');
+      modEl.innerHTML = (c.modules || []).map((m, mi) => `
+        <div class="p-3">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="bg-purple-100 text-purple-700 text-xs font-medium px-2 py-0.5 rounded">M${mi+1}</span>
+            <input type="text" value="${escapeHtml(m.title)}" onchange="aiGeneratedCourse.modules[${mi}].title=this.value" class="flex-1 font-medium px-2 py-1 border border-gray-200 rounded text-sm">
+          </div>
+          <div class="ml-6 space-y-1">
+            ${(m.lessons||[]).map((l, li) => `
+              <div class="flex items-center gap-2 text-xs">
+                <span class="w-5 h-5 rounded-full ${l.type==='quiz'?'bg-green-100 text-green-600':l.type==='video'?'bg-blue-100 text-blue-600':'bg-gray-100 text-gray-500'} flex items-center justify-center">${l.type==='quiz'?'?':l.type==='video'?'▶':'📄'}</span>
+                <input type="text" value="${escapeHtml(l.title)}" onchange="aiGeneratedCourse.modules[${mi}].lessons[${li}].title=this.value" class="flex-1 px-2 py-1 border border-gray-200 rounded">
+                <span class="text-gray-400">${l.duration||10}m</span>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `).join('') || '<p class="p-3 text-gray-400">No modules</p>';
+      
+      let totalQ = 0;
+      (c.modules||[]).forEach(m => (m.lessons||[]).forEach(l => { if(l.type==='quiz' && l.questions) totalQ += l.questions.length; }));
+      
+      document.getElementById('aiGenQuizCount').textContent = totalQ + ' questions';
+      document.getElementById('aiGenQuizSection').classList.toggle('hidden', totalQ === 0);
+      
+      if (totalQ > 0) {
+        let qHtml = '';
+        c.modules.forEach(m => m.lessons.forEach(l => {
+          if (l.type === 'quiz' && l.questions && l.questions.length) {
+            qHtml += `<div class="mb-3"><p class="font-medium text-purple-700 text-xs mb-1">${escapeHtml(l.title)}</p>`;
+            qHtml += l.questions.map((q,qi) => `<div class="ml-3 text-xs text-gray-600">${qi+1}. ${escapeHtml(q.question).substring(0,60)}...</div>`).join('');
+            qHtml += '</div>';
+          }
+        }));
+        document.getElementById('aiGenQuizzes').innerHTML = qHtml;
+      }
+    }
+    
+    async function saveGeneratedCourse() {
+      if (!aiGeneratedCourse) return;
+      
+      aiGeneratedCourse.title = document.getElementById('aiGenTitle').value;
+      aiGeneratedCourse.ceuHours = parseFloat(document.getElementById('aiGenCEHours').value) || 3;
+      aiGeneratedCourse.description = document.getElementById('aiGenDescription').value;
+      aiGeneratedCourse.slug = aiGeneratedCourse.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') + '-' + Date.now().toString(36);
+      
+      aiBuilderStep = 3;
+      updateAIBuilderUI();
+      
+      const token = localStorage.getItem('token');
+      
+      try {
+        const response = await fetch(`${API_URL}/api/admin/courses`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify(aiGeneratedCourse)
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok && data.course) {
+          closeAICourseBuilder();
+          loadCourses();
+          // Offer to preview or edit
+          const action = confirm('✅ Course created successfully!\n\nClick OK to preview the course layout\nClick Cancel to edit the course');
+          if (action) {
+            previewCourse(data.course._id);
+          } else {
+            setTimeout(() => editCourse(data.course._id), 300);
+          }
+        } else {
+          throw new Error(data.error || 'Failed to save course');
+        }
+      } catch (error) {
+        console.error('Save error:', error);
+        alert('Failed to save: ' + error.message);
+        aiBuilderStep = 2;
+        updateAIBuilderUI();
+      }
+    }
+  </script>
+
+    </main>
+  </div>
+</body>
+</html>
