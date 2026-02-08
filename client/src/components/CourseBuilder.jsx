@@ -1062,6 +1062,66 @@ function ContentEditor({ courseData, setCourseData }) {
     return () => window.removeEventListener('keydown', handler);
   });
 
+  // --- AI Suggest ---
+  const [aiLoading, setAiLoading] = useState({}); // { [blockIndex]: true }
+  const API_URL = import.meta.env.VITE_API_URL || "https://api.counselorready.com";
+
+  const aiSuggestContent = async (blockIndex, blockType, textBefore, textAfter) => {
+    setAiLoading(prev => ({ ...prev, [blockIndex]: true }));
+    try {
+      const res = await fetch(`${API_URL}/api/ai/suggest-block`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify({
+          blockType,
+          textBefore: textBefore || "",
+          textAfter: textAfter || "",
+          courseTitle: courseData.title,
+          moduleTitle: currentModule.title,
+        }),
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || `HTTP ${res.status}`);
+      }
+
+      const data = await res.json();
+      if (data.block && Object.keys(data.block).length > 0) {
+        pushHistory();
+        const newModules = [...modules];
+        const newBlocks = [...(newModules[activeModule].blocks || [])];
+        newBlocks[blockIndex] = { ...newBlocks[blockIndex], ...data.block };
+        newModules[activeModule] = { ...newModules[activeModule], blocks: newBlocks };
+        setCourseData({ ...courseData, modules: newModules });
+      }
+    } catch (err) {
+      console.error("AI suggest error:", err);
+      alert("AI suggestion failed: " + err.message);
+    }
+    setAiLoading(prev => ({ ...prev, [blockIndex]: false }));
+  };
+
+  // Gather surrounding text context for a block at given index
+  const gatherContext = (blockIndex) => {
+    const blocks = currentModule.blocks || [];
+    let textBefore = "", textAfter = "";
+    for (let j = blockIndex - 1; j >= 0 && j >= blockIndex - 3; j--) {
+      if (blocks[j]?.type === "text" && blocks[j]?.content) {
+        textBefore = blocks[j].content + "\n" + textBefore;
+      }
+    }
+    for (let j = blockIndex + 1; j < blocks.length && j <= blockIndex + 3; j++) {
+      if (blocks[j]?.type === "text" && blocks[j]?.content) {
+        textAfter = textAfter + "\n" + blocks[j].content;
+      }
+    }
+    return { textBefore, textAfter };
+  };
+
   const modules = courseData?.modules || [];
   const currentModule = modules[activeModule] || { blocks: [], title: "No modules" };
 
@@ -1157,7 +1217,16 @@ function ContentEditor({ courseData, setCourseData }) {
     newModules[activeModule] = { ...newModules[activeModule], blocks: newBlocks };
     setCourseData({ ...courseData, modules: newModules });
     // Focus on the new interactive block for editing
-    setEditingBlock(blockIndex + 1);
+    const newBlockIndex = blockIndex + 1;
+    setEditingBlock(newBlockIndex);
+
+    // Auto-suggest AI content for non-text block types
+    const AI_SUGGESTABLE = ["multipleChoice", "multiSelect", "matching", "reflection",
+      "accordion", "flashcardDeck", "cardSort", "sequencing", "timeline",
+      "scenarioTree", "imageText", "hotspot"];
+    if (AI_SUGGESTABLE.includes(newBlockType)) {
+      aiSuggestContent(newBlockIndex, newBlockType, beforeContent, afterContent);
+    }
   };
 
   const blockConfig = (type) => BLOCK_TYPES.find(b => b.type === type) || { label: type, icon: "?", color: C.textMuted, category: "content" };
@@ -1250,8 +1319,26 @@ function ContentEditor({ courseData, setCourseData }) {
                   <span style={{ width: 26, height: 26, borderRadius: 6, background: cfg.color + "14", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13 }}>{cfg.icon}</span>
                   <span style={{ fontWeight: 600, fontSize: 13, flex: 1, color: C.navy }}>{cfg.label}</span>
                   {isKC && <span style={{ fontSize: 9, fontWeight: 700, color: C.burgundy, background: C.burgundyFaded, padding: "2px 6px", borderRadius: 4 }}>KC</span>}
+                  {aiLoading[i] && <span style={{ fontSize: 10, fontWeight: 600, color: C.gold, animation: "pulse 1s infinite" }}>AI generating...</span>}
                   <span style={{ fontSize: 11, color: C.textLight }}>{countBlockWords(block)}w</span>
                   <div style={{ display: "flex", gap: 2, position: "relative" }}>
+                    {block.type !== "text" && block.type !== "sectionDivider" && (
+                      <button onClick={(e) => {
+                        e.stopPropagation();
+                        const ctx = gatherContext(i);
+                        aiSuggestContent(i, block.type, ctx.textBefore, ctx.textAfter);
+                      }}
+                        disabled={aiLoading[i]}
+                        title="AI: generate content for this block based on surrounding text"
+                        style={{
+                          background: aiLoading[i] ? C.goldFaded : "none",
+                          border: `1px solid ${C.gold}`,
+                          borderRadius: 4, cursor: aiLoading[i] ? "wait" : "pointer",
+                          padding: "2px 8px", fontSize: 10, fontWeight: 700, color: C.amber,
+                        }}>
+                        {aiLoading[i] ? "..." : "AI"}
+                      </button>
+                    )}
                     <button onClick={(e) => { e.stopPropagation(); setChangeTypeMenu(changeTypeMenu === i ? null : i); }}
                       title="Change block type"
                       style={{ background: "none", border: `1px solid ${C.border}`, borderRadius: 4, cursor: "pointer", padding: "2px 6px", fontSize: 10, color: C.textMuted }}>
