@@ -33,7 +33,7 @@ export default function Courses() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-moss-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-hunter-600"></div>
       </div>
     );
   }
@@ -97,8 +97,8 @@ function CourseCard({ course, hasSubscription }) {
   return (
     <div className="card flex flex-col hover:shadow-md transition-shadow">
       {/* Course image/icon */}
-      <div className="h-40 bg-gradient-to-br from-moss-100 to-moss-200 rounded-lg mb-4 flex items-center justify-center">
-        <BookOpen className="w-12 h-12 text-moss-600" />
+      <div className="h-40 bg-gradient-to-br from-hunter-100 to-hunter-200 rounded-lg mb-4 flex items-center justify-center">
+        <BookOpen className="w-12 h-12 text-hunter-600" />
       </div>
 
       {/* Content */}
@@ -137,11 +137,11 @@ function CourseCard({ course, hasSubscription }) {
           <div className="mb-4">
             <div className="flex justify-between text-sm mb-1">
               <span className="text-gray-600">Progress</span>
-              <span className="text-moss-600 font-medium">{course.enrollment.percentComplete}%</span>
+              <span className="text-hunter-600 font-medium">{course.enrollment.percentComplete}%</span>
             </div>
             <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
               <div 
-                className="h-full bg-moss-500 rounded-full transition-all" 
+                className="h-full bg-hunter-500 rounded-full transition-all" 
                 style={{ width: `${course.enrollment.percentComplete}%` }}
               ></div>
             </div>
@@ -154,9 +154,9 @@ function CourseCard({ course, hasSubscription }) {
         to={`/courses/${course.slug}`}
         className={`mt-auto flex items-center justify-center gap-2 py-2.5 rounded-lg font-medium transition-colors ${
           isEnrolled
-            ? 'bg-moss-600 text-white hover:bg-moss-700'
+            ? 'bg-hunter-600 text-white hover:bg-hunter-700'
             : canAccess
-            ? 'bg-moss-100 text-moss-700 hover:bg-moss-200'
+            ? 'bg-hunter-100 text-hunter-700 hover:bg-hunter-200'
             : 'bg-gray-100 text-gray-500'
         }`}
       >
