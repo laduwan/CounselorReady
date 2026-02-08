@@ -67,7 +67,7 @@ export default function Credentials() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-moss-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-hunter-600"></div>
       </div>
     );
   }
@@ -95,8 +95,8 @@ export default function Credentials() {
             <div key={cred._id} className="card">
               <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-4">
                 <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 bg-dustyrose-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <Award className="w-6 h-6 text-dustyrose-600" />
+                  <div className="w-12 h-12 bg-burgundy-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <Award className="w-6 h-6 text-burgundy-800" />
                   </div>
                   <div>
                     <h3 className="font-semibold text-gray-900">{cred.name}</h3>
@@ -132,13 +132,13 @@ export default function Credentials() {
               <div className="bg-gray-50 rounded-lg p-4">
                 <div className="flex items-center justify-between mb-3">
                   <span className="font-medium text-gray-900">CEU Progress</span>
-                  <span className="text-moss-600 font-medium">
+                  <span className="text-hunter-600 font-medium">
                     {cred.totalCEUsCompleted}/{cred.totalCEUsRequired} hours
                   </span>
                 </div>
                 <div className="h-2 bg-gray-200 rounded-full overflow-hidden mb-4">
                   <div 
-                    className="h-full bg-moss-500 rounded-full" 
+                    className="h-full bg-hunter-500 rounded-full" 
                     style={{ width: `${cred.percentComplete}%` }}
                   ></div>
                 </div>
@@ -170,7 +170,7 @@ export default function Credentials() {
                           <FileText className="w-4 h-4 text-gray-400" />
                           <span className="text-gray-700">{log.description}</span>
                         </div>
-                        <span className="text-moss-600">+{log.hours} hrs</span>
+                        <span className="text-hunter-600">+{log.hours} hrs</span>
                       </div>
                     ))}
                   </div>
@@ -295,7 +295,7 @@ function AddCredentialModal({ templates, onClose, onSuccess, hasSubscription, cu
                   <button
                     key={type.id}
                     onClick={() => { setSelectedType(type.id); setStep(2); }}
-                    className="w-full text-left p-4 border border-gray-200 rounded-lg hover:border-moss-500 hover:bg-moss-50 transition-colors"
+                    className="w-full text-left p-4 border border-gray-200 rounded-lg hover:border-hunter-500 hover:bg-hunter-100 transition-colors"
                   >
                     <div className="font-medium text-gray-900">{type.label}</div>
                     <div className="text-sm text-gray-500">{type.desc}</div>
@@ -308,7 +308,7 @@ function AddCredentialModal({ templates, onClose, onSuccess, hasSubscription, cu
               <div className="space-y-3">
                 <button
                   onClick={() => { setStep(1); setSelectedType(null); }}
-                  className="text-moss-600 hover:text-moss-700 text-sm flex items-center gap-1 mb-4"
+                  className="text-hunter-600 hover:text-hunter-700 text-sm flex items-center gap-1 mb-4"
                 >
                   ← Back
                 </button>
@@ -318,7 +318,7 @@ function AddCredentialModal({ templates, onClose, onSuccess, hasSubscription, cu
                     <button
                       key={template._id}
                       onClick={() => { setSelectedTemplate(template); setStep(3); }}
-                      className="w-full text-left p-3 border border-gray-200 rounded-lg hover:border-moss-500 hover:bg-moss-50 transition-colors"
+                      className="w-full text-left p-3 border border-gray-200 rounded-lg hover:border-hunter-500 hover:bg-hunter-100 transition-colors"
                     >
                       <div className="font-medium text-gray-900">
                         {template.state && `${template.state} `}{template.code}
@@ -334,17 +334,17 @@ function AddCredentialModal({ templates, onClose, onSuccess, hasSubscription, cu
               <div className="space-y-4">
                 <button
                   onClick={() => { setStep(2); setSelectedTemplate(null); }}
-                  className="text-moss-600 hover:text-moss-700 text-sm flex items-center gap-1 mb-4"
+                  className="text-hunter-600 hover:text-hunter-700 text-sm flex items-center gap-1 mb-4"
                 >
                   ← Back
                 </button>
                 
-                <div className="bg-moss-50 rounded-lg p-4 mb-4">
-                  <h3 className="font-medium text-moss-900">
+                <div className="bg-hunter-100 rounded-lg p-4 mb-4">
+                  <h3 className="font-medium text-hunter-700">
                     {selectedTemplate.state && `${selectedTemplate.state} `}{selectedTemplate.code}
                   </h3>
-                  <p className="text-sm text-moss-700">{selectedTemplate.name}</p>
-                  <p className="text-sm text-moss-600 mt-1">
+                  <p className="text-sm text-hunter-700">{selectedTemplate.name}</p>
+                  <p className="text-sm text-hunter-600 mt-1">
                     {selectedTemplate.totalCEUsRequired} CEUs required every {selectedTemplate.renewalCycle} months
                   </p>
                 </div>
