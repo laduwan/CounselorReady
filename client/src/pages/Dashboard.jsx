@@ -47,7 +47,7 @@ export default function Dashboard() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-moss-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-hunter-600"></div>
       </div>
     );
   }
@@ -66,8 +66,8 @@ export default function Dashboard() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <div className="card">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-moss-100 rounded-lg flex items-center justify-center">
-              <BookOpen className="w-5 h-5 text-moss-600" />
+            <div className="w-10 h-10 bg-hunter-100 rounded-lg flex items-center justify-center">
+              <BookOpen className="w-5 h-5 text-hunter-600" />
             </div>
             <div>
               <p className="text-2xl font-bold text-gray-900">{courses.length}</p>
@@ -78,8 +78,8 @@ export default function Dashboard() {
 
         <div className="card">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-dustyrose-100 rounded-lg flex items-center justify-center">
-              <Award className="w-5 h-5 text-dustyrose-600" />
+            <div className="w-10 h-10 bg-burgundy-100 rounded-lg flex items-center justify-center">
+              <Award className="w-5 h-5 text-burgundy-800" />
             </div>
             <div>
               <p className="text-2xl font-bold text-gray-900">
@@ -129,7 +129,7 @@ export default function Dashboard() {
         <div>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-gray-900">Continue Learning</h2>
-            <Link to="/courses" className="text-moss-600 hover:text-moss-700 text-sm font-medium flex items-center gap-1">
+            <Link to="/courses" className="text-hunter-600 hover:text-hunter-700 text-sm font-medium flex items-center gap-1">
               All courses <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
@@ -140,18 +140,18 @@ export default function Dashboard() {
                 <Link
                   key={item.course._id}
                   to={`/courses/${item.course.slug}`}
-                  className="card block hover:border-moss-200 transition-colors"
+                  className="card block hover:border-hunter-200 transition-colors"
                 >
                   <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-moss-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <BookOpen className="w-6 h-6 text-moss-600" />
+                    <div className="w-12 h-12 bg-hunter-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <BookOpen className="w-6 h-6 text-hunter-600" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <h3 className="font-medium text-gray-900 truncate">{item.course.title}</h3>
                       <div className="flex items-center gap-2 mt-1">
                         <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
                           <div 
-                            className="h-full bg-moss-500 rounded-full" 
+                            className="h-full bg-hunter-500 rounded-full" 
                             style={{ width: `${item.percentComplete}%` }}
                           ></div>
                         </div>
@@ -178,7 +178,7 @@ export default function Dashboard() {
         <div>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-gray-900">Your Credentials</h2>
-            <Link to="/credentials" className="text-moss-600 hover:text-moss-700 text-sm font-medium flex items-center gap-1">
+            <Link to="/credentials" className="text-hunter-600 hover:text-hunter-700 text-sm font-medium flex items-center gap-1">
               Manage <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
@@ -208,13 +208,13 @@ export default function Dashboard() {
                   <div>
                     <div className="flex justify-between text-sm mb-1">
                       <span className="text-gray-600">CEU Progress</span>
-                      <span className="text-moss-600 font-medium">
+                      <span className="text-hunter-600 font-medium">
                         {cred.totalCEUsCompleted}/{cred.totalCEUsRequired}
                       </span>
                     </div>
                     <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
                       <div 
-                        className="h-full bg-moss-500 rounded-full" 
+                        className="h-full bg-hunter-500 rounded-full" 
                         style={{ width: `${cred.percentComplete}%` }}
                       ></div>
                     </div>
