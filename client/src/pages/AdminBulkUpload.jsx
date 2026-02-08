@@ -160,7 +160,7 @@ export default function AdminBulkUpload() {
               <select
                 value={settings.accessType}
                 onChange={(e) => setSettings(s => ({ ...s, accessType: e.target.value }))}
-                className="w-full rounded-md border-gray-300 shadow-sm focus:border-moss-500 focus:ring-moss-500"
+                className="w-full rounded-md border-gray-300 shadow-sm focus:border-burgundy-500 focus:ring-burgundy-500"
               >
                 <option value="free">Free</option>
                 <option value="paid">Paid</option>
@@ -173,7 +173,7 @@ export default function AdminBulkUpload() {
               <select
                 value={settings.accessTier}
                 onChange={(e) => setSettings(s => ({ ...s, accessTier: e.target.value }))}
-                className="w-full rounded-md border-gray-300 shadow-sm focus:border-moss-500 focus:ring-moss-500"
+                className="w-full rounded-md border-gray-300 shadow-sm focus:border-burgundy-500 focus:ring-burgundy-500"
               >
                 <option value="free">Free</option>
                 <option value="professional">Professional</option>
@@ -189,7 +189,7 @@ export default function AdminBulkUpload() {
                 value={settings.price}
                 onChange={(e) => setSettings(s => ({ ...s, price: e.target.value }))}
                 placeholder="e.g., 29.99"
-                className="w-full rounded-md border-gray-300 shadow-sm focus:border-moss-500 focus:ring-moss-500"
+                className="w-full rounded-md border-gray-300 shadow-sm focus:border-burgundy-500 focus:ring-burgundy-500"
               />
             </div>
 
@@ -198,7 +198,7 @@ export default function AdminBulkUpload() {
               <select
                 value={settings.pricingTier}
                 onChange={(e) => setSettings(s => ({ ...s, pricingTier: e.target.value }))}
-                className="w-full rounded-md border-gray-300 shadow-sm focus:border-moss-500 focus:ring-moss-500"
+                className="w-full rounded-md border-gray-300 shadow-sm focus:border-burgundy-500 focus:ring-burgundy-500"
               >
                 <option value="standard">Standard</option>
                 <option value="premium">Premium</option>
@@ -210,7 +210,7 @@ export default function AdminBulkUpload() {
               <select
                 value={settings.approvingBody}
                 onChange={(e) => setSettings(s => ({ ...s, approvingBody: e.target.value }))}
-                className="w-full rounded-md border-gray-300 shadow-sm focus:border-moss-500 focus:ring-moss-500"
+                className="w-full rounded-md border-gray-300 shadow-sm focus:border-burgundy-500 focus:ring-burgundy-500"
               >
                 <option value="NBCC">NBCC</option>
                 <option value="ACA">ACA</option>
@@ -226,7 +226,7 @@ export default function AdminBulkUpload() {
                 type="text"
                 value={settings.approvalNumber}
                 onChange={(e) => setSettings(s => ({ ...s, approvalNumber: e.target.value }))}
-                className="w-full rounded-md border-gray-300 shadow-sm focus:border-moss-500 focus:ring-moss-500"
+                className="w-full rounded-md border-gray-300 shadow-sm focus:border-burgundy-500 focus:ring-burgundy-500"
               />
             </div>
 
@@ -236,7 +236,7 @@ export default function AdminBulkUpload() {
                 type="text"
                 value={settings.instructor}
                 onChange={(e) => setSettings(s => ({ ...s, instructor: e.target.value }))}
-                className="w-full rounded-md border-gray-300 shadow-sm focus:border-moss-500 focus:ring-moss-500"
+                className="w-full rounded-md border-gray-300 shadow-sm focus:border-burgundy-500 focus:ring-burgundy-500"
               />
             </div>
 
@@ -246,7 +246,7 @@ export default function AdminBulkUpload() {
                   type="checkbox"
                   checked={settings.autoSave}
                   onChange={(e) => setSettings(s => ({ ...s, autoSave: e.target.checked }))}
-                  className="rounded border-gray-300 text-moss-600 focus:ring-moss-500"
+                  className="rounded border-gray-300 text-forest-600 focus:ring-burgundy-500"
                 />
                 <span className="ml-2 text-sm text-gray-700">
                   Auto-save courses (skip preview)
@@ -263,7 +263,7 @@ export default function AdminBulkUpload() {
           className={`
             bg-white rounded-lg border-2 border-dashed p-8 text-center
             transition-colors cursor-pointer
-            ${files.length > 0 ? 'border-moss-500 bg-moss-50' : 'border-gray-300 hover:border-moss-400'}
+            ${files.length > 0 ? 'border-forest-500 bg-forest-100' : 'border-gray-300 hover:border-forest-400'}
           `}
           onClick={() => document.getElementById('file-input').click()}
         >
@@ -282,7 +282,7 @@ export default function AdminBulkUpload() {
           
           {files.length > 0 ? (
             <div className="mt-4">
-              <p className="text-moss-700 font-medium">{files.length} file(s) selected</p>
+              <p className="text-forest-700 font-medium">{files.length} file(s) selected</p>
               <ul className="mt-2 text-sm text-gray-600 max-h-32 overflow-y-auto">
                 {files.map((f, i) => (
                   <li key={i}>{f.name} ({(f.size / 1024).toFixed(1)} KB)</li>
@@ -292,7 +292,7 @@ export default function AdminBulkUpload() {
           ) : (
             <div className="mt-4">
               <p className="text-gray-600">
-                <span className="font-medium text-moss-600">Click to upload</span> or drag and drop
+                <span className="font-medium text-forest-600">Click to upload</span> or drag and drop
               </p>
               <p className="text-sm text-gray-500 mt-1">
                 DOCX, PDF, TXT, MD, or ZIP (max 50MB)
@@ -310,7 +310,7 @@ export default function AdminBulkUpload() {
               px-6 py-3 rounded-lg font-medium text-white
               ${uploading || files.length === 0 
                 ? 'bg-gray-400 cursor-not-allowed' 
-                : 'bg-moss-600 hover:bg-moss-700'}
+                : 'bg-forest-600 hover:bg-forest-700'}
               transition-colors
             `}
           >
@@ -352,7 +352,7 @@ export default function AdminBulkUpload() {
               <button
                 onClick={handleSaveCourses}
                 disabled={savingCourses}
-                className="px-4 py-2 bg-moss-600 text-white rounded-lg hover:bg-moss-700 disabled:bg-gray-400"
+                className="px-4 py-2 bg-forest-600 text-white rounded-lg hover:bg-forest-700 disabled:bg-gray-400"
               >
                 {savingCourses ? 'Saving...' : `Save All (${previewCourses.length})`}
               </button>
@@ -367,7 +367,7 @@ export default function AdminBulkUpload() {
                       <h3 className="font-medium text-gray-900">{item.course.title}</h3>
                       <p className="text-sm text-gray-600 mt-1">{item.course.description?.substring(0, 150)}...</p>
                       <div className="mt-2 flex flex-wrap gap-2">
-                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-moss-100 text-moss-700">
+                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-forest-100 text-forest-700">
                           {item.course.ceuHours} CE Hours
                         </span>
                         <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-700">
@@ -435,7 +435,7 @@ export default function AdminBulkUpload() {
                       </div>
                       <a
                         href={`/admin/courses/${course.courseId}`}
-                        className="text-moss-600 hover:text-moss-700 text-sm"
+                        className="text-forest-600 hover:text-forest-700 text-sm"
                       >
                         Edit →
                       </a>
