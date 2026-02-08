@@ -78,7 +78,7 @@ export default function Layout({ children }) {
                 className={`
                   flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors
                   ${isActive 
-                    ? 'bg-forest-100 text-burgundy-800' 
+                    ? 'bg-forest-100 text-forest-600' 
                     : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                   }
                 `}
@@ -94,7 +94,7 @@ export default function Layout({ children }) {
         <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200">
           <div className="flex items-center gap-3 mb-3">
             <div className="w-10 h-10 rounded-full bg-forest-100 flex items-center justify-center">
-              <span className="text-burgundy-800 font-medium">
+              <span className="text-forest-600 font-medium">
                 {user?.profile?.firstName?.charAt(0) || 'U'}
               </span>
             </div>
@@ -132,7 +132,7 @@ export default function Layout({ children }) {
               <span className="px-2 py-1 bg-amber-100 text-amber-700 rounded-full text-xs font-medium">
                 Trial
               </span>
-              <Link to="/settings" className="text-burgundy-800 hover:text-burgundy-700 flex items-center gap-1">
+              <Link to="/settings" className="text-forest-600 hover:text-forest-700 flex items-center gap-1">
                 Upgrade <ChevronRight className="w-4 h-4" />
               </Link>
             </div>
