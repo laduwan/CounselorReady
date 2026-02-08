@@ -421,6 +421,78 @@ router.post('/block-action', protect, requireAdmin, async (req, res) => {
   }
 });
 
+
+// ---- POST /api/ai/suggest-block ----
+// Generate AI content for a specific block type based on surrounding text.
+router.post('/suggest-block', protect, requireAdmin, async (req, res) => {
+  const { blockType, textBefore, textAfter, courseTitle, moduleTitle } = req.body;
+
+  if (!blockType) return res.status(400).json({ error: 'blockType is required' });
+  if (!ANTHROPIC_API_KEY) return res.status(500).json({ error: 'ANTHROPIC_API_KEY not configured' });
+
+  const trimTo = (text, maxWords) => {
+    if (!text) return '';
+    return text.replace(/<[^>]*>/g, ' ').split(/\s+/).filter(w => w).slice(0, maxWords).join(' ');
+  };
+
+  const typePrompts = {
+    multipleChoice: 'Generate a knowledge check with 4 options (1 correct). Return JSON: { "question":"...","options":[{"text":"...","isCorrect":false},{"text":"...","isCorrect":true},{"text":"...","isCorrect":false},{"text":"...","isCorrect":false}],"explanation":"..." }',
+    multiSelect: 'Generate a multi-select question (2-3 correct out of 5). Return JSON: { "question":"...","options":[{"text":"...","isCorrect":false}...],"explanation":"..." }',
+    matching: 'Generate 4-5 term/definition matching pairs. Return JSON: { "matchingPairs":[{"term":"...","definition":"..."}...],"matchingInstructions":"Match each term with its definition." }',
+    reflection: 'Generate a clinical reflection prompt. Return JSON: { "question":"...","minLength":50 }',
+    accordion: 'Generate 3-4 expandable accordion sections. Return JSON: { "accordionItems":[{"title":"...","content":"..."}...] }',
+    flashcardDeck: 'Generate 4-6 flashcards. Return JSON: { "instructions":"Review key concepts","flashcards":[{"id":"f1","front":"...","back":"..."}...] }',
+    cardSort: 'Generate card sort with 2 categories and 6+ cards. Return JSON: { "instructions":"...","categories":["A","B"],"cards":[{"id":"c1","text":"...","correctCategory":"A"}...],"explanation":"..." }',
+    sequencing: 'Generate 4-6 ordered steps. Return JSON: { "instructions":"...","steps":[{"id":"s1","text":"...","order":1}...],"explanation":"..." }',
+    timeline: 'Generate 4-6 chronological events. Return JSON: { "instructions":"...","events":[{"id":"t1","text":"...","year":"...","order":1}...],"explanation":"..." }',
+    scenarioTree: 'Generate a clinical scenario with 2 choices. Return JSON: { "scenarioTitle":"...","instructions":"...","startNode":"start","nodes":{"start":{"text":"...","choices":[{"text":"...","next":"a"},{"text":"...","next":"b"}],"feedback":null},"a":{"text":"...","choices":[],"feedback":"excellent"},"b":{"text":"...","choices":[],"feedback":"consider"}} }',
+    imageText: 'Generate image+text block. Return JSON: { "title":"...","content":"...","imageAlt":"Suggested: [describe ideal image]","imagePosition":"left","highlight":false }',
+    hotspot: 'Generate hotspot diagram. Return JSON: { "instructions":"...","imageDescription":"Suggested: [describe]","hotspots":[{"id":"h1","x":25,"y":30,"label":"...","description":"..."}],"explanation":"..." }',
+  };
+
+  const typePrompt = typePrompts[blockType];
+  if (!typePrompt) return res.json({ block: {}, message: 'No AI suggestion for ' + blockType });
+
+  try {
+    console.log('AI suggest-block:', blockType);
+    const response = await fetch(ANTHROPIC_API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': ANTHROPIC_API_KEY,
+        'anthropic-version': '2023-06-01',
+      },
+      body: JSON.stringify({
+        model: ANTHROPIC_MODEL,
+        max_tokens: 2000,
+        system: 'You are a CE content expert for CounselorReady (NBCC ACEP #7760). Generate clinically accurate graduate-level content for mental health professionals. Return ONLY valid JSON, no markdown fences or preamble.',
+        messages: [{ role: 'user', content: `Course: ${courseTitle || 'CE Course'}\nModule: ${moduleTitle || 'Module'}\n\nCONTENT BEFORE:\n${trimTo(textBefore, 800) || '(start)'}\n\nCONTENT AFTER:\n${trimTo(textAfter, 400) || '(end)'}\n\nTASK:\n${typePrompt}\n\nReturn ONLY JSON.` }],
+      }),
+    });
+
+    if (!response.ok) {
+      const errText = await response.text();
+      console.error('Anthropic error:', response.status, errText);
+      return res.status(500).json({ error: 'AI API error: ' + response.status });
+    }
+
+    const data = await response.json();
+    const rawText = data.content?.[0]?.text || '';
+    let block = {};
+    try {
+      block = JSON.parse(rawText.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim());
+    } catch (e) {
+      return res.status(500).json({ error: 'AI returned invalid JSON', raw: rawText });
+    }
+
+    console.log('AI suggest-block complete:', blockType);
+    res.json({ block, usage: data.usage });
+  } catch (error) {
+    console.error('AI suggest-block error:', error.message);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // ─── GET /api/ai/status ────────────────────────────────────────
 // Health check — is the AI configured and reachable?
 
