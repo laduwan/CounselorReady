@@ -9,7 +9,6 @@ import {
   Scissors, EyeOff
 } from "lucide-react";
 
-// â”€â”€â”€ Brand Colors â”€â”€â”€
 const C = {
   burgundy: "#6B1D34", burgundyLight: "#8B2D4A", burgundyFaded: "rgba(107,29,52,0.08)",
   green: "#4A7C59", greenLight: "#5A9469", greenFaded: "rgba(74,124,89,0.08)",
@@ -22,30 +21,30 @@ const C = {
   purple: "#7C3AED", teal: "#0F766E", amber: "#B45309", slate: "#1E293B",
 };
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-// BLOCK TYPE REGISTRY â€” 17 Total
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ============================================================
+// BLOCK TYPE REGISTRY  17 Total
+// ============================================================
 const BLOCK_TYPES = [
-  // â”€â”€ Content (auto-complete on render) â”€â”€
-  { type: "sectionDivider", label: "Section Divider", icon: "Â§", color: C.navy, category: "content" },
-  { type: "text", label: "Text Content", icon: "Â¶", color: C.green, category: "content" },
-  { type: "imageText", label: "Image + Text", icon: "ðŸ–¼", color: C.greenLight, category: "content" },
-  { type: "image", label: "Standalone Image", icon: "ðŸ“·", color: C.teal, category: "content" },
-  { type: "accordion", label: "Accordion", icon: "â‰¡", color: C.gold, category: "content" },
-  { type: "resources", label: "Resources", icon: "ðŸ“Ž", color: C.navy, category: "content" },
-  { type: "videoEmbed", label: "Video + Markers", icon: "ðŸŽ¬", color: C.slate, category: "content" },
-  // â”€â”€ Knowledge Checks (graded, count for ACEP) â”€â”€
-  { type: "multipleChoice", label: "Multiple Choice", icon: "â—‰", color: C.burgundy, category: "assessment" },
-  { type: "multiSelect", label: "Multi-Select", icon: "â˜‘", color: C.burgundyLight, category: "assessment" },
-  { type: "matching", label: "Matching", icon: "â†”", color: C.navyLight, category: "assessment" },
-  { type: "cardSort", label: "Card Sort", icon: "ðŸ—‚", color: "#0284C7", category: "assessment" },
-  { type: "sequencing", label: "Sequencing", icon: "ðŸ“‹", color: C.navy, category: "assessment" },
-  { type: "timeline", label: "Timeline", icon: "ðŸ“…", color: C.teal, category: "assessment" },
-  // â”€â”€ Interactive Engagement â”€â”€
-  { type: "reflection", label: "Reflection", icon: "ðŸ’­", color: C.green, category: "interactive" },
-  { type: "hotspot", label: "Hotspot / Diagram", icon: "ðŸŽ¯", color: C.purple, category: "interactive" },
-  { type: "scenarioTree", label: "Scenario Tree", icon: "ðŸ”€", color: C.burgundy, category: "interactive" },
-  { type: "flashcardDeck", label: "Flashcard Deck", icon: "ðŸƒ", color: C.amber, category: "interactive" },
+  // -- Content (auto-complete on render) --
+  { type: "sectionDivider", label: "Section Divider", icon: "\u00A7", color: C.navy, category: "content" },
+  { type: "text", label: "Text Content", icon: "\u00B6", color: C.green, category: "content" },
+  { type: "imageText", label: "Image + Text", icon: "IT", color: C.greenLight, category: "content" },
+  { type: "image", label: "Standalone Image", icon: "IM", color: C.teal, category: "content" },
+  { type: "accordion", label: "Accordion", icon: "=", color: C.gold, category: "content" },
+  { type: "resources", label: "Resources", icon: "R", color: C.navy, category: "content" },
+  { type: "videoEmbed", label: "Video + Markers", icon: "V", color: C.slate, category: "content" },
+  // -- Knowledge Checks (graded, count for ACEP) --
+  { type: "multipleChoice", label: "Multiple Choice", icon: "(*)", color: C.burgundy, category: "assessment" },
+  { type: "multiSelect", label: "Multi-Select", icon: "\u2611", color: C.burgundyLight, category: "assessment" },
+  { type: "matching", label: "Matching", icon: "<>", color: C.navyLight, category: "assessment" },
+  { type: "cardSort", label: "Card Sort", icon: "CS", color: "#0284C7", category: "assessment" },
+  { type: "sequencing", label: "Sequencing", icon: "SQ", color: C.navy, category: "assessment" },
+  { type: "timeline", label: "Timeline", icon: "TL", color: C.teal, category: "assessment" },
+  // -- Interactive Engagement --
+  { type: "reflection", label: "Reflection", icon: "RF", color: C.green, category: "interactive" },
+  { type: "hotspot", label: "Hotspot / Diagram", icon: "HS", color: C.purple, category: "interactive" },
+  { type: "scenarioTree", label: "Scenario Tree", icon: "ST", color: C.burgundy, category: "interactive" },
+  { type: "flashcardDeck", label: "Flashcard Deck", icon: "FC", color: C.amber, category: "interactive" },
 ];
 
 const BLOCK_DEFAULTS = {
@@ -79,7 +78,6 @@ const KNOWLEDGE_CHECK_TYPES = ["multipleChoice", "multiSelect", "matching", "car
 const ENGAGEMENT_TYPES = ["accordion", "hotspot", "scenarioTree", "flashcardDeck", "reflection"];
 const CONTENT_TYPES = ["sectionDivider", "text", "imageText", "image", "resources", "videoEmbed"];
 
-// â”€â”€â”€ Utilities â”€â”€â”€
 function countWords(text) {
   if (!text) return 0;
   return text.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim().split(" ").filter(Boolean).length;
@@ -110,7 +108,6 @@ function countBlockWords(block) {
   return w;
 }
 
-// â”€â”€â”€ Styles â”€â”€â”€
 const S = {
   container: { fontFamily: "'Newsreader', Georgia, serif", background: C.bg, minHeight: "100vh", color: C.text },
   header: { background: `linear-gradient(135deg, ${C.burgundy} 0%, #4A1224 100%)`, padding: "18px 28px", display: "flex", alignItems: "center", justifyContent: "space-between" },
@@ -138,9 +135,9 @@ const S = {
 };
 
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ============================================================
 // CLOUDINARY UPLOADER (inline component)
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ============================================================
 function CloudinaryUploader({ onUpload, context = "general", currentImage = null, label = "Upload Image", compact = false }) {
   const [uploading, setUploading] = useState(false);
   const [preview, setPreview] = useState(currentImage);
@@ -204,7 +201,7 @@ function CloudinaryUploader({ onUpload, context = "general", currentImage = null
         <input type="file" ref={fileRef} accept="image/*" onChange={handleFileInput} style={{ display: "none" }} />
         <button onClick={() => fileRef.current?.click()} disabled={uploading}
           style={{ background: C.green, color: "#fff", border: "none", borderRadius: 6, padding: "6px 12px", fontSize: 12, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 4, opacity: uploading ? 0.6 : 1 }}>
-          {uploading ? "â³" : "ðŸ“·"} {label}
+          {uploading ? "" : "*"} {label}
         </button>
         {preview && <img src={preview} alt="" style={{ width: 28, height: 28, borderRadius: 4, objectFit: "cover" }} />}
         {error && <span style={{ color: C.danger, fontSize: 11 }}>{error}</span>}
@@ -227,9 +224,9 @@ function CloudinaryUploader({ onUpload, context = "general", currentImage = null
           </div>
         ) : (
           <div>
-            <div style={{ fontSize: 28, marginBottom: 6 }}>ðŸ“·</div>
+            <div style={{ fontSize: 28, marginBottom: 6 }}>*</div>
             <div style={{ fontWeight: 600, color: C.navy, fontSize: 14 }}>{label}</div>
-            <div style={{ color: C.textLight, fontSize: 12, marginTop: 4 }}>Drag & drop or click Â· Max 10MB</div>
+            <div style={{ color: C.textLight, fontSize: 12, marginTop: 4 }}>Drag & drop or click * Max 10MB</div>
             {uploading && <div style={{ marginTop: 10, background: C.green, borderRadius: 4, height: 4, width: "60%", margin: "10px auto 0" }} />}
           </div>
         )}
@@ -237,18 +234,18 @@ function CloudinaryUploader({ onUpload, context = "general", currentImage = null
       <input type="text" value={alt} onChange={(e) => setAlt(e.target.value)}
         placeholder="Alt text for accessibility"
         style={{ ...S.input, marginTop: 8, fontSize: 12 }} />
-      {error && <p style={{ color: C.danger, fontSize: 12, marginTop: 4 }}>âš  {error}</p>}
+      {error && <p style={{ color: C.danger, fontSize: 12, marginTop: 4 }}> {error}</p>}
     </div>
   );
 }
 
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ============================================================
 // CATEGORIZED BLOCK PICKER
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-// ═════════════════════════════════════════════════════════════
-// TEXT BLOCK EDITOR — Split & Insert + Preview
-// ═════════════════════════════════════════════════════════════
+// ============================================================
+// ============================================================
+// TEXT BLOCK EDITOR  Split & Insert + Preview
+// ============================================================
 function TextBlockEditor({ block, onChange, onSplit }) {
   const textareaRef = useRef(null);
   const [preview, setPreview] = useState(false);
@@ -361,14 +358,14 @@ function TextBlockEditor({ block, onChange, onSplit }) {
                 <div style={{ fontSize: 10, fontWeight: 600, color: C.textMuted, marginBottom: 6 }}>RECOMMENDED FOR TEXT FLOW</div>
                 <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
                   {[
-                    { type: "multipleChoice", label: "Knowledge Check", icon: "\u25C9", color: C.burgundy },
-                    { type: "reflection", label: "Reflection Prompt", icon: "\uD83D\uDCAD", color: C.green },
-                    { type: "accordion", label: "Accordion", icon: "\u2261", color: C.gold },
-                    { type: "matching", label: "Matching Exercise", icon: "\u2194", color: C.navyLight },
-                    { type: "imageText", label: "Image + Text", icon: "\uD83D\uDDBC", color: C.greenLight },
-                    { type: "scenarioTree", label: "Clinical Scenario", icon: "\uD83D\uDD00", color: C.burgundy },
-                    { type: "flashcardDeck", label: "Flashcard Review", icon: "\uD83C\uDCC3", color: C.amber },
-                    { type: "cardSort", label: "Card Sort", icon: "\uD83D\uDDC2", color: "#0284C7" },
+                    { type: "multipleChoice", label: "Knowledge Check", icon: "(*)", color: C.burgundy },
+                    { type: "reflection", label: "Reflection Prompt", icon: "RF", color: C.green },
+                    { type: "accordion", label: "Accordion", icon: "=", color: C.gold },
+                    { type: "matching", label: "Matching Exercise", icon: "<>", color: C.navyLight },
+                    { type: "imageText", label: "Image + Text", icon: "IT", color: C.greenLight },
+                    { type: "scenarioTree", label: "Clinical Scenario", icon: "ST", color: C.burgundy },
+                    { type: "flashcardDeck", label: "Flashcard Review", icon: "FC", color: C.amber },
+                    { type: "cardSort", label: "Card Sort", icon: "CS", color: "#0284C7" },
                   ].map(bt => (
                     <button key={bt.type} onClick={() => handleSplit(bt.type)}
                       style={{
@@ -417,7 +414,7 @@ function TextBlockEditor({ block, onChange, onSplit }) {
 function BlockPicker({ onPick, onClose }) {
   const categories = [
     { key: "content", label: "Content", desc: "Text, images, media", color: C.green },
-    { key: "assessment", label: "Knowledge Checks", desc: "Graded Â· ACEP compliant", color: C.burgundy },
+    { key: "assessment", label: "Knowledge Checks", desc: "Graded * ACEP compliant", color: C.burgundy },
     { key: "interactive", label: "Engagement", desc: "Interactive activities", color: C.purple },
   ];
 
@@ -425,7 +422,7 @@ function BlockPicker({ onPick, onClose }) {
     <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 12, padding: 16, marginBottom: 8, boxShadow: "0 8px 32px rgba(0,0,0,0.1)" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
         <span style={{ fontWeight: 700, fontSize: 14, color: C.navy }}>Add Content Block</span>
-        <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 18, color: C.textMuted, lineHeight: 1 }}>âœ•</button>
+        <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 18, color: C.textMuted, lineHeight: 1 }}>x</button>
       </div>
       {categories.map(cat => {
         const blocks = BLOCK_TYPES.filter(b => b.category === cat.key);
@@ -455,14 +452,13 @@ function BlockPicker({ onPick, onClose }) {
 }
 
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-// BLOCK EDITOR â€” All 17 types
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ============================================================
+// BLOCK EDITOR  All 17 types
+// ============================================================
 function BlockEditor({ block, onChange }) {
   switch (block.type) {
 
-    // â”€â”€ Original 9 â”€â”€
-    case "sectionDivider":
+        case "sectionDivider":
       return (
         <div style={S.grid2}>
           <div><label style={S.label}>Section Title</label><input style={S.input} value={block.title} onChange={e => onChange({ title: e.target.value })} /></div>
@@ -521,7 +517,7 @@ function BlockEditor({ block, onChange }) {
                   const items = [...block.accordionItems]; items[i] = { ...items[i], content: e.target.value }; onChange({ accordionItems: items });
                 }} />
               </div>
-              <button style={S.btnDanger} onClick={() => onChange({ accordionItems: block.accordionItems.filter((_, j) => j !== i) })}>âœ•</button>
+              <button style={S.btnDanger} onClick={() => onChange({ accordionItems: block.accordionItems.filter((_, j) => j !== i) })}>x</button>
             </div>
           ))}
           <button style={{ ...S.btnSecondary, fontSize: 12, padding: "6px 12px" }} onClick={() => onChange({ accordionItems: [...(block.accordionItems || []), { title: "", content: "" }] })}>+ Add Item</button>
@@ -544,7 +540,7 @@ function BlockEditor({ block, onChange }) {
               <input style={{ ...S.input, flex: 1 }} value={opt.text} onChange={e => {
                 const opts = [...block.options]; opts[i] = { ...opts[i], text: e.target.value }; onChange({ options: opts });
               }} />
-              <button style={S.btnDanger} onClick={() => onChange({ options: block.options.filter((_, j) => j !== i) })}>âœ•</button>
+              <button style={S.btnDanger} onClick={() => onChange({ options: block.options.filter((_, j) => j !== i) })}>x</button>
             </div>
           ))}
           <button style={{ ...S.btnSecondary, fontSize: 12, padding: "6px 12px" }} onClick={() => onChange({ options: [...(block.options || []), { text: "", isCorrect: false }] })}>+ Add Option</button>
@@ -561,9 +557,9 @@ function BlockEditor({ block, onChange }) {
           {(block.matchingPairs || []).map((pair, i) => (
             <div key={i} style={{ display: "flex", gap: 8, marginBottom: 6, alignItems: "center" }}>
               <input style={{ ...S.input, flex: 1 }} placeholder="Term" value={pair.term} onChange={e => { const p = [...block.matchingPairs]; p[i] = { ...p[i], term: e.target.value }; onChange({ matchingPairs: p }); }} />
-              <span style={{ color: C.textLight }}>â†”</span>
+              <span style={{ color: C.textLight }}></span>
               <input style={{ ...S.input, flex: 1 }} placeholder="Definition" value={pair.definition} onChange={e => { const p = [...block.matchingPairs]; p[i] = { ...p[i], definition: e.target.value }; onChange({ matchingPairs: p }); }} />
-              <button style={S.btnDanger} onClick={() => onChange({ matchingPairs: block.matchingPairs.filter((_, j) => j !== i) })}>âœ•</button>
+              <button style={S.btnDanger} onClick={() => onChange({ matchingPairs: block.matchingPairs.filter((_, j) => j !== i) })}>x</button>
             </div>
           ))}
           <button style={{ ...S.btnSecondary, fontSize: 12, padding: "6px 12px" }} onClick={() => onChange({ matchingPairs: [...(block.matchingPairs || []), { term: "", definition: "" }] })}>+ Add Pair</button>
@@ -591,14 +587,14 @@ function BlockEditor({ block, onChange }) {
               <select style={{ ...S.input, flex: 1 }} value={res.type} onChange={e => { const r = [...block.resources]; r[i] = { ...r[i], type: e.target.value }; onChange({ resources: r }); }}>
                 <option value="pdf">PDF</option><option value="worksheet">Worksheet</option><option value="video">Video</option><option value="link">Link</option>
               </select>
-              <button style={S.btnDanger} onClick={() => onChange({ resources: block.resources.filter((_, j) => j !== i) })}>âœ•</button>
+              <button style={S.btnDanger} onClick={() => onChange({ resources: block.resources.filter((_, j) => j !== i) })}>x</button>
             </div>
           ))}
           <button style={{ ...S.btnSecondary, fontSize: 12, padding: "6px 12px" }} onClick={() => onChange({ resources: [...(block.resources || []), { title: "", url: "", type: "pdf" }] })}>+ Add Resource</button>
         </div>
       );
 
-    // â•â•â• NEW BLOCK TYPE #10: IMAGE â•â•â•
+    //  NEW BLOCK TYPE #10: IMAGE 
     case "image":
       return (
         <div>
@@ -625,31 +621,31 @@ function BlockEditor({ block, onChange }) {
         </div>
       );
 
-    // â•â•â• NEW BLOCK TYPE #11: CARD SORT â•â•â•
+    //  NEW BLOCK TYPE #11: CARD SORT 
     case "cardSort":
       return <CardSortEditor block={block} onChange={onChange} />;
 
-    // â•â•â• NEW BLOCK TYPE #12: SEQUENCING â•â•â•
+    //  NEW BLOCK TYPE #12: SEQUENCING 
     case "sequencing":
       return <SequencingEditor block={block} onChange={onChange} />;
 
-    // â•â•â• NEW BLOCK TYPE #13: HOTSPOT â•â•â•
+    //  NEW BLOCK TYPE #13: HOTSPOT 
     case "hotspot":
       return <HotspotEditor block={block} onChange={onChange} />;
 
-    // â•â•â• NEW BLOCK TYPE #14: TIMELINE â•â•â•
+    //  NEW BLOCK TYPE #14: TIMELINE 
     case "timeline":
       return <TimelineEditor block={block} onChange={onChange} />;
 
-    // â•â•â• NEW BLOCK TYPE #15: SCENARIO TREE â•â•â•
+    //  NEW BLOCK TYPE #15: SCENARIO TREE 
     case "scenarioTree":
       return <ScenarioTreeEditor block={block} onChange={onChange} />;
 
-    // â•â•â• NEW BLOCK TYPE #16: FLASHCARD DECK â•â•â•
+    //  NEW BLOCK TYPE #16: FLASHCARD DECK 
     case "flashcardDeck":
       return <FlashcardDeckEditor block={block} onChange={onChange} />;
 
-    // â•â•â• NEW BLOCK TYPE #17: VIDEO EMBED â•â•â•
+    //  NEW BLOCK TYPE #17: VIDEO EMBED 
     case "videoEmbed":
       return <VideoEmbedEditor block={block} onChange={onChange} />;
 
@@ -659,9 +655,9 @@ function BlockEditor({ block, onChange }) {
 }
 
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ============================================================
 // NEW BLOCK EDITORS
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ============================================================
 
 const CATEGORY_COLORS = ["#E11D48", "#6366F1", "#059669", "#D97706", "#0284C7", "#9333EA", "#DC2626", "#0891B2"];
 
@@ -689,7 +685,7 @@ function CardSortEditor({ block, onChange }) {
                 onChange({ categories: newCats, cards: newCards });
               }} />
             <button style={{ background: "none", border: "none", cursor: "pointer", color: C.danger, fontSize: 12, padding: 2 }}
-              onClick={() => onChange({ categories: cats.filter((_, j) => j !== i) })}>âœ•</button>
+              onClick={() => onChange({ categories: cats.filter((_, j) => j !== i) })}>x</button>
           </div>
         ))}
         <button style={{ ...S.btnSecondary, fontSize: 11, padding: "4px 10px" }} onClick={addCategory}>+ Category</button>
@@ -706,14 +702,14 @@ function CardSortEditor({ block, onChange }) {
           }}>
             {cats.map(c => <option key={c} value={c}>{c}</option>)}
           </select>
-          <button style={S.btnDanger} onClick={() => onChange({ cards: (block.cards || []).filter((_, j) => j !== i) })}>âœ•</button>
+          <button style={S.btnDanger} onClick={() => onChange({ cards: (block.cards || []).filter((_, j) => j !== i) })}>x</button>
         </div>
       ))}
       <button style={{ ...S.btnSecondary, fontSize: 12, padding: "6px 12px" }} onClick={addCard}>+ Add Card</button>
 
       <div style={{ marginTop: 12 }}><label style={S.label}>Explanation</label><textarea style={{ ...S.textarea, minHeight: 50 }} value={block.explanation || ""} onChange={e => onChange({ explanation: e.target.value })} /></div>
       <div style={{ marginTop: 10, fontSize: 11, color: C.textMuted, background: C.goldFaded, borderRadius: 6, padding: 8 }}>
-        Distribution: {cats.map(c => `${c}: ${(block.cards || []).filter(cd => cd.correctCategory === c).length}`).join(" Â· ")}
+        Distribution: {cats.map(c => `${c}: ${(block.cards || []).filter(cd => cd.correctCategory === c).length}`).join(" * ")}
       </div>
     </div>
   );
@@ -729,7 +725,7 @@ function SequencingEditor({ block, onChange }) {
     <div>
       <label style={S.label}>Instructions</label>
       <textarea style={{ ...S.textarea, minHeight: 50 }} value={block.instructions || ""} onChange={e => onChange({ instructions: e.target.value })} />
-      <label style={{ ...S.label, marginTop: 12 }}>Steps â€” in CORRECT order ({(block.steps || []).length})</label>
+      <label style={{ ...S.label, marginTop: 12 }}>Steps  in CORRECT order ({(block.steps || []).length})</label>
       <p style={{ fontSize: 11, color: C.textLight, margin: "0 0 8px" }}>Enter steps in correct sequence. They'll be shuffled for the learner.</p>
       {(block.steps || []).map((step, i) => (
         <div key={step.id || i} style={{ display: "flex", gap: 8, marginBottom: 4, alignItems: "center" }}>
@@ -739,7 +735,7 @@ function SequencingEditor({ block, onChange }) {
           }} placeholder="Step description..." />
           <button style={S.btnDanger} onClick={() => {
             onChange({ steps: (block.steps || []).filter((_, j) => j !== i).map((s, idx) => ({ ...s, order: idx + 1 })) });
-          }}>âœ•</button>
+          }}>x</button>
         </div>
       ))}
       <button style={{ ...S.btnSecondary, fontSize: 12, padding: "6px 12px" }} onClick={addStep}>+ Add Step</button>
@@ -787,7 +783,7 @@ function HotspotEditor({ block, onChange }) {
             <label style={{ fontSize: 10, color: C.textLight }}>Y%</label>
             <input type="number" min="0" max="100" style={{ ...S.input, width: 52, textAlign: "center", padding: "6px 4px" }} value={spot.y}
               onChange={e => { const spots = [...(block.hotspots || [])]; spots[i] = { ...spots[i], y: Number(e.target.value) }; onChange({ hotspots: spots }); }} />
-            <button style={S.btnDanger} onClick={() => onChange({ hotspots: (block.hotspots || []).filter((_, j) => j !== i) })}>âœ•</button>
+            <button style={S.btnDanger} onClick={() => onChange({ hotspots: (block.hotspots || []).filter((_, j) => j !== i) })}>x</button>
           </div>
           <textarea style={{ ...S.textarea, minHeight: 40, fontSize: 12 }} value={spot.info} onChange={e => {
             const spots = [...(block.hotspots || [])]; spots[i] = { ...spots[i], info: e.target.value }; onChange({ hotspots: spots });
@@ -811,7 +807,7 @@ function TimelineEditor({ block, onChange }) {
     <div>
       <label style={S.label}>Instructions</label>
       <textarea style={{ ...S.textarea, minHeight: 50 }} value={block.instructions || ""} onChange={e => onChange({ instructions: e.target.value })} />
-      <label style={{ ...S.label, marginTop: 12 }}>Events â€” in CORRECT chronological order ({(block.events || []).length})</label>
+      <label style={{ ...S.label, marginTop: 12 }}>Events  in CORRECT chronological order ({(block.events || []).length})</label>
       {(block.events || []).map((evt, i) => (
         <div key={evt.id || i} style={{ display: "flex", gap: 6, marginBottom: 4, alignItems: "center" }}>
           <input style={{ ...S.input, width: 70, textAlign: "center", fontWeight: 700 }} value={evt.year} onChange={e => {
@@ -822,7 +818,7 @@ function TimelineEditor({ block, onChange }) {
           }} placeholder="Event description..." />
           <button style={S.btnDanger} onClick={() => {
             onChange({ events: (block.events || []).filter((_, j) => j !== i).map((e, idx) => ({ ...e, order: idx + 1 })) });
-          }}>âœ•</button>
+          }}>x</button>
         </div>
       ))}
       <button style={{ ...S.btnSecondary, fontSize: 12, padding: "6px 12px" }} onClick={addEvent}>+ Add Event</button>
@@ -874,7 +870,7 @@ function ScenarioTreeEditor({ block, onChange }) {
             <div style={{ display: "flex", gap: 6, marginTop: 6 }}>
               <select style={{ ...S.input, width: "auto", fontSize: 11 }} value={node.feedback?.type || ""}
                 onChange={e => { const n = { ...nodes }; n[nodeId] = { ...n[nodeId], feedback: { ...n[nodeId].feedback, type: e.target.value } }; onChange({ nodes: n }); }}>
-                <option value="">No feedback</option><option value="excellent">âœ“ Excellent</option><option value="good">âœ“ Good</option><option value="partial">âš  Partial</option><option value="bad">âœ• Error</option>
+                <option value="">No feedback</option><option value="excellent"> Excellent</option><option value="good"> Good</option><option value="partial"> Partial</option><option value="bad"> Error</option>
               </select>
               {node.feedback?.type && (
                 <input style={{ ...S.input, flex: 1, fontSize: 11 }} value={node.feedback?.message || ""} placeholder="Feedback message..."
@@ -890,12 +886,12 @@ function ScenarioTreeEditor({ block, onChange }) {
                       onChange={e => { const n = { ...nodes }; const c = [...(n[nodeId].choices || [])]; c[ci] = { ...c[ci], text: e.target.value }; n[nodeId] = { ...n[nodeId], choices: c }; onChange({ nodes: n }); }} />
                     <select style={{ ...S.input, width: "auto", fontSize: 11, minWidth: 100 }} value={choice.next || ""}
                       onChange={e => { const n = { ...nodes }; const c = [...(n[nodeId].choices || [])]; c[ci] = { ...c[ci], next: e.target.value }; n[nodeId] = { ...n[nodeId], choices: c }; onChange({ nodes: n }); }}>
-                      <option value="">â†’ target</option>
+                      <option value=""> target</option>
                       {nodeIds.filter(id => id !== nodeId).map(id => <option key={id} value={id}>{id}</option>)}
                     </select>
                     <button style={{ ...S.btnDanger, fontSize: 10 }} onClick={() => {
                       const n = { ...nodes }; n[nodeId] = { ...n[nodeId], choices: (n[nodeId].choices || []).filter((_, j) => j !== ci) }; onChange({ nodes: n });
-                    }}>âœ•</button>
+                    }}>x</button>
                   </div>
                 ))}
                 <button style={{ fontSize: 11, color: "#6366F1", background: "none", border: "none", cursor: "pointer", marginTop: 4 }}
@@ -923,7 +919,7 @@ function FlashcardDeckEditor({ block, onChange }) {
         <div key={card.id || i} style={{ background: "#f8f8f6", borderRadius: 8, padding: 10, marginBottom: 6, border: `1px solid ${C.borderLight}` }}>
           <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
             <span style={{ fontSize: 11, fontWeight: 700, color: C.textLight }}>Card {i + 1}</span>
-            <button style={{ ...S.btnDanger, fontSize: 10 }} onClick={() => onChange({ flashcards: (block.flashcards || []).filter((_, j) => j !== i) })}>âœ•</button>
+            <button style={{ ...S.btnDanger, fontSize: 10 }} onClick={() => onChange({ flashcards: (block.flashcards || []).filter((_, j) => j !== i) })}>x</button>
           </div>
           <input style={{ ...S.input, marginBottom: 4, fontWeight: 600 }} value={card.front} onChange={e => {
             const cards = [...(block.flashcards || [])]; cards[i] = { ...cards[i], front: e.target.value }; onChange({ flashcards: cards });
@@ -967,9 +963,9 @@ function VideoEmbedEditor({ block, onChange }) {
             }} placeholder="Marker label" />
             <input style={{ ...S.input, fontSize: 11, color: C.textMuted }} value={marker.prompt || ""} onChange={e => {
               const m = [...(block.markers || [])]; m[i] = { ...m[i], prompt: e.target.value }; onChange({ markers: m });
-            }} placeholder="ðŸ’¬ Discussion prompt (optional)" />
+            }} placeholder=" Discussion prompt (optional)" />
           </div>
-          <button style={{ ...S.btnDanger, marginTop: 4 }} onClick={() => onChange({ markers: (block.markers || []).filter((_, j) => j !== i) })}>âœ•</button>
+          <button style={{ ...S.btnDanger, marginTop: 4 }} onClick={() => onChange({ markers: (block.markers || []).filter((_, j) => j !== i) })}>x</button>
         </div>
       ))}
       <button style={{ ...S.btnSecondary, fontSize: 12, padding: "6px 12px" }} onClick={addMarker}>+ Add Marker</button>
@@ -984,13 +980,13 @@ function InlineImageButton({ onInsert }) {
     <div style={{ position: "relative", display: "inline-block" }}>
       <button onClick={() => setShow(!show)} title="Insert Image"
         style={{ background: show ? C.green : "none", color: show ? "#fff" : C.navy, border: `1px solid ${C.border}`, borderRadius: 6, padding: "4px 10px", cursor: "pointer", fontSize: 12, fontWeight: 600, display: "flex", alignItems: "center", gap: 4 }}>
-        ðŸ“· Insert Image
+        Insert Image
       </button>
       {show && (
         <div style={{ position: "absolute", top: "100%", right: 0, zIndex: 100, background: "#fff", border: `1px solid ${C.border}`, borderRadius: 10, padding: 14, width: 320, boxShadow: "0 8px 24px rgba(0,0,0,0.12)", marginTop: 4 }}>
           <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
             <span style={{ fontWeight: 700, fontSize: 13 }}>Insert Inline Image</span>
-            <button onClick={() => setShow(false)} style={{ background: "none", border: "none", cursor: "pointer", color: C.textMuted }}>âœ•</button>
+            <button onClick={() => setShow(false)} style={{ background: "none", border: "none", cursor: "pointer", color: C.textMuted }}>x</button>
           </div>
           <CloudinaryUploader context="inline" label="Upload Inline Image"
             onUpload={(d) => {
@@ -1006,9 +1002,9 @@ function InlineImageButton({ onInsert }) {
 }
 
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ============================================================
 // INSERT BAR
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ============================================================
 function InsertBar({ onInsert, active }) {
   return (
     <div style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: "4px 0", opacity: active ? 1 : 0.3, transition: "opacity 0.2s" }}
@@ -1022,18 +1018,55 @@ function InsertBar({ onInsert, active }) {
 }
 
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ============================================================
 // CONTENT EDITOR (Tab 2)
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ============================================================
 function ContentEditor({ courseData, setCourseData }) {
   const [activeModule, setActiveModule] = useState(0);
   const [showBlockMenu, setShowBlockMenu] = useState(null);
   const [editingBlock, setEditingBlock] = useState(null);
+  const [changeTypeMenu, setChangeTypeMenu] = useState(null); // block index showing type picker
+
+  // --- Undo / Redo ---
+  const historyRef = useRef([]);
+  const futureRef = useRef([]);
+  const lastSaveRef = useRef(null);
+
+  const pushHistory = () => {
+    historyRef.current = [...historyRef.current, JSON.stringify(courseData)].slice(-30);
+    futureRef.current = [];
+  };
+
+  const undo = () => {
+    if (historyRef.current.length === 0) return;
+    futureRef.current = [...futureRef.current, JSON.stringify(courseData)];
+    const prev = historyRef.current.pop();
+    setCourseData(JSON.parse(prev));
+  };
+
+  const redo = () => {
+    if (futureRef.current.length === 0) return;
+    historyRef.current = [...historyRef.current, JSON.stringify(courseData)];
+    const next = futureRef.current.pop();
+    setCourseData(JSON.parse(next));
+  };
+
+  // Keyboard shortcuts: Ctrl+Z / Ctrl+Shift+Z
+  useEffect(() => {
+    const handler = (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) { e.preventDefault(); undo(); }
+      if ((e.ctrlKey || e.metaKey) && e.key === 'z' && e.shiftKey) { e.preventDefault(); redo(); }
+      if ((e.ctrlKey || e.metaKey) && e.key === 'y') { e.preventDefault(); redo(); }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  });
 
   const modules = courseData?.modules || [];
   const currentModule = modules[activeModule] || { blocks: [], title: "No modules" };
 
   const updateBlock = (blockIndex, updates) => {
+    pushHistory();
     const newModules = [...modules];
     const newBlocks = [...(newModules[activeModule].blocks || [])];
     newBlocks[blockIndex] = { ...newBlocks[blockIndex], ...updates };
@@ -1042,6 +1075,7 @@ function ContentEditor({ courseData, setCourseData }) {
   };
 
   const addBlock = (type, afterIndex) => {
+    pushHistory();
     const newModules = [...modules];
     const newBlocks = [...(newModules[activeModule].blocks || [])];
     const newBlock = { id: uid(), type, ...(BLOCK_DEFAULTS[type] || {}) };
@@ -1054,6 +1088,8 @@ function ContentEditor({ courseData, setCourseData }) {
   };
 
   const removeBlock = (blockIndex) => {
+    if (!confirm("Delete this block? You can undo with Ctrl+Z.")) return;
+    pushHistory();
     const newModules = [...modules];
     const newBlocks = [...(newModules[activeModule].blocks || [])];
     newBlocks.splice(blockIndex, 1);
@@ -1064,6 +1100,7 @@ function ContentEditor({ courseData, setCourseData }) {
 
   const moveBlock = (from, to) => {
     if (to < 0 || to >= currentModule.blocks.length) return;
+    pushHistory();
     const newModules = [...modules];
     const newBlocks = [...(newModules[activeModule].blocks || [])];
     const [moved] = newBlocks.splice(from, 1);
@@ -1073,8 +1110,34 @@ function ContentEditor({ courseData, setCourseData }) {
     if (editingBlock === from) setEditingBlock(to);
   };
 
+  // Change a block's type while preserving what content we can
+  const changeBlockType = (blockIndex, newType) => {
+    pushHistory();
+    const newModules = [...modules];
+    const newBlocks = [...(newModules[activeModule].blocks || [])];
+    const oldBlock = newBlocks[blockIndex];
+
+    // Build new block with defaults for the new type
+    const newBlock = { id: oldBlock.id, type: newType, ...(BLOCK_DEFAULTS[newType] || {}) };
+
+    // Try to carry over compatible content
+    if (oldBlock.content && newType === "text") newBlock.content = oldBlock.content;
+    if (oldBlock.content && newType === "reflection") newBlock.question = oldBlock.content.replace(/<[^>]*>/g, '').slice(0, 500);
+    if (oldBlock.question && newType === "text") newBlock.content = oldBlock.question;
+    if (oldBlock.question && newType === "reflection") newBlock.question = oldBlock.question;
+    if (oldBlock.question && (newType === "multipleChoice" || newType === "multiSelect")) newBlock.question = oldBlock.question;
+    if (oldBlock.title && newType === "sectionDivider") newBlock.title = oldBlock.title;
+
+    newBlocks[blockIndex] = newBlock;
+    newModules[activeModule] = { ...newModules[activeModule], blocks: newBlocks };
+    setCourseData({ ...courseData, modules: newModules });
+    setChangeTypeMenu(null);
+    setEditingBlock(blockIndex);
+  };
+
   // Split a text block at cursor position, insert a new block between
   const splitBlock = (blockIndex, beforeContent, afterContent, newBlockType) => {
+    pushHistory();
     const newModules = [...modules];
     const newBlocks = [...(newModules[activeModule].blocks || [])];
 
@@ -1149,6 +1212,18 @@ function ContentEditor({ courseData, setCourseData }) {
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
           <h3 style={{ fontSize: 18, fontWeight: 700, color: C.navy, margin: 0 }}>{currentModule.title}</h3>
           <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+            {/* Undo / Redo */}
+            <button onClick={undo} disabled={historyRef.current.length === 0}
+              title="Undo (Ctrl+Z)"
+              style={{ ...S.btnSecondary, fontSize: 11, padding: "4px 10px", opacity: historyRef.current.length === 0 ? 0.3 : 1 }}>
+              Undo
+            </button>
+            <button onClick={redo} disabled={futureRef.current.length === 0}
+              title="Redo (Ctrl+Shift+Z)"
+              style={{ ...S.btnSecondary, fontSize: 11, padding: "4px 10px", opacity: futureRef.current.length === 0 ? 0.3 : 1 }}>
+              Redo
+            </button>
+            <span style={{ width: 1, height: 16, background: C.border }} />
             <span style={S.badge(C.green)}>{(currentModule.blocks || []).filter(b => KNOWLEDGE_CHECK_TYPES.includes(b.type)).length} knowledge checks</span>
             <span style={{ fontSize: 13, color: C.textMuted }}>{(currentModule.blocks || []).length} blocks</span>
           </div>
@@ -1171,15 +1246,59 @@ function ContentEditor({ courseData, setCourseData }) {
               }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 14px", borderBottom: isEditing ? `1px solid ${C.borderLight}` : "none", cursor: "pointer" }}
                   onClick={() => setEditingBlock(isEditing ? null : i)}>
-                  <span style={{ cursor: "grab", color: C.textLight, fontSize: 12 }}>â ¿</span>
+                  <span style={{ cursor: "grab", color: C.textLight, fontSize: 12 }}>::</span>
                   <span style={{ width: 26, height: 26, borderRadius: 6, background: cfg.color + "14", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13 }}>{cfg.icon}</span>
                   <span style={{ fontWeight: 600, fontSize: 13, flex: 1, color: C.navy }}>{cfg.label}</span>
                   {isKC && <span style={{ fontSize: 9, fontWeight: 700, color: C.burgundy, background: C.burgundyFaded, padding: "2px 6px", borderRadius: 4 }}>KC</span>}
                   <span style={{ fontSize: 11, color: C.textLight }}>{countBlockWords(block)}w</span>
-                  <div style={{ display: "flex", gap: 2 }}>
-                    <button onClick={(e) => { e.stopPropagation(); moveBlock(i, i - 1); }} style={{ background: "none", border: "none", cursor: "pointer", padding: 3, opacity: i === 0 ? 0.3 : 1, fontSize: 12 }}>â–²</button>
-                    <button onClick={(e) => { e.stopPropagation(); moveBlock(i, i + 1); }} style={{ background: "none", border: "none", cursor: "pointer", padding: 3, opacity: i === currentModule.blocks.length - 1 ? 0.3 : 1, fontSize: 12 }}>â–¼</button>
-                    <button onClick={(e) => { e.stopPropagation(); removeBlock(i); }} style={{ background: "none", border: "none", cursor: "pointer", padding: 3, color: C.danger, fontSize: 12 }}>âœ•</button>
+                  <div style={{ display: "flex", gap: 2, position: "relative" }}>
+                    <button onClick={(e) => { e.stopPropagation(); setChangeTypeMenu(changeTypeMenu === i ? null : i); }}
+                      title="Change block type"
+                      style={{ background: "none", border: `1px solid ${C.border}`, borderRadius: 4, cursor: "pointer", padding: "2px 6px", fontSize: 10, color: C.textMuted }}>
+                      Type
+                    </button>
+                    <button onClick={(e) => { e.stopPropagation(); moveBlock(i, i - 1); }} style={{ background: "none", border: "none", cursor: "pointer", padding: 3, opacity: i === 0 ? 0.3 : 1, fontSize: 12 }}>Up</button>
+                    <button onClick={(e) => { e.stopPropagation(); moveBlock(i, i + 1); }} style={{ background: "none", border: "none", cursor: "pointer", padding: 3, opacity: i === currentModule.blocks.length - 1 ? 0.3 : 1, fontSize: 12 }}>Dn</button>
+                    <button onClick={(e) => { e.stopPropagation(); removeBlock(i); }} style={{ background: "none", border: "none", cursor: "pointer", padding: 3, color: C.danger, fontSize: 12 }}>x</button>
+                    {changeTypeMenu === i && (
+                      <div style={{
+                        position: "absolute", top: "100%", right: 0, zIndex: 200,
+                        background: C.card, border: `1px solid ${C.border}`, borderRadius: 10,
+                        padding: 10, width: 260, boxShadow: "0 8px 24px rgba(0,0,0,0.15)",
+                        marginTop: 4,
+                      }}
+                      onClick={(e) => e.stopPropagation()}>
+                        <div style={{ fontSize: 11, fontWeight: 700, color: C.navy, marginBottom: 8 }}>
+                          CHANGE TO: <span style={{ fontWeight: 400, color: C.textMuted }}>(current: {cfg.label})</span>
+                        </div>
+                        <div style={{ maxHeight: 240, overflowY: "auto" }}>
+                          {BLOCK_TYPES.filter(bt => bt.type !== block.type).map(bt => (
+                            <button key={bt.type}
+                              onClick={(e) => { e.stopPropagation(); changeBlockType(i, bt.type); }}
+                              style={{
+                                display: "flex", alignItems: "center", gap: 8, width: "100%",
+                                padding: "6px 8px", border: "none", borderRadius: 6,
+                                background: "transparent", cursor: "pointer", fontSize: 12,
+                                textAlign: "left", color: C.text,
+                              }}
+                              onMouseEnter={e => e.currentTarget.style.background = bt.color + "10"}
+                              onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+                              <span style={{
+                                width: 22, height: 22, borderRadius: 4, background: bt.color + "14",
+                                display: "flex", alignItems: "center", justifyContent: "center",
+                                fontSize: 10, fontWeight: 700, color: bt.color,
+                              }}>{bt.icon}</span>
+                              <span style={{ fontWeight: 500 }}>{bt.label}</span>
+                              <span style={{ marginLeft: "auto", fontSize: 10, color: bt.color }}>{bt.category}</span>
+                            </button>
+                          ))}
+                        </div>
+                        <button onClick={(e) => { e.stopPropagation(); setChangeTypeMenu(null); }}
+                          style={{ marginTop: 6, fontSize: 10, color: C.textMuted, background: "none", border: "none", cursor: "pointer", textDecoration: "underline" }}>
+                          Cancel
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
                 {isEditing && (
@@ -1204,7 +1323,7 @@ function ContentEditor({ courseData, setCourseData }) {
 
         {(currentModule.blocks || []).length === 0 && (
           <div style={{ textAlign: "center", padding: 60, color: C.textMuted, border: `2px dashed ${C.border}`, borderRadius: 12 }}>
-            <div style={{ fontSize: 32, marginBottom: 8 }}>ðŸ“</div>
+            <div style={{ fontSize: 32, marginBottom: 8 }}>+</div>
             <p style={{ fontSize: 15, fontWeight: 600 }}>No content blocks yet</p>
             <p style={{ fontSize: 13, marginBottom: 16 }}>Choose from 17 block types organized by Content, Knowledge Checks, and Engagement</p>
             <button style={S.btnPrimary} onClick={() => setShowBlockMenu(-1)}>+ Add First Block</button>
@@ -1216,15 +1335,15 @@ function ContentEditor({ courseData, setCourseData }) {
 }
 
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-// ACEP CHECKER (Tab 3) â€” Updated for 17 block types
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ============================================================
+// ACEP CHECKER (Tab 3)  Updated for 17 block types
+// ============================================================
 function ACEPChecker({ courseData }) {
   if (!courseData?.modules?.length) {
     return (
       <div style={S.card}>
         <div style={{ ...S.cardBody, textAlign: "center", padding: 60 }}>
-          <div style={{ fontSize: 40 }}>ðŸ“‹</div>
+          <div style={{ fontSize: 40 }}>+</div>
           <h3 style={{ color: C.navy, marginTop: 16 }}>No Course Data to Check</h3>
           <p style={{ color: C.textMuted, fontSize: 14 }}>Generate or import a course first.</p>
         </div>
@@ -1259,7 +1378,7 @@ function ACEPChecker({ courseData }) {
     { label: "Knowledge Checks per Module (2-5)", value: `${totalKC} total`, pass: moduleStats.every(m => m.knowledgeChecks >= 2), detail: moduleStats.map(m => `${m.title?.split(":")[0]}: ${m.knowledgeChecks}`).join(", ") },
     { label: "Learning Objectives", value: hasObjectives ? `${courseData.objectives.length}` : "Missing", pass: hasObjectives },
     { label: "Target Audience", value: hasTargetAudience ? "Yes" : "Missing", pass: hasTargetAudience },
-    { label: "Pass Threshold â‰¥ 80%", value: `${((courseData.assessment?.passThreshold || 0.8) * 100).toFixed(0)}%`, pass: (courseData.assessment?.passThreshold || 0.8) >= 0.8 },
+    { label: "Pass Threshold  80%", value: `${((courseData.assessment?.passThreshold || 0.8) * 100).toFixed(0)}%`, pass: (courseData.assessment?.passThreshold || 0.8) >= 0.8 },
     { label: "Final Exam (15+ questions)", value: `${(courseData.assessment?.questions || []).length}`, pass: (courseData.assessment?.questions || []).length >= 15 },
   ];
 
@@ -1279,9 +1398,9 @@ function ACEPChecker({ courseData }) {
           </div>
           <div>
             <h3 style={{ fontSize: 20, fontWeight: 700, color: C.navy, margin: "0 0 4px" }}>
-              {score === 100 ? "ACEP Compliant âœ“" : score >= 60 ? "Needs Attention" : "Not Compliant"}
+              {score === 100 ? "ACEP Compliant" : score >= 60 ? "Needs Attention" : "Not Compliant"}
             </h3>
-            <p style={{ color: C.textMuted, fontSize: 14, margin: 0 }}>{passCount}/{checks.length} requirements Â· {ceHours} CE Â· {courseData.modules.length} modules Â· 17 block types available</p>
+            <p style={{ color: C.textMuted, fontSize: 14, margin: 0 }}>{passCount}/{checks.length} requirements * {ceHours} CE * {courseData.modules.length} modules * 17 block types available</p>
           </div>
         </div>
       </div>
@@ -1293,7 +1412,7 @@ function ACEPChecker({ courseData }) {
         </div>
         {checks.map((c, i) => (
           <div key={i} style={{ display: "flex", alignItems: "center", gap: 12, padding: "14px 20px", borderBottom: i < checks.length - 1 ? `1px solid ${C.borderLight}` : "none", background: c.pass ? C.greenFaded : C.dangerFaded }}>
-            <span style={{ fontSize: 16 }}>{c.pass ? "âœ“" : "âš "}</span>
+            <span style={{ fontSize: 16 }}>{c.pass ? "OK" : "!!"}</span>
             <div style={{ flex: 1 }}>
               <div style={{ fontWeight: 600, fontSize: 14, color: C.navy }}>{c.label}</div>
               {c.detail && <div style={{ fontSize: 12, color: C.textMuted, marginTop: 2 }}>{c.detail}</div>}
@@ -1336,9 +1455,9 @@ function ACEPChecker({ courseData }) {
 }
 
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ============================================================
 // AI COURSE GENERATOR
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ============================================================
 function getModuleTitle(topic, index) {
   const templates = [
     "Foundations, Definitions, and Theoretical Frameworks",
@@ -1526,8 +1645,8 @@ function AIGenerator({ onGenerated }) {
       const objectives = [];
       const objMatch = content.match(/(?:learning objectives|course objectives|objectives)[\s\S]*?(?=\n#{1,2}|\n---|\n\n\n)/i);
       if (objMatch) {
-        const lines = objMatch[0].match(/^\s*(?:\d+[\.\)]\s+|[-â€¢]\s+).+$/gm) || [];
-        lines.slice(0, 6).forEach(l => objectives.push(l.replace(/^\s*(?:\d+[\.\)]\s+|[-â€¢]\s+)/, "").replace(/\*\*/g, "").trim()));
+        const lines = objMatch[0].match(/^\s*(?:\d+[\.\)]\s+|[-]\s+).+$/gm) || [];
+        lines.slice(0, 6).forEach(l => objectives.push(l.replace(/^\s*(?:\d+[\.\)]\s+|[-]\s+)/, "").replace(/\*\*/g, "").trim()));
       }
 
       setOutline({
@@ -1674,7 +1793,7 @@ function AIGenerator({ onGenerated }) {
                       <FileUp size={22} color={C.textLight} />
                       <div style={{ textAlign: "left" }}>
                         <div style={{ fontWeight: 600, fontSize: 13, color: C.navy }}>Drop your outline here or click to browse</div>
-                        <div style={{ fontSize: 11, color: C.textMuted }}>.docx, .pdf, .md, .txt â€” We'll detect modules and build the course structure</div>
+                        <div style={{ fontSize: 11, color: C.textMuted }}>.docx, .pdf, .md, .txt  We'll detect modules and build the course structure</div>
                       </div>
                     </div>
                   )}
@@ -1770,7 +1889,7 @@ function AIGenerator({ onGenerated }) {
               <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                 <BookOpen size={20} color={C.green} />
                 <span style={{ fontWeight: 700, fontSize: 16 }}>Course Outline</span>
-                {uploadedFileName && <span style={S.badge(C.burgundy)}>ðŸ“„ From: {uploadedFileName}</span>}
+                {uploadedFileName && <span style={S.badge(C.burgundy)}>From: {uploadedFileName}</span>}
               </div>
               <div style={{ display: "flex", gap: 8 }}>
                 <button style={S.btnSecondary} onClick={() => setStep("input")}>
@@ -1799,7 +1918,7 @@ function AIGenerator({ onGenerated }) {
                     onClick={() => setOutline({ ...outline, modules: outline.modules.map((m, j) => j === i ? { ...m, expanded: !m.expanded } : m) })}>
                     {mod.expanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
                     <span style={{ fontWeight: 600, flex: 1, fontSize: 14 }}>{mod.title}</span>
-                    <span style={{ fontSize: 12, color: C.textMuted }}>~{mod.estimatedWords.toLocaleString()} words Â· {mod.knowledgeChecks} checks</span>
+                    <span style={{ fontSize: 12, color: C.textMuted }}>~{mod.estimatedWords.toLocaleString()} words * {mod.knowledgeChecks} checks</span>
                   </div>
                   {mod.expanded && (
                     <div style={{ padding: 14, borderTop: `1px solid ${C.borderLight}` }}>
@@ -1876,9 +1995,9 @@ function AIGenerator({ onGenerated }) {
 }
 
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ============================================================
 // IMPORT TAB
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ============================================================
 function parseMarkdownToCourse(content, filename) {
   const title = filename.replace(/\.(md|txt|markdown|docx|pdf)$/i, "").replace(/[_-]/g, " ").replace(/\b\w/g, c => c.toUpperCase());
   const objectives = [];
@@ -2055,16 +2174,16 @@ function ImportTab({ onImported }) {
 
           {error && (
             <div style={{ marginTop: 12, padding: "10px 14px", background: C.dangerFaded, borderRadius: 8, color: C.danger, fontSize: 13 }}>
-              âš  {error}
+               {error}
             </div>
           )}
 
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 12, marginTop: 20 }}>
             {[
-              { icon: "ðŸ“„", title: "Word (.docx)", desc: "Full document parsing with headers and sections" },
-              { icon: "ðŸ“•", title: "PDF (.pdf)", desc: "Text extraction from PDF documents" },
-              { icon: "ðŸ“", title: "Markdown (.md)", desc: "Module headers, objectives, assessments" },
-              { icon: "ðŸ“ƒ", title: "Plain Text (.txt)", desc: "Structured text with section headings" },
+              { icon: "-", title: "Word (.docx)", desc: "Full document parsing with headers and sections" },
+              { icon: "-", title: "PDF (.pdf)", desc: "Text extraction from PDF documents" },
+              { icon: "-", title: "Markdown (.md)", desc: "Module headers, objectives, assessments" },
+              { icon: "-", title: "Plain Text (.txt)", desc: "Structured text with section headings" },
             ].map(f => (
               <div key={f.title} style={{ background: C.greenFaded, borderRadius: 10, padding: 14, border: `1px solid ${C.green}22` }}>
                 <span style={{ fontSize: 22 }}>{f.icon}</span>
@@ -2088,7 +2207,7 @@ function ImportTab({ onImported }) {
           <div style={S.cardBody}>
             <div style={{ marginBottom: 16 }}>
               <div style={{ fontSize: 18, fontWeight: 700, color: C.navy }}>{preview.title}</div>
-              <div style={{ fontSize: 13, color: C.textMuted, marginTop: 4 }}>{preview.ceHours} CE Hours Â· {preview.modules.length} modules Â· {preview.modules.reduce((s, m) => s + (m.blocks || []).length, 0)} blocks</div>
+              <div style={{ fontSize: 13, color: C.textMuted, marginTop: 4 }}>{preview.ceHours} CE Hours * {preview.modules.length} modules * {preview.modules.reduce((s, m) => s + (m.blocks || []).length, 0)} blocks</div>
             </div>
             <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 16 }}>
               {[
@@ -2125,9 +2244,9 @@ function ImportTab({ onImported }) {
 }
 
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ============================================================
 // MAIN APP
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ============================================================
 export default function CourseBuilderV2() {
   const [activeTab, setActiveTab] = useState(0);
   const [courseData, setCourseData] = useState({
@@ -2145,11 +2264,11 @@ export default function CourseBuilderV2() {
   });
 
   const tabs = [
-    { label: "AI Generator", icon: "âœ¨" },
-    { label: "Content Editor", icon: "ðŸ“" },
-    { label: "ACEP Checker", icon: "ðŸ“‹" },
-    { label: "Import", icon: "ðŸ“¥" },
-    { label: "Block Types", icon: "ðŸ§©" },
+    { label: "AI Generator", icon: "-" },
+    { label: "Content Editor", icon: "-" },
+    { label: "ACEP Checker", icon: "-" },
+    { label: "Import", icon: "-" },
+    { label: "Block Types", icon: "S" },
   ];
 
   return (
@@ -2160,7 +2279,7 @@ export default function CourseBuilderV2() {
       <div style={S.header}>
         <div>
           <div style={{ color: "#fff", fontSize: 20, fontWeight: 700, letterSpacing: "-0.02em" }}>CounselorReady Course Builder</div>
-          <div style={{ color: "rgba(255,255,255,0.55)", fontSize: 13, marginTop: 2 }}>NBCC ACEP #7760 Â· 17 Block Types Â· Cloudinary Images</div>
+          <div style={{ color: "rgba(255,255,255,0.55)", fontSize: 13, marginTop: 2 }}>NBCC ACEP #7760 | 17 Block Types * Cloudinary Images</div>
         </div>
         <div style={{ display: "flex", gap: 10 }}>
           <button style={{ ...S.btnSecondary, borderColor: "rgba(255,255,255,0.2)", color: "#fff", fontSize: 12 }} onClick={() => {
@@ -2168,7 +2287,7 @@ export default function CourseBuilderV2() {
             const blob = new Blob([json], { type: "application/json" });
             const a = document.createElement("a"); a.href = URL.createObjectURL(blob);
             a.download = `${courseData.title?.replace(/[^a-z0-9]/gi, "_") || "course"}.json`; a.click();
-          }}>ðŸ’¾ Export JSON</button>
+          }}> Export JSON</button>
         </div>
       </div>
 
@@ -2193,9 +2312,9 @@ export default function CourseBuilderV2() {
 }
 
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ============================================================
 // BLOCK TYPE CATALOG (Tab 3)
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ============================================================
 function BlockTypeCatalog() {
   const categories = [
     { key: "content", label: "Content Blocks", desc: "Auto-complete on render. Text, images, media delivery.", color: C.green, count: BLOCK_TYPES.filter(b => b.category === "content").length },
