@@ -1645,6 +1645,7 @@ function AIGenerator({ onGenerated }) {
   const [outline, setOutline] = useState(null);
   const [progress, setProgress] = useState(0);
   const [generatingContent, setGeneratingContent] = useState(false);
+  const [generatingModule, setGeneratingModule] = useState(""); // "Module 2 of 6: Ethics..."
   const [uploadingOutline, setUploadingOutline] = useState(false);
   const [uploadedFileName, setUploadedFileName] = useState(null);
   const outlineFileRef = useRef();
@@ -1708,6 +1709,17 @@ function AIGenerator({ onGenerated }) {
           if (startIdx >= 0) {
             contentChunks.push(content.substring(startIdx, endIdx > startIdx ? endIdx : content.length));
           }
+        }
+      } else {
+        // No module headers detected -- split content evenly across modules
+        const totalWords = countWords(content);
+        const estimatedCECalc = Math.max(1, Math.round(totalWords / 6000));
+        const moduleCountCalc = Math.max(4, estimatedCECalc * 2);
+        const paragraphs = content.split(/\n{2,}/).filter(p => p.trim().length > 20);
+        const perModule = Math.max(1, Math.ceil(paragraphs.length / moduleCountCalc));
+        for (let i = 0; i < moduleCountCalc; i++) {
+          const chunk = paragraphs.slice(i * perModule, (i + 1) * perModule).join("\n\n");
+          contentChunks.push(chunk || "");
         }
       }
 
@@ -1813,32 +1825,106 @@ function AIGenerator({ onGenerated }) {
     }, 2500);
   };
 
-  const generateContent = () => {
+  const generateContent = async () => {
     setGeneratingContent(true);
     setProgress(0);
-    const timer = setInterval(() => setProgress(p => {
-      if (p >= 95) { clearInterval(timer); return p; }
-      return p + Math.random() * 8;
-    }), 400);
 
-    setTimeout(() => {
-      clearInterval(timer);
+    const API_URL = import.meta.env.VITE_API_URL || "https://api.counselorready.com";
+    const token = localStorage.getItem("token");
+    const totalModules = outline.modules.length;
+
+    try {
+      const generatedModules = [];
+
+      for (let mi = 0; mi < totalModules; mi++) {
+        const mod = outline.modules[mi];
+        setProgress(Math.round(((mi) / totalModules) * 90));
+        setGeneratingModule(`Module ${mi + 1} of ${totalModules}: ${mod.title.replace(/^Module \d+:\s*/, "")}`);
+
+        console.log(`Generating module ${mi + 1}/${totalModules}: ${mod.title}`);
+
+        try {
+          const res = await fetch(`${API_URL}/api/ai/content`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+              module: {
+                title: mod.title,
+                estimatedWords: mod.estimatedWords || 1500,
+                knowledgeChecks: mod.knowledgeChecks || 3,
+                objectives: outline.objectives,
+              },
+              courseTitle: outline.title,
+              courseTopic: topic || outline.title,
+              moduleIndex: mi,
+              sourceContent: mod.sourceContent || "",
+            }),
+          });
+
+          if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            console.error(`Module ${mi + 1} failed:`, err);
+            // Fallback to local generation if API fails
+            generatedModules.push({
+              ...mod,
+              sourceContent: undefined,
+              blocks: mod.sourceContent
+                ? generateBlocksFromSource(mod, mi, outline)
+                : generateModuleBlocks(mod, mi, outline),
+              _generationMethod: "fallback",
+            });
+            continue;
+          }
+
+          const data = await res.json();
+          const blocks = (data.blocks || []).map(b => ({
+            ...b,
+            id: b.id || uid(),
+          }));
+
+          const wordCount = blocks.reduce((sum, b) => sum + countBlockWords(b), 0);
+          const kcCount = blocks.filter(b => KNOWLEDGE_CHECK_TYPES.includes(b.type)).length;
+          console.log(`Module ${mi + 1} generated: ${wordCount} words, ${kcCount} KCs, ${blocks.length} blocks`);
+
+          generatedModules.push({
+            ...mod,
+            sourceContent: undefined,
+            blocks,
+            _generationMethod: "ai",
+          });
+        } catch (fetchErr) {
+          console.error(`Module ${mi + 1} fetch error:`, fetchErr);
+          generatedModules.push({
+            ...mod,
+            sourceContent: undefined,
+            blocks: mod.sourceContent
+              ? generateBlocksFromSource(mod, mi, outline)
+              : generateModuleBlocks(mod, mi, outline),
+            _generationMethod: "fallback",
+          });
+        }
+      }
+
       setProgress(100);
+
       const courseData = {
         ...outline,
         _uploadedContent: undefined,
-        modules: outline.modules.map((mod, mi) => ({
-          ...mod,
-          sourceContent: undefined,
-          blocks: mod.sourceContent
-            ? generateBlocksFromSource(mod, mi, outline)
-            : generateModuleBlocks(mod, mi, outline),
-        })),
+        modules: generatedModules,
       };
+
       setGeneratingContent(false);
       setStep("content");
       if (onGenerated) onGenerated(courseData);
-    }, 4000);
+
+    } catch (err) {
+      console.error("Content generation error:", err);
+      setGeneratingContent(false);
+      alert("Generation failed: " + err.message + "\nTry again or check the server logs.");
+    }
   };
 
   return (
@@ -2050,11 +2136,15 @@ function AIGenerator({ onGenerated }) {
             <div style={S.card}>
               <div style={{ ...S.cardBody, textAlign: "center", padding: 40 }}>
                 <Loader2 size={32} color={C.green} style={{ animation: "spin 1s linear infinite" }} />
-                <h3 style={{ marginTop: 12, color: C.navy, fontSize: 16 }}>Generating Course Content...</h3>
-                <p style={{ color: C.textMuted, fontSize: 13 }}>Writing content blocks, knowledge checks, and assessment items</p>
+                <h3 style={{ marginTop: 12, color: C.navy, fontSize: 16 }}>Generating Course Content via AI...</h3>
+                <p style={{ color: C.textMuted, fontSize: 13, marginBottom: 4 }}>Calling Claude API for each module (this takes 30-90 seconds per module)</p>
+                {generatingModule && (
+                  <p style={{ color: C.burgundy, fontSize: 13, fontWeight: 600 }}>{generatingModule}</p>
+                )}
                 <div style={{ maxWidth: 400, margin: "16px auto", background: C.borderLight, borderRadius: 20, height: 6, overflow: "hidden" }}>
                   <div style={{ background: `linear-gradient(90deg, ${C.green}, ${C.gold})`, height: "100%", width: `${progress}%`, transition: "width 0.3s", borderRadius: 20 }} />
                 </div>
+                <p style={{ color: C.textLight, fontSize: 11, marginTop: 8 }}>{Math.round(progress)}% complete</p>
               </div>
             </div>
           )}
