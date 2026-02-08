@@ -151,22 +151,46 @@ function CourseViewerWrapper() {
 
 function ProtectedRoute({ children }) {
   const { isAuthenticated, loading } = useAuth();
-  if (loading) return <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-moss-600" /></div>;
+  if (loading) return <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-hunter-600" /></div>;
   if (!isAuthenticated) return <Navigate to="/login" replace />;
   return children;
 }
 
 function AdminRoute({ children }) {
   const { isAuthenticated, loading, user } = useAuth();
-  if (loading) return <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-moss-600" /></div>;
+  if (loading) return <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-hunter-600" /></div>;
   if (!isAuthenticated) return <Navigate to="/login" replace />;
-  if (user?.role !== 'admin') return <Navigate to="/dashboard" replace />;
+  if (user?.role !== 'admin') {
+    console.warn('AdminRoute: access denied. user.role =', user?.role, '| user:', user?.profile?.firstName, user?.email);
+    return (
+      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#F7F5F2" }}>
+        <div style={{ background: "#fff", borderRadius: 12, padding: 32, maxWidth: 420, textAlign: "center", border: "1px solid #E8E4DF", boxShadow: "0 4px 12px rgba(0,0,0,0.08)" }}>
+          <div style={{ width: 56, height: 56, borderRadius: "50%", background: "#FAE8EB", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px", fontSize: 28 }}>
+            &#x1F512;
+          </div>
+          <h2 style={{ fontSize: 20, fontWeight: 700, color: "#6B1D34", marginBottom: 8 }}>Admin Access Required</h2>
+          <p style={{ fontSize: 14, color: "#6B7280", marginBottom: 20, lineHeight: 1.6 }}>
+            Signed in as <strong>{user?.email || 'unknown'}</strong> with role "<strong>{user?.role || 'none'}</strong>".
+            Admin panel requires the "admin" role.
+          </p>
+          <div style={{ display: "flex", gap: 8, justifyContent: "center" }}>
+            <a href="/dashboard" style={{ padding: "10px 20px", background: "#4A7C59", color: "#fff", borderRadius: 8, textDecoration: "none", fontSize: 14, fontWeight: 600 }}>
+              Go to Dashboard
+            </a>
+            <a href="/login" onClick={() => { localStorage.removeItem('token'); }} style={{ padding: "10px 20px", background: "#fff", color: "#6B1D34", border: "1px solid #6B1D34", borderRadius: 8, textDecoration: "none", fontSize: 14, fontWeight: 600 }}>
+              Switch Account
+            </a>
+          </div>
+        </div>
+      </div>
+    );
+  }
   return children;
 }
 
 function PublicRoute({ children }) {
   const { isAuthenticated, loading } = useAuth();
-  if (loading) return <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-moss-600" /></div>;
+  if (loading) return <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-hunter-600" /></div>;
   if (isAuthenticated) return <Navigate to="/dashboard" replace />;
   return children;
 }
