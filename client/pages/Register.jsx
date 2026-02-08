@@ -195,7 +195,7 @@ export default function Register() {
                 'Progress tracking & reminders'
               ].map((item, i) => (
                 <li key={i} className="flex items-center gap-2 text-sm text-gray-600">
-                  <CheckCircle className="w-4 h-4 text-burgundy-800" />
+                  <CheckCircle className="w-4 h-4 text-forest-500" />
                   {item}
                 </li>
               ))}
@@ -205,7 +205,7 @@ export default function Register() {
 
         <p className="mt-6 text-center text-gray-600">
           Already have an account?{' '}
-          <Link to="/login" className="text-burgundy-800 hover:text-burgundy-700 font-medium">
+          <Link to="/login" className="text-forest-600 hover:text-burgundy-700 font-medium">
             Sign in
           </Link>
         </p>

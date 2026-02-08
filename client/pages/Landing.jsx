@@ -72,7 +72,7 @@ export default function Landing() {
             {/* Feature 2 */}
             <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
               <div className="w-12 h-12 bg-burgundy-100 rounded-lg flex items-center justify-center mb-4">
-                <Award className="w-6 h-6 text-burgundy-800" />
+                <Award className="w-6 h-6 text-burgundy-700" />
               </div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">
                 Credential Tracker
@@ -121,7 +121,7 @@ export default function Landing() {
                   'Upload certificates from any provider'
                 ].map((item, i) => (
                   <li key={i} className="flex items-center gap-3">
-                    <CheckCircle className="w-5 h-5 text-forest-600 flex-shrink-0" />
+                    <CheckCircle className="w-5 h-5 text-forest-500 flex-shrink-0" />
                     <span className="text-gray-700">{item}</span>
                   </li>
                 ))}
@@ -191,15 +191,15 @@ export default function Landing() {
               <p className="text-3xl font-bold text-gray-900 mb-4">$0</p>
               <ul className="space-y-2 text-left mb-6">
                 <li className="flex items-center gap-2 text-gray-600">
-                  <CheckCircle className="w-4 h-4 text-forest-600" />
+                  <CheckCircle className="w-4 h-4 text-forest-500" />
                   NCMHCE Study Starter course
                 </li>
                 <li className="flex items-center gap-2 text-gray-600">
-                  <CheckCircle className="w-4 h-4 text-forest-600" />
+                  <CheckCircle className="w-4 h-4 text-forest-500" />
                   1 credential tracking
                 </li>
                 <li className="flex items-center gap-2 text-gray-600">
-                  <CheckCircle className="w-4 h-4 text-forest-600" />
+                  <CheckCircle className="w-4 h-4 text-forest-500" />
                   Basic progress tracking
                 </li>
               </ul>
@@ -218,23 +218,23 @@ export default function Landing() {
               <p className="text-sm text-gray-500 mb-4">or $149/year (save 35%)</p>
               <ul className="space-y-2 text-left mb-6">
                 <li className="flex items-center gap-2 text-gray-600">
-                  <CheckCircle className="w-4 h-4 text-forest-600" />
+                  <CheckCircle className="w-4 h-4 text-forest-500" />
                   All courses included
                 </li>
                 <li className="flex items-center gap-2 text-gray-600">
-                  <CheckCircle className="w-4 h-4 text-forest-600" />
+                  <CheckCircle className="w-4 h-4 text-forest-500" />
                   Unlimited credentials
                 </li>
                 <li className="flex items-center gap-2 text-gray-600">
-                  <CheckCircle className="w-4 h-4 text-forest-600" />
+                  <CheckCircle className="w-4 h-4 text-forest-500" />
                   Email & calendar reminders
                 </li>
                 <li className="flex items-center gap-2 text-gray-600">
-                  <CheckCircle className="w-4 h-4 text-forest-600" />
+                  <CheckCircle className="w-4 h-4 text-forest-500" />
                   Certificate storage
                 </li>
                 <li className="flex items-center gap-2 text-gray-600">
-                  <CheckCircle className="w-4 h-4 text-forest-600" />
+                  <CheckCircle className="w-4 h-4 text-forest-500" />
                   CEU tracking across credentials
                 </li>
               </ul>
@@ -252,10 +252,10 @@ export default function Landing() {
           <h2 className="text-3xl font-bold text-white mb-6">
             Ready to Build Your Clinical Confidence?
           </h2>
-          <p className="text-lg text-white/80 mb-8">
+          <p className="text-lg text-burgundy-100 mb-8">
             Join counselors who are taking control of their professional development.
           </p>
-          <Link to="/register" className="inline-flex items-center gap-2 bg-white text-burgundy-800 font-semibold px-8 py-3 rounded-lg hover:bg-burgundy-100 transition-colors">
+          <Link to="/register" className="inline-flex items-center gap-2 bg-white text-forest-600 font-semibold px-8 py-3 rounded-lg hover:bg-forest-100 transition-colors">
             Start Free Trial <ArrowRight className="w-5 h-5" />
           </Link>
         </div>

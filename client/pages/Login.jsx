@@ -101,10 +101,10 @@ export default function Login() {
 
             <div className="flex items-center justify-between text-sm">
               <label className="flex items-center gap-2">
-                <input type="checkbox" className="rounded border-gray-300 text-burgundy-800 focus:ring-burgundy-500" />
+                <input type="checkbox" className="rounded border-gray-300 text-forest-600 focus:ring-burgundy-500" />
                 <span className="text-gray-600">Remember me</span>
               </label>
-              <Link to="/forgot-password" className="text-burgundy-800 hover:text-burgundy-700">
+              <Link to="/forgot-password" className="text-forest-600 hover:text-burgundy-700">
                 Forgot password?
               </Link>
             </div>
@@ -121,7 +121,7 @@ export default function Login() {
 
         <p className="mt-6 text-center text-gray-600">
           Don't have an account?{' '}
-          <Link to="/register" className="text-burgundy-800 hover:text-burgundy-700 font-medium">
+          <Link to="/register" className="text-forest-600 hover:text-burgundy-700 font-medium">
             Start free trial
           </Link>
         </p>

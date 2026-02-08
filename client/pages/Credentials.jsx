@@ -95,7 +95,7 @@ export default function Credentials() {
             <div key={cred._id} className="card">
               <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-4">
                 <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 bg-burgundy-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <div className="w-12 h-12 bg-honey-400 bg-opacity-20 rounded-lg flex items-center justify-center flex-shrink-0">
                     <Award className="w-6 h-6 text-honey-400" />
                   </div>
                   <div>
@@ -295,7 +295,7 @@ function AddCredentialModal({ templates, onClose, onSuccess, hasSubscription, cu
                   <button
                     key={type.id}
                     onClick={() => { setSelectedType(type.id); setStep(2); }}
-                    className="w-full text-left p-4 border border-gray-200 rounded-lg hover:border-burgundy-500 hover:bg-forest-100 transition-colors"
+                    className="w-full text-left p-4 border border-gray-200 rounded-lg hover:border-burgundy-500 hover:bg-burgundy-100 transition-colors"
                   >
                     <div className="font-medium text-gray-900">{type.label}</div>
                     <div className="text-sm text-gray-500">{type.desc}</div>
@@ -318,7 +318,7 @@ function AddCredentialModal({ templates, onClose, onSuccess, hasSubscription, cu
                     <button
                       key={template._id}
                       onClick={() => { setSelectedTemplate(template); setStep(3); }}
-                      className="w-full text-left p-3 border border-gray-200 rounded-lg hover:border-burgundy-500 hover:bg-forest-100 transition-colors"
+                      className="w-full text-left p-3 border border-gray-200 rounded-lg hover:border-burgundy-500 hover:bg-burgundy-100 transition-colors"
                     >
                       <div className="font-medium text-gray-900">
                         {template.state && `${template.state} `}{template.code}
