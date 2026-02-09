@@ -1,10 +1,10 @@
-// routes/certificates.js - SIMPLIFIED VERSION WITHOUT AUTH MIDDLEWARE
+// routes/certificates.js - WITH BACKWARD COMPATIBILITY
 import express from 'express';
 import Certificate from '../models/Certificate.js';
 
 const router = express.Router();
 
-// Simple auth check using req.user (set by existing auth system)
+// Simple auth check
 const requireAuth = (req, res, next) => {
   if (!req.user) {
     return res.status(401).json({ success: false, message: 'Not authenticated' });
@@ -12,8 +12,8 @@ const requireAuth = (req, res, next) => {
   next();
 };
 
-// Get user's certificates
-router.get('/my-certificates', requireAuth, async (req, res) => {
+// Get user's certificates - MAIN FUNCTION
+const getUserCertificates = async (req, res) => {
   try {
     const certificates = await Certificate.find({
       user: req.user._id,
@@ -42,11 +42,21 @@ router.get('/my-certificates', requireAuth, async (req, res) => {
       message: 'Failed to fetch certificates'
     });
   }
-});
+};
+
+// BOTH ENDPOINTS - for backward compatibility
+router.get('/', requireAuth, getUserCertificates);  // Old endpoint
+router.get('/my-certificates', requireAuth, getUserCertificates);  // New endpoint
 
 // Get single certificate
 router.get('/:certificateId', requireAuth, async (req, res) => {
   try {
+    // Skip if it's a special route
+    if (req.params.certificateId === 'my-certificates' || 
+        req.params.certificateId === 'verify') {
+      return next();
+    }
+
     const certificate = await Certificate.findOne({
       _id: req.params.certificateId,
       user: req.user._id,
