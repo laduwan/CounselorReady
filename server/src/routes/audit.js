@@ -1,13 +1,28 @@
-// routes/audit.js
+// routes/audit.js - SIMPLIFIED VERSION WITHOUT AUTH MIDDLEWARE
 import express from 'express';
 import CELog from '../models/CELog.js';
 import Certificate from '../models/Certificate.js';
-import { protect, admin } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
+// Simple auth check
+const requireAuth = (req, res, next) => {
+  if (!req.user) {
+    return res.status(401).json({ success: false, message: 'Not authenticated' });
+  }
+  next();
+};
+
+// Simple admin check
+const requireAdmin = (req, res, next) => {
+  if (!req.user || req.user.role !== 'admin') {
+    return res.status(403).json({ success: false, message: 'Admin access required' });
+  }
+  next();
+};
+
 // Generate audit report for current user
-router.get('/report', protect, async (req, res) => {
+router.get('/report', requireAuth, async (req, res) => {
   try {
     const { startDate, endDate, format = 'json' } = req.query;
     
@@ -101,14 +116,6 @@ router.get('/report', protect, async (req, res) => {
       }))
     };
     
-    if (format === 'pdf') {
-      // TODO: Generate PDF report
-      return res.status(501).json({
-        success: false,
-        message: 'PDF format not yet implemented'
-      });
-    }
-    
     res.json({
       success: true,
       report
@@ -125,9 +132,9 @@ router.get('/report', protect, async (req, res) => {
 });
 
 // Admin: Get all audit data
-router.get('/admin', protect, admin, async (req, res) => {
+router.get('/admin', requireAuth, requireAdmin, async (req, res) => {
   try {
-    const { startDate, endDate, userId } = req.query;
+    const { startDate, endDate, userId, limit = 1000 } = req.query;
     
     const query = { completed: true };
     
@@ -148,7 +155,7 @@ router.get('/admin', protect, admin, async (req, res) => {
       .populate('user', 'firstName lastName email licenseNumber licenseState')
       .populate('course', 'title code ceHours category')
       .sort({ completedAt: -1 })
-      .limit(1000); // Limit for performance
+      .limit(parseInt(limit));
     
     res.json({
       success: true,
