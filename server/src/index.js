@@ -11,6 +11,8 @@ dotenv.config();
 // Import routes
 import authRoutes from './routes/auth.js';
 import coursesRoutes from './routes/courses.js';
+import celogsRoutes from './routes/celogs.js';
+
 // import adminRoutes from './routes/admin.js';
 import usersRoutes from './routes/users.js';
 import certificatesRoutes from './routes/certificates.js';
@@ -132,6 +134,11 @@ app.use('/api/interactive-courses', interactiveCourseRoutes);
 app.use('/api/courses', coursesRoutes);
 // app.use('/api/admin', adminRoutes);
 app.use('/api/users', usersRoutes);
+
+// ...
+
+app.use('/api/celogs', celogsRoutes);
+```
 app.use('/api/certificates', certificatesRoutes);
 app.use('/api/credentials', credentialsRoutes);
 app.use('/api/payments', paymentsRoutes);
