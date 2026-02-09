@@ -11,16 +11,16 @@ dotenv.config();
 // Import routes
 import authRoutes from './routes/auth.js';
 import coursesRoutes from './routes/courses.js';
-import adminRoutes from './routes/admin.js';
+// import adminRoutes from './routes/admin.js';
 import usersRoutes from './routes/users.js';
 import certificatesRoutes from './routes/certificates.js';
 import credentialsRoutes from './routes/credentials.js';
 import paymentsRoutes from './routes/payments.js';
 import analyticsRoutes from './routes/analytics.js';
 import migrationRoutes from './routes/migration.js';
-import announcementsRoutes from './routes/announcements.js';
+// import announcementsRoutes from './routes/announcements.js';
 import remindersRoutes from './routes/reminders.js';
-import scanRoutes from './routes/scan.js';
+// import scanRoutes from './routes/scan.js';
 import scormRoutes from './routes/scorm.js';
 import ltiRoutes from './routes/lti.js';
 import xapiRoutes from './routes/xapi.js';
@@ -28,7 +28,7 @@ import cebrokerRoutes from './routes/cebroker.js';
 import helpRoutes from './routes/help.js';
 import bulkUploadRoutes from './routes/bulkUpload.js';
 import imageUploadRoutes from './routes/imageUpload.js';
-import courseBuilderRoutes from './routes/courseBuilder.js';
+// import courseBuilderRoutes from './routes/courseBuilder.js';
 import adminStatsRoutes from './routes/adminStats.js';
 import interactiveCourseRoutes from './routes/interactiveCourseRoutes.js';
 
@@ -130,7 +130,7 @@ app.get('/health', async (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/interactive-courses', interactiveCourseRoutes);
 app.use('/api/courses', coursesRoutes);
-app.use('/api/admin', adminRoutes);
+// app.use('/api/admin', adminRoutes);
 app.use('/api/users', usersRoutes);
 app.use('/api/certificates', certificatesRoutes);
 app.use('/api/credentials', credentialsRoutes);
@@ -138,9 +138,9 @@ app.use('/api/payments', paymentsRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/migration', migrationRoutes);
 app.use('/api/images', imageUploadRoutes);
-app.use('/api/announcements', announcementsRoutes);
+// app.use('/api/announcements', announcementsRoutes);
 app.use('/api/reminders', remindersRoutes);
-app.use('/api/scan', scanRoutes);
+// app.use('/api/scan', scanRoutes);
 app.use('/api/scorm', scormRoutes);
 app.use('/api/lti', ltiRoutes);
 app.use('/api/xapi', xapiRoutes);
@@ -148,7 +148,7 @@ app.use('/api/cebroker', cebrokerRoutes);
 app.use('/api/help', helpRoutes);
 app.use('/api/admin/courses', bulkUploadRoutes);
 app.use('/api/admin/stats', adminStatsRoutes);
-app.use('/api/admin/course-builder', courseBuilderRoutes);
+// app.use('/api/admin/course-builder', courseBuilderRoutes);
 
 // Serve static files from templates directory
 app.use('/templates', express.static(path.join(__dirname, 'templates')));
