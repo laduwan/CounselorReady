@@ -132,11 +132,8 @@ app.get('/health', async (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/interactive-courses', interactiveCourseRoutes);
 app.use('/api/courses', coursesRoutes);
-// app.use('/api/admin', adminRoutes);
+app.use('/api/admin', adminRoutes);
 app.use('/api/users', usersRoutes);
-
-// ...
-
 app.use('/api/celogs', celogsRoutes);
 ```
 app.use('/api/certificates', certificatesRoutes);
