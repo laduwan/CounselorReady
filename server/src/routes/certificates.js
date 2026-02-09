@@ -1,12 +1,19 @@
-// routes/certificates.js
+// routes/certificates.js - SIMPLIFIED VERSION WITHOUT AUTH MIDDLEWARE
 import express from 'express';
 import Certificate from '../models/Certificate.js';
-import { protect } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
+// Simple auth check using req.user (set by existing auth system)
+const requireAuth = (req, res, next) => {
+  if (!req.user) {
+    return res.status(401).json({ success: false, message: 'Not authenticated' });
+  }
+  next();
+};
+
 // Get user's certificates
-router.get('/my-certificates', protect, async (req, res) => {
+router.get('/my-certificates', requireAuth, async (req, res) => {
   try {
     const certificates = await Certificate.find({
       user: req.user._id,
@@ -38,7 +45,7 @@ router.get('/my-certificates', protect, async (req, res) => {
 });
 
 // Get single certificate
-router.get('/:certificateId', protect, async (req, res) => {
+router.get('/:certificateId', requireAuth, async (req, res) => {
   try {
     const certificate = await Certificate.findOne({
       _id: req.params.certificateId,
@@ -78,7 +85,7 @@ router.get('/:certificateId', protect, async (req, res) => {
 });
 
 // Download certificate PDF
-router.get('/:certificateId/download', protect, async (req, res) => {
+router.get('/:certificateId/download', requireAuth, async (req, res) => {
   try {
     const certificate = await Certificate.findOne({
       _id: req.params.certificateId,
@@ -112,7 +119,7 @@ router.get('/:certificateId/download', protect, async (req, res) => {
   }
 });
 
-// Verify certificate (public endpoint)
+// Verify certificate (public endpoint - no auth)
 router.get('/verify/:verificationCode', async (req, res) => {
   try {
     const certificate = await Certificate.findOne({
