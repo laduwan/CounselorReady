@@ -625,16 +625,18 @@ router.get('/transcript', protect, async (req, res) => {
     // Table Header
     const tableTop = doc.y;
     doc.rect(50, tableTop, 512, 20).fill('#6b1d34');
-    doc.fillColor('#ffffff').fontSize(9).font('Helvetica-Bold');
-    doc.text('Date', 55, tableTop + 6);
-    doc.text('Course Title', 110, tableTop + 6);
-    doc.text('Provider', 320, tableTop + 6);
-    doc.text('Hours', 420, tableTop + 6);
-    doc.text('Category', 470, tableTop + 6);
+    doc.fillColor('#ffffff').fontSize(7.5).font('Helvetica-Bold');
+    doc.text('Date', 55, tableTop + 6, { width: 45 });
+    doc.text('Course Title', 100, tableTop + 6, { width: 130 });
+    doc.text('Provider', 230, tableTop + 6, { width: 70 });
+    doc.text('Approved By', 300, tableTop + 6, { width: 55 });
+    doc.text('Approval #', 355, tableTop + 6, { width: 70 });
+    doc.text('Hours', 430, tableTop + 6, { width: 30 });
+    doc.text('Category', 465, tableTop + 6, { width: 90 });
     
     // Table Rows
     let rowY = tableTop + 25;
-    doc.fillColor('#2b4133').font('Helvetica').fontSize(8);
+    doc.fillColor('#2b4133').font('Helvetica').fontSize(7.5);
     
     certificates.forEach((cert, i) => {
       // Check if we need a new page
@@ -653,11 +655,19 @@ router.get('/transcript', protect, async (req, res) => {
         ? new Date(cert.completionDate).toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: '2-digit' })
         : 'N/A';
       
-      doc.text(dateStr, 55, rowY, { width: 50 });
-      doc.text(cert.title.substring(0, 40) + (cert.title.length > 40 ? '...' : ''), 110, rowY, { width: 200 });
-      doc.text((cert.provider || 'CounselorReady').substring(0, 20), 320, rowY, { width: 95 });
-      doc.text(cert.ceHours?.toFixed(1) || '0', 420, rowY, { width: 40 });
-      doc.text(cert.category || 'General', 470, rowY, { width: 80 });
+      // Approving body: use stored approvingBody, fallback to NBCC for platform certs
+      const approvedBy = cert.approvingBody || (cert.source === 'platform' ? 'NBCC' : (cert.nbccApproved ? 'NBCC' : '-'));
+      // Approval number: could be provider-level (ACEP #7760) or course-level (individual course number)
+      // For platform certs: show ACEP number. For external: show whatever the user entered as approvalNumber or acepNumber
+      const approvalNum = cert.approvalNumber || cert.acepNumber || (cert.source === 'platform' ? 'ACEP #7760' : '-');
+      
+      doc.text(dateStr, 55, rowY, { width: 45 });
+      doc.text(cert.title.substring(0, 28) + (cert.title.length > 28 ? '...' : ''), 100, rowY, { width: 130 });
+      doc.text((cert.provider || 'CounselorReady').substring(0, 14), 230, rowY, { width: 70 });
+      doc.text(approvedBy, 300, rowY, { width: 55 });
+      doc.text(approvalNum, 355, rowY, { width: 70 });
+      doc.text(cert.ceHours?.toFixed(1) || '0', 430, rowY, { width: 30 });
+      doc.text(cert.category || 'General', 465, rowY, { width: 90 });
       
       rowY += 18;
     });
