@@ -473,188 +473,9 @@ router.post('/generate/:courseId', protect, async (req, res) => {
   }
 });
 
-// GET /api/certificates/:id - Get specific certificate
-router.get('/:id', protect, async (req, res) => {
-  try {
-    const certificate = await Certificate.findOne({
-      _id: req.params.id,
-      userId: req.user._id
-    });
-    
-    if (!certificate) {
-      return res.status(404).json({ error: 'Certificate not found' });
-    }
-    
-    res.json({ certificate });
-  } catch (error) {
-    console.error('Get certificate error:', error);
-    res.status(500).json({ error: 'Failed to get certificate' });
-  }
-});
-
-// PUT /api/certificates/:id - Update certificate
-router.put('/:id', protect, upload.single('file'), async (req, res) => {
-  try {
-    const certificate = await Certificate.findOne({
-      _id: req.params.id,
-      userId: req.user._id
-    });
-    
-    if (!certificate) {
-      return res.status(404).json({ error: 'Certificate not found' });
-    }
-    
-    const { title, provider, completionDate, ceHours, category, nbccApproved, acepNumber, notes, credentials, approvingBody, approvalNumber, applicability, applicableStates } = req.body;
-    
-    // Update fields
-    if (title) certificate.title = title;
-    if (provider) certificate.provider = provider;
-    if (completionDate) certificate.completionDate = new Date(completionDate);
-    if (ceHours) certificate.ceHours = parseFloat(ceHours);
-    if (category) certificate.category = category;
-    if (nbccApproved !== undefined) certificate.nbccApproved = nbccApproved === 'true' || nbccApproved === true;
-    if (acepNumber !== undefined) certificate.acepNumber = acepNumber || null;
-    if (approvingBody !== undefined) certificate.approvingBody = approvingBody || null;
-    if (approvalNumber !== undefined) certificate.approvalNumber = approvalNumber || null;
-    if (applicability) certificate.applicability = applicability;
-    if (notes !== undefined) certificate.notes = notes || null;
-    
-    // Parse and update credentials
-    if (credentials) {
-      try {
-        certificate.credentials = typeof credentials === 'string' ? JSON.parse(credentials) : credentials;
-      } catch (e) {
-        certificate.credentials = [];
-      }
-    }
-    
-    // Parse and update applicable states
-    if (applicableStates) {
-      try {
-        certificate.applicableStates = typeof applicableStates === 'string' ? JSON.parse(applicableStates) : applicableStates;
-      } catch (e) {
-        certificate.applicableStates = [];
-      }
-    }
-    
-    // Upload new file if provided
-    if (req.file) {
-      try {
-        // Delete old file from Cloudinary if exists
-        if (certificate.fileKey) {
-          await cloudinary.uploader.destroy(certificate.fileKey);
-        }
-        
-        const result = await uploadToCloudinary(req.file.buffer, {
-          folder: `certificates/${req.user._id}`,
-          resource_type: 'auto',
-          public_id: `cert_${Date.now()}`
-        });
-        
-        certificate.fileUrl = result.secure_url;
-        certificate.fileKey = result.public_id;
-        certificate.fileName = req.file.originalname;
-        certificate.fileType = req.file.mimetype;
-      } catch (uploadError) {
-        console.error('Cloudinary upload error:', uploadError);
-      }
-    }
-    
-    await certificate.save();
-    
-    res.json({ certificate });
-  } catch (error) {
-    console.error('Update certificate error:', error);
-    res.status(500).json({ error: 'Failed to update certificate' });
-  }
-});
-
-// DELETE /api/certificates/:id - Delete certificate
-router.delete('/:id', protect, async (req, res) => {
-  try {
-    const certificate = await Certificate.findOne({
-      _id: req.params.id,
-      userId: req.user._id
-    });
-    
-    if (!certificate) {
-      return res.status(404).json({ error: 'Certificate not found' });
-    }
-    
-    // Don't allow deletion of platform-generated certificates
-    if (certificate.source === 'platform') {
-      return res.status(403).json({ 
-        error: 'Cannot delete platform-generated certificates. Please contact support if you need to revoke this certificate.' 
-      });
-    }
-    
-    // Delete file from Cloudinary if exists
-    if (certificate.fileKey) {
-      try {
-        await cloudinary.uploader.destroy(certificate.fileKey);
-      } catch (cloudError) {
-        console.error('Error deleting from Cloudinary:', cloudError);
-      }
-    }
-    
-    // Remove CEU logs from linked credentials
-    if (certificate.credentials && certificate.credentials.length > 0) {
-      for (const credId of certificate.credentials) {
-        try {
-          const credential = await UserCredential.findOne({
-            _id: credId,
-            userId: req.user._id
-          });
-          
-          if (credential) {
-            await credential.removeCEU(certificate._id);
-          }
-        } catch (credError) {
-          console.error('Error removing CEU from credential:', credError);
-        }
-      }
-    }
-    
-    await certificate.deleteOne();
-    
-    res.json({ message: 'Certificate deleted successfully' });
-  } catch (error) {
-    console.error('Delete certificate error:', error);
-    res.status(500).json({ error: 'Failed to delete certificate' });
-  }
-});
-
-// POST /api/certificates/:id/revoke - Revoke a certificate (admin only)
-router.post('/:id/revoke', protect, async (req, res) => {
-  try {
-    // Check if user is admin
-    if (req.user.role !== 'admin') {
-      return res.status(403).json({ error: 'Only admins can revoke certificates' });
-    }
-    
-    const { reason } = req.body;
-    
-    const certificate = await Certificate.findById(req.params.id);
-    if (!certificate) {
-      return res.status(404).json({ error: 'Certificate not found' });
-    }
-    
-    certificate.isRevoked = true;
-    certificate.revokedAt = new Date();
-    certificate.revokedBy = req.user._id;
-    certificate.revokedReason = reason || 'Revoked by administrator';
-    
-    await certificate.save();
-    
-    res.json({ 
-      message: 'Certificate revoked successfully',
-      certificate 
-    });
-  } catch (error) {
-    console.error('Revoke certificate error:', error);
-    res.status(500).json({ error: 'Failed to revoke certificate' });
-  }
-});
+// ============================================
+// NAMED ROUTES (must be ABOVE /:id to avoid conflicts)
+// ============================================
 
 // GET /api/certificates/verify/:code - Public verification endpoint
 router.get('/verify/:code', async (req, res) => {
@@ -1037,6 +858,193 @@ router.get('/ce-summary', protect, async (req, res) => {
   } catch (error) {
     console.error('CE summary error:', error);
     res.status(500).json({ error: 'Failed to get CE summary' });
+  }
+});
+
+// ============================================
+// PARAMETERIZED ROUTES (/:id must be LAST)
+// ============================================
+
+// GET /api/certificates/:id - Get specific certificate
+router.get('/:id', protect, async (req, res) => {
+  try {
+    const certificate = await Certificate.findOne({
+      _id: req.params.id,
+      userId: req.user._id
+    });
+    
+    if (!certificate) {
+      return res.status(404).json({ error: 'Certificate not found' });
+    }
+    
+    res.json({ certificate });
+  } catch (error) {
+    console.error('Get certificate error:', error);
+    res.status(500).json({ error: 'Failed to get certificate' });
+  }
+});
+
+// PUT /api/certificates/:id - Update certificate
+router.put('/:id', protect, upload.single('file'), async (req, res) => {
+  try {
+    const certificate = await Certificate.findOne({
+      _id: req.params.id,
+      userId: req.user._id
+    });
+    
+    if (!certificate) {
+      return res.status(404).json({ error: 'Certificate not found' });
+    }
+    
+    const { title, provider, completionDate, ceHours, category, nbccApproved, acepNumber, notes, credentials, approvingBody, approvalNumber, applicability, applicableStates } = req.body;
+    
+    // Update fields
+    if (title) certificate.title = title;
+    if (provider) certificate.provider = provider;
+    if (completionDate) certificate.completionDate = new Date(completionDate);
+    if (ceHours) certificate.ceHours = parseFloat(ceHours);
+    if (category) certificate.category = category;
+    if (nbccApproved !== undefined) certificate.nbccApproved = nbccApproved === 'true' || nbccApproved === true;
+    if (acepNumber !== undefined) certificate.acepNumber = acepNumber || null;
+    if (approvingBody !== undefined) certificate.approvingBody = approvingBody || null;
+    if (approvalNumber !== undefined) certificate.approvalNumber = approvalNumber || null;
+    if (applicability) certificate.applicability = applicability;
+    if (notes !== undefined) certificate.notes = notes || null;
+    
+    // Parse and update credentials
+    if (credentials) {
+      try {
+        certificate.credentials = typeof credentials === 'string' ? JSON.parse(credentials) : credentials;
+      } catch (e) {
+        certificate.credentials = [];
+      }
+    }
+    
+    // Parse and update applicable states
+    if (applicableStates) {
+      try {
+        certificate.applicableStates = typeof applicableStates === 'string' ? JSON.parse(applicableStates) : applicableStates;
+      } catch (e) {
+        certificate.applicableStates = [];
+      }
+    }
+    
+    // Upload new file if provided
+    if (req.file) {
+      try {
+        // Delete old file from Cloudinary if exists
+        if (certificate.fileKey) {
+          await cloudinary.uploader.destroy(certificate.fileKey);
+        }
+        
+        const result = await uploadToCloudinary(req.file.buffer, {
+          folder: `certificates/${req.user._id}`,
+          resource_type: 'auto',
+          public_id: `cert_${Date.now()}`
+        });
+        
+        certificate.fileUrl = result.secure_url;
+        certificate.fileKey = result.public_id;
+        certificate.fileName = req.file.originalname;
+        certificate.fileType = req.file.mimetype;
+      } catch (uploadError) {
+        console.error('Cloudinary upload error:', uploadError);
+      }
+    }
+    
+    await certificate.save();
+    
+    res.json({ certificate });
+  } catch (error) {
+    console.error('Update certificate error:', error);
+    res.status(500).json({ error: 'Failed to update certificate' });
+  }
+});
+
+// DELETE /api/certificates/:id - Delete certificate
+router.delete('/:id', protect, async (req, res) => {
+  try {
+    const certificate = await Certificate.findOne({
+      _id: req.params.id,
+      userId: req.user._id
+    });
+    
+    if (!certificate) {
+      return res.status(404).json({ error: 'Certificate not found' });
+    }
+    
+    // Don't allow deletion of platform-generated certificates
+    if (certificate.source === 'platform') {
+      return res.status(403).json({ 
+        error: 'Cannot delete platform-generated certificates. Please contact support if you need to revoke this certificate.' 
+      });
+    }
+    
+    // Delete file from Cloudinary if exists
+    if (certificate.fileKey) {
+      try {
+        await cloudinary.uploader.destroy(certificate.fileKey);
+      } catch (cloudError) {
+        console.error('Error deleting from Cloudinary:', cloudError);
+      }
+    }
+    
+    // Remove CEU logs from linked credentials
+    if (certificate.credentials && certificate.credentials.length > 0) {
+      for (const credId of certificate.credentials) {
+        try {
+          const credential = await UserCredential.findOne({
+            _id: credId,
+            userId: req.user._id
+          });
+          
+          if (credential) {
+            await credential.removeCEU(certificate._id);
+          }
+        } catch (credError) {
+          console.error('Error removing CEU from credential:', credError);
+        }
+      }
+    }
+    
+    await certificate.deleteOne();
+    
+    res.json({ message: 'Certificate deleted successfully' });
+  } catch (error) {
+    console.error('Delete certificate error:', error);
+    res.status(500).json({ error: 'Failed to delete certificate' });
+  }
+});
+
+// POST /api/certificates/:id/revoke - Revoke a certificate (admin only)
+router.post('/:id/revoke', protect, async (req, res) => {
+  try {
+    // Check if user is admin
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Only admins can revoke certificates' });
+    }
+    
+    const { reason } = req.body;
+    
+    const certificate = await Certificate.findById(req.params.id);
+    if (!certificate) {
+      return res.status(404).json({ error: 'Certificate not found' });
+    }
+    
+    certificate.isRevoked = true;
+    certificate.revokedAt = new Date();
+    certificate.revokedBy = req.user._id;
+    certificate.revokedReason = reason || 'Revoked by administrator';
+    
+    await certificate.save();
+    
+    res.json({ 
+      message: 'Certificate revoked successfully',
+      certificate 
+    });
+  } catch (error) {
+    console.error('Revoke certificate error:', error);
+    res.status(500).json({ error: 'Failed to revoke certificate' });
   }
 });
 
