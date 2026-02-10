@@ -21,13 +21,20 @@ router.get('/profile', protect, async (req, res) => {
 // @access  Private
 router.put('/profile', protect, async (req, res) => {
   try {
-    const { firstName, lastName, state, timezone, phone } = req.body;
+    const { firstName, lastName, state, timezone, phone, fullName } = req.body;
     
     const user = await User.findById(req.user._id);
     
-    if (firstName) user.profile.firstName = firstName;
-    if (lastName !== undefined) user.profile.lastName = lastName;
-    if (state) user.profile.state = state.toUpperCase();
+    // Support fullName as single field (split into first/last)
+    if (fullName && !firstName && !lastName) {
+      const parts = fullName.trim().split(/\s+/);
+      user.profile.firstName = parts[0] || '';
+      user.profile.lastName = parts.slice(1).join(' ') || '';
+    } else {
+      if (firstName !== undefined) user.profile.firstName = firstName;
+      if (lastName !== undefined) user.profile.lastName = lastName;
+    }
+    if (state && typeof state === 'string') user.profile.state = state.toUpperCase();
     if (timezone) user.profile.timezone = timezone;
     if (phone !== undefined) user.profile.phone = phone;
     
@@ -48,19 +55,38 @@ router.put('/profile', protect, async (req, res) => {
 // @access  Private
 router.put('/notifications', protect, async (req, res) => {
   try {
-    const { emailReminders, calendarSync, marketingEmails, reminderFrequency } = req.body;
+    const { 
+      emailReminders, 
+      smsReminders,
+      calendarSync, 
+      marketingEmails, 
+      reminderFrequency,
+      weeklyProgress,
+      fallingBehindAlert,
+      ceMilestones,
+      courseProgressReminders
+    } = req.body;
     
     const user = await User.findById(req.user._id);
     
+    // Initialize notifications object if needed
+    if (!user.notifications) user.notifications = {};
+    
     if (emailReminders !== undefined) user.notifications.emailReminders = emailReminders;
+    if (smsReminders !== undefined) user.notifications.smsReminders = smsReminders;
     if (calendarSync !== undefined) user.notifications.calendarSync = calendarSync;
     if (marketingEmails !== undefined) user.notifications.marketingEmails = marketingEmails;
     if (reminderFrequency) user.notifications.reminderFrequency = reminderFrequency;
+    if (weeklyProgress !== undefined) user.notifications.weeklyProgress = weeklyProgress;
+    if (fallingBehindAlert !== undefined) user.notifications.fallingBehindAlert = fallingBehindAlert;
+    if (ceMilestones !== undefined) user.notifications.ceMilestones = ceMilestones;
+    if (courseProgressReminders !== undefined) user.notifications.courseProgressReminders = courseProgressReminders;
     
     await user.save();
     
     res.json({
       message: 'Notification preferences updated',
+      notifications: user.notifications,
       user: user.toJSON()
     });
   } catch (error) {
