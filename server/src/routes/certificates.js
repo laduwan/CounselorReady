@@ -18,7 +18,10 @@ cloudinary.config({
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET
 });
+const { getCertificateSignedUrl } = require('../utils/certificate-fix');
 
+// Add this route for secure certificate access
+router.get('/:id/signed-url', protect, getCertificateSignedUrl);
 // Configure multer for memory storage
 const upload = multer({
   storage: multer.memoryStorage(),
