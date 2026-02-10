@@ -196,12 +196,13 @@
     
     <!-- Sync Button -->
     <div class="mt-6 text-center">
-      <button onclick="syncCertificates()" id="syncBtn" class="inline-flex items-center gap-2 text-forest-600 hover:text-forest-800 font-medium transition-colors">
+      <button onclick="syncCertificates()" id="syncBtn" class="inline-flex items-center gap-2 bg-forest-50 hover:bg-forest-100 text-forest-700 border border-forest-200 font-medium px-4 py-2 rounded-xl transition-colors">
         <svg id="syncIcon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
         </svg>
-        Sync
+        <span id="syncLabel">Sync CE Hours to Credentials</span>
       </button>
+      <p id="syncResult" class="text-sm mt-2 hidden"></p>
     </div>
   </main>
 
@@ -485,17 +486,60 @@
     async function syncCertificates() {
       const btn = document.getElementById('syncBtn');
       const icon = document.getElementById('syncIcon');
+      const label = document.getElementById('syncLabel');
+      const resultEl = document.getElementById('syncResult');
+      const token = localStorage.getItem('token');
       
       btn.disabled = true;
       icon.classList.add('animate-spin');
+      label.textContent = 'Syncing...';
+      resultEl.classList.add('hidden');
       
-      await loadCertificates();
-      await loadUserCredentials();
-      
-      setTimeout(() => {
+      try {
+        // Call the sync-ce endpoint to allocate certificate hours to credentials
+        const response = await fetch(`${API_URL}/api/certificates/sync-ce`, {
+          method: 'POST',
+          headers: { 
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+          // Refresh page data
+          await loadCertificates();
+          await loadUserCredentials();
+          
+          // Show result
+          if (data.synced > 0) {
+            resultEl.textContent = `✅ Synced ${data.synced} certificate(s) to credentials.`;
+            resultEl.className = 'text-sm mt-2 text-green-700';
+          } else {
+            resultEl.textContent = '✅ All certificates already synced. No new hours to allocate.';
+            resultEl.className = 'text-sm mt-2 text-forest-600';
+          }
+        } else {
+          resultEl.textContent = `⚠️ ${data.error || 'Sync failed'}`;
+          resultEl.className = 'text-sm mt-2 text-red-600';
+        }
+        
+        resultEl.classList.remove('hidden');
+        
+        // Hide result after 5 seconds
+        setTimeout(() => resultEl.classList.add('hidden'), 5000);
+        
+      } catch (error) {
+        console.error('Sync error:', error);
+        resultEl.textContent = '⚠️ Could not connect to server.';
+        resultEl.className = 'text-sm mt-2 text-red-600';
+        resultEl.classList.remove('hidden');
+      } finally {
         btn.disabled = false;
         icon.classList.remove('animate-spin');
-      }, 500);
+        label.textContent = 'Sync CE Hours to Credentials';
+      }
     }
 
     async function downloadTranscript() {
@@ -861,15 +905,8 @@
               categorySelect.value = match.value;
             }
           }
-          if (data.extracted.nbccApproved) {
-            document.getElementById('nbccApproved').checked = true;
-            document.getElementById('acepField').classList.remove('hidden');
-          }
-          if (data.extracted.acepNumber) {
-            document.getElementById('acepNumber').value = data.extracted.acepNumber;
-          }
           
-          // Handle approving body
+          // Handle approving body FIRST (this drives nbccApproved and applicability)
           if (data.extracted.approvingBody) {
             const approvingBodySelect = document.getElementById('approvingBody');
             const options = Array.from(approvingBodySelect.options);
@@ -878,20 +915,21 @@
             );
             if (match) {
               approvingBodySelect.value = match.value;
-              handleApprovingBodyChange();
+              handleApprovingBodyChange(); // triggers applicability logic
             }
-            // Also set nbccApproved for backward compat
+            // Set nbccApproved for backward compat
             if (['NBCC', 'ACEP', 'ACA'].includes(data.extracted.approvingBody.toUpperCase())) {
               document.getElementById('nbccApproved').checked = true;
             }
           }
           
-          // Handle approval number
+          // Handle approval number → maps to both approvalNumber AND legacy acepNumber
           if (data.extracted.approvalNumber) {
             document.getElementById('approvalNumber').value = data.extracted.approvalNumber;
+            document.getElementById('acepNumber').value = data.extracted.approvalNumber; // legacy field
           }
           
-          // Handle applicability
+          // Handle applicability (may already be set by approvingBody handler above)
           if (data.extracted.applicability) {
             const applicabilityRadio = document.querySelector(`input[name="applicability"][value="${data.extracted.applicability}"]`);
             if (applicabilityRadio) {
