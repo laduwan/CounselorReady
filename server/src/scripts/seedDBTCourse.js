@@ -14,7 +14,7 @@ dotenv.config();
 
 const MONGODB_URI = process.env.MONGODB_URI;
 if (!MONGODB_URI) {
-  console.error('âŒ MONGODB_URI not found');
+  console.error('❌ MONGODB_URI not found');
   process.exit(1);
 }
 
@@ -26,7 +26,7 @@ const DBT_COURSE = {
   title: "Dialectical Behavior Therapy: Foundations, Clinical Applications, and Evidence-Based Integration",
   slug: "dbt-skills-training-comprehensive",
   code: "CR-DBT-001",
-  description: "This comprehensive 6-hour continuing education course provides mental health professionals with a thorough understanding of Dialectical Behavior Therapy (DBT). From its theoretical foundations in biosocial theory and dialectical philosophy to practical applications of the four core skill modulesâ€”Mindfulness, Distress Tolerance, Emotion Regulation, and Interpersonal Effectivenessâ€”this course equips clinicians with evidence-based strategies for working with clients who experience emotional dysregulation, self-destructive behaviors, and interpersonal difficulties.",
+  description: "This comprehensive 6-hour continuing education course provides mental health professionals with a thorough understanding of Dialectical Behavior Therapy (DBT). From its theoretical foundations in biosocial theory and dialectical philosophy to practical applications of the four core skill modules—Mindfulness, Distress Tolerance, Emotion Regulation, and Interpersonal Effectiveness—this course equips clinicians with evidence-based strategies for working with clients who experience emotional dysregulation, self-destructive behaviors, and interpersonal difficulties.",
   ceHours: 6,
   credits: 6,
   category: "Clinical Practice",
@@ -42,9 +42,9 @@ const DBT_COURSE = {
   ],
   objectives: [
     "Articulate the theoretical foundations of DBT, including biosocial theory, dialectical philosophy, and the transaction model of emotion dysregulation",
-    "Identify and describe the four core DBT skill modulesâ€”Mindfulness, Distress Tolerance, Emotion Regulation, and Interpersonal Effectiveness",
+    "Identify and describe the four core DBT skill modules—Mindfulness, Distress Tolerance, Emotion Regulation, and Interpersonal Effectiveness",
     "Differentiate DBT from standard Cognitive Behavioral Therapy and identify clinical presentations where DBT is indicated",
-    "Describe the four components of comprehensive DBTâ€”individual therapy, group skills training, phone coaching, and consultation team",
+    "Describe the four components of comprehensive DBT—individual therapy, group skills training, phone coaching, and consultation team",
     "Apply specific DBT techniques to common clinical scenarios in outpatient practice",
     "Evaluate the empirical evidence supporting DBT across multiple diagnostic categories",
     "Analyze limitations, criticisms, and cultural considerations related to DBT implementation"
@@ -96,7 +96,7 @@ const DBT_COURSE = {
             },
             {
               title: "How to Get the Most from This Course",
-              content: "We recommend completing this course in multiple sittings rather than all at once. Take notes, complete all reflection exercises, and consider how the material applies to your current caseload. The knowledge checks are designed to reinforce learningâ€”take them seriously even though they don't count toward your final grade."
+              content: "We recommend completing this course in multiple sittings rather than all at once. Take notes, complete all reflection exercises, and consider how the material applies to your current caseload. The knowledge checks are designed to reinforce learning—take them seriously even though they don't count toward your final grade."
             }
           ],
           accessibility: { role: "region", ariaLabel: "Course details accordion" }
@@ -174,7 +174,7 @@ const DBT_COURSE = {
           type: "text",
           content: `<p><strong>Biosocial Theory: The Foundation of Understanding</strong></p>
           <p>At the heart of DBT lies biosocial theory, which provides a comprehensive framework for understanding how emotion dysregulation develops and is maintained. According to this model, emotion dysregulation arises from the transaction between biological vulnerability and an invalidating environment.</p>
-          <p>Biological vulnerability refers to an individual's innate tendency toward emotional sensitivity. Some people are simply born with nervous systems that react more quickly to emotional stimuli, experience emotions more intensely, and take longer to return to baseline. This is not a character flaw or a choiceâ€”it is a neurobiological reality that varies across individuals.</p>
+          <p>Biological vulnerability refers to an individual's innate tendency toward emotional sensitivity. Some people are simply born with nervous systems that react more quickly to emotional stimuli, experience emotions more intensely, and take longer to return to baseline. This is not a character flaw or a choice—it is a neurobiological reality that varies across individuals.</p>
           <p>An invalidating environment is one in which the individual's internal experiences are chronically dismissed, punished, or trivialized. Common forms of invalidation include telling a child they shouldn't feel what they're feeling, punishing emotional expression, oversimplifying the solutions to emotional problems, and intermittently reinforcing emotional escalation.</p>`,
           accessibility: { role: "article", ariaLabel: "Biosocial theory explanation" }
         },
@@ -222,7 +222,7 @@ const DBT_COURSE = {
             { text: "Helping the child label and understand their emotional experience", isCorrect: false },
             { text: "Sitting with the child during a tantrum without judgment", isCorrect: false }
           ],
-          explanation: "Invalidation occurs when emotional experiences are dismissed, trivialized, or punished. Telling a child they're 'fine' or 'being dramatic' when they're clearly distressed teaches them that their internal experiences are wrong, untrustworthy, or unacceptableâ€”a core contributor to emotion dysregulation.",
+          explanation: "Invalidation occurs when emotional experiences are dismissed, trivialized, or punished. Telling a child they're 'fine' or 'being dramatic' when they're clearly distressed teaches them that their internal experiences are wrong, untrustworthy, or unacceptable—a core contributor to emotion dysregulation.",
           accessibility: { ariaLabel: "Knowledge check about invalidation", announceCorrect: true }
         }
       ]
@@ -251,11 +251,11 @@ const DBT_COURSE = {
           accordionItems: [
             {
               title: "OBSERVE: Just Notice",
-              content: "Observing means attending to events, emotions, and behaviors without trying to change them. It's like watching clouds pass in the skyâ€”noticing without grabbing. In practice: Notice your breath, notice sensations in your body, notice thoughts arising without getting caught up in them."
+              content: "Observing means attending to events, emotions, and behaviors without trying to change them. It's like watching clouds pass in the sky—noticing without grabbing. In practice: Notice your breath, notice sensations in your body, notice thoughts arising without getting caught up in them."
             },
             {
               title: "DESCRIBE: Put Words On",
-              content: "Describing means putting words on what you observe. It involves labeling thoughts as thoughts, feelings as feelings, and facts as facts. Key principle: Describe only what you directly observeâ€”avoid interpretations, judgments, or assumptions."
+              content: "Describing means putting words on what you observe. It involves labeling thoughts as thoughts, feelings as feelings, and facts as facts. Key principle: Describe only what you directly observe—avoid interpretations, judgments, or assumptions."
             },
             {
               title: "PARTICIPATE: Enter Fully",
@@ -267,7 +267,7 @@ const DBT_COURSE = {
             },
             {
               title: "ONE-MINDFULLY: In the Moment",
-              content: "Do one thing at a time. When you're eating, eat. When you're walking, walk. When you're worrying, worry completelyâ€”then move on. Let go of distractions and return to what you're doing."
+              content: "Do one thing at a time. When you're eating, eat. When you're walking, walk. When you're worrying, worry completely—then move on. Let go of distractions and return to what you're doing."
             },
             {
               title: "EFFECTIVELY: Focus on What Works",
@@ -285,7 +285,7 @@ const DBT_COURSE = {
             { text: "Evaluating whether your emotional response is appropriate", isCorrect: false },
             { text: "Planning how to respond to a difficult situation", isCorrect: false }
           ],
-          explanation: "Observing in DBT means simply noticing or attending to internal and external experiences without trying to change, fix, or judge them. It's the foundation of mindful awarenessâ€”just noticing what is present in this moment.",
+          explanation: "Observing in DBT means simply noticing or attending to internal and external experiences without trying to change, fix, or judge them. It's the foundation of mindful awareness—just noticing what is present in this moment.",
           accessibility: { ariaLabel: "Knowledge check about Observe skill", announceCorrect: true }
         },
         {
@@ -298,7 +298,7 @@ const DBT_COURSE = {
           matchingInstructions: "Match each DBT mindfulness skill to its correct description.",
           matchingPairs: [
             { term: "Observe", definition: "Attend to events, emotions, and behaviors without trying to change them" },
-            { term: "Describe", definition: "Put words on experiencesâ€”label thoughts as thoughts, feelings as feelings" },
+            { term: "Describe", definition: "Put words on experiences—label thoughts as thoughts, feelings as feelings" },
             { term: "Participate", definition: "Fully engage in the current activity without self-consciousness" },
             { term: "Non-judgmentally", definition: "Notice without evaluating as good or bad" },
             { term: "One-mindfully", definition: "Do one thing at a time with complete attention" },
@@ -336,7 +336,7 @@ const DBT_COURSE = {
         {
           type: "text",
           content: `<p>Distress Tolerance skills are designed to help clients survive crisis situations without resorting to self-destructive behaviors. The goal is not to make the distress go away (that comes with emotion regulation skills); the goal is to get through the crisis without making things worse.</p>
-          <p>A key concept is <strong>radical acceptance</strong>â€”fully accepting reality as it is, even when we don't like it. Radical acceptance does not mean approval or resignation; it means acknowledging what is true in this moment so we can respond effectively.</p>`,
+          <p>A key concept is <strong>radical acceptance</strong>—fully accepting reality as it is, even when we don't like it. Radical acceptance does not mean approval or resignation; it means acknowledging what is true in this moment so we can respond effectively.</p>`,
           accessibility: { role: "article", ariaLabel: "Introduction to distress tolerance" }
         },
         {
@@ -356,11 +356,11 @@ const DBT_COURSE = {
             },
             {
               title: "Radical Acceptance",
-              content: "Fully accepting reality as it isâ€”not approval, not resignation, just acknowledgment of what IS true. Suffering = Pain + Non-acceptance. When we stop fighting reality, we can respond effectively."
+              content: "Fully accepting reality as it is—not approval, not resignation, just acknowledgment of what IS true. Suffering = Pain + Non-acceptance. When we stop fighting reality, we can respond effectively."
             },
             {
               title: "Turning the Mind",
-              content: "Choosing to accept. Acceptance is not a one-time decision but an ongoing choice. When you notice yourself fighting reality, turn your mind back toward acceptanceâ€”again and again."
+              content: "Choosing to accept. Acceptance is not a one-time decision but an ongoing choice. When you notice yourself fighting reality, turn your mind back toward acceptance—again and again."
             }
           ],
           accessibility: { role: "region", ariaLabel: "Distress tolerance skills accordion" }
@@ -374,7 +374,7 @@ const DBT_COURSE = {
             { text: "Survive crisis situations without making things worse", isCorrect: true },
             { text: "Replace negative thoughts with positive ones", isCorrect: false }
           ],
-          explanation: "Distress tolerance skills are crisis survival skillsâ€”they help clients get through intense emotional pain without engaging in behaviors that will create additional problems. The goal is not to fix or eliminate the distress but to tolerate it skillfully.",
+          explanation: "Distress tolerance skills are crisis survival skills—they help clients get through intense emotional pain without engaging in behaviors that will create additional problems. The goal is not to fix or eliminate the distress but to tolerate it skillfully.",
           accessibility: { ariaLabel: "Knowledge check about distress tolerance goals", announceCorrect: true }
         },
         {
@@ -426,7 +426,7 @@ const DBT_COURSE = {
         {
           type: "text",
           content: `<p>While Distress Tolerance skills help clients survive crises, Emotion Regulation skills help reduce the frequency and intensity of unwanted emotions over time. This module teaches clients to understand their emotions, reduce vulnerability to negative emotions, and change unwanted emotions when they arise.</p>
-          <p>A foundational concept is that <strong>emotions are not problems to be eliminated</strong>â€”they are signals that provide information. The goal is not to never feel negative emotions but to experience emotions without being controlled by them.</p>`,
+          <p>A foundational concept is that <strong>emotions are not problems to be eliminated</strong>—they are signals that provide information. The goal is not to never feel negative emotions but to experience emotions without being controlled by them.</p>`,
           accessibility: { role: "article", ariaLabel: "Introduction to emotion regulation" }
         },
         {
@@ -446,7 +446,7 @@ const DBT_COURSE = {
             },
             {
               title: "Opposite Action",
-              content: "When an emotion doesn't fit the facts or acting on it would be ineffective, act opposite to the action urge. Fear without threat â†’ approach. Unjustified anger â†’ gently avoid or be kind. Sadness without loss â†’ get active."
+              content: "When an emotion doesn't fit the facts or acting on it would be ineffective, act opposite to the action urge. Fear without threat → approach. Unjustified anger → gently avoid or be kind. Sadness without loss → get active."
             },
             {
               title: "Problem Solving",
@@ -493,7 +493,7 @@ const DBT_COURSE = {
             { text: "Experience emotions without being controlled by them", isCorrect: true },
             { text: "Suppress emotions until they naturally dissipate", isCorrect: false }
           ],
-          explanation: "DBT views emotions as valid and functionalâ€”they provide important information. The goal is not to eliminate negative emotions but to reduce suffering caused by unregulated emotional responses and to have more control over emotional experiences.",
+          explanation: "DBT views emotions as valid and functional—they provide important information. The goal is not to eliminate negative emotions but to reduce suffering caused by unregulated emotional responses and to have more control over emotional experiences.",
           accessibility: { ariaLabel: "Knowledge check about emotion regulation goals", announceCorrect: true }
         }
       ]
@@ -548,7 +548,7 @@ const DBT_COURSE = {
             { text: "Getting what you want or need from interactions", isCorrect: true },
             { text: "Validating other people's perspectives", isCorrect: false }
           ],
-          explanation: "DEAR MAN is the objectives effectiveness skillâ€”it helps you get what you want or need from interpersonal interactions. GIVE focuses on relationship effectiveness, and FAST focuses on self-respect effectiveness.",
+          explanation: "DEAR MAN is the objectives effectiveness skill—it helps you get what you want or need from interpersonal interactions. GIVE focuses on relationship effectiveness, and FAST focuses on self-respect effectiveness.",
           accessibility: { ariaLabel: "Knowledge check about DEAR MAN", announceCorrect: true }
         },
         {
@@ -578,7 +578,7 @@ const DBT_COURSE = {
             { term: "E (DEAR MAN)", definition: "Express your feelings and opinions" },
             { term: "A (DEAR MAN)", definition: "Assert by asking clearly for what you want" },
             { term: "R (DEAR MAN)", definition: "Reinforce by explaining mutual benefits" },
-            { term: "G (GIVE)", definition: "Be Gentleâ€”no attacks, threats, or judgments" },
+            { term: "G (GIVE)", definition: "Be Gentle—no attacks, threats, or judgments" },
             { term: "F (FAST)", definition: "Be Fair to yourself and the other person" }
           ],
           accessibility: { ariaLabel: "Drag and drop matching for interpersonal skills", role: "application" }
@@ -617,11 +617,11 @@ const DBT_COURSE = {
             },
             {
               title: "Phone Coaching",
-              content: "Brief calls between sessions to help clients apply skills in real-time crisis situations. NOT for processing feelings or doing therapyâ€”for skill coaching only. Calls are short (5-10 minutes typically)."
+              content: "Brief calls between sessions to help clients apply skills in real-time crisis situations. NOT for processing feelings or doing therapy—for skill coaching only. Calls are short (5-10 minutes typically)."
             },
             {
               title: "Consultation Team",
-              content: "Weekly meeting for therapists to support each other, maintain motivation, and ensure treatment fidelity. The consultation team is 'therapy for the therapist'â€”essential for preventing burnout with difficult clients."
+              content: "Weekly meeting for therapists to support each other, maintain motivation, and ensure treatment fidelity. The consultation team is 'therapy for the therapist'—essential for preventing burnout with difficult clients."
             },
             {
               title: "DBT-Informed vs. Comprehensive DBT",
@@ -803,7 +803,7 @@ const DBT_COURSE = {
           { text: "Fully acknowledging reality as it is without fighting it", isCorrect: true },
           { text: "Accepting that you cannot change", isCorrect: false }
         ],
-        explanation: "Radical acceptance is acknowledging what IS true so you can respond effectivelyâ€”not approval or resignation."
+        explanation: "Radical acceptance is acknowledging what IS true so you can respond effectively—not approval or resignation."
       },
       {
         question: "The DBT 'What' skills include:",
@@ -863,7 +863,7 @@ const DBT_COURSE = {
           { text: "Support therapists and maintain treatment fidelity", isCorrect: true },
           { text: "Provide group therapy to clients", isCorrect: false }
         ],
-        explanation: "The consultation team is 'therapy for the therapist'â€”supporting clinicians working with challenging clients."
+        explanation: "The consultation team is 'therapy for the therapist'—supporting clinicians working with challenging clients."
       },
       {
         question: "Which is NOT a component of comprehensive DBT?",
@@ -933,7 +933,7 @@ const DBT_COURSE = {
           { text: "Having one single goal in therapy", isCorrect: false },
           { text: "Using one skill at a time", isCorrect: false }
         ],
-        explanation: "One-mindfully means doing one thing at a time with complete attentionâ€”the opposite of multitasking."
+        explanation: "One-mindfully means doing one thing at a time with complete attention—the opposite of multitasking."
       },
       {
         question: "FAST skills help maintain:",
@@ -964,11 +964,11 @@ const DBT_COURSE = {
 // ============================================================
 
 async function seedDBTCourse() {
-  console.log('\nðŸ§  Seeding DBT Skills Training Course...\n');
+  console.log('\n🧠 Seeding DBT Skills Training Course...\n');
   
   try {
     await mongoose.connect(MONGODB_URI);
-    console.log('âœ… Connected to MongoDB\n');
+    console.log('✅ Connected to MongoDB\n');
 
     const Course = mongoose.connection.models.Course || 
       mongoose.model('Course', new mongoose.Schema({}, { strict: false }));
@@ -983,10 +983,10 @@ async function seedDBTCourse() {
 
     if (existing) {
       await Course.updateOne({ _id: existing._id }, { $set: DBT_COURSE });
-      console.log('âœï¸  Updated existing DBT course');
+      console.log('✏️  Updated existing DBT course');
     } else {
       await Course.create(DBT_COURSE);
-      console.log('âœ… Created new DBT course');
+      console.log('✅ Created new DBT course');
     }
 
     // Count content blocks
@@ -999,7 +999,7 @@ async function seedDBTCourse() {
       });
     });
 
-    console.log(`\nðŸ“Š Course Statistics:`);
+    console.log(`\n📊 Course Statistics:`);
     console.log(`   Title: ${DBT_COURSE.title}`);
     console.log(`   CE Hours: ${DBT_COURSE.ceHours}`);
     console.log(`   Modules: ${DBT_COURSE.modules.length}`);
@@ -1008,10 +1008,10 @@ async function seedDBTCourse() {
     console.log(`   Final Assessment Questions: ${DBT_COURSE.assessment.questions.length}`);
     console.log(`   Accessibility: WCAG ${DBT_COURSE.accessibility.wcagLevel} compliant`);
 
-    console.log('\nâœ… DBT Course seeded successfully!\n');
+    console.log('\n✅ DBT Course seeded successfully!\n');
 
   } catch (error) {
-    console.error('âŒ Error:', error.message);
+    console.error('❌ Error:', error.message);
   } finally {
     await mongoose.disconnect();
   }
