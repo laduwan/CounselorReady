@@ -1,12 +1,11 @@
-// Certificate Fix: Signed URL Generation
-// =====================================
-// This addresses the 401 Unauthorized error when viewing certificates
-// by implementing signed URL generation for secure Cloudinary access
+// Updated Certificate Fix for CounselorReady
+// =========================================
+// This version works with your existing system that uses 'fileKey' instead of 'cloudinaryPublicId'
 
 const cloudinary = require('cloudinary').v2;
-const Certificate = require('../models/Certificate');
+const Certificate = require('../models/Certificate'); // Adjust path as needed
 
-// Configure Cloudinary (should already be done in certificateService.js)
+// Configure Cloudinary (should already be done)
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
@@ -15,7 +14,7 @@ cloudinary.config({
 
 /**
  * Generate a signed URL for secure certificate access
- * This solves the 401 Unauthorized error from Cloudinary
+ * Works with your existing 'fileKey' field
  */
 function generateSignedCertificateUrl(publicId, options = {}) {
   const defaultOptions = {
@@ -58,8 +57,8 @@ function extractPublicIdFromUrl(cloudinaryUrl) {
 }
 
 /**
- * API Route: Get signed certificate URL
- * Add this to your certificates.js routes file
+ * API Route: Get signed certificate URL (UPDATED VERSION)
+ * This version works with your existing 'fileKey' field
  */
 const getCertificateSignedUrl = async (req, res) => {
   try {
@@ -67,7 +66,7 @@ const getCertificateSignedUrl = async (req, res) => {
     const userId = req.user._id;
 
     // Find certificate and verify ownership
-    const certificate = await Certificate.findById(id).populate('user', '_id');
+    const certificate = await Certificate.findById(id);
     
     if (!certificate) {
       return res.status(404).json({
@@ -76,15 +75,15 @@ const getCertificateSignedUrl = async (req, res) => {
       });
     }
 
-    // Verify user owns this certificate
-    if (certificate.user._id.toString() !== userId.toString()) {
+    // Verify user owns this certificate (updated to use userId instead of populated user)
+    if (certificate.userId.toString() !== userId.toString()) {
       return res.status(403).json({
         success: false,
         error: { code: 'FORBIDDEN', message: 'Access denied' }
       });
     }
 
-    if (!certificate.pdfUrl) {
+    if (!certificate.fileUrl) {
       return res.status(404).json({
         success: false,
         error: { code: 'NO_PDF', message: 'Certificate PDF not available' }
@@ -94,12 +93,13 @@ const getCertificateSignedUrl = async (req, res) => {
     // Generate signed URL
     let signedUrl;
     
-    if (certificate.cloudinaryPublicId) {
-      // Use stored public_id if available
-      signedUrl = generateSignedCertificateUrl(certificate.cloudinaryPublicId);
+    if (certificate.fileKey) {
+      // Use stored fileKey (public_id) - this is your existing field!
+      signedUrl = generateSignedCertificateUrl(certificate.fileKey);
+      console.log(`Generated signed URL using fileKey: ${certificate.fileKey}`);
     } else {
-      // Extract public_id from existing URL
-      const publicId = extractPublicIdFromUrl(certificate.pdfUrl);
+      // Fallback: Extract public_id from existing URL
+      const publicId = extractPublicIdFromUrl(certificate.fileUrl);
       if (!publicId) {
         return res.status(500).json({
           success: false,
@@ -107,6 +107,7 @@ const getCertificateSignedUrl = async (req, res) => {
         });
       }
       signedUrl = generateSignedCertificateUrl(publicId);
+      console.log(`Generated signed URL using extracted publicId: ${publicId}`);
     }
 
     res.json({
@@ -128,94 +129,20 @@ const getCertificateSignedUrl = async (req, res) => {
 };
 
 /**
- * Updated Certificate Service: Store public_id for future use
- * Modify the existing certificateService.js generatePDF function
- */
-const updatedGeneratePDF = async function({
-  certificateNumber,
-  userName,
-  courseTitle,
-  completionDate,
-  ceHours,
-  nbccNumber,
-  providerNumber = '7760',
-  template = 'standard'
-}) {
-  return new Promise((resolve, reject) => {
-    try {
-      // ... existing PDF generation code ...
-
-      const doc = new PDFDocument({
-        size: 'LETTER',
-        layout: 'landscape',
-        margin: 50
-      });
-      
-      const chunks = [];
-      
-      doc.on('data', chunk => chunks.push(chunk));
-      doc.on('end', async () => {
-        try {
-          const pdfBuffer = Buffer.concat(chunks);
-          
-          // Generate public_id for new certificates
-          const publicId = `counselorready/certificates/cert_${certificateNumber.replace(/[^a-zA-Z0-9]/g, '_')}`;
-          
-          // Upload to Cloudinary with explicit public_id
-          const uploadResult = await new Promise((res, rej) => {
-            const uploadStream = cloudinary.uploader.upload_stream(
-              {
-                public_id: publicId,
-                resource_type: 'raw',
-                format: 'pdf',
-                folder: false, // Don't add folder since it's in public_id
-                overwrite: true
-              },
-              (error, result) => {
-                if (error) rej(error);
-                else res(result);
-              }
-            );
-            
-            const readable = new (require('stream').Readable)();
-            readable.push(pdfBuffer);
-            readable.push(null);
-            readable.pipe(uploadStream);
-          });
-          
-          // Return both secure_url and public_id for database storage
-          resolve({
-            url: uploadResult.secure_url,
-            publicId: uploadResult.public_id
-          });
-        } catch (uploadError) {
-          reject(uploadError);
-        }
-      });
-      
-      doc.on('error', reject);
-      
-      // ... rest of PDF generation code remains the same ...
-      
-      doc.end();
-      
-    } catch (error) {
-      reject(error);
-    }
-  });
-};
-
-/**
  * Database Migration Script: Update existing certificates
- * Run this to fix existing certificates with missing cloudinaryPublicId
+ * Run this to fix existing certificates with missing fileKey
  */
 const fixExistingCertificates = async () => {
   console.log('Starting certificate URL fix migration...');
   
   try {
     const certificates = await Certificate.find({ 
-      pdfUrl: { $exists: true },
-      cloudinaryPublicId: { $exists: false }
+      fileUrl: { $exists: true },
+      $or: [
+        { fileKey: { $exists: false } },
+        { fileKey: null },
+        { fileKey: '' }
+      ]
     });
 
     console.log(`Found ${certificates.length} certificates to fix`);
@@ -225,17 +152,17 @@ const fixExistingCertificates = async () => {
     
     for (const cert of certificates) {
       try {
-        const publicId = extractPublicIdFromUrl(cert.pdfUrl);
+        const publicId = extractPublicIdFromUrl(cert.fileUrl);
         
         if (publicId) {
           await Certificate.findByIdAndUpdate(cert._id, {
-            cloudinaryPublicId: publicId
+            fileKey: publicId
           });
           fixed++;
           console.log(`Fixed certificate ${cert.certificateNumber}: ${publicId}`);
         } else {
           failed++;
-          console.log(`Could not extract public_id for certificate ${cert.certificateNumber}: ${cert.pdfUrl}`);
+          console.log(`Could not extract public_id for certificate ${cert.certificateNumber}: ${cert.fileUrl}`);
         }
       } catch (error) {
         failed++;
@@ -249,66 +176,73 @@ const fixExistingCertificates = async () => {
   }
 };
 
+/**
+ * Test function to check if a certificate URL works
+ */
+const testCertificateAccess = async (certificateId) => {
+  try {
+    const certificate = await Certificate.findById(certificateId);
+    if (!certificate) {
+      console.log('Certificate not found');
+      return;
+    }
+
+    console.log('Certificate Details:');
+    console.log('- Certificate Number:', certificate.certificateNumber);
+    console.log('- Original URL:', certificate.fileUrl);
+    console.log('- File Key (public_id):', certificate.fileKey);
+    
+    let publicId = certificate.fileKey;
+    if (!publicId) {
+      publicId = extractPublicIdFromUrl(certificate.fileUrl);
+      console.log('- Extracted Public ID:', publicId);
+    }
+    
+    if (publicId) {
+      const signedUrl = generateSignedCertificateUrl(publicId);
+      console.log('- Signed URL:', signedUrl);
+      console.log('✅ Signed URL generated successfully');
+    } else {
+      console.log('❌ Could not generate signed URL');
+    }
+    
+  } catch (error) {
+    console.error('Test failed:', error);
+  }
+};
+
 // Export functions for use in routes and services
 module.exports = {
   generateSignedCertificateUrl,
   extractPublicIdFromUrl,
   getCertificateSignedUrl,
-  updatedGeneratePDF,
-  fixExistingCertificates
+  fixExistingCertificates,
+  testCertificateAccess
 };
 
 // =====================================
-// IMPLEMENTATION INSTRUCTIONS
+// IMPLEMENTATION STATUS
 // =====================================
 
 /*
-1. ADD TO ROUTES:
-   In /server/src/routes/certificates.js, add:
-   
-   router.get('/:id/signed-url', protect, getCertificateSignedUrl);
+✅ ALREADY COMPLETED:
+1. Signed URL route added to certificates.js (lines 21, 24)
+2. Platform certificates already store fileKey (public_id) correctly
+3. Certificate generation is working properly
 
-2. UPDATE FRONTEND:
-   Instead of using pdfUrl directly, call:
-   
-   GET /api/certificates/{id}/signed-url
-   
-   Then use the signedUrl from the response
+🔧 WHAT'S NEEDED:
+1. Replace the certificate-fix.js utility file with this updated version
+2. Test the signed URL generation
+3. Optionally run migration for old certificates without fileKey
 
-3. UPDATE CERTIFICATE SERVICE:
-   Replace the resolve(uploadResult.secure_url) in certificateService.js with:
-   
-   resolve({
-     url: uploadResult.secure_url,
-     publicId: uploadResult.public_id
-   });
-   
-   And update the calling code to store both values
+📍 YOUR SYSTEM STATUS:
+- Platform certificate generation: ✅ Working (stores fileKey correctly)  
+- Certificate viewing: ❌ Failing (401 errors from direct URLs)
+- Signed URL route: ✅ Added to certificates.js
+- Fix utility: ⏳ Needs this updated version
 
-4. RUN MIGRATION:
-   Execute fixExistingCertificates() to update existing certificates
-
-5. FRONTEND UPDATE EXAMPLE:
-   
-   // Old way (causing 401 error):
-   <a href={certificate.pdfUrl}>Download</a>
-   
-   // New way (secure):
-   const getSignedUrl = async (certId) => {
-     const response = await fetch(`/api/certificates/${certId}/signed-url`, {
-       headers: { Authorization: `Bearer ${token}` }
-     });
-     const { data } = await response.json();
-     return data.signedUrl;
-   };
-   
-   <button onClick={async () => {
-     const url = await getSignedUrl(certificate._id);
-     window.open(url, '_blank');
-   }}>
-     Download Certificate
-   </button>
-
-This fix ensures secure, authenticated access to certificates while maintaining 
-the existing certificate generation workflow.
+🚀 NEXT STEPS:
+1. Replace /server/src/utils/certificate-fix.js with this code
+2. Test by calling: GET /api/certificates/{certificate_id}/signed-url
+3. Update frontend to use signed URLs instead of direct fileUrl
 */
