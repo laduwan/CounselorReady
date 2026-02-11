@@ -93,19 +93,6 @@
         </button>
       </div>
     </div>
-    
-    <!-- Subtle Help Hint (dismissible) -->
-    <div id="pageHint" class="mb-6 flex items-center justify-between bg-stone-100 rounded-lg px-4 py-2 text-sm">
-      <p class="text-forest-600">
-        <span class="font-medium">💡 Tip:</span> This page stores CE certificates. For licenses & credentials, visit 
-        <a href="/credentials.html" class="text-burgundy-700 hover:underline font-medium">Credentials</a>.
-      </p>
-      <button onclick="dismissHint()" class="text-forest-400 hover:text-forest-600 ml-4">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-        </svg>
-      </button>
-    </div>
 
     <!-- Stats Bar -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
@@ -210,7 +197,7 @@
       <div class="p-6 space-y-6">
         <!-- Upload Form -->
         <form id="uploadForm" class="space-y-6">
-          <!-- File Upload -->
+          <!-- File Upload with AI Scan -->
           <div>
             <label class="block text-sm font-semibold text-burgundy-900 mb-3">Certificate File (PDF)</label>
             <div id="dropZone" class="border-2 border-dashed border-forest-300 rounded-xl p-8 text-center hover:border-burgundy-500 transition-colors cursor-pointer">
@@ -221,25 +208,40 @@
                 <div>
                   <p class="text-burgundy-900 font-medium">Click to upload or drag and drop</p>
                   <p class="text-forest-500 text-sm">PDF files only, max 10MB</p>
+                  <p class="text-gold-600 text-sm font-medium mt-1">✨ AI will extract certificate details automatically</p>
                 </div>
               </div>
               <input type="file" id="fileInput" accept=".pdf" class="hidden" onchange="handleFileSelect(event)">
             </div>
-            <div id="filePreview" class="hidden mt-3 p-3 bg-forest-50 rounded-lg flex items-center justify-between">
-              <div class="flex items-center gap-3">
-                <svg class="w-8 h-8 text-burgundy-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                </svg>
-                <div>
-                  <p id="fileName" class="font-medium text-burgundy-900"></p>
-                  <p id="fileSize" class="text-sm text-forest-500"></p>
+            <div id="filePreview" class="hidden mt-3 p-3 bg-forest-50 rounded-lg">
+              <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center gap-3">
+                  <svg class="w-8 h-8 text-burgundy-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                  </svg>
+                  <div>
+                    <p id="fileName" class="font-medium text-burgundy-900"></p>
+                    <p id="fileSize" class="text-sm text-forest-500"></p>
+                  </div>
                 </div>
+                <button type="button" onclick="clearFile()" class="text-forest-400 hover:text-forest-600">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                  </svg>
+                </button>
               </div>
-              <button type="button" onclick="clearFile()" class="text-forest-400 hover:text-forest-600">
+              <!-- AI Scan Button -->
+              <button type="button" id="scanBtn" onclick="scanCertificate()" class="w-full inline-flex items-center justify-center gap-2 bg-gold-600 hover:bg-gold-700 text-white font-semibold px-4 py-2 rounded-lg transition-colors">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
                 </svg>
+                <span id="scanBtnText">Scan Certificate with AI</span>
               </button>
+            </div>
+            <!-- AI Scan Results -->
+            <div id="scanResults" class="hidden mt-3 p-3 bg-blue-50 rounded-lg">
+              <h4 class="font-semibold text-blue-900 mb-2">AI Extracted Information:</h4>
+              <div id="scanResultsContent" class="text-sm text-blue-800"></div>
             </div>
           </div>
 
@@ -310,41 +312,6 @@
             </div>
           </div>
 
-          <!-- Applicability -->
-          <div>
-            <label class="block text-sm font-semibold text-burgundy-900 mb-3">Certificate Applicability</label>
-            <div class="space-y-2">
-              <label class="flex items-center gap-3 cursor-pointer">
-                <input type="radio" name="applicability" value="national" class="w-4 h-4 text-burgundy-600 border-forest-300 focus:ring-burgundy-500">
-                <span class="text-burgundy-900">National (applies to all states)</span>
-              </label>
-              <label class="flex items-center gap-3 cursor-pointer">
-                <input type="radio" name="applicability" value="state-specific" class="w-4 h-4 text-burgundy-600 border-forest-300 focus:ring-burgundy-500">
-                <span class="text-burgundy-900">State-specific</span>
-              </label>
-              <label class="flex items-center gap-3 cursor-pointer">
-                <input type="radio" name="applicability" value="" checked class="w-4 h-4 text-burgundy-600 border-forest-300 focus:ring-burgundy-500">
-                <span class="text-burgundy-900">Not specified</span>
-              </label>
-            </div>
-          </div>
-
-          <!-- State Selection (hidden by default) -->
-          <div id="stateSelection" class="hidden">
-            <label class="block text-sm font-semibold text-burgundy-900 mb-2">Applicable States</label>
-            <div class="grid grid-cols-2 md:grid-cols-3 gap-2 max-h-32 overflow-y-auto border border-forest-200 rounded-lg p-3">
-              <!-- State checkboxes will be populated here -->
-            </div>
-          </div>
-
-          <!-- Apply to Credentials -->
-          <div>
-            <label class="block text-sm font-semibold text-burgundy-900 mb-3">Apply to Credentials (optional)</label>
-            <div id="credentialCheckboxes" class="space-y-2 max-h-32 overflow-y-auto">
-              <!-- Populated by JavaScript -->
-            </div>
-          </div>
-
           <!-- Notes -->
           <div>
             <label for="notes" class="block text-sm font-semibold text-burgundy-900 mb-2">Notes (optional)</label>
@@ -368,7 +335,7 @@
 
   <script>
     // Configuration
-    const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:3001' : 'https://counselorready-backend.onrender.com';
+    const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:3001' : 'https://api.counselorready.com';
     
     // Global variables
     let certificates = [];
@@ -376,7 +343,7 @@
     let selectedFile = null;
     let originalCertificates = [];
 
-    // ✅ NEW SECURE CERTIFICATE VIEWING - Uses backend serving
+    // ✅ Fixed certificate viewing with /serve endpoint
     async function viewCertificate(certificateId, button) {
       try {
         const token = localStorage.getItem('token');
@@ -390,7 +357,7 @@
         `;
         button.disabled = true;
         
-        // NEW APPROACH: Direct backend serving (no signed URLs)
+        // Use the /serve endpoint
         const certificateUrl = `${API_URL}/api/certificates/${certificateId}/serve`;
         
         console.log('Fetching certificate from:', certificateUrl);
@@ -412,12 +379,12 @@
           const url = URL.createObjectURL(blob);
           
           // Open PDF in new window
-          const newWindow = window.open(url, '_blank');
+          window.open(url, '_blank');
           
           // Clean up the object URL after some time
           setTimeout(() => {
             URL.revokeObjectURL(url);
-          }, 60000); // Clean up after 1 minute
+          }, 60000);
           
           console.log('✅ Certificate opened successfully');
         } else {
@@ -431,8 +398,84 @@
         alert('Failed to access certificate. Please try again.');
         
         // Restore button on error
-        button.innerHTML = originalHTML;
-        button.disabled = false;
+        if (button) {
+          button.innerHTML = originalHTML;
+          button.disabled = false;
+        }
+      }
+    }
+
+    // ✅ AI Certificate Scanning Function
+    async function scanCertificate() {
+      if (!selectedFile) {
+        alert('Please select a file first');
+        return;
+      }
+
+      const scanBtn = document.getElementById('scanBtn');
+      const scanBtnText = document.getElementById('scanBtnText');
+      const scanResults = document.getElementById('scanResults');
+      const scanResultsContent = document.getElementById('scanResultsContent');
+
+      // Show loading state
+      scanBtn.disabled = true;
+      scanBtnText.textContent = 'Scanning...';
+      scanBtn.classList.add('opacity-50');
+
+      try {
+        const token = localStorage.getItem('token');
+        const formData = new FormData();
+        formData.append('certificate', selectedFile);
+
+        console.log('Scanning certificate with AI...');
+
+        const response = await fetch(`${API_URL}/api/certificates/scan`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          },
+          body: formData
+        });
+
+        if (response.ok) {
+          const result = await response.json();
+          console.log('AI scan result:', result);
+
+          // Populate form fields with extracted data
+          if (result.title) document.getElementById('certTitle').value = result.title;
+          if (result.provider) document.getElementById('provider').value = result.provider;
+          if (result.ceHours) document.getElementById('ceHours').value = result.ceHours;
+          if (result.completionDate) document.getElementById('completionDate').value = result.completionDate;
+          if (result.category) document.getElementById('category').value = result.category;
+          if (result.nbccApproved) document.getElementById('nbccApproved').checked = result.nbccApproved;
+          if (result.approvingBody) document.getElementById('approvingBody').value = result.approvingBody;
+          if (result.approvalNumber) document.getElementById('approvalNumber').value = result.approvalNumber;
+
+          // Show scan results
+          scanResultsContent.innerHTML = `
+            <div class="grid grid-cols-2 gap-2 text-sm">
+              ${result.title ? `<div><strong>Title:</strong> ${result.title}</div>` : ''}
+              ${result.provider ? `<div><strong>Provider:</strong> ${result.provider}</div>` : ''}
+              ${result.ceHours ? `<div><strong>CE Hours:</strong> ${result.ceHours}</div>` : ''}
+              ${result.completionDate ? `<div><strong>Date:</strong> ${result.completionDate}</div>` : ''}
+            </div>
+          `;
+          scanResults.classList.remove('hidden');
+
+          scanBtnText.textContent = '✅ Scan Complete';
+        } else {
+          console.error('Scan failed:', response.status);
+          scanBtnText.textContent = 'Scan Failed - Try Manual Entry';
+          // Don't alert, just let user continue manually
+        }
+
+      } catch (error) {
+        console.error('Scan error:', error);
+        scanBtnText.textContent = 'Scan Failed - Try Manual Entry';
+        // Don't alert, just let user continue manually
+      } finally {
+        scanBtn.disabled = false;
+        scanBtn.classList.remove('opacity-50');
       }
     }
 
@@ -444,24 +487,44 @@
         return;
       }
       
-      await Promise.all([
-        loadCertificates(),
-        loadUserCredentials()
-      ]);
+      try {
+        await Promise.all([
+          loadCertificates(),
+          loadUserCredentials()
+        ]);
+      } catch (error) {
+        console.error('Initialization error:', error);
+      }
     }
 
+    // ✅ Fixed certificate loading with better error handling
     async function loadCertificates() {
       const token = localStorage.getItem('token');
       try {
+        console.log('Loading certificates...');
         const response = await fetch(`${API_URL}/api/certificates`, {
-          headers: { 'Authorization': `Bearer ${token}` }
+          headers: { 
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
         });
+        
+        console.log('Certificates response status:', response.status);
+        
         if (response.ok) {
           const data = await response.json();
+          console.log('Certificates data:', data);
+          
           originalCertificates = data.certificates || [];
           certificates = [...originalCertificates];
+          
+          console.log(`Loaded ${certificates.length} certificates`);
+          
           renderCertificates();
           updateStats();
+        } else {
+          const errorText = await response.text();
+          console.error('Failed to load certificates:', response.status, errorText);
         }
       } catch (error) {
         console.error('Load certificates error:', error);
@@ -488,9 +551,10 @@
       const container = document.getElementById('certificatesList');
       const emptyState = document.getElementById('emptyState');
       
+      console.log('Rendering certificates, count:', certificates.length);
+      
       if (certificates.length === 0) {
         container.innerHTML = '';
-        container.appendChild(emptyState);
         emptyState.classList.remove('hidden');
         return;
       }
@@ -512,8 +576,6 @@
               <span class="bg-forest-100 text-forest-700 px-2 py-0.5 rounded-full text-xs font-medium">${cert.ceHours || 0} CE Hours</span>
               ${cert.category && cert.category !== 'General' ? `<span class="bg-burgundy-100 text-burgundy-700 px-2 py-0.5 rounded-full text-xs font-medium">${cert.category}</span>` : ''}
               ${cert.approvingBody ? `<span class="bg-gold-100 text-gold-700 px-2 py-0.5 rounded-full text-xs font-medium">${cert.approvingBody}</span>` : (cert.nbccApproved ? '<span class="bg-gold-100 text-gold-700 px-2 py-0.5 rounded-full text-xs font-medium">NBCC</span>' : '')}
-              ${cert.applicability === 'national' ? '<span class="bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full text-xs font-medium">National</span>' : ''}
-              ${cert.applicability === 'state-specific' && cert.applicableStates?.length ? `<span class="bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full text-xs font-medium">${cert.applicableStates.join(', ')}</span>` : ''}
             </div>
             ${cert.verificationCode ? `
               <div class="mt-2 flex items-center gap-2">
@@ -526,12 +588,11 @@
                 </button>
               </div>
             ` : ''}
-            ${getCredentialBadges(cert)}
           </div>
           <div class="flex items-center gap-2">
             ${cert.fileUrl ? `<button onclick="viewCertificate('${cert._id}', this)" class="p-2 text-forest-500 hover:text-forest-700 hover:bg-forest-50 rounded-lg transition-colors" title="View Certificate">
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 616 0z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
               </svg>
             </button>` : ''}
@@ -545,33 +606,6 @@
       `).join('');
       
       container.innerHTML = html;
-    }
-    
-    function copyVerificationCode(code) {
-      navigator.clipboard.writeText(code).then(() => {
-        const toast = document.createElement('div');
-        toast.className = 'fixed bottom-4 right-4 bg-forest-700 text-white px-4 py-2 rounded-lg shadow-lg z-50';
-        toast.textContent = 'Copied!';
-        document.body.appendChild(toast);
-        setTimeout(() => toast.remove(), 2000);
-      });
-    }
-
-    function getCredentialBadges(cert) {
-      if (!cert.credentials || cert.credentials.length === 0) return '';
-      
-      const linkedCredentials = userCredentials.filter(c => cert.credentials.includes(c._id));
-      if (linkedCredentials.length === 0) return '';
-      
-      return `
-        <div class="mt-2 flex flex-wrap gap-1">
-          ${linkedCredentials.map(cred => `
-            <span class="bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full text-xs">
-              Applied to ${cred.name}
-            </span>
-          `).join('')}
-        </div>
-      `;
     }
 
     function renderCredentialCheckboxes() {
@@ -592,8 +626,18 @@
 
     function updateStats() {
       document.getElementById('totalCerts').textContent = certificates.length;
-      document.getElementById('totalHours').textContent = certificates.reduce((sum, c) => sum + (c.ceHours || 0), 0);
+      document.getElementById('totalHours').textContent = certificates.reduce((sum, c) => sum + (parseFloat(c.ceHours) || 0), 0);
       document.getElementById('nbccCerts').textContent = certificates.filter(c => c.nbccApproved).length;
+    }
+
+    function copyVerificationCode(code) {
+      navigator.clipboard.writeText(code).then(() => {
+        const toast = document.createElement('div');
+        toast.className = 'fixed bottom-4 right-4 bg-forest-700 text-white px-4 py-2 rounded-lg shadow-lg z-50';
+        toast.textContent = 'Copied!';
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 2000);
+      });
     }
 
     async function deleteCertificate(id) {
@@ -622,8 +666,8 @@
       
       if (search) {
         filtered = filtered.filter(c => 
-          c.title.toLowerCase().includes(search) || 
-          c.provider.toLowerCase().includes(search)
+          (c.title || '').toLowerCase().includes(search) || 
+          (c.provider || '').toLowerCase().includes(search)
         );
       }
       
@@ -633,31 +677,14 @@
       
       // Sort
       switch (sort) {
-        case 'date-desc': filtered.sort((a, b) => new Date(b.completionDate) - new Date(a.completionDate)); break;
-        case 'date-asc': filtered.sort((a, b) => new Date(a.completionDate) - new Date(b.completionDate)); break;
-        case 'hours-desc': filtered.sort((a, b) => b.ceHours - a.ceHours); break;
-        case 'title-asc': filtered.sort((a, b) => a.title.localeCompare(b.title)); break;
+        case 'date-desc': filtered.sort((a, b) => new Date(b.completionDate || 0) - new Date(a.completionDate || 0)); break;
+        case 'date-asc': filtered.sort((a, b) => new Date(a.completionDate || 0) - new Date(b.completionDate || 0)); break;
+        case 'hours-desc': filtered.sort((a, b) => (parseFloat(b.ceHours) || 0) - (parseFloat(a.ceHours) || 0)); break;
+        case 'title-asc': filtered.sort((a, b) => (a.title || '').localeCompare(b.title || '')); break;
       }
       
       certificates = filtered;
       renderCertificates();
-    }
-
-    // Event listeners
-    document.addEventListener('DOMContentLoaded', initializePage);
-    document.getElementById('searchInput').addEventListener('input', filterCertificates);
-    document.getElementById('filterYear').addEventListener('change', filterCertificates);
-    document.getElementById('sortBy').addEventListener('change', filterCertificates);
-
-    // Dismiss hint
-    function dismissHint() {
-      document.getElementById('pageHint').style.display = 'none';
-      localStorage.setItem('certificatesHintDismissed', 'true');
-    }
-
-    // Check if hint was dismissed
-    if (localStorage.getItem('certificatesHintDismissed')) {
-      document.getElementById('pageHint').style.display = 'none';
     }
 
     // Modal functions
@@ -669,6 +696,12 @@
     function closeUploadModal() {
       document.getElementById('uploadModal').classList.add('hidden');
       document.body.style.overflow = '';
+      
+      // Reset form
+      document.getElementById('uploadForm').reset();
+      clearFile();
+      document.getElementById('scanResults').classList.add('hidden');
+      document.getElementById('scanBtnText').textContent = 'Scan Certificate with AI';
     }
 
     // File handling
@@ -694,12 +727,18 @@
       document.getElementById('fileName').textContent = file.name;
       document.getElementById('fileSize').textContent = `${(file.size / 1024 / 1024).toFixed(2)} MB`;
       document.getElementById('filePreview').classList.remove('hidden');
+      
+      // Reset scan button
+      document.getElementById('scanBtnText').textContent = 'Scan Certificate with AI';
+      document.getElementById('scanBtn').disabled = false;
+      document.getElementById('scanResults').classList.add('hidden');
     }
 
     function clearFile() {
       selectedFile = null;
       document.getElementById('fileInput').value = '';
       document.getElementById('filePreview').classList.add('hidden');
+      document.getElementById('scanResults').classList.add('hidden');
     }
 
     // Upload form submission
@@ -711,24 +750,33 @@
         return;
       }
       
-      const formData = new FormData();
-      formData.append('certificate', selectedFile);
-      formData.append('title', document.getElementById('certTitle').value);
-      formData.append('provider', document.getElementById('provider').value);
-      formData.append('completionDate', document.getElementById('completionDate').value);
-      formData.append('ceHours', document.getElementById('ceHours').value);
-      formData.append('category', document.getElementById('category').value);
-      formData.append('nbccApproved', document.getElementById('nbccApproved').checked);
-      formData.append('approvingBody', document.getElementById('approvingBody').value);
-      formData.append('approvalNumber', document.getElementById('approvalNumber').value);
-      formData.append('applicability', document.querySelector('input[name="applicability"]:checked').value);
-      formData.append('notes', document.getElementById('notes').value);
-      
-      // Add selected credentials
-      const selectedCredentials = Array.from(document.querySelectorAll('input[name="credentials"]:checked')).map(cb => cb.value);
-      formData.append('credentials', JSON.stringify(selectedCredentials));
+      const submitBtn = e.target.querySelector('button[type="submit"]');
+      const originalBtnText = submitBtn.innerHTML;
       
       try {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = `
+          <svg class="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+          </svg>
+          Uploading...
+        `;
+        
+        const formData = new FormData();
+        formData.append('certificate', selectedFile);
+        formData.append('title', document.getElementById('certTitle').value);
+        formData.append('provider', document.getElementById('provider').value);
+        formData.append('completionDate', document.getElementById('completionDate').value);
+        formData.append('ceHours', document.getElementById('ceHours').value);
+        formData.append('category', document.getElementById('category').value);
+        formData.append('nbccApproved', document.getElementById('nbccApproved').checked);
+        formData.append('approvingBody', document.getElementById('approvingBody').value);
+        formData.append('approvalNumber', document.getElementById('approvalNumber').value);
+        formData.append('notes', document.getElementById('notes').value);
+        
+        const selectedCredentials = Array.from(document.querySelectorAll('input[name="credentials"]:checked')).map(cb => cb.value);
+        formData.append('credentials', JSON.stringify(selectedCredentials));
+        
         const token = localStorage.getItem('token');
         const response = await fetch(`${API_URL}/api/certificates/upload`, {
           method: 'POST',
@@ -736,18 +784,22 @@
           body: formData
         });
         
+        const result = await response.json();
+        
         if (response.ok) {
+          console.log('Upload successful:', result);
           closeUploadModal();
-          document.getElementById('uploadForm').reset();
-          clearFile();
-          await loadCertificates();
+          await loadCertificates(); // Reload certificates
         } else {
-          const error = await response.json();
-          alert('Upload failed: ' + (error.message || 'Unknown error'));
+          console.error('Upload failed:', result);
+          alert('Upload failed: ' + (result.error || 'Unknown error'));
         }
       } catch (error) {
         console.error('Upload error:', error);
         alert('Upload failed. Please try again.');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalBtnText;
       }
     });
 
@@ -775,6 +827,12 @@
       }
     }
 
+    // Event listeners
+    document.addEventListener('DOMContentLoaded', initializePage);
+    document.getElementById('searchInput').addEventListener('input', filterCertificates);
+    document.getElementById('filterYear').addEventListener('change', filterCertificates);
+    document.getElementById('sortBy').addEventListener('change', filterCertificates);
+
     // Setup drag and drop
     function setupEventListeners() {
       const dropZone = document.getElementById('dropZone');
@@ -799,13 +857,12 @@
       });
     }
 
-    // Initialize event listeners when DOM is loaded
+    // Initialize everything
     document.addEventListener('DOMContentLoaded', setupEventListeners);
-
-    // Close modal on escape
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') closeUploadModal();
     });
+
   </script>
 
 </body>
