@@ -71,7 +71,8 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
-// ✅ FIXED: Secure certificate serving route using Cloudinary signed/private URLs
+// ✅ FIXED: Certificate serving using Cloudinary private download API
+// Bypasses "Restrict unsigned delivery" / "Strict transformations" settings
 router.get('/:id/serve', authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
@@ -79,84 +80,106 @@ router.get('/:id/serve', authenticateToken, async (req, res) => {
 
     console.log(`Certificate serve request: ${id} from user: ${userId}`);
 
-    // Find certificate and verify ownership
     const certificate = await Certificate.findById(id);
     
     if (!certificate) {
-      console.log(`Certificate not found: ${id}`);
       return res.status(404).json({ error: 'Certificate not found' });
     }
 
-    // Verify user owns this certificate
     if (certificate.userId.toString() !== userId.toString()) {
-      console.log(`Access denied for certificate ${id} - user mismatch`);
       return res.status(403).json({ error: 'Access denied' });
     }
 
     if (!certificate.fileUrl) {
-      console.log(`No file URL for certificate ${id}`);
       return res.status(404).json({ error: 'Certificate file not available' });
     }
 
     console.log(`Serving certificate ${certificate.certificateNumber || id} from: ${certificate.fileUrl}`);
 
     // Extract public_id from the Cloudinary URL
-    // URL format: https://res.cloudinary.com/{cloud}/image/upload/v{version}/{public_id}.{ext}
     const urlMatch = certificate.fileUrl.match(/\/upload\/(?:v\d+\/)?(.+)$/);
     
     if (!urlMatch) {
-      console.log('Could not parse Cloudinary URL, trying raw fetch...');
-      return tryRawFetch(certificate.fileUrl, certificate, res);
+      console.log('Could not parse Cloudinary URL');
+      return res.status(404).json({ error: 'Certificate file URL is malformed' });
     }
 
-    const fullPath = urlMatch[1]; // e.g., "certificates/userId/cert_name.pdf"
+    const fullPath = urlMatch[1];
     const publicId = fullPath.replace(/\.[^.]+$/, '');
     const ext = fullPath.match(/\.([^.]+)$/)?.[1] || 'pdf';
     
     console.log(`Extracted public_id: ${publicId}, format: ${ext}`);
 
-    // Strategy 1: Check if resource exists and get its details via Admin API
+    // Use Cloudinary's private_download_url API - this generates an authenticated
+    // API-based download URL that bypasses CDN delivery restrictions
     try {
-      const resourceInfo = await cloudinary.api.resource(publicId, { resource_type: 'image' });
-      console.log(`✅ Resource found in Cloudinary: ${resourceInfo.public_id}, bytes: ${resourceInfo.bytes}, type: ${resourceInfo.type}`);
+      const downloadUrl = cloudinary.utils.private_download_url(publicId, ext, {
+        resource_type: 'image',
+        type: 'upload',
+        expires_at: Math.floor(Date.now() / 1000) + 3600
+      });
       
-      // Use the secure_url from the resource info (freshest URL)
-      const freshUrl = resourceInfo.secure_url;
-      console.log(`Fresh URL from API: ${freshUrl}`);
+      console.log(`Generated private download URL: ${downloadUrl.substring(0, 80)}...`);
       
-      const fetchResult = await fetch(freshUrl);
-      if (fetchResult.ok) {
-        const arrayBuffer = await fetchResult.arrayBuffer();
+      const response = await fetch(downloadUrl);
+      
+      if (response.ok) {
+        const arrayBuffer = await response.arrayBuffer();
         const fileBuffer = Buffer.from(arrayBuffer);
-        console.log(`✅ Fetched via fresh URL, size: ${fileBuffer.length} bytes`);
+        console.log(`✅ Private download worked! Size: ${fileBuffer.length} bytes`);
         return sendFile(res, fileBuffer, certificate, ext);
       }
-      console.log(`Fresh URL returned ${fetchResult.status}`);
-    } catch (apiErr) {
-      console.log(`Admin API check failed: ${apiErr.message}`);
       
-      // Maybe it was uploaded as 'raw' resource type instead of 'image'
-      try {
-        const rawResource = await cloudinary.api.resource(publicId, { resource_type: 'raw' });
-        console.log(`✅ Found as raw resource: ${rawResource.secure_url}`);
-        const fetchResult = await fetch(rawResource.secure_url);
-        if (fetchResult.ok) {
-          const arrayBuffer = await fetchResult.arrayBuffer();
-          const fileBuffer = Buffer.from(arrayBuffer);
-          return sendFile(res, fileBuffer, certificate, ext);
-        }
-      } catch (rawErr) {
-        console.log(`Raw resource check also failed: ${rawErr.message}`);
-      }
+      console.log(`Private download returned ${response.status}: ${await response.text()}`);
+    } catch (dlErr) {
+      console.log(`Private download URL failed: ${dlErr.message}`);
     }
 
-    // Strategy 2: Generate a signed URL
+    // Strategy 2: Use Admin API to get raw content via explicit download
+    try {
+      console.log('Trying Admin API download...');
+      // Generate a URL using the Cloudinary API endpoint directly
+      const timestamp = Math.floor(Date.now() / 1000);
+      const apiKey = process.env.CLOUDINARY_API_KEY;
+      const apiSecret = process.env.CLOUDINARY_API_SECRET;
+      const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
+      
+      // Create signature for the download
+      const crypto = await import('crypto');
+      const toSign = `public_id=${publicId}&timestamp=${timestamp}${apiSecret}`;
+      const signature = crypto.createHash('sha1').update(toSign).digest('hex');
+      
+      const apiDownloadUrl = `https://api.cloudinary.com/v1_1/${cloudName}/image/download?` +
+        `public_id=${encodeURIComponent(publicId)}&` +
+        `timestamp=${timestamp}&` +
+        `api_key=${apiKey}&` +
+        `signature=${signature}&` +
+        `format=${ext}`;
+      
+      console.log(`Trying API download endpoint...`);
+      
+      const apiResponse = await fetch(apiDownloadUrl);
+      
+      if (apiResponse.ok) {
+        const arrayBuffer = await apiResponse.arrayBuffer();
+        const fileBuffer = Buffer.from(arrayBuffer);
+        console.log(`✅ API download worked! Size: ${fileBuffer.length} bytes`);
+        return sendFile(res, fileBuffer, certificate, ext);
+      }
+      
+      console.log(`API download returned ${apiResponse.status}`);
+    } catch (apiErr) {
+      console.log(`API download failed: ${apiErr.message}`);
+    }
+
+    // Strategy 3: Use cloudinary.url with auth token
     try {
       const signedUrl = cloudinary.url(publicId, {
         sign_url: true,
         resource_type: 'image',
         format: ext,
-        secure: true
+        secure: true,
+        type: 'upload'
       });
       console.log(`Trying signed URL: ${signedUrl}`);
       
@@ -164,16 +187,21 @@ router.get('/:id/serve', authenticateToken, async (req, res) => {
       if (signedResult.ok) {
         const arrayBuffer = await signedResult.arrayBuffer();
         const fileBuffer = Buffer.from(arrayBuffer);
-        console.log(`✅ Signed URL worked, size: ${fileBuffer.length} bytes`);
+        console.log(`✅ Signed URL worked! Size: ${fileBuffer.length} bytes`);
         return sendFile(res, fileBuffer, certificate, ext);
       }
       console.log(`Signed URL returned ${signedResult.status}`);
     } catch (signErr) {
-      console.log(`Signed URL attempt failed: ${signErr.message}`);
+      console.log(`Signed URL failed: ${signErr.message}`);
     }
 
-    // Strategy 3: Try raw stored URL  
-    return tryRawFetch(certificate.fileUrl, certificate, res);
+    // All strategies exhausted
+    console.error('❌ All Cloudinary access methods failed. Check Cloudinary security settings.');
+    console.error('Go to Cloudinary Dashboard → Settings → Security → Disable "Restrict unsigned delivery"');
+    return res.status(503).json({ 
+      error: 'Certificate file cannot be accessed. Cloudinary delivery is restricted.',
+      hint: 'Admin: Check Cloudinary security settings'
+    });
 
   } catch (error) {
     console.error('Certificate serving error:', error);
@@ -196,25 +224,6 @@ function sendFile(res, fileBuffer, certificate, ext) {
     'Cache-Control': 'private, max-age=3600'
   });
   return res.send(fileBuffer);
-}
-
-// Helper: try raw URL fetch with redirect fallback
-async function tryRawFetch(url, certificate, res) {
-  try {
-    const response = await fetch(url);
-    if (response.ok) {
-      const arrayBuffer = await response.arrayBuffer();
-      const fileBuffer = Buffer.from(arrayBuffer);
-      console.log(`✅ Raw URL worked, size: ${fileBuffer.length} bytes`);
-      const ext = url.match(/\.([^.?]+)(?:\?|$)/)?.[1] || 'pdf';
-      return sendFile(res, fileBuffer, certificate, ext);
-    }
-    console.log(`Raw URL returned ${response.status}, redirecting as last resort...`);
-  } catch (err) {
-    console.error('Raw URL fetch failed:', err.message);
-  }
-  // Absolute last resort: redirect
-  return res.redirect(url);
 }
 
 // GET /api/certificates - Get all certificates for authenticated user
