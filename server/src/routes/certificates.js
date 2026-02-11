@@ -3,9 +3,10 @@
 import { Router } from 'express';
 import multer from 'multer';
 import { v2 as cloudinary } from 'cloudinary';
-import fetch from 'node-fetch';
 import Certificate from '../models/Certificate.js';
 import jwt from 'jsonwebtoken';
+
+// Use native fetch (Node 18+) — no need for node-fetch
 
 // Create router instance
 const router = Router();
@@ -54,10 +55,11 @@ const upload = multer({
     fileSize: 10 * 1024 * 1024, // 10MB limit
   },
   fileFilter: (req, file, cb) => {
-    if (file.mimetype === 'application/pdf') {
+    const allowed = ['application/pdf', 'image/jpeg', 'image/png', 'image/jpg'];
+    if (allowed.includes(file.mimetype)) {
       cb(null, true);
     } else {
-      cb(new Error('Only PDF files are allowed'), false);
+      cb(new Error('Only PDF, JPG, and PNG files are allowed'), false);
     }
   }
 });
@@ -69,7 +71,7 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
-// ✅ MAIN FIX: Secure certificate serving route
+// ✅ FIXED: Secure certificate serving route with fallback
 router.get('/:id/serve', authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
@@ -98,29 +100,46 @@ router.get('/:id/serve', authenticateToken, async (req, res) => {
 
     console.log(`Serving certificate ${certificate.certificateNumber || id} from: ${certificate.fileUrl}`);
 
-    // Fetch the file directly from Cloudinary
-    const response = await fetch(certificate.fileUrl);
-    
-    if (!response.ok) {
-      console.error(`Failed to fetch certificate from Cloudinary: ${response.status} ${response.statusText}`);
-      return res.status(404).json({ error: 'Certificate file not accessible' });
+    // Try to fetch the file from Cloudinary and proxy it
+    try {
+      const response = await fetch(certificate.fileUrl);
+      
+      if (!response.ok) {
+        console.error(`Cloudinary fetch failed: ${response.status} ${response.statusText} for URL: ${certificate.fileUrl}`);
+        // Fallback: redirect to the Cloudinary URL directly
+        // (some Cloudinary URLs work in browser but fail server-to-server)
+        console.log('Falling back to redirect...');
+        return res.redirect(certificate.fileUrl);
+      }
+
+      // Use arrayBuffer() for compatibility (works with both node-fetch and native fetch)
+      const arrayBuffer = await response.arrayBuffer();
+      const fileBuffer = Buffer.from(arrayBuffer);
+      
+      console.log(`Successfully fetched certificate file, size: ${fileBuffer.length} bytes`);
+
+      // Determine content type from filename
+      const fileName = certificate.fileName || 'certificate.pdf';
+      const isImage = /\.(jpg|jpeg|png)$/i.test(fileName);
+      const contentType = isImage 
+        ? (fileName.match(/\.png$/i) ? 'image/png' : 'image/jpeg')
+        : 'application/pdf';
+
+      // Set proper headers for viewing
+      res.set({
+        'Content-Type': contentType,
+        'Content-Disposition': `inline; filename="${fileName}"`,
+        'Content-Length': fileBuffer.length,
+        'Cache-Control': 'private, max-age=3600'
+      });
+
+      // Send the file
+      res.send(fileBuffer);
+    } catch (fetchError) {
+      console.error('Fetch error, redirecting to source URL:', fetchError.message);
+      // If fetch completely fails, redirect as fallback
+      return res.redirect(certificate.fileUrl);
     }
-
-    // Get the file data
-    const fileBuffer = await response.buffer();
-    
-    console.log(`Successfully fetched certificate file, size: ${fileBuffer.length} bytes`);
-
-    // Set proper headers for PDF viewing
-    res.set({
-      'Content-Type': 'application/pdf',
-      'Content-Disposition': `inline; filename="${certificate.fileName || 'certificate.pdf'}"`,
-      'Content-Length': fileBuffer.length,
-      'Cache-Control': 'private, max-age=3600'
-    });
-
-    // Send the PDF file
-    res.send(fileBuffer);
 
   } catch (error) {
     console.error('Certificate serving error:', error);
@@ -179,13 +198,16 @@ router.post('/upload', authenticateToken, upload.single('certificate'), async (r
     const certificateNumber = `CR-${randomStr}-${timestamp.toString().slice(-4)}`;
 
     // Upload to Cloudinary
+    const isPDF = req.file.mimetype === 'application/pdf';
+    const fileExt = isPDF ? 'pdf' : (req.file.mimetype === 'image/png' ? 'png' : 'jpg');
+    
     const uploadResult = await new Promise((resolve, reject) => {
       cloudinary.uploader.upload_stream(
         {
           folder: `certificates/${req.user._id}`,
           public_id: `cert_${timestamp}`,
-          resource_type: 'image', // Use 'image' for PDFs
-          format: 'pdf'
+          resource_type: 'image',
+          format: fileExt
         },
         (error, result) => {
           if (error) reject(error);
