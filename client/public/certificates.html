@@ -231,7 +231,7 @@
                 </button>
               </div>
               <!-- AI Scan Button -->
-              <button type="button" id="scanBtn" onclick="scanCertificate()" class="w-full inline-flex items-center justify-center gap-2 bg-gold-600 hover:bg-gold-700 text-white font-semibold px-4 py-2 rounded-lg transition-colors">
+              <button type="button" id="scanBtn" onclick="scanCertificate()" class="w-full inline-flex items-center justify-center gap-2 bg-forest-600 hover:bg-forest-700 text-white font-semibold px-4 py-2 rounded-lg transition-colors">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
                 </svg>
@@ -316,6 +316,33 @@
           <div>
             <label for="notes" class="block text-sm font-semibold text-burgundy-900 mb-2">Notes (optional)</label>
             <textarea id="notes" rows="3" class="w-full px-4 py-2 border border-forest-200 rounded-lg focus:ring-2 focus:ring-burgundy-500 focus:border-burgundy-500 outline-none" placeholder="Any additional notes about this certificate..."></textarea>
+          </div>
+
+          <!-- Certificate Applicability -->
+          <div>
+            <label class="block text-sm font-semibold text-burgundy-900 mb-3">Certificate Applicability</label>
+            <div class="space-y-2">
+              <label class="flex items-center gap-3 cursor-pointer">
+                <input type="radio" name="applicability" value="national" class="w-4 h-4 text-burgundy-600 border-forest-300 focus:ring-burgundy-500">
+                <span class="text-forest-700">National (applies to all states)</span>
+              </label>
+              <label class="flex items-center gap-3 cursor-pointer">
+                <input type="radio" name="applicability" value="state" class="w-4 h-4 text-burgundy-600 border-forest-300 focus:ring-burgundy-500">
+                <span class="text-forest-700">State-specific</span>
+              </label>
+              <label class="flex items-center gap-3 cursor-pointer">
+                <input type="radio" name="applicability" value="" checked class="w-4 h-4 text-burgundy-600 border-forest-300 focus:ring-burgundy-500">
+                <span class="text-forest-700">Not specified</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Apply to Credentials -->
+          <div>
+            <label class="block text-sm font-semibold text-burgundy-900 mb-2">Apply to Credentials (optional)</label>
+            <div id="credentialCheckboxes" class="space-y-2">
+              <p class="text-forest-500 text-sm">Loading credentials...</p>
+            </div>
           </div>
 
           <!-- Form Actions -->
@@ -794,6 +821,11 @@
         formData.append('approvingBody', document.getElementById('approvingBody').value);
         formData.append('approvalNumber', document.getElementById('approvalNumber').value);
         formData.append('notes', document.getElementById('notes').value);
+        
+        const applicability = document.querySelector('input[name="applicability"]:checked');
+        if (applicability && applicability.value) {
+          formData.append('applicability', applicability.value);
+        }
         
         const selectedCredentials = Array.from(document.querySelectorAll('input[name="credentials"]:checked')).map(cb => cb.value);
         formData.append('credentials', JSON.stringify(selectedCredentials));
