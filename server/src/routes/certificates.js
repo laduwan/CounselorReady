@@ -71,7 +71,7 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
-// ✅ FIXED: Secure certificate serving route with fallback
+// ✅ FIXED: Secure certificate serving route using Cloudinary signed/private URLs
 router.get('/:id/serve', authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
@@ -100,52 +100,122 @@ router.get('/:id/serve', authenticateToken, async (req, res) => {
 
     console.log(`Serving certificate ${certificate.certificateNumber || id} from: ${certificate.fileUrl}`);
 
-    // Try to fetch the file from Cloudinary and proxy it
-    try {
-      const response = await fetch(certificate.fileUrl);
-      
-      if (!response.ok) {
-        console.error(`Cloudinary fetch failed: ${response.status} ${response.statusText} for URL: ${certificate.fileUrl}`);
-        // Fallback: redirect to the Cloudinary URL directly
-        // (some Cloudinary URLs work in browser but fail server-to-server)
-        console.log('Falling back to redirect...');
-        return res.redirect(certificate.fileUrl);
-      }
-
-      // Use arrayBuffer() for compatibility (works with both node-fetch and native fetch)
-      const arrayBuffer = await response.arrayBuffer();
-      const fileBuffer = Buffer.from(arrayBuffer);
-      
-      console.log(`Successfully fetched certificate file, size: ${fileBuffer.length} bytes`);
-
-      // Determine content type from filename
-      const fileName = certificate.fileName || 'certificate.pdf';
-      const isImage = /\.(jpg|jpeg|png)$/i.test(fileName);
-      const contentType = isImage 
-        ? (fileName.match(/\.png$/i) ? 'image/png' : 'image/jpeg')
-        : 'application/pdf';
-
-      // Set proper headers for viewing
-      res.set({
-        'Content-Type': contentType,
-        'Content-Disposition': `inline; filename="${fileName}"`,
-        'Content-Length': fileBuffer.length,
-        'Cache-Control': 'private, max-age=3600'
-      });
-
-      // Send the file
-      res.send(fileBuffer);
-    } catch (fetchError) {
-      console.error('Fetch error, redirecting to source URL:', fetchError.message);
-      // If fetch completely fails, redirect as fallback
-      return res.redirect(certificate.fileUrl);
+    // Extract public_id from the Cloudinary URL
+    // URL format: https://res.cloudinary.com/{cloud}/image/upload/v{version}/{public_id}.{ext}
+    const urlMatch = certificate.fileUrl.match(/\/upload\/(?:v\d+\/)?(.+)$/);
+    
+    if (!urlMatch) {
+      console.log('Could not parse Cloudinary URL, trying raw fetch...');
+      return tryRawFetch(certificate.fileUrl, certificate, res);
     }
+
+    const fullPath = urlMatch[1]; // e.g., "certificates/userId/cert_name.pdf"
+    const publicId = fullPath.replace(/\.[^.]+$/, '');
+    const ext = fullPath.match(/\.([^.]+)$/)?.[1] || 'pdf';
+    
+    console.log(`Extracted public_id: ${publicId}, format: ${ext}`);
+
+    // Strategy 1: Check if resource exists and get its details via Admin API
+    try {
+      const resourceInfo = await cloudinary.api.resource(publicId, { resource_type: 'image' });
+      console.log(`✅ Resource found in Cloudinary: ${resourceInfo.public_id}, bytes: ${resourceInfo.bytes}, type: ${resourceInfo.type}`);
+      
+      // Use the secure_url from the resource info (freshest URL)
+      const freshUrl = resourceInfo.secure_url;
+      console.log(`Fresh URL from API: ${freshUrl}`);
+      
+      const fetchResult = await fetch(freshUrl);
+      if (fetchResult.ok) {
+        const arrayBuffer = await fetchResult.arrayBuffer();
+        const fileBuffer = Buffer.from(arrayBuffer);
+        console.log(`✅ Fetched via fresh URL, size: ${fileBuffer.length} bytes`);
+        return sendFile(res, fileBuffer, certificate, ext);
+      }
+      console.log(`Fresh URL returned ${fetchResult.status}`);
+    } catch (apiErr) {
+      console.log(`Admin API check failed: ${apiErr.message}`);
+      
+      // Maybe it was uploaded as 'raw' resource type instead of 'image'
+      try {
+        const rawResource = await cloudinary.api.resource(publicId, { resource_type: 'raw' });
+        console.log(`✅ Found as raw resource: ${rawResource.secure_url}`);
+        const fetchResult = await fetch(rawResource.secure_url);
+        if (fetchResult.ok) {
+          const arrayBuffer = await fetchResult.arrayBuffer();
+          const fileBuffer = Buffer.from(arrayBuffer);
+          return sendFile(res, fileBuffer, certificate, ext);
+        }
+      } catch (rawErr) {
+        console.log(`Raw resource check also failed: ${rawErr.message}`);
+      }
+    }
+
+    // Strategy 2: Generate a signed URL
+    try {
+      const signedUrl = cloudinary.url(publicId, {
+        sign_url: true,
+        resource_type: 'image',
+        format: ext,
+        secure: true
+      });
+      console.log(`Trying signed URL: ${signedUrl}`);
+      
+      const signedResult = await fetch(signedUrl);
+      if (signedResult.ok) {
+        const arrayBuffer = await signedResult.arrayBuffer();
+        const fileBuffer = Buffer.from(arrayBuffer);
+        console.log(`✅ Signed URL worked, size: ${fileBuffer.length} bytes`);
+        return sendFile(res, fileBuffer, certificate, ext);
+      }
+      console.log(`Signed URL returned ${signedResult.status}`);
+    } catch (signErr) {
+      console.log(`Signed URL attempt failed: ${signErr.message}`);
+    }
+
+    // Strategy 3: Try raw stored URL  
+    return tryRawFetch(certificate.fileUrl, certificate, res);
 
   } catch (error) {
     console.error('Certificate serving error:', error);
     res.status(500).json({ error: 'Failed to serve certificate' });
   }
 });
+
+// Helper: send file with proper headers
+function sendFile(res, fileBuffer, certificate, ext) {
+  const fileName = certificate.fileName || `certificate.${ext}`;
+  const isImage = /^(jpg|jpeg|png)$/i.test(ext);
+  const contentType = isImage 
+    ? (ext === 'png' ? 'image/png' : 'image/jpeg')
+    : 'application/pdf';
+
+  res.set({
+    'Content-Type': contentType,
+    'Content-Disposition': `inline; filename="${fileName}"`,
+    'Content-Length': fileBuffer.length,
+    'Cache-Control': 'private, max-age=3600'
+  });
+  return res.send(fileBuffer);
+}
+
+// Helper: try raw URL fetch with redirect fallback
+async function tryRawFetch(url, certificate, res) {
+  try {
+    const response = await fetch(url);
+    if (response.ok) {
+      const arrayBuffer = await response.arrayBuffer();
+      const fileBuffer = Buffer.from(arrayBuffer);
+      console.log(`✅ Raw URL worked, size: ${fileBuffer.length} bytes`);
+      const ext = url.match(/\.([^.?]+)(?:\?|$)/)?.[1] || 'pdf';
+      return sendFile(res, fileBuffer, certificate, ext);
+    }
+    console.log(`Raw URL returned ${response.status}, redirecting as last resort...`);
+  } catch (err) {
+    console.error('Raw URL fetch failed:', err.message);
+  }
+  // Absolute last resort: redirect
+  return res.redirect(url);
+}
 
 // GET /api/certificates - Get all certificates for authenticated user
 router.get('/', authenticateToken, async (req, res) => {
