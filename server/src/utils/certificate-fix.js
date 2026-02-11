@@ -12,19 +12,29 @@ cloudinary.config({
 });
 
 /**
- * ✅ FIXED: Generate a signed URL for secure certificate access
- * Changed resource_type from 'raw' to 'image' to match original uploads
+ * ✅ FINAL FIX: Generate a signed URL for secure certificate access
+ * Fixed signature generation parameters
  */
 export function generateSignedCertificateUrl(publicId, options = {}) {
-  const defaultOptions = {
-    resource_type: 'image', // ✅ FIXED: Changed from 'raw' to 'image'
-    sign_url: true,
-    secure: true,
-    expires_at: Math.floor(Date.now() / 1000) + (24 * 60 * 60), // 24 hours
-    type: 'upload'
-  };
-
-  return cloudinary.url(publicId, { ...defaultOptions, ...options });
+  try {
+    // Clean the publicId - remove .pdf extension if present since Cloudinary adds it back
+    const cleanPublicId = publicId.replace(/\.pdf$/, '');
+    
+    const signedUrl = cloudinary.url(cleanPublicId, {
+      resource_type: 'image',
+      type: 'upload',
+      sign_url: true,
+      secure: true,
+      format: 'pdf', // Explicitly specify PDF format
+      expires_at: Math.floor(Date.now() / 1000) + (24 * 60 * 60), // 24 hours from now
+      ...options
+    });
+    
+    return signedUrl;
+  } catch (error) {
+    console.error('Error generating signed URL:', error);
+    throw error;
+  }
 }
 
 /**
