@@ -1,5 +1,5 @@
 // /server/src/routes/certificates.js
-// Simplified certificates router with inline auth to avoid import issues
+// Fixed JWT user extraction for certificates router
 import { Router } from 'express';
 import multer from 'multer';
 import { v2 as cloudinary } from 'cloudinary';
@@ -10,7 +10,7 @@ import jwt from 'jsonwebtoken';
 // Create router instance
 const router = Router();
 
-// Simple inline auth middleware to avoid import issues
+// Fixed auth middleware with better JWT user extraction
 const authenticateToken = (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
@@ -20,15 +20,29 @@ const authenticateToken = (req, res, next) => {
       return res.status(401).json({ error: 'Access token required' });
     }
 
-    jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+    jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
       if (err) {
+        console.error('JWT verification error:', err);
         return res.status(403).json({ error: 'Invalid or expired token' });
       }
-      req.user = user;
+      
+      // Handle different JWT payload structures
+      req.user = {
+        _id: decoded._id || decoded.userId || decoded.id || decoded.sub,
+        ...decoded
+      };
+      
+      console.log(`Authenticated user: ${req.user._id}`);
+      
+      if (!req.user._id) {
+        console.error('No user ID found in token:', decoded);
+        return res.status(403).json({ error: 'Invalid token structure' });
+      }
+      
       next();
     });
   } catch (error) {
-    console.error('Auth error:', error);
+    console.error('Auth middleware error:', error);
     return res.status(500).json({ error: 'Authentication error' });
   }
 };
@@ -151,7 +165,10 @@ router.post('/upload', authenticateToken, upload.single('certificate'), async (r
 
     // Validate required fields
     if (!title || !provider || !completionDate || !ceHours) {
-      return res.status(400).json({ error: 'Missing required fields' });
+      return res.status(400).json({ 
+        success: false,
+        error: 'Missing required fields: title, provider, completionDate, ceHours' 
+      });
     }
 
     console.log(`Uploading certificate: ${title} for user: ${req.user._id}`);
@@ -187,7 +204,7 @@ router.post('/upload', authenticateToken, upload.single('certificate'), async (r
       completionDate: new Date(completionDate),
       ceHours: parseFloat(ceHours),
       category,
-      nbccApproved: nbccApproved === 'true',
+      nbccApproved: nbccApproved === 'true' || nbccApproved === true,
       approvingBody,
       approvalNumber,
       applicability: applicability || null,
@@ -205,13 +222,17 @@ router.post('/upload', authenticateToken, upload.single('certificate'), async (r
     console.log(`Certificate saved with ID: ${certificate._id}`);
 
     res.status(201).json({
+      success: true,
       message: 'Certificate uploaded successfully',
       certificate
     });
 
   } catch (error) {
     console.error('Certificate upload error:', error);
-    res.status(500).json({ error: 'Failed to upload certificate' });
+    res.status(500).json({ 
+      success: false,
+      error: 'Failed to upload certificate: ' + error.message 
+    });
   }
 });
 
@@ -220,6 +241,8 @@ router.post('/generate/:courseId', authenticateToken, async (req, res) => {
   try {
     const { courseId } = req.params;
     const userId = req.user._id;
+
+    console.log(`Certificate generation request for course ${courseId} by user ${userId}`);
 
     // Check if certificate already exists
     const existingCert = await Certificate.findOne({
@@ -230,18 +253,23 @@ router.post('/generate/:courseId', authenticateToken, async (req, res) => {
 
     if (existingCert) {
       return res.status(400).json({
+        success: false,
         error: 'Certificate already exists for this course'
       });
     }
 
     // Placeholder for certificate generation
     res.status(400).json({
-      error: 'Certificate generation temporarily disabled'
+      success: false,
+      error: 'Certificate generation temporarily disabled - feature under development'
     });
 
   } catch (error) {
     console.error('Certificate generation error:', error);
-    res.status(500).json({ error: 'Failed to generate certificate' });
+    res.status(500).json({ 
+      success: false,
+      error: 'Failed to generate certificate' 
+    });
   }
 });
 
