@@ -1,43 +1,37 @@
 // /server/src/routes/certificates.js
-// Complete certificates router with corrected auth import
+// Simplified certificates router with inline auth to avoid import issues
 import { Router } from 'express';
 import multer from 'multer';
 import { v2 as cloudinary } from 'cloudinary';
 import fetch from 'node-fetch';
 import Certificate from '../models/Certificate.js';
-
-// Try common auth middleware import patterns
-let authenticateToken;
-try {
-  // Pattern 1: Default export
-  const authModule = await import('../middleware/auth.js');
-  authenticateToken = authModule.default;
-} catch {
-  try {
-    // Pattern 2: Named export with different name
-    const authModule = await import('../middleware/auth.js');
-    authenticateToken = authModule.authenticate || authModule.verifyToken || authModule.authMiddleware;
-  } catch {
-    // Pattern 3: Create a simple auth middleware if none exists
-    authenticateToken = (req, res, next) => {
-      const token = req.headers.authorization?.split(' ')[1];
-      if (!token) {
-        return res.status(401).json({ error: 'No token provided' });
-      }
-      // Simple token validation - you should implement proper JWT verification
-      try {
-        // This is a placeholder - implement your actual token verification
-        req.user = { _id: 'placeholder-user-id' };
-        next();
-      } catch (error) {
-        res.status(401).json({ error: 'Invalid token' });
-      }
-    };
-  }
-}
+import jwt from 'jsonwebtoken';
 
 // Create router instance
 const router = Router();
+
+// Simple inline auth middleware to avoid import issues
+const authenticateToken = (req, res, next) => {
+  try {
+    const authHeader = req.headers.authorization;
+    const token = authHeader && authHeader.split(' ')[1];
+
+    if (!token) {
+      return res.status(401).json({ error: 'Access token required' });
+    }
+
+    jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+      if (err) {
+        return res.status(403).json({ error: 'Invalid or expired token' });
+      }
+      req.user = user;
+      next();
+    });
+  } catch (error) {
+    console.error('Auth error:', error);
+    return res.status(500).json({ error: 'Authentication error' });
+  }
+};
 
 // Configure multer for file uploads
 const upload = multer({
