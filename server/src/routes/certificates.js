@@ -107,3 +107,4 @@ async function viewCertificate(certificateId, button) {
     button.disabled = false;
   }
 }
+export default router;
