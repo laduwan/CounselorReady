@@ -13,21 +13,19 @@ cloudinary.config({
 
 /**
  * ✅ FINAL FIX: Generate a signed URL for secure certificate access
- * Fixed signature generation parameters
+ * Fixed signature generation to match Cloudinary's requirements
  */
 export function generateSignedCertificateUrl(publicId, options = {}) {
   try {
-    // Clean the publicId - remove .pdf extension if present since Cloudinary adds it back
-    const cleanPublicId = publicId.replace(/\.pdf$/, '');
-    
-    const signedUrl = cloudinary.url(cleanPublicId, {
+    // Don't remove .pdf extension - keep the full publicId as stored
+    const signedUrl = cloudinary.url(publicId, {
       resource_type: 'image',
       type: 'upload',
       sign_url: true,
       secure: true,
-      format: 'pdf', // Explicitly specify PDF format
       expires_at: Math.floor(Date.now() / 1000) + (24 * 60 * 60), // 24 hours from now
       ...options
+      // Don't specify format - let Cloudinary use what's in the publicId
     });
     
     return signedUrl;
@@ -98,7 +96,7 @@ export const getCertificateSignedUrl = async (req, res) => {
     let signedUrl;
     
     if (certificate.fileKey) {
-      // Use stored fileKey (public_id)
+      // Use stored fileKey (public_id) - keep it exactly as stored
       signedUrl = generateSignedCertificateUrl(certificate.fileKey);
       console.log(`Generated signed URL using fileKey: ${certificate.fileKey}`);
     } else {
