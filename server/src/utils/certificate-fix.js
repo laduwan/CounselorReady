@@ -12,11 +12,12 @@ cloudinary.config({
 });
 
 /**
- * Generate a signed URL for secure certificate access
+ * ✅ FIXED: Generate a signed URL for secure certificate access
+ * Changed resource_type from 'raw' to 'image' to match original uploads
  */
 export function generateSignedCertificateUrl(publicId, options = {}) {
   const defaultOptions = {
-    resource_type: 'raw',
+    resource_type: 'image', // ✅ FIXED: Changed from 'raw' to 'image'
     sign_url: true,
     secure: true,
     expires_at: Math.floor(Date.now() / 1000) + (24 * 60 * 60), // 24 hours
@@ -27,26 +28,21 @@ export function generateSignedCertificateUrl(publicId, options = {}) {
 }
 
 /**
- * ✅ FIXED: Extract public_id from existing Cloudinary URL
+ * Extract public_id from existing Cloudinary URL
  */
 export function extractPublicIdFromUrl(cloudinaryUrl) {
   if (!cloudinaryUrl) return null;
   
   try {
-    // Example URL: https://res.cloudinary.com/dzfsgjhdx/image/upload/v1770709313957/certificates/695810fa77585ec7a2c97ec2/cert_1770709313957.pdf
-    
     const url = new URL(cloudinaryUrl);
     const pathParts = url.pathname.split('/');
     
-    // Find the upload index
     const uploadIndex = pathParts.findIndex(part => part === 'upload');
     if (uploadIndex === -1) return null;
     
-    // Get everything after 'upload/' - this includes version, folder, and filename
     const publicIdParts = pathParts.slice(uploadIndex + 1);
     const fullPath = publicIdParts.join('/');
     
-    // Return the full path: v1770709313957/certificates/695810fa77585ec7a2c97ec2/cert_1770709313957.pdf
     return fullPath;
     
   } catch (error) {
