@@ -199,7 +199,7 @@
         <form id="uploadForm" class="space-y-6">
           <!-- File Upload with AI Scan -->
           <div>
-            <label class="block text-sm font-semibold text-burgundy-900 mb-3">Certificate File (PDF)</label>
+            <label class="block text-sm font-semibold text-burgundy-900 mb-3">Certificate File (PDF or Image)</label>
             <div id="dropZone" class="border-2 border-dashed border-forest-300 rounded-xl p-8 text-center hover:border-burgundy-500 transition-colors cursor-pointer">
               <div class="space-y-3">
                 <svg class="mx-auto h-12 w-12 text-forest-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
@@ -207,11 +207,11 @@
                 </svg>
                 <div>
                   <p class="text-burgundy-900 font-medium">Click to upload or drag and drop</p>
-                  <p class="text-forest-500 text-sm">PDF files only, max 10MB</p>
+                  <p class="text-forest-500 text-sm">PDF, JPG, or PNG files, max 10MB</p>
                   <p class="text-gold-600 text-sm font-medium mt-1">✨ AI will extract certificate details automatically</p>
                 </div>
               </div>
-              <input type="file" id="fileInput" accept=".pdf" class="hidden" onchange="handleFileSelect(event)">
+              <input type="file" id="fileInput" accept=".pdf,.jpg,.jpeg,.png" class="hidden" onchange="handleFileSelect(event)">
             </div>
             <div id="filePreview" class="hidden mt-3 p-3 bg-forest-50 rounded-lg">
               <div class="flex items-center justify-between mb-3">
@@ -374,23 +374,38 @@
         button.disabled = false;
         
         if (response.ok) {
-          // Get the PDF blob and create object URL
-          const blob = await response.blob();
-          const url = URL.createObjectURL(blob);
+          // Check if we got redirected (fallback redirect from backend)
+          const contentType = response.headers.get('content-type') || '';
           
-          // Open PDF in new window
-          window.open(url, '_blank');
-          
-          // Clean up the object URL after some time
-          setTimeout(() => {
-            URL.revokeObjectURL(url);
-          }, 60000);
-          
-          console.log('✅ Certificate opened successfully');
+          if (contentType.includes('application/pdf') || contentType.includes('image/')) {
+            // Got the file directly — open as blob
+            const blob = await response.blob();
+            const url = URL.createObjectURL(blob);
+            window.open(url, '_blank');
+            setTimeout(() => URL.revokeObjectURL(url), 60000);
+            console.log('✅ Certificate opened successfully');
+          } else {
+            // Might be a JSON error or unexpected response, try direct URL
+            console.warn('Unexpected content type, trying direct URL...');
+            const cert = originalCertificates.find(c => c._id === certificateId);
+            if (cert && cert.fileUrl) {
+              window.open(cert.fileUrl, '_blank');
+            } else {
+              alert('Could not open certificate.');
+            }
+          }
         } else {
-          const errorText = await response.text();
-          console.error('❌ Certificate access failed:', response.status, errorText);
-          alert('Error accessing certificate. Please try again.');
+          console.error('❌ Certificate serve failed:', response.status);
+          // Fallback: try opening the stored Cloudinary URL directly
+          const cert = originalCertificates.find(c => c._id === certificateId);
+          if (cert && cert.fileUrl) {
+            console.log('Trying direct Cloudinary URL as fallback...');
+            window.open(cert.fileUrl, '_blank');
+          } else {
+            const errorText = await response.text();
+            console.error('Error details:', errorText);
+            alert('Error accessing certificate. The file may no longer be available.');
+          }
         }
         
       } catch (error) {
@@ -425,11 +440,11 @@
       try {
         const token = localStorage.getItem('token');
         const formData = new FormData();
-        formData.append('certificate', selectedFile);
+        formData.append('file', selectedFile);
 
         console.log('Scanning certificate with AI...');
 
-        const response = await fetch(`${API_URL}/api/certificates/scan`, {
+        const response = await fetch(`${API_URL}/api/scan`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${token}`
@@ -441,23 +456,28 @@
           const result = await response.json();
           console.log('AI scan result:', result);
 
+          // Extract the nested data (scan API returns { success, extracted: {...} })
+          const data = result.extracted || result;
+
           // Populate form fields with extracted data
-          if (result.title) document.getElementById('certTitle').value = result.title;
-          if (result.provider) document.getElementById('provider').value = result.provider;
-          if (result.ceHours) document.getElementById('ceHours').value = result.ceHours;
-          if (result.completionDate) document.getElementById('completionDate').value = result.completionDate;
-          if (result.category) document.getElementById('category').value = result.category;
-          if (result.nbccApproved) document.getElementById('nbccApproved').checked = result.nbccApproved;
-          if (result.approvingBody) document.getElementById('approvingBody').value = result.approvingBody;
-          if (result.approvalNumber) document.getElementById('approvalNumber').value = result.approvalNumber;
+          if (data.title) document.getElementById('certTitle').value = data.title;
+          if (data.provider) document.getElementById('provider').value = data.provider;
+          if (data.ceHours) document.getElementById('ceHours').value = data.ceHours;
+          if (data.completionDate) document.getElementById('completionDate').value = data.completionDate;
+          if (data.category) document.getElementById('category').value = data.category;
+          if (data.approvingBody === 'NBCC' || data.approvingBody === 'ACEP') document.getElementById('nbccApproved').checked = true;
+          if (data.approvingBody) document.getElementById('approvingBody').value = data.approvingBody;
+          if (data.approvalNumber) document.getElementById('approvalNumber').value = data.approvalNumber;
 
           // Show scan results
           scanResultsContent.innerHTML = `
             <div class="grid grid-cols-2 gap-2 text-sm">
-              ${result.title ? `<div><strong>Title:</strong> ${result.title}</div>` : ''}
-              ${result.provider ? `<div><strong>Provider:</strong> ${result.provider}</div>` : ''}
-              ${result.ceHours ? `<div><strong>CE Hours:</strong> ${result.ceHours}</div>` : ''}
-              ${result.completionDate ? `<div><strong>Date:</strong> ${result.completionDate}</div>` : ''}
+              ${data.title ? `<div><strong>Title:</strong> ${data.title}</div>` : ''}
+              ${data.provider ? `<div><strong>Provider:</strong> ${data.provider}</div>` : ''}
+              ${data.ceHours ? `<div><strong>CE Hours:</strong> ${data.ceHours}</div>` : ''}
+              ${data.completionDate ? `<div><strong>Date:</strong> ${data.completionDate}</div>` : ''}
+              ${data.learnerName ? `<div><strong>Learner:</strong> ${data.learnerName}</div>` : ''}
+              ${data.approvingBody ? `<div><strong>Approved by:</strong> ${data.approvingBody}</div>` : ''}
             </div>
           `;
           scanResults.classList.remove('hidden');
@@ -709,8 +729,9 @@
       const file = event.target.files[0];
       if (!file) return;
       
-      if (file.type !== 'application/pdf') {
-        alert('Please select a PDF file');
+      const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png', 'image/jpg'];
+      if (!allowedTypes.includes(file.type)) {
+        alert('Please select a PDF, JPG, or PNG file');
         return;
       }
       
