@@ -1473,10 +1473,10 @@
     
     function getContentHealth(course) {
       const ceHours = course.ceuHours || course.ceHours || 0;
-      const wordCount = countWordsInCourse(course);
+      const wordCount = course.wordCount || countWordsInCourse(course);
       const targetWords = ceHours * 6000;
       const pct = targetWords > 0 ? Math.round((wordCount / targetWords) * 100) : 0;
-      const modules = course.modules?.length || 0;
+      const modules = course.moduleCount || course.modules?.length || 0;
       
       let status, color, bgColor, borderColor, label, icon;
       if (ceHours === 0 && wordCount > 0) {
@@ -1622,8 +1622,8 @@
               <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium border ${health.bgColor} ${health.color} ${health.borderColor}">${health.icon} ${health.label}</span>
             </div>
             <p class="text-sm text-forest-600">
-              ${course.modules?.length || 0} modules • 
-              ${course.ceuHours || 0} CE hrs • 
+              ${course.moduleCount || course.modules?.length || 0} modules • 
+              ${course.ceuHours || course.ceHours || 0} CE hrs • 
               ${health.wordCount.toLocaleString()} words ${progressBar} • 
               ${priceDisplay} • 
               ${isPremium ? '<span class="text-purple-600">Premium</span>' : '<span class="text-gray-500">Standard</span>'} • 
