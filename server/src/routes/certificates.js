@@ -408,12 +408,202 @@ router.delete('/:id', authenticateToken, async (req, res) => {
   }
 });
 
-// GET /api/certificates/transcript - Generate CE transcript
+// GET /api/certificates/transcript - Generate CE transcript PDF
 router.get('/transcript', authenticateToken, async (req, res) => {
   try {
-    res.status(501).json({ error: 'Transcript generation not yet implemented' });
+    const userId = req.user._id;
+    const { credential, startDate, endDate } = req.query;
+    
+    // Get user info
+    const User = (await import('../models/User.js')).default;
+    const user = await User.findById(userId).lean();
+    
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Build query
+    let query = { userId };
+    if (startDate && endDate) {
+      query.completionDate = { $gte: new Date(startDate), $lte: new Date(endDate) };
+    }
+    
+    let certificates = await Certificate.find(query).sort({ completionDate: -1 }).lean();
+    
+    if (credential && credential !== 'all') {
+      certificates = certificates.filter(c => 
+        c.credentials && c.credentials.some(cred => cred.toString() === credential)
+      );
+    }
+
+    // Import PDFKit
+    const PDFDocument = (await import('pdfkit')).default;
+    
+    const doc = new PDFDocument({ 
+      size: 'LETTER', 
+      margin: 50,
+      info: {
+        Title: 'CE Transcript - CounselorReady',
+        Author: 'CounselorReady - NBCC ACEP #7760'
+      }
+    });
+    
+    const chunks = [];
+    doc.on('data', chunk => chunks.push(chunk));
+    doc.on('end', () => {
+      const pdfBuffer = Buffer.concat(chunks);
+      res.set({
+        'Content-Type': 'application/pdf',
+        'Content-Disposition': `inline; filename="CE_Transcript_${new Date().toISOString().slice(0,10)}.pdf"`,
+        'Content-Length': pdfBuffer.length
+      });
+      res.send(pdfBuffer);
+    });
+
+    // === COLORS ===
+    const burgundy = '#6B1D34';
+    const forest = '#4A7C59';
+    const navy = '#34495E';
+    const gold = '#D4A855';
+    const lightGray = '#f5f5f5';
+
+    // === HEADER ===
+    doc.fontSize(20).fillColor(burgundy).font('Helvetica-Bold')
+       .text('COUNSELOR', 50, 50, { continued: true })
+       .fillColor(forest).text('READY');
+    
+    doc.fontSize(9).fillColor(navy).font('Helvetica')
+       .text('NBCC Approved Continuing Education Provider #7760', 50, 75);
+    doc.text('Ga Integrated Therapeutic Perspectives LLC', 50, 87);
+    
+    // Divider
+    doc.moveTo(50, 105).lineTo(562, 105).lineWidth(2).strokeColor(burgundy).stroke();
+
+    // === TITLE ===
+    doc.fontSize(16).fillColor(burgundy).font('Helvetica-Bold')
+       .text('Continuing Education Transcript', 50, 118, { align: 'center' });
+    
+    // === USER INFO ===
+    const userName = `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email;
+    doc.fontSize(11).fillColor(navy).font('Helvetica')
+       .text(`Name: ${userName}`, 50, 145);
+    doc.text(`Email: ${user.email}`, 50, 160);
+    doc.text(`Generated: ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}`, 50, 175);
+    
+    if (startDate && endDate) {
+      doc.text(`Period: ${new Date(startDate).toLocaleDateString()} - ${new Date(endDate).toLocaleDateString()}`, 50, 190);
+    }
+
+    // === SUMMARY STATS ===
+    const totalHours = certificates.reduce((sum, c) => sum + (c.ceHours || 0), 0);
+    const ethicsHours = certificates.filter(c => 
+      c.category && (c.category.toLowerCase().includes('ethics'))
+    ).reduce((sum, c) => sum + (c.ceHours || 0), 0);
+    const nbccCount = certificates.filter(c => c.nbccApproved).length;
+    
+    let statsY = startDate ? 210 : 195;
+    
+    // Stats boxes
+    doc.roundedRect(50, statsY, 155, 45, 5).fillAndStroke(lightGray, '#ddd');
+    doc.roundedRect(220, statsY, 155, 45, 5).fillAndStroke(lightGray, '#ddd');
+    doc.roundedRect(390, statsY, 172, 45, 5).fillAndStroke(lightGray, '#ddd');
+    
+    doc.fontSize(18).fillColor(burgundy).font('Helvetica-Bold');
+    doc.text(String(certificates.length), 55, statsY + 5, { width: 145, align: 'center' });
+    doc.text(String(totalHours), 225, statsY + 5, { width: 145, align: 'center' });
+    doc.text(String(ethicsHours), 395, statsY + 5, { width: 162, align: 'center' });
+    
+    doc.fontSize(8).fillColor(navy).font('Helvetica');
+    doc.text('Certificates', 55, statsY + 30, { width: 145, align: 'center' });
+    doc.text('Total CE Hours', 225, statsY + 30, { width: 145, align: 'center' });
+    doc.text('Ethics Hours', 395, statsY + 30, { width: 162, align: 'center' });
+
+    // === CERTIFICATE TABLE ===
+    let tableY = statsY + 60;
+    
+    // Table header
+    doc.roundedRect(50, tableY, 512, 22, 3).fill(burgundy);
+    doc.fontSize(9).fillColor('#fff').font('Helvetica-Bold');
+    doc.text('Date', 55, tableY + 6, { width: 70 });
+    doc.text('Certificate Title', 130, tableY + 6, { width: 195 });
+    doc.text('Provider', 330, tableY + 6, { width: 100 });
+    doc.text('Hours', 435, tableY + 6, { width: 40, align: 'center' });
+    doc.text('Category', 478, tableY + 6, { width: 80 });
+    
+    tableY += 25;
+
+    // Table rows
+    certificates.forEach((cert, i) => {
+      // Check for page break
+      if (tableY > 700) {
+        doc.addPage();
+        tableY = 50;
+        
+        // Repeat header
+        doc.roundedRect(50, tableY, 512, 22, 3).fill(burgundy);
+        doc.fontSize(9).fillColor('#fff').font('Helvetica-Bold');
+        doc.text('Date', 55, tableY + 6, { width: 70 });
+        doc.text('Certificate Title', 130, tableY + 6, { width: 195 });
+        doc.text('Provider', 330, tableY + 6, { width: 100 });
+        doc.text('Hours', 435, tableY + 6, { width: 40, align: 'center' });
+        doc.text('Category', 478, tableY + 6, { width: 80 });
+        tableY += 25;
+      }
+      
+      // Alternating row colors
+      if (i % 2 === 0) {
+        doc.rect(50, tableY - 2, 512, 20).fill('#fafafa');
+      }
+      
+      const dateStr = cert.completionDate 
+        ? new Date(cert.completionDate).toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' })
+        : 'N/A';
+      
+      const category = (cert.category || 'General')
+        .replace('cultural-diversity', 'Cultural Div.')
+        .replace('substance-abuse', 'Substance Abuse')
+        .replace('professional-development', 'Prof. Dev.');
+      
+      doc.fontSize(8.5).fillColor(navy).font('Helvetica');
+      doc.text(dateStr, 55, tableY + 2, { width: 70 });
+      doc.text((cert.title || 'Untitled').substring(0, 40), 130, tableY + 2, { width: 195 });
+      doc.text((cert.provider || 'Unknown').substring(0, 22), 330, tableY + 2, { width: 100 });
+      doc.fontSize(9).font('Helvetica-Bold').fillColor(forest);
+      doc.text(String(cert.ceHours || 0), 435, tableY + 2, { width: 40, align: 'center' });
+      doc.fontSize(7.5).fillColor(navy).font('Helvetica');
+      doc.text(category.substring(0, 15), 478, tableY + 2, { width: 80 });
+      
+      // NBCC badge
+      if (cert.nbccApproved) {
+        doc.fontSize(6).fillColor(gold).text('NBCC', 555, tableY + 2);
+      }
+      
+      tableY += 20;
+    });
+
+    // Total row
+    tableY += 5;
+    doc.moveTo(50, tableY).lineTo(562, tableY).lineWidth(1).strokeColor(burgundy).stroke();
+    tableY += 8;
+    doc.fontSize(10).fillColor(burgundy).font('Helvetica-Bold');
+    doc.text(`Total: ${certificates.length} certificates, ${totalHours} CE hours`, 55, tableY);
+    if (ethicsHours > 0) {
+      doc.fontSize(9).fillColor(forest)
+         .text(`(including ${ethicsHours} ethics hours)`, 300, tableY);
+    }
+
+    // === FOOTER ===
+    const footerY = 730;
+    doc.moveTo(50, footerY).lineTo(562, footerY).lineWidth(0.5).strokeColor('#ccc').stroke();
+    doc.fontSize(7).fillColor('#999').font('Helvetica');
+    doc.text('This transcript was generated by CounselorReady (counselorready.com)', 50, footerY + 5, { align: 'center' });
+    doc.text('NBCC Approved Continuing Education Provider #7760 | GAITP LLC', 50, footerY + 15, { align: 'center' });
+    doc.text('This document is for informational purposes. Verify individual certificates at counselorready.com/verify', 50, footerY + 25, { align: 'center' });
+    
+    doc.end();
+    
   } catch (error) {
-    console.error('Transcript error:', error);
+    console.error('Transcript generation error:', error);
     res.status(500).json({ error: 'Failed to generate transcript' });
   }
 });
