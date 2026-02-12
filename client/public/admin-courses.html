@@ -146,6 +146,9 @@
         </div>
       </div>
       
+      <!-- Content Health Dashboard -->
+      <div id="contentHealthDashboard" class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6"></div>
+
       <!-- Search and Bulk Actions Bar -->
       <div class="flex flex-wrap items-center gap-4 mb-6 bg-white p-4 rounded-xl border border-burgundy-100">
         <!-- Search -->
@@ -168,6 +171,18 @@
             <option value="published">Published</option>
             <option value="draft">Draft</option>
             <option value="archived">Archived</option>
+          </select>
+        </div>
+        
+        <!-- Content Health Filter -->
+        <div class="flex items-center gap-2">
+          <label class="text-sm text-forest-600">Content:</label>
+          <select id="contentFilter" onchange="filterCourses()" class="px-3 py-2 border border-forest-200 rounded-lg text-sm">
+            <option value="all">All</option>
+            <option value="complete">✅ Complete (≥90%)</option>
+            <option value="nearly">🟡 Nearly There (50-89%)</option>
+            <option value="wip">🔨 In Progress</option>
+            <option value="no-ce">⚠️ No CE Hrs Set</option>
           </select>
         </div>
         
@@ -1418,6 +1433,110 @@
       updateComplianceBadges();
     }
 
+    // ============================================
+    // CONTENT HEALTH FUNCTIONS
+    // ============================================
+    
+    function countWordsInCourse(course) {
+      let total = 0;
+      function cw(text) {
+        if (!text) return 0;
+        return text.toString().replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().split(' ').filter(w => w.length > 0).length;
+      }
+      if (course.modules && Array.isArray(course.modules)) {
+        for (const mod of course.modules) {
+          total += cw(mod.title); total += cw(mod.description);
+          if (mod.lessons && Array.isArray(mod.lessons)) {
+            for (const lesson of mod.lessons) {
+              total += cw(lesson.title); total += cw(lesson.content);
+              if (lesson.contentBlocks && Array.isArray(lesson.contentBlocks)) {
+                for (const block of lesson.contentBlocks) {
+                  total += cw(block.content); total += cw(block.text);
+                  total += cw(block.question); total += cw(block.explanation);
+                  if (block.options) block.options.forEach(o => total += cw(typeof o === 'string' ? o : o.text || ''));
+                  if (block.items) block.items.forEach(item => { total += cw(typeof item === 'string' ? item : item.title || ''); total += cw(typeof item === 'object' ? item.content || '' : ''); });
+                }
+              }
+            }
+          }
+          if (mod.contentBlocks && Array.isArray(mod.contentBlocks)) {
+            for (const block of mod.contentBlocks) {
+              total += cw(block.content); total += cw(block.text);
+              total += cw(block.question); total += cw(block.explanation);
+            }
+          }
+        }
+      }
+      total += cw(course.description); total += cw(course.overview);
+      return total;
+    }
+    
+    function getContentHealth(course) {
+      const ceHours = course.ceuHours || course.ceHours || 0;
+      const wordCount = countWordsInCourse(course);
+      const targetWords = ceHours * 6000;
+      const pct = targetWords > 0 ? Math.round((wordCount / targetWords) * 100) : 0;
+      const modules = course.modules?.length || 0;
+      
+      let status, color, bgColor, borderColor, label, icon;
+      if (ceHours === 0 && wordCount > 0) {
+        status = 'no-ce'; label = 'No CE Hrs'; icon = '⚠️';
+        color = 'text-amber-700'; bgColor = 'bg-amber-50'; borderColor = 'border-amber-200';
+      } else if (targetWords > 0 && pct >= 90) {
+        status = 'complete'; label = 'Complete'; icon = '✅';
+        color = 'text-green-700'; bgColor = 'bg-green-50'; borderColor = 'border-green-200';
+      } else if (targetWords > 0 && pct >= 50) {
+        status = 'nearly'; label = 'Nearly There'; icon = '🟡';
+        color = 'text-yellow-700'; bgColor = 'bg-yellow-50'; borderColor = 'border-yellow-200';
+      } else if (wordCount > 100 || modules > 0) {
+        status = 'wip'; label = 'In Progress'; icon = '🔨';
+        color = 'text-blue-700'; bgColor = 'bg-blue-50'; borderColor = 'border-blue-200';
+      } else {
+        status = 'empty'; label = 'Empty'; icon = '📦';
+        color = 'text-gray-500'; bgColor = 'bg-gray-50'; borderColor = 'border-gray-200';
+      }
+      return { status, label, icon, color, bgColor, borderColor, wordCount, targetWords, pct, ceHours, modules };
+    }
+    
+    function renderContentHealthDashboard() {
+      const dashboard = document.getElementById('contentHealthDashboard');
+      if (!dashboard) return;
+      
+      const healths = courses.map(c => getContentHealth(c));
+      const complete = healths.filter(h => h.status === 'complete').length;
+      const nearly = healths.filter(h => h.status === 'nearly').length;
+      const wip = healths.filter(h => h.status === 'wip').length;
+      const noCE = healths.filter(h => h.status === 'no-ce').length;
+      const totalWords = healths.reduce((s, h) => s + h.wordCount, 0);
+      const totalCE = courses.reduce((s, c) => s + (c.ceuHours || c.ceHours || 0), 0);
+      
+      dashboard.innerHTML = `
+        <div class="bg-white rounded-xl border border-burgundy-100 shadow-sm p-4 cursor-pointer hover:shadow-md transition-shadow" onclick="document.getElementById('contentFilter').value='all';filterCourses()">
+          <div class="text-xs font-medium text-forest-500 uppercase tracking-wide mb-1">Total Courses</div>
+          <div class="text-3xl font-bold text-burgundy-800">${courses.length}</div>
+          <div class="text-xs text-forest-500 mt-1">${totalWords.toLocaleString()} words · ${totalCE} CE hrs</div>
+        </div>
+        <div class="bg-white rounded-xl border border-green-200 shadow-sm p-4 cursor-pointer hover:shadow-md transition-shadow" onclick="document.getElementById('contentFilter').value='complete';filterCourses()">
+          <div class="text-xs font-medium text-green-600 uppercase tracking-wide mb-1">✅ Complete</div>
+          <div class="text-3xl font-bold text-green-700">${complete}</div>
+          <div class="text-xs text-green-600 mt-1">≥90% of word target</div>
+          <div class="w-full bg-green-100 rounded-full h-1.5 mt-2"><div class="bg-green-500 h-1.5 rounded-full" style="width:${courses.length ? (complete/courses.length*100) : 0}%"></div></div>
+        </div>
+        <div class="bg-white rounded-xl border border-yellow-200 shadow-sm p-4 cursor-pointer hover:shadow-md transition-shadow" onclick="document.getElementById('contentFilter').value='nearly';filterCourses()">
+          <div class="text-xs font-medium text-yellow-600 uppercase tracking-wide mb-1">🟡 Nearly There</div>
+          <div class="text-3xl font-bold text-yellow-700">${nearly}</div>
+          <div class="text-xs text-yellow-600 mt-1">50-89% complete</div>
+          <div class="w-full bg-yellow-100 rounded-full h-1.5 mt-2"><div class="bg-yellow-500 h-1.5 rounded-full" style="width:${courses.length ? (nearly/courses.length*100) : 0}%"></div></div>
+        </div>
+        <div class="bg-white rounded-xl border border-blue-200 shadow-sm p-4 cursor-pointer hover:shadow-md transition-shadow" onclick="document.getElementById('contentFilter').value='wip';filterCourses()">
+          <div class="text-xs font-medium text-blue-600 uppercase tracking-wide mb-1">🔨 Needs Work</div>
+          <div class="text-3xl font-bold text-blue-700">${wip + noCE}</div>
+          <div class="text-xs text-blue-600 mt-1">${noCE} missing CE hours</div>
+          <div class="w-full bg-blue-100 rounded-full h-1.5 mt-2"><div class="bg-blue-500 h-1.5 rounded-full" style="width:${courses.length ? ((wip+noCE)/courses.length*100) : 0}%"></div></div>
+        </div>
+      `;
+    }
+
     // Load all courses
     async function loadCourses() {
       const token = localStorage.getItem('token');
@@ -1443,15 +1562,14 @@
     // Render course list
     function renderCourseList() {
       document.getElementById('courseCount').textContent = courses.length;
-      
-      // Apply any existing filters
+      renderContentHealthDashboard();
       filterCourses();
     }
 
-    // Filter courses based on search and status
     function filterCourses() {
       const searchTerm = document.getElementById('courseSearch').value.toLowerCase().trim();
       const statusFilter = document.getElementById('statusFilter').value;
+      const contentFilter = document.getElementById('contentFilter')?.value || 'all';
       
       const filtered = courses.filter(course => {
         const matchesSearch = !searchTerm || 
@@ -1461,7 +1579,17 @@
         
         const matchesStatus = statusFilter === 'all' || course.status === statusFilter;
         
-        return matchesSearch && matchesStatus;
+        let matchesContent = true;
+        if (contentFilter !== 'all') {
+          const health = getContentHealth(course);
+          if (contentFilter === 'wip') {
+            matchesContent = health.status === 'wip' || health.status === 'empty';
+          } else {
+            matchesContent = health.status === contentFilter;
+          }
+        }
+        
+        return matchesSearch && matchesStatus && matchesContent;
       });
       
       renderFilteredCourseList(filtered);
@@ -1481,14 +1609,22 @@
         const priceDisplay = course.price ? `<span class="text-green-700 font-semibold">$${course.price}</span>` : '<span class="text-gray-400">No price</span>';
         const categoryDisplay = course.ceuCategories?.[0]?.category || course.category || '';
         const isPremium = ['ethics', 'telehealth', 'supervision'].includes(categoryDisplay?.toLowerCase());
+        const health = getContentHealth(course);
+        const progressBar = health.targetWords > 0 
+          ? `<span class="inline-flex items-center gap-1"><span class="w-16 bg-gray-200 rounded-full h-1.5 inline-block align-middle"><span class="block h-1.5 rounded-full ${health.pct >= 90 ? 'bg-green-500' : health.pct >= 50 ? 'bg-yellow-500' : 'bg-blue-400'}" style="width:${Math.min(100, health.pct)}%"></span></span><span class="text-xs text-forest-500">${health.pct}%</span></span>`
+          : '';
         
         return `
         <div class="bg-white rounded-xl border border-burgundy-100 shadow-sm p-4 flex items-center justify-between">
           <div class="flex-1">
-            <h3 class="font-semibold text-burgundy-900">${course.title}</h3>
+            <div class="flex items-center gap-2 mb-1">
+              <h3 class="font-semibold text-burgundy-900">${course.title}</h3>
+              <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium border ${health.bgColor} ${health.color} ${health.borderColor}">${health.icon} ${health.label}</span>
+            </div>
             <p class="text-sm text-forest-600">
               ${course.modules?.length || 0} modules • 
               ${course.ceuHours || 0} CE hrs • 
+              ${health.wordCount.toLocaleString()} words ${progressBar} • 
               ${priceDisplay} • 
               ${isPremium ? '<span class="text-purple-600">Premium</span>' : '<span class="text-gray-500">Standard</span>'} • 
               <span class="px-2 py-0.5 rounded-full text-xs ${course.status === 'published' ? 'bg-green-100 text-green-700' : course.status === 'archived' ? 'bg-gray-100 text-gray-600' : 'bg-yellow-100 text-yellow-700'}">${course.status}</span>
