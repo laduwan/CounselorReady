@@ -1,9 +1,16 @@
-import mongoose from 'mongoose';
-import dotenv from 'dotenv';
-dotenv.config();
+/**
+ * CounselorReady Course Seed File
+ * Course: See Something? Say Something: Your Duty as a Mandated Reporter
+ * CE Hours: 3.0
+ * NBCC ACEP Provider #7760
+ *
+ * Run: node seedMandatedReporter.js
+ * Requires: MONGODB_URI environment variable
+ */
 
-const MONGODB_URI = process.env.MONGODB_URI;
-if (!MONGODB_URI) { console.error('MONGODB_URI not found in .env'); process.exit(1); }
+const mongoose = require('mongoose');
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/counselorready';
+if (!MONGODB_URI) { console.error('MONGODB_URI not found'); process.exit(1); }
 
 // ╔══════════════════════════════════════════════════════════════════╗
 // ║  SEE SOMETHING? SAY SOMETHING: YOUR DUTY AS A MANDATED REPORTER ║
