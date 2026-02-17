@@ -179,6 +179,26 @@ const COURSE_DATA = {
           accessibility: { ariaLabel: "Knowledge check question", announceCorrect: true }
         },
         {
+          type: "text",
+          content: `<h3>The Evolution of Child Protection in the United States</h3>
+<p>The history of mandated reporting in the United States is a story of gradual recognition that children and other vulnerable populations deserve systematic, legally enforced protection. Before the 1960s, child abuse was widely regarded as a private family matter, and professionals who suspected maltreatment had no clear legal obligation—or even a clear pathway—to report their concerns. The landmark work of Dr. C. Henry Kempe and his colleagues, who published "The Battered-Child Syndrome" in the Journal of the American Medical Association in 1962, fundamentally changed the national conversation about child abuse. Their research documented patterns of injuries in children that could only be explained by deliberate infliction, providing the medical profession with both the evidence and the vocabulary to address what had long been a hidden epidemic.</p>
+<p>In the wake of Kempe's research, states began enacting mandated reporting laws at a rapid pace. By 1967, every state in the nation had adopted some form of mandated reporting legislation. The Child Abuse Prevention and Treatment Act (CAPTA) of 1974 further strengthened the national framework by providing federal funding to states that implemented child protection systems meeting certain minimum standards, including mandated reporting provisions. Over the decades since, these laws have been expanded, refined, and strengthened in response to high-profile cases of abuse that revealed gaps in the protective system.</p>
+<p>The evolution of mandated reporting reflects a broader societal shift in how we understand the relationship between the state, the family, and the individual. While the family unit remains a cornerstone of American society, we now recognize that the privacy of the family cannot serve as a shield behind which abuse and neglect can occur unchecked. Mandated reporting laws represent the careful balancing of these competing values: respecting family autonomy while ensuring that vulnerable individuals within families receive the protection they deserve. This balance continues to evolve as our understanding of abuse, neglect, and exploitation deepens and as new challenges—such as online exploitation and trafficking—emerge.</p>`,
+          accessibility: { role: "article" }
+        },
+        {
+          type: "multipleChoice",
+          question: "In states that have adopted 'universal mandated reporting,' who is required to report suspected child abuse?",
+          options: [
+            { text: "Only licensed healthcare and mental health professionals", isCorrect: false },
+            { text: "Only professionals who work directly with children", isCorrect: false },
+            { text: "Every adult in the state, regardless of profession", isCorrect: true },
+            { text: "Only government employees and law enforcement officers", isCorrect: false }
+          ],
+          explanation: "Universal mandated reporting states require every adult—not just designated professionals—to report suspected child abuse or neglect. The rationale is that child protection is everyone's responsibility, extending the obligation beyond professional categories to all members of the community.",
+          accessibility: { ariaLabel: "Knowledge check question", announceCorrect: true }
+        },
+        {
           type: "reflection",
           question: "Consider your current professional role. Are you aware of the specific mandated reporting laws that apply in your jurisdiction? What steps could you take this week to verify your obligations and ensure you know the correct reporting procedures for your area?",
           accessibility: { role: "textbox", ariaLabel: "Reflection prompt" }
@@ -289,6 +309,26 @@ const COURSE_DATA = {
             { text: "Attempt to categorize the exact type of maltreatment before reporting", isCorrect: false }
           ],
           explanation: "A single indicator rarely constitutes definitive evidence. Effective mandated reporters observe constellations of indicators—physical signs, behavioral changes, and contextual factors—that together form patterns warranting concern. You do not need to categorize or prove maltreatment before reporting.",
+          accessibility: { ariaLabel: "Knowledge check question", announceCorrect: true }
+        },
+        {
+          type: "text",
+          content: `<h3>The Continuum of Harm: Understanding Severity and Chronicity</h3>
+<p>One of the most challenging aspects of recognizing maltreatment is understanding that abuse and neglect exist on a continuum rather than as discrete, easily categorized events. A single incident of physical discipline that crosses the line into abuse may look very different from chronic, escalating violence. Neglect may range from occasional lapses in supervision to pervasive failure to meet a child's basic needs for food, shelter, medical care, and emotional connection. Understanding this continuum is essential because mandated reporters must recognize not only the most obvious and severe forms of maltreatment but also the subtler patterns that, over time, can cause profound and lasting harm.</p>
+<p>Research consistently demonstrates that chronic, low-level maltreatment can be just as damaging—and sometimes more damaging—than a single acute incident. A child who experiences ongoing emotional abuse, characterized by persistent criticism, belittling, and rejection, may suffer psychological harm that is more profound and enduring than a child who experiences a single incident of physical abuse. Similarly, chronic neglect—the persistent failure to provide adequate nutrition, medical care, supervision, or emotional support—has been linked to significant developmental delays, attachment disorders, and long-term mental health consequences including depression, anxiety, and difficulties forming healthy relationships in adulthood.</p>
+<p>For mandated reporters, this understanding has important practical implications. It means that you should not wait for a dramatic or unmistakable sign of abuse before making a report. The accumulation of smaller concerns—a child who is consistently hungry, frequently absent, increasingly withdrawn, or showing signs of poor hygiene over an extended period—may warrant a report just as much as an obvious injury. Pay attention to patterns over time, not just isolated incidents. Document your observations carefully, noting dates, specific behaviors, and the context in which you made your observations. This documentation can be invaluable to investigators who are trying to understand the full picture of a child's situation.</p>`,
+          accessibility: { role: "article" }
+        },
+        {
+          type: "multipleChoice",
+          question: "Which of the following statements about the severity of maltreatment is MOST accurate?",
+          options: [
+            { text: "Only severe physical injuries meet the threshold for mandated reporting", isCorrect: false },
+            { text: "Emotional abuse is generally less harmful than physical abuse and can usually be monitored rather than reported", isCorrect: false },
+            { text: "Chronic low-level maltreatment can cause harm as profound as or greater than a single acute incident", isCorrect: true },
+            { text: "Neglect is primarily a problem of poverty and does not typically warrant a mandated report", isCorrect: false }
+          ],
+          explanation: "Research consistently shows that chronic, low-level maltreatment—including ongoing emotional abuse and persistent neglect—can cause profound and lasting harm, sometimes exceeding the impact of a single acute incident. Mandated reporters should attend to patterns over time, not just dramatic events.",
           accessibility: { ariaLabel: "Knowledge check question", announceCorrect: true }
         },
         {
@@ -537,6 +577,18 @@ const COURSE_DATA = {
         },
         {
           type: "text",
+          content: `<h3>Informed Consent and Proactive Disclosure</h3>
+<p>One of the most effective strategies for managing the tension between confidentiality and mandated reporting is to address the issue proactively through informed consent. Rather than waiting until a reportable situation arises and then surprising the client with a breach of confidentiality, experienced practitioners integrate mandated reporting disclosure into their intake processes from the very beginning of the professional relationship. This approach is not only good clinical practice—it is increasingly recognized as an ethical obligation in itself.</p>
+<p>The informed consent discussion should clearly explain the limits of confidentiality, including the professional's status as a mandated reporter and the circumstances under which confidential information may be disclosed without the client's permission. This disclosure should be documented in writing and signed by the client, but it should also be discussed verbally to ensure the client genuinely understands what it means. Simply having a client sign a form is not sufficient—the client needs to understand, in plain language, that if the professional develops reasonable suspicion of abuse, neglect, or exploitation involving a child or vulnerable adult, the law requires them to make a report.</p>
+<p>While some professionals worry that this disclosure will discourage clients from being honest, research suggests the opposite. Clients who understand the limits of confidentiality from the outset are better able to make informed decisions about what they share and when. They may initially be more cautious, but over time, as trust develops, they often become more forthcoming—not less. The transparency of the disclosure itself builds trust by demonstrating that the professional is honest and straightforward about their obligations.</p>
+<p>Furthermore, when a reportable situation does arise, having established clear expectations from the beginning makes the process significantly less traumatic for both the client and the professional. The client is not blindsided by a sudden breach of confidentiality, and the professional can reference the earlier discussion: "As we discussed when we first started working together, I have a legal obligation to report when I have concerns about the safety of a child. I want to be transparent with you about what I need to do." This approach preserves as much of the therapeutic relationship as possible while fulfilling the legal duty to report.</p>
+<h3>Documentation: Your Professional Shield</h3>
+<p>Thorough documentation is essential at every stage of the mandated reporting process, and it serves multiple critical functions. First, it protects you legally by creating a contemporaneous record of your observations, your reasoning, and your actions. If your decision to report—or your timing in reporting—is ever questioned, your documentation will be your primary defense. Second, it supports the investigation by providing investigators with detailed, factual information that can help them assess the situation and make appropriate decisions. Third, it helps you organize your own thinking, forcing you to articulate clearly what you observed, why it concerned you, and what steps you took in response.</p>
+<p>Effective documentation follows several key principles. Record your observations as close to the time they occurred as possible, while your memory is fresh and detailed. Use specific, factual language rather than vague or conclusory statements. Write "I observed a bruise approximately three inches in diameter on the child's left upper arm" rather than "The child appeared to have been hit." Include direct quotes when possible, using the speaker's exact words enclosed in quotation marks. Note the date, time, location, and context of each observation. Document any conversations you had about the situation, including consultations with supervisors, colleagues, or legal counsel, noting who you spoke with, when, and what was discussed. Finally, document the report itself: when you made the oral report, to whom, what information you provided, and any case numbers or reference numbers you received.</p>`,
+          accessibility: { role: "article" }
+        },
+        {
+          type: "text",
           content: `<h3>Practical Strategies for Managing the Tension</h3>
 <p>While the law is clear that legal duties take precedence, this does not mean you must approach the situation without nuance or compassion. There are practical strategies you can employ to fulfill your legal obligation while minimizing unnecessary harm to the professional relationship:</p>
 <p><strong>Inform clients of your reporting obligations at the outset.</strong> Many professionals include information about mandated reporting in their intake paperwork and discuss it during initial sessions. When clients are informed in advance, a subsequent report feels less like a betrayal and more like the fulfillment of a clearly stated obligation.</p>
@@ -760,6 +812,26 @@ const COURSE_DATA = {
           ],
           explanation: "The case studies illustrate four critical mistakes: waiting for certainty, investigating instead of reporting, following bad supervisory advice, and prioritizing confidentiality over safety. Your duty to report is personal—no supervisor can override it, and mandated reporting is a recognized EXCEPTION to confidentiality, not the other way around.",
           accessibility: { ariaLabel: "Multi-select knowledge check", announceCorrect: true }
+        },
+        {
+          type: "text",
+          content: `<h3>Self-Care and Professional Resilience in Mandated Reporting</h3>
+<p>The emotional toll of mandated reporting is a topic that deserves serious attention but is often overlooked in professional training. Making a report of suspected abuse or neglect is not simply an administrative task—it is an act that carries significant emotional weight. Professionals who have made reports frequently describe feelings of anxiety, guilt, doubt, and even grief. They worry about the consequences of their report for the child, for the family, and for their own professional relationships. They may second-guess their decision, wondering whether they overreacted or whether the situation was truly as concerning as it appeared. These emotional responses are normal and understandable, but they need to be acknowledged and addressed rather than suppressed or ignored.</p>
+<p>Building professional resilience around mandated reporting involves several key strategies. First, familiarize yourself thoroughly with the reporting process before you ever need to use it. Much of the anxiety associated with reporting stems from uncertainty about procedures, timelines, and expectations. The more prepared you feel, the more confident you will be when the time comes to act. Second, develop a support network of trusted colleagues with whom you can debrief after making a report. Peer support is one of the most effective strategies for managing the emotional impact of difficult professional decisions. Third, practice regular self-care activities that help you process stress and maintain your emotional well-being. This might include supervision, consultation, physical exercise, mindfulness practices, or creative outlets.</p>
+<p>It is also important to maintain perspective about the purpose and impact of your reports. Research consistently shows that mandated reporting saves lives and prevents ongoing harm. While the immediate aftermath of a report may feel disruptive, the long-term outcomes for children and vulnerable adults who receive protective intervention are significantly better than outcomes for those whose maltreatment goes undetected and unaddressed. When you make a report, you are not just fulfilling a legal obligation—you are potentially changing the trajectory of a vulnerable person's life for the better. Holding onto this perspective can help sustain you through the difficult moments that mandated reporting inevitably entails.</p>`,
+          accessibility: { role: "article" }
+        },
+        {
+          type: "multipleChoice",
+          question: "A mandated reporter consults their supervisor about a concern, and the supervisor says 'I don't think it rises to the level of a report.' What should the reporter do?",
+          options: [
+            { text: "Follow the supervisor's judgment since they have more experience", isCorrect: false },
+            { text: "Document the supervisor's advice and file the report anyway if they still have reasonable suspicion", isCorrect: true },
+            { text: "Wait to see if additional evidence emerges before taking action", isCorrect: false },
+            { text: "Ask a different colleague for a second opinion before deciding", isCorrect: false }
+          ],
+          explanation: "The duty to report is personal and non-delegable. A supervisor's opinion does not relieve you of your legal obligation. If you have reasonable suspicion, you must report regardless of supervisory advice. Document the consultation, but fulfill your duty.",
+          accessibility: { ariaLabel: "Knowledge check question", announceCorrect: true }
         },
         {
           type: "text",
@@ -1095,7 +1167,7 @@ async function main() {
   let issues = 0;
   if (COURSE_DATA.assessment.questions.length < 15) { console.log(`     ⚠️  Assessment: ${COURSE_DATA.assessment.questions.length} questions (min 15)`); issues++; } else { console.log(`     ✅ Assessment: ${COURSE_DATA.assessment.questions.length} questions`); }
   if (estimatedWords < requiredWords) { console.log(`     ⚠️  Word count: ${estimatedWords.toLocaleString()} / ${requiredWords.toLocaleString()}`); issues++; } else { console.log(`     ✅ Word count: ${estimatedWords.toLocaleString()} / ${requiredWords.toLocaleString()}`); }
-  COURSE_DATA.modules.forEach((m, i) => { const kc = (m.contentBlocks || []).filter(b => b.type === 'multipleChoice').length; if (kc < 2) { console.log(`     ⚠️  Module ${i+1}: ${kc} knowledge checks (min 2)`); issues++; } else { console.log(`     ✅ Module ${i+1}: ${kc} knowledge checks`); } });
+  COURSE_DATA.modules.forEach((m, i) => { const kc = (m.contentBlocks || []).filter(b => ['multipleChoice', 'multiSelect', 'matching'].includes(b.type)).length; if (kc < 2) { console.log(`     ⚠️  Module ${i+1}: ${kc} knowledge checks (min 2)`); issues++; } else { console.log(`     ✅ Module ${i+1}: ${kc} knowledge checks`); } });
   if (issues === 0) console.log(`\n  🎉 All ACEP compliance checks passed!`); else console.log(`\n  ⚠️  ${issues} issue(s) to address before publishing`);
 
   await mongoose.disconnect();
