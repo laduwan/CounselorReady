@@ -1114,7 +1114,13 @@ async function main() {
   const Course = mongoose.connection.models.Course ||
     mongoose.model('Course', new mongoose.Schema({}, { strict: false }));
 
-  const existing = await Course.findOne({ title: titlePattern });
+  const existing = await Course.findOne({
+    $or: [
+      { slug: COURSE_DATA.slug },
+      { title: titlePattern },
+      { code: COURSE_DATA.code }
+    ]
+  });
 
   if (existing) {
     await Course.updateOne({ _id: existing._id }, { $set: COURSE_DATA });
