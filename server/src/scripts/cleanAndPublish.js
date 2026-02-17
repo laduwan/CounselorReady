@@ -3,8 +3,9 @@
 // Step 2: Publish 5 complete courses still in draft
 // Run: node src/scripts/cleanAndPublish.js
 
-const mongoose = require('mongoose');
-require('dotenv').config();
+import mongoose from 'mongoose';
+import dotenv from 'dotenv';
+dotenv.config();
 
 const MONGO_URI = process.env.MONGODB_URI || process.env.MONGO_URI;
 
