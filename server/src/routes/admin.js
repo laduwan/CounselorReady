@@ -1581,9 +1581,70 @@ router.get('/enrollments/search', protect, adminOnly, async (req, res) => {
 router.get('/courses', protect, adminOnly, async (req, res) => {
   try {
     const courses = await Course.find()
-.select('title slug category ceuHours ceHours status enrollmentCount createdAt isExternal externalUrl importType source wordCount moduleCount price ceuCategories')      .sort({ createdAt: -1 });
-    
-    res.json({ courses });
+      .select('title slug category ceuHours ceHours status enrollmentCount createdAt isExternal externalUrl importType source wordCount moduleCount price ceuCategories modules')
+      .sort({ createdAt: -1 })
+      .lean();
+
+    // Helper: strip HTML and count words from a string
+    const countWords = (str) => {
+      if (!str) return 0;
+      return str.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().split(' ').filter(Boolean).length;
+    };
+
+    // Helper: count words across all content blocks in a module
+    const countBlockWords = (block) => {
+      let w = 0;
+      w += countWords(block.content);
+      w += countWords(block.question);
+      w += countWords(block.explanation);
+      w += countWords(block.instructions);
+      w += countWords(block.imageCaption);
+      (block.options || []).forEach(o => { w += countWords(o.text); });
+      (block.accordionItems || []).forEach(a => { w += countWords(a.title) + countWords(a.content); });
+      (block.matchingPairs || []).forEach(p => { w += countWords(p.term) + countWords(p.definition); });
+      (block.cards || []).forEach(c => { w += countWords(c.text); });
+      (block.steps || []).forEach(s => { w += countWords(s.text); });
+      (block.events || []).forEach(e => { w += countWords(e.text); });
+      (block.hotspots || []).forEach(h => { w += countWords(h.label) + countWords(h.info); });
+      (block.flashcards || []).forEach(f => { w += countWords(f.front) + countWords(f.back); });
+      (block.markers || []).forEach(m => { w += countWords(m.label) + countWords(m.prompt); });
+      if (block.nodes) {
+        Object.values(block.nodes).forEach(n => {
+          w += countWords(n.text);
+          w += countWords(n.feedback?.message);
+          (n.choices || []).forEach(c => { w += countWords(c.text); });
+        });
+      }
+      // Also handle old-style lessons (non-interactive courses)
+      w += countWords(block.lessonContent);
+      return w;
+    };
+
+    const coursesWithWordCount = courses.map(course => {
+      // Use cached wordCount if valid
+      if (course.wordCount && course.wordCount > 0) {
+        const { modules, ...rest } = course;
+        return rest;
+      }
+
+      // Compute from modules content
+      let computed = 0;
+      (course.modules || []).forEach(mod => {
+        // Interactive courses use contentBlocks
+        (mod.contentBlocks || []).forEach(block => {
+          computed += countBlockWords(block);
+        });
+        // Legacy courses use lessons
+        (mod.lessons || []).forEach(lesson => {
+          if (lesson.content) computed += countWords(lesson.content);
+        });
+      });
+
+      const { modules, ...rest } = course;
+      return { ...rest, wordCount: computed };
+    });
+
+    res.json({ courses: coursesWithWordCount });
   } catch (error) {
     console.error('Get admin courses error:', error);
     res.status(500).json({ error: 'Failed to get courses' });
