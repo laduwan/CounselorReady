@@ -108,6 +108,10 @@
               <i class="fas fa-download"></i>
               Export CSV
             </button>
+            <button onclick="openCreateUserModal()" class="bg-burgundy-800 hover:bg-burgundy-900 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2">
+              <i class="fas fa-user-plus"></i>
+              Create User
+            </button>
           </div>
         </div>
 
@@ -251,7 +255,7 @@
             </div>
             <div>
               <h2 id="modalUserName" class="text-xl font-bold">User Name</h2>
-              <p id="modalUserEmail" class="text-white/80 text-sm">email@example.com</p>
+              <p id="modalUserEmail" class="text-white/80 text-sm"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="77121a161e1b37120f161a071b125914181a">[email&#160;protected]</a></p>
             </div>
           </div>
           <button onclick="closeUserModal()" class="text-white/80 hover:text-white">
@@ -503,7 +507,7 @@
     </div>
   </div>
 
-  <script>
+  <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
     const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://api.counselorready.com';
     const token = localStorage.getItem('token');
     
@@ -1143,11 +1147,172 @@
       
       if (diff < 60000) return 'Just now';
       if (diff < 3600000) return `${Math.floor(diff / 60000)}m ago`;
-      if (diff < 86400000) return `${Math.floor(diff / 3600000)}h ago`;
-      if (diff < 604800000) return `${Math.floor(diff / 86400000)}d ago`;
-      
-      return date.toLocaleDateString();
+  <!-- CREATE USER MODAL -->
+  <div id="createUserModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+      <div class="p-6">
+        <div class="flex items-center justify-between mb-1">
+          <h2 class="font-display text-xl font-bold text-burgundy-900">Create New User</h2>
+          <button onclick="closeCreateUserModal()" class="text-gray-400 hover:text-gray-600 text-xl leading-none">&times;</button>
+        </div>
+        <p class="text-sm text-forest-600 mb-6">Create an account manually — for test users, comped access, or migrated learners.</p>
+
+        <div id="cuError" class="hidden bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-lg mb-4"></div>
+        <div id="cuSuccess" class="hidden bg-green-50 border border-green-200 text-green-700 text-sm px-4 py-3 rounded-lg mb-4"></div>
+
+        <div class="grid grid-cols-2 gap-4 mb-4">
+          <div>
+            <label class="block text-xs font-semibold text-gray-600 mb-1.5">First Name</label>
+            <input id="cu_firstName" type="text" placeholder="Jane" class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-burgundy-300">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-gray-600 mb-1.5">Last Name</label>
+            <input id="cu_lastName" type="text" placeholder="Smith" class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-burgundy-300">
+          </div>
+        </div>
+
+        <div class="mb-4">
+          <label class="block text-xs font-semibold text-gray-600 mb-1.5">Email Address <span class="text-red-500">*</span></label>
+          <input id="cu_email" type="email" placeholder="jane@example.com" class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-burgundy-300">
+        </div>
+
+        <div class="mb-4">
+          <label class="block text-xs font-semibold text-gray-600 mb-1.5">Password <span class="text-red-500">*</span></label>
+          <input id="cu_password" type="password" placeholder="Minimum 8 characters" class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-burgundy-300">
+        </div>
+
+        <div class="grid grid-cols-2 gap-4 mb-4">
+          <div>
+            <label class="block text-xs font-semibold text-gray-600 mb-1.5">Plan</label>
+            <select id="cu_plan" class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-burgundy-300 bg-white">
+              <option value="free">Free</option>
+              <option value="basic">Basic</option>
+              <option value="professional">Professional</option>
+              <option value="vip">VIP</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-gray-600 mb-1.5">Role</label>
+            <select id="cu_role" class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-burgundy-300 bg-white">
+              <option value="user">User</option>
+              <option value="admin">Admin</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4 mb-6">
+          <div>
+            <label class="block text-xs font-semibold text-gray-600 mb-1.5">License Type</label>
+            <select id="cu_licenseType" class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-burgundy-300 bg-white">
+              <option value="">Select...</option>
+              <option>LPC</option><option>LMHC</option><option>LCSW</option>
+              <option>LMFT</option><option>Psychologist</option><option>Other</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-gray-600 mb-1.5">State</label>
+            <select id="cu_state" class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-burgundy-300 bg-white">
+              <option value="">Select...</option>
+              <option>AL</option><option>AK</option><option>AZ</option><option>AR</option><option>CA</option>
+              <option>CO</option><option>CT</option><option>DE</option><option>FL</option><option>GA</option>
+              <option>HI</option><option>ID</option><option>IL</option><option>IN</option><option>IA</option>
+              <option>KS</option><option>KY</option><option>LA</option><option>ME</option><option>MD</option>
+              <option>MA</option><option>MI</option><option>MN</option><option>MS</option><option>MO</option>
+              <option>MT</option><option>NE</option><option>NV</option><option>NH</option><option>NJ</option>
+              <option>NM</option><option>NY</option><option>NC</option><option>ND</option><option>OH</option>
+              <option>OK</option><option>OR</option><option>PA</option><option>RI</option><option>SC</option>
+              <option>SD</option><option>TN</option><option>TX</option><option>UT</option><option>VT</option>
+              <option>VA</option><option>WA</option><option>WV</option><option>WI</option><option>WY</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="flex gap-3">
+          <button onclick="closeCreateUserModal()" class="flex-1 px-4 py-2.5 border border-gray-200 rounded-lg text-sm font-semibold text-gray-600 hover:bg-gray-50">Cancel</button>
+          <button onclick="submitCreateUser()" id="cu_submitBtn" class="flex-2 px-6 py-2.5 bg-burgundy-800 hover:bg-burgundy-900 text-white rounded-lg text-sm font-semibold">Create User</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function openCreateUserModal() {
+      document.getElementById('createUserModal').classList.remove('hidden');
+      ['cu_firstName','cu_lastName','cu_email','cu_password'].forEach(id => document.getElementById(id).value = '');
+      document.getElementById('cu_plan').value = 'free';
+      document.getElementById('cu_role').value = 'user';
+      document.getElementById('cu_licenseType').value = '';
+      document.getElementById('cu_state').value = '';
+      document.getElementById('cuError').classList.add('hidden');
+      document.getElementById('cuSuccess').classList.add('hidden');
+    }
+
+    function closeCreateUserModal() {
+      document.getElementById('createUserModal').classList.add('hidden');
+    }
+
+    document.getElementById('createUserModal').addEventListener('click', function(e) {
+      if (e.target === this) closeCreateUserModal();
+    });
+
+    async function submitCreateUser() {
+      const btn = document.getElementById('cu_submitBtn');
+      const errDiv = document.getElementById('cuError');
+      const successDiv = document.getElementById('cuSuccess');
+      errDiv.classList.add('hidden');
+      successDiv.classList.add('hidden');
+
+      const email = document.getElementById('cu_email').value.trim();
+      const password = document.getElementById('cu_password').value;
+
+      if (!email || !password) {
+        errDiv.textContent = 'Email and password are required.';
+        errDiv.classList.remove('hidden');
+        return;
+      }
+      if (password.length < 8) {
+        errDiv.textContent = 'Password must be at least 8 characters.';
+        errDiv.classList.remove('hidden');
+        return;
+      }
+
+      btn.textContent = 'Creating...';
+      btn.disabled = true;
+
+      const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://api.counselorready.com';
+      const token = localStorage.getItem('token');
+
+      try {
+        const res = await fetch(`${API_URL}/api/admin/users/create`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({
+            firstName: document.getElementById('cu_firstName').value.trim(),
+            lastName: document.getElementById('cu_lastName').value.trim(),
+            email,
+            password,
+            plan: document.getElementById('cu_plan').value,
+            role: document.getElementById('cu_role').value,
+            licenseType: document.getElementById('cu_licenseType').value,
+            state: document.getElementById('cu_state').value
+          })
+        });
+
+        const data = await res.json();
+        if (!res.ok) {
+          errDiv.textContent = data.error || 'Failed to create user.';
+          errDiv.classList.remove('hidden');
+        } else {
+          successDiv.textContent = `Created: ${data.user.email} — Plan: ${data.user.plan}`;
+          successDiv.classList.remove('hidden');
+          setTimeout(() => { closeCreateUserModal(); window.location.reload(); }, 1500);
+        }
+      } catch (err) {
+        errDiv.textContent = 'Network error — check connection.';
+        errDiv.classList.remove('hidden');
+      } finally {
+        btn.textContent = 'Create User';
+        btn.disabled = false;
+      }
     }
   </script>
-</body>
-</html>
