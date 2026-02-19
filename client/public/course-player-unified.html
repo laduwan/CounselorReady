@@ -255,9 +255,10 @@
       const slug = getSlug();
       if (!slug) { showError('No course specified.'); return; }
       try {
-        const res = await fetch(`${API_BASE}/interactive-courses/${slug}`);
+        const res = await fetch(`${API_BASE}/interactive-courses/slug/${slug}`);
         if (!res.ok) throw new Error('Not found');
-        course = await res.json();
+        const resData = await res.json();
+        course = resData.data || resData;
         document.title = `${course.title} - CounselorReady`;
         renderSidebar();
         renderSection(0);
