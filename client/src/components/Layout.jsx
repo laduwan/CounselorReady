@@ -1,27 +1,31 @@
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Menu, X, ChevronDown, LogOut, Settings } from 'lucide-react';
+import { Menu, X, ChevronDown, LogOut, Settings, ShieldCheck } from 'lucide-react';
 
+// React routes use Link; external static HTML pages use <a>
 const navLinks = [
-  { name: 'Dashboard',      href: '/dashboard' },
-  { name: 'Courses',        href: '/courses' },
-  { name: 'Credentials',    href: '/credentials' },
-  { name: 'CE Certificates',href: '/certificates' },
-  { name: 'Messages',       href: '/messages' },
+  { name: 'Dashboard',       href: '/dashboard',        static: false },
+  { name: 'Courses',         href: '/courses',           static: false },
+  { name: 'Credentials',     href: '/credentials',       static: false },
+  { name: 'CE Certificates', href: '/certificates.html', static: true  },
+  { name: 'Messages',        href: '/messages.html',     static: true  },
 ];
 
+const BURGUNDY      = '#6B1D34';
+const BURGUNDY_DARK = '#4a1524';
+const BURGUNDY_LIGHT = '#fdf5f6';
+const HUNTER        = '#4A7C59';
+const GOLD          = '#D4A855';
+
 export default function Layout({ children }) {
-  const [mobileOpen, setMobileOpen] = useState(false);
+  const [mobileOpen, setMobileOpen]   = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const { user, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
 
-  const handleLogout = () => {
-    logout();
-    navigate('/');
-  };
+  const handleLogout = () => { logout(); navigate('/'); };
 
   const isActive = (href) =>
     location.pathname === href ||
@@ -30,72 +34,81 @@ export default function Layout({ children }) {
   const firstName = user?.profile?.firstName || user?.firstName || '';
   const lastName  = user?.profile?.lastName  || user?.lastName  || '';
   const initials  = `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase() || 'U';
+  const isAdmin   = user?.role === 'admin' || user?.isAdmin;
 
   return (
     <div className="min-h-screen bg-stone-50">
 
-      {/* ── TOP HEADER ─────────────────────────────────────────────── */}
-      <header className="bg-white border-b border-stone-200 sticky top-0 z-40 shadow-sm">
+      {/* ── HEADER ── */}
+      <header style={{ background: 'white', borderBottom: '1px solid #e7e5e4', position: 'sticky', top: 0, zIndex: 40, boxShadow: '0 1px 3px rgba(107,29,52,0.08)' }}>
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
 
           {/* Logo */}
           <Link to="/dashboard" className="flex items-center gap-3 flex-shrink-0">
-            <div
-              className="w-10 h-10 rounded-xl flex items-center justify-center shadow-sm"
-              style={{ background: 'linear-gradient(135deg, #8B2542, #6B1D34)' }}
-            >
+            <div style={{ width: 40, height: 40, borderRadius: '0.75rem', background: 'linear-gradient(135deg, #8B2542, #6B1D34)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 8px rgba(107,29,52,0.25)' }}>
               <span style={{ position: 'relative', display: 'inline-block', width: 22, height: 22 }}>
-                <span style={{ color: '#D4A855', position: 'absolute', top: -3, left: 0, fontFamily: "'Cormorant Garamond', Georgia, serif", fontWeight: 700, fontSize: 18 }}>C</span>
-                <span style={{ color: '#4A7C59', position: 'absolute', top: 5, left: 7, fontFamily: "'Cormorant Garamond', Georgia, serif", fontWeight: 700, fontSize: 14 }}>R</span>
+                <span style={{ color: GOLD,   position: 'absolute', top: -3, left: 0, fontFamily: "'Cormorant Garamond', Georgia, serif", fontWeight: 700, fontSize: 18 }}>C</span>
+                <span style={{ color: HUNTER, position: 'absolute', top: 5,  left: 7, fontFamily: "'Cormorant Garamond', Georgia, serif", fontWeight: 700, fontSize: 14 }}>R</span>
               </span>
             </div>
-            <span className="font-display text-xl font-semibold hidden sm:block">
-              <span style={{ color: '#6B1D34' }}>Counselor</span><span style={{ color: '#4A7C59' }}>Ready</span>
+            <span className="hidden sm:block" style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontWeight: 600, fontSize: '1.25rem' }}>
+              <span style={{ color: BURGUNDY }}>Counselor</span><span style={{ color: HUNTER }}>Ready</span>
             </span>
           </Link>
 
           {/* Desktop Nav */}
-          <nav className="hidden lg:flex items-center gap-1">
-            {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                to={link.href}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  isActive(link.href)
-                    ? 'text-burgundy-800 bg-burgundy-50 border-b-2 border-burgundy-700'
-                    : 'text-stone-600 hover:text-stone-900 hover:bg-stone-100'
-                }`}
-                style={isActive(link.href) ? { color: '#6B1D34' } : {}}
-              >
-                {link.name}
-              </Link>
-            ))}
+          <nav className="hidden lg:flex items-center gap-0.5">
+            {navLinks.map((link) => {
+              const active = !link.static && isActive(link.href);
+              const sharedStyle = {
+                padding: '0.375rem 0.875rem',
+                borderRadius: '0.5rem',
+                fontSize: '0.875rem',
+                fontWeight: 500,
+                transition: 'all 0.15s',
+                textDecoration: 'none',
+                borderBottom: active ? `2px solid ${BURGUNDY}` : '2px solid transparent',
+                color: active ? BURGUNDY : '#57534e',
+                background: active ? BURGUNDY_LIGHT : 'transparent',
+              };
+              return link.static ? (
+                <a key={link.href} href={link.href} style={sharedStyle}
+                  onMouseEnter={e => { e.target.style.color = BURGUNDY; e.target.style.background = BURGUNDY_LIGHT; }}
+                  onMouseLeave={e => { e.target.style.color = '#57534e'; e.target.style.background = 'transparent'; }}>
+                  {link.name}
+                </a>
+              ) : (
+                <Link key={link.href} to={link.href} style={sharedStyle}>
+                  {link.name}
+                </Link>
+              );
+            })}
           </nav>
 
-          {/* Right side — user menu + mobile hamburger */}
+          {/* Right side */}
           <div className="flex items-center gap-3">
 
-            {/* Subscription badge */}
+            {/* Admin link */}
+            {isAdmin && (
+              <a href="/admin-users.html" className="hidden sm:flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full transition-colors"
+                style={{ color: BURGUNDY, background: BURGUNDY_LIGHT, border: `1px solid ${BURGUNDY}` }}>
+                <ShieldCheck className="w-3.5 h-3.5" /> Admin
+              </a>
+            )}
+
+            {/* Upgrade badge */}
             {user?.subscription?.plan === 'free' && (
-              <Link
-                to="/settings"
-                className="hidden sm:inline-flex items-center gap-1 text-xs font-medium px-3 py-1.5 rounded-full border transition-colors"
-                style={{ color: '#6B1D34', borderColor: '#6B1D34', backgroundColor: '#fdf5f6' }}
-              >
+              <Link to="/settings" className="hidden sm:inline-flex items-center gap-1 text-xs font-medium px-3 py-1.5 rounded-full border transition-colors"
+                style={{ color: BURGUNDY, borderColor: BURGUNDY, background: BURGUNDY_LIGHT }}>
                 Upgrade
               </Link>
             )}
 
-            {/* User avatar / dropdown */}
+            {/* User avatar dropdown */}
             <div className="relative">
-              <button
-                onClick={() => setUserMenuOpen(!userMenuOpen)}
-                className="flex items-center gap-2 p-1 rounded-lg hover:bg-stone-100 transition-colors"
-              >
-                <div
-                  className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-semibold shadow-sm"
-                  style={{ background: 'linear-gradient(135deg, #8B2542, #6B1D34)' }}
-                >
+              <button onClick={() => setUserMenuOpen(!userMenuOpen)}
+                className="flex items-center gap-2 p-1 rounded-lg transition-colors hover:bg-stone-100">
+                <div style={{ width: 32, height: 32, borderRadius: '50%', background: `linear-gradient(135deg, #8B2542, ${BURGUNDY})`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: '0.75rem', fontWeight: 600 }}>
                   {initials}
                 </div>
                 <span className="hidden md:block text-sm font-medium text-stone-700 max-w-[120px] truncate">
@@ -112,31 +125,26 @@ export default function Layout({ children }) {
                       <p className="text-sm font-medium text-stone-900 truncate">{firstName} {lastName}</p>
                       <p className="text-xs text-stone-500 truncate">{user?.email}</p>
                       {user?.subscription?.plan && (
-                        <span
-                          className="inline-block mt-1 text-xs px-2 py-0.5 rounded-full font-medium capitalize"
-                          style={{
-                            backgroundColor: user.subscription.plan === 'free' ? '#fdf5f6' : '#f0faf4',
-                            color: user.subscription.plan === 'free' ? '#6B1D34' : '#4A7C59'
-                          }}
-                        >
+                        <span className="inline-block mt-1 text-xs px-2 py-0.5 rounded-full font-medium capitalize"
+                          style={{ background: BURGUNDY_LIGHT, color: BURGUNDY }}>
                           {user.subscription.plan} plan
                         </span>
                       )}
                     </div>
-                    <Link
-                      to="/settings"
-                      onClick={() => setUserMenuOpen(false)}
-                      className="flex items-center gap-2 px-4 py-2 text-sm text-stone-700 hover:bg-stone-50 transition-colors"
-                    >
-                      <Settings className="w-4 h-4" />
-                      Settings
+                    {isAdmin && (
+                      <a href="/admin-users.html"
+                        className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-stone-50 transition-colors"
+                        style={{ color: BURGUNDY }}>
+                        <ShieldCheck className="w-4 h-4" /> Admin Panel
+                      </a>
+                    )}
+                    <Link to="/settings" onClick={() => setUserMenuOpen(false)}
+                      className="flex items-center gap-2 px-4 py-2 text-sm text-stone-700 hover:bg-stone-50 transition-colors">
+                      <Settings className="w-4 h-4" /> Settings
                     </Link>
-                    <button
-                      onClick={handleLogout}
-                      className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
-                    >
-                      <LogOut className="w-4 h-4" />
-                      Sign out
+                    <button onClick={handleLogout}
+                      className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors">
+                      <LogOut className="w-4 h-4" /> Sign out
                     </button>
                   </div>
                 </>
@@ -144,38 +152,36 @@ export default function Layout({ children }) {
             </div>
 
             {/* Mobile hamburger */}
-            <button
-              onClick={() => setMobileOpen(!mobileOpen)}
-              className="lg:hidden p-2 text-stone-500 hover:text-stone-700 hover:bg-stone-100 rounded-lg transition-colors"
-            >
+            <button onClick={() => setMobileOpen(!mobileOpen)}
+              className="lg:hidden p-2 rounded-lg transition-colors hover:bg-stone-100"
+              style={{ color: '#78716c' }}>
               {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
           </div>
         </div>
 
-        {/* ── MOBILE NAV ── */}
+        {/* Mobile Nav */}
         {mobileOpen && (
           <div className="lg:hidden border-t border-stone-200 bg-white px-4 py-3 space-y-1">
-            {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                to={link.href}
-                onClick={() => setMobileOpen(false)}
-                className={`block px-4 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                  isActive(link.href)
-                    ? 'bg-burgundy-50 font-semibold'
-                    : 'text-stone-600 hover:bg-stone-50'
-                }`}
-                style={isActive(link.href) ? { color: '#6B1D34' } : {}}
-              >
-                {link.name}
-              </Link>
-            ))}
+            {navLinks.map((link) => {
+              const active = !link.static && isActive(link.href);
+              const style = { display: 'block', padding: '0.625rem 1rem', borderRadius: '0.5rem', fontSize: '0.875rem', fontWeight: 500, textDecoration: 'none', color: active ? BURGUNDY : '#57534e', background: active ? BURGUNDY_LIGHT : 'transparent' };
+              return link.static ? (
+                <a key={link.href} href={link.href} style={style}>{link.name}</a>
+              ) : (
+                <Link key={link.href} to={link.href} onClick={() => setMobileOpen(false)} style={style}>{link.name}</Link>
+              );
+            })}
+            {isAdmin && (
+              <a href="/admin-users.html" style={{ display: 'block', padding: '0.625rem 1rem', borderRadius: '0.5rem', fontSize: '0.875rem', fontWeight: 500, color: BURGUNDY, background: BURGUNDY_LIGHT }}>
+                Admin Panel
+              </a>
+            )}
           </div>
         )}
       </header>
 
-      {/* ── PAGE CONTENT ─────────────────────────────────────────────── */}
+      {/* Page content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
         {children}
       </main>
