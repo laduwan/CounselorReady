@@ -350,7 +350,7 @@
       try {
         const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
         
-        const response = await fetch(`${API_URL}/api/courses/${slug}`, { headers });
+        const response = await fetch(`${API_URL}/api/interactive-courses/slug/${slug}`, { headers });
         
         if (!response.ok) {
           if (response.status === 404) {
@@ -888,7 +888,7 @@
         return;
       }
       
-      window.location.href = `/course-player.html?slug=${currentCourse.slug}`;
+      window.location.href = `/course-player-unified.html?slug=${currentCourse.slug}`;
     }
     
     // Purchase course individually
@@ -1278,7 +1278,7 @@
       try {
         const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
         
-        const response = await fetch(`${API_URL}/api/courses/${slug}`, { headers });
+        const response = await fetch(`${API_URL}/api/interactive-courses/slug/${slug}`, { headers });
         
         if (!response.ok) {
           if (response.status === 404) {
@@ -1528,7 +1528,7 @@
         return;
       }
       
-      window.location.href = `/course-player.html?slug=${currentCourse.slug}`;
+      window.location.href = `/course-player-unified.html?slug=${currentCourse.slug}`;
     }
     
     // Purchase course individually
