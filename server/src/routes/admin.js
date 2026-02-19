@@ -215,6 +215,73 @@ router.get('/users', protect, adminOnly, async (req, res) => {
   }
 });
 
+// @route   POST /api/admin/users/create
+// @desc    Create a new user account from admin panel
+// @access  Admin only
+router.post('/users/create', protect, adminOnly, async (req, res) => {
+  try {
+    const { firstName, lastName, email, password, role, plan, licenseType, state } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({ error: 'Email and password are required' });
+    }
+    if (password.length < 8) {
+      return res.status(400).json({ error: 'Password must be at least 8 characters' });
+    }
+
+    // Check if user already exists
+    const existing = await User.findOne({ email: email.toLowerCase().trim() });
+    if (existing) {
+      return res.status(400).json({ error: 'A user with that email already exists' });
+    }
+
+    // Hash password using same method as auth
+    const bcrypt = (await import('bcryptjs')).default;
+    const passwordHash = await bcrypt.hash(password, 10);
+
+    // Create user matching your User model schema
+    const user = new User({
+      email: email.toLowerCase().trim(),
+      passwordHash,
+      role: role || 'user',
+      profile: {
+        firstName: firstName || '',
+        lastName: lastName || '',
+        state: state ? state.toUpperCase() : '',
+        licenseType: licenseType || ''
+      },
+      subscription: {
+        plan: plan || 'free',
+        status: (plan && plan !== 'free') ? 'active' : 'free',
+        startDate: new Date()
+      },
+      createdByAdmin: true,
+      createdAt: new Date()
+    });
+
+    await user.save();
+
+    console.log(`Admin created user: ${email} | Plan: ${plan || 'free'} | Role: ${role || 'user'}`);
+
+    res.status(201).json({
+      success: true,
+      message: 'User created successfully',
+      user: {
+        _id: user._id,
+        email: user.email,
+        firstName: user.profile?.firstName,
+        lastName: user.profile?.lastName,
+        role: user.role,
+        plan: user.subscription?.plan
+      }
+    });
+
+  } catch (err) {
+    console.error('Admin create user error:', err);
+    res.status(500).json({ error: err.message || 'Failed to create user' });
+  }
+});
+
 // @route   PUT /api/admin/users/:userId/subscription
 // @desc    Update user subscription (admin override)
 // @access  Admin only
