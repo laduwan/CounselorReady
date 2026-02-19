@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Course Management - CounselorReady Admin</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            burgundy: { 50: '#fdf5f6', 100: '#fae8eb', 200: '#f5d0d6', 700: '#8b2542', 800: '#6b1d34', 900: '#4a1524' },
+            forest: { 50: '#f3f6f4', 100: '#e3ebe5', 500: '#547c5f', 600: '#40634a', 700: '#34503d', 800: '#2b4133' },
+            hunter: { 100: '#e8f0ea', 200: '#d1e1d5', 500: '#4A7C59', 600: '#3d6649', 700: '#34503d' },
+            honey: { 100: '#fef3d1', 200: '#fde7a3', 400: '#D4A855', 500: '#c99a4a', 600: '#b8893f' },
+            gold: { 50: '#fefce8', 100: '#fef9c3', 400: '#facc15', 500: '#d4a012' }
+          }
+        }
+      }
+    }
+  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Source+Serif+Pro:wght@400;600;700&family=Source+Sans+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body { font-family: 'Source Sans Pro', system-ui, sans-serif; }
+    .font-display { font-family: 'Source Serif Pro', Georgia, serif; }
+  </style>
+</head>
+<body class="bg-stone-50 min-h-screen">
+
+  <!-- Admin Header -->
+  <header class="bg-burgundy-800 text-white sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <div class="w-9 h-9 bg-white/10 rounded-lg flex items-center justify-center">
+          <span class="font-display font-bold"><span class="text-honey-400">C</span><span class="text-hunter-500">R</span></span>
+        </div>
+        <div>
+          <span class="font-display font-semibold text-lg">
+            <span class="text-burgundy-200">Counselor</span><span class="text-hunter-500">Ready</span>
+          </span>
+          <span class="ml-2 text-xs bg-honey-400 text-burgundy-900 px-2 py-0.5 rounded-full font-semibold">ADMIN</span>
+        </div>
+      </div>
+      <div class="flex items-center gap-4">
+        <span class="text-burgundy-200 text-sm" id="adminEmail">Admin</span>
+        <a href="/dashboard.html" class="text-burgundy-200 hover:text-white text-sm flex items-center gap-1">
+          <i class="fas fa-arrow-left"></i>
+          Exit Admin
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <div class="flex">
+    <!-- Sidebar -->
+    <aside class="w-64 bg-burgundy-800 min-h-[calc(100vh-52px)] sticky top-[52px] p-4">
+      <nav class="space-y-1">
+        <a href="/admin-analytics.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <i class="fas fa-chart-line w-5"></i>
+          Analytics
+        </a>
+        <a href="/admin-users.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <i class="fas fa-users w-5"></i>
+          Users
+        </a>
+        <a href="/admin-courses.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg bg-burgundy-700 text-white">
+          <i class="fas fa-book w-5"></i>
+          Courses
+        </a>
+        <a href="/admin-messages.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <i class="fas fa-envelope w-5"></i>
+          Messages
+        </a>
+        <a href="/admin-credentials.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <i class="fas fa-id-card w-5"></i>
+          Credentials
+        </a>
+        <a href="/admin-hardship.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <i class="fas fa-hand-holding-heart w-5"></i>
+          Hardship
+        </a>
+        <a href="/admin-integrations.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <i class="fas fa-plug w-5"></i>
+          Integrations
+        </a>
+        <a href="/admin-help.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <i class="fas fa-question-circle w-5"></i>
+          Help Center
+        </a>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 p-8">
+      <div class="max-w-7xl mx-auto">
+
+        <!-- Page Header -->
+        <div class="flex items-center justify-between mb-8">
+          <div>
+            <h1 class="font-display text-3xl font-bold text-burgundy-800">Course Management</h1>
+            <p class="text-forest-600 mt-1">Manage, publish, and create CE courses</p>
+          </div>
+          <div class="flex items-center gap-3">
+            <button onclick="openAIGenerateModal()" class="flex items-center gap-2 px-4 py-2 bg-hunter-500 hover:bg-hunter-600 text-white rounded-lg font-medium transition-colors">
+              <i class="fas fa-wand-magic-sparkles"></i>
+              AI Generate
+            </button>
+            <a href="/CourseBuilder" class="flex items-center gap-2 px-4 py-2 bg-burgundy-800 hover:bg-burgundy-900 text-white rounded-lg font-medium transition-colors">
+              <i class="fas fa-plus"></i>
+              New Course
+            </a>
+          </div>
+        </div>
+
+        <!-- Stats Bar -->
+        <div class="grid grid-cols-4 gap-4 mb-8">
+          <div class="bg-white rounded-xl border border-burgundy-100 p-4">
+            <div class="text-2xl font-bold text-burgundy-800" id="totalCount">—</div>
+            <div class="text-sm text-forest-600">Total Courses</div>
+          </div>
+          <div class="bg-white rounded-xl border border-burgundy-100 p-4">
+            <div class="text-2xl font-bold text-hunter-500" id="publishedCount">—</div>
+            <div class="text-sm text-forest-600">Published</div>
+          </div>
+          <div class="bg-white rounded-xl border border-burgundy-100 p-4">
+            <div class="text-2xl font-bold text-honey-500" id="draftCount">—</div>
+            <div class="text-sm text-forest-600">Drafts</div>
+          </div>
+          <div class="bg-white rounded-xl border border-burgundy-100 p-4">
+            <div class="text-2xl font-bold text-burgundy-700" id="totalHours">—</div>
+            <div class="text-sm text-forest-600">Total CE Hours</div>
+          </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="bg-white rounded-xl border border-burgundy-100 p-4 mb-6 flex items-center gap-4">
+          <div class="flex-1">
+            <input type="text" id="searchInput" placeholder="Search courses..." oninput="filterCourses()"
+              class="w-full px-4 py-2 border border-burgundy-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-burgundy-300">
+          </div>
+          <select id="statusFilter" onchange="filterCourses()" class="px-3 py-2 border border-burgundy-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-burgundy-300">
+            <option value="">All Status</option>
+            <option value="published">Published</option>
+            <option value="draft">Draft</option>
+            <option value="archived">Archived</option>
+          </select>
+          <select id="sortBy" onchange="filterCourses()" class="px-3 py-2 border border-burgundy-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-burgundy-300">
+            <option value="title">Sort: Title</option>
+            <option value="ceHours">Sort: CE Hours</option>
+            <option value="status">Sort: Status</option>
+            <option value="updatedAt">Sort: Last Updated</option>
+          </select>
+        </div>
+
+        <!-- Loading -->
+        <div id="loadingState" class="text-center py-16">
+          <div class="w-10 h-10 border-4 border-burgundy-200 border-t-burgundy-600 rounded-full animate-spin mx-auto mb-4"></div>
+          <p class="text-forest-600">Loading courses...</p>
+        </div>
+
+        <!-- Error -->
+        <div id="errorState" class="hidden text-center py-16">
+          <i class="fas fa-exclamation-triangle text-4xl text-burgundy-300 mb-4"></i>
+          <p class="text-burgundy-700 font-medium" id="errorMsg">Failed to load courses</p>
+          <button onclick="loadCourses()" class="mt-4 px-4 py-2 bg-burgundy-800 text-white rounded-lg text-sm">Retry</button>
+        </div>
+
+        <!-- Course Table -->
+        <div id="courseTable" class="hidden bg-white rounded-xl border border-burgundy-100 overflow-hidden">
+          <table class="w-full">
+            <thead class="bg-burgundy-50 border-b border-burgundy-100">
+              <tr>
+                <th class="text-left px-6 py-3 text-xs font-semibold text-burgundy-700 uppercase tracking-wider">Course</th>
+                <th class="text-left px-4 py-3 text-xs font-semibold text-burgundy-700 uppercase tracking-wider">CE Hours</th>
+                <th class="text-left px-4 py-3 text-xs font-semibold text-burgundy-700 uppercase tracking-wider">Status</th>
+                <th class="text-left px-4 py-3 text-xs font-semibold text-burgundy-700 uppercase tracking-wider">Sections</th>
+                <th class="text-right px-6 py-3 text-xs font-semibold text-burgundy-700 uppercase tracking-wider">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="courseTableBody" class="divide-y divide-burgundy-50"></tbody>
+          </table>
+
+          <!-- Pagination -->
+          <div class="px-6 py-4 border-t border-burgundy-100 flex items-center justify-between">
+            <span class="text-sm text-forest-600" id="paginationInfo"></span>
+            <div class="flex gap-2">
+              <button onclick="changePage(-1)" id="prevBtn" class="px-3 py-1 border border-burgundy-200 rounded text-sm hover:bg-burgundy-50 disabled:opacity-40" disabled>← Prev</button>
+              <button onclick="changePage(1)" id="nextBtn" class="px-3 py-1 border border-burgundy-200 rounded text-sm hover:bg-burgundy-50 disabled:opacity-40" disabled>Next →</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="fixed bottom-6 right-6 z-50 hidden">
+    <div id="toastContent" class="px-5 py-3 rounded-xl shadow-lg text-white text-sm font-medium flex items-center gap-2"></div>
+  </div>
+
+  <!-- Confirm Modal -->
+  <div id="confirmModal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center">
+    <div class="bg-white rounded-2xl shadow-xl p-6 max-w-md w-full mx-4">
+      <h3 class="font-display text-lg font-semibold text-burgundy-800 mb-2" id="confirmTitle">Confirm Action</h3>
+      <p class="text-forest-600 text-sm mb-6" id="confirmMsg"></p>
+      <div class="flex gap-3 justify-end">
+        <button onclick="closeConfirm()" class="px-4 py-2 border border-burgundy-200 rounded-lg text-sm hover:bg-burgundy-50">Cancel</button>
+        <button onclick="confirmAction()" id="confirmBtn" class="px-4 py-2 bg-burgundy-800 text-white rounded-lg text-sm hover:bg-burgundy-900">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- AI Generate Modal -->
+  <div id="aiModal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center">
+    <div class="bg-white rounded-2xl shadow-xl p-6 max-w-lg w-full mx-4">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="font-display text-lg font-semibold text-burgundy-800">AI Course Generator</h3>
+        <button onclick="closeAIModal()" class="text-forest-500 hover:text-forest-700"><i class="fas fa-times"></i></button>
+      </div>
+      <p class="text-sm text-forest-600 mb-4">Generate a complete CE course using AI. This will create a draft course you can review and edit before publishing.</p>
+      <div class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-burgundy-800 mb-1">Course Topic *</label>
+          <input type="text" id="aiTopic" placeholder="e.g., Motivational Interviewing for Substance Use Counselors"
+            class="w-full px-3 py-2 border border-burgundy-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-burgundy-300">
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-burgundy-800 mb-1">CE Hours</label>
+            <select id="aiHours" class="w-full px-3 py-2 border border-burgundy-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-burgundy-300">
+              <option value="1">1 Hour</option>
+              <option value="2">2 Hours</option>
+              <option value="3" selected>3 Hours</option>
+              <option value="4">4 Hours</option>
+              <option value="6">6 Hours</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-burgundy-800 mb-1">Category</label>
+            <select id="aiCategory" class="w-full px-3 py-2 border border-burgundy-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-burgundy-300">
+              <option value="ethics">Ethics</option>
+              <option value="clinical">Clinical Practice</option>
+              <option value="trauma">Trauma</option>
+              <option value="cultural">Cultural Competence</option>
+              <option value="assessment">Assessment</option>
+              <option value="supervision">Supervision</option>
+              <option value="technology">Technology</option>
+              <option value="special">Special Populations</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-burgundy-800 mb-1">Additional Notes (optional)</label>
+          <textarea id="aiNotes" rows="2" placeholder="Target audience, specific focus areas, state requirements..."
+            class="w-full px-3 py-2 border border-burgundy-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-burgundy-300 resize-none"></textarea>
+        </div>
+      </div>
+      <div class="flex gap-3 justify-end mt-6">
+        <button onclick="closeAIModal()" class="px-4 py-2 border border-burgundy-200 rounded-lg text-sm hover:bg-burgundy-50">Cancel</button>
+        <button onclick="runAIGenerate()" id="aiGenerateBtn" class="px-4 py-2 bg-hunter-500 hover:bg-hunter-600 text-white rounded-lg text-sm font-medium flex items-center gap-2">
+          <i class="fas fa-wand-magic-sparkles"></i>
+          Generate Course
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://api.counselorready.com';
+    const token = localStorage.getItem('token');
+
+    let allCourses = [];
+    let filteredCourses = [];
+    let currentPage = 1;
+    const pageSize = 20;
+    let pendingAction = null;
+
+    // Auth check
+    if (!token) { window.location.href = '/login.html'; }
+
+    async function init() {
+      // Set admin email
+      try {
+        const r = await fetch(`${API_URL}/api/auth/me`, { headers: { Authorization: `Bearer ${token}` } });
+        if (r.ok) {
+          const d = await r.json();
+          const user = d.user || d;
+          document.getElementById('adminEmail').textContent = user.email || 'Admin';
+          if (!user.isAdmin && user.role !== 'admin') {
+            window.location.href = '/dashboard.html';
+          }
+        }
+      } catch(e) {}
+      loadCourses();
+    }
+
+    async function loadCourses() {
+      document.getElementById('loadingState').classList.remove('hidden');
+      document.getElementById('courseTable').classList.add('hidden');
+      document.getElementById('errorState').classList.add('hidden');
+
+      try {
+        // Fetch all pages
+        let page = 1;
+        let courses = [];
+        while (true) {
+          const r = await fetch(`${API_URL}/api/interactive-courses?page=${page}&limit=50&status=all`, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          const d = await r.json();
+          const batch = d.data || d.courses || [];
+          courses = courses.concat(batch);
+          const pagination = d.pagination || {};
+          if (page >= (pagination.pages || 1) || batch.length === 0) break;
+          page++;
+        }
+
+        allCourses = courses;
+        updateStats();
+        filterCourses();
+        document.getElementById('loadingState').classList.add('hidden');
+        document.getElementById('courseTable').classList.remove('hidden');
+      } catch(e) {
+        document.getElementById('loadingState').classList.add('hidden');
+        document.getElementById('errorState').classList.remove('hidden');
+        document.getElementById('errorMsg').textContent = 'Failed to load courses: ' + e.message;
+      }
+    }
+
+    function updateStats() {
+      const published = allCourses.filter(c => c.status === 'published').length;
+      const draft = allCourses.filter(c => c.status !== 'published').length;
+      const totalHours = allCourses.reduce((s, c) => s + (c.ceHours || 0), 0);
+      document.getElementById('totalCount').textContent = allCourses.length;
+      document.getElementById('publishedCount').textContent = published;
+      document.getElementById('draftCount').textContent = draft;
+      document.getElementById('totalHours').textContent = totalHours;
+    }
+
+    function filterCourses() {
+      const search = document.getElementById('searchInput').value.toLowerCase();
+      const status = document.getElementById('statusFilter').value;
+      const sort = document.getElementById('sortBy').value;
+
+      filteredCourses = allCourses.filter(c => {
+        const matchSearch = !search || c.title?.toLowerCase().includes(search) || c.slug?.includes(search);
+        const matchStatus = !status || c.status === status;
+        return matchSearch && matchStatus;
+      });
+
+      filteredCourses.sort((a, b) => {
+        if (sort === 'ceHours') return (b.ceHours || 0) - (a.ceHours || 0);
+        if (sort === 'status') return (a.status || '').localeCompare(b.status || '');
+        if (sort === 'updatedAt') return new Date(b.updatedAt || 0) - new Date(a.updatedAt || 0);
+        return (a.title || '').localeCompare(b.title || '');
+      });
+
+      currentPage = 1;
+      renderTable();
+    }
+
+    function renderTable() {
+      const start = (currentPage - 1) * pageSize;
+      const page = filteredCourses.slice(start, start + pageSize);
+      const total = filteredCourses.length;
+      const totalPages = Math.ceil(total / pageSize);
+
+      document.getElementById('paginationInfo').textContent =
+        `Showing ${start + 1}–${Math.min(start + pageSize, total)} of ${total} courses`;
+      document.getElementById('prevBtn').disabled = currentPage <= 1;
+      document.getElementById('nextBtn').disabled = currentPage >= totalPages;
+
+      document.getElementById('courseTableBody').innerHTML = page.map(course => {
+        const isPublished = course.status === 'published';
+        const sectionCount = course.sections?.length || 0;
+        const updated = course.updatedAt ? new Date(course.updatedAt).toLocaleDateString() : '—';
+
+        return `
+          <tr class="hover:bg-burgundy-50 transition-colors">
+            <td class="px-6 py-4">
+              <div class="flex items-center gap-3">
+                ${course.thumbnail
+                  ? `<img src="${course.thumbnail}" class="w-12 h-12 rounded-lg object-cover flex-shrink-0">`
+                  : `<div class="w-12 h-12 bg-burgundy-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <i class="fas fa-book text-burgundy-400"></i>
+                    </div>`
+                }
+                <div>
+                  <div class="font-medium text-burgundy-900 text-sm">${escHtml(course.title || 'Untitled')}</div>
+                  <div class="text-xs text-forest-500 mt-0.5">${escHtml(course.slug || '')}</div>
+                  <div class="text-xs text-forest-400 mt-0.5">Updated ${updated}</div>
+                </div>
+              </div>
+            </td>
+            <td class="px-4 py-4">
+              <span class="inline-flex items-center gap-1 bg-honey-100 text-honey-600 px-2 py-0.5 rounded-full text-xs font-medium">
+                <i class="fas fa-clock text-[10px]"></i>
+                ${course.ceHours || 0} hrs
+              </span>
+            </td>
+            <td class="px-4 py-4">
+              <span class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${
+                isPublished
+                  ? 'bg-green-100 text-green-700'
+                  : course.status === 'archived'
+                  ? 'bg-gray-100 text-gray-600'
+                  : 'bg-yellow-100 text-yellow-700'
+              }">
+                <span class="w-1.5 h-1.5 rounded-full ${isPublished ? 'bg-green-500' : course.status === 'archived' ? 'bg-gray-400' : 'bg-yellow-500'}"></span>
+                ${isPublished ? 'Published' : course.status === 'archived' ? 'Archived' : 'Draft'}
+              </span>
+            </td>
+            <td class="px-4 py-4 text-sm text-forest-600">
+              ${sectionCount} sections
+            </td>
+            <td class="px-6 py-4">
+              <div class="flex items-center justify-end gap-2">
+                <a href="/course-details.html?slug=${course.slug}" target="_blank"
+                  class="p-1.5 text-forest-500 hover:text-forest-700 hover:bg-forest-50 rounded transition-colors" title="View Details">
+                  <i class="fas fa-eye text-sm"></i>
+                </a>
+                <a href="/admin-course-preview.html?id=${course._id}"
+                  class="p-1.5 text-forest-500 hover:text-forest-700 hover:bg-forest-50 rounded transition-colors" title="Preview Course">
+                  <i class="fas fa-play text-sm"></i>
+                </a>
+                <a href="/CourseBuilder?id=${course._id}"
+                  class="p-1.5 text-burgundy-500 hover:text-burgundy-700 hover:bg-burgundy-50 rounded transition-colors" title="Edit Course">
+                  <i class="fas fa-edit text-sm"></i>
+                </a>
+                <button onclick="togglePublish('${course._id}', '${course.status}', '${escHtml(course.title)}')"
+                  class="p-1.5 rounded transition-colors ${isPublished ? 'text-yellow-600 hover:bg-yellow-50' : 'text-green-600 hover:bg-green-50'}" 
+                  title="${isPublished ? 'Unpublish' : 'Publish'}">
+                  <i class="fas ${isPublished ? 'fa-eye-slash' : 'fa-check-circle'} text-sm"></i>
+                </button>
+                <button onclick="confirmDelete('${course._id}', '${escHtml(course.title)}')"
+                  class="p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors" title="Delete">
+                  <i class="fas fa-trash text-sm"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function changePage(dir) {
+      currentPage += dir;
+      renderTable();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function escHtml(str) {
+      return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    }
+
+    // ── Publish / Unpublish ──
+    function togglePublish(id, currentStatus, title) {
+      const willPublish = currentStatus !== 'published';
+      pendingAction = () => doTogglePublish(id, willPublish);
+      document.getElementById('confirmTitle').textContent = willPublish ? 'Publish Course' : 'Unpublish Course';
+      document.getElementById('confirmMsg').textContent = willPublish
+        ? `"${title}" will be visible to all users.`
+        : `"${title}" will be hidden from users and set to draft.`;
+      document.getElementById('confirmBtn').textContent = willPublish ? 'Publish' : 'Unpublish';
+      document.getElementById('confirmBtn').className = willPublish
+        ? 'px-4 py-2 bg-hunter-500 text-white rounded-lg text-sm hover:bg-hunter-600'
+        : 'px-4 py-2 bg-yellow-600 text-white rounded-lg text-sm hover:bg-yellow-700';
+      document.getElementById('confirmModal').classList.remove('hidden');
+    }
+
+    async function doTogglePublish(id, publish) {
+      try {
+        const r = await fetch(`${API_URL}/api/interactive-courses/${id}`, {
+          method: 'PUT',
+          headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: publish ? 'published' : 'draft' })
+        });
+        if (!r.ok) throw new Error('Failed');
+        showToast(publish ? 'Course published!' : 'Course unpublished', publish ? '#4A7C59' : '#b8893f');
+        await loadCourses();
+      } catch(e) {
+        showToast('Error updating status: ' + e.message, '#dc2626');
+      }
+    }
+
+    // ── Delete ──
+    function confirmDelete(id, title) {
+      pendingAction = () => doDelete(id);
+      document.getElementById('confirmTitle').textContent = 'Delete Course';
+      document.getElementById('confirmMsg').textContent = `Are you sure you want to permanently delete "${title}"? This cannot be undone.`;
+      document.getElementById('confirmBtn').textContent = 'Delete';
+      document.getElementById('confirmBtn').className = 'px-4 py-2 bg-red-600 text-white rounded-lg text-sm hover:bg-red-700';
+      document.getElementById('confirmModal').classList.remove('hidden');
+    }
+
+    async function doDelete(id) {
+      try {
+        const r = await fetch(`${API_URL}/api/interactive-courses/${id}`, {
+          method: 'DELETE',
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (!r.ok) throw new Error('Failed');
+        showToast('Course deleted', '#6b1d34');
+        await loadCourses();
+      } catch(e) {
+        showToast('Error deleting course: ' + e.message, '#dc2626');
+      }
+    }
+
+    function confirmAction() {
+      closeConfirm();
+      if (pendingAction) { pendingAction(); pendingAction = null; }
+    }
+
+    function closeConfirm() {
+      document.getElementById('confirmModal').classList.add('hidden');
+    }
+
+    // ── AI Generate ──
+    function openAIGenerateModal() {
+      document.getElementById('aiModal').classList.remove('hidden');
+    }
+
+    function closeAIModal() {
+      document.getElementById('aiModal').classList.add('hidden');
+    }
+
+    async function runAIGenerate() {
+      const topic = document.getElementById('aiTopic').value.trim();
+      if (!topic) { showToast('Please enter a course topic', '#dc2626'); return; }
+
+      const btn = document.getElementById('aiGenerateBtn');
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+      btn.disabled = true;
+
+      try {
+        const r = await fetch(`${API_URL}/api/ai-course-generator/generate`, {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            topic,
+            ceHours: parseInt(document.getElementById('aiHours').value),
+            category: document.getElementById('aiCategory').value,
+            notes: document.getElementById('aiNotes').value
+          })
+        });
+        const d = await r.json();
+        if (!r.ok) throw new Error(d.error || d.message || 'Generation failed');
+        closeAIModal();
+        showToast('Course generated! Redirecting to editor...', '#4A7C59');
+        const courseId = d.data?._id || d.course?._id || d._id;
+        setTimeout(() => {
+          window.location.href = courseId ? `/CourseBuilder?id=${courseId}` : '/CourseBuilder';
+        }, 1500);
+      } catch(e) {
+        showToast('Generation failed: ' + e.message, '#dc2626');
+      } finally {
+        btn.innerHTML = '<i class="fas fa-wand-magic-sparkles"></i> Generate Course';
+        btn.disabled = false;
+      }
+    }
+
+    // ── Toast ──
+    function showToast(msg, color = '#6b1d34') {
+      const toast = document.getElementById('toast');
+      const content = document.getElementById('toastContent');
+      content.textContent = msg;
+      content.style.background = color;
+      toast.classList.remove('hidden');
+      setTimeout(() => toast.classList.add('hidden'), 3500);
+    }
+
+    // Click outside to close modals
+    document.getElementById('confirmModal').addEventListener('click', e => {
+      if (e.target === document.getElementById('confirmModal')) closeConfirm();
+    });
+    document.getElementById('aiModal').addEventListener('click', e => {
+      if (e.target === document.getElementById('aiModal')) closeAIModal();
+    });
+
+    init();
+  </script>
+</body>
+</html>
