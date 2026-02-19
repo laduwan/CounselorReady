@@ -188,7 +188,7 @@
         const progress = course.enrollment?.percentComplete || 0;
         
         // Get primary CEU category
-        const primaryCategory = course.ceuCategories?.[0];
+        const primaryCategory = course.ceuCategories?.[0] || (course.categories?.[0] ? {hours: course.ceHours, category: course.categories[0]} : null);
         const categoryLabel = primaryCategory ? `${primaryCategory.hours} hrs ${primaryCategory.category}` : '';
         
         return `
@@ -215,9 +215,9 @@
 
               <!-- Meta Info -->
               <div class="flex flex-wrap items-center gap-2 mb-4">
-                ${course.ceuEligible && course.ceuHours ? `
+                ${course.ceHours || course.ceuHours ? `
                   <span class="bg-gold-100 text-gold-700 px-2 py-1 rounded-full text-xs font-medium">
-                    ${course.ceuHours} CE Hours
+                    ${course.ceHours || course.ceuHours} CE Hours
                   </span>
                 ` : ''}
                 
@@ -227,9 +227,9 @@
                   </span>
                 ` : ''}
                 
-                ${course.ceuApprovalNumber ? `
+                ${course.ceuApprovalNumber || (course.ceHours ? "7760" : null) ? `
                   <span class="bg-burgundy-100 text-burgundy-700 px-2 py-1 rounded-full text-xs font-medium">
-                    CE #${course.ceuApprovalNumber}
+                    CE #${course.ceuApprovalNumber || (course.ceHours ? "7760" : null)}
                   </span>
                 ` : ''}
                 
