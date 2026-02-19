@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Course Player - CounselorReady</title>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <style>
     :root {
       --burgundy-50: #fdf5f6; --burgundy-100: #fae8eb; --burgundy-200: #f5d0d6;
@@ -325,8 +326,12 @@
       switch (block.type) {
         case 'sectionDivider':
           return `<header class="section-divider"><div class="section-badge">Section ${block.sectionNumber || ''}</div><h2>${esc(block.title)}</h2>${block.subtitle ? `<p>${esc(block.subtitle)}</p>` : ''}</header>`;
-        case 'text':
-          return `<section class="content-block"><div class="text-block">${block.textContent || ''}</div></section>`;
+        case 'text': {
+          const raw = block.textContent || '';
+          const isHtml = /<[a-z][\s\S]*>/i.test(raw);
+          const rendered = isHtml ? raw : (typeof marked !== 'undefined' ? marked.parse(raw) : raw);
+          return `<section class="content-block"><div class="text-block prose">${rendered}</div></section>`;
+        }
         case 'imageText':
           return `<section class="content-block"><div class="image-text-block ${block.highlight ? 'highlight' : ''}">
             <img src="${esc(block.image)}" alt="${esc(block.imageAlt)}" class="image-text-image" loading="lazy">
