@@ -362,7 +362,7 @@
         }
         
         const data = await response.json();
-        currentCourse = data.course || data;
+        currentCourse = data.data || data.course || data;
         userProgress = data.progress || null;
         
         // Load user info if logged in
