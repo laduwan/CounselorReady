@@ -733,13 +733,16 @@ router.get('/user/enrolled', protect, async (req, res) => {
       .populate('courseId', 'title slug thumbnail totalLessons')
       .sort({ lastAccessedAt: -1 });
     
-    const enrolledCourses = progress.map(p => ({
-      course: p.courseId,
-      status: p.status,
-      percentComplete: p.percentComplete,
-      lastAccessedAt: p.lastAccessedAt,
-      enrolledAt: p.enrolledAt
-    }));
+    // Filter out enrollments where course no longer exists (null populate)
+    const enrolledCourses = progress
+      .filter(p => p.courseId != null)
+      .map(p => ({
+        course: p.courseId,
+        status: p.status,
+        percentComplete: p.percentComplete,
+        lastAccessedAt: p.lastAccessedAt,
+        enrolledAt: p.enrolledAt
+      }));
     
     res.json({ enrolledCourses });
   } catch (error) {
