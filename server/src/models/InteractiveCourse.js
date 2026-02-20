@@ -157,7 +157,8 @@ const CourseSchema = new mongoose.Schema({
   // Calculated fields
   totalEstimatedTime: Number, // in minutes
   totalContentBlocks: Number,
-  totalQuizQuestions: Number
+  totalQuizQuestions: Number,
+  wordCount: Number // pre-computed for admin dashboard
   
 }, { timestamps: true });
 
@@ -167,6 +168,16 @@ CourseSchema.pre('save', function(next) {
   this.totalContentBlocks = this.sections.reduce((sum, s) => sum + s.contentBlocks.length, 0);
   this.totalQuizQuestions = this.sections.reduce((sum, s) => sum + (s.quizQuestions?.length || 0), 0) 
     + (this.assessment?.questions?.length || 0);
+  // Calculate word count from all content blocks
+  let wc = 0;
+  this.sections.forEach(s => {
+    (s.contentBlocks || []).forEach(b => {
+      const txt = b.textContent || b.content || b.html || b.body || '';
+      const plain = txt.replace(/<[^>]+>/g, ' ').replace(/&\w+;/g, ' ').trim();
+      if (plain) wc += plain.split(/\s+/).filter(w => w.length > 0).length;
+    });
+  });
+  this.wordCount = wc;
   next();
 });
 
