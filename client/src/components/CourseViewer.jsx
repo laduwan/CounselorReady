@@ -12,7 +12,15 @@ import {
   ImageTextCard,
   SectionDivider,
   TimedAssessment,
-  ProgressTracker
+  ProgressTracker,
+  CardSort,
+  Sequencing,
+  Hotspot,
+  Timeline,
+  ScenarioTree,
+  FlashcardDeck,
+  VideoEmbed,
+  ImageBlock
 } from './InteractiveCourseComponents';
 
 // ============================================================================
@@ -171,7 +179,7 @@ function ContentBlockRenderer({
     case 'text':
       return (
         <div className="prose prose-slate max-w-none">
-          <div dangerouslySetInnerHTML={{ __html: block.textContent }} />
+          <div dangerouslySetInnerHTML={{ __html: block.textContent || block.content || '' }} />
         </div>
       );
 
@@ -183,6 +191,128 @@ function ContentBlockRenderer({
             controls 
             className="w-full h-full"
           />
+        </div>
+      );
+
+    case 'cardSort':
+      return (
+        <CardSort
+          categories={block.categories}
+          cards={block.cards}
+          instructions={block.instructions}
+          explanation={block.explanation}
+          onComplete={(correct, total) => handleInteractionComplete(correct === total, correct / total)}
+        />
+      );
+
+    case 'sequencing':
+      return (
+        <Sequencing
+          steps={block.steps}
+          instructions={block.instructions}
+          explanation={block.explanation}
+          onComplete={(correct, total) => handleInteractionComplete(correct === total, correct / total)}
+        />
+      );
+
+    case 'hotspot':
+      return (
+        <Hotspot
+          hotspots={block.hotspots}
+          hotspotImage={block.hotspotImage}
+          imageDescription={block.imageDescription}
+          instructions={block.instructions}
+          onComplete={(count) => handleInteractionComplete(true, 1)}
+        />
+      );
+
+    case 'timeline':
+      return (
+        <Timeline
+          events={block.events}
+          instructions={block.instructions}
+          onComplete={(correct, total) => handleInteractionComplete(correct === total, correct / total)}
+        />
+      );
+
+    case 'scenarioTree':
+      return (
+        <ScenarioTree
+          scenarioTitle={block.scenarioTitle}
+          startNode={block.startNode}
+          nodes={block.nodes}
+          onComplete={() => handleInteractionComplete(true, 1)}
+        />
+      );
+
+    case 'flashcardDeck':
+      return (
+        <FlashcardDeck
+          flashcards={block.flashcards}
+          instructions={block.instructions}
+          onComplete={(count) => handleInteractionComplete(true, 1)}
+        />
+      );
+
+    case 'videoEmbed':
+      return (
+        <VideoEmbed
+          videoUrl={block.videoUrl}
+          videoTitle={block.videoTitle}
+          videoDuration={block.videoDuration}
+          markers={block.markers}
+          onComplete={() => handleInteractionComplete(true, 1)}
+        />
+      );
+
+    case 'image':
+      return (
+        <ImageBlock
+          imageUrl={block.imageUrl}
+          imageAltText={block.imageAltText}
+          imageCaption={block.imageCaption}
+          imageSize={block.imageSize}
+          imageAlignment={block.imageAlignment}
+          onComplete={() => handleInteractionComplete(true, 1)}
+        />
+      );
+
+    case 'reflection':
+      return (
+        <div style={{ background: '#F0F7F4', borderRadius: 16, padding: 24, border: '1px solid #4A7C5922' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
+            <span style={{ fontSize: 20 }}>💭</span>
+            <h3 style={{ fontWeight: 700, color: '#34495E', margin: 0 }}>Reflection</h3>
+          </div>
+          <p style={{ color: '#34495E', fontWeight: 600, marginBottom: 12 }}>{block.question}</p>
+          <textarea
+            placeholder="Take a moment to reflect and write your thoughts here..."
+            style={{ width: '100%', minHeight: 120, padding: 12, borderRadius: 10, border: '1px solid #E8E4DF', fontSize: 14, fontFamily: 'inherit', resize: 'vertical', boxSizing: 'border-box' }}
+            onChange={(e) => {
+              if (e.target.value.length >= (block.minLength || 50)) {
+                handleInteractionComplete(true, 1);
+              }
+            }}
+          />
+          <p style={{ fontSize: 12, color: '#6B7280', marginTop: 6 }}>
+            Minimum {block.minLength || 50} characters to complete
+          </p>
+        </div>
+      );
+
+    case 'resources':
+      return (
+        <div style={{ background: '#fff', borderRadius: 16, padding: 24, border: '1px solid #E8E4DF' }}>
+          <h3 style={{ fontWeight: 700, color: '#34495E', marginBottom: 16 }}>📎 Resources</h3>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {(block.resources || []).map((r, i) => (
+              <a key={i} href={r.url} target="_blank" rel="noopener noreferrer"
+                style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', borderRadius: 10, background: '#F7F5F2', textDecoration: 'none', color: '#34495E', border: '1px solid #E8E4DF' }}>
+                <span>{r.type === 'pdf' ? '📄' : r.type === 'video' ? '🎬' : '🔗'}</span>
+                <span style={{ fontWeight: 600 }}>{r.title}</span>
+              </a>
+            ))}
+          </div>
         </div>
       );
 
@@ -643,22 +773,6 @@ function AssessmentView({ course, progress, onComplete, onBack }) {
     );
   }
 
-  // Guard: no assessment questions
-  if (!course.assessment?.questions?.length) {
-    return (
-      <div className="max-w-2xl mx-auto text-center py-12">
-        <div className="w-24 h-24 rounded-full bg-amber-100 flex items-center justify-center mx-auto mb-6">
-          <Award className="w-12 h-12 text-amber-600" />
-        </div>
-        <h1 className="text-3xl font-bold text-slate-800 mb-4">Assessment Coming Soon</h1>
-        <p className="text-xl text-slate-600 mb-8">The final assessment for this course is being finalized.</p>
-        <button onClick={onBack} className="px-6 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl">
-          Back to Course
-        </button>
-      </div>
-    );
-  }
-
   return (
     <div className="max-w-4xl mx-auto">
       <div className="mb-6">
@@ -860,18 +974,7 @@ export default function CourseViewer({ courseSlug }) {
     }
   }, [courseSlug]);
 
-  const handleNavigate = useCallback(async (target) => {
-    // Mark current section as completed before navigating away
-    const currentIndex = progress?.currentSectionIndex || 0;
-    try {
-      await api.updateSectionProgress(course.slug, currentIndex, {
-        status: 'completed',
-        completedAt: new Date().toISOString()
-      });
-    } catch (e) {
-      console.error('Failed to mark section complete:', e);
-    }
-
+  const handleNavigate = useCallback((target) => {
     if (target === 'assessment') {
       setCurrentView('assessment');
     } else if (typeof target === 'number') {
@@ -879,12 +982,7 @@ export default function CourseViewer({ courseSlug }) {
       setCurrentView('section');
     }
     setSidebarOpen(false);
-    // Refresh progress so sidebar updates
-    try {
-      const progressData = await api.getProgress(course.slug);
-      setProgress(progressData);
-    } catch (e) {}
-  }, [progress, course]);
+  }, []);
 
   if (loading) {
     return (
