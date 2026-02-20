@@ -65,7 +65,7 @@ function AppRoutes() {
   return (
     <Routes>
       {/* Public routes */}
-      <Route path="/" element={<Landing />} />
+      <Route path="/" element={<PublicRoute><Landing /></PublicRoute>} />
       <Route path="/login" element={
         <PublicRoute><Login /></PublicRoute>
       } />
