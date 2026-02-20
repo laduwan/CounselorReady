@@ -86,9 +86,12 @@
       <div class="flex items-center justify-between mb-5 flex-wrap gap-3">
         <h1 class="font-display text-3xl font-semibold text-burgundy-900">Manage Courses</h1>
         <div class="flex gap-2 flex-wrap">
-          <a href="/admin-users.html" class="bg-forest-50 hover:bg-forest-100 text-forest-700 font-medium px-4 py-2 rounded-xl flex items-center gap-1 text-sm transition-colors">👥 Users</a>
-          <button onclick="showToast('Bulk pricing coming soon','#34495e')" class="bg-green-50 hover:bg-green-100 text-green-700 font-medium px-4 py-2 rounded-xl flex items-center gap-1 text-sm transition-colors">💰 Bulk Pricing</button>
-          <button onclick="openAIModal()" class="bg-forest-500 hover:bg-forest-600 text-white font-medium px-4 py-2 rounded-xl flex items-center gap-1 text-sm transition-colors">✨ Create with AI</button>
+          <a href="/admin-users.html" class="bg-white border border-burgundy-200 hover:bg-burgundy-50 text-burgundy-700 font-medium px-3 py-2 rounded-xl flex items-center gap-1 text-sm transition-colors">👥 Users</a>
+          <button onclick="showToast('Bulk pricing coming soon','#34495e')" class="bg-white border border-burgundy-200 hover:bg-burgundy-50 text-burgundy-700 font-medium px-3 py-2 rounded-xl flex items-center gap-1 text-sm transition-colors">💰 Bulk Pricing</button>
+          <a href="/admin-migration.html" class="bg-white border border-burgundy-200 hover:bg-burgundy-50 text-burgundy-700 font-medium px-3 py-2 rounded-xl flex items-center gap-1 text-sm transition-colors">🗄️ Migration</a>
+          <button onclick="showToast('Bulk PDF upload coming soon','#34495e')" class="bg-white border border-burgundy-200 hover:bg-burgundy-50 text-burgundy-700 font-medium px-3 py-2 rounded-xl flex items-center gap-1 text-sm transition-colors">📄 Bulk PDF Upload</button>
+          <button onclick="showToast('SCORM import coming soon','#34495e')" class="bg-white border border-burgundy-200 hover:bg-burgundy-50 text-burgundy-700 font-medium px-3 py-2 rounded-xl flex items-center gap-1 text-sm transition-colors">📦 Import SCORM</button>
+          <button onclick="openAIModal()" class="bg-forest-500 hover:bg-forest-600 text-white font-medium px-3 py-2 rounded-xl flex items-center gap-1 text-sm transition-colors">✨ Create with AI</button>
           <a href="/CourseBuilder" class="bg-burgundy-800 hover:bg-burgundy-900 text-white font-semibold px-4 py-2 rounded-xl text-sm transition-colors">+ New Course</a>
         </div>
       </div>
@@ -308,15 +311,38 @@
     };
 
     function wordCount(c) {
+      // Use pre-computed field if available
+      if (c.wordCount && typeof c.wordCount === 'number') return c.wordCount;
+      if (c.totalWords && typeof c.totalWords === 'number') return c.totalWords;
+
       let n = 0;
-      (c.sections || c.modules || []).forEach(s => {
-        (s.contentBlocks || s.lessons || []).forEach(b => {
-          const t = b.textContent || b.content || b.body || b.html || '';
+      const sections = c.sections || c.modules || [];
+      sections.forEach(s => {
+        const blocks = s.contentBlocks || s.lessons || s.blocks || [];
+        blocks.forEach(b => {
+          // Try every possible field name for text content
+          const t = b.textContent || b.content || b.body || b.html
+            || b.text || b.description || b.data?.content || b.data?.text || '';
+          if (!t || typeof t !== 'string') return;
           const plain = t.replace(/<[^>]+>/g,' ').replace(/&\w+;/g,' ').replace(/\s+/g,' ').trim();
-          if (plain) n += plain.split(' ').filter(w => w).length;
+          if (plain) n += plain.split(/\s+/).filter(w => w.length > 0).length;
         });
       });
       return n;
+    }
+
+    // Debug helper — logs structure of first course to console
+    function debugCourseStructure(c) {
+      const sections = c.sections || c.modules || [];
+      console.log('Course:', c.title);
+      console.log('  Keys:', Object.keys(c));
+      console.log('  Sections count:', sections.length);
+      if (sections[0]) {
+        console.log('  Section[0] keys:', Object.keys(sections[0]));
+        const blocks = sections[0].contentBlocks || sections[0].lessons || sections[0].blocks || [];
+        console.log('  Blocks count:', blocks.length);
+        if (blocks[0]) console.log('  Block[0] keys:', Object.keys(blocks[0]));
+      }
     }
 
     function healthStatus(c) {
@@ -369,6 +395,7 @@
         } catch(e) {}
 
         allCourses = courses.map(c => ({ ...c, _health: healthStatus(c), _words: wordCount(c) }));
+        if (courses.length > 0) debugCourseStructure(courses[0]);
         updateDashboard();
         renderCourses();
         hide('loadingState'); show('mainContent');
