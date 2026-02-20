@@ -643,6 +643,22 @@ function AssessmentView({ course, progress, onComplete, onBack }) {
     );
   }
 
+  // Guard: no assessment questions
+  if (!course.assessment?.questions?.length) {
+    return (
+      <div className="max-w-2xl mx-auto text-center py-12">
+        <div className="w-24 h-24 rounded-full bg-amber-100 flex items-center justify-center mx-auto mb-6">
+          <Award className="w-12 h-12 text-amber-600" />
+        </div>
+        <h1 className="text-3xl font-bold text-slate-800 mb-4">Assessment Coming Soon</h1>
+        <p className="text-xl text-slate-600 mb-8">The final assessment for this course is being finalized.</p>
+        <button onClick={onBack} className="px-6 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl">
+          Back to Course
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-4xl mx-auto">
       <div className="mb-6">
@@ -844,7 +860,18 @@ export default function CourseViewer({ courseSlug }) {
     }
   }, [courseSlug]);
 
-  const handleNavigate = useCallback((target) => {
+  const handleNavigate = useCallback(async (target) => {
+    // Mark current section as completed before navigating away
+    const currentIndex = progress?.currentSectionIndex || 0;
+    try {
+      await api.updateSectionProgress(course.slug, currentIndex, {
+        status: 'completed',
+        completedAt: new Date().toISOString()
+      });
+    } catch (e) {
+      console.error('Failed to mark section complete:', e);
+    }
+
     if (target === 'assessment') {
       setCurrentView('assessment');
     } else if (typeof target === 'number') {
@@ -852,7 +879,12 @@ export default function CourseViewer({ courseSlug }) {
       setCurrentView('section');
     }
     setSidebarOpen(false);
-  }, []);
+    // Refresh progress so sidebar updates
+    try {
+      const progressData = await api.getProgress(course.slug);
+      setProgress(progressData);
+    } catch (e) {}
+  }, [progress, course]);
 
   if (loading) {
     return (
