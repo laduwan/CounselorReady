@@ -45,7 +45,7 @@ router.get('/', async (req, res) => {
     }
 
     const courses = await Course.find(query)
-      .select('title slug description thumbnail ceHours totalEstimatedTime categories tags status wordCount price createdAt')
+      .select('title slug description thumbnail ceHours totalEstimatedTime categories tags')
       .sort({ publishedAt: -1 })
       .skip((page - 1) * limit)
       .limit(parseInt(limit));
@@ -762,14 +762,15 @@ router.put('/:id/progress/section/:sectionIndex', protect, async (req, res) => {
     }
     sectionProgress.status = 'in_progress';
 
-    // Check if section is complete
+    // Check if section is complete - either all blocks viewed OR explicit completion sent
     const section = course.sections[sectionIndex];
     const totalBlocks = section.contentBlocks?.length || 0;
     const allBlocksViewed = sectionProgress.viewedBlocks.length >= totalBlocks;
+    const explicitComplete = req.body.status === 'completed';
 
-    if (allBlocksViewed) {
+    if (allBlocksViewed || explicitComplete) {
       sectionProgress.status = 'completed';
-      sectionProgress.completedAt = new Date();
+      sectionProgress.completedAt = sectionProgress.completedAt || new Date();
     }
 
     progress.lastAccessedAt = new Date();
