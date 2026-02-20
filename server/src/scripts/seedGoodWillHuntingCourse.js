@@ -897,9 +897,4 @@ async function seedCourse() {
   }
 }
 
-// Export for use as module or run directly
-if (require.main === module) {
-  seedCourse();
-}
-
-module.exports = { courseData, seedCourse };
+seedCourse();
