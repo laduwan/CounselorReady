@@ -18,10 +18,15 @@ export function AuthProvider({ children }) {
   }, []);
 
   const fetchUser = async () => {
+    // Timeout after 8 seconds — if API is cold-starting, don't block forever
+    const timeout = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('timeout')), 8000)
+    );
     try {
-      const { data } = await api.get('/auth/me');
+      const { data } = await Promise.race([api.get('/auth/me'), timeout]);
       setUser(data.user);
     } catch (error) {
+      // On timeout or error, clear token so user sees login page cleanly
       localStorage.removeItem('token');
       delete api.defaults.headers.common['Authorization'];
     } finally {
@@ -58,7 +63,7 @@ export function AuthProvider({ children }) {
     register,
     logout,
     isAuthenticated: !!user,
-    hasSubscription: user?.subscription?.status === 'active' || 
+    hasSubscription: user?.subscription?.status === 'active' ||
                      user?.subscription?.status === 'trial' ||
                      user?.subscription?.status === 'lifetime'
   };
