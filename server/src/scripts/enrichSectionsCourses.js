@@ -1,13 +1,8 @@
 /**
- * enrichSectionsCourses.js
+ * enrichSectionsCourses.js - v2 (fixed regex backtracking)
  * 
- * Fixes courses that have sections[] with only sectionDivider + text blocks.
- * Parses textContent HTML to:
- * 1. Extract embedded quiz questions → multipleChoice contentBlocks
- * 2. Build assessment from extracted questions
- * 3. Remove static quiz text from original text blocks
- * 
- * Run: node src/scripts/enrichSectionsCourses.js
+ * Parses textContent in sections-based courses to extract
+ * embedded quiz questions into interactive multipleChoice blocks.
  */
 
 import mongoose from 'mongoose';
@@ -16,108 +11,115 @@ dotenv.config();
 
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/counselorready';
 
-// ── Quiz Extraction Patterns ──────────────────────────────────────
-
-function extractQuizzesFromHTML(html) {
-  if (!html || typeof html !== 'string') return { cleanedHTML: html, questions: [] };
-  
-  const questions = [];
-  let cleanedHTML = html;
-
-  // Pattern 1: Numbered questions with lettered options and "Correct Answer:" line
-  // e.g., "1. What is CBT?\nA) Therapy\nB) Medicine\nCorrect Answer: A"
-  const numberedPattern = /(?:<[^>]*>)*\s*(\d+)\.\s*(.*?)(?:<[^>]*>)*\s*(?:<[^>]*>)*\s*[Aa]\)?\.?\s*(.*?)(?:<[^>]*>)*\s*(?:<[^>]*>)*\s*[Bb]\)?\.?\s*(.*?)(?:<[^>]*>)*\s*(?:<[^>]*>)*\s*[Cc]\)?\.?\s*(.*?)(?:<[^>]*>)*\s*(?:<[^>]*>)*\s*[Dd]\)?\.?\s*(.*?)(?:<[^>]*>)*\s*(?:<[^>]*>)*\s*(?:Correct\s*Answer|Answer):\s*([A-Da-d])(?:\s*[).]?\s*[—–-]?\s*(.*?))?(?=(?:<[^>]*>)*\s*(?:\d+\.|<h[23]|Comprehensive\s*Final|$))/gis;
-  
-  let match;
-  const matchedTexts = [];
-  
-  while ((match = numberedPattern.exec(html)) !== null) {
-    const questionText = stripTags(match[2]).trim();
-    const optA = stripTags(match[3]).trim();
-    const optB = stripTags(match[4]).trim();
-    const optC = stripTags(match[5]).trim();
-    const optD = stripTags(match[6]).trim();
-    const correctLetter = match[7].toUpperCase();
-    const explanation = match[8] ? stripTags(match[8]).trim() : '';
-    
-    if (questionText.length > 10 && optA && optB && optC && optD) {
-      const correctIdx = 'ABCD'.indexOf(correctLetter);
-      questions.push({
-        question: questionText,
-        options: [optA, optB, optC, optD].map((text, idx) => ({
-          text,
-          isCorrect: idx === correctIdx
-        })),
-        explanation: explanation || `The correct answer is ${correctLetter}.`,
-        type: 'multipleChoice'
-      });
-      matchedTexts.push(match[0]);
-    }
-  }
-
-  // Pattern 2: <strong>Question N.</strong> or <b>Question N.</b> format
-  const strongPattern = /<(?:strong|b)>\s*Question\s*(\d+)\.?\s*<\/(?:strong|b)>\s*(.*?)(?:<[^>]*>)*\s*[Aa]\)?\.?\s*(.*?)(?:<[^>]*>)*\s*[Bb]\)?\.?\s*(.*?)(?:<[^>]*>)*\s*[Cc]\)?\.?\s*(.*?)(?:<[^>]*>)*\s*[Dd]\)?\.?\s*(.*?)(?:<[^>]*>)*\s*(?:Correct\s*Answer|Answer):\s*([A-Da-d])(?:\s*[).]?\s*[—–-]?\s*(.*?))?(?=(?:<[^>]*>)*\s*(?:<(?:strong|b)>|Question|Comprehensive|$))/gis;
-  
-  while ((match = strongPattern.exec(html)) !== null) {
-    const questionText = stripTags(match[2]).trim();
-    const optA = stripTags(match[3]).trim();
-    const optB = stripTags(match[4]).trim();
-    const optC = stripTags(match[5]).trim();
-    const optD = stripTags(match[6]).trim();
-    const correctLetter = match[7].toUpperCase();
-    const explanation = match[8] ? stripTags(match[8]).trim() : '';
-    
-    if (questionText.length > 10 && optA && optB && optC && optD) {
-      // Check for duplicate
-      const isDupe = questions.some(q => q.question === questionText);
-      if (!isDupe) {
-        const correctIdx = 'ABCD'.indexOf(correctLetter);
-        questions.push({
-          question: questionText,
-          options: [optA, optB, optC, optD].map((text, idx) => ({
-            text,
-            isCorrect: idx === correctIdx
-          })),
-          explanation: explanation || `The correct answer is ${correctLetter}.`,
-          type: 'multipleChoice'
-        });
-        matchedTexts.push(match[0]);
-      }
-    }
-  }
-
-  // Pattern 3: Simple "Knowledge Check" header followed by questions
-  const kcHeaderPattern = /<h[23][^>]*>\s*(?:Knowledge\s*Check|Module\s*(?:Quiz|Assessment)|Check\s*Your\s*(?:Understanding|Knowledge))\s*<\/h[23]>/gi;
-  
-  // Remove matched quiz text from HTML
-  for (const txt of matchedTexts) {
-    cleanedHTML = cleanedHTML.replace(txt, '');
-  }
-  
-  // Also remove "Comprehensive Final Examination" header + intro text
-  cleanedHTML = cleanedHTML.replace(/<h[23][^>]*>\s*Comprehensive\s*Final\s*Exam(?:ination)?\s*<\/h[23]>[\s\S]*?(?=<h[23]|$)/gi, '');
-  
-  // Remove "Knowledge Check" headers that are now orphaned
-  cleanedHTML = cleanedHTML.replace(kcHeaderPattern, '');
-  
-  // Clean up empty paragraphs
-  cleanedHTML = cleanedHTML.replace(/<p>\s*<\/p>/g, '');
-  cleanedHTML = cleanedHTML.replace(/\n{3,}/g, '\n\n');
-  
-  return { cleanedHTML, questions };
-}
-
 function stripTags(html) {
   if (!html) return '';
   return html.replace(/<[^>]*>/g, '').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'").trim();
 }
 
-// ── Main Enrichment ───────────────────────────────────────────────
+function extractQuizzesFromText(textContent) {
+  if (!textContent || typeof textContent !== 'string') return { cleaned: textContent, questions: [] };
+  
+  const questions = [];
+  const lines = textContent.split('\n');
+  const outputLines = [];
+  let i = 0;
+  
+  while (i < lines.length) {
+    const line = stripTags(lines[i]).trim();
+    
+    // Check for numbered question: "1. question text" or "Question 1. text"
+    const qMatch = line.match(/^(?:Question\s+)?(\d+)[\.\)]\s+(.{15,})/i);
+    
+    if (qMatch) {
+      const qText = qMatch[2];
+      
+      // Look ahead for A) B) C) D) options
+      let optA = '', optB = '', optC = '', optD = '';
+      let correctLetter = '';
+      let explanation = '';
+      let linesConsumed = 0;
+      
+      // Scan next lines for options and answer
+      for (let j = i + 1; j < Math.min(i + 12, lines.length); j++) {
+        const l = stripTags(lines[j]).trim();
+        if (l.match(/^[Aa][\)\.]?\s/)) optA = l.replace(/^[Aa][\)\.]?\s*/, '');
+        else if (l.match(/^[Bb][\)\.]?\s/)) optB = l.replace(/^[Bb][\)\.]?\s*/, '');
+        else if (l.match(/^[Cc][\)\.]?\s/)) optC = l.replace(/^[Cc][\)\.]?\s*/, '');
+        else if (l.match(/^[Dd][\)\.]?\s/)) optD = l.replace(/^[Dd][\)\.]?\s*/, '');
+        else if (l.match(/^Correct\s*Answer/i)) {
+          const aMatch = l.match(/(?:Correct\s*Answer)\s*:?\s*([A-Da-d])/i);
+          if (aMatch) correctLetter = aMatch[1].toUpperCase();
+          const expMatch = l.match(/[—–-]\s*(.+)/);
+          if (expMatch) explanation = expMatch[1].trim();
+          linesConsumed = j - i;
+          // Check if next line is also explanation
+          if (j + 1 < lines.length) {
+            const nextL = stripTags(lines[j + 1]).trim();
+            if (nextL.match(/^Explanation:/i)) {
+              explanation = nextL.replace(/^Explanation:\s*/i, '');
+              linesConsumed = j + 1 - i;
+            }
+          }
+          break;
+        }
+        linesConsumed = j - i;
+      }
+      
+      if (optA && optB && optC && optD && correctLetter) {
+        const correctIdx = 'ABCD'.indexOf(correctLetter);
+        questions.push({
+          question: qText,
+          options: [optA, optB, optC, optD].map((text, idx) => ({
+            text,
+            isCorrect: idx === correctIdx
+          })),
+          explanation: explanation || 'The correct answer is ' + correctLetter + '.'
+        });
+        i += linesConsumed + 1;
+        continue;
+      }
+    }
+    
+    // Check for inline format: "1. question A) opt B) opt C) opt D) opt Correct Answer: X"
+    const inlineMatch = line.match(/^(\d+)[\.\)]\s+(.+?)\s+[Aa]\)\s+(.+?)\s+[Bb]\)\s+(.+?)\s+[Cc]\)\s+(.+?)\s+[Dd]\)\s+(.+?)(?:\s+Correct\s*Answer:\s*([A-Da-d]))?/i);
+    if (inlineMatch && inlineMatch[7]) {
+      const correctIdx = 'ABCD'.indexOf(inlineMatch[7].toUpperCase());
+      questions.push({
+        question: inlineMatch[2],
+        options: [inlineMatch[3], inlineMatch[4], inlineMatch[5], inlineMatch[6]].map((text, idx) => ({
+          text: text.trim(),
+          isCorrect: idx === correctIdx
+        })),
+        explanation: 'The correct answer is ' + inlineMatch[7].toUpperCase() + '.'
+      });
+      i++;
+      continue;
+    }
+    
+    // Skip "Comprehensive Final Examination" headers and intro
+    if (line.match(/^Comprehensive\s*Final\s*Exam/i)) {
+      i++;
+      // Skip the intro line too
+      if (i < lines.length && stripTags(lines[i]).match(/Complete the following/i)) i++;
+      continue;
+    }
+    
+    // Skip "Knowledge Check" headers
+    if (line.match(/^Knowledge\s*Check/i) || line.match(/^Module\s*(?:Quiz|Assessment)/i)) {
+      i++;
+      continue;
+    }
+    
+    outputLines.push(lines[i]);
+    i++;
+  }
+  
+  return { cleaned: outputLines.join('\n'), questions };
+}
 
 async function enrichCourses() {
   console.log('══════════════════════════════════════════════════════════════');
-  console.log('  ENRICH SECTIONS-BASED COURSES');
-  console.log('  Extract static quizzes → interactive blocks + assessments');
+  console.log('  ENRICH SECTIONS-BASED COURSES v2');
   console.log('══════════════════════════════════════════════════════════════\n');
   
   await mongoose.connect(MONGODB_URI);
@@ -128,48 +130,35 @@ async function enrichCourses() {
   const allCourses = await collection.find({}).toArray();
   
   let coursesFixed = 0;
-  let totalQuestionsExtracted = 0;
-  let totalAssessmentsBuilt = 0;
+  let totalQsExtracted = 0;
+  let totalAssessmentAdded = 0;
   
   for (const course of allCourses) {
     if (!course.sections || course.sections.length === 0) continue;
     
-    // Check if this course needs enrichment
-    const blockTypes = {};
-    let totalBlocks = 0;
+    // Skip courses that already have interactive elements
+    let hasInteractive = false;
     course.sections.forEach(s => (s.contentBlocks || []).forEach(b => {
-      blockTypes[b.type] = (blockTypes[b.type] || 0) + 1;
-      totalBlocks++;
+      if (['multipleChoice', 'multiSelect', 'matching', 'imageText', 'accordion'].includes(b.type)) {
+        hasInteractive = true;
+      }
     }));
+    if (hasInteractive) continue;
     
-    // Skip courses that already have interactive elements (trauma, neuro, suicide-risk)
-    const hasInteractive = blockTypes.multipleChoice || blockTypes.multiSelect || 
-                           blockTypes.matching || blockTypes.accordion || blockTypes.imageText;
-    if (hasInteractive) {
-      continue;
-    }
-    
-    // This course only has sectionDivider + text — needs enrichment
-    let courseQuestionsExtracted = 0;
-    const allExtractedQuestions = [];
+    let courseQs = 0;
+    const allQuestions = [];
     
     for (let si = 0; si < course.sections.length; si++) {
       const section = course.sections[si];
       if (!section.contentBlocks) continue;
       
       const newBlocks = [];
-      
-      for (let bi = 0; bi < section.contentBlocks.length; bi++) {
-        const block = section.contentBlocks[bi];
-        
-        if (block.type === 'text' && block.textContent) {
-          const { cleanedHTML, questions } = extractQuizzesFromHTML(block.textContent);
-          
-          // Update the text block with cleaned content
-          block.textContent = cleanedHTML;
+      for (const block of section.contentBlocks) {
+        if (block.type === 'text' && block.textContent && block.textContent.length > 100) {
+          const { cleaned, questions } = extractQuizzesFromText(block.textContent);
+          block.textContent = cleaned;
           newBlocks.push(block);
           
-          // Add extracted questions as interactive blocks
           for (const q of questions) {
             newBlocks.push({
               type: 'multipleChoice',
@@ -180,93 +169,56 @@ async function enrichCourses() {
               feedbackCorrect: 'Correct! ' + q.explanation,
               feedbackIncorrect: 'Not quite. ' + q.explanation
             });
-            courseQuestionsExtracted++;
-            allExtractedQuestions.push(q);
+            courseQs++;
+            allQuestions.push(q);
           }
         } else {
           newBlocks.push(block);
         }
       }
-      
-      // Reorder blocks
-      newBlocks.forEach((b, i) => b.order = i);
+      newBlocks.forEach((b, idx) => b.order = idx);
       course.sections[si].contentBlocks = newBlocks;
     }
     
-    // Build/supplement assessment from extracted questions
-    const currentAssessmentQs = course.assessment?.questions?.length || 0;
-    
-    if (allExtractedQuestions.length > 0 || currentAssessmentQs < 15) {
-      if (!course.assessment) {
-        course.assessment = { questions: [], passThreshold: 0.8, maxAttempts: 3 };
-      }
-      
-      // Use extracted questions for assessment (pick up to 15, spread across sections)
-      const availableForAssessment = allExtractedQuestions.filter(q => 
-        !course.assessment.questions.some(existing => 
-          existing.question === q.question || existing.text === q.question
-        )
-      );
-      
-      const needed = Math.max(0, 15 - currentAssessmentQs);
-      const toAdd = availableForAssessment.slice(0, needed);
-      
-      for (const q of toAdd) {
-        course.assessment.questions.push({
-          text: q.question,
-          question: q.question,
-          type: 'multipleChoice',
-          options: q.options,
-          explanation: q.explanation,
-          correctAnswer: q.options.findIndex(o => o.isCorrect)
-        });
-        totalAssessmentsBuilt++;
-      }
+    // Build assessment
+    const currentAQs = course.assessment?.questions?.length || 0;
+    if (!course.assessment) {
+      course.assessment = { questions: [], passThreshold: 0.8, maxAttempts: 3 };
     }
     
-    if (courseQuestionsExtracted > 0 || totalAssessmentsBuilt > 0) {
-      // Save to database
-      const updateOp = {};
-      updateOp["$set"] = {
-        sections: course.sections,
-        assessment: course.assessment,
-        updatedAt: new Date()
-      };
-      
-      await collection.updateOne({ _id: course._id }, updateOp);
-      
-      const newAssessmentTotal = course.assessment?.questions?.length || 0;
-      console.log(`  ✅ ${course.slug}`);
-      console.log(`     Extracted ${courseQuestionsExtracted} quiz Qs → interactive blocks`);
-      console.log(`     Assessment: ${currentAssessmentQs} → ${newAssessmentTotal} questions`);
+    const needed = Math.max(0, 15 - currentAQs);
+    const toAdd = allQuestions.slice(0, needed);
+    for (const q of toAdd) {
+      course.assessment.questions.push({
+        text: q.question,
+        question: q.question,
+        type: 'multipleChoice',
+        options: q.options,
+        explanation: q.explanation,
+        correctAnswer: q.options.findIndex(o => o.isCorrect)
+      });
+      totalAssessmentAdded++;
+    }
+    
+    if (courseQs > 0) {
+      const op = {};
+      op["$set"] = { sections: course.sections, assessment: course.assessment, updatedAt: new Date() };
+      await collection.updateOne({ _id: course._id }, op);
+      console.log('  ✅', course.slug, '|', courseQs, 'quizzes extracted |', 'assessment:', currentAQs, '->', course.assessment.questions.length);
       coursesFixed++;
-      totalQuestionsExtracted += courseQuestionsExtracted;
+      totalQsExtracted += courseQs;
     } else {
-      // No quizzes found in text, but course still needs assessment
-      // Check if textContent has any content at all
-      let hasContent = false;
-      course.sections.forEach(s => (s.contentBlocks || []).forEach(b => {
-        if (b.textContent && b.textContent.length > 100) hasContent = true;
-      }));
-      
-      if (hasContent) {
-        console.log(`  ⚠️  ${course.slug}: has content but no extractable quizzes`);
-      }
+      console.log('  ⚠️ ', course.slug, '| no extractable quizzes found | assessment:', currentAQs);
     }
   }
   
   console.log('\n══════════════════════════════════════════════════════════════');
-  console.log('  ENRICHMENT SUMMARY');
-  console.log('══════════════════════════════════════════════════════════════');
-  console.log(`  Courses enriched:     ${coursesFixed}`);
-  console.log(`  Quizzes extracted:    ${totalQuestionsExtracted}`);
-  console.log(`  Assessment Qs added:  ${totalAssessmentsBuilt}`);
+  console.log('  Courses fixed:', coursesFixed);
+  console.log('  Quizzes extracted:', totalQsExtracted);
+  console.log('  Assessment Qs added:', totalAssessmentAdded);
   console.log('══════════════════════════════════════════════════════════════\n');
   
   await mongoose.disconnect();
 }
 
-enrichCourses().catch(err => {
-  console.error('Error:', err.message);
-  process.exit(1);
-});
+enrichCourses().catch(err => { console.error('Error:', err.message); process.exit(1); });
