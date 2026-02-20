@@ -103,7 +103,7 @@
           <button onclick="openAIModal()" class="bg-forest-500 hover:bg-forest-600 text-white font-medium px-3 py-2 rounded-xl flex items-center gap-1.5 text-sm transition-colors">
             <i class="fas fa-wand-magic-sparkles text-xs"></i> Create with AI
           </button>
-          <a href="/admin/course-builder" class="bg-burgundy-800 hover:bg-burgundy-900 text-white font-semibold px-4 py-2 rounded-xl flex items-center gap-1.5 text-sm transition-colors">
+          <a href="/CourseBuilder" class="bg-burgundy-800 hover:bg-burgundy-900 text-white font-semibold px-4 py-2 rounded-xl flex items-center gap-1.5 text-sm transition-colors">
             <i class="fas fa-plus text-xs"></i> New Course
           </a>
         </div>
@@ -319,13 +319,15 @@
 
     // ── Health classification ──
     function wordCount(course) {
+      // Use pre-computed wordCount field from DB
+      if (course.wordCount && course.wordCount > 0) return course.wordCount;
+      // Fallback: calculate from full course data if available
       let count = 0;
       const sections = course.sections || course.modules || [];
       sections.forEach(sec => {
         const blocks = sec.contentBlocks || sec.lessons || [];
         blocks.forEach(b => {
           const text = b.textContent || b.content || b.body || '';
-          // Strip HTML tags then count words
           const plain = text.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
           if (plain) count += plain.split(' ').length;
         });
@@ -501,7 +503,7 @@
       const ceHours = c.ceHours || c.ceuHours || 0;
       const target = ceHours * WORDS_PER_CE_HOUR;
       const wordPct = target > 0 ? Math.min(100, Math.round((c._words / target) * 100)) : 0;
-      const sections = (c.sections || c.modules || []).length;
+      const sections = c.sectionCount || c.moduleCount || (c.sections || c.modules || []).length;
       const price = c.price ? `$${c.price}` : null;
       const tier = c.accessTier || c.pricingTier || null;
 
@@ -534,7 +536,7 @@
                 class="w-8 h-8 rounded-lg flex items-center justify-center text-sm bg-purple-50 hover:bg-purple-100 text-purple-700 transition-colors" title="Preview">👁️</a>
               <button onclick="duplicateCourse('${c._id}','${esc(c.title)}')"
                 class="w-8 h-8 rounded-lg flex items-center justify-center text-sm bg-gold-50 hover:bg-gold-100 text-gold-700 transition-colors" title="Duplicate">📋</button>
-              <a href="/admin/course-builder?id=${c._id}"
+              <a href="/CourseBuilder?id=${c._id}"
                 class="h-8 px-3 rounded-lg text-xs font-medium bg-forest-50 hover:bg-forest-100 text-forest-700 transition-colors flex items-center">Edit</a>
               <button onclick="deleteCourse('${c._id}','${esc(c.title)}','${src}')"
                 class="h-8 px-3 rounded-lg text-xs font-medium bg-burgundy-50 hover:bg-burgundy-100 text-burgundy-700 transition-colors">Delete</button>
@@ -671,7 +673,7 @@
         closeAIModal();
         showToast('✓ Generated! Opening editor...', '#4A7C59');
         const cid = d.data?._id || d.course?._id || d._id;
-        setTimeout(() => { window.location.href = cid ? `/admin/course-builder?id=${cid}` : '/admin/course-builder'; }, 1500);
+        setTimeout(() => { window.location.href = cid ? `/CourseBuilder?id=${cid}` : '/CourseBuilder'; }, 1500);
       } catch(e) {
         showToast('Error: ' + e.message, '#dc2626');
       } finally {
