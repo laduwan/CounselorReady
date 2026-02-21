@@ -63,6 +63,7 @@ export function AuthProvider({ children }) {
     register,
     logout,
     isAuthenticated: !!user,
+    isAdmin: user?.role === 'admin',
     hasSubscription: user?.subscription?.status === 'active' ||
                      user?.subscription?.status === 'trial' ||
                      user?.subscription?.status === 'lifetime'
