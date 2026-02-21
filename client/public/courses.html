@@ -154,7 +154,7 @@
           headers['Authorization'] = `Bearer ${token}`;
         }
 
-        const response = await fetch(`${API_URL}/api/interactive-courses`, { headers, cache: 'no-store' });
+        const response = await fetch(`${API_URL}/api/interactive-courses?limit=100`, { headers, cache: 'no-store' });
         const data = await response.json();
         
         allCourses = data.data || data.courses || [];
