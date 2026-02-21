@@ -14,6 +14,14 @@ import { generateCertificate, generateCertificateNumber } from '../utils/certifi
 
 const router = express.Router();
 
+// Helper: resolve course by ObjectId or slug
+async function findCourseByIdOrSlug(param) {
+  if (mongoose.Types.ObjectId.isValid(param)) {
+    return Course.findById(param);
+  }
+  return Course.findOne({ slug: param });
+}
+
 // ============================================================================
 // COURSE ROUTES
 // ============================================================================
@@ -96,21 +104,7 @@ router.get('/slug/:slug', async (req, res) => {
  */
 router.get('/:id', async (req, res) => {
   try {
-    // Check if it's a valid ObjectId
-    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
-      // Try as slug instead
-      const course = await Course.findOne({ 
-        slug: req.params.id,
-        status: 'published'
-      });
-      
-      if (!course) {
-        return res.status(404).json({ success: false, error: 'Course not found' });
-      }
-      return res.json({ success: true, data: course });
-    }
-
-    const course = await Course.findById(req.params.id);
+    const course = await findCourseByIdOrSlug(req.params.id);
 
     if (!course) {
       return res.status(404).json({ success: false, error: 'Course not found' });
@@ -133,7 +127,7 @@ router.get('/:id', async (req, res) => {
  */
 router.get('/:id/progress', protect, async (req, res) => {
   try {
-    const course = await Course.findById(req.params.id);
+    const course = await findCourseByIdOrSlug(req.params.id);
     if (!course) {
       return res.status(404).json({ success: false, error: 'Course not found' });
     }
@@ -225,7 +219,7 @@ router.post('/:id/assessment', protect, async (req, res) => {
   try {
     const { answers, score, passed, attempt, timeSpent } = req.body;
 
-    const course = await Course.findById(req.params.id);
+    const course = await findCourseByIdOrSlug(req.params.id);
     if (!course || !course.assessment) {
       return res.status(404).json({ success: false, error: 'Assessment not found' });
     }
@@ -342,7 +336,7 @@ router.post('/:id/evaluation', protect, async (req, res) => {
   try {
     const { responses } = req.body;
     
-    const course = await Course.findById(req.params.id);
+    const course = await findCourseByIdOrSlug(req.params.id);
     if (!course) {
       return res.status(404).json({ success: false, error: 'Course not found' });
     }
@@ -467,7 +461,7 @@ router.post('/:id/attestation', protect, async (req, res) => {
       });
     }
 
-    const course = await Course.findById(req.params.id);
+    const course = await findCourseByIdOrSlug(req.params.id);
     if (!course) {
       return res.status(404).json({ success: false, error: 'Course not found' });
     }
@@ -538,7 +532,7 @@ router.post('/:id/attestation', protect, async (req, res) => {
  */
 router.post('/:id/certificate', protect, async (req, res) => {
   try {
-    const course = await Course.findById(req.params.id);
+    const course = await findCourseByIdOrSlug(req.params.id);
     if (!course) {
       return res.status(404).json({ success: false, error: 'Course not found' });
     }
@@ -662,7 +656,7 @@ router.post('/:id/certificate', protect, async (req, res) => {
  */
 router.get('/:id/certificate/check', protect, async (req, res) => {
   try {
-    const course = await Course.findById(req.params.id);
+    const course = await findCourseByIdOrSlug(req.params.id);
     if (!course) {
       return res.status(404).json({ success: false, error: 'Course not found' });
     }
@@ -719,7 +713,7 @@ router.put('/:id/progress/section/:sectionIndex', protect, async (req, res) => {
     const { sectionIndex } = req.params;
     const { viewedBlocks, completedBlocks, timeSpent } = req.body;
 
-    const course = await Course.findById(req.params.id);
+    const course = await findCourseByIdOrSlug(req.params.id);
     if (!course) {
       return res.status(404).json({ success: false, error: 'Course not found' });
     }
@@ -786,6 +780,162 @@ router.put('/:id/progress/section/:sectionIndex', protect, async (req, res) => {
   } catch (error) {
     console.error('Error updating section progress:', error);
     res.status(500).json({ success: false, error: 'Failed to update progress' });
+  }
+});
+
+// ============================================================================
+// SECTION QUIZ ROUTE
+// ============================================================================
+
+/**
+ * POST /api/interactive-courses/:id/progress/section/:sectionIndex/quiz
+ * Submit section quiz attempt
+ */
+router.post('/:id/progress/section/:sectionIndex/quiz', protect, async (req, res) => {
+  try {
+    const { sectionIndex } = req.params;
+    const { answers, timeSpent } = req.body;
+
+    const course = await findCourseByIdOrSlug(req.params.id);
+    if (!course) {
+      return res.status(404).json({ success: false, error: 'Course not found' });
+    }
+
+    const section = course.sections[sectionIndex];
+    if (!section || !section.hasQuiz) {
+      return res.status(404).json({ success: false, error: 'Quiz not found' });
+    }
+
+    const progress = await CourseProgress.findOne({
+      userId: req.user._id,
+      courseId: course._id
+    });
+
+    if (!progress) {
+      return res.status(404).json({ success: false, error: 'Not enrolled in this course' });
+    }
+
+    // Calculate score
+    let correctCount = 0;
+    section.quizQuestions.forEach((q, i) => {
+      const selectedOption = answers[i];
+      if (selectedOption !== undefined) {
+        if (q.type === 'multiSelect' || q.type === 'multiple_select') {
+          const correctIndices = q.options.map((o, idx) => o.isCorrect ? idx : -1).filter(x => x >= 0);
+          const selectedIndices = Array.isArray(selectedOption) ? selectedOption : [selectedOption];
+          const isCorrect = correctIndices.length === selectedIndices.length &&
+            correctIndices.every(idx => selectedIndices.includes(idx));
+          if (isCorrect) correctCount++;
+        } else {
+          if (q.options[selectedOption]?.isCorrect) correctCount++;
+        }
+      }
+    });
+
+    const totalQuestions = section.quizQuestions.length;
+    const score = correctCount / totalQuestions;
+    const passed = score >= (section.quizPassThreshold || 0.8);
+
+    // Record attempt
+    const sectionProgress = progress.sectionProgress[sectionIndex];
+    sectionProgress.quizAttempts.push({
+      attemptedAt: new Date(),
+      answers,
+      score: correctCount,
+      totalQuestions,
+      passed,
+      timeSpent
+    });
+
+    if (passed) {
+      sectionProgress.quizPassed = true;
+    }
+
+    // Update best score
+    if (!sectionProgress.bestQuizScore || correctCount > sectionProgress.bestQuizScore) {
+      sectionProgress.bestQuizScore = correctCount;
+    }
+
+    // Check if section is now complete
+    const totalBlocks = section.contentBlocks?.length || 0;
+    const interactiveBlocks = (section.contentBlocks || [])
+      .map((b, i) => ['matching', 'multipleChoice', 'multiSelect'].includes(b.type) ? i : -1)
+      .filter(i => i >= 0);
+    
+    const allBlocksViewed = sectionProgress.viewedBlocks.length >= totalBlocks;
+    const allInteractiveComplete = interactiveBlocks.every(i => sectionProgress.completedBlocks.includes(i));
+
+    if (allBlocksViewed && allInteractiveComplete && sectionProgress.quizPassed) {
+      sectionProgress.status = 'completed';
+      sectionProgress.completedAt = new Date();
+    }
+
+    if (progress.calculateOverallProgress) {
+      progress.overallProgress = progress.calculateOverallProgress();
+    }
+    await progress.save();
+
+    res.json({
+      success: true,
+      score: correctCount,
+      totalQuestions,
+      percentage: Math.round(score * 100),
+      passed,
+      attemptsCount: sectionProgress.quizAttempts.length,
+      bestScore: sectionProgress.bestQuizScore,
+      sectionCompleted: sectionProgress.status === 'completed'
+    });
+  } catch (error) {
+    console.error('Error submitting quiz:', error);
+    res.status(500).json({ success: false, error: 'Failed to submit quiz' });
+  }
+});
+
+// ============================================================================
+// INTERACTION LOGGING ROUTE
+// ============================================================================
+
+/**
+ * POST /api/interactive-courses/:id/progress/interaction
+ * Log content interaction for analytics
+ */
+router.post('/:id/progress/interaction', protect, async (req, res) => {
+  try {
+    const { sectionIndex, blockIndex, blockType, action, isCorrect, selectedOptions, score, timeSpent } = req.body;
+
+    const course = await findCourseByIdOrSlug(req.params.id);
+    if (!course) {
+      return res.status(404).json({ success: false, error: 'Course not found' });
+    }
+
+    // Get attempt number for this block
+    const existingAttempts = await ContentInteraction.countDocuments({
+      userId: req.user._id,
+      courseId: course._id,
+      sectionIndex,
+      blockIndex,
+      action: 'answer'
+    });
+
+    const interaction = new ContentInteraction({
+      userId: req.user._id,
+      courseId: course._id,
+      sectionIndex,
+      blockIndex,
+      blockType,
+      action,
+      isCorrect,
+      selectedOptions,
+      score,
+      attemptNumber: action === 'answer' ? existingAttempts + 1 : undefined,
+      timeSpent
+    });
+
+    await interaction.save();
+    res.status(201).json({ success: true });
+  } catch (error) {
+    console.error('Error logging interaction:', error);
+    res.status(500).json({ success: false, error: 'Failed to log interaction' });
   }
 });
 
