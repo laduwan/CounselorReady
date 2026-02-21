@@ -93,3 +93,4 @@ export const generateToken = (userId) => {
 
 // Alias for admin middleware (used in course routes)
 export const admin = requireAdmin;
+export const adminOnly = requireAdmin;
