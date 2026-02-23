@@ -7,6 +7,7 @@ import {
   BookOpen, Brain, ClipboardCheck, ArrowUp, ArrowDown, Copy,
   Settings, Eye, Wand2, FileUp, BarChart3, Zap, Save, Download
 } from "lucide-react";
+import { jsPDF } from 'jspdf';
 
 // ─── Brand Colors ───
 const C = {
@@ -2084,18 +2085,131 @@ export default function CourseBuilderV2() {
     ],
     assessment: { questions: [], passThreshold: 0.80 },
     acepProvider: { name: "GA Integrated Therapeutic Perspectives LLC", number: "7760" },
-  });
+  });const [lastSaved, setLastSaved] = useState(null);
+  const [showRecovery, setShowRecovery] = useState(false);
+  const [recoveryData, setRecoveryData] = useState(null);
+  const [publishing, setPublishing] = useState(false);// AUTO-SAVE EFFECT
+  useEffect(() => {
+    // Check for saved data on mount
+    const saved = localStorage.getItem("coursebuilder_autosave");
+    const savedTime = localStorage.getItem("coursebuilder_autosave_time");
+    
+    if (saved && savedTime) {
+      try {
+        const parsed = JSON.parse(saved);
+        const time = new Date(savedTime);
+        
+        // Only show recovery if saved within last 24 hours and has content
+        const hoursSince = (Date.now() - time.getTime()) / (1000 * 60 * 60);
+        if (hoursSince < 24 && parsed.modules?.length > 1) {
+          setRecoveryData(parsed);
+          setShowRecovery(true);
+        }
+      } catch (e) {
+        console.error("Failed to parse autosave data:", e);
+        localStorage.removeItem("coursebuilder_autosave");
+        localStorage.removeItem("coursebuilder_autosave_time");
+      }
+    }
+    
+    // Set up auto-save interval (every 30 seconds)
+    const interval = setInterval(() => {
+      if (courseData.modules?.length > 1 || courseData.title !== "New Course") {
+        try {
+          localStorage.setItem("coursebuilder_autosave", JSON.stringify(courseData));
+          localStorage.setItem("coursebuilder_autosave_time", new Date().toISOString());
+          setLastSaved(new Date());
+        } catch (e) {
+          console.error("Auto-save failed:", e);
+        }
+      }
+    }, 30000); // 30 seconds
+    
+    return () => clearInterval(interval);
+  }, [courseData]);// Recovery handlers
+  const recoverCourse = () => {
+    if (recoveryData) {
+      setCourseData(recoveryData);
+      setShowRecovery(false);
+      alert(`✅ Course recovered!\n\nTitle: ${recoveryData.title}\nModules: ${recoveryData.modules.length}`);
+    }
+  };
+  
+  const dismissRecovery = () => {
+    setShowRecovery(false);
+    localStorage.removeItem("coursebuilder_autosave");
+    localStorage.removeItem("coursebuilder_autosave_time");
+  };
+  
+  // Format last saved time
+  const getLastSavedText = () => {
+    if (!lastSaved) return null;
+    const seconds = Math.floor((Date.now() - lastSaved.getTime()) / 1000);
+    if (seconds < 60) return `Saved ${seconds}s ago`;
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return `Saved ${minutes}m ago`;
+    const hours = Math.floor(minutes / 60);
+    return `Saved ${hours}h ago`;
+  };
 
-  const tabs = [
+ const tabs = [
     { label: "AI Generator", icon: "✨" },
     { label: "Import", icon: "📥" },
     { label: "Content Editor", icon: "📝" },
+    { label: "Preview", icon: "👁" },
     { label: "Exam Generator", icon: "🎯" },
     { label: "References", icon: "📚" },
     { label: "ACEP Checker", icon: "📋" },
   ];
-
-  return (
+// RECOVERY MODAL
+  const RecoveryModal = showRecovery ? (
+    <div style={{
+      position: "fixed",
+      inset: 0,
+      background: "rgba(0,0,0,0.5)",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      zIndex: 9999,
+    }}>
+      <div style={{
+        background: "#fff",
+        borderRadius: 12,
+        padding: 24,
+        maxWidth: 500,
+        boxShadow: "0 20px 60px rgba(0,0,0,0.3)",
+      }}>
+        <h3 style={{ color: C.navy, marginTop: 0 }}>💾 Recover Unsaved Course?</h3>
+        <p style={{ color: C.textMuted, lineHeight: 1.6 }}>
+          We found an auto-saved version of your course from{" "}
+          <strong>{new Date(localStorage.getItem("coursebuilder_autosave_time")).toLocaleString()}</strong>.
+        </p>
+        {recoveryData && (
+          <div style={{ background: C.greenFaded, padding: 12, borderRadius: 8, marginBottom: 16 }}>
+            <div><strong>{recoveryData.title}</strong></div>
+            <div style={{ fontSize: 13, color: C.textMuted, marginTop: 4 }}>
+              {recoveryData.ceHours} CE · {recoveryData.modules.length} modules · {" "}
+              {recoveryData.modules.reduce((s, m) => s + (m.blocks || []).length, 0)} blocks
+            </div>
+          </div>
+        )}
+        <div style={{ display: "flex", gap: 12 }}>
+          <button onClick={recoverCourse} style={{
+            ...S.btnPrimary,
+            flex: 1,
+          }}>
+            ✅ Recover Course
+          </button>
+          <button onClick={dismissRecovery} style={{
+            ...S.btnSecondary,
+            flex: 1,
+          }}>
+            ❌ Start Fresh
+          </button>
+        </div>
+      </div>
+    </div>
+  ) : null;  return (
     <div style={S.container}>
       <link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600;6..72,700;6..72,800&display=swap" rel="stylesheet" />
 
