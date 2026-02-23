@@ -957,12 +957,15 @@ function ContentEditor({ courseData, setCourseData }) {
   const regenerateModule = async (moduleIndex) => {
     const mod = modules[moduleIndex];
     if (!mod) return;
-    if (!confirm(`Regenerate "${mod.title}"? This will replace all blocks in this module.`)) return;
+    if (!confirm(`Regenerate "${mod.title}"? This will replace all blocks in this module. This may take 30-60 seconds.`)) return;
     setRegenerating(true);
     try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 120000); // 2 min timeout
       const res = await fetch(`${API_BASE}/admin/module/generate`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${getToken()}` },
+        signal: controller.signal,
         body: JSON.stringify({
           courseTitle: courseData.title,
           moduleTitle: mod.title,
@@ -974,7 +977,11 @@ function ContentEditor({ courseData, setCourseData }) {
           generateQuiz: true,
         }),
       });
-      if (!res.ok) throw new Error(`Generation failed: ${res.status}`);
+      clearTimeout(timeoutId);
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || `Generation failed: ${res.status}`);
+      }
       const data = await res.json();
       const generated = data.module || data;
       const newModules = [...modules];
@@ -994,7 +1001,10 @@ function ContentEditor({ courseData, setCourseData }) {
       }
       setCourseData({ ...courseData, modules: newModules });
     } catch (err) {
-      alert(`Regenerate failed: ${err.message}`);
+      const msg = err.name === 'AbortError' ? 'Request timed out. AI generation can take 60-90 seconds — please try again.' : 
+        err.message.includes('Failed to fetch') ? 'Network error — the server may have timed out. Try again or check your connection.' : 
+        `Regenerate failed: ${err.message}`;
+      alert(msg);
     } finally {
       setRegenerating(false);
     }
