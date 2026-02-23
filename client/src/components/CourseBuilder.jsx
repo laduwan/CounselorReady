@@ -7,7 +7,6 @@ import {
   BookOpen, Brain, ClipboardCheck, ArrowUp, ArrowDown, Copy,
   Settings, Eye, Wand2, FileUp, BarChart3, Zap, Save, Download
 } from "lucide-react";
-import { jsPDF } from 'jspdf';
 
 // ─── Brand Colors ───
 const C = {
@@ -2085,138 +2084,61 @@ export default function CourseBuilderV2() {
     ],
     assessment: { questions: [], passThreshold: 0.80 },
     acepProvider: { name: "GA Integrated Therapeutic Perspectives LLC", number: "7760" },
-  });const [lastSaved, setLastSaved] = useState(null);
-  const [showRecovery, setShowRecovery] = useState(false);
-  const [recoveryData, setRecoveryData] = useState(null);
-  const [publishing, setPublishing] = useState(false);// AUTO-SAVE EFFECT
-  useEffect(() => {
-    // Check for saved data on mount
-    const saved = localStorage.getItem("coursebuilder_autosave");
-    const savedTime = localStorage.getItem("coursebuilder_autosave_time");
-    
-    if (saved && savedTime) {
-      try {
-        const parsed = JSON.parse(saved);
-        const time = new Date(savedTime);
-        
-        // Only show recovery if saved within last 24 hours and has content
-        const hoursSince = (Date.now() - time.getTime()) / (1000 * 60 * 60);
-        if (hoursSince < 24 && parsed.modules?.length > 1) {
-          setRecoveryData(parsed);
-          setShowRecovery(true);
-        }
-      } catch (e) {
-        console.error("Failed to parse autosave data:", e);
-        localStorage.removeItem("coursebuilder_autosave");
-        localStorage.removeItem("coursebuilder_autosave_time");
-      }
-    }
-    
-    // Set up auto-save interval (every 30 seconds)
-    const interval = setInterval(() => {
-      if (courseData.modules?.length > 1 || courseData.title !== "New Course") {
-        try {
-          localStorage.setItem("coursebuilder_autosave", JSON.stringify(courseData));
-          localStorage.setItem("coursebuilder_autosave_time", new Date().toISOString());
-          setLastSaved(new Date());
-        } catch (e) {
-          console.error("Auto-save failed:", e);
-        }
-      }
-    }, 30000); // 30 seconds
-    
-    return () => clearInterval(interval);
-  }, [courseData]);// Recovery handlers
-  const recoverCourse = () => {
-    if (recoveryData) {
-      setCourseData(recoveryData);
-      setShowRecovery(false);
-      alert(`✅ Course recovered!\n\nTitle: ${recoveryData.title}\nModules: ${recoveryData.modules.length}`);
-    }
-  };
-  
-  const dismissRecovery = () => {
-    setShowRecovery(false);
-    localStorage.removeItem("coursebuilder_autosave");
-    localStorage.removeItem("coursebuilder_autosave_time");
-  };
-  
-  // Format last saved time
-  const getLastSavedText = () => {
-    if (!lastSaved) return null;
-    const seconds = Math.floor((Date.now() - lastSaved.getTime()) / 1000);
-    if (seconds < 60) return `Saved ${seconds}s ago`;
-    const minutes = Math.floor(seconds / 60);
-    if (minutes < 60) return `Saved ${minutes}m ago`;
-    const hours = Math.floor(minutes / 60);
-    return `Saved ${hours}h ago`;
-  };
+  });
 
- const tabs = [
+  const tabs = [
     { label: "AI Generator", icon: "✨" },
     { label: "Import", icon: "📥" },
     { label: "Content Editor", icon: "📝" },
-    { label: "Preview", icon: "👁" },
     { label: "Exam Generator", icon: "🎯" },
     { label: "References", icon: "📚" },
     { label: "ACEP Checker", icon: "📋" },
   ];
-// RECOVERY MODAL
-  const RecoveryModal = showRecovery ? (
-    <div style={{
-      position: "fixed",
-      inset: 0,
-      background: "rgba(0,0,0,0.5)",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      zIndex: 9999,
-    }}>
-      <div style={{
-        background: "#fff",
-        borderRadius: 12,
-        padding: 24,
-        maxWidth: 500,
-        boxShadow: "0 20px 60px rgba(0,0,0,0.3)",
-      }}>
-        <h3 style={{ color: C.navy, marginTop: 0 }}>💾 Recover Unsaved Course?</h3>
-        <p style={{ color: C.textMuted, lineHeight: 1.6 }}>
-          We found an auto-saved version of your course from{" "}
-          <strong>{new Date(localStorage.getItem("coursebuilder_autosave_time")).toLocaleString()}</strong>.
-        </p>
-        {recoveryData && (
-          <div style={{ background: C.greenFaded, padding: 12, borderRadius: 8, marginBottom: 16 }}>
-            <div><strong>{recoveryData.title}</strong></div>
-            <div style={{ fontSize: 13, color: C.textMuted, marginTop: 4 }}>
-              {recoveryData.ceHours} CE · {recoveryData.modules.length} modules · {" "}
-              {recoveryData.modules.reduce((s, m) => s + (m.blocks || []).length, 0)} blocks
-            </div>
-          </div>
-        )}
-        <div style={{ display: "flex", gap: 12 }}>
-          <button onClick={recoverCourse} style={{
-            ...S.btnPrimary,
-            flex: 1,
-          }}>
-            ✅ Recover Course
-          </button>
-          <button onClick={dismissRecovery} style={{
-            ...S.btnSecondary,
-            flex: 1,
-          }}>
-            ❌ Start Fresh
-          </button>
-        </div>
-      </div>
-    </div>
-  ) : null;  return (
+
+  return (
     <div style={S.container}>
       <link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600;6..72,700;6..72,800&display=swap" rel="stylesheet" />
-{RecoveryModal}
+      <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Lato:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+      {/* Admin Header — matches platform */}
+      <div style={{ background: "#4a1524", color: "#fff", position: "sticky", top: 0, zIndex: 50 }}>
+        <div style={{ maxWidth: "100%", padding: "12px 24px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+            <div style={{ width: 36, height: 36, background: "#6b1d34", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden" }}>
+              <span style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontWeight: 700, color: "#e4b54e", position: "absolute", fontSize: 16, top: 2, left: 5 }}>C</span>
+              <span style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontWeight: 700, color: "#98c3a9", position: "absolute", fontSize: 16, bottom: 2, left: 13 }}>R</span>
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontWeight: 600, fontSize: 18 }}>
+                <span style={{ color: "#f2a8be" }}>Counselor</span><span style={{ color: "#98c3a9" }}>Ready</span>
+              </span>
+              <span style={{ fontSize: 11, background: "#d4a855", color: "#fff", padding: "2px 8px", borderRadius: 10, fontWeight: 600, fontFamily: "'Lato', sans-serif" }}>ADMIN</span>
+            </div>
+            <span style={{ color: "rgba(255,255,255,0.15)", fontSize: 20, margin: "0 4px" }}>|</span>
+            <nav style={{ display: "flex", gap: 2, fontSize: 13, fontFamily: "'Lato', sans-serif" }}>
+              <a href="/admin-courses.html" style={{ color: "rgba(255,255,255,0.7)", textDecoration: "none", padding: "6px 10px", borderRadius: 6, display: "flex", alignItems: "center", gap: 6 }}><i className="fas fa-book" style={{ fontSize: 11 }}></i> Courses</a>
+              <a href="/admin-users.html" style={{ color: "rgba(255,255,255,0.7)", textDecoration: "none", padding: "6px 10px", borderRadius: 6, display: "flex", alignItems: "center", gap: 6 }}><i className="fas fa-users" style={{ fontSize: 11 }}></i> Users</a>
+              <a href="/admin-analytics.html" style={{ color: "rgba(255,255,255,0.7)", textDecoration: "none", padding: "6px 10px", borderRadius: 6, display: "flex", alignItems: "center", gap: 6 }}><i className="fas fa-chart-line" style={{ fontSize: 11 }}></i> Analytics</a>
+              <a href="/admin-messages.html" style={{ color: "rgba(255,255,255,0.7)", textDecoration: "none", padding: "6px 10px", borderRadius: 6, display: "flex", alignItems: "center", gap: 6 }}><i className="fas fa-envelope" style={{ fontSize: 11 }}></i> Messages</a>
+              <a href="/admin-credentials.html" style={{ color: "rgba(255,255,255,0.7)", textDecoration: "none", padding: "6px 10px", borderRadius: 6, display: "flex", alignItems: "center", gap: 6 }}><i className="fas fa-id-card" style={{ fontSize: 11 }}></i> Credentials</a>
+            </nav>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 16, fontSize: 14, fontFamily: "'Lato', sans-serif" }}>
+            <span style={{ color: "rgba(255,255,255,0.4)" }}>Admin</span>
+            <a href="/dashboard.html" style={{ color: "rgba(255,255,255,0.5)", textDecoration: "none", display: "flex", alignItems: "center", gap: 5 }}><i className="fas fa-home" style={{ fontSize: 11 }}></i> Exit to Dashboard</a>
+          </div>
+        </div>
+      </div>
+
       {/* Header */}
       <div style={S.header}>
         <div>
-          <div style={{ color: "#fff", fontSize: 20, fontWeight: 700, letterSpacing: "-0.02em" }}>CounselorReady Course Builder</div>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <a href="/admin-courses.html" style={{ color: "rgba(255,255,255,0.5)", fontSize: 13, textDecoration: "none", display: "flex", alignItems: "center", gap: 4 }}>← Back to Courses</a>
+            <span style={{ color: "rgba(255,255,255,0.2)" }}>|</span>
+            <div style={{ color: "#fff", fontSize: 20, fontWeight: 700, letterSpacing: "-0.02em" }}>Course Builder</div>
+          </div>
           <div style={{ color: "rgba(255,255,255,0.55)", fontSize: 13, marginTop: 2 }}>NBCC ACEP #7760 · AI-Powered · Cloudinary Images</div>
         </div>
         <div style={{ display: "flex", gap: 10 }}>
@@ -2226,11 +2148,7 @@ export default function CourseBuilderV2() {
             const a = document.createElement("a"); a.href = URL.createObjectURL(blob);
             a.download = `${courseData.title?.replace(/[^a-z0-9]/gi, "_") || "course"}.json`; a.click();
           }}>💾 Export JSON</button>
-       <button 
-            style={{ ...S.btnSecondary, borderColor: "rgba(255,255,255,0.2)", color: "#fff", fontSize: 12 }} 
-            onClick={() => alert("📄 PDF Export available after jsPDF is fully integrated!")}>
-            📄 Export PDF
-          </button> </div>
+        </div>
       </div>
 
       {/* Tab Bar */}
