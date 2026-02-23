@@ -2431,6 +2431,7 @@ router.put('/courses/:courseId/module/:moduleIndex/reorder-lessons', protect, ad
 // @desc    Generate quiz questions using AI from PDF, outline, or content
 // @access  Admin only
 router.post('/quiz/generate', protect, adminOnly, async (req, res) => {
+  req.setTimeout(120000); res.setTimeout(120000);
   try {
     if (!anthropic) {
       return res.status(500).json({ error: 'AI service not configured. Set ANTHROPIC_API_KEY in environment.' });
@@ -2657,6 +2658,7 @@ Return ONLY valid JSON, no other text.`;
 // @desc    Generate a complete course using AI
 // @access  Admin only
 router.post('/course/generate', protect, adminOnly, async (req, res) => {
+  req.setTimeout(120000); res.setTimeout(120000);
   try {
     if (!anthropic) {
       return res.status(500).json({ error: 'AI service not configured' });
@@ -3005,6 +3007,7 @@ Generate the complete course now. The content MUST meet NBCC word count requirem
 // @desc    Regenerate content for a single lesson using AI
 // @access  Admin only
 router.post('/courses/:courseId/lesson/regenerate', protect, adminOnly, async (req, res) => {
+  req.setTimeout(120000); res.setTimeout(120000);
   try {
     if (!anthropic) {
       return res.status(500).json({ error: 'AI service not configured' });
@@ -3129,6 +3132,9 @@ IMPORTANT:
 // @desc    Generate content for a SINGLE module (used by CourseBuilder module-by-module generation)
 // @access  Admin only
 router.post('/module/generate', protect, adminOnly, async (req, res) => {
+  // Extend timeout for AI generation (Anthropic API can take 30-90s)
+  req.setTimeout(120000);
+  res.setTimeout(120000);
   try {
     if (!anthropic) {
       return res.status(500).json({ error: 'AI service not configured. Set ANTHROPIC_API_KEY in environment.' });
