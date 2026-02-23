@@ -1,6 +1,7 @@
 // DROP INTO: /client/src/components/CourseBuilder.jsx
 
 import { useState, useCallback, useRef, useEffect } from "react";
+import jsPDF from "jspdf";
 import {
   Sparkles, FileText, CheckCircle, Upload, Plus, Trash2, GripVertical,
   ChevronDown, ChevronRight, AlertTriangle, Check, X, Loader2,
@@ -856,10 +857,56 @@ function InsertBar({ onInsert, active }) {
 // ═══════════════════════════════════════════════════════════
 // CONTENT EDITOR (Tab 2)
 // ═══════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════
+// BLOCK AI BUTTON — per-block AI actions
+// ═══════════════════════════════════════════════════════════
+function BlockAIButton({ label, action, block, context, isJson, onResult, apiBase, getToken }) {
+  const [loading, setLoading] = useState(false);
+
+  const run = async (e) => {
+    e.stopPropagation();
+    setLoading(true);
+    try {
+      const res = await fetch(`${apiBase}/ai/block-action`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${getToken()}` },
+        body: JSON.stringify({ action, block, context }),
+      });
+      if (!res.ok) throw new Error(`AI action failed: ${res.status}`);
+      const data = await res.json();
+      if (data.result !== undefined) {
+        if (isJson && typeof data.result === "string") {
+          try { onResult(JSON.parse(data.result)); } catch { onResult(data.result); }
+        } else {
+          onResult(data.result);
+        }
+      }
+    } catch (err) {
+      console.error(`Block AI action "${action}" failed:`, err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <button onClick={run} disabled={loading}
+      style={{ background: C.burgundyFaded, color: C.burgundy, border: "none", borderRadius: 5, padding: "3px 8px", fontSize: 11, fontWeight: 600, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 4, opacity: loading ? 0.6 : 1 }}>
+      {loading ? <Loader2 size={10} style={{ animation: "spin 1s linear infinite" }} /> : <Sparkles size={10} />} {label}
+    </button>
+  );
+}
+
 function ContentEditor({ courseData, setCourseData }) {
   const [activeModule, setActiveModule] = useState(0);
   const [showBlockMenu, setShowBlockMenu] = useState(null);
   const [editingBlock, setEditingBlock] = useState(null);
+  const [previewMode, setPreviewMode] = useState(false);
+  const [regenerating, setRegenerating] = useState(false);
+  const [enriching, setEnriching] = useState(false);
+  const [enrichProgress, setEnrichProgress] = useState("");
+
+  const API_BASE = import.meta.env.VITE_API_URL || "https://api.counselorready.com/api";
+  const getToken = () => localStorage.getItem("token");
 
   const modules = courseData?.modules || [];
   const currentModule = modules[activeModule] || { blocks: [], title: "No modules" };
@@ -906,6 +953,157 @@ function ContentEditor({ courseData, setCourseData }) {
 
   const blockConfig = (type) => BLOCK_TYPES.find(b => b.type === type) || { label: type, icon: "?", color: C.textMuted, category: "content" };
 
+  // Regenerate single module via AI
+  const regenerateModule = async (moduleIndex) => {
+    const mod = modules[moduleIndex];
+    if (!mod) return;
+    if (!confirm(`Regenerate "${mod.title}"? This will replace all blocks in this module.`)) return;
+    setRegenerating(true);
+    try {
+      const res = await fetch(`${API_BASE}/admin/module/generate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${getToken()}` },
+        body: JSON.stringify({
+          courseTitle: courseData.title,
+          moduleTopic: mod.title,
+          moduleNumber: moduleIndex + 1,
+          ceHours: courseData.ceHours,
+          category: courseData.category === "Ethics" ? "ethics" : "core",
+          level: courseData.level,
+          generateQuiz: true,
+        }),
+      });
+      if (!res.ok) throw new Error(`Generation failed: ${res.status}`);
+      const data = await res.json();
+      const generated = data.module || data;
+      const newModules = [...modules];
+      if (generated.blocks) {
+        newModules[moduleIndex] = { ...newModules[moduleIndex], blocks: generated.blocks };
+      } else if (generated.lessons) {
+        // Convert lessons to blocks
+        const blocks = generated.lessons.map((l, i) => ({
+          id: uid(), type: "text", content: l.content || l.textContent || "", order: i + 1,
+        }));
+        if (generated.quiz?.questions) {
+          generated.quiz.questions.forEach(q => {
+            blocks.push({ id: uid(), type: "multipleChoice", question: q.question, options: q.options, explanation: q.explanation || "" });
+          });
+        }
+        newModules[moduleIndex] = { ...newModules[moduleIndex], blocks };
+      }
+      setCourseData({ ...courseData, modules: newModules });
+    } catch (err) {
+      alert(`Regenerate failed: ${err.message}`);
+    } finally {
+      setRegenerating(false);
+    }
+  };
+
+  // ── Auto-Enrich: AI inserts interactive elements into text-heavy modules ──
+  const autoEnrichModule = async (moduleIndex) => {
+    const mod = modules[moduleIndex];
+    if (!mod) return;
+    const blocks = mod.blocks || [];
+    const textBlocks = blocks.filter(b => b.type === "text" || b.type === "imageText");
+    if (textBlocks.length === 0) { alert("No text content to enrich. Add or generate content first."); return; }
+
+    setEnriching(true);
+    setEnrichProgress("Analyzing module content...");
+
+    try {
+      const token = getToken();
+      // Find gaps: text blocks not followed by an interactive element
+      const interactiveTypes = [...KNOWLEDGE_CHECK_TYPES, ...ENGAGEMENT_TYPES];
+      const gaps = [];
+      for (let i = 0; i < blocks.length; i++) {
+        if (blocks[i].type !== "text" && blocks[i].type !== "imageText") continue;
+        const next = blocks[i + 1];
+        if (!next || !interactiveTypes.includes(next.type)) {
+          // This text block has no interactive element after it
+          const textContent = (blocks[i].content || "").replace(/<[^>]*>/g, " ").trim();
+          if (countWords(textContent) >= 80) { // Only enrich substantial text blocks
+            gaps.push({ afterIndex: i, textBefore: textContent });
+          }
+        }
+      }
+
+      if (gaps.length === 0) { alert("Module already has interactive elements after each text section!"); setEnriching(false); setEnrichProgress(""); return; }
+
+      // Plan which block types to insert — rotate through variety
+      const interactiveRotation = [
+        "multipleChoice", "reflection", "multiSelect", "matching",
+        "accordion", "scenarioTree", "flashcardDeck", "cardSort", "sequencing",
+      ];
+      // Ensure at least 2-3 knowledge checks for ACEP compliance
+      const existingKC = blocks.filter(b => KNOWLEDGE_CHECK_TYPES.includes(b.type)).length;
+      const neededKC = Math.max(0, 3 - existingKC);
+
+      const plan = gaps.map((gap, i) => {
+        let blockType;
+        if (i < neededKC) {
+          // Prioritize knowledge checks first
+          blockType = i === 0 ? "multipleChoice" : i === 1 ? "multiSelect" : "matching";
+        } else {
+          // Then cycle through engagement types
+          const engagementTypes = ["reflection", "accordion", "scenarioTree", "flashcardDeck", "cardSort"];
+          blockType = engagementTypes[(i - neededKC) % engagementTypes.length];
+        }
+        return { ...gap, blockType };
+      });
+
+      // Generate each block via AI
+      const newBlocks = [...blocks];
+      let inserted = 0;
+
+      for (let p = 0; p < plan.length; p++) {
+        const { afterIndex, textBefore, blockType } = plan[p];
+        const insertAt = afterIndex + 1 + inserted; // Adjust for previous insertions
+        const textAfter = (newBlocks[insertAt]?.content || newBlocks[insertAt]?.question || "").replace(/<[^>]*>/g, " ").substring(0, 500);
+
+        const label = BLOCK_TYPES.find(b => b.type === blockType)?.label || blockType;
+        setEnrichProgress(`Creating ${label} (${p + 1}/${plan.length})...`);
+
+        try {
+          const res = await fetch(`${API_BASE}/ai/suggest-block`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+            body: JSON.stringify({
+              blockType,
+              textBefore: textBefore.substring(0, 2000),
+              textAfter: textAfter.substring(0, 500),
+              courseTitle: courseData.title,
+              moduleTitle: mod.title,
+            }),
+          });
+
+          if (res.ok) {
+            const data = await res.json();
+            if (data.block) {
+              const newBlock = { id: uid(), type: blockType, ...BLOCK_DEFAULTS[blockType], ...data.block };
+              newBlocks.splice(insertAt, 0, newBlock);
+              inserted++;
+            }
+          }
+        } catch (err) {
+          console.error(`Failed to generate ${blockType}:`, err);
+          // Skip failures, continue with next
+        }
+      }
+
+      // Update the module
+      const newModules = [...modules];
+      newModules[moduleIndex] = { ...newModules[moduleIndex], blocks: newBlocks };
+      setCourseData({ ...courseData, modules: newModules });
+      setEnrichProgress(`✓ Added ${inserted} interactive elements`);
+      setTimeout(() => setEnrichProgress(""), 3000);
+    } catch (err) {
+      alert(`Enrich failed: ${err.message}`);
+      setEnrichProgress("");
+    } finally {
+      setEnriching(false);
+    }
+  };
+
   // Module stats for sidebar
   const getModuleStats = (mod) => {
     const blocks = mod.blocks || [];
@@ -941,12 +1139,20 @@ function ContentEditor({ courseData, setCourseData }) {
               </div>
             );
           })}
-          <div style={{ padding: 10 }}>
+          <div style={{ padding: 10, display: "flex", flexDirection: "column", gap: 6 }}>
             <button style={{ ...S.btnSecondary, width: "100%", justifyContent: "center", fontSize: 12, padding: "8px 12px" }} onClick={() => {
               const n = modules.length + 1;
               setCourseData({ ...courseData, modules: [...modules, { id: uid(), number: n, title: `Module ${n}: New Module`, blocks: [], knowledgeChecks: 3 }] });
               setActiveModule(modules.length);
             }}>+ Add Module</button>
+            {modules.length > 1 && (
+              <button style={{ ...S.btnDanger, width: "100%", justifyContent: "center", fontSize: 11, padding: "6px 10px" }} onClick={() => {
+                if (!confirm(`Delete "${currentModule.title}"?`)) return;
+                const newMods = modules.filter((_, i) => i !== activeModule);
+                setCourseData({ ...courseData, modules: newMods });
+                setActiveModule(Math.max(0, activeModule - 1));
+              }}>🗑 Delete Module</button>
+            )}
           </div>
         </div>
       </div>
@@ -956,6 +1162,18 @@ function ContentEditor({ courseData, setCourseData }) {
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
           <h3 style={{ fontSize: 18, fontWeight: 700, color: C.navy, margin: 0 }}>{currentModule.title}</h3>
           <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+            <button style={{ ...S.btnSecondary, fontSize: 11, padding: "5px 10px", background: regenerating ? C.burgundyFaded : "transparent" }}
+              onClick={() => regenerateModule(activeModule)} disabled={regenerating || enriching}>
+              {regenerating ? <><Loader2 size={12} style={{ animation: "spin 1s linear infinite" }} /> Regenerating...</> : <><Wand2 size={12} /> Regenerate</>}
+            </button>
+            <button style={{ ...S.btnSecondary, fontSize: 11, padding: "5px 10px", background: enriching ? C.goldFaded || "rgba(212,168,85,0.12)" : "transparent", borderColor: enriching ? C.gold : C.border, color: enriching ? C.gold : C.navy }}
+              onClick={() => autoEnrichModule(activeModule)} disabled={enriching || regenerating}>
+              {enriching ? <><Loader2 size={12} style={{ animation: "spin 1s linear infinite" }} /> {enrichProgress || "Enriching..."}</> : <><Sparkles size={12} /> Auto-Enrich</>}
+            </button>
+            <button style={{ ...S.btnSecondary, fontSize: 11, padding: "5px 10px", background: previewMode ? C.greenFaded : "transparent", color: previewMode ? C.green : C.navy }}
+              onClick={() => setPreviewMode(!previewMode)}>
+              <Eye size={12} /> {previewMode ? "Edit" : "Preview"}
+            </button>
             <span style={S.badge(C.green)}>{(currentModule.blocks || []).filter(b => KNOWLEDGE_CHECK_TYPES.includes(b.type)).length} knowledge checks</span>
             <span style={{ fontSize: 13, color: C.textMuted }}>{(currentModule.blocks || []).length} blocks</span>
           </div>
@@ -964,6 +1182,96 @@ function ContentEditor({ courseData, setCourseData }) {
         <InsertBar onInsert={() => setShowBlockMenu(-1)} active={showBlockMenu === -1} />
         {showBlockMenu === -1 && <BlockPicker onPick={(type) => addBlock(type, -1)} onClose={() => setShowBlockMenu(null)} />}
 
+        {previewMode ? (
+          /* ── PREVIEW MODE ── */
+          <div style={{ background: C.card, borderRadius: 12, border: `1px solid ${C.border}`, padding: 28 }}>
+            {(currentModule.blocks || []).map((block, i) => {
+              const cfg = blockConfig(block.type);
+              return (
+                <div key={block.id} style={{ marginBottom: 20 }}>
+                  {block.type === "sectionDivider" && (
+                    <div style={{ borderBottom: `2px solid ${C.burgundy}`, paddingBottom: 8, marginTop: 24 }}>
+                      <h2 style={{ color: C.burgundy, fontSize: 22, fontWeight: 700, margin: 0 }}>{block.title || "Section"}</h2>
+                      {block.subtitle && <p style={{ color: C.textMuted, fontSize: 14, margin: "4px 0 0" }}>{block.subtitle}</p>}
+                    </div>
+                  )}
+                  {block.type === "text" && (
+                    <div style={{ fontSize: 15, lineHeight: 1.7, color: C.text }} dangerouslySetInnerHTML={{ __html: block.content || "<em>Empty text block</em>" }} />
+                  )}
+                  {block.type === "imageText" && (
+                    <div style={{ display: "flex", gap: 20, flexDirection: block.imagePosition === "right" ? "row-reverse" : "row", alignItems: "flex-start" }}>
+                      {block.image && <img src={block.image} alt={block.imageAlt || ""} style={{ width: "40%", borderRadius: 8 }} />}
+                      <div style={{ flex: 1, fontSize: 15, lineHeight: 1.7 }} dangerouslySetInnerHTML={{ __html: block.content || "" }} />
+                    </div>
+                  )}
+                  {block.type === "image" && block.imageUrl && (
+                    <figure style={{ textAlign: "center", margin: "16px 0" }}>
+                      <img src={block.imageUrl} alt={block.imageAltText || ""} style={{ maxWidth: "80%", borderRadius: 8 }} />
+                      {block.imageCaption && <figcaption style={{ fontSize: 12, color: C.textMuted, marginTop: 6 }}>{block.imageCaption}</figcaption>}
+                    </figure>
+                  )}
+                  {block.type === "accordion" && (
+                    <div style={{ border: `1px solid ${C.border}`, borderRadius: 8, overflow: "hidden" }}>
+                      {(block.accordionItems || []).map((item, j) => (
+                        <div key={j} style={{ borderBottom: `1px solid ${C.borderLight}`, padding: "10px 14px" }}>
+                          <div style={{ fontWeight: 600, fontSize: 14, color: C.navy }}>{item.title || "Untitled"}</div>
+                          <div style={{ fontSize: 13, color: C.textMuted, marginTop: 4 }} dangerouslySetInnerHTML={{ __html: item.content || "" }} />
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  {(block.type === "multipleChoice" || block.type === "multiSelect") && (
+                    <div style={{ background: C.burgundyFaded, borderRadius: 10, padding: 16, borderLeft: `4px solid ${C.burgundy}` }}>
+                      <div style={{ fontSize: 10, fontWeight: 700, color: C.burgundy, marginBottom: 6 }}>KNOWLEDGE CHECK</div>
+                      <div style={{ fontWeight: 600, fontSize: 14, color: C.navy, marginBottom: 10 }}>{block.question || "Question?"}</div>
+                      {(block.options || []).map((opt, j) => (
+                        <div key={j} style={{ padding: "6px 10px", marginBottom: 4, borderRadius: 6, border: `1px solid ${opt.isCorrect ? C.green : C.border}`, background: opt.isCorrect ? C.greenFaded : "#fff", fontSize: 13 }}>
+                          {opt.isCorrect && <span style={{ color: C.green, fontWeight: 700, marginRight: 6 }}>✓</span>}
+                          {opt.text}
+                        </div>
+                      ))}
+                      {block.explanation && <div style={{ fontSize: 12, color: C.textMuted, marginTop: 8, fontStyle: "italic" }}>💡 {block.explanation}</div>}
+                    </div>
+                  )}
+                  {block.type === "reflection" && (
+                    <div style={{ background: C.greenFaded, borderRadius: 10, padding: 16, borderLeft: `4px solid ${C.green}` }}>
+                      <div style={{ fontSize: 10, fontWeight: 700, color: C.green, marginBottom: 6 }}>REFLECTION</div>
+                      <div style={{ fontWeight: 500, fontSize: 14, color: C.navy }}>{block.question || "Reflect on..."}</div>
+                    </div>
+                  )}
+                  {block.type === "matching" && (
+                    <div style={{ background: C.burgundyFaded, borderRadius: 10, padding: 16, borderLeft: `4px solid ${C.navy}` }}>
+                      <div style={{ fontSize: 10, fontWeight: 700, color: C.navy, marginBottom: 6 }}>MATCHING</div>
+                      {block.matchingInstructions && <div style={{ fontSize: 13, marginBottom: 8 }}>{block.matchingInstructions}</div>}
+                      {(block.matchingPairs || []).map((p, j) => (
+                        <div key={j} style={{ display: "flex", gap: 12, marginBottom: 4, fontSize: 13 }}>
+                          <span style={{ fontWeight: 600, color: C.navy }}>{p.term}</span>
+                          <span style={{ color: C.textMuted }}>→</span>
+                          <span>{p.definition}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  {block.type === "resources" && (
+                    <div style={{ background: C.goldFaded || "rgba(212,168,85,0.08)", borderRadius: 10, padding: 16, borderLeft: `4px solid ${C.gold}` }}>
+                      <div style={{ fontSize: 10, fontWeight: 700, color: C.gold, marginBottom: 6 }}>RESOURCES</div>
+                      {(block.resources || []).map((r, j) => (
+                        <div key={j} style={{ fontSize: 13, marginBottom: 4 }}>📎 <a href={r.url} style={{ color: C.navy }}>{r.title || r.url}</a> <span style={{ color: C.textLight, fontSize: 11 }}>({r.type})</span></div>
+                      ))}
+                    </div>
+                  )}
+                  {!["sectionDivider","text","imageText","image","accordion","multipleChoice","multiSelect","reflection","matching","resources"].includes(block.type) && (
+                    <div style={{ background: C.greenFaded, borderRadius: 10, padding: 16, borderLeft: `4px solid ${cfg.color}` }}>
+                      <div style={{ fontSize: 10, fontWeight: 700, color: cfg.color, marginBottom: 4 }}>{cfg.label.toUpperCase()}</div>
+                      <div style={{ fontSize: 13, color: C.textMuted }}>{block.instructions || block.question || block.scenarioTitle || JSON.stringify(block).substring(0, 200) + "..."}</div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+        <>
         {(currentModule.blocks || []).map((block, i) => {
           const cfg = blockConfig(block.type);
           const isEditing = editingBlock === i;
@@ -992,6 +1300,31 @@ function ContentEditor({ courseData, setCourseData }) {
                 {isEditing && (
                   <div style={{ padding: 14 }}>
                     <BlockEditor block={block} onChange={(updates) => updateBlock(i, updates)} />
+                    {/* AI Actions Bar */}
+                    <div style={{ borderTop: `1px solid ${C.borderLight}`, marginTop: 12, paddingTop: 10, display: "flex", flexWrap: "wrap", gap: 6, alignItems: "center" }}>
+                      <span style={{ fontSize: 11, color: C.textLight, fontWeight: 600, marginRight: 4 }}>AI:</span>
+                      {(block.type === "text" || block.type === "imageText") && <>
+                        <BlockAIButton label="Expand" action="expand" block={block} onResult={(result) => updateBlock(i, { content: result })} apiBase={API_BASE} getToken={getToken} />
+                        <BlockAIButton label="Simplify" action="simplify" block={block} onResult={(result) => updateBlock(i, { content: result })} apiBase={API_BASE} getToken={getToken} />
+                        <BlockAIButton label="Add Citations" action="add-citations" block={block} onResult={(result) => updateBlock(i, { content: result })} apiBase={API_BASE} getToken={getToken} />
+                        <BlockAIButton label="✨ Write Content" action="ai-write" block={block} context={block.title || currentModule.title} onResult={(result) => updateBlock(i, { content: result })} apiBase={API_BASE} getToken={getToken} />
+                      </>}
+                      {(block.type === "multipleChoice" || block.type === "multiSelect") && <>
+                        <BlockAIButton label="Better Options" action="improve-options" block={block} isJson onResult={(result) => updateBlock(i, result)} apiBase={API_BASE} getToken={getToken} />
+                      </>}
+                      {block.type === "matching" && <>
+                        <BlockAIButton label="Generate Pairs" action="generate-pairs" block={block} context={currentModule.title} isJson onResult={(result) => updateBlock(i, { matchingPairs: result })} apiBase={API_BASE} getToken={getToken} />
+                      </>}
+                      {block.type === "reflection" && <>
+                        <BlockAIButton label="New Prompt" action="generate-prompt" block={block} context={currentModule.title} onResult={(result) => updateBlock(i, { question: result })} apiBase={API_BASE} getToken={getToken} />
+                      </>}
+                      {block.type === "flashcardDeck" && <>
+                        <BlockAIButton label="Generate Cards" action="generate-cards" block={block} context={currentModule.title} isJson onResult={(result) => updateBlock(i, { flashcards: result })} apiBase={API_BASE} getToken={getToken} />
+                      </>}
+                      {block.type === "scenarioTree" && <>
+                        <BlockAIButton label="Generate Scenario" action="generate-scenario" block={block} context={currentModule.title} isJson onResult={(result) => updateBlock(i, result)} apiBase={API_BASE} getToken={getToken} />
+                      </>}
+                    </div>
                   </div>
                 )}
               </div>
@@ -1008,6 +1341,8 @@ function ContentEditor({ courseData, setCourseData }) {
             <p style={{ fontSize: 13, marginBottom: 16 }}>Choose from 17 block types organized by Content, Knowledge Checks, and Engagement</p>
             <button style={S.btnPrimary} onClick={() => setShowBlockMenu(-1)}>+ Add First Block</button>
           </div>
+        )}
+        </>
         )}
       </div>
     </div>
@@ -2072,6 +2407,10 @@ function ImportTab({ onImported }) {
 // ═══════════════════════════════════════════════════════════
 export default function CourseBuilderV2() {
   const [activeTab, setActiveTab] = useState(0);
+  const [saving, setSaving] = useState(false);
+  const [saveMsg, setSaveMsg] = useState(null);
+  const [courseId, setCourseId] = useState(null);
+  const [loading, setLoading] = useState(false);
   const [courseData, setCourseData] = useState({
     title: "New Course",
     ceHours: 3,
@@ -2085,6 +2424,174 @@ export default function CourseBuilderV2() {
     assessment: { questions: [], passThreshold: 0.80 },
     acepProvider: { name: "GA Integrated Therapeutic Perspectives LLC", number: "7760" },
   });
+
+  const API_BASE = import.meta.env.VITE_API_URL || "https://api.counselorready.com/api";
+  const getToken = () => localStorage.getItem("token");
+
+  // ── Load existing course when ?id= is in URL ──
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get("id");
+    if (!id) return;
+    setCourseId(id);
+    setLoading(true);
+
+    (async () => {
+      try {
+        // Try interactive courses first, then regular courses
+        let res = await fetch(`${API_BASE}/interactive-courses/${id}`, {
+          headers: { Authorization: `Bearer ${getToken()}` }
+        });
+        if (!res.ok) {
+          res = await fetch(`${API_BASE}/courses/${id}`, {
+            headers: { Authorization: `Bearer ${getToken()}` }
+          });
+        }
+        if (res.ok) {
+          const data = await res.json();
+          const course = data.course || data;
+          // Convert sections to modules if needed
+          if (course.sections && !course.modules) {
+            course.modules = course.sections.map((s, i) => ({
+              id: s._id || uid(),
+              number: i + 1,
+              title: s.title || `Module ${i + 1}`,
+              blocks: s.contentBlocks || [],
+              knowledgeChecks: 3,
+            }));
+          }
+          setCourseData(prev => ({ ...prev, ...course }));
+          setActiveTab(2); // Jump to Content Editor
+        }
+      } catch (err) {
+        console.error("Failed to load course:", err);
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, []);
+
+  // ── Save / Publish to Database ──
+  const saveCourse = async (publish = false) => {
+    setSaving(true);
+    setSaveMsg(null);
+    try {
+      const slug = courseData.title?.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "untitled-course";
+
+      // Build the interactivecourse-format payload
+      const payload = {
+        title: courseData.title,
+        slug,
+        description: courseData.description || "",
+        ceHours: courseData.ceHours || 3,
+        credits: courseData.ceHours || 3,
+        category: courseData.category || "Clinical Practice",
+        level: courseData.level || "Intermediate",
+        contentArea: courseData.category || "Clinical Practice",
+        targetAudience: courseData.targetAudience || [],
+        objectives: courseData.objectives || [],
+        deliveryMethod: "online",
+        isPublished: publish,
+        status: publish ? "published" : "draft",
+        acepProvider: courseData.acepProvider || { name: "GA Integrated Therapeutic Perspectives LLC", number: "7760" },
+        sections: (courseData.modules || []).map((mod, i) => ({
+          title: mod.title || `Module ${i + 1}`,
+          order: i + 1,
+          contentBlocks: (mod.blocks || []).map((b, j) => ({ ...b, order: j + 1 })),
+        })),
+        assessment: courseData.assessment || { questions: [], passThreshold: 0.80 },
+        references: courseData.references || [],
+      };
+
+      // Save via course-builder backend
+      const res = await fetch(`${API_BASE}/course-builder/save`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${getToken()}` },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) throw new Error(`Save failed: ${res.status}`);
+      const result = await res.json();
+      if (result.course?._id) setCourseId(result.course._id);
+      setSaveMsg(`✓ ${publish ? "Published" : "Saved"} — ${result.action || "success"}`);
+      setTimeout(() => setSaveMsg(null), 4000);
+    } catch (err) {
+      setSaveMsg(`✗ Error: ${err.message}`);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // ── PDF Export ──
+  const exportPDF = () => {
+    const doc = new jsPDF({ unit: "mm", format: "a4" });
+    const W = 170, LM = 20;
+    let y = 20;
+
+    const addPage = () => { doc.addPage(); y = 20; };
+    const checkSpace = (need) => { if (y + need > 275) addPage(); };
+    const wrapText = (text, maxW) => doc.splitTextToSize(text || "", maxW || W);
+
+    // Title page
+    doc.setFontSize(24); doc.setFont("helvetica", "bold"); doc.setTextColor(107, 29, 52);
+    doc.text(courseData.title || "Untitled Course", LM, 50);
+    doc.setFontSize(12); doc.setFont("helvetica", "normal"); doc.setTextColor(52, 73, 94);
+    doc.text(`${courseData.ceHours || 3} CE Hours · ${courseData.category || ""} · ${courseData.level || ""}`, LM, 62);
+    doc.text("NBCC ACEP Provider #7760", LM, 70);
+    doc.text("GA Integrated Therapeutic Perspectives LLC", LM, 78);
+    if (courseData.description) {
+      y = 95;
+      doc.setFontSize(10);
+      const desc = wrapText(courseData.description.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim());
+      desc.forEach(line => { checkSpace(5); doc.text(line, LM, y); y += 5; });
+    }
+    if (courseData.objectives?.length) {
+      y += 10; checkSpace(15);
+      doc.setFontSize(14); doc.setFont("helvetica", "bold"); doc.setTextColor(74, 124, 89);
+      doc.text("Learning Objectives", LM, y); y += 8;
+      doc.setFontSize(10); doc.setFont("helvetica", "normal"); doc.setTextColor(44, 44, 44);
+      courseData.objectives.forEach((obj, i) => {
+        const lines = wrapText(`${i + 1}. ${obj}`);
+        lines.forEach(line => { checkSpace(5); doc.text(line, LM, y); y += 5; });
+        y += 2;
+      });
+    }
+
+    // Modules
+    (courseData.modules || []).forEach((mod, mi) => {
+      addPage();
+      doc.setFontSize(16); doc.setFont("helvetica", "bold"); doc.setTextColor(107, 29, 52);
+      doc.text(mod.title || `Module ${mi + 1}`, LM, y); y += 10;
+
+      (mod.blocks || []).forEach(block => {
+        const text = (block.content || block.question || block.instructions || "").replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+        if (!text) return;
+        const label = BLOCK_TYPES.find(b => b.type === block.type)?.label || block.type;
+        checkSpace(12);
+        doc.setFontSize(9); doc.setFont("helvetica", "bold"); doc.setTextColor(74, 124, 89);
+        doc.text(`[${label}]`, LM, y); y += 5;
+        doc.setFontSize(10); doc.setFont("helvetica", "normal"); doc.setTextColor(44, 44, 44);
+        const lines = wrapText(text);
+        lines.forEach(line => { checkSpace(5); doc.text(line, LM, y); y += 5; });
+        y += 4;
+      });
+    });
+
+    // References
+    if (courseData.references?.length) {
+      addPage();
+      doc.setFontSize(16); doc.setFont("helvetica", "bold"); doc.setTextColor(107, 29, 52);
+      doc.text("References", LM, y); y += 10;
+      doc.setFontSize(9); doc.setFont("helvetica", "normal"); doc.setTextColor(44, 44, 44);
+      courseData.references.forEach(ref => {
+        const lines = wrapText(ref);
+        lines.forEach(line => { checkSpace(4.5); doc.text(line, LM, y); y += 4.5; });
+        y += 3;
+      });
+    }
+
+    doc.save(`${courseData.title?.replace(/[^a-z0-9]/gi, "_") || "course"}.pdf`);
+  };
 
   const tabs = [
     { label: "AI Generator", icon: "✨" },
@@ -2141,13 +2648,23 @@ export default function CourseBuilderV2() {
           </div>
           <div style={{ color: "rgba(255,255,255,0.55)", fontSize: 13, marginTop: 2 }}>NBCC ACEP #7760 · AI-Powered · Cloudinary Images</div>
         </div>
-        <div style={{ display: "flex", gap: 10 }}>
+        <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+          {saveMsg && <span style={{ fontSize: 12, color: saveMsg.startsWith("✓") ? "#98c3a9" : "#ff8888", fontWeight: 600 }}>{saveMsg}</span>}
+          <button style={{ ...S.btnSecondary, borderColor: "rgba(255,255,255,0.2)", color: "#fff", fontSize: 12 }} onClick={exportPDF} title="Export PDF">
+            <Download size={13} /> PDF
+          </button>
           <button style={{ ...S.btnSecondary, borderColor: "rgba(255,255,255,0.2)", color: "#fff", fontSize: 12 }} onClick={() => {
             const json = JSON.stringify(courseData, null, 2);
             const blob = new Blob([json], { type: "application/json" });
             const a = document.createElement("a"); a.href = URL.createObjectURL(blob);
             a.download = `${courseData.title?.replace(/[^a-z0-9]/gi, "_") || "course"}.json`; a.click();
-          }}>💾 Export JSON</button>
+          }}>💾 JSON</button>
+          <button style={{ ...S.btnSecondary, borderColor: "rgba(255,255,255,0.25)", color: "#fff", fontSize: 12 }} onClick={() => saveCourse(false)} disabled={saving}>
+            <Save size={13} /> {saving ? "Saving..." : "Save Draft"}
+          </button>
+          <button style={{ background: "#4A7C59", color: "#fff", border: "none", borderRadius: 8, padding: "8px 16px", fontSize: 12, fontWeight: 600, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 6, opacity: saving ? 0.6 : 1 }} onClick={() => saveCourse(true)} disabled={saving}>
+            <Check size={13} /> Publish
+          </button>
         </div>
       </div>
 
@@ -2160,6 +2677,13 @@ export default function CourseBuilderV2() {
         ))}
       </div>
 
+      {loading ? (
+        <div style={{ ...S.main, textAlign: "center", padding: 80 }}>
+          <Loader2 size={32} style={{ animation: "spin 1s linear infinite", color: C.burgundy }} />
+          <p style={{ color: C.textMuted, marginTop: 12 }}>Loading course...</p>
+          <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+        </div>
+      ) : (
       <div style={S.main}>
         {activeTab === 0 && <AIGenerator onGenerated={(data) => { setCourseData(data); setActiveTab(2); }} />}
         {activeTab === 1 && <ImportTab onImported={(data) => { setCourseData(data); setActiveTab(2); }} />}
@@ -2169,6 +2693,7 @@ export default function CourseBuilderV2() {
         {activeTab === 5 && <ACEPChecker courseData={courseData} />}
 
       </div>
+      )}
     </div>
   );
 }
