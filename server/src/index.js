@@ -233,7 +233,7 @@ const startServer = async () => {
   initializeScheduler();
   
   // Start listening
-  app.listen(PORT, () => {
+  const server = app.listen(PORT, () => {
     console.log(`
 ╔══════════════════════════════════════════════════╗
 ║                                                  ║
@@ -250,6 +250,11 @@ const startServer = async () => {
 ╚══════════════════════════════════════════════════╝
     `);
   });
+
+  // Increase server timeout for AI generation endpoints (Anthropic calls take 30-90s)
+  server.timeout = 120000; // 2 minutes
+  server.keepAliveTimeout = 120000;
+  server.headersTimeout = 125000;
 };
 
 startServer().catch(err => {
