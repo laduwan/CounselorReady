@@ -965,11 +965,12 @@ function ContentEditor({ courseData, setCourseData }) {
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${getToken()}` },
         body: JSON.stringify({
           courseTitle: courseData.title,
-          moduleTopic: mod.title,
+          moduleTitle: mod.title,
           moduleNumber: moduleIndex + 1,
+          totalModules: modules.length,
           ceHours: courseData.ceHours,
           category: courseData.category === "Ethics" ? "ethics" : "core",
-          level: courseData.level,
+          additionalNotes: "",
           generateQuiz: true,
         }),
       });
