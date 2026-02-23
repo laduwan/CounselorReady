@@ -168,6 +168,9 @@ for (const [slug, course] of allCourses) {
     }
   }
   
+  // Count references/resources
+  const refCount = (course.references || course.resources || []).length;
+  
   results.push({
     title: (course.title || 'Untitled').substring(0, 60),
     slug,
@@ -180,6 +183,7 @@ for (const [slug, course] of allCourses) {
     pct,
     assessmentCount,
     kcCount,
+    refCount,
     collection: course.collection,
     published: course.isPublished || course.status === 'published'
   });
@@ -189,8 +193,8 @@ for (const [slug, course] of allCourses) {
 results.sort((a, b) => b.pct - a.pct);
 
 // Print report
-console.log('COURSE'.padEnd(55) + 'CE  Words   Target   %   Asm  KC  Source');
-console.log('═'.repeat(105));
+console.log('COURSE'.padEnd(55) + 'CE  Words   Target   %   Asm  KC  Ref  Source');
+console.log('═'.repeat(110));
 
 let compliant = 0;
 let nearlyThere = 0;
@@ -209,6 +213,7 @@ for (const r of results) {
     `${(r.pct + '%').padStart(4)}  ` +
     `${String(r.assessmentCount).padStart(3)}  ` +
     `${String(r.kcCount).padStart(2)}  ` +
+    `${String(r.refCount).padStart(3)}  ` +
     `${src}`
   );
   
@@ -217,12 +222,21 @@ for (const r of results) {
   else needsWork++;
 }
 
-console.log('═'.repeat(105));
+console.log('═'.repeat(110));
 console.log(`\nSUMMARY:`);
 console.log(`  ✅ ACEP Compliant (≥90%): ${compliant} courses (${totalCE} CE hours)`);
 console.log(`  🟡 Nearly there (70-89%): ${nearlyThere} courses`);
 console.log(`  ❌ Needs work (<70%):      ${needsWork} courses`);
 console.log(`  📊 Total: ${results.length} courses`);
+
+// Flag courses missing references (ACEP requires min 3)
+const missingRefs = results.filter(r => r.refCount < 3 && r.pct >= 70);
+if (missingRefs.length > 0) {
+  console.log(`\n⚠️  ${missingRefs.length} course(s) ≥70% but missing references (need 3+):`);
+  for (const r of missingRefs) {
+    console.log(`     ${r.title.substring(0, 50)} — ${r.refCount} refs`);
+  }
+}
 
 // Update cached wordCount for all
 console.log('\nUpdating cached word counts...');
