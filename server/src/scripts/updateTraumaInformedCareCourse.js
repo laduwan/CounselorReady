@@ -1687,7 +1687,7 @@ const updateCourse = async () => {
     console.error('❌ Error:', error.message);
   }
   
-  process.exit(0);
+  await mongoose.disconnect();
 };
 
 updateCourse();
