@@ -2212,7 +2212,7 @@ export default function CourseBuilderV2() {
   ) : null;  return (
     <div style={S.container}>
       <link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600;6..72,700;6..72,800&display=swap" rel="stylesheet" />
-
+{RecoveryModal}
       {/* Header */}
       <div style={S.header}>
         <div>
@@ -2226,7 +2226,11 @@ export default function CourseBuilderV2() {
             const a = document.createElement("a"); a.href = URL.createObjectURL(blob);
             a.download = `${courseData.title?.replace(/[^a-z0-9]/gi, "_") || "course"}.json`; a.click();
           }}>💾 Export JSON</button>
-        </div>
+       <button 
+            style={{ ...S.btnSecondary, borderColor: "rgba(255,255,255,0.2)", color: "#fff", fontSize: 12 }} 
+            onClick={() => alert("📄 PDF Export available after jsPDF is fully integrated!")}>
+            📄 Export PDF
+          </button> </div>
       </div>
 
       {/* Tab Bar */}
