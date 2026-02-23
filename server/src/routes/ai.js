@@ -18,6 +18,13 @@ import jwt from 'jsonwebtoken';
 
 const router = express.Router();
 
+// Extend timeout for all AI routes (Anthropic API calls can take 30-90s)
+router.use((req, res, next) => {
+  req.setTimeout(120000);
+  res.setTimeout(120000);
+  next();
+});
+
 // ─── INLINE AUTH (avoids dependency on auth.js export names) ──
 const protect = async (req, res, next) => {
   try {
