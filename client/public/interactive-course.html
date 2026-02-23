@@ -956,7 +956,7 @@
       document.getElementById('pass-threshold').textContent = Math.round((assessment.passThreshold || 0.8) * 100);
 
       // Shuffle questions if enabled
-      shuffledQuestions = [...assessment.questions];
+      shuffledQuestions = [...assessment.questions].map((q, i) => ({ ...q, _originalIndex: i }));
       if (assessment.shuffleQuestions) {
         shuffledQuestions.sort(() => Math.random() - 0.5);
       }
@@ -1059,13 +1059,13 @@
         if (q.type === 'multipleChoice') {
           const selected = document.querySelector(`input[name="q${index}"]:checked`);
           answers.push({
-            questionIndex: index,
+            questionIndex: q._originalIndex ?? index,
             selectedOption: selected ? parseInt(selected.value) : null
           });
         } else if (q.type === 'multiSelect') {
           const selected = document.querySelectorAll(`input[name="q${index}"]:checked`);
           answers.push({
-            questionIndex: index,
+            questionIndex: q._originalIndex ?? index,
             selectedOptions: Array.from(selected).map(s => parseInt(s.value))
           });
         }
