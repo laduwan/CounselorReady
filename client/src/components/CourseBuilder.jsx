@@ -2438,30 +2438,54 @@ export default function CourseBuilderV2() {
 
     (async () => {
       try {
-        // Try interactive courses first, then regular courses
+        // Try interactive courses first (returns { success, data: course })
         let res = await fetch(`${API_BASE}/interactive-courses/${id}`, {
           headers: { Authorization: `Bearer ${getToken()}` }
         });
-        if (!res.ok) {
-          res = await fetch(`${API_BASE}/courses/${id}`, {
+        let course = null;
+
+        if (res.ok) {
+          const json = await res.json();
+          course = json.data || json.course || json;
+        } else {
+          // Fallback to admin courses endpoint (returns { ...course, stats })
+          res = await fetch(`${API_BASE}/admin/courses/${id}`, {
             headers: { Authorization: `Bearer ${getToken()}` }
           });
+          if (res.ok) {
+            course = await res.json();
+          }
         }
-        if (res.ok) {
-          const data = await res.json();
-          const course = data.course || data;
-          // Convert sections to modules if needed
+
+        if (course) {
+          // Convert sections → modules (interactive courses use sections/contentBlocks)
           if (course.sections && !course.modules) {
             course.modules = course.sections.map((s, i) => ({
               id: s._id || uid(),
               number: i + 1,
               title: s.title || `Module ${i + 1}`,
-              blocks: s.contentBlocks || [],
+              blocks: (s.contentBlocks || []).map(b => ({ ...b, id: b.id || b._id || uid() })),
               knowledgeChecks: 3,
             }));
           }
+          // Handle modules that have contentBlocks instead of blocks
+          if (course.modules) {
+            course.modules = course.modules.map((m, i) => ({
+              ...m,
+              id: m.id || m._id || uid(),
+              number: m.number || i + 1,
+              blocks: m.blocks || (m.contentBlocks || []).map(b => ({ ...b, id: b.id || b._id || uid() })),
+            }));
+          }
+          // Ensure modules array exists
+          if (!course.modules || course.modules.length === 0) {
+            course.modules = [{ id: uid(), number: 1, title: "Module 1", blocks: [], knowledgeChecks: 3 }];
+          }
+          console.log("CourseBuilder: loaded", course.title, "—", course.modules.length, "modules,", course.modules.reduce((s, m) => s + (m.blocks?.length || 0), 0), "blocks");
           setCourseData(prev => ({ ...prev, ...course }));
           setActiveTab(2); // Jump to Content Editor
+        } else {
+          console.error("CourseBuilder: course not found for id", id);
         }
       } catch (err) {
         console.error("Failed to load course:", err);
