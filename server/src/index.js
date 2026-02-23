@@ -30,6 +30,8 @@ import helpRoutes from './routes/help.js';
 import bulkUploadRoutes from './routes/bulkUpload.js';
 import aiRoutes from './routes/ai.js';
 import aiCourseGeneratorRoutes from './routes/aiCourseGenerator.js'; // ← NEW
+import courseBuilderRoutes from './routes/courseBuilder.js';
+import imageUploadRoutes from './routes/imageUpload.js';
 
 // Import services
 import { initializeScheduler } from './services/notificationScheduler.js';
@@ -60,9 +62,12 @@ app.use(cors({
     
     if (allowedOrigins.includes(origin)) {
       callback(null, true);
-    } else {
+    } else if (process.env.NODE_ENV === 'production') {
       console.log('Blocked by CORS:', origin);
-      callback(null, true); // Allow anyway for development - tighten in production
+      callback(new Error('Not allowed by CORS'));
+    } else {
+      // Allow all origins in development
+      callback(null, true);
     }
   },
   credentials: true,
@@ -150,6 +155,8 @@ app.use('/api/ai', aiRoutes);
 app.use('/api/help', helpRoutes);
 app.use('/api/admin/courses', bulkUploadRoutes);
 app.use('/api/ai-course-generator', aiCourseGeneratorRoutes); // ← NEW
+app.use('/api/course-builder', courseBuilderRoutes);
+app.use('/api/images', imageUploadRoutes);
 
 // Serve static files from templates directory (for certificates)
 app.use('/templates', express.static(path.join(__dirname, 'templates')));
