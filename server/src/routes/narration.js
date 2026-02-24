@@ -15,6 +15,7 @@
 // ========================================
 
 import express from 'express';
+import mongoose from 'mongoose';
 import narrationService from '../services/narrationService.js';
 
 const router = express.Router();
@@ -24,6 +25,7 @@ const router = express.Router();
 // Narration should be admin-only to control costs.
 
 import { authenticate, requireAdmin } from '../middleware/auth.js';
+import { Course } from '../models/InteractiveCourse.js';
 
 // ─── GET /api/narration/provider ────────────────────────────────
 // Returns current provider info and available voice presets
@@ -106,6 +108,36 @@ router.post('/block', authenticate, requireAdmin, async (req, res) => {
       voicePreset,
       provider,
     });
+
+    // Save narration URL back to the database
+    if (!result.skipped && result.url && courseId && moduleIndex != null && blockIndex != null) {
+      try {
+        // Try interactivecourses collection first (modules.contentBlocks)
+        const moduleUpdate = await Course.collection.updateOne(
+          { _id: new mongoose.Types.ObjectId(courseId) },
+          { $set: {
+            [`modules.${moduleIndex}.contentBlocks.${blockIndex}.narrationUrl`]: result.url,
+            [`modules.${moduleIndex}.contentBlocks.${blockIndex}.narrationDuration`]: result.duration,
+            [`modules.${moduleIndex}.contentBlocks.${blockIndex}.narrationPublicId`]: result.publicId,
+          }}
+        );
+        // If no match, try sections.contentBlocks
+        if (moduleUpdate.matchedCount === 0) {
+          await Course.collection.updateOne(
+            { _id: new mongoose.Types.ObjectId(courseId) },
+            { $set: {
+              [`sections.${moduleIndex}.contentBlocks.${blockIndex}.narrationUrl`]: result.url,
+              [`sections.${moduleIndex}.contentBlocks.${blockIndex}.narrationDuration`]: result.duration,
+              [`sections.${moduleIndex}.contentBlocks.${blockIndex}.narrationPublicId`]: result.publicId,
+            }}
+          );
+        }
+        console.log(`💾 Saved narration URL to DB for block ${moduleIndex}.${blockIndex}`);
+      } catch (dbErr) {
+        console.warn(`⚠️ Audio generated but DB save failed: ${dbErr.message}`);
+        // Don't fail the request — audio was generated successfully
+      }
+    }
 
     console.log(`✅ Narration complete: ${result.url || 'skipped'}`);
     res.json(result);
