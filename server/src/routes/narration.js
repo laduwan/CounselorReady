@@ -24,13 +24,13 @@ const router = express.Router();
 // Reuse your existing auth middleware. Adjust import path as needed.
 // Narration should be admin-only to control costs.
 
-import { authenticate, requireAdmin } from '../middleware/auth.js';
+import { protect, requireAdmin } from '../middleware/auth.js';
 import { Course } from '../models/InteractiveCourse.js';
 
 // ─── GET /api/narration/provider ────────────────────────────────
 // Returns current provider info and available voice presets
 
-router.get('/provider', authenticate, requireAdmin, (req, res) => {
+router.get('/provider', protect, requireAdmin, (req, res) => {
   try {
     const info = narrationService.getProviderInfo();
     res.json(info);
@@ -42,7 +42,7 @@ router.get('/provider', authenticate, requireAdmin, (req, res) => {
 // ─── GET /api/narration/voices ──────────────────────────────────
 // Returns available voice presets for the active provider
 
-router.get('/voices', authenticate, requireAdmin, (req, res) => {
+router.get('/voices', protect, requireAdmin, (req, res) => {
   try {
     const provider = req.query.provider || undefined;
     const presets = narrationService.getVoicePresets(provider);
@@ -62,7 +62,7 @@ router.get('/voices', authenticate, requireAdmin, (req, res) => {
 // Estimate cost/duration for narrating a course without generating audio
 // Body: { course: { sections: [...] }, provider?, voicePreset? }
 
-router.post('/estimate', authenticate, requireAdmin, (req, res) => {
+router.post('/estimate', protect, requireAdmin, (req, res) => {
   try {
     const { course, provider } = req.body;
 
@@ -81,7 +81,7 @@ router.post('/estimate', authenticate, requireAdmin, (req, res) => {
 // Generate narration for a single block
 // Body: { block: {...}, courseId?, moduleIndex?, blockIndex?, voicePreset?, provider? }
 
-router.post('/block', authenticate, requireAdmin, async (req, res) => {
+router.post('/block', protect, requireAdmin, async (req, res) => {
   try {
     const { block, courseId, moduleIndex, blockIndex, voicePreset, provider } = req.body;
 
@@ -151,7 +151,7 @@ router.post('/block', authenticate, requireAdmin, async (req, res) => {
 // Generate narration for all blocks in a module
 // Body: { blocks: [...], courseId?, moduleIndex?, voicePreset?, provider? }
 
-router.post('/module', authenticate, requireAdmin, async (req, res) => {
+router.post('/module', protect, requireAdmin, async (req, res) => {
   try {
     const { blocks, courseId, moduleIndex, voicePreset, provider } = req.body;
 
@@ -189,7 +189,7 @@ router.post('/module', authenticate, requireAdmin, async (req, res) => {
 // Body: { course: { _id, sections: [...] }, voicePreset?, provider? }
 // ⚠️ This can take several minutes for large courses!
 
-router.post('/course', authenticate, requireAdmin, async (req, res) => {
+router.post('/course', protect, requireAdmin, async (req, res) => {
   try {
     const { course, voicePreset, provider } = req.body;
 
@@ -219,7 +219,7 @@ router.post('/course', authenticate, requireAdmin, async (req, res) => {
 // Useful for voice selection before committing to full narration
 // Body: { text?: string, voicePreset?, provider? }
 
-router.post('/preview', authenticate, requireAdmin, async (req, res) => {
+router.post('/preview', protect, requireAdmin, async (req, res) => {
   try {
     const { text, voicePreset, provider } = req.body;
     const previewText = (text || 'Welcome to CounselorReady. This course will help you meet your continuing education requirements while building practical clinical skills.').substring(0, 250);
@@ -258,7 +258,7 @@ router.post('/preview', authenticate, requireAdmin, async (req, res) => {
 // Low-level: generate speech from raw text, upload to Cloudinary
 // Body: { text, courseId?, label?, voicePreset?, provider? }
 
-router.post('/text', authenticate, requireAdmin, async (req, res) => {
+router.post('/text', protect, requireAdmin, async (req, res) => {
   try {
     const { text, courseId, label, voicePreset, provider } = req.body;
 
