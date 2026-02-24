@@ -1190,23 +1190,6 @@ const courseData = {
     }
   ]
 },
-
-
-// ═══════════════════════════════════════════════════════════════
-//  INSERTION LOGIC
-// ═══════════════════════════════════════════════════════════════
-
-const COURSE_SLUG = 'dbt-skills-training-comprehensive';
-
-async function main() {
-  console.log('\n═══════════════════════════════════════════════════');
-  console.log('  DBT 6hr Course — Module Expansion');
-  console.log('═══════════════════════════════════════════════════\n');
-
-  // 1. Find the existing course
-  const existing = await collection.findOne({ slug: COURSE_SLUG });
-  if (!existing) {
-    console.error('❌ Course not found:', COURSE_SLUG);
     {
       title: "Evidence Base, Limitations, and Clinical Integration",
       order: 2,
@@ -1657,6 +1640,10 @@ async function main() {
     }
   ],
 
+  // ═══════════════════════════════════════════════════════════════
+  //  FINAL ASSESSMENT — 20 Questions | 80% Pass | 3 Attempts
+  // ═══════════════════════════════════════════════════════════════
+
   assessment: {
     passingScore: 80,
     maxAttempts: 3,
@@ -1868,6 +1855,7 @@ async function main() {
   // ═══════════════════════════════════════════════════════════════
   //  REFERENCES (31 APA-formatted citations)
   // ═══════════════════════════════════════════════════════════════
+  // ═══════════════════════════════════════════════════════════════
 
   references: [
     "Behavioral Tech, LLC. (n.d.). What is DBT? https://behavioraltech.org/resources/faqs/dialectical-behavior-therapy-dbt/",
@@ -1955,9 +1943,10 @@ async function main() {
     console.log('  ' + m.title + ': ' + mw + ' words');
     total += mw;
   }
-  console.log('\n  TOTAL: ' + total + ' / 36000 (' + Math.round(total/36000*100) + '%)');
+  console.log('');
+  console.log('  TOTAL: ' + total + ' / 36000 (' + Math.round(total/36000*100) + '%)');
   console.log('  Modules: ' + courseData.modules.length);
-  console.log('  Assessment questions: ' + (courseData.assessment?.questions || []).length);
+  console.log('  Assessment: ' + (courseData.assessment?.questions || []).length + ' questions');
   console.log('  References: ' + (courseData.references || []).length);
 
   await mongoose.disconnect();
