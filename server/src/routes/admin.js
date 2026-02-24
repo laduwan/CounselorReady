@@ -14,6 +14,18 @@ import { getRecentActivity } from '../services/activityTrackingService.js';
 
 const router = express.Router();
 
+// ── Async AI Generation Job Store ──────────────────────────────
+// In-memory store for async AI jobs (survives request timeout)
+const aiJobs = new Map();
+const AI_JOB_TTL = 10 * 60 * 1000; // 10 minutes
+// Clean up old jobs periodically
+setInterval(() => {
+  const now = Date.now();
+  for (const [id, job] of aiJobs) {
+    if (now - job.createdAt > AI_JOB_TTL) aiJobs.delete(id);
+  }
+}, 60000);
+
 // Configure Cloudinary
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -3129,12 +3141,9 @@ IMPORTANT:
 });
 
 // @route   POST /api/admin/module/generate
-// @desc    Generate content for a SINGLE module (used by CourseBuilder module-by-module generation)
+// @desc    Start async generation for a SINGLE module (returns jobId immediately)
 // @access  Admin only
 router.post('/module/generate', protect, adminOnly, async (req, res) => {
-  // Extend timeout for AI generation (Anthropic API can take 30-90s)
-  req.setTimeout(120000);
-  res.setTimeout(120000);
   try {
     if (!anthropic) {
       return res.status(500).json({ error: 'AI service not configured. Set ANTHROPIC_API_KEY in environment.' });
@@ -3156,14 +3165,22 @@ router.post('/module/generate', protect, adminOnly, async (req, res) => {
       return res.status(400).json({ error: 'moduleTitle is required' });
     }
 
-    const catNames = { core: 'Core/General', ethics: 'Ethics', supervision: 'Supervision', telehealth: 'Telehealth', cultural: 'Cultural Diversity', trauma: 'Trauma', substance: 'Substance Abuse', crisis: 'Crisis/Suicide' };
-    const catName = catNames[category] || 'Core/General';
+    // Create async job and return immediately (avoids Render 30s proxy timeout)
+    const jobId = `gen_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
+    aiJobs.set(jobId, { status: 'processing', createdAt: Date.now(), moduleTitle });
 
-    // Calculate word target for this module
-    const totalWords = (ceHours || 3) * 6000;
-    const wordsForModule = Math.ceil(totalWords / (totalModules || 6));
+    // Return jobId immediately — frontend will poll for results
+    res.json({ success: true, jobId, message: 'Generation started' });
 
-    const prompt = `You are an expert instructional designer creating continuing education content for licensed professional counselors.
+    // ── Run generation in background ──
+    (async () => {
+      try {
+        const catNames = { core: 'Core/General', ethics: 'Ethics', supervision: 'Supervision', telehealth: 'Telehealth', cultural: 'Cultural Diversity', trauma: 'Trauma', substance: 'Substance Abuse', crisis: 'Crisis/Suicide' };
+        const catName = catNames[category] || 'Core/General';
+        const totalWords = (ceHours || 3) * 6000;
+        const wordsForModule = Math.ceil(totalWords / (totalModules || 6));
+
+        const prompt = `You are an expert instructional designer creating continuing education content for licensed professional counselors.
 
 Generate COMPLETE, DETAILED content for ONE MODULE of a CE course.
 
@@ -3209,120 +3226,112 @@ ${generateQuiz !== false ? `- Generate 3-5 quiz questions that test comprehensio
 
 Return ONLY the JSON object, no markdown code blocks.`;
 
-    console.log(`Generating module ${moduleNumber}/${totalModules}: ${moduleTitle} (target: ${wordsForModule} words)`);
+        console.log(`[Job ${jobId}] Generating module ${moduleNumber}/${totalModules}: ${moduleTitle} (target: ${wordsForModule} words)`);
 
-    const response = await anthropic.messages.create({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 16000,
-      messages: [{ role: 'user', content: prompt }]
-    });
+        const response = await anthropic.messages.create({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 16000,
+          messages: [{ role: 'user', content: prompt }]
+        });
 
-    const responseText = response.content[0].text;
+        const responseText = response.content[0].text;
+        let moduleData;
 
-    let moduleData;
-    try {
-      let jsonText = responseText.replace(/```json\s*/gi, '').replace(/```\s*/g, '');
-      const startIdx = jsonText.indexOf('{');
-      const endIdx = jsonText.lastIndexOf('}');
-      if (startIdx === -1 || endIdx === -1 || endIdx < startIdx) {
-        throw new Error('No JSON found in response');
-      }
-      jsonText = jsonText.substring(startIdx, endIdx + 1);
-      jsonText = jsonText.replace(/,\s*}/g, '}').replace(/,\s*]/g, ']');
-      moduleData = JSON.parse(jsonText);
-    } catch (parseError) {
-      console.error('Module parse error:', parseError.message);
-      console.error('Response length:', responseText.length);
-      
-      // AGGRESSIVE SALVAGE: Extract whatever we can
-      // Strategy 1: Find the "content" field value even from broken JSON
-      const contentFieldMatch = responseText.match(/"content"\s*:\s*"((?:[^"\\]|\\["\\\/bfnrt]|\\u[0-9a-fA-F]{4})*)/);
-      if (contentFieldMatch && contentFieldMatch[1].length > 200) {
-        let salvaged = contentFieldMatch[1];
-        salvaged = salvaged.replace(/\\n/g, '\n').replace(/\\"/g, '"').replace(/\\\\/g, '\\').replace(/\\t/g, '\t');
-        // Clean up any trailing broken JSON
-        salvaged = salvaged.replace(/",?\s*"(questions|title|description)"[\s\S]*$/, '');
-        
-        // Extract questions if they exist before the break
-        const questions = [];
-        const qMatches = [...responseText.matchAll(/"question"\s*:\s*"((?:[^"\\]|\\.)*)"/g)];
-        const oMatches = [...responseText.matchAll(/"options"\s*:\s*\[((?:[^\]]*?))\]/g)];
-        const cMatches = [...responseText.matchAll(/"correctAnswer"\s*:\s*(\d+)/g)];
-        const eMatches = [...responseText.matchAll(/"explanation"\s*:\s*"((?:[^"\\]|\\.)*)"/g)];
-        
-        for (let qi = 0; qi < qMatches.length; qi++) {
-          const opts = oMatches[qi] ? [...oMatches[qi][1].matchAll(/"((?:[^"\\]|\\.)*)"/g)].map(m => m[1].replace(/\\"/g, '"')) : [];
-          if (opts.length >= 2) {
-            questions.push({
-              question: qMatches[qi][1].replace(/\\"/g, '"'),
-              type: 'multiple_choice',
-              options: opts,
-              correctAnswer: cMatches[qi] ? parseInt(cMatches[qi][1]) : 0,
-              explanation: eMatches[qi] ? eMatches[qi][1].replace(/\\"/g, '"') : '',
-              points: 1
-            });
-          }
-        }
-        
-        console.log(`SALVAGED from broken JSON: ~${salvaged.replace(/<[^>]*>/g, '').split(/\s+/).length} words, ${questions.length} questions`);
-        
-        moduleData = {
-          title: moduleTitle,
-          description: 'Content salvaged from partial AI response',
-          content: salvaged,
-          questions
-        };
-      } else {
-        // Strategy 2: Find raw HTML content
-        const contentMatch = responseText.match(/<h[23]>[\s\S]+/);
-        if (contentMatch) {
-          moduleData = {
-            title: moduleTitle,
-            description: '',
-            content: contentMatch[0].replace(/```\s*$/g, '').replace(/"[,\s]*$/, ''),
-            questions: []
-          };
-        } else {
-          // Strategy 3: Just use everything after the first <p> or <h tag
-          const anyHtml = responseText.match(/<(?:p|h\d|ul|ol|div)[^>]*>[\s\S]{200,}/);
-          if (anyHtml) {
-            moduleData = {
-              title: moduleTitle,
-              description: '',
-              content: anyHtml[0],
-              questions: []
-            };
+        try {
+          let jsonText = responseText.replace(/```json\s*/gi, '').replace(/```\s*/g, '');
+          const startIdx = jsonText.indexOf('{');
+          const endIdx = jsonText.lastIndexOf('}');
+          if (startIdx === -1 || endIdx === -1 || endIdx < startIdx) throw new Error('No JSON found');
+          jsonText = jsonText.substring(startIdx, endIdx + 1);
+          jsonText = jsonText.replace(/,\s*}/g, '}').replace(/,\s*]/g, ']');
+          moduleData = JSON.parse(jsonText);
+        } catch (parseError) {
+          console.error(`[Job ${jobId}] Parse error:`, parseError.message);
+          // Salvage content from broken JSON
+          const contentFieldMatch = responseText.match(/"content"\s*:\s*"((?:[^"\\]|\\["\\\/bfnrt]|\\u[0-9a-fA-F]{4})*)/);
+          if (contentFieldMatch && contentFieldMatch[1].length > 200) {
+            let salvaged = contentFieldMatch[1];
+            salvaged = salvaged.replace(/\\n/g, '\n').replace(/\\"/g, '"').replace(/\\\\/g, '\\').replace(/\\t/g, '\t');
+            salvaged = salvaged.replace(/",?\s*"(questions|title|description)"[\s\S]*$/, '');
+            const questions = [];
+            const qMatches = [...responseText.matchAll(/"question"\s*:\s*"((?:[^"\\]|\\.)*)"/g)];
+            const oMatches = [...responseText.matchAll(/"options"\s*:\s*\[((?:[^\]]*?))\]/g)];
+            const cMatches = [...responseText.matchAll(/"correctAnswer"\s*:\s*(\d+)/g)];
+            const eMatches = [...responseText.matchAll(/"explanation"\s*:\s*"((?:[^"\\]|\\.)*)"/g)];
+            for (let qi = 0; qi < qMatches.length; qi++) {
+              const opts = oMatches[qi] ? [...oMatches[qi][1].matchAll(/"((?:[^"\\]|\\.)*)"/g)].map(m => m[1].replace(/\\"/g, '"')) : [];
+              if (opts.length >= 2) {
+                questions.push({
+                  question: qMatches[qi][1].replace(/\\"/g, '"'),
+                  type: 'multiple_choice', options: opts,
+                  correctAnswer: cMatches[qi] ? parseInt(cMatches[qi][1]) : 0,
+                  explanation: eMatches[qi] ? eMatches[qi][1].replace(/\\"/g, '"') : '', points: 1
+                });
+              }
+            }
+            moduleData = { title: moduleTitle, description: 'Content salvaged from partial AI response', content: salvaged, questions };
           } else {
-            return res.status(500).json({ 
-              error: 'Failed to parse AI response for this module', 
-              salvageAttempted: true,
-              responseLength: responseText.length 
-            });
+            const contentMatch = responseText.match(/<h[23]>[\s\S]+/);
+            if (contentMatch) {
+              moduleData = { title: moduleTitle, description: '', content: contentMatch[0].replace(/```\s*$/g, ''), questions: [] };
+            } else {
+              aiJobs.set(jobId, { status: 'error', error: 'Failed to parse AI response', createdAt: Date.now() });
+              return;
+            }
           }
         }
-      }
-    }
 
-    // Count actual words
-    const actualWords = (moduleData.content || '').replace(/<[^>]*>/g, '').split(/\s+/).filter(w => w.length > 0).length;
-    console.log(`Module ${moduleNumber} generated: ${actualWords} words, ${(moduleData.questions || []).length} questions`);
+        const actualWords = (moduleData.content || '').replace(/<[^>]*>/g, '').split(/\s+/).filter(w => w.length > 0).length;
+        console.log(`[Job ${jobId}] Module ${moduleNumber} generated: ${actualWords} words, ${(moduleData.questions || []).length} questions`);
 
-    res.json({
-      success: true,
-      module: {
-        title: moduleData.title || moduleTitle,
-        description: moduleData.description || '',
-        content: moduleData.content || '',
-        questions: moduleData.questions || [],
-        wordCount: actualWords,
-        targetWords: wordsForModule
+        aiJobs.set(jobId, {
+          status: 'complete',
+          createdAt: Date.now(),
+          result: {
+            success: true,
+            module: {
+              title: moduleData.title || moduleTitle,
+              description: moduleData.description || '',
+              content: moduleData.content || '',
+              questions: moduleData.questions || [],
+              wordCount: actualWords,
+              targetWords: wordsForModule
+            }
+          }
+        });
+      } catch (error) {
+        console.error(`[Job ${jobId}] Generation error:`, error.message);
+        aiJobs.set(jobId, { status: 'error', error: error.message, createdAt: Date.now() });
       }
-    });
+    })();
 
   } catch (error) {
-    console.error('Module generation error:', error);
-    res.status(500).json({ error: 'Failed to generate module: ' + error.message });
+    console.error('Module generation start error:', error);
+    res.status(500).json({ error: 'Failed to start generation: ' + error.message });
   }
+});
+
+// @route   GET /api/admin/module/generate/status/:jobId
+// @desc    Poll async generation job status
+// @access  Admin only
+router.get('/module/generate/status/:jobId', protect, adminOnly, async (req, res) => {
+  const job = aiJobs.get(req.params.jobId);
+  if (!job) {
+    return res.status(404).json({ status: 'not_found', error: 'Job not found or expired' });
+  }
+  if (job.status === 'complete') {
+    // Return result and clean up
+    const result = job.result;
+    aiJobs.delete(req.params.jobId);
+    return res.json({ status: 'complete', ...result });
+  }
+  if (job.status === 'error') {
+    const error = job.error;
+    aiJobs.delete(req.params.jobId);
+    return res.json({ status: 'error', error });
+  }
+  // Still processing
+  res.json({ status: 'processing', moduleTitle: job.moduleTitle });
 });
 
 export default router;
