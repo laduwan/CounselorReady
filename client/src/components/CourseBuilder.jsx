@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useRef, useEffect } from "react";
 import jsPDF from "jspdf";
+import NarrationPanel from "./NarrationPanel.jsx";
 import {
   Sparkles, FileText, CheckCircle, Upload, Plus, Trash2, GripVertical,
   ChevronDown, ChevronRight, AlertTriangle, Check, X, Loader2,
@@ -2722,6 +2723,7 @@ export default function CourseBuilderV2() {
     { label: "Exam Generator", icon: "🎯" },
     { label: "References", icon: "📚" },
     { label: "ACEP Checker", icon: "📋" },
+    { label: "Narration", icon: "🎙️" },
   ];
 
   return (
@@ -2813,6 +2815,7 @@ export default function CourseBuilderV2() {
         {activeTab === 3 && <ExamGenerator courseData={courseData} setCourseData={setCourseData} />}
         {activeTab === 4 && <ReferencesManager courseData={courseData} setCourseData={setCourseData} />}
         {activeTab === 5 && <ACEPChecker courseData={courseData} />}
+        {activeTab === 6 && <NarrationTab courseData={courseData} setCourseData={setCourseData} />}
 
       </div>
       )}
@@ -3352,3 +3355,28 @@ Return as quiz questions where each "question" field contains one complete APA r
 
 
 
+
+// ═══════════════════════════════════════════════════════════
+// NARRATION TAB — TTS audio generation for course content
+// ═══════════════════════════════════════════════════════════
+function NarrationTab({ courseData, setCourseData }) {
+  if (!courseData?.modules?.length) {
+    return (
+      <div style={{ ...S.card, textAlign: "center", padding: 40 }}>
+        <p style={{ color: C.textMuted, fontSize: 14 }}>
+          No course content yet. Generate or import course content first, then come back to add narration.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <NarrationPanel
+      courseId={courseData._id || courseData.id || null}
+      modules={courseData.modules}
+      onNarrationComplete={({ modules }) => {
+        setCourseData(prev => ({ ...prev, modules }));
+      }}
+    />
+  );
+}
