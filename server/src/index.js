@@ -29,6 +29,7 @@ import cebrokerRoutes from './routes/cebroker.js';
 import helpRoutes from './routes/help.js';
 import bulkUploadRoutes from './routes/bulkUpload.js';
 import aiRoutes from './routes/ai.js';
+import narrationRoutes from './routes/narration.js';
 import aiCourseGeneratorRoutes from './routes/aiCourseGenerator.js'; // ← NEW
 import courseBuilderRoutes from './routes/courseBuilder.js';
 import imageUploadRoutes from './routes/imageUpload.js';
@@ -157,6 +158,7 @@ app.use('/api/admin/courses', bulkUploadRoutes);
 app.use('/api/ai-course-generator', aiCourseGeneratorRoutes); // ← NEW
 app.use('/api/course-builder', courseBuilderRoutes);
 app.use('/api/images', imageUploadRoutes);
+app.use('/api/narration', narrationRoutes);
 
 // Serve static files from templates directory (for certificates)
 app.use('/templates', express.static(path.join(__dirname, 'templates')));
