@@ -203,13 +203,23 @@
       }
 
       try {
-        const response = await fetch(`${API_URL}/api/admin/courses/${courseId}`, {
+        // Try interactive courses first (where most courses live)
+        let response = await fetch(`${API_URL}/api/interactive-courses/${courseId}`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
 
-        if (!response.ok) throw new Error('Failed to load course');
+        if (response.ok) {
+          const json = await response.json();
+          course = json.data || json; // interactive-courses wraps in { data: ... }
+        } else {
+          // Fall back to admin/courses (legacy collection)
+          response = await fetch(`${API_URL}/api/admin/courses/${courseId}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          if (!response.ok) throw new Error('Failed to load course');
+          course = await response.json();
+        }
 
-        course = await response.json();
         renderCourse();
 
       } catch (error) {
