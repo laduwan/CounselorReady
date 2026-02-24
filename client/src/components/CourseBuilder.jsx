@@ -957,15 +957,13 @@ function ContentEditor({ courseData, setCourseData }) {
   const regenerateModule = async (moduleIndex) => {
     const mod = modules[moduleIndex];
     if (!mod) return;
-    if (!confirm(`Regenerate "${mod.title}"? This will replace all blocks in this module. This may take 30-60 seconds.`)) return;
+    if (!confirm(`Regenerate "${mod.title}"? This will replace all blocks in this module. This may take 30-90 seconds.`)) return;
     setRegenerating(true);
     try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 120000); // 2 min timeout
-      const res = await fetch(`${API_BASE}/admin/module/generate`, {
+      // Step 1: Start the async job
+      const startRes = await fetch(`${API_BASE}/admin/module/generate`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${getToken()}` },
-        signal: controller.signal,
         body: JSON.stringify({
           courseTitle: courseData.title,
           moduleTitle: mod.title,
@@ -977,18 +975,82 @@ function ContentEditor({ courseData, setCourseData }) {
           generateQuiz: true,
         }),
       });
-      clearTimeout(timeoutId);
-      if (!res.ok) {
-        const errData = await res.json().catch(() => ({}));
-        throw new Error(errData.error || `Generation failed: ${res.status}`);
+      if (!startRes.ok) {
+        const errData = await startRes.json().catch(() => ({}));
+        throw new Error(errData.error || `Failed to start generation: ${startRes.status}`);
       }
-      const data = await res.json();
-      const generated = data.module || data;
+      const startData = await startRes.json();
+      const jobId = startData.jobId;
+      if (!jobId) throw new Error("No jobId returned — server may need updating");
+
+      // Step 2: Poll for results every 3 seconds (up to 2 minutes)
+      let attempts = 0;
+      const maxAttempts = 40; // 40 x 3s = 2 minutes
+      let result = null;
+
+      while (attempts < maxAttempts) {
+        await new Promise(r => setTimeout(r, 3000));
+        attempts++;
+        try {
+          const pollRes = await fetch(`${API_BASE}/admin/module/generate/status/${jobId}`, {
+            headers: { Authorization: `Bearer ${getToken()}` },
+          });
+          if (!pollRes.ok) continue;
+          const pollData = await pollRes.json();
+
+          if (pollData.status === "complete") {
+            result = pollData;
+            break;
+          } else if (pollData.status === "error") {
+            throw new Error(pollData.error || "Generation failed on server");
+          }
+          // else "processing" — keep polling
+        } catch (pollErr) {
+          if (pollErr.message.includes("Generation failed")) throw pollErr;
+          // Network blip — keep trying
+        }
+      }
+
+      if (!result) throw new Error("Generation timed out after 2 minutes. Check server logs.");
+
+      // Step 3: Process result
+      const generated = result.module || result;
       const newModules = [...modules];
       if (generated.blocks) {
         newModules[moduleIndex] = { ...newModules[moduleIndex], blocks: generated.blocks };
+      } else if (generated.content) {
+        // Convert single content string + questions to blocks
+        const blocks = [
+          { id: uid(), type: "sectionDivider", title: mod.title, sectionNumber: moduleIndex + 1, subtitle: generated.description || "" },
+        ];
+        if (generated.content.length > 15000) {
+          const mid = Math.floor(generated.content.length / 2);
+          const sp = generated.content.indexOf("<h3>", mid);
+          if (sp > 0) {
+            blocks.push({ id: uid(), type: "text", content: generated.content.substring(0, sp) });
+            blocks.push({ id: uid(), type: "text", content: generated.content.substring(sp) });
+          } else {
+            blocks.push({ id: uid(), type: "text", content: generated.content });
+          }
+        } else {
+          blocks.push({ id: uid(), type: "text", content: generated.content });
+        }
+        if (generated.questions?.length > 0) {
+          generated.questions.forEach(q => {
+            blocks.push({
+              id: uid(),
+              type: q.type === "multiple_select" ? "multiSelect" : "multipleChoice",
+              question: q.question,
+              options: (q.options || []).map((opt, oi) => ({
+                text: opt, isCorrect: Array.isArray(q.correctAnswer) ? q.correctAnswer.includes(oi) : oi === q.correctAnswer
+              })),
+              explanation: q.explanation || "",
+            });
+          });
+        }
+        blocks.push({ id: uid(), type: "reflection", question: `Reflect on what you learned about ${mod.title.split(":").pop().trim()}. How will you apply these concepts in your clinical practice?`, minLength: 100 });
+        newModules[moduleIndex] = { ...newModules[moduleIndex], blocks };
       } else if (generated.lessons) {
-        // Convert lessons to blocks
         const blocks = generated.lessons.map((l, i) => ({
           id: uid(), type: "text", content: l.content || l.textContent || "", order: i + 1,
         }));
@@ -1001,10 +1063,7 @@ function ContentEditor({ courseData, setCourseData }) {
       }
       setCourseData({ ...courseData, modules: newModules });
     } catch (err) {
-      const msg = err.name === 'AbortError' ? 'Request timed out. AI generation can take 60-90 seconds — please try again.' : 
-        err.message.includes('Failed to fetch') ? 'Network error — the server may have timed out. Try again or check your connection.' : 
-        `Regenerate failed: ${err.message}`;
-      alert(msg);
+      alert(`Regenerate failed: ${err.message}`);
     } finally {
       setRegenerating(false);
     }
@@ -1795,15 +1854,16 @@ function AIGenerator({ onGenerated }) {
       };
 
       try {
-        const res = await fetch(`${API_BASE}/admin/module/generate`, {
+        // Start async job (returns immediately with jobId)
+        const startRes = await fetch(`${API_BASE}/admin/module/generate`, {
           method: "POST",
           headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
           body: JSON.stringify(body),
         });
 
-        if (!res.ok) {
-          const errData = await res.json().catch(() => ({}));
-          console.error(`Module ${mi + 1} failed:`, errData.error);
+        if (!startRes.ok) {
+          const errData = await startRes.json().catch(() => ({}));
+          console.error(`Module ${mi + 1} failed to start:`, errData.error);
           generatedModules.push({
             id: uid(), number: mi + 1, title: mod.title,
             blocks: [
@@ -1815,15 +1875,42 @@ function AIGenerator({ onGenerated }) {
           continue;
         }
 
-        const data = await res.json();
+        const startData = await startRes.json();
+        const jobId = startData.jobId;
 
-        if (data.success && data.module) {
+        // Poll for results (async generation avoids Render proxy timeout)
+        let data = null;
+        if (jobId) {
+          for (let attempt = 0; attempt < 40; attempt++) {
+            await new Promise(r => setTimeout(r, 3000));
+            setProgressMsg(`Module ${mi + 1} of ${moduleCount}: generating... (${attempt * 3}s)`);
+            try {
+              const pollRes = await fetch(`${API_BASE}/admin/module/generate/status/${jobId}`, {
+                headers: { "Authorization": `Bearer ${token}` },
+              });
+              if (pollRes.ok) {
+                const pollData = await pollRes.json();
+                if (pollData.status === "complete") { data = pollData; break; }
+                if (pollData.status === "error") throw new Error(pollData.error || "Generation failed");
+              }
+            } catch (pollErr) {
+              if (pollErr.message.includes("Generation failed")) throw pollErr;
+            }
+          }
+          if (!data) throw new Error("Generation timed out");
+        } else {
+          // Fallback: server returned result directly (old format)
+          data = startData;
+        }
+
+        if (data.success !== false && (data.module || data.content)) {
+          const mod_data = data.module || data;
           const blocks = [];
-          blocks.push({ id: uid(), type: "sectionDivider", title: mod.title, sectionNumber: mi + 1, subtitle: data.module.description || "" });
+          blocks.push({ id: uid(), type: "sectionDivider", title: mod.title, sectionNumber: mi + 1, subtitle: mod_data.description || "" });
 
           // Add content as text block(s) — split if very long
-          if (data.module.content) {
-            const content = data.module.content;
+          if (mod_data.content) {
+            const content = mod_data.content;
             if (content.length > 15000) {
               // Split at a heading boundary near the middle
               const mid = Math.floor(content.length / 2);
@@ -1840,8 +1927,8 @@ function AIGenerator({ onGenerated }) {
           }
 
           // Add quiz questions as interactive blocks
-          if (data.module.questions && data.module.questions.length > 0) {
-            data.module.questions.forEach(q => {
+          if (mod_data.questions && mod_data.questions.length > 0) {
+            mod_data.questions.forEach(q => {
               if (q.type === "multiple_select") {
                 blocks.push({ id: uid(), type: "multiSelect", question: q.question, options: (q.options || []).map((opt, oi) => ({
                   text: opt, isCorrect: Array.isArray(q.correctAnswer) ? q.correctAnswer.includes(oi) : oi === q.correctAnswer
@@ -1863,7 +1950,7 @@ function AIGenerator({ onGenerated }) {
           // Add a reflection prompt
           blocks.push({ id: uid(), type: "reflection", question: `Reflect on what you learned about ${mod.title.split(":").pop().trim()}. How will you apply these concepts in your clinical practice? Describe a specific situation.`, minLength: 100 });
 
-          const wordCount = data.module.wordCount || blocks.reduce((s, b) => s + countBlockWords(b), 0);
+          const wordCount = mod_data.wordCount || blocks.reduce((s, b) => s + countBlockWords(b), 0);
           totalWordsGenerated += wordCount;
 
           generatedModules.push({
