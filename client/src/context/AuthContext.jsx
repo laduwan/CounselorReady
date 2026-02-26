@@ -64,9 +64,7 @@ export function AuthProvider({ children }) {
     logout,
     isAuthenticated: !!user,
     isAdmin: user?.role === 'admin',
-    hasSubscription: user?.subscription?.status === 'active' ||
-                     user?.subscription?.status === 'trial' ||
-                     user?.subscription?.status === 'lifetime'
+    hasSubscription: ['active', 'trial', 'lifetime', 'paused'].includes(user?.subscription?.status)
   };
 
   return (
