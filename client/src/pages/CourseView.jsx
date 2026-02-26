@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
+import { safeHTML } from '../utils/sanitize';
 import { 
   BookOpen, 
   CheckCircle, 
@@ -167,7 +168,7 @@ export default function CourseView() {
               {activeLesson.content && (
                 <div 
                   className="prose prose-moss max-w-none"
-                  dangerouslySetInnerHTML={{ __html: activeLesson.content }}
+                  dangerouslySetInnerHTML={{ __html: safeHTML(activeLesson.content) }}
                 />
               )}
 
