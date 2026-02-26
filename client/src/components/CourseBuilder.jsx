@@ -3,6 +3,7 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import jsPDF from "jspdf";
 import NarrationPanel from "./NarrationPanel.jsx";
+import { safeHTML } from "../utils/sanitize";
 import {
   Sparkles, FileText, CheckCircle, Upload, Plus, Trash2, GripVertical,
   ChevronDown, ChevronRight, AlertTriangle, Check, X, Loader2,
@@ -1267,12 +1268,12 @@ function ContentEditor({ courseData, setCourseData }) {
                     </div>
                   )}
                   {block.type === "text" && (
-                    <div style={{ fontSize: 15, lineHeight: 1.7, color: C.text }} dangerouslySetInnerHTML={{ __html: block.content || "<em>Empty text block</em>" }} />
+                    <div style={{ fontSize: 15, lineHeight: 1.7, color: C.text }} dangerouslySetInnerHTML={{ __html: safeHTML(block.content || "<em>Empty text block</em>") }} />
                   )}
                   {block.type === "imageText" && (
                     <div style={{ display: "flex", gap: 20, flexDirection: block.imagePosition === "right" ? "row-reverse" : "row", alignItems: "flex-start" }}>
                       {block.image && <img src={block.image} alt={block.imageAlt || ""} style={{ width: "40%", borderRadius: 8 }} />}
-                      <div style={{ flex: 1, fontSize: 15, lineHeight: 1.7 }} dangerouslySetInnerHTML={{ __html: block.content || "" }} />
+                      <div style={{ flex: 1, fontSize: 15, lineHeight: 1.7 }} dangerouslySetInnerHTML={{ __html: safeHTML(block.content || "") }} />
                     </div>
                   )}
                   {block.type === "image" && block.imageUrl && (
@@ -1286,7 +1287,7 @@ function ContentEditor({ courseData, setCourseData }) {
                       {(block.accordionItems || []).map((item, j) => (
                         <div key={j} style={{ borderBottom: `1px solid ${C.borderLight}`, padding: "10px 14px" }}>
                           <div style={{ fontWeight: 600, fontSize: 14, color: C.navy }}>{item.title || "Untitled"}</div>
-                          <div style={{ fontSize: 13, color: C.textMuted, marginTop: 4 }} dangerouslySetInnerHTML={{ __html: item.content || "" }} />
+                          <div style={{ fontSize: 13, color: C.textMuted, marginTop: 4 }} dangerouslySetInnerHTML={{ __html: safeHTML(item.content || "") }} />
                         </div>
                       ))}
                     </div>
