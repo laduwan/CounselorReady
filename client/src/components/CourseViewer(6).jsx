@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { 
   ChevronLeft, ChevronRight, Menu, X, BookOpen, Clock, Award, 
   CheckCircle2, Circle, Play, Lock, AlertCircle, Download,
-  BarChart3, Home, Settings, LogOut, User
+  BarChart3, Home, Settings, LogOut, User, Type, Eye, Volume2
 } from 'lucide-react';
 import { safeHTML } from '../utils/sanitize';
 import {
@@ -31,26 +31,22 @@ const API_BASE = '/api/interactive-courses';
 
 const api = {
   async getCourse(slug) {
-    const res = await fetch(`${API_BASE}/${slug}`);
-    if (!res.ok) throw new Error('Failed to fetch course');
+    const res = await fetch(`${API_BASE}/slug/${slug}`, { credentials: 'include' });
+    if (!res.ok) throw new Error('Course not found');
     return res.json();
   },
-
+  
   async getProgress(slug) {
-    const res = await fetch(`${API_BASE}/${slug}/progress`, {
-      headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-    });
-    if (!res.ok) throw new Error('Failed to fetch progress');
+    const res = await fetch(`${API_BASE}/${slug}/progress`, { credentials: 'include' });
+    if (!res.ok) return null;
     return res.json();
   },
 
   async updateSectionProgress(slug, sectionIndex, data) {
-    const res = await fetch(`${API_BASE}/${slug}/progress/section/${sectionIndex}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('token')}`
-      },
+    const res = await fetch(`${API_BASE}/${slug}/sections/${sectionIndex}/progress`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
       body: JSON.stringify(data)
     });
     if (!res.ok) throw new Error('Failed to update progress');
@@ -58,12 +54,10 @@ const api = {
   },
 
   async submitSectionQuiz(slug, sectionIndex, answers, timeSpent) {
-    const res = await fetch(`${API_BASE}/${slug}/progress/section/${sectionIndex}/quiz`, {
+    const res = await fetch(`${API_BASE}/${slug}/sections/${sectionIndex}/quiz`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('token')}`
-      },
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
       body: JSON.stringify({ answers, timeSpent })
     });
     if (!res.ok) throw new Error('Failed to submit quiz');
@@ -71,29 +65,153 @@ const api = {
   },
 
   async submitAssessment(slug, answers, timeUsed, questionOrder) {
-    const res = await fetch(`${API_BASE}/${slug}/progress/assessment`, {
+    const res = await fetch(`${API_BASE}/${slug}/assessment/submit`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('token')}`
-      },
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
       body: JSON.stringify({ answers, timeUsed, questionOrder })
     });
     if (!res.ok) throw new Error('Failed to submit assessment');
     return res.json();
   },
 
-  async logInteraction(slug, data) {
-    fetch(`${API_BASE}/${slug}/progress/interaction`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('token')}`
-      },
-      body: JSON.stringify(data)
-    }).catch(console.error); // Fire and forget
+  async logInteraction(slug, interaction) {
+    try {
+      await fetch(`${API_BASE}/${slug}/interaction`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(interaction)
+      });
+    } catch (err) {
+      console.error('Failed to log interaction:', err);
+    }
   }
 };
+
+// ============================================================================
+// ACCESSIBILITY TOOLBAR
+// ============================================================================
+function AccessibilityToolbar({ settings, onUpdate }) {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <div className="relative">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="p-2 text-navy-500 hover:text-burgundy-700 hover:bg-burgundy-50 rounded-lg transition-colors"
+        aria-label="Accessibility options"
+        aria-expanded={isOpen}
+        title="Accessibility Options"
+      >
+        <Eye className="w-5 h-5" />
+      </button>
+
+      {isOpen && (
+        <>
+          <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
+          <div 
+            className="absolute right-0 top-full mt-2 w-72 bg-white rounded-xl shadow-lg border border-slate-200 z-50 p-4"
+            role="dialog"
+            aria-label="Accessibility settings"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-bold text-navy-700 text-sm">Accessibility Options</h3>
+              <button onClick={() => setIsOpen(false)} className="text-slate-400 hover:text-navy-600">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Font Size */}
+            <div className="mb-4">
+              <label className="text-sm font-medium text-navy-600 mb-2 block">
+                <Type className="w-4 h-4 inline mr-1" />
+                Text Size
+              </label>
+              <div className="flex gap-2">
+                {[
+                  { label: 'A', value: 'normal', size: 'text-sm' },
+                  { label: 'A', value: 'large', size: 'text-base' },
+                  { label: 'A', value: 'x-large', size: 'text-lg' },
+                ].map(opt => (
+                  <button
+                    key={opt.value}
+                    onClick={() => onUpdate({ ...settings, fontSize: opt.value })}
+                    className={`flex-1 py-2 rounded-lg font-semibold transition-colors ${opt.size} ${
+                      settings.fontSize === opt.value
+                        ? 'bg-burgundy-800 text-white'
+                        : 'bg-slate-100 text-navy-600 hover:bg-slate-200'
+                    }`}
+                    aria-label={`${opt.value} text size`}
+                    aria-pressed={settings.fontSize === opt.value}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* High Contrast */}
+            <div className="mb-4">
+              <button
+                onClick={() => onUpdate({ ...settings, highContrast: !settings.highContrast })}
+                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                  settings.highContrast
+                    ? 'bg-navy-800 text-white'
+                    : 'bg-slate-100 text-navy-600 hover:bg-slate-200'
+                }`}
+                role="switch"
+                aria-checked={settings.highContrast}
+              >
+                <span className="flex items-center gap-2">
+                  <Eye className="w-4 h-4" />
+                  High Contrast
+                </span>
+                <span className={`w-9 h-5 rounded-full relative transition-colors ${
+                  settings.highContrast ? 'bg-hunter-600' : 'bg-slate-300'
+                }`}>
+                  <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-transform ${
+                    settings.highContrast ? 'left-4' : 'left-0.5'
+                  }`} />
+                </span>
+              </button>
+            </div>
+
+            {/* Narration / Read Aloud */}
+            <div className="mb-2">
+              <button
+                onClick={() => onUpdate({ ...settings, narration: !settings.narration })}
+                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                  settings.narration
+                    ? 'bg-navy-800 text-white'
+                    : 'bg-slate-100 text-navy-600 hover:bg-slate-200'
+                }`}
+                role="switch"
+                aria-checked={settings.narration}
+              >
+                <span className="flex items-center gap-2">
+                  <Volume2 className="w-4 h-4" />
+                  Read Aloud (TTS)
+                </span>
+                <span className={`w-9 h-5 rounded-full relative transition-colors ${
+                  settings.narration ? 'bg-hunter-600' : 'bg-slate-300'
+                }`}>
+                  <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-transform ${
+                    settings.narration ? 'left-4' : 'left-0.5'
+                  }`} />
+                </span>
+              </button>
+            </div>
+
+            <p className="text-xs text-slate-400 mt-3 pt-3 border-t border-slate-100">
+              Settings apply to this session only.
+            </p>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
 
 // ============================================================================
 // CONTENT BLOCK RENDERER
@@ -104,7 +222,8 @@ function ContentBlockRenderer({
   sectionIndex,
   courseSlug,
   onComplete,
-  isCompleted 
+  isCompleted,
+  a11y
 }) {
   const handleInteractionComplete = useCallback((isCorrect, score) => {
     api.logInteraction(courseSlug, {
@@ -117,6 +236,19 @@ function ContentBlockRenderer({
     });
     onComplete(blockIndex, isCorrect);
   }, [courseSlug, sectionIndex, blockIndex, block.type, onComplete]);
+
+  // TTS: read aloud text content when narration enabled
+  const speakText = useCallback((text) => {
+    if (!a11y?.narration || !window.speechSynthesis) return;
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text.replace(/<[^>]*>/g, ''));
+    utterance.rate = 0.9;
+    window.speechSynthesis.speak(utterance);
+  }, [a11y?.narration]);
+
+  // Font size class
+  const textSizeClass = a11y?.fontSize === 'x-large' ? 'text-lg' : a11y?.fontSize === 'large' ? 'text-base' : 'text-sm';
+  const proseSize = a11y?.fontSize === 'x-large' ? 'prose-lg' : a11y?.fontSize === 'large' ? 'prose-base' : 'prose';
 
   switch (block.type) {
     case 'accordion':
@@ -179,14 +311,23 @@ function ContentBlockRenderer({
 
     case 'text':
       return (
-        <div className="prose prose-slate max-w-none">
+        <div className={`${proseSize} prose-slate max-w-none`}>
+          {a11y?.narration && (
+            <button 
+              onClick={() => speakText(block.textContent || block.content || '')}
+              className="mb-2 flex items-center gap-1.5 text-xs font-medium text-burgundy-600 hover:text-burgundy-800 transition-colors"
+              aria-label="Read this section aloud"
+            >
+              <Volume2 className="w-3.5 h-3.5" /> Read Aloud
+            </button>
+          )}
           <div dangerouslySetInnerHTML={{ __html: safeHTML(block.textContent || block.content || '') }} />
         </div>
       );
 
     case 'video':
       return (
-        <div className="aspect-video bg-slate-900 rounded-xl overflow-hidden">
+        <div className="aspect-video bg-navy-800 rounded-xl overflow-hidden">
           <video 
             src={block.videoUrl} 
             controls 
@@ -280,7 +421,7 @@ function ContentBlockRenderer({
 
     case 'reflection':
       return (
-        <div style={{ background: '#F0F7F4', borderRadius: 16, padding: 24, border: '1px solid #4A7C5922' }}>
+        <div style={{ background: '#F2F7F3', borderRadius: 16, padding: 24, border: '1px solid rgba(74,124,89,0.15)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
             <span style={{ fontSize: 20 }}>💭</span>
             <h3 style={{ fontWeight: 700, color: '#34495E', margin: 0 }}>Reflection</h3>
@@ -288,6 +429,7 @@ function ContentBlockRenderer({
           <p style={{ color: '#34495E', fontWeight: 600, marginBottom: 12 }}>{block.question}</p>
           <textarea
             placeholder="Take a moment to reflect and write your thoughts here..."
+            aria-label={`Reflection: ${block.question}`}
             style={{ width: '100%', minHeight: 120, padding: 12, borderRadius: 10, border: '1px solid #E8E4DF', fontSize: 14, fontFamily: 'inherit', resize: 'vertical', boxSizing: 'border-box' }}
             onChange={(e) => {
               if (e.target.value.length >= (block.minLength || 50)) {
@@ -319,8 +461,8 @@ function ContentBlockRenderer({
 
     default:
       return (
-        <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
-          <p className="text-amber-700">Unknown content type: {block.type}</p>
+        <div className="p-4 bg-honey-50 border border-honey-300 rounded-lg">
+          <p className="text-honey-700">Unknown content type: {block.type}</p>
         </div>
       );
   }
@@ -335,7 +477,8 @@ function SectionView({
   sectionIndex,
   progress,
   onNavigate,
-  onProgressUpdate
+  onProgressUpdate,
+  a11y
 }) {
   const [viewedBlocks, setViewedBlocks] = useState(new Set(progress?.viewedBlocks || []));
   const [completedBlocks, setCompletedBlocks] = useState(new Set(progress?.completedBlocks || []));
@@ -400,7 +543,7 @@ function SectionView({
     <div className="max-w-4xl mx-auto">
       {/* Section Header */}
       <div className="mb-8">
-        <div className="flex items-center gap-3 text-sm text-slate-500 mb-2">
+        <div className="flex items-center gap-3 text-sm text-navy-500 mb-2">
           <span>Section {sectionIndex + 1} of {course.sections.length}</span>
           <span>•</span>
           <span className="flex items-center gap-1">
@@ -408,24 +551,24 @@ function SectionView({
             {section.estimatedTime} min
           </span>
         </div>
-        <h1 className="text-3xl font-bold text-slate-800">{section.title}</h1>
+        <h1 className="text-3xl font-bold text-navy-700">{section.title}</h1>
         {section.description && (
-          <p className="text-slate-600 mt-2">{section.description}</p>
+          <p className="text-navy-500 mt-2">{section.description}</p>
         )}
       </div>
 
       {/* Progress indicator */}
       <div className="mb-6 bg-white rounded-xl border border-slate-200 p-4">
         <div className="flex items-center justify-between text-sm mb-2">
-          <span className="text-slate-600">Section Progress</span>
-          <span className="font-semibold text-teal-600">
+          <span className="text-navy-600">Section Progress</span>
+          <span className="font-semibold text-burgundy-700">
             {viewedBlocks.size}/{section.contentBlocks.length} viewed
             {interactiveBlockCount > 0 && ` • ${completedBlocks.size}/${interactiveBlockCount} completed`}
           </span>
         </div>
         <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
           <div 
-            className="h-full bg-teal-500 transition-all"
+            className="h-full bg-burgundy-700 transition-all rounded-full"
             style={{ width: `${(viewedBlocks.size / section.contentBlocks.length) * 100}%` }}
           />
         </div>
@@ -448,15 +591,16 @@ function SectionView({
                 courseSlug={course.slug}
                 onComplete={handleBlockComplete}
                 isCompleted={completedBlocks.has(index)}
+                a11y={a11y}
               />
             </div>
           ))}
 
           {/* Section Quiz CTA */}
           {section.hasQuiz && !quizPassed && (
-            <div className="bg-gradient-to-r from-teal-50 to-emerald-50 border border-teal-200 rounded-2xl p-6 text-center">
-              <h3 className="text-xl font-bold text-slate-800 mb-2">Section Quiz</h3>
-              <p className="text-slate-600 mb-4">
+            <div className="bg-hunter-50 border border-hunter-200 rounded-2xl p-6 text-center">
+              <h3 className="text-xl font-bold text-navy-700 mb-2">Section Quiz</h3>
+              <p className="text-navy-500 mb-4">
                 Complete all content and activities above to unlock the section quiz.
               </p>
               <button
@@ -464,7 +608,7 @@ function SectionView({
                 disabled={!canTakeQuiz}
                 className={`px-6 py-3 rounded-xl font-semibold transition-all ${
                   canTakeQuiz
-                    ? 'bg-teal-600 hover:bg-teal-700 text-white'
+                    ? 'bg-hunter-600 hover:bg-hunter-700 text-white'
                     : 'bg-slate-200 text-slate-400 cursor-not-allowed'
                 }`}
               >
@@ -474,10 +618,10 @@ function SectionView({
           )}
 
           {quizPassed && (
-            <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-6 text-center">
-              <CheckCircle2 className="w-12 h-12 text-emerald-500 mx-auto mb-3" />
-              <h3 className="text-xl font-bold text-emerald-700 mb-2">Section Complete!</h3>
-              <p className="text-emerald-600">You passed the section quiz.</p>
+            <div className="bg-hunter-50 border border-hunter-200 rounded-2xl p-6 text-center">
+              <CheckCircle2 className="w-12 h-12 text-hunter-600 mx-auto mb-3" />
+              <h3 className="text-xl font-bold text-hunter-700 mb-2">Section Complete!</h3>
+              <p className="text-hunter-600">You passed the section quiz.</p>
             </div>
           )}
         </div>
@@ -504,7 +648,7 @@ function SectionView({
           className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
             sectionIndex === 0
               ? 'text-slate-300 cursor-not-allowed'
-              : 'text-slate-600 hover:bg-slate-100'
+              : 'text-navy-600 hover:bg-slate-100'
           }`}
         >
           <ChevronLeft className="w-5 h-5" />
@@ -514,7 +658,7 @@ function SectionView({
         {isLastSection && canProceed ? (
           <button
             onClick={() => onNavigate('assessment')}
-            className="flex items-center gap-2 px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl transition-colors"
+            className="flex items-center gap-2 px-6 py-3 bg-hunter-600 hover:bg-hunter-700 text-white font-semibold rounded-xl transition-colors"
           >
             Take Final Assessment
             <Award className="w-5 h-5" />
@@ -525,7 +669,7 @@ function SectionView({
             disabled={!canProceed}
             className={`flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-colors ${
               canProceed
-                ? 'bg-teal-600 hover:bg-teal-700 text-white'
+                ? 'bg-burgundy-800 hover:bg-burgundy-700 text-white'
                 : 'bg-slate-200 text-slate-400 cursor-not-allowed'
             }`}
           >
@@ -563,21 +707,21 @@ function SectionQuiz({ section, courseSlug, sectionIndex, onComplete, onBack }) 
     return (
       <div className="bg-white rounded-2xl border border-slate-200 shadow-lg p-8 text-center">
         <div className={`w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 ${
-          results.passed ? 'bg-emerald-100' : 'bg-amber-100'
+          results.passed ? 'bg-hunter-100' : 'bg-honey-100'
         }`}>
           {results.passed ? (
-            <CheckCircle2 className="w-10 h-10 text-emerald-600" />
+            <CheckCircle2 className="w-10 h-10 text-hunter-600" />
           ) : (
-            <AlertCircle className="w-10 h-10 text-amber-600" />
+            <AlertCircle className="w-10 h-10 text-honey-600" />
           )}
         </div>
-        <h2 className="text-2xl font-bold text-slate-800 mb-2">
+        <h2 className="text-2xl font-bold text-navy-700 mb-2">
           {results.passed ? 'Quiz Passed!' : 'Keep Trying!'}
         </h2>
-        <p className="text-slate-600 mb-4">
+        <p className="text-navy-500 mb-4">
           You scored {results.score}/{results.totalQuestions} ({results.percentage}%)
         </p>
-        <p className="text-sm text-slate-500 mb-6">
+        <p className="text-sm text-navy-400 mb-6">
           {results.passed 
             ? 'You can now proceed to the next section.'
             : `You need ${Math.round(section.quizPassThreshold * 100)}% to pass.`}
@@ -586,8 +730,8 @@ function SectionQuiz({ section, courseSlug, sectionIndex, onComplete, onBack }) 
           onClick={() => onComplete(results)}
           className={`px-6 py-3 rounded-xl font-semibold ${
             results.passed
-              ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
-              : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+              ? 'bg-hunter-600 hover:bg-hunter-700 text-white'
+              : 'bg-slate-100 hover:bg-slate-200 text-navy-600'
           }`}
         >
           {results.passed ? 'Continue' : 'Review Content & Retry'}
@@ -600,15 +744,15 @@ function SectionQuiz({ section, courseSlug, sectionIndex, onComplete, onBack }) 
 
   return (
     <div className="bg-white rounded-2xl border border-slate-200 shadow-lg overflow-hidden">
-      <div className="bg-gradient-to-r from-teal-600 to-teal-500 px-6 py-4 flex items-center justify-between">
+      <div className="bg-burgundy-800 px-6 py-4 flex items-center justify-between">
         <h3 className="text-white font-bold">Section Quiz</h3>
-        <span className="text-teal-100 text-sm">
+        <span className="text-burgundy-200 text-sm">
           Question {currentQuestion + 1} of {section.quizQuestions.length}
         </span>
       </div>
 
       <div className="p-6">
-        <p className="text-lg text-slate-800 font-medium mb-6">{question.question}</p>
+        <p className="text-lg text-navy-700 font-medium mb-6">{question.question}</p>
 
         <div className="space-y-3 mb-8">
           {question.options.map((option, index) => (
@@ -617,18 +761,18 @@ function SectionQuiz({ section, courseSlug, sectionIndex, onComplete, onBack }) 
               onClick={() => setAnswers(prev => ({ ...prev, [currentQuestion]: index }))}
               className={`w-full text-left px-5 py-4 rounded-xl border-2 transition-all flex items-center gap-4 ${
                 answers[currentQuestion] === index
-                  ? 'bg-teal-50 border-teal-400'
-                  : 'bg-slate-50 border-slate-200 hover:border-teal-300'
+                  ? 'bg-burgundy-50 border-burgundy-500'
+                  : 'bg-slate-50 border-slate-200 hover:border-burgundy-300'
               }`}
             >
               <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
                 answers[currentQuestion] === index
-                  ? 'bg-teal-500 border-teal-500 text-white'
+                  ? 'bg-burgundy-700 border-burgundy-700 text-white'
                   : 'border-slate-300'
               }`}>
                 {answers[currentQuestion] === index && <CheckCircle2 className="w-4 h-4" />}
               </div>
-              <span className="text-slate-700">{option.text}</span>
+              <span className="text-navy-600">{option.text}</span>
             </button>
           ))}
         </div>
@@ -636,7 +780,7 @@ function SectionQuiz({ section, courseSlug, sectionIndex, onComplete, onBack }) 
         <div className="flex items-center justify-between pt-4 border-t border-slate-200">
           <button
             onClick={onBack}
-            className="text-slate-600 hover:text-slate-800"
+            className="text-navy-500 hover:text-navy-700"
           >
             ← Back to Content
           </button>
@@ -645,7 +789,7 @@ function SectionQuiz({ section, courseSlug, sectionIndex, onComplete, onBack }) 
             {currentQuestion > 0 && (
               <button
                 onClick={() => setCurrentQuestion(prev => prev - 1)}
-                className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg"
+                className="px-4 py-2 text-navy-600 hover:bg-slate-100 rounded-lg"
               >
                 Previous
               </button>
@@ -657,7 +801,7 @@ function SectionQuiz({ section, courseSlug, sectionIndex, onComplete, onBack }) 
                 disabled={answers[currentQuestion] === undefined}
                 className={`px-4 py-2 rounded-lg ${
                   answers[currentQuestion] !== undefined
-                    ? 'bg-teal-600 hover:bg-teal-700 text-white'
+                    ? 'bg-burgundy-800 hover:bg-burgundy-700 text-white'
                     : 'bg-slate-200 text-slate-400 cursor-not-allowed'
                 }`}
               >
@@ -669,7 +813,7 @@ function SectionQuiz({ section, courseSlug, sectionIndex, onComplete, onBack }) 
                 disabled={Object.keys(answers).length < section.quizQuestions.length}
                 className={`px-6 py-2 rounded-lg font-semibold ${
                   Object.keys(answers).length >= section.quizQuestions.length
-                    ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
+                    ? 'bg-hunter-600 hover:bg-hunter-700 text-white'
                     : 'bg-slate-200 text-slate-400 cursor-not-allowed'
                 }`}
               >
@@ -709,19 +853,19 @@ function AssessmentView({ course, progress, onComplete, onBack }) {
   if (assessmentResults?.passed) {
     return (
       <div className="max-w-2xl mx-auto text-center py-12">
-        <div className="w-24 h-24 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-6">
-          <Award className="w-12 h-12 text-emerald-600" />
+        <div className="w-24 h-24 rounded-full bg-hunter-100 flex items-center justify-center mx-auto mb-6">
+          <Award className="w-12 h-12 text-hunter-600" />
         </div>
-        <h1 className="text-3xl font-bold text-slate-800 mb-4">Congratulations!</h1>
-        <p className="text-xl text-slate-600 mb-2">You've completed {course.title}</p>
-        <p className="text-slate-500 mb-8">
+        <h1 className="text-3xl font-bold text-navy-700 mb-4">Congratulations!</h1>
+        <p className="text-xl text-navy-500 mb-2">You've completed {course.title}</p>
+        <p className="text-navy-400 mb-8">
           Final Score: {assessmentResults.score}/{assessmentResults.totalQuestions} ({assessmentResults.percentage}%)
         </p>
         
         {assessmentResults.certificateId && (
           <a
             href={`/api/certificates/${assessmentResults.certificateId}/download`}
-            className="inline-flex items-center gap-2 px-6 py-3 bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-xl transition-colors"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-burgundy-800 hover:bg-burgundy-700 text-white font-semibold rounded-xl transition-colors"
           >
             <Download className="w-5 h-5" />
             Download Certificate
@@ -729,7 +873,7 @@ function AssessmentView({ course, progress, onComplete, onBack }) {
         )}
         
         <div className="mt-6">
-          <p className="text-sm text-slate-500">
+          <p className="text-sm text-navy-400">
             {course.ceHours} CE Hours • {course.ceProvider}
           </p>
         </div>
@@ -740,31 +884,31 @@ function AssessmentView({ course, progress, onComplete, onBack }) {
   if (assessmentResults && !assessmentResults.passed) {
     return (
       <div className="max-w-2xl mx-auto text-center py-12">
-        <div className="w-24 h-24 rounded-full bg-amber-100 flex items-center justify-center mx-auto mb-6">
-          <AlertCircle className="w-12 h-12 text-amber-600" />
+        <div className="w-24 h-24 rounded-full bg-honey-100 flex items-center justify-center mx-auto mb-6">
+          <AlertCircle className="w-12 h-12 text-honey-600" />
         </div>
-        <h1 className="text-3xl font-bold text-slate-800 mb-4">Not Quite!</h1>
-        <p className="text-xl text-slate-600 mb-2">
+        <h1 className="text-3xl font-bold text-navy-700 mb-4">Not Quite!</h1>
+        <p className="text-xl text-navy-500 mb-2">
           You scored {assessmentResults.percentage}%
         </p>
-        <p className="text-slate-500 mb-4">
+        <p className="text-navy-400 mb-4">
           You need {Math.round(course.assessment.passThreshold * 100)}% to pass.
         </p>
-        <p className="text-amber-600 font-medium mb-8">
+        <p className="text-honey-600 font-medium mb-8">
           {assessmentResults.attemptsRemaining} attempts remaining
         </p>
         
         <div className="flex gap-4 justify-center">
           <button
             onClick={onBack}
-            className="px-6 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl transition-colors"
+            className="px-6 py-3 bg-slate-100 hover:bg-slate-200 text-navy-600 font-semibold rounded-xl transition-colors"
           >
             Review Content
           </button>
           {assessmentResults.attemptsRemaining > 0 && (
             <button
               onClick={() => setAssessmentResults(null)}
-              className="px-6 py-3 bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-xl transition-colors"
+              className="px-6 py-3 bg-burgundy-800 hover:bg-burgundy-700 text-white font-semibold rounded-xl transition-colors"
             >
               Try Again
             </button>
@@ -779,7 +923,7 @@ function AssessmentView({ course, progress, onComplete, onBack }) {
       <div className="mb-6">
         <button
           onClick={onBack}
-          className="text-slate-600 hover:text-slate-800 flex items-center gap-2"
+          className="text-navy-500 hover:text-navy-700 flex items-center gap-2"
         >
           <ChevronLeft className="w-4 h-4" />
           Back to Course
@@ -828,12 +972,12 @@ function CourseSidebar({
           {/* Header */}
           <div className="p-4 border-b border-slate-200">
             <div className="flex items-center justify-between mb-3">
-              <h2 className="font-bold text-slate-800 line-clamp-2">{course.title}</h2>
-              <button onClick={onClose} className="lg:hidden text-slate-400 hover:text-slate-600">
+              <h2 className="font-bold text-navy-700 line-clamp-2">{course.title}</h2>
+              <button onClick={onClose} className="lg:hidden text-slate-400 hover:text-navy-600">
                 <X className="w-5 h-5" />
               </button>
             </div>
-            <div className="flex items-center gap-3 text-sm text-slate-500">
+            <div className="flex items-center gap-3 text-sm text-navy-400">
               <span className="flex items-center gap-1">
                 <Clock className="w-4 h-4" />
                 {Math.round(course.totalEstimatedTime / 60)}h
@@ -848,19 +992,19 @@ function CourseSidebar({
           {/* Progress */}
           <div className="p-4 border-b border-slate-200">
             <div className="flex items-center justify-between text-sm mb-2">
-              <span className="text-slate-600">Overall Progress</span>
-              <span className="font-bold text-teal-600">{progress?.overallProgress || 0}%</span>
+              <span className="text-navy-600">Progress</span>
+              <span className="font-bold text-burgundy-700">{progress?.overallProgress || 0}%</span>
             </div>
             <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
               <div 
-                className="h-full bg-gradient-to-r from-teal-500 to-emerald-500 transition-all"
+                className="h-full bg-burgundy-700 transition-all rounded-full"
                 style={{ width: `${progress?.overallProgress || 0}%` }}
               />
             </div>
           </div>
 
           {/* Sections */}
-          <nav className="flex-1 overflow-y-auto p-4">
+          <nav className="flex-1 overflow-y-auto p-4" aria-label="Course sections">
             <ul className="space-y-2">
               {course.sections.map((section, index) => {
                 const sectionProgress = progress?.sectionProgress?.[index];
@@ -873,22 +1017,23 @@ function CourseSidebar({
                     <button
                       onClick={() => !isLocked && onNavigate(index)}
                       disabled={isLocked}
+                      aria-current={isCurrent ? 'step' : undefined}
                       className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-colors ${
                         isCurrent
-                          ? 'bg-teal-50 text-teal-700'
+                          ? 'bg-burgundy-50 text-burgundy-800'
                           : isLocked
                             ? 'text-slate-300 cursor-not-allowed'
-                            : 'text-slate-600 hover:bg-slate-50'
+                            : 'text-navy-600 hover:bg-slate-50'
                       }`}
                     >
                       <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 ${
                         isCompleted
-                          ? 'bg-emerald-500 text-white'
+                          ? 'bg-hunter-600 text-white'
                           : isCurrent
-                            ? 'bg-teal-500 text-white'
+                            ? 'bg-burgundy-700 text-white'
                             : isLocked
                               ? 'bg-slate-100 text-slate-300'
-                              : 'bg-slate-200 text-slate-500'
+                              : 'bg-slate-200 text-navy-500'
                       }`}>
                         {isCompleted ? (
                           <CheckCircle2 className="w-4 h-4" />
@@ -911,20 +1056,20 @@ function CourseSidebar({
                   disabled={!progress?.sectionProgress?.every(s => s.status === 'completed')}
                   className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-colors ${
                     currentView === 'assessment'
-                      ? 'bg-emerald-50 text-emerald-700'
+                      ? 'bg-hunter-50 text-hunter-700'
                       : progress?.sectionProgress?.every(s => s.status === 'completed')
-                        ? 'text-slate-600 hover:bg-slate-50'
+                        ? 'text-navy-600 hover:bg-slate-50'
                         : 'text-slate-300 cursor-not-allowed'
                   }`}
                 >
                   <div className={`w-6 h-6 rounded-full flex items-center justify-center ${
-                    progress?.assessmentPassed
-                      ? 'bg-emerald-500 text-white'
-                      : currentView === 'assessment'
-                        ? 'bg-emerald-500 text-white'
-                        : 'bg-slate-200 text-slate-500'
+                    currentView === 'assessment'
+                      ? 'bg-hunter-600 text-white'
+                      : progress?.sectionProgress?.every(s => s.status === 'completed')
+                        ? 'bg-honey-400 text-white'
+                        : 'bg-slate-100 text-slate-300'
                   }`}>
-                    <Award className="w-4 h-4" />
+                    <Award className="w-3.5 h-3.5" />
                   </div>
                   <span className="text-sm font-medium">Final Assessment</span>
                 </button>
@@ -947,6 +1092,11 @@ export default function CourseViewer({ courseSlug }) {
   const [error, setError] = useState(null);
   const [currentView, setCurrentView] = useState('section'); // 'section' | 'assessment'
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [a11y, setA11y] = useState({
+    fontSize: 'normal',
+    highContrast: false,
+    narration: false,
+  });
 
   useEffect(() => {
     async function loadCourse() {
@@ -965,6 +1115,13 @@ export default function CourseViewer({ courseSlug }) {
     }
     loadCourse();
   }, [courseSlug]);
+
+  // Stop TTS on cleanup
+  useEffect(() => {
+    return () => {
+      if (window.speechSynthesis) window.speechSynthesis.cancel();
+    };
+  }, []);
 
   const refreshProgress = useCallback(async () => {
     try {
@@ -985,12 +1142,16 @@ export default function CourseViewer({ courseSlug }) {
     setSidebarOpen(false);
   }, []);
 
+  // Accessibility: font size class for main content area
+  const fontSizeClass = a11y.fontSize === 'x-large' ? 'text-lg' : a11y.fontSize === 'large' ? 'text-base' : 'text-sm';
+  const hcClass = a11y.highContrast ? 'high-contrast' : '';
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50">
         <div className="text-center">
-          <div className="w-12 h-12 border-4 border-teal-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-slate-600">Loading course...</p>
+          <div className="w-12 h-12 border-4 border-burgundy-700 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-navy-500">Loading course...</p>
         </div>
       </div>
     );
@@ -1001,8 +1162,8 @@ export default function CourseViewer({ courseSlug }) {
       <div className="min-h-screen flex items-center justify-center bg-slate-50">
         <div className="text-center">
           <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
-          <h2 className="text-xl font-bold text-slate-800 mb-2">Error Loading Course</h2>
-          <p className="text-slate-600">{error}</p>
+          <h2 className="text-xl font-bold text-navy-700 mb-2">Error Loading Course</h2>
+          <p className="text-navy-500">{error}</p>
         </div>
       </div>
     );
@@ -1012,7 +1173,15 @@ export default function CourseViewer({ courseSlug }) {
   const currentSectionProgress = progress?.sectionProgress?.[progress?.currentSectionIndex || 0];
 
   return (
-    <div className="min-h-screen bg-slate-50 flex">
+    <div className={`min-h-screen bg-slate-50 flex ${hcClass}`}>
+      {/* Skip to content link */}
+      <a 
+        href="#main-content" 
+        className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:bg-burgundy-800 focus:text-white focus:px-4 focus:py-2 focus:rounded-lg focus:text-sm focus:font-semibold"
+      >
+        Skip to main content
+      </a>
+
       {/* Sidebar */}
       <CourseSidebar
         course={course}
@@ -1024,31 +1193,33 @@ export default function CourseViewer({ courseSlug }) {
       />
 
       {/* Main Content */}
-      <main className="flex-1 min-w-0">
+      <main className="flex-1 min-w-0" id="main-content">
         {/* Top bar */}
         <header className="bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between sticky top-0 z-30">
           <button
             onClick={() => setSidebarOpen(true)}
-            className="lg:hidden p-2 text-slate-600 hover:text-slate-800"
+            className="lg:hidden p-2 text-navy-600 hover:text-navy-800"
+            aria-label="Open course navigation"
           >
             <Menu className="w-5 h-5" />
           </button>
           
           <div className="flex-1 lg:hidden text-center">
-            <span className="font-medium text-slate-800 text-sm">
+            <span className="font-medium text-navy-700 text-sm">
               {currentView === 'assessment' ? 'Final Assessment' : currentSection?.title}
             </span>
           </div>
 
-          <div className="flex items-center gap-2">
-            <a href="/dashboard" className="p-2 text-slate-400 hover:text-slate-600">
+          <div className="flex items-center gap-1">
+            <AccessibilityToolbar settings={a11y} onUpdate={setA11y} />
+            <a href="/dashboard" className="p-2 text-navy-400 hover:text-navy-600" aria-label="Return to dashboard">
               <Home className="w-5 h-5" />
             </a>
           </div>
         </header>
 
         {/* Content */}
-        <div className="p-6 lg:p-8">
+        <div className={`p-6 lg:p-8 ${fontSizeClass}`}>
           {currentView === 'assessment' ? (
             <AssessmentView
               course={course}
@@ -1064,6 +1235,7 @@ export default function CourseViewer({ courseSlug }) {
               progress={currentSectionProgress}
               onNavigate={handleNavigate}
               onProgressUpdate={refreshProgress}
+              a11y={a11y}
             />
           )}
         </div>
@@ -1072,7 +1244,7 @@ export default function CourseViewer({ courseSlug }) {
   );
 }
 
-// Animation styles
+// Animation + High Contrast styles
 const styles = `
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(10px); }
@@ -1080,6 +1252,36 @@ const styles = `
 }
 .animate-fadeIn {
   animation: fadeIn 0.3s ease-out;
+}
+@media (prefers-reduced-motion: reduce) {
+  .animate-fadeIn { animation: none; }
+}
+
+/* High Contrast Mode */
+.high-contrast {
+  --hc-text: #000;
+  --hc-bg: #fff;
+  --hc-border: #000;
+}
+.high-contrast * {
+  border-color: #333 !important;
+}
+.high-contrast p,
+.high-contrast span,
+.high-contrast li,
+.high-contrast td,
+.high-contrast th,
+.high-contrast label {
+  color: #000 !important;
+}
+.high-contrast h1,
+.high-contrast h2,
+.high-contrast h3,
+.high-contrast h4 {
+  color: #000 !important;
+}
+.high-contrast .prose * {
+  color: #000 !important;
 }
 `;
 
