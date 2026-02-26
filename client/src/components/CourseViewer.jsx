@@ -4,6 +4,7 @@ import {
   CheckCircle2, Circle, Play, Lock, AlertCircle, Download,
   BarChart3, Home, Settings, LogOut, User
 } from 'lucide-react';
+import { safeHTML } from '../utils/sanitize';
 import {
   Accordion,
   MatchingExercise,
@@ -179,7 +180,7 @@ function ContentBlockRenderer({
     case 'text':
       return (
         <div className="prose prose-slate max-w-none">
-          <div dangerouslySetInnerHTML={{ __html: block.textContent || block.content || '' }} />
+          <div dangerouslySetInnerHTML={{ __html: safeHTML(block.textContent || block.content || '') }} />
         </div>
       );
 
