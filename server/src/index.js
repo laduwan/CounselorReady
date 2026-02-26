@@ -1,5 +1,7 @@
 import express from 'express';
 import cors from 'cors';
+import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import path from 'path';
@@ -76,11 +78,67 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 }));
 
+// Security headers
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: 'cross-origin' }, // Allow cross-origin for API
+  contentSecurityPolicy: false // Disable CSP since this is an API server
+}));
+
+// ===========================================
+// RATE LIMITING
+// ===========================================
+
+// Global rate limit: 200 requests per 15 minutes per IP
+const globalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 200,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many requests, please try again later.' }
+});
+app.use('/api/', globalLimiter);
+
+// Strict auth limiter: 7 attempts per 15 minutes
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 7,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many login attempts. Please try again in 15 minutes.' }
+});
+app.use('/api/auth/login', authLimiter);
+app.use('/api/auth/register', authLimiter);
+
+// Password reset limiter: 3 per hour
+const passwordResetLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 3,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many password reset requests. Please try again in an hour.' }
+});
+app.use('/api/auth/forgot-password', passwordResetLimiter);
+app.use('/api/auth/reset-password', passwordResetLimiter);
+
+// AI endpoint limiter: 15 per hour (protect against cost abuse)
+const aiLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 15,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'AI generation rate limit reached. Please try again later.' }
+});
+app.use('/api/ai/', aiLimiter);
+app.use('/api/ai-course-generator/', aiLimiter);
+app.use('/api/admin/quiz/generate', aiLimiter);
+app.use('/api/admin/course/generate', aiLimiter);
+app.use('/api/admin/module/generate', aiLimiter);
+
 // Body parsing middleware
 // Stripe webhook needs raw body, so we handle it before json parsing
 app.use('/api/payments/webhook', express.raw({ type: 'application/json' }));
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+app.use(express.json({ limit: '15mb' }));
+app.use(express.urlencoded({ extended: true, limit: '15mb' }));
 
 // Request logging (development)
 if (process.env.NODE_ENV !== 'production') {
@@ -160,8 +218,9 @@ app.use('/api/course-builder', courseBuilderRoutes);
 app.use('/api/images', imageUploadRoutes);
 app.use('/api/narration', narrationRoutes);
 
-// Serve static files from templates directory (for certificates)
-app.use('/templates', express.static(path.join(__dirname, 'templates')));
+// Static templates directory intentionally NOT served publicly
+// Certificate assets (signature.png, certificate_template.pdf) are loaded
+// via filesystem path in certificate generation routes only
 
 // ===========================================
 // ERROR HANDLING
