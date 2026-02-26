@@ -140,98 +140,162 @@ export function parseCourseMarkdown(text) {
 
   // === PARSE MODULES FROM NARRATIVE SCRIPT ===
   // Find the narrative script or course content section
+  // Try multiple section header formats
   let contentSection = content;
-  const narrativeMatch = content.match(/##\s*NARRATIVE SCRIPT\s*\n([\s\S]*?)(?=\n##\s*POST-TEST|\n##\s*VIDEO RESOURCES SUMMARY|$)/);
-  if (narrativeMatch) {
-    contentSection = narrativeMatch[1];
-  } else {
-    // Try COURSE CONTENT SUMMARY
-    const summaryMatch = content.match(/##\s*COURSE CONTENT SUMMARY\s*\n([\s\S]*?)(?=\n##\s*POST-TEST|$)/);
-    if (summaryMatch) {
-      contentSection = summaryMatch[1];
+  const sectionPatterns = [
+    /##\s*NARRATIVE SCRIPT\s*\n([\s\S]*?)(?=\n##\s*POST-TEST|\n##\s*VIDEO RESOURCES SUMMARY|\n##\s*BIBLIOGRAPHY|$)/,
+    /##\s*COURSE CONTENT(?:\s+SUMMARY)?\s*\n([\s\S]*?)(?=\n##\s*POST-TEST|\n##\s*BIBLIOGRAPHY|$)/,
+    /##\s*CONTENT\s*\n([\s\S]*?)(?=\n##\s*POST-TEST|\n##\s*BIBLIOGRAPHY|$)/,
+    /##\s*COURSE MATERIAL\s*\n([\s\S]*?)(?=\n##\s*POST-TEST|\n##\s*BIBLIOGRAPHY|$)/
+  ];
+  
+  for (const pattern of sectionPatterns) {
+    const sectionMatch = content.match(pattern);
+    if (sectionMatch) {
+      contentSection = sectionMatch[1];
+      break;
     }
   }
 
-  // Parse modules: ### MODULE X: Title (XX minutes) or ### Module X: Title
-  const moduleRegex = /###\s*(?:MODULE\s*)?(\d+):\s*([^\n(]+)(?:\s*\((\d+)\s*minutes?\))?/gi;
+  // Parse modules with flexible heading detection
+  // Matches: ### MODULE X: Title, ### Module X: Title, ## Module X: Title,
+  //          ### Section X: Title, ### Part X: Title, ### X. Title, ### X: Title
+  const moduleRegex = /^(?:#{2,3})\s*(?:MODULE|Module|SECTION|Section|PART|Part)?\s*(\d+)[.:]\s*([^\n(]+)(?:\s*\((\d+)\s*minutes?\))?/gim;
   const moduleMatches = [...contentSection.matchAll(moduleRegex)];
   
-  for (let i = 0; i < moduleMatches.length; i++) {
-    const match = moduleMatches[i];
-    const moduleNum = parseInt(match[1]);
-    const moduleTitle = match[2].trim();
-    const duration = match[3] ? parseInt(match[3]) : 30;
-    
-    // Get content between this module and the next (or end)
-    const startIdx = match.index + match[0].length;
-    const endIdx = i < moduleMatches.length - 1 
-      ? moduleMatches[i + 1].index 
-      : contentSection.length;
-    const moduleContent = contentSection.substring(startIdx, endIdx).trim();
-
-    // Create module
-    const module = {
-      title: `Module ${moduleNum}: ${moduleTitle}`,
-      description: extractFirstParagraph(moduleContent),
-      order: moduleNum,
-      objectives: [],
-      lessons: []
-    };
-
-    // Add text lesson with module content
-    const htmlContent = markdownToHtml(moduleContent);
-    module.lessons.push({
-      title: moduleTitle,
-      type: 'text',
-      content: htmlContent,
-      duration: Math.max(10, duration - (videoMap.has(moduleNum) ? 15 : 0)),
-      order: 1,
-      isFree: moduleNum === 1 && module.lessons.length === 0
-    });
-
-    // Add video lessons for this module
-    if (videoMap.has(moduleNum)) {
-      const videos = videoMap.get(moduleNum);
-      videos.forEach((video, idx) => {
-        module.lessons.push({
-          title: `Video: ${video.title}`,
-          type: 'video',
-          content: `Watch: "${video.title}"${video.author ? ` by ${video.author}` : ''}`,
-          videoUrl: video.url,
-          duration: parseDuration(video.duration),
-          order: module.lessons.length + 1,
-          isFree: false
-        });
-      });
-    }
-
-    course.modules.push(module);
-  }
-
-  // If no modules found, try simpler format (### Module N: Title)
-  if (course.modules.length === 0) {
-    const simpleModuleRegex = /###\s*Module\s*(\d+):\s*([^\n]+)/gi;
-    const simpleMatches = [...content.matchAll(simpleModuleRegex)];
-    
-    for (const match of simpleMatches) {
-      const moduleNum = parseInt(match[1]);
-      const moduleTitle = match[2].trim();
-      
+  if (moduleMatches.length > 0) {
+    // Check for content BEFORE the first module (intro/overview)
+    const preModuleContent = contentSection.substring(0, moduleMatches[0].index).trim();
+    if (preModuleContent.length > 200) {
+      // Significant intro content — add as Module 0 / Introduction
+      const introHtml = markdownToHtml(preModuleContent);
       course.modules.push({
-        title: `Module ${moduleNum}: ${moduleTitle}`,
-        description: '',
-        order: moduleNum,
+        title: 'Introduction',
+        description: extractFirstParagraph(preModuleContent),
+        order: 0,
         objectives: [],
         lessons: [{
-          title: moduleTitle,
+          title: 'Course Introduction',
           type: 'text',
-          content: `<h2>${moduleTitle}</h2><p>Module content.</p>`,
-          duration: 20,
+          content: introHtml,
+          duration: 10,
           order: 1,
-          isFree: moduleNum === 1
+          isFree: true
         }]
       });
     }
+
+    for (let i = 0; i < moduleMatches.length; i++) {
+      const match = moduleMatches[i];
+      const moduleNum = parseInt(match[1]);
+      const moduleTitle = match[2].trim();
+      const duration = match[3] ? parseInt(match[3]) : 30;
+      
+      // Get ALL content between this module heading and the next (or end)
+      const startIdx = match.index + match[0].length;
+      const endIdx = i < moduleMatches.length - 1 
+        ? moduleMatches[i + 1].index 
+        : contentSection.length;
+      const moduleContent = contentSection.substring(startIdx, endIdx).trim();
+
+      if (!moduleContent) {
+        console.warn(`Parser: Module ${moduleNum} "${moduleTitle}" has no content between headings`);
+      }
+
+      // Create module
+      const module = {
+        title: `Module ${moduleNum}: ${moduleTitle}`,
+        description: extractFirstParagraph(moduleContent),
+        order: moduleNum,
+        objectives: [],
+        lessons: []
+      };
+
+      // Add text lesson with full module content
+      const htmlContent = markdownToHtml(moduleContent);
+      module.lessons.push({
+        title: moduleTitle,
+        type: 'text',
+        content: htmlContent,
+        duration: Math.max(10, duration - (videoMap.has(moduleNum) ? 15 : 0)),
+        order: 1,
+        isFree: moduleNum === 1 && course.modules.length === 0
+      });
+
+      // Add video lessons for this module
+      if (videoMap.has(moduleNum)) {
+        const videos = videoMap.get(moduleNum);
+        videos.forEach((video, idx) => {
+          module.lessons.push({
+            title: `Video: ${video.title}`,
+            type: 'video',
+            content: `Watch: "${video.title}"${video.author ? ` by ${video.author}` : ''}`,
+            videoUrl: video.url,
+            duration: parseDuration(video.duration),
+            order: module.lessons.length + 1,
+            isFree: false
+          });
+        });
+      }
+
+      course.modules.push(module);
+    }
+  }
+
+  // Fallback: if no modules found with numbered headings, try to find ANY ### headings as sections
+  if (course.modules.length === 0) {
+    const anyHeadingRegex = /^###\s+(.+)$/gm;
+    const headingMatches = [...contentSection.matchAll(anyHeadingRegex)];
+    
+    if (headingMatches.length > 0) {
+      for (let i = 0; i < headingMatches.length; i++) {
+        const match = headingMatches[i];
+        const sectionTitle = match[1].trim();
+        
+        // Get content between this heading and the next
+        const startIdx = match.index + match[0].length;
+        const endIdx = i < headingMatches.length - 1 
+          ? headingMatches[i + 1].index 
+          : contentSection.length;
+        const sectionContent = contentSection.substring(startIdx, endIdx).trim();
+        
+        const htmlContent = markdownToHtml(sectionContent);
+        course.modules.push({
+          title: sectionTitle,
+          description: extractFirstParagraph(sectionContent),
+          order: i + 1,
+          objectives: [],
+          lessons: [{
+            title: sectionTitle,
+            type: 'text',
+            content: htmlContent || `<p>${sectionTitle}</p>`,
+            duration: 20,
+            order: 1,
+            isFree: i === 0
+          }]
+        });
+      }
+    }
+  }
+
+  // Last resort: if still no modules, treat the entire content section as one module
+  if (course.modules.length === 0 && contentSection.trim().length > 100) {
+    console.warn('Parser: No module headings found. Creating single module from all content.');
+    const htmlContent = markdownToHtml(contentSection);
+    course.modules.push({
+      title: course.title || 'Course Content',
+      description: extractFirstParagraph(contentSection),
+      order: 1,
+      objectives: [],
+      lessons: [{
+        title: course.title || 'Course Content',
+        type: 'text',
+        content: htmlContent,
+        duration: 30,
+        order: 1,
+        isFree: true
+      }]
+    });
   }
 
   // === PARSE QUIZ QUESTIONS ===
@@ -301,21 +365,32 @@ export function parseCourseMarkdown(text) {
 }
 
 /**
- * Extract first paragraph from markdown text
+ * Extract first paragraph from markdown text for module description
+ * Only removes single-line emoji prefixes, never multi-line greedy matches
  */
 function extractFirstParagraph(text) {
+  if (!text) return '';
+  
   const cleaned = text
+    // Remove horizontal rules (single-line only)
     .replace(/^---+$/gm, '')
-    .replace(/📺[^]*?\n/g, '')
-    .replace(/\*\*WATCH NOW[^]*?\n/g, '')
+    // Remove single-line video references (NOT greedy multi-line)
+    .replace(/^📺[^\n]*$/gm, '')
+    .replace(/^\*\*WATCH NOW[^\n]*$/gm, '')
     .trim();
   
-  const firstPara = cleaned.split(/\n\n/)[0];
+  // Get first meaningful paragraph (skip empty lines)
+  const paragraphs = cleaned.split(/\n\n/).filter(p => p.trim().length > 0);
+  if (paragraphs.length === 0) return '';
+  
+  const firstPara = paragraphs[0];
   return firstPara
-    .replace(/\*\*([^*]+)\*\*/g, '$1')
+    .replace(/\*\*([^*]+)\*\*/g, '$1')  // Strip bold markers
+    .replace(/\*([^*]+)\*/g, '$1')       // Strip italic markers
+    .replace(/^#+\s*/gm, '')             // Strip heading markers
     .replace(/\n/g, ' ')
     .trim()
-    .substring(0, 300);
+    .substring(0, 500);  // Increased from 300 to 500 for better descriptions
 }
 
 /**
@@ -341,34 +416,97 @@ function parseDuration(durationStr) {
 
 /**
  * Convert markdown to basic HTML
+ * CRITICAL: This function must PRESERVE all content. Never strip or remove content.
+ * Video/media references are converted to styled callout boxes, not deleted.
  */
 function markdownToHtml(md) {
+  if (!md || typeof md !== 'string') return '';
+
+  // Step 1: Convert video/media references to styled callout boxes (NEVER strip them)
   let html = md
-    // Remove watch now sections
-    .replace(/📺\s*\*\*WATCH NOW[^]*?(?=\n---|\n\n\*\*|$)/g, '')
+    .replace(/📺\s*\*\*WATCH NOW[^\n]*\*\*[^\n]*/g, (match) => {
+      // Convert to a visible callout instead of deleting
+      const cleaned = match.replace(/📺/g, '').replace(/\*\*/g, '').trim();
+      return `<div class="video-callout" style="background:#f0f7ff;border-left:4px solid #4A7C59;padding:12px;margin:12px 0;border-radius:4px;"><strong>📺 ${cleaned}</strong></div>`;
+    });
+
+  // Step 2: Handle blockquotes (before paragraph wrapping)
+  html = html.replace(/^>\s*(.+)$/gm, '<blockquote>$1</blockquote>');
+
+  // Step 3: Handle tables — convert markdown tables to HTML tables
+  html = html.replace(/^(\|.+\|)\n(\|[-| :]+\|)\n((?:\|.+\|\n?)*)/gm, (match, headerRow, sepRow, bodyRows) => {
+    const headers = headerRow.split('|').filter(c => c.trim()).map(c => `<th>${c.trim()}</th>`).join('');
+    const rows = bodyRows.trim().split('\n').map(row => {
+      const cells = row.split('|').filter(c => c.trim()).map(c => `<td>${c.trim()}</td>`).join('');
+      return `<tr>${cells}</tr>`;
+    }).join('');
+    return `<table style="width:100%;border-collapse:collapse;margin:12px 0;"><thead><tr>${headers}</tr></thead><tbody>${rows}</tbody></table>`;
+  });
+
+  // Step 4: Inline formatting
+  html = html
     // Bold
     .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
-    // Italic
-    .replace(/\*([^*]+)\*/g, '<em>$1</em>')
-    // Headers
+    // Italic (but not inside URLs or already-processed tags)
+    .replace(/(?<![a-zA-Z:\/])\*([^*\n]+)\*(?![a-zA-Z])/g, '<em>$1</em>')
+    // Headers (process largest first to avoid conflicts)
     .replace(/^####\s*(.+)$/gm, '<h4>$1</h4>')
     .replace(/^###\s*(.+)$/gm, '<h3>$1</h3>')
     .replace(/^##\s*(.+)$/gm, '<h2>$1</h2>')
+    .replace(/^#\s*(.+)$/gm, '<h1>$1</h1>')
     // Horizontal rules
     .replace(/^---+$/gm, '<hr/>')
-    // Bullet lists
-    .replace(/^-\s+(.+)$/gm, '<li>$1</li>')
-    .replace(/(<li>.*<\/li>\n?)+/g, '<ul>$&</ul>')
-    // Numbered lists
-    .replace(/^\d+\.\s+(.+)$/gm, '<li>$1</li>')
     // Links
-    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>')
-    // Paragraphs - wrap remaining text blocks
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>');
+
+  // Step 5: Handle lists properly — collect consecutive list items into list blocks
+  // Bullet lists
+  const lines = html.split('\n');
+  const processedLines = [];
+  let inBulletList = false;
+  let inNumberedList = false;
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const bulletMatch = line.match(/^[-*]\s+(.+)$/);
+    const numberedMatch = line.match(/^\d+\.\s+(.+)$/);
+
+    if (bulletMatch) {
+      if (!inBulletList) {
+        if (inNumberedList) { processedLines.push('</ol>'); inNumberedList = false; }
+        processedLines.push('<ul>');
+        inBulletList = true;
+      }
+      processedLines.push(`<li>${bulletMatch[1]}</li>`);
+    } else if (numberedMatch) {
+      if (!inNumberedList) {
+        if (inBulletList) { processedLines.push('</ul>'); inBulletList = false; }
+        processedLines.push('<ol>');
+        inNumberedList = true;
+      }
+      processedLines.push(`<li>${numberedMatch[1]}</li>`);
+    } else {
+      if (inBulletList) { processedLines.push('</ul>'); inBulletList = false; }
+      if (inNumberedList) { processedLines.push('</ol>'); inNumberedList = false; }
+      processedLines.push(line);
+    }
+  }
+  // Close any open lists
+  if (inBulletList) processedLines.push('</ul>');
+  if (inNumberedList) processedLines.push('</ol>');
+
+  html = processedLines.join('\n');
+
+  // Step 6: Wrap remaining text blocks in paragraphs
+  html = html
     .split(/\n\n+/)
     .map(block => {
       block = block.trim();
       if (!block) return '';
-      if (block.startsWith('<')) return block;
+      // Don't wrap blocks that are already HTML elements
+      if (/^<(?:h[1-6]|ul|ol|li|table|thead|tbody|tr|th|td|div|blockquote|hr|p|pre|code)/i.test(block)) return block;
+      // Don't wrap blocks that contain block-level elements
+      if (/<(?:ul|ol|table|div|blockquote|h[1-6])/i.test(block)) return block;
       return `<p>${block.replace(/\n/g, ' ')}</p>`;
     })
     .join('\n');
