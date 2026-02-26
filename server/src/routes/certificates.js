@@ -1,52 +1,14 @@
 // /server/src/routes/certificates.js
-// Fixed JWT user extraction for certificates router
 import { Router } from 'express';
 import multer from 'multer';
 import { v2 as cloudinary } from 'cloudinary';
 import Certificate from '../models/Certificate.js';
-import jwt from 'jsonwebtoken';
+import { protect } from '../middleware/auth.js';
 
 // Use native fetch (Node 18+) — no need for node-fetch
 
 // Create router instance
 const router = Router();
-
-// Fixed auth middleware with better JWT user extraction
-const authenticateToken = (req, res, next) => {
-  try {
-    const authHeader = req.headers.authorization;
-    const token = authHeader && authHeader.split(' ')[1];
-
-    if (!token) {
-      return res.status(401).json({ error: 'Access token required' });
-    }
-
-    jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
-      if (err) {
-        console.error('JWT verification error:', err);
-        return res.status(403).json({ error: 'Invalid or expired token' });
-      }
-      
-      // Handle different JWT payload structures
-      req.user = {
-        _id: decoded._id || decoded.userId || decoded.id || decoded.sub,
-        ...decoded
-      };
-      
-      console.log(`Authenticated user: ${req.user._id}`);
-      
-      if (!req.user._id) {
-        console.error('No user ID found in token:', decoded);
-        return res.status(403).json({ error: 'Invalid token structure' });
-      }
-      
-      next();
-    });
-  } catch (error) {
-    console.error('Auth middleware error:', error);
-    return res.status(500).json({ error: 'Authentication error' });
-  }
-};
 
 // Configure multer for file uploads
 const upload = multer({
@@ -73,7 +35,7 @@ cloudinary.config({
 
 // ✅ FIXED: Certificate serving using Cloudinary private download API
 // Bypasses "Restrict unsigned delivery" / "Strict transformations" settings
-router.get('/:id/serve', authenticateToken, async (req, res) => {
+router.get('/:id/serve', protect, async (req, res) => {
   try {
     const { id } = req.params;
     const userId = req.user._id;
@@ -227,7 +189,7 @@ function sendFile(res, fileBuffer, certificate, ext) {
 }
 
 // GET /api/certificates - Get all certificates for authenticated user
-router.get('/', authenticateToken, async (req, res) => {
+router.get('/', protect, async (req, res) => {
   try {
     const certificates = await Certificate.find({ userId: req.user._id })
       .sort({ createdAt: -1 });
@@ -241,7 +203,7 @@ router.get('/', authenticateToken, async (req, res) => {
 });
 
 // POST /api/certificates/upload - Upload new certificate
-router.post('/upload', authenticateToken, upload.single('certificate'), async (req, res) => {
+router.post('/upload', protect, upload.single('certificate'), async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ error: 'No file uploaded' });
@@ -338,7 +300,7 @@ router.post('/upload', authenticateToken, upload.single('certificate'), async (r
 });
 
 // POST /api/certificates/generate/:courseId - Generate certificate for completed course
-router.post('/generate/:courseId', authenticateToken, async (req, res) => {
+router.post('/generate/:courseId', protect, async (req, res) => {
   try {
     const { courseId } = req.params;
     const userId = req.user._id;
@@ -375,7 +337,7 @@ router.post('/generate/:courseId', authenticateToken, async (req, res) => {
 });
 
 // DELETE /api/certificates/:id - Delete certificate
-router.delete('/:id', authenticateToken, async (req, res) => {
+router.delete('/:id', protect, async (req, res) => {
   try {
     const { id } = req.params;
     const userId = req.user._id;
@@ -409,7 +371,7 @@ router.delete('/:id', authenticateToken, async (req, res) => {
 });
 
 // GET /api/certificates/transcript - Generate CE transcript PDF
-router.get('/transcript', authenticateToken, async (req, res) => {
+router.get('/transcript', protect, async (req, res) => {
   try {
     const userId = req.user._id;
     const { credential, startDate, endDate } = req.query;
