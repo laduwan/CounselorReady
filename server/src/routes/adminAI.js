@@ -921,5 +921,3 @@ router.get('/module/generate/status/:jobId', protect, adminOnly, async (req, res
 });
 
 export default router;
-
-export default router;
