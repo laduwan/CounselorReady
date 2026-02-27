@@ -1,6 +1,7 @@
 import express from 'express';
 import crypto from 'crypto';
 import { Resend } from 'resend';
+import { body, validationResult } from 'express-validator';
 import User from '../models/User.js';
 import { protect, generateToken } from '../middleware/auth.js';
 import { logActivity, ACTIVITY_TYPES } from '../services/activityTrackingService.js';
@@ -8,18 +9,26 @@ import { logActivity, ACTIVITY_TYPES } from '../services/activityTrackingService
 const router = express.Router();
 const resend = new Resend(process.env.RESEND_API_KEY);
 
+// Validation error handler
+const validate = (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ error: errors.array()[0].msg });
+  }
+  next();
+};
+
 // Register
-router.post('/register', async (req, res) => {
+router.post('/register', [
+  body('email').isEmail().normalizeEmail().withMessage('Please enter a valid email'),
+  body('password').isLength({ min: 8 }).withMessage('Password must be at least 8 characters'),
+  body('firstName').trim().notEmpty().withMessage('First name is required'),
+  body('lastName').optional().trim(),
+  body('state').optional().trim().isLength({ max: 2 }).withMessage('State must be a 2-letter code'),
+  validate
+], async (req, res) => {
   try {
     const { email, password, firstName, lastName, state } = req.body;
-    
-    if (!email || !password || !firstName) {
-      return res.status(400).json({ error: 'Email, password, and first name are required' });
-    }
-    
-    if (password.length < 8) {
-      return res.status(400).json({ error: 'Password must be at least 8 characters' });
-    }
     
     const existingUser = await User.findOne({ email: email.toLowerCase() });
     if (existingUser) {
@@ -28,6 +37,10 @@ router.post('/register', async (req, res) => {
     
     const trialEndsAt = new Date();
     trialEndsAt.setDate(trialEndsAt.getDate() + 7);
+    
+    // Generate email verification token
+    const verificationToken = crypto.randomBytes(32).toString('hex');
+    const verificationTokenHash = crypto.createHash('sha256').update(verificationToken).digest('hex');
     
     const user = await User.create({
       email: email.toLowerCase(),
@@ -41,7 +54,9 @@ router.post('/register', async (req, res) => {
         status: 'trial',
         plan: 'free',
         trialEndsAt
-      }
+      },
+      emailVerificationToken: verificationTokenHash,
+      emailVerificationExpires: new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours
     });
     
     // Log activity for admin notification
@@ -53,10 +68,43 @@ router.post('/register', async (req, res) => {
       userEmail: email.toLowerCase()
     });
     
+    // Send verification email
+    const verifyUrl = `https://counselorready.com/verify-email.html?token=${verificationToken}`;
+    try {
+      await resend.emails.send({
+        from: 'CounselorReady <noreply@counselorready.com>',
+        to: user.email,
+        subject: 'Verify Your Email - CounselorReady',
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <div style="background: #6B1D34; padding: 30px; text-align: center;">
+              <h1 style="color: #D4A855; margin: 0;">CounselorReady</h1>
+              <p style="color: #fff; margin: 5px 0 0 0; font-size: 12px; letter-spacing: 2px;">LEARN. LICENSE. LEAD.</p>
+            </div>
+            <div style="padding: 30px; background: #fff;">
+              <h2 style="color: #6B1D34;">Welcome, ${firstName}!</h2>
+              <p>Thank you for joining CounselorReady. Please verify your email address to get the most out of your account.</p>
+              <div style="text-align: center; margin: 30px 0;">
+                <a href="${verifyUrl}" style="background: #4A7C59; color: #fff; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">Verify Email Address</a>
+              </div>
+              <p style="color: #666; font-size: 14px;">This link expires in 24 hours.</p>
+              <p style="color: #666; font-size: 14px;">If you didn't create this account, you can ignore this email.</p>
+            </div>
+            <div style="background: #f5f5f5; padding: 20px; text-align: center; font-size: 12px; color: #666;">
+              <p style="margin: 0;">Ga Integrated Therapeutic Perspectives LLC | NBCC ACEP #7760</p>
+            </div>
+          </div>
+        `
+      });
+    } catch (emailErr) {
+      console.error('Verification email failed:', emailErr);
+      // Don't block registration if email fails
+    }
+    
     const token = generateToken(user._id);
     
     res.status(201).json({
-      message: 'Registration successful',
+      message: 'Registration successful. Please check your email to verify your account.',
       token,
       user: user.toJSON()
     });
@@ -67,13 +115,13 @@ router.post('/register', async (req, res) => {
 });
 
 // Login
-router.post('/login', async (req, res) => {
+router.post('/login', [
+  body('email').isEmail().normalizeEmail().withMessage('Please enter a valid email'),
+  body('password').notEmpty().withMessage('Password is required'),
+  validate
+], async (req, res) => {
   try {
     const { email, password } = req.body;
-    
-    if (!email || !password) {
-      return res.status(400).json({ error: 'Email and password are required' });
-    }
     
     const user = await User.findOne({ email: email.toLowerCase() }).select('+passwordHash');
     
@@ -118,8 +166,99 @@ router.get('/me', protect, async (req, res) => {
   }
 });
 
+// Verify email
+router.get('/verify-email', async (req, res) => {
+  try {
+    const { token } = req.query;
+    
+    if (!token) {
+      return res.status(400).json({ error: 'Verification token is required' });
+    }
+    
+    const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+    
+    const user = await User.findOne({
+      emailVerificationToken: tokenHash,
+      emailVerificationExpires: { $gt: Date.now() }
+    });
+    
+    if (!user) {
+      return res.status(400).json({ error: 'Invalid or expired verification link. Please request a new one.' });
+    }
+    
+    user.emailVerified = true;
+    user.emailVerificationToken = undefined;
+    user.emailVerificationExpires = undefined;
+    await user.save();
+    
+    res.json({ message: 'Email verified successfully! You can now access all features.' });
+  } catch (error) {
+    console.error('Email verification error:', error);
+    res.status(500).json({ error: 'Verification failed' });
+  }
+});
+
+// Resend verification email
+router.post('/resend-verification', protect, async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    
+    if (user.emailVerified) {
+      return res.json({ message: 'Email is already verified' });
+    }
+    
+    // Generate new token
+    const verificationToken = crypto.randomBytes(32).toString('hex');
+    const verificationTokenHash = crypto.createHash('sha256').update(verificationToken).digest('hex');
+    
+    user.emailVerificationToken = verificationTokenHash;
+    user.emailVerificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000);
+    await user.save();
+    
+    const verifyUrl = `https://counselorready.com/verify-email.html?token=${verificationToken}`;
+    
+    await resend.emails.send({
+      from: 'CounselorReady <noreply@counselorready.com>',
+      to: user.email,
+      subject: 'Verify Your Email - CounselorReady',
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <div style="background: #6B1D34; padding: 30px; text-align: center;">
+            <h1 style="color: #D4A855; margin: 0;">CounselorReady</h1>
+            <p style="color: #fff; margin: 5px 0 0 0; font-size: 12px; letter-spacing: 2px;">LEARN. LICENSE. LEAD.</p>
+          </div>
+          <div style="padding: 30px; background: #fff;">
+            <h2 style="color: #6B1D34;">Verify Your Email</h2>
+            <p>Hi ${user.profile?.firstName || 'there'},</p>
+            <p>Please click the button below to verify your email address:</p>
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="${verifyUrl}" style="background: #4A7C59; color: #fff; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">Verify Email Address</a>
+            </div>
+            <p style="color: #666; font-size: 14px;">This link expires in 24 hours.</p>
+          </div>
+          <div style="background: #f5f5f5; padding: 20px; text-align: center; font-size: 12px; color: #666;">
+            <p style="margin: 0;">Ga Integrated Therapeutic Perspectives LLC | NBCC ACEP #7760</p>
+          </div>
+        </div>
+      `
+    });
+    
+    res.json({ message: 'Verification email sent. Please check your inbox.' });
+  } catch (error) {
+    console.error('Resend verification error:', error);
+    res.status(500).json({ error: 'Failed to send verification email' });
+  }
+});
+
 // Forgot password
-router.post('/forgot-password', async (req, res) => {
+router.post('/forgot-password', [
+  body('email').isEmail().normalizeEmail().withMessage('Please enter a valid email'),
+  validate
+], async (req, res) => {
   try {
     const { email } = req.body;
     
@@ -144,7 +283,7 @@ router.post('/forgot-password', async (req, res) => {
       subject: 'Reset Your Password - CounselorReady',
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <div style="background: linear-gradient(135deg, #34503d, #6b1d34); padding: 30px; text-align: center;">
+          <div style="background: #6B1D34; padding: 30px; text-align: center;">
             <h1 style="color: #facc15; margin: 0;">CounselorReady</h1>
             <p style="color: #fff; margin: 5px 0 0 0; font-size: 12px; letter-spacing: 2px;">LEARN. LICENSE. LEAD.</p>
           </div>
@@ -173,17 +312,13 @@ router.post('/forgot-password', async (req, res) => {
 });
 
 // Reset password
-router.post('/reset-password', async (req, res) => {
+router.post('/reset-password', [
+  body('token').notEmpty().withMessage('Reset token is required'),
+  body('password').isLength({ min: 8 }).withMessage('Password must be at least 8 characters'),
+  validate
+], async (req, res) => {
   try {
     const { token, password } = req.body;
-    
-    if (!token || !password) {
-      return res.status(400).json({ error: 'Token and new password are required' });
-    }
-    
-    if (password.length < 8) {
-      return res.status(400).json({ error: 'Password must be at least 8 characters' });
-    }
     
     const resetTokenHash = crypto.createHash('sha256').update(token).digest('hex');
     
@@ -207,7 +342,7 @@ router.post('/reset-password', async (req, res) => {
       subject: 'Password Changed - CounselorReady',
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <div style="background: linear-gradient(135deg, #34503d, #6b1d34); padding: 30px; text-align: center;">
+          <div style="background: #6B1D34; padding: 30px; text-align: center;">
             <h1 style="color: #facc15; margin: 0;">CounselorReady</h1>
           </div>
           <div style="padding: 30px; background: #fff;">
@@ -228,17 +363,13 @@ router.post('/reset-password', async (req, res) => {
 });
 
 // Change password (logged in)
-router.post('/change-password', protect, async (req, res) => {
+router.post('/change-password', protect, [
+  body('currentPassword').notEmpty().withMessage('Current password is required'),
+  body('newPassword').isLength({ min: 8 }).withMessage('New password must be at least 8 characters'),
+  validate
+], async (req, res) => {
   try {
     const { currentPassword, newPassword } = req.body;
-    
-    if (!currentPassword || !newPassword) {
-      return res.status(400).json({ error: 'Current and new password are required' });
-    }
-    
-    if (newPassword.length < 8) {
-      return res.status(400).json({ error: 'New password must be at least 8 characters' });
-    }
     
     const user = await User.findById(req.user._id).select('+passwordHash');
     
