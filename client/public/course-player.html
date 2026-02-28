@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <script>
-  // Redirect to unified player, preserving slug parameter
+  // Redirect to full player, preserving slug parameter
   const params = new URLSearchParams(window.location.search);
   const slug = params.get('slug');
-  window.location.replace('/course-player-unified.html' + (slug ? '?slug=' + slug : ''));
+  window.location.replace('/interactive-course.html' + (slug ? '?slug=' + slug : ''));
 </script>
 </head>
 <body></body>

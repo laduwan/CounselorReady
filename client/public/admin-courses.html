@@ -390,12 +390,12 @@
         try {
           let p = 1;
           while (true) {
-            const r = await fetch(`${API_URL}/api/interactive-courses?page=${p}&limit=50`, {
+            const r = await fetch(`${API_URL}/api/interactive-courses?status=all&page=${p}&limit=50`, {
               headers: { Authorization: `Bearer ${token}` }
             });
             if (!r.ok) break;
             const d = await r.json();
-            const batch = (d.data || []).map(c => ({ ...c, _source: 'interactivecourses' }));
+            const batch = (d.courses || d.data || []).map(c => ({ ...c, _source: 'interactivecourses' }));
             // Prefer interactivecourses version (deduplicate by slug)
             batch.forEach(ic => {
               const idx = courses.findIndex(c => c.slug === ic.slug);
@@ -532,7 +532,7 @@
                 title="${pub ? 'Unpublish' : 'Publish'}">
                 ${pub ? '📤' : '📥'}
               </button>
-              <a href="/admin-course-preview.html?id=${c._id}"
+              <a href="/interactive-course.html?id=${c._id}"
                 class="w-8 h-8 rounded-lg flex items-center justify-center text-sm bg-purple-50 hover:bg-purple-100 text-purple-700 transition-colors" title="Preview">👁️</a>
               <button onclick="duplicateCourse('${c._id}','${esc(c.title)}')"
                 class="w-8 h-8 rounded-lg flex items-center justify-center text-sm bg-gold-50 hover:bg-gold-100 text-gold-700 transition-colors" title="Duplicate">📋</button>
