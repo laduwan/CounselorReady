@@ -28,7 +28,11 @@ router.get('/', async (req, res) => {
       limit = 10 
     } = req.query;
 
-    const query = { status };
+    const query = {};
+    // Allow status=all to return everything (needed by admin dashboard)
+    if (status && status !== 'all') {
+      query.status = status;
+    }
     
     if (category) query.categories = category;
     if (tag) query.tags = tag;
@@ -40,7 +44,7 @@ router.get('/', async (req, res) => {
     }
 
     const courses = await Course.find(query)
-      .select('title slug description thumbnail ceHours totalEstimatedTime categories tags')
+      .select('title slug description thumbnail ceHours ceuHours totalEstimatedTime categories tags status wordCount sectionCount sections.title sections.contentBlocks price accessTier pricingTier publishedAt createdAt')
       .sort({ publishedAt: -1 })
       .skip((page - 1) * limit)
       .limit(parseInt(limit));
@@ -48,7 +52,8 @@ router.get('/', async (req, res) => {
     const total = await Course.countDocuments(query);
 
     res.json({
-      courses,
+      data: courses,       // ← admin-courses.html reads d.data
+      courses,             // ← backward compat for public catalog
       pagination: {
         page: parseInt(page),
         limit: parseInt(limit),
@@ -63,15 +68,24 @@ router.get('/', async (req, res) => {
 });
 
 /**
- * GET /api/interactive-courses/:slug
- * Get full course details by slug
+ * GET /api/interactive-courses/:param
+ * Get full course details by slug OR ObjectId
+ * - Slug lookups: published only (public catalog)
+ * - ObjectId lookups: any status (admin preview)
  */
-router.get('/:slug', async (req, res) => {
+router.get('/:param', async (req, res) => {
   try {
-    const course = await Course.findOne({ 
-      slug: req.params.slug,
-      status: 'published'
-    });
+    let course;
+    if (mongoose.Types.ObjectId.isValid(req.params.param)) {
+      // ObjectId lookup — admin preview needs drafts too
+      course = await Course.findById(req.params.param);
+    } else {
+      // Slug lookup — public catalog, published only
+      course = await Course.findOne({ 
+        slug: req.params.param,
+        status: 'published'
+      });
+    }
 
     if (!course) {
       return res.status(404).json({ error: 'Course not found' });
