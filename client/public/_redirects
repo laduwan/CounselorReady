@@ -1,5 +1,12 @@
-# Block sensitive paths — return 404 instead of serving index.html
-/.env    /404.html    404
-/.git/*  /404.html    404
-/wp-admin  /404.html  404
-/wp-admin/*  /404.html  404
+# Block sensitive paths (MUST come before catch-all)
+/.env           /404.html    404
+/.env.*         /404.html    404
+/.git/*         /404.html    404
+/wp-admin       /404.html    404
+/wp-admin/*     /404.html    404
+/wp-login*      /404.html    404
+/api/debug      /404.html    404
+/api/debug/*    /404.html    404
+
+# SPA catch-all (must be LAST)
+/*    /index.html   200
