@@ -41,7 +41,11 @@ router.get('/', async (req, res) => {
       limit = 10 
     } = req.query;
 
-    const query = { status };
+    const query = {};
+    // Allow status=all to return everything (needed by admin dashboard)
+    if (status && status !== 'all') {
+      query.status = status;
+    }
     
     if (category) query.categories = category;
     if (tag) query.tags = tag;
@@ -83,8 +87,7 @@ router.get('/', async (req, res) => {
 router.get('/slug/:slug', async (req, res) => {
   try {
     const course = await Course.findOne({ 
-      slug: req.params.slug,
-      status: 'published'
+      slug: req.params.slug
     });
 
     if (!course) {
