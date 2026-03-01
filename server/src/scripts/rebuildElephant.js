@@ -330,36 +330,7 @@ REQUIRED BLOCKS in this exact order:`;
   }
 }
 
-// ── BUILD FINAL EXAM SECTION ────────────────────────────────────────
-function buildFinalExamSection() {
-  return {
-    title: "Final Examination",
-    contentBlocks: [
-      {
-        type: "sectionDivider",
-        title: "Final Examination",
-        sectionNumber: 8
-      },
-      {
-        type: "text",
-        textContent: `<div style="background: linear-gradient(135deg, rgba(107,29,52,0.08), rgba(107,29,52,0.03)); border-left: 4px solid #6B1D34; padding: 24px; border-radius: 8px; margin: 16px 0;">
-<h2 style="color:#4A7C59; margin-top: 0;">📋 Final Examination</h2>
-<p style="font-size: 15px; color: #34495E; margin-bottom: 12px;">This examination consists of <strong>20 multiple-choice questions</strong> assessing your understanding of the course material. Please review the following requirements:</p>
-<ul style="color: #34495E; line-height: 1.8;">
-<li><strong>Passing Score:</strong> 80% (16 out of 20 correct)</li>
-<li><strong>Maximum Attempts:</strong> 3</li>
-<li><strong>Time Limit:</strong> None — take your time and consider each question carefully</li>
-</ul>
-<p style="font-size: 14px; color: #6B7280; margin-bottom: 0;">Upon successful completion, your CE certificate will be generated automatically. You may review any section of the course before attempting the exam.</p>
-</div>`
-      }
-    ],
-    isFinalExam: true,
-    examQuestions: FINAL_EXAM.questions,
-    passingScore: FINAL_EXAM.passingScore,
-    maxAttempts: FINAL_EXAM.maxAttempts
-  };
-}
+
 
 // ── MAIN ────────────────────────────────────────────────────────────
 async function main() {
@@ -390,8 +361,6 @@ async function main() {
     }
   }
 
-  // Add final exam section
-  sections.push(buildFinalExamSection());
 
   console.log(`\n${"═".repeat(60)}`);
   console.log(`CONTENT GENERATION COMPLETE`);
@@ -400,6 +369,10 @@ async function main() {
   console.log(`Target: 18,000 words`);
   console.log(`Status: ${totalWords >= 18000 ? "✅ MEETS REQUIREMENT" : `⚠️ ${totalWords}/18000 (${Math.round(totalWords/180)}%)`}`);
   console.log(`${"═".repeat(60)}\n`);
+
+  // Append APA references to last content section
+  const refsHTML = `<h2 style="color:#34495E; border-bottom-width:2px; border-bottom-style:solid; border-bottom-color:#D4A855; padding-bottom:8px; margin-top:40px; font-size:1.5rem; font-weight:700;">References</h2><ol style="line-height:2; color:#475569; font-size:14px; padding-left:20px;">${REFERENCES.map(r => `<li>${r.author} (${r.year}). ${r.title}. <em>${r.source}</em>.</li>`).join("")}</ol>`;
+  sections[sections.length - 1].contentBlocks.push({ type: "text", textContent: refsHTML });
 
   // ── ASSEMBLE COURSE DOCUMENT ────────────────────────────────────
   const courseDoc = {
@@ -442,9 +415,13 @@ async function main() {
     // References
     references: REFERENCES,
     
-    // Assessment
+    // Assessment — transform to player format: type "multipleChoice", options as {text} objects
     assessment: {
-      questions: FINAL_EXAM.questions,
+      questions: FINAL_EXAM.questions.map(q => ({
+        ...q,
+        type: "multipleChoice",
+        options: q.options.map((opt, i) => ({ text: opt, originalIndex: i }))
+      })),
       passingScore: 80,
       maxAttempts: 3
     },
