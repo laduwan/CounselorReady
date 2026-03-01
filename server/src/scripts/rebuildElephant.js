@@ -7,8 +7,8 @@ if (!MONGODB_URI) { console.error("No MONGODB_URI"); process.exit(1); }
 if (!ANTHROPIC_API_KEY) { console.error("No ANTHROPIC_API_KEY"); process.exit(1); }
 
 const COURSE_SLUG = "the-elephant-in-the-room-navigating-difficult-conversations-in-therapy";
-const MODEL = "claude-sonnet-4-5-20250514";
-const MAX_TOKENS = 8000;
+const MODEL = "claude-sonnet-4-5-20250929";
+const MAX_TOKENS = 16000;
 
 // ── SOURCE CONTENT (from elephant.pdf) ──────────────────────────────
 // This is the foundation the API will expand upon
@@ -165,7 +165,12 @@ You are writing ONE continuous narrative, not assembling separate pieces. The co
 
 2. FORWARD REFERENCES: Tease upcoming content naturally. "We'll return to exactly how to navigate this in Section 5." "The framework you'll learn in the next section gives you language for this." This creates momentum and makes the learner feel guided.
 
-3. ONE VOICE: Write in a warm, direct, clinician-to-clinician tone throughout. Second person ("you") is fine. The tone should feel like an experienced colleague sharing hard-won wisdom — not a textbook, not a lecture, not a listicle.
+3. VOICE — AUTHORITATIVE AND SUPPORTIVE: Write as a respected expert instructor delivering graduate-level professional development. The tone blends:
+   - AUTHORITATIVE: Present information with scholarly confidence. State findings definitively. Use precise clinical language. Reference research as evidence, not decoration. Write like someone who has trained hundreds of clinicians and knows exactly what they need to hear.
+   - SUPPORTIVE: Acknowledge the real challenges clinicians face. Normalize difficulty without excusing avoidance. Frame growth as achievable. Use "you" to speak directly to the learner, but as a mentor guiding professional development — not a peer chatting over coffee.
+   - OBJECTIVE: Present concepts with clinical precision. Avoid cheerleading, motivational-speaker energy, or overly conversational asides. Let the evidence and clinical reasoning speak. When you make a strong claim, ground it in research or observable clinical reality.
+   THE WRONG TONE: "Here's the thing — we've all been there, right?" or "Let's be real for a sec..."
+   THE RIGHT TONE: "Research consistently demonstrates that therapist avoidance correlates with poorer outcomes (Safran & Muran, 2000). Understanding the mechanisms behind this pattern is essential for clinical growth."
 
 4. NARRATIVE FLOW INTO INTERACTIVE ELEMENTS: Before every accordion, matching exercise, or reflection, include a brief transitional sentence in the preceding text block that naturally leads into it. Examples:
    - "Let's pause here and look at how this plays out in real clinical situations."
@@ -182,7 +187,7 @@ You are writing ONE continuous narrative, not assembling separate pieces. The co
 8. CLINICAL DEPTH: Write for licensed professionals. Cite research inline (author, year). Include nuanced case examples that feel real, not generic. Every paragraph should teach something the learner can use Monday morning.
 
 BRAND COLORS for HTML styling:
-- Burgundy: #6B1D34 — headings, alerts
+- Burgundy: #6B1D34 — section dividers, alerts, warnings
 - Hunter Green: #4A7C59 — key concept callouts, buttons
 - Honey/Gold: #D4A855 — heading underlines, clinical example boxes, blockquote borders
 - Navy: #34495E — subheadings, tables, body emphasis
@@ -197,8 +202,8 @@ CONTENT BLOCK TYPES:
 7. "reflection" - { type: "reflection", reflectionPrompt: "...", reflectionPlaceholder: "Type your response..." }
 
 HTML FORMATTING for text blocks:
-- Headings: <h2 style="color:#6B1D34; border-bottom: 2px solid #D4A855; padding-bottom: 8px; margin-top: 40px;">
-- Subheadings: <h3 style="color:#34495E; margin-top: 28px;">
+- Headings: <h2 style="color:#34495E; border-bottom-width:2px; border-bottom-style:solid; border-bottom-color:#D4A855; padding-bottom:8px; margin-top:40px; margin-bottom:18px; font-size:1.5rem; font-weight:700;">
+- Subheadings: <h3 style="color:#6B1D34; margin-top: 28px; font-weight: 700;">
 - Key concept box: <div style="background: linear-gradient(135deg, rgba(74,124,89,0.08), rgba(74,124,89,0.03)); border-left: 4px solid #4A7C59; padding: 20px 24px; border-radius: 8px; margin: 24px 0;"><span style="font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:0.6px; color:#4A7C59; display:block; margin-bottom:8px;">💡 Key Concept</span>...</div>
 - Clinical warning: <div style="background: rgba(107,29,52,0.06); border-left: 4px solid #6B1D34; padding: 20px 24px; border-radius: 8px; margin: 24px 0;"><span style="font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:0.6px; color:#6B1D34; display:block; margin-bottom:8px;">⚠️ Watch for This</span>...</div>
 - Clinical example: <div style="background: rgba(212,168,85,0.08); border-left: 4px solid #D4A855; padding: 20px 24px; border-radius: 8px; margin: 24px 0;"><span style="font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:0.6px; color:#96782E; display:block; margin-bottom:8px;">📋 Clinical Example</span>...</div>
@@ -338,7 +343,7 @@ function buildFinalExamSection() {
       {
         type: "text",
         textContent: `<div style="background: linear-gradient(135deg, rgba(107,29,52,0.08), rgba(107,29,52,0.03)); border-left: 4px solid #6B1D34; padding: 24px; border-radius: 8px; margin: 16px 0;">
-<h2 style="color:#6B1D34; margin-top: 0;">📋 Final Examination</h2>
+<h2 style="color:#4A7C59; margin-top: 0;">📋 Final Examination</h2>
 <p style="font-size: 15px; color: #34495E; margin-bottom: 12px;">This examination consists of <strong>20 multiple-choice questions</strong> assessing your understanding of the course material. Please review the following requirements:</p>
 <ul style="color: #34495E; line-height: 1.8;">
 <li><strong>Passing Score:</strong> 80% (16 out of 20 correct)</li>
@@ -401,7 +406,7 @@ async function main() {
     slug: COURSE_SLUG,
     title: "The Elephant in the Room: Navigating Difficult Conversations in Therapy",
     subtitle: "Frameworks, Language, and Courage for the Conversations That Matter Most",
-    description: "Every therapy room has elephants—the topics that everyone sees but nobody wants to address. This comprehensive 3-hour course equips counselors with the COMPASS framework, specific language patterns, and clinical courage to address treatment-interfering behaviors, lack of progress, cultural differences, power dynamics, and therapeutic ruptures. Through case examples and practical strategies, participants will develop competence in initiating and navigating the conversations that matter most.",
+    description: "Every therapy room has elephants — the obvious issues that both therapist and client recognize but neither addresses. These unspoken topics erode trust, stall progress, and deprive clients of corrective emotional experiences that are often more therapeutic than the planned interventions themselves. This 3-hour continuing education course examines why clinicians avoid difficult conversations and what that avoidance costs in terms of treatment outcomes, alliance quality, and professional integrity. Participants will learn the COMPASS framework — a structured, evidence-based approach for preparing, initiating, and navigating conversations about treatment-interfering behaviors, stalled progress, cultural dynamics, and therapeutic ruptures. The course draws on the work of Safran and Muran, Linehan, Sue, and other leading researchers to ground each strategy in empirical evidence. Through detailed clinical scenarios, matching exercises, and guided reflections, participants will practice translating these concepts into language and interventions they can apply immediately in their own clinical work.",
     courseCode: "CR-DC-301",
     instructor: "GA Integrated Therapeutic Perspectives LLC",
     
@@ -424,14 +429,11 @@ async function main() {
     
     // Learning Objectives
     objectives: [
-      "Identify common 'elephants' in therapy and recognize personal patterns of avoidance",
-      "Apply the COMPASS framework for preparing, initiating, and navigating difficult conversations",
-      "Utilize specific language patterns that promote openness while minimizing defensiveness",
-      "Address treatment-interfering behaviors directly while maintaining therapeutic alliance",
-      "Navigate conversations about lack of progress, treatment failure, and termination",
-      "Discuss cultural differences, power dynamics, and identity with authenticity and humility",
-      "Repair therapeutic alliance ruptures using evidence-based strategies",
-      "Manage personal anxiety and discomfort when approaching difficult topics"
+      "Identify common avoidance patterns in clinical practice and their impact on treatment outcomes",
+      "Apply the COMPASS framework to prepare for, initiate, and navigate difficult therapeutic conversations",
+      "Address treatment-interfering behaviors using curious compassion rather than confrontation",
+      "Navigate conversations involving cultural differences, power dynamics, and identity with humility and precision",
+      "Repair therapeutic alliance ruptures using evidence-based strategies from Safran and Muran's research"
     ],
     
     // Sections (interactive course format)
