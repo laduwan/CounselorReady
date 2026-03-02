@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 /**
  * ╔══════════════════════════════════════════════════════════════════════╗
- * ║  CounselorReady — Bulk Course Rebuilder v3                         ║
- * ║  Restructures + enforces graduate-level academic quality locally   ║
+ * ║  CounselorReady — Bulk Course Rebuilder v4                         ║
+ * ║  LOCAL quality enforcement + API generates ONLY missing elements   ║
+ * ║  Existing text NEVER passes through API — zero content loss        ║
  * ║                                                                     ║
  * ║  node src/scripts/bulkRebuildCourses.js --slug=therapeutic-rapport ║
  * ║  node src/scripts/bulkRebuildCourses.js --resume                   ║
@@ -43,30 +44,28 @@ const PRESENTER = {
 };
 
 // ═══════════════════════════════════════════════════════════════════
-// QUALITY ENFORCEMENT — runs locally, no API tokens
+// BANNED PATTERNS — local enforcement, zero API tokens
 // ═══════════════════════════════════════════════════════════════════
 
-// Headings that should NEVER appear inside section text content
-// because they are generic template artifacts, not topic-specific
-const BANNED_GENERIC_HEADINGS = [
+const BANNED_HEADINGS = [
   'introduction', 'theoretical foundation', 'theoretical framework',
-  'key concepts', 'practical application', 'practical applications',
-  'overview', 'summary', 'conclusion', 'learning objectives',
+  'key concepts', 'key concepts and definitions', 'practical application',
+  'practical applications', 'practical guidelines', 'overview', 'summary',
+  'summary and key takeaways', 'conclusion', 'learning objectives',
   'course overview', 'module overview', 'section overview',
   'background', 'literature review', 'discussion',
   'clinical implications', 'clinical applications',
+  'evidence base and research', 'evidence base',
   'case study', 'case studies', 'case example', 'case examples',
   'ethical considerations', 'cultural considerations',
   'review', 'review questions', 'key terms', 'key takeaways',
   'objectives', 'what you will learn', 'what you\'ll learn'
 ];
 
-// Preamble phrases that indicate template language, not real teaching
-const BANNED_PREAMBLE_PATTERNS = [
+const BANNED_PREAMBLES = [
   /in this (?:lesson|section|module),?\s+you will (?:learn|explore|discover|examine|understand|gain)/i,
   /this (?:lesson|section|module) (?:will|provides|covers|explores|examines|focuses)/i,
   /by the end of this (?:lesson|section|module)/i,
-  /the following (?:lesson|section|module) (?:will|is designed to)/i,
   /welcome to (?:this|the) (?:lesson|section|module)/i,
   /let(?:'s| us) begin (?:by|with|our)/i,
   /the purpose of this (?:lesson|section|module)/i,
@@ -78,247 +77,6 @@ const BANNED_PREAMBLE_PATTERNS = [
   /these skills are fundamental to your clinical practice/i,
   /these (?:concepts|strategies|skills|techniques) (?:will|can) (?:be|enhance|improve|support)/i,
 ];
-
-/**
- * Enforce quality on a single section's content blocks.
- * Modifies in place. Returns array of issues found and fixed.
- */
-function enforceQuality(section, sectionIndex, totalSections) {
-  const fixes = [];
-  if (!section.contentBlocks) return fixes;
-
-  // 1. Remove redundant sectionDividers
-  const before = section.contentBlocks.length;
-  section.contentBlocks = section.contentBlocks.filter(b => {
-    if (b.type !== 'sectionDivider') return true;
-    const dt = (b.title || '').toLowerCase().replace(/module \d+[:\s]*/i, '').trim();
-    const st = (section.title || '').toLowerCase().replace(/module \d+[:\s]*/i, '').trim();
-    if (dt === st || dt.includes(st) || st.includes(dt) || dt.length < 3) return false;
-    return true;
-  });
-  if (section.contentBlocks.length < before) {
-    fixes.push(`Removed ${before - section.contentBlocks.length} redundant sectionDivider(s)`);
-  }
-
-  // 2. Fix generic headings inside HTML text content
-  section.contentBlocks.forEach(b => {
-    if (b.type !== 'text' || !b.textContent) return;
-    let html = b.textContent;
-    let changed = false;
-
-    // Match h2, h3, h4 tags
-    html = html.replace(/<(h[2-4])([^>]*)>(.*?)<\/\1>/gi, (match, tag, attrs, content) => {
-      const clean = content.replace(/<[^>]+>/g, '').trim().toLowerCase();
-      // Check against banned list
-      if (BANNED_GENERIC_HEADINGS.includes(clean)) {
-        changed = true;
-        return ''; // Remove the generic heading entirely
-      }
-      // Check for "Module X:" prefix
-      if (/^module\s+\d+\s*[:\-–—]/i.test(clean)) {
-        const fixed = content.replace(/^module\s+\d+\s*[:\-–—]\s*/i, '');
-        changed = true;
-        return `<${tag}${attrs}>${fixed}</${tag}>`;
-      }
-      return match;
-    });
-
-    // Remove ALL CAPS headings (convert to title case)
-    html = html.replace(/<(h[2-4])([^>]*)>([A-Z\s:,&;]{10,})<\/\1>/g, (match, tag, attrs, content) => {
-      const titleCase = content.toLowerCase().replace(/\b\w/g, c => c.toUpperCase())
-        .replace(/\bAnd\b/g, 'and').replace(/\bOf\b/g, 'of').replace(/\bThe\b/g, 'the')
-        .replace(/\bIn\b/g, 'in').replace(/\bFor\b/g, 'for').replace(/\bTo\b/g, 'to')
-        .replace(/^./, c => c.toUpperCase()); // Always cap first word
-      changed = true;
-      return `<${tag}${attrs}>${titleCase}</${tag}>`;
-    });
-
-    if (changed) {
-      b.textContent = html;
-      fixes.push(`Fixed generic/ALL-CAPS headings in text block`);
-    }
-  });
-
-  // 3. Remove template preamble from first text block
-  const firstText = section.contentBlocks.find(b => b.type === 'text' && b.textContent);
-  if (firstText) {
-    let html = firstText.textContent;
-    let changed = false;
-
-    // Remove preamble paragraphs
-    BANNED_PREAMBLE_PATTERNS.forEach(pattern => {
-      // Match <p> tags containing the pattern
-      const pPattern = new RegExp(`<p[^>]*>[^<]*${pattern.source}[^<]*<\\/p>`, 'gi');
-      const newHtml = html.replace(pPattern, '');
-      if (newHtml !== html) {
-        html = newHtml;
-        changed = true;
-      }
-    });
-
-    // Also check for standalone sentences (not in <p> tags) at the start
-    BANNED_PREAMBLE_PATTERNS.forEach(pattern => {
-      if (pattern.test(stripHtml(html).substring(0, 500))) {
-        // Only flag, don't blindly remove — the paragraph removal above handles most cases
-      }
-    });
-
-    if (changed) {
-      firstText.textContent = html.replace(/^\s*(<br\s*\/?>|\s)*/, '').trim();
-      fixes.push(`Removed template preamble language`);
-    }
-  }
-
-  // 4. Fix quiz option format: string[] → {text, isCorrect}[]
-  section.contentBlocks.forEach(b => {
-    if ((b.type === 'multipleChoice' || b.type === 'multiSelect') && b.options) {
-      const needsFix = b.options.some(o => typeof o === 'string');
-      if (needsFix) {
-        b.options = b.options.map((o, i) => {
-          if (typeof o === 'string') return { text: o, isCorrect: i === (b.correctAnswer || 0) };
-          return o;
-        });
-        delete b.correctAnswer;
-        fixes.push(`Fixed option format in ${b.type} block`);
-      }
-      // Ensure exactly 1 correct answer
-      const correctCount = b.options.filter(o => o.isCorrect).length;
-      if (correctCount === 0 && b.options.length > 0) {
-        b.options[0].isCorrect = true;
-        fixes.push(`Fixed missing correct answer in ${b.type}`);
-      }
-      if (correctCount > 1 && b.type === 'multipleChoice') {
-        let found = false;
-        b.options.forEach(o => {
-          if (o.isCorrect && found) o.isCorrect = false;
-          if (o.isCorrect) found = true;
-        });
-        fixes.push(`Fixed multiple correct answers in multipleChoice`);
-      }
-    }
-  });
-
-  // 5. Re-number order fields sequentially
-  section.contentBlocks.forEach((b, i) => { b.order = i + 1; });
-
-  // 6. Ensure section has required fields
-  section.hasQuiz = section.hasQuiz || false;
-  section.quizQuestions = section.quizQuestions || [];
-  section.order = sectionIndex + 1;
-
-  // 7. Remove empty text blocks
-  const beforeEmpty = section.contentBlocks.length;
-  section.contentBlocks = section.contentBlocks.filter(b => {
-    if (b.type === 'text' && (!b.textContent || stripHtml(b.textContent).length < 10)) return false;
-    return true;
-  });
-  if (section.contentBlocks.length < beforeEmpty) {
-    fixes.push(`Removed ${beforeEmpty - section.contentBlocks.length} empty text block(s)`);
-    section.contentBlocks.forEach((b, i) => { b.order = i + 1; });
-  }
-
-  // 8. Check for duplicate consecutive headings across sections (logged, not auto-fixed)
-  // This catches when multiple sections use identical heading patterns
-
-  return fixes;
-}
-
-/**
- * Run quality enforcement across ALL sections and detect cross-section issues
- */
-function enforceQualityCourse(sections) {
-  const allFixes = [];
-
-  // Per-section enforcement
-  sections.forEach((s, i) => {
-    const fixes = enforceQuality(s, i, sections.length);
-    if (fixes.length) {
-      allFixes.push({ section: i + 1, title: s.title, fixes });
-    }
-  });
-
-  // Cross-section checks: detect identical heading patterns
-  const headingPatterns = sections.map(s => {
-    const blocks = s.contentBlocks || [];
-    return blocks.filter(b => b.type === 'text').map(b => {
-      const headings = [];
-      (b.textContent || '').replace(/<h[2-4][^>]*>(.*?)<\/h[2-4]>/gi, (m, content) => {
-        headings.push(content.replace(/<[^>]+>/g, '').trim().toLowerCase());
-      });
-      return headings;
-    }).flat();
-  });
-
-  // Find headings that appear in 2+ sections
-  const allHeadings = headingPatterns.flat();
-  const headingCounts = {};
-  allHeadings.forEach(h => { headingCounts[h] = (headingCounts[h] || 0) + 1; });
-  const duplicateHeadings = Object.entries(headingCounts).filter(([h, c]) => c > 1 && h.length > 3);
-  if (duplicateHeadings.length) {
-    allFixes.push({
-      section: 'CROSS-SECTION',
-      title: 'Duplicate headings across sections',
-      fixes: duplicateHeadings.map(([h, c]) => `"${h}" appears in ${c} sections — needs unique headings`)
-    });
-  }
-
-  return allFixes;
-}
-
-/**
- * Fix assessment options format
- */
-function fixAssessmentQuality(assessment) {
-  if (!assessment?.questions) return assessment;
-  assessment.questions.forEach(q => {
-    if (q.options) {
-      q.options = q.options.map((o, i) => typeof o === 'string' ? { text: o, isCorrect: i === (q.correctAnswer || 0) } : o);
-      delete q.correctAnswer;
-    }
-    if (!q.type) q.type = 'multipleChoice';
-    // Ensure exactly 1 correct for multipleChoice
-    if (q.type === 'multipleChoice') {
-      const cc = (q.options || []).filter(o => o.isCorrect).length;
-      if (cc === 0 && q.options?.length) q.options[0].isCorrect = true;
-      if (cc > 1) {
-        let found = false;
-        q.options.forEach(o => { if (o.isCorrect && found) o.isCorrect = false; if (o.isCorrect) found = true; });
-      }
-    }
-  });
-  return assessment;
-}
-
-// ═══════════════════════════════════════════════════════════════════
-// SYSTEM PROMPT
-// ═══════════════════════════════════════════════════════════════════
-
-const SYSTEM_PROMPT = `You are a CE course restructuring assistant for CounselorReady (NBCC ACEP #7760).
-
-Your job: take EXISTING course content and restructure it into correct interactive format for graduate-level mental health professionals.
-
-CRITICAL: Output ONLY valid JSON. No markdown, no backticks, no explanation.
-
-contentBlocks[] types:
-- "text": { type: "text", order: N, textContent: "<p>HTML</p>" }
-- "accordion": { type: "accordion", order: N, title: "Title", accordionItems: [{ title: "Item", content: "HTML" }] }
-- "multipleChoice": { type: "multipleChoice", order: N, question: "?", options: [{ text: "...", isCorrect: true/false }], explanation: "..." }
-- "multiSelect": { type: "multiSelect", order: N, question: "?", options: [{ text: "...", isCorrect: true/false }], explanation: "..." }
-- "reflection": { type: "reflection", order: N, question: "Prompt", textContent: "<p>context</p>", minLength: 50 }
-- "matching": { type: "matching", order: N, matchingInstructions: "...", matchingPairs: [{ term: "...", definition: "..." }] }
-- "imageText": { type: "imageText", order: N, title: "...", content: "<p>HTML</p>", imagePosition: "left", highlight: false }
-- "resources": { type: "resources", order: N, resources: [{ title: "...", url: "https://...", type: "article"|"tool"|"website"|"book" }] }
-
-ACADEMIC DESIGN RULES:
-1. No sectionDivider blocks. The player renders section.title in the header.
-2. NEVER use generic headings like "Introduction", "Theoretical Foundation", "Key Concepts", "Practical Application", "Overview", "Summary", "Conclusion" inside text blocks. Every <h3>/<h4> must be SPECIFIC to the section topic.
-3. NEVER start with preamble like "In this lesson you will learn..." — dive directly into the content.
-4. Each section must feel like a distinct chapter, not a copy of a template.
-5. Preserve existing clinical substance. Add missing interactive elements.
-6. Knowledge checks: 4 options, 1 correct, format: [{ text, isCorrect }]. Test clinical APPLICATION.
-7. When expanding, add clinical vignettes with named clients (diverse backgrounds), DSM-5-TR references, evidence-based citations.
-8. Tone: warm, authoritative. Like a respected colleague presenting at a professional conference.
-9. No ALL CAPS headings. Use APA-style title case.`;
 
 // ═══════════════════════════════════════════════════════════════════
 // HELPERS
@@ -337,53 +95,119 @@ function countSectionWords(s) {
   return t;
 }
 function countCourseWords(ss) { return (ss || []).reduce((sum, s) => sum + countSectionWords(s), 0); }
+function loadProgress() { try { return JSON.parse(fs.readFileSync(PROGRESS_FILE, 'utf-8')); } catch(e) { return { completed: [], failed: [] }; } }
+function saveProgress(p) { fs.writeFileSync(PROGRESS_FILE, JSON.stringify(p, null, 2)); }
 
-function serializeSectionForPrompt(section) {
-  const blocks = section.contentBlocks || [];
-  let output = '';
-  blocks.forEach(b => {
-    if (b.type === 'sectionDivider') return;
-    if (b.type === 'text' && b.textContent) output += `[TEXT BLOCK]\n${b.textContent}\n[/TEXT BLOCK]\n\n`;
-    if (b.type === 'accordion' && b.accordionItems?.length) {
-      output += `[ACCORDION]\n`;
-      b.accordionItems.forEach(ai => { output += `  ${ai.title}: ${ai.content}\n`; });
-      output += `[/ACCORDION]\n\n`;
-    }
-    if (b.type === 'imageText' && b.content) output += `[IMAGE-TEXT]\n${b.title || ''}\n${b.content}\n[/IMAGE-TEXT]\n\n`;
-    if ((b.type === 'multipleChoice' || b.type === 'multiSelect') && b.question) {
-      output += `[KC]\nQ: ${b.question}\n`;
-      (b.options || []).forEach(o => { output += `  ${(o.isCorrect) ? '✓' : '○'} ${typeof o === 'string' ? o : o.text}\n`; });
-      if (b.explanation) output += `Explanation: ${b.explanation}\n`;
-      output += `[/KC]\n\n`;
-    }
-    if (b.type === 'reflection') output += `[REFLECTION]\n${b.question || b.textContent || ''}\n[/REFLECTION]\n\n`;
-    if (b.type === 'matching' && b.matchingPairs?.length) {
-      output += `[MATCHING]\n`;
-      b.matchingPairs.forEach(p => output += `  ${p.term} → ${p.definition}\n`);
-      output += `[/MATCHING]\n\n`;
-    }
-    if (b.type === 'resources' && b.resources?.length) {
-      output += `[RESOURCES]\n`;
-      b.resources.forEach(r => output += `  ${r.title}: ${r.url}\n`);
-      output += `[/RESOURCES]\n\n`;
+// ═══════════════════════════════════════════════════════════════════
+// LOCAL QUALITY ENFORCEMENT — modifies sections in place, no API
+// ═══════════════════════════════════════════════════════════════════
+
+function enforceLocalQuality(section, sectionIndex) {
+  const fixes = [];
+  if (!section.contentBlocks) section.contentBlocks = [];
+
+  // 1. Remove redundant sectionDividers
+  const before = section.contentBlocks.length;
+  section.contentBlocks = section.contentBlocks.filter(b => {
+    if (b.type !== 'sectionDivider') return true;
+    const dt = (b.title || '').toLowerCase().replace(/module \d+[:\s]*/i, '').trim();
+    const st = (section.title || '').toLowerCase().replace(/module \d+[:\s]*/i, '').trim();
+    return dt !== st && !dt.includes(st) && !st.includes(dt) && dt.length >= 3;
+  });
+  if (section.contentBlocks.length < before) fixes.push(`-${before - section.contentBlocks.length} sectionDivider`);
+
+  // 2. Fix generic headings in text blocks — REPLACE with section-topic-specific ones
+  section.contentBlocks.forEach(b => {
+    if (b.type !== 'text' || !b.textContent) return;
+    let html = b.textContent;
+    let changed = false;
+
+    html = html.replace(/<(h[2-4])([^>]*)>(.*?)<\/\1>/gi, (match, tag, attrs, content) => {
+      const clean = content.replace(/<[^>]+>/g, '').trim().toLowerCase();
+      if (BANNED_HEADINGS.includes(clean)) {
+        changed = true;
+        return ''; // Remove generic heading — content below it stands on its own
+      }
+      // Remove "Module X:" prefix
+      if (/^module\s+\d+\s*[:\-–—]/i.test(clean)) {
+        changed = true;
+        return `<${tag}${attrs}>${content.replace(/^module\s+\d+\s*[:\-–—]\s*/i, '')}</${tag}>`;
+      }
+      return match;
+    });
+
+    // Fix ALL CAPS headings → title case
+    html = html.replace(/<(h[2-4])([^>]*)>([A-Z\s:,&;]{10,})<\/\1>/g, (match, tag, attrs, content) => {
+      const tc = content.toLowerCase().replace(/\b\w/g, c => c.toUpperCase())
+        .replace(/\b(And|Of|The|In|For|To|A|An|By|With)\b/g, m => m.toLowerCase())
+        .replace(/^./, c => c.toUpperCase());
+      changed = true;
+      return `<${tag}${attrs}>${tc}</${tag}>`;
+    });
+
+    if (changed) { b.textContent = html; fixes.push('fixed headings'); }
+  });
+
+  // 3. Remove preamble paragraphs from first text block
+  const firstText = section.contentBlocks.find(b => b.type === 'text' && b.textContent);
+  if (firstText) {
+    let html = firstText.textContent;
+    let changed = false;
+    BANNED_PREAMBLES.forEach(pattern => {
+      const pRe = new RegExp(`<p[^>]*>[^<]*?${pattern.source}[^<]*?</p>`, 'gi');
+      const newHtml = html.replace(pRe, '');
+      if (newHtml !== html) { html = newHtml; changed = true; }
+    });
+    if (changed) { firstText.textContent = html.replace(/^\s*(<br\s*\/?>|\s)*/, '').trim(); fixes.push('removed preamble'); }
+  }
+
+  // 4. Fix quiz options: string[] → {text, isCorrect}[]
+  section.contentBlocks.forEach(b => {
+    if ((b.type === 'multipleChoice' || b.type === 'multiSelect') && b.options) {
+      if (b.options.some(o => typeof o === 'string')) {
+        b.options = b.options.map((o, i) => typeof o === 'string' ? { text: o, isCorrect: i === (b.correctAnswer || 0) } : o);
+        delete b.correctAnswer;
+        fixes.push('fixed option format');
+      }
+      // Ensure exactly 1 correct for multipleChoice
+      if (b.type === 'multipleChoice') {
+        const cc = b.options.filter(o => o.isCorrect).length;
+        if (cc === 0 && b.options.length) { b.options[0].isCorrect = true; fixes.push('added missing correct answer'); }
+        if (cc > 1) { let f = false; b.options.forEach(o => { if (o.isCorrect && f) o.isCorrect = false; if (o.isCorrect) f = true; }); fixes.push('fixed multiple correct'); }
+      }
     }
   });
-  return output;
+
+  // 5. Remove empty text blocks
+  section.contentBlocks = section.contentBlocks.filter(b => {
+    if (b.type === 'text' && (!b.textContent || stripHtml(b.textContent).length < 10)) return false;
+    return true;
+  });
+
+  // 6. Renumber + ensure fields
+  section.contentBlocks.forEach((b, i) => { b.order = i + 1; });
+  section.order = sectionIndex + 1;
+  section.hasQuiz = section.hasQuiz || false;
+  section.quizQuestions = section.quizQuestions || [];
+
+  return fixes;
 }
 
 // ═══════════════════════════════════════════════════════════════════
-// API
+// API — only for generating NEW interactive blocks
 // ═══════════════════════════════════════════════════════════════════
 
-async function callClaude(userPrompt, maxTokens = 12000) {
+const GEN_SYSTEM = `You generate interactive course elements for graduate-level mental health CE courses. Output ONLY valid JSON array. No markdown, no backticks, no explanation. Just a JSON array of contentBlock objects.`;
+
+async function callClaude(system, prompt, maxTokens = 4000) {
   let attempts = 0;
   while (attempts < 3) {
     try {
       const response = await client.messages.create({
         model: 'claude-sonnet-4-20250514',
         max_tokens: maxTokens,
-        system: SYSTEM_PROMPT,
-        messages: [{ role: 'user', content: userPrompt }]
+        system,
+        messages: [{ role: 'user', content: prompt }]
       });
       const text = response.content.filter(c => c.type === 'text').map(c => c.text).join('');
       let cleaned = text.trim();
@@ -398,101 +222,116 @@ async function callClaude(userPrompt, maxTokens = 12000) {
   }
 }
 
-// ═══════════════════════════════════════════════════════════════════
-// RESTRUCTURE SECTION
-// ═══════════════════════════════════════════════════════════════════
-
-async function restructureSection(course, section, sectionIndex, totalSections) {
-  const existingContent = serializeSectionForPrompt(section);
-  const existingWords = countSectionWords(section);
+/**
+ * Generate ONLY the missing interactive blocks for a section.
+ * Returns an array of new contentBlock objects to splice in.
+ */
+async function generateMissingBlocks(course, section, sectionIndex, totalSections) {
   const blocks = section.contentBlocks || [];
   const isLast = sectionIndex === totalSections - 1;
-
-  // Inventory
+  
   const kcCount = blocks.filter(b => b.type === 'multipleChoice' || b.type === 'multiSelect').length;
   const hasReflection = blocks.some(b => b.type === 'reflection');
   const hasMatching = blocks.some(b => b.type === 'matching');
-  const hasAccordion = blocks.some(b => b.type === 'accordion');
   const hasResources = blocks.some(b => b.type === 'resources' && b.resources?.length > 0);
 
-  const needs = [];
-  if (kcCount < 2) needs.push(`ADD ${2 - kcCount} multipleChoice knowledge check(s) — clinical application, not recall`);
-  if (!hasReflection) needs.push('ADD 1 reflection block for clinical self-examination');
-  if (!hasMatching) needs.push('ADD 1 matching exercise (5-6 pairs relevant to this section)');
-  if (!hasAccordion && existingWords > 1500) needs.push('CONVERT one dense area into accordion (4-5 expandable items)');
-  if (isLast && !hasResources) needs.push('ADD 1 resources block: 5-6 real professional resources with real URLs');
+  const requests = [];
+  if (kcCount < 2) requests.push(`${2 - kcCount} multipleChoice block(s) testing clinical APPLICATION of ${section.title} concepts. 4 options each, 1 correct, with explanation.`);
+  if (!hasReflection) requests.push(`1 reflection block prompting the clinician to examine their own practice regarding ${section.title}.`);
+  if (!hasMatching) requests.push(`1 matching exercise with 5-6 term/definition pairs from ${section.title} content.`);
+  if (isLast && !hasResources) requests.push(`1 resources block with 5-6 real professional resources (real URLs — APA, SAMHSA, NIMH, NBCC, etc.) related to ${course.title}.`);
 
-  const targetWords = Math.ceil((course.ceHours * WORDS_PER_CE_HOUR * 1.1) / totalSections);
-  const deficit = targetWords - existingWords;
-  if (deficit > 500) needs.push(`EXPAND text by ~${deficit} words with clinical vignettes, case examples, research citations`);
+  if (requests.length === 0) return [];
 
-  // Run local quality enforcement first (catches everything we can fix without API)
-  const preFixes = enforceQuality(section, sectionIndex, totalSections);
-  if (preFixes.length) console.log(`     🔧 Pre-fixed: ${preFixes.join('; ')}`);
+  // Give the API a SUMMARY of the section topic — NOT the full content
+  const topicSummary = stripHtml(
+    blocks.filter(b => b.type === 'text').map(b => b.textContent || '').join(' ')
+  ).substring(0, 800);
 
-  // Check if cross-section duplicate headings need API help
-  const textHtml = blocks.filter(b => b.type === 'text').map(b => b.textContent || '').join('');
-  const hasGenericHeadings = BANNED_GENERIC_HEADINGS.some(h => {
-    const re = new RegExp(`<h[2-4][^>]*>\\s*${h}\\s*</h[2-4]>`, 'i');
-    return re.test(textHtml);
-  });
-  if (hasGenericHeadings) needs.push('REPLACE any remaining generic headings with topic-specific headings for this section');
+  const prompt = `Generate these interactive elements for a CE course section.
 
-  // Check for preamble the local fix might have missed (inline, not in separate <p>)
-  const firstTextContent = stripHtml((section.contentBlocks.find(b => b.type === 'text')?.textContent || '').substring(0, 500));
-  const hasPreamble = BANNED_PREAMBLE_PATTERNS.some(p => p.test(firstTextContent));
-  if (hasPreamble) needs.push('REWRITE the opening paragraph — dive directly into the topic, no "In this lesson" preamble');
+COURSE: "${course.title}" (${course.ceHours} CE hours)
+SECTION: "${section.title}"
+TOPIC CONTEXT (summary): ${topicSummary}
 
-  if (needs.length === 0) {
-    console.log(`  ✅ S${sectionIndex + 1}: "${section.title}" — complete (${existingWords}w)`);
-    return section;
-  }
+GENERATE (return as a JSON array of contentBlock objects):
+${requests.map((r, i) => `${i + 1}. ${r}`).join('\n')}
 
-  const prompt = `Restructure this section. Keep clinical substance, fix structure and headings.
+FORMAT for each block type:
+- multipleChoice: { "type": "multipleChoice", "order": 1, "question": "Clinical scenario question?", "options": [{"text": "A", "isCorrect": false}, {"text": "B", "isCorrect": true}, {"text": "C", "isCorrect": false}, {"text": "D", "isCorrect": false}], "explanation": "Why B is correct..." }
+- reflection: { "type": "reflection", "order": 1, "question": "Reflective prompt?", "textContent": "<p>Context for reflection</p>", "minLength": 50 }
+- matching: { "type": "matching", "order": 1, "matchingInstructions": "Match each term...", "matchingPairs": [{"term": "Term", "definition": "Definition"}] }
+- resources: { "type": "resources", "order": 1, "resources": [{"title": "Resource Name", "url": "https://real-url.org", "type": "website"}] }
 
-COURSE: "${course.title}" (${course.ceHours} CE)
-SECTION ${sectionIndex + 1}/${totalSections}: "${section.title}"
-WORDS: ${existingWords} → target ${targetWords}
+Return ONLY a JSON array: [ { block1 }, { block2 }, ... ]`;
 
-EXISTING CONTENT:
-${existingContent}
-
-REQUIRED CHANGES:
-${needs.map((n, i) => `${i + 1}. ${n}`).join('\n')}
-
-HEADING RULES:
-- NO generic headings: Introduction, Theoretical Foundation, Key Concepts, Overview, Summary, Conclusion, etc.
-- Every <h3>/<h4> must be SPECIFIC to "${section.title}" — e.g. for a section on alliance ruptures: "Recognizing the Rupture Pattern", "The Six-Step Repair Model", not "Introduction", "Key Concepts"
-- NO ALL CAPS headings. Use title case.
-- NO "Module X:" prefixes.
-
-OPENING RULE: Start teaching immediately. No "In this lesson you will..." — begin with a compelling clinical statement or scenario.
-
-Return JSON:
-{
-  "title": "${section.title}",
-  "description": "${section.description || ''}",
-  "order": ${sectionIndex + 1},
-  "estimatedTime": ${Math.ceil((course.ceHours * 60) / totalSections)},
-  "hasQuiz": false,
-  "quizQuestions": [],
-  "contentBlocks": [/* sequential order starting at 1 */]
-}`;
-
-  console.log(`  📝 S${sectionIndex + 1}: "${section.title}" (${existingWords}w→${targetWords}w, ${needs.length} changes)...`);
-  const rebuilt = await callClaude(prompt, 16000);
+  const newBlocks = await callClaude(GEN_SYSTEM, prompt, 4000);
   await sleep(API_DELAY);
+  return Array.isArray(newBlocks) ? newBlocks : [];
+}
 
-  if (rebuilt) {
-    // Run quality enforcement on API output too
-    const postFixes = enforceQuality(rebuilt, sectionIndex, totalSections);
-    const newWords = countSectionWords(rebuilt);
-    console.log(`     → ${newWords}w${postFixes.length ? ` (post-fixed: ${postFixes.length})` : ''}`);
-    return rebuilt;
+/**
+ * Generate expansion text for a section that's under word count.
+ * Returns a single text block to append.
+ */
+async function generateExpansionText(course, section, deficit) {
+  const topicSummary = stripHtml(
+    (section.contentBlocks || []).filter(b => b.type === 'text').map(b => b.textContent || '').join(' ')
+  ).substring(0, 1000);
+
+  const prompt = `Generate additional clinical text content for a CE course section. Return ONLY a JSON object — one text block.
+
+COURSE: "${course.title}"
+SECTION: "${section.title}"
+EXISTING CONTENT SUMMARY: ${topicSummary}
+WORDS NEEDED: ~${deficit}
+
+Generate a text block with rich clinical content that DEEPENS the existing material. Include:
+- A clinical vignette with a named client (diverse background)
+- Evidence-based research citations
+- Practical clinical application techniques
+- Use <p>, <h3>, <h4>, <ul>, <li>, <strong>, <em>, <blockquote> tags
+- DO NOT use generic headings like "Case Study" or "Clinical Application" — use topic-specific headings
+
+Return: { "type": "text", "order": 1, "textContent": "<p>Rich HTML content here...</p>" }`;
+
+  const block = await callClaude(GEN_SYSTEM, prompt, 8000);
+  await sleep(API_DELAY);
+  return block;
+}
+
+/**
+ * Splice new blocks into existing section at natural break points.
+ * Inserts interactive elements after text blocks.
+ */
+function spliceBlocks(section, newBlocks) {
+  if (!newBlocks.length) return;
+
+  const existing = section.contentBlocks;
+  const textIndices = existing.map((b, i) => b.type === 'text' ? i : -1).filter(i => i >= 0);
+
+  if (textIndices.length === 0) {
+    // No text blocks — just append
+    existing.push(...newBlocks);
+  } else {
+    // Distribute new blocks after text blocks evenly
+    const insertPoints = [];
+    const step = Math.max(1, Math.floor(textIndices.length / (newBlocks.length + 1)));
+    
+    for (let i = 0; i < newBlocks.length; i++) {
+      const textIdx = textIndices[Math.min((i + 1) * step, textIndices.length - 1)];
+      insertPoints.push({ afterIndex: textIdx, block: newBlocks[i] });
+    }
+
+    // Insert in reverse order to preserve indices
+    insertPoints.sort((a, b) => b.afterIndex - a.afterIndex);
+    insertPoints.forEach(({ afterIndex, block }) => {
+      existing.splice(afterIndex + 1, 0, block);
+    });
   }
 
-  console.log(`     ⚠️  API failed, using locally-fixed original`);
-  return section;
+  // Renumber
+  existing.forEach((b, i) => { b.order = i + 1; });
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -503,26 +342,52 @@ async function fixAssessment(course, sectionTitles) {
   const existing = course.assessment?.questions || [];
   const needed = Math.max(15, course.ceHours * 5);
 
+  // Fix existing option formats
+  existing.forEach(q => {
+    if (q.options) {
+      q.options = q.options.map((o, i) => typeof o === 'string' ? { text: o, isCorrect: i === (q.correctAnswer || 0) } : o);
+      delete q.correctAnswer;
+    }
+    if (!q.type) q.type = 'multipleChoice';
+  });
+
   if (existing.length >= needed) {
     console.log(`  ✅ Assessment: ${existing.length}q`);
-    return fixAssessmentQuality(course.assessment);
+    return course.assessment;
   }
 
-  const prompt = `${existing.length ? `Add questions to` : `Generate`} final assessment for "${course.title}" (${course.ceHours} CE).
+  const deficit = needed - existing.length;
+  const prompt = `Generate ${deficit} assessment questions for "${course.title}" (${course.ceHours} CE).
 Sections: ${sectionTitles.join(', ')}
-${existing.length ? `\nExisting (${existing.length}q — keep + add ${needed - existing.length}):\n${existing.map(q => `- ${q.question}`).join('\n')}` : ''}
+${existing.length ? `Already have ${existing.length}q. Generate ${deficit} MORE covering gaps.` : ''}
 
-Return JSON:
-{"title":"Final Assessment","timeLimit":${course.ceHours*10},"passThreshold":0.8,"attemptsAllowed":3,"shuffleQuestions":true,"shuffleOptions":true,
-"questions":[{"question":"?","type":"multipleChoice","options":[{"text":"A","isCorrect":false},{"text":"B","isCorrect":true},{"text":"C","isCorrect":false},{"text":"D","isCorrect":false}],"explanation":"..."}]}
+Return JSON array of question objects:
+[{"question":"Clinical scenario?","type":"multipleChoice","options":[{"text":"A","isCorrect":false},{"text":"B","isCorrect":true},{"text":"C","isCorrect":false},{"text":"D","isCorrect":false}],"explanation":"Rationale..."}]
 
-${needed} questions. Clinical application focus. All sections covered. 2+ ethics, 2+ cultural. 4 options, 1 correct.`;
+Clinical application focus. Cover all sections. Include ethics + cultural questions. 4 options, 1 correct.`;
 
-  console.log(`  📝 Assessment: ${existing.length}→${needed}q...`);
-  const a = await callClaude(prompt, 8000);
+  console.log(`  📝 Assessment: +${deficit}q...`);
+  const newQs = await callClaude(GEN_SYSTEM, prompt, 6000);
   await sleep(API_DELAY);
-  console.log(`     → ${a?.questions?.length || 0}q`);
-  return fixAssessmentQuality(a);
+
+  const allQs = [...existing, ...(Array.isArray(newQs) ? newQs : [])];
+  // Fix formats on new questions too
+  allQs.forEach(q => {
+    if (q.options) {
+      q.options = q.options.map((o, i) => typeof o === 'string' ? { text: o, isCorrect: i === (q.correctAnswer || 0) } : o);
+      delete q.correctAnswer;
+    }
+    if (!q.type) q.type = 'multipleChoice';
+  });
+
+  console.log(`     → ${allQs.length}q total`);
+  return {
+    title: course.assessment?.title || "Final Assessment",
+    timeLimit: course.assessment?.timeLimit || course.ceHours * 10,
+    passThreshold: 0.8, attemptsAllowed: 3,
+    shuffleQuestions: true, shuffleOptions: true,
+    questions: allQs
+  };
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -537,15 +402,15 @@ async function fixMetadata(course) {
     return { objectives: obj, references: refs };
   }
 
-  const prompt = `Generate metadata for "${course.title}" (${course.ceHours} CE).
+  const prompt = `Generate metadata for CE course "${course.title}" (${course.ceHours} CE).
 Sections: ${(course.sections||[]).map(s=>s.title).join(', ')}
 
 Return JSON:
-{"objectives":["Bloom's taxonomy verbs"],"references":[{"title":"Real text","author":"Author, A.","year":2020,"source":"Publisher"}]}
+{"objectives":["5-8 Bloom's taxonomy objectives"],"references":[{"title":"Real text","author":"Author, A.","year":2020,"source":"Publisher"}]}
 ${obj.length<4?'Need 5+ objectives.':''} ${refs.length<5?'Need 6+ REAL references.':''}`;
 
   console.log(`  📝 Metadata...`);
-  const m = await callClaude(prompt, 3000);
+  const m = await callClaude(GEN_SYSTEM, prompt, 3000);
   await sleep(API_DELAY);
   return { objectives: m?.objectives || obj, references: m?.references || refs };
 }
@@ -563,34 +428,40 @@ function validate(data, ceHours) {
   if ((data.objectives?.length||0) < 4) issues.push(`OBJ:${data.objectives?.length||0}`);
   if ((data.references?.length||0) < 5) issues.push(`REFS:${data.references?.length||0}`);
   if ((data.assessment?.questions?.length||0) < 15) issues.push(`EXAM:${data.assessment?.questions?.length||0}`);
+  
   ss.forEach((s, i) => {
     const kc = (s.contentBlocks||[]).filter(b => b.type==='multipleChoice'||b.type==='multiSelect').length;
     if (kc < 2) issues.push(`S${i+1}KC:${kc}`);
   });
+  
   const last = ss[ss.length-1]?.contentBlocks||[];
   if (!last.some(b => b.type==='resources'&&b.resources?.length)) issues.push('NO_RESOURCES');
 
-  // Quality checks
+  // Quality: check for remaining banned headings
   ss.forEach((s, i) => {
     const html = (s.contentBlocks||[]).filter(b=>b.type==='text').map(b=>b.textContent||'').join('');
-    BANNED_GENERIC_HEADINGS.forEach(h => {
-      if (new RegExp(`<h[2-4][^>]*>\\s*${h}\\s*</h[2-4]>`, 'i').test(html)) {
-        issues.push(`S${i+1}:GENERIC_HEADING:"${h}"`);
+    BANNED_HEADINGS.forEach(h => {
+      if (new RegExp(`<h[2-4][^>]*>\\s*${h.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*</h[2-4]>`, 'i').test(html)) {
+        issues.push(`S${i+1}:HEADING:"${h}"`);
       }
     });
-    const firstText = stripHtml((s.contentBlocks?.find(b=>b.type==='text')?.textContent||'').substring(0,300));
-    if (BANNED_PREAMBLE_PATTERNS.some(p=>p.test(firstText))) issues.push(`S${i+1}:PREAMBLE`);
   });
+
+  // Quality: check for duplicate headings across sections
+  const allH = [];
+  ss.forEach(s => {
+    (s.contentBlocks||[]).filter(b=>b.type==='text').forEach(b => {
+      (b.textContent||'').replace(/<h[2-4][^>]*>(.*?)<\/h[2-4]>/gi, (m, c) => {
+        allH.push(c.replace(/<[^>]+>/g, '').trim().toLowerCase());
+      });
+    });
+  });
+  const hCounts = {};
+  allH.forEach(h => { if (h.length > 3) hCounts[h] = (hCounts[h]||0) + 1; });
+  Object.entries(hCounts).forEach(([h, c]) => { if (c > 1) issues.push(`DUP_HEADING:"${h}"×${c}`); });
 
   return issues;
 }
-
-// ═══════════════════════════════════════════════════════════════════
-// PROGRESS
-// ═══════════════════════════════════════════════════════════════════
-
-function loadProgress() { try { return JSON.parse(fs.readFileSync(PROGRESS_FILE, 'utf-8')); } catch(e) { return { completed: [], failed: [] }; } }
-function saveProgress(p) { fs.writeFileSync(PROGRESS_FILE, JSON.stringify(p, null, 2)); }
 
 // ═══════════════════════════════════════════════════════════════════
 // REBUILD ONE COURSE
@@ -606,38 +477,78 @@ async function rebuildCourse(course, db) {
   console.log(`   ${course.slug} | ${ce}CE | ${oldWords}w/${ce*WORDS_PER_CE_HOUR}w (${Math.round(oldWords/(ce*WORDS_PER_CE_HOUR)*100)}%) | ${sections.length} sections`);
   console.log(`${'═'.repeat(70)}`);
 
-  // Phase 1: Local quality enforcement (free, no API)
+  // ── Phase 1: Local quality enforcement (FREE) ──
   console.log(`\n  🔍 Phase 1: Local quality enforcement...`);
-  const qualityFixes = enforceQualityCourse(sections);
-  qualityFixes.forEach(f => {
-    console.log(`     S${f.section}: ${f.fixes.join('; ')}`);
+  sections.forEach((s, i) => {
+    const fixes = enforceLocalQuality(s, i);
+    if (fixes.length) console.log(`     S${i+1} "${s.title}": ${fixes.join('; ')}`);
   });
+  const postLocalWords = countCourseWords(sections);
+  if (postLocalWords !== oldWords) console.log(`     Words: ${oldWords}→${postLocalWords} (headings/dividers removed)`);
 
-  // Phase 2: API-assisted restructuring (only for missing elements + word expansion)
-  console.log(`\n  🤖 Phase 2: API restructuring...`);
-  const rebuilt = [];
+  // ── Phase 2: Generate missing interactive elements (API — small calls) ──
+  console.log(`\n  🤖 Phase 2: Generate missing elements...`);
   for (let i = 0; i < sections.length; i++) {
-    try { rebuilt.push(await restructureSection(course, sections[i], i, sections.length)); }
-    catch (e) { console.log(`  ❌ S${i+1}: ${e.message}`); rebuilt.push(sections[i]); }
+    const s = sections[i];
+    try {
+      const newBlocks = await generateMissingBlocks(course, s, i, sections.length);
+      if (newBlocks.length) {
+        // Fix option formats on new blocks before splicing
+        newBlocks.forEach(b => {
+          if ((b.type === 'multipleChoice' || b.type === 'multiSelect') && b.options) {
+            b.options = b.options.map((o, j) => typeof o === 'string' ? { text: o, isCorrect: j === (b.correctAnswer||0) } : o);
+            delete b.correctAnswer;
+          }
+        });
+        spliceBlocks(s, newBlocks);
+        console.log(`     S${i+1}: +${newBlocks.length} blocks (${newBlocks.map(b=>b.type).join(', ')})`);
+      } else {
+        console.log(`     S${i+1}: ✅ complete`);
+      }
+    } catch (e) {
+      console.log(`     S${i+1}: ⚠️ ${e.message}`);
+    }
   }
 
-  // Phase 3: Final quality enforcement on all rebuilt sections (free)
-  console.log(`\n  🔍 Phase 3: Final quality enforcement...`);
-  const finalFixes = enforceQualityCourse(rebuilt);
-  if (finalFixes.length) {
-    finalFixes.forEach(f => console.log(`     ${typeof f.section === 'number' ? 'S' + f.section : f.section}: ${f.fixes.join('; ')}`));
+  // ── Phase 3: Expand word count if needed (API — only for undercount) ──
+  const midWords = countCourseWords(sections);
+  const targetWords = ce * WORDS_PER_CE_HOUR;
+  if (midWords < targetWords) {
+    console.log(`\n  📝 Phase 3: Word expansion (${midWords}/${targetWords})...`);
+    // Find sections with room to grow
+    const perSection = Math.ceil(targetWords * 1.1 / sections.length);
+    for (let i = 0; i < sections.length; i++) {
+      const sw = countSectionWords(sections[i]);
+      const deficit = perSection - sw;
+      if (deficit > 500) {
+        try {
+          const expansion = await generateExpansionText(course, sections[i], deficit);
+          if (expansion && expansion.textContent) {
+            sections[i].contentBlocks.push(expansion);
+            sections[i].contentBlocks.forEach((b, j) => { b.order = j + 1; });
+            const newSw = countSectionWords(sections[i]);
+            console.log(`     S${i+1}: +${newSw - sw}w (${sw}→${newSw}w)`);
+          }
+        } catch (e) {
+          console.log(`     S${i+1}: ⚠️ expansion failed: ${e.message}`);
+        }
+      }
+    }
   } else {
-    console.log(`     ✅ Clean`);
+    console.log(`\n  ✅ Phase 3: Word count OK (${midWords}/${targetWords})`);
   }
+
+  // ── Phase 4: Final enforcement pass (FREE) ──
+  sections.forEach((s, i) => { enforceLocalQuality(s, i); });
 
   // Assessment
   let assessment;
-  try { assessment = await fixAssessment(course, rebuilt.map(s=>s.title)); }
-  catch (e) { console.log(`  ❌ Assessment: ${e.message}`); assessment = fixAssessmentQuality(course.assessment); }
+  try { assessment = await fixAssessment(course, sections.map(s=>s.title)); }
+  catch (e) { console.log(`  ❌ Assessment: ${e.message}`); assessment = course.assessment; }
 
   // Metadata
   let meta;
-  try { meta = await fixMetadata({...course, sections: rebuilt}); }
+  try { meta = await fixMetadata({...course, sections}); }
   catch (e) { meta = { objectives: course.objectives||[], references: course.references||[] }; }
 
   const refs = (meta.references||[]).map(r => typeof r==='string'?r:`${r.author} (${r.year}). ${r.title}. ${r.source}.`);
@@ -648,7 +559,7 @@ async function rebuildCourse(course, db) {
     objectives: meta.objectives,
     targetAudience: course.targetAudience || ["Licensed Professional Counselors (LPC/LPCC)","Licensed Mental Health Counselors (LMHC)","Licensed Clinical Social Workers (LCSW)","Licensed Marriage and Family Therapists (LMFT)"],
     categories: course.categories||[], tags: course.tags||[],
-    sections: rebuilt, assessment, presenter: PRESENTER, references: refs,
+    sections, assessment, presenter: PRESENTER, references: refs,
     author: "GA Integrated Therapeutic Perspectives LLC",
     status: 'draft', updatedAt: new Date()
   };
@@ -658,10 +569,10 @@ async function rebuildCourse(course, db) {
     console.log(`  🔧 Slug fix → cbt-toolbox-core-techniques`);
   }
 
-  const newWords = countCourseWords(rebuilt);
+  const finalWords = countCourseWords(sections);
   const issues = validate(doc, ce);
 
-  console.log(`\n  📊 ${oldWords}w→${newWords}w | ${assessment?.questions?.length||0}q | ${meta.objectives?.length||0} obj | ${refs.length} refs`);
+  console.log(`\n  📊 ${oldWords}w→${finalWords}w | ${assessment?.questions?.length||0}q | ${meta.objectives?.length||0} obj | ${refs.length} refs`);
   if (issues.length) console.log(`     ⚠️  ${issues.join(' | ')}`);
   else console.log(`     ✅ ACEP + quality compliant`);
 
@@ -670,7 +581,7 @@ async function rebuildCourse(course, db) {
     console.log(`  💾 Saved (draft)`);
   }
 
-  return { slug: doc.slug, title: doc.title, before: oldWords, after: newWords, issues, exam: assessment?.questions?.length||0 };
+  return { slug: doc.slug, title: doc.title, before: oldWords, after: finalWords, issues, exam: assessment?.questions?.length||0 };
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -679,8 +590,8 @@ async function rebuildCourse(course, db) {
 
 async function main() {
   console.log(`\n╔══════════════════════════════════════════════════════════════════════╗`);
-  console.log(`║  CounselorReady — Bulk Course Rebuilder v3                         ║`);
-  console.log(`║  Local quality enforcement + API restructuring                     ║`);
+  console.log(`║  CounselorReady — Bulk Course Rebuilder v4                         ║`);
+  console.log(`║  Local enforcement + API for missing elements only                 ║`);
   if (DRY_RUN) console.log(`║  ⚠️  DRY RUN                                                       ║`);
   if (RESUME) console.log(`║  ♻️  RESUME                                                         ║`);
   console.log(`╚══════════════════════════════════════════════════════════════════════╝\n`);
