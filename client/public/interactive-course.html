@@ -32,7 +32,7 @@
               400: '#D4A855', 500: '#C69840', 600: '#B8872C', 700: '#9A6F1A'
             },
             navy: {
-              300: '#7D9AB2', 400: '#5A7A94', 500: '#456177', 600: '#284157',
+              300: '#7D9AB2', 400: '#5A7A94', 500: '#456177', 600: '#34495E',
               700: '#2C3E50', 800: '#1A252F', 900: '#111820'
             },
             gold: { 50: '#fefce8', 100: '#fef9c3', 200: '#fef08a', 300: '#fde047', 400: '#facc15', 500: '#d4a012' }
@@ -145,189 +145,9 @@
     .high-contrast-mode h4 { color: #000 !important; }
     .high-contrast-mode .prose * { color: #000 !important; }
     .high-contrast-mode * { border-color: #333 !important; }
-
-    /* ============================================ */
-    /* APA 7TH EDITION CLINICAL STYLING            */
-    /* ============================================ */
-    
-    /* APA Typography - H1 and H2 use Cormorant Garamond */
-    .apa-h1, h1.apa-level-1 {
-      font-family: 'Cormorant Garamond', serif;
-      text-align: center;
-      font-weight: 700;
-      color: #6B1D34;
-      text-transform: capitalize;
-    }
-
-    .apa-h2, h2.apa-level-2 {
-      font-family: 'Cormorant Garamond', serif;
-      text-align: left;
-      font-weight: 700;
-      color: #284157;
-      text-transform: capitalize;
-    }
-
-    /* Top Header - Burgundy text on eggshell */
-    .course-top-header {
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      background: #F5F5DC;
-      padding: 1.5rem 2rem;
-      text-align: center;
-      border-bottom: 2px solid #E5E5DC;
-    }
-
-    .course-top-header h1 {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 1.75rem;
-      font-weight: 700;
-      color: #6B1D34;
-      margin: 0;
-    }
-
-    /* Essential for Post-Test Callout */
-    .essential-callout {
-      background-color: #FFFFFF;
-      border: 3px solid #6B1D34;
-      border-left: 8px solid #6B1D34;
-      border-radius: 8px;
-      padding: 1.5rem;
-      margin: 2rem 0;
-      position: relative;
-      box-shadow: 0 4px 12px rgba(107, 29, 52, 0.15);
-    }
-
-    .essential-callout::before {
-      content: "📣";
-      position: absolute;
-      top: -16px;
-      left: 20px;
-      background: #FFFFFF;
-      padding: 0 8px;
-      font-size: 1.5rem;
-    }
-
-    .essential-callout-title {
-      color: #6B1D34;
-      font-weight: 700;
-      font-size: 0.875rem;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      margin-bottom: 0.75rem;
-    }
-
-    .essential-callout-title::after {
-      content: "ESSENTIAL FOR POST-TEST";
-    }
-
-    .essential-callout-content {
-      color: #2C3E50;
-      line-height: 1.6;
-      font-weight: 500;
-    }
-
-    .essential-callout-content strong {
-      color: #6B1D34;
-      font-weight: 700;
-    }
-
-    /* Clinical Pearl - Honey border */
-    .clinical-pearl {
-      background-color: #FFFFFF;
-      border: 2px solid #D4A855;
-      border-radius: 8px;
-      padding: 1.5rem;
-      margin: 2rem 0;
-      position: relative;
-      box-shadow: 0 2px 6px rgba(212, 168, 85, 0.15);
-    }
-
-    .clinical-pearl::before {
-      content: "💡";
-      position: absolute;
-      top: -12px;
-      left: 20px;
-      background: #FFFFFF;
-      padding: 0 8px;
-      font-size: 1.25rem;
-    }
-
-    .clinical-pearl-title {
-      color: #D4A855;
-      font-weight: 700;
-      font-size: 0.875rem;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      margin-bottom: 0.75rem;
-    }
-
-    /* Functional Content Modes */
-    .assessment-box {
-      background-color: #FFFFFF;
-      border: 2px solid #6B1D34;
-      border-radius: 8px;
-      padding: 1.5rem;
-      margin: 2rem 0;
-    }
-
-    .assessment-box-title {
-      color: #6B1D34;
-      font-weight: 700;
-      font-size: 0.875rem;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      margin-bottom: 0.75rem;
-    }
-
-    .intervention-box {
-      background-color: #FFFFFF;
-      border: 2px solid #4A7C59;
-      border-radius: 8px;
-      padding: 1.5rem;
-      margin: 2rem 0;
-    }
-
-    .intervention-box-title {
-      color: #4A7C59;
-      font-weight: 700;
-      font-size: 0.875rem;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      margin-bottom: 0.75rem;
-    }
-
-    .protocol-box {
-      background-color: #FFFFFF;
-      border: 2px solid #284157;
-      border-radius: 8px;
-      padding: 1.5rem;
-      margin: 2rem 0;
-    }
-
-    .protocol-box-title {
-      color: #284157;
-      font-weight: 700;
-      font-size: 0.875rem;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      margin-bottom: 0.75rem;
-    }
-
-    .urgent-alert {
-      display: inline-block;
-      background: #6B1D34;
-      color: #D4A855;
-      padding: 0.25rem 0.75rem;
-      border-radius: 12px;
-      font-weight: 700;
-      font-size: 0.75rem;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
   </style>
 </head>
-<body class="font-sans min-h-screen" style="background-color: #F5F5DC !important;">
+<body class="bg-slate-50 font-sans min-h-screen">
   
   <!-- Skip Link for Keyboard Navigation -->
   <a href="#content-area" class="skip-link">Skip to main content</a>
@@ -425,54 +245,54 @@
     <!-- Main Content -->
     <main class="lg:ml-72">
       
-      <!-- Top Header - Burgundy on Eggshell -->
-      <header class="course-top-header">
-        <h1 id="section-title"></h1>
-      </header>
-
-      <!-- Accessibility Toolbar (moved below header) -->
-      <div class="sticky top-0 z-30 bg-white border-b border-slate-200 px-4 py-2 flex items-center justify-end gap-1">
-        <div class="relative">
-          <button id="a11y-toggle" onclick="toggleA11yPanel()" class="p-2 text-slate-400 hover:text-burgundy-700 hover:bg-burgundy-50 rounded-lg transition-colors" aria-label="Accessibility options" title="Accessibility Options">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
-          </button>
-          <div id="a11y-panel" class="hidden absolute right-0 top-full mt-2 w-72 bg-white rounded-xl shadow-lg border border-slate-200 z-50 p-4">
-            <div class="flex items-center justify-between mb-4">
-              <h3 class="font-bold text-slate-700 text-sm">Accessibility Options</h3>
-              <button onclick="toggleA11yPanel()" class="text-slate-400 hover:text-slate-600 text-lg leading-none">&times;</button>
-            </div>
-            <!-- Font Size -->
-            <div class="mb-4">
-              <label class="text-sm font-medium text-slate-600 mb-2 block">Text Size</label>
-              <div class="flex gap-2">
-                <button onclick="setFontSize('normal')" id="fs-normal" class="flex-1 py-2 rounded-lg font-semibold text-sm bg-burgundy-800 text-white transition-colors">A</button>
-                <button onclick="setFontSize('large')" id="fs-large" class="flex-1 py-2 rounded-lg font-semibold text-base bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors">A</button>
-                <button onclick="setFontSize('x-large')" id="fs-xlarge" class="flex-1 py-2 rounded-lg font-semibold text-lg bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors">A</button>
+      <!-- Top Bar -->
+      <header class="bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between sticky top-0 z-30">
+        <div class="lg:hidden w-10"></div>
+        <h1 id="section-title" class="text-lg font-semibold text-slate-800 text-center flex-1"></h1>
+        <div class="flex items-center gap-1">
+          <!-- Accessibility Toolbar -->
+          <div class="relative">
+            <button id="a11y-toggle" onclick="toggleA11yPanel()" class="p-2 text-slate-400 hover:text-burgundy-700 hover:bg-burgundy-50 rounded-lg transition-colors" aria-label="Accessibility options" title="Accessibility Options">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+            </button>
+            <div id="a11y-panel" class="hidden absolute right-0 top-full mt-2 w-72 bg-white rounded-xl shadow-lg border border-slate-200 z-50 p-4">
+              <div class="flex items-center justify-between mb-4">
+                <h3 class="font-bold text-slate-700 text-sm">Accessibility Options</h3>
+                <button onclick="toggleA11yPanel()" class="text-slate-400 hover:text-slate-600 text-lg leading-none">&times;</button>
               </div>
+              <!-- Font Size -->
+              <div class="mb-4">
+                <label class="text-sm font-medium text-slate-600 mb-2 block">Text Size</label>
+                <div class="flex gap-2">
+                  <button onclick="setFontSize('normal')" id="fs-normal" class="flex-1 py-2 rounded-lg font-semibold text-sm bg-burgundy-800 text-white transition-colors">A</button>
+                  <button onclick="setFontSize('large')" id="fs-large" class="flex-1 py-2 rounded-lg font-semibold text-base bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors">A</button>
+                  <button onclick="setFontSize('x-large')" id="fs-xlarge" class="flex-1 py-2 rounded-lg font-semibold text-lg bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors">A</button>
+                </div>
+              </div>
+              <!-- High Contrast -->
+              <div class="mb-4">
+                <button onclick="toggleHighContrast()" id="hc-btn" class="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors">
+                  <span>High Contrast</span>
+                  <span id="hc-indicator" class="w-9 h-5 rounded-full bg-slate-300 relative inline-block"><span id="hc-dot" class="absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-all"></span></span>
+                </button>
+              </div>
+              <!-- Read Aloud -->
+              <div class="mb-2">
+                <button onclick="toggleReadAloud()" id="tts-btn" class="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors">
+                  <span>Read Aloud (TTS)</span>
+                  <span id="tts-indicator" class="w-9 h-5 rounded-full bg-slate-300 relative inline-block"><span id="tts-dot" class="absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-all"></span></span>
+                </button>
+              </div>
+              <p class="text-xs text-slate-400 mt-3 pt-3 border-t border-slate-100">Settings apply to this session only.</p>
             </div>
-            <!-- High Contrast -->
-            <div class="mb-4">
-              <button onclick="toggleHighContrast()" id="hc-btn" class="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors">
-                <span>High Contrast</span>
-                <span id="hc-indicator" class="w-9 h-5 rounded-full bg-slate-300 relative inline-block"><span id="hc-dot" class="absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-all"></span></span>
-              </button>
-            </div>
-            <!-- Read Aloud -->
-            <div class="mb-2">
-              <button onclick="toggleReadAloud()" id="tts-btn" class="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors">
-                <span>Read Aloud (TTS)</span>
-                <span id="tts-indicator" class="w-9 h-5 rounded-full bg-slate-300 relative inline-block"><span id="tts-dot" class="absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-all"></span></span>
-              </button>
-            </div>
-            <p class="text-xs text-slate-400 mt-3 pt-3 border-t border-slate-100">Settings apply to this session only.</p>
           </div>
+          <a href="/dashboard.html" class="p-2 text-slate-400 hover:text-slate-600">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+            </svg>
+          </a>
         </div>
-        <a href="/dashboard.html" class="p-2 text-slate-400 hover:text-slate-600">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
-          </svg>
-        </a>
-      </div>
+      </header>
 
       <!-- Content Area (Sections) -->
       <div id="content-area" role="main" aria-label="Course content" tabindex="-1" class="p-6 lg:p-8 max-w-4xl mx-auto"></div>
@@ -878,7 +698,7 @@
                 <span class="text-burgundy-700 font-bold">${block.sectionNumber || ''}</span>
               </div>
               <div>
-                <h2 class="apa-h2">${block.title || ''}</h2>
+                <h2 class="text-xl font-bold text-slate-800">${block.title || ''}</h2>
                 ${block.subtitle ? `<p class="text-slate-500">${block.subtitle}</p>` : ''}
               </div>
             </div>
