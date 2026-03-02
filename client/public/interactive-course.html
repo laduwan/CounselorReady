@@ -32,7 +32,7 @@
               400: '#D4A855', 500: '#C69840', 600: '#B8872C', 700: '#9A6F1A'
             },
             navy: {
-              300: '#7D9AB2', 400: '#5A7A94', 500: '#456177', 600: '#34495E',
+              300: '#7D9AB2', 400: '#5A7A94', 500: '#456177', 600: '#284157',
               700: '#2C3E50', 800: '#1A252F', 900: '#111820'
             },
             gold: { 50: '#fefce8', 100: '#fef9c3', 200: '#fef08a', 300: '#fde047', 400: '#facc15', 500: '#d4a012' }
@@ -145,9 +145,189 @@
     .high-contrast-mode h4 { color: #000 !important; }
     .high-contrast-mode .prose * { color: #000 !important; }
     .high-contrast-mode * { border-color: #333 !important; }
+
+    /* ============================================ */
+    /* APA 7TH EDITION CLINICAL STYLING            */
+    /* ============================================ */
+    
+    /* APA Typography - H1 and H2 use Cormorant Garamond */
+    .apa-h1, h1.apa-level-1 {
+      font-family: 'Cormorant Garamond', serif;
+      text-align: center;
+      font-weight: 700;
+      color: #6B1D34;
+      text-transform: capitalize;
+    }
+
+    .apa-h2, h2.apa-level-2 {
+      font-family: 'Cormorant Garamond', serif;
+      text-align: left;
+      font-weight: 700;
+      color: #284157;
+      text-transform: capitalize;
+    }
+
+    /* Top Header - Burgundy text on eggshell */
+    .course-top-header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: #F5F5DC;
+      padding: 1.5rem 2rem;
+      text-align: center;
+      border-bottom: 2px solid #E5E5DC;
+    }
+
+    .course-top-header h1 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: #6B1D34;
+      margin: 0;
+    }
+
+    /* Essential for Post-Test Callout */
+    .essential-callout {
+      background-color: #FFFFFF;
+      border: 3px solid #6B1D34;
+      border-left: 8px solid #6B1D34;
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin: 2rem 0;
+      position: relative;
+      box-shadow: 0 4px 12px rgba(107, 29, 52, 0.15);
+    }
+
+    .essential-callout::before {
+      content: "📣";
+      position: absolute;
+      top: -16px;
+      left: 20px;
+      background: #FFFFFF;
+      padding: 0 8px;
+      font-size: 1.5rem;
+    }
+
+    .essential-callout-title {
+      color: #6B1D34;
+      font-weight: 700;
+      font-size: 0.875rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 0.75rem;
+    }
+
+    .essential-callout-title::after {
+      content: "ESSENTIAL FOR POST-TEST";
+    }
+
+    .essential-callout-content {
+      color: #2C3E50;
+      line-height: 1.6;
+      font-weight: 500;
+    }
+
+    .essential-callout-content strong {
+      color: #6B1D34;
+      font-weight: 700;
+    }
+
+    /* Clinical Pearl - Honey border */
+    .clinical-pearl {
+      background-color: #FFFFFF;
+      border: 2px solid #D4A855;
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin: 2rem 0;
+      position: relative;
+      box-shadow: 0 2px 6px rgba(212, 168, 85, 0.15);
+    }
+
+    .clinical-pearl::before {
+      content: "💡";
+      position: absolute;
+      top: -12px;
+      left: 20px;
+      background: #FFFFFF;
+      padding: 0 8px;
+      font-size: 1.25rem;
+    }
+
+    .clinical-pearl-title {
+      color: #D4A855;
+      font-weight: 700;
+      font-size: 0.875rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 0.75rem;
+    }
+
+    /* Functional Content Modes */
+    .assessment-box {
+      background-color: #FFFFFF;
+      border: 2px solid #6B1D34;
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin: 2rem 0;
+    }
+
+    .assessment-box-title {
+      color: #6B1D34;
+      font-weight: 700;
+      font-size: 0.875rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 0.75rem;
+    }
+
+    .intervention-box {
+      background-color: #FFFFFF;
+      border: 2px solid #4A7C59;
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin: 2rem 0;
+    }
+
+    .intervention-box-title {
+      color: #4A7C59;
+      font-weight: 700;
+      font-size: 0.875rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 0.75rem;
+    }
+
+    .protocol-box {
+      background-color: #FFFFFF;
+      border: 2px solid #284157;
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin: 2rem 0;
+    }
+
+    .protocol-box-title {
+      color: #284157;
+      font-weight: 700;
+      font-size: 0.875rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 0.75rem;
+    }
+
+    .urgent-alert {
+      display: inline-block;
+      background: #6B1D34;
+      color: #D4A855;
+      padding: 0.25rem 0.75rem;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
   </style>
 </head>
-<body class="bg-slate-50 font-sans min-h-screen">
+<body class="font-sans min-h-screen" style="background-color: #F5F5DC !important;">
   
   <!-- Skip Link for Keyboard Navigation -->
   <a href="#content-area" class="skip-link">Skip to main content</a>
