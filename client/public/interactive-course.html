@@ -32,7 +32,7 @@
               400: '#D4A855', 500: '#C69840', 600: '#B8872C', 700: '#9A6F1A'
             },
             navy: {
-              300: '#7D9AB2', 400: '#5A7A94', 500: '#456177', 600: '#34495E',
+              300: '#7D9AB2', 400: '#5A7A94', 500: '#456177', 600: '#284157',
               700: '#2C3E50', 800: '#1A252F', 900: '#111820'
             },
             gold: { 50: '#fefce8', 100: '#fef9c3', 200: '#fef08a', 300: '#fde047', 400: '#facc15', 500: '#d4a012' }
@@ -147,7 +147,7 @@
     .high-contrast-mode * { border-color: #333 !important; }
   </style>
 </head>
-<body class="bg-slate-50 font-sans min-h-screen">
+<body class="font-sans min-h-screen" style="background-color: #F5F5DC !important;">
   
   <!-- Skip Link for Keyboard Navigation -->
   <a href="#content-area" class="skip-link">Skip to main content</a>
@@ -245,10 +245,15 @@
     <!-- Main Content -->
     <main class="lg:ml-72">
       
-      <!-- Top Bar -->
-      <header class="bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between sticky top-0 z-30">
+      <!-- APA Top Header - Burgundy on Eggshell -->
+      <header style="position: sticky; top: 0; z-index: 100; background: #F5F5DC; padding: 1.5rem 2rem; text-align: center; border-bottom: 2px solid #E5E5DC;">
+        <h1 id="section-title" style="font-family: 'Cormorant Garamond', serif; font-size: 1.75rem; font-weight: 700; color: #6B1D34; margin: 0;"></h1>
+      </header>
+
+      <!-- Top Bar with Accessibility -->
+      <div class="bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between sticky top-0 z-30" style="top: 80px;">
         <div class="lg:hidden w-10"></div>
-        <h1 id="section-title" class="text-lg font-semibold text-slate-800 text-center flex-1"></h1>
+        <div class="flex-1"></div>
         <div class="flex items-center gap-1">
           <!-- Accessibility Toolbar -->
           <div class="relative">
@@ -292,7 +297,7 @@
             </svg>
           </a>
         </div>
-      </header>
+      </div>
 
       <!-- Content Area (Sections) -->
       <div id="content-area" role="main" aria-label="Course content" tabindex="-1" class="p-6 lg:p-8 max-w-4xl mx-auto"></div>
@@ -698,7 +703,7 @@
                 <span class="text-burgundy-700 font-bold">${block.sectionNumber || ''}</span>
               </div>
               <div>
-                <h2 class="text-xl font-bold text-slate-800">${block.title || ''}</h2>
+                <h2 class="text-xl font-bold" style="font-family: 'Cormorant Garamond', serif; color: #284157;">${block.title || ''}</h2>
                 ${block.subtitle ? `<p class="text-slate-500">${block.subtitle}</p>` : ''}
               </div>
             </div>
