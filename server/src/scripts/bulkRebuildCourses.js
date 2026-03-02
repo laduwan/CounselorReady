@@ -180,7 +180,11 @@ function enforceLocalQuality(section, sectionIndex) {
 
   // 5. Remove empty text blocks
   section.contentBlocks = section.contentBlocks.filter(b => {
-    if (b.type === 'text' && (!b.textContent || stripHtml(b.textContent).length < 10)) return false;
+    if (b.type === 'text') {
+      const hasText = (b.textContent && stripHtml(b.textContent).length >= 10) || 
+                      (b.content && stripHtml(b.content).length >= 10);
+      if (!hasText) return false;
+    }
     return true;
   });
 
@@ -480,8 +484,26 @@ async function rebuildCourse(course, db) {
   // ── Phase 1: Local quality enforcement (FREE) ──
   console.log(`\n  🔍 Phase 1: Local quality enforcement...`);
   sections.forEach((s, i) => {
+    const wordsBefore = countSectionWords(s);
+    const backup = JSON.parse(JSON.stringify(s)); // deep clone
     const fixes = enforceLocalQuality(s, i);
-    if (fixes.length) console.log(`     S${i+1} "${s.title}": ${fixes.join('; ')}`);
+    const wordsAfter = countSectionWords(s);
+    
+    // SAFETY: if we lost more than 10% of words, roll back
+    if (wordsBefore > 0 && wordsAfter < wordsBefore * 0.9) {
+      console.log(`     ⛔ S${i+1} "${s.title}": enforcement dropped ${wordsBefore}→${wordsAfter}w — ROLLED BACK`);
+      Object.assign(s, backup);
+      // Still apply safe-only fixes: sectionDivider removal and option format fixes
+      s.contentBlocks = (s.contentBlocks || []).filter(b => {
+        if (b.type !== 'sectionDivider') return true;
+        const dt = (b.title || '').toLowerCase().replace(/module \d+[:\s]*/i, '').trim();
+        const st = (s.title || '').toLowerCase().replace(/module \d+[:\s]*/i, '').trim();
+        return dt !== st && !dt.includes(st) && !st.includes(dt) && dt.length >= 3;
+      });
+      s.contentBlocks.forEach((b, j) => { b.order = j + 1; });
+    } else if (fixes.length) {
+      console.log(`     S${i+1} "${s.title}": ${fixes.join('; ')}${wordsAfter !== wordsBefore ? ` (${wordsBefore}→${wordsAfter}w)` : ''}`);
+    }
   });
   const postLocalWords = countCourseWords(sections);
   if (postLocalWords !== oldWords) console.log(`     Words: ${oldWords}→${postLocalWords} (headings/dividers removed)`);
@@ -538,8 +560,13 @@ async function rebuildCourse(course, db) {
     console.log(`\n  ✅ Phase 3: Word count OK (${midWords}/${targetWords})`);
   }
 
-  // ── Phase 4: Final enforcement pass (FREE) ──
-  sections.forEach((s, i) => { enforceLocalQuality(s, i); });
+  // ── Phase 4: Final enforcement pass (FREE, with safety) ──
+  sections.forEach((s, i) => {
+    const wb = countSectionWords(s);
+    const bk = JSON.parse(JSON.stringify(s));
+    enforceLocalQuality(s, i);
+    if (wb > 0 && countSectionWords(s) < wb * 0.9) Object.assign(s, bk);
+  });
 
   // Assessment
   let assessment;
