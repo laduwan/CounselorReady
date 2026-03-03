@@ -1582,7 +1582,7 @@ function generateBlocksFromSource(mod, moduleIndex, outline) {
 
   // If very little content was parsed, add placeholder
   if (blocks.length <= 1) {
-    blocks.push({ id: uid(), type: "text", content: `<h2>${mod.title}</h2><p>${src.substring(0, 3000)}</p>` });
+    blocks.push({ id: uid(), type: "text", content: `<h2>${mod.title}</h2><p>${src.substring(0, 8000)}</p>` });
   }
 
   // Add knowledge checks
@@ -1714,7 +1714,7 @@ function AIGenerator({ onGenerated }) {
 
       const totalWords = countWords(content);
       const estimatedCE = Math.max(1, Math.round(totalWords / 6000));
-      setCeHours(Math.min(6, estimatedCE));
+      setCeHours(estimatedCE);
 
       // Build modules from detected headers or create defaults
       const moduleCount = detectedModules.length >= 2 ? detectedModules.length : Math.max(4, estimatedCE * 2);
@@ -1740,7 +1740,7 @@ function AIGenerator({ onGenerated }) {
       setOutline({
         title: topic.trim() || `${fileTitle}: Evidence-Based Approaches for Mental Health Professionals`,
         description: `This comprehensive ${estimatedCE}-hour continuing education course is based on uploaded content covering ${fileTitle.toLowerCase()}. Content will be expanded to meet ACEP standards with knowledge checks, interactive elements, and assessment items.`,
-        ceHours: Math.min(6, estimatedCE),
+        ceHours: estimatedCE,
         level,
         category,
         targetAudience: ["LPCs", "LMHCs", "LCSWs", "LMFTs", "Psychologists", "Psychiatric NPs"],
@@ -1850,7 +1850,7 @@ function AIGenerator({ onGenerated }) {
         totalModules: moduleCount,
         ceHours: outline.ceHours,
         category: outline.category === "Ethics" ? "ethics" : outline.category === "Crisis" ? "crisis" : "core",
-        sourceContent: sourceContent.substring(0, 3000),
+        sourceContent: sourceContent.substring(0, 8000),
         additionalNotes: additionalNotes || "",
         generateQuiz: true,
       };
@@ -2075,7 +2075,7 @@ function AIGenerator({ onGenerated }) {
                 <div>
                   <label style={S.label}>CE Hours *</label>
                   <select style={S.input} value={ceHours} onChange={e => setCeHours(Number(e.target.value))}>
-                    {[1, 2, 3, 4, 5, 6].map(h => <option key={h} value={h}>{h} CE Hour{h > 1 ? "s" : ""}</option>)}
+                    {[1, 2, 3, 4, 5, 6, 7, 8].map(h => <option key={h} value={h}>{h} CE Hour{h > 1 ? "s" : ""}</option>)}
                   </select>
                 </div>
                 <div>
@@ -2296,7 +2296,7 @@ function parseMarkdownToCourse(content, filename) {
     } else {
       modules.push({
         id: uid(), number: 1, title: "Module 1: Course Content",
-        blocks: [{ id: uid(), type: "text", content: content.substring(0, 10000) }],
+        blocks: [{ id: uid(), type: "text", content: content }],
         knowledgeChecks: 0, estimatedWords: countWords(content),
       });
     }
@@ -2306,7 +2306,7 @@ function parseMarkdownToCourse(content, filename) {
       const section = content.substring(hdr.index, nextIdx);
       const blocks = [
         { id: uid(), type: "sectionDivider", title: `Module ${hdr.num}: ${hdr.title}`, sectionNumber: hdr.num },
-        { id: uid(), type: "text", content: section.replace(/^#{1,3}.+$/gm, "").trim().substring(0, 10000) },
+        { id: uid(), type: "text", content: section.replace(/^#{1,3}.+$/gm, "").trim() },
       ];
       modules.push({
         id: uid(), number: hdr.num, title: `Module ${hdr.num}: ${hdr.title}`,
