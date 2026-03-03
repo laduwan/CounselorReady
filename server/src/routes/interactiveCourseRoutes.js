@@ -120,6 +120,45 @@ router.get('/:id', async (req, res) => {
   }
 });
 
+/**
+ * PUT /api/interactive-courses/:id
+ * Update course fields (publish/unpublish, metadata, etc.)
+ * Syncs status and isPublished to prevent dual-field desync
+ */
+router.put('/:id', protect, async (req, res) => {
+  try {
+    const course = await Course.findById(req.params.id);
+    if (!course) {
+      return res.status(404).json({ success: false, error: 'Course not found' });
+    }
+
+    const updates = req.body;
+
+    // Sync dual publish fields — if either is set, sync the other
+    if (updates.status === 'published' || updates.isPublished === true) {
+      updates.status = 'published';
+      updates.isPublished = true;
+      if (!course.publishedAt) updates.publishedAt = new Date();
+    } else if (updates.status === 'draft' || updates.isPublished === false) {
+      updates.status = 'draft';
+      updates.isPublished = false;
+    }
+
+    updates.updatedAt = new Date();
+
+    const updated = await Course.findByIdAndUpdate(
+      req.params.id,
+      { $set: updates },
+      { new: true }
+    );
+
+    res.json({ success: true, data: updated });
+  } catch (error) {
+    console.error('Error updating course:', error);
+    res.status(500).json({ success: false, error: 'Failed to update course' });
+  }
+});
+
 // ============================================================================
 // PROGRESS ROUTES (Protected)
 // ============================================================================
