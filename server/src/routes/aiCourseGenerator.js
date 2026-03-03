@@ -135,7 +135,8 @@ Requirements:
     }
 
     // Step 4: Generate assessment questions
-    const assessmentPrompt = `Create 15 multiple-choice assessment questions for a ${ceHours}-hour CE course on ${topic}. 
+    const questionCount = Math.max(15, Math.ceil(ceHours) * 5);
+    const assessmentPrompt = `Create ${questionCount} multiple-choice assessment questions for a ${ceHours}-hour CE course on ${topic}. 
     
 Format each as:
 {
@@ -145,11 +146,11 @@ Format each as:
   "explanation": "Why this is correct"
 }
 
-Return ONLY a JSON array of 15 questions.`;
+Return ONLY a JSON array of ${questionCount} questions.`;
 
     const assessmentResponse = await anthropic.messages.create({
       model: 'claude-sonnet-4-20250514',
-      max_tokens: 4000,
+      max_tokens: 8000,
       messages: [{
         role: 'user',
         content: assessmentPrompt
@@ -171,7 +172,7 @@ Return ONLY a JSON array of 15 questions.`;
     // Step 5: Build final course object
     const course = {
       title: topic || `${ceHours}-Hour CE Course`,
-      ceHours: parseInt(ceHours),
+      ceHours: parseFloat(ceHours) || 3,
       level,
       category,
       description: `A comprehensive ${ceHours}-hour continuing education course for mental health professionals on ${topic}.`,
