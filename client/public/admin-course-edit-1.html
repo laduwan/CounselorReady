@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Edit Course | CounselorReady Admin</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 36 36'><rect width='36' height='36' rx='6' fill='%236B1D34'/><text x='9' y='16' font-family='Georgia' font-size='14' font-weight='800' fill='%23D4A855'>C</text><text x='14' y='22' font-family='Georgia' font-size='14' font-weight='800' fill='%237A9E84'>R</text></svg>">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700;800&family=Lato:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <script>
+    tailwind.config = {
+      theme: { extend: {
+        colors: {
+          burgundy: { 50:'#FDF5F7',100:'#FAE8EB',200:'#F5D0D6',500:'#C94D65',700:'#8B2542',800:'#6B1D34',900:'#4A1524' },
+          navy: { 50:'#F0F4F7',100:'#D9E2EA',200:'#B3C5D4',300:'#7A98AE',400:'#4A6B82',500:'#284157',600:'#1F3345',700:'#172736' },
+          hunter: { 50:'#F2F7F4',100:'#E4EBE6',200:'#C9D7CD',300:'#A3BDA9',400:'#7A9E84',500:'#4A7C59',600:'#3D6A4A' },
+          honey: { 50:'#FDF9F0',100:'#F9F0DB',200:'#F3E0B5',300:'#EACD86',400:'#D4A855',500:'#C49545' },
+          forest: { 50:'#F2F7F4',100:'#E4EBE6',200:'#C9D7CD',300:'#A3BDA9',400:'#7A9E84',500:'#4A7C59',600:'#3D6A4A',700:'#305538' },
+        },
+        fontFamily: { display: ['Cormorant Garamond','Georgia','serif'], body: ['Lato','system-ui','sans-serif'] }
+      }}
+    }
+  </script>
+  <style>
+    body { font-family: 'Lato', system-ui, sans-serif; background: #FAFAF9; }
+    .font-display { font-family: 'Cormorant Garamond', Georgia, serif; }
+    .section-card { background: #fff; border: 1px solid #D1D5DB; border-radius: 12px; overflow: hidden; }
+    .section-header { padding: 12px 20px; border-bottom: 1px solid #E5E7EB; display: flex; align-items: center; gap: 10px; cursor: pointer; user-select: none; }
+    .section-header:hover { background: #FAFAF9; }
+    .section-body { padding: 20px; }
+    .field-label { display: block; font-size: 12px; font-weight: 600; color: #284157; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+    .field-input { width: 100%; padding: 8px 12px; border: 1px solid #D1D5DB; border-radius: 8px; font-size: 14px; font-family: 'Lato', sans-serif; transition: border-color 0.15s; }
+    .field-input:focus { outline: none; border-color: #284157; box-shadow: 0 0 0 2px rgba(40,65,87,0.1); }
+    .field-textarea { min-height: 80px; resize: vertical; }
+    .field-select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236B7280' d='M6 8L1 3h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 32px; }
+    .tag-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+    .tag { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 16px; font-size: 12px; font-weight: 500; background: #F0F4F7; color: #284157; }
+    .tag button { background: none; border: none; cursor: pointer; color: #9CA3AF; font-size: 14px; line-height: 1; }
+    .tag button:hover { color: #DC2626; }
+    .toggle { position: relative; width: 44px; height: 24px; border-radius: 12px; cursor: pointer; transition: background 0.2s; }
+    .toggle.on { background: #4A7C59; }
+    .toggle.off { background: #D1D5DB; }
+    .toggle::after { content: ''; position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; border-radius: 10px; background: #fff; transition: transform 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+    .toggle.on::after { transform: translateX(20px); }
+    .chevron-icon { transition: transform 0.2s; font-size: 12px; color: #9CA3AF; }
+    .chevron-icon.open { transform: rotate(180deg); }
+    .dirty-badge { display: none; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 700; background: #FDF9F0; color: #C49545; }
+    .dirty .dirty-badge { display: inline-block; }
+    @keyframes shimmer { 0% { background-position: -400px 0; } 100% { background-position: 400px 0; } }
+    .skeleton { background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%); background-size: 800px 100%; animation: shimmer 1.5s infinite; border-radius: 8px; }
+  </style>
+</head>
+<body class="min-h-screen">
+
+  <!-- NAV -->
+  <nav class="bg-[#FAFAF9] border-b border-gray-300 px-6 h-14 flex items-center justify-between" style="box-shadow: 0 1px 3px rgba(0,0,0,0.06);">
+    <div class="flex items-center gap-2.5">
+      <div class="w-9 h-9 rounded-lg bg-burgundy-800 relative overflow-hidden flex-shrink-0">
+        <span class="absolute font-display font-extrabold text-honey-400" style="font-size:18px;top:5px;left:9px;">C</span>
+        <span class="absolute font-display font-extrabold text-hunter-400" style="font-size:18px;top:10px;left:13px;">R</span>
+      </div>
+      <span class="font-display text-base">
+        <span class="font-bold text-burgundy-800">Counselor</span><span class="font-bold text-hunter-500">Ready</span>
+      </span>
+    </div>
+    <div class="flex gap-3">
+      <a href="/admin-courses.html" class="text-sm text-gray-600 hover:text-navy-500 px-2 py-1 rounded-md flex items-center gap-1.5">
+        <i class="fas fa-arrow-left text-xs"></i> Back to Courses
+      </a>
+      <a href="/admin-course-preview.html" id="previewLink" class="text-sm text-gray-600 hover:text-navy-500 px-2 py-1 rounded-md flex items-center gap-1.5">
+        <i class="fas fa-eye text-xs"></i> Preview
+      </a>
+    </div>
+    <div class="flex items-center gap-3">
+      <span id="saveStatus" class="text-xs text-gray-400"></span>
+      <button onclick="saveCourse()" id="saveBtn" class="px-4 py-1.5 rounded-lg bg-hunter-500 text-white text-sm font-semibold hover:bg-hunter-600 transition-colors flex items-center gap-1.5">
+        <i class="fas fa-save text-xs"></i> Save Changes
+      </button>
+    </div>
+  </nav>
+
+  <!-- MAIN -->
+  <div class="max-w-4xl mx-auto px-5 py-6">
+
+    <!-- Page Header -->
+    <div class="mb-6">
+      <div class="flex items-center gap-3 mb-1">
+        <h1 class="font-display text-2xl font-bold text-burgundy-800" id="pageTitle">Edit Course</h1>
+        <span id="statusBadge" class="text-xs font-bold px-2.5 py-0.5 rounded-full bg-gray-100 text-gray-500">LOADING</span>
+        <span id="sourceBadge" class="text-xs font-medium px-2 py-0.5 rounded-full bg-navy-50 text-navy-500"></span>
+      </div>
+      <p class="text-sm text-gray-500" id="courseSubline">Loading course data...</p>
+    </div>
+
+    <!-- Loading skeleton -->
+    <div id="loadingSkeleton">
+      <div class="skeleton h-16 w-full mb-3"></div>
+      <div class="skeleton h-16 w-full mb-3"></div>
+      <div class="skeleton h-16 w-full mb-3"></div>
+    </div>
+
+    <!-- Edit Sections -->
+    <div id="editSections" class="hidden space-y-4">
+
+      <!-- ═══ 1. BASIC INFO ═══ -->
+      <div class="section-card" data-section="basic">
+        <div class="section-header" onclick="toggleSection('basic')">
+          <i class="fas fa-info-circle text-navy-400"></i>
+          <span class="text-sm font-semibold text-navy-500">Basic Information</span>
+          <span class="dirty-badge">unsaved</span>
+          <i class="fas fa-chevron-down chevron-icon open ml-auto"></i>
+        </div>
+        <div class="section-body" id="sec-basic">
+          <div class="grid grid-cols-2 gap-4 mb-4">
+            <div class="col-span-2">
+              <label class="field-label">Title</label>
+              <input class="field-input" id="f-title" data-field="title" oninput="markDirty('basic')">
+            </div>
+            <div class="col-span-2">
+              <label class="field-label">Subtitle</label>
+              <input class="field-input" id="f-subtitle" data-field="subtitle" oninput="markDirty('basic')">
+            </div>
+            <div>
+              <label class="field-label">Course Code</label>
+              <input class="field-input" id="f-courseCode" data-field="courseCode" oninput="markDirty('basic')" placeholder="CR-101">
+            </div>
+            <div>
+              <label class="field-label">Slug</label>
+              <input class="field-input" id="f-slug" data-field="slug" oninput="markDirty('basic')" placeholder="auto-generated">
+            </div>
+            <div class="col-span-2">
+              <label class="field-label">Description</label>
+              <textarea class="field-input field-textarea" id="f-description" data-field="description" oninput="markDirty('basic')"></textarea>
+            </div>
+            <div class="col-span-2">
+              <label class="field-label">Short Description</label>
+              <textarea class="field-input" id="f-shortDescription" data-field="shortDescription" oninput="markDirty('basic')" rows="2"></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ 2. PROVIDER & INSTRUCTOR ═══ -->
+      <div class="section-card" data-section="provider">
+        <div class="section-header" onclick="toggleSection('provider')">
+          <i class="fas fa-building text-navy-400"></i>
+          <span class="text-sm font-semibold text-navy-500">Provider & Instructor</span>
+          <span class="dirty-badge">unsaved</span>
+          <i class="fas fa-chevron-down chevron-icon ml-auto"></i>
+        </div>
+        <div class="section-body hidden" id="sec-provider">
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="field-label">Instructor / Provider Name</label>
+              <input class="field-input" id="f-instructor" data-field="instructor" oninput="markDirty('provider')" value="GA Integrated Therapeutic Perspectives LLC">
+            </div>
+            <div>
+              <label class="field-label">Presenter</label>
+              <input class="field-input" id="f-presenter" data-field="presenter" oninput="markDirty('provider')">
+            </div>
+            <div>
+              <label class="field-label">ACEP Provider Name</label>
+              <input class="field-input" id="f-acepName" oninput="markDirty('provider')" value="GA Integrated Therapeutic Perspectives LLC">
+            </div>
+            <div>
+              <label class="field-label">ACEP Number</label>
+              <input class="field-input" id="f-acepNumber" oninput="markDirty('provider')" value="7760">
+            </div>
+            <div>
+              <label class="field-label">Approving Body</label>
+              <input class="field-input" id="f-approvingBody" data-field="approvingBody" oninput="markDirty('provider')" value="NBCC">
+            </div>
+            <div>
+              <label class="field-label">Approval Number</label>
+              <input class="field-input" id="f-approvalNumber" data-field="approvalNumber" oninput="markDirty('provider')" value="#7760">
+            </div>
+            <div class="col-span-2">
+              <label class="field-label">Conflict of Interest Disclosure</label>
+              <textarea class="field-input" id="f-conflictDisclosure" data-field="conflictOfInterestDisclosure" oninput="markDirty('provider')" rows="2" placeholder="There is no conflict of interest for anyone in a position to control the content of this educational activity."></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ 3. CE / ACEP METADATA ═══ -->
+      <div class="section-card" data-section="ce">
+        <div class="section-header" onclick="toggleSection('ce')">
+          <i class="fas fa-certificate text-honey-500"></i>
+          <span class="text-sm font-semibold text-navy-500">CE & ACEP Metadata</span>
+          <span class="dirty-badge">unsaved</span>
+          <i class="fas fa-chevron-down chevron-icon ml-auto"></i>
+        </div>
+        <div class="section-body hidden" id="sec-ce">
+          <div class="grid grid-cols-3 gap-4">
+            <div>
+              <label class="field-label">CE Hours</label>
+              <input class="field-input" type="number" id="f-ceHours" data-field="ceHours" oninput="markDirty('ce')" min="0" step="0.5">
+            </div>
+            <div>
+              <label class="field-label">CEU Hours</label>
+              <input class="field-input" type="number" id="f-ceuHours" data-field="ceuHours" oninput="markDirty('ce')" min="0" step="0.5">
+            </div>
+            <div>
+              <label class="field-label">Credits</label>
+              <input class="field-input" type="number" id="f-credits" data-field="credits" oninput="markDirty('ce')" min="0" step="0.5">
+            </div>
+            <div>
+              <label class="field-label">CE Category</label>
+              <select class="field-input field-select" id="f-ceCategory" data-field="ceCategory" onchange="markDirty('ce')">
+                <option value="Clinical">Clinical</option>
+                <option value="Ethics">Ethics</option>
+                <option value="Cultural">Cultural Diversity</option>
+                <option value="General">General</option>
+                <option value="Supervision">Supervision</option>
+                <option value="Substance Abuse">Substance Abuse</option>
+                <option value="Trauma">Trauma</option>
+                <option value="Crisis">Crisis/Suicide Prevention</option>
+                <option value="Telehealth">Telehealth</option>
+              </select>
+            </div>
+            <div>
+              <label class="field-label">Category (Content Area)</label>
+              <input class="field-input" id="f-category" data-field="category" oninput="markDirty('ce')">
+            </div>
+            <div>
+              <label class="field-label">Content Area</label>
+              <input class="field-input" id="f-contentArea" data-field="contentArea" oninput="markDirty('ce')">
+            </div>
+            <div>
+              <label class="field-label">Delivery Method</label>
+              <select class="field-input field-select" id="f-deliveryMethod" data-field="deliveryMethod" onchange="markDirty('ce')">
+                <option value="online">Online (Asynchronous)</option>
+                <option value="synchronous">Synchronous</option>
+                <option value="blended">Blended</option>
+              </select>
+            </div>
+            <div>
+              <label class="field-label">Instructional Level</label>
+              <select class="field-input field-select" id="f-level" data-field="level" onchange="markDirty('ce')">
+                <option value="Beginner">Beginner</option>
+                <option value="Intermediate">Intermediate</option>
+                <option value="Advanced">Advanced</option>
+              </select>
+            </div>
+            <div class="flex items-center gap-3 pt-5">
+              <label class="field-label mb-0">CEU Eligible</label>
+              <div class="toggle on" id="f-ceuEligible" onclick="toggleBool(this);markDirty('ce')"></div>
+            </div>
+          </div>
+
+          <!-- CEU Categories breakdown -->
+          <div class="mt-4 pt-4 border-t border-gray-200">
+            <div class="flex items-center justify-between mb-2">
+              <label class="field-label mb-0">CEU Category Breakdown</label>
+              <button onclick="addCeuCategory()" class="text-xs text-hunter-500 font-semibold hover:text-hunter-600">+ Add Category</button>
+            </div>
+            <div id="ceuCategoriesContainer" class="space-y-2"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ 4. ACCESS & PRICING ═══ -->
+      <div class="section-card" data-section="pricing">
+        <div class="section-header" onclick="toggleSection('pricing')">
+          <i class="fas fa-dollar-sign text-hunter-400"></i>
+          <span class="text-sm font-semibold text-navy-500">Access & Pricing</span>
+          <span class="dirty-badge">unsaved</span>
+          <i class="fas fa-chevron-down chevron-icon ml-auto"></i>
+        </div>
+        <div class="section-body hidden" id="sec-pricing">
+          <div class="grid grid-cols-3 gap-4">
+            <div>
+              <label class="field-label">Access Type</label>
+              <select class="field-input field-select" id="f-accessType" data-field="accessType" onchange="markDirty('pricing')">
+                <option value="free">Free</option>
+                <option value="subscription">Subscription</option>
+                <option value="paid">Individual Purchase</option>
+              </select>
+            </div>
+            <div>
+              <label class="field-label">Access Tier</label>
+              <select class="field-input field-select" id="f-accessTier" data-field="accessTier" onchange="markDirty('pricing')">
+                <option value="free">Free</option>
+                <option value="starter">Starter ($19.99/mo)</option>
+                <option value="professional">Professional ($29.99/mo)</option>
+                <option value="vip">VIP ($49.99/mo)</option>
+              </select>
+            </div>
+            <div>
+              <label class="field-label">Price ($)</label>
+              <input class="field-input" type="number" id="f-price" data-field="price" oninput="markDirty('pricing')" min="0" step="0.01" placeholder="0.00">
+            </div>
+            <div>
+              <label class="field-label">Pricing Tier</label>
+              <select class="field-input field-select" id="f-pricingTier" data-field="pricingTier" onchange="markDirty('pricing')">
+                <option value="free">Free</option>
+                <option value="standard">Standard</option>
+                <option value="premium">Premium</option>
+              </select>
+            </div>
+            <div>
+              <label class="field-label">Estimated Minutes</label>
+              <input class="field-input" type="number" id="f-estimatedMinutes" data-field="estimatedMinutes" oninput="markDirty('pricing')" min="0" placeholder="120">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ 5. LEARNING DESIGN ═══ -->
+      <div class="section-card" data-section="learning">
+        <div class="section-header" onclick="toggleSection('learning')">
+          <i class="fas fa-graduation-cap text-burgundy-500"></i>
+          <span class="text-sm font-semibold text-navy-500">Learning Objectives & Audience</span>
+          <span class="dirty-badge">unsaved</span>
+          <i class="fas fa-chevron-down chevron-icon ml-auto"></i>
+        </div>
+        <div class="section-body hidden" id="sec-learning">
+          <!-- Objectives -->
+          <div class="mb-4">
+            <div class="flex items-center justify-between mb-2">
+              <label class="field-label mb-0">Learning Objectives <span class="font-normal text-gray-400">(min 4)</span></label>
+              <button onclick="addObjective()" class="text-xs text-hunter-500 font-semibold hover:text-hunter-600">+ Add Objective</button>
+            </div>
+            <div id="objectivesContainer" class="space-y-2"></div>
+          </div>
+
+          <!-- Target Audience -->
+          <div class="mb-4 pt-4 border-t border-gray-200">
+            <div class="flex items-center justify-between mb-2">
+              <label class="field-label mb-0">Target Audience</label>
+              <button onclick="addAudience()" class="text-xs text-hunter-500 font-semibold hover:text-hunter-600">+ Add</button>
+            </div>
+            <div id="audienceContainer" class="space-y-2"></div>
+          </div>
+
+          <!-- Tags -->
+          <div class="pt-4 border-t border-gray-200">
+            <label class="field-label">Tags</label>
+            <div class="flex gap-2">
+              <input class="field-input flex-1" id="tagInput" placeholder="Add tag and press Enter" onkeydown="if(event.key==='Enter'){event.preventDefault();addTag();}">
+              <button onclick="addTag()" class="px-3 py-1.5 rounded-lg bg-navy-50 text-navy-500 text-xs font-semibold hover:bg-navy-100">Add</button>
+            </div>
+            <div class="tag-list" id="tagsContainer"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ 6. ASSESSMENT SETTINGS ═══ -->
+      <div class="section-card" data-section="assessment">
+        <div class="section-header" onclick="toggleSection('assessment')">
+          <i class="fas fa-clipboard-check text-hunter-400"></i>
+          <span class="text-sm font-semibold text-navy-500">Assessment & Completion Settings</span>
+          <span class="dirty-badge">unsaved</span>
+          <i class="fas fa-chevron-down chevron-icon ml-auto"></i>
+        </div>
+        <div class="section-body hidden" id="sec-assessment">
+          <div class="grid grid-cols-3 gap-4 mb-4">
+            <div>
+              <label class="field-label">Passing Score (%)</label>
+              <input class="field-input" type="number" id="f-passingScore" oninput="markDirty('assessment')" min="0" max="100" value="80">
+            </div>
+            <div>
+              <label class="field-label">Max Attempts</label>
+              <input class="field-input" type="number" id="f-maxAttempts" oninput="markDirty('assessment')" min="1" max="10" value="3">
+            </div>
+            <div>
+              <label class="field-label">Assessment Questions</label>
+              <input class="field-input" type="text" id="f-questionCount" readonly disabled style="background:#F9FAFB; cursor:not-allowed;">
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div class="flex items-center justify-between p-3 rounded-lg bg-gray-50">
+              <div>
+                <p class="text-sm font-semibold text-gray-800">Certificate Enabled</p>
+                <p class="text-xs text-gray-500">Generate certificate on completion</p>
+              </div>
+              <div class="toggle on" id="f-certificateEnabled" onclick="toggleBool(this);markDirty('assessment')"></div>
+            </div>
+            <div class="flex items-center justify-between p-3 rounded-lg bg-gray-50">
+              <div>
+                <p class="text-sm font-semibold text-gray-800">Require Evaluation</p>
+                <p class="text-xs text-gray-500">NBCC course evaluation form</p>
+              </div>
+              <div class="toggle on" id="f-requireEvaluation" onclick="toggleBool(this);markDirty('assessment')"></div>
+            </div>
+            <div class="flex items-center justify-between p-3 rounded-lg bg-gray-50">
+              <div>
+                <p class="text-sm font-semibold text-gray-800">Require Attestation</p>
+                <p class="text-xs text-gray-500">User confirms participation</p>
+              </div>
+              <div class="toggle on" id="f-requireAttestation" onclick="toggleBool(this);markDirty('assessment')"></div>
+            </div>
+            <div class="flex items-center justify-between p-3 rounded-lg bg-gray-50">
+              <div>
+                <p class="text-sm font-semibold text-gray-800">Linear Progression</p>
+                <p class="text-xs text-gray-500">Enforce sequential section order</p>
+              </div>
+              <div class="toggle on" id="f-linearProgression" onclick="toggleBool(this);markDirty('assessment')"></div>
+            </div>
+          </div>
+
+          <!-- Drip / Time Settings -->
+          <div class="mt-4 pt-4 border-t border-gray-200">
+            <p class="field-label mb-3">Drip & Time Settings</p>
+            <div class="grid grid-cols-3 gap-4">
+              <div class="flex items-center justify-between p-3 rounded-lg bg-gray-50 col-span-1">
+                <div>
+                  <p class="text-sm font-semibold text-gray-800">Enforce Min Time</p>
+                  <p class="text-xs text-gray-500">Require reading time</p>
+                </div>
+                <div class="toggle off" id="f-enforceMinTime" onclick="toggleBool(this);markDirty('assessment')"></div>
+              </div>
+              <div>
+                <label class="field-label">Min Time % of Estimate</label>
+                <input class="field-input" type="number" id="f-minTimePercent" oninput="markDirty('assessment')" min="0" max="100" value="80">
+              </div>
+              <div>
+                <label class="field-label">Drip Schedule (days)</label>
+                <input class="field-input" type="number" id="f-dripDays" oninput="markDirty('assessment')" min="0" placeholder="0 = no drip">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ 7. REFERENCES ═══ -->
+      <div class="section-card" data-section="references">
+        <div class="section-header" onclick="toggleSection('references')">
+          <i class="fas fa-book text-navy-400"></i>
+          <span class="text-sm font-semibold text-navy-500">References</span>
+          <span class="dirty-badge">unsaved</span>
+          <i class="fas fa-chevron-down chevron-icon ml-auto"></i>
+        </div>
+        <div class="section-body hidden" id="sec-references">
+          <div class="flex items-center justify-between mb-3">
+            <p class="text-xs text-gray-500">Minimum 3 peer-reviewed references with title, author, year, source</p>
+            <button onclick="addReference()" class="text-xs text-hunter-500 font-semibold hover:text-hunter-600">+ Add Reference</button>
+          </div>
+          <div id="referencesContainer" class="space-y-3"></div>
+        </div>
+      </div>
+
+      <!-- ═══ 8. MODULES OVERVIEW ═══ -->
+      <div class="section-card" data-section="modules">
+        <div class="section-header" onclick="toggleSection('modules')">
+          <i class="fas fa-layer-group text-burgundy-400"></i>
+          <span class="text-sm font-semibold text-navy-500">Modules / Sections Overview</span>
+          <i class="fas fa-chevron-down chevron-icon ml-auto"></i>
+        </div>
+        <div class="section-body hidden" id="sec-modules">
+          <p class="text-xs text-gray-500 mb-3">Read-only summary. Use the <a href="#" id="builderLink" class="text-burgundy-800 underline">Course Builder</a> to edit content blocks.</p>
+          <div id="modulesContainer" class="space-y-2"></div>
+        </div>
+      </div>
+
+      <!-- ═══ PUBLISH STATUS ═══ -->
+      <div class="section-card" data-section="status">
+        <div class="section-header" onclick="toggleSection('status')">
+          <i class="fas fa-toggle-on text-hunter-400"></i>
+          <span class="text-sm font-semibold text-navy-500">Publish Status</span>
+          <i class="fas fa-chevron-down chevron-icon ml-auto"></i>
+        </div>
+        <div class="section-body hidden" id="sec-status">
+          <div class="flex items-center gap-6">
+            <div class="flex items-center gap-3">
+              <label class="field-label mb-0">Status</label>
+              <select class="field-input field-select" style="width:auto" id="f-status" data-field="status" onchange="markDirty('status')">
+                <option value="draft">Draft</option>
+                <option value="published">Published</option>
+              </select>
+            </div>
+            <div class="flex items-center gap-3">
+              <label class="field-label mb-0">Is Published</label>
+              <div class="toggle off" id="f-isPublished" onclick="toggleBool(this);markDirty('status')"></div>
+            </div>
+          </div>
+          <p class="text-xs text-gray-400 mt-2">Both status and isPublished must be set for course to appear publicly.</p>
+        </div>
+      </div>
+
+      <!-- BOTTOM ACTIONS -->
+      <div class="flex justify-between items-center py-4">
+        <a href="/admin-courses.html" class="text-sm text-gray-500 hover:text-navy-500 flex items-center gap-1.5">
+          <i class="fas fa-arrow-left text-xs"></i> Back to Courses
+        </a>
+        <div class="flex gap-3">
+          <button onclick="saveCourse()" class="px-5 py-2.5 rounded-lg bg-hunter-500 text-white text-sm font-semibold hover:bg-hunter-600 transition-colors flex items-center gap-2">
+            <i class="fas fa-save"></i> Save All Changes
+          </button>
+          <button onclick="saveAndPublish()" class="px-5 py-2.5 rounded-lg bg-burgundy-800 text-white text-sm font-semibold hover:bg-burgundy-700 transition-colors flex items-center gap-2">
+            <i class="fas fa-rocket"></i> Save & Publish
+          </button>
+        </div>
+      </div>
+
+    </div><!-- end editSections -->
+  </div>
+
+  <!-- TOAST -->
+  <div id="toast" class="hidden fixed bottom-4 right-4 z-50">
+    <div id="toastMsg" class="px-4 py-2.5 rounded-lg text-white text-sm font-semibold shadow-lg"></div>
+  </div>
+
+  <!-- JAVASCRIPT -->
+  <script>
+    const API = 'https://api.counselorready.com/api';
+    const params = new URLSearchParams(window.location.search);
+    const courseId = params.get('id');
+    const source = params.get('src') || 'interactive'; // 'interactive' or 'legacy'
+    let course = {};
+    let dirtySections = new Set();
+    let tags = [];
+    let objectives = [];
+    let audience = [];
+    let references = [];
+    let ceuCategories = [];
+
+    function getToken() { return localStorage.getItem('token'); }
+    function authHeaders() { return { 'Authorization': `Bearer ${getToken()}`, 'Content-Type': 'application/json' }; }
+
+    // ── Init ──
+    async function init() {
+      if (!getToken()) { window.location.href = '/login.html'; return; }
+      if (!courseId) { showToast('No course ID provided', '#DC2626'); return; }
+
+      document.getElementById('previewLink').href = `/admin-course-preview.html?id=${courseId}`;
+      document.getElementById('builderLink').href = `/admin/course-builder?id=${courseId}`;
+
+      try {
+        // Try interactive collection first, fall back to legacy
+        let res;
+        if (source === 'legacy') {
+          res = await fetch(`${API}/admin/courses/${courseId}`, { headers: authHeaders() });
+        } else {
+          res = await fetch(`${API}/interactive-courses/${courseId}`, { headers: authHeaders() });
+          if (!res.ok) {
+            res = await fetch(`${API}/admin/courses/${courseId}`, { headers: authHeaders() });
+          }
+        }
+        if (!res.ok) throw new Error(`Course not found (${res.status})`);
+        const data = await res.json();
+        course = data.course || data;
+
+        populateForm();
+        document.getElementById('loadingSkeleton').classList.add('hidden');
+        document.getElementById('editSections').classList.remove('hidden');
+      } catch(e) {
+        console.error('Load failed:', e);
+        showToast('Failed to load course: ' + e.message, '#DC2626');
+      }
+    }
+
+    // ── Populate Form ──
+    function populateForm() {
+      // Header
+      document.getElementById('pageTitle').textContent = `Edit: ${course.title || 'Untitled'}`;
+      document.getElementById('courseSubline').textContent = `${course.courseCode || ''} · ${course.ceHours || 0} CE hrs · ${course.wordCount?.toLocaleString() || '?'} words`;
+      const isPub = course.status === 'published' || course.isPublished;
+      document.getElementById('statusBadge').textContent = isPub ? 'PUBLISHED' : 'DRAFT';
+      document.getElementById('statusBadge').className = `text-xs font-bold px-2.5 py-0.5 rounded-full ${isPub ? 'bg-hunter-50 text-hunter-500' : 'bg-honey-50 text-honey-500'}`;
+      document.getElementById('sourceBadge').textContent = (course.sections) ? 'Interactive' : 'Legacy';
+
+      // Basic fields
+      setVal('f-title', course.title);
+      setVal('f-subtitle', course.subtitle);
+      setVal('f-courseCode', course.courseCode);
+      setVal('f-slug', course.slug);
+      setVal('f-description', course.description);
+      setVal('f-shortDescription', course.shortDescription);
+
+      // Provider
+      setVal('f-instructor', course.instructor || 'GA Integrated Therapeutic Perspectives LLC');
+      setVal('f-presenter', course.presenter || '');
+      setVal('f-acepName', course.acepProvider?.name || 'GA Integrated Therapeutic Perspectives LLC');
+      setVal('f-acepNumber', course.acepProvider?.number || '7760');
+      setVal('f-approvingBody', course.approvingBody || 'NBCC');
+      setVal('f-approvalNumber', course.approvalNumber || '#7760');
+      setVal('f-conflictDisclosure', course.conflictOfInterestDisclosure || '');
+
+      // CE
+      setVal('f-ceHours', course.ceHours);
+      setVal('f-ceuHours', course.ceuHours || course.ceHours);
+      setVal('f-credits', course.credits || course.ceHours);
+      setVal('f-ceCategory', course.ceCategory || course.category);
+      setVal('f-category', course.category);
+      setVal('f-contentArea', course.contentArea);
+      setVal('f-deliveryMethod', course.deliveryMethod || 'online');
+      setVal('f-level', course.level || 'Intermediate');
+      setBool('f-ceuEligible', course.ceuEligible !== false);
+      ceuCategories = course.ceuCategories || [];
+      renderCeuCategories();
+
+      // Pricing
+      setVal('f-accessType', course.accessType || 'subscription');
+      setVal('f-accessTier', course.accessTier || 'professional');
+      setVal('f-price', course.price || 0);
+      setVal('f-pricingTier', course.pricingTier || 'standard');
+      setVal('f-estimatedMinutes', course.estimatedMinutes || '');
+
+      // Learning
+      objectives = course.objectives || [];
+      renderObjectives();
+      audience = course.targetAudience || [];
+      renderAudience();
+      tags = course.tags || [];
+      renderTags();
+
+      // Assessment
+      const settings = course.settings || {};
+      const assessment = course.assessment || {};
+      setVal('f-passingScore', settings.passingScore || assessment.passingScore || assessment.passThreshold * 100 || 80);
+      setVal('f-maxAttempts', assessment.maxAttempts || 3);
+      setVal('f-questionCount', `${(assessment.questions || []).length} questions`);
+      setBool('f-certificateEnabled', settings.certificateEnabled !== false);
+      setBool('f-requireEvaluation', settings.requireEvaluation !== false);
+      setBool('f-requireAttestation', settings.requireAttestation !== false);
+      setBool('f-linearProgression', settings.linearProgression !== false);
+      setBool('f-enforceMinTime', settings.enforceMinTime === true);
+      setVal('f-minTimePercent', settings.minTimePercent || 80);
+      setVal('f-dripDays', course.dripSchedule?.days || 0);
+
+      // References
+      references = course.references || [];
+      renderReferences();
+
+      // Modules
+      renderModules();
+
+      // Status
+      setVal('f-status', course.status || 'draft');
+      setBool('f-isPublished', course.isPublished === true);
+    }
+
+    // ── Save ──
+    async function saveCourse() {
+      const btn = document.getElementById('saveBtn');
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin text-xs"></i> Saving...';
+
+      const payload = buildPayload();
+
+      try {
+        let res;
+        if (course.sections) {
+          // Interactive course
+          res = await fetch(`${API}/interactive-courses/${courseId}`, {
+            method: 'PUT', headers: authHeaders(), body: JSON.stringify(payload)
+          });
+        } else {
+          // Legacy course
+          res = await fetch(`${API}/admin/courses/${courseId}`, {
+            method: 'PUT', headers: authHeaders(), body: JSON.stringify(payload)
+          });
+        }
+        if (!res.ok) { const err = await res.json(); throw new Error(err.error || res.status); }
+
+        dirtySections.clear();
+        document.querySelectorAll('.dirty').forEach(el => el.classList.remove('dirty'));
+        showToast('✓ Course saved', '#4A7C59');
+        document.getElementById('saveStatus').textContent = `Saved ${new Date().toLocaleTimeString()}`;
+      } catch(e) {
+        console.error('Save failed:', e);
+        showToast('Save failed: ' + e.message, '#DC2626');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-save text-xs"></i> Save Changes';
+      }
+    }
+
+    async function saveAndPublish() {
+      setBool('f-isPublished', true);
+      setVal('f-status', 'published');
+      await saveCourse();
+    }
+
+    function buildPayload() {
+      const p = {};
+
+      // Basic
+      p.title = getVal('f-title');
+      p.subtitle = getVal('f-subtitle');
+      p.courseCode = getVal('f-courseCode');
+      p.slug = getVal('f-slug');
+      p.description = getVal('f-description');
+      p.shortDescription = getVal('f-shortDescription');
+
+      // Provider
+      p.instructor = getVal('f-instructor');
+      p.presenter = getVal('f-presenter');
+      p.acepProvider = { name: getVal('f-acepName'), number: getVal('f-acepNumber') };
+      p.approvingBody = getVal('f-approvingBody');
+      p.approvalNumber = getVal('f-approvalNumber');
+      p.conflictOfInterestDisclosure = getVal('f-conflictDisclosure');
+
+      // CE
+      p.ceHours = parseFloat(getVal('f-ceHours')) || 0;
+      p.ceuHours = parseFloat(getVal('f-ceuHours')) || p.ceHours;
+      p.credits = parseFloat(getVal('f-credits')) || p.ceHours;
+      p.ceCategory = getVal('f-ceCategory');
+      p.category = getVal('f-category');
+      p.contentArea = getVal('f-contentArea');
+      p.deliveryMethod = getVal('f-deliveryMethod');
+      p.level = getVal('f-level');
+      p.ceuEligible = getBool('f-ceuEligible');
+      p.ceuCategories = ceuCategories;
+
+      // Pricing
+      p.accessType = getVal('f-accessType');
+      p.accessTier = getVal('f-accessTier');
+      p.price = parseFloat(getVal('f-price')) || 0;
+      p.pricingTier = getVal('f-pricingTier');
+      p.estimatedMinutes = parseInt(getVal('f-estimatedMinutes')) || 0;
+
+      // Learning
+      p.objectives = objectives;
+      p.targetAudience = audience;
+      p.tags = tags;
+
+      // Assessment & Settings
+      p.settings = {
+        passingScore: parseInt(getVal('f-passingScore')) || 80,
+        certificateEnabled: getBool('f-certificateEnabled'),
+        requireEvaluation: getBool('f-requireEvaluation'),
+        requireAttestation: getBool('f-requireAttestation'),
+        linearProgression: getBool('f-linearProgression'),
+        enforceMinTime: getBool('f-enforceMinTime'),
+        minTimePercent: parseInt(getVal('f-minTimePercent')) || 80,
+      };
+
+      // Update assessment passingScore/maxAttempts without touching questions
+      if (course.assessment) {
+        p.assessment = {
+          ...course.assessment,
+          passingScore: parseInt(getVal('f-passingScore')) || 80,
+          maxAttempts: parseInt(getVal('f-maxAttempts')) || 3,
+        };
+      }
+
+      if (parseInt(getVal('f-dripDays')) > 0) {
+        p.dripSchedule = { days: parseInt(getVal('f-dripDays')) };
+      }
+
+      // References
+      p.references = references;
+
+      // Status
+      p.status = getVal('f-status');
+      p.isPublished = getBool('f-isPublished');
+
+      return p;
+    }
+
+    // ── Section toggle ──
+    function toggleSection(name) {
+      const body = document.getElementById('sec-' + name);
+      const card = document.querySelector(`[data-section="${name}"]`);
+      const chev = card.querySelector('.chevron-icon');
+      body.classList.toggle('hidden');
+      chev.classList.toggle('open');
+    }
+
+    function markDirty(section) {
+      dirtySections.add(section);
+      document.querySelector(`[data-section="${section}"]`).classList.add('dirty');
+    }
+
+    // ── Toggle boolean ──
+    function toggleBool(el) {
+      el.classList.toggle('on');
+      el.classList.toggle('off');
+    }
+    function setBool(id, val) {
+      const el = document.getElementById(id);
+      el.classList.toggle('on', val);
+      el.classList.toggle('off', !val);
+    }
+    function getBool(id) { return document.getElementById(id).classList.contains('on'); }
+    function setVal(id, val) { const el = document.getElementById(id); if (el) el.value = val ?? ''; }
+    function getVal(id) { return document.getElementById(id)?.value || ''; }
+
+    // ── Objectives ──
+    function renderObjectives() {
+      document.getElementById('objectivesContainer').innerHTML = objectives.map((o, i) => `
+        <div class="flex gap-2 items-start">
+          <span class="text-xs text-gray-400 pt-2.5 w-4 flex-shrink-0">${i+1}.</span>
+          <textarea class="field-input flex-1" rows="2" oninput="objectives[${i}]=this.value;markDirty('learning')">${esc(o)}</textarea>
+          <button onclick="objectives.splice(${i},1);renderObjectives();markDirty('learning')" class="text-gray-400 hover:text-red-500 pt-2">✕</button>
+        </div>`).join('');
+    }
+    function addObjective() { objectives.push(''); renderObjectives(); markDirty('learning'); }
+
+    // ── Audience ──
+    function renderAudience() {
+      document.getElementById('audienceContainer').innerHTML = audience.map((a, i) => `
+        <div class="flex gap-2">
+          <input class="field-input flex-1" value="${esc(a)}" oninput="audience[${i}]=this.value;markDirty('learning')">
+          <button onclick="audience.splice(${i},1);renderAudience();markDirty('learning')" class="text-gray-400 hover:text-red-500">✕</button>
+        </div>`).join('');
+    }
+    function addAudience() { audience.push(''); renderAudience(); markDirty('learning'); }
+
+    // ── Tags ──
+    function renderTags() {
+      document.getElementById('tagsContainer').innerHTML = tags.map((t, i) =>
+        `<span class="tag">${esc(t)}<button onclick="tags.splice(${i},1);renderTags();markDirty('learning')">✕</button></span>`
+      ).join('');
+    }
+    function addTag() {
+      const input = document.getElementById('tagInput');
+      const val = input.value.trim();
+      if (val && !tags.includes(val)) { tags.push(val); renderTags(); markDirty('learning'); }
+      input.value = '';
+    }
+
+    // ── References ──
+    function renderReferences() {
+      document.getElementById('referencesContainer').innerHTML = references.map((r, i) => `
+        <div class="p-3 rounded-lg border border-gray-200 bg-gray-50">
+          <div class="flex justify-between items-start mb-2">
+            <span class="text-xs font-semibold text-navy-500">Reference ${i+1}</span>
+            <button onclick="references.splice(${i},1);renderReferences();markDirty('references')" class="text-xs text-red-400 hover:text-red-600">Remove</button>
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <input class="field-input col-span-2" placeholder="Title *" value="${esc(r.title||'')}" oninput="references[${i}].title=this.value;markDirty('references')">
+            <input class="field-input" placeholder="Author *" value="${esc(r.author||'')}" oninput="references[${i}].author=this.value;markDirty('references')">
+            <div class="flex gap-2">
+              <input class="field-input" type="number" placeholder="Year" value="${r.year||''}" oninput="references[${i}].year=parseInt(this.value);markDirty('references')" style="width:80px">
+              <input class="field-input flex-1" placeholder="Source/Journal" value="${esc(r.source||'')}" oninput="references[${i}].source=this.value;markDirty('references')">
+            </div>
+          </div>
+        </div>`).join('');
+    }
+    function addReference() { references.push({ title:'', author:'', year:'', source:'' }); renderReferences(); markDirty('references'); }
+
+    // ── CEU Categories ──
+    function renderCeuCategories() {
+      document.getElementById('ceuCategoriesContainer').innerHTML = ceuCategories.map((c, i) => `
+        <div class="flex gap-2 items-center">
+          <input class="field-input flex-1" placeholder="Category" value="${esc(c.category||'')}" oninput="ceuCategories[${i}].category=this.value;markDirty('ce')">
+          <input class="field-input" type="number" placeholder="Hours" value="${c.hours||''}" style="width:80px" oninput="ceuCategories[${i}].hours=parseFloat(this.value);markDirty('ce')">
+          <button onclick="ceuCategories.splice(${i},1);renderCeuCategories();markDirty('ce')" class="text-gray-400 hover:text-red-500">✕</button>
+        </div>`).join('');
+    }
+    function addCeuCategory() { ceuCategories.push({ category:'', hours:0 }); renderCeuCategories(); markDirty('ce'); }
+
+    // ── Modules Overview (read-only) ──
+    function renderModules() {
+      const sections = course.sections || [];
+      const modules = course.modules || [];
+      const items = sections.length > 0 ? sections : modules;
+
+      if (items.length === 0) {
+        document.getElementById('modulesContainer').innerHTML = '<p class="text-sm text-gray-500 text-center py-4">No modules/sections found</p>';
+        return;
+      }
+
+      document.getElementById('modulesContainer').innerHTML = items.map((m, i) => {
+        const blocks = m.contentBlocks || m.blocks || [];
+        const lessons = m.lessons || [];
+        const wordCount = blocks.reduce((sum, b) => {
+          const txt = (b.textContent || b.content || '').replace(/<[^>]*>/g, ' ');
+          return sum + txt.split(/\s+/).filter(w => w).length;
+        }, 0);
+        return `
+          <div class="p-3 rounded-lg border border-gray-200 flex items-center gap-3">
+            <span class="w-8 h-8 rounded-lg bg-navy-50 flex items-center justify-center text-xs font-bold text-navy-500 flex-shrink-0">${i+1}</span>
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-semibold text-gray-800 truncate">${esc(m.title || 'Untitled')}</p>
+              <p class="text-xs text-gray-500">${blocks.length || lessons.length} blocks · ${wordCount.toLocaleString()} words</p>
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    // ── Helpers ──
+    function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+    function showToast(msg, bg = '#284157') {
+      const el = document.getElementById('toastMsg');
+      el.textContent = msg;
+      el.style.background = bg;
+      document.getElementById('toast').classList.remove('hidden');
+      clearTimeout(window._tt);
+      window._tt = setTimeout(() => document.getElementById('toast').classList.add('hidden'), 3000);
+    }
+
+    // Warn on unsaved changes
+    window.addEventListener('beforeunload', e => {
+      if (dirtySections.size > 0) { e.preventDefault(); e.returnValue = ''; }
+    });
+
+    init();
+  </script>
+</body>
+</html>
