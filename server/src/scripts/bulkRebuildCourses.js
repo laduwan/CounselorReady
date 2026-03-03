@@ -573,22 +573,79 @@ async function callClaude(prompt, maxTokens = 4000) {
 // PHASE 2: Generate missing interactive blocks
 // ═══════════════════════════════════════════════════════════════════
 
+// Knowledge check types (graded, count for ACEP compliance)
+const KC_TYPES = new Set(['multipleChoice', 'multiSelect', 'matching', 'cardSort', 'sequencing', 'timeline']);
+// Engagement types (interactive but not graded)
+const ENGAGE_TYPES = new Set(['accordion', 'scenarioTree', 'flashcardDeck', 'reflection']);
+
+// Rotation patterns — KC first for ACEP, then engagement variety
+const KC_ROTATION = ['multipleChoice', 'multiSelect', 'matching', 'cardSort', 'sequencing'];
+const ENGAGE_ROTATION = ['accordion', 'scenarioTree', 'flashcardDeck', 'reflection'];
+
 async function generateMissingBlocks(course, section, sectionIndex, totalSections) {
   const blocks = section.contentBlocks || [];
   const isLast = sectionIndex === totalSections - 1;
 
-  const kcCount = blocks.filter(b => b.type === 'multipleChoice' || b.type === 'multiSelect').length;
-  const hasReflection = blocks.some(b => b.type === 'reflection');
-  const hasMatching = blocks.some(b => b.type === 'matching');
+  // Count existing interactive elements
+  const existingKC = blocks.filter(b => KC_TYPES.has(b.type)).length;
+  const existingEngage = blocks.filter(b => ENGAGE_TYPES.has(b.type)).length;
+  const existingTypes = new Set(blocks.map(b => b.type));
   const hasResources = blocks.some(b => b.type === 'resources' && b.resources?.length > 0);
 
+  // Build request list: 2-3 KC for ACEP + 1-2 engagement for variety
   const requests = [];
-  if (kcCount < 2) requests.push(`${2 - kcCount} multipleChoice block(s) testing clinical APPLICATION of "${section.title}" concepts. 4 options, 1 correct, with clinical rationale explanation.`);
-  if (!hasReflection) requests.push(`1 reflection block prompting clinical self-examination regarding "${section.title}".`);
-  if (!hasMatching) requests.push(`1 matching exercise with 5-6 term/definition pairs from "${section.title}" content.`);
-  if (isLast && !hasResources) requests.push(`1 resources block with 5-6 real professional resources (real URLs — APA.org, SAMHSA.gov, NIMH.nih.gov, NBCC.org, etc.) related to ${course.title}.`);
+  const blocksToGenerate = [];
 
-  if (!requests.length) return [];
+  // KC priority: need at least 2 per section for ACEP
+  const kcNeeded = Math.max(0, 2 - existingKC);
+  let kcIdx = 0;
+  for (let i = 0; i < kcNeeded; i++) {
+    // Pick KC type not already present, cycling through rotation
+    let type = KC_ROTATION[kcIdx % KC_ROTATION.length];
+    let tries = 0;
+    while (existingTypes.has(type) && tries < KC_ROTATION.length) { kcIdx++; type = KC_ROTATION[kcIdx % KC_ROTATION.length]; tries++; }
+    kcIdx++;
+    blocksToGenerate.push(type);
+    existingTypes.add(type);
+  }
+
+  // Engagement: add 1-2 if section lacks variety
+  const engageNeeded = Math.max(0, 1 - existingEngage);
+  let engIdx = (sectionIndex * 2) % ENGAGE_ROTATION.length; // offset per section for variety across course
+  for (let i = 0; i < engageNeeded + 1; i++) {
+    let type = ENGAGE_ROTATION[engIdx % ENGAGE_ROTATION.length];
+    let tries = 0;
+    while (existingTypes.has(type) && tries < ENGAGE_ROTATION.length) { engIdx++; type = ENGAGE_ROTATION[engIdx % ENGAGE_ROTATION.length]; tries++; }
+    if (tries < ENGAGE_ROTATION.length) {
+      engIdx++;
+      blocksToGenerate.push(type);
+      existingTypes.add(type);
+    }
+  }
+
+  // Resources on last section only
+  if (isLast && !hasResources) blocksToGenerate.push('resources');
+
+  if (!blocksToGenerate.length) return [];
+
+  // Build generation requests with type-specific instructions
+  const typeInstructions = {
+    multipleChoice: 'a multipleChoice block testing clinical APPLICATION. 4 options, 1 correct, with clinical scenario and rationale.',
+    multiSelect: 'a multiSelect block where 2+ answers are correct. Clinical scenario, 4-5 options, clear rationale for each correct answer.',
+    matching: 'a matching exercise with 5-6 term/definition pairs from the section content.',
+    cardSort: 'a cardSort exercise with 2-3 categories and 6-8 cards that learners sort into the correct category.',
+    sequencing: 'a sequencing exercise with 5-6 steps of a clinical process that must be ordered correctly.',
+    timeline: 'a timeline exercise with 5-6 events related to the topic that must be ordered chronologically.',
+    accordion: 'an accordion with 4-5 expandable panels, each exploring a sub-topic in depth (2-3 paragraphs per panel).',
+    scenarioTree: 'a scenarioTree with a clinical scenario (3-4 decision points, 2-3 choices each, leading to different outcomes with clinical feedback).',
+    flashcardDeck: 'a flashcardDeck with 8-10 cards testing key terms and concepts (front=term/question, back=definition/answer).',
+    reflection: 'a reflection block prompting clinical self-examination with context paragraph.',
+    resources: `a resources block with 5-6 real professional resources (use real URLs: APA.org, SAMHSA.gov, NIMH.nih.gov, NBCC.org, etc.) related to ${course.title}.`,
+  };
+
+  blocksToGenerate.forEach((type, i) => {
+    requests.push(`${i + 1}. Generate ${typeInstructions[type]}`);
+  });
 
   const topicSummary = stripHtml(
     blocks.filter(b => b.type === 'text').map(b => getBlockHtml(b)).join(' ')
@@ -601,25 +658,63 @@ SECTION: "${section.title}"
 TOPIC: ${topicSummary}
 
 GENERATE (return JSON array):
-${requests.map((r, i) => `${i + 1}. ${r}`).join('\n')}
+${requests.join('\n')}
 
-Block formats:
+Block JSON formats (use EXACTLY these structures):
+
 - multipleChoice: {"type":"multipleChoice","order":1,"question":"Clinical scenario?","options":[{"text":"A","isCorrect":false},{"text":"B","isCorrect":true},{"text":"C","isCorrect":false},{"text":"D","isCorrect":false}],"explanation":"Rationale..."}
-- reflection: {"type":"reflection","order":1,"question":"Reflective prompt?","textContent":"<p>Context</p>","minLength":50}
+
+- multiSelect: {"type":"multiSelect","order":1,"question":"Which of the following apply?","options":[{"text":"A","isCorrect":true},{"text":"B","isCorrect":false},{"text":"C","isCorrect":true},{"text":"D","isCorrect":false}],"explanation":"Rationale..."}
+
 - matching: {"type":"matching","order":1,"matchingInstructions":"Match each term...","matchingPairs":[{"term":"Term","definition":"Definition"}]}
-- resources: {"type":"resources","order":1,"resources":[{"title":"Name","url":"https://real-url.org","type":"website"}]}
+
+- cardSort: {"type":"cardSort","order":1,"instructions":"Sort these into the correct category.","categories":["Category 1","Category 2"],"cards":[{"id":"c1","text":"Item text","correctCategory":"Category 1"},{"id":"c2","text":"Item text","correctCategory":"Category 2"}],"explanation":"Rationale..."}
+
+- sequencing: {"type":"sequencing","order":1,"instructions":"Put these steps in the correct order.","steps":[{"id":"s1","text":"First step","order":1},{"id":"s2","text":"Second step","order":2}],"explanation":"Rationale..."}
+
+- timeline: {"type":"timeline","order":1,"instructions":"Order these events chronologically.","events":[{"id":"t1","text":"Event description","year":"1950","order":1},{"id":"t2","text":"Event description","year":"1970","order":2}],"explanation":"Rationale..."}
+
+- accordion: {"type":"accordion","order":1,"accordionItems":[{"title":"Panel Title","content":"<p>Rich HTML content with 2-3 paragraphs...</p>"}]}
+
+- scenarioTree: {"type":"scenarioTree","order":1,"scenarioTitle":"Clinical Scenario Title","startNode":"start","nodes":{"start":{"text":"<p>Client presents with...</p>","choices":[{"text":"Option A","next":"nodeA"},{"text":"Option B","next":"nodeB"}]},"nodeA":{"text":"<p>Result of choice A...</p>","feedback":"<p>Clinical rationale...</p>"},"nodeB":{"text":"<p>Result of choice B...</p>","feedback":"<p>Clinical rationale...</p>"}}}
+
+- flashcardDeck: {"type":"flashcardDeck","order":1,"instructions":"Review these key concepts.","flashcards":[{"id":"f1","front":"Term or Question","back":"Definition or Answer"}]}
+
+- reflection: {"type":"reflection","order":1,"question":"Reflective prompt?","textContent":"<p>Context paragraph</p>","minLength":50}
+
+- resources: {"type":"resources","order":1,"resources":[{"title":"Resource Name","url":"https://real-url.org","type":"website"}]}
 
 Return ONLY: [ {block1}, {block2}, ... ]`;
 
-  const newBlocks = await callClaude(prompt, 4000);
+  const newBlocks = await callClaude(prompt, 6000);
   await sleep(API_DELAY);
   
   const result = Array.isArray(newBlocks) ? newBlocks : [];
-  // Fix option formats
+  // Fix option formats for MC/MS blocks
   result.forEach(b => {
     if ((b.type === 'multipleChoice' || b.type === 'multiSelect') && b.options) {
       b.options = b.options.map((o, j) => typeof o === 'string' ? { text: o, isCorrect: j === (b.correctAnswer || 0) } : o);
       delete b.correctAnswer;
+    }
+    // Ensure cardSort cards have IDs
+    if (b.type === 'cardSort' && b.cards) {
+      b.cards = b.cards.map((c, i) => ({ ...c, id: c.id || `c${i+1}` }));
+    }
+    // Ensure sequencing steps have IDs and order
+    if (b.type === 'sequencing' && b.steps) {
+      b.steps = b.steps.map((s, i) => ({ ...s, id: s.id || `s${i+1}`, order: s.order || i+1 }));
+    }
+    // Ensure timeline events have IDs and order
+    if (b.type === 'timeline' && b.events) {
+      b.events = b.events.map((e, i) => ({ ...e, id: e.id || `t${i+1}`, order: e.order || i+1 }));
+    }
+    // Ensure flashcards have IDs
+    if (b.type === 'flashcardDeck' && b.flashcards) {
+      b.flashcards = b.flashcards.map((f, i) => ({ ...f, id: f.id || `f${i+1}` }));
+    }
+    // Ensure scenarioTree has startNode
+    if (b.type === 'scenarioTree' && b.nodes && !b.startNode) {
+      b.startNode = Object.keys(b.nodes)[0] || 'start';
     }
   });
   return result;
@@ -760,7 +855,7 @@ function validate(data, ceHours) {
   if ((data.assessment?.questions?.length||0) < 15) issues.push(`EXAM:${data.assessment?.questions?.length||0}`);
 
   ss.forEach((s, i) => {
-    const kc = (s.contentBlocks||[]).filter(b => b.type==='multipleChoice'||b.type==='multiSelect').length;
+    const kc = (s.contentBlocks||[]).filter(b => KC_TYPES.has(b.type)).length;
     if (kc < 2) issues.push(`S${i+1}KC:${kc}`);
   });
 
