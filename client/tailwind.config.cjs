@@ -1,5 +1,5 @@
 /** @type {import('tailwindcss').Config} */
-module.exports = {
+export default {
   content: [
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
@@ -7,91 +7,84 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        // ═══ Official Brand Colors ═══
-        // Burgundy #6B1D34 → burgundy-800
-        // Hunter Green #4A7C59 → hunter-600
-        // Honey Gold #D4A855 → honey-400
-        // Navy #34495E → navy-600
-        
-        // Primary Brand Colors
+        // ═══════════════════════════════════════════════
+        // CounselorReady Unified Palette v1.0
+        // Reference: CounselorReady_Color_Spec_v1.docx
+        // ═══════════════════════════════════════════════
+
+        // PRIMARY: H1, logo, CTAs, alerts, accents
         burgundy: {
-          50:  '#FDF2F4',
+          50:  '#FDF5F7',
           100: '#FAE8EB',
           200: '#F5D0D6',
-          300: '#E9A3B0',
-          400: '#D87389',
+          300: '#E8A4B2',
+          400: '#D4708A',
           500: '#C94D65',
           600: '#A83350',
           700: '#8B2542',
-          800: '#6B1D34', // ← Brand primary
+          800: '#6B1D34', // ★ Primary
           900: '#4A1524',
         },
-        forest: {
-          100: '#E3EBE5',
-          200: '#C8D7CC',
-          400: '#759A7F',
-          500: '#547C5F',
-          600: '#40634A',
-          700: '#34503D',
+
+        // PRIMARY: H2, footer, body emphasis, secondary text
+        navy: {
+          50:  '#F0F4F7',
+          100: '#D9E2EA',
+          200: '#B3C5D4',
+          300: '#7A98AE',
+          400: '#4A6B82',
+          500: '#284157', // ★ Primary
+          600: '#1F3345',
+          700: '#172736',
+          800: '#101C27',
         },
+
+        // PRIMARY: Buttons, nav, success, intervention
         hunter: {
-          50:  '#F2F7F3',
+          50:  '#F2F7F4',
           100: '#E4EBE6',
           200: '#C9D7CD',
-          300: '#A4BDA9',
-          400: '#7F9E87',
-          500: '#5F8268',
-          600: '#4A7C59', // ← Brand primary
-          700: '#395F45',
-          800: '#2D4C37',
+          300: '#A3BDA9',
+          400: '#7A9E84',
+          500: '#4A7C59', // ★ Primary
+          600: '#3D6A4A',
+          700: '#305538',
+          800: '#234027',
         },
+
+        // PRIMARY: Highlights, badges, awards, progress
         honey: {
-          50:  '#FFFDF5',
-          100: '#FFF9E6',
-          200: '#FFF0C2',
-          300: '#E0C87A',
-          400: '#D4A855', // ← Brand primary
-          500: '#C69840',
-          600: '#B8872C',
-          700: '#9A6F1A',
+          50:  '#FDF9F0',
+          100: '#F9F0DB',
+          200: '#F3E0B5',
+          300: '#EACD86',
+          400: '#D4A855', // ★ Primary
+          500: '#C49545',
+          600: '#A67936',
+          700: '#865E2C',
+          800: '#6B4A25',
         },
-        navy: {
-          300: '#7D9AB2',
-          400: '#5A7A94',
-          500: '#456177',
-          600: '#34495E', // ← Brand primary
-          700: '#2C3E50',
-          800: '#1A252F',
-          900: '#111820',
+
+        // PRIMARY: Page backgrounds, content canvas
+        eggshell: {
+          50:  '#F5F5DC', // ★ Primary
+          100: '#EDEDD0',
+          200: '#E2E2BE',
+          300: '#D4D4A4',
         },
-        stone: {
-          50: '#FAFAF9',
-          100: '#F5F5F4',
-          200: '#E7E5E4',
-        },
-        // UI component scales
-        moss: {
-          100: '#E8EDE8',
-          200: '#D1DBD1',
-          400: '#8FA78F',
-          500: '#6A856A',
-          600: '#4B5D4B',
-          700: '#3A4A3A',
-        },
-        dustyrose: {
-          100: '#F4ECEE',
-          200: '#E9D9DD',
-          400: '#B8969D',
-          500: '#9A7A82',
-          600: '#7D4E57',
-          700: '#5E3A42',
-        },
+
+        // ═══════════════════════════════════════════════
+        // DEPRECATED — kept for transition, remove later
+        // forest-* → use hunter-*
+        // moss-* → use hunter-*
+        // dustyrose-* → use burgundy-*
+        // stone-* → use eggshell-*
+        // ═══════════════════════════════════════════════
       },
       fontFamily: {
         display: ['Cormorant Garamond', 'Georgia', 'serif'],
         sans: ['Lato', 'system-ui', 'sans-serif'],
         body: ['Lato', 'system-ui', 'sans-serif'],
-        inter: ['Inter', 'system-ui', 'sans-serif'],
       },
       fontSize: {
         'display-xl': ['4rem', { lineHeight: '1.1', fontWeight: '600' }],
