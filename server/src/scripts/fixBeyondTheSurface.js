@@ -162,16 +162,22 @@ async function main() {
   let currentParts = [];
   let currentWords = 0;
 
-  for (const part of parts) {
+  for (let pi = 0; pi < parts.length; pi++) {
+    const part = parts[pi];
     const partWords = countWords(part.html);
     currentParts.push(part);
     currentWords += partWords;
     
-    // Start a new section when we hit the target (but don't create too many)
-    const remainingParts = parts.length - parts.indexOf(part) - 1;
-    const remainingSections = TARGET_SECTIONS - newSections.length - 1;
+    const remainingParts = parts.length - pi - 1;
+    const sectionsStillNeeded = TARGET_SECTIONS - newSections.length;
     
-    if (currentWords >= targetWordsPerSection && remainingSections > 0 && remainingParts >= remainingSections) {
+    // Split when: we've hit target words OR we need to split now to have 
+    // enough sections (1 part per remaining section minimum)
+    const hitTarget = currentWords >= targetWordsPerSection && sectionsStillNeeded > 1;
+    const mustSplitToDistribute = remainingParts > 0 && remainingParts < sectionsStillNeeded && sectionsStillNeeded > 1;
+    const isLastPart = pi === parts.length - 1;
+    
+    if (hitTarget || mustSplitToDistribute || isLastPart) {
       newSections.push({
         title: currentParts[0].title,
         html: currentParts.map(p => p.html).join('\n'),
@@ -180,15 +186,6 @@ async function main() {
       currentParts = [];
       currentWords = 0;
     }
-  }
-  
-  // Push remaining
-  if (currentParts.length) {
-    newSections.push({
-      title: currentParts[0].title,
-      html: currentParts.map(p => p.html).join('\n'),
-      words: currentWords
-    });
   }
 
   // If conclusion exists, append to last section or add as final
