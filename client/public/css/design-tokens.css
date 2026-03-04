@@ -1,0 +1,199 @@
+/* ═══════════════════════════════════════════════════════════════════
+   CounselorReady Design Tokens v1.0
+   Source of truth: CounselorReady_Color_Spec_v1.docx
+   
+   Deploy to: client/public/css/design-tokens.css
+   Import in: Every HTML page and React entry point
+   
+   RULE: If this file and any other file disagree, THIS FILE WINS.
+   ═══════════════════════════════════════════════════════════════════ */
+
+:root {
+
+  /* ── BURGUNDY SCALE ─────────────────────────────────────────────
+     Role: Primary brand · H1 headings · CTAs · Alerts · Logo
+     Primary: 800 ★                                                */
+  --cr-burgundy-50:  #FDF5F7;
+  --cr-burgundy-100: #FAE8EB;
+  --cr-burgundy-200: #F5D0D6;
+  --cr-burgundy-300: #E8A4B2;
+  --cr-burgundy-400: #D4708A;
+  --cr-burgundy-500: #C94D65;
+  --cr-burgundy-600: #A83350;
+  --cr-burgundy-700: #8B2542;
+  --cr-burgundy-800: #6B1D34;  /* ★ PRIMARY */
+  --cr-burgundy-900: #4A1524;
+
+  /* ── NAVY SCALE ─────────────────────────────────────────────────
+     Role: H2 headings · Body emphasis · Footers · Secondary text
+     Primary: 500 ★                                                */
+  --cr-navy-50:  #F0F4F7;
+  --cr-navy-100: #D9E2EA;
+  --cr-navy-200: #B3C5D4;
+  --cr-navy-300: #7A98AE;
+  --cr-navy-400: #4A6B82;
+  --cr-navy-500: #284157;  /* ★ PRIMARY */
+  --cr-navy-600: #1F3345;
+  --cr-navy-700: #172736;
+  --cr-navy-800: #101C27;
+
+  /* ── HUNTER GREEN SCALE ─────────────────────────────────────────
+     Role: Primary buttons · Navigation · Success · Intervention
+     Primary: 500 ★                                                */
+  --cr-green-50:  #F2F7F4;
+  --cr-green-100: #E4EBE6;
+  --cr-green-200: #C9D7CD;
+  --cr-green-300: #A3BDA9;
+  --cr-green-400: #7A9E84;
+  --cr-green-500: #4A7C59;  /* ★ PRIMARY */
+  --cr-green-600: #3D6A4A;
+  --cr-green-700: #305538;
+  --cr-green-800: #234027;
+
+  /* ── HONEY / GOLD SCALE ─────────────────────────────────────────
+     Role: Highlights · Badges · Awards · Progress bars · Accents
+     Primary: 400 ★                                                */
+  --cr-honey-50:  #FDF9F0;
+  --cr-honey-100: #F9F0DB;
+  --cr-honey-200: #F3E0B5;
+  --cr-honey-300: #EACD86;
+  --cr-honey-400: #D4A855;  /* ★ PRIMARY */
+  --cr-honey-500: #C49545;
+  --cr-honey-600: #A67936;
+  --cr-honey-700: #865E2C;
+  --cr-honey-800: #6B4A25;
+
+  /* ── EGGSHELL SCALE ─────────────────────────────────────────────
+     Role: Page backgrounds · Content areas · Canvas
+     Primary: 50 ★                                                 */
+  --cr-eggshell-50:  #F5F5DC;  /* ★ PRIMARY */
+  --cr-eggshell-100: #EDEDD0;
+  --cr-eggshell-200: #E2E2BE;
+  --cr-eggshell-300: #D4D4A4;
+
+
+  /* ═══════════════════════════════════════════════════════════════
+     SEMANTIC TOKENS
+     Use THESE in components — never raw scale values.
+     ═══════════════════════════════════════════════════════════════ */
+
+  /* ── Backgrounds ──────────────────────────────────────────────── */
+  --cr-bg:             var(--cr-eggshell-50);     /* Page background */
+  --cr-bg-card:        #FFFFFF;                    /* Card / panel */
+  --cr-bg-alt:         var(--cr-eggshell-100);     /* Alternate rows */
+  --cr-bg-nav:         var(--cr-burgundy-800);     /* Navigation bar */
+  --cr-bg-footer:      var(--cr-navy-500);         /* Footer */
+
+  /* ── Borders ──────────────────────────────────────────────────── */
+  --cr-border:         var(--cr-eggshell-200);     /* Default border */
+  --cr-border-light:   var(--cr-eggshell-100);     /* Light divider */
+  --cr-border-accent:  var(--cr-burgundy-100);     /* Accent border */
+
+  /* ── Text ─────────────────────────────────────────────────────── */
+  --cr-text:           #2C2C2C;                    /* Primary body */
+  --cr-text-muted:     #6B7280;                    /* Secondary */
+  --cr-text-light:     #9CA3AF;                    /* Placeholder */
+  --cr-text-inverse:   #FFFFFF;                    /* On dark bg */
+
+  /* ── Headings ─────────────────────────────────────────────────── */
+  --cr-h1:             var(--cr-burgundy-800);     /* #6B1D34 */
+  --cr-h2:             var(--cr-navy-500);          /* #284157 */
+  --cr-h3:             var(--cr-green-500);         /* #4A7C59 */
+  --cr-h4:             var(--cr-navy-500);          /* #284157 */
+
+  /* ── Buttons ──────────────────────────────────────────────────── */
+  --cr-btn-primary-bg:    var(--cr-green-500);
+  --cr-btn-primary-hover: var(--cr-green-600);
+  --cr-btn-primary-active:var(--cr-green-700);
+  --cr-btn-cta-bg:        var(--cr-burgundy-800);
+  --cr-btn-cta-hover:     var(--cr-burgundy-700);
+
+  /* ── Interactive / Accent ──────────────────────────────────────── */
+  --cr-accent:         var(--cr-honey-400);        /* Highlights */
+  --cr-intervention:   var(--cr-green-500);         /* Clinical mode */
+  --cr-progress:       var(--cr-honey-400);        /* Progress bars */
+  --cr-progress-track: var(--cr-honey-200);        /* Progress track */
+  --cr-focus:          var(--cr-burgundy-500);      /* Focus rings */
+
+  /* ── Links ────────────────────────────────────────────────────── */
+  --cr-link:           var(--cr-navy-500);
+  --cr-link-hover:     var(--cr-burgundy-800);
+
+  /* ── Feedback ─────────────────────────────────────────────────── */
+  --cr-success:        #059669;
+  --cr-error:          #DC2626;
+  --cr-warning:        var(--cr-honey-400);
+
+  /* ── Block-Type Categories (course player) ────────────────────── */
+  --cr-block-content:    var(--cr-navy-500);        /* text, accordion, resources */
+  --cr-block-knowledge:  var(--cr-burgundy-800);    /* quiz, matching, cardSort */
+  --cr-block-engagement: var(--cr-green-500);       /* reflection, scenario, flashcard */
+  --cr-block-progress:   var(--cr-honey-400);       /* progress, badges, certificates */
+
+
+  /* ═══════════════════════════════════════════════════════════════
+     TYPOGRAPHY TOKENS
+     ═══════════════════════════════════════════════════════════════ */
+
+  /* ── Font Families ────────────────────────────────────────────── */
+  --cr-font-display:  'Cormorant Garamond', 'Georgia', serif;
+  --cr-font-body:     'Lato', 'Helvetica Neue', 'Arial', sans-serif;
+
+  /* ── Font Sizes ───────────────────────────────────────────────── */
+  --cr-text-h1:       2.5rem;    /* 40px */
+  --cr-text-h2:       1.75rem;   /* 28px */
+  --cr-text-h3:       1.25rem;   /* 20px */
+  --cr-text-h4:       1.1rem;    /* 17.6px */
+  --cr-text-body:     1rem;      /* 16px */
+  --cr-text-small:    0.875rem;  /* 14px */
+  --cr-text-label:    0.75rem;   /* 12px */
+
+  /* ── Font Weights ─────────────────────────────────────────────── */
+  --cr-weight-h1:     700;
+  --cr-weight-h2:     600;
+  --cr-weight-h3:     700;
+  --cr-weight-h4:     600;
+  --cr-weight-body:   400;
+  --cr-weight-label:  600;
+
+  /* ── Line Heights ─────────────────────────────────────────────── */
+  --cr-leading-tight:   1.3;
+  --cr-leading-normal:  1.6;
+  --cr-leading-relaxed: 1.8;
+
+  /* ── Spacing Scale ────────────────────────────────────────────── */
+  --cr-space-xs:   0.25rem;   /* 4px */
+  --cr-space-sm:   0.5rem;    /* 8px */
+  --cr-space-md:   1rem;      /* 16px */
+  --cr-space-lg:   1.5rem;    /* 24px */
+  --cr-space-xl:   2rem;      /* 32px */
+  --cr-space-2xl:  3rem;      /* 48px */
+
+  /* ── Border Radius ────────────────────────────────────────────── */
+  --cr-radius-sm:  0.375rem;  /* 6px */
+  --cr-radius-md:  0.75rem;   /* 12px */
+  --cr-radius-lg:  1rem;      /* 16px */
+  --cr-radius-xl:  1.5rem;    /* 24px */
+
+  /* ── Shadows ──────────────────────────────────────────────────── */
+  --cr-shadow-sm:  0 1px 2px rgba(107, 29, 52, 0.05);
+  --cr-shadow-md:  0 4px 6px rgba(107, 29, 52, 0.07);
+  --cr-shadow-lg:  0 10px 15px rgba(107, 29, 52, 0.10);
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════
+   DEPRECATED COLOR MIGRATION
+   
+   These values exist in legacy code. Find-and-replace with the
+   token equivalents listed. Do NOT add new uses.
+   
+   ~~#40634A~~ (Forest Green 600)  → var(--cr-green-500)
+   ~~#34495E~~ (Old Navy)          → var(--cr-navy-500)
+   ~~#4B5D4B~~ (Moss 600)         → var(--cr-green-500)
+   ~~#7D4E57~~ (Dusty Rose 600)   → var(--cr-burgundy-700)
+   ~~#FAFAF9~~ (Stone 50)         → var(--cr-bg)
+   ~~#F8F7F4~~ (Settings bg)      → var(--cr-bg)
+   ~~#FAFAF8~~ (React bg)         → var(--cr-bg)
+   ~~#F5F5F4~~ (Stone 100)        → var(--cr-bg-alt)
+   ═══════════════════════════════════════════════════════════════════ */
