@@ -89,7 +89,7 @@ COURSE STRUCTURE:
 }
 
 BRAND: CounselorReady — "Learn. License. Lead."
-Colors: Burgundy #6B1D34, Hunter Green #4A7C59, Gold #D4A855, Navy #34495E
+Colors: Burgundy #6B1D34, Hunter Green #4A7C59, Gold #D4A855, Navy #284157
 
 When generating content, use HTML formatting in text blocks (<p>, <h2>, <h3>, <strong>, <em>, <ul>, <li>).
 Always include proper clinical terminology and evidence-based frameworks.

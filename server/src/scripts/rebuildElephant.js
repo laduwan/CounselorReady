@@ -190,7 +190,7 @@ BRAND COLORS for HTML styling:
 - Burgundy: #6B1D34 — section dividers, alerts, warnings
 - Hunter Green: #4A7C59 — key concept callouts, buttons
 - Honey/Gold: #D4A855 — heading underlines, clinical example boxes, blockquote borders
-- Navy: #34495E — subheadings, tables, body emphasis
+- Navy: #284157 — subheadings, tables, body emphasis
 
 CONTENT BLOCK TYPES:
 1. "sectionDivider" - { type: "sectionDivider", title: "Section Title", sectionNumber: N }
@@ -202,13 +202,13 @@ CONTENT BLOCK TYPES:
 7. "reflection" - { type: "reflection", reflectionPrompt: "...", reflectionPlaceholder: "Type your response..." }
 
 HTML FORMATTING for text blocks:
-- Headings: <h2 style="color:#34495E; border-bottom-width:2px; border-bottom-style:solid; border-bottom-color:#D4A855; padding-bottom:8px; margin-top:40px; margin-bottom:18px; font-size:1.5rem; font-weight:700;">
+- Headings: <h2 style="color:#284157; border-bottom-width:2px; border-bottom-style:solid; border-bottom-color:#D4A855; padding-bottom:8px; margin-top:40px; margin-bottom:18px; font-size:1.5rem; font-weight:700;">
 - Subheadings: <h3 style="color:#6B1D34; margin-top: 28px; font-weight: 700;">
 - Key concept box: <div style="background: linear-gradient(135deg, rgba(74,124,89,0.08), rgba(74,124,89,0.03)); border-left: 4px solid #4A7C59; padding: 20px 24px; border-radius: 8px; margin: 24px 0;"><span style="font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:0.6px; color:#4A7C59; display:block; margin-bottom:8px;">💡 Key Concept</span>...</div>
 - Clinical warning: <div style="background: rgba(107,29,52,0.06); border-left: 4px solid #6B1D34; padding: 20px 24px; border-radius: 8px; margin: 24px 0;"><span style="font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:0.6px; color:#6B1D34; display:block; margin-bottom:8px;">⚠️ Watch for This</span>...</div>
 - Clinical example: <div style="background: rgba(212,168,85,0.08); border-left: 4px solid #D4A855; padding: 20px 24px; border-radius: 8px; margin: 24px 0;"><span style="font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:0.6px; color:#96782E; display:block; margin-bottom:8px;">📋 Clinical Example</span>...</div>
-- Blockquotes: <blockquote style="border-left: 3px solid #D4A855; padding: 14px 20px; margin: 24px 0; font-style: italic; color: #34495E; background: rgba(212,168,85,0.04); border-radius: 0 8px 8px 0;">
-- Tables: <table style="width:100%; border-collapse:collapse; margin:24px 0; border-radius:8px; overflow:hidden; box-shadow:0 1px 3px rgba(0,0,0,0.06);"><thead style="background:#34495E; color:#fff;">
+- Blockquotes: <blockquote style="border-left: 3px solid #D4A855; padding: 14px 20px; margin: 24px 0; font-style: italic; color: #284157; background: rgba(212,168,85,0.04); border-radius: 0 8px 8px 0;">
+- Tables: <table style="width:100%; border-collapse:collapse; margin:24px 0; border-radius:8px; overflow:hidden; box-shadow:0 1px 3px rgba(0,0,0,0.06);"><thead style="background:#284157; color:#fff;">
 - Paragraphs: substantive (4-6 sentences), flowing, with <strong> on key terms at first use
 
 CRITICAL: Return ONLY the JSON array. No markdown fences. No preamble. Start with [ and end with ].`;
@@ -371,7 +371,7 @@ async function main() {
   console.log(`${"═".repeat(60)}\n`);
 
   // Append APA references to last content section
-  const refsHTML = `<h2 style="color:#34495E; border-bottom-width:2px; border-bottom-style:solid; border-bottom-color:#D4A855; padding-bottom:8px; margin-top:40px; font-size:1.5rem; font-weight:700;">References</h2><ol style="line-height:2; color:#475569; font-size:14px; padding-left:20px;">${REFERENCES.map(r => `<li>${r.author} (${r.year}). ${r.title}. <em>${r.source}</em>.</li>`).join("")}</ol>`;
+  const refsHTML = `<h2 style="color:#284157; border-bottom-width:2px; border-bottom-style:solid; border-bottom-color:#D4A855; padding-bottom:8px; margin-top:40px; font-size:1.5rem; font-weight:700;">References</h2><ol style="line-height:2; color:#475569; font-size:14px; padding-left:20px;">${REFERENCES.map(r => `<li>${r.author} (${r.year}). ${r.title}. <em>${r.source}</em>.</li>`).join("")}</ol>`;
   sections[sections.length - 1].contentBlocks.push({ type: "text", textContent: refsHTML });
 
   // ── ASSEMBLE COURSE DOCUMENT ────────────────────────────────────
