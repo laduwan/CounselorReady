@@ -146,6 +146,23 @@
     .high-contrast-mode .prose * { color: #000 !important; }
     .high-contrast-mode * { border-color: #333 !important; }
 
+    /* Dark mode */
+    .dark-mode { background-color: #1a1a2e !important; }
+    .dark-mode .lg\:ml-72 { background-color: #1a1a2e !important; }
+    .dark-mode header { background-color: #1a1a2e !important; border-bottom-color: #2d2d44 !important; }
+    .dark-mode #section-title { color: #E8A4B2 !important; }
+    .dark-mode #content-area { background-color: #1a1a2e !important; }
+    .dark-mode .prose p, .dark-mode .prose li, .dark-mode .prose span { color: #d1d1e0 !important; }
+    .dark-mode .prose h3 { color: #E8A4B2 !important; }
+    .dark-mode .prose strong { color: #eee !important; }
+    .dark-mode .bg-white, .dark-mode [class*="bg-white"] { background-color: #16213e !important; }
+    .dark-mode .border-slate-200, .dark-mode [class*="border-slate"] { border-color: #2d2d44 !important; }
+    .dark-mode .text-slate-800, .dark-mode .text-slate-700, .dark-mode .text-slate-600, .dark-mode .font-medium { color: #d1d1e0 !important; }
+    .dark-mode .text-slate-500, .dark-mode .text-slate-400 { color: #8888a0 !important; }
+    .dark-mode .bg-slate-50, .dark-mode .bg-slate-100, .dark-mode [class*="bg-slate-5"] { background-color: #1a1a33 !important; }
+    .dark-mode .narration-player { background-color: #16213e !important; border-color: #2d2d44 !important; }
+    .dark-mode #section-nav { border-color: #2d2d44 !important; }
+
     /* ══════════════════════════════════════════════════ */
     /* STYLE C SIDEBAR — Clinical Dashboard              */
     /* ══════════════════════════════════════════════════ */
@@ -162,7 +179,6 @@
     .sb-progress-sub { font-size: 10px; opacity: .6; color: #fff; }
     .sb-bar-track { height: 4px; border-radius: 2px; background: rgba(255,255,255,.15); overflow: hidden; }
     .sb-bar-fill { height: 100%; border-radius: 2px; background: linear-gradient(90deg, #D4A855, #EACD86); transition: width .4s ease; }
-    .sb-bar-fill.bar-complete { background: #4A7C59; }
 
     .sb-nav { flex: 1; overflow-y: auto; padding: 10px; }
     .mod-card { background: #fff; border-radius: 10px; margin-bottom: 8px; border: 1px solid #E2E2BE; overflow: hidden; }
@@ -340,25 +356,23 @@
     </aside>
 
     <!-- Mobile Menu Button -->
-    <button id="menu-btn" onclick="toggleSidebar()" class="lg:hidden fixed top-4 left-4 z-50 p-2 bg-white rounded-lg shadow-md">
+    <button id="menu-btn" onclick="toggleSidebar()" class="lg:hidden fixed top-4 left-4 z-50 p-2 bg-white rounded-lg shadow-md" aria-label="Open navigation">
       <svg class="w-6 h-6 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
       </svg>
     </button>
 
+    <!-- Sidebar overlay (mobile) -->
+    <div id="sidebar-overlay" onclick="closeSidebar()" class="hidden fixed inset-0 bg-black bg-opacity-40 z-30 lg:hidden" aria-hidden="true"></div>
+
     <!-- Main Content -->
     <main class="lg:ml-72">
       
-      <!-- APA Top Header - Burgundy on Eggshell -->
-      <header style="position: sticky; top: 0; z-index: 100; background: #F5F5DC; padding: 1.5rem 2rem; text-align: center; border-bottom: 2px solid #E5E5DC;">
-        <h1 id="section-title" style="font-family: 'Cormorant Garamond', serif; font-size: 1.75rem; font-weight: 700; color: #6B1D34; margin: 0;"></h1>
-      </header>
-
-      <!-- Top Bar with Accessibility -->
-      <div class="bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between sticky top-0 z-30" style="top: 80px;">
-        <div class="lg:hidden w-10"></div>
-        <div class="flex-1"></div>
-        <div class="flex items-center gap-1">
+      <!-- APA Top Header - Burgundy on Eggshell, with accessibility + home -->
+      <header style="position: sticky; top: 0; z-index: 100; background: #F5F5DC; padding: 1rem 2rem; border-bottom: 2px solid #E5E5DC; display: flex; align-items: center; justify-content: center;">
+        <div class="lg:hidden" style="width:44px"></div>
+        <h1 id="section-title" style="font-family: 'Cormorant Garamond', serif; font-size: 1.75rem; font-weight: 700; color: #6B1D34; margin: 0; flex: 1; text-align: center;"></h1>
+        <div style="display:flex;align-items:center;gap:4px;flex-shrink:0">
           <!-- Accessibility Toolbar -->
           <div class="relative">
             <button id="a11y-toggle" onclick="toggleA11yPanel()" class="p-2 text-slate-400 hover:text-burgundy-700 hover:bg-burgundy-50 rounded-lg transition-colors" aria-label="Accessibility options" title="Accessibility Options">
@@ -369,7 +383,6 @@
                 <h3 class="font-bold text-slate-700 text-sm">Accessibility Options</h3>
                 <button onclick="toggleA11yPanel()" class="text-slate-400 hover:text-slate-600 text-lg leading-none">&times;</button>
               </div>
-              <!-- Font Size -->
               <div class="mb-4">
                 <label class="text-sm font-medium text-slate-600 mb-2 block">Text Size</label>
                 <div class="flex gap-2">
@@ -378,14 +391,18 @@
                   <button onclick="setFontSize('x-large')" id="fs-xlarge" class="flex-1 py-2 rounded-lg font-semibold text-lg bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors">A</button>
                 </div>
               </div>
-              <!-- High Contrast -->
               <div class="mb-4">
                 <button onclick="toggleHighContrast()" id="hc-btn" class="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors">
                   <span>High Contrast</span>
                   <span id="hc-indicator" class="w-9 h-5 rounded-full bg-slate-300 relative inline-block"><span id="hc-dot" class="absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-all"></span></span>
                 </button>
               </div>
-              <!-- Read Aloud -->
+              <div class="mb-4">
+                <button onclick="toggleDarkMode()" id="dm-btn" class="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors">
+                  <span>Dark Mode</span>
+                  <span id="dm-indicator" class="w-9 h-5 rounded-full bg-slate-300 relative inline-block"><span id="dm-dot" class="absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-all"></span></span>
+                </button>
+              </div>
               <div class="mb-2">
                 <button onclick="toggleReadAloud()" id="tts-btn" class="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors">
                   <span>Read Aloud (TTS)</span>
@@ -395,13 +412,13 @@
               <p class="text-xs text-slate-400 mt-3 pt-3 border-t border-slate-100">Settings apply to this session only.</p>
             </div>
           </div>
-          <a href="/dashboard.html" class="p-2 text-slate-400 hover:text-slate-600">
+          <a href="/dashboard.html" class="p-2 text-slate-400 hover:text-burgundy-700 rounded-lg transition-colors" aria-label="Go to dashboard" title="Dashboard">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
             </svg>
           </a>
         </div>
-      </div>
+      </header>
 
       <!-- Content Area (Sections) -->
       <div id="content-area" role="main" aria-label="Course content" tabindex="-1" class="p-6 lg:p-8 max-w-4xl mx-auto"></div>
@@ -807,6 +824,9 @@
 
     function goToSection(index) {
       if (index < 0 || index >= course.sections.length) return;
+      
+      // Close sidebar on mobile
+      if (window.innerWidth < 1024) closeSidebar();
       
       // Stop any playing narration before switching
       if (typeof stopAllNarrations === 'function') stopAllNarrations();
@@ -1414,6 +1434,11 @@
             <option value="1.25">1.25x</option>
             <option value="1.5">1.5x</option>
           </select>
+          <div style="display:flex;align-items:center;gap:4px" aria-label="Volume control">
+            <svg style="width:16px;height:16px;flex-shrink:0;color:#78716c" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072M12 6.253v13M8 9H5a1 1 0 00-1 1v4a1 1 0 001 1h3l4 4V5L8 9z"/></svg>
+            <input type="range" min="0" max="100" value="80" onchange="setNarrationVolume('${audioId}', this.value)" oninput="setNarrationVolume('${audioId}', this.value)"
+              aria-label="Volume" style="width:60px;height:4px;cursor:pointer;accent-color:#6B1D34">
+          </div>
           <audio id="${audioId}" src="${block.narrationUrl}" preload="metadata"></audio>
         `;
         div.appendChild(playerHtml);
@@ -1478,6 +1503,11 @@
     function setNarrationSpeed(audioId, speed) {
       const audio = document.getElementById(audioId);
       if (audio) audio.playbackRate = parseFloat(speed);
+    }
+
+    function setNarrationVolume(audioId, val) {
+      const audio = document.getElementById(audioId);
+      if (audio) audio.volume = parseInt(val) / 100;
     }
 
     // Section-level: play all block narrations sequentially
@@ -2208,11 +2238,9 @@
       const completed = currentSectionIndex + 1;
       const pct = Math.round((completed / total) * 100);
 
-      // Gold bar
+      // Gold bar — stays gold at all percentages
       const bar = document.getElementById('progress-bar');
       bar.style.width = pct + '%';
-      if (pct >= 100) bar.classList.add('bar-complete');
-      else bar.classList.remove('bar-complete');
 
       // Ring SVG
       const circ = 94.2; // 2 * PI * 15
@@ -2246,13 +2274,40 @@
 
     function toggleSidebar() {
       const sidebar = document.getElementById('sidebar');
-      sidebar.classList.toggle('-translate-x-full');
+      const overlay = document.getElementById('sidebar-overlay');
+      const menuBtn = document.getElementById('menu-btn');
+      const isOpen = !sidebar.classList.contains('-translate-x-full');
+      
+      if (isOpen) {
+        closeSidebar();
+      } else {
+        sidebar.classList.remove('-translate-x-full');
+        if (overlay) overlay.classList.remove('hidden');
+        if (menuBtn) {
+          menuBtn.innerHTML = '<svg class="w-6 h-6 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>';
+          menuBtn.setAttribute('aria-label', 'Close navigation');
+        }
+        srAnnounce('Navigation opened');
+      }
+    }
+
+    function closeSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      const overlay = document.getElementById('sidebar-overlay');
+      const menuBtn = document.getElementById('menu-btn');
+      sidebar.classList.add('-translate-x-full');
+      if (overlay) overlay.classList.add('hidden');
+      if (menuBtn) {
+        menuBtn.innerHTML = '<svg class="w-6 h-6 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>';
+        menuBtn.setAttribute('aria-label', 'Open navigation');
+      }
+      srAnnounce('Navigation closed');
     }
 
     // ============================================
     // ACCESSIBILITY TOOLBAR
     // ============================================
-    let a11yState = { fontSize: 'normal', highContrast: false, readAloud: false };
+    let a11yState = { fontSize: 'normal', highContrast: false, darkMode: false, readAloud: false };
 
     function toggleA11yPanel() {
       const panel = document.getElementById('a11y-panel');
@@ -2309,6 +2364,27 @@
         dot.style.left = '0.125rem';
       }
       srAnnounce('High contrast ' + (a11yState.highContrast ? 'enabled' : 'disabled'));
+    }
+
+    function toggleDarkMode() {
+      a11yState.darkMode = !a11yState.darkMode;
+      const body = document.body;
+      const btn = document.getElementById('dm-btn');
+      const indicator = document.getElementById('dm-indicator');
+      const dot = document.getElementById('dm-dot');
+      
+      if (a11yState.darkMode) {
+        body.classList.add('dark-mode');
+        btn.className = btn.className.replace('bg-slate-100 text-slate-600 hover:bg-slate-200', 'bg-slate-800 text-white');
+        indicator.className = indicator.className.replace('bg-slate-300', 'bg-green-600');
+        dot.style.left = '1rem';
+      } else {
+        body.classList.remove('dark-mode');
+        btn.className = btn.className.replace('bg-slate-800 text-white', 'bg-slate-100 text-slate-600 hover:bg-slate-200');
+        indicator.className = indicator.className.replace('bg-green-600', 'bg-slate-300');
+        dot.style.left = '0.125rem';
+      }
+      srAnnounce('Dark mode ' + (a11yState.darkMode ? 'enabled' : 'disabled'));
     }
 
     function toggleReadAloud() {
@@ -2950,16 +3026,18 @@
           }
         });
       });
-
-      // Also check course-level resources
       if (course.resources && Array.isArray(course.resources)) {
         resources = resources.concat(course.resources);
       }
 
+      // If no course-specific resources, show default platform links
       if (resources.length === 0) {
-        // Show nothing or hide FAB
-        const fabWrap = document.getElementById('fabWrap');
-        if (fabWrap) fabWrap.style.display = 'none';
+        container.innerHTML = `
+          <a href="/courses.html" class="fab-i" role="menuitem"><span class="fab-ic" aria-hidden="true">&#128218;</span><span class="fab-n">Browse Courses</span></a>
+          <a href="/dashboard.html" class="fab-i" role="menuitem"><span class="fab-ic" aria-hidden="true">&#127968;</span><span class="fab-n">Dashboard</span></a>
+          <a href="/certificates.html" class="fab-i" role="menuitem"><span class="fab-ic" aria-hidden="true">&#127891;</span><span class="fab-n">My Certificates</span></a>
+          <a href="/transcript.html" class="fab-i" role="menuitem"><span class="fab-ic" aria-hidden="true">&#128203;</span><span class="fab-n">CE Transcript</span></a>
+        `;
         return;
       }
 
