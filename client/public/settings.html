@@ -122,30 +122,18 @@
       font-size: 0.95rem;
     }
 
-    /* -- Settings Tabs -- */
-    .settings-tabs {
-      display: flex;
-      gap: 0;
-      border-bottom: 2px solid var(--border);
-      margin-bottom: 2rem;
-    }
-    .settings-tab {
-      padding: 0.75rem 1.5rem;
-      font-size: 0.95rem;
-      font-weight: 600;
-      color: var(--text-secondary);
-      background: none;
-      border: none;
-      cursor: pointer;
-      border-bottom: 3px solid transparent;
-      margin-bottom: -2px;
-      transition: all 0.2s;
-    }
-    .settings-tab:hover { color: var(--navy); }
-    .settings-tab.active {
-      color: var(--burgundy);
-      border-bottom-color: var(--burgundy);
-    }
+ <!-- Settings Tabs -->
+    <div class="settings-tabs">
+      <button class="settings-tab active" data-tab="notifications" onclick="switchTab('notifications')">
+        🔔 Notifications
+      </button>
+      <button class="settings-tab" data-tab="profile" onclick="switchTab('profile')">
+        👤 Profile
+      </button>
+      <button class="settings-tab" data-tab="account" onclick="switchTab('account')">
+        🔑 Account
+      </button>
+    </div>
 
     /* -- Cards -- */
     .card {
