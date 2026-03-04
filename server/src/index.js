@@ -217,12 +217,12 @@ app.use('/api/scorm', scormRoutes);
 app.use('/api/lti', ltiRoutes);
 app.use('/api/xapi', xapiRoutes);
 app.use('/api/cebroker', cebrokerRoutes);
-app.use('/api/ai', aiRoutes);
 app.use('/api/help', helpRoutes);
 app.use('/api/admin/courses', bulkUploadRoutes);
-app.use('/api/ai-course-generator', aiCourseGeneratorRoutes); // ← NEW
+// ── Previously unregistered routes (wiring audit fix 2026-03-04) ──
+app.use('/api/ai', aiRoutes);
+app.use('/api/ai-course-generator', aiCourseGeneratorRoutes);
 app.use('/api/course-builder', courseBuilderRoutes);
-app.use('/api/images', imageUploadRoutes);
 app.use('/api/narration', narrationRoutes);
 
 // Static templates directory intentionally NOT served publicly
