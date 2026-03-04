@@ -6,8 +6,8 @@ import { useState, useRef, useEffect } from "react";
 
 const C = {
   burgundy: "#6B1D34", green: "#4A7C59", gold: "#D4A855",
-  navy: "#34495E", text: "#2C2C2C", textMuted: "#6B7280",
-  border: "#E8E4DF", card: "#FFFFFF", bg: "#FAFAF8",
+  navy: "#284157", text: "#2C2C2C", textMuted: "#6B7280",
+  border: "#E8E4DF", card: "#FFFFFF", bg: "#F5F5DC",
   danger: "#DC2626",
 };
 
