@@ -26,8 +26,15 @@ import scanRoutes from './routes/scan.js';
 import scormRoutes from './routes/scorm.js';
 import ltiRoutes from './routes/lti.js';
 import xapiRoutes from './routes/xapi.js';
-import interactiveCourseRoutes from './routes/interactiveCourseRoutes.js';
+import interactiveCourseRoutes from './routes/courseRoutes.js';
 import cebrokerRoutes from './routes/cebroker.js';
+import helpRoutes from './routes/help.js';
+import bulkUploadRoutes from './routes/bulkUpload.js';
+// ── Previously unregistered routes (wiring audit fix 2026-03-04) ──
+import aiRoutes from './routes/ai.js';
+import aiCourseGeneratorRoutes from './routes/aiCourseGenerator.js';
+import courseBuilderRoutes from './routes/courseBuilder.js';
+import narrationRoutes from './routes/narration.js';
 import helpRoutes from './routes/help.js';
 import bulkUploadRoutes from './routes/bulkUpload.js';
 import aiRoutes from './routes/ai.js';
