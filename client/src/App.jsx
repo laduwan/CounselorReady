@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate, useParams } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
-import { CRFooter } from './utils/copyright.js';
+import { CRFooter } from './utils/copyright.jsx';
 
 // Pages
 import Landing from './pages/Landing';
