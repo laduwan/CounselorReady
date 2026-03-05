@@ -35,7 +35,6 @@ import aiRoutes from './routes/ai.js';
 import aiCourseGeneratorRoutes from './routes/aiCourseGenerator.js';
 import courseBuilderRoutes from './routes/courseBuilder.js';
 import narrationRoutes from './routes/narration.js';
-import helpRoutes from './routes/help.js';
 import bulkUploadRoutes from './routes/bulkUpload.js';
 import aiRoutes from './routes/ai.js';
 import narrationRoutes from './routes/narration.js';
