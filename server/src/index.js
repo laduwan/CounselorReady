@@ -26,7 +26,7 @@ import scanRoutes from './routes/scan.js';
 import scormRoutes from './routes/scorm.js';
 import ltiRoutes from './routes/lti.js';
 import xapiRoutes from './routes/xapi.js';
-import interactiveCourseRoutes from './routes/courseRoutes.js';
+import interactiveCourseRoutes from './routes/interactiveCourseRoutes.js';
 import cebrokerRoutes from './routes/cebroker.js';
 import helpRoutes from './routes/help.js';
 import bulkUploadRoutes from './routes/bulkUpload.js';
