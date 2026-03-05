@@ -27,7 +27,7 @@ const SLUG_FILTER = process.argv.find(a => a.startsWith('--slug='))?.split('=')[
 
 // ── QUIZ DETECTION ──
 // Matches "Knowledge Check" headers followed by numbered questions with lettered options
-const QUIZ_HEADER_RE = /(?:#{1,3}\s*)?(?:Knowledge Check|Post-?Test|Assessment|Quiz)(?:\s*:?\s*(?:Module|Section)?\s*\d*)?/i;
+const QUIZ_HEADER_RE = /^(?:#{1,3}\s*)?(?:Knowledge Check|Post-?Test(?:\s+Questions)?|Final Assessment|Quiz)(?:\s*:?\s*(?:Module|Section)?\s*\d*)?$/i;
 
 // Matches a numbered question like "1. What is..." or "1) What is..."
 const QUESTION_START_RE = /^\s*(\d+)[.)]\s+(.+)/;
@@ -38,60 +38,93 @@ const OPTION_RE = /^\s*([a-dA-D])[.)]\s+(.+)/;
 // Matches correct answer markers
 const CORRECT_ANSWER_RE = /(?:Correct Answer|Answer|Correct)[:\s]*([A-Da-d])/i;
 
+// Matches answer key entries like "1. **B** - explanation"
+const ANSWER_KEY_ENTRY_RE = /^\s*(\d+)[.)]\s*\*\*([A-Da-d])\*\*\s*[-–—]\s*(.*)/i;
+
 function parseQuizFromText(text) {
   // Strip HTML tags for parsing
   const plain = text.replace(/<[^>]+>/g, '\n').replace(/&nbsp;/g, ' ');
   const lines = plain.split('\n').map(l => l.trim()).filter(l => l.length > 0);
 
-  const quizzes = []; // Array of { headerLine, questions[], startIdx, endIdx }
+  // First pass: extract answer keys
+  const answerKeys = {}; // { questionNum: correctLetterIndex }
+  let inAnswerKey = false;
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    if (/(?:POST-?TEST\s+)?ANSWER KEY/i.test(line)) {
+      inAnswerKey = true;
+      continue;
+    }
+    if (inAnswerKey) {
+      const akMatch = line.match(ANSWER_KEY_ENTRY_RE);
+      if (akMatch) {
+        const qNum = parseInt(akMatch[1]);
+        const letter = akMatch[2].toLowerCase();
+        const explanation = akMatch[3].trim();
+        answerKeys[qNum] = {
+          correctIndex: letter.charCodeAt(0) - 'a'.charCodeAt(0),
+          explanation,
+        };
+      } else if (line.length > 5 && !ANSWER_KEY_ENTRY_RE.test(line) && !/^\d/.test(line)) {
+        // Left the answer key section
+        inAnswerKey = false;
+      }
+    }
+  }
+
+  // Second pass: extract quizzes
+  const quizzes = [];
   let currentQuiz = null;
   let currentQuestion = null;
-  let quizStartLine = -1;
-  let quizEndLine = -1;
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
 
-    // Detect quiz header
-    if (QUIZ_HEADER_RE.test(line) && !QUESTION_START_RE.test(line)) {
-      // Save previous quiz if exists
-      if (currentQuiz && currentQuiz.questions.length > 0) {
-        currentQuiz.endIdx = i - 1;
-        quizzes.push(currentQuiz);
-      }
-      if (currentQuestion && currentQuiz) {
-        currentQuiz.questions.push(currentQuestion);
-      }
-      currentQuiz = { header: line, questions: [], startIdx: i, endIdx: -1 };
+    // Skip answer key sections entirely
+    if (/(?:POST-?TEST\s+)?ANSWER KEY/i.test(line)) {
+      // Save current quiz
+      if (currentQuestion && currentQuiz) currentQuiz.questions.push(currentQuestion);
+      if (currentQuiz && currentQuiz.questions.length > 0) quizzes.push(currentQuiz);
+      currentQuiz = null;
       currentQuestion = null;
-      quizStartLine = i;
+      // Skip until we leave the answer key
+      while (i < lines.length - 1) {
+        i++;
+        if (!ANSWER_KEY_ENTRY_RE.test(lines[i]) && lines[i].length > 5 && !/^\d/.test(lines[i])) break;
+      }
+      continue;
+    }
+
+    // Detect quiz header — must be a standalone line matching exactly
+    if (QUIZ_HEADER_RE.test(line)) {
+      if (currentQuestion && currentQuiz) currentQuiz.questions.push(currentQuestion);
+      if (currentQuiz && currentQuiz.questions.length > 0) quizzes.push(currentQuiz);
+      currentQuiz = { header: line.replace(/^#+\s*/, ''), questions: [], startIdx: i, endIdx: -1 };
+      currentQuestion = null;
       continue;
     }
 
     // Detect question start
     const qMatch = line.match(QUESTION_START_RE);
     if (qMatch) {
-      // If we found a question but no quiz header yet, create implicit quiz
+      // Verify this is actually a quiz question by checking for options ahead
       if (!currentQuiz) {
-        // Only if this looks like a real quiz (has options following)
-        const nextFewLines = lines.slice(i + 1, i + 6).join('\n');
-        if (OPTION_RE.test(nextFewLines)) {
+        const nextLines = lines.slice(i + 1, i + 8).join('\n');
+        if (OPTION_RE.test(nextLines)) {
           currentQuiz = { header: 'Knowledge Check', questions: [], startIdx: i, endIdx: -1 };
         } else {
-          continue;
+          continue; // Not a quiz, just a numbered list
         }
       }
 
-      // Save previous question
-      if (currentQuestion) {
-        currentQuiz.questions.push(currentQuestion);
-      }
+      if (currentQuestion) currentQuiz.questions.push(currentQuestion);
 
       currentQuestion = {
         questionNum: parseInt(qMatch[1]),
         questionText: qMatch[2],
         options: [],
         correctAnswer: -1,
+        explanation: '',
         lineStart: i,
         lineEnd: i,
       };
@@ -112,7 +145,7 @@ function parseQuizFromText(text) {
       continue;
     }
 
-    // Detect correct answer marker
+    // Detect correct answer marker inline
     const aMatch = line.match(CORRECT_ANSWER_RE);
     if (aMatch && currentQuestion) {
       const correctLetter = aMatch[1].toLowerCase();
@@ -121,12 +154,9 @@ function parseQuizFromText(text) {
       continue;
     }
 
-    // If we're past a quiz and hit non-quiz content, close the quiz
+    // If we have a complete question (4 options) and hit non-quiz content
     if (currentQuiz && currentQuestion && currentQuestion.options.length >= 2) {
-      // Check if this line is explanatory text after the question
       if (line.length > 10 && !QUESTION_START_RE.test(line) && !OPTION_RE.test(line)) {
-        // Could be explanation text or next content paragraph
-        // If next line is also not a question/option, we've left the quiz
         const nextLine = lines[i + 1] || '';
         if (!QUESTION_START_RE.test(nextLine) && !OPTION_RE.test(nextLine) && !CORRECT_ANSWER_RE.test(nextLine)) {
           currentQuiz.questions.push(currentQuestion);
@@ -140,15 +170,29 @@ function parseQuizFromText(text) {
   }
 
   // Save last quiz
-  if (currentQuestion && currentQuiz) {
-    currentQuiz.questions.push(currentQuestion);
-  }
-  if (currentQuiz && currentQuiz.questions.length > 0) {
-    currentQuiz.endIdx = lines.length - 1;
-    quizzes.push(currentQuiz);
+  if (currentQuestion && currentQuiz) currentQuiz.questions.push(currentQuestion);
+  if (currentQuiz && currentQuiz.questions.length > 0) quizzes.push(currentQuiz);
+
+  // Apply answer keys to questions
+  // Answer keys correspond to post-test questions (numbered 1-20)
+  const hasAnswerKeys = Object.keys(answerKeys).length > 0;
+  if (hasAnswerKeys) {
+    // Find the post-test quiz
+    for (const quiz of quizzes) {
+      if (/post-?test/i.test(quiz.header)) {
+        for (const q of quiz.questions) {
+          const ak = answerKeys[q.questionNum];
+          if (ak) {
+            q.correctAnswer = ak.correctIndex;
+            q.explanation = ak.explanation;
+          }
+        }
+      }
+    }
   }
 
-  return quizzes;
+  // Filter out quizzes with 0 valid questions
+  return quizzes.filter(q => q.questions.length > 0 && q.questions.some(qq => qq.options.length >= 2));
 }
 
 // Build text patterns to strip from the original content
@@ -189,6 +233,26 @@ function buildStripPatterns(quiz, originalText) {
   return patterns;
 }
 
+// Also strip answer key sections entirely
+function buildAnswerKeyStripPatterns(originalText) {
+  const patterns = [];
+  const isHtml = /<[a-z][\s\S]*?>/i.test(originalText);
+
+  // "POST-TEST ANSWER KEY" header
+  patterns.push(/^.*(?:POST-?TEST\s+)?ANSWER KEY.*$/gim);
+  if (isHtml) {
+    patterns.push(/<(?:h[123]|p|strong)[^>]*>[^<]*(?:POST-?TEST\s+)?ANSWER KEY[^<]*<\/(?:h[123]|p|strong)>/gi);
+  }
+
+  // Answer key entries: "1. **B** - explanation"
+  patterns.push(/^\s*\d+[.)]\s*\*\*[A-Da-d]\*\*\s*[-–—].+$/gim);
+  if (isHtml) {
+    patterns.push(/<p[^>]*>\s*\d+[.)]\s*(?:<strong>)?[A-Da-d](?:<\/strong>)?\s*[-–—][^<]*<\/p>/gi);
+  }
+
+  return patterns;
+}
+
 // Convert extracted quiz to multipleChoice content blocks
 function quizToBlocks(quiz) {
   const blocks = [];
@@ -213,7 +277,7 @@ function quizToBlocks(quiz) {
       type: 'multipleChoice',
       question: q.questionText,
       options,
-      explanation: q.correctAnswer >= 0 ? '' : '⚠️ NEEDS REVIEW: correct answer not auto-detected',
+      explanation: q.explanation || (q.correctAnswer === -1 ? '⚠️ NEEDS REVIEW: correct answer not auto-detected' : ''),
       order: 0, // Will be set during insertion
     });
   }
@@ -281,6 +345,13 @@ async function main() {
           }
         }
 
+        // Also strip answer key sections
+        const akPatterns = buildAnswerKeyStripPatterns(rawContent);
+        for (const pat of akPatterns) {
+          cleanedContent = cleanedContent.replace(pat, '');
+          cleanedTextContent = cleanedTextContent.replace(pat, '');
+        }
+
         // Clean up whitespace
         cleanedContent = cleanedContent.replace(/\n{3,}/g, '\n\n').replace(/(<br\s*\/?>\s*){3,}/gi, '<br><br>').trim();
         cleanedTextContent = cleanedTextContent.replace(/\n{3,}/g, '\n\n').trim();
@@ -307,11 +378,17 @@ async function main() {
             courseQuestions++;
           }
 
-          if (needsReview) courseNeedsReview += mcBlocks.length;
+          if (needsReview) courseNeedsReview += mcBlocks.filter(b => b.explanation.includes('NEEDS REVIEW')).length;
           courseQuizzes++;
           courseModified = true;
 
-          console.log(`   ✅ "${sTitle}" block ${bi}: extracted "${quiz.header}" → ${mcBlocks.length} questions${needsReview ? ' ⚠️ NEEDS ANSWER REVIEW' : ''}`);
+          const answeredCount = mcBlocks.filter(b => !b.explanation.includes('NEEDS REVIEW')).length;
+          const reviewCount = mcBlocks.filter(b => b.explanation.includes('NEEDS REVIEW')).length;
+          const statusMsg = reviewCount > 0 
+            ? `⚠️ ${reviewCount} need answer review` 
+            : `✓ all answers from answer key`;
+
+          console.log(`   ✅ "${sTitle}" block ${bi}: extracted "${quiz.header}" → ${mcBlocks.length} questions (${statusMsg})`);
         }
 
         console.log(`      Text block: ${origWords} → ${cleanWords} words (-${origWords - cleanWords} quiz words removed)`);
