@@ -85,7 +85,7 @@ export default function CloudinaryUploader({
           if (file) { const dt = new DataTransfer(); dt.items.add(file); fileRef.current.files = dt.files; handleFileSelect({ target: { files: dt.files } }); }
         }}
         style={{ border: '2px dashed #E8E4DF', borderRadius: 10, padding: preview ? 8 : 32,
-          textAlign: 'center', cursor: 'pointer', background: preview ? '#FAFAF8' : '#fff', position: 'relative' }}>
+          textAlign: 'center', cursor: 'pointer', background: preview ? '#F5F5DC' : '#fff', position: 'relative' }}>
         {preview ? (
           <div style={{ position: 'relative' }}>
             <img src={preview} alt={alt} style={{ maxWidth: '100%', maxHeight: 200, borderRadius: 8, display: 'block', margin: '0 auto' }} />
@@ -94,7 +94,7 @@ export default function CloudinaryUploader({
         ) : (
           <div>
             <div style={{ fontSize: 32, marginBottom: 8 }}>📷</div>
-            <div style={{ fontWeight: 600, color: '#34495E', fontSize: 14 }}>{label}</div>
+            <div style={{ fontWeight: 600, color: '#284157', fontSize: 14 }}>{label}</div>
             <div style={{ color: '#9CA3AF', fontSize: 12, marginTop: 4 }}>Drag & drop or click · Max 10MB</div>
           </div>
         )}
@@ -102,7 +102,7 @@ export default function CloudinaryUploader({
       <div style={{ marginTop: 8, display: 'flex', gap: 8 }}>
         <input type="text" value={alt} onChange={(e) => setAlt(e.target.value)} placeholder="Alt text for accessibility"
           style={{ flex: 1, padding: '8px 12px', borderRadius: 6, border: '1px solid #E8E4DF', fontSize: 13, outline: 'none' }} />
-        <button onClick={handleBrowse} style={{ background: 'none', border: '1px solid #E8E4DF', borderRadius: 6, padding: '8px 14px', fontSize: 12, cursor: 'pointer', fontWeight: 600, color: '#34495E' }}>📁 Browse</button>
+        <button onClick={handleBrowse} style={{ background: 'none', border: '1px solid #E8E4DF', borderRadius: 6, padding: '8px 14px', fontSize: 12, cursor: 'pointer', fontWeight: 600, color: '#284157' }}>📁 Browse</button>
       </div>
       {error && <p style={{ color: '#DC2626', fontSize: 12, marginTop: 6 }}>⚠ {error}</p>}
       {showBrowser && (

@@ -1,5 +1,5 @@
 // DROP INTO: /client/src/components/InteractiveCourseComponents.jsx
-// CounselorReady Brand: Burgundy #6B1D34 | Green #4A7C59 | Gold #D4A855 | Navy #34495E
+// CounselorReady Brand: Burgundy #6B1D34 | Green #4A7C59 | Gold #D4A855 | Navy #284157
 // ALL 16 LEARNER BLOCK TYPES
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';

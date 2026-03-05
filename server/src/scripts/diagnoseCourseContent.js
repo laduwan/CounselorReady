@@ -1,133 +1,181 @@
+/**
+ * diagnoseCourseContent.js
+ * CounselorReady — Read-only diagnostic
+ *
+ * Checks all courses in `interactivecourses` collection for:
+ *   1. Metadata bleed — provider info, tagline, course hours in content blocks
+ *   2. Raw markdown tables — pipe-character tables that should be interactive blocks
+ *   3. All-caps section titles — template artifact language
+ *   4. "---" separator lines rendered as content
+ *   5. Empty or near-empty sections
+ *
+ * Usage (run from server/):
+ *   node diagnoseCourseContent.js
+ *
+ * Output: Console report + diagnoseCourseContent_results.json
+ */
+
 import mongoose from 'mongoose';
+import fs from 'fs';
+import dotenv from 'dotenv';
+dotenv.config();
 
-const MONGODB_URI = process.env.MONGODB_URI;
-if (!MONGODB_URI) { console.error('No MONGODB_URI'); process.exit(1); }
+// ─── Patterns to detect ───────────────────────────────────────────────────
 
-async function main() {
-  await mongoose.connect(MONGODB_URI);
-  const db = mongoose.connection.db;
-  const ic = db.collection('interactivecourses');
+const METADATA_PATTERNS = [
+  { label: 'Provider line',    re: /NBCC ACEP Provider/i },
+  { label: 'GAITP LLC',        re: /GAITP LLC|Ga Integrated Therapeutic/i },
+  { label: 'Tagline',          re: /Learn\.\s*License\.\s*Lead\./i },
+  { label: 'CounselorReady brand', re: /CounselorReady:/i },
+  { label: 'Course Hours line', re: /Course Hours:\s*[\d.]+\s*Continuing Education/i },
+  { label: 'CE hours metadata', re: /^\s*[\d.]+\s*(CE|Continuing Education)\s*Hours?\s*$/im },
+  { label: 'Target Audience line', re: /Target Audience:/i },
+  { label: 'Presenter metadata', re: /Presenter:|Instructor of Record:/i },
+];
 
-  // Sample 5 published courses with the worst formatting
-  const samples = [
-    'crisis-intervention-and-suicide-prevention-a-comprehensive-clinical-guide',
-    'beyond-the-uniform-first-responder-families',
-    'ethics-and-professional-boundaries-in-counseling-practice',
-    '28-days-later-understanding-addiction-and-recovery',
-    'motivational-interviewing-from-ambivalence-to-action'
-  ];
+const MARKDOWN_TABLE_PATTERN = /\|.+\|.+\|/;  // pipe-delimited table rows
+const ALLCAPS_TITLE_PATTERN   = /^[A-Z\s\d:&\/\-]{8,}$/; // 8+ char all-caps string
+const SEPARATOR_PATTERN       = /^---+\s*$/m;
+const DECISION_POINT_PATTERN  = /DECISION POINT:/i;
 
-  for (const slug of samples) {
-    const course = await ic.findOne({ slug });
-    if (!course) { console.log(`\n❌ ${slug} NOT FOUND\n`); continue; }
+// ─── Schema (minimal) ─────────────────────────────────────────────────────
 
-    console.log('\n' + '='.repeat(100));
-    console.log(`COURSE: ${course.title} (${slug})`);
-    console.log(`Sections: ${course.sections?.length || 0}`);
-    console.log('='.repeat(100));
+const ContentBlockSchema = new mongoose.Schema({ type: String, content: String, textContent: String }, { strict: false });
+const SectionSchema      = new mongoose.Schema({ title: String, contentBlocks: [ContentBlockSchema] }, { strict: false });
+const CourseSchema        = new mongoose.Schema({
+  title: String, slug: String, status: String,
+  sections: [SectionSchema],
+}, { strict: false, collection: 'interactivecourses' });
 
-    const sections = course.sections || [];
-    for (let si = 0; si < Math.min(sections.length, 2); si++) {
-      const section = sections[si];
-      console.log(`\n--- SECTION ${si+1}: "${section.title}" ---`);
-      console.log(`ContentBlocks: ${section.contentBlocks?.length || 0}`);
+const Course = mongoose.models.DiagCourse || mongoose.model('DiagCourse', CourseSchema);
 
-      const blocks = section.contentBlocks || [];
-      for (let bi = 0; bi < blocks.length; bi++) {
-        const b = blocks[bi];
-        console.log(`\n  BLOCK ${bi+1} [${b.type}]:`);
+// ─── Helpers ──────────────────────────────────────────────────────────────
 
-        if (b.type === 'text') {
-          const txt = b.textContent || b.content || '';
-          // Show first 500 chars to understand format
-          const preview = txt.substring(0, 500);
-          const hasHTML = /<[a-z][\s\S]*>/i.test(txt);
-          const hasMarkdown = /^#{1,3}\s|^\*\*|^---$/m.test(txt);
-          const hasEmbeddedQuiz = /correct answer|rationale:|A\)|B\)|C\)|D\)/i.test(txt);
-          const hasModuleHeader = /module \d+:|module duration:|learning objectives:/i.test(txt);
-          const wordCount = txt.replace(/<[^>]+>/g, ' ').trim().split(/\s+/).filter(w => w).length;
+function getBlockText(block) {
+  return (block.textContent || block.content || '').toString();
+}
 
-          console.log(`    Words: ${wordCount}`);
-          console.log(`    Has HTML tags: ${hasHTML}`);
-          console.log(`    Has Markdown: ${hasMarkdown}`);
-          console.log(`    Has embedded quiz: ${hasEmbeddedQuiz}`);
-          console.log(`    Has module metadata: ${hasModuleHeader}`);
-          console.log(`    PREVIEW: ${preview.replace(/\n/g, '\\n').substring(0, 400)}...`);
-        } else if (b.type === 'multipleChoice' || b.type === 'multiSelect') {
-          console.log(`    Question: ${(b.question || '').substring(0, 100)}`);
-          console.log(`    Options: ${b.options?.length || 0}`);
-          const optFormat = b.options?.[0];
-          console.log(`    Option format: ${typeof optFormat === 'object' ? 'OBJECT {text,isCorrect}' : 'STRING'}`);
-        } else {
-          console.log(`    (${b.type} block - skipped detail)`);
-        }
-      }
+function checkBlock(text, sectionTitle, blockIndex, findings) {
+  // Metadata bleed
+  for (const { label, re } of METADATA_PATTERNS) {
+    if (re.test(text)) {
+      findings.push({ type: 'METADATA_BLEED', label, section: sectionTitle, blockIndex,
+        snippet: text.slice(0, 120).replace(/\n/g, ' ') });
     }
   }
+  // Raw markdown table
+  if (MARKDOWN_TABLE_PATTERN.test(text)) {
+    findings.push({ type: 'RAW_MARKDOWN_TABLE', section: sectionTitle, blockIndex,
+      snippet: text.slice(0, 120).replace(/\n/g, ' ') });
+  }
+  // Separator lines
+  if (SEPARATOR_PATTERN.test(text)) {
+    findings.push({ type: 'SEPARATOR_LINE', section: sectionTitle, blockIndex,
+      snippet: text.slice(0, 80).replace(/\n/g, ' ') });
+  }
+  // Decision Point artifact
+  if (DECISION_POINT_PATTERN.test(text)) {
+    findings.push({ type: 'DECISION_POINT_ARTIFACT', section: sectionTitle, blockIndex,
+      snippet: text.slice(0, 120).replace(/\n/g, ' ') });
+  }
+}
 
-  // Now get a count of content patterns across ALL courses
-  console.log('\n\n' + '='.repeat(100));
-  console.log('PATTERN ANALYSIS ACROSS ALL COURSES');
-  console.log('='.repeat(100) + '\n');
+function checkSectionTitle(title, findings) {
+  if (!title) return;
+  const trimmed = title.trim();
+  if (ALLCAPS_TITLE_PATTERN.test(trimmed) && trimmed.length > 8) {
+    findings.push({ type: 'ALLCAPS_TITLE', section: trimmed, blockIndex: -1, snippet: trimmed });
+  }
+  if (DECISION_POINT_PATTERN.test(trimmed)) {
+    findings.push({ type: 'DECISION_POINT_TITLE', section: trimmed, blockIndex: -1, snippet: trimmed });
+  }
+}
 
-  const allCourses = await ic.find({}).toArray();
-  let stats = {
-    totalTextBlocks: 0,
-    htmlFormatted: 0,
-    plainText: 0,
-    markdownStyle: 0,
-    embeddedQuizzes: 0,
-    moduleMetadata: 0,
-    emptyBlocks: 0,
-    avgWordsPerBlock: 0,
-    totalWords: 0,
-    coursesWithOnlyTextAndDividers: 0,
-    coursesWithInteractiveBlocks: 0
+// ─── Main ─────────────────────────────────────────────────────────────────
+
+async function run() {
+  await mongoose.connect(process.env.MONGODB_URI);
+  console.log('✅ Connected to MongoDB\n');
+
+  const courses = await Course.find({}).lean();
+  console.log(`📚 Found ${courses.length} courses in interactivecourses\n`);
+
+  const report = {
+    runAt: new Date().toISOString(),
+    totalCourses: courses.length,
+    affectedCourses: 0,
+    clean: 0,
+    byIssueType: {},
+    courses: [],
   };
 
-  for (const c of allCourses) {
-    let hasInteractive = false;
-    for (const s of (c.sections || [])) {
-      for (const b of (s.contentBlocks || [])) {
-        if (b.type === 'text') {
-          stats.totalTextBlocks++;
-          const txt = b.textContent || b.content || '';
-          if (!txt.trim()) { stats.emptyBlocks++; continue; }
-          
-          const words = txt.replace(/<[^>]+>/g, ' ').trim().split(/\s+/).filter(w => w).length;
-          stats.totalWords += words;
+  for (const course of courses) {
+    const findings = [];
 
-          if (/<[a-z][\s\S]*>/i.test(txt)) stats.htmlFormatted++;
-          else if (/^#{1,3}\s|^\*\*/m.test(txt)) stats.markdownStyle++;
-          else stats.plainText++;
-
-          if (/correct answer|rationale:|A\)\s|B\)\s|C\)\s|D\)\s/i.test(txt)) stats.embeddedQuizzes++;
-          if (/module \d+:|module duration:|learning objectives:/i.test(txt)) stats.moduleMetadata++;
-        }
-        if (['multipleChoice', 'multiSelect', 'matching', 'reflection', 'accordion', 'imageText'].includes(b.type)) {
-          hasInteractive = true;
-        }
+    for (const section of (course.sections || [])) {
+      checkSectionTitle(section.title, findings);
+      for (let i = 0; i < (section.contentBlocks || []).length; i++) {
+        const text = getBlockText(section.contentBlocks[i]);
+        if (text) checkBlock(text, section.title, i, findings);
       }
     }
-    if (hasInteractive) stats.coursesWithInteractiveBlocks++;
-    else stats.coursesWithOnlyTextAndDividers++;
+
+    const issueTypes = [...new Set(findings.map(f => f.type))];
+
+    if (findings.length > 0) {
+      report.affectedCourses++;
+      issueTypes.forEach(t => {
+        report.byIssueType[t] = (report.byIssueType[t] || 0) + 1;
+      });
+      report.courses.push({
+        title: course.title,
+        slug: course.slug,
+        status: course.status,
+        issueCount: findings.length,
+        issueTypes,
+        findings,
+      });
+    } else {
+      report.clean++;
+    }
   }
 
-  stats.avgWordsPerBlock = stats.totalTextBlocks > 0 ? Math.round(stats.totalWords / stats.totalTextBlocks) : 0;
+  // ─── Console output ───────────────────────────────────────────────────
 
-  console.log(`Total text blocks: ${stats.totalTextBlocks}`);
-  console.log(`  HTML formatted: ${stats.htmlFormatted}`);
-  console.log(`  Plain text: ${stats.plainText}`);
-  console.log(`  Markdown-style: ${stats.markdownStyle}`);
-  console.log(`  Empty: ${stats.emptyBlocks}`);
-  console.log(`  With embedded quizzes: ${stats.embeddedQuizzes}`);
-  console.log(`  With module metadata: ${stats.moduleMetadata}`);
-  console.log(`  Avg words per block: ${stats.avgWordsPerBlock}`);
-  console.log('');
-  console.log(`Courses with interactive blocks: ${stats.coursesWithInteractiveBlocks}`);
-  console.log(`Courses with ONLY text+dividers: ${stats.coursesWithOnlyTextAndDividers}`);
+  console.log('═══════════════════════════════════════════════');
+  console.log('  COURSE CONTENT DIAGNOSTIC REPORT');
+  console.log('═══════════════════════════════════════════════');
+  console.log(`  Total courses:    ${report.totalCourses}`);
+  console.log(`  ✅ Clean:         ${report.clean}`);
+  console.log(`  ⚠️  Affected:      ${report.affectedCourses}`);
+  console.log('\n  Issues by type:');
+  for (const [type, count] of Object.entries(report.byIssueType)) {
+    console.log(`    ${type.padEnd(28)} ${count} course(s)`);
+  }
+
+  console.log('\n─── Affected Courses ───────────────────────────');
+  for (const c of report.courses.sort((a, b) => b.issueCount - a.issueCount)) {
+    console.log(`\n  📘 ${c.title}`);
+    console.log(`     slug:   ${c.slug}`);
+    console.log(`     status: ${c.status}`);
+    console.log(`     issues: ${c.issueCount} (${c.issueTypes.join(', ')})`);
+    for (const f of c.findings.slice(0, 3)) {
+      console.log(`       [${f.type}] §"${f.section}" block#${f.blockIndex}`);
+      console.log(`         → "${f.snippet.slice(0, 90)}"`);
+    }
+    if (c.findings.length > 3) {
+      console.log(`       ... and ${c.findings.length - 3} more findings`);
+    }
+  }
+
+  // ─── Save JSON ────────────────────────────────────────────────────────
+  fs.writeFileSync('diagnoseCourseContent_results.json', JSON.stringify(report, null, 2));
+  console.log('\n✅ Full results saved to diagnoseCourseContent_results.json');
 
   await mongoose.disconnect();
 }
 
-main().catch(err => { console.error(err); process.exit(1); });
+run().catch(err => {
+  console.error('Error:', err);
+  process.exit(1);
+});

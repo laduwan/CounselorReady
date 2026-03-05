@@ -424,9 +424,9 @@ function ContentBlockRenderer({
         <div style={{ background: '#F2F7F3', borderRadius: 16, padding: 24, border: '1px solid rgba(74,124,89,0.15)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
             <span style={{ fontSize: 20 }}>💭</span>
-            <h3 style={{ fontWeight: 700, color: '#34495E', margin: 0 }}>Reflection</h3>
+            <h3 style={{ fontWeight: 700, color: '#284157', margin: 0 }}>Reflection</h3>
           </div>
-          <p style={{ color: '#34495E', fontWeight: 600, marginBottom: 12 }}>{block.question}</p>
+          <p style={{ color: '#284157', fontWeight: 600, marginBottom: 12 }}>{block.question}</p>
           <textarea
             placeholder="Take a moment to reflect and write your thoughts here..."
             aria-label={`Reflection: ${block.question}`}
@@ -446,11 +446,11 @@ function ContentBlockRenderer({
     case 'resources':
       return (
         <div style={{ background: '#fff', borderRadius: 16, padding: 24, border: '1px solid #E8E4DF' }}>
-          <h3 style={{ fontWeight: 700, color: '#34495E', marginBottom: 16 }}>📎 Resources</h3>
+          <h3 style={{ fontWeight: 700, color: '#284157', marginBottom: 16 }}>📎 Resources</h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {(block.resources || []).map((r, i) => (
               <a key={i} href={r.url} target="_blank" rel="noopener noreferrer"
-                style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', borderRadius: 10, background: '#F7F5F2', textDecoration: 'none', color: '#34495E', border: '1px solid #E8E4DF' }}>
+                style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', borderRadius: 10, background: '#F7F5F2', textDecoration: 'none', color: '#284157', border: '1px solid #E8E4DF' }}>
                 <span>{r.type === 'pdf' ? '📄' : r.type === 'video' ? '🎬' : '🔗'}</span>
                 <span style={{ fontWeight: 600 }}>{r.title}</span>
               </a>
