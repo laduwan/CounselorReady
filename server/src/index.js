@@ -35,13 +35,6 @@ import aiRoutes from './routes/ai.js';
 import aiCourseGeneratorRoutes from './routes/aiCourseGenerator.js';
 import courseBuilderRoutes from './routes/courseBuilder.js';
 import narrationRoutes from './routes/narration.js';
-import bulkUploadRoutes from './routes/bulkUpload.js';
-import aiRoutes from './routes/ai.js';
-import narrationRoutes from './routes/narration.js';
-import aiCourseGeneratorRoutes from './routes/aiCourseGenerator.js'; // ← NEW
-import courseBuilderRoutes from './routes/courseBuilder.js';
-import imageUploadRoutes from './routes/imageUpload.js';
-
 // Import services
 import { initializeScheduler } from './services/notificationScheduler.js';
 
