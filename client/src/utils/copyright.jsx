@@ -4,7 +4,7 @@
  * Shared copyright utility for React and vanilla JS pages.
  *
  * Usage (ES module / React):
- *   import { getCopyright, renderFooter } from './copyright.js';
+ *   import { getCopyright, renderFooter } from './copyright.jsx';
  *
  * Usage (vanilla JS via <script>):
  *   <script src="/js/copyright.js"></script>
