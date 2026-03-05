@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate, useParams } from 'react-router-dom';
-import { AuthProvider, useAuth } from './context/AuthContext';import { CRFooter } from '../utils/copyright.js';
-<CRFooter />
+import { AuthProvider, useAuth } from './context/AuthContext';
+import { CRFooter } from './utils/copyright.js';
+
 // Pages
 import Landing from './pages/Landing';
 import Login from './pages/Login';
@@ -42,6 +43,29 @@ function ProtectedRoute({ children }) {
   return children;
 }
 
+// Admin Route wrapper (must be logged in + admin role)
+function AdminRoute({ children }) {
+  const { isAuthenticated, loading, user } = useAuth();
+  
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-moss-600"></div>
+      </div>
+    );
+  }
+  
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+  
+  if (user?.role !== 'admin') {
+    return <Navigate to="/dashboard" replace />;
+  }
+  
+  return children;
+}
+
 // Public Route wrapper (redirect if already logged in)
 function PublicRoute({ children }) {
   const { isAuthenticated, loading } = useAuth();
@@ -61,34 +85,11 @@ function PublicRoute({ children }) {
   return children;
 }
 
-// Admin Route wrapper (requires admin role)
-function AdminRoute({ children }) {
-  const { isAuthenticated, isAdmin, loading } = useAuth();
-  
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-moss-600"></div>
-      </div>
-    );
-  }
-  
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
-  }
-  
-  if (!isAdmin) {
-    return <Navigate to="/dashboard" replace />;
-  }
-  
-  return children;
-}
-
 function AppRoutes() {
   return (
     <Routes>
       {/* Public routes */}
-      <Route path="/" element={<PublicRoute><Landing /></PublicRoute>} />
+      <Route path="/" element={<Landing />} />
       <Route path="/login" element={
         <PublicRoute><Login /></PublicRoute>
       } />
@@ -155,6 +156,7 @@ function App() {
       <AuthProvider>
         <AppRoutes />
       </AuthProvider>
+      <CRFooter />
     </BrowserRouter>
   );
 }
