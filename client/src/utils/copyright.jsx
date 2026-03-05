@@ -58,7 +58,7 @@ export function getBrandMeta() {
  * Drop-in React footer component.
  *
  * Usage:
- *   import { CRFooter } from './copyright.js';
+ *   import { CRFooter } from './copyright.jsx';
  *   <CRFooter />                        // standard
  *   <CRFooter variant="admin" />        // admin pages (no nav links)
  *   <CRFooter variant="course" />       // inside course player
