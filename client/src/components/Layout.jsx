@@ -47,38 +47,39 @@ export default function Layout({ children }) {
           <Link to="/dashboard" className="flex items-center gap-3 flex-shrink-0">
             <div style={{ width: 40, height: 40, borderRadius: '0.75rem', background: 'linear-gradient(135deg, #8B2542, #6B1D34)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 8px rgba(107,29,52,0.25)' }}>
               <span style={{ position: 'relative', display: 'inline-block', width: 22, height: 22 }}>
-                <span style={{ color: GOLD,   position: 'absolute', top: -3, left: 0, fontFamily: "'Cormorant Garamond', Georgia, serif", fontWeight: 700, fontSize: 18 }}>C</span>
-                <span style={{ color: HUNTER, position: 'absolute', top: 5,  left: 7, fontFamily: "'Cormorant Garamond', Georgia, serif", fontWeight: 700, fontSize: 14 }}>R</span>
+                <span style={{ color: GOLD, position: 'absolute', top: -3, left: 0, fontFamily: "'Cormorant Garamond', Georgia, serif", fontWeight: 700, fontSize: 17 }}>C</span>
+                <span style={{ color: '#7A9E84', position: 'absolute', top: 4, left: 6, fontFamily: "'Cormorant Garamond', Georgia, serif", fontWeight: 700, fontSize: 14 }}>R</span>
               </span>
             </div>
-            <span className="hidden sm:block" style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontWeight: 600, fontSize: '1.25rem' }}>
+            <span style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontWeight: 600, fontSize: '1.35rem', letterSpacing: '0.015em' }}>
               <span style={{ color: BURGUNDY }}>Counselor</span><span style={{ color: HUNTER }}>Ready</span>
             </span>
           </Link>
 
           {/* Desktop Nav */}
-          <nav className="hidden lg:flex items-center gap-0.5">
+          <nav className="hidden lg:flex items-center gap-1">
             {navLinks.map((link) => {
               const active = !link.static && isActive(link.href);
-              const sharedStyle = {
-                padding: '0.375rem 0.875rem',
+              const style = {
+                padding: '0.5rem 0.875rem',
                 borderRadius: '0.5rem',
                 fontSize: '0.875rem',
                 fontWeight: 500,
-                transition: 'all 0.15s',
                 textDecoration: 'none',
-                borderBottom: active ? `2px solid ${BURGUNDY}` : '2px solid transparent',
-                color: active ? BURGUNDY : '#57534e',
+                transition: 'all 0.15s',
+                color: active ? BURGUNDY : '#78716c',
                 background: active ? BURGUNDY_LIGHT : 'transparent',
               };
               return link.static ? (
-                <a key={link.href} href={link.href} style={sharedStyle}
-                  onMouseEnter={e => { e.target.style.color = BURGUNDY; e.target.style.background = BURGUNDY_LIGHT; }}
-                  onMouseLeave={e => { e.target.style.color = '#57534e'; e.target.style.background = 'transparent'; }}>
+                <a key={link.href} href={link.href} style={style}
+                  onMouseEnter={e => { if (!active) e.target.style.background = '#f5f5f4'; }}
+                  onMouseLeave={e => { if (!active) e.target.style.background = 'transparent'; }}>
                   {link.name}
                 </a>
               ) : (
-                <Link key={link.href} to={link.href} style={sharedStyle}>
+                <Link key={link.href} to={link.href} style={style}
+                  onMouseEnter={e => { if (!active) e.target.style.background = '#f5f5f4'; }}
+                  onMouseLeave={e => { if (!active) e.target.style.background = 'transparent'; }}>
                   {link.name}
                 </Link>
               );
@@ -88,23 +89,16 @@ export default function Layout({ children }) {
           {/* Right side */}
           <div className="flex items-center gap-3">
 
-            {/* Admin link */}
+            {/* Admin badge */}
             {isAdmin && (
-              <a href="/admin-users.html" className="hidden sm:flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full transition-colors"
-                style={{ color: BURGUNDY, background: BURGUNDY_LIGHT, border: `1px solid ${BURGUNDY}` }}>
+              <a href="/admin-users.html"
+                className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors"
+                style={{ background: BURGUNDY_LIGHT, color: BURGUNDY }}>
                 <ShieldCheck className="w-3.5 h-3.5" /> Admin
               </a>
             )}
 
-            {/* Upgrade badge */}
-            {user?.subscription?.plan === 'free' && (
-              <Link to="/settings" className="hidden sm:inline-flex items-center gap-1 text-xs font-medium px-3 py-1.5 rounded-full border transition-colors"
-                style={{ color: BURGUNDY, borderColor: BURGUNDY, background: BURGUNDY_LIGHT }}>
-                Upgrade
-              </Link>
-            )}
-
-            {/* User avatar dropdown */}
+            {/* User menu */}
             <div className="relative">
               <button onClick={() => setUserMenuOpen(!userMenuOpen)}
                 className="flex items-center gap-2 p-1 rounded-lg transition-colors hover:bg-stone-100">
@@ -182,7 +176,7 @@ export default function Layout({ children }) {
       </header>
 
       {/* Page content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+      <main id="main-content" className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
         {children}
       </main>
     </div>
