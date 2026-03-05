@@ -425,7 +425,7 @@ router.get('/transcript', protect, async (req, res) => {
     // === COLORS ===
     const burgundy = '#6B1D34';
     const forest = '#4A7C59';
-    const navy = '#34495E';
+    const navy = '#284157';
     const gold = '#D4A855';
     const lightGray = '#f5f5f5';
 

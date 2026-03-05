@@ -7,6 +7,7 @@
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Lato:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script>
     tailwind.config = {
       theme: {
@@ -19,7 +20,7 @@
             },
             forest: {
               50: '#f3f6f4', 100: '#E3EBE5', 200: '#C8D7CC', 300: '#a3baab',
-              400: '#759A7F', 500: '#547C5F', 600: '#40634A', 700: '#34503D',
+              400: '#759A7F', 500: '#547C5F', 600: '#4A7C59', 700: '#34503D',
               800: '#2f4036', 900: '#28352e'
             },
             hunter: {
@@ -59,6 +60,144 @@
     .prose li { margin-bottom: 0.5rem; line-height: 1.6; color: #475569; }
     .prose ul li { list-style-type: disc; }
     .prose ol li { list-style-type: decimal; }
+    .prose h2 { font-family: 'Cormorant Garamond', serif; font-size: 1.75rem; font-weight: 600; margin-top: 2rem; margin-bottom: 0.75rem; color: #284157; }
+    .prose h4 { font-size: 1.1rem; font-weight: 600; margin-top: 1.25rem; margin-bottom: 0.5rem; color: #284157; }
+    .prose table { width: 100%; border-collapse: collapse; margin: 1.5rem 0; font-size: 0.95rem; }
+    .prose th { background: #f1f5f9; font-weight: 600; text-align: left; padding: 0.75rem 1rem; border: 1px solid #e2e8f0; color: #284157; }
+    .prose td { padding: 0.75rem 1rem; border: 1px solid #e2e8f0; color: #475569; }
+    .prose tr:nth-child(even) { background: #f8fafc; }
+    .prose blockquote { border-left: 4px solid #6B1D34; padding: 1rem 1.25rem; margin: 1.5rem 0; background: #fdf2f4; border-radius: 0 8px 8px 0; font-style: italic; }
+    .prose blockquote p { color: #64748b; }
+    .prose hr { border: none; border-top: 2px solid #e2e8f0; margin: 2rem 0; }
+
+    /* Overview card */
+    .course-overview-card {
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-left: 4px solid #6B1D34;
+      border-radius: 0 12px 12px 0;
+      padding: 28px 32px;
+      margin-bottom: 8px;
+    }
+    .course-overview-card h2 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #6B1D34;
+      margin: 0 0 16px 0;
+    }
+    .overview-badges {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+    .overview-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      font-family: 'Lato', sans-serif;
+    }
+    .overview-badge.ce { background: #fdf2f4; color: #6B1D34; }
+    .overview-badge.category { background: #e8f0ea; color: #4A7C59; }
+    .overview-badge.level { background: #f1f5f9; color: #284157; }
+    .overview-badge.acep { background: #fef3d1; color: #92700C; }
+    .overview-description {
+      color: #475569;
+      line-height: 1.7;
+      margin-bottom: 20px;
+      font-size: 0.95rem;
+    }
+    .overview-section-title {
+      font-family: 'Lato', sans-serif;
+      font-weight: 700;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #284157;
+      margin: 20px 0 10px;
+    }
+    .overview-audience {
+      color: #64748b;
+      font-size: 0.9rem;
+      line-height: 1.6;
+      margin-bottom: 4px;
+    }
+    .overview-objectives {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      counter-reset: obj;
+    }
+    .overview-objectives li {
+      counter-increment: obj;
+      padding: 8px 0 8px 36px;
+      position: relative;
+      color: #475569;
+      font-size: 0.9rem;
+      line-height: 1.5;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    .overview-objectives li:last-child { border-bottom: none; }
+    .overview-objectives li::before {
+      content: counter(obj);
+      position: absolute;
+      left: 0;
+      top: 8px;
+      width: 24px;
+      height: 24px;
+      background: #fdf2f4;
+      color: #6B1D34;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .overview-outline {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .overview-outline li {
+      padding: 6px 0;
+      color: #475569;
+      font-size: 0.9rem;
+    }
+    .overview-outline li::before {
+      content: '\2022';
+      color: #4A7C59;
+      font-weight: 700;
+      margin-right: 8px;
+    }
+    .content-begins-divider {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin: 32px 0 28px;
+    }
+    .content-begins-divider .line {
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(to right, transparent, #e2e8f0, transparent);
+    }
+    .content-begins-divider .pill {
+      padding: 6px 20px;
+      background: #e8f0ea;
+      color: #4A7C59;
+      font-size: 12px;
+      font-weight: 700;
+      font-family: 'Lato', sans-serif;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      border-radius: 20px;
+      white-space: nowrap;
+    }
     
     /* Accordion */
     .accordion-content { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; }
@@ -145,6 +284,119 @@
     .high-contrast-mode h4 { color: #000 !important; }
     .high-contrast-mode .prose * { color: #000 !important; }
     .high-contrast-mode * { border-color: #333 !important; }
+
+    /* Dark mode */
+    .dark-mode { background-color: #1a1a2e !important; }
+    .dark-mode .lg\:ml-72 { background-color: #1a1a2e !important; }
+    .dark-mode header { background-color: #1a1a2e !important; border-bottom-color: #2d2d44 !important; }
+    .dark-mode #section-title { color: #E8A4B2 !important; }
+    .dark-mode #content-area { background-color: #1a1a2e !important; }
+    .dark-mode .prose p, .dark-mode .prose li, .dark-mode .prose span { color: #d1d1e0 !important; }
+    .dark-mode .prose h3 { color: #E8A4B2 !important; }
+    .dark-mode .prose strong { color: #eee !important; }
+    .dark-mode .bg-white, .dark-mode [class*="bg-white"] { background-color: #16213e !important; }
+    .dark-mode .border-slate-200, .dark-mode [class*="border-slate"] { border-color: #2d2d44 !important; }
+    .dark-mode .text-slate-800, .dark-mode .text-slate-700, .dark-mode .text-slate-600, .dark-mode .font-medium { color: #d1d1e0 !important; }
+    .dark-mode .text-slate-500, .dark-mode .text-slate-400 { color: #8888a0 !important; }
+    .dark-mode .bg-slate-50, .dark-mode .bg-slate-100, .dark-mode [class*="bg-slate-5"] { background-color: #1a1a33 !important; }
+    .dark-mode .narration-player { background-color: #16213e !important; border-color: #2d2d44 !important; }
+    .dark-mode #section-nav { border-color: #2d2d44 !important; }
+
+    /* ══════════════════════════════════════════════════ */
+    /* STYLE C SIDEBAR — Clinical Dashboard              */
+    /* ══════════════════════════════════════════════════ */
+    #sidebar { background: #F5F5DC !important; border-right: none !important; box-shadow: 2px 0 12px rgba(0,0,0,0.06); }
+    .sb-header { padding: 16px 18px 14px; background: linear-gradient(135deg, #6B1D34, #4A1020); color: #fff; flex-shrink: 0; }
+    .sb-meta { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+    .sb-ce-badge { background: rgba(255,255,255,.15); padding: 3px 10px; border-radius: 20px; font-size: 10px; font-weight: 700; letter-spacing: .5px; }
+    .sb-category { font-size: 10px; opacity: .7; }
+    .sb-title { font-family: 'Cormorant Garamond', serif; font-size: 17px; font-weight: 700; line-height: 1.25; margin: 0 0 14px; color: #fff; }
+    .sb-progress-row { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+    .sb-ring { position: relative; width: 36px; height: 36px; flex-shrink: 0; }
+    .sb-ring-pct { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); font-size: 10px; font-weight: 700; color: #D4A855; }
+    .sb-progress-text { font-size: 11px; font-weight: 600; opacity: .9; color: #fff; }
+    .sb-progress-sub { font-size: 10px; opacity: .6; color: #fff; }
+    .sb-bar-track { height: 4px; border-radius: 2px; background: rgba(255,255,255,.15); overflow: hidden; }
+    .sb-bar-fill { height: 100%; border-radius: 2px; background: linear-gradient(90deg, #D4A855, #EACD86); transition: width .4s ease; }
+
+    .sb-nav { flex: 1; overflow-y: auto; padding: 10px; }
+    .mod-card { background: #fff; border-radius: 10px; margin-bottom: 8px; border: 1px solid #E2E2BE; overflow: hidden; }
+    .mod-head-bar { padding: 8px 14px; font-size: 10px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase; display: flex; align-items: center; justify-content: space-between; }
+    .mod-head-bar.mh-done { background: rgba(74,124,89,0.08); color: #4A7C59; }
+    .mod-head-bar.mh-active { color: #284157; }
+    .mod-head-bar.mh-locked { color: #9CA3AF; }
+    .mod-check-badge { background: #4A7C59; color: #fff; width: 16px; height: 16px; border-radius: 50%; font-size: 9px; display: flex; align-items: center; justify-content: center; }
+
+    .sec-item { padding: 8px 14px; display: flex; align-items: center; gap: 8px; border-top: 1px solid #EDEDD0; cursor: pointer; transition: background .15s; border-left: 3px solid transparent; min-height: 44px; }
+    .sec-item:hover { background: rgba(40,65,87,.03); }
+    .sec-item.si-done { background: rgba(74,124,89,0.06); }
+    .sec-item.si-active { background: #FDF5F7; border-left-color: #6B1D34; }
+    .sec-item.si-locked { opacity: .5; cursor: not-allowed; }
+    .sec-item.si-locked:hover { background: transparent; }
+
+    .sec-dot { width: 18px; height: 18px; border-radius: 50%; font-size: 9px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .sec-dot.sd-done { background: #4A7C59; color: #fff; }
+    .sec-dot.sd-active { background: #6B1D34; color: #fff; }
+    .sec-dot.sd-upcoming { background: #EDEDD0; color: #6B7280; }
+    .sec-dot.sd-locked { background: #EDEDD0; color: #9CA3AF; font-size: 8px; }
+
+    .sec-label { font-size: 12.5px; color: #284157; }
+    .si-active .sec-label { color: #6B1D34; font-weight: 600; }
+
+    .sb-footer { padding: 10px 18px; border-top: 1px solid #E2E2BE; background: #fff; flex-shrink: 0; }
+    .sb-footer-text { font-size: 9px; color: #6B7280; text-align: center; font-family: 'Cormorant Garamond', serif; letter-spacing: .5px; font-style: italic; }
+
+    /* ══════════════════════════════════════════════════ */
+    /* REFERENCES SIDEBAR                                */
+    /* ══════════════════════════════════════════════════ */
+    .ref-tab { position: fixed; right: 0; top: 50%; transform: translateY(-50%); background: #284157; color: #fff; border: none; padding: 16px 10px; border-radius: 8px 0 0 8px; cursor: pointer; font-weight: 600; font-size: .8rem; writing-mode: vertical-rl; text-orientation: mixed; box-shadow: -2px 0 8px rgba(0,0,0,.12); z-index: 150; transition: right .3s ease; min-height: auto; min-width: auto; }
+    .ref-tab:hover { background: #1F3345; }
+    .ref-tab.shifted { right: 400px; }
+    .ref-panel { position: fixed; right: -400px; top: 0; width: 400px; height: 100vh; background: #fff; box-shadow: -4px 0 12px rgba(0,0,0,.12); transition: right .3s ease; z-index: 200; overflow-y: auto; }
+    .ref-panel.open { right: 0; }
+    .ref-hd { padding: 1.5rem; background: #284157; color: #fff; position: sticky; top: 0; display: flex; justify-content: space-between; align-items: center; z-index: 1; }
+    .ref-hd h2 { font-weight: 700; font-size: 1.125rem; margin: 0; }
+    .ref-x { background: none; border: none; color: #fff; font-size: 1.5rem; cursor: pointer; padding: 4px 8px; line-height: 1; min-height: auto; min-width: auto; }
+    .ref-body { padding: 1.5rem; }
+    .ref-entry { margin-bottom: 1.25rem; padding-left: 2rem; text-indent: -2rem; line-height: 1.6; color: #2C2C2C; font-size: .9rem; }
+
+    /* ══════════════════════════════════════════════════ */
+    /* RESOURCE FAB                                      */
+    /* ══════════════════════════════════════════════════ */
+    .fab-wrap { position: fixed; bottom: 24px; right: 24px; z-index: 150; }
+    .fab-btn-res { width: 56px; height: 56px; border-radius: 50%; background: #284157; color: #fff; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; box-shadow: 0 4px 12px rgba(40,65,87,.3); transition: all .2s; }
+    .fab-btn-res:hover { background: #1F3345; transform: scale(1.05); }
+    .fab-menu { position: absolute; bottom: 66px; right: 0; width: 280px; background: #fff; border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,.12); padding: 1rem; opacity: 0; visibility: hidden; transform: translateY(10px); transition: all .3s; }
+    .fab-menu.open { opacity: 1; visibility: visible; transform: translateY(0); }
+    .fab-t { font-weight: 700; color: #284157; margin-bottom: .75rem; font-size: .75rem; text-transform: uppercase; letter-spacing: .5px; }
+    .fab-i { display: flex; align-items: center; gap: .75rem; padding: .75rem; border-radius: 6px; text-decoration: none; color: #2C2C2C; transition: all .2s; cursor: pointer; min-height: 44px; }
+    .fab-i:hover { background: #F5F5DC; transform: translateX(4px); }
+    .fab-ic { font-size: 1.25rem; min-height: auto; min-width: auto; }
+    .fab-n { font-weight: 500; font-size: .875rem; }
+
+    /* ══════════════════════════════════════════════════ */
+    /* TIMER FOOTER                                      */
+    /* ══════════════════════════════════════════════════ */
+    .ce-timer { position: fixed; bottom: 0; left: 288px; right: 0; background: #fff; border-top: 2px solid #E2E2BE; padding: .875rem 2rem; display: none; justify-content: space-between; align-items: center; z-index: 100; box-shadow: 0 -2px 8px rgba(0,0,0,.05); }
+    .ce-timer.on { display: flex; }
+    .ce-timer-left { display: flex; align-items: center; gap: 1rem; }
+    .ce-timer-lbl { font-weight: 600; color: #2C2C2C; font-size: .875rem; }
+    .ce-timer-clk { font-size: 1.25rem; font-weight: 700; color: #6B1D34; font-variant-numeric: tabular-nums; }
+    .ce-pt-btn { background: #6B1D34; color: #fff; border: none; padding: .75rem 2rem; border-radius: 6px; font-weight: 700; font-size: 1rem; cursor: pointer; font-family: 'Lato', sans-serif; transition: all .2s; }
+    .ce-pt-btn:hover:not(:disabled) { background: #560019; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(107,29,52,.3); }
+    .ce-pt-btn:disabled { background: #6B7280; cursor: not-allowed; opacity: .6; }
+
+    @media (max-width: 1024px) {
+      .ref-tab.shifted { right: 100%; }
+      .ref-panel { width: 100%; right: -100%; }
+      .ce-timer { left: 0; }
+    }
+    @media (max-width: 768px) {
+      .ce-timer.on { flex-direction: column; gap: .75rem; padding: .75rem 1rem; }
+    }
+    @media print {
+      .ref-tab, .ref-panel, .fab-wrap, .ce-timer { display: none !important; }
+    }
   </style>
 </head>
 <body class="font-sans min-h-screen" style="background-color: #F5F5DC !important;">
@@ -178,44 +430,46 @@
   <!-- Main Course Viewer -->
   <div id="course-viewer" class="hidden">
     
-    <!-- Sidebar -->
-    <aside id="sidebar" class="fixed inset-y-0 left-0 w-72 bg-white border-r border-slate-200 transform -translate-x-full lg:translate-x-0 transition-transform z-40">
+    <!-- Sidebar — Style C Clinical Dashboard -->
+    <aside id="sidebar" class="fixed inset-y-0 left-0 w-72 transform -translate-x-full lg:translate-x-0 transition-transform z-40">
       <div class="flex flex-col h-full">
-        
-        <!-- Course Info -->
-        <div class="p-4 border-b border-slate-200">
-          <a href="/courses.html" class="flex items-center gap-2 text-slate-600 hover:text-burgundy-700 text-sm mb-3">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-            </svg>
-            Back to Courses
-          </a>
-          <h2 id="course-title" class="font-semibold text-slate-800 text-sm"></h2>
-          <div class="mt-2 flex items-center gap-2 text-xs text-slate-500">
-            <span id="course-ce-hours"></span>
-            <span>•</span>
-            <span id="course-sections-count"></span>
+
+        <!-- Burgundy gradient header -->
+        <div class="sb-header">
+          <div class="sb-meta">
+            <span class="sb-ce-badge" id="course-ce-hours">3 CE Hours</span>
+            <span class="sb-category" id="course-category"></span>
           </div>
-        </div>
-        
-        <!-- Progress -->
-        <div class="p-4 border-b border-slate-200">
-          <div class="flex justify-between text-sm mb-1">
-            <span class="text-slate-600">Progress</span>
-            <span id="progress-percent" class="font-medium text-burgundy-700">0%</span>
+          <h2 class="sb-title" id="course-title"></h2>
+
+          <div class="sb-progress-row">
+            <div class="sb-ring">
+              <svg width="36" height="36" viewBox="0 0 36 36" style="transform:rotate(-90deg)">
+                <circle cx="18" cy="18" r="15" fill="none" stroke="rgba(255,255,255,.15)" stroke-width="3"/>
+                <circle cx="18" cy="18" r="15" fill="none" stroke="#D4A855"
+                  stroke-width="3" stroke-linecap="round" id="ring-fill"
+                  stroke-dasharray="0 94.2"/>
+              </svg>
+              <span class="sb-ring-pct" id="ring-pct">0%</span>
+            </div>
+            <div>
+              <div class="sb-progress-text" id="progress-text">0 of 0 complete</div>
+              <div class="sb-progress-sub" id="progress-sub">Section 1 in progress</div>
+            </div>
           </div>
-          <div class="h-2 bg-slate-100 rounded-full overflow-hidden">
-            <div id="progress-bar" class="h-full bg-burgundy-700 rounded-full transition-all" style="width: 0%"></div>
+
+          <div class="sb-bar-track">
+            <div class="sb-bar-fill" id="progress-bar" style="width:0%"></div>
           </div>
         </div>
 
-        <!-- Sections Nav -->
-        <nav id="sections-nav" aria-label="Course sections" class="flex-1 overflow-y-auto p-4">
-          <ul class="space-y-2"></ul>
+        <!-- Sections Nav — card-based modules -->
+        <nav id="sections-nav" aria-label="Course sections" class="sb-nav">
+          <!-- Dynamically populated by buildSectionsNav() -->
         </nav>
 
         <!-- Certificate Section -->
-        <div id="certificate-section" class="border-t border-slate-200 p-4 hidden">
+        <div id="certificate-section" class="border-t border-slate-200 p-4 hidden" style="background:#fff">
           <div id="cert-loading" class="text-center py-2">
             <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-burgundy-700 mx-auto"></div>
             <p class="text-xs text-slate-500 mt-1">Checking eligibility...</p>
@@ -232,29 +486,32 @@
             </button>
           </div>
         </div>
+
+        <!-- Provider footer -->
+        <div class="sb-footer">
+          <div class="sb-footer-text">NBCC Approved Provider #7760 · GAITP LLC</div>
+        </div>
       </div>
     </aside>
 
     <!-- Mobile Menu Button -->
-    <button id="menu-btn" onclick="toggleSidebar()" class="lg:hidden fixed top-4 left-4 z-50 p-2 bg-white rounded-lg shadow-md">
+    <button id="menu-btn" onclick="toggleSidebar()" class="lg:hidden fixed top-4 left-4 z-50 p-2 bg-white rounded-lg shadow-md" aria-label="Open navigation">
       <svg class="w-6 h-6 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
       </svg>
     </button>
 
+    <!-- Sidebar overlay (mobile) -->
+    <div id="sidebar-overlay" onclick="closeSidebar()" class="hidden fixed inset-0 bg-black bg-opacity-40 z-30 lg:hidden" aria-hidden="true"></div>
+
     <!-- Main Content -->
     <main class="lg:ml-72">
       
-      <!-- APA Top Header - Burgundy on Eggshell -->
-      <header style="position: sticky; top: 0; z-index: 100; background: #F5F5DC; padding: 1.5rem 2rem; text-align: center; border-bottom: 2px solid #E5E5DC;">
-        <h1 id="section-title" style="font-family: 'Cormorant Garamond', serif; font-size: 1.75rem; font-weight: 700; color: #6B1D34; margin: 0;"></h1>
-      </header>
-
-      <!-- Top Bar with Accessibility -->
-      <div class="bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between sticky top-0 z-30" style="top: 80px;">
-        <div class="lg:hidden w-10"></div>
-        <div class="flex-1"></div>
-        <div class="flex items-center gap-1">
+      <!-- APA Top Header - Burgundy on Eggshell, with accessibility + home -->
+      <header style="position: sticky; top: 0; z-index: 100; background: #F5F5DC; padding: 1rem 2rem; border-bottom: 2px solid #E5E5DC; display: flex; align-items: center; justify-content: center;">
+        <div class="lg:hidden" style="width:44px"></div>
+        <h1 id="section-title" style="font-family: 'Cormorant Garamond', serif; font-size: 1.75rem; font-weight: 700; color: #6B1D34; margin: 0; flex: 1; text-align: center;"></h1>
+        <div style="display:flex;align-items:center;gap:4px;flex-shrink:0">
           <!-- Accessibility Toolbar -->
           <div class="relative">
             <button id="a11y-toggle" onclick="toggleA11yPanel()" class="p-2 text-slate-400 hover:text-burgundy-700 hover:bg-burgundy-50 rounded-lg transition-colors" aria-label="Accessibility options" title="Accessibility Options">
@@ -265,7 +522,6 @@
                 <h3 class="font-bold text-slate-700 text-sm">Accessibility Options</h3>
                 <button onclick="toggleA11yPanel()" class="text-slate-400 hover:text-slate-600 text-lg leading-none">&times;</button>
               </div>
-              <!-- Font Size -->
               <div class="mb-4">
                 <label class="text-sm font-medium text-slate-600 mb-2 block">Text Size</label>
                 <div class="flex gap-2">
@@ -274,14 +530,18 @@
                   <button onclick="setFontSize('x-large')" id="fs-xlarge" class="flex-1 py-2 rounded-lg font-semibold text-lg bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors">A</button>
                 </div>
               </div>
-              <!-- High Contrast -->
               <div class="mb-4">
                 <button onclick="toggleHighContrast()" id="hc-btn" class="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors">
                   <span>High Contrast</span>
                   <span id="hc-indicator" class="w-9 h-5 rounded-full bg-slate-300 relative inline-block"><span id="hc-dot" class="absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-all"></span></span>
                 </button>
               </div>
-              <!-- Read Aloud -->
+              <div class="mb-4">
+                <button onclick="toggleDarkMode()" id="dm-btn" class="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors">
+                  <span>Dark Mode</span>
+                  <span id="dm-indicator" class="w-9 h-5 rounded-full bg-slate-300 relative inline-block"><span id="dm-dot" class="absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-all"></span></span>
+                </button>
+              </div>
               <div class="mb-2">
                 <button onclick="toggleReadAloud()" id="tts-btn" class="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors">
                   <span>Read Aloud (TTS)</span>
@@ -291,13 +551,13 @@
               <p class="text-xs text-slate-400 mt-3 pt-3 border-t border-slate-100">Settings apply to this session only.</p>
             </div>
           </div>
-          <a href="/dashboard.html" class="p-2 text-slate-400 hover:text-slate-600">
+          <a href="/dashboard.html" class="p-2 text-slate-400 hover:text-burgundy-700 rounded-lg transition-colors" aria-label="Go to dashboard" title="Dashboard">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
             </svg>
           </a>
         </div>
-      </div>
+      </header>
 
       <!-- Content Area (Sections) -->
       <div id="content-area" role="main" aria-label="Course content" tabindex="-1" class="p-6 lg:p-8 max-w-4xl mx-auto"></div>
@@ -489,6 +749,55 @@
       </div>
 
     </main>
+
+    <!-- ═══════════════════════════════════════════ -->
+    <!-- REFERENCES SIDEBAR                         -->
+    <!-- ═══════════════════════════════════════════ -->
+    <button class="ref-tab" id="refTab" aria-label="Open reference list" aria-expanded="false" aria-controls="refPanel">
+      <svg style="width:14px;height:14px;margin-bottom:6px" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+      References
+    </button>
+    <aside class="ref-panel" id="refPanel" role="complementary" aria-label="APA Reference List">
+      <div class="ref-hd">
+        <h2>References</h2>
+        <button class="ref-x" id="refClose" aria-label="Close reference list">&times;</button>
+      </div>
+      <div class="ref-body" id="refBody">
+        <p style="color:#6B7280;font-size:14px;font-style:italic">References will populate from course data.</p>
+      </div>
+    </aside>
+
+    <!-- ═══════════════════════════════════════════ -->
+    <!-- RESOURCE FAB                               -->
+    <!-- ═══════════════════════════════════════════ -->
+    <div class="fab-wrap" id="fabWrap">
+      <button class="fab-btn-res" id="fabBtn" aria-label="Open downloadable resources" aria-expanded="false" aria-controls="fabMenu">
+        <svg style="width:24px;height:24px" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
+      </button>
+      <div class="fab-menu" id="fabMenu" role="menu" aria-label="Course resources">
+        <div class="fab-t">Course Resources</div>
+        <div id="fabItems">
+          <p style="color:#6B7280;font-size:13px;font-style:italic;padding:8px">Resources will populate from course data.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════ -->
+    <!-- CE TIMER FOOTER                            -->
+    <!-- ═══════════════════════════════════════════ -->
+    <footer class="ce-timer" id="ceTimerBar" role="contentinfo" aria-label="Course timer">
+      <div class="ce-timer-left">
+        <span style="font-size:1.5rem" aria-hidden="true">&#9201;</span>
+        <div>
+          <div class="ce-timer-lbl">Required Course Time</div>
+          <div class="ce-timer-clk" id="ceTimerClk" aria-live="polite">00:00:00</div>
+        </div>
+      </div>
+      <button class="ce-pt-btn" id="cePtBtn" disabled aria-label="Post-test locked until timer completes" onclick="startAssessment()">
+        Final Post-Test (Locked)
+      </button>
+    </footer>
+
   </div>
 
   <script>
@@ -561,10 +870,10 @@
       document.getElementById('loading').classList.add('hidden');
       document.getElementById('course-viewer').classList.remove('hidden');
       
-      // Set course info
+      // Set course info in Style C sidebar header
       document.getElementById('course-title').textContent = course.title;
       document.getElementById('course-ce-hours').textContent = `${course.ceHours || 1} CE Hours`;
-      document.getElementById('course-sections-count').textContent = `${course.sections?.length || 0} Sections`;
+      document.getElementById('course-category').textContent = course.ceCategory || 'Clinical Practice';
       
       // Build sections nav
       buildSectionsNav();
@@ -574,6 +883,15 @@
       
       // Check certificate eligibility
       checkCertificateEligibility();
+
+      // Populate references sidebar from course data
+      populateReferences();
+
+      // Populate resource FAB from course data
+      populateResources();
+
+      // Initialize CE timer if course has timerEnabled or ceHours
+      initCETimer();
     }
 
     function showError(message) {
@@ -586,48 +904,68 @@
     // SECTIONS NAVIGATION
     // ============================================
     function buildSectionsNav() {
-      const nav = document.querySelector('#sections-nav ul');
+      const nav = document.getElementById('sections-nav');
       nav.innerHTML = '';
-      
+
+      // Build one card containing all course sections
+      const card = document.createElement('div');
+      card.className = 'mod-card';
+      card.id = 'mod-card-main';
+
+      // Module header
+      const head = document.createElement('div');
+      head.className = 'mod-head-bar mh-active';
+      head.id = 'mod-head-main';
+      head.innerHTML = `<span>Course Sections</span>`;
+      card.appendChild(head);
+
+      // Section items
       course.sections?.forEach((section, index) => {
-        const li = document.createElement('li');
-        li.innerHTML = `
-          <button onclick="goToSection(${index})" 
-                  class="section-nav-btn w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${index === 0 ? 'bg-burgundy-50 text-burgundy-700 font-medium' : 'text-slate-600 hover:bg-slate-50'}"
-                  data-section="${index}">
-            <span class="flex items-center gap-2">
-              <span class="w-5 h-5 rounded-full border-2 flex items-center justify-center text-xs font-medium ${index === 0 ? 'border-burgundy-600 text-burgundy-600' : 'border-slate-300 text-slate-400'}">
-                ${index + 1}
-              </span>
-              <span class="truncate">${section.title || `Section ${index + 1}`}</span>
-            </span>
-          </button>
-        `;
-        nav.appendChild(li);
+        const item = document.createElement('div');
+        item.className = 'sec-item' + (index === 0 ? ' si-active' : '');
+        item.setAttribute('role', 'button');
+        item.setAttribute('tabindex', '0');
+        item.setAttribute('aria-label', `${section.title || 'Section ' + (index + 1)}${index === 0 ? ' — current' : ''}`);
+        item.dataset.section = index;
+        item.onclick = () => goToSection(index);
+        item.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); goToSection(index); } };
+
+        const dot = document.createElement('span');
+        dot.className = 'sec-dot ' + (index === 0 ? 'sd-active' : 'sd-upcoming');
+        dot.setAttribute('aria-hidden', 'true');
+        dot.textContent = index + 1;
+
+        const label = document.createElement('span');
+        label.className = 'sec-label';
+        label.textContent = section.title || `Section ${index + 1}`;
+
+        item.appendChild(dot);
+        item.appendChild(label);
+        card.appendChild(item);
       });
 
-      // Add Final Exam item
-      const examLi = document.createElement('li');
-      examLi.innerHTML = `
-        <button onclick="startAssessment()" 
-                class="section-nav-btn w-full text-left px-3 py-2 rounded-lg text-sm transition-colors text-slate-400 cursor-not-allowed"
-                data-section="exam"
-                disabled>
-          <span class="flex items-center gap-2">
-            <span class="w-5 h-5 rounded-full border-2 border-slate-300 flex items-center justify-center">
-              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4"/>
-              </svg>
-            </span>
-            <span>Final Exam</span>
-          </span>
-        </button>
+      nav.appendChild(card);
+
+      // Add Final Exam card
+      const examCard = document.createElement('div');
+      examCard.className = 'mod-card';
+      examCard.id = 'mod-card-exam';
+      examCard.style.opacity = '0.5';
+      examCard.innerHTML = `
+        <div class="mod-head-bar mh-locked">Final Assessment</div>
+        <div class="sec-item si-locked" role="button" aria-label="Final Exam — locked" aria-disabled="true" data-section="exam" id="exam-nav-item">
+          <span class="sec-dot sd-locked" aria-hidden="true">&#128274;</span>
+          <span class="sec-label" style="color:#9CA3AF">Final Exam</span>
+        </div>
       `;
-      nav.appendChild(examLi);
+      nav.appendChild(examCard);
     }
 
     function goToSection(index) {
       if (index < 0 || index >= course.sections.length) return;
+      
+      // Close sidebar on mobile
+      if (window.innerWidth < 1024) closeSidebar();
       
       // Stop any playing narration before switching
       if (typeof stopAllNarrations === 'function') stopAllNarrations();
@@ -635,16 +973,56 @@
       currentSectionIndex = index;
       const section = course.sections[index];
       
-      // Update nav highlighting
-      document.querySelectorAll('.section-nav-btn').forEach((btn, i) => {
-        if (i === index) {
-          btn.classList.add('bg-burgundy-50', 'text-burgundy-700', 'font-medium');
-          btn.classList.remove('text-slate-600', 'hover:bg-slate-50');
-        } else if (btn.dataset.section !== 'exam') {
-          btn.classList.remove('bg-burgundy-50', 'text-burgundy-700', 'font-medium');
-          btn.classList.add('text-slate-600', 'hover:bg-slate-50');
+      // Update nav highlighting — Style C classes
+      document.querySelectorAll('.sec-item[data-section]').forEach((item) => {
+        const si = parseInt(item.dataset.section);
+        if (isNaN(si)) return; // skip exam item
+
+        const dot = item.querySelector('.sec-dot');
+        const label = item.querySelector('.sec-label');
+
+        if (si === index) {
+          // Active
+          item.className = 'sec-item si-active';
+          item.setAttribute('aria-label', (section.title || 'Section ' + (si + 1)) + ' — current');
+          if (dot) { dot.className = 'sec-dot sd-active'; dot.textContent = si + 1; }
+        } else if (si < index) {
+          // Done — transparent green bg, green check, navy text
+          item.className = 'sec-item si-done';
+          item.setAttribute('aria-label', (course.sections[si]?.title || 'Section ' + (si + 1)) + ' — completed');
+          if (dot) { dot.className = 'sec-dot sd-done'; dot.textContent = '✓'; }
+        } else {
+          // Upcoming
+          item.className = 'sec-item';
+          item.setAttribute('aria-label', course.sections[si]?.title || 'Section ' + (si + 1));
+          if (dot) { dot.className = 'sec-dot sd-upcoming'; dot.textContent = si + 1; }
         }
       });
+
+      // Update module card header if all sections before current are done
+      const modHead = document.getElementById('mod-head-main');
+      if (modHead) {
+        if (index >= course.sections.length - 1 && index > 0) {
+          // Almost done or at last section
+          modHead.className = 'mod-head-bar mh-active';
+          modHead.innerHTML = '<span>Course Sections</span>';
+        }
+      }
+
+      // Unlock exam card if all sections visited
+      if (index === course.sections.length - 1) {
+        const examCard = document.getElementById('mod-card-exam');
+        if (examCard) examCard.style.opacity = '1';
+        const examItem = document.getElementById('exam-nav-item');
+        if (examItem) {
+          examItem.classList.remove('si-locked');
+          examItem.setAttribute('aria-disabled', 'false');
+          examItem.onclick = () => startAssessment();
+          examItem.style.cursor = 'pointer';
+          const examLabel = examItem.querySelector('.sec-label');
+          if (examLabel) examLabel.style.color = '#284157';
+        }
+      }
       
       // Update header
       document.getElementById('section-title').textContent = section.title || `Section ${index + 1}`;
@@ -680,6 +1058,63 @@
         container.appendChild(listenBar);
       }
       
+      // If Section 1 (index 0), render overview card first
+      if (currentSectionIndex === 0 && course) {
+        const overviewCard = document.createElement('div');
+        overviewCard.className = 'course-overview-card';
+        
+        const ceHours = course.ceHours || course.creditHours || course.ceuHours || 1;
+        const category = course.ceCategory || course.category || '';
+        const level = course.level || '';
+        const desc = course.description || '';
+        const audience = course.targetAudience || [];
+        const objectives = course.objectives || [];
+        const courseSections = course.sections || [];
+
+        let cardHtml = `<h2>What You'll Learn</h2>`;
+        
+        cardHtml += `<div class="overview-badges">`;
+        cardHtml += `<span class="overview-badge ce">${ceHours} CE Hour${ceHours !== 1 ? 's' : ''}</span>`;
+        if (category) cardHtml += `<span class="overview-badge category">${category}</span>`;
+        if (level) cardHtml += `<span class="overview-badge level">${level}</span>`;
+        cardHtml += `<span class="overview-badge acep">NBCC ACEP #7760</span>`;
+        cardHtml += `</div>`;
+
+        if (desc) {
+          cardHtml += `<p class="overview-description">${desc}</p>`;
+        }
+
+        if (audience.length > 0) {
+          cardHtml += `<div class="overview-section-title">Target Audience</div>`;
+          cardHtml += `<p class="overview-audience">${Array.isArray(audience) ? audience.join(', ') : audience}</p>`;
+        }
+
+        if (objectives.length > 0) {
+          cardHtml += `<div class="overview-section-title">Learning Objectives</div>`;
+          cardHtml += `<ol class="overview-objectives">`;
+          objectives.forEach(obj => { cardHtml += `<li>${obj}</li>`; });
+          cardHtml += `</ol>`;
+        }
+
+        if (courseSections.length > 1) {
+          cardHtml += `<div class="overview-section-title">Course Outline</div>`;
+          cardHtml += `<ul class="overview-outline">`;
+          courseSections.forEach(s => {
+            const t = s.title || 'Untitled Section';
+            cardHtml += `<li>${t}</li>`;
+          });
+          cardHtml += `</ul>`;
+        }
+
+        overviewCard.innerHTML = cardHtml;
+        container.appendChild(overviewCard);
+
+        const divider = document.createElement('div');
+        divider.className = 'content-begins-divider';
+        divider.innerHTML = `<div class="line"></div><span class="pill">Course Content Begins</span><div class="line"></div>`;
+        container.appendChild(divider);
+      }
+
       section.contentBlocks?.forEach((block, blockIndex) => {
         const blockEl = renderContentBlock(block, blockIndex);
         if (blockEl) container.appendChild(blockEl);
@@ -711,9 +1146,12 @@
           break;
 
         case 'text':
+          const rawText = block.content || block.textContent || '';
+          const isHtml = /<[a-z][\s\S]*?>/i.test(rawText);
+          const rendered = isHtml ? rawText : (typeof marked !== 'undefined' ? marked.parse(rawText) : rawText);
           div.innerHTML = `
             <div class="prose max-w-none">
-              ${block.content || block.textContent || ''}
+              ${rendered}
             </div>
           `;
           break;
@@ -825,7 +1263,7 @@
               <div style="padding:24px">
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
                   <div>
-                    <h4 style="font-weight:600;color:#34495E;margin-bottom:12px;font-size:14px">Terms</h4>
+                    <h4 style="font-weight:600;color:#284157;margin-bottom:12px;font-size:14px">Terms</h4>
                     <div id="${matchId}-terms" style="display:flex;flex-direction:column;gap:8px">
                       ${shuffledTerms.map(t => `
                         <div class="match-term" draggable="true" data-term="${t.term}" id="${t._tid}"
@@ -837,7 +1275,7 @@
                     </div>
                   </div>
                   <div>
-                    <h4 style="font-weight:600;color:#34495E;margin-bottom:12px;font-size:14px">Definitions</h4>
+                    <h4 style="font-weight:600;color:#284157;margin-bottom:12px;font-size:14px">Definitions</h4>
                     <div style="display:flex;flex-direction:column;gap:8px">
                       ${shuffledDefs.map(d => `
                         <div class="match-def-zone" data-correct-term="${d.term}" id="${d._did}"
@@ -874,19 +1312,19 @@
               </div>
               <div style="padding:24px">
                 <div id="${fcId}-card" onclick="flashcardFlip('${fcId}')" 
-                  style="min-height:220px;border-radius:12px;border:2px solid #E8E4DF;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:32px;background:#FAFAF8;transition:background 0.3s;position:relative">
+                  style="min-height:220px;border-radius:12px;border:2px solid #E8E4DF;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:32px;background:#F5F5DC;transition:background 0.3s;position:relative">
                   <div style="text-align:center">
                     <p id="${fcId}-label" style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;color:#9CA3AF">Term · Card 1 of ${flashcards.length}</p>
-                    <p id="${fcId}-text" style="font-size:18px;font-weight:600;color:#34495E;line-height:1.5">${flashcards[0]?.front || ''}</p>
+                    <p id="${fcId}-text" style="font-size:18px;font-weight:600;color:#284157;line-height:1.5">${flashcards[0]?.front || ''}</p>
                     <p style="font-size:12px;color:#9CA3AF;margin-top:16px">Click to reveal answer</p>
                   </div>
                 </div>
                 <div style="display:flex;align-items:center;justify-content:space-between;margin-top:16px">
-                  <button onclick="flashcardNav('${fcId}', -1)" style="padding:8px 16px;color:#34495E;font-weight:500;background:none;border:none;cursor:pointer">← Previous</button>
+                  <button onclick="flashcardNav('${fcId}', -1)" style="padding:8px 16px;color:#284157;font-weight:500;background:none;border:none;cursor:pointer">← Previous</button>
                   <div id="${fcId}-dots" style="display:flex;gap:4px">
                     ${flashcards.map((_, i) => `<button onclick="flashcardGo('${fcId}', ${i})" style="width:10px;height:10px;border-radius:50%;padding:0;border:none;cursor:pointer;background:${i === 0 ? '#6B1D34' : '#E8E4DF'}"></button>`).join('')}
                   </div>
-                  <button onclick="flashcardNav('${fcId}', 1)" style="padding:8px 16px;color:#34495E;font-weight:500;background:none;border:none;cursor:pointer">Next →</button>
+                  <button onclick="flashcardNav('${fcId}', 1)" style="padding:8px 16px;color:#284157;font-weight:500;background:none;border:none;cursor:pointer">Next →</button>
                 </div>
                 <div id="${fcId}-done" style="display:none;margin-top:16px;background:rgba(5,150,105,0.08);border:1px solid rgba(5,150,105,0.2);border-radius:12px;padding:12px;align-items:center;gap:8px">
                   <span style="color:#059669;font-size:14px;font-weight:600">✓ All cards reviewed! Activity complete.</span>
@@ -933,12 +1371,12 @@
               </div>
               <div style="padding:24px">
                 <div id="${csId}-unplaced" style="margin-bottom:20px">
-                  <h4 style="font-weight:700;color:#34495E;font-size:12px;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">Cards to Sort</h4>
+                  <h4 style="font-weight:700;color:#284157;font-size:12px;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">Cards to Sort</h4>
                   <div style="display:flex;flex-wrap:wrap;gap:8px">
                     ${csShuffled.map(c => `
                       <div class="cs-card" draggable="true" data-card-id="${c.id}" data-correct-cat="${c.correctCategory}"
                         ondragstart="csDragStart(event)"
-                        style="padding:10px 16px;background:rgba(52,73,94,0.06);border:2px solid #E8E4DF;border-radius:10px;cursor:grab;font-weight:500;font-size:13px;color:#34495E;user-select:none">
+                        style="padding:10px 16px;background:rgba(52,73,94,0.06);border:2px solid #E8E4DF;border-radius:10px;cursor:grab;font-weight:500;font-size:13px;color:#284157;user-select:none">
                         ${c.text}
                       </div>
                     `).join('')}
@@ -946,14 +1384,14 @@
                 </div>
                 <div style="display:grid;grid-template-columns:repeat(${Math.min(csCategories.length, 3)}, 1fr);gap:16px">
                   ${csCategories.map((cat, i) => {
-                    const colors = ['#4A7C59','#6B1D34','#D4A855','#34495E'];
+                    const colors = ['#4A7C59','#6B1D34','#D4A855','#284157'];
                     return `
                       <div class="cs-zone" data-category="${cat}"
                         ondragover="event.preventDefault();this.style.borderColor='#D4A855'"
                         ondragleave="this.style.borderColor='rgba(74,124,89,0.4)'"
                         ondrop="csDrop(event, this, '${csId}')"
-                        style="min-height:120px;border-radius:12px;border:2px dashed rgba(74,124,89,0.4);padding:16px;background:#FAFAF8">
-                        <h4 style="font-weight:700;font-size:13px;color:#34495E;margin-bottom:12px;display:flex;align-items:center;gap:8px">
+                        style="min-height:120px;border-radius:12px;border:2px dashed rgba(74,124,89,0.4);padding:16px;background:#F5F5DC">
+                        <h4 style="font-weight:700;font-size:13px;color:#284157;margin-bottom:12px;display:flex;align-items:center;gap:8px">
                           <span style="width:10px;height:10px;border-radius:50%;background:${colors[i % colors.length]}"></span>${cat}
                         </h4>
                         <div class="cs-placed" style="display:flex;flex-direction:column;gap:6px"></div>
@@ -977,7 +1415,7 @@
           const sqShuffled = [...sqSteps].sort(() => Math.random() - 0.5);
           div.innerHTML = `
             <div class="bg-white rounded-xl border-2 border-slate-200 overflow-hidden" id="${sqId}">
-              <div style="background:#34495E;padding:16px 24px">
+              <div style="background:#284157;padding:16px 24px">
                 <h3 style="color:#fff;font-weight:700;font-size:17px;margin:0">📋 Sequencing Activity</h3>
                 <p style="color:rgba(255,255,255,0.5);font-size:13px;margin-top:4px">${block.instructions || 'Arrange the steps in the correct order'}</p>
               </div>
@@ -986,8 +1424,8 @@
                   ${sqShuffled.map((s, i) => `
                     <div class="sq-item" draggable="true" data-order="${s.order}" data-item-id="${s.id}"
                       ondragstart="sqDragStart(event, ${i})" ondragover="sqDragOver(event, this)" ondragleave="sqDragLeave(this)" ondrop="sqDrop(event, this, '${sqId}')" ondragend="sqDragEnd(this)"
-                      style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:12px;user-select:none;border:2px solid #E8E4DF;background:#FAFAF8;cursor:grab">
-                      <div class="sq-num" style="width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#34495E;color:#fff;font-weight:800;font-size:14px;flex-shrink:0">${i + 1}</div>
+                      style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:12px;user-select:none;border:2px solid #E8E4DF;background:#F5F5DC;cursor:grab">
+                      <div class="sq-num" style="width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#284157;color:#fff;font-weight:800;font-size:14px;flex-shrink:0">${i + 1}</div>
                       <span style="width:14px;color:#9CA3AF;flex-shrink:0;font-size:16px">⋮⋮</span>
                       <span style="flex:1;font-size:14px;font-weight:500;color:#2C2C2C">${s.text}</span>
                       <div style="display:flex;flex-direction:column;gap:2px">
@@ -1047,7 +1485,7 @@
         case 'hotspot':
           const hsId = `hs-${currentSectionIndex}-${blockIndex}`;
           const hotspots = block.hotspots || [];
-          const hsCols = ['#6B1D34','#4A7C59','#D4A855','#34495E','#6366F1','#8B5CF6'];
+          const hsCols = ['#6B1D34','#4A7C59','#D4A855','#284157','#6366F1','#8B5CF6'];
           div.innerHTML = `
             <div class="bg-white rounded-xl border-2 border-slate-200 overflow-hidden" id="${hsId}">
               <div style="background:#6B1D34;padding:16px 24px">
@@ -1074,7 +1512,7 @@
                   </div>
                 </div>
                 <div id="${hsId}-info" style="display:none;margin-top:16px;border-radius:12px;padding:16px;background:rgba(52,73,94,0.06);border:1px solid #E8E4DF">
-                  <h4 id="${hsId}-info-title" style="font-weight:700;color:#34495E;margin-bottom:4px"></h4>
+                  <h4 id="${hsId}-info-title" style="font-weight:700;color:#284157;margin-bottom:4px"></h4>
                   <p id="${hsId}-info-text" style="font-size:14px;color:#6B7280;line-height:1.6;margin:0"></p>
                 </div>
                 <div id="${hsId}-done" style="display:none;margin-top:16px;background:rgba(5,150,105,0.08);border:1px solid rgba(5,150,105,0.2);border-radius:12px;padding:12px;align-items:center;gap:8px">
@@ -1089,7 +1527,7 @@
         case 'videoEmbed':
           div.innerHTML = `
             <div class="bg-white rounded-xl border-2 border-slate-200 overflow-hidden">
-              <div style="background:#34495E;padding:16px 24px">
+              <div style="background:#284157;padding:16px 24px">
                 <h3 style="color:#fff;font-weight:700;font-size:17px;margin:0;display:flex;align-items:center;gap:8px">▶ ${block.videoTitle || 'Video Content'}</h3>
                 ${block.videoDuration ? `<p style="color:rgba(255,255,255,0.5);font-size:13px;margin-top:4px">Duration: ${block.videoDuration}</p>` : ''}
               </div>
@@ -1195,6 +1633,11 @@
             <option value="1.25">1.25x</option>
             <option value="1.5">1.5x</option>
           </select>
+          <div style="display:flex;align-items:center;gap:4px" aria-label="Volume control">
+            <svg style="width:16px;height:16px;flex-shrink:0;color:#78716c" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072M12 6.253v13M8 9H5a1 1 0 00-1 1v4a1 1 0 001 1h3l4 4V5L8 9z"/></svg>
+            <input type="range" min="0" max="100" value="80" onchange="setNarrationVolume('${audioId}', this.value)" oninput="setNarrationVolume('${audioId}', this.value)"
+              aria-label="Volume" style="width:60px;height:4px;cursor:pointer;accent-color:#6B1D34">
+          </div>
           <audio id="${audioId}" src="${block.narrationUrl}" preload="metadata"></audio>
         `;
         div.appendChild(playerHtml);
@@ -1259,6 +1702,11 @@
     function setNarrationSpeed(audioId, speed) {
       const audio = document.getElementById(audioId);
       if (audio) audio.playbackRate = parseFloat(speed);
+    }
+
+    function setNarrationVolume(audioId, val) {
+      const audio = document.getElementById(audioId);
+      if (audio) audio.volume = parseInt(val) / 100;
     }
 
     // Section-level: play all block narrations sequentially
@@ -1466,7 +1914,7 @@
         <div style="display:flex;align-items:center;gap:10px;padding:8px 16px;border-radius:10px;background:${correct === total ? 'rgba(5,150,105,0.08)' : 'rgba(212,168,85,0.12)'}">
           <span style="font-weight:700">${correct}/${total} (${Math.round(correct/total*100)}%)</span>
         </div>
-        <button onclick="location.reload()" style="display:flex;align-items:center;gap:6px;padding:8px 16px;background:rgba(52,73,94,0.06);border-radius:10px;font-weight:600;color:#34495E;border:none;cursor:pointer">↺ Try Again</button>
+        <button onclick="location.reload()" style="display:flex;align-items:center;gap:6px;padding:8px 16px;background:rgba(52,73,94,0.06);border-radius:10px;font-weight:600;color:#284157;border:none;cursor:pointer">↺ Try Again</button>
       `;
     }
 
@@ -1504,8 +1952,8 @@
         labelEl.textContent = `Answer · Card ${fc.idx + 1} of ${fc.cards.length}`;
         textEl.textContent = card.back;
       } else {
-        cardEl.style.background = '#FAFAF8';
-        textEl.style.color = '#34495E';
+        cardEl.style.background = '#F5F5DC';
+        textEl.style.color = '#284157';
         labelEl.style.color = '#9CA3AF';
         labelEl.textContent = `Term · Card ${fc.idx + 1} of ${fc.cards.length}`;
         textEl.textContent = card.front;
@@ -1528,8 +1976,8 @@
       document.getElementById(fcId + '-text').textContent = card.front;
       document.getElementById(fcId + '-label').textContent = `Term · Card ${fc.idx + 1} of ${fc.cards.length}`;
       document.getElementById(fcId + '-label').style.color = '#9CA3AF';
-      document.getElementById(fcId + '-text').style.color = '#34495E';
-      document.getElementById(fcId + '-card').style.background = '#FAFAF8';
+      document.getElementById(fcId + '-text').style.color = '#284157';
+      document.getElementById(fcId + '-card').style.background = '#F5F5DC';
       flashcardUpdateDots(fcId);
     }
 
@@ -1574,19 +2022,19 @@
           <p style="font-size:14px;color:#2C2C2C;margin:0;line-height:1.6">${node.feedback.message}</p>
         </div>`;
       }
-      html += `<p style="color:#34495E;line-height:1.7;margin-bottom:24px;font-size:15px">${node.text}</p>`;
+      html += `<p style="color:#284157;line-height:1.7;margin-bottom:24px;font-size:15px">${node.text}</p>`;
       
       if (node.isEnd) {
         html += `<div style="padding:24px;border-radius:12px;text-align:center;background:${node.feedback?.type === 'positive' ? 'rgba(5,150,105,0.08)' : 'rgba(212,168,85,0.12)'}">
           <div style="font-size:40px;margin-bottom:8px">🏆</div>
-          <p style="font-weight:700;color:#34495E;margin-bottom:4px">Scenario Complete</p>
+          <p style="font-weight:700;color:#284157;margin-bottom:4px">Scenario Complete</p>
           <p style="font-size:13px;color:#6B7280">You've completed this clinical scenario.</p>
-          <button onclick="scenarioRestart('${stId}')" style="margin-top:16px;display:inline-flex;align-items:center;gap:6px;padding:8px 20px;background:#fff;border:1px solid #E8E4DF;border-radius:10px;font-weight:600;color:#34495E;cursor:pointer">↺ Try a Different Path</button>
+          <button onclick="scenarioRestart('${stId}')" style="margin-top:16px;display:inline-flex;align-items:center;gap:6px;padding:8px 20px;background:#fff;border:1px solid #E8E4DF;border-radius:10px;font-weight:600;color:#284157;cursor:pointer">↺ Try a Different Path</button>
         </div>`;
       } else {
         html += `<p style="font-size:12px;font-weight:700;color:#9CA3AF;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px">Choose your response:</p>`;
         (node.choices || []).forEach((ch, i) => {
-          html += `<button onclick="scenarioChoose('${stId}', '${ch.next}')" style="width:100%;text-align:left;padding:16px 20px;border-radius:12px;border:2px solid #E8E4DF;background:#FAFAF8;display:flex;align-items:center;gap:12px;cursor:pointer;margin-bottom:10px;font-family:inherit">
+          html += `<button onclick="scenarioChoose('${stId}', '${ch.next}')" style="width:100%;text-align:left;padding:16px 20px;border-radius:12px;border:2px solid #E8E4DF;background:#F5F5DC;display:flex;align-items:center;gap:12px;cursor:pointer;margin-bottom:10px;font-family:inherit">
             <div style="width:32px;height:32px;border-radius:50%;background:rgba(74,124,89,0.08);color:#4A7C59;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-weight:700;font-size:14px">${String.fromCharCode(65 + i)}</div>
             <span style="flex:1;font-weight:500;color:#2C2C2C">${ch.text}</span>
             <span style="color:#9CA3AF">→</span>
@@ -1668,7 +2116,7 @@
         card.dataset.cardId = cardId;
         card.dataset.correctCat = correctCat;
         card.setAttribute('ondragstart', 'csDragStart(event)');
-        card.style.cssText = 'padding:10px 16px;background:rgba(52,73,94,0.06);border:2px solid #E8E4DF;border-radius:10px;cursor:grab;font-weight:500;font-size:13px;color:#34495E;user-select:none';
+        card.style.cssText = 'padding:10px 16px;background:rgba(52,73,94,0.06);border:2px solid #E8E4DF;border-radius:10px;cursor:grab;font-weight:500;font-size:13px;color:#284157;user-select:none';
         card.textContent = text;
         unplaced.appendChild(card);
       }
@@ -1704,7 +2152,7 @@
           <div style="display:flex;align-items:center;gap:10px;padding:8px 16px;border-radius:10px;background:${correct === total ? 'rgba(5,150,105,0.08)' : 'rgba(212,168,85,0.12)'}">
             <span style="font-weight:700">${correct}/${total} (${Math.round(correct/total*100)}%)</span>
           </div>
-          <button onclick="location.reload()" style="display:flex;align-items:center;gap:6px;padding:8px 16px;background:rgba(52,73,94,0.06);border-radius:10px;font-weight:600;color:#34495E;border:none;cursor:pointer">↺ Try Again</button>
+          <button onclick="location.reload()" style="display:flex;align-items:center;gap:6px;padding:8px 16px;background:rgba(52,73,94,0.06);border-radius:10px;font-weight:600;color:#284157;border:none;cursor:pointer">↺ Try Again</button>
         `;
       }
     }
@@ -1728,13 +2176,13 @@
 
     function sqDragLeave(el) {
       el.style.borderColor = '#E8E4DF';
-      el.style.background = '#FAFAF8';
+      el.style.background = '#F5F5DC';
     }
 
     function sqDrop(e, targetEl, containerId) {
       e.preventDefault();
       targetEl.style.borderColor = '#E8E4DF';
-      targetEl.style.background = '#FAFAF8';
+      targetEl.style.background = '#F5F5DC';
       if (_sqDragIdx === null) return;
       
       const itemsContainer = document.getElementById(containerId + '-items');
@@ -1832,7 +2280,7 @@
           <div style="display:flex;align-items:center;gap:10px;padding:8px 16px;border-radius:10px;background:${correct === items.length ? 'rgba(5,150,105,0.08)' : 'rgba(212,168,85,0.12)'}">
             <span style="font-weight:700">${correct}/${items.length} (${Math.round(correct/items.length*100)}%)</span>
           </div>
-          <button onclick="location.reload()" style="display:flex;align-items:center;gap:6px;padding:8px 16px;background:rgba(52,73,94,0.06);border-radius:10px;font-weight:600;color:#34495E;border:none;cursor:pointer">↺ Try Again</button>
+          <button onclick="location.reload()" style="display:flex;align-items:center;gap:6px;padding:8px 16px;background:rgba(52,73,94,0.06);border-radius:10px;font-weight:600;color:#284157;border:none;cursor:pointer">↺ Try Again</button>
         `;
       }
     }
@@ -1985,9 +2433,30 @@
     }
 
     function updateProgress() {
-      const progress = ((currentSectionIndex + 1) / course.sections.length) * 100;
-      document.getElementById('progress-bar').style.width = `${progress}%`;
-      document.getElementById('progress-percent').textContent = `${Math.round(progress)}%`;
+      const total = course.sections.length;
+      const completed = currentSectionIndex + 1;
+      const pct = Math.round((completed / total) * 100);
+
+      // Gold bar — stays gold at all percentages
+      const bar = document.getElementById('progress-bar');
+      bar.style.width = pct + '%';
+
+      // Ring SVG
+      const circ = 94.2; // 2 * PI * 15
+      const filled = circ * pct / 100;
+      const ring = document.getElementById('ring-fill');
+      if (ring) ring.setAttribute('stroke-dasharray', filled + ' ' + (circ - filled));
+      const ringPct = document.getElementById('ring-pct');
+      if (ringPct) ringPct.textContent = pct + '%';
+
+      // Text
+      const progText = document.getElementById('progress-text');
+      if (progText) progText.textContent = `${currentSectionIndex} of ${total} complete`;
+      const progSub = document.getElementById('progress-sub');
+      if (progSub) {
+        if (pct >= 100) progSub.textContent = 'All sections complete';
+        else progSub.textContent = `Section ${completed} in progress`;
+      }
     }
 
     document.getElementById('prev-btn').addEventListener('click', () => {
@@ -2004,13 +2473,40 @@
 
     function toggleSidebar() {
       const sidebar = document.getElementById('sidebar');
-      sidebar.classList.toggle('-translate-x-full');
+      const overlay = document.getElementById('sidebar-overlay');
+      const menuBtn = document.getElementById('menu-btn');
+      const isOpen = !sidebar.classList.contains('-translate-x-full');
+      
+      if (isOpen) {
+        closeSidebar();
+      } else {
+        sidebar.classList.remove('-translate-x-full');
+        if (overlay) overlay.classList.remove('hidden');
+        if (menuBtn) {
+          menuBtn.innerHTML = '<svg class="w-6 h-6 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>';
+          menuBtn.setAttribute('aria-label', 'Close navigation');
+        }
+        srAnnounce('Navigation opened');
+      }
+    }
+
+    function closeSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      const overlay = document.getElementById('sidebar-overlay');
+      const menuBtn = document.getElementById('menu-btn');
+      sidebar.classList.add('-translate-x-full');
+      if (overlay) overlay.classList.add('hidden');
+      if (menuBtn) {
+        menuBtn.innerHTML = '<svg class="w-6 h-6 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>';
+        menuBtn.setAttribute('aria-label', 'Open navigation');
+      }
+      srAnnounce('Navigation closed');
     }
 
     // ============================================
     // ACCESSIBILITY TOOLBAR
     // ============================================
-    let a11yState = { fontSize: 'normal', highContrast: false, readAloud: false };
+    let a11yState = { fontSize: 'normal', highContrast: false, darkMode: false, readAloud: false };
 
     function toggleA11yPanel() {
       const panel = document.getElementById('a11y-panel');
@@ -2067,6 +2563,27 @@
         dot.style.left = '0.125rem';
       }
       srAnnounce('High contrast ' + (a11yState.highContrast ? 'enabled' : 'disabled'));
+    }
+
+    function toggleDarkMode() {
+      a11yState.darkMode = !a11yState.darkMode;
+      const body = document.body;
+      const btn = document.getElementById('dm-btn');
+      const indicator = document.getElementById('dm-indicator');
+      const dot = document.getElementById('dm-dot');
+      
+      if (a11yState.darkMode) {
+        body.classList.add('dark-mode');
+        btn.className = btn.className.replace('bg-slate-100 text-slate-600 hover:bg-slate-200', 'bg-slate-800 text-white');
+        indicator.className = indicator.className.replace('bg-slate-300', 'bg-green-600');
+        dot.style.left = '1rem';
+      } else {
+        body.classList.remove('dark-mode');
+        btn.className = btn.className.replace('bg-slate-800 text-white', 'bg-slate-100 text-slate-600 hover:bg-slate-200');
+        indicator.className = indicator.className.replace('bg-green-600', 'bg-slate-300');
+        dot.style.left = '0.125rem';
+      }
+      srAnnounce('Dark mode ' + (a11yState.darkMode ? 'enabled' : 'disabled'));
     }
 
     function toggleReadAloud() {
@@ -2624,6 +3141,194 @@
 
     function printCertificate() {
       downloadCertificate();
+    }
+
+    // ============================================
+    // REFERENCES SIDEBAR
+    // ============================================
+    function populateReferences() {
+      const body = document.getElementById('refBody');
+      if (!body) return;
+
+      // Collect references from course data
+      let refs = [];
+      // Check course-level references
+      if (course.references && Array.isArray(course.references)) {
+        refs = course.references;
+      }
+      // Also scan content blocks for resources-type blocks with references
+      course.sections?.forEach(section => {
+        section.contentBlocks?.forEach(block => {
+          if (block.type === 'resources' && block.references) {
+            refs = refs.concat(block.references);
+          }
+        });
+      });
+
+      if (refs.length === 0) {
+        body.innerHTML = '<p style="color:#6B7280;font-size:14px;font-style:italic">No references found for this course.</p>';
+        return;
+      }
+
+      // Deduplicate by title
+      const seen = new Set();
+      const unique = refs.filter(r => {
+        const key = (r.title || r.text || r).toString().substring(0, 50);
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+
+      body.innerHTML = unique.map(r => {
+        const text = typeof r === 'string' ? r : (r.text || r.citation || `${r.author || ''} (${r.year || ''}). ${r.title || ''}. <em>${r.source || r.journal || ''}</em>`);
+        return `<div class="ref-entry">${text}</div>`;
+      }).join('');
+    }
+
+    // Toggle references panel
+    (function initRefs() {
+      const tab = document.getElementById('refTab');
+      const panel = document.getElementById('refPanel');
+      const close = document.getElementById('refClose');
+      if (!tab || !panel) return;
+
+      function toggle() {
+        const open = panel.classList.toggle('open');
+        tab.classList.toggle('shifted');
+        tab.setAttribute('aria-expanded', open);
+        srAnnounce(open ? 'References opened' : 'References closed');
+        if (open && close) close.focus();
+      }
+      tab.addEventListener('click', toggle);
+      if (close) close.addEventListener('click', toggle);
+      document.addEventListener('keydown', e => {
+        if (e.key === 'Escape' && panel.classList.contains('open')) toggle();
+      });
+    })();
+
+    // ============================================
+    // RESOURCE FAB
+    // ============================================
+    function populateResources() {
+      const container = document.getElementById('fabItems');
+      if (!container) return;
+
+      // Collect resource blocks from course
+      let resources = [];
+      course.sections?.forEach(section => {
+        section.contentBlocks?.forEach(block => {
+          if (block.type === 'resources' && block.items) {
+            resources = resources.concat(block.items);
+          }
+          if (block.type === 'resources' && block.resources) {
+            resources = resources.concat(block.resources);
+          }
+        });
+      });
+      if (course.resources && Array.isArray(course.resources)) {
+        resources = resources.concat(course.resources);
+      }
+
+      // If no course-specific resources, show default platform links
+      if (resources.length === 0) {
+        container.innerHTML = `
+          <a href="/courses.html" class="fab-i" role="menuitem"><span class="fab-ic" aria-hidden="true">&#128218;</span><span class="fab-n">Browse Courses</span></a>
+          <a href="/dashboard.html" class="fab-i" role="menuitem"><span class="fab-ic" aria-hidden="true">&#127968;</span><span class="fab-n">Dashboard</span></a>
+          <a href="/certificates.html" class="fab-i" role="menuitem"><span class="fab-ic" aria-hidden="true">&#127891;</span><span class="fab-n">My Certificates</span></a>
+          <a href="/transcript.html" class="fab-i" role="menuitem"><span class="fab-ic" aria-hidden="true">&#128203;</span><span class="fab-n">CE Transcript</span></a>
+        `;
+        return;
+      }
+
+      const icons = { pdf: '&#128196;', link: '&#128279;', video: '&#127909;', worksheet: '&#128203;', default: '&#128196;' };
+      container.innerHTML = resources.map(r => {
+        const name = r.title || r.name || r.text || 'Resource';
+        const url = r.url || r.link || '#';
+        const type = r.type || 'default';
+        const icon = icons[type] || icons.default;
+        return `<a href="${url}" target="_blank" rel="noopener" class="fab-i" role="menuitem"><span class="fab-ic" aria-hidden="true">${icon}</span><span class="fab-n">${name}</span></a>`;
+      }).join('');
+    }
+
+    // Toggle FAB
+    (function initFab() {
+      const btn = document.getElementById('fabBtn');
+      const menu = document.getElementById('fabMenu');
+      if (!btn || !menu) return;
+
+      btn.addEventListener('click', () => {
+        const open = menu.classList.toggle('open');
+        btn.setAttribute('aria-expanded', open);
+        srAnnounce(open ? 'Resources menu opened' : 'Resources menu closed');
+      });
+      document.addEventListener('click', e => {
+        if (!btn.contains(e.target) && !menu.contains(e.target)) {
+          menu.classList.remove('open');
+          btn.setAttribute('aria-expanded', 'false');
+        }
+      });
+    })();
+
+    // ============================================
+    // CE TIMER
+    // ============================================
+    let ceTimerState = { on: false, iv: null, seconds: 0 };
+
+    function initCETimer() {
+      // Only show timer if course has timerEnabled flag or ceHours > 0
+      if (!course.timerEnabled && !course.ceHours) return;
+      if (course.timerEnabled === false) return;
+
+      const hours = course.ceHours || 1;
+      ceTimerState.seconds = hours * 3600;
+
+      // Show the timer bar
+      const bar = document.getElementById('ceTimerBar');
+      if (!bar) return;
+      bar.classList.add('on');
+
+      // Add bottom padding to main content
+      const main = document.querySelector('.lg\\:ml-72');
+      if (main) main.style.paddingBottom = '5rem';
+
+      // Move FAB up
+      const fab = document.getElementById('fabWrap');
+      if (fab) fab.style.bottom = '85px';
+
+      // Update clock display
+      updateTimerDisplay();
+
+      // Start countdown
+      ceTimerState.on = true;
+      ceTimerState.iv = setInterval(() => {
+        if (ceTimerState.seconds > 0) {
+          ceTimerState.seconds--;
+          updateTimerDisplay();
+          // Warning color at 5 minutes
+          if (ceTimerState.seconds <= 300) {
+            document.getElementById('ceTimerClk').style.color = '#D4A855';
+          }
+        } else {
+          clearInterval(ceTimerState.iv);
+          document.getElementById('ceTimerClk').style.color = '#4A7C59';
+          document.getElementById('ceTimerClk').textContent = '00:00:00';
+          const ptBtn = document.getElementById('cePtBtn');
+          if (ptBtn) {
+            ptBtn.disabled = false;
+            ptBtn.textContent = 'Begin Post-Test';
+          }
+          srAnnounce('Course timer complete. Post-test is now available.');
+        }
+      }, 1000);
+    }
+
+    function updateTimerDisplay() {
+      const s = ceTimerState.seconds;
+      const h = String(Math.floor(s / 3600)).padStart(2, '0');
+      const m = String(Math.floor((s % 3600) / 60)).padStart(2, '0');
+      const sec = String(s % 60).padStart(2, '0');
+      const clk = document.getElementById('ceTimerClk');
+      if (clk) clk.textContent = `${h}:${m}:${sec}`;
     }
 
     // ============================================

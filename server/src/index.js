@@ -30,12 +30,11 @@ import interactiveCourseRoutes from './routes/interactiveCourseRoutes.js';
 import cebrokerRoutes from './routes/cebroker.js';
 import helpRoutes from './routes/help.js';
 import bulkUploadRoutes from './routes/bulkUpload.js';
+// ── Previously unregistered routes (wiring audit fix 2026-03-04) ──
 import aiRoutes from './routes/ai.js';
-import narrationRoutes from './routes/narration.js';
-import aiCourseGeneratorRoutes from './routes/aiCourseGenerator.js'; // ← NEW
+import aiCourseGeneratorRoutes from './routes/aiCourseGenerator.js';
 import courseBuilderRoutes from './routes/courseBuilder.js';
-import imageUploadRoutes from './routes/imageUpload.js';
-
+import narrationRoutes from './routes/narration.js';
 // Import services
 import { initializeScheduler } from './services/notificationScheduler.js';
 
@@ -210,12 +209,12 @@ app.use('/api/scorm', scormRoutes);
 app.use('/api/lti', ltiRoutes);
 app.use('/api/xapi', xapiRoutes);
 app.use('/api/cebroker', cebrokerRoutes);
-app.use('/api/ai', aiRoutes);
 app.use('/api/help', helpRoutes);
 app.use('/api/admin/courses', bulkUploadRoutes);
-app.use('/api/ai-course-generator', aiCourseGeneratorRoutes); // ← NEW
+// ── Previously unregistered routes (wiring audit fix 2026-03-04) ──
+app.use('/api/ai', aiRoutes);
+app.use('/api/ai-course-generator', aiCourseGeneratorRoutes);
 app.use('/api/course-builder', courseBuilderRoutes);
-app.use('/api/images', imageUploadRoutes);
 app.use('/api/narration', narrationRoutes);
 
 // Static templates directory intentionally NOT served publicly

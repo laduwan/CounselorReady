@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Settings | CounselorReady</title>
-  <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Lato:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <style>
     :root {
       --burgundy: #6B1D34;
@@ -13,8 +13,8 @@
       --hunter-light: #5A9A6E;
       --honey: #D4A855;
       --honey-light: #E4C475;
-      --navy: #34495E;
-      --navy-light: #4A6580;
+      --navy: #284157;
+      --navy-light: #3A5470;
       --moss-600: #4A7C59;
       --moss-700: #3D6A4A;
       --dustyrose-600: #8B2542;
@@ -36,21 +36,21 @@
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
     body {
-      font-family: 'Source Sans 3', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-family: 'Lato', -apple-system, BlinkMacSystemFont, sans-serif;
       background: var(--bg);
       color: var(--text-primary);
       line-height: 1.6;
     }
 
-    /* â”€â”€ Navigation Bar â”€â”€ */
+    /* -- Navigation Bar -- */
     .navbar {
-      background: linear-gradient(135deg, var(--burgundy) 0%, var(--burgundy-light) 100%);
+      background: #F8F7F4;
       padding: 0 2rem;
       height: 64px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      box-shadow: 0 2px 8px rgba(107, 29, 52, 0.2);
+      box-shadow: 0 1px 0 #E5E2DC;
     }
     .navbar-brand {
       display: flex;
@@ -59,32 +59,50 @@
       text-decoration: none;
     }
     .logo-mark {
-      width: 38px; height: 38px;
+      width: 36px; height: 36px;
       background: linear-gradient(135deg, var(--burgundy-light), var(--burgundy));
-      border-radius: 10px;
-      display: flex; align-items: center; justify-content: center;
-      font-weight: 700; font-size: 14px;
+      border-radius: 9px;
+      display: flex; align-items: flex-start; justify-content: center;
+      font-family: 'Cormorant Garamond', serif;
+      font-weight: 700;
       box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      position: relative; overflow: visible;
+      padding-top: 4px;
     }
-    .logo-mark .c { color: var(--honey); }
-    .logo-mark .r { color: var(--hunter-light); }
+    .logo-mark .c {
+      color: #D4A855;
+      font-size: 17px;
+      line-height: 1;
+      position: relative;
+      z-index: 2;
+    }
+    .logo-mark .r {
+      color: #7A9E84;
+      font-size: 14px;
+      line-height: 1;
+      position: relative;
+      top: 5px;
+      left: -6px;
+      z-index: 1;
+    }
     .navbar-title {
-      font-family: 'Merriweather', serif;
-      font-size: 1.15rem;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.2rem;
     }
-    .navbar-title .counselor { color: #F5D0D8; font-weight: 700; }
-    .navbar-title .ready { color: #A8D5BA; font-weight: 700; }
+    .navbar-title .counselor { color: #6B1D34; font-weight: 700; }
+    .navbar-title .ready { color: #4A7C59; font-weight: 700; }
     .navbar-links {
       display: flex; align-items: center; gap: 1.25rem;
     }
     .navbar-links a {
-      color: rgba(255,255,255,0.8); text-decoration: none;
+      color: #4A4A4A; text-decoration: none;
       font-size: 0.9rem; font-weight: 500;
       transition: color 0.2s;
     }
-    .navbar-links a:hover, .navbar-links a.active { color: #fff; }
+    .navbar-links a:hover { color: #284157; }
+    .navbar-links a.active { color: #284157; font-weight: 700; border-bottom: 2px solid #284157; padding-bottom: 2px; }
 
-    /* â”€â”€ Page Layout â”€â”€ */
+    /* -- Page Layout -- */
     .page-container {
       max-width: 900px;
       margin: 0 auto;
@@ -94,7 +112,7 @@
       margin-bottom: 2rem;
     }
     .page-header h1 {
-      font-family: 'Merriweather', serif;
+      font-family: 'Cormorant Garamond', serif;
       font-size: 1.75rem;
       color: var(--burgundy);
       margin-bottom: 0.25rem;
@@ -104,32 +122,20 @@
       font-size: 0.95rem;
     }
 
-    /* â”€â”€ Settings Tabs â”€â”€ */
-    .settings-tabs {
-      display: flex;
-      gap: 0;
-      border-bottom: 2px solid var(--border);
-      margin-bottom: 2rem;
-    }
-    .settings-tab {
-      padding: 0.75rem 1.5rem;
-      font-size: 0.95rem;
-      font-weight: 600;
-      color: var(--text-secondary);
-      background: none;
-      border: none;
-      cursor: pointer;
-      border-bottom: 3px solid transparent;
-      margin-bottom: -2px;
-      transition: all 0.2s;
-    }
-    .settings-tab:hover { color: var(--navy); }
-    .settings-tab.active {
-      color: var(--burgundy);
-      border-bottom-color: var(--burgundy);
-    }
+ <!-- Settings Tabs -->
+    <div class="settings-tabs">
+      <button class="settings-tab active" data-tab="notifications" onclick="switchTab('notifications')">
+        🔔 Notifications
+      </button>
+      <button class="settings-tab" data-tab="profile" onclick="switchTab('profile')">
+        👤 Profile
+      </button>
+      <button class="settings-tab" data-tab="account" onclick="switchTab('account')">
+        🔑 Account
+      </button>
+    </div>
 
-    /* â”€â”€ Cards â”€â”€ */
+    /* -- Cards -- */
     .card {
       background: var(--card-bg);
       border-radius: 12px;
@@ -156,9 +162,9 @@
     .card-header-icon.honey { background: #FFFBEB; color: #B8860B; }
     .card-header-icon.navy { background: #EFF6FF; color: var(--navy); }
     .card-header h2 {
-      font-family: 'Merriweather', serif;
+      font-family: 'Cormorant Garamond', serif;
       font-size: 1.1rem;
-      color: var(--text-primary);
+      color: var(--navy);
     }
     .card-header p {
       font-size: 0.85rem;
@@ -167,7 +173,7 @@
     }
     .card-body { padding: 1.5rem; }
 
-    /* â”€â”€ Toggle Switch â”€â”€ */
+    /* -- Toggle Switch -- */
     .toggle-row {
       display: flex;
       align-items: center;
@@ -206,7 +212,7 @@
     .toggle-icon.alert { background: #FFF7ED; color: #EA580C; }
     .toggle-icon.milestone { background: #FFFBEB; color: #B8860B; }
     .toggle-icon.progress { background: #FDF2F8; color: var(--burgundy); }
-    .toggle-label { font-weight: 600; color: var(--text-primary); font-size: 0.95rem; }
+    .toggle-label { font-weight: 600; color: var(--navy); font-size: 0.95rem; }
     .toggle-desc { font-size: 0.82rem; color: var(--text-secondary); margin-top: 2px; }
     .toggle-switch {
       position: relative;
@@ -253,13 +259,13 @@
       margin-left: 6px;
     }
 
-    /* â”€â”€ Form Fields â”€â”€ */
+    /* -- Form Fields -- */
     .form-group { margin-bottom: 1.25rem; }
     .form-label {
       display: block;
       font-weight: 600;
       font-size: 0.88rem;
-      color: var(--text-primary);
+      color: var(--navy);
       margin-bottom: 0.4rem;
     }
     .form-input {
@@ -290,7 +296,7 @@
       pointer-events: none;
     }
 
-    /* â”€â”€ Buttons â”€â”€ */
+    /* -- Buttons -- */
     .btn-primary {
       background: var(--hunter);
       color: white;
@@ -321,7 +327,7 @@
       background: #F0FAF3;
     }
 
-    /* â”€â”€ Reminder Schedule â”€â”€ */
+    /* -- Reminder Schedule -- */
     .schedule-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -347,7 +353,7 @@
     .schedule-dot.blue { background: #3B82F6; }
     .schedule-dot.green { background: var(--hunter); }
 
-    /* â”€â”€ CE Tracker Banner â”€â”€ */
+    /* -- CE Tracker Banner -- */
     .tracker-banner {
       display: flex;
       align-items: center;
@@ -374,7 +380,7 @@
       color: var(--hunter);
     }
 
-    /* â”€â”€ Toast â”€â”€ */
+    /* -- Toast -- */
     .toast {
       position: fixed;
       bottom: 2rem;
@@ -399,7 +405,7 @@
       opacity: 1;
     }
 
-    /* â”€â”€ Section Divider â”€â”€ */
+    /* -- Section Divider -- */
     .section-divider {
       display: flex;
       align-items: center;
@@ -409,7 +415,7 @@
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.8px;
-      color: var(--text-muted);
+      color: var(--navy);
     }
     .section-divider::after {
       content: '';
@@ -418,11 +424,11 @@
       background: var(--border);
     }
 
-    /* â”€â”€ Tab Panels â”€â”€ */
+    /* -- Tab Panels -- */
     .tab-panel { display: none; }
     .tab-panel.active { display: block; }
 
-    /* â”€â”€ Responsive â”€â”€ */
+    /* -- Responsive -- */
     @media (max-width: 640px) {
       .page-container { padding: 1.25rem 1rem 3rem; }
       .schedule-grid { grid-template-columns: 1fr; }
@@ -439,7 +445,7 @@
     <a href="/dashboard" class="navbar-brand">
       <div class="logo-mark"><span class="c">C</span><span class="r">R</span></div>
       <div class="navbar-title">
-        <span class="counselor">COUNSELOR</span><span class="ready">READY</span>
+        <span class="counselor">Counselor</span><span class="ready">Ready</span>
       </div>
     </a>
     <div class="navbar-links">
@@ -461,19 +467,19 @@
     <!-- Settings Tabs -->
     <div class="settings-tabs">
       <button class="settings-tab active" data-tab="notifications" onclick="switchTab('notifications')">
-        ðŸ”” Notifications
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align:-2px;margin-right:5px;"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>Notifications
       </button>
       <button class="settings-tab" data-tab="profile" onclick="switchTab('profile')">
-        ðŸ‘¤ Profile
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align:-2px;margin-right:5px;"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Profile
       </button>
       <button class="settings-tab" data-tab="account" onclick="switchTab('account')">
-        ðŸ”’ Account
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align:-2px;margin-right:5px;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>Account
       </button>
     </div>
 
-    <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+    <!-- -- -->
     <!-- NOTIFICATIONS TAB                      -->
-    <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+    <!-- -- -->
     <div class="tab-panel active" id="tab-notifications">
 
       <!-- Contact Information -->
@@ -547,7 +553,7 @@
                 <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
               </div>
               <div>
-                <div class="toggle-label">SMS Reminders <span class="vip-badge">â˜… VIP</span></div>
+                <div class="toggle-label">SMS Reminders <span class="vip-badge">... VIP</span></div>
                 <div class="toggle-desc">Text message alerts for upcoming credential deadlines</div>
               </div>
             </div>
@@ -567,7 +573,7 @@
               </div>
               <div>
                 <div class="toggle-label">Weekly Progress Summary</div>
-                <div class="toggle-desc">Every Monday â€” see your CE progress across all credentials</div>
+                <div class="toggle-desc">Every Monday " see your CE progress across all credentials</div>
               </div>
             </div>
             <div class="toggle-switch">
@@ -672,11 +678,11 @@
         <div class="card-body" style="padding: 1rem 1.5rem;">
           <div class="tracker-banner">
             <div class="tracker-banner-text">
-              <span>ðŸ“Š</span>
+              <svg width="22" height="22" fill="none" stroke="#4A7C59" stroke-width="1.75" viewBox="0 0 24 24" style="flex-shrink:0;"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>
               <p>Want to see a <strong>preview of your upcoming reminders</strong> and manage detailed CE tracking? Visit the CE Tracker on your dashboard.</p>
             </div>
             <a href="/dashboard#ce-tracker" class="btn-secondary" style="white-space: nowrap; text-decoration: none;">
-              Open CE Tracker â†’
+              Open CE Tracker &rarr;
             </a>
           </div>
         </div>
@@ -691,9 +697,9 @@
 
     </div>
 
-    <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+    <!-- -- -->
     <!-- PROFILE TAB (placeholder)              -->
-    <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+    <!-- -- -->
     <div class="tab-panel" id="tab-profile">
       <div class="card">
         <div class="card-header">
@@ -708,15 +714,15 @@
         <div class="card-body">
           <p style="color: var(--text-secondary); font-size: 0.92rem;">
             Profile settings are managed on your existing profile page. 
-            <a href="/profile" style="color: var(--hunter); font-weight: 600;">Go to Profile â†’</a>
+            <a href="/profile" style="color: var(--hunter); font-weight: 600;">Go to Profile &rarr;</a>
           </p>
         </div>
       </div>
     </div>
 
-    <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+    <!-- -- -->
     <!-- ACCOUNT TAB (placeholder)              -->
-    <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+    <!-- -- -->
     <div class="tab-panel" id="tab-account">
       <div class="card">
         <div class="card-header">
@@ -731,7 +737,7 @@
         <div class="card-body">
           <p style="color: var(--text-secondary); font-size: 0.92rem;">
             Manage your password and subscription on the 
-            <a href="/subscription" style="color: var(--hunter); font-weight: 600;">Subscription page â†’</a>
+            <a href="/subscription" style="color: var(--hunter); font-weight: 600;">Subscription page &rarr;</a>
           </p>
         </div>
       </div>
@@ -750,7 +756,7 @@
       ? 'http://localhost:5000/api' 
       : 'https://api.counselorready.com/api';
 
-    // â”€â”€ Tab Switching â”€â”€
+    // -- Tab Switching --
     function switchTab(tabName) {
       document.querySelectorAll('.settings-tab').forEach(t => t.classList.remove('active'));
       document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
@@ -758,7 +764,7 @@
       document.getElementById(`tab-${tabName}`).classList.add('active');
     }
 
-    // â”€â”€ Toggle Row Active State â”€â”€
+    // -- Toggle Row Active State --
     function updateToggleRow(rowId, isChecked) {
       const row = document.getElementById(rowId);
       if (isChecked) {
@@ -777,14 +783,14 @@
       loadNotificationSettings();
     });
 
-    // Load Settings from API
+    // -- Load Settings from API --
     async function loadNotificationSettings() {
       try {
         const token = localStorage.getItem('token');
         if (!token) return;
 
-        const res = await fetch(API_BASE + '/auth/me', {
-          headers: { 'Authorization': 'Bearer ' + token }
+        const res = await fetch(`${API_BASE}/auth/me`, {
+          headers: { 'Authorization': `Bearer ${token}` }
         });
         if (!res.ok) return;
 
@@ -793,90 +799,82 @@
 
         // Populate contact info
         if (user.email) document.getElementById('notif-email').value = user.email;
-        // Phone may be nested under profile
-        var phone = user.phone || (user.profile && user.profile.phone) || '';
-        if (phone) document.getElementById('notif-phone').value = phone;
+        if (user.phone) document.getElementById('notif-phone').value = user.phone;
 
-        // Populate notification prefs from user.notifications
-        var prefs = user.notifications || {};
-        var toggleMap = {
-          'toggle-email': { key: 'emailReminders', row: 'row-email' },
-          'toggle-sms': { key: 'smsReminders', row: 'row-sms' },
-          'toggle-weekly': { key: 'weeklyProgress', row: 'row-weekly' },
-          'toggle-alert': { key: 'fallingBehindAlert', row: 'row-alert' },
-          'toggle-milestone': { key: 'ceMilestones', row: 'row-milestone' },
-          'toggle-progress': { key: 'courseProgressReminders', row: 'row-progress' },
-        };
-
-        for (var toggleId in toggleMap) {
-          var conf = toggleMap[toggleId];
-          if (typeof prefs[conf.key] === 'boolean') {
-            document.getElementById(toggleId).checked = prefs[conf.key];
-            updateToggleRow(conf.row, prefs[conf.key]);
-          }
+        // Populate notification prefs if they exist
+        const prefs = user.notificationPreferences || user.notifications || {};
+        if (typeof prefs.emailReminders === 'boolean') {
+          document.getElementById('toggle-email').checked = prefs.emailReminders;
+          updateToggleRow('row-email', prefs.emailReminders);
+        }
+        if (typeof prefs.smsReminders === 'boolean') {
+          document.getElementById('toggle-sms').checked = prefs.smsReminders;
+          updateToggleRow('row-sms', prefs.smsReminders);
+        }
+        if (typeof prefs.weeklyProgress === 'boolean') {
+          document.getElementById('toggle-weekly').checked = prefs.weeklyProgress;
+          updateToggleRow('row-weekly', prefs.weeklyProgress);
+        }
+        if (typeof prefs.fallingBehindAlert === 'boolean') {
+          document.getElementById('toggle-alert').checked = prefs.fallingBehindAlert;
+          updateToggleRow('row-alert', prefs.fallingBehindAlert);
+        }
+        if (typeof prefs.ceMilestones === 'boolean') {
+          document.getElementById('toggle-milestone').checked = prefs.ceMilestones;
+          updateToggleRow('row-milestone', prefs.ceMilestones);
+        }
+        if (typeof prefs.courseProgressReminders === 'boolean') {
+          document.getElementById('toggle-progress').checked = prefs.courseProgressReminders;
+          updateToggleRow('row-progress', prefs.courseProgressReminders);
         }
       } catch (err) {
         console.error('Failed to load notification settings:', err);
       }
     }
 
-    // Save Settings to API
+    // -- Save Settings to API --
     async function saveNotificationSettings() {
-      var token = localStorage.getItem('token');
-      if (!token) {
-        alert('Please log in to save settings.');
-        return;
-      }
-
-      var hdrs = {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + token
+      const payload = {
+        phone: document.getElementById('notif-phone').value,
+        notificationPreferences: {
+          emailReminders: document.getElementById('toggle-email').checked,
+          smsReminders: document.getElementById('toggle-sms').checked,
+          weeklyProgress: document.getElementById('toggle-weekly').checked,
+          fallingBehindAlert: document.getElementById('toggle-alert').checked,
+          ceMilestones: document.getElementById('toggle-milestone').checked,
+          courseProgressReminders: document.getElementById('toggle-progress').checked,
+        }
       };
 
       try {
-        // 1) Save phone to profile endpoint
-        var phone = document.getElementById('notif-phone').value;
-        var profileRes = await fetch(API_BASE + '/users/profile', {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`${API_BASE}/users/profile`, {
           method: 'PUT',
-          headers: hdrs,
-          body: JSON.stringify({ phone: phone })
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(payload)
         });
 
-        // 2) Save notification toggles to separate notifications endpoint
-        var notifRes = await fetch(API_BASE + '/users/notifications', {
-          method: 'PUT',
-          headers: hdrs,
-          body: JSON.stringify({
-            emailReminders: document.getElementById('toggle-email').checked,
-            smsReminders: document.getElementById('toggle-sms').checked,
-            weeklyProgress: document.getElementById('toggle-weekly').checked,
-            fallingBehindAlert: document.getElementById('toggle-alert').checked,
-            ceMilestones: document.getElementById('toggle-milestone').checked,
-            courseProgressReminders: document.getElementById('toggle-progress').checked
-          })
-        });
-
-        if (profileRes.ok && notifRes.ok) {
+        if (res.ok) {
           showToast();
         } else {
-          var profileErr = !profileRes.ok ? await profileRes.json() : null;
-          var notifErr = !notifRes.ok ? await notifRes.json() : null;
-          var msg = (profileErr && profileErr.error) || (notifErr && notifErr.error) || 'Unknown error';
-          alert('Failed to save: ' + msg);
+          const err = await res.json();
+          alert('Failed to save: ' + (err.message || 'Unknown error'));
         }
       } catch (err) {
         console.error('Save error:', err);
-        alert('Network error. Please try again.');
+        alert('Network error -- please try again.');
       }
     }
 
-
-    // â”€â”€ Toast â”€â”€
+    // -- Toast --
     function showToast() {
       const toast = document.getElementById('toast');
       toast.classList.add('show');
       setTimeout(() => toast.classList.remove('show'), 3000);
     }
   </script>
-</body>
+<script src="/js/footer.js"></script></body>
 </html>
