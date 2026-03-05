@@ -38,8 +38,8 @@ const OPTION_RE = /^\s*([a-dA-D])[.)]\s+(.+)/;
 // Matches correct answer markers
 const CORRECT_ANSWER_RE = /(?:Correct Answer|Answer|Correct)[:\s]*([A-Da-d])/i;
 
-// Matches answer key entries like "1. **B** - explanation"
-const ANSWER_KEY_ENTRY_RE = /^\s*(\d+)[.)]\s*\*\*([A-Da-d])\*\*\s*[-–—]\s*(.*)/i;
+// Matches answer key entries: "1. **B** - explanation" OR "1. B - explanation" (after HTML strip)
+const ANSWER_KEY_ENTRY_RE = /^\s*(\d+)[.)]\s*(?:\*\*)?([A-Da-d])(?:\*\*)?\s*[-–—]\s*(.*)/i;
 
 function parseQuizFromText(text) {
   // Strip HTML tags for parsing
