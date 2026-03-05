@@ -1,5 +1,5 @@
 /**
- * copyright.js
+ * copyright.jsx
  * CounselorReady — GAITP LLC
  * Shared copyright utility for React and vanilla JS pages.
  *
