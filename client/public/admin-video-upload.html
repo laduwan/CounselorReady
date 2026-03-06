@@ -136,7 +136,7 @@
     </div>
 
     <script>
-        const API_URL = 'https://counselorready-api.onrender.com'; // Update with your API URL
+        const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://api.counselorready.com';
         let currentXHR = null;
 
         // Initialize
