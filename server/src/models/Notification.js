@@ -14,7 +14,7 @@ const notificationSchema = new mongoose.Schema({
   },
   type: {
     type: String,
-    enum: ['credential_expiring', 'ce_reminder', 'course_completed', 'system', 'welcome'],
+    enum: ['credential_expiring', 'ce_reminder', 'course_completed', 'system', 'welcome', 'info', 'badge_earned', 'referral', 'supervision'],
     required: true
   },
   title: {
@@ -48,6 +48,12 @@ const notificationSchema = new mongoose.Schema({
   },
   actionUrl: {
     type: String
+  },
+  link: {
+    type: String
+  },
+  readAt: {
+    type: Date
   },
   metadata: {
     type: mongoose.Schema.Types.Mixed

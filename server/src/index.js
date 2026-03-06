@@ -47,6 +47,13 @@ import cePlannerRoutes from './routes/cePlanner.js';
 import insuranceCredentialsRoutes from './routes/insuranceCredentials.js';
 import auditKitRoutes from './routes/auditKit.js';
 import boardAlertsRoutes from './routes/boardAlerts.js';
+// ── New feature routes (2026-03-06 batch 2) ──
+import groupLicensesRoutes from './routes/groupLicenses.js';
+import recommendationsRoutes from './routes/recommendations.js';
+import supervisionRoutes from './routes/supervision.js';
+import referralsRoutes from './routes/referrals.js';
+import gamificationRoutes from './routes/gamification.js';
+import notificationsRoutes from './routes/notifications.js';
 // Import services
 import { initializeScheduler } from './services/notificationScheduler.js';
 
@@ -235,6 +242,13 @@ app.use('/api/ce-planner', cePlannerRoutes);
 app.use('/api/insurance-credentials', insuranceCredentialsRoutes);
 app.use('/api/audit-kit', auditKitRoutes);
 app.use('/api/board-alerts', boardAlertsRoutes);
+// ── New feature routes (2026-03-06 batch 2) ──
+app.use('/api/group-licenses', groupLicensesRoutes);
+app.use('/api/recommendations', recommendationsRoutes);
+app.use('/api/supervision', supervisionRoutes);
+app.use('/api/referrals', referralsRoutes);
+app.use('/api/gamification', gamificationRoutes);
+app.use('/api/notifications', notificationsRoutes);
 
 // Static templates directory intentionally NOT served publicly
 // Certificate assets (signature.png, certificate_template.pdf) are loaded

@@ -22,11 +22,17 @@ import CEPlanner from './pages/CEPlanner';
 import InsuranceTracker from './pages/InsuranceTracker';
 import AuditKit from './pages/AuditKit';
 import BoardAlerts from './pages/BoardAlerts';
+import SupervisionTracker from './pages/SupervisionTracker';
+import GamificationPage from './pages/Gamification';
+import Referrals from './pages/Referrals';
+import GroupLicenseDashboard from './pages/GroupLicenseDashboard';
+import Recommendations from './pages/Recommendations';
 
 // Components
 import Layout from './components/Layout';
 import CourseViewer from './components/CourseViewer';
 import CourseBuilder from './components/CourseBuilder';
+import { AccessibilityProvider, SkipToContent, AccessibilityPanel } from './components/AccessibilityProvider';
 
 // Wrapper to pass slug param to CourseViewer
 function CourseViewerWrapper() {
@@ -169,6 +175,31 @@ function AppRoutes() {
           <Layout><BoardAlerts /></Layout>
         </ProtectedRoute>
       } />
+      <Route path="/supervision" element={
+        <ProtectedRoute>
+          <Layout><SupervisionTracker /></Layout>
+        </ProtectedRoute>
+      } />
+      <Route path="/achievements" element={
+        <ProtectedRoute>
+          <Layout><GamificationPage /></Layout>
+        </ProtectedRoute>
+      } />
+      <Route path="/referrals" element={
+        <ProtectedRoute>
+          <Layout><Referrals /></Layout>
+        </ProtectedRoute>
+      } />
+      <Route path="/group-licenses" element={
+        <ProtectedRoute>
+          <Layout><GroupLicenseDashboard /></Layout>
+        </ProtectedRoute>
+      } />
+      <Route path="/recommendations" element={
+        <ProtectedRoute>
+          <Layout><Recommendations /></Layout>
+        </ProtectedRoute>
+      } />
 
       {/* Admin routes */}
       <Route path="/admin/course-builder" element={
@@ -186,12 +217,16 @@ function AppRoutes() {
 function App() {
   return (
     <ErrorBoundary>
-      <BrowserRouter>
-        <AuthProvider>
-          <AppRoutes />
-        </AuthProvider>
-        <CRFooter />
-      </BrowserRouter>
+      <AccessibilityProvider>
+        <BrowserRouter>
+          <SkipToContent />
+          <AuthProvider>
+            <AppRoutes />
+          </AuthProvider>
+          <AccessibilityPanel />
+          <CRFooter />
+        </BrowserRouter>
+      </AccessibilityProvider>
     </ErrorBoundary>
   );
 }
