@@ -161,7 +161,7 @@ const SUICIDE_RISK_INTERACTIVE = {
         {
           type: "text",
           content: `<p>Historically, suicidal behavior was often categorized simplistically—"genuine" versus "manipulative," "serious" versus "attention-seeking." Contemporary understanding recognizes that suicidal behavior exists on a continuum and emerges from genuine psychological pain, regardless of the apparent severity or outcome of any particular behavior.</p>
-<h3>The Continuum of Suicidal Behavior</h3>
+<h2>The Continuum of Suicidal Behavior</h2>
 <p>Suicidal behavior encompasses a range of phenomena:</p>
 <p><strong>Suicidal ideation</strong> refers to thoughts about suicide, which vary in frequency, intensity, duration, and specificity. Passive ideation ("I wish I were dead," "I wouldn't mind if I didn't wake up tomorrow") differs from active ideation ("I'm thinking about killing myself"). Ideation may be fleeting or persistent, vague or accompanied by specific plans.</p>
 <p><strong>Suicidal planning</strong> involves formulating a method, timeline, and/or other specifics about how one might attempt suicide. The presence of a plan, particularly a detailed and feasible plan, generally indicates elevated risk compared to ideation without planning.</p>
@@ -175,7 +175,7 @@ const SUICIDE_RISK_INTERACTIVE = {
         {
           type: "text",
           content: `
-<h3>Why People Consider Suicide: Psychological Perspectives</h3>
+<h2>Why People Consider Suicide: Psychological Perspectives</h2>
 <p>To intervene effectively with suicidal clients, counselors must understand the psychological processes that lead people to consider ending their lives. Multiple theoretical frameworks offer insight into these processes.</p>
 <p>From a psychological pain perspective, suicide is understood as a response to unbearable psychological suffering. Edwin Shneidman (1993), a pioneer in suicidology, coined the term "psychache" to describe the intense psychological pain that drives suicidal behavior. In this view, suicide is not primarily about wanting to die but about wanting to escape unbearable pain when no other escape seems possible. This perspective emphasizes the importance of addressing psychological pain and expanding the person's perception of available options.</p>
 <p>From a cognitive perspective, suicidal individuals often display characteristic patterns of thinking: cognitive constriction (tunnel vision that limits perceived options), hopelessness (the belief that things will never improve), and problem-solving deficits that interfere with generating and implementing alternatives to suicide. Aaron Beck's research demonstrated that hopelessness is a stronger predictor of suicide than depression per se, highlighting the importance of addressing hopeless cognitions in treatment.</p>
@@ -522,7 +522,7 @@ const SUICIDE_RISK_INTERACTIVE = {
 <p><strong>R</strong> - Recklessness: Acting recklessly or engaging in risky activities, seemingly without thinking</p>
 <p><strong>M</strong> - Mood Changes: Dramatic changes in mood</p>
 <p>This mnemonic provides a quick reference for warning signs, though comprehensive assessment requires more detailed inquiry.</p>
-<h3>Additional Warning Signs to Monitor</h3>
+<h2>Additional Warning Signs to Monitor</h2>
 <p>Beyond the IS PATH WARM framework, counselors should be attentive to additional warning signs that may indicate imminent risk:</p>
 <p><strong>Giving away prized possessions</strong>: When a person begins giving away items of sentimental or monetary value—particularly without clear reason such as moving or downsizing—this may indicate preparation for death. This is especially concerning when combined with statements about "not needing things anymore" or wanting others to "have something to remember me by."</p>
 <p><strong>Making final arrangements</strong>: Activities like creating or updating a will, writing letters to loved ones, settling debts, or making arrangements for pets may indicate preparation for suicide. While these activities are normal in certain contexts (serious illness, advanced age), they warrant attention when they appear unexpectedly.</p>
@@ -787,7 +787,7 @@ const SUICIDE_RISK_INTERACTIVE = {
 5. <strong>Active suicidal ideation with specific plan and intent</strong>: Thoughts of suicide with a specific plan and intent to carry it out</p>
 <p>Higher levels indicate greater severity. The scale also assesses intensity of ideation (frequency, duration, controllability, deterrents, reasons for ideation) and categorizes suicidal behavior (actual attempt, interrupted attempt, aborted attempt, preparatory acts, non-suicidal self-injurious behavior).</p>
 <p>The C-SSRS is available in multiple versions (lifetime/recent, screening, since last visit) and has been validated across populations and settings. Training in its use is available free of charge from the Columbia Lighthouse Project.</p>
-<h3>Clinical Use of the C-SSRS</h3>
+<h2>Clinical Use of the C-SSRS</h2>
 <p>In clinical practice, the C-SSRS can serve as:</p>
 <p><strong>Screening tool</strong>: The brief screener version can efficiently identify individuals warranting more comprehensive assessment.</p>
 <p><strong>Assessment framework</strong>: The full version provides systematic coverage of ideation and behavior domains.</p>
@@ -1058,7 +1058,7 @@ const SUICIDE_RISK_INTERACTIVE = {
         {
           type: "text",
           content: `<div style="background:#FFF8E1;border-left:4px solid #D4A855;padding:16px;border-radius:4px;margin:16px 0;">
-<h3>🏥 Clinical Vignette: Assessment in Action</h3>
+<h2>🏥 Clinical Vignette: Assessment in Action</h2>
 <p><strong>Marcus, 42, presents to your office for his third session.</strong> He has been treated for depression following his divorce. Today he appears more withdrawn than usual. When you ask how he's been, he says, "I've been thinking it might be easier for everyone if I wasn't around." He reports giving his dog to his sister last week and has been "getting his affairs in order."</p>
 <p><strong>Consider:</strong> What risk factors and warning signs do you identify? How would you structure your assessment from this point? What level on the C-SSRS would you initially assign, and what additional information do you need?</p>
 </div>`,
@@ -1642,7 +1642,7 @@ const SUICIDE_RISK_INTERACTIVE = {
         {
           type: "text",
           content: `<div style="background:#FFF8E1;border-left:4px solid #D4A855;padding:16px;border-radius:4px;margin:16px 0;">
-<h3>🏥 Clinical Vignette: Safety Planning</h3>
+<h2>🏥 Clinical Vignette: Safety Planning</h2>
 <p><strong>Returning to Marcus:</strong> Your assessment reveals active suicidal ideation with a plan (overdose on collected medications) but ambivalent intent. He identifies his children as a reason for living and agrees to work on a safety plan. He has a firearm in his home "for protection."</p>
 <p><strong>Consider:</strong> Walk through each step of the Stanley-Brown Safety Plan with Marcus. How would you approach the lethal means counseling conversation, particularly regarding both the medications and the firearm? What disposition decision would you make?</p>
 </div>`,
@@ -2300,7 +2300,7 @@ const SUICIDE_RISK_INTERACTIVE = {
         {
           type: "text",
           content: `<p>Thorough documentation is both a clinical necessity and a legal safeguard. Best practices for documenting suicide care include:</p>
-<h3>Content of Documentation</h3>
+<h2>Content of Documentation</h2>
 <p>Documentation of suicide risk assessment should include:</p>
 <p>- <strong>Date and time</strong> of assessment
 - <strong>Source of information</strong> (client self-report, collateral contacts, records review)
@@ -2318,7 +2318,7 @@ const SUICIDE_RISK_INTERACTIVE = {
 - <strong>Client response</strong> to interventions
 - <strong>Follow-up plan</strong> (next appointment, crisis resources, who to contact)
 - <strong>Consultations obtained</strong> (who, when, advice given)</p>
-<h3>Documentation Principles</h3>
+<h2>Documentation Principles</h2>
 <p><strong>Document in real time</strong>: Complete documentation as soon as possible after the session, while details are fresh.</p>
 <p><strong>Be specific</strong>: "Client denied suicidal ideation" is less useful than "Client denied current thoughts of suicide or self-harm; no passive or active ideation; no plan; stated 'I want to live.'"</p>
 <p><strong>Document clinical reasoning</strong>: Records should reflect not just what was done but why. "Given moderate risk (active ideation with plan but denial of intent, presence of protective factors including reasons for living and supportive family), decision made to continue outpatient treatment with enhanced safety planning and increased session frequency."</p>
@@ -2421,7 +2421,7 @@ const SUICIDE_RISK_INTERACTIVE = {
         {
           type: "text",
           content: `<div style="background:#FFF8E1;border-left:4px solid #D4A855;padding:16px;border-radius:4px;margin:16px 0;">
-<h3>🏥 Clinical Vignette: Ethical Dilemma</h3>
+<h2>🏥 Clinical Vignette: Ethical Dilemma</h2>
 <p><strong>A 17-year-old client, Jaylen, discloses suicidal ideation during session.</strong> He begs you not to tell his parents, stating "they'll just make everything worse — my dad will say I'm weak and my mom will cry for weeks." You assess him at moderate risk. His parents are in the waiting room.</p>
 <p><strong>Consider:</strong> How do you balance Jaylen's request for confidentiality with your duty to protect? What are your legal obligations regarding parental notification for a minor? How would you approach this conversation with both Jaylen and his parents?</p>
 </div>`,
@@ -2505,7 +2505,7 @@ const SUICIDE_RISK_INTERACTIVE = {
         {
           type: "text",
           content: `<p>Several factors influence how clinicians are affected by suicide care:</p>
-<h3>Factors That Increase Risk</h3>
+<h2>Factors That Increase Risk</h2>
 <p>- High caseloads of suicidal clients
 - Inadequate training in suicide care
 - Lack of supervision or consultation
@@ -2513,7 +2513,7 @@ const SUICIDE_RISK_INTERACTIVE = {
 - Personal history of trauma or loss
 - Inadequate organizational support
 - Work-life imbalance</p>
-<h3>Factors That Provide Protection</h3>
+<h2>Factors That Provide Protection</h2>
 <p>- Adequate training and competence
 - Regular supervision or consultation
 - Peer support

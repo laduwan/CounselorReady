@@ -158,7 +158,7 @@ const COURSE_DATA = {
         // │                                          │
         // │  Supported HTML:                         │
         // │    <p>         — paragraphs              │
-        // │    <h3>        — subheadings              │
+        // │    <h2>        — subheadings              │
         // │    <strong>    — bold                     │
         // │    <em>        — italic                   │
         // │    <ul><li>    — bullet lists             │
@@ -173,7 +173,7 @@ const COURSE_DATA = {
           type: "text",
           content: `<p>Opening paragraph that introduces the module topic and sets the context for learning. This should connect to the overall course objectives and explain why this content matters for clinical practice.</p>
 <p>Continue with foundational concepts. Use <strong>bold text</strong> for key terms and <em>italics</em> for emphasis. Each text block should be a coherent section of content.</p>
-<h3>Subheading for a New Section</h3>
+<h2>Subheading for a New Section</h2>
 <p>Additional content under the subheading. Remember: aim for 6,000+ words per CE hour across ALL text blocks in ALL modules combined. For a 3-CE course, you need at least 18,000 words total.</p>
 <p>Include clinical examples, research citations, and practical applications throughout. Content should be substantive enough that a professional can implement learnings in their Monday morning practice.</p>`,
           accessibility: { role: "article" }
@@ -182,7 +182,7 @@ const COURSE_DATA = {
         // Another text block — break up long content for readability
         {
           type: "text",
-          content: `<h3>Another Section Within This Module</h3>
+          content: `<h2>Another Section Within This Module</h2>
 <p>More content here. You can have as many text blocks as needed per module.</p>
 <p>Include research citations in APA format within the text: (Author, Year). Full references go in the references array at the bottom of the course data.</p>`,
           accessibility: { role: "article" }
@@ -383,7 +383,7 @@ const COURSE_DATA = {
         {
           type: "text",
           content: `<p>Continue with module content. Include clinical vignettes and case examples.</p>
-<h3>Clinical Vignette</h3>
+<h2>Clinical Vignette</h2>
 <p><em>"Maria, a 34-year-old Latina woman, presents to your office reporting..." [Describe clinical scenario that illustrates key concepts from this module. Include enough detail for learners to practice applying assessment/intervention skills.]</em></p>
 <p>Analysis of the vignette and how it connects to the module content.</p>`,
           accessibility: { role: "article" }

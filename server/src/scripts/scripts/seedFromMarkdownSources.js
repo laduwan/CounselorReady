@@ -196,7 +196,7 @@ function markdownToHtml(md) {
     } else if (line.startsWith('### ')) {
       if (inBulletList) { result.push('</ul>'); inBulletList = false; }
       if (inNumberedList) { result.push('</ol>'); inNumberedList = false; }
-      result.push(`<h3>${applyInline(line.substring(4))}</h3>`);
+      result.push(`<h2>${applyInline(line.substring(4))}</h2>`);
     } else if (line.startsWith('## ')) {
       if (inBulletList) { result.push('</ul>'); inBulletList = false; }
       if (inNumberedList) { result.push('</ol>'); inNumberedList = false; }
