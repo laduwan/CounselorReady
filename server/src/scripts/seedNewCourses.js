@@ -64,14 +64,16 @@ function generateSlug(title) {
 
 function markdownToHtml(md) {
   return md
+    .replace(/^#### (.+)$/gm, '<h4>$1</h4>')
     .replace(/^### (.+)$/gm, '<h2>$1</h2>')
     .replace(/^## (.+)$/gm, '<h2>$1</h2>')
     .replace(/^# (.+)$/gm, '<h1>$1</h1>')
     .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
     .replace(/\*(.+?)\*/g, '<em>$1</em>')
     .replace(/\n\n/g, '</p><p>')
-    .replace(/^(?!<[h])/gm, '<p>')
-    .replace(/(?<![>])$/gm, '</p>');
+    .replace(/^(?!<[hdo\/])/gm, '<p>')
+    .replace(/(?<![>])$/gm, '</p>')
+    .replace(/<p>\s*<\/p>/g, '');
 }
 
 function parseMarkdownCourse(content, filename) {

@@ -712,15 +712,23 @@
         case 'text':
           var rawText = block.content || block.textContent || '';
           var isHtmlContent = /<[a-z][\s\S]*>/i.test(rawText);
-          var hasMarkdownHeadings = /^#{1,6}\s/m.test(rawText);
+          var hasMarkdownHeadings = /(?:^|<p>\s*)#{1,6}\s/m.test(rawText);
           var renderedText = !isHtmlContent
             ? (typeof marked !== 'undefined' ? marked.parse(rawText) : rawText)
             : hasMarkdownHeadings
-              ? rawText.replace(/^(#{1,6})\s+(.+)$/gm, function(match, hashes, text) {
-                  var level = hashes.length;
-                  return '<h' + level + '>' + text + '</h' + level + '>';
-                })
+              ? rawText
+                  .replace(/<p>\s*(#{1,6})\s+(.+?)\s*<\/p>/gm, function(m, hashes, text) {
+                    return '<h' + hashes.length + '>' + text + '</h' + hashes.length + '>';
+                  })
+                  .replace(/^(#{1,6})\s+(.+)$/gm, function(match, hashes, text) {
+                    return '<h' + hashes.length + '>' + text + '</h' + hashes.length + '>';
+                  })
               : rawText;
+          // Fix <details>/<summary> wrapped in <p> tags
+          renderedText = renderedText
+            .replace(/<p>\s*(<\/?details[^>]*>)\s*<\/p>/gim, '$1')
+            .replace(/<p>\s*(<summary[^>]*>)/gim, '$1')
+            .replace(/(<\/summary>)\s*<\/p>/gim, '$1');
           div.innerHTML = `
             <div class="prose max-w-none">
               ${renderedText}

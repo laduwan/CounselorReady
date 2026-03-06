@@ -1239,16 +1239,26 @@
         case 'text':
           const rawText = block.content || block.textContent || '';
           const isHtml = /<[a-z][\s\S]*?>/i.test(rawText);
-          const hasMarkdownHeadings = /^#{1,6}\s/m.test(rawText);
+          const hasMarkdownHeadings = /(?:^|<p>\s*)#{1,6}\s/m.test(rawText);
           // If content has markdown headings mixed with HTML, parse the markdown parts
-          const rendered = !isHtml
+          let rendered = !isHtml
             ? (typeof marked !== 'undefined' ? marked.parse(rawText) : rawText)
-            : hasMarkdownHeadings && typeof marked !== 'undefined'
-              ? rawText.replace(/^(#{1,6})\s+(.+)$/gm, (match, hashes, text) => {
-                  const level = hashes.length;
-                  return `<h${level}>${text}</h${level}>`;
-                })
+            : hasMarkdownHeadings
+              ? rawText
+                  // Fix <p>-wrapped markdown headings: <p>#### Heading</p> → <h4>Heading</h4>
+                  .replace(/<p>\s*(#{1,6})\s+(.+?)\s*<\/p>/gm, (m, hashes, text) => {
+                    return `<h${hashes.length}>${text}</h${hashes.length}>`;
+                  })
+                  // Fix bare markdown headings at start of line
+                  .replace(/^(#{1,6})\s+(.+)$/gm, (match, hashes, text) => {
+                    return `<h${hashes.length}>${text}</h${hashes.length}>`;
+                  })
               : rawText;
+          // Fix <details>/<summary> wrapped in <p> tags (invalid HTML from markdownToHtml)
+          rendered = rendered
+            .replace(/<p>\s*(<\/?details[^>]*>)\s*<\/p>/gim, '$1')
+            .replace(/<p>\s*(<summary[^>]*>)/gim, '$1')
+            .replace(/(<\/summary>)\s*<\/p>/gim, '$1');
           div.innerHTML = `
             <div class="prose max-w-none">
               ${rendered}
