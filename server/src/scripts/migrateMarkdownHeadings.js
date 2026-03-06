@@ -4,10 +4,15 @@
  * Unauthorized copying or distribution is strictly prohibited.
  */
 // migrateMarkdownHeadings.js
-// Converts raw markdown heading syntax (####, ###, ##) to proper HTML tags
-// in course content blocks that contain mixed HTML and markdown.
+// Fixes broken HTML produced by markdownToHtml() in seedNewCourses.js:
+//   1. <p>#### Heading</p>  → <h4>Heading</h4>
+//   2. <p><details></p>     → <details>   (unwrap block elements from <p>)
+//   3. <p><summary></p>     → <summary>
+//   4. <p></details></p>    → </details>
+//   5. <p></summary></p>    → </summary>
+//   6. Bare #### at line start → <h4>
 //
-// This does NOT change word count — only converts tag syntax.
+// This does NOT change word count — only fixes tag structure.
 //
 // Run: node src/scripts/migrateMarkdownHeadings.js
 // Add --dry-run to preview changes without writing to DB
@@ -21,21 +26,35 @@ dotenv.config();
 const DRY_RUN = process.argv.includes('--dry-run');
 
 /**
- * Convert markdown heading lines to HTML heading tags.
- * #### Heading → <h4>Heading</h4>
- * ### Heading  → <h3>Heading</h3>  (note: h3→h2 migration handles these separately)
- * ## Heading   → <h2>Heading</h2>
+ * Fix all broken HTML patterns from markdownToHtml()
  */
-function convertMarkdownHeadings(text) {
-  // Order matters: longest prefix first to avoid partial matches
+function fixBrokenHtml(text) {
   return text
+    // Fix 1: <p>-wrapped markdown headings → proper heading tags
+    .replace(/<p>\s*####\s+(.+?)\s*<\/p>/gm, '<h4>$1</h4>')
+    .replace(/<p>\s*###\s+(.+?)\s*<\/p>/gm, '<h3>$1</h3>')
+    .replace(/<p>\s*##\s+(.+?)\s*<\/p>/gm, '<h2>$1</h2>')
+    // Fix 2: Bare markdown headings at start of line
     .replace(/^####\s+(.+)$/gm, '<h4>$1</h4>')
     .replace(/^###\s+(.+)$/gm, '<h3>$1</h3>')
-    .replace(/^##\s+(.+)$/gm, '<h2>$1</h2>');
+    .replace(/^##\s+(.+)$/gm, '<h2>$1</h2>')
+    // Fix 3: Unwrap <details>/<summary> from invalid <p> wrappers
+    .replace(/<p>\s*(<details[^>]*>)\s*<\/p>/gim, '$1')
+    .replace(/<p>\s*(<\/details>)\s*<\/p>/gim, '$1')
+    .replace(/<p>\s*(<summary[^>]*>)/gim, '$1')
+    .replace(/(<\/summary>)\s*<\/p>/gim, '$1')
+    // Fix 4: Clean up empty <p></p> tags left behind
+    .replace(/<p>\s*<\/p>/gm, '');
 }
 
-function hasMarkdownHeadings(text) {
-  return /^#{2,4}\s+.+$/m.test(text);
+function needsFix(text) {
+  // Check for <p>-wrapped markdown headings
+  if (/(?:<p>\s*)#{2,4}\s+.+/m.test(text)) return true;
+  // Check for bare markdown headings
+  if (/^#{2,4}\s+.+$/m.test(text)) return true;
+  // Check for <p>-wrapped <details>/<summary>
+  if (/<p>\s*<\/?(?:details|summary)/im.test(text)) return true;
+  return false;
 }
 
 async function migrate() {
@@ -47,6 +66,8 @@ async function migrate() {
     const db = mongoose.connection.db;
     const collections = ['interactivecourses', 'courses'];
     let totalFixed = 0;
+    let totalHeadings = 0;
+    let totalDetails = 0;
 
     for (const collName of collections) {
       const coll = db.collection(collName);
@@ -56,6 +77,7 @@ async function migrate() {
       for (const course of courses) {
         let courseModified = false;
         const updates = {};
+        const fixes = { headings: 0, details: 0 };
 
         // Interactive courses: sections[].contentBlocks[]
         if (course.sections && Array.isArray(course.sections)) {
@@ -70,19 +92,29 @@ async function migrate() {
               const newBlock = { ...block };
 
               for (const field of fields) {
-                if (newBlock[field] && typeof newBlock[field] === 'string' && hasMarkdownHeadings(newBlock[field])) {
+                if (newBlock[field] && typeof newBlock[field] === 'string' && needsFix(newBlock[field])) {
                   const original = newBlock[field];
-                  newBlock[field] = convertMarkdownHeadings(original);
-                  blockModified = true;
+                  newBlock[field] = fixBrokenHtml(original);
+                  if (newBlock[field] !== original) {
+                    blockModified = true;
 
-                  if (DRY_RUN) {
-                    const matches = original.match(/^#{2,4}\s+(.+)$/gm);
-                    if (matches) {
-                      matches.forEach(m => {
-                        const level = m.match(/^(#{2,4})/)[1].length;
-                        const text = m.replace(/^#{2,4}\s+/, '');
-                        console.log(`  → S${si + 1} B${bi + 1}: "#{level}→h${level}" "${text.substring(0, 60)}"`);
-                      });
+                    if (DRY_RUN) {
+                      // Count heading fixes
+                      const hMatches = original.match(/(?:<p>\s*|^)#{2,4}\s+.+/gm);
+                      if (hMatches) {
+                        fixes.headings += hMatches.length;
+                        hMatches.forEach(m => {
+                          const clean = m.replace(/<\/?p>/g, '').trim();
+                          const level = clean.match(/^(#{2,4})/)?.[1]?.length || '?';
+                          const text = clean.replace(/^#{2,4}\s+/, '');
+                          console.log(`  → S${si + 1} B${bi + 1}: ####→h${level} "${text.substring(0, 55)}"`);
+                        });
+                      }
+                      // Count details fixes
+                      const dMatches = original.match(/<p>\s*<\/?(?:details|summary)/gim);
+                      if (dMatches) {
+                        fixes.details += dMatches.length;
+                      }
                     }
                   }
                 }
@@ -106,26 +138,35 @@ async function migrate() {
             if (!mod.lessons || !Array.isArray(mod.lessons)) return mod;
 
             const newLessons = mod.lessons.map((lesson, li) => {
-              if (!lesson.content || typeof lesson.content !== 'string' || !hasMarkdownHeadings(lesson.content)) {
+              if (!lesson.content || typeof lesson.content !== 'string' || !needsFix(lesson.content)) {
                 return lesson;
               }
 
               const original = lesson.content;
-              const updated = convertMarkdownHeadings(original);
-              courseModified = true;
+              const updated = fixBrokenHtml(original);
+              if (updated !== original) {
+                courseModified = true;
 
-              if (DRY_RUN) {
-                const matches = original.match(/^#{2,4}\s+(.+)$/gm);
-                if (matches) {
-                  matches.forEach(m => {
-                    const level = m.match(/^(#{2,4})/)[1].length;
-                    const text = m.replace(/^#{2,4}\s+/, '');
-                    console.log(`  → M${mi + 1} L${li + 1}: "#{level}→h${level}" "${text.substring(0, 60)}"`);
-                  });
+                if (DRY_RUN) {
+                  const hMatches = original.match(/(?:<p>\s*|^)#{2,4}\s+.+/gm);
+                  if (hMatches) {
+                    fixes.headings += hMatches.length;
+                    hMatches.forEach(m => {
+                      const clean = m.replace(/<\/?p>/g, '').trim();
+                      const level = clean.match(/^(#{2,4})/)?.[1]?.length || '?';
+                      const text = clean.replace(/^#{2,4}\s+/, '');
+                      console.log(`  → M${mi + 1} L${li + 1}: ####→h${level} "${text.substring(0, 55)}"`);
+                    });
+                  }
+                  const dMatches = original.match(/<p>\s*<\/?(?:details|summary)/gim);
+                  if (dMatches) {
+                    fixes.details += dMatches.length;
+                  }
                 }
-              }
 
-              return { ...lesson, content: updated };
+                return { ...lesson, content: updated };
+              }
+              return lesson;
             });
 
             return { ...mod, lessons: newLessons };
@@ -138,7 +179,12 @@ async function migrate() {
 
         if (courseModified) {
           totalFixed++;
-          console.log(`  ✏️  ${course.title || course.slug} — markdown headings converted`);
+          totalHeadings += fixes.headings;
+          totalDetails += fixes.details;
+          const fixDesc = [];
+          if (fixes.headings) fixDesc.push(`${fixes.headings} headings`);
+          if (fixes.details) fixDesc.push(`${fixes.details} details/summary tags`);
+          console.log(`  ✏️  ${course.title || course.slug} — fixed ${fixDesc.join(', ')}`);
 
           if (!DRY_RUN) {
             await coll.updateOne({ _id: course._id }, { $set: updates });
@@ -149,7 +195,9 @@ async function migrate() {
 
     console.log(`\n${'='.repeat(50)}`);
     console.log(`${DRY_RUN ? '🔍 Would fix' : '✅ Fixed'}: ${totalFixed} courses`);
-    if (DRY_RUN) console.log('Run without --dry-run to apply changes.');
+    console.log(`  Headings: ${totalHeadings} markdown→HTML conversions`);
+    console.log(`  Details/Summary: ${totalDetails} unwrapped from <p> tags`);
+    if (DRY_RUN) console.log('\nRun without --dry-run to apply changes.');
 
   } catch (err) {
     console.error('❌ Migration failed:', err);
