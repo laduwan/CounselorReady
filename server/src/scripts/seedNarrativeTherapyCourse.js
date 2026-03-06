@@ -476,7 +476,17 @@ const NARRATIVE_THERAPY_COURSE = {
 
 <p>Externalization naturally leads to the question: Are there times when the problem's influence is less? Are there exceptions to this pattern? These questions, which will be explored fully in the next module, begin to open space for alternative narratives.</p>
 
-<p>As we map a problem's effects, we inevitably discover that the problem's influence is not total. There are times, places, relationships, or circumstances where the problem is weaker, absent, or successfully resisted. These exceptionsâ€”what narrative therapists call "unique outcomes"â€”become the seeds of alternative stories.</p>
+<p>As we map a problem's effects, we inevitably discover that the problem's influence is not total. There are times, places, relationships, or circumstances where the problem is weaker, absent, or successfully resisted. These exceptionsâ€”what narrative therapists call “unique outcomes”â€”become the seeds of alternative stories.</p>
+
+<h2>Why Externalization Works: A Neuroscience-Informed Perspective</h2>
+
+<p>While narrative therapy was not developed from neuroscience, contemporary brain research offers intriguing support for why externalization is therapeutically effective. When a person identifies completely with a problem (“I AM depressed”), the brain processes this as an identity-level threat. The amygdala activates threat responses, cortisol floods the system, and the prefrontal cortex—responsible for flexible thinking and problem-solving—becomes less accessible. The person is literally less able to think creatively about their situation because their brain is in a defensive state.</p>
+
+<p>Externalization creates what neuroscientists might call “cognitive distancing”—a separation between the observing self and the observed experience. Research on affect labeling shows that naming an emotion (“I notice fear”) rather than being consumed by it (“I'm terrified”) activates the prefrontal cortex and reduces amygdala reactivity. Externalization takes this a step further: by positioning the problem as an external entity with its own tactics and strategies, the client activates neural pathways associated with problem-solving and strategic thinking rather than threat response.</p>
+
+<p>Dan Siegel's concept of “mindsight”—the capacity to observe one's own mental processes—aligns closely with what externalization cultivates. When clients learn to observe Depression's tactics rather than being submerged in depressive experience, they are developing the very neural integration that Siegel identifies as central to mental health. The capacity to say “Depression is telling me I'm worthless” rather than “I'm worthless” represents a measurable shift in neural processing that opens space for alternative responses.</p>
+
+<p>This neuroscience-informed understanding can also help clinicians explain externalization to skeptical clients or referral sources: “When we separate the problem from the person, we're creating the neural conditions for the client to think more flexibly about their situation. Research shows that this kind of cognitive distancing activates the thinking brain and quiets the threat response.”</p>
 
 <p>For now, notice how externalization has changed the therapeutic landscape. The client is no longer defending themselves against a problem that IS them. Instead, they are examining a problem that has affected them, evaluating whether they want to continue in the same relationship with that problem, and becoming curious about moments when the relationship has been different.</p>`,
           accessibility: { role: "article", ariaLabel: "Effects evaluation and transition to finding exceptions" }
@@ -1017,6 +1027,61 @@ const NARRATIVE_THERAPY_COURSE = {
         },
         {
           type: "text",
+          content: `<h2>Ethical Considerations in Narrative Practice</h2>
+
+<p>Narrative therapy raises distinctive ethical considerations that practitioners must navigate thoughtfully. Because the approach positions the therapist as a collaborator rather than an expert, some traditional ethical frameworks—built around the assumption that the therapist diagnoses and treats—require reinterpretation.</p>
+
+<h3>Informed Consent and Transparency</h3>
+
+<p>Informed consent in narrative therapy goes beyond the standard disclosure of credentials, fees, and confidentiality limits. Because narrative therapy operates from a philosophical stance that differs significantly from what many clients expect, clinicians have an ethical obligation to explain the approach's assumptions and methods. Clients should understand that narrative therapy will involve examining the stories they've constructed about themselves, that the therapist will use specific questioning techniques like externalization, and that the goal is not diagnosis or symptom elimination but expanding the client's sense of identity and possibility. This transparency is not just ethically requiredâ€"it embodies the narrative value of sharing power with clients.</p>
+
+<p>Additionally, narrative therapists should be transparent about their own values and positions. Unlike models that prioritize therapist neutrality, narrative practice acknowledges that therapy is never value-free. When a therapist asks externalizing questions or searches for unique outcomes, they are making choices influenced by their values. Being open about this allows clients to evaluate whether the therapist's approach aligns with their own values and goals.</p>
+
+<h3>Power and the Therapeutic Relationship</h3>
+
+<p>Despite narrative therapy's commitment to flattening power hierarchies, the therapist inevitably holds significant power. They choose which questions to ask, which responses to pursue, and which threads to follow. A therapist who exclusively searches for unique outcomes while minimizing problem talk may inadvertently silence a client's experience. Conversely, a therapist who lingers too long in problem-saturated territory may reinforce the very narrative they hope to challenge. Ethical practice requires ongoing reflection about how therapeutic choices serve the client versus the therapist's theoretical commitments.</p>
+
+<p>Supervision and peer consultation are particularly important in narrative practice because the approach's collaborative stance can mask power dynamics. A therapist who believes they are being de-centered may not recognize the ways their questions shape the conversation's direction. Regular reflection with colleagues can illuminate blind spots and ensure the client's meanings remain genuinely central.</p>
+
+<h3>Documentation and Progress Notes</h3>
+
+<p>Narrative therapy creates interesting challenges for clinical documentation. Traditional progress notes often use language that narrative therapists would consider problem-saturating: "Client presents with depressed affect," "Exhibited poor insight," "Remains resistant to treatment." These notes locate problems inside the person and privilege the therapist's assessment over the client's meaning-making.</p>
+
+<p>Some narrative practitioners advocate for what David Epston calls "co-research" notes—progress documentation written collaboratively with clients, in language that reflects the therapeutic conversation. Rather than "Client displays anxiety symptoms," a narrative-informed note might read: "We explored how Anxiety has been affecting Marcus's work relationships. Marcus identified a recent moment when he spoke up in a meeting despite Anxiety's presence, and we began exploring what made this possible."</p>
+
+<p>However, practitioners must balance narrative-informed documentation with institutional requirements, insurance expectations, and legal standards of care. Many practice settings require diagnostic language, symptom tracking, and treatment plan goals written in measurable terms. Narrative therapists working in these contexts often develop a dual documentation practice: institutional records that meet regulatory requirements, alongside therapeutic letters or session summaries written in narrative-consistent language that serve the client's re-authoring process.</p>
+
+<h3>The Evidence Base: What Research Tells Us</h3>
+
+<p>Clinicians considering narrative therapy should be familiar with the current state of its evidence base. While narrative therapy has a growing body of supportive research, it has fewer randomized controlled trials (RCTs) than modalities like CBT or DBT. This reflects both philosophical tensions between narrative therapy and positivist research paradigms, and practical challenges in manualizating an approach that values spontaneous, collaborative conversation.</p>
+
+<p>Nonetheless, the evidence that does exist is encouraging. Vromans and Schweitzer's (2011) randomized controlled trial found narrative therapy effective for major depressive disorder, with improvements in both symptom and interpersonal outcomes. Multiple studies have demonstrated narrative therapy's effectiveness with children and adolescents, particularly for behavioral problems, anxiety, and adjustment difficulties. The approach has also shown promise in working with trauma survivors, grief, eating disorders, and couples conflict.</p>
+
+<p>Qualitative and mixed-methods research—arguably more philosophically consistent with narrative therapy's values—provides robust support. Studies consistently find that clients value the approach's emphasis on their own expertise, the experience of being heard and witnessed, and the sense of agency that comes from re-authoring their stories. Research on therapeutic letters specifically has confirmed Epston's finding that clients rate them as highly valuable to their therapeutic progress.</p>
+
+<p>For practitioners in evidence-based practice settings, it's important to note that the American Psychological Association's definition of evidence-based practice encompasses clinical expertise and client values alongside research evidence. Narrative therapy's strong fit with many clients' values and its growing research support position it as a legitimate evidence-informed approach, particularly when integrated with other well-supported modalities.</p>
+
+<h3>Scope of Practice and Competency</h3>
+
+<p>As with any therapeutic approach, clinicians should practice narrative therapy within the bounds of their competency. Reading a book or attending a single workshop does not constitute adequate training to present oneself as a narrative therapist. Ethical practice requires ongoing training, supervised practice, and honest self-assessment of competency levels. Clinicians new to narrative therapy might begin by incorporating specific techniques (such as externalization questions) into their existing practice, gradually expanding their narrative skills through training, supervision, and consultation.</p>
+
+<p>It's also important to recognize the limits of any single approach. A narrative therapist who encounters a client needing medication management, acute crisis intervention, or specialized trauma processing should refer or collaborate with appropriate providers rather than attempting to address everything through narrative means alone.</p>`,
+          accessibility: { role: "article", ariaLabel: "Ethical considerations in narrative therapy practice" }
+        },
+        {
+          type: "multipleChoice",
+          question: "Which of the following best describes the challenge of clinical documentation in narrative therapy?",
+          options: [
+            { text: "Narrative therapists do not need to maintain progress notes", isCorrect: false },
+            { text: "Traditional progress note language can be problem-saturating, requiring clinicians to balance narrative-informed language with institutional requirements", isCorrect: true },
+            { text: "All documentation should be written exclusively in externalized language", isCorrect: false },
+            { text: "Progress notes should avoid mentioning the client's problems entirely", isCorrect: false }
+          ],
+          explanation: "Narrative therapists face a documentation tension: traditional progress notes often use problem-saturating language that locates problems inside the person, while narrative therapy seeks to externalize problems. Ethical practice requires balancing narrative-consistent documentation with institutional, insurance, and legal requirements. Many practitioners develop dual documentation approaches.",
+          accessibility: { ariaLabel: "Knowledge check about documentation in narrative therapy", announceCorrect: true }
+        },
+        {
+          type: "text",
           content: `<h2>Integrating Narrative Therapy with Other Modalities</h2>
 
 <p>Narrative therapy doesn't need to be practiced in isolation. Many clinicians integrate narrative practices with other therapeutic approaches, creating flexible, client-centered treatment. Here's how narrative concepts can complement other modalities:</p>
@@ -1373,6 +1438,26 @@ const NARRATIVE_THERAPY_COURSE = {
           { text: "Use narrative therapy only after CBT has failed", isCorrect: false }
         ],
         explanation: "Narrative and cognitive approaches can be integrated effectively. CBT thought records can identify the problem story, which can then be externalized and examined through a narrative lens. Alternative narratives can support more adaptive thinking patterns."
+      },
+      {
+        question: "From a neuroscience-informed perspective, externalization is therapeutically effective because:",
+        options: [
+          { text: "It eliminates negative neural pathways associated with the problem", isCorrect: false },
+          { text: "It creates cognitive distancing that activates prefrontal cortex functioning and reduces amygdala threat response", isCorrect: true },
+          { text: "It bypasses the brain's language centers to access emotional memory", isCorrect: false },
+          { text: "It triggers the release of serotonin through positive reframing", isCorrect: false }
+        ],
+        explanation: "Research on affect labeling and cognitive distancing shows that separating the observing self from the observed experience activates prefrontal cortex functioning and reduces amygdala reactivity. Externalization extends this principle by positioning the problem as separate from the person, enabling strategic thinking rather than identity-level threat responses."
+      },
+      {
+        question: "Ethical informed consent in narrative therapy should include:",
+        options: [
+          { text: "Only standard disclosures about credentials, fees, and confidentiality", isCorrect: false },
+          { text: "An explanation of the approach's assumptions, methods, and how it differs from traditional therapy", isCorrect: true },
+          { text: "A guarantee that the client will develop a preferred story", isCorrect: false },
+          { text: "A detailed review of postmodern philosophy and Michel Foucault's work", isCorrect: false }
+        ],
+        explanation: "Because narrative therapy operates from philosophical assumptions that differ significantly from what many clients expect, ethical practice requires transparency about the approach—its methods (externalization, re-authoring), its stance (the therapist as collaborator, not expert), and its goals (expanding identity and possibility rather than diagnosis and symptom elimination)."
       }
     ]
   },
@@ -1420,6 +1505,14 @@ const NARRATIVE_THERAPY_COURSE = {
     },
     {
       citation: "Vromans, L. P., & Schweitzer, R. D. (2011). Narrative therapy for adults with major depressive disorder: Improved symptom and interpersonal outcomes. Psychotherapy Research, 21(1), 4-15.",
+      type: "journal"
+    },
+    {
+      citation: "Siegel, D. J. (2010). Mindsight: The new science of personal transformation. Bantam Books.",
+      type: "book"
+    },
+    {
+      citation: "Lieberman, M. D., Eisenberger, N. I., Crockett, M. J., Tom, S. M., Pfeifer, J. H., & Way, B. M. (2007). Putting feelings into words: Affect labeling disrupts amygdala activity in response to affective stimuli. Psychological Science, 18(5), 421-428.",
       type: "journal"
     },
     {
