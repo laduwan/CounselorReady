@@ -132,7 +132,7 @@
 @layer utilities {
   /* Text gradient for logo */
   .text-gradient-logo {
-    @apply bg-gradient-to-r from-burgundy-700 to-burgundy-800 bg-clip-text text-transparent;
+    color: #6B1D34;
   }
   
   /* Focus ring utility */

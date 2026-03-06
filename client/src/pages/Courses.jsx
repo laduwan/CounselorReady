@@ -102,8 +102,8 @@ function CourseCard({ course, hasSubscription }) {
   return (
     <div className="card flex flex-col hover:shadow-md transition-shadow">
       {/* Course image/icon */}
-      <div className="h-40 bg-gradient-to-br from-moss-100 to-moss-200 rounded-lg mb-4 flex items-center justify-center">
-        <BookOpen className="w-12 h-12 text-moss-600" />
+      <div className="h-40 bg-hunter-100 rounded-lg mb-4 flex items-center justify-center">
+        <BookOpen className="w-12 h-12 text-hunter-500" />
       </div>
 
       {/* Content */}

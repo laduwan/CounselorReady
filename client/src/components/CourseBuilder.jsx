@@ -120,7 +120,7 @@ function countBlockWords(block) {
 // ─── Styles ───
 const S = {
   container: { fontFamily: "'Newsreader', Georgia, serif", background: C.bg, minHeight: "100vh", color: C.text },
-  header: { background: `linear-gradient(135deg, ${C.burgundy} 0%, #4A1224 100%)`, padding: "18px 28px", display: "flex", alignItems: "center", justifyContent: "space-between" },
+  header: { background: C.burgundy, padding: "18px 28px", display: "flex", alignItems: "center", justifyContent: "space-between" },
   tabBar: { display: "flex", background: "#fff", borderBottom: `2px solid ${C.border}`, padding: "0 20px", gap: 0, overflowX: "auto" },
   tab: (active) => ({
     padding: "14px 22px", fontSize: 14, fontWeight: active ? 700 : 500, cursor: "pointer",
@@ -2138,7 +2138,7 @@ function AIGenerator({ onGenerated }) {
             <h3 style={{ marginTop: 16, color: C.navy }}>Generating Course Outline...</h3>
             <p style={{ color: C.textMuted, fontSize: 14 }}>Analyzing topic, structuring modules, mapping ACEP requirements</p>
             <div style={{ maxWidth: 400, margin: "20px auto", background: C.borderLight, borderRadius: 20, height: 8, overflow: "hidden" }}>
-              <div style={{ background: `linear-gradient(90deg, ${C.burgundy}, ${C.gold})`, height: "100%", width: `${progress}%`, transition: "width 0.3s", borderRadius: 20 }} />
+              <div style={{ background: C.burgundy, height: "100%", width: `${progress}%`, transition: "width 0.3s", borderRadius: 20 }} />
             </div>
           </div>
         </div>
@@ -2228,7 +2228,7 @@ function AIGenerator({ onGenerated }) {
                 <h3 style={{ marginTop: 12, color: C.navy, fontSize: 16 }}>Generating Course Content via AI...</h3>
                 <p style={{ color: C.textMuted, fontSize: 13 }}>{progressMsg || "Connecting to AI service..."}</p>
                 <div style={{ maxWidth: 400, margin: "16px auto", background: C.borderLight, borderRadius: 20, height: 6, overflow: "hidden" }}>
-                  <div style={{ background: `linear-gradient(90deg, ${C.green}, ${C.gold})`, height: "100%", width: `${progress}%`, transition: "width 0.3s", borderRadius: 20 }} />
+                  <div style={{ background: C.green, height: "100%", width: `${progress}%`, transition: "width 0.3s", borderRadius: 20 }} />
                 </div>
                 <p style={{ fontSize: 11, color: C.textLight, marginTop: 8 }}>This may take 30-90 seconds for a {outline?.ceHours || 3}CE course ({((outline?.ceHours || 3) * 6000).toLocaleString()}+ words)</p>
               </div>
