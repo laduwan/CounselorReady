@@ -116,13 +116,13 @@ function AccessibilityToolbar({ settings, onUpdate }) {
         <>
           <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
           <div 
-            className="absolute right-0 top-full mt-2 w-72 bg-white rounded-xl shadow-lg border border-slate-200 z-50 p-4"
+            className="absolute right-0 top-full mt-2 w-72 bg-white rounded-xl shadow-lg border border-forest-200 z-50 p-4"
             role="dialog"
             aria-label="Accessibility settings"
           >
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-bold text-navy-700 text-sm">Accessibility Options</h3>
-              <button onClick={() => setIsOpen(false)} className="text-slate-400 hover:text-navy-600">
+              <button onClick={() => setIsOpen(false)} className="text-forest-400 hover:text-navy-600">
                 <X className="w-4 h-4" />
               </button>
             </div>
@@ -145,7 +145,7 @@ function AccessibilityToolbar({ settings, onUpdate }) {
                     className={`flex-1 py-2 rounded-lg font-semibold transition-colors ${opt.size} ${
                       settings.fontSize === opt.value
                         ? 'bg-burgundy-800 text-white'
-                        : 'bg-slate-100 text-navy-600 hover:bg-slate-200'
+                        : 'bg-stone-100 text-navy-600 hover:bg-stone-200'
                     }`}
                     aria-label={`${opt.value} text size`}
                     aria-pressed={settings.fontSize === opt.value}
@@ -163,7 +163,7 @@ function AccessibilityToolbar({ settings, onUpdate }) {
                 className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                   settings.highContrast
                     ? 'bg-navy-800 text-white'
-                    : 'bg-slate-100 text-navy-600 hover:bg-slate-200'
+                    : 'bg-stone-100 text-navy-600 hover:bg-stone-200'
                 }`}
                 role="switch"
                 aria-checked={settings.highContrast}
@@ -173,7 +173,7 @@ function AccessibilityToolbar({ settings, onUpdate }) {
                   High Contrast
                 </span>
                 <span className={`w-9 h-5 rounded-full relative transition-colors ${
-                  settings.highContrast ? 'bg-hunter-600' : 'bg-slate-300'
+                  settings.highContrast ? 'bg-hunter-600' : 'bg-forest-200'
                 }`}>
                   <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-transform ${
                     settings.highContrast ? 'left-4' : 'left-0.5'
@@ -189,7 +189,7 @@ function AccessibilityToolbar({ settings, onUpdate }) {
                 className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                   settings.narration
                     ? 'bg-navy-800 text-white'
-                    : 'bg-slate-100 text-navy-600 hover:bg-slate-200'
+                    : 'bg-stone-100 text-navy-600 hover:bg-stone-200'
                 }`}
                 role="switch"
                 aria-checked={settings.narration}
@@ -199,7 +199,7 @@ function AccessibilityToolbar({ settings, onUpdate }) {
                   Read Aloud (TTS)
                 </span>
                 <span className={`w-9 h-5 rounded-full relative transition-colors ${
-                  settings.narration ? 'bg-hunter-600' : 'bg-slate-300'
+                  settings.narration ? 'bg-hunter-600' : 'bg-forest-200'
                 }`}>
                   <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-transform ${
                     settings.narration ? 'left-4' : 'left-0.5'
@@ -208,7 +208,7 @@ function AccessibilityToolbar({ settings, onUpdate }) {
               </button>
             </div>
 
-            <p className="text-xs text-slate-400 mt-3 pt-3 border-t border-slate-100">
+            <p className="text-xs text-forest-400 mt-3 pt-3 border-t border-slate-100">
               Settings apply to this session only.
             </p>
           </div>
@@ -563,7 +563,7 @@ function SectionView({
       </div>
 
       {/* Progress indicator */}
-      <div className="mb-6 bg-white rounded-xl border border-slate-200 p-4">
+      <div className="mb-6 bg-white rounded-xl border border-forest-200 p-4">
         <div className="flex items-center justify-between text-sm mb-2">
           <span className="text-navy-600">Section Progress</span>
           <span className="font-semibold text-burgundy-700">
@@ -571,9 +571,9 @@ function SectionView({
             {interactiveBlockCount > 0 && ` • ${completedBlocks.size}/${interactiveBlockCount} completed`}
           </span>
         </div>
-        <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+        <div className="h-2 bg-stone-100 rounded-full overflow-hidden">
           <div 
-            className="h-full bg-burgundy-700 transition-all rounded-full"
+            className="h-full bg-honey-400 transition-all rounded-full"
             style={{ width: `${(viewedBlocks.size / section.contentBlocks.length) * 100}%` }}
           />
         </div>
@@ -614,7 +614,7 @@ function SectionView({
                 className={`px-6 py-3 rounded-xl font-semibold transition-all ${
                   canTakeQuiz
                     ? 'bg-hunter-600 hover:bg-hunter-700 text-white'
-                    : 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                    : 'bg-stone-200 text-forest-400 cursor-not-allowed'
                 }`}
               >
                 {canTakeQuiz ? 'Take Quiz' : `Complete all content first (${viewedBlocks.size}/${section.contentBlocks.length})`}
@@ -646,14 +646,14 @@ function SectionView({
       )}
 
       {/* Navigation */}
-      <div className="mt-12 pt-6 border-t border-slate-200 flex items-center justify-between">
+      <div className="mt-12 pt-6 border-t border-forest-200 flex items-center justify-between">
         <button
           onClick={() => onNavigate(sectionIndex - 1)}
           disabled={sectionIndex === 0}
           className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
             sectionIndex === 0
               ? 'text-slate-300 cursor-not-allowed'
-              : 'text-navy-600 hover:bg-slate-100'
+              : 'text-navy-600 hover:bg-stone-100'
           }`}
         >
           <ChevronLeft className="w-5 h-5" />
@@ -675,7 +675,7 @@ function SectionView({
             className={`flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-colors ${
               canProceed
                 ? 'bg-burgundy-800 hover:bg-burgundy-700 text-white'
-                : 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                : 'bg-stone-200 text-forest-400 cursor-not-allowed'
             }`}
           >
             {canProceed ? 'Next Section' : 'Complete quiz to continue'}
@@ -710,7 +710,7 @@ function SectionQuiz({ section, courseSlug, sectionIndex, onComplete, onBack }) 
 
   if (submitted && results) {
     return (
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-lg p-8 text-center">
+      <div className="bg-white rounded-2xl border border-forest-200 shadow-lg p-8 text-center">
         <div className={`w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 ${
           results.passed ? 'bg-hunter-100' : 'bg-honey-100'
         }`}>
@@ -736,7 +736,7 @@ function SectionQuiz({ section, courseSlug, sectionIndex, onComplete, onBack }) 
           className={`px-6 py-3 rounded-xl font-semibold ${
             results.passed
               ? 'bg-hunter-600 hover:bg-hunter-700 text-white'
-              : 'bg-slate-100 hover:bg-slate-200 text-navy-600'
+              : 'bg-stone-100 hover:bg-stone-200 text-navy-600'
           }`}
         >
           {results.passed ? 'Continue' : 'Review Content & Retry'}
@@ -748,7 +748,7 @@ function SectionQuiz({ section, courseSlug, sectionIndex, onComplete, onBack }) 
   const question = section.quizQuestions[currentQuestion];
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 shadow-lg overflow-hidden">
+    <div className="bg-white rounded-2xl border border-forest-200 shadow-lg overflow-hidden">
       <div className="bg-burgundy-800 px-6 py-4 flex items-center justify-between">
         <h3 className="text-white font-bold">Section Quiz</h3>
         <span className="text-burgundy-200 text-sm">
@@ -767,13 +767,13 @@ function SectionQuiz({ section, courseSlug, sectionIndex, onComplete, onBack }) 
               className={`w-full text-left px-5 py-4 rounded-xl border-2 transition-all flex items-center gap-4 ${
                 answers[currentQuestion] === index
                   ? 'bg-burgundy-50 border-burgundy-500'
-                  : 'bg-slate-50 border-slate-200 hover:border-burgundy-300'
+                  : 'bg-stone-50 border-forest-200 hover:border-burgundy-300'
               }`}
             >
               <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
                 answers[currentQuestion] === index
                   ? 'bg-burgundy-700 border-burgundy-700 text-white'
-                  : 'border-slate-300'
+                  : 'border-forest-300'
               }`}>
                 {answers[currentQuestion] === index && <CheckCircle2 className="w-4 h-4" />}
               </div>
@@ -782,7 +782,7 @@ function SectionQuiz({ section, courseSlug, sectionIndex, onComplete, onBack }) 
           ))}
         </div>
 
-        <div className="flex items-center justify-between pt-4 border-t border-slate-200">
+        <div className="flex items-center justify-between pt-4 border-t border-forest-200">
           <button
             onClick={onBack}
             className="text-navy-500 hover:text-navy-700"
@@ -794,7 +794,7 @@ function SectionQuiz({ section, courseSlug, sectionIndex, onComplete, onBack }) 
             {currentQuestion > 0 && (
               <button
                 onClick={() => setCurrentQuestion(prev => prev - 1)}
-                className="px-4 py-2 text-navy-600 hover:bg-slate-100 rounded-lg"
+                className="px-4 py-2 text-navy-600 hover:bg-stone-100 rounded-lg"
               >
                 Previous
               </button>
@@ -807,7 +807,7 @@ function SectionQuiz({ section, courseSlug, sectionIndex, onComplete, onBack }) 
                 className={`px-4 py-2 rounded-lg ${
                   answers[currentQuestion] !== undefined
                     ? 'bg-burgundy-800 hover:bg-burgundy-700 text-white'
-                    : 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                    : 'bg-stone-200 text-forest-400 cursor-not-allowed'
                 }`}
               >
                 Next
@@ -819,7 +819,7 @@ function SectionQuiz({ section, courseSlug, sectionIndex, onComplete, onBack }) 
                 className={`px-6 py-2 rounded-lg font-semibold ${
                   Object.keys(answers).length >= section.quizQuestions.length
                     ? 'bg-hunter-600 hover:bg-hunter-700 text-white'
-                    : 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                    : 'bg-stone-200 text-forest-400 cursor-not-allowed'
                 }`}
               >
                 Submit Quiz
@@ -906,7 +906,7 @@ function AssessmentView({ course, progress, onComplete, onBack }) {
         <div className="flex gap-4 justify-center">
           <button
             onClick={onBack}
-            className="px-6 py-3 bg-slate-100 hover:bg-slate-200 text-navy-600 font-semibold rounded-xl transition-colors"
+            className="px-6 py-3 bg-stone-100 hover:bg-stone-200 text-navy-600 font-semibold rounded-xl transition-colors"
           >
             Review Content
           </button>
@@ -968,17 +968,17 @@ function CourseSidebar({
       )}
       
       <aside className={`
-        fixed top-0 left-0 h-full w-80 bg-white border-r border-slate-200 z-50
+        fixed top-0 left-0 h-full w-80 bg-white border-r border-forest-200 z-50
         transform transition-transform duration-300
         lg:relative lg:transform-none
         ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}>
         <div className="h-full flex flex-col">
           {/* Header */}
-          <div className="p-4 border-b border-slate-200">
+          <div className="p-4 border-b border-forest-200">
             <div className="flex items-center justify-between mb-3">
               <h2 className="font-bold text-navy-700 line-clamp-2">{course.title}</h2>
-              <button onClick={onClose} className="lg:hidden text-slate-400 hover:text-navy-600">
+              <button onClick={onClose} className="lg:hidden text-forest-400 hover:text-navy-600">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -995,14 +995,14 @@ function CourseSidebar({
           </div>
 
           {/* Progress */}
-          <div className="p-4 border-b border-slate-200">
+          <div className="p-4 border-b border-forest-200">
             <div className="flex items-center justify-between text-sm mb-2">
               <span className="text-navy-600">Progress</span>
               <span className="font-bold text-burgundy-700">{progress?.overallProgress || 0}%</span>
             </div>
-            <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+            <div className="h-2 bg-stone-100 rounded-full overflow-hidden">
               <div 
-                className="h-full bg-burgundy-700 transition-all rounded-full"
+                className="h-full bg-honey-400 transition-all rounded-full"
                 style={{ width: `${progress?.overallProgress || 0}%` }}
               />
             </div>
@@ -1028,7 +1028,7 @@ function CourseSidebar({
                           ? 'bg-burgundy-50 text-burgundy-800'
                           : isLocked
                             ? 'text-slate-300 cursor-not-allowed'
-                            : 'text-navy-600 hover:bg-slate-50'
+                            : 'text-navy-600 hover:bg-stone-50'
                       }`}
                     >
                       <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 ${
@@ -1037,8 +1037,8 @@ function CourseSidebar({
                           : isCurrent
                             ? 'bg-burgundy-700 text-white'
                             : isLocked
-                              ? 'bg-slate-100 text-slate-300'
-                              : 'bg-slate-200 text-navy-500'
+                              ? 'bg-stone-100 text-slate-300'
+                              : 'bg-stone-200 text-navy-500'
                       }`}>
                         {isCompleted ? (
                           <CheckCircle2 className="w-4 h-4" />
@@ -1055,7 +1055,7 @@ function CourseSidebar({
               })}
 
               {/* Final Assessment */}
-              <li className="pt-4 mt-4 border-t border-slate-200">
+              <li className="pt-4 mt-4 border-t border-forest-200">
                 <button
                   onClick={() => onNavigate('assessment')}
                   disabled={!progress?.sectionProgress?.every(s => s.status === 'completed')}
@@ -1063,7 +1063,7 @@ function CourseSidebar({
                     currentView === 'assessment'
                       ? 'bg-hunter-50 text-hunter-700'
                       : progress?.sectionProgress?.every(s => s.status === 'completed')
-                        ? 'text-navy-600 hover:bg-slate-50'
+                        ? 'text-navy-600 hover:bg-stone-50'
                         : 'text-slate-300 cursor-not-allowed'
                   }`}
                 >
@@ -1072,7 +1072,7 @@ function CourseSidebar({
                       ? 'bg-hunter-600 text-white'
                       : progress?.sectionProgress?.every(s => s.status === 'completed')
                         ? 'bg-honey-400 text-white'
-                        : 'bg-slate-100 text-slate-300'
+                        : 'bg-stone-100 text-slate-300'
                   }`}>
                     <Award className="w-3.5 h-3.5" />
                   </div>
@@ -1153,7 +1153,7 @@ export default function CourseViewer({ courseSlug }) {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+      <div className="min-h-screen flex items-center justify-center bg-stone-50">
         <div className="text-center">
           <div className="w-12 h-12 border-4 border-burgundy-700 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
           <p className="text-navy-500">Loading course...</p>
@@ -1164,7 +1164,7 @@ export default function CourseViewer({ courseSlug }) {
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+      <div className="min-h-screen flex items-center justify-center bg-stone-50">
         <div className="text-center">
           <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
           <h2 className="text-xl font-bold text-navy-700 mb-2">Error Loading Course</h2>
@@ -1178,7 +1178,7 @@ export default function CourseViewer({ courseSlug }) {
   const currentSectionProgress = progress?.sectionProgress?.[progress?.currentSectionIndex || 0];
 
   return (
-    <div className={`min-h-screen bg-slate-50 flex ${hcClass}`}>
+    <div className={`min-h-screen bg-stone-50 flex ${hcClass}`}>
       {/* Skip to content link */}
       <a 
         href="#main-content" 
@@ -1200,7 +1200,7 @@ export default function CourseViewer({ courseSlug }) {
       {/* Main Content */}
       <main className="flex-1 min-w-0" id="main-content">
         {/* Top bar */}
-        <header className="bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between sticky top-0 z-30">
+        <header className="bg-white border-b border-forest-200 px-4 py-3 flex items-center justify-between sticky top-0 z-30">
           <button
             onClick={() => setSidebarOpen(true)}
             className="lg:hidden p-2 text-navy-600 hover:text-navy-800"

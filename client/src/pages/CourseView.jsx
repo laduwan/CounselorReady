@@ -107,7 +107,7 @@ export default function CourseView() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-hunter-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-burgundy-700"></div>
       </div>
     );
   }
@@ -115,7 +115,7 @@ export default function CourseView() {
   if (!course) {
     return (
       <div className="text-center py-12">
-        <p className="text-gray-500">Course not found</p>
+        <p className="text-forest-500">Course not found</p>
       </div>
     );
   }
@@ -127,7 +127,7 @@ export default function CourseView() {
         {/* Back to overview */}
         <button
           onClick={() => setViewingContent(false)}
-          className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6"
+          className="flex items-center gap-2 text-forest-600 hover:text-navy-600 mb-6"
         >
           <ArrowLeft className="w-4 h-4" />
           Back to Overview
@@ -146,7 +146,7 @@ export default function CourseView() {
                 <h2 className="text-xl font-semibold text-navy-500 mb-4">{activeLesson.title}</h2>
 
                 {activeLesson.type === 'video' && activeLesson.videoUrl && (
-                  <div className="aspect-video bg-gray-900 rounded-lg mb-4">
+                  <div className="aspect-video bg-navy-800 rounded-lg mb-4">
                     <video
                       src={activeLesson.videoUrl}
                       controls
@@ -182,8 +182,8 @@ export default function CourseView() {
               </div>
             ) : activeLesson ? (
               <div className="card mb-6 text-center py-12">
-                <Lock className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                <p className="text-gray-600 mb-4">
+                <Lock className="w-12 h-12 text-forest-200 mx-auto mb-4" />
+                <p className="text-forest-600 mb-4">
                   {enrollment?.enrolled
                     ? 'Upgrade to Pro to access this lesson'
                     : 'Enroll in this course to access this lesson'}
@@ -208,12 +208,12 @@ export default function CourseView() {
               <div className="card mb-6">
                 <h3 className="font-semibold text-navy-500 mb-3">Your Progress</h3>
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-gray-600">Completed</span>
-                  <span className="font-medium text-hunter-600">{enrollment.percentComplete}%</span>
+                  <span className="text-forest-600">Completed</span>
+                  <span className="font-medium text-burgundy-700">{enrollment.percentComplete}%</span>
                 </div>
-                <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                <div className="h-2 bg-stone-100 rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-hunter-500 rounded-full"
+                    className="h-full bg-honey-400 rounded-full"
                     style={{ width: `${enrollment.percentComplete}%` }}
                   ></div>
                 </div>
@@ -225,21 +225,21 @@ export default function CourseView() {
               <h3 className="font-semibold text-navy-500 mb-4">Course Content</h3>
               <div className="space-y-2">
                 {course.modules?.map((module) => (
-                  <div key={module._id} className="border border-gray-100 rounded-lg overflow-hidden">
+                  <div key={module._id} className="border border-forest-100 rounded-lg overflow-hidden">
                     <button
                       onClick={() => toggleModule(module._id)}
-                      className="w-full flex items-center justify-between p-3 hover:bg-gray-50 transition-colors"
+                      className="w-full flex items-center justify-between p-3 hover:bg-stone-50 transition-colors"
                     >
-                      <span className="font-medium text-gray-900 text-left">{module.title}</span>
+                      <span className="font-medium text-navy-600 text-left">{module.title}</span>
                       {expandedModules[module._id] ? (
-                        <ChevronDown className="w-4 h-4 text-gray-400" />
+                        <ChevronDown className="w-4 h-4 text-forest-400" />
                       ) : (
-                        <ChevronRight className="w-4 h-4 text-gray-400" />
+                        <ChevronRight className="w-4 h-4 text-forest-400" />
                       )}
                     </button>
 
                     {expandedModules[module._id] && (
-                      <div className="border-t border-gray-100">
+                      <div className="border-t border-forest-100">
                         {module.lessons?.map((lesson) => {
                           const completed = isLessonCompleted(lesson._id);
                           const canAccess = canAccessLesson(lesson);
@@ -249,19 +249,19 @@ export default function CourseView() {
                             <button
                               key={lesson._id}
                               onClick={() => setActiveLesson(lesson)}
-                              className={`w-full flex items-center gap-3 p-3 text-left hover:bg-gray-50 transition-colors ${
+                              className={`w-full flex items-center gap-3 p-3 text-left hover:bg-stone-50 transition-colors ${
                                 isActive ? 'bg-hunter-50' : ''
                               }`}
                             >
                               {completed ? (
                                 <CheckCircle className="w-4 h-4 text-hunter-600 flex-shrink-0" />
                               ) : canAccess ? (
-                                <Play className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                                <Play className="w-4 h-4 text-forest-400 flex-shrink-0" />
                               ) : (
-                                <Lock className="w-4 h-4 text-gray-300 flex-shrink-0" />
+                                <Lock className="w-4 h-4 text-forest-200 flex-shrink-0" />
                               )}
                               <span className={`text-sm ${
-                                !canAccess ? 'text-gray-400' : 'text-gray-700'
+                                !canAccess ? 'text-forest-300' : 'text-forest-700'
                               }`}>
                                 {lesson.title}
                               </span>
@@ -269,7 +269,7 @@ export default function CourseView() {
                                 <span className="ml-auto text-xs text-hunter-600 font-medium">Free</span>
                               )}
                               {lesson.duration && (
-                                <span className="ml-auto text-xs text-gray-400">{lesson.duration}m</span>
+                                <span className="ml-auto text-xs text-forest-400">{lesson.duration}m</span>
                               )}
                             </button>
                           );
@@ -298,7 +298,7 @@ export default function CourseView() {
       {/* Back button */}
       <button
         onClick={() => navigate('/courses')}
-        className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6"
+        className="flex items-center gap-2 text-forest-600 hover:text-navy-600 mb-6"
       >
         <ArrowLeft className="w-4 h-4" />
         Back to Courses
@@ -314,10 +314,10 @@ export default function CourseView() {
         {/* Course title and meta */}
         <h1 className="text-3xl font-bold text-burgundy-800 mb-2">{course.title}</h1>
         {course.subtitle && (
-          <p className="text-lg text-gray-600 mb-4">{course.subtitle}</p>
+          <p className="text-lg text-forest-600 mb-4">{course.subtitle}</p>
         )}
 
-        <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500 mb-6">
+        <div className="flex flex-wrap items-center gap-4 text-sm text-forest-500 mb-6">
           {totalModules > 0 && (
             <span className="flex items-center gap-1">
               <BookOpen className="w-4 h-4 text-hunter-500" />
@@ -332,7 +332,7 @@ export default function CourseView() {
           )}
           {course.totalDuration > 0 && (
             <span className="flex items-center gap-1">
-              <Clock className="w-4 h-4 text-gray-400" />
+              <Clock className="w-4 h-4 text-forest-400" />
               {course.totalDuration} min
             </span>
           )}
@@ -353,20 +353,20 @@ export default function CourseView() {
         {course.description && (
           <div className="mb-8">
             <h3 className="font-semibold text-navy-500 mb-2">About This Course</h3>
-            <p className="text-gray-600 leading-relaxed">{course.description}</p>
+            <p className="text-forest-600 leading-relaxed">{course.description}</p>
           </div>
         )}
 
         {/* Progress if enrolled */}
         {isEnrolled && (
-          <div className="mb-8 p-4 bg-hunter-50 rounded-lg">
+          <div className="mb-8 p-4 bg-stone-50 rounded-lg">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium text-gray-700">Your Progress</span>
-              <span className="text-sm font-medium text-hunter-600">{enrollment.percentComplete}%</span>
+              <span className="text-sm font-medium text-forest-700">Your Progress</span>
+              <span className="text-sm font-medium text-burgundy-700">{enrollment.percentComplete}%</span>
             </div>
             <div className="h-2 bg-white rounded-full overflow-hidden">
               <div
-                className="h-full bg-hunter-500 rounded-full transition-all"
+                className="h-full bg-honey-400 rounded-full transition-all"
                 style={{ width: `${enrollment.percentComplete}%` }}
               ></div>
             </div>
@@ -379,13 +379,13 @@ export default function CourseView() {
             <h3 className="font-semibold text-navy-500 mb-3">Course Content</h3>
             <div className="space-y-2">
               {course.modules.map((module, idx) => (
-                <div key={module._id} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                  <span className="w-7 h-7 flex items-center justify-center bg-hunter-500 text-white text-xs font-bold rounded-full flex-shrink-0">
+                <div key={module._id} className="flex items-center gap-3 p-3 bg-stone-50 rounded-lg">
+                  <span className="w-7 h-7 flex items-center justify-center bg-burgundy-800 text-white text-xs font-bold rounded-full flex-shrink-0">
                     {idx + 1}
                   </span>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-900 truncate">{module.title}</p>
-                    <p className="text-xs text-gray-500">{module.lessons?.length || 0} lessons</p>
+                    <p className="text-sm font-medium text-navy-600 truncate">{module.title}</p>
+                    <p className="text-xs text-forest-500">{module.lessons?.length || 0} lessons</p>
                   </div>
                 </div>
               ))}
@@ -398,7 +398,7 @@ export default function CourseView() {
           {isEnrolled ? (
             <button
               onClick={handleStartCourse}
-              className="flex-1 flex items-center justify-center gap-2 py-3 px-6 bg-hunter-500 text-white font-semibold rounded-lg hover:bg-hunter-600 transition-colors"
+              className="flex-1 flex items-center justify-center gap-2 py-3 px-6 bg-hunter-600 text-white font-semibold rounded-lg hover:bg-hunter-700 transition-colors"
             >
               <Play className="w-5 h-5" />
               {enrollment.percentComplete > 0 ? 'Continue Course' : 'Start Course'}
@@ -416,7 +416,7 @@ export default function CourseView() {
           ) : (
             <button
               onClick={() => navigate('/settings?upgrade=true')}
-              className="flex-1 flex items-center justify-center gap-2 py-3 px-6 bg-gray-100 text-gray-600 font-semibold rounded-lg hover:bg-gray-200 transition-colors"
+              className="flex-1 flex items-center justify-center gap-2 py-3 px-6 bg-stone-100 text-forest-500 font-semibold rounded-lg hover:bg-stone-200 transition-colors"
             >
               <Lock className="w-5 h-5" />
               Upgrade to Access
