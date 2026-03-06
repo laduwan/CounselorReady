@@ -4,16 +4,35 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Video Upload - CounselorReady Admin</title>
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg">
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              burgundy: { 50: '#fdf5f6', 100: '#fae8eb', 200: '#f5d0d6', 400: '#dd768a', 500: '#c94d65', 600: '#8b2542', 700: '#8b2542', 800: '#6b1d34', 900: '#4a1524' },
+              forest: { 50: '#f3f6f4', 100: '#e3ebe5', 500: '#547c5f', 600: '#4A7C59', 700: '#34503d' },
+              hunter: { 100: '#e8f0ea', 500: '#4A7C59', 600: '#3d6649' },
+              honey: { 100: '#fef3d1', 400: '#D4A855', 500: '#c99a4a' },
+              gold: { 50: '#fefce8', 400: '#facc15', 500: '#d4a012' }
+            }
+          }
+        }
+      }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Source+Serif+Pro:wght@400;600;700&family=Source+Sans+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/lib/fontawesome/css/all.min.css">
     <style>
+        body { font-family: 'Source Sans Pro', sans-serif; }
+        h1, h2, h3, h4, h5, h6 { font-family: 'Source Serif Pro', serif; }
         .upload-zone {
             border: 2px dashed #cbd5e1;
             transition: all 0.3s ease;
         }
         .upload-zone.dragover {
-            border-color: #2C5F7C;
-            background-color: #f0f9ff;
+            border-color: #8b2542;
+            background-color: #fdf5f6;
         }
         .upload-zone:hover {
             border-color: #94a3b8;
@@ -23,7 +42,7 @@
         }
     </style>
 </head>
-<body class="bg-gray-50">
+<body class="bg-stone-50">
     <div class="max-w-4xl mx-auto p-6">
         <!-- Header -->
         <div class="mb-8">
@@ -38,7 +57,7 @@
                 <span id="storage-text" class="text-sm text-gray-600">Loading...</span>
             </div>
             <div class="w-full bg-gray-200 rounded-full h-2.5">
-                <div id="storage-bar" class="bg-[#2C5F7C] h-2.5 rounded-full progress-bar" style="width: 0%"></div>
+                <div id="storage-bar" class="bg-burgundy-700 h-2.5 rounded-full progress-bar" style="width: 0%"></div>
             </div>
             <p id="storage-details" class="text-xs text-gray-500 mt-1"></p>
         </div>
@@ -69,7 +88,7 @@
             <label class="block text-sm font-medium text-gray-700 mb-2">
                 Associate with Course (Optional)
             </label>
-            <select id="course-select" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#2C5F7C]">
+            <select id="course-select" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-burgundy-700">
                 <option value="">-- No course selected --</option>
             </select>
             <p class="text-xs text-gray-500 mt-1">Selecting a course helps organize your videos</p>
@@ -79,7 +98,7 @@
         <div id="upload-progress" class="bg-white rounded-lg shadow-sm p-6 mb-6 hidden">
             <div class="flex items-center justify-between mb-4">
                 <div class="flex items-center">
-                    <i class="fas fa-video text-[#2C5F7C] mr-3"></i>
+                    <i class="fas fa-video text-burgundy-700 mr-3"></i>
                     <div>
                         <p id="upload-filename" class="font-medium text-gray-800">filename.mp4</p>
                         <p id="upload-size" class="text-sm text-gray-500">0 MB</p>
@@ -90,7 +109,7 @@
                 </button>
             </div>
             <div class="w-full bg-gray-200 rounded-full h-3 mb-2">
-                <div id="upload-bar" class="bg-[#2C5F7C] h-3 rounded-full progress-bar" style="width: 0%"></div>
+                <div id="upload-bar" class="bg-burgundy-700 h-3 rounded-full progress-bar" style="width: 0%"></div>
             </div>
             <div class="flex justify-between text-sm text-gray-500">
                 <span id="upload-percent">0%</span>
@@ -114,12 +133,12 @@
                                 readonly 
                                 class="flex-1 text-sm bg-gray-50 border rounded px-2 py-1 mr-2"
                             >
-                            <button onclick="copyUrl()" class="text-[#2C5F7C] hover:text-[#1e4a5f]">
+                            <button onclick="copyUrl()" class="text-burgundy-700 hover:text-burgundy-800">
                                 <i class="fas fa-copy"></i>
                             </button>
                         </div>
                     </div>
-                    <button onclick="resetUpload()" class="mt-4 text-sm text-[#2C5F7C] hover:underline">
+                    <button onclick="resetUpload()" class="mt-4 text-sm text-burgundy-700 hover:underline">
                         Upload another video
                     </button>
                 </div>
@@ -193,10 +212,10 @@
 
                 // Change color if near limit
                 if (data.percentUsed > 90) {
-                    document.getElementById('storage-bar').classList.remove('bg-[#2C5F7C]');
+                    document.getElementById('storage-bar').classList.remove('bg-burgundy-700');
                     document.getElementById('storage-bar').classList.add('bg-red-500');
                 } else if (data.percentUsed > 75) {
-                    document.getElementById('storage-bar').classList.remove('bg-[#2C5F7C]');
+                    document.getElementById('storage-bar').classList.remove('bg-burgundy-700');
                     document.getElementById('storage-bar').classList.add('bg-yellow-500');
                 }
             } catch (err) {
@@ -246,7 +265,7 @@
                                     <p class="text-xs text-gray-500">${formatBytes(file.size)} • ${new Date(file.createdAt).toLocaleDateString()}</p>
                                 </div>
                             </div>
-                            <button onclick="copyToClipboard('${file.url}')" class="text-[#2C5F7C] hover:text-[#1e4a5f] text-sm">
+                            <button onclick="copyToClipboard('${file.url}')" class="text-burgundy-700 hover:text-burgundy-800 text-sm">
                                 <i class="fas fa-copy mr-1"></i> Copy URL
                             </button>
                         </div>
