@@ -99,7 +99,7 @@ export default function Layout({ children }) {
 
             {/* Admin badge */}
             {isAdmin && (
-              <a href="/admin-users.html"
+              <a href="/admin.html"
                 className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors"
                 style={{ background: BURGUNDY_LIGHT, color: BURGUNDY }}>
                 <ShieldCheck className="w-3.5 h-3.5" /> Admin
@@ -134,7 +134,7 @@ export default function Layout({ children }) {
                       )}
                     </div>
                     {isAdmin && (
-                      <a href="/admin-users.html"
+                      <a href="/admin.html"
                         className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-stone-50 transition-colors"
                         style={{ color: BURGUNDY }}>
                         <ShieldCheck className="w-4 h-4" /> Admin Panel
@@ -175,7 +175,7 @@ export default function Layout({ children }) {
               );
             })}
             {isAdmin && (
-              <a href="/admin-users.html" style={{ display: 'block', padding: '0.625rem 1rem', borderRadius: '0.5rem', fontSize: '0.875rem', fontWeight: 500, color: BURGUNDY, background: BURGUNDY_LIGHT }}>
+              <a href="/admin.html" style={{ display: 'block', padding: '0.625rem 1rem', borderRadius: '0.5rem', fontSize: '0.875rem', fontWeight: 500, color: BURGUNDY, background: BURGUNDY_LIGHT }}>
                 Admin Panel
               </a>
             )}
