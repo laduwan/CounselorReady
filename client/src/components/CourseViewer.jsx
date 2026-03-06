@@ -947,6 +947,43 @@ function AssessmentView({ course, progress, onComplete, onBack }) {
 }
 
 // ============================================================================
+// REFERENCES VIEW
+// ============================================================================
+function ReferencesView({ course, onBack }) {
+  return (
+    <div className="max-w-4xl mx-auto">
+      <div className="mb-8">
+        <button
+          onClick={onBack}
+          className="text-navy-500 hover:text-navy-700 flex items-center gap-2 mb-4"
+        >
+          <ChevronLeft className="w-4 h-4" />
+          Back to Course
+        </button>
+        <h1 className="text-3xl font-bold text-navy-700">References</h1>
+        <p className="text-navy-500 mt-2">
+          {course.references.length} citations supporting this course material
+        </p>
+      </div>
+
+      <div className="bg-white rounded-2xl border border-forest-200 shadow-sm p-6 lg:p-8">
+        <ol className="space-y-4">
+          {course.references.map((ref, index) => (
+            <li
+              key={index}
+              className="text-sm text-navy-600 leading-relaxed pl-10"
+              style={{ textIndent: '-2.25rem' }}
+            >
+              {ref}
+            </li>
+          ))}
+        </ol>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================================
 // SIDEBAR
 // ============================================================================
 function CourseSidebar({ 
@@ -1054,6 +1091,29 @@ function CourseSidebar({
                 );
               })}
 
+              {/* References */}
+              {course.references?.length > 0 && (
+                <li className="pt-4 mt-4 border-t border-forest-200">
+                  <button
+                    onClick={() => onNavigate('references')}
+                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-colors ${
+                      currentView === 'references'
+                        ? 'bg-burgundy-50 text-burgundy-800'
+                        : 'text-navy-600 hover:bg-stone-50'
+                    }`}
+                  >
+                    <div className={`w-6 h-6 rounded-full flex items-center justify-center ${
+                      currentView === 'references'
+                        ? 'bg-burgundy-700 text-white'
+                        : 'bg-stone-200 text-navy-500'
+                    }`}>
+                      <BookOpen className="w-3.5 h-3.5" />
+                    </div>
+                    <span className="text-sm font-medium">References</span>
+                  </button>
+                </li>
+              )}
+
               {/* Final Assessment */}
               <li className="pt-4 mt-4 border-t border-forest-200">
                 <button
@@ -1095,7 +1155,7 @@ export default function CourseViewer({ courseSlug }) {
   const [progress, setProgress] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [currentView, setCurrentView] = useState('section'); // 'section' | 'assessment'
+  const [currentView, setCurrentView] = useState('section'); // 'section' | 'assessment' | 'references'
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [a11y, setA11y] = useState({
     fontSize: 'normal',
@@ -1140,6 +1200,8 @@ export default function CourseViewer({ courseSlug }) {
   const handleNavigate = useCallback((target) => {
     if (target === 'assessment') {
       setCurrentView('assessment');
+    } else if (target === 'references') {
+      setCurrentView('references');
     } else if (typeof target === 'number') {
       setProgress(prev => ({ ...prev, currentSectionIndex: target }));
       setCurrentView('section');
@@ -1211,7 +1273,7 @@ export default function CourseViewer({ courseSlug }) {
           
           <div className="flex-1 lg:hidden text-center">
             <span className="font-medium text-navy-700 text-sm">
-              {currentView === 'assessment' ? 'Final Assessment' : currentSection?.title}
+              {currentView === 'assessment' ? 'Final Assessment' : currentView === 'references' ? 'References' : currentSection?.title}
             </span>
           </div>
 
@@ -1230,6 +1292,11 @@ export default function CourseViewer({ courseSlug }) {
               course={course}
               progress={progress}
               onComplete={refreshProgress}
+              onBack={() => handleNavigate(course.sections.length - 1)}
+            />
+          ) : currentView === 'references' ? (
+            <ReferencesView
+              course={course}
               onBack={() => handleNavigate(course.sections.length - 1)}
             />
           ) : (
