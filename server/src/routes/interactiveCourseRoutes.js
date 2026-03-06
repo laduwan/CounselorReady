@@ -62,7 +62,7 @@ router.get('/', async (req, res) => {
     }
 
     const courses = await Course.find(query)
-      .select('title slug description thumbnail ceHours totalEstimatedTime categories tags wordCount sectionCount moduleCount assessmentQuestionCount ceuCategories accessType price pricingTier status ceuHours ceuApprovalNumber')
+      .select('title slug description thumbnail ceHours totalEstimatedTime categories tags wordCount sectionCount moduleCount assessmentQuestionCount ceuCategories accessType price pricingTier status ceuHours ceuApprovalNumber courseCode')
       .sort({ publishedAt: -1 })
       .skip((page - 1) * limit)
       .limit(parseInt(limit));

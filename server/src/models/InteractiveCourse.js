@@ -97,6 +97,9 @@ const CourseSchema = new mongoose.Schema({
   description: { type: String, required: true },
   thumbnail: String,
   
+  // Course code (admin-assigned identifier, e.g. CR-ETH301)
+  courseCode: { type: String, trim: true },
+
   // CE/Accreditation info
   ceHours: { type: Number, required: true },
   ceProvider: { type: String, default: 'NBCC ACEP #7760' },
