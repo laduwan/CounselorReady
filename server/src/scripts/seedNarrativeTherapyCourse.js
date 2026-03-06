@@ -90,7 +90,7 @@ const NARRATIVE_THERAPY_COURSE = {
         },
         {
           type: "text",
-          content: `<h3>Introduction: Why Stories Matter in Therapy</h3>
+          content: `<h2>Introduction: Why Stories Matter in Therapy</h2>
           
 <p>Consider for a moment the last client who walked into your office. Before they said a single word, they had already constructed a story about themselvesâ€”who they are, why they struggle, and what that struggle means about their identity, their worth, and their future. This story wasn't created in a vacuum. It was shaped by family narratives passed down through generations, cultural messages about what it means to be successful or to fail, societal discourses about mental health and illness, and countless interpersonal experiences that confirmed or challenged their self-perception.</p>
 
@@ -98,7 +98,7 @@ const NARRATIVE_THERAPY_COURSE = {
 
 <p>This is the central insight of narrative therapy: <strong>the stories we tell about ourselves shape the lives we live</strong>. And if stories can imprison us, they can also liberate us. The work of narrative therapy is to help clients recognize the constructed nature of their problem-saturated stories, discover the alternative narratives already present in their lived experience, and actively author new stories that open space for preferred ways of being.</p>
 
-<h3>The Origins: Michael White and David Epston</h3>
+<h2>The Origins: Michael White and David Epston</h2>
 
 <p>Narrative therapy emerged in the 1980s through the collaborative work of Australian social worker Michael White and New Zealand family therapist David Epston. Both practitioners were deeply influenced by the intellectual currents of their timeâ€”postmodernism, social constructionism, and the work of French philosopher Michel Foucault on power, knowledge, and discourse.</p>
 
@@ -108,7 +108,7 @@ const NARRATIVE_THERAPY_COURSE = {
 
 <p>White continued developing narrative therapy until his death in 2008, with his 2007 book <em>Maps of Narrative Practice</em> providing a comprehensive framework for the approach. Epston has continued the work, particularly in applying narrative ideas to work with children and in developing innovative uses of therapeutic letters and documents.</p>
 
-<h3>Social Constructionism: The Philosophical Foundation</h3>
+<h2>Social Constructionism: The Philosophical Foundation</h2>
 
 <p>To understand narrative therapy, you must first understand social constructionismâ€”the philosophical perspective that underpins it. Social constructionism holds that our understanding of reality is not a direct reflection of an objective world "out there" but is actively constructed through social processes, particularly language.</p>
 
@@ -118,7 +118,7 @@ const NARRATIVE_THERAPY_COURSE = {
 
 <p>For narrative therapists, this insight is liberating. If the meanings attached to our experiences are socially constructed rather than fixed, they can be <em>reconstructed</em>. The story of "I am broken and need to be fixed" can become "I am a person responding to difficult circumstances in ways that once made sense." The narrative of "I am my depression" can transform into "Depression has been trying to take over my life, and I'm finding ways to reclaim it."</p>
 
-<h3>The Power of Discourse: Foucault's Influence</h3>
+<h2>The Power of Discourse: Foucault's Influence</h2>
 
 <p>Michel Foucault, the French philosopher and social theorist, profoundly influenced White's thinking about power, knowledge, and identity. Foucault argued that power operates not primarily through force or coercion but through discourseâ€”the systems of thought, language, and practice that define what is considered normal, healthy, deviant, or pathological.</p>
 
@@ -128,7 +128,7 @@ const NARRATIVE_THERAPY_COURSE = {
 
 <p>Foucault's analysis of "subjugated knowledges"â€”ways of understanding that have been marginalized or suppressed by dominant discoursesâ€”also informs narrative practice. Clients often have alternative stories about themselves that have been overshadowed by problem narratives. The narrative therapist's job is to help these subjugated stories surface and thicken.</p>
 
-<h3>Key Concepts in Narrative Therapy</h3>
+<h2>Key Concepts in Narrative Therapy</h2>
 
 <p>Before we move into specific techniques, let's establish the core conceptual vocabulary of narrative therapy:</p>
 
@@ -232,7 +232,7 @@ const NARRATIVE_THERAPY_COURSE = {
         },
         {
           type: "text",
-          content: `<h3>The Therapeutic Relationship in Narrative Practice</h3>
+          content: `<h2>The Therapeutic Relationship in Narrative Practice</h2>
 
 <p>The therapeutic relationship in narrative therapy differs significantly from other modalities. While all effective therapies emphasize the therapeutic alliance, narrative therapy conceptualizes this relationship in distinctive ways.</p>
 
@@ -244,7 +244,7 @@ const NARRATIVE_THERAPY_COURSE = {
 
 <p><strong>Witnessing and acknowledgment:</strong> A core function of the therapeutic relationship in narrative practice is bearing witness to the client's experienceâ€”acknowledging their struggles, honoring their survival, and recognizing their competencies. This is not the same as cheerleading or false positivity. It's about seeing the person fully, including their pain and their agency.</p>
 
-<h3>Critiques and Limitations of Narrative Therapy</h3>
+<h2>Critiques and Limitations of Narrative Therapy</h2>
 
 <p>No therapeutic approach is without limitations, and intellectual honesty requires acknowledging the critiques of narrative therapy:</p>
 
@@ -307,7 +307,7 @@ const NARRATIVE_THERAPY_COURSE = {
         },
         {
           type: "text",
-          content: `<h3>Understanding Externalization</h3>
+          content: `<h2>Understanding Externalization</h2>
 
 <p>Externalization is perhaps the most distinctive and recognizable technique in narrative therapy. At its core, externalization involves using language to position problems as separate from the person experiencing them. Instead of "I am depressed," the client learns to say "Depression has been affecting me." Instead of "She's an angry child," we explore "How has Anger been showing up in your life?"</p>
 
@@ -315,7 +315,7 @@ const NARRATIVE_THERAPY_COURSE = {
 
 <p>White (2007) emphasized that externalization is not a technique applied to clients but a way of thinking and speaking that the therapist embodies. It emerges from the genuine belief that people are not their problemsâ€”that there is always more to a person than any problem could capture.</p>
 
-<h3>The Linguistic Technology of Externalization</h3>
+<h2>The Linguistic Technology of Externalization</h2>
 
 <p>Externalization operates through specific linguistic practices:</p>
 
@@ -327,7 +327,7 @@ const NARRATIVE_THERAPY_COURSE = {
 
 <p><strong>Personification (with caution):</strong> Sometimes externalizing conversations personify the problemâ€”speaking of Depression's "tactics," Anxiety's "tricks," or the Inner Critic's "voice." This can be powerful, but it's important not to impose personification on clients who find it strange or off-putting. Follow the client's language and comfort level.</p>
 
-<h3>Mapping the Problem's Influence</h3>
+<h2>Mapping the Problem's Influence</h2>
 
 <p>Once a problem has been named and externalized, the next step is to map its influence across different domains of the client's life. This mapping serves several purposes: it acknowledges the problem's real effects (validating the client's experience), it reveals patterns the client may not have noticed, and it begins identifying areas where the problem's influence might be contested.</p>
 
@@ -341,7 +341,7 @@ const NARRATIVE_THERAPY_COURSE = {
 
 <p><strong>Effects on social connections and community:</strong> How has the problem affected friendships, community involvement, social activities? What has it isolated the client from?</p>
 
-<h3>A Clinical Example: Externalizing Anxiety</h3>
+<h2>A Clinical Example: Externalizing Anxiety</h2>
 
 <p>Let's walk through how externalization might unfold in a clinical session with a client experiencing chronic anxiety.</p>
 
@@ -456,7 +456,7 @@ const NARRATIVE_THERAPY_COURSE = {
         },
         {
           type: "text",
-          content: `<h3>The Effects Evaluation: Taking a Position</h3>
+          content: `<h2>The Effects Evaluation: Taking a Position</h2>
 
 <p>Mapping the problem's influence is only part of the externalization process. The next crucial step is what White called "taking a position" on the problem. After exploring the problem's effects across multiple domains, the therapist invites the client to evaluate: Is this okay? Is this what you want? How do you feel about the problem having this much influence?</p>
 
@@ -472,7 +472,7 @@ const NARRATIVE_THERAPY_COURSE = {
 
 <p>This evaluation creates what White called "experience-near justification" for change. Rather than the therapist telling the client they should want to change (expertise-driven), the client discovers their own reasons for change by examining what the problem has cost them and whether those costs are acceptable. This justification is "experience-near" because it emerges from the client's own life rather than from therapeutic theory.</p>
 
-<h3>From Mapping Influence to Finding Exceptions</h3>
+<h2>From Mapping Influence to Finding Exceptions</h2>
 
 <p>Externalization naturally leads to the question: Are there times when the problem's influence is less? Are there exceptions to this pattern? These questions, which will be explored fully in the next module, begin to open space for alternative narratives.</p>
 
@@ -519,7 +519,7 @@ const NARRATIVE_THERAPY_COURSE = {
         },
         {
           type: "text",
-          content: `<h3>The Heart of Narrative Therapy: Re-Authoring Conversations</h3>
+          content: `<h2>The Heart of Narrative Therapy: Re-Authoring Conversations</h2>
 
 <p>If externalization is the distinctive technique of narrative therapy, re-authoring is its heart. Re-authoring conversations help clients move from problem-saturated stories to what White called "preferred stories"â€”alternative narratives that more fully capture who the person is and who they want to become.</p>
 
@@ -527,7 +527,7 @@ const NARRATIVE_THERAPY_COURSE = {
 
 <p>A unique outcome is any event, thought, feeling, intention, or action that contradicts or falls outside the dominant problem story. The key insight is that these moments are almost always present but have been rendered invisible by the problem-saturated narrative. The client doesn't notice them, dismisses them as flukes, or fails to give them significance. The narrative therapist's job is to notice these moments, draw attention to them, and help the client explore what they might mean.</p>
 
-<h3>Discovering Unique Outcomes</h3>
+<h2>Discovering Unique Outcomes</h2>
 
 <p>Unique outcomes can emerge anywhere in the therapeutic conversation. They might appear:</p>
 
@@ -541,7 +541,7 @@ const NARRATIVE_THERAPY_COURSE = {
 
 <p>The key is to remain genuinely curious and to resist the temptation to manufacture hope artificially. Unique outcomes are discovered, not invented. The therapist's job is to notice what's already there but hasn't been seen.</p>
 
-<h3>Thickening the Counter-Story</h3>
+<h2>Thickening the Counter-Story</h2>
 
 <p>Finding a unique outcome is just the beginning. A single exception, by itself, can be easily dismissedâ€”"That was just a fluke," "I was having a good day," "It didn't really count." The narrative therapist's task is to "thicken" this counter-story, helping it develop from a thin, easily dismissed exception into a rich alternative narrative that can compete with the problem story.</p>
 
@@ -567,7 +567,7 @@ const NARRATIVE_THERAPY_COURSE = {
 
 <p>By moving back and forth between these landscapes, we help the client develop a thick, multi-dimensional understanding of the unique outcome. It's not just something that happened; it's evidence of who they are and what they value.</p>
 
-<h3>Linking to Other Moments: Building a Counter-Narrative</h3>
+<h2>Linking to Other Moments: Building a Counter-Narrative</h2>
 
 <p>Once a unique outcome has been thickened, we begin connecting it to other exceptions. A single moment of courage becomes more significant when linked to other moments of courageâ€”even small ones, even years apart. These linked moments begin to form a counter-narrative, an alternative story that runs alongside (and challenges) the problem story.</p>
 
@@ -581,7 +581,7 @@ const NARRATIVE_THERAPY_COURSE = {
 
 <p>This linking creates what we might call a "counter-plot"â€”a subordinate storyline that has been running all along but has been obscured by the dominant problem narrative. The more moments we can link together, the stronger this counter-plot becomes.</p>
 
-<h3>Clinical Vignette: Re-Authoring with "Maria"</h3>
+<h2>Clinical Vignette: Re-Authoring with "Maria"</h2>
 
 <p>Maria, 34, came to therapy describing herself as a "people-pleaser who can't set boundaries." She had a long history of overcommitting, saying yes when she meant no, and feeling resentful but unable to change. Her problem-saturated story: "I'm fundamentally weak. I need other people's approval to feel okay about myself. I'll never be able to say no."</p>
 
@@ -715,7 +715,7 @@ const NARRATIVE_THERAPY_COURSE = {
         },
         {
           type: "text",
-          content: `<h3>Scaffolding Questions: Building Understanding Step by Step</h3>
+          content: `<h2>Scaffolding Questions: Building Understanding Step by Step</h2>
 
 <p>White was very intentional about the structure of his questions. He developed the concept of "scaffolding"â€”borrowed from educational psychologyâ€”to describe how questions should build on each other, taking clients step by step toward new understandings they couldn't reach directly.</p>
 
@@ -731,7 +731,7 @@ const NARRATIVE_THERAPY_COURSE = {
 
 <p>Moving through these levels gradually, the therapist helps clients arrive at new self-understandings that feel authentic because they emerged from their own experience, not from the therapist's interpretations.</p>
 
-<h3>When Re-Authoring Gets Stuck</h3>
+<h2>When Re-Authoring Gets Stuck</h2>
 
 <p>Re-authoring doesn't always flow smoothly. Clients may struggle to identify unique outcomes, dismiss exceptions, or resist developing alternative narratives. Some common challenges and responses:</p>
 
@@ -799,7 +799,7 @@ const NARRATIVE_THERAPY_COURSE = {
         },
         {
           type: "text",
-          content: `<h3>The Power of Therapeutic Documents</h3>
+          content: `<h2>The Power of Therapeutic Documents</h2>
 
 <p>One of narrative therapy's most creative contributions is the use of therapeutic documentsâ€”written materials that extend the work of therapy beyond the consulting room. David Epston, in particular, has championed this practice, noting that "the words in a session vanish into thin air" while written documents can be returned to again and again.</p>
 
@@ -814,7 +814,7 @@ const NARRATIVE_THERAPY_COURSE = {
 
 <p>Research suggests that clients often value therapeutic letters as much as or more than the sessions themselves. Epston (1994) calculated that the average letter is worth 4.5 sessions to clients in terms of its therapeutic valueâ€”a remarkable finding that speaks to the power of the written word in narrative work.</p>
 
-<h3>Types of Therapeutic Documents</h3>
+<h2>Types of Therapeutic Documents</h2>
 
 <p><strong>Therapeutic Letters:</strong> The most common form of narrative document, these are letters written by the therapist to the client between sessions. They might summarize what was discussed, highlight unique outcomes, reflect on the developing alternative story, or pose questions for further reflection. The letters are not clinical summaries but personalized, warm communications written in the client's language.</p>
 
@@ -830,7 +830,7 @@ const NARRATIVE_THERAPY_COURSE = {
 
 <p><strong>Counter-Documents:</strong> These directly challenge official documents that have been harmfulâ€”psychiatric records, school reports, legal documents. A counter-document tells the same events from the client's perspective, highlights what was missed or misrepresented, and offers an alternative interpretation.</p>
 
-<h3>Definitional Ceremonies</h3>
+<h2>Definitional Ceremonies</h2>
 
 <p>Definitional ceremonies (adapted from anthropologist Barbara Myerhoff's work with elderly Jewish communities in Venice, California) involve inviting witnesses to hear and respond to a client's emerging story. The structure typically involves:</p>
 
@@ -842,7 +842,7 @@ const NARRATIVE_THERAPY_COURSE = {
 
 <p>This structure creates multiple layers of witnessing and authentication. The client's story is not only told but heard, reflected, and enriched through others' responses. Definitional ceremonies can be powerful for clients whose stories have been marginalized, dismissed, or never properly witnessed.</p>
 
-<h3>Outsider Witness Practices</h3>
+<h2>Outsider Witness Practices</h2>
 
 <p>Related to definitional ceremonies, outsider witness practices involve inviting others to serve as witnesses to the therapeutic conversation. This might be done through:</p>
 
@@ -852,7 +852,7 @@ const NARRATIVE_THERAPY_COURSE = {
 
 <p><strong>Imagined witnesses:</strong> When real witnesses are unavailable, therapists can invite clients to imagine how a significant person (living or dead, known or unknown) might respond to their story. "If your grandmother were here, what do you think she would say about this courage you're showing?"</p>
 
-<h3>Practical Considerations for Documents and Ceremonies</h3>
+<h2>Practical Considerations for Documents and Ceremonies</h2>
 
 <p><strong>Time and sustainability:</strong> Writing thoughtful therapeutic letters takes time. Many clinicians find this challenging in the context of high caseloads and productivity pressures. Some solutions: write brief notes rather than long letters, focus therapeutic letters on turning-point sessions, or collaborate with clients on co-creating documents.</p>
 
@@ -945,7 +945,7 @@ const NARRATIVE_THERAPY_COURSE = {
         },
         {
           type: "text",
-          content: `<h3>Re-Membering Conversations</h3>
+          content: `<h2>Re-Membering Conversations</h2>
 
 <p>Re-membering (hyphenated to emphasize the concept of membership) is a narrative practice particularly valuable in grief work. White adapted this from Myerhoff's work and developed it as a way to help clients maintain and revise their connections with important figuresâ€”both living and deceased.</p>
 
@@ -963,7 +963,7 @@ const NARRATIVE_THERAPY_COURSE = {
 
 <p>Re-membering is not only for grief. It can also help clients revise their relationship with living people who are physically absent (estranged family members, distant friends) or reconsider the influence of people from their past (former mentors, abusers, childhood friends).</p>
 
-<h3>Narrative Practices with Couples and Families</h3>
+<h2>Narrative Practices with Couples and Families</h2>
 
 <p>Narrative therapy was born in family therapy contexts, and its techniques adapt naturally to relational work:</p>
 
@@ -1017,7 +1017,7 @@ const NARRATIVE_THERAPY_COURSE = {
         },
         {
           type: "text",
-          content: `<h3>Integrating Narrative Therapy with Other Modalities</h3>
+          content: `<h2>Integrating Narrative Therapy with Other Modalities</h2>
 
 <p>Narrative therapy doesn't need to be practiced in isolation. Many clinicians integrate narrative practices with other therapeutic approaches, creating flexible, client-centered treatment. Here's how narrative concepts can complement other modalities:</p>
 
@@ -1037,7 +1037,7 @@ const NARRATIVE_THERAPY_COURSE = {
 
 <p>Integration in practice: Use ACT values exercises to identify what matters, then use narrative re-authoring to explore times when the client has lived according to those values, building a values-aligned counter-narrative.</p>
 
-<h3>Cultural Considerations and Adaptations</h3>
+<h2>Cultural Considerations and Adaptations</h2>
 
 <p>While narrative therapy's attention to power and cultural discourse is a strength, practitioners must be thoughtful about cultural adaptations:</p>
 
@@ -1051,7 +1051,7 @@ const NARRATIVE_THERAPY_COURSE = {
 
 <p><strong>Colonization and historical trauma:</strong> Narrative therapy's attention to power makes it particularly relevant for work with indigenous communities and others affected by colonization. The approach can help name and externalize the effects of historical trauma while honoring cultural survival and resistance. However, clinicians must be aware of their own position and avoid inadvertently imposing Western therapeutic frameworks.</p>
 
-<h3>Common Clinical Scenarios: Putting It Together</h3>
+<h2>Common Clinical Scenarios: Putting It Together</h2>
 
 <p><strong>Scenario 1: The client who is "stuck"</strong></p>
 <p>A client has been in therapy for months with limited progress. They describe themselves in deficit terms and seem unable to imagine change.</p>
