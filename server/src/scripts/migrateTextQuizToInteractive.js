@@ -57,6 +57,9 @@ function containsQuizContent(content) {
   // Format 2/3/4: Numbered questions + lowercase a) b) c) d)
   if (/\d+\.\s+\S/.test(text) && /[a-d]\)\s+\S/m.test(text)) return true;
 
+  // Format 6: Numbered questions + uppercase "- A)" through "- D)" with ✓ checkmarks
+  if (/\d+\.\s+\S/.test(text) && /[A-D]\)/m.test(text) && /✓/.test(text)) return true;
+
   // Format 5: Decision point with Option A:/B:/C:/D:
   if (/Option\s+[A-D]\s*:/i.test(text) && (text.match(/Option\s+[A-D]\s*:/gi) || []).length >= 2) return true;
 
@@ -163,10 +166,10 @@ function parseFormat2(htmlContent) {
     }
     if (options.length < 2) continue;
 
-    // Extract inline correct answer: "Correct Answer: b) text"
+    // Extract inline correct answer: "Correct Answer: b) text" or "Correct Answer: B"
     let correctLetter = null;
     let explanation = '';
-    const correctMatch = part.match(/Correct Answer:\s*([a-d])\)/i);
+    const correctMatch = part.match(/Correct Answer:\s*([a-dA-D])\)?/i);
     if (correctMatch) {
       correctLetter = correctMatch[1].toLowerCase();
     }
@@ -307,6 +310,53 @@ function parseFormat4(htmlContent) {
 }
 
 // ============================================================
+// FORMAT 6: Numbered N. + uppercase "- A)" with ✓ checkmark on correct answer
+// Used by: Career Counseling Across the Lifespan
+// ============================================================
+
+function parseFormat6(htmlContent) {
+  const text = stripHtml(htmlContent);
+  if (!/\d+\.\s+\S/.test(text) || !/[A-D]\)/m.test(text) || !/✓/.test(text)) return null;
+
+  const questions = [];
+  const parts = text.split(/(?=(?:^|\n)\d+\.\s+[A-Z"W])/m);
+
+  for (const part of parts) {
+    const qMatch = part.match(/(\d+)\.\s+([\s\S]*?)(?=\n\s*-?\s*[A-D]\))/);
+    if (!qMatch) continue;
+
+    const qNum = parseInt(qMatch[1]);
+    const questionText = qMatch[2].trim();
+    if (questionText.length < 10) continue;
+
+    const options = [];
+    const optRegex = /([A-D])\)\s*([^\n]+)/g;
+    let optMatch;
+    while ((optMatch = optRegex.exec(part)) !== null) {
+      if (!options.find(o => o.letter === optMatch[1])) {
+        const rawText = optMatch[2].trim();
+        const hasCheck = rawText.includes('✓');
+        options.push({
+          letter: optMatch[1],
+          text: rawText.replace(/\s*✓\s*/, '').trim(),
+          isCorrect: hasCheck
+        });
+      }
+    }
+    if (options.length < 2) continue;
+
+    questions.push({
+      questionNum: qNum,
+      question: questionText,
+      options: options.map(opt => ({ text: opt.text, isCorrect: opt.isCorrect })),
+      explanation: ''
+    });
+  }
+
+  return questions.length > 0 ? questions : null;
+}
+
+// ============================================================
 // FORMAT 5: Decision Points — "Option A:" through "Option D:"
 // Used by: 28 Days Later, It Takes a Village, Walking on Eggshells
 // ============================================================
@@ -384,6 +434,12 @@ function parseQuizContent(htmlContent) {
     if (q) return { type: 'knowledgeCheck', questions: q };
   }
 
+  // Try Format 6: checkmark ✓ answers with uppercase A)-D)
+  if (/✓/.test(text) && /[A-D]\)/m.test(text)) {
+    const q = parseFormat6(htmlContent);
+    if (q) return { type: 'knowledgeCheck', questions: q };
+  }
+
   // Try Format 2: questions + lowercase a)-d) + "Correct Answer:" inline
   if (/Correct Answer/i.test(text) && /[a-d]\)/m.test(text)) {
     const q = parseFormat2(htmlContent);
@@ -423,8 +479,8 @@ function extractNonQuizText(htmlContent) {
   cleaned = cleaned.replace(/<p[^>]*>\s*<strong>\d+\.\s+.*?<\/strong>.*?<\/p>/gi, '');
   cleaned = cleaned.replace(/<p[^>]*>\s*\d+\.\s+[A-Z][\s\S]*?<\/p>/gi, '');
 
-  // Remove option lines: uppercase A)-D) and lowercase a)-d)
-  cleaned = cleaned.replace(/<p[^>]*>\s*[A-Da-d]\)\s+.*?<\/p>/gi, '');
+  // Remove option lines: uppercase A)-D), lowercase a)-d), and "- A)" bullet variants
+  cleaned = cleaned.replace(/<p[^>]*>\s*-?\s*[A-Da-d]\)\s+.*?<\/p>/gi, '');
 
   // Remove "Correct Answer:" lines
   cleaned = cleaned.replace(/<p[^>]*>\s*<strong>Correct Answer.*?<\/p>/gi, '');
