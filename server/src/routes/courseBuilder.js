@@ -1,4 +1,9 @@
 /**
+ * Copyright (c) 2026 CounselorReady, a subsidiary of Ga Integrated Therapeutic Perspectives, LLC.
+ * All rights reserved. Proprietary and confidential.
+ * Unauthorized copying or distribution is strictly prohibited.
+ */
+/**
  * courseBuilder.js - AI Course Builder API Routes
  * 
  * Generates ACEP-compliant CE courses using Anthropic Claude API

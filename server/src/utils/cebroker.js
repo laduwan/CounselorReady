@@ -1,4 +1,9 @@
 /**
+ * Copyright (c) 2026 CounselorReady, a subsidiary of Ga Integrated Therapeutic Perspectives, LLC.
+ * All rights reserved. Proprietary and confidential.
+ * Unauthorized copying or distribution is strictly prohibited.
+ */
+/**
  * CE Broker Integration
  * Automatically reports CE completions to CE Broker for FL, GA, and other states
  * 

@@ -1,3 +1,8 @@
+/**
+ * Copyright (c) 2026 CounselorReady, a subsidiary of Ga Integrated Therapeutic Perspectives, LLC.
+ * All rights reserved. Proprietary and confidential.
+ * Unauthorized copying or distribution is strictly prohibited.
+ */
 // reseedSuicideRisk.js — Re-load Suicide Risk Assessment from markdown
 // Run: node src/scripts/reseedSuicideRisk.js
 

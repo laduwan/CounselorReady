@@ -1,3 +1,8 @@
+/**
+ * Copyright (c) 2026 CounselorReady, a subsidiary of Ga Integrated Therapeutic Perspectives, LLC.
+ * All rights reserved. Proprietary and confidential.
+ * Unauthorized copying or distribution is strictly prohibited.
+ */
 // scripts/updateNeurobiologyCourse.js
 // Enhanced Neurobiology of Trauma course with more content and images
 // Run: node src/scripts/updateNeurobiologyCourse.js

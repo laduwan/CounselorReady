@@ -1,4 +1,9 @@
 /**
+ * Copyright (c) 2026 CounselorReady, a subsidiary of Ga Integrated Therapeutic Perspectives, LLC.
+ * All rights reserved. Proprietary and confidential.
+ * Unauthorized copying or distribution is strictly prohibited.
+ */
+/**
  * diagnoseEnforcement.js — v2
  * CounselorReady | READ-ONLY diagnostic
  *

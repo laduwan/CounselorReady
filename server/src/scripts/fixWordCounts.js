@@ -1,3 +1,8 @@
+/**
+ * Copyright (c) 2026 CounselorReady, a subsidiary of Ga Integrated Therapeutic Perspectives, LLC.
+ * All rights reserved. Proprietary and confidential.
+ * Unauthorized copying or distribution is strictly prohibited.
+ */
 // fixWordCounts.js — Calculate and store wordCount + moduleCount on all courses
 // The admin list page reads course.wordCount and course.moduleCount
 // but the API strips lesson content from the list response.

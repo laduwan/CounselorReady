@@ -1,3 +1,8 @@
+/**
+ * Copyright (c) 2026 CounselorReady, a subsidiary of Ga Integrated Therapeutic Perspectives, LLC.
+ * All rights reserved. Proprietary and confidential.
+ * Unauthorized copying or distribution is strictly prohibited.
+ */
 // addDBTVideo.js
 // Adds a video lesson to DBT course Module 3 (Distress Tolerance)
 // Run: node src/scripts/addDBTVideo.js

@@ -1,3 +1,8 @@
+/**
+ * Copyright (c) 2026 CounselorReady, a subsidiary of Ga Integrated Therapeutic Perspectives, LLC.
+ * All rights reserved. Proprietary and confidential.
+ * Unauthorized copying or distribution is strictly prohibited.
+ */
 // DROP INTO: /client/src/components/InteractiveCourseComponents.jsx
 // CounselorReady Brand: Burgundy #6B1D34 | Green #4A7C59 | Gold #D4A855 | Navy #284157
 // ALL 16 LEARNER BLOCK TYPES
