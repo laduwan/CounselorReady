@@ -135,7 +135,7 @@ export default function Dashboard() {
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-gray-900">Continue Learning</h2>
             <Link to="/courses" className="text-moss-600 hover:text-moss-700 text-sm font-medium flex items-center gap-1">
-              All courses <ArrowRight className="w-4 h-4" />
+              All Courses <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
 
@@ -144,7 +144,7 @@ export default function Dashboard() {
               {courses.slice(0, 3).map((item) => (
                 <Link
                   key={item.course._id}
-                  to={`/courses/${item.course.slug}`}
+                  to={`/learn/${item.course.slug}`}
                   className="card block hover:border-moss-200 transition-colors"
                 >
                   <div className="flex items-center gap-4">
