@@ -1,3 +1,8 @@
+/**
+ * Copyright (c) 2026 CounselorReady, a subsidiary of Ga Integrated Therapeutic Perspectives, LLC.
+ * All rights reserved. Proprietary and confidential.
+ * Unauthorized copying or distribution is strictly prohibited.
+ */
 // seedStandardCourses_batch1.js
 // Run with: node src/data/seedStandardCourses_batch1.js
 // Courses 1-3: CBT Toolbox, DBT Skills, Motivational Interviewing

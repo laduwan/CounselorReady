@@ -1,3 +1,8 @@
+/**
+ * Copyright (c) 2026 CounselorReady, a subsidiary of Ga Integrated Therapeutic Perspectives, LLC.
+ * All rights reserved. Proprietary and confidential.
+ * Unauthorized copying or distribution is strictly prohibited.
+ */
 // updateVideoLessons.js
 // Run in Render Shell: node updateVideoLessons.js
 // This script updates the 14 video placeholder lessons with full text content

@@ -1,3 +1,8 @@
+/**
+ * Copyright (c) 2026 CounselorReady, a subsidiary of Ga Integrated Therapeutic Perspectives, LLC.
+ * All rights reserved. Proprietary and confidential.
+ * Unauthorized copying or distribution is strictly prohibited.
+ */
 // reseedFromMarkdown_v2.js — FIXED: Captures ALL content including intro, exams, references
 // Run: node src/scripts/reseedFromMarkdown_v2.js
 

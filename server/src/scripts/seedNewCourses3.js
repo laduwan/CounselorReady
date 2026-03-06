@@ -1,3 +1,8 @@
+/**
+ * Copyright (c) 2026 CounselorReady, a subsidiary of Ga Integrated Therapeutic Perspectives, LLC.
+ * All rights reserved. Proprietary and confidential.
+ * Unauthorized copying or distribution is strictly prohibited.
+ */
 // seedNewCourses3.js — Seed 3 new complete courses  
 // Run: node src/scripts/seedNewCourses3.js
 
