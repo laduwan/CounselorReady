@@ -420,6 +420,7 @@ function ScanCertificateModal({ mode, onClose, onSuccess }) {
   const [error, setError] = useState('');
   const [dragOver, setDragOver] = useState(false);
   const fileInputRef = useRef(null);
+  const cameraInputRef = useRef(null);
 
   const isCEMode = mode === 'ce';
   const title = isCEMode ? 'Scan CE Certificate' : 'Scan Credential Document';
@@ -591,6 +592,33 @@ function ScanCertificateModal({ mode, onClose, onSuccess }) {
                     </div>
                   )}
                 </div>
+
+                {/* Take Photo — triggers camera on mobile */}
+                {!file && (
+                  <div className="mt-3">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="flex-1 border-t border-gray-200"></div>
+                      <span className="text-xs text-gray-400">or</span>
+                      <div className="flex-1 border-t border-gray-200"></div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => cameraInputRef.current?.click()}
+                      className="w-full flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-moss-300 rounded-xl hover:border-moss-500 hover:bg-moss-50 transition-all text-moss-700 font-medium"
+                    >
+                      <Camera className="w-5 h-5" />
+                      Take Photo
+                    </button>
+                  </div>
+                )}
+                <input
+                  ref={cameraInputRef}
+                  type="file"
+                  accept="image/*"
+                  capture="environment"
+                  onChange={(e) => handleFileSelect(e.target.files[0])}
+                  className="hidden"
+                />
 
                 {file && (
                   <button
