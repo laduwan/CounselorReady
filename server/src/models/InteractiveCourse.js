@@ -149,8 +149,8 @@ const CourseSchema = new mongoose.Schema({
     category: { type: String, enum: ['category1', 'category2', 'category3'] } // ACEP categories
   },
   
-  // References (ACEP required)
-  references: [String],
+  // References (ACEP required) - supports both string citations and {title, author, year, source, citation} objects
+  references: [mongoose.Schema.Types.Mixed],
   
   // Metadata
   author: String,

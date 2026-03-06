@@ -3056,6 +3056,9 @@
         });
       });
 
+      // Filter out corrupted "[object Object]" entries from schema mismatch
+      refs = refs.filter(r => r && r !== '[object Object]' && (typeof r !== 'string' || r.trim().length > 0));
+
       if (refs.length === 0) {
         body.innerHTML = '<p style="color:#6B7280;font-size:14px;font-style:italic">No references found for this course.</p>';
         return;
@@ -3064,7 +3067,7 @@
       // Deduplicate by title
       const seen = new Set();
       const unique = refs.filter(r => {
-        const key = (r.title || r.text || r).toString().substring(0, 50);
+        const key = (r.title || r.text || r.citation || r).toString().substring(0, 50);
         if (seen.has(key)) return false;
         seen.add(key);
         return true;
