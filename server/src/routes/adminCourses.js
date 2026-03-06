@@ -935,7 +935,7 @@ router.get('/enrollments/search', protect, adminOnly, async (req, res) => {
 router.get('/courses', protect, adminOnly, async (req, res) => {
   try {
     const courses = await Course.find()
-      .select('title slug category ceuHours ceHours status enrollmentCount createdAt isExternal externalUrl importType source wordCount moduleCount price ceuCategories modules')
+      .select('title slug category ceuHours ceHours status enrollmentCount createdAt isExternal externalUrl importType source wordCount moduleCount price ceuCategories modules courseCode')
       .sort({ createdAt: -1 })
       .lean();
 
