@@ -10,11 +10,14 @@ import { Menu, X, ChevronDown, LogOut, Settings, ShieldCheck } from 'lucide-reac
 
 // React routes use Link; external static HTML pages use <a>
 const navLinks = [
-  { name: 'Dashboard',       href: '/dashboard',        static: false },
-  { name: 'Courses',         href: '/courses',           static: false },
-  { name: 'Credentials',     href: '/credentials',       static: false },
-  { name: 'CE Certificates', href: '/certificates.html', static: true  },
-  { name: 'Messages',        href: '/messages.html',     static: true  },
+  { name: 'Dashboard',       href: '/dashboard',          static: false },
+  { name: 'Courses',         href: '/courses',            static: false },
+  { name: 'Credentials',     href: '/credentials',        static: false },
+  { name: 'CE Planner',      href: '/ce-planner',         static: false },
+  { name: 'Insurance',       href: '/insurance-tracker',   static: false },
+  { name: 'Audit Kit',       href: '/audit-kit',          static: false },
+  { name: 'Alerts',          href: '/board-alerts',       static: false },
+  { name: 'Team',            href: '/organization',       static: false },
 ];
 
 const BURGUNDY      = '#6B1D34';
@@ -96,7 +99,7 @@ export default function Layout({ children }) {
 
             {/* Admin badge */}
             {isAdmin && (
-              <a href="/admin-users.html"
+              <a href="/admin.html"
                 className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors"
                 style={{ background: BURGUNDY_LIGHT, color: BURGUNDY }}>
                 <ShieldCheck className="w-3.5 h-3.5" /> Admin
@@ -131,7 +134,7 @@ export default function Layout({ children }) {
                       )}
                     </div>
                     {isAdmin && (
-                      <a href="/admin-users.html"
+                      <a href="/admin.html"
                         className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-stone-50 transition-colors"
                         style={{ color: BURGUNDY }}>
                         <ShieldCheck className="w-4 h-4" /> Admin Panel
@@ -172,7 +175,7 @@ export default function Layout({ children }) {
               );
             })}
             {isAdmin && (
-              <a href="/admin-users.html" style={{ display: 'block', padding: '0.625rem 1rem', borderRadius: '0.5rem', fontSize: '0.875rem', fontWeight: 500, color: BURGUNDY, background: BURGUNDY_LIGHT }}>
+              <a href="/admin.html" style={{ display: 'block', padding: '0.625rem 1rem', borderRadius: '0.5rem', fontSize: '0.875rem', fontWeight: 500, color: BURGUNDY, background: BURGUNDY_LIGHT }}>
                 Admin Panel
               </a>
             )}
