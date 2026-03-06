@@ -53,14 +53,15 @@ function parseKnowledgeCheckQuestions(htmlContent) {
     return null;
   }
 
-  // Extract answer key from <details> section
+  // Extract answer key from <details> section FIRST
   const answerMap = {};
   const detailsMatch = htmlContent.match(/<details[\s\S]*?<\/details>/i);
   if (detailsMatch) {
     const detailsText = stripHtml(detailsMatch[0]);
     // Pattern: "1. C) Prefrontal cortex — explanation"
-    // or "1. **C) Prefrontal cortex** — explanation"
-    const answerRegex = /(\d+)\.\s*\**([A-D])\)\s*([^—\n*]+)\**\s*(?:—|–|-)\s*([\s\S]*?)(?=\n\s*\d+\.|$)/gm;
+    // Also handles: "1. C) Prefrontal cortex - explanation" (single dash)
+    // Use multiline: each answer starts with "N." at beginning of line
+    const answerRegex = /(\d+)\.\s*([A-D])\)\s*([^—–\-\n]+?)\s*(?:—|–|-)\s*([\s\S]*?)(?=\n\s*\d+\.\s*[A-D]\)|$)/g;
     let am;
     while ((am = answerRegex.exec(detailsText)) !== null) {
       answerMap[parseInt(am[1])] = {
@@ -71,32 +72,35 @@ function parseKnowledgeCheckQuestions(htmlContent) {
     }
   }
 
+  // Remove <details> section from HTML before parsing questions/options
+  // This prevents answer-key text (which also has A) B) etc.) from inflating option counts
+  const htmlWithoutDetails = htmlContent.replace(/<details[\s\S]*?<\/details>/gi, '');
+  const cleanText = stripHtml(htmlWithoutDetails);
+
   // Extract individual questions
   const questions = [];
   // Split on "Question N:" pattern
-  const parts = text.split(/(?=\*{0,2}Question\s+\d+\s*:\*{0,2})/i);
+  const parts = cleanText.split(/(?=Question\s+\d+\s*:)/i);
 
   for (const part of parts) {
-    const qMatch = part.match(/\*{0,2}Question\s+(\d+)\s*:\*{0,2}\s*([\s\S]*?)(?=\n\s*[A-D]\))/i);
+    const qMatch = part.match(/Question\s+(\d+)\s*:\s*([\s\S]*?)(?=\n\s*[A-D]\))/i);
     if (!qMatch) continue;
 
     const qNum = parseInt(qMatch[1]);
     const questionText = qMatch[2].trim();
 
-    // Extract options A) through D)
+    // Extract options A) through D) — only 4 max per question
     const options = [];
     const optRegex = /([A-D])\)\s*([^\n]+)/g;
-    let om;
-    const optionPart = part.substring(qMatch.index + qMatch[0].length);
-
-    // Reset regex and search full part for options
-    const fullOptRegex = /([A-D])\)\s*([^\n]+)/g;
     let optMatch;
-    while ((optMatch = fullOptRegex.exec(part)) !== null) {
-      options.push({
-        letter: optMatch[1],
-        text: optMatch[2].trim()
-      });
+    while ((optMatch = optRegex.exec(part)) !== null) {
+      // Deduplicate — only take first occurrence of each letter
+      if (!options.find(o => o.letter === optMatch[1])) {
+        options.push({
+          letter: optMatch[1],
+          text: optMatch[2].trim()
+        });
+      }
     }
 
     if (options.length < 2) continue;
@@ -124,7 +128,9 @@ function parseKnowledgeCheckQuestions(htmlContent) {
  * Pattern: "Option A:" through "Option D:" with <details> for correct answer
  */
 function parseDecisionPoint(htmlContent) {
-  const text = stripHtml(htmlContent);
+  // Strip <details> from HTML before parsing to avoid matching answer-key text as options
+  const htmlWithoutDetails = htmlContent.replace(/<details[\s\S]*?<\/details>/gi, '');
+  const text = stripHtml(htmlWithoutDetails);
 
   // Must have "Option A:" through at least "Option B:"
   if (!/Option\s+[A-D]\s*:/i.test(text)) return null;
@@ -144,16 +150,12 @@ function parseDecisionPoint(htmlContent) {
   const paragraphs = questionText.split(/\n\n+/).filter(p => p.trim().length > 10);
   questionText = paragraphs.length > 0 ? paragraphs[paragraphs.length - 1].trim() : questionText;
 
-  // Extract options
+  // Extract options from text WITHOUT answer key
   const options = [];
   const optRegex = /Option\s+([A-D])\s*:\s*([\s\S]*?)(?=Option\s+[A-D]\s*:|$)/gi;
   let om;
   while ((om = optRegex.exec(text)) !== null) {
-    // Stop at <details> or answer section
     let optText = om[2].trim();
-    if (optText.includes('Click to reveal')) {
-      optText = optText.substring(0, optText.indexOf('Click to reveal')).trim();
-    }
     // Clean up trailing separators
     optText = optText.replace(/\s*---\s*$/, '').trim();
     if (optText.length > 0) {
@@ -232,10 +234,10 @@ function extractNonQuizText(htmlContent) {
   // Remove Option A:/B:/C:/D: blocks
   cleaned = cleaned.replace(/<p[^>]*>\s*<strong>Option\s+[A-D]\s*:.*?<\/p>/gi, '');
 
-  // Remove <details> sections entirely
+  // Remove <details> sections entirely (including </p><p></details> variants from markdownToHtml)
   cleaned = cleaned.replace(/<details[\s\S]*?<\/details>/gi, '');
-  // Also remove broken <p><details> variants
   cleaned = cleaned.replace(/<p>\s*<details[\s\S]*?<\/details>\s*<\/p>/gi, '');
+  cleaned = cleaned.replace(/<p>\s*<\/details>\s*<\/p>/gi, '');
 
   // Remove POST-MODULE PULSE CHECK sections
   cleaned = cleaned.replace(/<h[23][^>]*>.*?PULSE CHECK.*?<\/h[23]>/gi, '');
