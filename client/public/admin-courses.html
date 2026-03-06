@@ -561,9 +561,10 @@
             </div>
           </div>
           <div class="flex items-center gap-4 text-sm flex-wrap">
-            <span class="text-forest-600"><strong class="text-forest-800">${sections}</strong> modules</span>
-            <span class="text-forest-300">·</span>
+            ${c.courseCode ? `<span class="font-mono text-xs px-2 py-0.5 rounded bg-forest-50 text-forest-700 border border-forest-200">${esc(c.courseCode)}</span><span class="text-forest-300">·</span>` : ''}
             <span class="text-forest-600"><strong class="text-forest-800">${ceHours}</strong> CE hrs</span>
+            <span class="text-forest-300">·</span>
+            <span class="text-forest-600"><strong class="text-forest-800">${sections}</strong> modules</span>
             <span class="text-forest-300">·</span>
             <span class="text-forest-600"><strong class="text-forest-800">${c._words.toLocaleString()}</strong> words</span>
             ${target > 0 ? `
