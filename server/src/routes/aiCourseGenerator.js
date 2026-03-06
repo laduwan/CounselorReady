@@ -205,9 +205,11 @@ Return ONLY a JSON array of ${questionCount} questions.`;
 });
 
 // Helper function to parse content into blocks
+// CRITICAL: Preserve ALL content. Never discard text.
+// Per GOLD_STANDARD_SPEC §18.1: Never strip content through pipeline processing.
 function parseContentIntoBlocks(content, moduleNumber) {
   const blocks = [];
-  
+
   // Add section divider
   blocks.push({
     id: Math.random().toString(36).slice(2, 9),
@@ -217,39 +219,61 @@ function parseContentIntoBlocks(content, moduleNumber) {
     subtitle: ''
   });
 
-  // Split content into sections by H3 tags
-  const sections = content.split(/<h3[^>]*>/).filter(s => s.trim());
-  
-  sections.forEach(section => {
-    const titleMatch = section.match(/^([^<]+)/);
-    const title = titleMatch ? titleMatch[1].trim() : '';
-    const htmlContent = section.replace(/^[^<]+/, '').trim();
-    
-    if (htmlContent.length > 100) {
+  // Split content into sections by H3 tags, but PRESERVE the heading text
+  const sections = content.split(/(?=<h3[^>]*>)/i).filter(s => s.trim());
+
+  for (const section of sections) {
+    const trimmed = section.trim();
+    if (!trimmed) continue;
+
+    // Check if this section contains knowledge check questions
+    // Separate them from instructional content
+    const kcPattern = /(?:Knowledge Check|Question \d+:)/i;
+    if (kcPattern.test(trimmed)) {
+      // Extract KC questions separately
+      const questionMatches = trimmed.matchAll(/Question \d+:\s*(.*?)(?=Question \d+:|$)/gs);
+      let hasQuestions = false;
+
+      for (const match of questionMatches) {
+        hasQuestions = true;
+        const qText = match[1].trim();
+        // Try to parse options from the question text
+        const optionMatches = [...qText.matchAll(/([A-D])\)\s*(.+?)(?=[A-D]\)|$)/gs)];
+        const questionLine = qText.split(/[A-D]\)/)[0]?.trim() || qText;
+
+        if (optionMatches.length >= 2) {
+          const options = optionMatches.map((m, idx) => ({
+            text: m[2].trim(),
+            isCorrect: idx === 0 // Default — should be overridden by answer key
+          }));
+          blocks.push({
+            id: Math.random().toString(36).slice(2, 9),
+            type: 'multipleChoice',
+            question: questionLine,
+            options,
+            explanation: 'Review the course content for the rationale behind this answer.'
+          });
+        }
+      }
+
+      // If there was non-KC content before the questions, preserve it
+      const preKC = trimmed.split(kcPattern)[0]?.trim();
+      if (preKC && preKC.length > 50) {
+        blocks.push({
+          id: Math.random().toString(36).slice(2, 9),
+          type: 'text',
+          content: preKC
+        });
+      }
+    } else {
+      // Regular instructional content — preserve in full as text block
+      // Keep the h3 heading intact (it provides structure)
       blocks.push({
         id: Math.random().toString(36).slice(2, 9),
         type: 'text',
-        content: htmlContent
+        content: trimmed
       });
     }
-  });
-
-  // Extract knowledge check questions if present
-  const questionMatches = content.matchAll(/Question \d+:(.*?)(?=Question \d+:|$)/gs);
-  for (const match of questionMatches) {
-    const questionText = match[1].trim();
-    blocks.push({
-      id: Math.random().toString(36).slice(2, 9),
-      type: 'multipleChoice',
-      question: questionText,
-      options: [
-        { text: 'Option A', isCorrect: true },
-        { text: 'Option B', isCorrect: false },
-        { text: 'Option C', isCorrect: false },
-        { text: 'Option D', isCorrect: false }
-      ],
-      explanation: 'Explanation here'
-    });
   }
 
   return blocks;

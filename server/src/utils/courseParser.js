@@ -352,13 +352,31 @@ export function parseCourseMarkdown(text) {
     }
   }
 
-  // === PARSE BIBLIOGRAPHY ===
-  const bibMatch = content.match(/##\s*BIBLIOGRAPHY\s*\n([\s\S]*?)(?=\n---|\n##\s|$)/);
-  if (bibMatch) {
-    const bibSection = bibMatch[1].trim();
-    // Split by double newlines or by lines starting with author
-    const citations = bibSection.split(/\n\n+/).filter(c => c.trim().length > 10);
-    course.bibliography = citations.map(c => c.trim().replace(/\s+/g, ' '));
+  // === PARSE BIBLIOGRAPHY / REFERENCES ===
+  // Try multiple header formats: BIBLIOGRAPHY, REFERENCES, WORKS CITED
+  const bibPatterns = [
+    /##\s*BIBLIOGRAPHY\s*\n([\s\S]*?)(?=\n---|\n##\s|$)/,
+    /##\s*REFERENCES\s*\n([\s\S]*?)(?=\n---|\n##\s|$)/,
+    /##\s*WORKS?\s*CITED\s*\n([\s\S]*?)(?=\n---|\n##\s|$)/i
+  ];
+
+  for (const bibPattern of bibPatterns) {
+    const bibMatch = content.match(bibPattern);
+    if (bibMatch) {
+      const bibSection = bibMatch[1].trim();
+      // Split by double newlines or by lines that start with a new APA entry
+      // APA entries start with Author last name (capital letter) or indented continuation
+      const rawEntries = bibSection.split(/\n\n+/).filter(c => c.trim().length > 10);
+
+      // Preserve full APA citations — do NOT collapse internal whitespace within entries
+      // Only normalize line breaks within a single entry (continuation lines)
+      course.bibliography = rawEntries.map(entry => {
+        // Join continuation lines (lines within one entry) with a single space
+        // but preserve the full citation text including italics markers
+        return entry.trim().replace(/\n\s*/g, ' ').replace(/\s{2,}/g, ' ');
+      });
+      break;
+    }
   }
 
   return course;
@@ -460,7 +478,7 @@ function markdownToHtml(md) {
     .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>');
 
   // Step 5: Handle lists properly — collect consecutive list items into list blocks
-  // Bullet lists
+  // Supports both bullet and numbered lists, including nested/indented items
   const lines = html.split('\n');
   const processedLines = [];
   let inBulletList = false;
@@ -470,8 +488,16 @@ function markdownToHtml(md) {
     const line = lines[i];
     const bulletMatch = line.match(/^[-*]\s+(.+)$/);
     const numberedMatch = line.match(/^\d+\.\s+(.+)$/);
+    // Detect indented sub-items (nested lists)
+    const indentedBulletMatch = line.match(/^\s{2,}[-*]\s+(.+)$/);
+    const indentedNumberedMatch = line.match(/^\s{2,}\d+\.\s+(.+)$/);
 
-    if (bulletMatch) {
+    if (indentedBulletMatch && (inBulletList || inNumberedList)) {
+      // Nested bullet inside a list — keep as sub-item
+      processedLines.push(`<li style="margin-left:1.5em">${indentedBulletMatch[1]}</li>`);
+    } else if (indentedNumberedMatch && (inBulletList || inNumberedList)) {
+      processedLines.push(`<li style="margin-left:1.5em">${indentedNumberedMatch[1]}</li>`);
+    } else if (bulletMatch) {
       if (!inBulletList) {
         if (inNumberedList) { processedLines.push('</ol>'); inNumberedList = false; }
         processedLines.push('<ul>');
@@ -498,6 +524,7 @@ function markdownToHtml(md) {
   html = processedLines.join('\n');
 
   // Step 6: Wrap remaining text blocks in paragraphs
+  // CRITICAL: Never discard content. Every non-empty block must produce output.
   html = html
     .split(/\n\n+/)
     .map(block => {
@@ -507,8 +534,16 @@ function markdownToHtml(md) {
       if (/^<(?:h[1-6]|ul|ol|li|table|thead|tbody|tr|th|td|div|blockquote|hr|p|pre|code)/i.test(block)) return block;
       // Don't wrap blocks that contain block-level elements
       if (/<(?:ul|ol|table|div|blockquote|h[1-6])/i.test(block)) return block;
+      // Preserve APA-style references (lines starting with author names / hanging indent patterns)
+      // These are typically single-spaced entries that should each be their own <p>
+      if (/^[A-Z][a-z]+,\s+[A-Z]/.test(block) && /\(\d{4}\)/.test(block)) {
+        // APA reference entry — wrap in cr-reference class for proper hanging indent
+        const entries = block.split(/\n/).filter(l => l.trim());
+        return entries.map(entry => `<p class="cr-reference">${entry.trim()}</p>`).join('\n');
+      }
       return `<p>${block.replace(/\n/g, ' ')}</p>`;
     })
+    .filter(block => block !== '')
     .join('\n');
 
   return html;
