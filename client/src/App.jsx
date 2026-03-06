@@ -6,6 +6,7 @@
 import { BrowserRouter, Routes, Route, Navigate, useParams } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { CRFooter } from './utils/copyright.jsx';
+import ErrorBoundary from './components/ErrorBoundary';
 
 // Pages
 import Landing from './pages/Landing';
@@ -184,12 +185,14 @@ function AppRoutes() {
 
 function App() {
   return (
-    <BrowserRouter>
-      <AuthProvider>
-        <AppRoutes />
-      </AuthProvider>
-      <CRFooter />
-    </BrowserRouter>
+    <ErrorBoundary>
+      <BrowserRouter>
+        <AuthProvider>
+          <AppRoutes />
+        </AuthProvider>
+        <CRFooter />
+      </BrowserRouter>
+    </ErrorBoundary>
   );
 }
 
