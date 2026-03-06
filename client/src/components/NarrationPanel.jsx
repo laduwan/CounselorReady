@@ -352,7 +352,7 @@ function NarrationPanel({ courseId, modules, onNarrationComplete }) {
             <div style={{ height: 6, background: "#D1FAE5", borderRadius: 6, overflow: "hidden" }}>
               <div style={{
                 width: `${progress.total > 0 ? (progress.current / progress.total * 100) : 0}%`,
-                height: "100%", background: `linear-gradient(90deg, ${C.green}, ${C.gold})`,
+                height: "100%", background: C.green,
                 borderRadius: 6, transition: "width 0.3s"
               }} />
             </div>
@@ -387,7 +387,7 @@ function NarrationPanel({ courseId, modules, onNarrationComplete }) {
             style={{
               padding: "12px 24px", borderRadius: 10, border: "none", cursor: generating ? "not-allowed" : "pointer",
               fontSize: 14, fontWeight: 700, display: "inline-flex", alignItems: "center", gap: 8,
-              background: `linear-gradient(135deg, ${C.burgundy}, #4A1224)`, color: "#fff",
+              background: C.burgundy, color: "#fff",
               boxShadow: "0 2px 8px rgba(107,29,52,0.2)",
               opacity: (generating || !provider?.configured) ? 0.5 : 1,
             }}

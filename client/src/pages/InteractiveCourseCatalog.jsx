@@ -9,9 +9,9 @@
 
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { 
-  BookOpen, Clock, Award, ChevronRight, Search, 
-  Filter, Grid, List, Star, Users, CheckCircle 
+import {
+  BookOpen, Clock, Award, ChevronRight, Search,
+  Filter, Grid, List, Star, Users, CheckCircle
 } from 'lucide-react';
 import api from '../services/api';
 
@@ -64,7 +64,7 @@ const InteractiveCourseCatalog = () => {
   const filteredCourses = courses.filter(course => {
     const matchesSearch = course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          course.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = selectedCategory === 'all' || 
+    const matchesCategory = selectedCategory === 'all' ||
                            (course.categories && course.categories.includes(selectedCategory));
     return matchesSearch && matchesCategory;
   });
@@ -79,9 +79,9 @@ const InteractiveCourseCatalog = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-stone-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600 mx-auto"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-hunter-600 mx-auto"></div>
           <p className="mt-4 text-gray-600">Loading courses...</p>
         </div>
       </div>
@@ -90,12 +90,12 @@ const InteractiveCourseCatalog = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-stone-50 flex items-center justify-center">
         <div className="text-center">
           <p className="text-red-600">{error}</p>
-          <button 
+          <button
             onClick={fetchCourses}
-            className="mt-4 px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700"
+            className="mt-4 px-4 py-2 bg-hunter-500 text-white rounded-lg hover:bg-hunter-600"
           >
             Try Again
           </button>
@@ -105,12 +105,12 @@ const InteractiveCourseCatalog = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-stone-50">
       {/* Header */}
-      <div className="bg-gradient-to-r from-teal-600 to-emerald-600 text-white py-12">
+      <div className="bg-burgundy-800 text-white py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h1 className="text-3xl font-bold">Interactive CE Courses</h1>
-          <p className="mt-2 text-teal-100">
+          <p className="mt-2 text-burgundy-200">
             Engaging, self-paced continuing education for mental health professionals
           </p>
         </div>
@@ -127,7 +127,7 @@ const InteractiveCourseCatalog = () => {
               placeholder="Search courses..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-burgundy-500 focus:border-transparent"
             />
           </div>
 
@@ -137,7 +137,7 @@ const InteractiveCourseCatalog = () => {
             <select
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
-              className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-teal-500"
+              className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-burgundy-500"
             >
               {categories.map(cat => (
                 <option key={cat} value={cat}>
@@ -151,13 +151,13 @@ const InteractiveCourseCatalog = () => {
           <div className="flex border border-gray-300 rounded-lg overflow-hidden">
             <button
               onClick={() => setViewMode('grid')}
-              className={`p-2 ${viewMode === 'grid' ? 'bg-teal-600 text-white' : 'bg-white text-gray-600'}`}
+              className={`p-2 ${viewMode === 'grid' ? 'bg-hunter-500 text-white' : 'bg-white text-gray-600'}`}
             >
               <Grid className="h-5 w-5" />
             </button>
             <button
               onClick={() => setViewMode('list')}
-              className={`p-2 ${viewMode === 'list' ? 'bg-teal-600 text-white' : 'bg-white text-gray-600'}`}
+              className={`p-2 ${viewMode === 'list' ? 'bg-hunter-500 text-white' : 'bg-white text-gray-600'}`}
             >
               <List className="h-5 w-5" />
             </button>
@@ -175,9 +175,9 @@ const InteractiveCourseCatalog = () => {
         ) : viewMode === 'grid' ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredCourses.map(course => (
-              <CourseCard 
-                key={course._id} 
-                course={course} 
+              <CourseCard
+                key={course._id}
+                course={course}
                 progress={getProgressForCourse(course._id)}
                 onClick={() => handleCourseClick(course)}
               />
@@ -186,9 +186,9 @@ const InteractiveCourseCatalog = () => {
         ) : (
           <div className="space-y-4">
             {filteredCourses.map(course => (
-              <CourseListItem 
-                key={course._id} 
-                course={course} 
+              <CourseListItem
+                key={course._id}
+                course={course}
                 progress={getProgressForCourse(course._id)}
                 onClick={() => handleCourseClick(course)}
               />
@@ -206,25 +206,25 @@ const CourseCard = ({ course, progress, onClick }) => {
   const isCompleted = progress?.status === 'completed' || progress?.status === 'certified';
 
   return (
-    <div 
+    <div
       onClick={onClick}
       className="bg-white rounded-xl shadow-sm hover:shadow-lg transition-all cursor-pointer overflow-hidden border border-gray-100 group"
     >
       {/* Thumbnail */}
-      <div className="h-40 bg-gradient-to-br from-teal-500 to-emerald-600 relative">
+      <div className="h-40 bg-hunter-100 relative">
         <div className="absolute inset-0 flex items-center justify-center">
-          <BookOpen className="h-16 w-16 text-white/30" />
+          <BookOpen className="h-16 w-16 text-hunter-300" />
         </div>
         {isCompleted && (
-          <div className="absolute top-3 right-3 bg-green-500 text-white px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1">
+          <div className="absolute top-3 right-3 bg-hunter-500 text-white px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1">
             <CheckCircle className="h-3 w-3" />
             Completed
           </div>
         )}
         {isEnrolled && !isCompleted && (
-          <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/30">
-            <div 
-              className="h-full bg-white transition-all"
+          <div className="absolute bottom-0 left-0 right-0 h-1 bg-hunter-200">
+            <div
+              className="h-full bg-hunter-500 transition-all"
               style={{ width: `${progress.progress || 0}%` }}
             />
           </div>
@@ -234,7 +234,7 @@ const CourseCard = ({ course, progress, onClick }) => {
       {/* Content */}
       <div className="p-5">
         <div className="flex items-start justify-between mb-2">
-          <h3 className="font-semibold text-gray-900 group-hover:text-teal-600 transition-colors line-clamp-2">
+          <h3 className="font-semibold text-gray-900 group-hover:text-burgundy-800 transition-colors line-clamp-2">
             {course.title}
           </h3>
         </div>
@@ -245,7 +245,7 @@ const CourseCard = ({ course, progress, onClick }) => {
 
         <div className="flex items-center gap-4 text-sm text-gray-500">
           <div className="flex items-center gap-1">
-            <Award className="h-4 w-4 text-teal-600" />
+            <Award className="h-4 w-4 text-honey-400" />
             <span>{course.ceHours} CE Hours</span>
           </div>
           <div className="flex items-center gap-1">
@@ -258,7 +258,7 @@ const CourseCard = ({ course, progress, onClick }) => {
         {course.categories && course.categories.length > 0 && (
           <div className="mt-3 flex flex-wrap gap-1">
             {course.categories.slice(0, 2).map(cat => (
-              <span key={cat} className="px-2 py-0.5 bg-teal-50 text-teal-700 text-xs rounded-full">
+              <span key={cat} className="px-2 py-0.5 bg-hunter-50 text-hunter-700 text-xs rounded-full">
                 {cat}
               </span>
             ))}
@@ -268,10 +268,10 @@ const CourseCard = ({ course, progress, onClick }) => {
         {/* Action */}
         <div className="mt-4 pt-4 border-t border-gray-100">
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-teal-600">
+            <span className="text-sm font-medium text-hunter-600">
               {isCompleted ? 'Review Course' : isEnrolled ? 'Continue Learning' : 'Start Course'}
             </span>
-            <ChevronRight className="h-5 w-5 text-teal-600 group-hover:translate-x-1 transition-transform" />
+            <ChevronRight className="h-5 w-5 text-hunter-600 group-hover:translate-x-1 transition-transform" />
           </div>
         </div>
       </div>
@@ -285,24 +285,24 @@ const CourseListItem = ({ course, progress, onClick }) => {
   const isCompleted = progress?.status === 'completed' || progress?.status === 'certified';
 
   return (
-    <div 
+    <div
       onClick={onClick}
       className="bg-white rounded-xl shadow-sm hover:shadow-md transition-all cursor-pointer p-5 border border-gray-100 group"
     >
       <div className="flex items-center gap-5">
         {/* Icon */}
-        <div className="h-16 w-16 bg-gradient-to-br from-teal-500 to-emerald-600 rounded-lg flex items-center justify-center flex-shrink-0">
-          <BookOpen className="h-8 w-8 text-white" />
+        <div className="h-16 w-16 bg-hunter-100 rounded-lg flex items-center justify-center flex-shrink-0">
+          <BookOpen className="h-8 w-8 text-hunter-500" />
         </div>
 
         {/* Content */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <h3 className="font-semibold text-gray-900 group-hover:text-teal-600 transition-colors">
+            <h3 className="font-semibold text-gray-900 group-hover:text-burgundy-800 transition-colors">
               {course.title}
             </h3>
             {isCompleted && (
-              <span className="bg-green-100 text-green-700 px-2 py-0.5 rounded-full text-xs font-medium flex items-center gap-1">
+              <span className="bg-hunter-100 text-hunter-700 px-2 py-0.5 rounded-full text-xs font-medium flex items-center gap-1">
                 <CheckCircle className="h-3 w-3" />
                 Completed
               </span>
@@ -313,7 +313,7 @@ const CourseListItem = ({ course, progress, onClick }) => {
           </p>
           <div className="flex items-center gap-4 mt-2 text-sm text-gray-500">
             <div className="flex items-center gap-1">
-              <Award className="h-4 w-4 text-teal-600" />
+              <Award className="h-4 w-4 text-honey-400" />
               <span>{course.ceHours} CE Hours</span>
             </div>
             <div className="flex items-center gap-1">
@@ -334,14 +334,14 @@ const CourseListItem = ({ course, progress, onClick }) => {
             <div className="text-right">
               <div className="text-sm font-medium text-gray-900">{progress.progress || 0}%</div>
               <div className="w-24 h-2 bg-gray-200 rounded-full mt-1">
-                <div 
-                  className="h-full bg-teal-600 rounded-full"
+                <div
+                  className="h-full bg-hunter-500 rounded-full"
                   style={{ width: `${progress.progress || 0}%` }}
                 />
               </div>
             </div>
           )}
-          <ChevronRight className="h-5 w-5 text-gray-400 group-hover:text-teal-600 group-hover:translate-x-1 transition-all" />
+          <ChevronRight className="h-5 w-5 text-gray-400 group-hover:text-hunter-600 group-hover:translate-x-1 transition-all" />
         </div>
       </div>
     </div>
