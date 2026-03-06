@@ -21,32 +21,37 @@
               400: '#759a7f', 500: '#547c5f', 600: '#4A7C59', 700: '#34503d',
               800: '#2b4133', 900: '#1f3025', 950: '#121c16'
             },
-            gold: { 50: '#fefce8', 100: '#fef9c3', 200: '#fef08a', 300: '#fde047', 400: '#facc15', 500: '#d4a012' }
+            gold: { 50: '#fefce8', 100: '#fef9c3', 200: '#fef08a', 300: '#fde047', 400: '#facc15', 500: '#d4a012' },
+            hunter: { 100: '#e8f0ea', 500: '#4A7C59', 600: '#3d6649' },
+            honey: { 100: '#fef3d1', 400: '#D4A855', 500: '#c99a4a' }
           }
         }
       }
     }
   </script>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Lato:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Source+Serif+Pro:wght@400;600;700&family=Source+Sans+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/lib/fontawesome/css/all.min.css">
   <style>
-    body { font-family: 'Lato', sans-serif; }
-    .font-display { font-family: 'Cormorant Garamond', serif; }
-    h1, h2, h3 { font-family: 'Cormorant Garamond', serif; }
+    body { font-family: 'Source Sans Pro', system-ui, sans-serif; }
+    .font-display { font-family: 'Source Serif Pro', Georgia, serif; }
+    h1, h2, h3 { font-family: 'Source Serif Pro', Georgia, serif; }
     .tab-active { border-bottom: 3px solid #6b1d34; color: #6b1d34; font-weight: 600; }
   </style>
 </head>
 <body class="bg-stone-50 min-h-screen">
 
   <!-- Admin Header -->
-  <header class="bg-burgundy-900 text-white sticky top-0 z-50">
+  <header class="bg-burgundy-800 text-white sticky top-0 z-50">
     <div class="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
       <div class="flex items-center gap-4">
-        <div class="w-9 h-9 bg-forest-700 rounded-lg flex items-center justify-center">
-          <span class="text-gold-400 font-display font-bold">CR</span>
+        <div class="w-9 h-9 bg-white/10 rounded-lg flex items-center justify-center">
+          <span class="font-display font-bold"><span class="text-honey-400">C</span><span class="text-hunter-500">R</span></span>
         </div>
         <div>
-          <span class="font-display font-semibold text-lg text-burgundy-800">CounselorReady</span>
-          <span class="ml-2 text-xs bg-gold-500 text-burgundy-900 px-2 py-0.5 rounded-full font-semibold">ADMIN</span>
+          <span class="font-display font-semibold text-lg">
+            <span class="text-burgundy-200">Counselor</span><span class="text-hunter-500">Ready</span>
+          </span>
+          <span class="ml-2 text-xs bg-honey-400 text-burgundy-900 px-2 py-0.5 rounded-full font-semibold">ADMIN</span>
         </div>
       </div>
       <div class="flex items-center gap-4">
@@ -61,33 +66,33 @@
 
   <div class="flex">
     <!-- Sidebar -->
-    <aside class="w-64 bg-white border-r border-burgundy-100 min-h-[calc(100vh-52px)] sticky top-[52px] p-4">
+    <aside class="w-64 bg-burgundy-800 min-h-[calc(100vh-52px)] sticky top-[52px] p-4">
       <nav class="space-y-1">
-        <a href="/admin-courses.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 hover:text-burgundy-700 transition-colors">
+        <a href="/admin-courses.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
           Courses
         </a>
-        <a href="/admin-users.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 hover:text-burgundy-700 transition-colors">
+        <a href="/admin-users.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"/></svg>
           Users
         </a>
-        <a href="/admin-migration.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 hover:text-burgundy-700 transition-colors">
+        <a href="/admin-migration.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
           Migration
         </a>
-        <a href="/admin-messages.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg bg-burgundy-50 text-burgundy-800 font-medium">
+        <a href="/admin-messages.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg bg-burgundy-700 text-white">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
           Messages
         </a>
-        <a href="/admin-hardship.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 hover:text-burgundy-700 transition-colors">
+        <a href="/admin-hardship.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
           Hardship Requests
         </a>
-        <a href="/admin-analytics.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 hover:text-burgundy-700 transition-colors">
+        <a href="/admin-analytics.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
           Analytics
         </a>
-        <a href="/admin-integrations.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 hover:text-burgundy-700 transition-colors">
+        <a href="/admin-integrations.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z"/></svg>
           Integrations
         </a>
