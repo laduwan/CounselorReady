@@ -17,6 +17,11 @@ import CourseView from './pages/CourseView';
 import Credentials from './pages/Credentials';
 import Settings from './pages/Settings';
 import InteractiveCourseCatalog from './pages/InteractiveCourseCatalog';
+import OrganizationDashboard from './pages/OrganizationDashboard';
+import CEPlanner from './pages/CEPlanner';
+import InsuranceTracker from './pages/InsuranceTracker';
+import AuditKit from './pages/AuditKit';
+import BoardAlerts from './pages/BoardAlerts';
 
 // Components
 import Layout from './components/Layout';
@@ -141,7 +146,34 @@ function AppRoutes() {
           <Layout><Settings /></Layout>
         </ProtectedRoute>
       } />
-      
+
+      {/* New feature routes */}
+      <Route path="/organization" element={
+        <ProtectedRoute>
+          <Layout><OrganizationDashboard /></Layout>
+        </ProtectedRoute>
+      } />
+      <Route path="/ce-planner" element={
+        <ProtectedRoute>
+          <Layout><CEPlanner /></Layout>
+        </ProtectedRoute>
+      } />
+      <Route path="/insurance-tracker" element={
+        <ProtectedRoute>
+          <Layout><InsuranceTracker /></Layout>
+        </ProtectedRoute>
+      } />
+      <Route path="/audit-kit" element={
+        <ProtectedRoute>
+          <Layout><AuditKit /></Layout>
+        </ProtectedRoute>
+      } />
+      <Route path="/board-alerts" element={
+        <ProtectedRoute>
+          <Layout><BoardAlerts /></Layout>
+        </ProtectedRoute>
+      } />
+
       {/* Admin routes */}
       <Route path="/admin/course-builder" element={
         <AdminRoute>
