@@ -124,7 +124,7 @@ export function MatchingExercise({ pairs, instructions = "Drag each term to its 
 
   return (
     <div style={{ background: B.card, borderRadius: 16, border: `1px solid ${B.border}`, overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
-      <div style={{ background: `linear-gradient(135deg, ${B.green}, ${B.greenLt})`, padding: '16px 24px' }}>
+      <div style={{ background: B.green, padding: '16px 24px' }}>
         <h3 style={{ color: '#fff', fontWeight: 700, fontSize: 17, margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}><GripVertical size={20} /> Matching Exercise</h3>
         <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: 13, marginTop: 4 }}>{instructions}</p>
       </div>
@@ -193,7 +193,7 @@ export function MultipleChoice({ question, options, explanation, onAnswer }) {
   const ok = sel !== null && options[sel]?.isCorrect;
   return (
     <div style={{ background: B.card, borderRadius: 16, border: `1px solid ${B.border}`, overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
-      <div style={{ background: `linear-gradient(135deg, ${B.navy}, ${B.navyLt})`, padding: '16px 24px' }}>
+      <div style={{ background: B.navy, padding: '16px 24px' }}>
         <h3 style={{ color: '#fff', fontWeight: 700, fontSize: 17, margin: 0 }}>Question</h3>
       </div>
       <div style={{ padding: 24 }}>
@@ -250,7 +250,7 @@ export function MultiSelect({ question, options, explanation, onAnswer }) {
 
   return (
     <div style={{ background: B.card, borderRadius: 16, border: `1px solid ${B.border}`, overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
-      <div style={{ background: `linear-gradient(135deg, ${B.navy}, ${B.navyLt})`, padding: '16px 24px' }}>
+      <div style={{ background: B.navy, padding: '16px 24px' }}>
         <h3 style={{ color: '#fff', fontWeight: 700, fontSize: 17, margin: 0 }}>Select All That Apply</h3>
       </div>
       <div style={{ padding: 24 }}>
@@ -301,7 +301,7 @@ export function ImageTextCard({ image, imageAlt, title, content, imagePosition =
   return (
     <div style={{ background: B.card, borderRadius: 16, overflow: 'hidden', border: `${highlight ? 2 : 1}px solid ${highlight ? B.green : B.border}`, boxShadow: highlight ? `0 0 0 3px ${B.greenBg}` : '0 2px 8px rgba(0,0,0,0.06)' }}>
       <div style={{ display: 'flex', flexDirection: imagePosition === 'right' ? 'row-reverse' : 'row' }}>
-        <div style={{ width: '40%', minHeight: 180, background: `linear-gradient(135deg, ${B.greenBg}, ${B.navyBg})`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ width: '40%', minHeight: 180, background: B.greenBg, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           {image ? <img src={image} alt={imageAlt || title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : (
             <div style={{ textAlign: 'center', padding: 24 }}><BookOpen size={48} color={B.green + '44'} /><p style={{ fontSize: 12, color: B.light, marginTop: 8 }}>Course Content</p></div>
           )}
@@ -323,7 +323,7 @@ export function SectionDivider({ title, subtitle, sectionNumber }) {
     <div style={{ position: 'relative', padding: '48px 0' }}>
       <div style={{ position: 'absolute', top: '50%', left: 0, right: 0, height: 2, background: B.border }}></div>
       <div style={{ position: 'relative', display: 'flex', justifyContent: 'center' }}>
-        <div style={{ background: `linear-gradient(135deg, ${B.burgundy}, ${B.burgundyLt})`, borderRadius: 16, padding: '20px 32px', boxShadow: '0 4px 16px rgba(107,29,52,0.2)' }}>
+        <div style={{ background: B.burgundy, borderRadius: 16, padding: '20px 32px', boxShadow: '0 4px 16px rgba(107,29,52,0.2)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
             {sectionNumber && <div style={{ width: 48, height: 48, borderRadius: '50%', background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><span style={{ fontSize: 22, fontWeight: 800, color: '#fff' }}>{sectionNumber}</span></div>}
             <div>
@@ -364,7 +364,7 @@ export function TimedAssessment({ title = "Final Assessment", questions, timeLim
 
   if (!started) return (
     <div style={{ background: B.card, borderRadius: 16, border: `1px solid ${B.border}`, overflow: 'hidden' }}>
-      <div style={{ background: `linear-gradient(135deg, ${B.burgundy}, ${B.burgundyLt})`, padding: '16px 24px' }}><h3 style={{ color: '#fff', fontWeight: 700, fontSize: 19, margin: 0 }}>{title}</h3></div>
+      <div style={{ background: B.burgundy, padding: '16px 24px' }}><h3 style={{ color: '#fff', fontWeight: 700, fontSize: 19, margin: 0 }}>{title}</h3></div>
       <div style={{ padding: 32, textAlign: 'center' }}>
         <div style={{ width: 80, height: 80, borderRadius: '50%', background: B.burgundyBg, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px' }}><Clock size={40} color={B.burgundy} /></div>
         <h4 style={{ fontSize: 22, fontWeight: 700, color: B.navy, marginBottom: 8 }}>Ready to Begin?</h4>
@@ -398,7 +398,7 @@ export function TimedAssessment({ title = "Final Assessment", questions, timeLim
   const q = questions[cq]; const warn = time < 300;
   return (
     <div style={{ background: B.card, borderRadius: 16, border: `1px solid ${B.border}`, overflow: 'hidden' }}>
-      <div style={{ background: `linear-gradient(135deg, ${B.burgundy}, ${B.burgundyLt})`, padding: '16px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      <div style={{ background: B.burgundy, padding: '16px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <h3 style={{ color: '#fff', fontWeight: 700, fontSize: 17, margin: 0 }}>{title}</h3>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 14px', borderRadius: 8, background: warn ? 'rgba(220,38,38,0.3)' : 'rgba(255,255,255,0.15)', color: warn ? '#FCA5A5' : '#fff' }}><Clock size={16} /><span style={{ fontFamily: 'monospace', fontWeight: 700 }}>{fmt(time)}</span></div>
       </div>
@@ -448,14 +448,14 @@ export function ProgressTracker({ sections, currentSection, completedSections, t
   const pct = Math.round((completedSections.length / sections.length) * 100);
   return (
     <div style={{ background: B.card, borderRadius: 16, border: `1px solid ${B.border}`, overflow: 'hidden' }}>
-      <div style={{ background: `linear-gradient(135deg, ${B.green}, ${B.greenLt})`, padding: '16px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div style={{ background: B.green, padding: '16px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <h3 style={{ color: '#fff', fontWeight: 700, fontSize: 17, margin: 0 }}>Course Progress</h3>
         <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: 13 }}>{totalTimeEstimate}</span>
       </div>
       <div style={{ padding: 24 }}>
         <div style={{ marginBottom: 24 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}><span style={{ fontSize: 13, fontWeight: 500, color: B.muted }}>Overall Progress</span><span style={{ fontSize: 13, fontWeight: 700, color: B.green }}>{pct}%</span></div>
-          <div style={{ height: 10, background: B.navyBg, borderRadius: 6, overflow: 'hidden' }}><div style={{ height: '100%', background: `linear-gradient(90deg, ${B.green}, ${B.greenLt})`, borderRadius: 6, width: `${pct}%`, transition: 'width 0.5s' }} /></div>
+          <div style={{ height: 10, background: B.navyBg, borderRadius: 6, overflow: 'hidden' }}><div style={{ height: '100%', background: B.green, borderRadius: 6, width: `${pct}%`, transition: 'width 0.5s' }} /></div>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
           {sections.map((s, i) => {
@@ -497,7 +497,7 @@ export function CardSort({ categories = [], cards = [], instructions = "Sort eac
 
   return (
     <div style={{ background: B.card, borderRadius: 16, border: `1px solid ${B.border}`, overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
-      <div style={{ background: `linear-gradient(135deg, ${B.green}, ${B.greenLt})`, padding: '16px 24px' }}>
+      <div style={{ background: B.green, padding: '16px 24px' }}>
         <h3 style={{ color: '#fff', fontWeight: 700, fontSize: 17, margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}><GripVertical size={20} /> Card Sort Activity</h3>
         <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: 13, marginTop: 4 }}>{instructions}</p>
       </div>
@@ -573,7 +573,7 @@ export function Sequencing({ steps = [], instructions = "Arrange the steps in th
 
   return (
     <div style={{ background: B.card, borderRadius: 16, border: `1px solid ${B.border}`, overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
-      <div style={{ background: `linear-gradient(135deg, ${B.navy}, ${B.navyLt})`, padding: '16px 24px' }}>
+      <div style={{ background: B.navy, padding: '16px 24px' }}>
         <h3 style={{ color: '#fff', fontWeight: 700, fontSize: 17, margin: 0 }}>📋 Sequencing Activity</h3>
         <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 13, marginTop: 4 }}>{instructions}</p>
       </div>
@@ -626,7 +626,7 @@ export function Hotspot({ hotspots = [], hotspotImage, imageDescription, instruc
 
   return (
     <div style={{ background: B.card, borderRadius: 16, border: `1px solid ${B.border}`, overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
-      <div style={{ background: `linear-gradient(135deg, ${B.burgundy}, ${B.burgundyLt})`, padding: '16px 24px' }}>
+      <div style={{ background: B.burgundy, padding: '16px 24px' }}>
         <h3 style={{ color: '#fff', fontWeight: 700, fontSize: 17, margin: 0 }}>🎯 Hotspot Activity</h3>
         <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: 13, marginTop: 4 }}>{instructions}</p>
         <span style={{ display: 'inline-block', marginTop: 8, background: 'rgba(255,255,255,0.2)', color: '#fff', borderRadius: 20, padding: '3px 12px', fontSize: 12, fontWeight: 600 }}>{Object.keys(rev).length}/{hotspots.length} discovered</span>
@@ -674,7 +674,7 @@ export function Timeline({ events = [], instructions = "Arrange events in chrono
 
   return (
     <div style={{ background: B.card, borderRadius: 16, border: `1px solid ${B.border}`, overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
-      <div style={{ background: `linear-gradient(135deg, ${B.green}, ${B.greenLt})`, padding: '16px 24px' }}>
+      <div style={{ background: B.green, padding: '16px 24px' }}>
         <h3 style={{ color: '#fff', fontWeight: 700, fontSize: 17, margin: 0 }}>📅 Timeline Activity</h3>
         <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: 13, marginTop: 4 }}>{instructions}</p>
       </div>
@@ -730,7 +730,7 @@ export function ScenarioTree({ scenarioTitle, startNode, nodes = {}, onComplete 
 
   return (
     <div style={{ background: B.card, borderRadius: 16, border: `1px solid ${B.border}`, overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
-      <div style={{ background: `linear-gradient(135deg, ${B.burgundy}, ${B.burgundyLt})`, padding: '16px 24px' }}>
+      <div style={{ background: B.burgundy, padding: '16px 24px' }}>
         <h3 style={{ color: '#fff', fontWeight: 700, fontSize: 17, margin: 0 }}>🔀 {scenarioTitle || 'Clinical Scenario'}</h3>
         <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 13, marginTop: 4 }}>Step {hist.length + 1}</p>
       </div>
@@ -787,7 +787,7 @@ export function FlashcardDeck({ flashcards = [], instructions, onComplete }) {
 
   return (
     <div style={{ background: B.card, borderRadius: 16, border: `1px solid ${B.border}`, overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
-      <div style={{ background: `linear-gradient(135deg, ${B.gold}, ${B.goldLt})`, padding: '16px 24px' }}>
+      <div style={{ background: B.gold, padding: '16px 24px' }}>
         <h3 style={{ color: '#fff', fontWeight: 700, fontSize: 17, margin: 0 }}>🃏 Flashcard Deck</h3>
         {instructions && <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: 13, marginTop: 4 }}>{instructions}</p>}
         <span style={{ display: 'inline-block', marginTop: 8, background: 'rgba(255,255,255,0.25)', color: '#fff', borderRadius: 20, padding: '3px 12px', fontSize: 12, fontWeight: 600 }}>{seen.size}/{flashcards.length} reviewed</span>
@@ -827,7 +827,7 @@ export function VideoEmbed({ videoUrl, videoTitle, videoDuration, markers = [], 
 
   return (
     <div style={{ background: B.card, borderRadius: 16, border: `1px solid ${B.border}`, overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
-      <div style={{ background: `linear-gradient(135deg, ${B.navy}, #1E293B)`, padding: '16px 24px' }}>
+      <div style={{ background: B.navy, padding: '16px 24px' }}>
         <h3 style={{ color: '#fff', fontWeight: 700, fontSize: 17, margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}><Play size={20} /> {videoTitle || 'Video Content'}</h3>
         {videoDuration && <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 13, marginTop: 4 }}>Duration: {videoDuration}</p>}
       </div>
