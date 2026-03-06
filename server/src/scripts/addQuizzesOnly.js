@@ -1,4 +1,9 @@
 /**
+ * Copyright (c) 2026 CounselorReady, a subsidiary of Ga Integrated Therapeutic Perspectives, LLC.
+ * All rights reserved. Proprietary and confidential.
+ * Unauthorized copying or distribution is strictly prohibited.
+ */
+/**
  * ADD QUIZZES ONLY - Does NOT modify lesson content
  * This script surgically adds knowledge checks and final exam
  * to the Active Listening course without touching existing content.

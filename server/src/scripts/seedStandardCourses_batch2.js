@@ -1,3 +1,8 @@
+/**
+ * Copyright (c) 2026 CounselorReady, a subsidiary of Ga Integrated Therapeutic Perspectives, LLC.
+ * All rights reserved. Proprietary and confidential.
+ * Unauthorized copying or distribution is strictly prohibited.
+ */
 // seedStandardCourses_batch2.js
 // Run with: node src/data/seedStandardCourses_batch2.js
 // Courses: Trauma Foundations, Suicide Assessment, Psychopharmacology for Counselors

@@ -1,3 +1,8 @@
+/**
+ * Copyright (c) 2026 CounselorReady, a subsidiary of Ga Integrated Therapeutic Perspectives, LLC.
+ * All rights reserved. Proprietary and confidential.
+ * Unauthorized copying or distribution is strictly prohibited.
+ */
 // adminAI.js — Admin AI generation (quiz, course, module)
 import express from 'express';
 import Anthropic from '@anthropic-ai/sdk';

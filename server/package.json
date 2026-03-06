@@ -2,6 +2,8 @@
   "name": "counselorready-server",
   "version": "1.0.0",
   "description": "CounselorReady API Server",
+  "license": "UNLICENSED",
+  "author": "CounselorReady, a subsidiary of Ga Integrated Therapeutic Perspectives, LLC",
   "main": "src/index.js",
   "type": "module",
   "scripts": {

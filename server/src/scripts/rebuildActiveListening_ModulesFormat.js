@@ -1,3 +1,8 @@
+/**
+ * Copyright (c) 2026 CounselorReady, a subsidiary of Ga Integrated Therapeutic Perspectives, LLC.
+ * All rights reserved. Proprietary and confidential.
+ * Unauthorized copying or distribution is strictly prohibited.
+ */
 // rebuildActiveListening_ModulesFormat.js
 // Rebuilds Active Listening course in COURSE collection with modules/lessons format
 // This works with course-player.html (what learners use)

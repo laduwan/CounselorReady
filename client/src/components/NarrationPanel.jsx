@@ -1,3 +1,8 @@
+/**
+ * Copyright (c) 2026 CounselorReady, a subsidiary of Ga Integrated Therapeutic Perspectives, LLC.
+ * All rights reserved. Proprietary and confidential.
+ * Unauthorized copying or distribution is strictly prohibited.
+ */
 // NarrationPanel.jsx — Admin narration controls for CourseBuilder
 // Generates TTS audio per block/module/course via /api/narration endpoints
 // =====================================================================

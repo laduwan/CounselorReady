@@ -1,3 +1,8 @@
+/**
+ * Copyright (c) 2026 CounselorReady, a subsidiary of Ga Integrated Therapeutic Perspectives, LLC.
+ * All rights reserved. Proprietary and confidential.
+ * Unauthorized copying or distribution is strictly prohibited.
+ */
 export const stateLicenses = [
   // ALABAMA
   { type: 'state_license', code: 'LPC', name: 'Licensed Professional Counselor', state: 'AL', issuingBody: 'Alabama Board of Examiners in Counseling', renewalCycle: 24, totalCEUsRequired: 40, requirements: [{ category: 'Ethics', hoursRequired: 6 }, { category: 'General', hoursRequired: 34 }] },
