@@ -79,18 +79,15 @@ const InteractiveCourseCatalog = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-stone-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-burgundy-700 mx-auto"></div>
-          <p className="mt-4 text-forest-600">Loading courses...</p>
-        </div>
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-burgundy-700"></div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen bg-stone-50 flex items-center justify-center">
+      <div className="flex items-center justify-center min-h-[60vh]">
         <div className="text-center">
           <p className="text-red-600">{error}</p>
           <button
@@ -105,20 +102,18 @@ const InteractiveCourseCatalog = () => {
   }
 
   return (
-    <div className="min-h-screen bg-stone-50">
-      {/* Header */}
-      <div className="bg-burgundy-800 text-white py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 className="text-3xl font-bold">Interactive CE Courses</h1>
-          <p className="mt-2 text-burgundy-200">
-            Engaging, self-paced continuing education for mental health professionals
-          </p>
-        </div>
+    <div>
+      {/* Page heading */}
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-navy-600">Courses</h1>
+        <p className="text-forest-600">
+          Engaging, self-paced continuing education for mental health professionals
+        </p>
       </div>
 
       {/* Filters */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div className="bg-white rounded-xl shadow-sm p-4 flex flex-wrap gap-4 items-center">
+      <div className="mb-6">
+        <div className="bg-white rounded-xl shadow-sm p-4 flex flex-wrap gap-4 items-center border border-forest-100">
           {/* Search */}
           <div className="relative flex-1 min-w-64">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-forest-400" />
@@ -166,7 +161,7 @@ const InteractiveCourseCatalog = () => {
       </div>
 
       {/* Course Grid/List */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
+      <div>
         {filteredCourses.length === 0 ? (
           <div className="text-center py-12">
             <BookOpen className="h-12 w-12 text-forest-300 mx-auto" />

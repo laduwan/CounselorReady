@@ -12,7 +12,6 @@ import Landing from './pages/Landing';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
-import Courses from './pages/Courses';
 import CourseView from './pages/CourseView';
 import Credentials from './pages/Credentials';
 import Settings from './pages/Settings';
@@ -70,7 +69,7 @@ function AdminRoute({ children }) {
   }
   
   if (user?.role !== 'admin') {
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to="/courses" replace />;
   }
   
   return children;
@@ -89,7 +88,7 @@ function PublicRoute({ children }) {
   }
   
   if (isAuthenticated) {
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to="/courses" replace />;
   }
   
   return children;
@@ -115,7 +114,7 @@ function AppRoutes() {
       } />
       <Route path="/courses" element={
         <ProtectedRoute>
-          <Layout><Courses /></Layout>
+          <Layout><InteractiveCourseCatalog /></Layout>
         </ProtectedRoute>
       } />
       <Route path="/courses/:slug" element={
@@ -124,12 +123,8 @@ function AppRoutes() {
         </ProtectedRoute>
       } />
       
-      {/* Interactive Courses */}
-      <Route path="/learn" element={
-        <ProtectedRoute>
-          <Layout><InteractiveCourseCatalog /></Layout>
-        </ProtectedRoute>
-      } />
+      {/* Redirect old /learn path to /courses */}
+      <Route path="/learn" element={<Navigate to="/courses" replace />} />
       <Route path="/learn/:slug" element={
         <ProtectedRoute>
           <CourseViewerWrapper />
