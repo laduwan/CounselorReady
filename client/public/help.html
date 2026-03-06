@@ -11,21 +11,40 @@
       theme: {
         extend: {
           colors: {
-            burgundy: { 50: '#fdf5f6', 100: '#fae8eb', 200: '#f5d0d6', 700: '#8b2542', 800: '#6b1d34', 900: '#4a1524' },
-            forest: { 50: '#f3f6f4', 100: '#e3ebe5', 500: '#547c5f', 600: '#4A7C59', 700: '#34503d', 800: '#2b4133' },
+            burgundy: {
+              50: '#fdf5f6', 100: '#fae8eb', 200: '#f5d0d6', 300: '#eba9b5',
+              400: '#dd768a', 500: '#c94d65', 600: '#a83350', 700: '#8B2635',
+              800: '#6b1d34', 900: '#4a1524', 950: '#2d0a14'
+            },
+            forest: {
+              50: '#f3f6f4', 100: '#e3ebe5', 200: '#c8d7cc', 300: '#a1bba8',
+              400: '#759a7f', 500: '#547c5f', 600: '#4A7C59', 700: '#34503d',
+              800: '#2b4133', 900: '#1f3025', 950: '#121c16'
+            },
+            gold: {
+              50: '#fdf9f0', 100: '#f9f0db', 200: '#f3e0b5', 300: '#eacd86',
+              400: '#D4A855', 500: '#c49545', 600: '#a67936', 700: '#865e2c',
+              800: '#6b4a25', 900: '#4d351b'
+            },
             hunter: { 100: '#e8f0ea', 200: '#d1e1d5', 500: '#4A7C59', 600: '#3d6649', 700: '#34503d' },
             honey: { 100: '#fef3d1', 200: '#fde7a3', 400: '#D4A855', 500: '#c99a4a', 600: '#b8893f' }
+          },
+          fontFamily: {
+            'display': ['Cormorant Garamond', 'Georgia', 'serif'],
+            'body': ['Lato', 'system-ui', 'sans-serif']
           }
         }
       }
     }
   </script>
-  <link href="https://fonts.googleapis.com/css2?family=Source+Serif+Pro:wght@400;600;700&family=Source+Sans+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Lato:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/lib/fontawesome/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <style>
-    body { font-family: 'Source Sans Pro', system-ui, sans-serif; }
-    .font-display { font-family: 'Source Serif Pro', Georgia, serif; }
+    body { font-family: 'Lato', system-ui, sans-serif; }
+    .font-display { font-family: 'Cormorant Garamond', Georgia, serif; }
     .category-card:hover { transform: translateY(-2px); }
     .article-content h1 { font-size: 1.75rem; font-weight: 700; margin-bottom: 1rem; color: #6b1d34; }
     .article-content h2 { font-size: 1.35rem; font-weight: 600; margin-top: 1.5rem; margin-bottom: 0.75rem; color: #34503d; }
@@ -41,21 +60,21 @@
   </style>
 </head>
 <body class="bg-stone-50 min-h-screen">
-  <header class="bg-burgundy-800 text-white">
-    <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+  <header class="bg-white border-b border-stone-200 sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
       <a href="/" class="flex items-center gap-3">
-        <div class="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center">
-          <span class="font-display font-bold text-lg"><span class="text-honey-400">C</span><span class="text-hunter-500">R</span></span>
+        <div class="w-10 h-10 rounded-xl flex items-center justify-center shadow-md" style="background: linear-gradient(135deg, #8b2542, #6b1d34);">
+          <span class="font-display font-bold text-lg" style="position: relative; display: inline-block; width: 22px; height: 22px;"><span style="color: #D4A855; position: absolute; top: -3px; left: 0;">C</span><span style="color: #4A7C59; position: absolute; top: 5px; left: 6px;">R</span></span>
         </div>
         <span class="font-display font-semibold text-xl">
-          <span class="text-burgundy-200">Counselor</span><span class="text-hunter-500">Ready</span>
+          <span class="text-burgundy-800">Counselor</span><span class="text-forest-600">Ready</span>
         </span>
       </a>
       <nav class="flex items-center gap-6">
-        <a href="/courses.html" class="text-burgundy-200 hover:text-white transition-colors">Courses</a>
-        <a href="/help.html" class="text-white font-medium">Help</a>
-        <a href="/dashboard.html" id="dashboardLink" class="hidden px-4 py-2 bg-hunter-600 text-white rounded-lg hover:bg-hunter-700 transition-colors">Dashboard</a>
-        <a href="/login.html" id="loginLink" class="px-4 py-2 bg-white/10 text-white rounded-lg hover:bg-white/20 transition-colors">Login</a>
+        <a href="/courses.html" class="text-forest-500 hover:text-forest-700 transition-colors">Courses</a>
+        <a href="/help.html" class="text-forest-700 font-medium border-b-2 border-forest-600 pb-1">Help</a>
+        <a href="/dashboard.html" id="dashboardLink" class="hidden px-4 py-2 bg-forest-600 text-white rounded-lg hover:bg-forest-700 transition-colors">Dashboard</a>
+        <a href="/login.html" id="loginLink" class="px-4 py-2 bg-burgundy-700 text-white rounded-lg hover:bg-burgundy-800 transition-colors">Login</a>
       </nav>
     </div>
   </header>
@@ -161,7 +180,7 @@
 
   <footer class="bg-burgundy-900 text-burgundy-200 py-8">
     <div class="max-w-6xl mx-auto px-6 text-center">
-      <p>&copy; 2025 CounselorReady. All rights reserved.</p>
+      <p>&copy; 2026 CounselorReady. All rights reserved.</p>
       <div class="flex justify-center gap-6 mt-4">
         <a href="/privacy.html" class="hover:text-white">Privacy</a>
         <a href="/terms.html" class="hover:text-white">Terms</a>
