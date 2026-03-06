@@ -1,3 +1,8 @@
+/**
+ * Copyright (c) 2026 CounselorReady, a subsidiary of Ga Integrated Therapeutic Perspectives, LLC.
+ * All rights reserved. Proprietary and confidential.
+ * Unauthorized copying or distribution is strictly prohibited.
+ */
 // DROP INTO: /server/src/routes/imageUpload.js
 // THEN ADD TO /server/src/index.js:
 //   import imageUploadRoutes from './routes/imageUpload.js';
