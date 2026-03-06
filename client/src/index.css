@@ -140,3 +140,70 @@
     @apply focus:ring-2 focus:ring-burgundy-500 focus:ring-offset-2 outline-none;
   }
 }
+
+/* ==========================================
+   ACCESSIBILITY STYLES (WCAG 2.1 AA)
+   ========================================== */
+
+/* High Contrast Mode */
+.high-contrast {
+  --tw-bg-opacity: 1;
+  filter: contrast(1.25);
+}
+
+.high-contrast button,
+.high-contrast a,
+.high-contrast input,
+.high-contrast select,
+.high-contrast textarea {
+  border-width: 2px !important;
+}
+
+/* Reduced Motion */
+.reduced-motion *,
+.reduced-motion *::before,
+.reduced-motion *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+}
+
+/* Enhanced Focus Indicators (WCAG 2.4.7) */
+.focus-visible-enhanced *:focus-visible {
+  outline: 3px solid #4A7C59 !important;
+  outline-offset: 2px !important;
+  box-shadow: 0 0 0 4px rgba(74, 124, 89, 0.3) !important;
+}
+
+/* Dyslexia-Friendly Font */
+.dyslexia-font {
+  font-family: 'OpenDyslexic', 'Comic Sans MS', 'Arial', sans-serif !important;
+  letter-spacing: 0.05em;
+  word-spacing: 0.15em;
+}
+
+/* Screen reader only helper */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* Ensure visible when focused (skip-to-content) */
+.sr-only:focus,
+.sr-only:active {
+  position: static;
+  width: auto;
+  height: auto;
+  padding: inherit;
+  margin: inherit;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
+}
