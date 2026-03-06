@@ -36,6 +36,11 @@ const storageUsageSchema = new mongoose.Schema({
     type: String, // MIME type
   },
   
+  // URL (R2 public or signed URL)
+  url: {
+    type: String,
+  },
+
   // Association
   courseId: {
     type: mongoose.Schema.Types.ObjectId,

@@ -35,6 +35,7 @@ import aiRoutes from './routes/ai.js';
 import aiCourseGeneratorRoutes from './routes/aiCourseGenerator.js';
 import courseBuilderRoutes from './routes/courseBuilder.js';
 import narrationRoutes from './routes/narration.js';
+import uploadsRoutes from './routes/uploads.js';
 // Import services
 import { initializeScheduler } from './services/notificationScheduler.js';
 
@@ -216,6 +217,7 @@ app.use('/api/ai', aiRoutes);
 app.use('/api/ai-course-generator', aiCourseGeneratorRoutes);
 app.use('/api/course-builder', courseBuilderRoutes);
 app.use('/api/narration', narrationRoutes);
+app.use('/api/uploads', uploadsRoutes);
 
 // Static templates directory intentionally NOT served publicly
 // Certificate assets (signature.png, certificate_template.pdf) are loaded
