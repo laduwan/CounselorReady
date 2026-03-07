@@ -297,26 +297,35 @@ TARGET WORD COUNT: ${targetWords} words minimum
 KNOWLEDGE CHECKS NEEDED: ${kcCount}
 ${mod.objectives ? `MODULE OBJECTIVES:\n${mod.objectives.map((o, i) => `${i + 1}. ${o}`).join('\n')}` : ''}
 
-${sourceContent ? `SOURCE CONTENT TO EXPAND:\n${sourceContent.substring(0, 6000)}\n\n` : ''}
+${sourceContent ? `SOURCE CONTENT TO EXPAND:\n${sourceContent.substring(0, 6000)}\n\nIMPORTANT: If the source content contains questions, quizzes, or knowledge checks, preserve their approximate placement relative to the surrounding content topics. Place each knowledge check after the same content it follows in the original.\n\n` : ''}
 
-Generate content blocks as a JSON array. Include:
+Generate content blocks as a JSON array.
+
+CRITICAL LAYOUT RULE: Distribute knowledge checks THROUGHOUT the module — place one after every 2-3 text blocks to reinforce learning as the reader progresses. Do NOT group all knowledge checks together at the end.
+
+Structure pattern to follow:
 1. A sectionDivider block at the start
-2. Multiple text blocks with substantial HTML content (~500+ words each)
-3. At least 1 accordion block for key concepts
-4. ${kcCount} knowledge check blocks (mix of multipleChoice and multiSelect)
-5. 1 reflection block
-6. Use <h2>, <h3>, <p>, <strong>, <em>, <ul>, <li> in text content
+2. 2-3 text blocks with substantial HTML content (~500+ words each)
+3. 1 knowledge check block (multipleChoice or multiSelect) testing the PRECEDING content
+4. Repeat steps 2-3 until all ${kcCount} knowledge checks are distributed throughout
+5. At least 1 accordion block for key concepts (place where natural, e.g. after introducing terminology)
+6. 1 reflection block at the end
+7. Use <h2>, <h3>, <p>, <strong>, <em>, <ul>, <li> in text content
 
 Return ONLY a valid JSON array of blocks (no markdown, no backticks):
 [
   { "type": "sectionDivider", "title": "...", "sectionNumber": ${(moduleIndex || 0) + 1}, "subtitle": "..." },
   { "type": "text", "content": "<h2>...</h2><p>...</p>" },
-  { "type": "accordion", "accordionItems": [{ "title": "...", "content": "..." }] },
+  { "type": "text", "content": "<h2>...</h2><p>...</p>" },
   { "type": "multipleChoice", "question": "...", "options": [{ "text": "...", "isCorrect": false }, ...], "explanation": "..." },
+  { "type": "text", "content": "<h2>...</h2><p>...</p>" },
+  { "type": "accordion", "accordionItems": [{ "title": "...", "content": "..." }] },
+  { "type": "multiSelect", "question": "...", "options": [{ "text": "...", "isCorrect": false }, ...], "explanation": "..." },
+  { "type": "text", "content": "<h2>...</h2><p>...</p>" },
   { "type": "reflection", "question": "...", "minLength": 100 }
 ]
 
-Make all knowledge check questions clinically relevant with plausible distractors. Include detailed explanations for each question. Content must be evidence-based and appropriate for licensed mental health professionals.`;
+Make all knowledge check questions clinically relevant with plausible distractors. Include detailed explanations for each question. Each knowledge check should test comprehension of the content immediately BEFORE it, not content that comes later. Content must be evidence-based and appropriate for licensed mental health professionals.`;
 
     console.log(`🤖 Generating content for "${mod.title}" (${targetWords}w, ${kcCount} KC)...`);
 

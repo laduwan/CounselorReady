@@ -112,7 +112,7 @@ Requirements:
 - Write ${minWordsPerModule} words minimum
 - Include clinical examples and evidence-based practices
 - Use clear headings and paragraphs
-- Include 3 knowledge check questions at the end
+- Distribute 3 knowledge check questions throughout the content (place one after every 2-3 paragraphs, NOT all at the end)
 - Format as HTML with <h3>, <p>, <ul>, <strong> tags
 - Target audience: Licensed mental health professionals`;
 
