@@ -41,7 +41,7 @@ export default function Settings() {
                 onClick={() => setActiveTab(tab.id)}
                 className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                   activeTab === tab.id
-                    ? 'bg-moss-50 text-moss-600'
+                    ? 'bg-burgundy-100 text-burgundy-700'
                     : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                 }`}
               >
@@ -218,7 +218,7 @@ function NotificationSettings({ user }) {
           <button
             onClick={() => setSettings(prev => ({ ...prev, emailReminders: !prev.emailReminders }))}
             className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-              settings.emailReminders ? 'bg-moss-600' : 'bg-gray-200'
+              settings.emailReminders ? 'bg-burgundy-700' : 'bg-gray-200'
             }`}
           >
             <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
@@ -235,7 +235,7 @@ function NotificationSettings({ user }) {
           <button
             onClick={() => setSettings(prev => ({ ...prev, marketingEmails: !prev.marketingEmails }))}
             className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-              settings.marketingEmails ? 'bg-moss-600' : 'bg-gray-200'
+              settings.marketingEmails ? 'bg-burgundy-700' : 'bg-gray-200'
             }`}
           >
             <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
@@ -322,9 +322,9 @@ function SubscriptionSettings({ user, hasSubscription }) {
         </div>
 
         {!hasSubscription && (
-          <div className="bg-moss-50 rounded-lg p-4 mb-6">
-            <h3 className="font-medium text-moss-900 mb-2">Upgrade to Pro</h3>
-            <ul className="space-y-2 text-sm text-moss-700 mb-4">
+          <div className="bg-burgundy-100 rounded-lg p-4 mb-6">
+            <h3 className="font-medium text-burgundy-900 mb-2">Upgrade to Pro</h3>
+            <ul className="space-y-2 text-sm text-burgundy-800 mb-4">
               <li className="flex items-center gap-2">
                 <CheckCircle className="w-4 h-4" />
                 All courses included

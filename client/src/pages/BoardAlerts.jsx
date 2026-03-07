@@ -52,7 +52,7 @@ export default function BoardAlerts() {
     }
   };
 
-  if (loading) return <div className="flex justify-center py-12"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-moss-600"></div></div>;
+  if (loading) return <div className="flex justify-center py-12"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-burgundy-700"></div></div>;
 
   // Get unique states for filter
   const states = [...new Set(alerts.map(a => a.state))].sort();
@@ -84,7 +84,7 @@ export default function BoardAlerts() {
         <div className="flex rounded-lg border overflow-hidden text-sm">
           {[['all', 'All'], ['unread', 'Unread'], ['urgent', 'Urgent']].map(([val, label]) => (
             <button key={val} onClick={() => setFilter(val)}
-              className={`px-3 py-1.5 ${filter === val ? 'bg-moss-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}>
+              className={`px-3 py-1.5 ${filter === val ? 'bg-burgundy-700 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}>
               {label}
             </button>
           ))}
@@ -141,7 +141,7 @@ export default function BoardAlerts() {
                         <span>Posted: {new Date(alert.createdAt).toLocaleDateString()}</span>
                         {alert.sourceUrl && (
                           <a href={alert.sourceUrl} target="_blank" rel="noopener noreferrer"
-                            className="text-moss-600 hover:underline flex items-center gap-1">
+                            className="text-burgundy-700 hover:underline flex items-center gap-1">
                             Source <ExternalLink className="w-3 h-3" />
                           </a>
                         )}

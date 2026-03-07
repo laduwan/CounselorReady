@@ -16,7 +16,6 @@ import {
   Sliders,
   BarChart3,
   Clock,
-  Award,
   ArrowRight,
   MessageCircle,
   ChevronRight
@@ -59,7 +58,6 @@ export default function Dashboard() {
   const totalCEHours = credentials.summary?.overallProgress?.totalCompleted || 0;
   const totalCredentials = credentials.summary?.totalCredentials || 0;
   const certCount = Array.isArray(certificates) ? certificates.length : 0;
-  const totalLearningTime = courses.reduce((sum, c) => sum + (c.totalEstimatedTime || 60), 0);
 
   if (loading) {
     return (
@@ -88,45 +86,53 @@ export default function Dashboard() {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-8">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
         {/* CE Hours */}
-        <div className="bg-white rounded-xl p-4 border border-burgundy-100 shadow-sm flex items-center gap-3">
-          <div className="w-10 h-10 bg-forest-100 rounded-lg flex items-center justify-center flex-shrink-0">
-            <Award className="w-5 h-5 text-forest-600" />
+        <div className="bg-white rounded-xl p-4 border border-burgundy-100 shadow-sm">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-forest-600 text-xs">CE Hours Earned</span>
+            <div className="w-7 h-7 bg-forest-100 rounded-lg flex items-center justify-center">
+              <Clock className="w-3.5 h-3.5 text-forest-600" />
+            </div>
           </div>
-          <p className="font-display text-2xl font-semibold text-burgundy-900">{totalCEHours} <span className="text-sm font-normal text-forest-500">CE hrs</span></p>
-        </div>
-
-        {/* Total Learning Time */}
-        <div className="bg-white rounded-xl p-4 border border-burgundy-100 shadow-sm flex items-center gap-3">
-          <div className="w-10 h-10 bg-forest-100 rounded-lg flex items-center justify-center flex-shrink-0">
-            <Clock className="w-5 h-5 text-forest-600" />
-          </div>
-          <p className="font-display text-2xl font-semibold text-burgundy-900">{Math.round(totalLearningTime / 60)} <span className="text-sm font-normal text-forest-500">hrs total</span></p>
+          <p className="font-display text-2xl font-semibold text-burgundy-900">{totalCEHours}</p>
+          <p className="text-forest-500 text-xs">This cycle</p>
         </div>
 
         {/* Courses Completed */}
-        <div className="bg-white rounded-xl p-4 border border-burgundy-100 shadow-sm flex items-center gap-3">
-          <div className="w-10 h-10 bg-burgundy-100 rounded-lg flex items-center justify-center flex-shrink-0">
-            <CheckCircle className="w-5 h-5 text-burgundy-600" />
+        <div className="bg-white rounded-xl p-4 border border-burgundy-100 shadow-sm">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-forest-600 text-xs">Courses Completed</span>
+            <div className="w-7 h-7 bg-burgundy-100 rounded-lg flex items-center justify-center">
+              <CheckCircle className="w-3.5 h-3.5 text-burgundy-600" />
+            </div>
           </div>
-          <p className="font-display text-2xl font-semibold text-burgundy-900">{completedCourses} <span className="text-sm font-normal text-forest-500">done</span></p>
+          <p className="font-display text-2xl font-semibold text-burgundy-900">{completedCourses}</p>
+          <p className="text-forest-500 text-xs">All time</p>
         </div>
 
         {/* Certificates Stored */}
-        <div className="bg-white rounded-xl p-4 border border-burgundy-100 shadow-sm flex items-center gap-3">
-          <div className="w-10 h-10 bg-honey-100 rounded-lg flex items-center justify-center flex-shrink-0">
-            <FileText className="w-5 h-5 text-honey-600" />
+        <div className="bg-white rounded-xl p-4 border border-burgundy-100 shadow-sm">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-forest-600 text-xs">Certificates Stored</span>
+            <div className="w-7 h-7 bg-honey-100 rounded-lg flex items-center justify-center">
+              <FileText className="w-3.5 h-3.5 text-honey-600" />
+            </div>
           </div>
-          <p className="font-display text-2xl font-semibold text-burgundy-900">{certCount} <span className="text-sm font-normal text-forest-500">certs</span></p>
+          <p className="font-display text-2xl font-semibold text-burgundy-900">{certCount}</p>
+          <p className="text-forest-500 text-xs">Uploaded</p>
         </div>
 
         {/* Active Credentials */}
-        <div className="bg-white rounded-xl p-4 border border-burgundy-100 shadow-sm flex items-center gap-3">
-          <div className="w-10 h-10 bg-forest-100 rounded-lg flex items-center justify-center flex-shrink-0">
-            <ShieldCheck className="w-5 h-5 text-forest-600" />
+        <div className="bg-white rounded-xl p-4 border border-burgundy-100 shadow-sm">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-forest-600 text-xs">Active Credentials</span>
+            <div className="w-7 h-7 bg-forest-100 rounded-lg flex items-center justify-center">
+              <ShieldCheck className="w-3.5 h-3.5 text-forest-600" />
+            </div>
           </div>
-          <p className="font-display text-2xl font-semibold text-burgundy-900">{totalCredentials} <span className="text-sm font-normal text-forest-500">active</span></p>
+          <p className="font-display text-2xl font-semibold text-burgundy-900">{totalCredentials}</p>
+          <p className="text-forest-500 text-xs">Tracked</p>
         </div>
       </div>
 

@@ -90,7 +90,7 @@ export default function OrganizationDashboard() {
     }
   };
 
-  if (loading) return <div className="flex justify-center py-12"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-moss-600"></div></div>;
+  if (loading) return <div className="flex justify-center py-12"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-burgundy-700"></div></div>;
 
   const orgTypes = {
     group_practice: 'Group Practice', agency: 'Agency', clinic: 'Clinic',
@@ -101,7 +101,7 @@ export default function OrganizationDashboard() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-gray-900">Organization Dashboard</h1>
-        <button onClick={() => setShowCreateForm(!showCreateForm)} className="flex items-center gap-2 px-4 py-2 bg-moss-600 text-white rounded-lg hover:bg-moss-700 text-sm">
+        <button onClick={() => setShowCreateForm(!showCreateForm)} className="flex items-center gap-2 px-4 py-2 bg-burgundy-700 text-white rounded-lg hover:bg-burgundy-800 text-sm">
           <Plus className="w-4 h-4" /> New Organization
         </button>
       </div>
@@ -141,7 +141,7 @@ export default function OrganizationDashboard() {
             </div>
             <div className="md:col-span-2 flex justify-end gap-3">
               <button type="button" onClick={() => setShowCreateForm(false)} className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800">Cancel</button>
-              <button type="submit" className="px-4 py-2 bg-moss-600 text-white rounded-lg hover:bg-moss-700 text-sm">Create</button>
+              <button type="submit" className="px-4 py-2 bg-burgundy-700 text-white rounded-lg hover:bg-burgundy-800 text-sm">Create</button>
             </div>
           </form>
         </div>
@@ -152,7 +152,7 @@ export default function OrganizationDashboard() {
         <div className="flex gap-2 mb-6 flex-wrap">
           {orgs.map(org => (
             <button key={org._id} onClick={() => { setSelectedOrg(org); loadDashboard(org._id); }}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${selectedOrg?._id === org._id ? 'bg-moss-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${selectedOrg?._id === org._id ? 'bg-burgundy-700 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>
               <Building2 className="w-4 h-4 inline mr-1" /> {org.name}
             </button>
           ))}
@@ -164,7 +164,7 @@ export default function OrganizationDashboard() {
           <Building2 className="w-12 h-12 mx-auto text-gray-300 mb-4" />
           <h2 className="text-lg font-semibold text-gray-700 mb-2">No Organization Yet</h2>
           <p className="text-gray-500 mb-4">Create an organization to manage your team's CE compliance in one place.</p>
-          <button onClick={() => setShowCreateForm(true)} className="px-4 py-2 bg-moss-600 text-white rounded-lg hover:bg-moss-700 text-sm">Create Organization</button>
+          <button onClick={() => setShowCreateForm(true)} className="px-4 py-2 bg-burgundy-700 text-white rounded-lg hover:bg-burgundy-800 text-sm">Create Organization</button>
         </div>
       )}
 
@@ -215,11 +215,11 @@ export default function OrganizationDashboard() {
           <div className="grid md:grid-cols-2 gap-4 mb-6">
             <div className="bg-white rounded-xl border p-4">
               <p className="text-sm text-gray-500 mb-1">Total CE Hours Earned (Team)</p>
-              <p className="text-3xl font-bold text-moss-600">{dashboard.stats.totalCEHoursEarned}</p>
+              <p className="text-3xl font-bold text-burgundy-700">{dashboard.stats.totalCEHoursEarned}</p>
             </div>
             <div className="bg-white rounded-xl border p-4">
               <p className="text-sm text-gray-500 mb-1">Total Courses Completed (Team)</p>
-              <p className="text-3xl font-bold text-moss-600">{dashboard.stats.totalCoursesCompleted}</p>
+              <p className="text-3xl font-bold text-burgundy-700">{dashboard.stats.totalCoursesCompleted}</p>
             </div>
           </div>
 
@@ -227,7 +227,7 @@ export default function OrganizationDashboard() {
           <div className="bg-white rounded-xl border">
             <div className="p-4 border-b flex items-center justify-between">
               <h2 className="text-lg font-semibold">Team Members</h2>
-              <button onClick={() => setShowInviteForm(!showInviteForm)} className="flex items-center gap-2 px-3 py-1.5 bg-moss-50 text-moss-700 rounded-lg hover:bg-moss-100 text-sm">
+              <button onClick={() => setShowInviteForm(!showInviteForm)} className="flex items-center gap-2 px-3 py-1.5 bg-burgundy-100 text-burgundy-800 rounded-lg hover:bg-burgundy-200 text-sm">
                 <Mail className="w-4 h-4" /> Invite
               </button>
             </div>
@@ -247,7 +247,7 @@ export default function OrganizationDashboard() {
                       <option value="manager">Manager</option>
                     </select>
                   </div>
-                  <button type="submit" className="px-4 py-2 bg-moss-600 text-white rounded-lg hover:bg-moss-700 text-sm">Send Invite</button>
+                  <button type="submit" className="px-4 py-2 bg-burgundy-700 text-white rounded-lg hover:bg-burgundy-800 text-sm">Send Invite</button>
                 </form>
               </div>
             )}

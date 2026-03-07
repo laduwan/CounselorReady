@@ -44,7 +44,7 @@ export default function Referrals() {
     }
   }
 
-  if (loading) return <div className="flex justify-center p-12"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-moss-600"></div></div>;
+  if (loading) return <div className="flex justify-center p-12"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-burgundy-700"></div></div>;
 
   return (
     <div className="max-w-3xl mx-auto" role="main" aria-label="Referral Program">
@@ -52,23 +52,23 @@ export default function Referrals() {
       <p className="text-gray-600 mb-6">Earn $10 credit for every colleague who subscribes</p>
 
       {/* Referral Link Card */}
-      <div className="bg-gradient-to-r from-moss-600 to-moss-700 rounded-xl p-6 text-white mb-6">
+      <div className="bg-gradient-to-r from-burgundy-700 to-burgundy-800 rounded-xl p-6 text-white mb-6">
         <h2 className="text-lg font-semibold mb-2">Your Referral Link</h2>
         <div className="flex items-center gap-2">
           <input
             readOnly
             value={data?.referralLink || ''}
-            className="flex-1 bg-white bg-opacity-20 rounded-lg px-4 py-2 text-white placeholder-moss-200 text-sm"
+            className="flex-1 bg-white bg-opacity-20 rounded-lg px-4 py-2 text-white placeholder-burgundy-300 text-sm"
             aria-label="Your referral link"
           />
           <button
             onClick={copyLink}
-            className="px-4 py-2 bg-white text-moss-700 rounded-lg font-medium hover:bg-moss-50 transition text-sm"
+            className="px-4 py-2 bg-white text-burgundy-800 rounded-lg font-medium hover:bg-burgundy-100 transition text-sm"
           >
             {copied ? 'Copied!' : 'Copy'}
           </button>
         </div>
-        <p className="text-moss-200 text-sm mt-2">Code: <span className="font-mono font-bold">{data?.referralCode}</span></p>
+        <p className="text-burgundy-300 text-sm mt-2">Code: <span className="font-mono font-bold">{data?.referralCode}</span></p>
       </div>
 
       {/* Stats */}
@@ -82,7 +82,7 @@ export default function Referrals() {
           <div className="text-xs text-gray-500">Sign Ups</div>
         </div>
         <div className="bg-white rounded-xl border p-4 text-center">
-          <div className="text-2xl font-bold text-moss-600">{data?.stats?.totalConversions || 0}</div>
+          <div className="text-2xl font-bold text-burgundy-700">{data?.stats?.totalConversions || 0}</div>
           <div className="text-xs text-gray-500">Subscribed</div>
         </div>
         <div className="bg-white rounded-xl border p-4 text-center">

@@ -45,7 +45,7 @@ function LoadingScreen() {
   const { serverWaking } = useAuth();
   return (
     <div className="min-h-screen flex flex-col items-center justify-center gap-4 bg-stone-50">
-      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-moss-600"></div>
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-burgundy-700"></div>
       {serverWaking && (
         <div className="text-center animate-fade-in">
           <p className="text-gray-600 text-sm font-medium">Server is waking up...</p>
