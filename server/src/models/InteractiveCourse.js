@@ -70,6 +70,7 @@ const ContentBlockSchema = new mongoose.Schema({
 const SectionSchema = new mongoose.Schema({
   title: { type: String, required: true },
   description: String,
+  module: String, // Group label for sidebar navigation (e.g. "Module 1: Foundations")
   order: { type: Number, required: true },
   contentBlocks: [ContentBlockSchema],
   
