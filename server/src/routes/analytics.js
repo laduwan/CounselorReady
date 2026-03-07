@@ -515,8 +515,10 @@ router.get('/admin/overview', protect, async (req, res) => {
         $project: {
           _id: '$course._id',
           title: '$course.title',
-          'analytics.enrollments': '$enrollments',
-          'analytics.avgRating': '$course.analytics.avgRating'
+          analytics: {
+            enrollments: '$enrollments',
+            avgRating: '$course.analytics.avgRating'
+          }
         }
       }
     ]);
