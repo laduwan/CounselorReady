@@ -269,7 +269,7 @@
   </main>
 
   <script>
-    const API_URL = localStorage.getItem('apiUrl') || '/api';
+    const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://api.counselorready.com';
     const token = localStorage.getItem('token');
 
     // Auth check
@@ -279,8 +279,7 @@
 
     // Load admin email
     try {
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      fetch(`${API_URL}/users/me`, { headers: { 'Authorization': `Bearer ${token}` } })
+      fetch(`${API_URL}/api/users/me`, { headers: { 'Authorization': `Bearer ${token}` } })
         .then(r => r.json())
         .then(data => {
           const user = data.user || data;
@@ -294,7 +293,7 @@
     } catch(e) {}
 
     // Load stats
-    fetch(`${API_URL}/admin/stats/overview`, {
+    fetch(`${API_URL}/api/admin/stats/overview`, {
       headers: { 'Authorization': `Bearer ${token}` }
     })
     .then(r => r.json())
