@@ -24,8 +24,8 @@ export default function GamificationPage() {
     try {
       setLoading(true);
       const [profileRes, leaderRes] = await Promise.all([
-        api.get('/api/gamification/my'),
-        api.get('/api/gamification/leaderboard')
+        api.get('/gamification/my'),
+        api.get('/gamification/leaderboard')
       ]);
       setProfile(profileRes.data);
       setLeaderboard(leaderRes.data);
@@ -38,7 +38,7 @@ export default function GamificationPage() {
 
   async function updateWeeklyGoal(hours) {
     try {
-      await api.put('/api/gamification/weekly-goal', { hours });
+      await api.put('/gamification/weekly-goal', { hours });
       setProfile(p => ({ ...p, weeklyGoalHours: hours }));
     } catch (err) {
       console.error(err);
