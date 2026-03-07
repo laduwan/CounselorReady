@@ -40,64 +40,47 @@ function CourseViewerWrapper() {
   return <CourseViewer courseSlug={slug} />;
 }
 
+// Loading screen with server wake-up awareness
+function LoadingScreen() {
+  const { serverWaking } = useAuth();
+  return (
+    <div className="min-h-screen flex flex-col items-center justify-center gap-4 bg-stone-50">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-moss-600"></div>
+      {serverWaking && (
+        <div className="text-center animate-fade-in">
+          <p className="text-gray-600 text-sm font-medium">Server is waking up...</p>
+          <p className="text-gray-400 text-xs mt-1">This may take up to 30 seconds on first visit</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // Protected Route wrapper
 function ProtectedRoute({ children }) {
   const { isAuthenticated, loading } = useAuth();
-  
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-moss-600"></div>
-      </div>
-    );
-  }
-  
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
-  }
-  
+
+  if (loading) return <LoadingScreen />;
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
   return children;
 }
 
 // Admin Route wrapper (must be logged in + admin role)
 function AdminRoute({ children }) {
   const { isAuthenticated, loading, user } = useAuth();
-  
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-moss-600"></div>
-      </div>
-    );
-  }
-  
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
-  }
-  
-  if (user?.role !== 'admin') {
-    return <Navigate to="/courses" replace />;
-  }
-  
+
+  if (loading) return <LoadingScreen />;
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
+  if (user?.role !== 'admin') return <Navigate to="/courses" replace />;
   return children;
 }
 
 // Public Route wrapper (redirect if already logged in)
 function PublicRoute({ children }) {
   const { isAuthenticated, loading } = useAuth();
-  
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-moss-600"></div>
-      </div>
-    );
-  }
-  
-  if (isAuthenticated) {
-    return <Navigate to="/courses" replace />;
-  }
-  
+
+  if (loading) return <LoadingScreen />;
+  if (isAuthenticated) return <Navigate to="/courses" replace />;
   return children;
 }
 

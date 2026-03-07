@@ -7,6 +7,7 @@ import axios from 'axios';
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'https://api.counselorready.com/api',
+  timeout: 30000, // 30s timeout to handle Render cold starts
   headers: {
     'Content-Type': 'application/json'
   }
@@ -21,15 +22,26 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Handle auth errors
+// Retry on network errors (cold start resilience)
 api.interceptors.response.use(
   (response) => response,
-  (error) => {
-    if (error.response?.status === 401) {
-      localStorage.removeItem('token');
-      window.location.href = '/login';
+  async (error) => {
+    const config = error.config;
+
+    // Don't retry if already retried, or if it's a real HTTP error (not network)
+    if (config._retried || error.response) {
+      // Handle 401 specifically
+      if (error.response?.status === 401) {
+        localStorage.removeItem('token');
+        window.location.href = '/login';
+      }
+      return Promise.reject(error);
     }
-    return Promise.reject(error);
+
+    // Network error or timeout — retry once after 3s
+    config._retried = true;
+    await new Promise(r => setTimeout(r, 3000));
+    return api(config);
   }
 );
 
