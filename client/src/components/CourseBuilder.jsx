@@ -2074,13 +2074,21 @@ function AIGenerator({ onGenerated }) {
       setProgressMsg(`Module ${mi + 1} of ${moduleCount}: ${mod.title.split(":").pop().trim()}...`);
 
       // Get source content for this module if uploaded
-      const sourceContent = mod.sourceContent ||
+      let sourceContent = mod.sourceContent ||
         (outline._uploadedContent
           ? outline._uploadedContent.substring(
               mi * Math.floor(outline._uploadedContent.length / moduleCount),
               (mi + 1) * Math.floor(outline._uploadedContent.length / moduleCount)
             )
           : "");
+
+      // Pre-mark knowledge check positions so the AI preserves original placement
+      if (sourceContent) {
+        sourceContent = sourceContent.replace(
+          /(?:^|\n)\s*(?:Question\s*\d*[:.]|Knowledge Check[:.]?|Quiz[:.]?|Assessment[:.]?|Check Your Understanding[:.]?|Which of the following|Select all that apply|True or False[:.]?|All of the following EXCEPT)\s*/gim,
+          (match) => `\n[KNOWLEDGE CHECK MARKER] ${match.trim()} `
+        );
+      }
 
       const body = {
         courseTitle: outline.title,
