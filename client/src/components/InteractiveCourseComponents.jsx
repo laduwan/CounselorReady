@@ -123,39 +123,40 @@ export function MatchingExercise({ pairs, instructions = "Drag each term to its 
   const avail = terms.filter(t => !used.includes(t.id));
 
   return (
-    <div style={{ background: B.card, borderRadius: 16, border: `1px solid ${B.border}`, overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
-      <div style={{ background: B.green, padding: '16px 24px' }}>
-        <h3 style={{ color: '#fff', fontWeight: 700, fontSize: 17, margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}><GripVertical size={20} /> Matching Exercise</h3>
-        <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: 13, marginTop: 4 }}>{instructions}</p>
-      </div>
-      <div style={{ padding: 24 }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
+    <div style={{ background: B.card, borderRadius: 12, border: `1px solid ${B.border}`, overflow: 'hidden' }}>
+      <div style={{ padding: '16px 20px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+          <GripVertical size={14} style={{ color: B.green }} />
+          <span style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: B.muted }}>Matching Exercise</span>
+        </div>
+        <p style={{ fontSize: 13, color: B.light, marginBottom: 16 }}>{instructions}</p>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
           <div>
-            <h4 style={{ fontWeight: 600, color: B.navy, marginBottom: 12, fontSize: 14 }}>Terms</h4>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <h4 style={{ fontWeight: 600, color: B.navy, marginBottom: 8, fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.03em' }}>Terms</h4>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
               {avail.map(t => (
                 <div key={t.id} draggable={!done} onDragStart={(e) => { setDragged(t); e.dataTransfer.effectAllowed = 'move'; }}
-                  style={{ padding: '12px 16px', background: B.greenBg, border: `2px solid ${B.green}33`, borderRadius: 10, cursor: done ? 'default' : 'grab', fontWeight: 500, color: B.green, fontSize: 14, opacity: done ? 0.5 : 1 }}>
+                  style={{ padding: '8px 12px', background: B.greenBg, border: `1.5px solid ${B.green}33`, borderRadius: 8, cursor: done ? 'default' : 'grab', fontWeight: 500, color: B.green, fontSize: 13, opacity: done ? 0.5 : 1 }}>
                   {t.term}
                 </div>
               ))}
-              {avail.length === 0 && !show && <p style={{ color: B.light, fontSize: 13, fontStyle: 'italic' }}>All terms matched!</p>}
+              {avail.length === 0 && !show && <p style={{ color: B.light, fontSize: 12, fontStyle: 'italic' }}>All terms matched!</p>}
             </div>
           </div>
           <div>
-            <h4 style={{ fontWeight: 600, color: B.navy, marginBottom: 12, fontSize: 14 }}>Definitions</h4>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <h4 style={{ fontWeight: 600, color: B.navy, marginBottom: 8, fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.03em' }}>Definitions</h4>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
               {defs.map(d => {
                 const m = matches[d.id]; const ok = show && m?.term === d.term; const bad = show && m && m.term !== d.term;
                 return (
                   <div key={d.id} onDragOver={(e) => e.preventDefault()} onDrop={(e) => { e.preventDefault(); if (dragged && !matches[d.id]) setMatches(p => ({ ...p, [d.id]: dragged })); setDragged(null); }}
-                    style={{ minHeight: 60, padding: '12px 16px', borderRadius: 10, border: `2px dashed ${m ? (ok ? B.ok : bad ? B.err : B.gold) : B.border}`, background: m ? (ok ? B.okBg : bad ? B.errBg : B.goldBg) : B.navyBg }}>
-                    <p style={{ fontSize: 13, color: B.muted, marginBottom: m ? 8 : 0 }}>{d.definition}</p>
+                    style={{ minHeight: 48, padding: '8px 12px', borderRadius: 8, border: `1.5px dashed ${m ? (ok ? B.ok : bad ? B.err : B.gold) : B.border}`, background: m ? (ok ? B.okBg : bad ? B.errBg : B.goldBg) : B.navyBg }}>
+                    <p style={{ fontSize: 12, color: B.muted, marginBottom: m ? 6 : 0 }}>{d.definition}</p>
                     {m && (
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 12px', borderRadius: 6, background: ok ? 'rgba(5,150,105,0.12)' : bad ? 'rgba(220,38,38,0.12)' : B.goldBg }}>
-                        <span style={{ fontWeight: 600, fontSize: 13, color: ok ? B.ok : bad ? B.err : '#92400E' }}>{m.term}</span>
-                        {!done && <button onClick={() => setMatches(p => { const n = {...p}; delete n[d.id]; return n; })} style={{ ...btnReset, background: 'none', color: B.light, padding: 2 }}><X size={16} /></button>}
-                        {show && (ok ? <CheckCircle2 size={16} color={B.ok} /> : <X size={16} color={B.err} />)}
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '4px 8px', borderRadius: 4, background: ok ? 'rgba(5,150,105,0.12)' : bad ? 'rgba(220,38,38,0.12)' : B.goldBg }}>
+                        <span style={{ fontWeight: 600, fontSize: 12, color: ok ? B.ok : bad ? B.err : '#92400E' }}>{m.term}</span>
+                        {!done && <button onClick={() => setMatches(p => { const n = {...p}; delete n[d.id]; return n; })} style={{ ...btnReset, background: 'none', color: B.light, padding: 2 }}><X size={14} /></button>}
+                        {show && (ok ? <CheckCircle2 size={14} color={B.ok} /> : <X size={14} color={B.err} />)}
                       </div>
                     )}
                   </div>
@@ -164,18 +165,18 @@ export function MatchingExercise({ pairs, instructions = "Drag each term to its 
             </div>
           </div>
         </div>
-        <div style={{ marginTop: 24, paddingTop: 16, borderTop: `1px solid ${B.border}`, display: 'flex', justifyContent: show ? 'space-between' : 'flex-end', alignItems: 'center' }}>
+        <div style={{ marginTop: 16, paddingTop: 12, borderTop: `1px solid ${B.border}`, display: 'flex', justifyContent: show ? 'space-between' : 'flex-end', alignItems: 'center' }}>
           {show ? (
             <>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 16px', borderRadius: 10, background: score === pairs.length ? B.okBg : B.goldBg }}>
-                <Award size={20} color={score === pairs.length ? B.ok : B.gold} /><span style={{ fontWeight: 700 }}>Score: {score}/{pairs.length} ({Math.round(score/pairs.length*100)}%)</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 12px', borderRadius: 8, background: score === pairs.length ? B.okBg : B.goldBg }}>
+                <Award size={16} color={score === pairs.length ? B.ok : B.gold} /><span style={{ fontWeight: 700, fontSize: 13 }}>Score: {score}/{pairs.length}</span>
               </div>
-              <button onClick={reset} style={{ ...btnReset, display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px', background: B.navyBg, borderRadius: 10, fontWeight: 600, color: B.navy }}><RotateCcw size={16} /> Try Again</button>
+              <button onClick={reset} style={{ ...btnReset, display: 'flex', alignItems: 'center', gap: 5, padding: '6px 12px', background: B.navyBg, borderRadius: 8, fontWeight: 600, fontSize: 13, color: B.navy }}><RotateCcw size={14} /> Try Again</button>
             </>
           ) : (
             <button onClick={check} disabled={Object.keys(matches).length !== defs.length}
-              style={{ ...btnReset, display: 'flex', alignItems: 'center', gap: 8, padding: '10px 24px', borderRadius: 10, fontWeight: 700, fontSize: 14, background: Object.keys(matches).length === defs.length ? B.green : B.border, color: Object.keys(matches).length === defs.length ? '#fff' : B.light }}>
-              <Check size={16} /> Check Answers
+              style={{ ...btnReset, display: 'flex', alignItems: 'center', gap: 6, padding: '8px 18px', borderRadius: 8, fontWeight: 600, fontSize: 13, background: Object.keys(matches).length === defs.length ? B.green : B.border, color: Object.keys(matches).length === defs.length ? '#fff' : B.light }}>
+              <Check size={14} /> Check Answers
             </button>
           )}
         </div>
@@ -192,42 +193,43 @@ export function MultipleChoice({ question, options, explanation, onAnswer }) {
   const [sub, setSub] = useState(false);
   const ok = sel !== null && options[sel]?.isCorrect;
   return (
-    <div style={{ background: B.card, borderRadius: 16, border: `1px solid ${B.border}`, overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
-      <div style={{ background: B.navy, padding: '16px 24px' }}>
-        <h3 style={{ color: '#fff', fontWeight: 700, fontSize: 17, margin: 0 }}>Question</h3>
-      </div>
-      <div style={{ padding: 24 }}>
-        <p style={{ fontSize: 17, color: B.navy, fontWeight: 600, marginBottom: 24 }}>{question}</p>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+    <div style={{ background: B.card, borderRadius: 12, border: `1px solid ${B.border}`, overflow: 'hidden' }}>
+      <div style={{ padding: '16px 20px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+          <div style={{ width: 6, height: 6, borderRadius: '50%', background: B.navy, flexShrink: 0 }} />
+          <span style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: B.muted }}>Knowledge Check</span>
+        </div>
+        <p style={{ fontSize: 15, color: B.navy, fontWeight: 600, marginBottom: 14, lineHeight: 1.5 }}>{question}</p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
           {options.map((o, i) => {
             const s = sel === i; const gc = sub && o.isCorrect; const bc = sub && s && !o.isCorrect;
             return (
               <button key={i} onClick={() => !sub && setSel(i)} disabled={sub}
-                style={{ ...btnReset, width: '100%', textAlign: 'left', padding: '16px 20px', borderRadius: 12, border: `2px solid ${gc ? B.ok : bc ? B.err : s ? B.green : B.border}`, background: gc ? B.okBg : bc ? B.errBg : s ? B.greenBg : B.bg, display: 'flex', alignItems: 'center', gap: 14 }}>
-                <div style={{ width: 32, height: 32, borderRadius: '50%', border: `2px solid ${gc ? B.ok : bc ? B.err : s ? B.green : B.border}`, background: gc ? B.ok : bc ? B.err : s ? B.green : 'transparent', color: (gc||bc||s) ? '#fff' : B.muted, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  {gc ? <Check size={16} /> : bc ? <X size={16} /> : <span style={{ fontSize: 14, fontWeight: 600 }}>{String.fromCharCode(65+i)}</span>}
+                style={{ ...btnReset, width: '100%', textAlign: 'left', padding: '10px 14px', borderRadius: 8, border: `1.5px solid ${gc ? B.ok : bc ? B.err : s ? B.green : B.border}`, background: gc ? B.okBg : bc ? B.errBg : s ? B.greenBg : B.bg, display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{ width: 22, height: 22, borderRadius: '50%', border: `2px solid ${gc ? B.ok : bc ? B.err : s ? B.green : B.border}`, background: gc ? B.ok : bc ? B.err : s ? B.green : 'transparent', color: (gc||bc||s) ? '#fff' : B.muted, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  {gc ? <Check size={12} /> : bc ? <X size={12} /> : <span style={{ fontSize: 11, fontWeight: 600 }}>{String.fromCharCode(65+i)}</span>}
                 </div>
-                <span style={{ fontWeight: 500, color: gc ? B.ok : bc ? B.err : B.text }}>{o.text}</span>
+                <span style={{ fontWeight: 500, fontSize: 14, color: gc ? B.ok : bc ? B.err : B.text }}>{o.text}</span>
               </button>
             );
           })}
         </div>
         {sub && explanation && (
-          <div style={{ marginTop: 24, padding: 16, borderRadius: 12, background: ok ? B.okBg : B.goldBg, display: 'flex', alignItems: 'flex-start', gap: 12 }}>
-            <Info size={20} style={{ color: ok ? B.ok : B.gold, marginTop: 2, flexShrink: 0 }} />
+          <div style={{ marginTop: 14, padding: 12, borderRadius: 8, background: ok ? B.okBg : B.goldBg, display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+            <Info size={16} style={{ color: ok ? B.ok : B.gold, marginTop: 1, flexShrink: 0 }} />
             <div>
-              <p style={{ fontWeight: 700, color: ok ? B.ok : '#92400E', margin: 0 }}>{ok ? 'Correct!' : 'Explanation'}</p>
-              <p style={{ fontSize: 13, color: ok ? B.ok : '#92400E', marginTop: 4 }}>{explanation}</p>
+              <p style={{ fontWeight: 700, fontSize: 13, color: ok ? B.ok : '#92400E', margin: 0 }}>{ok ? 'Correct!' : 'Explanation'}</p>
+              <p style={{ fontSize: 13, color: ok ? B.ok : '#92400E', marginTop: 2 }}>{explanation}</p>
             </div>
           </div>
         )}
-        <div style={{ marginTop: 24, paddingTop: 16, borderTop: `1px solid ${B.border}`, display: 'flex', justifyContent: 'flex-end' }}>
+        <div style={{ marginTop: 14, paddingTop: 12, borderTop: `1px solid ${B.border}`, display: 'flex', justifyContent: 'flex-end' }}>
           {sub ? (
-            <button onClick={() => { setSel(null); setSub(false); }} style={{ ...btnReset, display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px', background: B.navyBg, borderRadius: 10, fontWeight: 600, color: B.navy }}><RotateCcw size={16} /> Try Again</button>
+            <button onClick={() => { setSel(null); setSub(false); }} style={{ ...btnReset, display: 'flex', alignItems: 'center', gap: 5, padding: '6px 12px', background: B.navyBg, borderRadius: 8, fontWeight: 600, fontSize: 13, color: B.navy }}><RotateCcw size={14} /> Try Again</button>
           ) : (
             <button onClick={() => { setSub(true); if (onAnswer) onAnswer(ok); }} disabled={sel === null}
-              style={{ ...btnReset, display: 'flex', alignItems: 'center', gap: 8, padding: '10px 24px', borderRadius: 10, fontWeight: 700, fontSize: 14, background: sel !== null ? B.green : B.border, color: sel !== null ? '#fff' : B.light }}>
-              Submit Answer <ArrowRight size={16} />
+              style={{ ...btnReset, display: 'flex', alignItems: 'center', gap: 6, padding: '8px 18px', borderRadius: 8, fontWeight: 600, fontSize: 13, background: sel !== null ? B.green : B.border, color: sel !== null ? '#fff' : B.light }}>
+              Submit <ArrowRight size={14} />
             </button>
           )}
         </div>
@@ -249,43 +251,43 @@ export function MultiSelect({ question, options, explanation, onAnswer }) {
   const perfect = cc === tc && ic === 0;
 
   return (
-    <div style={{ background: B.card, borderRadius: 16, border: `1px solid ${B.border}`, overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
-      <div style={{ background: B.navy, padding: '16px 24px' }}>
-        <h3 style={{ color: '#fff', fontWeight: 700, fontSize: 17, margin: 0 }}>Select All That Apply</h3>
-      </div>
-      <div style={{ padding: 24 }}>
-        <p style={{ fontSize: 17, color: B.navy, fontWeight: 600, marginBottom: 8 }}>{question}</p>
-        <p style={{ fontSize: 13, color: B.muted, marginBottom: 24 }}>Select all correct answers</p>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+    <div style={{ background: B.card, borderRadius: 12, border: `1px solid ${B.border}`, overflow: 'hidden' }}>
+      <div style={{ padding: '16px 20px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+          <div style={{ width: 6, height: 6, borderRadius: '50%', background: B.navy, flexShrink: 0 }} />
+          <span style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: B.muted }}>Select All That Apply</span>
+        </div>
+        <p style={{ fontSize: 15, color: B.navy, fontWeight: 600, marginBottom: 14, lineHeight: 1.5 }}>{question}</p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
           {options.map((o, i) => {
             const s = sel.has(i); const gc = sub && o.isCorrect && s; const bc = sub && !o.isCorrect && s; const miss = sub && o.isCorrect && !s;
             return (
               <button key={i} onClick={() => toggle(i)} disabled={sub}
-                style={{ ...btnReset, width: '100%', textAlign: 'left', padding: '16px 20px', borderRadius: 12, border: `2px solid ${gc ? B.ok : bc ? B.err : miss ? B.gold : s ? B.green : B.border}`, background: gc ? B.okBg : bc ? B.errBg : miss ? B.goldBg : s ? B.greenBg : B.bg, display: 'flex', alignItems: 'center', gap: 14 }}>
-                <div style={{ width: 24, height: 24, borderRadius: 6, border: `2px solid ${gc ? B.ok : bc ? B.err : miss ? B.gold : s ? B.green : B.border}`, background: gc ? B.ok : bc ? B.err : miss ? B.gold : s ? B.green : 'transparent', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  {(s || miss) && <Check size={14} />}
+                style={{ ...btnReset, width: '100%', textAlign: 'left', padding: '10px 14px', borderRadius: 8, border: `1.5px solid ${gc ? B.ok : bc ? B.err : miss ? B.gold : s ? B.green : B.border}`, background: gc ? B.okBg : bc ? B.errBg : miss ? B.goldBg : s ? B.greenBg : B.bg, display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{ width: 18, height: 18, borderRadius: 4, border: `2px solid ${gc ? B.ok : bc ? B.err : miss ? B.gold : s ? B.green : B.border}`, background: gc ? B.ok : bc ? B.err : miss ? B.gold : s ? B.green : 'transparent', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  {(s || miss) && <Check size={11} />}
                 </div>
-                <span style={{ fontWeight: 500, color: gc ? B.ok : bc ? B.err : miss ? '#92400E' : B.text }}>{o.text}</span>
+                <span style={{ fontWeight: 500, fontSize: 14, color: gc ? B.ok : bc ? B.err : miss ? '#92400E' : B.text }}>{o.text}</span>
               </button>
             );
           })}
         </div>
         {sub && (
-          <div style={{ marginTop: 24, padding: 16, borderRadius: 12, background: perfect ? B.okBg : B.goldBg, display: 'flex', alignItems: 'flex-start', gap: 12 }}>
-            <Info size={20} style={{ color: perfect ? B.ok : B.gold, marginTop: 2, flexShrink: 0 }} />
+          <div style={{ marginTop: 14, padding: 12, borderRadius: 8, background: perfect ? B.okBg : B.goldBg, display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+            <Info size={16} style={{ color: perfect ? B.ok : B.gold, marginTop: 1, flexShrink: 0 }} />
             <div>
-              <p style={{ fontWeight: 700, color: perfect ? B.ok : '#92400E', margin: 0 }}>{perfect ? 'Perfect!' : `${cc}/${tc} correct`}</p>
-              {explanation && <p style={{ fontSize: 13, color: perfect ? B.ok : '#92400E', marginTop: 4 }}>{explanation}</p>}
+              <p style={{ fontWeight: 700, fontSize: 13, color: perfect ? B.ok : '#92400E', margin: 0 }}>{perfect ? 'Perfect!' : `${cc}/${tc} correct`}</p>
+              {explanation && <p style={{ fontSize: 13, color: perfect ? B.ok : '#92400E', marginTop: 2 }}>{explanation}</p>}
             </div>
           </div>
         )}
-        <div style={{ marginTop: 24, paddingTop: 16, borderTop: `1px solid ${B.border}`, display: 'flex', justifyContent: 'flex-end' }}>
+        <div style={{ marginTop: 14, paddingTop: 12, borderTop: `1px solid ${B.border}`, display: 'flex', justifyContent: 'flex-end' }}>
           {sub ? (
-            <button onClick={() => { setSel(new Set()); setSub(false); }} style={{ ...btnReset, display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px', background: B.navyBg, borderRadius: 10, fontWeight: 600, color: B.navy }}><RotateCcw size={16} /> Try Again</button>
+            <button onClick={() => { setSel(new Set()); setSub(false); }} style={{ ...btnReset, display: 'flex', alignItems: 'center', gap: 5, padding: '6px 12px', background: B.navyBg, borderRadius: 8, fontWeight: 600, fontSize: 13, color: B.navy }}><RotateCcw size={14} /> Try Again</button>
           ) : (
             <button onClick={() => { setSub(true); if (onAnswer) onAnswer(perfect); }} disabled={sel.size === 0}
-              style={{ ...btnReset, display: 'flex', alignItems: 'center', gap: 8, padding: '10px 24px', borderRadius: 10, fontWeight: 700, fontSize: 14, background: sel.size > 0 ? B.green : B.border, color: sel.size > 0 ? '#fff' : B.light }}>
-              Submit Answer <ArrowRight size={16} />
+              style={{ ...btnReset, display: 'flex', alignItems: 'center', gap: 6, padding: '8px 18px', borderRadius: 8, fontWeight: 600, fontSize: 13, background: sel.size > 0 ? B.green : B.border, color: sel.size > 0 ? '#fff' : B.light }}>
+              Submit <ArrowRight size={14} />
             </button>
           )}
         </div>
