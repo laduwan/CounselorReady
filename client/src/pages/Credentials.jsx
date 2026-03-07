@@ -100,7 +100,7 @@ export default function Credentials() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-moss-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-burgundy-700"></div>
       </div>
     );
   }
@@ -212,13 +212,13 @@ export default function Credentials() {
                   <div className="bg-gray-50 rounded-lg p-4">
                     <div className="flex items-center justify-between mb-3">
                       <span className="font-medium text-gray-900">CEU Progress</span>
-                      <span className="text-moss-600 font-medium">
+                      <span className="text-burgundy-700 font-medium">
                         {cred.totalCEUsCompleted}/{cred.totalCEUsRequired} hours
                       </span>
                     </div>
                     <div className="h-2 bg-gray-200 rounded-full overflow-hidden mb-4">
                       <div 
-                        className="h-full bg-moss-500 rounded-full" 
+                        className="h-full bg-burgundy-600 rounded-full" 
                         style={{ width: `${cred.percentComplete}%` }}
                       ></div>
                     </div>
@@ -247,7 +247,7 @@ export default function Credentials() {
                               <FileText className="w-4 h-4 text-gray-400" />
                               <span className="text-gray-700">{log.description}</span>
                             </div>
-                            <span className="text-moss-600">+{log.hours} hrs</span>
+                            <span className="text-burgundy-700">+{log.hours} hrs</span>
                           </div>
                         ))}
                       </div>
@@ -293,8 +293,8 @@ export default function Credentials() {
                 <div key={cert._id} className="card">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div className="flex items-start gap-3 flex-1 min-w-0">
-                      <div className="w-10 h-10 bg-moss-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                        <FileText className="w-5 h-5 text-moss-600" />
+                      <div className="w-10 h-10 bg-burgundy-200 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <FileText className="w-5 h-5 text-burgundy-700" />
                       </div>
                       <div className="min-w-0">
                         <h3 className="font-medium text-gray-900 truncate">{cert.title}</h3>
@@ -331,7 +331,7 @@ export default function Credentials() {
                       {cert.fileUrl && (
                         <button
                           onClick={() => setShowCertViewer(cert)}
-                          className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-moss-600 border border-moss-200 rounded-lg hover:bg-moss-50 transition-colors"
+                          className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-burgundy-700 border border-burgundy-300 rounded-lg hover:bg-burgundy-100 transition-colors"
                           title="View certificate"
                         >
                           <Eye className="w-4 h-4" />
@@ -553,9 +553,9 @@ function ScanCertificateModal({ mode, onClose, onSuccess }) {
                   onDragLeave={handleDragLeave}
                   onClick={() => fileInputRef.current?.click()}
                   className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all ${
-                    dragOver ? 'border-moss-400 bg-moss-50'
-                      : file ? 'border-moss-300 bg-moss-50/50'
-                      : 'border-gray-300 hover:border-moss-400 hover:bg-gray-50'
+                    dragOver ? 'border-burgundy-500 bg-burgundy-100'
+                      : file ? 'border-burgundy-400 bg-burgundy-100/50'
+                      : 'border-gray-300 hover:border-burgundy-500 hover:bg-gray-50'
                   }`}
                 >
                   <input
@@ -604,7 +604,7 @@ function ScanCertificateModal({ mode, onClose, onSuccess }) {
                     <button
                       type="button"
                       onClick={() => cameraInputRef.current?.click()}
-                      className="w-full flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-moss-300 rounded-xl hover:border-moss-500 hover:bg-moss-50 transition-all text-moss-700 font-medium"
+                      className="w-full flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-burgundy-400 rounded-xl hover:border-burgundy-600 hover:bg-burgundy-100 transition-all text-burgundy-800 font-medium"
                     >
                       <Camera className="w-5 h-5" />
                       Take Photo
@@ -676,7 +676,7 @@ function ScanCertificateModal({ mode, onClose, onSuccess }) {
                   <button onClick={() => { setExtractedData(null); setFile(null); setPreview(null); }} className="flex-1 px-4 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium">
                     Start Over
                   </button>
-                  <button onClick={handleSave} disabled={saving} className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-moss-600 text-white rounded-lg hover:bg-moss-700 transition-colors font-medium disabled:opacity-60">
+                  <button onClick={handleSave} disabled={saving} className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-burgundy-700 text-white rounded-lg hover:bg-burgundy-800 transition-colors font-medium disabled:opacity-60">
                     {saving ? (<><Loader className="w-4 h-4 animate-spin" /> Saving...</>) : (<><CheckCircle className="w-4 h-4" /> Save Certificate</>)}
                   </button>
                 </div>
@@ -698,7 +698,7 @@ function ScanCertificateModal({ mode, onClose, onSuccess }) {
                   {extractedData.issuingBody && <div className="text-sm"><span className="text-gray-500">Issuing Body:</span> <span className="font-medium">{extractedData.issuingBody}</span></div>}
                   {extractedData.expirationDate && <div className="text-sm"><span className="text-gray-500">Expires:</span> <span className="font-medium">{extractedData.expirationDate}</span></div>}
                   {extractedData.templateName && (
-                    <div className="mt-3 p-2 bg-moss-50 border border-moss-200 rounded text-sm text-moss-700">
+                    <div className="mt-3 p-2 bg-burgundy-100 border border-burgundy-300 rounded text-sm text-burgundy-800">
                       ✓ Matched template: {extractedData.templateName}
                     </div>
                   )}
@@ -712,7 +712,7 @@ function ScanCertificateModal({ mode, onClose, onSuccess }) {
                   <button onClick={() => { setExtractedData(null); setFile(null); setPreview(null); }} className="flex-1 px-4 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium">
                     Scan Another
                   </button>
-                  <button onClick={onClose} className="flex-1 px-4 py-2.5 bg-moss-600 text-white rounded-lg hover:bg-moss-700 transition-colors font-medium">
+                  <button onClick={onClose} className="flex-1 px-4 py-2.5 bg-burgundy-700 text-white rounded-lg hover:bg-burgundy-800 transition-colors font-medium">
                     Done
                   </button>
                 </div>
@@ -817,7 +817,7 @@ function CertificateViewerModal({ certificate, onClose }) {
             {loading && (
               <div className="flex items-center justify-center h-96">
                 <div className="text-center">
-                  <Loader className="w-8 h-8 text-moss-600 animate-spin mx-auto mb-3" />
+                  <Loader className="w-8 h-8 text-burgundy-700 animate-spin mx-auto mb-3" />
                   <p className="text-gray-500">Loading certificate...</p>
                 </div>
               </div>
@@ -829,7 +829,7 @@ function CertificateViewerModal({ certificate, onClose }) {
                   <p className="text-gray-700 font-medium mb-2">Could not load certificate</p>
                   <p className="text-gray-500 text-sm mb-4">{error}</p>
                   {certificate.fileUrl && (
-                    <a href={certificate.fileUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-sm text-moss-600 hover:text-moss-700">
+                    <a href={certificate.fileUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-sm text-burgundy-700 hover:text-burgundy-800">
                       <ExternalLink className="w-4 h-4" /> Try opening directly
                     </a>
                   )}
@@ -900,7 +900,7 @@ function AddCredentialModal({ templates, onClose, onSuccess, hasSubscription, cu
                   { id: 'national_cert', label: 'National Certification', desc: 'NCC, ACS, MAC, etc.' },
                   { id: 'specialty_cert', label: 'Specialty Certification', desc: 'Trauma, telehealth, etc.' }
                 ].map((type) => (
-                  <button key={type.id} onClick={() => { setSelectedType(type.id); setStep(2); }} className="w-full text-left p-4 border border-gray-200 rounded-lg hover:border-moss-500 hover:bg-moss-50 transition-colors">
+                  <button key={type.id} onClick={() => { setSelectedType(type.id); setStep(2); }} className="w-full text-left p-4 border border-gray-200 rounded-lg hover:border-burgundy-600 hover:bg-burgundy-100 transition-colors">
                     <div className="font-medium text-gray-900">{type.label}</div>
                     <div className="text-sm text-gray-500">{type.desc}</div>
                   </button>
@@ -910,11 +910,11 @@ function AddCredentialModal({ templates, onClose, onSuccess, hasSubscription, cu
 
             {step === 2 && selectedType && (
               <div className="space-y-3">
-                <button onClick={() => { setStep(1); setSelectedType(null); }} className="text-moss-600 hover:text-moss-700 text-sm flex items-center gap-1 mb-4">← Back</button>
+                <button onClick={() => { setStep(1); setSelectedType(null); }} className="text-burgundy-700 hover:text-burgundy-800 text-sm flex items-center gap-1 mb-4">← Back</button>
                 <p className="text-gray-600 mb-4">Select your credential:</p>
                 <div className="max-h-64 overflow-y-auto space-y-2">
                   {templates[selectedType]?.map((template) => (
-                    <button key={template._id} onClick={() => { setSelectedTemplate(template); setStep(3); }} className="w-full text-left p-3 border border-gray-200 rounded-lg hover:border-moss-500 hover:bg-moss-50 transition-colors">
+                    <button key={template._id} onClick={() => { setSelectedTemplate(template); setStep(3); }} className="w-full text-left p-3 border border-gray-200 rounded-lg hover:border-burgundy-600 hover:bg-burgundy-100 transition-colors">
                       <div className="font-medium text-gray-900">{template.state && `${template.state} `}{template.code}</div>
                       <div className="text-sm text-gray-500">{template.name}</div>
                     </button>
@@ -925,11 +925,11 @@ function AddCredentialModal({ templates, onClose, onSuccess, hasSubscription, cu
 
             {step === 3 && selectedTemplate && (
               <div className="space-y-4">
-                <button onClick={() => { setStep(2); setSelectedTemplate(null); }} className="text-moss-600 hover:text-moss-700 text-sm flex items-center gap-1 mb-4">← Back</button>
-                <div className="bg-moss-50 rounded-lg p-4 mb-4">
-                  <h3 className="font-medium text-moss-900">{selectedTemplate.state && `${selectedTemplate.state} `}{selectedTemplate.code}</h3>
-                  <p className="text-sm text-moss-700">{selectedTemplate.name}</p>
-                  <p className="text-sm text-moss-600 mt-1">{selectedTemplate.totalCEUsRequired} CEUs required every {selectedTemplate.renewalCycle} months</p>
+                <button onClick={() => { setStep(2); setSelectedTemplate(null); }} className="text-burgundy-700 hover:text-burgundy-800 text-sm flex items-center gap-1 mb-4">← Back</button>
+                <div className="bg-burgundy-100 rounded-lg p-4 mb-4">
+                  <h3 className="font-medium text-burgundy-900">{selectedTemplate.state && `${selectedTemplate.state} `}{selectedTemplate.code}</h3>
+                  <p className="text-sm text-burgundy-800">{selectedTemplate.name}</p>
+                  <p className="text-sm text-burgundy-700 mt-1">{selectedTemplate.totalCEUsRequired} CEUs required every {selectedTemplate.renewalCycle} months</p>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">License/Certificate Number</label>

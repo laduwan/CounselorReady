@@ -27,7 +27,7 @@ export default function Recommendations() {
     fetch();
   }, []);
 
-  if (loading) return <div className="flex justify-center p-12"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-moss-600"></div></div>;
+  if (loading) return <div className="flex justify-center p-12"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-burgundy-700"></div></div>;
 
   return (
     <div className="max-w-4xl mx-auto" role="main" aria-label="Smart CE Recommendations">
@@ -37,9 +37,9 @@ export default function Recommendations() {
       {/* Summary Cards */}
       {data?.summary && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-          <div className="bg-gradient-to-br from-moss-50 to-moss-100 rounded-xl border border-moss-200 p-5">
-            <div className="text-3xl font-bold text-moss-700">{data.summary.totalHoursNeeded}</div>
-            <div className="text-sm text-moss-600">CE Hours Needed</div>
+          <div className="bg-gradient-to-br from-burgundy-100 to-burgundy-200 rounded-xl border border-burgundy-300 p-5">
+            <div className="text-3xl font-bold text-burgundy-800">{data.summary.totalHoursNeeded}</div>
+            <div className="text-sm text-burgundy-700">CE Hours Needed</div>
           </div>
           <div className="bg-white rounded-xl border p-5">
             <div className="text-3xl font-bold text-gray-900">{data.summary.coursesCompleted}</div>
@@ -75,7 +75,7 @@ export default function Recommendations() {
       {data?.recommendations?.length > 0 ? (
         <div className="space-y-4">
           {data.recommendations.map(course => (
-            <div key={course._id} className="bg-white rounded-xl border p-5 hover:border-moss-300 transition cursor-pointer"
+            <div key={course._id} className="bg-white rounded-xl border p-5 hover:border-burgundy-400 transition cursor-pointer"
               onClick={() => navigate(`/courses/${course.slug}`)} role="article">
               <div className="flex justify-between items-start">
                 <div className="flex-1">
@@ -88,13 +88,13 @@ export default function Recommendations() {
                   {course.reasons?.length > 0 && (
                     <div className="flex flex-wrap gap-2">
                       {course.reasons.map((reason, i) => (
-                        <span key={i} className="text-xs px-2 py-1 bg-moss-50 text-moss-700 rounded-full">{reason}</span>
+                        <span key={i} className="text-xs px-2 py-1 bg-burgundy-100 text-burgundy-800 rounded-full">{reason}</span>
                       ))}
                     </div>
                   )}
                 </div>
                 <div className="ml-4 text-right">
-                  <div className="bg-moss-100 text-moss-700 rounded-full w-10 h-10 flex items-center justify-center font-bold text-sm" title="Relevance score">
+                  <div className="bg-burgundy-200 text-burgundy-800 rounded-full w-10 h-10 flex items-center justify-center font-bold text-sm" title="Relevance score">
                     {course.relevanceScore}
                   </div>
                 </div>

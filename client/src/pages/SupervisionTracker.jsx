@@ -79,7 +79,7 @@ export default function SupervisionTracker() {
     }
   }
 
-  if (loading) return <div className="flex justify-center p-12"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-moss-600"></div></div>;
+  if (loading) return <div className="flex justify-center p-12"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-burgundy-700"></div></div>;
 
   return (
     <div className="max-w-6xl mx-auto" role="main" aria-label="Supervision Tracker">
@@ -88,7 +88,7 @@ export default function SupervisionTracker() {
           <h1 className="text-2xl font-bold text-gray-900">Supervision Tracker</h1>
           <p className="text-gray-600 mt-1">Track supervision hours toward licensure</p>
         </div>
-        <button onClick={() => setShowCreateForm(true)} className="px-4 py-2 bg-moss-600 text-white rounded-lg hover:bg-moss-700 transition">
+        <button onClick={() => setShowCreateForm(true)} className="px-4 py-2 bg-burgundy-700 text-white rounded-lg hover:bg-burgundy-800 transition">
           + New Supervision Log
         </button>
       </div>
@@ -106,7 +106,7 @@ export default function SupervisionTracker() {
               key={log._id}
               onClick={() => setSelectedLog(log)}
               aria-current={selectedLog?._id === log._id ? 'true' : undefined}
-              className={`w-full text-left p-4 rounded-lg border transition ${selectedLog?._id === log._id ? 'border-moss-500 bg-moss-50' : 'border-gray-200 hover:border-gray-300'}`}
+              className={`w-full text-left p-4 rounded-lg border transition ${selectedLog?._id === log._id ? 'border-burgundy-600 bg-burgundy-100' : 'border-gray-200 hover:border-gray-300'}`}
             >
               <div className="font-medium text-gray-900">{log.licenseType} — {log.state}</div>
               <div className="text-sm text-gray-600">Supervisor: {log.supervisor?.name}</div>
@@ -116,7 +116,7 @@ export default function SupervisionTracker() {
                   <span>{log.totalLoggedHours || 0}/{log.totalHoursRequired}h</span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2" role="progressbar" aria-valuenow={log.progressPercent || 0} aria-valuemin="0" aria-valuemax="100">
-                  <div className="bg-moss-500 h-2 rounded-full transition-all" style={{ width: `${log.progressPercent || 0}%` }}></div>
+                  <div className="bg-burgundy-600 h-2 rounded-full transition-all" style={{ width: `${log.progressPercent || 0}%` }}></div>
                 </div>
               </div>
             </button>
@@ -140,7 +140,7 @@ export default function SupervisionTracker() {
               {/* Progress Stats */}
               <div className="grid grid-cols-3 gap-4 mb-6">
                 <div className="bg-gray-50 rounded-lg p-3 text-center">
-                  <div className="text-2xl font-bold text-moss-600">{selectedLog.totalLoggedHours || 0}</div>
+                  <div className="text-2xl font-bold text-burgundy-700">{selectedLog.totalLoggedHours || 0}</div>
                   <div className="text-xs text-gray-500">Hours Logged</div>
                 </div>
                 <div className="bg-gray-50 rounded-lg p-3 text-center">
@@ -156,7 +156,7 @@ export default function SupervisionTracker() {
               {/* Sessions */}
               <div className="flex justify-between items-center mb-3">
                 <h3 className="font-semibold text-gray-900">Sessions</h3>
-                <button onClick={() => setShowSessionForm(true)} className="text-sm px-3 py-1 bg-moss-100 text-moss-700 rounded-lg hover:bg-moss-200">
+                <button onClick={() => setShowSessionForm(true)} className="text-sm px-3 py-1 bg-burgundy-200 text-burgundy-800 rounded-lg hover:bg-burgundy-300">
                   + Add Session
                 </button>
               </div>
@@ -241,7 +241,7 @@ export default function SupervisionTracker() {
               </div>
               <div className="flex justify-end gap-3 pt-2">
                 <button type="button" onClick={() => setShowCreateForm(false)} className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg">Cancel</button>
-                <button type="submit" className="px-4 py-2 bg-moss-600 text-white rounded-lg hover:bg-moss-700">Create Log</button>
+                <button type="submit" className="px-4 py-2 bg-burgundy-700 text-white rounded-lg hover:bg-burgundy-800">Create Log</button>
               </div>
             </form>
           </div>
@@ -299,7 +299,7 @@ export default function SupervisionTracker() {
               </div>
               <div className="flex justify-end gap-3 pt-2">
                 <button type="button" onClick={() => setShowSessionForm(false)} className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg">Cancel</button>
-                <button type="submit" className="px-4 py-2 bg-moss-600 text-white rounded-lg hover:bg-moss-700">Log Session</button>
+                <button type="submit" className="px-4 py-2 bg-burgundy-700 text-white rounded-lg hover:bg-burgundy-800">Log Session</button>
               </div>
             </form>
           </div>
