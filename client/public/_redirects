@@ -8,5 +8,10 @@
 /api/debug      /404.html    404
 /api/debug/*    /404.html    404
 
+# Serve static HTML pages directly (bypass SPA catch-all)
+/admin.html              /admin.html              200
+/admin-*.html            /admin-*.html            200
+/about.html              /about.html              200
+
 # SPA catch-all (must be LAST)
 /*    /index.html   200
