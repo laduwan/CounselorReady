@@ -91,7 +91,7 @@ export default function AdminBulkUpload() {
         formData.append(key, value);
       });
 
-      const response = await api.post('/api/admin/courses/bulk-upload', formData, {
+      const response = await api.post('/admin/courses/bulk-upload', formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
         },
@@ -120,7 +120,7 @@ export default function AdminBulkUpload() {
 
     try {
       const coursesToSave = previewCourses.map(p => p.course);
-      const response = await api.post('/api/admin/courses/bulk-save', {
+      const response = await api.post('/admin/courses/bulk-save', {
         courses: coursesToSave
       });
 

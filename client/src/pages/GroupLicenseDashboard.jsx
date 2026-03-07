@@ -25,7 +25,7 @@ export default function GroupLicenseDashboard() {
   async function fetchLicenses() {
     try {
       setLoading(true);
-      const { data } = await api.get('/api/group-licenses/my');
+      const { data } = await api.get('/group-licenses/my');
       setLicenses(data);
       if (data.length > 0) {
         setSelected(data[0]);
@@ -40,7 +40,7 @@ export default function GroupLicenseDashboard() {
 
   async function fetchCompliance(id) {
     try {
-      const { data } = await api.get(`/api/group-licenses/${id}/compliance`);
+      const { data } = await api.get(`/group-licenses/${id}/compliance`);
       setCompliance(data);
     } catch { /* ignore */ }
   }
@@ -48,7 +48,7 @@ export default function GroupLicenseDashboard() {
   async function createLicense(e) {
     e.preventDefault();
     try {
-      const { data } = await api.post('/api/group-licenses', newLicense);
+      const { data } = await api.post('/group-licenses', newLicense);
       setLicenses(prev => [data, ...prev]);
       setSelected(data);
       setShowCreateForm(false);
@@ -62,7 +62,7 @@ export default function GroupLicenseDashboard() {
     if (!selected) return;
     try {
       const emails = inviteEmails.split(/[,\n]/).map(e => e.trim()).filter(Boolean);
-      const { data } = await api.post(`/api/group-licenses/${selected._id}/invite`, { emails });
+      const { data } = await api.post(`/group-licenses/${selected._id}/invite`, { emails });
       setInviteEmails('');
       setShowInviteForm(false);
       fetchLicenses();

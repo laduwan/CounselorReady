@@ -16,7 +16,7 @@ export default function Referrals() {
   async function fetchReferral() {
     try {
       setLoading(true);
-      const { data } = await api.get('/api/referrals/my');
+      const { data } = await api.get('/referrals/my');
       setData(data);
     } catch (err) {
       console.error('Failed to load referral data:', err);

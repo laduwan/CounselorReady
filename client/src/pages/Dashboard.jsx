@@ -18,7 +18,12 @@ import {
   Clock,
   ArrowRight,
   MessageCircle,
-  ChevronRight
+  ChevronRight,
+  Trophy,
+  ClipboardList,
+  Star,
+  Sparkles,
+  X
 } from 'lucide-react';
 
 export default function Dashboard() {
@@ -28,6 +33,7 @@ export default function Dashboard() {
   const [credentials, setCredentials] = useState({ summary: null, credentials: [] });
   const [activity, setActivity] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [whatsNewDismissed, setWhatsNewDismissed] = useState(() => localStorage.getItem('cr_whats_new_v1') === 'dismissed');
 
   useEffect(() => {
     const fetchData = async (retries = 2) => {
@@ -84,6 +90,53 @@ export default function Dashboard() {
           </button>
         )}
       </div>
+
+      {/* What's New Banner */}
+      {!whatsNewDismissed && (
+        <div className="mb-8 bg-gradient-to-r from-burgundy-50 to-honey-50 border border-burgundy-200 rounded-xl p-5 relative">
+          <button
+            onClick={() => { setWhatsNewDismissed(true); localStorage.setItem('cr_whats_new_v1', 'dismissed'); }}
+            className="absolute top-3 right-3 p-1 rounded-lg hover:bg-white/60 transition-colors text-stone-400"
+            aria-label="Dismiss"
+          >
+            <X className="w-4 h-4" />
+          </button>
+          <div className="flex items-center gap-2 mb-3">
+            <Sparkles className="w-5 h-5 text-burgundy-700" />
+            <h3 className="font-semibold text-burgundy-900">New Features Available</h3>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            <Link to="/supervision" className="flex items-center gap-2.5 p-2.5 rounded-lg bg-white/70 hover:bg-white transition-colors">
+              <ClipboardList className="w-4 h-4 text-burgundy-700 flex-shrink-0" />
+              <div>
+                <div className="text-sm font-medium text-burgundy-900">Supervision Tracker</div>
+                <div className="text-xs text-stone-500">Log hours toward licensure</div>
+              </div>
+            </Link>
+            <Link to="/achievements" className="flex items-center gap-2.5 p-2.5 rounded-lg bg-white/70 hover:bg-white transition-colors">
+              <Trophy className="w-4 h-4 text-burgundy-700 flex-shrink-0" />
+              <div>
+                <div className="text-sm font-medium text-burgundy-900">Achievements</div>
+                <div className="text-xs text-stone-500">Earn badges & track streaks</div>
+              </div>
+            </Link>
+            <Link to="/referrals" className="flex items-center gap-2.5 p-2.5 rounded-lg bg-white/70 hover:bg-white transition-colors">
+              <Star className="w-4 h-4 text-burgundy-700 flex-shrink-0" />
+              <div>
+                <div className="text-sm font-medium text-burgundy-900">Referral Program</div>
+                <div className="text-xs text-stone-500">Earn $10 per referral</div>
+              </div>
+            </Link>
+            <Link to="/recommendations" className="flex items-center gap-2.5 p-2.5 rounded-lg bg-white/70 hover:bg-white transition-colors">
+              <Sparkles className="w-4 h-4 text-burgundy-700 flex-shrink-0" />
+              <div>
+                <div className="text-sm font-medium text-burgundy-900">Smart Recommendations</div>
+                <div className="text-xs text-stone-500">Personalized CE suggestions</div>
+              </div>
+            </Link>
+          </div>
+        </div>
+      )}
 
       {/* Stats Grid */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
@@ -145,7 +198,7 @@ export default function Dashboard() {
           {/* Quick Actions */}
           <div className="bg-white rounded-xl border border-burgundy-100 shadow-sm p-6">
             <h2 className="font-display text-xl font-semibold text-burgundy-900 mb-4">Quick Actions</h2>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               <Link to="/courses" className="flex flex-col items-center p-4 rounded-xl bg-burgundy-50 hover:bg-burgundy-100 transition-colors group">
                 <div className="w-12 h-12 bg-burgundy-700 rounded-xl flex items-center justify-center mb-3 group-hover:scale-105 transition-transform">
                   <BookOpen className="w-6 h-6 text-white" />
@@ -172,6 +225,27 @@ export default function Dashboard() {
                   <BarChart3 className="w-6 h-6 text-white" />
                 </div>
                 <span className="text-stone-700 font-medium text-sm">Generate Audit</span>
+              </Link>
+
+              <Link to="/supervision" className="flex flex-col items-center p-4 rounded-xl bg-burgundy-50 hover:bg-burgundy-100 transition-colors group">
+                <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-3 group-hover:scale-105 transition-transform" style={{ background: '#6B1D34' }}>
+                  <ClipboardList className="w-6 h-6 text-white" />
+                </div>
+                <span className="text-burgundy-800 font-medium text-sm">Supervision</span>
+              </Link>
+
+              <Link to="/recommendations" className="flex flex-col items-center p-4 rounded-xl bg-forest-50 hover:bg-forest-100 transition-colors group">
+                <div className="w-12 h-12 bg-forest-600 rounded-xl flex items-center justify-center mb-3 group-hover:scale-105 transition-transform">
+                  <Sparkles className="w-6 h-6 text-white" />
+                </div>
+                <span className="text-forest-800 font-medium text-sm">Recommendations</span>
+              </Link>
+
+              <Link to="/achievements" className="flex flex-col items-center p-4 rounded-xl bg-honey-50 hover:bg-honey-100 transition-colors group">
+                <div className="w-12 h-12 bg-honey-500 rounded-xl flex items-center justify-center mb-3 group-hover:scale-105 transition-transform">
+                  <Trophy className="w-6 h-6 text-white" />
+                </div>
+                <span className="text-honey-800 font-medium text-sm">Achievements</span>
               </Link>
             </div>
           </div>
