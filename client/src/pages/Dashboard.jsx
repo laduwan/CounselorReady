@@ -24,7 +24,7 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchData = async (retries = 2) => {
       try {
         const [coursesRes, credentialsRes] = await Promise.all([
           api.get('/courses/user/enrolled'),
@@ -33,6 +33,11 @@ export default function Dashboard() {
         setCourses(coursesRes.data.enrolledCourses || []);
         setCredentials(credentialsRes.data);
       } catch (error) {
+        // Retry on network/timeout errors (server may still be waking up)
+        if (retries > 0 && !error.response) {
+          await new Promise(r => setTimeout(r, 3000));
+          return fetchData(retries - 1);
+        }
         console.error('Error fetching dashboard data:', error);
       } finally {
         setLoading(false);
