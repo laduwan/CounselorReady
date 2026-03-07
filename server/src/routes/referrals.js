@@ -4,13 +4,24 @@
  * Unauthorized copying or distribution is strictly prohibited.
  */
 import express from 'express';
+import rateLimit from 'express-rate-limit';
 import Referral from '../models/Referral.js';
 import User from '../models/User.js';
 import { protect, requireAdmin } from '../middleware/auth.js';
+import { validate } from '../middleware/validate.js';
 
 const router = express.Router();
 
 const REWARD_AMOUNT = 10; // $10 credit per successful referral
+
+// Rate-limit click tracking to prevent abuse (60 per minute per IP)
+const clickLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 60,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many requests, please try again later' }
+});
 
 // ── Get or create my referral profile ──
 router.get('/my', protect, async (req, res) => {
@@ -44,7 +55,7 @@ router.get('/my', protect, async (req, res) => {
 });
 
 // ── Track a referral link click ──
-router.post('/track/:code', async (req, res) => {
+router.post('/track/:code', clickLimiter, async (req, res) => {
   try {
     const referral = await Referral.findOne({ referralCode: req.params.code, isActive: true });
     if (!referral) return res.status(404).json({ error: 'Invalid referral code' });
@@ -59,12 +70,11 @@ router.post('/track/:code', async (req, res) => {
 });
 
 // ── Record a signup from referral (called during registration) ──
-router.post('/register', async (req, res) => {
+router.post('/register', validate({
+  body: { referralCode: 'string', email: 'email' }
+}), async (req, res) => {
   try {
     const { referralCode, email, userId } = req.body;
-    if (!referralCode || !email) {
-      return res.status(400).json({ error: 'Referral code and email required' });
-    }
 
     const referral = await Referral.findOne({ referralCode, isActive: true });
     if (!referral) return res.status(404).json({ error: 'Invalid referral code' });
@@ -99,7 +109,9 @@ router.post('/register', async (req, res) => {
 });
 
 // ── Process referral reward when referred user subscribes ──
-router.post('/convert', protect, requireAdmin, async (req, res) => {
+router.post('/convert', protect, requireAdmin, validate({
+  body: { userId: 'string' }
+}), async (req, res) => {
   try {
     const { userId } = req.body;
     const user = await User.findById(userId);
@@ -135,13 +147,42 @@ router.post('/convert', protect, requireAdmin, async (req, res) => {
   }
 });
 
-// ── Admin: list all referral programs ──
+// ── Admin: list all referral programs (with pagination & search) ──
 router.get('/admin/all', protect, requireAdmin, async (req, res) => {
   try {
-    const referrals = await Referral.find()
+    const { page = 1, limit = 25, search, status } = req.query;
+    const pageNum = Math.max(1, Number(page));
+    const limitNum = Math.min(100, Math.max(1, Number(limit)));
+
+    const query = {};
+    if (status === 'active') query.isActive = true;
+    if (status === 'inactive') query.isActive = false;
+
+    let referrals = Referral.find(query)
       .populate('referrerId', 'email profile.firstName profile.lastName')
-      .sort({ totalConversions: -1 });
-    res.json(referrals);
+      .sort({ totalConversions: -1 })
+      .skip((pageNum - 1) * limitNum)
+      .limit(limitNum);
+
+    const [results, total] = await Promise.all([
+      referrals,
+      Referral.countDocuments(query)
+    ]);
+
+    // If search is provided, filter populated results by referrer email/name
+    let filtered = results;
+    if (search) {
+      const s = search.toLowerCase();
+      filtered = results.filter(r => {
+        const ref = r.referrerId;
+        if (!ref) return false;
+        return (ref.email?.toLowerCase().includes(s) ||
+          ref.profile?.firstName?.toLowerCase().includes(s) ||
+          ref.profile?.lastName?.toLowerCase().includes(s));
+      });
+    }
+
+    res.json({ referrals: filtered, total, page: pageNum, totalPages: Math.ceil(total / limitNum) });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
