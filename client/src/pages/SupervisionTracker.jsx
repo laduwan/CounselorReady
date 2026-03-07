@@ -11,6 +11,8 @@ export default function SupervisionTracker() {
   const [selectedLog, setSelectedLog] = useState(null);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [showSessionForm, setShowSessionForm] = useState(false);
+  const [showEditForm, setShowEditForm] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(null); // 'log' | sessionId | null
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -79,6 +81,49 @@ export default function SupervisionTracker() {
     }
   }
 
+  async function updateLog(e) {
+    e.preventDefault();
+    if (!selectedLog) return;
+    try {
+      const { data } = await api.put(`/supervision/${selectedLog._id}`, {
+        supervisor: selectedLog.supervisor,
+        licenseType: selectedLog.licenseType,
+        state: selectedLog.state,
+        totalHoursRequired: selectedLog.totalHoursRequired,
+        status: selectedLog.status
+      });
+      setLogs(prev => prev.map(l => l._id === data._id ? data : l));
+      setSelectedLog(data);
+      setShowEditForm(false);
+    } catch (err) {
+      setError(err.response?.data?.error || 'Failed to update log');
+    }
+  }
+
+  async function deleteLog() {
+    if (!selectedLog) return;
+    try {
+      await api.delete(`/supervision/${selectedLog._id}`);
+      setLogs(prev => prev.filter(l => l._id !== selectedLog._id));
+      setSelectedLog(logs.length > 1 ? logs.find(l => l._id !== selectedLog._id) : null);
+      setConfirmDelete(null);
+    } catch (err) {
+      setError(err.response?.data?.error || 'Failed to delete log');
+    }
+  }
+
+  async function deleteSession(sessionId) {
+    if (!selectedLog) return;
+    try {
+      const { data } = await api.delete(`/supervision/${selectedLog._id}/sessions/${sessionId}`);
+      setSelectedLog(data);
+      setLogs(prev => prev.map(l => l._id === data._id ? data : l));
+      setConfirmDelete(null);
+    } catch (err) {
+      setError(err.response?.data?.error || 'Failed to delete session');
+    }
+  }
+
   if (loading) return <div className="flex justify-center p-12"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-burgundy-700"></div></div>;
 
   return (
@@ -132,9 +177,13 @@ export default function SupervisionTracker() {
                   <h2 className="text-xl font-bold text-gray-900">{selectedLog.licenseType} Supervision — {selectedLog.state}</h2>
                   <p className="text-gray-600">Supervisor: {selectedLog.supervisor?.name} ({selectedLog.supervisor?.credentials})</p>
                 </div>
-                <span className={`px-3 py-1 rounded-full text-xs font-medium ${selectedLog.status === 'completed' ? 'bg-green-100 text-green-700' : selectedLog.status === 'on_hold' ? 'bg-yellow-100 text-yellow-700' : 'bg-blue-100 text-blue-700'}`}>
-                  {selectedLog.status?.replace('_', ' ')}
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className={`px-3 py-1 rounded-full text-xs font-medium ${selectedLog.status === 'completed' ? 'bg-green-100 text-green-700' : selectedLog.status === 'on_hold' ? 'bg-yellow-100 text-yellow-700' : 'bg-blue-100 text-blue-700'}`}>
+                    {selectedLog.status?.replace('_', ' ')}
+                  </span>
+                  <button onClick={() => setShowEditForm(true)} className="text-xs px-2.5 py-1 text-gray-600 hover:bg-gray-100 rounded-lg transition">Edit</button>
+                  <button onClick={() => setConfirmDelete('log')} className="text-xs px-2.5 py-1 text-red-600 hover:bg-red-50 rounded-lg transition">Delete</button>
+                </div>
               </div>
 
               {/* Progress Stats */}
@@ -164,16 +213,27 @@ export default function SupervisionTracker() {
               {selectedLog.sessions?.length > 0 ? (
                 <div className="space-y-2 max-h-96 overflow-y-auto">
                   {[...selectedLog.sessions].reverse().map((s, i) => (
-                    <div key={s._id || i} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div key={s._id || i} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg group">
                       <div>
                         <div className="text-sm font-medium text-gray-900">
                           {new Date(s.date).toLocaleDateString()} — {s.hours}h {s.type.replace('_', ' ')}
                         </div>
                         {s.topics?.length > 0 && <div className="text-xs text-gray-500">{s.topics.join(', ')}</div>}
                       </div>
-                      <span className={`text-xs px-2 py-0.5 rounded ${s.modality === 'telehealth' ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700'}`}>
-                        {s.modality?.replace('_', ' ')}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className={`text-xs px-2 py-0.5 rounded ${s.modality === 'telehealth' ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700'}`}>
+                          {s.modality?.replace('_', ' ')}
+                        </span>
+                        {s._id && (
+                          <button
+                            onClick={() => setConfirmDelete(s._id)}
+                            className="opacity-0 group-hover:opacity-100 text-xs text-red-500 hover:text-red-700 transition-opacity"
+                            aria-label="Delete session"
+                          >
+                            ✕
+                          </button>
+                        )}
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -302,6 +362,91 @@ export default function SupervisionTracker() {
                 <button type="submit" className="px-4 py-2 bg-burgundy-700 text-white rounded-lg hover:bg-burgundy-800">Log Session</button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+      {/* Edit Log Modal */}
+      {showEditForm && selectedLog && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" role="dialog" aria-label="Edit supervision log">
+          <div className="bg-white rounded-xl p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto">
+            <h2 className="text-lg font-bold mb-4">Edit Supervision Log</h2>
+            <form onSubmit={updateLog} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-1">Supervisor Name *</label>
+                <input required className="w-full border rounded-lg px-3 py-2" value={selectedLog.supervisor?.name || ''}
+                  onChange={e => setSelectedLog(l => ({ ...l, supervisor: { ...l.supervisor, name: e.target.value } }))} />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm font-medium mb-1">Credentials</label>
+                  <input className="w-full border rounded-lg px-3 py-2" value={selectedLog.supervisor?.credentials || ''}
+                    onChange={e => setSelectedLog(l => ({ ...l, supervisor: { ...l.supervisor, credentials: e.target.value } }))} />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">License #</label>
+                  <input className="w-full border rounded-lg px-3 py-2" value={selectedLog.supervisor?.licenseNumber || ''}
+                    onChange={e => setSelectedLog(l => ({ ...l, supervisor: { ...l.supervisor, licenseNumber: e.target.value } }))} />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm font-medium mb-1">License Type</label>
+                  <select className="w-full border rounded-lg px-3 py-2" value={selectedLog.licenseType}
+                    onChange={e => setSelectedLog(l => ({ ...l, licenseType: e.target.value }))}>
+                    <option value="LPC">LPC</option><option value="LMHC">LMHC</option><option value="LCPC">LCPC</option>
+                    <option value="LCSW">LCSW</option><option value="LMFT">LMFT</option><option value="Other">Other</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Status</label>
+                  <select className="w-full border rounded-lg px-3 py-2" value={selectedLog.status}
+                    onChange={e => setSelectedLog(l => ({ ...l, status: e.target.value }))}>
+                    <option value="active">Active</option>
+                    <option value="on_hold">On Hold</option>
+                    <option value="completed">Completed</option>
+                  </select>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm font-medium mb-1">State</label>
+                  <input className="w-full border rounded-lg px-3 py-2" maxLength={2} value={selectedLog.state}
+                    onChange={e => setSelectedLog(l => ({ ...l, state: e.target.value.toUpperCase() }))} />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Total Hours Required</label>
+                  <input type="number" min="1" className="w-full border rounded-lg px-3 py-2" value={selectedLog.totalHoursRequired}
+                    onChange={e => setSelectedLog(l => ({ ...l, totalHoursRequired: Number(e.target.value) }))} />
+                </div>
+              </div>
+              <div className="flex justify-end gap-3 pt-2">
+                <button type="button" onClick={() => { setShowEditForm(false); fetchLogs(); }} className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg">Cancel</button>
+                <button type="submit" className="px-4 py-2 bg-burgundy-700 text-white rounded-lg hover:bg-burgundy-800">Save Changes</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Confirm Delete Dialog */}
+      {confirmDelete && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" role="alertdialog" aria-label="Confirm deletion">
+          <div className="bg-white rounded-xl p-6 w-full max-w-sm">
+            <h2 className="text-lg font-bold text-gray-900 mb-2">Confirm Delete</h2>
+            <p className="text-gray-600 text-sm mb-4">
+              {confirmDelete === 'log'
+                ? 'This will permanently delete this supervision log and all its sessions. This cannot be undone.'
+                : 'This will permanently delete this session. This cannot be undone.'}
+            </p>
+            <div className="flex justify-end gap-3">
+              <button onClick={() => setConfirmDelete(null)} className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg">Cancel</button>
+              <button
+                onClick={() => confirmDelete === 'log' ? deleteLog() : deleteSession(confirmDelete)}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+              >
+                Delete
+              </button>
+            </div>
           </div>
         </div>
       )}
