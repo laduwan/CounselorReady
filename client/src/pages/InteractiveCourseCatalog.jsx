@@ -34,7 +34,7 @@ const InteractiveCourseCatalog = () => {
     try {
       setLoading(true);
       const response = await api.get('/interactive-courses');
-      setCourses(response.data.courses || []);
+      setCourses(response.data.data || response.data.courses || []);
     } catch (err) {
       console.error('Error fetching courses:', err);
       setError('Failed to load courses');
