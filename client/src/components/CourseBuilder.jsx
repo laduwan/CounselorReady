@@ -907,10 +907,12 @@ function ContentEditor({ courseData, setCourseData }) {
   const [activeModule, setActiveModule] = useState(0);
   const [showBlockMenu, setShowBlockMenu] = useState(null);
   const [editingBlock, setEditingBlock] = useState(null);
-  const [previewMode, setPreviewMode] = useState(false);
+  const [previewMode, setPreviewMode] = useState(false); // false | "full" | "split"
   const [regenerating, setRegenerating] = useState(false);
   const [enriching, setEnriching] = useState(false);
   const [enrichProgress, setEnrichProgress] = useState("");
+  const [floatingMenuOpen, setFloatingMenuOpen] = useState(false);
+  const editorPanelRef = useRef(null);
 
   const API_BASE = import.meta.env.VITE_API_URL || "https://api.counselorready.com/api";
   const getToken = () => localStorage.getItem("token");
@@ -1208,9 +1210,258 @@ function ContentEditor({ courseData, setCourseData }) {
     };
   };
 
+  // ── Preview renderer (shared between full-preview and split-preview) ──
+  const renderPreview = (blocks) => (
+    <div style={{ background: C.card, borderRadius: 12, border: `1px solid ${C.border}`, padding: 24 }}>
+      {(blocks || []).map((block, i) => {
+        const cfg = blockConfig(block.type);
+        return (
+          <div key={block.id || i} style={{ marginBottom: 20, cursor: previewMode === "split" ? "pointer" : "default" }}
+            onClick={() => { if (previewMode === "split") setEditingBlock(i); }}>
+            {block.type === "sectionDivider" && (
+              <div style={{ borderBottom: `2px solid ${C.burgundy}`, paddingBottom: 8, marginTop: 24 }}>
+                <h2 style={{ color: C.burgundy, fontSize: 22, fontWeight: 700, margin: 0 }}>{block.title || "Section"}</h2>
+                {block.subtitle && <p style={{ color: C.textMuted, fontSize: 14, margin: "4px 0 0" }}>{block.subtitle}</p>}
+              </div>
+            )}
+            {block.type === "text" && (
+              <div style={{ fontSize: 15, lineHeight: 1.7, color: C.text }} dangerouslySetInnerHTML={{ __html: safeHTML(block.content || "<em>Empty text block</em>") }} />
+            )}
+            {block.type === "imageText" && (
+              <div style={{ display: "flex", gap: 20, flexDirection: block.imagePosition === "right" ? "row-reverse" : "row", alignItems: "flex-start" }}>
+                {block.image && <img src={block.image} alt={block.imageAlt || ""} style={{ width: "40%", borderRadius: 8 }} />}
+                <div style={{ flex: 1, fontSize: 15, lineHeight: 1.7 }} dangerouslySetInnerHTML={{ __html: safeHTML(block.content || "") }} />
+              </div>
+            )}
+            {block.type === "image" && block.imageUrl && (
+              <figure style={{ textAlign: "center", margin: "16px 0" }}>
+                <img src={block.imageUrl} alt={block.imageAltText || ""} style={{ maxWidth: "80%", borderRadius: 8 }} />
+                {block.imageCaption && <figcaption style={{ fontSize: 12, color: C.textMuted, marginTop: 6 }}>{block.imageCaption}</figcaption>}
+              </figure>
+            )}
+            {block.type === "accordion" && (
+              <div style={{ border: `1px solid ${C.border}`, borderRadius: 8, overflow: "hidden" }}>
+                {(block.accordionItems || []).map((item, j) => (
+                  <div key={j} style={{ borderBottom: `1px solid ${C.borderLight}`, padding: "10px 14px" }}>
+                    <div style={{ fontWeight: 600, fontSize: 14, color: C.navy }}>{item.title || "Untitled"}</div>
+                    <div style={{ fontSize: 13, color: C.textMuted, marginTop: 4 }} dangerouslySetInnerHTML={{ __html: safeHTML(item.content || "") }} />
+                  </div>
+                ))}
+              </div>
+            )}
+            {(block.type === "multipleChoice" || block.type === "multiSelect") && (
+              <div style={{ background: C.burgundyFaded, borderRadius: 10, padding: 16, borderLeft: `4px solid ${C.burgundy}` }}>
+                <div style={{ fontSize: 10, fontWeight: 700, color: C.burgundy, marginBottom: 6 }}>KNOWLEDGE CHECK</div>
+                <div style={{ fontWeight: 600, fontSize: 14, color: C.navy, marginBottom: 10 }}>{block.question || "Question?"}</div>
+                {(block.options || []).map((opt, j) => (
+                  <div key={j} style={{ padding: "6px 10px", marginBottom: 4, borderRadius: 6, border: `1px solid ${opt.isCorrect ? C.green : C.border}`, background: opt.isCorrect ? C.greenFaded : "#fff", fontSize: 13 }}>
+                    {opt.isCorrect && <span style={{ color: C.green, fontWeight: 700, marginRight: 6 }}>✓</span>}
+                    {opt.text}
+                  </div>
+                ))}
+                {block.explanation && <div style={{ fontSize: 12, color: C.textMuted, marginTop: 8, fontStyle: "italic" }}>💡 {block.explanation}</div>}
+              </div>
+            )}
+            {block.type === "reflection" && (
+              <div style={{ background: C.greenFaded, borderRadius: 10, padding: 16, borderLeft: `4px solid ${C.green}` }}>
+                <div style={{ fontSize: 10, fontWeight: 700, color: C.green, marginBottom: 6 }}>REFLECTION</div>
+                <div style={{ fontWeight: 500, fontSize: 14, color: C.navy }}>{block.question || "Reflect on..."}</div>
+              </div>
+            )}
+            {block.type === "matching" && (
+              <div style={{ background: C.burgundyFaded, borderRadius: 10, padding: 16, borderLeft: `4px solid ${C.navy}` }}>
+                <div style={{ fontSize: 10, fontWeight: 700, color: C.navy, marginBottom: 6 }}>MATCHING</div>
+                {block.matchingInstructions && <div style={{ fontSize: 13, marginBottom: 8 }}>{block.matchingInstructions}</div>}
+                {(block.matchingPairs || []).map((p, j) => (
+                  <div key={j} style={{ display: "flex", gap: 12, marginBottom: 4, fontSize: 13 }}>
+                    <span style={{ fontWeight: 600, color: C.navy }}>{p.term}</span>
+                    <span style={{ color: C.textMuted }}>→</span>
+                    <span>{p.definition}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+            {block.type === "resources" && (
+              <div style={{ background: C.goldFaded || "rgba(212,168,85,0.08)", borderRadius: 10, padding: 16, borderLeft: `4px solid ${C.gold}` }}>
+                <div style={{ fontSize: 10, fontWeight: 700, color: C.gold, marginBottom: 6 }}>RESOURCES</div>
+                {(block.resources || []).map((r, j) => (
+                  <div key={j} style={{ fontSize: 13, marginBottom: 4 }}>📎 <a href={r.url} style={{ color: C.navy }}>{r.title || r.url}</a> <span style={{ color: C.textLight, fontSize: 11 }}>({r.type})</span></div>
+                ))}
+              </div>
+            )}
+            {!["sectionDivider","text","imageText","image","accordion","multipleChoice","multiSelect","reflection","matching","resources"].includes(block.type) && (
+              <div style={{ background: C.greenFaded, borderRadius: 10, padding: 16, borderLeft: `4px solid ${cfg.color}` }}>
+                <div style={{ fontSize: 10, fontWeight: 700, color: cfg.color, marginBottom: 4 }}>{cfg.label.toUpperCase()}</div>
+                <div style={{ fontSize: 13, color: C.textMuted }}>{block.instructions || block.question || block.scenarioTitle || JSON.stringify(block).substring(0, 200) + "..."}</div>
+              </div>
+            )}
+          </div>
+        );
+      })}
+      {(blocks || []).length === 0 && (
+        <p style={{ textAlign: "center", color: C.textMuted, fontSize: 14, padding: 40 }}>No blocks to preview</p>
+      )}
+    </div>
+  );
+
+  // ── Block list renderer (shared between edit and split modes) ──
+  const renderBlockList = () => (
+    <>
+      <InsertBar onInsert={() => setShowBlockMenu(-1)} active={showBlockMenu === -1} />
+      {showBlockMenu === -1 && <BlockPicker onPick={(type) => addBlock(type, -1)} onClose={() => setShowBlockMenu(null)} />}
+
+      {(currentModule.blocks || []).map((block, i) => {
+        const cfg = blockConfig(block.type);
+        const isSelected = editingBlock === i;
+        const isKC = KNOWLEDGE_CHECK_TYPES.includes(block.type);
+        const isEngagement = ENGAGEMENT_TYPES.includes(block.type);
+        return (
+          <div key={block.id}>
+            <div style={{
+              border: `1px solid ${isSelected ? C.burgundy : C.border}`, borderRadius: 10, marginBottom: 4, background: C.card,
+              borderLeft: isKC ? `4px solid ${C.burgundy}` : isEngagement ? `4px solid ${C.purple}` : undefined,
+              boxShadow: isSelected ? `0 0 0 2px ${C.burgundy}22` : "none",
+            }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 14px", cursor: "pointer" }}
+                onClick={() => setEditingBlock(isSelected ? null : i)}>
+                <span style={{ cursor: "grab", color: C.textLight, fontSize: 12 }}>⠿</span>
+                <span style={{ width: 26, height: 26, borderRadius: 6, background: cfg.color + "14", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13 }}>{cfg.icon}</span>
+                <span style={{ fontWeight: 600, fontSize: 13, flex: 1, color: C.navy, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{cfg.label}</span>
+                {isKC && <span style={{ fontSize: 9, fontWeight: 700, color: C.burgundy, background: C.burgundyFaded, padding: "2px 6px", borderRadius: 4 }}>KC</span>}
+                <span style={{ fontSize: 11, color: C.textLight }}>{countBlockWords(block)}w</span>
+                <div style={{ display: "flex", gap: 2 }}>
+                  <button onClick={(e) => { e.stopPropagation(); moveBlock(i, i - 1); }} title="Move up" style={{ background: "none", border: "none", cursor: "pointer", padding: 3, opacity: i === 0 ? 0.3 : 1, fontSize: 12 }}>▲</button>
+                  <button onClick={(e) => { e.stopPropagation(); moveBlock(i, i + 1); }} title="Move down" style={{ background: "none", border: "none", cursor: "pointer", padding: 3, opacity: i === currentModule.blocks.length - 1 ? 0.3 : 1, fontSize: 12 }}>▼</button>
+                  <button onClick={(e) => { e.stopPropagation(); duplicateBlock(i); }} title="Duplicate block" style={{ background: "none", border: "none", cursor: "pointer", padding: 3, fontSize: 12, color: C.navy }}>⧉</button>
+                  <button onClick={(e) => { e.stopPropagation(); removeBlock(i); }} title="Delete block" style={{ background: "none", border: "none", cursor: "pointer", padding: 3, color: C.danger, fontSize: 12 }}>✕</button>
+                </div>
+              </div>
+              {/* Inline editing only when NOT in panel mode (i.e., no split/preview) */}
+              {isSelected && previewMode !== "split" && (
+                <div style={{ padding: 14, borderTop: `1px solid ${C.borderLight}` }}>
+                  <BlockEditor block={block} onChange={(updates) => updateBlock(i, updates)} />
+                  {/* AI Actions Bar */}
+                  <div style={{ borderTop: `1px solid ${C.borderLight}`, marginTop: 12, paddingTop: 10, display: "flex", flexWrap: "wrap", gap: 6, alignItems: "center" }}>
+                    <span style={{ fontSize: 11, color: C.textLight, fontWeight: 600, marginRight: 4 }}>AI:</span>
+                    {(block.type === "text" || block.type === "imageText") && <>
+                      <BlockAIButton label="Expand" action="expand" block={block} onResult={(result) => updateBlock(i, { content: result })} apiBase={API_BASE} getToken={getToken} />
+                      <BlockAIButton label="Simplify" action="simplify" block={block} onResult={(result) => updateBlock(i, { content: result })} apiBase={API_BASE} getToken={getToken} />
+                      <BlockAIButton label="Add Citations" action="add-citations" block={block} onResult={(result) => updateBlock(i, { content: result })} apiBase={API_BASE} getToken={getToken} />
+                      <BlockAIButton label="Write Content" action="ai-write" block={block} context={block.title || currentModule.title} onResult={(result) => updateBlock(i, { content: result })} apiBase={API_BASE} getToken={getToken} />
+                    </>}
+                    {(block.type === "multipleChoice" || block.type === "multiSelect") && <>
+                      <BlockAIButton label="Better Options" action="improve-options" block={block} isJson onResult={(result) => updateBlock(i, result)} apiBase={API_BASE} getToken={getToken} />
+                    </>}
+                    {block.type === "matching" && <>
+                      <BlockAIButton label="Generate Pairs" action="generate-pairs" block={block} context={currentModule.title} isJson onResult={(result) => updateBlock(i, { matchingPairs: result })} apiBase={API_BASE} getToken={getToken} />
+                    </>}
+                    {block.type === "reflection" && <>
+                      <BlockAIButton label="New Prompt" action="generate-prompt" block={block} context={currentModule.title} onResult={(result) => updateBlock(i, { question: result })} apiBase={API_BASE} getToken={getToken} />
+                    </>}
+                    {block.type === "flashcardDeck" && <>
+                      <BlockAIButton label="Generate Cards" action="generate-cards" block={block} context={currentModule.title} isJson onResult={(result) => updateBlock(i, { flashcards: result })} apiBase={API_BASE} getToken={getToken} />
+                    </>}
+                    {block.type === "scenarioTree" && <>
+                      <BlockAIButton label="Generate Scenario" action="generate-scenario" block={block} context={currentModule.title} isJson onResult={(result) => updateBlock(i, result)} apiBase={API_BASE} getToken={getToken} />
+                    </>}
+                  </div>
+                </div>
+              )}
+            </div>
+            <InsertBar onInsert={() => setShowBlockMenu(i)} active={showBlockMenu === i} />
+            {showBlockMenu === i && <BlockPicker onPick={(type) => addBlock(type, i)} onClose={() => setShowBlockMenu(null)} />}
+          </div>
+        );
+      })}
+
+      {(currentModule.blocks || []).length === 0 && (
+        <div style={{ textAlign: "center", padding: 48, color: C.textMuted, border: `2px dashed ${C.border}`, borderRadius: 12, background: C.card }}>
+          <div style={{ fontSize: 32, marginBottom: 8 }}>📝</div>
+          <p style={{ fontSize: 15, fontWeight: 600, color: C.navy }}>No content blocks yet</p>
+          <p style={{ fontSize: 13, marginBottom: 20, maxWidth: 420, margin: "0 auto 20px", lineHeight: 1.5 }}>
+            Build your module with 17 block types: text content, images, knowledge checks (multiple choice, matching, sequencing), and engagement activities (scenarios, flashcards, reflections).
+          </p>
+          <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap", marginBottom: 20 }}>
+            <button style={S.btnPrimary} onClick={() => setShowBlockMenu(-1)}>+ Add Content Block</button>
+            <button style={{ ...S.btnSecondary, borderColor: C.burgundy + "44", color: C.burgundy }}
+              onClick={() => regenerateModule(activeModule)}>
+              <Wand2 size={14} /> AI Generate This Module
+            </button>
+          </div>
+          <p style={{ fontSize: 11, color: C.textLight }}>
+            Tip: Use "AI Generate" to auto-create content, or "Auto-Enrich" to add interactive elements to existing text.
+          </p>
+        </div>
+      )}
+    </>
+  );
+
+  // ── Editor panel for split mode (right column) ──
+  const renderEditorPanel = () => {
+    if (editingBlock === null || editingBlock < 0 || editingBlock >= (currentModule.blocks || []).length) {
+      return (
+        <div style={{ ...S.card, textAlign: "center", padding: 40, position: "sticky", top: 20 }}>
+          <div style={{ fontSize: 28, marginBottom: 8 }}>👆</div>
+          <p style={{ fontSize: 14, fontWeight: 600, color: C.navy }}>Select a block to edit</p>
+          <p style={{ fontSize: 12, color: C.textMuted }}>Click any block in the list to open its editor here</p>
+        </div>
+      );
+    }
+
+    const block = currentModule.blocks[editingBlock];
+    const cfg = blockConfig(block.type);
+
+    return (
+      <div ref={editorPanelRef} style={{ ...S.card, position: "sticky", top: 20, maxHeight: "calc(100vh - 200px)", overflowY: "auto" }}>
+        <div style={{ padding: "12px 16px", borderBottom: `1px solid ${C.borderLight}`, display: "flex", alignItems: "center", gap: 8, background: C.burgundyFaded }}>
+          <span style={{ width: 24, height: 24, borderRadius: 6, background: cfg.color + "14", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12 }}>{cfg.icon}</span>
+          <span style={{ fontWeight: 700, fontSize: 14, color: C.burgundy, flex: 1 }}>{cfg.label}</span>
+          <span style={{ fontSize: 11, color: C.textMuted }}>Block {editingBlock + 1}</span>
+          <button onClick={() => setEditingBlock(null)} title="Close editor"
+            style={{ background: "none", border: "none", cursor: "pointer", color: C.textMuted, fontSize: 16, padding: "0 4px" }}>✕</button>
+        </div>
+        <div style={{ padding: 16 }}>
+          <BlockEditor block={block} onChange={(updates) => updateBlock(editingBlock, updates)} />
+          {/* AI Actions Bar */}
+          <div style={{ borderTop: `1px solid ${C.borderLight}`, marginTop: 12, paddingTop: 10, display: "flex", flexWrap: "wrap", gap: 6, alignItems: "center" }}>
+            <span style={{ fontSize: 11, color: C.textLight, fontWeight: 600, marginRight: 4 }}>AI:</span>
+            {(block.type === "text" || block.type === "imageText") && <>
+              <BlockAIButton label="Expand" action="expand" block={block} onResult={(result) => updateBlock(editingBlock, { content: result })} apiBase={API_BASE} getToken={getToken} />
+              <BlockAIButton label="Simplify" action="simplify" block={block} onResult={(result) => updateBlock(editingBlock, { content: result })} apiBase={API_BASE} getToken={getToken} />
+              <BlockAIButton label="Add Citations" action="add-citations" block={block} onResult={(result) => updateBlock(editingBlock, { content: result })} apiBase={API_BASE} getToken={getToken} />
+              <BlockAIButton label="Write Content" action="ai-write" block={block} context={block.title || currentModule.title} onResult={(result) => updateBlock(editingBlock, { content: result })} apiBase={API_BASE} getToken={getToken} />
+            </>}
+            {(block.type === "multipleChoice" || block.type === "multiSelect") && <>
+              <BlockAIButton label="Better Options" action="improve-options" block={block} isJson onResult={(result) => updateBlock(editingBlock, result)} apiBase={API_BASE} getToken={getToken} />
+            </>}
+            {block.type === "matching" && <>
+              <BlockAIButton label="Generate Pairs" action="generate-pairs" block={block} context={currentModule.title} isJson onResult={(result) => updateBlock(editingBlock, { matchingPairs: result })} apiBase={API_BASE} getToken={getToken} />
+            </>}
+            {block.type === "reflection" && <>
+              <BlockAIButton label="New Prompt" action="generate-prompt" block={block} context={currentModule.title} onResult={(result) => updateBlock(editingBlock, { question: result })} apiBase={API_BASE} getToken={getToken} />
+            </>}
+            {block.type === "flashcardDeck" && <>
+              <BlockAIButton label="Generate Cards" action="generate-cards" block={block} context={currentModule.title} isJson onResult={(result) => updateBlock(editingBlock, { flashcards: result })} apiBase={API_BASE} getToken={getToken} />
+            </>}
+            {block.type === "scenarioTree" && <>
+              <BlockAIButton label="Generate Scenario" action="generate-scenario" block={block} context={currentModule.title} isJson onResult={(result) => updateBlock(editingBlock, result)} apiBase={API_BASE} getToken={getToken} />
+            </>}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // ── Determine grid layout based on mode ──
+  const gridColumns = previewMode === "split"
+    ? "280px 1fr 400px"          // sidebar + block list + editor panel
+    : previewMode === "full"
+      ? "280px 1fr"              // sidebar + preview
+      : "280px 1fr";             // sidebar + block list (inline editing)
+
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "240px 1fr", gap: 20 }}>
-      {/* Module Sidebar */}
+    <div style={{ display: "grid", gridTemplateColumns: gridColumns, gap: 16, position: "relative" }}>
+      {/* ── Module Sidebar (wider: 280px) ── */}
       <div>
         <div style={{ ...S.card, position: "sticky", top: 20 }}>
           <div style={{ padding: "12px 14px", borderBottom: `1px solid ${C.borderLight}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -1222,7 +1473,8 @@ function ContentEditor({ courseData, setCourseData }) {
             return (
               <div key={mod.id || i} onClick={() => { setActiveModule(i); setEditingBlock(null); }}
                 style={{ padding: "10px 14px", cursor: "pointer", borderLeft: i === activeModule ? `3px solid ${C.burgundy}` : "3px solid transparent", background: i === activeModule ? C.burgundyFaded : "transparent", transition: "all 0.2s" }}>
-                <div style={{ fontSize: 13, fontWeight: i === activeModule ? 600 : 400, color: i === activeModule ? C.burgundy : C.textMuted }}>
+                <div style={{ fontSize: 13, fontWeight: i === activeModule ? 600 : 400, color: i === activeModule ? C.burgundy : C.textMuted, lineHeight: 1.4 }}
+                  title={mod.title || `Module ${i + 1}`}>
                   {mod.title?.replace(/^Module \d+:\s*/, "") || `Module ${i + 1}`}
                 </div>
                 <div style={{ display: "flex", gap: 8, fontSize: 10, color: C.textLight, marginTop: 3 }}>
@@ -1251,8 +1503,9 @@ function ContentEditor({ courseData, setCourseData }) {
         </div>
       </div>
 
-      {/* Block Canvas */}
+      {/* ── Main Content Area ── */}
       <div>
+        {/* Toolbar */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16, gap: 12 }}>
           <input
             style={{ fontSize: 18, fontWeight: 700, color: C.navy, margin: 0, border: "none", background: "transparent", outline: "none", flex: 1, minWidth: 0, padding: "4px 8px", borderRadius: 6, cursor: "text", fontFamily: "inherit" }}
@@ -1262,7 +1515,7 @@ function ContentEditor({ courseData, setCourseData }) {
             onBlur={e => { e.target.style.background = "transparent"; e.target.style.border = "none"; }}
             title="Click to edit module title"
           />
-          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+          <div style={{ display: "flex", gap: 6, alignItems: "center", flexShrink: 0 }}>
             <button style={{ ...S.btnSecondary, fontSize: 11, padding: "5px 10px", background: regenerating ? C.burgundyFaded : "transparent" }}
               onClick={() => regenerateModule(activeModule)} disabled={regenerating || enriching}>
               {regenerating ? <><Loader2 size={12} style={{ animation: "spin 1s linear infinite" }} /> Regenerating...</> : <><Wand2 size={12} /> Regenerate</>}
@@ -1271,193 +1524,85 @@ function ContentEditor({ courseData, setCourseData }) {
               onClick={() => autoEnrichModule(activeModule)} disabled={enriching || regenerating}>
               {enriching ? <><Loader2 size={12} style={{ animation: "spin 1s linear infinite" }} /> {enrichProgress || "Enriching..."}</> : <><Sparkles size={12} /> Auto-Enrich</>}
             </button>
-            <button style={{ ...S.btnSecondary, fontSize: 11, padding: "5px 10px", background: previewMode ? C.greenFaded : "transparent", color: previewMode ? C.green : C.navy }}
-              onClick={() => setPreviewMode(!previewMode)}>
-              <Eye size={12} /> {previewMode ? "Edit" : "Preview"}
-            </button>
-            <span style={S.badge(C.green)}>{(currentModule.blocks || []).filter(b => KNOWLEDGE_CHECK_TYPES.includes(b.type)).length} knowledge checks</span>
-            <span style={{ fontSize: 13, color: C.textMuted }}>{(currentModule.blocks || []).length} blocks</span>
+
+            {/* View mode selector: Edit | Split | Preview */}
+            <div style={{ display: "flex", borderRadius: 6, overflow: "hidden", border: `1px solid ${C.border}` }}>
+              <button onClick={() => setPreviewMode(false)} title="Edit mode"
+                style={{ background: !previewMode ? C.navy : "transparent", color: !previewMode ? "#fff" : C.textMuted, border: "none", padding: "4px 10px", fontSize: 11, fontWeight: 600, cursor: "pointer" }}>
+                Edit
+              </button>
+              <button onClick={() => { setPreviewMode("split"); if (editingBlock === null && (currentModule.blocks || []).length > 0) setEditingBlock(0); }} title="Side-by-side edit and preview"
+                style={{ background: previewMode === "split" ? C.navy : "transparent", color: previewMode === "split" ? "#fff" : C.textMuted, border: "none", borderLeft: `1px solid ${C.border}`, borderRight: `1px solid ${C.border}`, padding: "4px 10px", fontSize: 11, fontWeight: 600, cursor: "pointer" }}>
+                Split
+              </button>
+              <button onClick={() => setPreviewMode("full")} title="Full preview"
+                style={{ background: previewMode === "full" ? C.navy : "transparent", color: previewMode === "full" ? "#fff" : C.textMuted, border: "none", padding: "4px 10px", fontSize: 11, fontWeight: 600, cursor: "pointer" }}>
+                <Eye size={11} /> Preview
+              </button>
+            </div>
+
+            <span style={S.badge(C.green)}>{(currentModule.blocks || []).filter(b => KNOWLEDGE_CHECK_TYPES.includes(b.type)).length} KC</span>
+            <span style={{ fontSize: 12, color: C.textMuted }}>{(currentModule.blocks || []).length} blocks</span>
           </div>
         </div>
 
-        <InsertBar onInsert={() => setShowBlockMenu(-1)} active={showBlockMenu === -1} />
-        {showBlockMenu === -1 && <BlockPicker onPick={(type) => addBlock(type, -1)} onClose={() => setShowBlockMenu(null)} />}
-
-        {previewMode ? (
-          /* ── PREVIEW MODE ── */
-          <div style={{ background: C.card, borderRadius: 12, border: `1px solid ${C.border}`, padding: 28 }}>
-            {(currentModule.blocks || []).map((block, i) => {
-              const cfg = blockConfig(block.type);
-              return (
-                <div key={block.id} style={{ marginBottom: 20 }}>
-                  {block.type === "sectionDivider" && (
-                    <div style={{ borderBottom: `2px solid ${C.burgundy}`, paddingBottom: 8, marginTop: 24 }}>
-                      <h2 style={{ color: C.burgundy, fontSize: 22, fontWeight: 700, margin: 0 }}>{block.title || "Section"}</h2>
-                      {block.subtitle && <p style={{ color: C.textMuted, fontSize: 14, margin: "4px 0 0" }}>{block.subtitle}</p>}
-                    </div>
-                  )}
-                  {block.type === "text" && (
-                    <div style={{ fontSize: 15, lineHeight: 1.7, color: C.text }} dangerouslySetInnerHTML={{ __html: safeHTML(block.content || "<em>Empty text block</em>") }} />
-                  )}
-                  {block.type === "imageText" && (
-                    <div style={{ display: "flex", gap: 20, flexDirection: block.imagePosition === "right" ? "row-reverse" : "row", alignItems: "flex-start" }}>
-                      {block.image && <img src={block.image} alt={block.imageAlt || ""} style={{ width: "40%", borderRadius: 8 }} />}
-                      <div style={{ flex: 1, fontSize: 15, lineHeight: 1.7 }} dangerouslySetInnerHTML={{ __html: safeHTML(block.content || "") }} />
-                    </div>
-                  )}
-                  {block.type === "image" && block.imageUrl && (
-                    <figure style={{ textAlign: "center", margin: "16px 0" }}>
-                      <img src={block.imageUrl} alt={block.imageAltText || ""} style={{ maxWidth: "80%", borderRadius: 8 }} />
-                      {block.imageCaption && <figcaption style={{ fontSize: 12, color: C.textMuted, marginTop: 6 }}>{block.imageCaption}</figcaption>}
-                    </figure>
-                  )}
-                  {block.type === "accordion" && (
-                    <div style={{ border: `1px solid ${C.border}`, borderRadius: 8, overflow: "hidden" }}>
-                      {(block.accordionItems || []).map((item, j) => (
-                        <div key={j} style={{ borderBottom: `1px solid ${C.borderLight}`, padding: "10px 14px" }}>
-                          <div style={{ fontWeight: 600, fontSize: 14, color: C.navy }}>{item.title || "Untitled"}</div>
-                          <div style={{ fontSize: 13, color: C.textMuted, marginTop: 4 }} dangerouslySetInnerHTML={{ __html: safeHTML(item.content || "") }} />
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                  {(block.type === "multipleChoice" || block.type === "multiSelect") && (
-                    <div style={{ background: C.burgundyFaded, borderRadius: 10, padding: 16, borderLeft: `4px solid ${C.burgundy}` }}>
-                      <div style={{ fontSize: 10, fontWeight: 700, color: C.burgundy, marginBottom: 6 }}>KNOWLEDGE CHECK</div>
-                      <div style={{ fontWeight: 600, fontSize: 14, color: C.navy, marginBottom: 10 }}>{block.question || "Question?"}</div>
-                      {(block.options || []).map((opt, j) => (
-                        <div key={j} style={{ padding: "6px 10px", marginBottom: 4, borderRadius: 6, border: `1px solid ${opt.isCorrect ? C.green : C.border}`, background: opt.isCorrect ? C.greenFaded : "#fff", fontSize: 13 }}>
-                          {opt.isCorrect && <span style={{ color: C.green, fontWeight: 700, marginRight: 6 }}>✓</span>}
-                          {opt.text}
-                        </div>
-                      ))}
-                      {block.explanation && <div style={{ fontSize: 12, color: C.textMuted, marginTop: 8, fontStyle: "italic" }}>💡 {block.explanation}</div>}
-                    </div>
-                  )}
-                  {block.type === "reflection" && (
-                    <div style={{ background: C.greenFaded, borderRadius: 10, padding: 16, borderLeft: `4px solid ${C.green}` }}>
-                      <div style={{ fontSize: 10, fontWeight: 700, color: C.green, marginBottom: 6 }}>REFLECTION</div>
-                      <div style={{ fontWeight: 500, fontSize: 14, color: C.navy }}>{block.question || "Reflect on..."}</div>
-                    </div>
-                  )}
-                  {block.type === "matching" && (
-                    <div style={{ background: C.burgundyFaded, borderRadius: 10, padding: 16, borderLeft: `4px solid ${C.navy}` }}>
-                      <div style={{ fontSize: 10, fontWeight: 700, color: C.navy, marginBottom: 6 }}>MATCHING</div>
-                      {block.matchingInstructions && <div style={{ fontSize: 13, marginBottom: 8 }}>{block.matchingInstructions}</div>}
-                      {(block.matchingPairs || []).map((p, j) => (
-                        <div key={j} style={{ display: "flex", gap: 12, marginBottom: 4, fontSize: 13 }}>
-                          <span style={{ fontWeight: 600, color: C.navy }}>{p.term}</span>
-                          <span style={{ color: C.textMuted }}>→</span>
-                          <span>{p.definition}</span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                  {block.type === "resources" && (
-                    <div style={{ background: C.goldFaded || "rgba(212,168,85,0.08)", borderRadius: 10, padding: 16, borderLeft: `4px solid ${C.gold}` }}>
-                      <div style={{ fontSize: 10, fontWeight: 700, color: C.gold, marginBottom: 6 }}>RESOURCES</div>
-                      {(block.resources || []).map((r, j) => (
-                        <div key={j} style={{ fontSize: 13, marginBottom: 4 }}>📎 <a href={r.url} style={{ color: C.navy }}>{r.title || r.url}</a> <span style={{ color: C.textLight, fontSize: 11 }}>({r.type})</span></div>
-                      ))}
-                    </div>
-                  )}
-                  {!["sectionDivider","text","imageText","image","accordion","multipleChoice","multiSelect","reflection","matching","resources"].includes(block.type) && (
-                    <div style={{ background: C.greenFaded, borderRadius: 10, padding: 16, borderLeft: `4px solid ${cfg.color}` }}>
-                      <div style={{ fontSize: 10, fontWeight: 700, color: cfg.color, marginBottom: 4 }}>{cfg.label.toUpperCase()}</div>
-                      <div style={{ fontSize: 13, color: C.textMuted }}>{block.instructions || block.question || block.scenarioTitle || JSON.stringify(block).substring(0, 200) + "..."}</div>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
+        {/* Content based on view mode */}
+        {previewMode === "full" ? (
+          renderPreview(currentModule.blocks)
         ) : (
-        <>
-        {(currentModule.blocks || []).map((block, i) => {
-          const cfg = blockConfig(block.type);
-          const isEditing = editingBlock === i;
-          const isKC = KNOWLEDGE_CHECK_TYPES.includes(block.type);
-          const isEngagement = ENGAGEMENT_TYPES.includes(block.type);
-          return (
-            <div key={block.id}>
-              <div style={{
-                border: `1px solid ${isEditing ? C.burgundy : C.border}`, borderRadius: 10, marginBottom: 4, background: C.card,
-                borderLeft: isKC ? `4px solid ${C.burgundy}` : isEngagement ? `4px solid ${C.purple}` : undefined,
-                boxShadow: isEditing ? `0 0 0 2px ${C.burgundy}22` : "none",
-              }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 14px", borderBottom: isEditing ? `1px solid ${C.borderLight}` : "none", cursor: "pointer" }}
-                  onClick={() => setEditingBlock(isEditing ? null : i)}>
-                  <span style={{ cursor: "grab", color: C.textLight, fontSize: 12 }}>⠿</span>
-                  <span style={{ width: 26, height: 26, borderRadius: 6, background: cfg.color + "14", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13 }}>{cfg.icon}</span>
-                  <span style={{ fontWeight: 600, fontSize: 13, flex: 1, color: C.navy }}>{cfg.label}</span>
-                  {isKC && <span style={{ fontSize: 9, fontWeight: 700, color: C.burgundy, background: C.burgundyFaded, padding: "2px 6px", borderRadius: 4 }}>KC</span>}
-                  <span style={{ fontSize: 11, color: C.textLight }}>{countBlockWords(block)}w</span>
-                  <div style={{ display: "flex", gap: 2 }}>
-                    <button onClick={(e) => { e.stopPropagation(); moveBlock(i, i - 1); }} title="Move up" style={{ background: "none", border: "none", cursor: "pointer", padding: 3, opacity: i === 0 ? 0.3 : 1, fontSize: 12 }}>▲</button>
-                    <button onClick={(e) => { e.stopPropagation(); moveBlock(i, i + 1); }} title="Move down" style={{ background: "none", border: "none", cursor: "pointer", padding: 3, opacity: i === currentModule.blocks.length - 1 ? 0.3 : 1, fontSize: 12 }}>▼</button>
-                    <button onClick={(e) => { e.stopPropagation(); duplicateBlock(i); }} title="Duplicate block" style={{ background: "none", border: "none", cursor: "pointer", padding: 3, fontSize: 12, color: C.navy }}>⧉</button>
-                    <button onClick={(e) => { e.stopPropagation(); removeBlock(i); }} title="Delete block" style={{ background: "none", border: "none", cursor: "pointer", padding: 3, color: C.danger, fontSize: 12 }}>✕</button>
-                  </div>
-                </div>
-                {isEditing && (
-                  <div style={{ padding: 14 }}>
-                    <BlockEditor block={block} onChange={(updates) => updateBlock(i, updates)} />
-                    {/* AI Actions Bar */}
-                    <div style={{ borderTop: `1px solid ${C.borderLight}`, marginTop: 12, paddingTop: 10, display: "flex", flexWrap: "wrap", gap: 6, alignItems: "center" }}>
-                      <span style={{ fontSize: 11, color: C.textLight, fontWeight: 600, marginRight: 4 }}>AI:</span>
-                      {(block.type === "text" || block.type === "imageText") && <>
-                        <BlockAIButton label="Expand" action="expand" block={block} onResult={(result) => updateBlock(i, { content: result })} apiBase={API_BASE} getToken={getToken} />
-                        <BlockAIButton label="Simplify" action="simplify" block={block} onResult={(result) => updateBlock(i, { content: result })} apiBase={API_BASE} getToken={getToken} />
-                        <BlockAIButton label="Add Citations" action="add-citations" block={block} onResult={(result) => updateBlock(i, { content: result })} apiBase={API_BASE} getToken={getToken} />
-                        <BlockAIButton label="✨ Write Content" action="ai-write" block={block} context={block.title || currentModule.title} onResult={(result) => updateBlock(i, { content: result })} apiBase={API_BASE} getToken={getToken} />
-                      </>}
-                      {(block.type === "multipleChoice" || block.type === "multiSelect") && <>
-                        <BlockAIButton label="Better Options" action="improve-options" block={block} isJson onResult={(result) => updateBlock(i, result)} apiBase={API_BASE} getToken={getToken} />
-                      </>}
-                      {block.type === "matching" && <>
-                        <BlockAIButton label="Generate Pairs" action="generate-pairs" block={block} context={currentModule.title} isJson onResult={(result) => updateBlock(i, { matchingPairs: result })} apiBase={API_BASE} getToken={getToken} />
-                      </>}
-                      {block.type === "reflection" && <>
-                        <BlockAIButton label="New Prompt" action="generate-prompt" block={block} context={currentModule.title} onResult={(result) => updateBlock(i, { question: result })} apiBase={API_BASE} getToken={getToken} />
-                      </>}
-                      {block.type === "flashcardDeck" && <>
-                        <BlockAIButton label="Generate Cards" action="generate-cards" block={block} context={currentModule.title} isJson onResult={(result) => updateBlock(i, { flashcards: result })} apiBase={API_BASE} getToken={getToken} />
-                      </>}
-                      {block.type === "scenarioTree" && <>
-                        <BlockAIButton label="Generate Scenario" action="generate-scenario" block={block} context={currentModule.title} isJson onResult={(result) => updateBlock(i, result)} apiBase={API_BASE} getToken={getToken} />
-                      </>}
-                    </div>
-                  </div>
-                )}
-              </div>
-              <InsertBar onInsert={() => setShowBlockMenu(i)} active={showBlockMenu === i} />
-              {showBlockMenu === i && <BlockPicker onPick={(type) => addBlock(type, i)} onClose={() => setShowBlockMenu(null)} />}
-            </div>
-          );
-        })}
-
-        {(currentModule.blocks || []).length === 0 && (
-          <div style={{ textAlign: "center", padding: 48, color: C.textMuted, border: `2px dashed ${C.border}`, borderRadius: 12, background: C.card }}>
-            <div style={{ fontSize: 32, marginBottom: 8 }}>📝</div>
-            <p style={{ fontSize: 15, fontWeight: 600, color: C.navy }}>No content blocks yet</p>
-            <p style={{ fontSize: 13, marginBottom: 20, maxWidth: 420, margin: "0 auto 20px", lineHeight: 1.5 }}>
-              Build your module with 17 block types: text content, images, knowledge checks (multiple choice, matching, sequencing), and engagement activities (scenarios, flashcards, reflections).
-            </p>
-            <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap", marginBottom: 20 }}>
-              <button style={S.btnPrimary} onClick={() => setShowBlockMenu(-1)}>+ Add Content Block</button>
-              <button style={{ ...S.btnSecondary, borderColor: C.burgundy + "44", color: C.burgundy }}
-                onClick={() => regenerateModule(activeModule)}>
-                <Wand2 size={14} /> AI Generate This Module
-              </button>
-            </div>
-            <p style={{ fontSize: 11, color: C.textLight }}>
-              Tip: Use "AI Generate" to auto-create content, or "Auto-Enrich" to add interactive elements to existing text.
-            </p>
-          </div>
-        )}
-        </>
+          renderBlockList()
         )}
       </div>
+
+      {/* ── Editor Panel (split mode only) ── */}
+      {previewMode === "split" && (
+        <div>
+          {renderEditorPanel()}
+        </div>
+      )}
+
+      {/* ── Floating Add Block Button ── */}
+      {!previewMode && (
+        <div style={{ position: "fixed", bottom: 28, right: 28, zIndex: 100 }}>
+          {floatingMenuOpen && (
+            <div style={{
+              position: "absolute", bottom: 56, right: 0, width: 260,
+              background: "#fff", border: `1px solid ${C.border}`, borderRadius: 12,
+              boxShadow: "0 12px 40px rgba(0,0,0,0.18)", padding: 8, maxHeight: 400, overflowY: "auto",
+            }}>
+              <div style={{ padding: "6px 10px", fontSize: 11, fontWeight: 700, color: C.textLight, textTransform: "uppercase" }}>Add Block</div>
+              {BLOCK_TYPES.map((bt) => (
+                <button key={bt.type} onClick={() => {
+                  addBlock(bt.type, (currentModule.blocks || []).length - 1);
+                  setFloatingMenuOpen(false);
+                }}
+                  style={{
+                    display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "8px 10px",
+                    background: "none", border: "none", cursor: "pointer", borderRadius: 6, fontSize: 13,
+                    color: C.navy, textAlign: "left",
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.background = C.greenFaded}
+                  onMouseLeave={e => e.currentTarget.style.background = "none"}>
+                  <span style={{ width: 24, height: 24, borderRadius: 5, background: bt.color + "14", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, flexShrink: 0 }}>{bt.icon}</span>
+                  <span style={{ fontWeight: 500 }}>{bt.label}</span>
+                </button>
+              ))}
+            </div>
+          )}
+          <button onClick={() => setFloatingMenuOpen(!floatingMenuOpen)} title="Add block"
+            style={{
+              width: 48, height: 48, borderRadius: "50%",
+              background: floatingMenuOpen ? C.danger : C.burgundy, color: "#fff",
+              border: "none", cursor: "pointer", fontSize: 22, fontWeight: 300,
+              display: "flex", alignItems: "center", justifyContent: "center",
+              boxShadow: "0 4px 16px rgba(107,29,52,0.35)",
+              transition: "transform 0.2s, background 0.2s",
+              transform: floatingMenuOpen ? "rotate(45deg)" : "none",
+            }}>
+            +
+          </button>
+        </div>
+      )}
     </div>
   );
 }
