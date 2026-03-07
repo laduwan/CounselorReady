@@ -39,7 +39,7 @@ export default function CEPlanner() {
     loadPlan();
   }, []);
 
-  if (loading) return <div className="flex justify-center py-12"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-moss-600"></div></div>;
+  if (loading) return <div className="flex justify-center py-12"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-burgundy-700"></div></div>;
 
   if (!planData || planData.plan?.length === 0) {
     return (
@@ -49,7 +49,7 @@ export default function CEPlanner() {
           <Target className="w-12 h-12 mx-auto text-gray-300 mb-4" />
           <h2 className="text-lg font-semibold text-gray-700 mb-2">No Credentials Found</h2>
           <p className="text-gray-500 mb-4">{planData?.message || 'Add your credentials first to get a personalized CE plan.'}</p>
-          <a href="/credentials" className="inline-flex items-center gap-2 px-4 py-2 bg-moss-600 text-white rounded-lg hover:bg-moss-700 text-sm">
+          <a href="/credentials" className="inline-flex items-center gap-2 px-4 py-2 bg-burgundy-700 text-white rounded-lg hover:bg-burgundy-800 text-sm">
             Add Credentials <ArrowRight className="w-4 h-4" />
           </a>
         </div>
@@ -67,7 +67,7 @@ export default function CEPlanner() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <div className="bg-white rounded-xl border p-4">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-moss-50 rounded-lg"><Target className="w-5 h-5 text-moss-600" /></div>
+            <div className="p-2 bg-burgundy-100 rounded-lg"><Target className="w-5 h-5 text-burgundy-700" /></div>
             <div>
               <p className="text-2xl font-bold">{summary.totalCredentials}</p>
               <p className="text-xs text-gray-500">Active Credentials</p>
@@ -129,7 +129,7 @@ export default function CEPlanner() {
                 </div>
                 {item.suggestedHoursPerWeek && (
                   <div className="text-right">
-                    <div className="flex items-center gap-1 text-sm font-medium text-moss-700">
+                    <div className="flex items-center gap-1 text-sm font-medium text-burgundy-800">
                       <TrendingUp className="w-4 h-4" /> {item.suggestedHoursPerWeek} hrs/week
                     </div>
                     <p className="text-xs text-gray-500">suggested pace</p>
@@ -144,7 +144,7 @@ export default function CEPlanner() {
                   <span className="font-medium">{progressPct}%</span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2.5">
-                  <div className="bg-moss-500 h-2.5 rounded-full transition-all" style={{ width: `${Math.min(100, progressPct)}%` }} />
+                  <div className="bg-burgundy-600 h-2.5 rounded-full transition-all" style={{ width: `${Math.min(100, progressPct)}%` }} />
                 </div>
               </div>
 
@@ -176,15 +176,15 @@ export default function CEPlanner() {
                         {rec.suggestedCourses.length > 0 ? (
                           rec.suggestedCourses.map(course => (
                             <a key={course.id} href={`/learn/${course.slug}`}
-                              className="flex items-center justify-between p-3 bg-moss-50 rounded-lg hover:bg-moss-100 transition-colors mb-2">
+                              className="flex items-center justify-between p-3 bg-burgundy-100 rounded-lg hover:bg-burgundy-200 transition-colors mb-2">
                               <div className="flex items-center gap-3">
-                                <BookOpen className="w-4 h-4 text-moss-600" />
+                                <BookOpen className="w-4 h-4 text-burgundy-700" />
                                 <div>
                                   <p className="text-sm font-medium text-gray-900">{course.title}</p>
                                   <p className="text-xs text-gray-500">{course.ceHours} CE hours \u2022 {rec.category}</p>
                                 </div>
                               </div>
-                              <ArrowRight className="w-4 h-4 text-moss-600" />
+                              <ArrowRight className="w-4 h-4 text-burgundy-700" />
                             </a>
                           ))
                         ) : rec.note ? (

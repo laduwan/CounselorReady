@@ -45,7 +45,7 @@ export default function GamificationPage() {
     }
   }
 
-  if (loading) return <div className="flex justify-center p-12"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-moss-600"></div></div>;
+  if (loading) return <div className="flex justify-center p-12"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-burgundy-700"></div></div>;
   if (!profile) return <div className="text-center p-12 text-gray-500">Unable to load gamification data</div>;
 
   const xpProgress = ((profile.xp % 500) / 500) * 100;
@@ -59,7 +59,7 @@ export default function GamificationPage() {
       <div className="flex gap-1 mb-6 border-b" role="tablist">
         {['overview', 'badges', 'leaderboard'].map(t => (
           <button key={t} role="tab" aria-selected={tab === t} onClick={() => setTab(t)}
-            className={`px-4 py-2 text-sm font-medium capitalize transition ${tab === t ? 'text-moss-600 border-b-2 border-moss-600' : 'text-gray-500 hover:text-gray-700'}`}>
+            className={`px-4 py-2 text-sm font-medium capitalize transition ${tab === t ? 'text-burgundy-700 border-b-2 border-burgundy-700' : 'text-gray-500 hover:text-gray-700'}`}>
             {t}
           </button>
         ))}
@@ -69,17 +69,17 @@ export default function GamificationPage() {
       {tab === 'overview' && (
         <div className="space-y-6">
           {/* Level & XP */}
-          <div className="bg-gradient-to-r from-moss-600 to-moss-700 rounded-xl p-6 text-white">
+          <div className="bg-gradient-to-r from-burgundy-700 to-burgundy-800 rounded-xl p-6 text-white">
             <div className="flex justify-between items-center mb-3">
               <div>
                 <div className="text-3xl font-bold">Level {profile.level}</div>
-                <div className="text-moss-200">{profile.xp} XP total</div>
+                <div className="text-burgundy-300">{profile.xp} XP total</div>
               </div>
               <div className="text-right">
-                <div className="text-sm text-moss-200">{profile.xpToNextLevel} XP to next level</div>
+                <div className="text-sm text-burgundy-300">{profile.xpToNextLevel} XP to next level</div>
               </div>
             </div>
-            <div className="w-full bg-moss-800 bg-opacity-40 rounded-full h-3" role="progressbar" aria-valuenow={xpProgress} aria-label="XP progress">
+            <div className="w-full bg-burgundy-900 bg-opacity-40 rounded-full h-3" role="progressbar" aria-valuenow={xpProgress} aria-label="XP progress">
               <div className="bg-white bg-opacity-90 h-3 rounded-full transition-all" style={{ width: `${xpProgress}%` }}></div>
             </div>
           </div>
@@ -155,7 +155,7 @@ export default function GamificationPage() {
       {tab === 'leaderboard' && leaderboard && (
         <div className="bg-white rounded-xl border overflow-hidden">
           <div className="p-4 bg-gray-50 border-b">
-            <div className="text-sm text-gray-600">Your Rank: <span className="font-bold text-moss-600">#{leaderboard.myRank || '—'}</span> ({leaderboard.myXp} XP)</div>
+            <div className="text-sm text-gray-600">Your Rank: <span className="font-bold text-burgundy-700">#{leaderboard.myRank || '—'}</span> ({leaderboard.myXp} XP)</div>
           </div>
           <table className="w-full" role="table">
             <thead>
@@ -175,7 +175,7 @@ export default function GamificationPage() {
                     {entry.rank <= 3 ? ['🥇', '🥈', '🥉'][entry.rank - 1] : `#${entry.rank}`}
                   </td>
                   <td className="px-4 py-3 font-medium text-gray-900">{entry.name}</td>
-                  <td className="px-4 py-3 text-right text-moss-600 font-semibold">{entry.xp.toLocaleString()}</td>
+                  <td className="px-4 py-3 text-right text-burgundy-700 font-semibold">{entry.xp.toLocaleString()}</td>
                   <td className="px-4 py-3 text-right">{entry.level}</td>
                   <td className="px-4 py-3 text-right">{entry.streak}d</td>
                   <td className="px-4 py-3 text-right">{entry.badges}</td>

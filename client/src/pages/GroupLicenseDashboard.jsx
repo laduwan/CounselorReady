@@ -71,7 +71,7 @@ export default function GroupLicenseDashboard() {
     }
   }
 
-  if (loading) return <div className="flex justify-center p-12"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-moss-600"></div></div>;
+  if (loading) return <div className="flex justify-center p-12"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-burgundy-700"></div></div>;
 
   return (
     <div className="max-w-6xl mx-auto" role="main" aria-label="Group Licensing">
@@ -80,7 +80,7 @@ export default function GroupLicenseDashboard() {
           <h1 className="text-2xl font-bold text-gray-900">Group Licensing</h1>
           <p className="text-gray-600 mt-1">Manage team CE subscriptions and compliance</p>
         </div>
-        <button onClick={() => setShowCreateForm(true)} className="px-4 py-2 bg-moss-600 text-white rounded-lg hover:bg-moss-700 transition">
+        <button onClick={() => setShowCreateForm(true)} className="px-4 py-2 bg-burgundy-700 text-white rounded-lg hover:bg-burgundy-800 transition">
           + New Group License
         </button>
       </div>
@@ -91,7 +91,7 @@ export default function GroupLicenseDashboard() {
         <div className="bg-white rounded-xl border p-12 text-center">
           <h3 className="text-lg font-semibold text-gray-900 mb-2">No Group Licenses Yet</h3>
           <p className="text-gray-600 mb-4">Create a group license to manage CE subscriptions for your team, clinic, or organization.</p>
-          <button onClick={() => setShowCreateForm(true)} className="px-6 py-2 bg-moss-600 text-white rounded-lg hover:bg-moss-700">Get Started</button>
+          <button onClick={() => setShowCreateForm(true)} className="px-6 py-2 bg-burgundy-700 text-white rounded-lg hover:bg-burgundy-800">Get Started</button>
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -99,7 +99,7 @@ export default function GroupLicenseDashboard() {
           <div className="space-y-3">
             {licenses.map(lic => (
               <button key={lic._id} onClick={() => { setSelected(lic); fetchCompliance(lic._id); }}
-                className={`w-full text-left p-4 rounded-lg border transition ${selected?._id === lic._id ? 'border-moss-500 bg-moss-50' : 'border-gray-200 hover:border-gray-300'}`}>
+                className={`w-full text-left p-4 rounded-lg border transition ${selected?._id === lic._id ? 'border-burgundy-600 bg-burgundy-100' : 'border-gray-200 hover:border-gray-300'}`}>
                 <div className="font-semibold text-gray-900">{lic.organizationName}</div>
                 <div className="text-sm text-gray-600">{lic.usedSeats}/{lic.totalSeats} seats used</div>
                 <span className={`mt-1 inline-block text-xs px-2 py-0.5 rounded-full ${lic.plan === 'enterprise' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}`}>
@@ -116,14 +116,14 @@ export default function GroupLicenseDashboard() {
               <div className="bg-white rounded-xl border p-6">
                 <div className="flex justify-between items-start mb-4">
                   <h2 className="text-xl font-bold text-gray-900">{selected.organizationName}</h2>
-                  <button onClick={() => setShowInviteForm(true)} className="text-sm px-3 py-1 bg-moss-100 text-moss-700 rounded-lg hover:bg-moss-200">
+                  <button onClick={() => setShowInviteForm(true)} className="text-sm px-3 py-1 bg-burgundy-200 text-burgundy-800 rounded-lg hover:bg-burgundy-300">
                     + Invite Members
                   </button>
                 </div>
 
                 <div className="grid grid-cols-3 gap-4 mb-6">
                   <div className="bg-gray-50 rounded-lg p-3 text-center">
-                    <div className="text-2xl font-bold text-moss-600">{selected.usedSeats}</div>
+                    <div className="text-2xl font-bold text-burgundy-700">{selected.usedSeats}</div>
                     <div className="text-xs text-gray-500">Active Seats</div>
                   </div>
                   <div className="bg-gray-50 rounded-lg p-3 text-center">
@@ -215,7 +215,7 @@ export default function GroupLicenseDashboard() {
               </div>
               <div className="flex justify-end gap-3 pt-2">
                 <button type="button" onClick={() => setShowCreateForm(false)} className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg">Cancel</button>
-                <button type="submit" className="px-4 py-2 bg-moss-600 text-white rounded-lg hover:bg-moss-700">Create License</button>
+                <button type="submit" className="px-4 py-2 bg-burgundy-700 text-white rounded-lg hover:bg-burgundy-800">Create License</button>
               </div>
             </form>
           </div>
@@ -236,7 +236,7 @@ export default function GroupLicenseDashboard() {
               <div className="text-sm text-gray-500">{selected?.availableSeats} seats available</div>
               <div className="flex justify-end gap-3">
                 <button type="button" onClick={() => setShowInviteForm(false)} className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg">Cancel</button>
-                <button type="submit" className="px-4 py-2 bg-moss-600 text-white rounded-lg hover:bg-moss-700">Send Invites</button>
+                <button type="submit" className="px-4 py-2 bg-burgundy-700 text-white rounded-lg hover:bg-burgundy-800">Send Invites</button>
               </div>
             </form>
           </div>

@@ -122,7 +122,7 @@ export default function InsuranceTracker() {
     }
   };
 
-  if (loading) return <div className="flex justify-center py-12"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-moss-600"></div></div>;
+  if (loading) return <div className="flex justify-center py-12"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-burgundy-700"></div></div>;
 
   // Stats
   const approved = credentials.filter(c => c.applicationStatus === 'approved').length;
@@ -134,7 +134,7 @@ export default function InsuranceTracker() {
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-gray-900">Insurance Panel Tracker</h1>
         <button onClick={() => { resetForm(); setShowForm(!showForm); }}
-          className="flex items-center gap-2 px-4 py-2 bg-moss-600 text-white rounded-lg hover:bg-moss-700 text-sm">
+          className="flex items-center gap-2 px-4 py-2 bg-burgundy-700 text-white rounded-lg hover:bg-burgundy-800 text-sm">
           <Plus className="w-4 h-4" /> Add Panel
         </button>
       </div>
@@ -227,7 +227,7 @@ export default function InsuranceTracker() {
             </div>
             <div className="md:col-span-2 flex justify-end gap-3">
               <button type="button" onClick={() => { setShowForm(false); resetForm(); }} className="px-4 py-2 text-sm text-gray-600">Cancel</button>
-              <button type="submit" className="px-4 py-2 bg-moss-600 text-white rounded-lg hover:bg-moss-700 text-sm">{editingId ? 'Update' : 'Add Panel'}</button>
+              <button type="submit" className="px-4 py-2 bg-burgundy-700 text-white rounded-lg hover:bg-burgundy-800 text-sm">{editingId ? 'Update' : 'Add Panel'}</button>
             </div>
           </form>
         </div>
@@ -281,7 +281,7 @@ export default function InsuranceTracker() {
                       {cred.effectiveDate && <div><p className="text-xs text-gray-500">Effective Date</p><p className="text-sm font-medium">{new Date(cred.effectiveDate).toLocaleDateString()}</p></div>}
                       {cred.recredentialingDate && <div><p className="text-xs text-gray-500">Recredentialing Due</p><p className="text-sm font-medium">{new Date(cred.recredentialingDate).toLocaleDateString()}</p></div>}
                       {cred.contactName && <div><p className="text-xs text-gray-500">Contact</p><p className="text-sm font-medium">{cred.contactName} {cred.contactPhone && `\u2022 ${cred.contactPhone}`}</p></div>}
-                      {cred.portalUrl && <div><p className="text-xs text-gray-500">Portal</p><a href={cred.portalUrl} target="_blank" rel="noopener noreferrer" className="text-sm text-moss-600 hover:underline flex items-center gap-1">Open Portal <ExternalLink className="w-3 h-3" /></a></div>}
+                      {cred.portalUrl && <div><p className="text-xs text-gray-500">Portal</p><a href={cred.portalUrl} target="_blank" rel="noopener noreferrer" className="text-sm text-burgundy-700 hover:underline flex items-center gap-1">Open Portal <ExternalLink className="w-3 h-3" /></a></div>}
                       {cred.nextFollowUpDate && <div><p className="text-xs text-gray-500">Next Follow-Up</p><p className={`text-sm font-medium ${new Date(cred.nextFollowUpDate) <= new Date() ? 'text-red-600' : ''}`}>{new Date(cred.nextFollowUpDate).toLocaleDateString()}</p></div>}
                     </div>
 
@@ -292,7 +292,7 @@ export default function InsuranceTracker() {
                         <div className="grid grid-cols-2 gap-2">
                           {cred.documentsChecklist.map((doc, idx) => (
                             <label key={idx} className="flex items-center gap-2 text-sm cursor-pointer p-2 rounded hover:bg-gray-50">
-                              <input type="checkbox" checked={doc.uploaded} onChange={() => toggleChecklist(cred._id, idx)} className="rounded text-moss-600" />
+                              <input type="checkbox" checked={doc.uploaded} onChange={() => toggleChecklist(cred._id, idx)} className="rounded text-burgundy-700" />
                               <span className={doc.uploaded ? 'line-through text-gray-400' : ''}>{doc.name}</span>
                               {doc.required && !doc.uploaded && <span className="text-red-500 text-xs">*</span>}
                             </label>
