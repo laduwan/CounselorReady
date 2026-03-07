@@ -5,7 +5,7 @@
  */
 // DROP INTO: /client/src/components/CourseBuilder.jsx
 
-import { useState, useCallback, useRef, useEffect } from "react";
+import React, { useState, useCallback, useRef, useEffect } from "react";
 import jsPDF from "jspdf";
 import NarrationPanel from "./NarrationPanel.jsx";
 import { safeHTML } from "../utils/sanitize";
@@ -958,6 +958,23 @@ function ContentEditor({ courseData, setCourseData }) {
     if (editingBlock === from) setEditingBlock(to);
   };
 
+  const duplicateBlock = (blockIndex) => {
+    const newModules = [...modules];
+    const newBlocks = [...(newModules[activeModule].blocks || [])];
+    const original = newBlocks[blockIndex];
+    const clone = { ...JSON.parse(JSON.stringify(original)), id: uid() };
+    newBlocks.splice(blockIndex + 1, 0, clone);
+    newModules[activeModule] = { ...newModules[activeModule], blocks: newBlocks };
+    setCourseData({ ...courseData, modules: newModules });
+    setEditingBlock(blockIndex + 1);
+  };
+
+  const updateModuleTitle = (newTitle) => {
+    const newModules = [...modules];
+    newModules[activeModule] = { ...newModules[activeModule], title: newTitle };
+    setCourseData({ ...courseData, modules: newModules });
+  };
+
   const blockConfig = (type) => BLOCK_TYPES.find(b => b.type === type) || { label: type, icon: "?", color: C.textMuted, category: "content" };
 
   // Regenerate single module via AI
@@ -1236,8 +1253,15 @@ function ContentEditor({ courseData, setCourseData }) {
 
       {/* Block Canvas */}
       <div>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
-          <h3 style={{ fontSize: 18, fontWeight: 700, color: C.navy, margin: 0 }}>{currentModule.title}</h3>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16, gap: 12 }}>
+          <input
+            style={{ fontSize: 18, fontWeight: 700, color: C.navy, margin: 0, border: "none", background: "transparent", outline: "none", flex: 1, minWidth: 0, padding: "4px 8px", borderRadius: 6, cursor: "text", fontFamily: "inherit" }}
+            value={currentModule.title}
+            onChange={e => updateModuleTitle(e.target.value)}
+            onFocus={e => { e.target.style.background = C.burgundyFaded; e.target.style.border = `1px solid ${C.burgundy}33`; }}
+            onBlur={e => { e.target.style.background = "transparent"; e.target.style.border = "none"; }}
+            title="Click to edit module title"
+          />
           <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
             <button style={{ ...S.btnSecondary, fontSize: 11, padding: "5px 10px", background: regenerating ? C.burgundyFaded : "transparent" }}
               onClick={() => regenerateModule(activeModule)} disabled={regenerating || enriching}>
@@ -1369,9 +1393,10 @@ function ContentEditor({ courseData, setCourseData }) {
                   {isKC && <span style={{ fontSize: 9, fontWeight: 700, color: C.burgundy, background: C.burgundyFaded, padding: "2px 6px", borderRadius: 4 }}>KC</span>}
                   <span style={{ fontSize: 11, color: C.textLight }}>{countBlockWords(block)}w</span>
                   <div style={{ display: "flex", gap: 2 }}>
-                    <button onClick={(e) => { e.stopPropagation(); moveBlock(i, i - 1); }} style={{ background: "none", border: "none", cursor: "pointer", padding: 3, opacity: i === 0 ? 0.3 : 1, fontSize: 12 }}>▲</button>
-                    <button onClick={(e) => { e.stopPropagation(); moveBlock(i, i + 1); }} style={{ background: "none", border: "none", cursor: "pointer", padding: 3, opacity: i === currentModule.blocks.length - 1 ? 0.3 : 1, fontSize: 12 }}>▼</button>
-                    <button onClick={(e) => { e.stopPropagation(); removeBlock(i); }} style={{ background: "none", border: "none", cursor: "pointer", padding: 3, color: C.danger, fontSize: 12 }}>✕</button>
+                    <button onClick={(e) => { e.stopPropagation(); moveBlock(i, i - 1); }} title="Move up" style={{ background: "none", border: "none", cursor: "pointer", padding: 3, opacity: i === 0 ? 0.3 : 1, fontSize: 12 }}>▲</button>
+                    <button onClick={(e) => { e.stopPropagation(); moveBlock(i, i + 1); }} title="Move down" style={{ background: "none", border: "none", cursor: "pointer", padding: 3, opacity: i === currentModule.blocks.length - 1 ? 0.3 : 1, fontSize: 12 }}>▼</button>
+                    <button onClick={(e) => { e.stopPropagation(); duplicateBlock(i); }} title="Duplicate block" style={{ background: "none", border: "none", cursor: "pointer", padding: 3, fontSize: 12, color: C.navy }}>⧉</button>
+                    <button onClick={(e) => { e.stopPropagation(); removeBlock(i); }} title="Delete block" style={{ background: "none", border: "none", cursor: "pointer", padding: 3, color: C.danger, fontSize: 12 }}>✕</button>
                   </div>
                 </div>
                 {isEditing && (
@@ -1412,11 +1437,22 @@ function ContentEditor({ courseData, setCourseData }) {
         })}
 
         {(currentModule.blocks || []).length === 0 && (
-          <div style={{ textAlign: "center", padding: 60, color: C.textMuted, border: `2px dashed ${C.border}`, borderRadius: 12 }}>
+          <div style={{ textAlign: "center", padding: 48, color: C.textMuted, border: `2px dashed ${C.border}`, borderRadius: 12, background: C.card }}>
             <div style={{ fontSize: 32, marginBottom: 8 }}>📝</div>
-            <p style={{ fontSize: 15, fontWeight: 600 }}>No content blocks yet</p>
-            <p style={{ fontSize: 13, marginBottom: 16 }}>Choose from 17 block types organized by Content, Knowledge Checks, and Engagement</p>
-            <button style={S.btnPrimary} onClick={() => setShowBlockMenu(-1)}>+ Add First Block</button>
+            <p style={{ fontSize: 15, fontWeight: 600, color: C.navy }}>No content blocks yet</p>
+            <p style={{ fontSize: 13, marginBottom: 20, maxWidth: 420, margin: "0 auto 20px", lineHeight: 1.5 }}>
+              Build your module with 17 block types: text content, images, knowledge checks (multiple choice, matching, sequencing), and engagement activities (scenarios, flashcards, reflections).
+            </p>
+            <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap", marginBottom: 20 }}>
+              <button style={S.btnPrimary} onClick={() => setShowBlockMenu(-1)}>+ Add Content Block</button>
+              <button style={{ ...S.btnSecondary, borderColor: C.burgundy + "44", color: C.burgundy }}
+                onClick={() => regenerateModule(activeModule)}>
+                <Wand2 size={14} /> AI Generate This Module
+              </button>
+            </div>
+            <p style={{ fontSize: 11, color: C.textLight }}>
+              Tip: Use "AI Generate" to auto-create content, or "Auto-Enrich" to add interactive elements to existing text.
+            </p>
           </div>
         )}
         </>
@@ -1546,6 +1582,49 @@ function ACEPChecker({ courseData }) {
   );
 }
 
+
+// ═══════════════════════════════════════════════════════════
+// STEP PROGRESS INDICATOR — for multi-step flows
+// ═══════════════════════════════════════════════════════════
+function StepProgress({ steps, currentStep }) {
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 0, marginBottom: 24, padding: "0 4px" }}>
+      {steps.map((s, i) => {
+        const isActive = i === currentStep;
+        const isDone = i < currentStep;
+        const isLast = i === steps.length - 1;
+        return (
+          <React.Fragment key={i}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <div style={{
+                width: 28, height: 28, borderRadius: "50%",
+                background: isDone ? C.green : isActive ? C.burgundy : C.borderLight,
+                color: isDone || isActive ? "#fff" : C.textLight,
+                display: "flex", alignItems: "center", justifyContent: "center",
+                fontSize: 12, fontWeight: 700, transition: "all 0.3s",
+                boxShadow: isActive ? `0 0 0 3px ${C.burgundy}22` : "none",
+              }}>
+                {isDone ? "✓" : i + 1}
+              </div>
+              <span style={{
+                fontSize: 12, fontWeight: isActive ? 700 : 500,
+                color: isDone ? C.green : isActive ? C.burgundy : C.textLight,
+                whiteSpace: "nowrap",
+              }}>{s}</span>
+            </div>
+            {!isLast && (
+              <div style={{
+                flex: 1, height: 2, minWidth: 24, margin: "0 8px",
+                background: isDone ? C.green : C.borderLight,
+                borderRadius: 1, transition: "background 0.3s",
+              }} />
+            )}
+          </React.Fragment>
+        );
+      })}
+    </div>
+  );
+}
 
 // ═══════════════════════════════════════════════════════════
 // AI COURSE GENERATOR
@@ -2016,8 +2095,15 @@ function AIGenerator({ onGenerated }) {
     }
   };
 
+  const stepIndex = step === "input" ? 0 : step === "generating" ? 1 : step === "outline" ? 1 : step === "content" ? 3 : 0;
+
   return (
     <div>
+      <StepProgress
+        steps={["Configure", "Review Outline", "Generate Content", "Complete"]}
+        currentStep={generatingContent ? 2 : stepIndex}
+      />
+
       {step === "input" && (
         <div>
           <div style={S.card}>
@@ -2169,6 +2255,28 @@ function AIGenerator({ onGenerated }) {
               </div>
               <textarea style={{ ...S.textarea, minHeight: 60 }} value={outline.description} onChange={e => setOutline({ ...outline, description: e.target.value })} />
 
+              {/* ── Editable Objectives ── */}
+              <div style={{ margin: "20px 0 12px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <span style={{ fontWeight: 700, fontSize: 15, color: C.navy }}>Learning Objectives ({(outline.objectives || []).length})</span>
+                <button style={{ ...S.btnSecondary, fontSize: 11, padding: "4px 10px" }} onClick={() => {
+                  setOutline({ ...outline, objectives: [...(outline.objectives || []), ""] });
+                }}>+ Add Objective</button>
+              </div>
+              {(outline.objectives || []).map((obj, i) => (
+                <div key={i} style={{ display: "flex", gap: 8, marginBottom: 6, alignItems: "center" }}>
+                  <span style={{ width: 22, height: 22, borderRadius: "50%", background: C.greenFaded, color: C.green, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700, flexShrink: 0 }}>{i + 1}</span>
+                  <input style={{ ...S.input, flex: 1, fontSize: 13 }} value={obj} placeholder="e.g., Identify evidence-based strategies for..."
+                    onChange={e => {
+                      const objs = [...outline.objectives];
+                      objs[i] = e.target.value;
+                      setOutline({ ...outline, objectives: objs });
+                    }} />
+                  <button style={S.btnDanger} onClick={() => {
+                    setOutline({ ...outline, objectives: outline.objectives.filter((_, j) => j !== i) });
+                  }}>✕</button>
+                </div>
+              ))}
+
               <div style={{ margin: "20px 0 12px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                 <span style={{ fontWeight: 700, fontSize: 15, color: C.navy }}>Modules ({outline.modules.length})</span>
                 <span style={{ fontSize: 13, color: C.textMuted }}>Est. {outline.totalEstimatedWords.toLocaleString()} words total</span>
@@ -2181,6 +2289,33 @@ function AIGenerator({ onGenerated }) {
                     {mod.expanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
                     <span style={{ fontWeight: 600, flex: 1, fontSize: 14 }}>{mod.title}</span>
                     <span style={{ fontSize: 12, color: C.textMuted }}>~{mod.estimatedWords.toLocaleString()} words · {mod.knowledgeChecks} checks</span>
+                    {/* Module reorder and delete controls */}
+                    <div style={{ display: "flex", gap: 2 }} onClick={e => e.stopPropagation()}>
+                      <button style={{ background: "none", border: "none", cursor: "pointer", padding: 3, opacity: i === 0 ? 0.3 : 0.7, fontSize: 12 }}
+                        disabled={i === 0}
+                        onClick={() => {
+                          const mods = [...outline.modules];
+                          [mods[i - 1], mods[i]] = [mods[i], mods[i - 1]];
+                          mods.forEach((m, idx) => { m.number = idx + 1; });
+                          setOutline({ ...outline, modules: mods });
+                        }}>▲</button>
+                      <button style={{ background: "none", border: "none", cursor: "pointer", padding: 3, opacity: i === outline.modules.length - 1 ? 0.3 : 0.7, fontSize: 12 }}
+                        disabled={i === outline.modules.length - 1}
+                        onClick={() => {
+                          const mods = [...outline.modules];
+                          [mods[i], mods[i + 1]] = [mods[i + 1], mods[i]];
+                          mods.forEach((m, idx) => { m.number = idx + 1; });
+                          setOutline({ ...outline, modules: mods });
+                        }}>▼</button>
+                      {outline.modules.length > 1 && (
+                        <button style={{ background: "none", border: "none", cursor: "pointer", padding: 3, color: C.danger, fontSize: 12 }}
+                          onClick={() => {
+                            const mods = outline.modules.filter((_, j) => j !== i);
+                            mods.forEach((m, idx) => { m.number = idx + 1; });
+                            setOutline({ ...outline, modules: mods });
+                          }}>✕</button>
+                      )}
+                    </div>
                   </div>
                   {mod.expanded && (
                     <div style={{ padding: 14, borderTop: `1px solid ${C.borderLight}` }}>
@@ -2245,11 +2380,31 @@ function AIGenerator({ onGenerated }) {
             </div>
             <h3 style={{ color: C.navy }}>Course Generated Successfully!</h3>
             <p style={{ color: C.textMuted, fontSize: 14, maxWidth: 500, margin: "8px auto 20px" }}>
-              Your course has been loaded into the Content Editor. Switch tabs to review, edit blocks, and run the ACEP compliance checker.
+              {progressMsg || "Your course has been loaded into the Content Editor."}
             </p>
-            <button style={S.btnPrimary} onClick={() => setStep("input")}>
-              <Sparkles size={16} /> Generate Another Course
-            </button>
+
+            {/* Quick next-steps guide */}
+            <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap", marginBottom: 24, maxWidth: 600, margin: "0 auto 24px" }}>
+              {[
+                { step: "1", label: "Edit Content", desc: "Review and refine blocks", tab: 2, color: C.green },
+                { step: "2", label: "Generate Exam", desc: "Create final assessment", tab: 3, color: C.burgundy },
+                { step: "3", label: "Add References", desc: "APA 7th citations", tab: 4, color: C.navy },
+                { step: "4", label: "ACEP Check", desc: "Verify compliance", tab: 5, color: C.gold },
+              ].map(s => (
+                <div key={s.step} onClick={() => onGenerated && null}
+                  style={{ flex: "1 1 120px", background: s.color + "08", border: `1px solid ${s.color}22`, borderRadius: 10, padding: "12px 10px", textAlign: "center" }}>
+                  <div style={{ width: 24, height: 24, borderRadius: "50%", background: s.color, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, margin: "0 auto 6px" }}>{s.step}</div>
+                  <div style={{ fontWeight: 700, fontSize: 13, color: s.color }}>{s.label}</div>
+                  <div style={{ fontSize: 11, color: C.textMuted, marginTop: 2 }}>{s.desc}</div>
+                </div>
+              ))}
+            </div>
+
+            <div style={{ display: "flex", gap: 10, justifyContent: "center" }}>
+              <button style={S.btnSecondary} onClick={() => setStep("input")}>
+                <Sparkles size={16} /> Generate Another
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -2530,8 +2685,44 @@ export default function CourseBuilderV2() {
     acepProvider: { name: "GA Integrated Therapeutic Perspectives LLC", number: "7760" },
   });
 
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [lastSavedData, setLastSavedData] = useState(null);
+  const autoSaveTimerRef = useRef(null);
+
   const API_BASE = import.meta.env.VITE_API_URL || "https://api.counselorready.com/api";
   const getToken = () => localStorage.getItem("token");
+
+  // ── Track unsaved changes ──
+  const wrappedSetCourseData = useCallback((newData) => {
+    setCourseData(newData);
+    setHasUnsavedChanges(true);
+  }, []);
+
+  // ── Unsaved changes warning on page leave ──
+  useEffect(() => {
+    const handleBeforeUnload = (e) => {
+      if (hasUnsavedChanges) {
+        e.preventDefault();
+        e.returnValue = "You have unsaved changes. Are you sure you want to leave?";
+      }
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [hasUnsavedChanges]);
+
+  // ── Auto-save every 30s after last edit ──
+  useEffect(() => {
+    if (!hasUnsavedChanges || saving) return;
+    if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current);
+    autoSaveTimerRef.current = setTimeout(() => {
+      // Only auto-save if there's meaningful content (not the default "New Course")
+      const totalBlocks = (courseData.modules || []).reduce((s, m) => s + (m.blocks || []).length, 0);
+      if (totalBlocks > 0) {
+        saveCourse(false, true); // silent auto-save
+      }
+    }, 30000);
+    return () => { if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current); };
+  }, [hasUnsavedChanges, courseData]);
 
   // ── Load existing course when ?id= is in URL ──
   useEffect(() => {
@@ -2601,9 +2792,9 @@ export default function CourseBuilderV2() {
   }, []);
 
   // ── Save / Publish to Database ──
-  const saveCourse = async (publish = false) => {
+  const saveCourse = async (publish = false, silent = false) => {
     setSaving(true);
-    setSaveMsg(null);
+    if (!silent) setSaveMsg(null);
     try {
       const slug = courseData.title?.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "untitled-course";
 
@@ -2642,10 +2833,16 @@ export default function CourseBuilderV2() {
       if (!res.ok) throw new Error(`Save failed: ${res.status}`);
       const result = await res.json();
       if (result.course?._id) setCourseId(result.course._id);
-      setSaveMsg(`✓ ${publish ? "Published" : "Saved"} — ${result.action || "success"}`);
-      setTimeout(() => setSaveMsg(null), 4000);
+      setHasUnsavedChanges(false);
+      if (silent) {
+        setSaveMsg("✓ Auto-saved");
+        setTimeout(() => setSaveMsg(null), 2000);
+      } else {
+        setSaveMsg(`✓ ${publish ? "Published" : "Saved"} — ${result.action || "success"}`);
+        setTimeout(() => setSaveMsg(null), 4000);
+      }
     } catch (err) {
-      setSaveMsg(`✗ Error: ${err.message}`);
+      if (!silent) setSaveMsg(`✗ Error: ${err.message}`);
     } finally {
       setSaving(false);
     }
@@ -2722,14 +2919,20 @@ export default function CourseBuilderV2() {
     doc.save(`${courseData.title?.replace(/[^a-z0-9]/gi, "_") || "course"}.pdf`);
   };
 
+  const totalBlocks = (courseData.modules || []).reduce((s, m) => s + (m.blocks || []).length, 0);
+  const hasContent = totalBlocks > 0;
+  const totalWords = (courseData.modules || []).reduce((s, m) => s + (m.blocks || []).reduce((bs, b) => bs + countBlockWords(b), 0), 0);
+  const examQuestions = (courseData.assessment?.questions || []).length;
+  const refCount = (courseData.references || []).length;
+
   const tabs = [
-    { label: "AI Generator", icon: "✨" },
-    { label: "Import", icon: "📥" },
-    { label: "Content Editor", icon: "📝" },
-    { label: "Exam Generator", icon: "🎯" },
-    { label: "References", icon: "📚" },
-    { label: "ACEP Checker", icon: "📋" },
-    { label: "Narration", icon: "🎙️" },
+    { label: "AI Generator", icon: "✨", badge: null },
+    { label: "Import", icon: "📥", badge: null },
+    { label: "Content Editor", icon: "📝", badge: hasContent ? `${totalBlocks}` : null, badgeColor: C.green },
+    { label: "Exam Generator", icon: "🎯", badge: examQuestions > 0 ? `${examQuestions}` : null, badgeColor: C.burgundy, needsContent: !hasContent },
+    { label: "References", icon: "📚", badge: refCount > 0 ? `${refCount}` : null, badgeColor: C.navy, needsContent: !hasContent },
+    { label: "ACEP Checker", icon: "📋", badge: null, needsContent: !hasContent },
+    { label: "Narration", icon: "🎙️", badge: null, needsContent: !hasContent },
   ];
 
   return (
@@ -2779,6 +2982,7 @@ export default function CourseBuilderV2() {
           <div style={{ color: "rgba(255,255,255,0.55)", fontSize: 13, marginTop: 2 }}>NBCC ACEP #7760 · AI-Powered · Cloudinary Images</div>
         </div>
         <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+          {hasUnsavedChanges && !saveMsg && <span style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", fontWeight: 500, display: "flex", alignItems: "center", gap: 4 }}><span style={{ width: 6, height: 6, borderRadius: "50%", background: "#f0ad4e", display: "inline-block" }} />Unsaved changes</span>}
           {saveMsg && <span style={{ fontSize: 12, color: saveMsg.startsWith("✓") ? "#98c3a9" : "#ff8888", fontWeight: 600 }}>{saveMsg}</span>}
           <button style={{ ...S.btnSecondary, borderColor: "rgba(255,255,255,0.2)", color: "#fff", fontSize: 12 }} onClick={exportPDF} title="Export PDF">
             <Download size={13} /> PDF
@@ -2801,8 +3005,16 @@ export default function CourseBuilderV2() {
       {/* Tab Bar */}
       <div style={S.tabBar}>
         {tabs.map((tab, i) => (
-          <div key={i} style={S.tab(activeTab === i)} onClick={() => setActiveTab(i)}>
+          <div key={i} style={{ ...S.tab(activeTab === i), opacity: tab.needsContent ? 0.5 : 1, position: "relative" }}
+            onClick={() => setActiveTab(i)}
+            title={tab.needsContent ? "Generate or import content first" : ""}>
             <span>{tab.icon}</span> {tab.label}
+            {tab.badge && (
+              <span style={{
+                background: tab.badgeColor || C.green, color: "#fff", fontSize: 10, fontWeight: 700,
+                padding: "1px 6px", borderRadius: 10, lineHeight: "16px", minWidth: 16, textAlign: "center",
+              }}>{tab.badge}</span>
+            )}
           </div>
         ))}
       </div>
@@ -2815,13 +3027,13 @@ export default function CourseBuilderV2() {
         </div>
       ) : (
       <div style={S.main}>
-        {activeTab === 0 && <AIGenerator onGenerated={(data) => { setCourseData(data); setActiveTab(2); }} />}
-        {activeTab === 1 && <ImportTab onImported={(data) => { setCourseData(data); setActiveTab(2); }} />}
-        {activeTab === 2 && <ContentEditor courseData={courseData} setCourseData={setCourseData} />}
-        {activeTab === 3 && <ExamGenerator courseData={courseData} setCourseData={setCourseData} />}
-        {activeTab === 4 && <ReferencesManager courseData={courseData} setCourseData={setCourseData} />}
+        {activeTab === 0 && <AIGenerator onGenerated={(data) => { wrappedSetCourseData(data); setActiveTab(2); }} />}
+        {activeTab === 1 && <ImportTab onImported={(data) => { wrappedSetCourseData(data); setActiveTab(2); }} />}
+        {activeTab === 2 && <ContentEditor courseData={courseData} setCourseData={wrappedSetCourseData} />}
+        {activeTab === 3 && <ExamGenerator courseData={courseData} setCourseData={wrappedSetCourseData} />}
+        {activeTab === 4 && <ReferencesManager courseData={courseData} setCourseData={wrappedSetCourseData} />}
         {activeTab === 5 && <ACEPChecker courseData={courseData} />}
-        {activeTab === 6 && <NarrationTab courseData={courseData} setCourseData={setCourseData} />}
+        {activeTab === 6 && <NarrationTab courseData={courseData} setCourseData={wrappedSetCourseData} />}
 
       </div>
       )}
