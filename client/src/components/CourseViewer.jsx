@@ -714,33 +714,33 @@ function SectionQuiz({ section, courseSlug, sectionIndex, onComplete, onBack }) 
 
   if (submitted && results) {
     return (
-      <div className="bg-white rounded-xl border border-forest-200 p-5 text-center">
-        <div className={`w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3 ${
-          results.passed ? 'bg-hunter-100' : 'bg-honey-100'
+      <div className="bg-burgundy-50/60 rounded-2xl border-l-4 border-burgundy-700 p-6 text-center my-6">
+        <div className={`w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4 ${
+          results.passed ? 'bg-hunter-100 ring-4 ring-hunter-50' : 'bg-honey-100 ring-4 ring-honey-50'
         }`}>
           {results.passed ? (
-            <CheckCircle2 className="w-6 h-6 text-hunter-600" />
+            <CheckCircle2 className="w-7 h-7 text-hunter-600" />
           ) : (
-            <AlertCircle className="w-6 h-6 text-honey-600" />
+            <AlertCircle className="w-7 h-7 text-honey-600" />
           )}
         </div>
-        <h2 className="text-lg font-bold text-navy-700 mb-1">
+        <h2 className="text-xl font-bold text-navy-700 mb-2">
           {results.passed ? 'Quiz Passed!' : 'Keep Trying!'}
         </h2>
         <p className="text-sm text-navy-500 mb-1">
           You scored {results.score}/{results.totalQuestions} ({results.percentage}%)
         </p>
-        <p className="text-xs text-navy-400 mb-4">
+        <p className="text-xs text-navy-400 mb-5">
           {results.passed
             ? 'You can now proceed to the next section.'
             : `You need ${Math.round(section.quizPassThreshold * 100)}% to pass.`}
         </p>
         <button
           onClick={() => onComplete(results)}
-          className={`px-5 py-2 rounded-lg text-sm font-semibold ${
+          className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all shadow-sm ${
             results.passed
-              ? 'bg-hunter-600 hover:bg-hunter-700 text-white'
-              : 'bg-stone-100 hover:bg-stone-200 text-navy-600'
+              ? 'bg-burgundy-800 hover:bg-burgundy-700 text-white shadow-burgundy-200'
+              : 'bg-white hover:bg-stone-50 text-navy-600 border border-forest-200'
           }`}
         >
           {results.passed ? 'Continue' : 'Review Content & Retry'}
@@ -752,56 +752,58 @@ function SectionQuiz({ section, courseSlug, sectionIndex, onComplete, onBack }) 
   const question = section.quizQuestions[currentQuestion];
 
   return (
-    <div className="bg-white rounded-xl border border-forest-200 overflow-hidden">
-      <div className="px-5 py-3 border-b border-forest-200 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className="w-1.5 h-1.5 rounded-full bg-burgundy-700" />
-          <h3 className="text-xs font-bold text-navy-500 uppercase tracking-wide">Section Quiz</h3>
+    <div className="bg-burgundy-50/60 rounded-2xl border-l-4 border-burgundy-700 overflow-hidden my-6">
+      <div className="px-6 py-4 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="w-7 h-7 rounded-full bg-burgundy-700 flex items-center justify-center">
+            <CheckCircle2 className="w-3.5 h-3.5 text-white" />
+          </div>
+          <h3 className="text-sm font-bold text-burgundy-800 tracking-wide">Check Your Understanding</h3>
         </div>
-        <span className="text-navy-400 text-xs">
-          {currentQuestion + 1}/{section.quizQuestions.length}
+        <span className="text-burgundy-400 text-xs font-semibold bg-white px-2.5 py-1 rounded-full">
+          {currentQuestion + 1} of {section.quizQuestions.length}
         </span>
       </div>
 
-      <div className="p-5">
-        <p className="text-[15px] text-navy-700 font-medium mb-4 leading-relaxed">{question.question}</p>
+      <div className="px-6 pb-6 pl-16">
+        <p className="text-base text-navy-700 font-semibold mb-5 leading-relaxed">{question.question}</p>
 
-        <div className="space-y-2 mb-5">
+        <div className="space-y-3 mb-5">
           {question.options.map((option, index) => (
             <button
               key={index}
               onClick={() => setAnswers(prev => ({ ...prev, [currentQuestion]: index }))}
-              className={`w-full text-left px-3.5 py-2.5 rounded-lg border-[1.5px] transition-all flex items-center gap-3 text-sm ${
+              className={`w-full text-left px-4 py-3 rounded-xl border-2 transition-all flex items-center gap-3.5 text-[15px] ${
                 answers[currentQuestion] === index
-                  ? 'bg-burgundy-50 border-burgundy-500'
-                  : 'bg-stone-50 border-forest-200 hover:border-burgundy-300'
+                  ? 'bg-burgundy-50 border-burgundy-600 shadow-sm shadow-burgundy-100'
+                  : 'bg-white border-forest-200 hover:border-burgundy-300 hover:shadow-sm'
               }`}
             >
-              <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
+              <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all ${
                 answers[currentQuestion] === index
                   ? 'bg-burgundy-700 border-burgundy-700 text-white'
                   : 'border-forest-300'
               }`}>
-                {answers[currentQuestion] === index && <CheckCircle2 className="w-3 h-3" />}
+                {answers[currentQuestion] === index ? <CheckCircle2 className="w-3.5 h-3.5" /> : <span className="text-xs font-bold text-forest-400">{String.fromCharCode(65 + index)}</span>}
               </div>
-              <span className="text-navy-600">{option.text}</span>
+              <span className="text-navy-600 leading-snug">{option.text}</span>
             </button>
           ))}
         </div>
 
-        <div className="flex items-center justify-between pt-3 border-t border-forest-200">
+        <div className="flex items-center justify-between pt-4 border-t border-burgundy-100">
           <button
             onClick={onBack}
-            className="text-xs text-navy-500 hover:text-navy-700"
+            className="text-xs text-navy-500 hover:text-navy-700 font-medium"
           >
-            ← Back
+            ← Back to Content
           </button>
 
-          <div className="flex gap-2">
+          <div className="flex gap-2.5">
             {currentQuestion > 0 && (
               <button
                 onClick={() => setCurrentQuestion(prev => prev - 1)}
-                className="px-3 py-1.5 text-sm text-navy-600 hover:bg-stone-100 rounded-lg"
+                className="px-4 py-2 text-sm text-navy-600 hover:bg-white rounded-xl border border-forest-200 font-medium transition-all"
               >
                 Previous
               </button>
@@ -811,9 +813,9 @@ function SectionQuiz({ section, courseSlug, sectionIndex, onComplete, onBack }) 
               <button
                 onClick={() => setCurrentQuestion(prev => prev + 1)}
                 disabled={answers[currentQuestion] === undefined}
-                className={`px-3 py-1.5 text-sm rounded-lg ${
+                className={`px-4 py-2 text-sm rounded-xl font-bold transition-all ${
                   answers[currentQuestion] !== undefined
-                    ? 'bg-burgundy-800 hover:bg-burgundy-700 text-white'
+                    ? 'bg-burgundy-800 hover:bg-burgundy-700 text-white shadow-sm shadow-burgundy-200'
                     : 'bg-stone-200 text-forest-400 cursor-not-allowed'
                 }`}
               >
@@ -823,13 +825,13 @@ function SectionQuiz({ section, courseSlug, sectionIndex, onComplete, onBack }) 
               <button
                 onClick={handleSubmit}
                 disabled={Object.keys(answers).length < section.quizQuestions.length}
-                className={`px-4 py-1.5 text-sm rounded-lg font-semibold ${
+                className={`px-5 py-2 text-sm rounded-xl font-bold transition-all ${
                   Object.keys(answers).length >= section.quizQuestions.length
-                    ? 'bg-hunter-600 hover:bg-hunter-700 text-white'
+                    ? 'bg-burgundy-800 hover:bg-burgundy-700 text-white shadow-sm shadow-burgundy-200'
                     : 'bg-stone-200 text-forest-400 cursor-not-allowed'
                 }`}
               >
-                Submit Quiz
+                Submit
               </button>
             )}
           </div>
