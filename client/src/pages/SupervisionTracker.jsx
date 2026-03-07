@@ -37,7 +37,7 @@ export default function SupervisionTracker() {
   async function fetchLogs() {
     try {
       setLoading(true);
-      const { data } = await api.get('/api/supervision');
+      const { data } = await api.get('/supervision');
       setLogs(data);
       if (data.length > 0 && !selectedLog) setSelectedLog(data[0]);
     } catch (err) {
@@ -50,7 +50,7 @@ export default function SupervisionTracker() {
   async function createLog(e) {
     e.preventDefault();
     try {
-      const { data } = await api.post('/api/supervision', newLog);
+      const { data } = await api.post('/supervision', newLog);
       setLogs(prev => [data, ...prev]);
       setSelectedLog(data);
       setShowCreateForm(false);
@@ -69,7 +69,7 @@ export default function SupervisionTracker() {
     if (!selectedLog) return;
     try {
       const payload = { ...newSession, topics: newSession.topics.split(',').map(t => t.trim()).filter(Boolean) };
-      const { data } = await api.post(`/api/supervision/${selectedLog._id}/sessions`, payload);
+      const { data } = await api.post(`/supervision/${selectedLog._id}/sessions`, payload);
       setSelectedLog(data);
       setLogs(prev => prev.map(l => l._id === data._id ? data : l));
       setShowSessionForm(false);
