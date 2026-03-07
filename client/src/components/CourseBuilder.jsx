@@ -1466,7 +1466,7 @@ function ContentEditor({ courseData, setCourseData }) {
 // ═══════════════════════════════════════════════════════════
 // ACEP CHECKER (Tab 3) — Updated for 17 block types
 // ═══════════════════════════════════════════════════════════
-function ACEPChecker({ courseData }) {
+function ACEPChecker({ courseData, acepOverride }) {
   if (!courseData?.modules?.length) {
     return (
       <div style={S.card}>
@@ -1526,9 +1526,13 @@ function ACEPChecker({ courseData }) {
           </div>
           <div>
             <h3 style={{ fontSize: 20, fontWeight: 700, color: C.navy, margin: "0 0 4px" }}>
-              {score === 100 ? "ACEP Compliant ✓" : score >= 60 ? "Needs Attention" : "Not Compliant"}
+              {acepOverride ? "ACEP Override Active" : score === 100 ? "ACEP Compliant ✓" : score >= 60 ? "Needs Attention" : "Not Compliant"}
             </h3>
-            <p style={{ color: C.textMuted, fontSize: 14, margin: 0 }}>{passCount}/{checks.length} requirements · {ceHours} CE · {courseData.modules.length} modules · 17 block types available</p>
+            <p style={{ color: C.textMuted, fontSize: 14, margin: 0 }}>
+              {acepOverride
+                ? `Override enabled — publishing allowed regardless of ACEP compliance · ${passCount}/${checks.length} met`
+                : `${passCount}/${checks.length} requirements · ${ceHours} CE · ${courseData.modules.length} modules · 17 block types available`}
+            </p>
           </div>
         </div>
       </div>
@@ -1536,8 +1540,14 @@ function ACEPChecker({ courseData }) {
       <div style={S.card}>
         <div style={S.cardHeader}>
           <span style={{ fontWeight: 700, fontSize: 15 }}>Requirements</span>
-          <span style={S.badge(C.burgundy)}>NBCC ACEP #7760</span>
+          <span style={S.badge(acepOverride ? C.gold : C.burgundy)}>{acepOverride ? "Override Active" : "NBCC ACEP #7760"}</span>
         </div>
+        {acepOverride && (
+          <div style={{ padding: "12px 20px", background: "#fff8e1", borderBottom: `1px solid ${C.borderLight}`, fontSize: 13, color: "#7a6200", display: "flex", alignItems: "center", gap: 8 }}>
+            <span style={{ fontSize: 16 }}>&#9888;</span>
+            <span>ACEP override is enabled — this course will publish without ACEP provider credentials. Use this when building courses for external organizations.</span>
+          </div>
+        )}
         {checks.map((c, i) => (
           <div key={i} style={{ display: "flex", alignItems: "center", gap: 12, padding: "14px 20px", borderBottom: i < checks.length - 1 ? `1px solid ${C.borderLight}` : "none", background: c.pass ? C.greenFaded : C.dangerFaded }}>
             <span style={{ fontSize: 16 }}>{c.pass ? "✓" : "⚠"}</span>
@@ -2687,6 +2697,7 @@ export default function CourseBuilderV2() {
 
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [lastSavedData, setLastSavedData] = useState(null);
+  const [acepOverride, setAcepOverride] = useState(false);
   const autoSaveTimerRef = useRef(null);
 
   const API_BASE = import.meta.env.VITE_API_URL || "https://api.counselorready.com/api";
@@ -2813,7 +2824,8 @@ export default function CourseBuilderV2() {
         deliveryMethod: "online",
         isPublished: publish,
         status: publish ? "published" : "draft",
-        acepProvider: courseData.acepProvider || { name: "GA Integrated Therapeutic Perspectives LLC", number: "7760" },
+        acepOverride: acepOverride,
+        acepProvider: acepOverride ? null : (courseData.acepProvider || { name: "GA Integrated Therapeutic Perspectives LLC", number: "7760" }),
         sections: (courseData.modules || []).map((mod, i) => ({
           title: mod.title || `Module ${i + 1}`,
           order: i + 1,
@@ -2863,8 +2875,10 @@ export default function CourseBuilderV2() {
     doc.text(courseData.title || "Untitled Course", LM, 50);
     doc.setFontSize(12); doc.setFont("helvetica", "normal"); doc.setTextColor(52, 73, 94);
     doc.text(`${courseData.ceHours || 3} CE Hours · ${courseData.category || ""} · ${courseData.level || ""}`, LM, 62);
-    doc.text("NBCC ACEP Provider #7760", LM, 70);
-    doc.text("GA Integrated Therapeutic Perspectives LLC", LM, 78);
+    if (!acepOverride) {
+      doc.text("NBCC ACEP Provider #7760", LM, 70);
+      doc.text("GA Integrated Therapeutic Perspectives LLC", LM, 78);
+    }
     if (courseData.description) {
       y = 95;
       doc.setFontSize(10);
@@ -2979,9 +2993,13 @@ export default function CourseBuilderV2() {
             <span style={{ color: "rgba(255,255,255,0.2)" }}>|</span>
             <div style={{ color: "#fff", fontSize: 20, fontWeight: 700, letterSpacing: "-0.02em" }}>Course Builder</div>
           </div>
-          <div style={{ color: "rgba(255,255,255,0.55)", fontSize: 13, marginTop: 2 }}>NBCC ACEP #7760 · AI-Powered · Cloudinary Images</div>
+          <div style={{ color: "rgba(255,255,255,0.55)", fontSize: 13, marginTop: 2 }}>{acepOverride ? "ACEP Override Active · Non-ACEP Course" : "NBCC ACEP #7760"} · AI-Powered · Cloudinary Images</div>
         </div>
         <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+          <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, color: acepOverride ? "#f0ad4e" : "rgba(255,255,255,0.5)", cursor: "pointer", userSelect: "none", fontWeight: 500, padding: "4px 10px", borderRadius: 6, background: acepOverride ? "rgba(240,173,78,0.15)" : "transparent", border: `1px solid ${acepOverride ? "rgba(240,173,78,0.4)" : "rgba(255,255,255,0.12)"}` }}>
+            <input type="checkbox" checked={acepOverride} onChange={(e) => setAcepOverride(e.target.checked)} style={{ accentColor: "#f0ad4e", width: 13, height: 13 }} />
+            ACEP Override
+          </label>
           {hasUnsavedChanges && !saveMsg && <span style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", fontWeight: 500, display: "flex", alignItems: "center", gap: 4 }}><span style={{ width: 6, height: 6, borderRadius: "50%", background: "#f0ad4e", display: "inline-block" }} />Unsaved changes</span>}
           {saveMsg && <span style={{ fontSize: 12, color: saveMsg.startsWith("✓") ? "#98c3a9" : "#ff8888", fontWeight: 600 }}>{saveMsg}</span>}
           <button style={{ ...S.btnSecondary, borderColor: "rgba(255,255,255,0.2)", color: "#fff", fontSize: 12 }} onClick={exportPDF} title="Export PDF">
@@ -3032,7 +3050,7 @@ export default function CourseBuilderV2() {
         {activeTab === 2 && <ContentEditor courseData={courseData} setCourseData={wrappedSetCourseData} />}
         {activeTab === 3 && <ExamGenerator courseData={courseData} setCourseData={wrappedSetCourseData} />}
         {activeTab === 4 && <ReferencesManager courseData={courseData} setCourseData={wrappedSetCourseData} />}
-        {activeTab === 5 && <ACEPChecker courseData={courseData} />}
+        {activeTab === 5 && <ACEPChecker courseData={courseData} acepOverride={acepOverride} />}
         {activeTab === 6 && <NarrationTab courseData={courseData} setCourseData={wrappedSetCourseData} />}
 
       </div>
