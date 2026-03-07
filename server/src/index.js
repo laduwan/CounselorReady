@@ -41,6 +41,7 @@ import aiCourseGeneratorRoutes from './routes/aiCourseGenerator.js';
 import courseBuilderRoutes from './routes/courseBuilder.js';
 import narrationRoutes from './routes/narration.js';
 import uploadsRoutes from './routes/uploads.js';
+import imageUploadRoutes from './routes/imageUpload.js';
 // ── New feature routes (2026-03-06) ──
 import organizationsRoutes from './routes/organizations.js';
 import cePlannerRoutes from './routes/cePlanner.js';
@@ -236,6 +237,7 @@ app.use('/api/ai-course-generator', aiCourseGeneratorRoutes);
 app.use('/api/course-builder', courseBuilderRoutes);
 app.use('/api/narration', narrationRoutes);
 app.use('/api/uploads', uploadsRoutes);
+app.use('/api/images', imageUploadRoutes);
 // ── New feature routes (2026-03-06) ──
 app.use('/api/organizations', organizationsRoutes);
 app.use('/api/ce-planner', cePlannerRoutes);
