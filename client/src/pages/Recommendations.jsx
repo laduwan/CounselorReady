@@ -16,7 +16,7 @@ export default function Recommendations() {
     async function fetch() {
       try {
         setLoading(true);
-        const { data } = await api.get('/api/recommendations');
+        const { data } = await api.get('/recommendations');
         setData(data);
       } catch (err) {
         console.error('Failed to load recommendations:', err);

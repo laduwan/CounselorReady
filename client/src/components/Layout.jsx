@@ -6,7 +6,7 @@
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Menu, X, ChevronDown, LogOut, Settings, ShieldCheck } from 'lucide-react';
+import { Menu, X, ChevronDown, LogOut, Settings, ShieldCheck, Trophy, Users, Star, ClipboardList, MoreHorizontal } from 'lucide-react';
 
 // React routes use Link; external static HTML pages use <a>
 const navLinks = [
@@ -14,10 +14,18 @@ const navLinks = [
   { name: 'Courses',         href: '/courses',            static: false },
   { name: 'Credentials',     href: '/credentials',        static: false },
   { name: 'CE Planner',      href: '/ce-planner',         static: false },
-  { name: 'Insurance',       href: '/insurance-tracker',   static: false },
   { name: 'Audit Kit',       href: '/audit-kit',          static: false },
   { name: 'Alerts',          href: '/board-alerts',       static: false },
-  { name: 'Team',            href: '/organization',       static: false },
+];
+
+const moreLinks = [
+  { name: 'Supervision',      href: '/supervision',        icon: ClipboardList },
+  { name: 'Insurance',        href: '/insurance-tracker',   icon: ShieldCheck },
+  { name: 'Achievements',     href: '/achievements',        icon: Trophy },
+  { name: 'Referrals',        href: '/referrals',           icon: Star },
+  { name: 'Recommendations',  href: '/recommendations',     icon: Star },
+  { name: 'Team',             href: '/organization',        icon: Users },
+  { name: 'Group Licenses',   href: '/group-licenses',      icon: Users },
 ];
 
 const BURGUNDY      = '#6B1D34';
@@ -29,6 +37,7 @@ const GOLD          = '#D4A855';
 export default function Layout({ children }) {
   const [mobileOpen, setMobileOpen]   = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [moreMenuOpen, setMoreMenuOpen] = useState(false);
   const { user, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
@@ -92,6 +101,53 @@ export default function Layout({ children }) {
                 </Link>
               );
             })}
+
+            {/* More dropdown */}
+            <div className="relative">
+              <button
+                onClick={() => setMoreMenuOpen(!moreMenuOpen)}
+                style={{
+                  padding: '0.5rem 0.875rem',
+                  borderRadius: '0.5rem',
+                  fontSize: '0.875rem',
+                  fontWeight: 500,
+                  transition: 'all 0.15s',
+                  color: moreLinks.some(l => isActive(l.href)) ? BURGUNDY : '#78716c',
+                  background: moreLinks.some(l => isActive(l.href)) ? BURGUNDY_LIGHT : 'transparent',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.25rem',
+                }}
+                onMouseEnter={e => { if (!moreLinks.some(l => isActive(l.href))) e.target.style.background = '#f5f5f4'; }}
+                onMouseLeave={e => { if (!moreLinks.some(l => isActive(l.href))) e.target.style.background = moreLinks.some(l => isActive(l.href)) ? BURGUNDY_LIGHT : 'transparent'; }}
+              >
+                More <ChevronDown className="w-3.5 h-3.5" />
+              </button>
+
+              {moreMenuOpen && (
+                <>
+                  <div className="fixed inset-0 z-10" onClick={() => setMoreMenuOpen(false)} />
+                  <div className="absolute left-0 top-full mt-2 w-52 bg-white rounded-xl shadow-lg border border-stone-200 py-1 z-20">
+                    {moreLinks.map((link) => {
+                      const active = isActive(link.href);
+                      const Icon = link.icon;
+                      return (
+                        <Link
+                          key={link.href}
+                          to={link.href}
+                          onClick={() => setMoreMenuOpen(false)}
+                          className="flex items-center gap-2.5 px-4 py-2.5 text-sm transition-colors hover:bg-stone-50"
+                          style={{ color: active ? BURGUNDY : '#57534e', fontWeight: active ? 600 : 400 }}
+                        >
+                          <Icon className="w-4 h-4" style={{ color: active ? BURGUNDY : '#a8a29e' }} />
+                          {link.name}
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </>
+              )}
+            </div>
           </nav>
 
           {/* Right side */}
@@ -164,7 +220,7 @@ export default function Layout({ children }) {
 
         {/* Mobile Nav */}
         {mobileOpen && (
-          <div className="lg:hidden border-t border-stone-200 bg-white px-4 py-3 space-y-1">
+          <div className="lg:hidden border-t border-stone-200 bg-white px-4 py-3 space-y-1 max-h-[70vh] overflow-y-auto">
             {navLinks.map((link) => {
               const active = !link.static && isActive(link.href);
               const style = { display: 'block', padding: '0.625rem 1rem', borderRadius: '0.5rem', fontSize: '0.875rem', fontWeight: 500, textDecoration: 'none', color: active ? BURGUNDY : '#57534e', background: active ? BURGUNDY_LIGHT : 'transparent' };
@@ -174,6 +230,21 @@ export default function Layout({ children }) {
                 <Link key={link.href} to={link.href} onClick={() => setMobileOpen(false)} style={style}>{link.name}</Link>
               );
             })}
+            <div className="border-t border-stone-100 my-2 pt-2">
+              <p className="px-3 py-1 text-xs font-semibold text-stone-400 uppercase tracking-wider">More</p>
+              {moreLinks.map((link) => {
+                const active = isActive(link.href);
+                const Icon = link.icon;
+                return (
+                  <Link key={link.href} to={link.href} onClick={() => setMobileOpen(false)}
+                    className="flex items-center gap-2.5"
+                    style={{ display: 'flex', padding: '0.625rem 1rem', borderRadius: '0.5rem', fontSize: '0.875rem', fontWeight: 500, textDecoration: 'none', color: active ? BURGUNDY : '#57534e', background: active ? BURGUNDY_LIGHT : 'transparent' }}>
+                    <Icon className="w-4 h-4" style={{ color: active ? BURGUNDY : '#a8a29e' }} />
+                    {link.name}
+                  </Link>
+                );
+              })}
+            </div>
             {isAdmin && (
               <a href="/admin.html" style={{ display: 'block', padding: '0.625rem 1rem', borderRadius: '0.5rem', fontSize: '0.875rem', fontWeight: 500, color: BURGUNDY, background: BURGUNDY_LIGHT }}>
                 Admin Panel
