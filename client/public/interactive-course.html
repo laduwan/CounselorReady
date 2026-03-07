@@ -1040,6 +1040,9 @@
             .replace(/<p>\s*(<\/?details[^>]*>)\s*<\/p>/gim, '$1')
             .replace(/<p>\s*(<summary[^>]*>)/gim, '$1')
             .replace(/(<\/summary>)\s*<\/p>/gim, '$1');
+          // Strip inline "References" section from body — these display in the sidebar panel.
+          // Removes <h2>References</h2> and all <p> tags until the next <h2> or end of string.
+          rendered = rendered.replace(/<h2[^>]*>\s*References\s*<\/h2>(?:\s*<p[^>]*>[\s\S]*?<\/p>)*/gi, '');
           div.innerHTML = `
             <div class="prose max-w-none">
               ${rendered}
