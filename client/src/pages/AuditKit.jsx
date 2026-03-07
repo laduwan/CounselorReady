@@ -82,7 +82,7 @@ export default function AuditKit() {
               className="px-3 py-2 border rounded-lg text-sm" />
           </div>
           <button onClick={generatePackage} disabled={loading}
-            className="flex items-center gap-2 px-6 py-2 bg-moss-600 text-white rounded-lg hover:bg-moss-700 text-sm disabled:opacity-50">
+            className="flex items-center gap-2 px-6 py-2 bg-burgundy-700 text-white rounded-lg hover:bg-burgundy-800 text-sm disabled:opacity-50">
             {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileDown className="w-4 h-4" />}
             {loading ? 'Generating...' : 'Generate Package'}
           </button>
@@ -94,7 +94,7 @@ export default function AuditKit() {
           {/* Summary */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
             <div className="bg-white rounded-xl border p-4 text-center">
-              <Award className="w-6 h-6 mx-auto text-moss-600 mb-2" />
+              <Award className="w-6 h-6 mx-auto text-burgundy-700 mb-2" />
               <p className="text-2xl font-bold">{auditData.summary.credentialCount}</p>
               <p className="text-xs text-gray-500">Credentials</p>
             </div>
@@ -214,7 +214,7 @@ export default function AuditKit() {
                       <p className="text-sm font-medium">{f.title}</p>
                       <p className="text-xs text-gray-500">{f.ceHours} hrs \u2022 {f.category} \u2022 {f.fileName || 'Certificate'}</p>
                     </div>
-                    <a href={f.fileUrl} target="_blank" rel="noopener noreferrer" className="text-sm text-moss-600 hover:underline flex items-center gap-1">
+                    <a href={f.fileUrl} target="_blank" rel="noopener noreferrer" className="text-sm text-burgundy-700 hover:underline flex items-center gap-1">
                       <FileDown className="w-4 h-4" /> Download
                     </a>
                   </div>

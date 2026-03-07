@@ -104,7 +104,7 @@ export function SkipToContent({ targetId = 'main-content' }) {
   return (
     <a
       href={`#${targetId}`}
-      className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:px-4 focus:py-2 focus:bg-moss-600 focus:text-white focus:rounded focus:outline-none focus:ring-2 focus:ring-moss-400"
+      className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:px-4 focus:py-2 focus:bg-burgundy-700 focus:text-white focus:rounded focus:outline-none focus:ring-2 focus:ring-burgundy-500"
     >
       Skip to main content
     </a>
@@ -121,7 +121,7 @@ export function AccessibilityPanel() {
       <button
         onClick={() => setIsOpen(true)}
         aria-label="Open accessibility settings"
-        className="fixed bottom-4 right-4 z-50 p-3 bg-moss-600 text-white rounded-full shadow-lg hover:bg-moss-700 focus:outline-none focus:ring-2 focus:ring-moss-400"
+        className="fixed bottom-4 right-4 z-50 p-3 bg-burgundy-700 text-white rounded-full shadow-lg hover:bg-burgundy-800 focus:outline-none focus:ring-2 focus:ring-burgundy-500"
         title="Accessibility Settings"
       >
         <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
@@ -190,7 +190,7 @@ export function AccessibilityPanel() {
               role="switch"
               aria-checked={settings[key]}
               onClick={() => updateSetting(key, !settings[key])}
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${settings[key] ? 'bg-moss-600' : 'bg-gray-300'}`}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${settings[key] ? 'bg-burgundy-700' : 'bg-gray-300'}`}
             >
               <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${settings[key] ? 'translate-x-6' : 'translate-x-1'}`} />
             </button>
@@ -199,7 +199,7 @@ export function AccessibilityPanel() {
 
         <button
           onClick={resetSettings}
-          className="w-full mt-2 text-sm text-moss-600 hover:text-moss-800 underline"
+          className="w-full mt-2 text-sm text-burgundy-700 hover:text-burgundy-900 underline"
         >
           Reset to defaults
         </button>
