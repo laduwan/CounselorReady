@@ -5,6 +5,7 @@
  */
 import { Resend } from 'resend';
 import User from '../models/User.js';
+import UserActivity from '../models/UserActivity.js';
 
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
@@ -16,14 +17,19 @@ const ADMIN_EMAILS = process.env.ADMIN_NOTIFICATION_EMAILS?.split(',') || ['admi
  */
 export const ACTIVITY_TYPES = {
   USER_REGISTERED: 'user_registered',
+  USER_LOGIN: 'user_login',
   USER_ENROLLED: 'user_enrolled',
+  PAYMENT_SUCCEEDED: 'payment_succeeded',
+  PAYMENT_FAILED: 'payment_failed',
+  COURSE_STARTED: 'course_started',
   COURSE_COMPLETED: 'course_completed',
   COURSE_FAILED: 'course_failed',
   QUIZ_PASSED: 'quiz_passed',
   QUIZ_FAILED: 'quiz_failed',
   SUBSCRIPTION_STARTED: 'subscription_started',
   SUBSCRIPTION_CANCELED: 'subscription_canceled',
-  CERTIFICATE_GENERATED: 'certificate_generated'
+  CERTIFICATE_GENERATED: 'certificate_generated',
+  LESSON_COMPLETED: 'lesson_completed'
 };
 
 /**
@@ -41,13 +47,28 @@ export async function logActivity(type, data, options = {}) {
     timestamp: new Date()
   };
   
-  // Store in admin's activity log (we'll use User model's activity array or a separate collection)
+  // Persist to dedicated UserActivity collection (scalable, queryable)
   try {
-    // Find admin user(s) and add to their activity feed
+    await UserActivity.create({
+      userId,
+      type,
+      userName,
+      userEmail,
+      courseId: data.courseId || undefined,
+      courseName: data.courseName || undefined,
+      data,
+      timestamp: activity.timestamp
+    });
+  } catch (error) {
+    console.error('Failed to log to UserActivity collection:', error);
+  }
+
+  // Also store in admin's activity feed (for backward compatibility)
+  try {
     await User.updateMany(
       { role: 'admin' },
-      { 
-        $push: { 
+      {
+        $push: {
           adminActivityFeed: {
             $each: [activity],
             $position: 0,
@@ -57,7 +78,7 @@ export async function logActivity(type, data, options = {}) {
       }
     );
   } catch (error) {
-    console.error('Failed to log activity:', error);
+    console.error('Failed to log to admin feed:', error);
   }
   
   // Send email notification if enabled
