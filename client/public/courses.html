@@ -21,7 +21,11 @@
               400: '#759a7f', 500: '#547c5f', 600: '#4A7C59', 700: '#34503d',
               800: '#2b4133', 900: '#1f3025', 950: '#121c16'
             },
-            gold: { 50: '#fefce8', 100: '#fef9c3', 200: '#fef08a', 300: '#fde047', 400: '#facc15', 500: '#d4a012' }
+            gold: { 50: '#fefce8', 100: '#fef9c3', 200: '#fef08a', 300: '#fde047', 400: '#facc15', 500: '#d4a012' },
+            hunter: {
+              50: '#F2F7F4', 100: '#E4EBE6', 200: '#C9D7CD', 300: '#A3BDA9',
+              400: '#7A9E84', 500: '#4A7C59', 600: '#3D6A4A', 700: '#305538', 800: '#234027'
+            }
           },
           fontFamily: {
             'display': ['Cormorant Garamond', 'Georgia', 'serif'],
@@ -193,11 +197,11 @@
         
         return `
           <div class="bg-white rounded-xl border border-burgundy-100 shadow-sm overflow-hidden hover:shadow-lg transition-shadow">
-            <!-- Thumbnail -->
-            <div class="h-48 bg-gradient-to-br from-burgundy-100 to-forest-100 flex items-center justify-center">
-              ${course.thumbnail ? 
+            <!-- Thumbnail — gradient green to rose with deep rose book icon -->
+            <div class="h-48 bg-gradient-to-br from-forest-100 to-burgundy-200 flex items-center justify-center">
+              ${course.thumbnail ?
                 `<img src="${course.thumbnail}" alt="${course.title}" class="w-full h-full object-cover">` :
-                `<svg class="w-16 h-16 text-burgundy-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                `<svg class="w-16 h-16 text-burgundy-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
                 </svg>`
               }
@@ -210,34 +214,42 @@
               
               ${course.subtitle ? `<p class="text-forest-600 text-sm mb-3">${course.subtitle}</p>` : ''}
               
-              <!-- Description -->
-              <p class="text-forest-500 text-sm mb-4 line-clamp-2">${course.description}</p>
+              <!-- Description (sage) -->
+              <p class="text-forest-600 text-sm mb-4 line-clamp-2">${course.description}</p>
 
-              <!-- Meta Info -->
+              <!-- Meta Info Pills -->
               <div class="flex flex-wrap items-center gap-2 mb-4">
                 ${course.ceHours || course.ceuHours ? `
-                  <span class="bg-gold-100 text-gold-700 px-2 py-1 rounded-full text-xs font-medium">
+                  <span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs font-medium">
                     ${course.ceHours || course.ceuHours} CE Hours
                   </span>
                 ` : ''}
-                
+
                 ${categoryLabel ? `
                   <span class="bg-forest-100 text-forest-700 px-2 py-1 rounded-full text-xs font-medium">
                     ${categoryLabel}
                   </span>
                 ` : ''}
-                
+
                 ${course.ceuApprovalNumber || (course.ceHours ? "7760" : null) ? `
                   <span class="bg-burgundy-100 text-burgundy-700 px-2 py-1 rounded-full text-xs font-medium">
                     CE #${course.ceuApprovalNumber || (course.ceHours ? "7760" : null)}
                   </span>
                 ` : ''}
-                
+
                 ${isFree ? `
                   <span class="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs font-medium">
                     FREE
                   </span>
                 ` : ''}
+              </div>
+
+              <!-- Duration with clock icon -->
+              <div class="flex items-center gap-1 text-sm text-forest-500 mb-4">
+                <svg class="w-4 h-4 text-forest-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <span>${course.totalEstimatedTime || 60} min</span>
               </div>
 
               <!-- Progress Bar (if enrolled) -->
