@@ -27,6 +27,7 @@ import GamificationPage from './pages/Gamification';
 import Referrals from './pages/Referrals';
 import GroupLicenseDashboard from './pages/GroupLicenseDashboard';
 import Recommendations from './pages/Recommendations';
+import LegacyVault from './pages/LegacyVault';
 
 // Components
 import Layout from './components/Layout';
@@ -181,6 +182,12 @@ function AppRoutes() {
       <Route path="/recommendations" element={
         <ProtectedRoute>
           <Layout><Recommendations /></Layout>
+        </ProtectedRoute>
+      } />
+
+      <Route path="/legacy-vault" element={
+        <ProtectedRoute>
+          <Layout><LegacyVault /></Layout>
         </ProtectedRoute>
       } />
 
