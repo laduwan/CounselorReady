@@ -70,6 +70,7 @@ const ContentBlockSchema = new mongoose.Schema({
 const SectionSchema = new mongoose.Schema({
   title: { type: String, required: true },
   description: String,
+  module: String, // Group label for sidebar navigation (e.g. "Module 1: Foundations")
   order: { type: Number, required: true },
   contentBlocks: [ContentBlockSchema],
   
@@ -149,8 +150,8 @@ const CourseSchema = new mongoose.Schema({
     category: { type: String, enum: ['category1', 'category2', 'category3'] } // ACEP categories
   },
   
-  // References (ACEP required)
-  references: [String],
+  // References (ACEP required) - supports both string citations and {title, author, year, source, citation} objects
+  references: [mongoose.Schema.Types.Mixed],
   
   // Metadata
   author: String,

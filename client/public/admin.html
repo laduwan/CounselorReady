@@ -55,7 +55,58 @@
     </div>
   </header>
 
-  <main class="max-w-7xl mx-auto px-6 py-8">
+  <div class="flex">
+    <!-- Sidebar -->
+    <aside class="w-64 bg-burgundy-800 min-h-[calc(100vh-52px)] sticky top-[52px] p-4">
+      <nav class="space-y-1">
+        <a href="/admin.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg bg-burgundy-700 text-white">
+          <i class="fas fa-th-large w-5"></i>
+          Admin Hub
+        </a>
+        <a href="/admin-analytics.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <i class="fas fa-chart-line w-5"></i>
+          Analytics
+        </a>
+        <a href="/admin-users.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <i class="fas fa-users w-5"></i>
+          Users
+        </a>
+        <a href="/admin-courses.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <i class="fas fa-book w-5"></i>
+          Courses
+        </a>
+        <a href="/admin-messages.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <i class="fas fa-envelope w-5"></i>
+          Messages
+        </a>
+        <a href="/admin-credentials.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <i class="fas fa-id-card w-5"></i>
+          Credentials
+        </a>
+        <a href="/admin-hardship.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <i class="fas fa-hand-holding-heart w-5"></i>
+          Hardship
+        </a>
+        <a href="/admin-coupons.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <i class="fas fa-tags w-5"></i>
+          Coupons
+        </a>
+        <a href="/admin-integrations.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <i class="fas fa-plug w-5"></i>
+          Integrations
+        </a>
+        <a href="/admin-migration.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <i class="fas fa-database w-5"></i>
+          Migration
+        </a>
+        <a href="/admin-help.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <i class="fas fa-question-circle w-5"></i>
+          Help Center
+        </a>
+      </nav>
+    </aside>
+
+  <main class="flex-1 p-8">
 
     <!-- Page Title -->
     <div class="mb-8">
@@ -267,9 +318,10 @@
     </div>
 
   </main>
+  </div>
 
   <script>
-    const API_URL = localStorage.getItem('apiUrl') || '/api';
+    const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://api.counselorready.com';
     const token = localStorage.getItem('token');
 
     // Auth check
@@ -279,8 +331,7 @@
 
     // Load admin email
     try {
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      fetch(`${API_URL}/users/me`, { headers: { 'Authorization': `Bearer ${token}` } })
+      fetch(`${API_URL}/api/users/me`, { headers: { 'Authorization': `Bearer ${token}` } })
         .then(r => r.json())
         .then(data => {
           const user = data.user || data;
@@ -294,10 +345,15 @@
     } catch(e) {}
 
     // Load stats
-    fetch(`${API_URL}/admin/stats/overview`, {
+    fetch(`${API_URL}/api/admin/stats/overview`, {
       headers: { 'Authorization': `Bearer ${token}` }
     })
-    .then(r => r.json())
+    .then(r => {
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      const ct = r.headers.get('content-type') || '';
+      if (!ct.includes('application/json')) throw new Error('API returned HTML — check API_URL');
+      return r.json();
+    })
     .then(result => {
       if (result.success && result.data) {
         const d = result.data;
@@ -308,9 +364,17 @@
         document.getElementById('statCompletions').textContent = d.completions?.total?.toLocaleString() || '0';
         document.getElementById('statCEHours').textContent = d.ceHours?.total?.toLocaleString() || '0';
         document.getElementById('statCerts').textContent = d.completions?.certificates?.toLocaleString() || '0';
+      } else {
+        throw new Error('API returned success=false');
       }
     })
-    .catch(err => console.error('Failed to load stats:', err));
+    .catch(err => {
+      console.error('Failed to load stats:', err);
+      ['statUsers','statActive','statCourses','statCompletions','statCEHours','statCerts'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) { el.textContent = '!'; el.title = err.message; }
+      });
+    });
   </script>
 </body>
 </html>

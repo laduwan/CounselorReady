@@ -10,7 +10,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
-  BookOpen, Clock, Award, ChevronRight, Search,
+  BookOpen, Clock, ChevronRight, Search,
   Filter, Grid, List, Star, Users, CheckCircle
 } from 'lucide-react';
 import api from '../services/api';
@@ -105,9 +105,9 @@ const InteractiveCourseCatalog = () => {
     <div>
       {/* Page heading */}
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-navy-600">Courses</h1>
+        <h1 className="font-display text-3xl font-semibold text-burgundy-900">CE Course Library</h1>
         <p className="text-forest-600">
-          Engaging, self-paced continuing education for mental health professionals
+          Earn continuing education credits with our professionally designed courses.
         </p>
       </div>
 
@@ -199,17 +199,16 @@ const InteractiveCourseCatalog = () => {
 const CourseCard = ({ course, progress, onClick }) => {
   const isEnrolled = !!progress;
   const isCompleted = progress?.status === 'completed' || progress?.status === 'certified';
+  const primaryCategory = course.ceuCategories?.[0] || (course.categories?.[0] ? { hours: course.ceHours, category: course.categories[0] } : null);
 
   return (
     <div
       onClick={onClick}
-      className="bg-white rounded-xl shadow-sm hover:shadow-lg transition-all cursor-pointer overflow-hidden border border-forest-100 group"
+      className="bg-white rounded-xl shadow-sm hover:shadow-lg transition-all cursor-pointer overflow-hidden border border-burgundy-100 group"
     >
-      {/* Thumbnail */}
-      <div className="h-40 bg-hunter-100 relative">
-        <div className="absolute inset-0 flex items-center justify-center">
-          <BookOpen className="h-16 w-16 text-hunter-300" />
-        </div>
+      {/* Thumbnail — gradient green to rose with deep rose book icon */}
+      <div className="h-48 bg-gradient-to-br from-hunter-100 to-burgundy-200 relative flex items-center justify-center">
+        <BookOpen className="h-16 w-16 text-burgundy-500" />
         {isCompleted && (
           <div className="absolute top-3 right-3 bg-hunter-600 text-white px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1">
             <CheckCircle className="h-3 w-3" />
@@ -228,45 +227,51 @@ const CourseCard = ({ course, progress, onClick }) => {
 
       {/* Content */}
       <div className="p-5">
-        <div className="flex items-start justify-between mb-2">
-          <h3 className="font-semibold text-navy-600 group-hover:text-burgundy-800 transition-colors line-clamp-2">
-            {course.title}
-          </h3>
-        </div>
+        <h3 className="font-display text-lg font-semibold text-burgundy-900 group-hover:text-burgundy-700 transition-colors line-clamp-2 mb-2">
+          {course.title}
+        </h3>
 
-        <p className="text-sm text-forest-600 line-clamp-2 mb-4">
+        <p className="text-sm text-forest-500 line-clamp-2 mb-4">
           {course.description}
         </p>
 
-        <div className="flex items-center gap-4 text-sm text-forest-500">
-          <div className="flex items-center gap-1">
-            <Award className="h-4 w-4 text-honey-400" />
-            <span>{course.ceHours} CE Hours</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <Clock className="h-4 w-4 text-forest-400" />
-            <span>{course.totalEstimatedTime || 60} min</span>
-          </div>
+        {/* Info pills */}
+        <div className="flex flex-wrap items-center gap-2 mb-4">
+          {(course.ceHours || course.ceuHours) && (
+            <span className="bg-honey-100 text-honey-700 px-2 py-1 rounded-full text-xs font-medium">
+              {course.ceHours || course.ceuHours} CE Hours
+            </span>
+          )}
+          {primaryCategory && (
+            <span className="bg-forest-100 text-forest-700 px-2 py-1 rounded-full text-xs font-medium">
+              {primaryCategory.category}
+            </span>
+          )}
+          {course.categories && course.categories.length > 0 && !primaryCategory && (
+            <span className="bg-forest-100 text-forest-700 px-2 py-1 rounded-full text-xs font-medium">
+              {course.categories[0]}
+            </span>
+          )}
+          {(course.ceuApprovalNumber || course.ceHours) && (
+            <span className="bg-burgundy-100 text-burgundy-700 px-2 py-1 rounded-full text-xs font-medium">
+              CE #{course.ceuApprovalNumber || '7760'}
+            </span>
+          )}
         </div>
 
-        {/* Tags */}
-        {course.categories && course.categories.length > 0 && (
-          <div className="mt-3 flex flex-wrap gap-1">
-            {course.categories.slice(0, 2).map(cat => (
-              <span key={cat} className="px-2 py-0.5 bg-hunter-50 text-hunter-700 text-xs rounded-full">
-                {cat}
-              </span>
-            ))}
-          </div>
-        )}
+        {/* Duration with clock icon */}
+        <div className="flex items-center gap-1 text-sm text-forest-500 mb-4">
+          <Clock className="h-4 w-4 text-forest-400" />
+          <span>{course.totalEstimatedTime || 60} min</span>
+        </div>
 
         {/* Action */}
-        <div className="mt-4 pt-4 border-t border-forest-100">
+        <div className="pt-4 border-t border-forest-100">
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-hunter-600">
+            <span className="text-sm font-medium text-burgundy-800">
               {isCompleted ? 'Review Course' : isEnrolled ? 'Continue Learning' : 'Start Course'}
             </span>
-            <ChevronRight className="h-5 w-5 text-hunter-600 group-hover:translate-x-1 transition-transform" />
+            <ChevronRight className="h-5 w-5 text-burgundy-700 group-hover:translate-x-1 transition-transform" />
           </div>
         </div>
       </div>
@@ -278,22 +283,23 @@ const CourseCard = ({ course, progress, onClick }) => {
 const CourseListItem = ({ course, progress, onClick }) => {
   const isEnrolled = !!progress;
   const isCompleted = progress?.status === 'completed' || progress?.status === 'certified';
+  const primaryCategory = course.ceuCategories?.[0] || (course.categories?.[0] ? { hours: course.ceHours, category: course.categories[0] } : null);
 
   return (
     <div
       onClick={onClick}
-      className="bg-white rounded-xl shadow-sm hover:shadow-md transition-all cursor-pointer p-5 border border-forest-100 group"
+      className="bg-white rounded-xl shadow-sm hover:shadow-md transition-all cursor-pointer p-5 border border-burgundy-100 group"
     >
       <div className="flex items-center gap-5">
-        {/* Icon */}
-        <div className="h-16 w-16 bg-hunter-100 rounded-lg flex items-center justify-center flex-shrink-0">
-          <BookOpen className="h-8 w-8 text-hunter-500" />
+        {/* Icon — gradient green to rose */}
+        <div className="h-16 w-16 bg-gradient-to-br from-hunter-100 to-burgundy-200 rounded-lg flex items-center justify-center flex-shrink-0">
+          <BookOpen className="h-8 w-8 text-burgundy-500" />
         </div>
 
         {/* Content */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <h3 className="font-semibold text-navy-600 group-hover:text-burgundy-800 transition-colors">
+            <h3 className="font-display font-semibold text-burgundy-900 group-hover:text-burgundy-700 transition-colors">
               {course.title}
             </h3>
             {isCompleted && (
@@ -303,23 +309,29 @@ const CourseListItem = ({ course, progress, onClick }) => {
               </span>
             )}
           </div>
-          <p className="text-sm text-forest-600 line-clamp-1 mt-1">
+          <p className="text-sm text-forest-500 line-clamp-1 mt-1">
             {course.description}
           </p>
-          <div className="flex items-center gap-4 mt-2 text-sm text-forest-500">
-            <div className="flex items-center gap-1">
-              <Award className="h-4 w-4 text-honey-400" />
-              <span>{course.ceHours} CE Hours</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <Clock className="h-4 w-4 text-forest-400" />
-              <span>{course.totalEstimatedTime || 60} min</span>
-            </div>
-            {course.categories && (
-              <span className="text-forest-400">
-                {course.categories[0]}
+          <div className="flex items-center gap-3 mt-2 flex-wrap">
+            {(course.ceHours || course.ceuHours) && (
+              <span className="bg-honey-100 text-honey-700 px-2 py-0.5 rounded-full text-xs font-medium">
+                {course.ceHours || course.ceuHours} CE Hours
               </span>
             )}
+            {primaryCategory && (
+              <span className="bg-forest-100 text-forest-700 px-2 py-0.5 rounded-full text-xs font-medium">
+                {primaryCategory.category}
+              </span>
+            )}
+            {(course.ceuApprovalNumber || course.ceHours) && (
+              <span className="bg-burgundy-100 text-burgundy-700 px-2 py-0.5 rounded-full text-xs font-medium">
+                CE #{course.ceuApprovalNumber || '7760'}
+              </span>
+            )}
+            <span className="flex items-center gap-1 text-xs text-forest-500">
+              <Clock className="h-3.5 w-3.5 text-forest-400" />
+              {course.totalEstimatedTime || 60} min
+            </span>
           </div>
         </div>
 
@@ -330,13 +342,13 @@ const CourseListItem = ({ course, progress, onClick }) => {
               <div className="text-sm font-medium text-burgundy-700">{progress.progress || 0}%</div>
               <div className="w-24 h-2 bg-stone-200 rounded-full mt-1">
                 <div
-                  className="h-full bg-honey-400 rounded-full"
+                  className="h-full bg-burgundy-600 rounded-full"
                   style={{ width: `${progress.progress || 0}%` }}
                 />
               </div>
             </div>
           )}
-          <ChevronRight className="h-5 w-5 text-forest-400 group-hover:text-hunter-600 group-hover:translate-x-1 transition-all" />
+          <ChevronRight className="h-5 w-5 text-burgundy-400 group-hover:text-burgundy-700 group-hover:translate-x-1 transition-all" />
         </div>
       </div>
     </div>

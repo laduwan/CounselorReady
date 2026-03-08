@@ -581,7 +581,7 @@ function SectionView({
 
       {/* Content Blocks */}
       {!showQuiz ? (
-        <div className="space-y-8">
+        <div className="space-y-6">
           {section.contentBlocks.map((block, index) => (
             <div 
               key={index}
@@ -603,30 +603,34 @@ function SectionView({
 
           {/* Section Quiz CTA */}
           {section.hasQuiz && !quizPassed && (
-            <div className="bg-hunter-50 border border-hunter-200 rounded-2xl p-6 text-center">
-              <h3 className="text-xl font-bold text-navy-700 mb-2">Section Quiz</h3>
-              <p className="text-navy-500 mb-4">
-                Complete all content and activities above to unlock the section quiz.
-              </p>
+            <div className="bg-hunter-50 border border-hunter-200 rounded-xl px-5 py-4 flex items-center justify-between gap-4">
+              <div>
+                <h3 className="text-sm font-bold text-navy-700">Section Quiz</h3>
+                <p className="text-xs text-navy-400 mt-0.5">
+                  {canTakeQuiz ? 'Ready to test your knowledge' : `Complete all content first (${viewedBlocks.size}/${section.contentBlocks.length})`}
+                </p>
+              </div>
               <button
                 onClick={() => setShowQuiz(true)}
                 disabled={!canTakeQuiz}
-                className={`px-6 py-3 rounded-xl font-semibold transition-all ${
+                className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all flex-shrink-0 ${
                   canTakeQuiz
                     ? 'bg-hunter-600 hover:bg-hunter-700 text-white'
                     : 'bg-stone-200 text-forest-400 cursor-not-allowed'
                 }`}
               >
-                {canTakeQuiz ? 'Take Quiz' : `Complete all content first (${viewedBlocks.size}/${section.contentBlocks.length})`}
+                Take Quiz
               </button>
             </div>
           )}
 
           {quizPassed && (
-            <div className="bg-hunter-50 border border-hunter-200 rounded-2xl p-6 text-center">
-              <CheckCircle2 className="w-12 h-12 text-hunter-600 mx-auto mb-3" />
-              <h3 className="text-xl font-bold text-hunter-700 mb-2">Section Complete!</h3>
-              <p className="text-hunter-600">You passed the section quiz.</p>
+            <div className="bg-hunter-50 border border-hunter-200 rounded-xl px-5 py-3 flex items-center gap-3">
+              <CheckCircle2 className="w-5 h-5 text-hunter-600 flex-shrink-0" />
+              <div>
+                <span className="text-sm font-bold text-hunter-700">Section Complete</span>
+                <span className="text-xs text-hunter-600 ml-2">Quiz passed</span>
+              </div>
             </div>
           )}
         </div>
@@ -710,33 +714,33 @@ function SectionQuiz({ section, courseSlug, sectionIndex, onComplete, onBack }) 
 
   if (submitted && results) {
     return (
-      <div className="bg-white rounded-2xl border border-forest-200 shadow-lg p-8 text-center">
-        <div className={`w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 ${
-          results.passed ? 'bg-hunter-100' : 'bg-honey-100'
+      <div className="bg-burgundy-50/60 rounded-2xl border-l-4 border-burgundy-700 p-6 text-center my-6">
+        <div className={`w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4 ${
+          results.passed ? 'bg-hunter-100 ring-4 ring-hunter-50' : 'bg-honey-100 ring-4 ring-honey-50'
         }`}>
           {results.passed ? (
-            <CheckCircle2 className="w-10 h-10 text-hunter-600" />
+            <CheckCircle2 className="w-7 h-7 text-hunter-600" />
           ) : (
-            <AlertCircle className="w-10 h-10 text-honey-600" />
+            <AlertCircle className="w-7 h-7 text-honey-600" />
           )}
         </div>
-        <h2 className="text-2xl font-bold text-navy-700 mb-2">
+        <h2 className="text-xl font-bold text-navy-700 mb-2">
           {results.passed ? 'Quiz Passed!' : 'Keep Trying!'}
         </h2>
-        <p className="text-navy-500 mb-4">
+        <p className="text-sm text-navy-500 mb-1">
           You scored {results.score}/{results.totalQuestions} ({results.percentage}%)
         </p>
-        <p className="text-sm text-navy-400 mb-6">
-          {results.passed 
+        <p className="text-xs text-navy-400 mb-5">
+          {results.passed
             ? 'You can now proceed to the next section.'
             : `You need ${Math.round(section.quizPassThreshold * 100)}% to pass.`}
         </p>
         <button
           onClick={() => onComplete(results)}
-          className={`px-6 py-3 rounded-xl font-semibold ${
+          className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all shadow-sm ${
             results.passed
-              ? 'bg-hunter-600 hover:bg-hunter-700 text-white'
-              : 'bg-stone-100 hover:bg-stone-200 text-navy-600'
+              ? 'bg-burgundy-800 hover:bg-burgundy-700 text-white shadow-burgundy-200'
+              : 'bg-white hover:bg-stone-50 text-navy-600 border border-forest-200'
           }`}
         >
           {results.passed ? 'Continue' : 'Review Content & Retry'}
@@ -748,65 +752,70 @@ function SectionQuiz({ section, courseSlug, sectionIndex, onComplete, onBack }) 
   const question = section.quizQuestions[currentQuestion];
 
   return (
-    <div className="bg-white rounded-2xl border border-forest-200 shadow-lg overflow-hidden">
-      <div className="bg-burgundy-800 px-6 py-4 flex items-center justify-between">
-        <h3 className="text-white font-bold">Section Quiz</h3>
-        <span className="text-burgundy-200 text-sm">
-          Question {currentQuestion + 1} of {section.quizQuestions.length}
+    <div className="bg-burgundy-50/60 rounded-2xl border-l-4 border-burgundy-700 overflow-hidden my-6">
+      <div className="px-6 py-4 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="w-7 h-7 rounded-full bg-burgundy-700 flex items-center justify-center">
+            <CheckCircle2 className="w-3.5 h-3.5 text-white" />
+          </div>
+          <h3 className="text-sm font-bold text-burgundy-800 tracking-wide">Check Your Understanding</h3>
+        </div>
+        <span className="text-burgundy-400 text-xs font-semibold bg-white px-2.5 py-1 rounded-full">
+          {currentQuestion + 1} of {section.quizQuestions.length}
         </span>
       </div>
 
-      <div className="p-6">
-        <p className="text-lg text-navy-700 font-medium mb-6">{question.question}</p>
+      <div className="px-6 pb-6 pl-16">
+        <p className="text-base text-navy-700 font-semibold mb-5 leading-relaxed">{question.question}</p>
 
-        <div className="space-y-3 mb-8">
+        <div className="space-y-3 mb-5">
           {question.options.map((option, index) => (
             <button
               key={index}
               onClick={() => setAnswers(prev => ({ ...prev, [currentQuestion]: index }))}
-              className={`w-full text-left px-5 py-4 rounded-xl border-2 transition-all flex items-center gap-4 ${
+              className={`w-full text-left px-4 py-3 rounded-xl border-2 transition-all flex items-center gap-3.5 text-[15px] ${
                 answers[currentQuestion] === index
-                  ? 'bg-burgundy-50 border-burgundy-500'
-                  : 'bg-stone-50 border-forest-200 hover:border-burgundy-300'
+                  ? 'bg-burgundy-50 border-burgundy-600 shadow-sm shadow-burgundy-100'
+                  : 'bg-white border-forest-200 hover:border-burgundy-300 hover:shadow-sm'
               }`}
             >
-              <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
+              <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all ${
                 answers[currentQuestion] === index
                   ? 'bg-burgundy-700 border-burgundy-700 text-white'
                   : 'border-forest-300'
               }`}>
-                {answers[currentQuestion] === index && <CheckCircle2 className="w-4 h-4" />}
+                {answers[currentQuestion] === index ? <CheckCircle2 className="w-3.5 h-3.5" /> : <span className="text-xs font-bold text-forest-400">{String.fromCharCode(65 + index)}</span>}
               </div>
-              <span className="text-navy-600">{option.text}</span>
+              <span className="text-navy-600 leading-snug">{option.text}</span>
             </button>
           ))}
         </div>
 
-        <div className="flex items-center justify-between pt-4 border-t border-forest-200">
+        <div className="flex items-center justify-between pt-4 border-t border-burgundy-100">
           <button
             onClick={onBack}
-            className="text-navy-500 hover:text-navy-700"
+            className="text-xs text-navy-500 hover:text-navy-700 font-medium"
           >
             ← Back to Content
           </button>
 
-          <div className="flex gap-3">
+          <div className="flex gap-2.5">
             {currentQuestion > 0 && (
               <button
                 onClick={() => setCurrentQuestion(prev => prev - 1)}
-                className="px-4 py-2 text-navy-600 hover:bg-stone-100 rounded-lg"
+                className="px-4 py-2 text-sm text-navy-600 hover:bg-white rounded-xl border border-forest-200 font-medium transition-all"
               >
                 Previous
               </button>
             )}
-            
+
             {currentQuestion < section.quizQuestions.length - 1 ? (
               <button
                 onClick={() => setCurrentQuestion(prev => prev + 1)}
                 disabled={answers[currentQuestion] === undefined}
-                className={`px-4 py-2 rounded-lg ${
+                className={`px-4 py-2 text-sm rounded-xl font-bold transition-all ${
                   answers[currentQuestion] !== undefined
-                    ? 'bg-burgundy-800 hover:bg-burgundy-700 text-white'
+                    ? 'bg-burgundy-800 hover:bg-burgundy-700 text-white shadow-sm shadow-burgundy-200'
                     : 'bg-stone-200 text-forest-400 cursor-not-allowed'
                 }`}
               >
@@ -816,13 +825,13 @@ function SectionQuiz({ section, courseSlug, sectionIndex, onComplete, onBack }) 
               <button
                 onClick={handleSubmit}
                 disabled={Object.keys(answers).length < section.quizQuestions.length}
-                className={`px-6 py-2 rounded-lg font-semibold ${
+                className={`px-5 py-2 text-sm rounded-xl font-bold transition-all ${
                   Object.keys(answers).length >= section.quizQuestions.length
-                    ? 'bg-hunter-600 hover:bg-hunter-700 text-white'
+                    ? 'bg-burgundy-800 hover:bg-burgundy-700 text-white shadow-sm shadow-burgundy-200'
                     : 'bg-stone-200 text-forest-400 cursor-not-allowed'
                 }`}
               >
-                Submit Quiz
+                Submit
               </button>
             )}
           </div>
@@ -947,6 +956,43 @@ function AssessmentView({ course, progress, onComplete, onBack }) {
 }
 
 // ============================================================================
+// REFERENCES VIEW
+// ============================================================================
+function ReferencesView({ course, onBack }) {
+  return (
+    <div className="max-w-4xl mx-auto">
+      <div className="mb-8">
+        <button
+          onClick={onBack}
+          className="text-navy-500 hover:text-navy-700 flex items-center gap-2 mb-4"
+        >
+          <ChevronLeft className="w-4 h-4" />
+          Back to Course
+        </button>
+        <h1 className="text-3xl font-bold text-navy-700">References</h1>
+        <p className="text-navy-500 mt-2">
+          {course.references.length} citations supporting this course material
+        </p>
+      </div>
+
+      <div className="bg-white rounded-2xl border border-forest-200 shadow-sm p-6 lg:p-8">
+        <ol className="space-y-4">
+          {course.references.map((ref, index) => (
+            <li
+              key={index}
+              className="text-sm text-navy-600 leading-relaxed pl-10"
+              style={{ textIndent: '-2.25rem' }}
+            >
+              {ref}
+            </li>
+          ))}
+        </ol>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================================
 // SIDEBAR
 // ============================================================================
 function CourseSidebar({ 
@@ -1010,49 +1056,98 @@ function CourseSidebar({
 
           {/* Sections */}
           <nav className="flex-1 overflow-y-auto p-4" aria-label="Course sections">
-            <ul className="space-y-2">
-              {course.sections.map((section, index) => {
-                const sectionProgress = progress?.sectionProgress?.[index];
-                const isCompleted = sectionProgress?.status === 'completed';
-                const isCurrent = currentView === 'section' && progress?.currentSectionIndex === index;
-                const isLocked = index > 0 && progress?.sectionProgress?.[index - 1]?.status !== 'completed';
+            <ul className="space-y-1">
+              {(() => {
+                let lastModule = null;
+                return course.sections.map((section, index) => {
+                  const sectionProgress = progress?.sectionProgress?.[index];
+                  const isCompleted = sectionProgress?.status === 'completed';
+                  const isCurrent = currentView === 'section' && progress?.currentSectionIndex === index;
+                  const isLocked = index > 0 && progress?.sectionProgress?.[index - 1]?.status !== 'completed';
 
-                return (
-                  <li key={index}>
-                    <button
-                      onClick={() => !isLocked && onNavigate(index)}
-                      disabled={isLocked}
-                      aria-current={isCurrent ? 'step' : undefined}
-                      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-colors ${
-                        isCurrent
-                          ? 'bg-burgundy-50 text-burgundy-800'
-                          : isLocked
-                            ? 'text-slate-300 cursor-not-allowed'
-                            : 'text-navy-600 hover:bg-stone-50'
-                      }`}
-                    >
-                      <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 ${
-                        isCompleted
-                          ? 'bg-hunter-600 text-white'
-                          : isCurrent
-                            ? 'bg-burgundy-700 text-white'
+                  const showModuleHeader = section.module && section.module !== lastModule;
+                  lastModule = section.module || lastModule;
+
+                  // Count module progress
+                  let moduleCompleted = 0;
+                  let moduleTotal = 0;
+                  if (showModuleHeader) {
+                    course.sections.forEach((s, i) => {
+                      if (s.module === section.module) {
+                        moduleTotal++;
+                        if (progress?.sectionProgress?.[i]?.status === 'completed') moduleCompleted++;
+                      }
+                    });
+                  }
+
+                  return (
+                    <li key={index}>
+                      {showModuleHeader && (
+                        <div className={`${index > 0 ? 'mt-4 pt-3 border-t border-forest-100' : ''} mb-2 px-2`}>
+                          <div className="flex items-center justify-between">
+                            <span className="text-[11px] font-bold text-navy-400 uppercase tracking-wider">{section.module}</span>
+                            <span className="text-[10px] text-navy-300 font-medium">{moduleCompleted}/{moduleTotal}</span>
+                          </div>
+                        </div>
+                      )}
+                      <button
+                        onClick={() => !isLocked && onNavigate(index)}
+                        disabled={isLocked}
+                        aria-current={isCurrent ? 'step' : undefined}
+                        className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left transition-colors ${
+                          isCurrent
+                            ? 'bg-burgundy-50 text-burgundy-800'
                             : isLocked
-                              ? 'bg-stone-100 text-slate-300'
-                              : 'bg-stone-200 text-navy-500'
-                      }`}>
-                        {isCompleted ? (
-                          <CheckCircle2 className="w-4 h-4" />
-                        ) : isLocked ? (
-                          <Lock className="w-3 h-3" />
-                        ) : (
-                          <span className="text-xs font-semibold">{index + 1}</span>
-                        )}
-                      </div>
-                      <span className="text-sm font-medium line-clamp-2">{section.title}</span>
-                    </button>
-                  </li>
-                );
-              })}
+                              ? 'text-slate-300 cursor-not-allowed'
+                              : 'text-navy-600 hover:bg-stone-50'
+                        }`}
+                      >
+                        <div className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 ${
+                          isCompleted
+                            ? 'bg-hunter-600 text-white'
+                            : isCurrent
+                              ? 'bg-burgundy-700 text-white'
+                              : isLocked
+                                ? 'bg-stone-100 text-slate-300'
+                                : 'bg-stone-200 text-navy-500'
+                        }`}>
+                          {isCompleted ? (
+                            <CheckCircle2 className="w-3 h-3" />
+                          ) : isLocked ? (
+                            <Lock className="w-2.5 h-2.5" />
+                          ) : (
+                            <span className="text-[10px] font-semibold">{index + 1}</span>
+                          )}
+                        </div>
+                        <span className="text-[13px] font-medium line-clamp-2">{section.title}</span>
+                      </button>
+                    </li>
+                  );
+                });
+              })()}
+
+              {/* References */}
+              {course.references?.length > 0 && (
+                <li className="pt-4 mt-4 border-t border-forest-200">
+                  <button
+                    onClick={() => onNavigate('references')}
+                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-colors ${
+                      currentView === 'references'
+                        ? 'bg-burgundy-50 text-burgundy-800'
+                        : 'text-navy-600 hover:bg-stone-50'
+                    }`}
+                  >
+                    <div className={`w-6 h-6 rounded-full flex items-center justify-center ${
+                      currentView === 'references'
+                        ? 'bg-burgundy-700 text-white'
+                        : 'bg-stone-200 text-navy-500'
+                    }`}>
+                      <BookOpen className="w-3.5 h-3.5" />
+                    </div>
+                    <span className="text-sm font-medium">References</span>
+                  </button>
+                </li>
+              )}
 
               {/* Final Assessment */}
               <li className="pt-4 mt-4 border-t border-forest-200">
@@ -1095,7 +1190,7 @@ export default function CourseViewer({ courseSlug }) {
   const [progress, setProgress] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [currentView, setCurrentView] = useState('section'); // 'section' | 'assessment'
+  const [currentView, setCurrentView] = useState('section'); // 'section' | 'assessment' | 'references'
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [a11y, setA11y] = useState({
     fontSize: 'normal',
@@ -1140,6 +1235,8 @@ export default function CourseViewer({ courseSlug }) {
   const handleNavigate = useCallback((target) => {
     if (target === 'assessment') {
       setCurrentView('assessment');
+    } else if (target === 'references') {
+      setCurrentView('references');
     } else if (typeof target === 'number') {
       setProgress(prev => ({ ...prev, currentSectionIndex: target }));
       setCurrentView('section');
@@ -1211,7 +1308,7 @@ export default function CourseViewer({ courseSlug }) {
           
           <div className="flex-1 lg:hidden text-center">
             <span className="font-medium text-navy-700 text-sm">
-              {currentView === 'assessment' ? 'Final Assessment' : currentSection?.title}
+              {currentView === 'assessment' ? 'Final Assessment' : currentView === 'references' ? 'References' : currentSection?.title}
             </span>
           </div>
 
@@ -1230,6 +1327,11 @@ export default function CourseViewer({ courseSlug }) {
               course={course}
               progress={progress}
               onComplete={refreshProgress}
+              onBack={() => handleNavigate(course.sections.length - 1)}
+            />
+          ) : currentView === 'references' ? (
+            <ReferencesView
+              course={course}
               onBack={() => handleNavigate(course.sections.length - 1)}
             />
           ) : (
