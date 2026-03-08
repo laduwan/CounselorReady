@@ -4,13 +4,24 @@
  * Unauthorized copying or distribution is strictly prohibited.
  */
 import express from 'express';
+import rateLimit from 'express-rate-limit';
 import Notification from '../models/Notification.js';
 import { protect } from '../middleware/auth.js';
+import { validate } from '../middleware/validate.js';
 
 const router = express.Router();
 
 // In-memory store for SSE connections (WebSocket alternative that works without extra deps)
 const clients = new Map(); // userId -> Set of response objects
+
+// Rate-limit notification creation (30 per 15 min per IP)
+const createLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many notifications created, please slow down' }
+});
 
 // ── SSE endpoint for real-time notifications ──
 router.get('/stream', protect, (req, res) => {
@@ -64,24 +75,27 @@ export function sendRealtimeNotification(userId, notification) {
   }
 }
 
-// ── Get notification history ──
+// ── Get notification history (with pagination & filters) ──
 router.get('/', protect, async (req, res) => {
   try {
-    const { page = 1, limit = 20, unreadOnly } = req.query;
+    const { page = 1, limit = 20, unreadOnly, type } = req.query;
     const query = { userId: req.user._id };
     if (unreadOnly === 'true') query.read = false;
+    if (type) query.type = type;
 
-    const notifications = await Notification.find(query)
-      .sort({ createdAt: -1 })
-      .limit(Number(limit))
-      .skip((Number(page) - 1) * Number(limit));
+    const pageNum = Math.max(1, Number(page));
+    const limitNum = Math.min(50, Math.max(1, Number(limit)));
 
-    const unreadCount = await Notification.countDocuments({
-      userId: req.user._id,
-      read: false
-    });
+    const [notifications, total, unreadCount] = await Promise.all([
+      Notification.find(query)
+        .sort({ createdAt: -1 })
+        .limit(limitNum)
+        .skip((pageNum - 1) * limitNum),
+      Notification.countDocuments(query),
+      Notification.countDocuments({ userId: req.user._id, read: false })
+    ]);
 
-    res.json({ notifications, unreadCount });
+    res.json({ notifications, unreadCount, total, page: pageNum, totalPages: Math.ceil(total / limitNum) });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -116,9 +130,17 @@ router.patch('/read-all', protect, async (req, res) => {
 });
 
 // ── Create and send a notification (used by services) ──
-router.post('/', protect, async (req, res) => {
+router.post('/', protect, createLimiter, validate({
+  body: { title: 'string', message: 'string' }
+}), async (req, res) => {
   try {
     const { title, message, type, link, targetUserId } = req.body;
+
+    const validTypes = ['info', 'success', 'warning', 'error', 'credential_expiring', 'course_completed', 'badge_earned', 'system'];
+    if (type && !validTypes.includes(type)) {
+      return res.status(400).json({ error: `type must be one of: ${validTypes.join(', ')}` });
+    }
+
     const userId = targetUserId || req.user._id;
 
     const notification = await Notification.create({

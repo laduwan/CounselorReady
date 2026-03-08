@@ -6,6 +6,7 @@
 import express from 'express';
 import Gamification from '../models/Gamification.js';
 import { protect } from '../middleware/auth.js';
+import { validate } from '../middleware/validate.js';
 
 const router = express.Router();
 
@@ -66,9 +67,17 @@ router.get('/my', protect, async (req, res) => {
 });
 
 // ── Record an activity (called by other services) ──
-router.post('/activity', protect, async (req, res) => {
+router.post('/activity', protect, validate({
+  body: { type: 'string' }
+}), async (req, res) => {
   try {
     const { type, metadata } = req.body;
+
+    const validTypes = Object.keys(XP_VALUES);
+    if (!validTypes.includes(type)) {
+      return res.status(400).json({ error: `type must be one of: ${validTypes.join(', ')}` });
+    }
+
     let profile = await Gamification.findOne({ userId: req.user._id });
     if (!profile) {
       profile = await Gamification.create({ userId: req.user._id });
@@ -172,7 +181,9 @@ router.post('/activity', protect, async (req, res) => {
 });
 
 // ── Set weekly goal ──
-router.put('/weekly-goal', protect, async (req, res) => {
+router.put('/weekly-goal', protect, validate({
+  body: { hours: 'number' }
+}), async (req, res) => {
   try {
     const { hours } = req.body;
     let profile = await Gamification.findOne({ userId: req.user._id });
@@ -194,12 +205,23 @@ router.put('/weekly-goal', protect, async (req, res) => {
   }
 });
 
-// ── Leaderboard ──
+// ── Leaderboard (supports weekly/monthly/alltime periods) ──
 router.get('/leaderboard', protect, async (req, res) => {
   try {
-    const { period } = req.query; // 'weekly', 'monthly', 'alltime'
+    const { period = 'alltime' } = req.query;
 
-    const leaders = await Gamification.find()
+    let dateFilter = {};
+    if (period === 'weekly') {
+      const weekAgo = new Date();
+      weekAgo.setDate(weekAgo.getDate() - 7);
+      dateFilter = { lastActivityDate: { $gte: weekAgo } };
+    } else if (period === 'monthly') {
+      const monthAgo = new Date();
+      monthAgo.setMonth(monthAgo.getMonth() - 1);
+      dateFilter = { lastActivityDate: { $gte: monthAgo } };
+    }
+
+    const leaders = await Gamification.find(dateFilter)
       .sort({ xp: -1 })
       .limit(20)
       .populate('userId', 'profile.firstName profile.lastName');
@@ -219,11 +241,12 @@ router.get('/leaderboard', protect, async (req, res) => {
     const myProfile = await Gamification.findOne({ userId: req.user._id });
     let myRank = null;
     if (myProfile) {
-      const higherCount = await Gamification.countDocuments({ xp: { $gt: myProfile.xp } });
+      const rankQuery = { xp: { $gt: myProfile.xp }, ...dateFilter };
+      const higherCount = await Gamification.countDocuments(rankQuery);
       myRank = higherCount + 1;
     }
 
-    res.json({ leaderboard, myRank, myXp: myProfile?.xp || 0 });
+    res.json({ leaderboard, myRank, myXp: myProfile?.xp || 0, period });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

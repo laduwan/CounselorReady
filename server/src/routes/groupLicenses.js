@@ -4,15 +4,28 @@
  * Unauthorized copying or distribution is strictly prohibited.
  */
 import express from 'express';
+import rateLimit from 'express-rate-limit';
 import GroupLicense from '../models/GroupLicense.js';
 import User from '../models/User.js';
 import UserCourseProgress from '../models/UserCourseProgress.js';
 import { protect, requireAdmin } from '../middleware/auth.js';
+import { validate } from '../middleware/validate.js';
 
 const router = express.Router();
 
+// Rate-limit invitations (20 per 15 min per IP)
+const inviteLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many invite requests, please try again later' }
+});
+
 // ── Create a group license ──
-router.post('/', protect, async (req, res) => {
+router.post('/', protect, validate({
+  body: { organizationName: 'string', totalSeats: 'number' }
+}), async (req, res) => {
   try {
     const { organizationName, totalSeats, plan, billingCycle, contactEmail } = req.body;
 
@@ -63,14 +76,26 @@ router.get('/:id', protect, async (req, res) => {
 });
 
 // ── Invite members (add seats) ──
-router.post('/:id/invite', protect, async (req, res) => {
+router.post('/:id/invite', protect, inviteLimiter, validate({
+  body: { emails: 'array' }
+}), async (req, res) => {
   try {
     const license = await GroupLicense.findOne({ _id: req.params.id, adminUserId: req.user._id });
     if (!license) return res.status(404).json({ error: 'License not found' });
 
-    const { emails } = req.body; // array of email strings
-    if (!Array.isArray(emails) || emails.length === 0) {
-      return res.status(400).json({ error: 'Provide an array of emails' });
+    const { emails } = req.body;
+    if (emails.length === 0) {
+      return res.status(400).json({ error: 'Provide at least one email' });
+    }
+    if (emails.length > 50) {
+      return res.status(400).json({ error: 'Maximum 50 invitations at once' });
+    }
+
+    // Validate all emails
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const invalidEmails = emails.filter(e => !emailRegex.test(String(e).trim()));
+    if (invalidEmails.length > 0) {
+      return res.status(400).json({ error: `Invalid email(s): ${invalidEmails.join(', ')}` });
     }
 
     const available = license.totalSeats - license.seats.filter(s => s.status !== 'revoked').length;
@@ -119,12 +144,18 @@ router.delete('/:id/seats/:seatId', protect, async (req, res) => {
 });
 
 // ── Assign courses to the group ──
-router.post('/:id/assign-courses', protect, async (req, res) => {
+router.post('/:id/assign-courses', protect, validate({
+  body: { courseIds: 'array' }
+}), async (req, res) => {
   try {
     const license = await GroupLicense.findOne({ _id: req.params.id, adminUserId: req.user._id });
     if (!license) return res.status(404).json({ error: 'License not found' });
 
     const { courseIds, dueDate, mandatory } = req.body;
+    if (courseIds.length === 0) {
+      return res.status(400).json({ error: 'Provide at least one course ID' });
+    }
+
     for (const courseId of courseIds) {
       const alreadyAssigned = license.assignedCourses.find(
         a => a.courseId.toString() === courseId
@@ -148,7 +179,14 @@ router.get('/:id/compliance', protect, async (req, res) => {
       .populate('assignedCourses.courseId', 'title ceHours');
     if (!license) return res.status(404).json({ error: 'License not found' });
 
-    const activeMembers = license.seats.filter(s => s.status === 'active' && s.userId);
+    const { search } = req.query;
+    let activeMembers = license.seats.filter(s => s.status === 'active' && s.userId);
+
+    if (search) {
+      const s = search.toLowerCase();
+      activeMembers = activeMembers.filter(m => m.email?.toLowerCase().includes(s));
+    }
+
     const userIds = activeMembers.map(s => s.userId);
     const courseIds = license.assignedCourses.map(a => a.courseId?._id || a.courseId);
 
@@ -188,13 +226,28 @@ router.get('/:id/compliance', protect, async (req, res) => {
   }
 });
 
-// ── Admin: list all group licenses ──
+// ── Admin: list all group licenses (with pagination) ──
 router.get('/admin/all', protect, requireAdmin, async (req, res) => {
   try {
-    const licenses = await GroupLicense.find()
-      .populate('adminUserId', 'email profile.firstName profile.lastName')
-      .sort({ createdAt: -1 });
-    res.json(licenses);
+    const { page = 1, limit = 25, search } = req.query;
+    const pageNum = Math.max(1, Number(page));
+    const limitNum = Math.min(100, Math.max(1, Number(limit)));
+
+    const query = {};
+    if (search) {
+      query.organizationName = { $regex: search, $options: 'i' };
+    }
+
+    const [licenses, total] = await Promise.all([
+      GroupLicense.find(query)
+        .populate('adminUserId', 'email profile.firstName profile.lastName')
+        .sort({ createdAt: -1 })
+        .skip((pageNum - 1) * limitNum)
+        .limit(limitNum),
+      GroupLicense.countDocuments(query)
+    ]);
+
+    res.json({ licenses, total, page: pageNum, totalPages: Math.ceil(total / limitNum) });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
