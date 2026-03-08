@@ -206,9 +206,9 @@ const CourseCard = ({ course, progress, onClick }) => {
       className="bg-white rounded-xl shadow-sm hover:shadow-lg transition-all cursor-pointer overflow-hidden border border-forest-100 group"
     >
       {/* Thumbnail */}
-      <div className="h-40 bg-hunter-100 relative">
+      <div className="h-40 bg-burgundy-100 relative">
         <div className="absolute inset-0 flex items-center justify-center">
-          <BookOpen className="h-16 w-16 text-hunter-300" />
+          <BookOpen className="h-16 w-16 text-burgundy-300" />
         </div>
         {isCompleted && (
           <div className="absolute top-3 right-3 bg-hunter-600 text-white px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1">
@@ -286,8 +286,8 @@ const CourseListItem = ({ course, progress, onClick }) => {
     >
       <div className="flex items-center gap-5">
         {/* Icon */}
-        <div className="h-16 w-16 bg-hunter-100 rounded-lg flex items-center justify-center flex-shrink-0">
-          <BookOpen className="h-8 w-8 text-hunter-500" />
+        <div className="h-16 w-16 bg-burgundy-100 rounded-lg flex items-center justify-center flex-shrink-0">
+          <BookOpen className="h-8 w-8 text-burgundy-300" />
         </div>
 
         {/* Content */}
