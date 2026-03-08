@@ -275,7 +275,7 @@
    ═══════════════════════════════════════════════════════════════════ */
 
 .cr-section-header {
-  background: var(--cr-navy-500);
+  background: linear-gradient(135deg, var(--cr-navy-500), var(--cr-navy-600));
   color: var(--cr-text-inverse);
   padding: var(--cr-space-xl) var(--cr-space-lg);
   border-radius: var(--cr-radius-md);

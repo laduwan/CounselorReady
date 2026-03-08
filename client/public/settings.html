@@ -1,43 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <link rel="icon" type="image/svg+xml" href="./favicon.svg">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Settings | CounselorReady</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            burgundy: {
-              50: '#fdf5f6', 100: '#fae8eb', 200: '#f5d0d6', 300: '#eba9b5',
-              400: '#dd768a', 500: '#c94d65', 600: '#a83350', 700: '#8B2635',
-              800: '#6b1d34', 900: '#4a1524', 950: '#2d0a14'
-            },
-            forest: {
-              50: '#f3f6f4', 100: '#e3ebe5', 200: '#c8d7cc', 300: '#a1bba8',
-              400: '#759a7f', 500: '#547c5f', 600: '#4A7C59', 700: '#34503d',
-              800: '#2b4133', 900: '#1f3025', 950: '#121c16'
-            },
-            gold: {
-              50: '#fdf9f0', 100: '#f9f0db', 200: '#f3e0b5', 300: '#eacd86',
-              400: '#D4A855', 500: '#c49545', 600: '#a67936', 700: '#865e2c',
-              800: '#6b4a25', 900: '#4d351b'
-            }
-          },
-          fontFamily: {
-            'display': ['Cormorant Garamond', 'Georgia', 'serif'],
-            'body': ['Lato', 'system-ui', 'sans-serif']
-          }
-        }
-      }
-    }
-  </script>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Lato:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Lato:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <style>
     :root {
       --burgundy: #6B1D34;
@@ -52,7 +19,7 @@
       --moss-700: #3D6A4A;
       --dustyrose-600: #8B2542;
       --dustyrose-700: #6B1D34;
-      --bg: #fafaf9;
+      --bg: #F8F7F4;
       --card-bg: #FFFFFF;
       --border: #E5E2DC;
       --text-primary: #2C2C2C;
@@ -74,7 +41,66 @@
       color: var(--text-primary);
       line-height: 1.6;
     }
-    .font-display { font-family: 'Cormorant Garamond', Georgia, serif; }
+
+    /* -- Navigation Bar -- */
+    .navbar {
+      background: #F8F7F4;
+      padding: 0 2rem;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 1px 0 #E5E2DC;
+    }
+    .navbar-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+    }
+    .logo-mark {
+      width: 36px; height: 36px;
+      background: linear-gradient(135deg, var(--burgundy-light), var(--burgundy));
+      border-radius: 9px;
+      display: flex; align-items: flex-start; justify-content: center;
+      font-family: 'Cormorant Garamond', serif;
+      font-weight: 700;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      position: relative; overflow: visible;
+      padding-top: 4px;
+    }
+    .logo-mark .c {
+      color: #D4A855;
+      font-size: 17px;
+      line-height: 1;
+      position: relative;
+      z-index: 2;
+    }
+    .logo-mark .r {
+      color: #7A9E84;
+      font-size: 14px;
+      line-height: 1;
+      position: relative;
+      top: 5px;
+      left: -6px;
+      z-index: 1;
+    }
+    .navbar-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.2rem;
+    }
+    .navbar-title .counselor { color: #6B1D34; font-weight: 700; }
+    .navbar-title .ready { color: #4A7C59; font-weight: 700; }
+    .navbar-links {
+      display: flex; align-items: center; gap: 1.25rem;
+    }
+    .navbar-links a {
+      color: #4A4A4A; text-decoration: none;
+      font-size: 0.9rem; font-weight: 500;
+      transition: color 0.2s;
+    }
+    .navbar-links a:hover { color: #284157; }
+    .navbar-links a.active { color: #284157; font-weight: 700; border-bottom: 2px solid #284157; padding-bottom: 2px; }
 
     /* -- Page Layout -- */
     .page-container {
@@ -96,29 +122,18 @@
       font-size: 0.95rem;
     }
 
-    /* Settings Tabs */
-    .settings-tabs {
-      display: flex;
-      gap: 0.5rem;
-      margin-bottom: 1.5rem;
-      border-bottom: 2px solid var(--border);
-      padding-bottom: 0;
-    }
-    .settings-tab {
-      padding: 0.6rem 1.25rem;
-      border: none;
-      background: none;
-      font-size: 0.9rem;
-      font-weight: 600;
-      font-family: inherit;
-      color: var(--text-secondary);
-      cursor: pointer;
-      border-bottom: 2px solid transparent;
-      margin-bottom: -2px;
-      transition: color 0.2s, border-color 0.2s;
-    }
-    .settings-tab:hover { color: var(--navy); }
-    .settings-tab.active { color: var(--navy); border-bottom-color: var(--hunter); }
+ <!-- Settings Tabs -->
+    <div class="settings-tabs">
+      <button class="settings-tab active" data-tab="notifications" onclick="switchTab('notifications')">
+        🔔 Notifications
+      </button>
+      <button class="settings-tab" data-tab="profile" onclick="switchTab('profile')">
+        👤 Profile
+      </button>
+      <button class="settings-tab" data-tab="account" onclick="switchTab('account')">
+        🔑 Account
+      </button>
+    </div>
 
     /* -- Cards -- */
     .card {
@@ -425,44 +440,22 @@
 </head>
 <body>
 
-  <!-- Header -->
-  <header class="bg-white border-b border-stone-200 sticky top-0 z-50">
-    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-      <a href="/" class="flex items-center gap-3" style="text-decoration:none">
-        <div class="w-10 h-10 rounded-xl flex items-center justify-center shadow-md" style="background: linear-gradient(135deg, #8b2542, #6b1d34);">
-          <span class="font-display font-bold text-lg" style="position: relative; display: inline-block; width: 22px; height: 22px;"><span style="color: #D4A855; position: absolute; top: -3px; left: 0;">C</span><span style="color: #4A7C59; position: absolute; top: 5px; left: 6px;">R</span></span>
-        </div>
-        <span class="font-display font-semibold text-xl">
-          <span class="text-burgundy-800">Counselor</span><span class="text-hunter-600">Ready</span>
-        </span>
-      </a>
-
-      <nav class="hidden md:flex items-center gap-8">
-        <a href="/dashboard.html" class="text-forest-500 hover:text-forest-700 transition-colors" style="text-decoration:none">Dashboard</a>
-        <a href="/courses.html" class="text-forest-500 hover:text-forest-700 transition-colors" style="text-decoration:none">Courses</a>
-        <a href="/credentials.html" class="text-forest-500 hover:text-forest-700 transition-colors" style="text-decoration:none">Credentials</a>
-        <a href="/certificates.html" class="text-forest-500 hover:text-forest-700 transition-colors" style="text-decoration:none">CE Certificates</a>
-        <a href="/settings.html" class="text-forest-700 font-medium border-b-2 border-forest-600 pb-1" style="text-decoration:none">Settings</a>
-      </nav>
-
-      <div class="flex items-center gap-4">
-        <button onclick="toggleUserMenu()" class="flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-forest-50 transition-colors">
-          <div class="w-8 h-8 bg-burgundy-100 rounded-full flex items-center justify-center">
-            <span id="userInitial" class="text-burgundy-700 font-semibold text-sm">?</span>
-          </div>
-          <svg class="w-4 h-4 text-forest-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-          </svg>
-        </button>
-        <div id="userMenu" class="hidden absolute right-6 top-16 bg-white rounded-xl shadow-xl border border-burgundy-100 py-2 w-48 z-50">
-          <a href="/settings.html" class="block px-4 py-2 text-forest-700 hover:bg-forest-50 transition-colors" style="text-decoration:none">Settings</a>
-          <a href="/subscription.html" class="block px-4 py-2 text-forest-700 hover:bg-forest-50 transition-colors" style="text-decoration:none">Subscription</a>
-          <hr class="my-2 border-burgundy-100">
-          <button onclick="logout()" class="w-full text-left px-4 py-2 text-burgundy-700 hover:bg-burgundy-50 transition-colors">Sign Out</button>
-        </div>
+  <!-- Navigation -->
+  <nav class="navbar">
+    <a href="/dashboard" class="navbar-brand">
+      <div class="logo-mark"><span class="c">C</span><span class="r">R</span></div>
+      <div class="navbar-title">
+        <span class="counselor">Counselor</span><span class="ready">Ready</span>
       </div>
+    </a>
+    <div class="navbar-links">
+      <a href="/dashboard">Dashboard</a>
+      <a href="/courses">Courses</a>
+      <a href="/credentials">Credentials</a>
+      <a href="/certificates">Certificates</a>
+      <a href="/settings" class="active">Settings</a>
     </div>
-  </header>
+  </nav>
 
   <div class="page-container">
     <!-- Page Header -->
@@ -759,22 +752,8 @@
   </div>
 
   <script>
-    // User menu
-    function toggleUserMenu() {
-      document.getElementById('userMenu').classList.toggle('hidden');
-    }
-    document.addEventListener('click', (e) => {
-      if (!e.target.closest('button') && !e.target.closest('#userMenu')) {
-        document.getElementById('userMenu')?.classList.add('hidden');
-      }
-    });
-    function logout() {
-      localStorage.removeItem('token');
-      window.location.href = '/login.html';
-    }
-
-    const API_BASE = window.location.hostname === 'localhost'
-      ? 'http://localhost:5000/api'
+    const API_BASE = window.location.hostname === 'localhost' 
+      ? 'http://localhost:5000/api' 
       : 'https://api.counselorready.com/api';
 
     // -- Tab Switching --
