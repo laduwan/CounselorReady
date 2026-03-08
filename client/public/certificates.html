@@ -21,48 +21,45 @@
               400: '#759a7f', 500: '#547c5f', 600: '#4A7C59', 700: '#34503d',
               800: '#2b4133', 900: '#1f3025', 950: '#121c16'
             },
-            gold: { 50: '#fefce8', 100: '#fef9c3', 200: '#fef08a', 300: '#fde047', 400: '#facc15', 500: '#d4a012' }
-          },
-          fontFamily: {
-            'display': ['Cormorant Garamond', 'Georgia', 'serif'],
-            'body': ['Lato', 'system-ui', 'sans-serif']
+            gold: { 50: '#fefce8', 100: '#fef9c3', 200: '#fef08a', 300: '#fde047', 400: '#facc15', 500: '#d4a012' },
+            hunter: { 50: '#f0f5f1', 100: '#e8f0ea', 500: '#4A7C59', 600: '#3d6649', 700: '#305338' },
+            honey: { 100: '#fef3d1', 400: '#D4A855', 500: '#c99a4a' }
           }
         }
       }
     }
   </script>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Lato:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Source+Serif+Pro:wght@400;600;700&family=Source+Sans+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    body { font-family: 'Lato', system-ui, sans-serif; }
-    .font-display { font-family: 'Cormorant Garamond', Georgia, serif; }
+    body { font-family: 'Source Sans Pro', system-ui, sans-serif; }
+    .font-display { font-family: 'Source Serif Pro', Georgia, serif; }
+    h1, h2, h3 { font-family: 'Source Serif Pro', Georgia, serif; }
   </style>
 </head>
 <body class="bg-stone-50 min-h-screen">
   
   <!-- Header -->
-  <header class="bg-white border-b border-hunter-100 sticky top-0 z-50">
+  <header class="bg-white border-b border-forest-100 sticky top-0 z-50">
     <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
       <a href="/" class="flex items-center gap-3">
         <div class="w-10 h-10 rounded-xl flex items-center justify-center shadow-md" style="background: linear-gradient(135deg, #8b2542, #6b1d34);">
           <span class="font-display font-bold text-lg" style="position: relative; display: inline-block; width: 22px; height: 22px;"><span style="color: #D4A855; position: absolute; top: -3px; left: 0;">C</span><span style="color: #4A7C59; position: absolute; top: 5px; left: 6px;">R</span></span>
         </div>
         <span class="font-display font-semibold text-xl">
-          <span class="text-burgundy-800">Counselor</span><span class="text-hunter-600">Ready</span>
+          <span class="text-burgundy-800">Counselor</span><span class="text-forest-600">Ready</span>
         </span>
       </a>
       
       <nav class="hidden md:flex items-center gap-8">
-        <a href="/dashboard.html" class="text-hunter-600 hover:text-hunter-700 transition-colors">Dashboard</a>
-        <a href="/courses.html" class="text-hunter-600 hover:text-hunter-700 transition-colors">Courses</a>
-        <a href="/credentials.html" class="text-hunter-600 hover:text-hunter-700 transition-colors">Credentials</a>
+        <a href="/dashboard.html" class="text-forest-600 hover:text-forest-800 transition-colors">Dashboard</a>
+        <a href="/courses.html" class="text-forest-600 hover:text-forest-800 transition-colors">Courses</a>
+        <a href="/credentials.html" class="text-forest-600 hover:text-forest-800 transition-colors">Credentials</a>
         <a href="/certificates.html" class="text-burgundy-800 font-medium border-b-2 border-burgundy-700 pb-1">CE Certificates</a>
-        <a href="/messages.html" class="text-hunter-600 hover:text-hunter-700 transition-colors">Messages</a>
+        <a href="/messages.html" class="text-forest-600 hover:text-forest-800 transition-colors">Messages</a>
       </nav>
 
       <div class="flex items-center gap-4">
-        <a href="/dashboard.html" class="text-hunter-600 hover:text-hunter-700 text-sm">
+        <a href="/dashboard.html" class="text-forest-600 hover:text-forest-800 text-sm">
           ← Back to Dashboard
         </a>
       </div>
