@@ -7,7 +7,7 @@ import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
-import { Menu, X, ChevronDown, LogOut, Settings, ShieldCheck, Trophy, Users, Star, ClipboardList, MoreHorizontal, Bell } from 'lucide-react';
+import { Menu, X, ChevronDown, LogOut, Settings, ShieldCheck, Trophy, Users, Star, ClipboardList, MoreHorizontal, Bell, Lock } from 'lucide-react';
 
 // React routes use Link; external static HTML pages use <a>
 const navLinks = [
@@ -27,6 +27,7 @@ const moreLinks = [
   { name: 'Recommendations',  href: '/recommendations',     icon: Star },
   { name: 'Team',             href: '/organization',        icon: Users },
   { name: 'Group Licenses',   href: '/group-licenses',      icon: Users },
+  { name: 'Legacy Vault',     href: '/legacy-vault',         icon: Lock },
 ];
 
 const BURGUNDY      = '#6B1D34';
