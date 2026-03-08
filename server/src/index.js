@@ -55,6 +55,7 @@ import supervisionRoutes from './routes/supervision.js';
 import referralsRoutes from './routes/referrals.js';
 import gamificationRoutes from './routes/gamification.js';
 import notificationsRoutes from './routes/notifications.js';
+import legacyVaultRoutes from './routes/legacyVault.js';
 // Import services
 import { initializeScheduler } from './services/notificationScheduler.js';
 
@@ -251,6 +252,7 @@ app.use('/api/supervision', supervisionRoutes);
 app.use('/api/referrals', referralsRoutes);
 app.use('/api/gamification', gamificationRoutes);
 app.use('/api/notifications', notificationsRoutes);
+app.use('/api/legacy-vault', legacyVaultRoutes);
 
 // Static templates directory intentionally NOT served publicly
 // Certificate assets (signature.png, certificate_template.pdf) are loaded
