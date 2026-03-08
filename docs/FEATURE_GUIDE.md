@@ -27,6 +27,7 @@ CounselorReady is built for licensed counselors and mental health professionals 
 17. [Subscription Plans](#subscription-plans)
 18. [Notifications](#notifications)
 19. [Accessibility](#accessibility)
+20. [Legacy Vault](#legacy-vault)
 
 ---
 
@@ -66,6 +67,7 @@ Additional features are available under the **More** menu (three-dot icon):
 - Recommendations
 - Team (Organization Dashboard)
 - Group Licenses
+- Legacy Vault
 
 ---
 
@@ -584,6 +586,222 @@ CounselorReady includes built-in accessibility features:
 - **Skip to Content** link — allows keyboard users to jump past navigation
 - **Accessibility Panel** — adjustable settings for visual preferences
 - Full keyboard navigation support throughout the platform
+
+---
+
+## Legacy Vault
+
+**Path:** `/legacy-vault`
+
+Your secure digital vault for critical professional documents and practice succession planning. Legacy Vault ensures your practice is protected and your wishes are honored if you're ever unable to manage it yourself.
+
+Access Legacy Vault from the **More** menu in the top navigation bar.
+
+### At a Glance
+
+When you open Legacy Vault, four summary cards show your current status:
+
+| Card | What It Shows |
+|------|--------------|
+| **Documents** | Total documents stored in your vault |
+| **Contacts** | Number of active succession contacts |
+| **Expiring Soon** | Documents approaching their expiration date (within 30 days) |
+| **Plan Status** | Your succession plan status — Not Started, In Progress, or Complete |
+
+Below the stats, four tabs organize everything:
+
+---
+
+### Documents Tab
+
+Store and manage important professional documents with expiration tracking.
+
+#### Uploading a Document
+
+1. Click **Add Document**
+2. Fill in the details:
+   - **Title** (required) — e.g., "Georgia LPC License" or "Malpractice Policy"
+   - **Category** — choose from the list below
+   - **Description** — optional notes about the document
+   - **Expiration Date** — if applicable, the date this document expires
+   - **File** — upload a PDF, JPG, PNG, or WebP file (max 10MB)
+   - **Notes** — any additional context
+   - **Mark as Confidential** — flag sensitive documents
+3. Click **Save Document**
+
+Files are uploaded securely via Cloudinary with authenticated access — they cannot be accessed without signing in.
+
+#### Document Categories
+
+| Category | Use For |
+|----------|---------|
+| License | State professional licenses (LPC, LMHC, LCSW, etc.) |
+| Insurance | Liability, malpractice, or health insurance documents |
+| Will | Personal or professional will and testament |
+| Practice Agreement | Partnership agreements, operating agreements |
+| Business Entity | LLC articles, EIN letters, business registrations |
+| Tax Document | W-9s, 1099s, tax returns related to practice |
+| Malpractice | Malpractice insurance policies and certificates |
+| Emergency Plan | Practice emergency response plans |
+| Client Records Plan | Plans for client record retention and transfer |
+| Power of Attorney | Legal power of attorney documents |
+| Lease Agreement | Office lease or rental agreements |
+| EHR Credentials | Login info or access docs for your EHR system |
+| Other | Anything else |
+
+#### Expiration Tracking
+
+Documents with an expiration date show color-coded badges:
+
+- **Green** — valid, not expiring soon
+- **Amber** — expiring within 30 days (or your custom reminder window)
+- **Red** — already expired
+
+The **Expiring Soon** stat card on the summary bar counts documents expiring within 30 days so you can take action before they lapse.
+
+#### Downloading and Deleting
+
+- Click the **download icon** on any document to open it via a secure signed URL (valid for 5 minutes)
+- Click the **trash icon** to permanently delete a document and its file from storage
+- Confidential documents display an **eye-off icon** for quick identification
+
+---
+
+### Contacts Tab
+
+Define the people who should be notified or take action if you're unable to manage your practice.
+
+#### Adding a Contact
+
+1. Click **Add Contact**
+2. Fill in the details:
+   - **Name** (required)
+   - **Role** — their responsibility (see table below)
+   - **Access Level** — what they're authorized to do
+   - **Email** and **Phone**
+   - **Organization** — their practice or firm
+   - **License #** — if they're a licensed clinician
+   - **Responsibilities** — specific tasks they should handle
+   - **Notes** — any additional context
+   - **Primary Contact** — check this for your main point of contact
+3. Click **Add Contact**
+
+#### Contact Roles
+
+| Role | Description |
+|------|------------|
+| Clinical Executor | Takes over clinical responsibilities and client care |
+| Business Executor | Handles business, financial, and operational matters |
+| Emergency Contact | First person notified in an emergency |
+| Attorney | Legal representative for practice matters |
+| Accountant | Financial and tax matters |
+| EHR Administrator | Access and management of your EHR system |
+| Supervisor | Your clinical supervisor |
+| Colleague | Trusted colleague for general support |
+| Other | Any other role |
+
+#### Access Levels
+
+| Level | What It Means |
+|-------|--------------|
+| **Full Access** | Can access all vault documents |
+| **Limited Access** | Can access only specific documents you designate |
+| **Notify Only** | Receives alerts but cannot access vault contents |
+
+#### Managing Contacts
+
+- The **star icon** marks your primary contact
+- Click the **pencil icon** to edit any contact's details
+- Click the **trash icon** to remove a contact (soft delete — can be restored)
+
+---
+
+### Succession Plan Tab
+
+Create a structured continuity plan so your practice can transition smoothly if needed.
+
+#### Plan Status
+
+Use the status dropdown to track where you are:
+
+- **Not Started** — you haven't begun filling in the plan
+- **In Progress** — partially completed
+- **Complete** — all sections filled out and reviewed
+
+#### Practice Details
+
+Fill in the basics about your practice:
+
+- **Practice Name** — your business or DBA name
+- **Practice Type** — Solo Practice, Group Practice, Agency, or Other
+- **Estimated Active Clients** — how many clients you're currently serving
+- **EHR System** — which electronic health record system you use (e.g., SimplePractice, TherapyNotes, TheraNest)
+
+#### Continuity Instructions
+
+Four text fields capture the critical information your successors will need:
+
+1. **Client Notification Plan** — How should clients be notified? Who should contact them? What should the message say?
+2. **Records Transfer Plan** — Where are client records stored? How should they be transferred? What are the retention requirements?
+3. **Financial Instructions** — Outstanding invoices, insurance billing, bank accounts, pending insurance claims
+4. **Additional Instructions** — Anything else that doesn't fit in the other categories
+
+#### Saving
+
+Click **Save Plan** after making changes. The button is highlighted when you have unsaved changes. The plan records when it was last reviewed so you can track whether it's up to date.
+
+---
+
+### Check-In & Recovery Tab
+
+Two critical safety features: a dead man's switch and vault recovery.
+
+#### Dead Man's Switch
+
+A periodic check-in system that confirms you're active. If you miss check-ins, your succession contacts can be notified.
+
+**Setting Up:**
+
+1. Toggle **Enable Check-In** to turn it on
+2. Choose your **Check-In Interval** — how often you need to check in:
+   - 7 days
+   - 14 days
+   - 30 days (default)
+   - 60 days
+   - 90 days
+
+**Using It:**
+
+- Three status cards show your **Last Check-In** date, **Next Due** date, and current **Status**
+- When the next check-in is due, click **Check In Now** to reset the timer
+- If you're overdue, the status shows in red with how many days past due
+
+**What happens when you miss check-ins:** The system tracks missed check-ins. In a future update, your emergency contacts will receive automated notifications after consecutive missed check-ins.
+
+#### Recovery Token
+
+Generate and download a recovery token that can be used to restore vault access.
+
+1. Click **Generate Recovery Token**
+2. A text file automatically downloads containing your unique token
+3. **Store this file in a safe place** — a physical safe, a trusted family member, or your attorney's office
+
+If you already have a token, clicking **Regenerate Token** will create a new one and invalidate the previous token.
+
+The page shows whether you have an active recovery token and when it was created.
+
+---
+
+### Best Practices
+
+1. **Upload documents as soon as you receive them** — licenses, insurance renewals, and malpractice certificates should go into the vault immediately
+2. **Set expiration dates** on every document that has one — the system will alert you before they lapse
+3. **Add at least two succession contacts** — a clinical executor and an emergency contact at minimum
+4. **Complete your succession plan** — even a partial plan is better than none; update it annually
+5. **Use meaningful categories** — this makes it easy to find documents during an audit or emergency
+6. **Enable the dead man's switch** — set a reasonable interval (30 or 60 days) and make checking in part of your monthly routine
+7. **Generate a recovery token** and store it separately from your vault — with your attorney, in a safe deposit box, or with a trusted family member
+8. **Review your plan annually** — practices evolve; update your client count, EHR system, and instructions as things change
 
 ---
 
