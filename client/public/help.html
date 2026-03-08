@@ -13,7 +13,7 @@
           colors: {
             burgundy: {
               50: '#fdf5f6', 100: '#fae8eb', 200: '#f5d0d6', 300: '#eba9b5',
-              400: '#dd768a', 500: '#c94d65', 600: '#a83350', 700: '#8B2635',
+              400: '#dd768a', 500: '#c94d65', 600: '#a83350', 700: '#8b2542',
               800: '#6b1d34', 900: '#4a1524', 950: '#2d0a14'
             },
             forest: {
@@ -21,13 +21,11 @@
               400: '#759a7f', 500: '#547c5f', 600: '#4A7C59', 700: '#34503d',
               800: '#2b4133', 900: '#1f3025', 950: '#121c16'
             },
-            gold: {
-              50: '#fdf9f0', 100: '#f9f0db', 200: '#f3e0b5', 300: '#eacd86',
-              400: '#D4A855', 500: '#c49545', 600: '#a67936', 700: '#865e2c',
-              800: '#6b4a25', 900: '#4d351b'
-            },
-            hunter: { 100: '#e8f0ea', 200: '#d1e1d5', 500: '#4A7C59', 600: '#3d6649', 700: '#34503d' },
-            honey: { 100: '#fef3d1', 200: '#fde7a3', 400: '#D4A855', 500: '#c99a4a', 600: '#b8893f' }
+            honey: {
+              50: '#FDF9F0', 100: '#F9F0DB', 200: '#F3E0B5', 300: '#EACD86',
+              400: '#D4A855', 500: '#C49545', 600: '#A67936', 700: '#865E2C',
+              800: '#6B4A25'
+            }
           },
           fontFamily: {
             'display': ['Cormorant Garamond', 'Georgia', 'serif'],
@@ -122,7 +120,7 @@
     <section id="articleSection" class="hidden py-12">
       <div class="max-w-4xl mx-auto px-6">
         <div class="mb-6">
-          <button onclick="goBack()" class="text-hunter-600 hover:text-hunter-800 flex items-center gap-2">
+          <button onclick="goBack()" class="text-forest-600 hover:text-forest-800 flex items-center gap-2">
             <i class="fas fa-arrow-left"></i><span>Back to Help Center</span>
           </button>
         </div>
@@ -158,7 +156,7 @@
     <section id="categorySection" class="hidden py-12">
       <div class="max-w-4xl mx-auto px-6">
         <div class="mb-6">
-          <button onclick="goBack()" class="text-hunter-600 hover:text-hunter-800 flex items-center gap-2">
+          <button onclick="goBack()" class="text-forest-600 hover:text-forest-800 flex items-center gap-2">
             <i class="fas fa-arrow-left"></i><span>Back to Help Center</span>
           </button>
         </div>
@@ -281,7 +279,7 @@
         if (data.articles && data.articles.length > 0) {
           listDiv.innerHTML = data.articles.map(a => `
             <button onclick="loadArticle('${a.slug}')" class="w-full px-5 py-3 text-left hover:bg-burgundy-50 border-b border-burgundy-100 last:border-0">
-              <div class="flex items-center gap-3"><i class="fas ${a.icon || 'fa-circle-question'} text-hunter-500"></i>
+              <div class="flex items-center gap-3"><i class="fas ${a.icon || 'fa-circle-question'} text-forest-500"></i>
               <div><p class="font-medium text-forest-900">${a.title}</p><p class="text-sm text-forest-500 capitalize">${a.category.replace('-', ' ')}</p></div></div>
             </button>`).join('');
         } else listDiv.innerHTML = `<div class="px-5 py-4 text-center text-forest-500"><p>No articles found for "${query}"</p></div>`;
@@ -307,13 +305,13 @@
         document.getElementById('articleBody').innerHTML = `<div class="text-center py-12"><i class="fas fa-exclamation-circle text-4xl text-red-400 mb-4"></i>
           <h2 class="text-xl font-semibold text-forest-900 mb-2">Article Not Found</h2>
           <p class="text-forest-600 mb-4">The article you're looking for doesn't exist.</p>
-          <button onclick="goBack()" class="px-6 py-2 bg-hunter-600 text-white rounded-lg hover:bg-hunter-700">Return to Help Center</button></div>`;
+          <button onclick="goBack()" class="px-6 py-2 bg-forest-600 text-white rounded-lg hover:bg-forest-700">Return to Help Center</button></div>`;
       }
     }
 
     function renderArticle(article) {
       const labels = { 'getting-started': 'Getting Started', 'courses': 'Courses', 'certificates': 'Certificates', 'credentials': 'Credentials', 'subscriptions': 'Subscriptions', 'account': 'Account', 'technical': 'Technical', 'integrations': 'Integrations', 'troubleshooting': 'Troubleshooting' };
-      document.getElementById('articleMeta').innerHTML = `<span class="px-3 py-1 bg-hunter-100 text-hunter-700 rounded-full text-sm capitalize">${labels[article.category] || article.category}</span>
+      document.getElementById('articleMeta').innerHTML = `<span class="px-3 py-1 bg-forest-100 text-forest-700 rounded-full text-sm capitalize">${labels[article.category] || article.category}</span>
         <span class="text-forest-400 text-sm"><i class="fas fa-eye mr-1"></i>${article.views || 0} views</span>`;
       document.getElementById('articleBody').innerHTML = marked.parse(article.content);
       document.getElementById('feedbackSection').classList.remove('hidden');
@@ -324,8 +322,8 @@
       if (articles.length === 0) { document.getElementById('relatedArticles').classList.add('hidden'); return; }
       document.getElementById('relatedArticles').classList.remove('hidden');
       document.getElementById('relatedArticlesList').innerHTML = articles.map(a => `
-        <button onclick="loadArticle('${a.slug}')" class="flex items-center gap-3 p-4 bg-white rounded-lg border border-burgundy-100 hover:border-hunter-300 transition-colors text-left">
-          <i class="fas ${a.icon || 'fa-circle-question'} text-hunter-500"></i><span class="font-medium text-forest-900">${a.title}</span>
+        <button onclick="loadArticle('${a.slug}')" class="flex items-center gap-3 p-4 bg-white rounded-lg border border-burgundy-100 hover:border-forest-300 transition-colors text-left">
+          <i class="fas ${a.icon || 'fa-circle-question'} text-forest-500"></i><span class="font-medium text-forest-900">${a.title}</span>
         </button>`).join('');
     }
 
@@ -340,7 +338,7 @@
         if (data.articles && data.articles.length > 0) {
           document.getElementById('categoryArticles').innerHTML = data.articles.map(a => `
             <button onclick="loadArticle('${a.slug}')" class="w-full flex items-center gap-4 p-4 bg-burgundy-50 hover:bg-burgundy-100 rounded-lg transition-colors text-left">
-              <div class="w-10 h-10 bg-hunter-100 rounded-lg flex items-center justify-center flex-shrink-0"><i class="fas ${a.icon || 'fa-circle-question'} text-hunter-600"></i></div>
+              <div class="w-10 h-10 bg-forest-100 rounded-lg flex items-center justify-center flex-shrink-0"><i class="fas ${a.icon || 'fa-circle-question'} text-forest-600"></i></div>
               <div class="flex-1 min-w-0"><h3 class="font-medium text-forest-900">${a.title}</h3>${a.summary ? `<p class="text-sm text-forest-500 truncate">${a.summary}</p>` : ''}</div>
               <i class="fas fa-chevron-right text-forest-400"></i>
             </button>`).join('');
