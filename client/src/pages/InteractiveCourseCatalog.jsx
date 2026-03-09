@@ -264,6 +264,12 @@ const CourseCard = ({ course, progress, onClick }) => {
           )}
         </div>
 
+        {/* Duration with clock icon */}
+        <div className="flex items-center gap-1 text-sm text-forest-500 mb-4">
+          <Clock className="h-4 w-4 text-forest-400" />
+          <span>{course.totalEstimatedTime || 60} min</span>
+        </div>
+
         {/* Action — full-width burgundy button bar */}
         <div className="mt-auto">
           <button className="w-full bg-burgundy-800 hover:bg-burgundy-900 text-white font-semibold px-4 py-2 rounded-xl transition-colors">
