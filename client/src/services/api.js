@@ -30,11 +30,6 @@ api.interceptors.response.use(
 
     // Don't retry if already retried, or if it's a real HTTP error (not network)
     if (config._retried || error.response) {
-      // Handle 401 specifically
-      if (error.response?.status === 401) {
-        localStorage.removeItem('token');
-        window.location.href = '/login';
-      }
       return Promise.reject(error);
     }
 
