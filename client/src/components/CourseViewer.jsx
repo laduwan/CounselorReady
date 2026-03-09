@@ -1120,6 +1120,24 @@ function ReferencesView({ course, onBack }) {
 // ============================================================================
 // SIDEBAR
 // ============================================================================
+function ProgressRing({ progress, size = 36 }) {
+  const radius = 15;
+  const circumference = 2 * Math.PI * radius;
+  const offset = circumference - (progress / 100) * circumference;
+  return (
+    <div className="relative flex-shrink-0" style={{ width: size, height: size }}>
+      <svg width={size} height={size} viewBox="0 0 36 36" style={{ transform: 'rotate(-90deg)' }}>
+        <circle cx="18" cy="18" r={radius} fill="none" stroke="rgba(255,255,255,.15)" strokeWidth="3" />
+        <circle cx="18" cy="18" r={radius} fill="none" stroke="#D4A855" strokeWidth="3" strokeLinecap="round"
+          strokeDasharray={circumference} strokeDashoffset={offset} style={{ transition: 'stroke-dashoffset 0.4s ease' }} />
+      </svg>
+      <span className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[10px] font-bold" style={{ color: '#D4A855' }}>
+        {progress}%
+      </span>
+    </div>
+  );
+}
+
 function CourseSidebar({
   course,
   progress,
@@ -1131,183 +1149,289 @@ function CourseSidebar({
   currentPage,
   onPageChange
 }) {
+  const completedCount = progress?.sectionProgress?.filter(s => s.status === 'completed').length || 0;
+  const totalCount = course.sections.length;
+  const pct = progress?.overallProgress || 0;
+  const allComplete = progress?.sectionProgress?.every(s => s.status === 'completed');
+
   return (
     <>
       {/* Overlay for mobile */}
       {isOpen && (
-        <div 
+        <div
           className="fixed inset-0 bg-black/50 z-40 lg:hidden"
           onClick={onClose}
         />
       )}
-      
+
       <aside className={`
-        fixed top-0 left-0 h-full w-72 bg-white border-r border-forest-200 z-50
+        fixed top-0 left-0 h-full w-72 z-50
         transform transition-transform duration-300
         lg:relative lg:transform-none
         ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-      `}>
+      `} style={{ background: '#F5F5DC', boxShadow: '2px 0 12px rgba(0,0,0,0.06)' }}>
         <div className="h-full flex flex-col">
-          {/* Header */}
-          <div className="p-4 border-b border-forest-200">
-            <a href="/courses" className="flex items-center gap-2 text-navy-500 hover:text-burgundy-700 text-sm mb-3">
-              <ChevronLeft className="w-4 h-4" />
-              Back to Courses
-            </a>
-            <div className="flex items-center justify-between">
-              <h2 className="font-semibold text-navy-700 text-sm line-clamp-2">{course.title}</h2>
-              <button onClick={onClose} className="lg:hidden text-forest-400 hover:text-navy-600">
-                <X className="w-5 h-5" />
+          {/* Burgundy Gradient Header */}
+          <div className="flex-shrink-0" style={{ padding: '16px 18px 14px', background: 'linear-gradient(135deg, #6B1D34, #4A1020)', color: '#fff' }}>
+            <div className="flex items-center justify-between mb-2">
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wide" style={{ background: 'rgba(255,255,255,.15)', letterSpacing: '0.5px' }}>
+                {course.ceHours} CE Hours
+              </span>
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] opacity-70">{course.category || ''}</span>
+                <button onClick={onClose} className="lg:hidden text-white/60 hover:text-white">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+            <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '17px', fontWeight: 700, lineHeight: 1.25, margin: '0 0 14px', color: '#fff' }}>
+              {course.title}
+            </h2>
+
+            <div className="flex items-center gap-3 mb-2.5">
+              <ProgressRing progress={pct} />
+              <div>
+                <div className="text-[11px] font-semibold" style={{ opacity: 0.9 }}>{completedCount} of {totalCount} complete</div>
+                <div className="text-[10px]" style={{ opacity: 0.6 }}>
+                  {allComplete ? 'All sections complete' : `Section ${(progress?.currentSectionIndex || 0) + 1} in progress`}
+                </div>
+              </div>
+            </div>
+
+            <div className="rounded-sm overflow-hidden" style={{ height: 4, background: 'rgba(255,255,255,.15)' }}>
+              <div className="h-full rounded-sm transition-all duration-400" style={{ width: `${pct}%`, background: 'linear-gradient(90deg, #D4A855, #EACD86)' }} />
+            </div>
+          </div>
+
+          {/* Sections Nav — card-based modules */}
+          <nav className="flex-1 overflow-y-auto p-2.5" aria-label="Course sections">
+            {(() => {
+              let lastModule = null;
+              // Group sections by module
+              const modules = [];
+              course.sections.forEach((section, index) => {
+                const mod = section.module || 'Course Sections';
+                if (mod !== lastModule) {
+                  modules.push({ name: mod, sections: [] });
+                  lastModule = mod;
+                }
+                modules[modules.length - 1].sections.push({ section, index });
+              });
+
+              return modules.map((mod, mi) => {
+                const modCompleted = mod.sections.filter(({ index }) => progress?.sectionProgress?.[index]?.status === 'completed').length;
+                const modTotal = mod.sections.length;
+                const modDone = modCompleted === modTotal;
+                const modHasActive = mod.sections.some(({ index }) => currentView === 'section' && progress?.currentSectionIndex === index);
+
+                return (
+                  <div key={mi} className="mb-2 rounded-lg overflow-hidden" style={{ background: '#fff', border: '1px solid #E2E2BE' }}>
+                    {/* Module header bar */}
+                    <div className="flex items-center justify-between px-3.5 py-2" style={{
+                      fontSize: '10px', fontWeight: 700, letterSpacing: '0.5px', textTransform: 'uppercase',
+                      background: modDone ? 'rgba(74,124,89,0.08)' : 'transparent',
+                      color: modDone ? '#4A7C59' : modHasActive ? '#284157' : '#9CA3AF'
+                    }}>
+                      <span>{mod.name}</span>
+                      {modDone ? (
+                        <span className="flex items-center justify-center rounded-full text-white" style={{ width: 16, height: 16, background: '#4A7C59', fontSize: 9 }}>
+                          <CheckCircle2 className="w-2.5 h-2.5" />
+                        </span>
+                      ) : (
+                        <span style={{ fontSize: 9 }}>{modCompleted}/{modTotal}</span>
+                      )}
+                    </div>
+
+                    {/* Section items */}
+                    {mod.sections.map(({ section, index }) => {
+                      const sectionProgress = progress?.sectionProgress?.[index];
+                      const isCompleted = sectionProgress?.status === 'completed';
+                      const isCurrent = currentView === 'section' && progress?.currentSectionIndex === index;
+                      const isLocked = index > 0 && progress?.sectionProgress?.[index - 1]?.status !== 'completed';
+
+                      return (
+                        <button
+                          key={index}
+                          onClick={() => !isLocked && onNavigate(index)}
+                          disabled={isLocked}
+                          aria-current={isCurrent ? 'step' : undefined}
+                          className="w-full flex items-center gap-2 text-left transition-colors"
+                          style={{
+                            padding: '8px 14px',
+                            borderTop: '1px solid #EDEDD0',
+                            borderLeft: isCurrent ? '3px solid #6B1D34' : '3px solid transparent',
+                            background: isCurrent ? '#FDF5F7' : isCompleted ? 'rgba(74,124,89,0.06)' : 'transparent',
+                            opacity: isLocked ? 0.5 : 1,
+                            cursor: isLocked ? 'not-allowed' : 'pointer',
+                            minHeight: 44,
+                          }}
+                        >
+                          <div className="flex items-center justify-center rounded-full flex-shrink-0" style={{
+                            width: 18, height: 18, fontSize: 9, fontWeight: 700,
+                            background: isCompleted ? '#4A7C59' : isCurrent ? '#6B1D34' : '#EDEDD0',
+                            color: isCompleted || isCurrent ? '#fff' : isLocked ? '#9CA3AF' : '#6B7280',
+                          }}>
+                            {isCompleted ? (
+                              <CheckCircle2 className="w-2.5 h-2.5" />
+                            ) : isLocked ? (
+                              <Lock className="w-2 h-2" />
+                            ) : (
+                              <span>{index + 1}</span>
+                            )}
+                          </div>
+                          <span style={{
+                            fontSize: '12.5px',
+                            color: isCurrent ? '#6B1D34' : '#284157',
+                            fontWeight: isCurrent ? 600 : 400,
+                          }} className="line-clamp-2">{section.title}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                );
+              });
+            })()}
+          </nav>
+
+          {/* Take Final Exam button */}
+          {allComplete && (
+            <div className="p-4 flex-shrink-0" style={{ borderTop: '1px solid #E2E2BE', background: '#fff' }}>
+              <button
+                onClick={() => onNavigate('assessment')}
+                className="w-full flex items-center justify-center gap-2 px-4 py-3 text-white font-semibold rounded-lg transition-colors"
+                style={{ background: '#6B1D34' }}
+                onMouseEnter={e => e.currentTarget.style.background = '#560019'}
+                onMouseLeave={e => e.currentTarget.style.background = '#6B1D34'}
+              >
+                <CheckCircle2 className="w-5 h-5" />
+                Take Final Exam
               </button>
             </div>
-            <div className="mt-2 flex items-center gap-2 text-xs text-navy-400">
-              <span>{course.ceHours} CE Hours</span>
-              <span>•</span>
-              <span>{course.sections.length} Sections</span>
+          )}
+
+          {/* Provider footer */}
+          <div className="flex-shrink-0 px-4 py-2.5" style={{ borderTop: '1px solid #E2E2BE', background: '#fff' }}>
+            <div className="text-center" style={{ fontSize: 9, color: '#6B7280', fontFamily: "'Cormorant Garamond', serif", letterSpacing: '0.5px', fontStyle: 'italic' }}>
+              NBCC Approved Provider #7760 · GAITP LLC
             </div>
           </div>
-
-          {/* Progress */}
-          <div className="p-4 border-b border-forest-200">
-            <div className="flex justify-between text-sm mb-1">
-              <span className="text-navy-600">Progress</span>
-              <span className="font-medium text-burgundy-700">{progress?.overallProgress || 0}%</span>
-            </div>
-            <div className="h-2 bg-stone-100 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-burgundy-700 transition-all rounded-full"
-                style={{ width: `${progress?.overallProgress || 0}%` }}
-              />
-            </div>
-          </div>
-
-          {/* Sections */}
-          <nav className="flex-1 overflow-y-auto p-4" aria-label="Course sections">
-            <ul className="space-y-1">
-              {(() => {
-                let lastModule = null;
-                return course.sections.map((section, index) => {
-                  const sectionProgress = progress?.sectionProgress?.[index];
-                  const isCompleted = sectionProgress?.status === 'completed';
-                  const isCurrent = currentView === 'section' && progress?.currentSectionIndex === index;
-                  const isLocked = index > 0 && progress?.sectionProgress?.[index - 1]?.status !== 'completed';
-
-                  const showModuleHeader = section.module && section.module !== lastModule;
-                  lastModule = section.module || lastModule;
-
-                  // Count module progress
-                  let moduleCompleted = 0;
-                  let moduleTotal = 0;
-                  if (showModuleHeader) {
-                    course.sections.forEach((s, i) => {
-                      if (s.module === section.module) {
-                        moduleTotal++;
-                        if (progress?.sectionProgress?.[i]?.status === 'completed') moduleCompleted++;
-                      }
-                    });
-                  }
-
-                  return (
-                    <li key={index}>
-                      {showModuleHeader && (
-                        <div className={`${index > 0 ? 'mt-4 pt-3 border-t border-forest-100' : ''} mb-2 px-2`}>
-                          <div className="flex items-center justify-between">
-                            <span className="text-[11px] font-bold text-navy-400 uppercase tracking-wider">{section.module}</span>
-                            <span className="text-[10px] text-navy-300 font-medium">{moduleCompleted}/{moduleTotal}</span>
-                          </div>
-                        </div>
-                      )}
-                      <button
-                        onClick={() => !isLocked && onNavigate(index)}
-                        disabled={isLocked}
-                        aria-current={isCurrent ? 'step' : undefined}
-                        className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left transition-colors ${
-                          isCurrent
-                            ? 'bg-burgundy-50 text-burgundy-800'
-                            : isLocked
-                              ? 'text-slate-300 cursor-not-allowed'
-                              : 'text-navy-600 hover:bg-stone-50'
-                        }`}
-                      >
-                        <div className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 ${
-                          isCompleted
-                            ? 'bg-hunter-600 text-white'
-                            : isCurrent
-                              ? 'bg-burgundy-700 text-white'
-                              : isLocked
-                                ? 'bg-stone-100 text-slate-300'
-                                : 'bg-stone-200 text-navy-500'
-                        }`}>
-                          {isCompleted ? (
-                            <CheckCircle2 className="w-3 h-3" />
-                          ) : isLocked ? (
-                            <Lock className="w-2.5 h-2.5" />
-                          ) : (
-                            <span className="text-[10px] font-semibold">{index + 1}</span>
-                          )}
-                        </div>
-                        <span className="text-[13px] font-medium line-clamp-2">{section.title}</span>
-                      </button>
-
-                      {/* Sub-page indicators removed — scroll mode is default */}
-                    </li>
-                  );
-                });
-              })()}
-
-              {/* References */}
-              {course.references?.length > 0 && (
-                <li className="pt-4 mt-4 border-t border-forest-200">
-                  <button
-                    onClick={() => onNavigate('references')}
-                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-colors ${
-                      currentView === 'references'
-                        ? 'bg-burgundy-50 text-burgundy-800'
-                        : 'text-navy-600 hover:bg-stone-50'
-                    }`}
-                  >
-                    <div className={`w-6 h-6 rounded-full flex items-center justify-center ${
-                      currentView === 'references'
-                        ? 'bg-burgundy-700 text-white'
-                        : 'bg-stone-200 text-navy-500'
-                    }`}>
-                      <BookOpen className="w-3.5 h-3.5" />
-                    </div>
-                    <span className="text-sm font-medium">References</span>
-                  </button>
-                </li>
-              )}
-
-              {/* Final Assessment */}
-              <li className="pt-4 mt-4 border-t border-forest-200">
-                <button
-                  onClick={() => onNavigate('assessment')}
-                  disabled={!progress?.sectionProgress?.every(s => s.status === 'completed')}
-                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-colors ${
-                    currentView === 'assessment'
-                      ? 'bg-hunter-50 text-hunter-700'
-                      : progress?.sectionProgress?.every(s => s.status === 'completed')
-                        ? 'text-navy-600 hover:bg-stone-50'
-                        : 'text-slate-300 cursor-not-allowed'
-                  }`}
-                >
-                  <div className={`w-6 h-6 rounded-full flex items-center justify-center ${
-                    currentView === 'assessment'
-                      ? 'bg-hunter-600 text-white'
-                      : progress?.sectionProgress?.every(s => s.status === 'completed')
-                        ? 'bg-honey-400 text-white'
-                        : 'bg-stone-100 text-slate-300'
-                  }`}>
-                    <Award className="w-3.5 h-3.5" />
-                  </div>
-                  <span className="text-sm font-medium">Final Assessment</span>
-                </button>
-              </li>
-            </ul>
-          </nav>
         </div>
       </aside>
     </>
+  );
+}
+
+// ============================================================================
+// CE TIMER FOOTER
+// ============================================================================
+function CETimerFooter({ course, progress, onStartAssessment }) {
+  const [elapsed, setElapsed] = useState(0);
+  const [startTime] = useState(() => Date.now());
+
+  const requiredSeconds = (course.ceHours || 0) * 3600;
+  const allComplete = progress?.sectionProgress?.every(s => s.status === 'completed');
+  const timerDone = elapsed >= requiredSeconds;
+
+  useEffect(() => {
+    if (!requiredSeconds) return;
+    const interval = setInterval(() => {
+      setElapsed(Math.floor((Date.now() - startTime) / 1000));
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [requiredSeconds, startTime]);
+
+  if (!requiredSeconds) return null;
+
+  const remaining = Math.max(0, requiredSeconds - elapsed);
+  const hrs = Math.floor(remaining / 3600);
+  const mins = Math.floor((remaining % 3600) / 60);
+  const secs = remaining % 60;
+  const timeStr = `${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+
+  return (
+    <footer
+      className="ce-timer-footer fixed bottom-0 z-40"
+      style={{
+        left: 288, right: 0, background: '#fff',
+        borderTop: '2px solid #E2E2BE', padding: '0.875rem 2rem',
+        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+        boxShadow: '0 -2px 8px rgba(0,0,0,.05)',
+      }}
+    >
+      <div className="flex items-center gap-4">
+        <span style={{ fontSize: '1.5rem' }} aria-hidden="true">&#9201;</span>
+        <div>
+          <div style={{ fontWeight: 600, color: '#2C2C2C', fontSize: '0.875rem' }}>Required Course Time</div>
+          <div style={{ fontSize: '1.25rem', fontWeight: 700, color: '#6B1D34', fontVariantNumeric: 'tabular-nums' }} aria-live="polite">
+            {timeStr}
+          </div>
+        </div>
+      </div>
+      <button
+        onClick={onStartAssessment}
+        disabled={!allComplete || !timerDone}
+        style={{
+          background: (!allComplete || !timerDone) ? '#6B7280' : '#6B1D34',
+          color: '#fff', border: 'none', padding: '0.75rem 2rem',
+          borderRadius: 6, fontWeight: 700, fontSize: '1rem',
+          cursor: (!allComplete || !timerDone) ? 'not-allowed' : 'pointer',
+          opacity: (!allComplete || !timerDone) ? 0.6 : 1,
+          fontFamily: "'Lato', sans-serif", transition: 'all 0.2s',
+        }}
+      >
+        {timerDone ? 'Final Post-Test' : 'Final Post-Test (Locked)'}
+      </button>
+    </footer>
+  );
+}
+
+// ============================================================================
+// RESOURCE FAB
+// ============================================================================
+function ResourceFAB({ resources }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="fixed z-50" style={{ bottom: 24, right: 24 }}>
+      {open && (
+        <>
+          <div className="fixed inset-0" onClick={() => setOpen(false)} />
+          <div className="absolute bottom-16 right-0 w-72 bg-white rounded-lg p-4" style={{ boxShadow: '0 4px 16px rgba(0,0,0,.12)' }}>
+            <div style={{ fontWeight: 700, color: '#284157', marginBottom: '0.75rem', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+              Course Resources
+            </div>
+            {resources.map((res, i) => (
+              <a
+                key={i}
+                href={res.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-3 p-3 rounded-md transition-all no-underline"
+                style={{ color: '#2C2C2C', minHeight: 44 }}
+                onMouseEnter={e => { e.currentTarget.style.background = '#F5F5DC'; e.currentTarget.style.transform = 'translateX(4px)'; }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.transform = 'translateX(0)'; }}
+              >
+                <Download className="w-5 h-5 flex-shrink-0" style={{ color: '#284157' }} />
+                <span style={{ fontWeight: 500, fontSize: '0.875rem' }}>{res.title || res.name || 'Download'}</span>
+              </a>
+            ))}
+          </div>
+        </>
+      )}
+      <button
+        onClick={() => setOpen(!open)}
+        className="flex items-center justify-center rounded-full transition-all"
+        style={{
+          width: 56, height: 56, background: '#284157', color: '#fff',
+          border: 'none', cursor: 'pointer', boxShadow: '0 4px 12px rgba(40,65,87,.3)',
+          fontSize: '1.5rem',
+        }}
+        onMouseEnter={e => { e.currentTarget.style.background = '#1F3345'; e.currentTarget.style.transform = 'scale(1.05)'; }}
+        onMouseLeave={e => { e.currentTarget.style.background = '#284157'; e.currentTarget.style.transform = 'scale(1)'; }}
+        aria-label="Open downloadable resources"
+      >
+        <Download className="w-6 h-6" />
+      </button>
+    </div>
   );
 }
 
@@ -1381,7 +1505,7 @@ export default function CourseViewer({ courseSlug }) {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-stone-50">
+      <div className="min-h-screen flex items-center justify-center" style={{ background: '#F5F5DC' }}>
         <div className="text-center">
           <div className="w-12 h-12 border-4 border-burgundy-700 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
           <p className="text-navy-500">Loading course...</p>
@@ -1392,7 +1516,7 @@ export default function CourseViewer({ courseSlug }) {
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-stone-50">
+      <div className="min-h-screen flex items-center justify-center" style={{ background: '#F5F5DC' }}>
         <div className="text-center">
           <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
           <h2 className="text-xl font-bold text-navy-700 mb-2">Error Loading Course</h2>
@@ -1404,7 +1528,7 @@ export default function CourseViewer({ courseSlug }) {
 
   if (!course.sections || course.sections.length === 0) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-stone-50">
+      <div className="min-h-screen flex items-center justify-center" style={{ background: '#F5F5DC' }}>
         <div className="text-center">
           <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
           <h2 className="text-xl font-bold text-navy-700 mb-2">Course Content Unavailable</h2>
@@ -1418,7 +1542,7 @@ export default function CourseViewer({ courseSlug }) {
   const currentSectionProgress = progress?.sectionProgress?.[progress?.currentSectionIndex || 0];
 
   return (
-    <div className={`min-h-screen bg-stone-50 flex ${hcClass}`}>
+    <div className={`min-h-screen flex ${hcClass}`} style={{ background: '#F5F5DC' }}>
       {/* Skip to content link */}
       <a 
         href="#main-content" 
@@ -1442,38 +1566,40 @@ export default function CourseViewer({ courseSlug }) {
 
       {/* Main Content */}
       <main className="flex-1 min-w-0" id="main-content">
-        {/* Top bar */}
-        <header className="bg-white border-b border-forest-200 px-4 py-3 flex items-center justify-between sticky top-0 z-30">
+        {/* Top bar — eggshell with serif title */}
+        <header className="sticky top-0 z-30 flex items-center justify-center" style={{ background: '#F5F5DC', padding: '1rem 2rem', borderBottom: '2px solid #E5E5DC' }}>
           <button
             onClick={() => setSidebarOpen(true)}
-            className="lg:hidden p-2 text-navy-600 hover:text-navy-800"
+            className="lg:hidden p-2"
+            style={{ color: '#284157' }}
             aria-label="Open course navigation"
           >
-            <Menu className="w-5 h-5" />
+            <Menu className="w-6 h-6" />
           </button>
 
-          <h1 className="text-lg font-semibold text-navy-700 text-center flex-1">
+          <h1 className="flex-1 text-center m-0" style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '1.75rem', fontWeight: 700, color: '#6B1D34' }}>
             {currentView === 'assessment' ? 'Final Assessment' : currentView === 'references' ? 'References' : currentSection?.title}
           </h1>
 
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1 flex-shrink-0">
             <button
               onClick={() => setPagedMode(!pagedMode)}
-              className={`p-2 rounded-lg transition-colors ${pagedMode ? 'bg-burgundy-100 text-burgundy-700' : 'text-navy-400 hover:text-navy-600'}`}
+              className={`p-2 rounded-lg transition-colors ${pagedMode ? 'bg-burgundy-100 text-burgundy-700' : 'hover:text-burgundy-700'}`}
+              style={{ color: pagedMode ? undefined : '#9CA3AF' }}
               aria-label={pagedMode ? 'Switch to scroll mode' : 'Switch to paged mode'}
               title={pagedMode ? 'Scroll mode' : 'Paged mode'}
             >
               <Layers className="w-5 h-5" />
             </button>
             <AccessibilityToolbar settings={a11y} onUpdate={setA11y} />
-            <a href="/dashboard" className="p-2 text-navy-400 hover:text-navy-600" aria-label="Return to dashboard">
+            <a href="/dashboard" className="p-2 hover:text-burgundy-700 transition-colors" style={{ color: '#9CA3AF' }} aria-label="Return to dashboard">
               <Home className="w-5 h-5" />
             </a>
           </div>
         </header>
 
         {/* Content */}
-        <div className={`p-6 lg:p-8 ${fontSizeClass}`}>
+        <div className={`p-6 lg:p-8 pb-24 ${fontSizeClass}`} style={{ background: '#F5F5DC', minHeight: 'calc(100vh - 80px)' }}>
           {currentView === 'assessment' ? (
             <AssessmentView
               course={course}
@@ -1502,6 +1628,36 @@ export default function CourseViewer({ courseSlug }) {
           )}
         </div>
       </main>
+
+      {/* Vertical References Tab — right edge */}
+      {course.references?.length > 0 && currentView !== 'references' && (
+        <button
+          onClick={() => handleNavigate('references')}
+          className="fixed z-50 hover:opacity-90 transition-opacity"
+          style={{
+            right: 0, top: '50%', transform: 'translateY(-50%)',
+            background: '#284157', color: '#fff', border: 'none',
+            padding: '16px 10px', borderRadius: '8px 0 0 8px',
+            cursor: 'pointer', fontWeight: 600, fontSize: '0.8rem',
+            writingMode: 'vertical-rl', textOrientation: 'mixed',
+            boxShadow: '-2px 0 8px rgba(0,0,0,.12)',
+          }}
+          aria-label="Open reference list"
+        >
+          <BookOpen className="w-3.5 h-3.5 mb-1.5" style={{ transform: 'rotate(90deg)' }} />
+          References
+        </button>
+      )}
+
+      {/* CE Timer Footer */}
+      <CETimerFooter
+        course={course}
+        progress={progress}
+        onStartAssessment={() => handleNavigate('assessment')}
+      />
+
+      {/* Resource FAB */}
+      {course.resources?.length > 0 && <ResourceFAB resources={course.resources} />}
     </div>
   );
 }
@@ -1517,6 +1673,77 @@ const styles = `
 }
 @media (prefers-reduced-motion: reduce) {
   .animate-fadeIn { animation: none; }
+}
+
+/* APA heading hierarchy */
+.prose h2, .cr-content h2 {
+  font-family: "Cormorant Garamond", serif !important;
+  font-weight: 600 !important;
+  font-size: 1.75rem !important;
+  color: #284157 !important;
+  margin: 2rem 0 1rem 0;
+}
+.prose h3, .cr-content h3 {
+  font-weight: 700 !important;
+  font-size: 1.25rem !important;
+  color: #4A7C59 !important;
+  margin: 1.5rem 0 0.75rem 0;
+}
+.prose h4, .cr-content h4 {
+  font-weight: 600 !important;
+  font-size: 1.1rem !important;
+  color: #284157 !important;
+  margin: 1.25rem 0 0.5rem 0;
+}
+
+/* Table styling */
+.prose table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5rem 0;
+  font-size: 0.925rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  overflow: hidden;
+}
+.prose th {
+  background: #f0f4f1;
+  color: #284157;
+  font-weight: 700;
+  text-align: left;
+  padding: 12px 16px;
+  border-bottom: 2px solid #4A7C59;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+.prose td {
+  padding: 10px 16px;
+  border-bottom: 1px solid #e5e7eb;
+  color: #475569;
+  line-height: 1.6;
+  vertical-align: top;
+}
+.prose tr:nth-child(even) { background: #fafaf8; }
+.prose tr:hover { background: rgba(74, 124, 89, 0.04); }
+
+/* Blockquote / Clinical Vignette */
+.prose blockquote {
+  border-left: 4px solid #D4A855;
+  background: rgba(212, 168, 85, 0.06);
+  padding: 16px 20px;
+  margin: 1.5rem 0;
+  border-radius: 0 8px 8px 0;
+  font-style: italic;
+  color: #475569;
+}
+
+/* CE Timer responsive */
+@media (max-width: 1024px) {
+  .ce-timer-footer { left: 0 !important; }
+}
+@media (max-width: 768px) {
+  .ce-timer-footer { flex-direction: column !important; gap: 0.75rem !important; padding: 0.75rem 1rem !important; }
 }
 
 /* High Contrast Mode */
