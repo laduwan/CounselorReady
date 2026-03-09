@@ -324,7 +324,7 @@ const COURSE_DATA = {
           "Bilateral stimulation facilitating adaptive information processing"
         ],
         correctAnswer: 1,
-        explanation: ""
+        explanation: "The correct answer is that CPT primarily targets maladaptive beliefs, known as stuck points, about the trauma and its meaning. CPT uses cognitive restructuring techniques such as Socratic questioning and worksheets to challenge distorted cognitions related to safety, trust, power, esteem, and intimacy. Conditioned fear extinction through exposure (option A) describes the mechanism of Prolonged Exposure therapy, not CPT."
       },
       {
         question: "Phase-based trauma treatment is specifically indicated when:",
@@ -336,7 +336,7 @@ const COURSE_DATA = {
           "The client requests time-limited structured treatment"
         ],
         correctAnswer: 1,
-        explanation: ""
+        explanation: "The correct answer is that phase-based treatment is specifically indicated when early-onset, repeated, or complex trauma with severe dissociation is present. These clients often lack the regulatory capacity needed for direct trauma processing and require stabilization first. Adult-onset circumscribed trauma (option A) typically responds well to standard evidence-based treatments like CPT, PE, or EMDR without the need for an extended phased approach."
       },
       {
         question: "Male survivors most commonly present with which obscuring symptom profile:",
@@ -348,7 +348,7 @@ const COURSE_DATA = {
           "Social withdrawal and explicit PTSD symptom reporting"
         ],
         correctAnswer: 1,
-        explanation: ""
+        explanation: "The correct answer is that male survivors most commonly present with substance use, anger, somatic symptoms, and other externalizing behaviors without explicitly identifying sexual trauma. Socialized masculine norms around self-reliance and stigma surrounding male victimization create barriers to direct disclosure. Explicit sexual trauma disclosure with overt distress (option A) is incorrect because male survivors are significantly less likely to disclose due to shame, fear of disbelief, and concerns about masculinity."
       },
       {
         question: "Trauma bonding in trafficking survivors involves:",
@@ -360,7 +360,7 @@ const COURSE_DATA = {
           "A personality trait predisposing to exploitative relationships"
         ],
         correctAnswer: 1,
-        explanation: ""
+        explanation: "The correct answer is that trauma bonding involves intense emotional attachment formed through alternating cycles of abuse and affection under conditions of dependency and power imbalance. This neurobiological process, sometimes compared to Stockholm syndrome, makes it extremely difficult for trafficking survivors to leave or cooperate with intervention. It is not a voluntary choice (option A); rather, it is a survival adaptation driven by intermittent reinforcement and the basic human need for attachment under conditions of captivity."
       },
       {
         question: "The primary rationale for stabilization before trauma processing in phase-based treatment is:",
@@ -372,7 +372,7 @@ const COURSE_DATA = {
           "Evidence that stabilization eliminates need for trauma processing"
         ],
         correctAnswer: 1,
-        explanation: ""
+        explanation: "The correct answer is that adequate regulatory capacity prevents retraumatization during trauma processing. Without sufficient emotion regulation skills, grounding techniques, and distress tolerance, direct engagement with traumatic material can overwhelm the client and cause destabilization or retraumatization. The claim that stabilization eliminates the need for trauma processing (option D) is incorrect, as stabilization is a preparatory phase that builds the capacity needed for effective trauma processing, not a replacement for it."
       },
       {
         question: "Secondary traumatic stress produces:",
@@ -384,7 +384,7 @@ const COURSE_DATA = {
           "Exclusively countertransference without clinical impairment"
         ],
         correctAnswer: 1,
-        explanation: ""
+        explanation: "The correct answer is that secondary traumatic stress produces PTSD-parallel symptoms from indirect trauma exposure through clinical work with trauma survivors. Clinicians may develop intrusive imagery, avoidance, hyperarousal, and emotional numbing that mirror their clients' symptoms. General burnout (option A) is incorrect because burnout involves exhaustion and depersonalization from workplace demands broadly, whereas secondary traumatic stress is specifically trauma-related and can occur even in clinicians who otherwise find their work fulfilling."
       },
       {
         question: "Peritraumatic dissociation serves as:",
@@ -396,7 +396,7 @@ const COURSE_DATA = {
           "Evidence of prior psychiatric history"
         ],
         correctAnswer: 1,
-        explanation: ""
+        explanation: "The correct answer is that peritraumatic dissociation is a neurobiological protective mechanism that reduces the immediate psychological impact of overwhelming traumatic experience. Mediated by the dorsal vagal system, it involves depersonalization, derealization, and altered time perception during the traumatic event. It is not a voluntary escape (option A); rather, it is an automatic neurobiological response that occurs beyond conscious control when fight and flight responses are unavailable."
       },
       {
         question: "EMDR bilateral stimulation is theorized to facilitate:",
@@ -408,7 +408,7 @@ const COURSE_DATA = {
           "Somatic discharge of freeze responses"
         ],
         correctAnswer: 1,
-        explanation: ""
+        explanation: "The correct answer is that EMDR bilateral stimulation is theorized to facilitate adaptive information processing of traumatic memories. According to Shapiro's Adaptive Information Processing model, bilateral stimulation (eye movements, tapping, or auditory tones) helps the brain reprocess traumatic memories that have been stored in a dysfunctional, unprocessed state. Conditioned extinction through graduated exposure (option A) describes the mechanism of Prolonged Exposure therapy, not the theoretical basis of EMDR."
       },
       {
         question: "BIPOC sexual trauma survivors require treatment that includes:",
@@ -420,7 +420,7 @@ const COURSE_DATA = {
           "Referral only to BIPOC clinicians as standard of care"
         ],
         correctAnswer: 1,
-        explanation: ""
+        explanation: "The correct answer is that BIPOC sexual trauma survivors require treatment that includes awareness of racial trauma as a distinct intersecting dimension affecting their experience. Clinicians must understand how historical and ongoing racial trauma compounds sexual trauma, creating unique barriers to disclosure, trust, and help-seeking. Prioritizing cultural accommodation over evidence-based protocols (option C) is incorrect because effective treatment integrates cultural responsiveness within evidence-based frameworks rather than abandoning empirically supported approaches."
       },
       {
         question: "Post-traumatic growth is:",
@@ -432,7 +432,7 @@ const COURSE_DATA = {
           "Associated exclusively with complete symptom remission"
         ],
         correctAnswer: 1,
-        explanation: ""
+        explanation: "The correct answer is that post-traumatic growth is a genuine possibility for some survivors but not an expectation for all. Research by Tedeschi and Calhoun identifies domains of growth including changed self-perception, deeper relationships, and new life priorities that can emerge through the struggle with trauma. It is not the expected outcome of all effective treatment (option A), as imposing growth expectations can invalidate survivors' experiences and create additional pressure that undermines therapeutic progress."
       },
       {
         question: "The most powerful predictor of sexual trauma disclosure to a professional is:",
@@ -444,7 +444,7 @@ const COURSE_DATA = {
           "Trauma type"
         ],
         correctAnswer: 2,
-        explanation: ""
+        explanation: "The correct answer is clinician-created safety and explicit invitation for disclosure. Research consistently shows that survivors are most likely to disclose sexual trauma when clinicians establish a safe therapeutic environment and directly but sensitively ask about sexual trauma history. Symptom severity (option A) is incorrect because many survivors with severe symptoms never disclose unless specifically asked, as shame, self-blame, and fear of judgment often override symptom-driven motivation to seek help."
       },
     ]
   },

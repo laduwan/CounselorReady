@@ -270,7 +270,7 @@ const COURSE_DATA = {
           "Sexual dysfunction severity for medication trial eligibility"
         ],
         correctAnswer: 1,
-        explanation: ""
+        explanation: "The correct answer is female sexual function across six domains including desire, arousal, and satisfaction. The FSFI (Female Sexual Function Index) is a 19-item self-report instrument assessing desire, arousal, lubrication, orgasm, satisfaction, and pain, with established reliability, validity, and normative data. The first option is incorrect because male erectile function is assessed by a separate instrument, the International Index of Erectile Function (IIEF)."
       },
       {
         question: "Sensate focus exercises, developed by Masters and Johnson, specifically involve:",
@@ -282,7 +282,7 @@ const COURSE_DATA = {
           "Cognitive restructuring of sexual performance beliefs"
         ],
         correctAnswer: 1,
-        explanation: ""
+        explanation: "The correct answer is graduated non-demand pleasuring exercises that systematically reduce performance anxiety. Sensate focus works by explicitly prohibiting performance goals (erection, orgasm, intercourse) and redirecting attention from evaluative self-monitoring to present-moment sensory experience, progressing from non-genital to genital touching. Progressive relaxation (the first option) is incorrect because sensate focus uses the removal of performance demands and sensory redirection, not relaxation techniques, as its primary therapeutic mechanism."
       },
       {
         question: "The biopsychosocial model of sexual functioning:",
@@ -294,7 +294,7 @@ const COURSE_DATA = {
           "Is primarily applicable to medically-based sexual dysfunctions"
         ],
         correctAnswer: 2,
-        explanation: ""
+        explanation: "The correct answer is that the biopsychosocial model integrates biological, psychological, and sociocultural factors as interacting determinants of sexual functioning. This contemporary framework replaced earlier single-factor models and holds that any adequate clinical assessment must attend to all three domains, as attributing dysfunction to one factor alone produces incomplete formulations and treatment plans. The first option is incorrect because the model explicitly rejects prioritizing biological factors, instead treating all three domains as equally important interacting contributors."
       },
       {
         question: "A core principle of culturally responsive sexual health clinical practice is:",
@@ -306,7 +306,7 @@ const COURSE_DATA = {
           "Avoiding discussion of cultural factors to prevent stereotyping"
         ],
         correctAnswer: 2,
-        explanation: ""
+        explanation: "The correct answer is approaching each client's sexual values and practices with genuine curiosity and humility. Culturally responsive practice requires clinicians to explore the specific sexual scripts that organize each client's experience rather than applying assumptions derived from mainstream Western sexual norms. The first option is incorrect because applying universal Western norms as clinical standards is the opposite of cultural responsiveness and fails to account for the diverse cultural, religious, and relational frameworks that shape individual sexual experience."
       },
       {
         question: "Directed masturbation is an evidence-based first-line intervention for:",
@@ -318,7 +318,7 @@ const COURSE_DATA = {
           "Genitourinary syndrome of menopause"
         ],
         correctAnswer: 2,
-        explanation: ""
+        explanation: "The correct answer is female orgasmic disorder. Directed masturbation, developed by LoPiccolo and Lobitz (1972), is a graduated behavioral approach that begins with non-genital sensory exploration, progresses to focused genital self-stimulation, and gradually extends orgasmic response to partnered situations. Erectile disorder (the first option) is incorrect because its first-line behavioral treatment is sensate focus combined with cognitive interventions targeting performance anxiety, not directed masturbation."
       },
       {
         question: "The squeeze technique and stop-start method are evidence-based interventions for:",
@@ -330,7 +330,7 @@ const COURSE_DATA = {
           "Vaginismus"
         ],
         correctAnswer: 2,
-        explanation: ""
+        explanation: "The correct answer is premature ejaculation (early ejaculation). The squeeze technique, developed by Masters and Johnson, involves applying pressure to the penis before ejaculation to reduce arousal, while the stop-start technique, developed by Semans, involves pausing stimulation when arousal approaches the ejaculatory threshold. Erectile disorder (the second option) is incorrect because its primary behavioral intervention is sensate focus to address performance anxiety, not ejaculatory control techniques."
       },
       {
         question: "Mindfulness-based sex therapy approaches have the strongest evidence base for:",
@@ -342,7 +342,7 @@ const COURSE_DATA = {
           "Genito-pelvic pain/penetration disorder"
         ],
         correctAnswer: 1,
-        explanation: ""
+        explanation: "The correct answer is female sexual interest and arousal disorder, particularly post-cancer. Brotto and colleagues' mindfulness-based sex therapy group program for women with FSIAD and female cancer survivors has the strongest evidence base, with multiple RCTs documenting significant improvements in sexual desire, arousal, lubrication, and satisfaction. Erectile disorder in older adult men (the first option) is incorrect because while mindfulness may be a component of ED treatment, the strongest research evidence for mindfulness-based sex therapy is specifically with female sexual dysfunction populations."
       },
       {
         question: "When is referral to an AASECT-certified sex therapist most clearly indicated:",
@@ -354,7 +354,7 @@ const COURSE_DATA = {
           "When the sexual concern is more than 6 months in duration"
         ],
         correctAnswer: 1,
-        explanation: ""
+        explanation: "The correct answer is when the clinical complexity of the sexual dysfunction presentation exceeds the referring clinician's training. Referral decisions are based on honest self-assessment of competency boundaries, considering factors such as treatment resistance, complexity, and whether the presentation requires specialized sex therapy expertise. The first option is incorrect because the PLISSIT model demonstrates that many sexual health concerns can be effectively addressed by generalist clinicians at the Permission and Limited Information levels without specialist referral."
       },
       {
         question: "The concept of 'sexual scripts' (Gagnon & Simon, 1973) refers to:",
@@ -366,7 +366,7 @@ const COURSE_DATA = {
           "Partner communication scripts developed in sex therapy sessions"
         ],
         correctAnswer: 1,
-        explanation: ""
+        explanation: "The correct answer is culturally shared cognitive frameworks that organize sexual expectations and behavior. Sexual scripts operate at three levels -- cultural scenarios, interpersonal scripts, and intrapsychic scripts -- and shape how individuals understand and enact sexual experience based on their cultural, developmental, and experiential history. The first option is incorrect because sexual scripts are sociocultural phenomena that individuals internalize through cultural learning, not therapist-provided behavioral protocols for clinical use."
       },
       {
         question: "Genitourinary syndrome of menopause (GSM) is relevant to sexual health clinical work because:",
@@ -378,7 +378,7 @@ const COURSE_DATA = {
           "It is primarily a psychological rather than a physical condition"
         ],
         correctAnswer: 1,
-        explanation: ""
+        explanation: "The correct answer is that GSM produces vulvovaginal changes that cause sexual pain and dysfunction that is highly treatable. GSM affects approximately 50% of postmenopausal women, causing vaginal dryness, tissue fragility, and dyspareunia, all of which are treatable through local estrogen therapy, lubricants, and vaginal moisturizers. The first option is incorrect because GSM is a physical condition caused by estrogen decline that requires gynecological assessment and medical treatment, not psychiatric management."
       },
       {
         question: "Which statement about sexual desire is most consistent with current clinical evidence:",
@@ -390,7 +390,7 @@ const COURSE_DATA = {
           "Low sexual desire is always a clinical condition requiring treatment"
         ],
         correctAnswer: 1,
-        explanation: ""
+        explanation: "The correct answer is that responsive desire -- emerging in response to erotic stimuli rather than arising spontaneously -- is normative, particularly for women. Basson's circular model established that responsive desire is a normal pathway for female sexual experience, and this understanding provides immediate clinical benefit for women distressed by comparisons to the spontaneous desire model. The first option is incorrect because the expectation of constant spontaneous desire is identified in the course as one of the most common sources of sexual shame and misinformation that clinicians should actively address through psychoeducation."
       },
       {
         question: "The Ex-PLISSIT model extends the original PLISSIT model by adding:",
@@ -402,7 +402,7 @@ const COURSE_DATA = {
           "Extra screening questions at the permission-giving stage"
         ],
         correctAnswer: 1,
-        explanation: ""
+        explanation: "The correct answer is explicit acknowledgment and discussion of sexuality at all levels as a foundational practice. The Ex-PLISSIT model adds the recommendation that Permission -- the explicit acknowledgment that sexuality is an appropriate clinical topic -- be extended throughout all levels of clinical contact rather than only at the initial assessment. The first option is incorrect because the Ex-PLISSIT model does not add a new level to the framework but rather integrates the permission-giving stance as a continuous practice across all existing levels."
       },
     ]
   },
