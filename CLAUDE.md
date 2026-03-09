@@ -30,14 +30,21 @@ Sections of code marked with `// @lock` (or `/* @lock */`) comments are **protec
 
 6. **Course Catalog Page** (`client/src/pages/InteractiveCourseCatalog.jsx`) — FULLY LOCKED
    - The entire visual design of this page is locked: layout, colors, and all elements.
-   - **Page heading**: title text, burgundy-900 color, forest-600 subtitle — locked.
-   - **Filter bar**: white background, rounded-xl, forest borders, burgundy focus rings — locked.
+   - **Header banner**: teal-600 to emerald-600 gradient with white text — locked.
+   - **Filter bar**: white background, rounded-xl, gray-300 borders, teal-500 focus rings — locked.
    - **Grid layout**: 1/2/3-column responsive grid with gap-6 — locked.
-   - **CourseCard (grid view)**: gradient thumbnail (hunter-100 → burgundy-200), burgundy-500 book icon, burgundy-100 border, card shadow behavior, info pills (honey-100/forest-100/burgundy-100), clock icon, burgundy action bar — all locked.
-   - **CourseListItem (list view)**: icon square gradient, pill colors, progress bar (burgundy-600 fill, stone-200 track), chevron hover — all locked.
-   - **View toggle**: burgundy-800 active state, forest-600 inactive — locked.
+   - **CourseCard (grid view)**: gradient thumbnail (teal-500 → emerald-600), white/30 book icon, gray-100 border, teal-600 action text — all locked.
+   - **CourseListItem (list view)**: teal/emerald icon gradient, teal-600 progress bar fill, gray-200 track — all locked.
+   - **View toggle**: teal-600 active state, gray-600 inactive — locked.
    - Do NOT change any className, color value, gradient, spacing, border, shadow, or component hierarchy on this page.
    - Functional/data changes (API calls, state logic, filtering) are allowed — visual changes are not.
+
+7. **All Page Aesthetics** — LOCKED to 3/5/2026 baseline
+   - Do NOT change colors, gradients, spacing, fonts, or visual styling on any existing page without explicit user approval.
+   - Buttons use moss-600/moss-700 (green) — do NOT change to burgundy or any other color.
+   - Logo uses gradient `linear-gradient(135deg, #8B2542, #6B1D34)` — do NOT flatten to solid color.
+   - Landing page gradients and color transitions — do NOT simplify to flat colors.
+   - When adding new features, match existing page aesthetics — do NOT introduce new color schemes.
 
 ### How to mark new locked sections:
 
