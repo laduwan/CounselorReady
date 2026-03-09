@@ -536,6 +536,7 @@ function ContentBlockRenderer({
 // BLOCK GROUPING — splits content blocks into digestible pages
 // ============================================================================
 function groupBlocksIntoPages(blocks, maxPerPage = 3) {
+  if (!blocks || blocks.length === 0) return [];
   const pages = [];
   let current = [];
 
@@ -585,8 +586,12 @@ function SectionView({
   const [showQuiz, setShowQuiz] = useState(false);
   const [sessionStartTime] = useState(Date.now());
 
+  if (!section) return null;
+
+  const contentBlocks = section.contentBlocks || [];
+
   // Paging
-  const pages = useMemo(() => groupBlocksIntoPages(section.contentBlocks), [section.contentBlocks]);
+  const pages = useMemo(() => groupBlocksIntoPages(contentBlocks), [contentBlocks]);
   const totalPages = pages.length;
   const safePage = Math.min(currentPage || 0, totalPages - 1);
 
@@ -634,16 +639,16 @@ function SectionView({
     }
   }, []);
 
-  const interactiveBlockCount = section.contentBlocks.filter(
+  const interactiveBlockCount = contentBlocks.filter(
     b => ['matching', 'multipleChoice', 'multiSelect'].includes(b.type)
   ).length;
 
-  const allInteractiveComplete = section.contentBlocks.every((block, i) => {
+  const allInteractiveComplete = contentBlocks.every((block, i) => {
     if (!['matching', 'multipleChoice', 'multiSelect'].includes(block.type)) return true;
     return completedBlocks.has(i);
   });
 
-  const canTakeQuiz = section.hasQuiz && viewedBlocks.size >= section.contentBlocks.length && allInteractiveComplete;
+  const canTakeQuiz = section.hasQuiz && viewedBlocks.size >= contentBlocks.length && allInteractiveComplete;
   const quizPassed = progress?.quizPassed;
 
   const isLastSection = sectionIndex === course.sections.length - 1;
@@ -672,14 +677,14 @@ function SectionView({
         <div className="flex items-center justify-between text-sm mb-2">
           <span className="text-navy-600">Section Progress</span>
           <span className="font-semibold text-burgundy-700">
-            {viewedBlocks.size}/{section.contentBlocks.length} viewed
+            {viewedBlocks.size}/{contentBlocks.length} viewed
             {interactiveBlockCount > 0 && ` • ${completedBlocks.size}/${interactiveBlockCount} completed`}
           </span>
         </div>
         <div className="h-2 bg-stone-100 rounded-full overflow-hidden">
           <div 
             className="h-full bg-honey-400 transition-all rounded-full"
-            style={{ width: `${(viewedBlocks.size / section.contentBlocks.length) * 100}%` }}
+            style={{ width: `${contentBlocks.length > 0 ? (viewedBlocks.size / contentBlocks.length) * 100 : 0}%` }}
           />
         </div>
       </div>
@@ -708,7 +713,7 @@ function SectionView({
             </div>
           )}
 
-          {(pagedMode ? pages[safePage] || [] : section.contentBlocks.map((block, i) => ({ block, originalIndex: i }))).map(({ block, originalIndex }) => (
+          {(pagedMode ? pages[safePage] || [] : contentBlocks.map((block, i) => ({ block, originalIndex: i }))).map(({ block, originalIndex }) => (
             <div
               key={originalIndex}
               data-block-index={originalIndex}
@@ -761,7 +766,7 @@ function SectionView({
               <div>
                 <h3 className="text-sm font-bold text-navy-700">Section Quiz</h3>
                 <p className="text-xs text-navy-400 mt-0.5">
-                  {canTakeQuiz ? 'Ready to test your knowledge' : `Complete all content first (${viewedBlocks.size}/${section.contentBlocks.length})`}
+                  {canTakeQuiz ? 'Ready to test your knowledge' : `Complete all content first (${viewedBlocks.size}/${contentBlocks.length})`}
                 </p>
               </div>
               <button
@@ -1281,7 +1286,7 @@ function CourseSidebar({
 
                       {/* Sub-page indicators in paged mode */}
                       {pagedMode && isCurrent && (() => {
-                        const sectionPages = groupBlocksIntoPages(section.contentBlocks);
+                        const sectionPages = groupBlocksIntoPages(section.contentBlocks || []);
                         if (sectionPages.length <= 1) return null;
                         return (
                           <div className="ml-8 mt-1 mb-1 flex flex-col gap-0.5">
