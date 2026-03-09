@@ -100,7 +100,7 @@ export default function Layout({ children }) {
 
           {/* Logo */}
           <Link to="/dashboard" className="flex items-center gap-3 flex-shrink-0">
-            <div style={{ width: 40, height: 40, borderRadius: '0.75rem', background: 'linear-gradient(135deg, #8B2542, #6B1D34)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 8px rgba(107,29,52,0.25)' }}>
+            <div style={{ width: 40, height: 40, borderRadius: '0.75rem', background: '#6B1D34', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 8px rgba(107,29,52,0.25)' }}>
               <span style={{ position: 'relative', display: 'inline-block', width: 22, height: 22 }}>
                 <span style={{ color: GOLD, position: 'absolute', top: -3, left: 0, fontFamily: "'Cormorant Garamond', Georgia, serif", fontWeight: 700, fontSize: 17 }}>C</span>
                 <span style={{ color: '#7A9E84', position: 'absolute', top: 4, left: 6, fontFamily: "'Cormorant Garamond', Georgia, serif", fontWeight: 700, fontSize: 14 }}>R</span>
@@ -257,7 +257,7 @@ export default function Layout({ children }) {
             <div className="relative">
               <button onClick={() => setUserMenuOpen(!userMenuOpen)}
                 className="flex items-center gap-2 p-1 rounded-lg transition-colors hover:bg-stone-100">
-                <div style={{ width: 32, height: 32, borderRadius: '50%', background: `linear-gradient(135deg, #8B2542, ${BURGUNDY})`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: '0.75rem', fontWeight: 600 }}>
+                <div style={{ width: 32, height: 32, borderRadius: '50%', background: BURGUNDY, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: '0.75rem', fontWeight: 600 }}>
                   {initials}
                 </div>
                 <span className="hidden md:block text-sm font-medium text-stone-700 max-w-[120px] truncate">
