@@ -6,6 +6,7 @@
 @tailwind components;
 @tailwind utilities;
 
+/* @lock-start: Base theme — do not modify */
 @layer base {
   body {
     @apply font-body text-forest-700 bg-stone-50;
@@ -15,8 +16,10 @@
     @apply font-display text-burgundy-800;
   }
 }
+/* @lock-end */
 
 @layer components {
+  /* @lock-start: Core button styles */
   /* Primary Button */
   .btn-primary {
     @apply bg-burgundy-700 hover:bg-burgundy-800 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200;
@@ -31,9 +34,9 @@
   .btn-tertiary {
     @apply bg-burgundy-800 hover:bg-burgundy-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200;
   }
-  
-  /* Card Container */
-  .card {
+  /* @lock-end */
+
+  .card { /* @lock */
     @apply bg-white rounded-xl shadow-sm border border-forest-200 p-6;
   }
   
@@ -79,8 +82,7 @@
     @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8;
   }
   
-  /* Header/Nav */
-  .header-nav {
+  .header-nav { /* @lock */
     @apply bg-white border-b border-burgundy-100 sticky top-0 z-50;
   }
   
