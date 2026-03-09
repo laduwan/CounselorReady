@@ -9,7 +9,11 @@
   "scripts": {
     "dev": "node --watch src/index.js",
     "start": "node src/index.js",
-    "seed": "node src/utils/seed.js"
+    "seed": "node src/utils/seed.js",
+    "seed:validate": "node src/scripts/seedAndValidateCourses.js",
+    "seed:validate:fix": "node src/scripts/seedAndValidateCourses.js --fix",
+    "seed:validate:dry": "node src/scripts/seedAndValidateCourses.js --dry-run",
+    "seed:validate:only": "node src/scripts/seedAndValidateCourses.js --validate-only"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.24.0",
