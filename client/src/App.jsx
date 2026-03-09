@@ -28,6 +28,7 @@ import Referrals from './pages/Referrals';
 import GroupLicenseDashboard from './pages/GroupLicenseDashboard';
 import Recommendations from './pages/Recommendations';
 import LegacyVault from './pages/LegacyVault';
+import CourseQuickEdit from './pages/CourseQuickEdit';
 
 // Components
 import Layout from './components/Layout';
@@ -195,6 +196,11 @@ function AppRoutes() {
       <Route path="/admin/course-builder" element={
         <AdminRoute>
           <CourseBuilder />
+        </AdminRoute>
+      } />
+      <Route path="/admin/course-quick-edit" element={
+        <AdminRoute>
+          <Layout><CourseQuickEdit /></Layout>
         </AdminRoute>
       } />
       
