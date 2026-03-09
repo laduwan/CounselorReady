@@ -26,7 +26,8 @@ import {
   ScenarioTree,
   FlashcardDeck,
   VideoEmbed,
-  ImageBlock
+  ImageBlock,
+  KnowledgeCheckModal
 } from './InteractiveCourseComponents';
 
 // ============================================================================
@@ -266,31 +267,37 @@ function ContentBlockRenderer({
 
     case 'matching':
       return (
-        <MatchingExercise
-          pairs={block.matchingPairs}
-          instructions={block.matchingInstructions}
-          onComplete={(correct, total) => handleInteractionComplete(correct === total, correct / total)}
-        />
+        <KnowledgeCheckModal type="matching" completed={isCompleted}>
+          <MatchingExercise
+            pairs={block.matchingPairs}
+            instructions={block.matchingInstructions}
+            onComplete={(correct, total) => handleInteractionComplete(correct === total, correct / total)}
+          />
+        </KnowledgeCheckModal>
       );
 
     case 'multipleChoice':
       return (
-        <MultipleChoice
-          question={block.question}
-          options={block.options}
-          explanation={block.explanation}
-          onAnswer={(isCorrect) => handleInteractionComplete(isCorrect, isCorrect ? 1 : 0)}
-        />
+        <KnowledgeCheckModal type="multipleChoice" completed={isCompleted}>
+          <MultipleChoice
+            question={block.question}
+            options={block.options}
+            explanation={block.explanation}
+            onAnswer={(isCorrect) => handleInteractionComplete(isCorrect, isCorrect ? 1 : 0)}
+          />
+        </KnowledgeCheckModal>
       );
 
     case 'multiSelect':
       return (
-        <MultiSelect
-          question={block.question}
-          options={block.options}
-          explanation={block.explanation}
-          onAnswer={(isCorrect) => handleInteractionComplete(isCorrect, isCorrect ? 1 : 0)}
-        />
+        <KnowledgeCheckModal type="multiSelect" completed={isCompleted}>
+          <MultiSelect
+            question={block.question}
+            options={block.options}
+            explanation={block.explanation}
+            onAnswer={(isCorrect) => handleInteractionComplete(isCorrect, isCorrect ? 1 : 0)}
+          />
+        </KnowledgeCheckModal>
       );
 
     case 'imageText':

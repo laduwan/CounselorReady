@@ -904,3 +904,96 @@ export function ImageBlock({ imageUrl, imageAltText, imageCaption, imageSize = '
     </figure>
   );
 }
+
+// ============================================================================
+// KNOWLEDGE CHECK MODAL — compact trigger + popup overlay
+// ============================================================================
+export function KnowledgeCheckModal({ type, completed, children }) {
+  const [open, setOpen] = useState(false);
+
+  const label = type === 'matching' ? 'Matching Exercise' : type === 'multiSelect' ? 'Multi-Select Check' : 'Knowledge Check';
+
+  return (
+    <>
+      {/* Compact inline trigger */}
+      <button
+        onClick={() => setOpen(true)}
+        style={{
+          ...btnReset,
+          width: '100%',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 12,
+          padding: '14px 20px',
+          margin: '20px 0',
+          borderRadius: 12,
+          border: `2px solid ${completed ? B.ok : B.burgundy}44`,
+          background: completed ? B.okBg : B.burgundyBg,
+          transition: 'all 0.2s',
+          boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
+        }}
+      >
+        <div style={{
+          width: 32, height: 32, borderRadius: '50%',
+          background: completed ? B.ok : B.burgundy,
+          display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0
+        }}>
+          {completed
+            ? <CheckCircle2 size={16} style={{ color: '#fff' }} />
+            : <AlertCircle size={16} style={{ color: '#fff' }} />
+          }
+        </div>
+        <div style={{ flex: 1, textAlign: 'left' }}>
+          <span style={{ fontWeight: 700, fontSize: 14, color: completed ? B.ok : B.burgundy }}>
+            {completed ? `${label} — Completed` : label}
+          </span>
+          <span style={{ display: 'block', fontSize: 12, color: B.muted, marginTop: 2 }}>
+            {completed ? 'Click to review' : 'Click to open'}
+          </span>
+        </div>
+        <ArrowRight size={18} style={{ color: completed ? B.ok : B.burgundy, flexShrink: 0 }} />
+      </button>
+
+      {/* Modal overlay */}
+      {open && (
+        <div
+          style={{
+            position: 'fixed', inset: 0, zIndex: 9999,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            background: 'rgba(0,0,0,0.5)',
+            padding: 16,
+          }}
+          onClick={(e) => { if (e.target === e.currentTarget) setOpen(false); }}
+        >
+          <div style={{
+            background: B.bg, borderRadius: 16,
+            width: '100%', maxWidth: 640, maxHeight: '85vh',
+            overflowY: 'auto', position: 'relative',
+            boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
+          }}>
+            {/* Close button */}
+            <button
+              onClick={() => setOpen(false)}
+              style={{
+                ...btnReset,
+                position: 'sticky', top: 12, float: 'right', marginRight: 12, marginTop: 12,
+                width: 32, height: 32, borderRadius: '50%',
+                background: B.card, border: `1px solid ${B.border}`,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                zIndex: 1,
+                boxShadow: '0 2px 6px rgba(0,0,0,0.1)',
+              }}
+            >
+              <X size={16} style={{ color: B.muted }} />
+            </button>
+
+            {/* Render the actual knowledge check component */}
+            <div style={{ padding: 4 }}>
+              {children}
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
