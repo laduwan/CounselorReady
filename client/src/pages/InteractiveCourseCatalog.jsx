@@ -270,14 +270,11 @@ const CourseCard = ({ course, progress, onClick }) => {
           <span>{course.totalEstimatedTime || 60} min</span>
         </div>
 
-        {/* Action */}
-        <div className="pt-4 border-t border-forest-100">
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-burgundy-800">
-              {isCompleted ? 'Review Course' : isEnrolled ? 'Continue Learning' : 'Start Course'}
-            </span>
-            <ChevronRight className="h-5 w-5 text-burgundy-700 group-hover:translate-x-1 transition-transform" />
-          </div>
+        {/* Action — full-width burgundy button bar */}
+        <div className="mt-auto pt-4">
+          <button className="w-full bg-burgundy-700 hover:bg-burgundy-800 text-white text-sm font-medium py-2.5 rounded-lg transition-colors">
+            {isCompleted ? 'Review Course' : isEnrolled ? 'Continue Learning' : 'View Details'}
+          </button>
         </div>
       </div>
     </div>
