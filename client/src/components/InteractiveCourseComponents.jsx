@@ -911,7 +911,18 @@ export function ImageBlock({ imageUrl, imageAltText, imageCaption, imageSize = '
 export function KnowledgeCheckModal({ type, completed, children }) {
   const [open, setOpen] = useState(false);
 
-  const label = type === 'matching' ? 'Matching Exercise' : type === 'multiSelect' ? 'Multi-Select Check' : 'Knowledge Check';
+  const labels = {
+    matching: 'Matching Exercise',
+    multipleChoice: 'Knowledge Check',
+    multiSelect: 'Multi-Select Check',
+    cardSort: 'Card Sort Activity',
+    sequencing: 'Sequencing Activity',
+    hotspot: 'Hotspot Activity',
+    timeline: 'Timeline Activity',
+    scenarioTree: 'Clinical Scenario',
+    flashcardDeck: 'Flashcard Deck',
+  };
+  const label = labels[type] || 'Interactive Activity';
 
   return (
     <>
