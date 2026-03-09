@@ -6,6 +6,8 @@
 // pages/InteractiveCourseCatalog.jsx
 // Displays available interactive courses for enrollment
 // =====================================================
+// @lock-file: Layout structure, color scheme, and visual design of this page are LOCKED.
+// Do NOT change classNames, color values, gradients, spacing, grid layout, or component hierarchy.
 
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
@@ -101,6 +103,7 @@ const InteractiveCourseCatalog = () => {
     );
   }
 
+  // @lock-start: Page layout, heading, filter bar, and grid structure
   return (
     <div>
       {/* Page heading */}
@@ -193,8 +196,10 @@ const InteractiveCourseCatalog = () => {
       </div>
     </div>
   );
+  // @lock-end
 };
 
+// @lock-start: CourseCard — colors, gradient, pills, spacing, and visual hierarchy
 // Course Card Component (Grid View)
 const CourseCard = ({ course, progress, onClick }) => {
   const isEnrolled = !!progress;
@@ -278,7 +283,9 @@ const CourseCard = ({ course, progress, onClick }) => {
     </div>
   );
 };
+// @lock-end
 
+// @lock-start: CourseListItem — colors, icon, pills, progress bar, and visual hierarchy
 // Course List Item Component (List View)
 const CourseListItem = ({ course, progress, onClick }) => {
   const isEnrolled = !!progress;
@@ -354,5 +361,6 @@ const CourseListItem = ({ course, progress, onClick }) => {
     </div>
   );
 };
+// @lock-end
 
 export default InteractiveCourseCatalog;
