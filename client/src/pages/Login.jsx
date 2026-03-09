@@ -1,3 +1,8 @@
+/**
+ * Copyright (c) 2026 CounselorReady, a subsidiary of Ga Integrated Therapeutic Perspectives, LLC.
+ * All rights reserved. Proprietary and confidential.
+ * Unauthorized copying or distribution is strictly prohibited.
+ */
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -9,7 +14,7 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-
+  
   const { login } = useAuth();
   const navigate = useNavigate();
 
@@ -17,7 +22,7 @@ export default function Login() {
     e.preventDefault();
     setError('');
     setLoading(true);
-
+    
     try {
       await login(email, password);
       navigate('/dashboard');
@@ -34,12 +39,12 @@ export default function Login() {
         {/* Logo */}
         <div className="text-center mb-8">
           <Link to="/" className="inline-flex items-center gap-2">
-            <div className="w-10 h-10 bg-moss-600 rounded-lg flex items-center justify-center">
+            <div className="w-10 h-10 bg-burgundy-700 rounded-lg flex items-center justify-center">
               <svg viewBox="0 0 24 24" className="w-6 h-6 text-white" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M12 3v12M8 9l4-6 4 6M6 21h12" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             </div>
-            <span className="font-semibold text-moss-600 text-xl">CounselorReady</span>
+            <span className="font-semibold text-burgundy-700 text-xl">CounselorReady</span>
           </Link>
         </div>
 
@@ -101,10 +106,10 @@ export default function Login() {
 
             <div className="flex items-center justify-between text-sm">
               <label className="flex items-center gap-2">
-                <input type="checkbox" className="rounded border-gray-300 text-moss-600 focus:ring-moss-500" />
+                <input type="checkbox" className="rounded border-gray-300 text-burgundy-700 focus:ring-burgundy-500" />
                 <span className="text-gray-600">Remember me</span>
               </label>
-              <Link to="/forgot-password" className="text-moss-600 hover:text-moss-700">
+              <Link to="/forgot-password" className="text-burgundy-700 hover:text-burgundy-800">
                 Forgot password?
               </Link>
             </div>
@@ -121,7 +126,7 @@ export default function Login() {
 
         <p className="mt-6 text-center text-gray-600">
           Don't have an account?{' '}
-          <Link to="/register" className="text-moss-600 hover:text-moss-700 font-medium">
+          <Link to="/register" className="text-burgundy-700 hover:text-burgundy-800 font-medium">
             Start free trial
           </Link>
         </p>

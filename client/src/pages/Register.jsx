@@ -1,3 +1,8 @@
+/**
+ * Copyright (c) 2026 CounselorReady, a subsidiary of Ga Integrated Therapeutic Perspectives, LLC.
+ * All rights reserved. Proprietary and confidential.
+ * Unauthorized copying or distribution is strictly prohibited.
+ */
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -22,7 +27,7 @@ export default function Register() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-
+  
   const { register } = useAuth();
   const navigate = useNavigate();
 
@@ -36,14 +41,14 @@ export default function Register() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-
+    
     if (formData.password.length < 8) {
       setError('Password must be at least 8 characters');
       return;
     }
-
+    
     setLoading(true);
-
+    
     try {
       await register(formData);
       navigate('/dashboard');
@@ -60,12 +65,12 @@ export default function Register() {
         {/* Logo */}
         <div className="text-center mb-8">
           <Link to="/" className="inline-flex items-center gap-2">
-            <div className="w-10 h-10 bg-moss-600 rounded-lg flex items-center justify-center">
+            <div className="w-10 h-10 bg-burgundy-700 rounded-lg flex items-center justify-center">
               <svg viewBox="0 0 24 24" className="w-6 h-6 text-white" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M12 3v12M8 9l4-6 4 6M6 21h12" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             </div>
-            <span className="font-semibold text-moss-600 text-xl">CounselorReady</span>
+            <span className="font-semibold text-burgundy-700 text-xl">CounselorReady</span>
           </Link>
         </div>
 
@@ -195,7 +200,7 @@ export default function Register() {
                 'Progress tracking & reminders'
               ].map((item, i) => (
                 <li key={i} className="flex items-center gap-2 text-sm text-gray-600">
-                  <CheckCircle className="w-4 h-4 text-moss-600" />
+                  <CheckCircle className="w-4 h-4 text-burgundy-700" />
                   {item}
                 </li>
               ))}
@@ -205,7 +210,7 @@ export default function Register() {
 
         <p className="mt-6 text-center text-gray-600">
           Already have an account?{' '}
-          <Link to="/login" className="text-moss-600 hover:text-moss-700 font-medium">
+          <Link to="/login" className="text-burgundy-700 hover:text-burgundy-800 font-medium">
             Sign in
           </Link>
         </p>

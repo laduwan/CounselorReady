@@ -22,12 +22,12 @@
   /* @lock-start: Core button styles */
   /* Primary Button */
   .btn-primary {
-    @apply bg-moss-600 hover:bg-moss-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200;
+    @apply bg-burgundy-700 hover:bg-burgundy-800 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200;
   }
-
+  
   /* Secondary Button */
   .btn-secondary {
-    @apply bg-white hover:bg-gray-50 text-moss-600 border border-moss-600 font-medium py-2 px-4 rounded-lg transition-colors duration-200;
+    @apply bg-white hover:bg-gray-50 text-burgundy-700 border border-burgundy-700 font-medium py-2 px-4 rounded-lg transition-colors duration-200;
   }
   
   /* Tertiary Button */
@@ -134,7 +134,7 @@
 @layer utilities {
   /* Text gradient for logo */
   .text-gradient-logo {
-    @apply bg-gradient-to-r from-burgundy-700 to-burgundy-800 bg-clip-text text-transparent;
+    color: #6B1D34;
   }
   
   /* Focus ring utility */

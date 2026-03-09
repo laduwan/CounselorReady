@@ -39,9 +39,9 @@ Sections of code marked with `// @lock` (or `/* @lock */`) comments are **protec
    - Do NOT change any className, color value, gradient, spacing, border, shadow, or component hierarchy on this page.
    - Functional/data changes (API calls, state logic, filtering) are allowed — visual changes are not.
 
-7. **All Page Aesthetics** — LOCKED to 3/5/2026 baseline
+7. **All Page Aesthetics** — LOCKED to current burgundy/forest brand scheme
    - Do NOT change colors, gradients, spacing, fonts, or visual styling on any existing page without explicit user approval.
-   - Buttons use moss-600/moss-700 (green) — do NOT change to burgundy or any other color.
+   - Buttons use burgundy-700/burgundy-800 — do NOT change to moss, teal, or any other color.
    - Logo uses gradient `linear-gradient(135deg, #8B2542, #6B1D34)` — do NOT flatten to solid color.
    - Landing page gradients and color transitions — do NOT simplify to flat colors.
    - When adding new features, match existing page aesthetics — do NOT introduce new color schemes.
