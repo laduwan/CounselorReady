@@ -303,8 +303,8 @@ function ContentBlockRenderer({
   }, [a11y?.narration]);
 
   // Font size class
-  const textSizeClass = a11y?.fontSize === 'x-large' ? 'text-lg' : a11y?.fontSize === 'large' ? 'text-base' : 'text-sm';
-  const proseSize = a11y?.fontSize === 'x-large' ? 'prose-lg' : a11y?.fontSize === 'large' ? 'prose-base' : 'prose';
+  const textSizeClass = a11y?.fontSize === 'x-large' ? 'text-xl' : a11y?.fontSize === 'large' ? 'text-lg' : 'text-base';
+  const proseSize = a11y?.fontSize === 'x-large' ? 'prose-xl' : a11y?.fontSize === 'large' ? 'prose-lg' : 'prose-base';
 
   switch (block.type) {
     case 'accordion':
@@ -656,30 +656,78 @@ function SectionView({
 
   return (
     <div className="max-w-4xl mx-auto">
-      {/* Content Blocks — all blocks scrollable, no paging */}
+      {/* Content Blocks — scroll mode default, paged mode optional */}
       {!showQuiz ? (
         <div className="space-y-5">
-          {contentBlocks.map((block, i) => (
+          {/* Paged mode indicator (only when paged mode active) */}
+          {pagedMode && totalPages > 1 && (
+            <div className="flex items-center justify-between bg-white rounded-lg border border-forest-100 px-4 py-2">
+              <span className="text-xs font-medium text-navy-500">
+                Page {safePage + 1} of {totalPages}
+              </span>
+              <div className="flex gap-1.5">
+                {pages.map((_, pi) => (
+                  <button
+                    key={pi}
+                    onClick={() => onPageChange(pi)}
+                    className={`w-2 h-2 rounded-full transition-all ${
+                      pi === safePage ? 'bg-burgundy-600 scale-125' : pi < safePage ? 'bg-hunter-400' : 'bg-stone-300'
+                    }`}
+                    aria-label={`Go to page ${pi + 1}`}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {(pagedMode ? pages[safePage] || [] : contentBlocks.map((block, i) => ({ block, originalIndex: i }))).map(({ block, originalIndex }) => (
             <div
-              key={i}
-              data-block-index={i}
+              key={originalIndex}
+              data-block-index={originalIndex}
               ref={(el) => el && observerRef.current?.observe(el)}
               className="animate-fadeIn"
             >
               <ContentBlockRenderer
                 block={block}
-                blockIndex={i}
+                blockIndex={originalIndex}
                 sectionIndex={sectionIndex}
                 courseSlug={course.slug}
                 onComplete={handleBlockComplete}
-                isCompleted={completedBlocks.has(i)}
+                isCompleted={completedBlocks.has(originalIndex)}
                 a11y={a11y}
               />
             </div>
           ))}
 
+          {/* Paged navigation (only when paged mode active) */}
+          {pagedMode && totalPages > 1 && (
+            <div className="flex items-center justify-between pt-4">
+              <button
+                onClick={() => onPageChange(safePage - 1)}
+                disabled={safePage === 0}
+                className={`flex items-center gap-2 px-4 py-2 transition-colors ${
+                  safePage === 0 ? 'opacity-50 cursor-not-allowed text-navy-400' : 'text-navy-600 hover:text-burgundy-700'
+                }`}
+              >
+                <ChevronLeft className="w-4 h-4" /> Back
+              </button>
+              {safePage < totalPages - 1 ? (
+                <button
+                  onClick={() => { onPageChange(safePage + 1); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                  className="flex items-center gap-2 px-6 py-2 bg-burgundy-700 hover:bg-burgundy-800 text-white rounded-lg text-sm font-semibold transition-colors"
+                >
+                  Continue <ChevronRight className="w-4 h-4" />
+                </button>
+              ) : (
+                <span className="text-xs font-medium text-hunter-600 flex items-center gap-1">
+                  <CheckCircle2 className="w-4 h-4" /> All content viewed
+                </span>
+              )}
+            </div>
+          )}
+
           {/* Section Quiz CTA */}
-          {section.hasQuiz && !quizPassed && (
+          {(!pagedMode || safePage === totalPages - 1) && section.hasQuiz && !quizPassed && (
             <div className="bg-hunter-50 border border-hunter-200 rounded-xl px-5 py-4 flex items-center justify-between gap-4">
               <div>
                 <h3 className="text-sm font-bold text-navy-700">Section Quiz</h3>
@@ -701,7 +749,7 @@ function SectionView({
             </div>
           )}
 
-          {quizPassed && (
+          {(!pagedMode || safePage === totalPages - 1) && quizPassed && (
             <div className="bg-hunter-50 border border-hunter-200 rounded-xl px-5 py-3 flex items-center gap-3">
               <CheckCircle2 className="w-5 h-5 text-hunter-600 flex-shrink-0" />
               <div>
@@ -1328,7 +1376,7 @@ export default function CourseViewer({ courseSlug }) {
   }, []);
 
   // Accessibility: font size class for main content area
-  const fontSizeClass = a11y.fontSize === 'x-large' ? 'text-lg' : a11y.fontSize === 'large' ? 'text-base' : 'text-sm';
+  const fontSizeClass = a11y.fontSize === 'x-large' ? 'text-xl' : a11y.fontSize === 'large' ? 'text-lg' : 'text-base';
   const hcClass = a11y.highContrast ? 'high-contrast' : '';
 
   if (loading) {
@@ -1409,6 +1457,14 @@ export default function CourseViewer({ courseSlug }) {
           </h1>
 
           <div className="flex items-center gap-1">
+            <button
+              onClick={() => setPagedMode(!pagedMode)}
+              className={`p-2 rounded-lg transition-colors ${pagedMode ? 'bg-burgundy-100 text-burgundy-700' : 'text-navy-400 hover:text-navy-600'}`}
+              aria-label={pagedMode ? 'Switch to scroll mode' : 'Switch to paged mode'}
+              title={pagedMode ? 'Scroll mode' : 'Paged mode'}
+            >
+              <Layers className="w-5 h-5" />
+            </button>
             <AccessibilityToolbar settings={a11y} onUpdate={setA11y} />
             <a href="/dashboard" className="p-2 text-navy-400 hover:text-navy-600" aria-label="Return to dashboard">
               <Home className="w-5 h-5" />
