@@ -312,13 +312,13 @@ export function ImageTextCard({ image, imageAlt, title, content, imagePosition =
   return (
     <div style={{ background: B.card, borderRadius: 16, overflow: 'hidden', border: `${highlight ? 2 : 1}px solid ${highlight ? B.green : B.border}`, boxShadow: highlight ? `0 0 0 3px ${B.greenBg}` : '0 2px 8px rgba(0,0,0,0.06)' }}>
       <div style={{ display: 'flex', flexDirection: imagePosition === 'right' ? 'row-reverse' : 'row' }}>
-        <div style={{ width: '40%', minHeight: 180, background: B.greenBg, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ width: '35%', minHeight: 140, background: B.greenBg, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           {image ? <img src={image} alt={imageAlt || title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : (
-            <div style={{ textAlign: 'center', padding: 24 }}><BookOpen size={48} color={B.green + '44'} /><p style={{ fontSize: 12, color: B.light, marginTop: 8 }}>Course Content</p></div>
+            <div style={{ textAlign: 'center', padding: 20 }}><BookOpen size={36} color={B.green + '44'} /><p style={{ fontSize: 11, color: B.light, marginTop: 6 }}>Course Content</p></div>
           )}
         </div>
-        <div style={{ flex: 1, padding: 24 }}>
-          <h3 style={{ fontSize: 19, fontWeight: 700, color: B.navy, marginBottom: 12 }}>{title}</h3>
+        <div style={{ flex: 1, padding: 20 }}>
+          <h3 style={{ fontSize: 17, fontWeight: 700, color: B.navy, marginBottom: 10 }}>{title}</h3>
           {typeof content === 'string' ? <p style={{ color: B.muted, lineHeight: 1.7, fontSize: 14 }}>{content}</p> : content}
         </div>
       </div>
@@ -331,14 +331,14 @@ export function ImageTextCard({ image, imageAlt, title, content, imagePosition =
 // ============================================================================
 export function SectionDivider({ title, subtitle, sectionNumber }) {
   return (
-    <div style={{ position: 'relative', padding: '48px 0' }}>
+    <div style={{ position: 'relative', padding: '28px 0' }}>
       <div style={{ position: 'absolute', top: '50%', left: 0, right: 0, height: 2, background: B.border }}></div>
       <div style={{ position: 'relative', display: 'flex', justifyContent: 'center' }}>
-        <div style={{ background: B.burgundy, borderRadius: 16, padding: '20px 32px', boxShadow: '0 4px 16px rgba(107,29,52,0.2)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-            {sectionNumber && <div style={{ width: 48, height: 48, borderRadius: '50%', background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><span style={{ fontSize: 22, fontWeight: 800, color: '#fff' }}>{sectionNumber}</span></div>}
+        <div style={{ background: B.burgundy, borderRadius: 12, padding: '14px 24px', boxShadow: '0 4px 16px rgba(107,29,52,0.2)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            {sectionNumber && <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><span style={{ fontSize: 16, fontWeight: 800, color: '#fff' }}>{sectionNumber}</span></div>}
             <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}><BookOpen size={20} color="rgba(255,255,255,0.6)" /><h2 style={{ fontSize: 19, fontWeight: 700, color: '#fff', margin: 0 }}>{title}</h2></div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}><BookOpen size={16} color="rgba(255,255,255,0.6)" /><h2 style={{ fontSize: 16, fontWeight: 700, color: '#fff', margin: 0 }}>{title}</h2></div>
               {subtitle && <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: 13, marginTop: 4 }}>{subtitle}</p>}
             </div>
           </div>
