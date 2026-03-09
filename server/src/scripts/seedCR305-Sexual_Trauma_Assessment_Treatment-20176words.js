@@ -276,7 +276,7 @@ const COURSE_DATA = {
           "Specific to prior trauma history"
         ],
         correctAnswer: 1,
-        explanation: ""
+        explanation: "The correct answer is that tonic immobility is an involuntary neurobiological response occurring in approximately 70% of rape survivors. Research by Möller et al. (2017) established this as an automatic freeze response mediated by the brainstem, not a voluntary behavior. It is not evidence of consent (option C), as it represents a survival mechanism beyond conscious control, which has critical implications for legal proceedings and clinical psychoeducation."
       },
       {
         question: "The PCL-5 is most valuable for trauma treatment because:",
@@ -288,7 +288,7 @@ const COURSE_DATA = {
           "It identifies trauma type and perpetrator relationship"
         ],
         correctAnswer: 1,
-        explanation: ""
+        explanation: "The correct answer is that the PCL-5's sensitivity to change makes it most valuable for tracking treatment progress over time. While it is a validated self-report measure aligned with DSM-5 PTSD criteria, it does not provide a definitive diagnosis (option A), which requires a structured clinical interview. Its primary clinical utility lies in repeated administration to monitor symptom reduction and guide treatment decisions."
       },
       {
         question: "TF-CBT's distinctive feature not found in other first-line trauma treatments is:",
@@ -300,7 +300,7 @@ const COURSE_DATA = {
           "Bilateral stimulation during processing"
         ],
         correctAnswer: 2,
-        explanation: ""
+        explanation: "The correct answer is parallel parent/caregiver treatment sessions, which is the distinctive component of TF-CBT not present in other first-line trauma treatments such as CPT, PE, or EMDR. TF-CBT uniquely includes caregivers in parallel sessions to improve the child's support environment and enhance treatment outcomes. Imaginal exposure (option A) is a core component of Prolonged Exposure therapy, not a distinctive feature of TF-CBT."
       },
       {
         question: "Window of Tolerance describes:",
@@ -312,7 +312,7 @@ const COURSE_DATA = {
           "Duration of stabilization phase"
         ],
         correctAnswer: 1,
-        explanation: ""
+        explanation: "The correct answer is that the Window of Tolerance describes the optimal arousal zone between hyperarousal and dissociation, a concept developed by Daniel Siegel. Within this zone, individuals can process information and emotions effectively without becoming overwhelmed or shutting down. Maximum exposure intensity (option C) is incorrect because the Window of Tolerance refers to an individual's regulatory capacity, not a treatment parameter for exposure dosing."
       },
       {
         question: "CPT's primary mechanism targets:",

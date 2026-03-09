@@ -234,7 +234,7 @@ const COURSE_DATA = {
           "Presentation, Listening, Inquiry, Skills, Information, Therapy"
         ],
         correctAnswer: 1,
-        explanation: ""
+        explanation: "The correct answer is Permission, Limited Information, Specific Suggestions, Intensive Therapy. Developed by Annon (1976), the PLISSIT model provides a graduated framework for sexual health clinical involvement, from the most basic level (Permission) accessible to all clinicians through to Intensive Therapy requiring specialized sex therapy training. The first option is incorrect because PLISSIT is not a prevention or screening model but rather a framework for tiered clinical intervention in sexual health practice."
       },
       {
         question: "Masters and Johnson's human sexual response cycle includes which sequence:",
@@ -246,7 +246,7 @@ const COURSE_DATA = {
           "Arousal, desire, orgasm, resolution"
         ],
         correctAnswer: 1,
-        explanation: ""
+        explanation: "The correct answer is Excitement, Plateau, Orgasm, Resolution. Masters and Johnson's 1966 laboratory research identified this four-phase physiological sequence as the human sexual response cycle, which did not include a desire phase. The first option (Desire, Arousal, Orgasm, Resolution) is incorrect because the desire phase was added later by Helen Singer Kaplan in her triphasic model, not by Masters and Johnson."
       },
       {
         question: "Basson's (2001) circular model of female sexual response specifically addressed:",
@@ -258,7 +258,7 @@ const COURSE_DATA = {
           "The role of testosterone in female sexual desire disorders"
         ],
         correctAnswer: 1,
-        explanation: ""
+        explanation: "The correct answer is responsive desire as a normative pathway for women that differs from spontaneous desire. Basson's circular model reframed absent spontaneous desire as potentially normative rather than disordered for women whose desire emerges in response to erotic stimuli within an intimate context. The first option is incorrect because Basson's model focused on the desire and arousal pathway, not orgasmic disorder, which is a separate diagnostic category."
       },
       {
         question: "The FSFI is a validated instrument that assesses:",

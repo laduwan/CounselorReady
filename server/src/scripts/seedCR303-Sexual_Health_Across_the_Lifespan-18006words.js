@@ -234,7 +234,7 @@ const COURSE_DATA = {
           "Stable across the lifespan unless disrupted by illness"
         ],
         correctAnswer: 1,
-        explanation: ""
+        explanation: "The correct answer is that sexual functioning is the product of interacting biological, psychological, and sociocultural factors. The biopsychosocial model replaced single-factor models by recognizing that hormonal status, cognitive patterns, attachment, cultural scripts, and relationship context all dynamically interact to shape sexual experience. Viewing sexual functioning as primarily biological is incorrect because it ignores the well-documented psychological and sociocultural contributors that are central to comprehensive clinical formulation."
       },
       {
         question: "Basson's circular model of female sexual response describes:",
@@ -246,7 +246,7 @@ const COURSE_DATA = {
           "Hormonal determinants of female desire across the menstrual cycle"
         ],
         correctAnswer: 1,
-        explanation: ""
+        explanation: "The correct answer is that Basson's model describes responsive desire as a normative female pathway. Basson (2001) proposed a circular model in which desire can emerge in response to erotic stimuli rather than preceding arousal spontaneously, reframing this pattern as normal rather than disordered for many women. The option identifying spontaneous desire as a universal baseline reflects the older linear Masters and Johnson model, which Basson's work specifically challenged."
       },
       {
         question: "A developmentally normative sexual behavior in early childhood includes:",
@@ -258,7 +258,7 @@ const COURSE_DATA = {
           "Seeking pornographic material"
         ],
         correctAnswer: 1,
-        explanation: ""
+        explanation: "The correct answer is genital self-touching during bathing. The course identifies genital self-exploration as a developmentally expected component of bodily self-discovery in early childhood, typically driven by curiosity rather than sexual intent. Sexual role-playing involving penetration would be a concerning behavior suggesting possible exposure to adult sexual content, which is one of the clinical red flags distinguishing normative exploration from behavior warranting assessment."
       },
       {
         question: "The Permission level of the PLISSIT model involves:",
@@ -270,7 +270,7 @@ const COURSE_DATA = {
           "Referring to an AASECT-certified sex therapist"
         ],
         correctAnswer: 1,
-        explanation: ""
+        explanation: "The correct answer is communicating that sexual concerns are clinically appropriate and non-pathological. The Permission level of PLISSIT involves explicitly signaling that sexual health is a legitimate clinical topic, reducing shame and opening the door for clients to discuss concerns. Providing specific behavioral techniques corresponds to the Specific Suggestions level of the model, not the Permission level."
       },
       {
         question: "Genitourinary syndrome of menopause produces:",

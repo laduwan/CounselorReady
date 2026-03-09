@@ -219,7 +219,7 @@ const COURSE_DATA = {
           "Social and psychological stressors arising from cultural mismatch"
         ],
         correctAnswer: 1,
-        explanation: ""
+        explanation: "The correct answer is distal stressors (external discrimination/prejudice) and proximal stressors (internalized stigma, concealment, vigilance). Meyer's (2003) minority stress model specifically categorizes stressors into these two domains, with distal stressors being objective external events like discrimination and violence, and proximal stressors being subjective internal processes such as internalized homophobia, identity concealment, and hypervigilance. The option describing 'acute and chronic stressors equally applicable to all minority populations' is incorrect because Meyer's framework identifies stressors specific to the LGBTQ+ minority experience, not general stressors applicable to all groups."
       },
       {
         question: "Ryan et al. (2009) found that LGBTQ+ youth experiencing high family rejection were how many times more likely to attempt suicide:",
@@ -231,7 +231,7 @@ const COURSE_DATA = {
           "12.1 times"
         ],
         correctAnswer: 2,
-        explanation: ""
+        explanation: "The correct answer is 8.4 times. Ryan et al. (2009) documented that LGBTQ+ youth experiencing high levels of family rejection were 8.4 times more likely to attempt suicide, along with 5.9 times greater likelihood of depression and 3.4 times greater likelihood of unprotected sex. The option of 4.8 times is the most plausible distractor but understates the magnitude of the risk, which the research specifically quantified at 8.4 times greater likelihood."
       },
       {
         question: "Russell et al. (2018) found that use of chosen name for transgender youth was associated with:",
@@ -243,7 +243,7 @@ const COURSE_DATA = {
           "Increased disclosure of gender identity to peers"
         ],
         correctAnswer: 1,
-        explanation: ""
+        explanation: "The correct answer is a 56% reduction in suicidal ideation. Russell et al. (2018) found that use of a transgender youth's chosen name was associated with a 56% reduction in suicidal ideation, a 71% reduction in severe depression symptoms, and a 65% reduction in suicidal behavior. The option suggesting increased conflict with family members is incorrect because the research demonstrated that chosen name use is a concrete family acceptance behavior with measurable positive mental health effects, not a source of increased conflict."
       },
       {
         question: "The WPATH SOC8's position on clinicians working with transgender clients is that clinicians should function as:",
@@ -255,7 +255,7 @@ const COURSE_DATA = {
           "Advocates who challenge all barriers to gender-affirming care regardless of clinical readiness"
         ],
         correctAnswer: 1,
-        explanation: ""
+        explanation: "The correct answer is collaborators who support clients' own gender development and goals. WPATH SOC8 (Coleman et al., 2022) represents a paradigm shift from earlier versions by explicitly positioning the clinician as a collaborator rather than a gatekeeper, emphasizing support for the client's own gender development and goals. The gatekeeper option is incorrect because SOC8 specifically moved away from this model, recognizing that treating transgender healthcare as requiring special clinical authorization constitutes a harmful form of discrimination."
       },
       {
         question: "Conversion therapy is best described as:",
@@ -267,7 +267,7 @@ const COURSE_DATA = {
           "A legally prohibited practice in all US states"
         ],
         correctAnswer: 1,
-        explanation: ""
+        explanation: "The correct answer is that conversion therapy is any practice attempting to change sexual orientation or gender identity, which is harmful and unethical. Every major mental health professional organization (APA, ACA, NASW, AAMFT) ethically prohibits conversion therapy, and the APA Task Force (2009) found no credible evidence of efficacy and substantial evidence of harm including increased depression, anxiety, and suicidal ideation. The option describing it as a historical practice no longer in use is incorrect because conversion therapy continues to be practiced and remains legal in many U.S. states, which is why ongoing clinical vigilance against it is necessary."
       },
       {
         question: "Crenshaw's (1989) intersectionality framework is clinically relevant because:",
