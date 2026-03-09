@@ -35,7 +35,7 @@ const InteractiveCourseCatalog = () => {
   const fetchCourses = async () => {
     try {
       setLoading(true);
-      const response = await api.get('/interactive-courses');
+      const response = await api.get('/interactive-courses?limit=100');
       setCourses(response.data.data || response.data.courses || []);
     } catch (err) {
       console.error('Error fetching courses:', err);
@@ -49,7 +49,8 @@ const InteractiveCourseCatalog = () => {
     try {
       const response = await api.get('/interactive-courses/user/my-courses');
       const progressMap = {};
-      response.data.forEach(item => {
+      const items = response.data.data || response.data || [];
+      items.forEach(item => {
         if (item.course) {
           progressMap[item.course._id] = item;
         }
