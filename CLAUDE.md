@@ -28,6 +28,17 @@ Sections of code marked with `// @lock` (or `/* @lock */`) comments are **protec
    - The overall page structure (header, sidebar, main content area) is locked.
    - Navigation ordering and hierarchy is locked.
 
+6. **Course Catalog Page** (`client/src/pages/InteractiveCourseCatalog.jsx`) — FULLY LOCKED
+   - The entire visual design of this page is locked: layout, colors, and all elements.
+   - **Page heading**: title text, burgundy-900 color, forest-600 subtitle — locked.
+   - **Filter bar**: white background, rounded-xl, forest borders, burgundy focus rings — locked.
+   - **Grid layout**: 1/2/3-column responsive grid with gap-6 — locked.
+   - **CourseCard (grid view)**: gradient thumbnail (hunter-100 → burgundy-200), burgundy-500 book icon, burgundy-100 border, card shadow behavior, info pills (honey-100/forest-100/burgundy-100), clock icon, burgundy action bar — all locked.
+   - **CourseListItem (list view)**: icon square gradient, pill colors, progress bar (burgundy-600 fill, stone-200 track), chevron hover — all locked.
+   - **View toggle**: burgundy-800 active state, forest-600 inactive — locked.
+   - Do NOT change any className, color value, gradient, spacing, border, shadow, or component hierarchy on this page.
+   - Functional/data changes (API calls, state logic, filtering) are allowed — visual changes are not.
+
 ### How to mark new locked sections:
 
 Use these comment markers in any file:
