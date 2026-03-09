@@ -6,6 +6,7 @@ module.exports = {
   ],
   theme: {
     extend: {
+      // @lock-start: CounselorReady brand colors — do not modify
       colors: {
         // ═══════════════════════════════════════════════
         // CounselorReady Unified Palette v1.0
@@ -117,11 +118,14 @@ module.exports = {
           900: '#1C1917',
         },
       },
+      // @lock-end
+      // @lock-start: Brand fonts — do not modify
       fontFamily: {
         display: ['Cormorant Garamond', 'Georgia', 'serif'],
         sans: ['Lato', 'system-ui', 'sans-serif'],
         body: ['Lato', 'system-ui', 'sans-serif'],
       },
+      // @lock-end
     },
   },
   plugins: [],
