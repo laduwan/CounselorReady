@@ -220,6 +220,45 @@ function AccessibilityToolbar({ settings, onUpdate }) {
 }
 
 // ============================================================================
+// COLLAPSIBLE TEXT BLOCK — long text content gets a "Read more" toggle
+// ============================================================================
+function TextBlock({ rawHTML, isLong, proseSize, a11y, speakText }) {
+  const [expanded, setExpanded] = useState(!isLong);
+
+  return (
+    <div className="bg-white rounded-xl border border-stone-200 overflow-hidden">
+      <div className={`px-6 py-5 ${proseSize} prose-slate max-w-none ${!expanded ? 'max-h-48 overflow-hidden relative' : ''}`}>
+        {a11y?.narration && (
+          <button
+            onClick={() => speakText(rawHTML)}
+            className="mb-2 flex items-center gap-1.5 text-xs font-medium text-burgundy-600 hover:text-burgundy-800 transition-colors"
+            aria-label="Read this section aloud"
+          >
+            <Volume2 className="w-3.5 h-3.5" /> Read Aloud
+          </button>
+        )}
+        <div dangerouslySetInnerHTML={{ __html: safeHTML(rawHTML) }} />
+        {!expanded && (
+          <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-white to-transparent" />
+        )}
+      </div>
+      {isLong && (
+        <button
+          onClick={() => setExpanded(!expanded)}
+          className="w-full px-6 py-3 text-sm font-semibold text-burgundy-700 hover:text-burgundy-900 bg-stone-50 border-t border-stone-200 flex items-center justify-center gap-2 transition-colors"
+        >
+          {expanded ? (
+            <><ChevronLeft className="w-4 h-4 rotate-90" /> Show Less</>
+          ) : (
+            <><ChevronRight className="w-4 h-4 rotate-90" /> Read More</>
+          )}
+        </button>
+      )}
+    </div>
+  );
+}
+
+// ============================================================================
 // CONTENT BLOCK RENDERER
 // ============================================================================
 function ContentBlockRenderer({ 
@@ -321,21 +360,11 @@ function ContentBlockRenderer({
         />
       );
 
-    case 'text':
-      return (
-        <div className={`${proseSize} prose-slate max-w-none`}>
-          {a11y?.narration && (
-            <button 
-              onClick={() => speakText(block.textContent || block.content || '')}
-              className="mb-2 flex items-center gap-1.5 text-xs font-medium text-burgundy-600 hover:text-burgundy-800 transition-colors"
-              aria-label="Read this section aloud"
-            >
-              <Volume2 className="w-3.5 h-3.5" /> Read Aloud
-            </button>
-          )}
-          <div dangerouslySetInnerHTML={{ __html: safeHTML(block.textContent || block.content || '') }} />
-        </div>
-      );
+    case 'text': {
+      const rawHTML = block.textContent || block.content || '';
+      const isLong = rawHTML.length > 1200;
+      return <TextBlock rawHTML={rawHTML} isLong={isLong} proseSize={proseSize} a11y={a11y} speakText={speakText} />;
+    }
 
     case 'video':
       return (
@@ -454,7 +483,7 @@ function ContentBlockRenderer({
           <textarea
             placeholder="Take a moment to reflect and write your thoughts here..."
             aria-label={`Reflection: ${block.question}`}
-            style={{ width: '100%', minHeight: 120, padding: 12, borderRadius: 10, border: '1px solid #E8E4DF', fontSize: 14, fontFamily: 'inherit', resize: 'vertical', boxSizing: 'border-box' }}
+            style={{ width: '100%', minHeight: 80, padding: 12, borderRadius: 10, border: '1px solid #E8E4DF', fontSize: 14, fontFamily: 'inherit', resize: 'vertical', boxSizing: 'border-box' }}
             onChange={(e) => {
               if (e.target.value.length >= (block.minLength || 50)) {
                 handleInteractionComplete(true, 1);
@@ -600,9 +629,9 @@ function SectionView({
 
       {/* Content Blocks */}
       {!showQuiz ? (
-        <div className="space-y-6">
+        <div className="space-y-5">
           {section.contentBlocks.map((block, index) => (
-            <div 
+            <div
               key={index}
               data-block-index={index}
               ref={(el) => el && observerRef.current?.observe(el)}
