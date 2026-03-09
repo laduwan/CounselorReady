@@ -61,8 +61,8 @@ const api = {
   },
 
   async updateSectionProgress(slug, sectionIndex, data) {
-    const res = await fetch(`${API_BASE}/${slug}/sections/${sectionIndex}/progress`, {
-      method: 'POST',
+    const res = await fetch(`${API_BASE}/${slug}/progress/section/${sectionIndex}`, {
+      method: 'PUT',
       headers: authHeaders(),
       body: JSON.stringify(data)
     });
@@ -72,7 +72,7 @@ const api = {
   },
 
   async submitSectionQuiz(slug, sectionIndex, answers, timeSpent) {
-    const res = await fetch(`${API_BASE}/${slug}/sections/${sectionIndex}/quiz`, {
+    const res = await fetch(`${API_BASE}/${slug}/progress/section/${sectionIndex}/quiz`, {
       method: 'POST',
       headers: authHeaders(),
       body: JSON.stringify({ answers, timeSpent })
@@ -83,7 +83,7 @@ const api = {
   },
 
   async submitAssessment(slug, answers, timeUsed, questionOrder) {
-    const res = await fetch(`${API_BASE}/${slug}/assessment/submit`, {
+    const res = await fetch(`${API_BASE}/${slug}/assessment`, {
       method: 'POST',
       headers: authHeaders(),
       body: JSON.stringify({ answers, timeUsed, questionOrder })
@@ -95,7 +95,7 @@ const api = {
 
   async logInteraction(slug, interaction) {
     try {
-      await fetch(`${API_BASE}/${slug}/interaction`, {
+      await fetch(`${API_BASE}/${slug}/progress/interaction`, {
         method: 'POST',
         headers: authHeaders(),
         body: JSON.stringify(interaction)
@@ -303,8 +303,8 @@ function ContentBlockRenderer({
   }, [a11y?.narration]);
 
   // Font size class
-  const textSizeClass = a11y?.fontSize === 'x-large' ? 'text-lg' : a11y?.fontSize === 'large' ? 'text-base' : 'text-sm';
-  const proseSize = a11y?.fontSize === 'x-large' ? 'prose-lg' : a11y?.fontSize === 'large' ? 'prose-base' : 'prose';
+  const textSizeClass = a11y?.fontSize === 'x-large' ? 'text-xl' : a11y?.fontSize === 'large' ? 'text-lg' : 'text-base';
+  const proseSize = a11y?.fontSize === 'x-large' ? 'prose-xl' : a11y?.fontSize === 'large' ? 'prose-lg' : 'prose-base';
 
   switch (block.type) {
     case 'accordion':
@@ -656,43 +656,10 @@ function SectionView({
 
   return (
     <div className="max-w-4xl mx-auto">
-      {/* Section Header */}
-      <div className="mb-8">
-        <div className="flex items-center gap-3 text-sm text-navy-500 mb-2">
-          <span>Section {sectionIndex + 1} of {course.sections.length}</span>
-          <span>•</span>
-          <span className="flex items-center gap-1">
-            <Clock className="w-4 h-4" />
-            {section.estimatedTime} min
-          </span>
-        </div>
-        <h1 className="text-3xl font-bold text-navy-700">{section.title}</h1>
-        {section.description && (
-          <p className="text-navy-500 mt-2">{section.description}</p>
-        )}
-      </div>
-
-      {/* Progress indicator */}
-      <div className="mb-6 bg-white rounded-xl border border-forest-200 p-4">
-        <div className="flex items-center justify-between text-sm mb-2">
-          <span className="text-navy-600">Section Progress</span>
-          <span className="font-semibold text-burgundy-700">
-            {viewedBlocks.size}/{contentBlocks.length} viewed
-            {interactiveBlockCount > 0 && ` • ${completedBlocks.size}/${interactiveBlockCount} completed`}
-          </span>
-        </div>
-        <div className="h-2 bg-stone-100 rounded-full overflow-hidden">
-          <div 
-            className="h-full bg-honey-400 transition-all rounded-full"
-            style={{ width: `${contentBlocks.length > 0 ? (viewedBlocks.size / contentBlocks.length) * 100 : 0}%` }}
-          />
-        </div>
-      </div>
-
-      {/* Content Blocks */}
+      {/* Content Blocks — scroll mode default, paged mode optional */}
       {!showQuiz ? (
         <div className="space-y-5">
-          {/* Paged mode: page indicator */}
+          {/* Paged mode indicator (only when paged mode active) */}
           {pagedMode && totalPages > 1 && (
             <div className="flex items-center justify-between bg-white rounded-lg border border-forest-100 px-4 py-2">
               <span className="text-xs font-medium text-navy-500">
@@ -732,35 +699,34 @@ function SectionView({
             </div>
           ))}
 
-          {/* Paged navigation */}
+          {/* Paged navigation (only when paged mode active) */}
           {pagedMode && totalPages > 1 && (
             <div className="flex items-center justify-between pt-4">
               <button
                 onClick={() => onPageChange(safePage - 1)}
                 disabled={safePage === 0}
-                className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                  safePage === 0 ? 'text-slate-300 cursor-not-allowed' : 'text-navy-600 hover:bg-stone-100 border border-forest-200'
+                className={`flex items-center gap-2 px-4 py-2 transition-colors ${
+                  safePage === 0 ? 'opacity-50 cursor-not-allowed text-navy-400' : 'text-navy-600 hover:text-burgundy-700'
                 }`}
               >
                 <ChevronLeft className="w-4 h-4" /> Back
               </button>
-
               {safePage < totalPages - 1 ? (
                 <button
                   onClick={() => { onPageChange(safePage + 1); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-                  className="flex items-center gap-2 px-6 py-2.5 bg-burgundy-800 hover:bg-burgundy-700 text-white rounded-lg text-sm font-semibold transition-colors"
+                  className="flex items-center gap-2 px-6 py-2 bg-burgundy-700 hover:bg-burgundy-800 text-white rounded-lg text-sm font-semibold transition-colors"
                 >
-                  Continue <ChevronsRight className="w-4 h-4" />
+                  Continue <ChevronRight className="w-4 h-4" />
                 </button>
               ) : (
                 <span className="text-xs font-medium text-hunter-600 flex items-center gap-1">
-                  <CheckCircle2 className="w-4 h-4" /> All content on this section
+                  <CheckCircle2 className="w-4 h-4" /> All content viewed
                 </span>
               )}
             </div>
           )}
 
-          {/* Section Quiz CTA — show at end (scroll mode always, paged mode only on last page) */}
+          {/* Section Quiz CTA */}
           {(!pagedMode || safePage === totalPages - 1) && section.hasQuiz && !quizPassed && (
             <div className="bg-hunter-50 border border-hunter-200 rounded-xl px-5 py-4 flex items-center justify-between gap-4">
               <div>
@@ -808,15 +774,15 @@ function SectionView({
         />
       )}
 
-      {/* Navigation */}
-      <div className="mt-12 pt-6 border-t border-forest-200 flex items-center justify-between">
+      {/* Section Navigation — simple Previous / Next */}
+      <div className="mt-8 pt-6 border-t border-forest-200 flex justify-between">
         <button
           onClick={() => onNavigate(sectionIndex - 1)}
           disabled={sectionIndex === 0}
-          className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+          className={`flex items-center gap-2 px-4 py-2 transition-colors ${
             sectionIndex === 0
-              ? 'text-slate-300 cursor-not-allowed'
-              : 'text-navy-600 hover:bg-stone-100'
+              ? 'opacity-50 cursor-not-allowed text-navy-400'
+              : 'text-navy-600 hover:text-burgundy-700'
           }`}
         >
           <ChevronLeft className="w-5 h-5" />
@@ -826,22 +792,22 @@ function SectionView({
         {isLastSection && canProceed ? (
           <button
             onClick={() => onNavigate('assessment')}
-            className="flex items-center gap-2 px-6 py-3 bg-hunter-600 hover:bg-hunter-700 text-white font-semibold rounded-xl transition-colors"
+            className="flex items-center gap-2 px-6 py-2 bg-burgundy-700 text-white rounded-lg hover:bg-burgundy-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Take Final Assessment
-            <Award className="w-5 h-5" />
+            Next
+            <ChevronRight className="w-5 h-5" />
           </button>
         ) : (
           <button
             onClick={() => onNavigate(sectionIndex + 1)}
             disabled={!canProceed}
-            className={`flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-colors ${
+            className={`flex items-center gap-2 px-6 py-2 rounded-lg transition-colors ${
               canProceed
-                ? 'bg-burgundy-800 hover:bg-burgundy-700 text-white'
-                : 'bg-stone-200 text-forest-400 cursor-not-allowed'
+                ? 'bg-burgundy-700 hover:bg-burgundy-800 text-white'
+                : 'opacity-50 cursor-not-allowed bg-burgundy-700 text-white'
             }`}
           >
-            {canProceed ? 'Next Section' : 'Complete quiz to continue'}
+            Next
             <ChevronRight className="w-5 h-5" />
           </button>
         )}
@@ -1176,7 +1142,7 @@ function CourseSidebar({
       )}
       
       <aside className={`
-        fixed top-0 left-0 h-full w-80 bg-white border-r border-forest-200 z-50
+        fixed top-0 left-0 h-full w-72 bg-white border-r border-forest-200 z-50
         transform transition-transform duration-300
         lg:relative lg:transform-none
         ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
@@ -1184,33 +1150,32 @@ function CourseSidebar({
         <div className="h-full flex flex-col">
           {/* Header */}
           <div className="p-4 border-b border-forest-200">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="font-bold text-navy-700 line-clamp-2">{course.title}</h2>
+            <a href="/courses" className="flex items-center gap-2 text-navy-500 hover:text-burgundy-700 text-sm mb-3">
+              <ChevronLeft className="w-4 h-4" />
+              Back to Courses
+            </a>
+            <div className="flex items-center justify-between">
+              <h2 className="font-semibold text-navy-700 text-sm line-clamp-2">{course.title}</h2>
               <button onClick={onClose} className="lg:hidden text-forest-400 hover:text-navy-600">
                 <X className="w-5 h-5" />
               </button>
             </div>
-            <div className="flex items-center gap-3 text-sm text-navy-400">
-              <span className="flex items-center gap-1">
-                <Clock className="w-4 h-4" />
-                {Math.round(course.totalEstimatedTime / 60)}h
-              </span>
-              <span className="flex items-center gap-1">
-                <Award className="w-4 h-4" />
-                {course.ceHours} CE
-              </span>
+            <div className="mt-2 flex items-center gap-2 text-xs text-navy-400">
+              <span>{course.ceHours} CE Hours</span>
+              <span>•</span>
+              <span>{course.sections.length} Sections</span>
             </div>
           </div>
 
           {/* Progress */}
           <div className="p-4 border-b border-forest-200">
-            <div className="flex items-center justify-between text-sm mb-2">
+            <div className="flex justify-between text-sm mb-1">
               <span className="text-navy-600">Progress</span>
-              <span className="font-bold text-burgundy-700">{progress?.overallProgress || 0}%</span>
+              <span className="font-medium text-burgundy-700">{progress?.overallProgress || 0}%</span>
             </div>
             <div className="h-2 bg-stone-100 rounded-full overflow-hidden">
-              <div 
-                className="h-full bg-honey-400 transition-all rounded-full"
+              <div
+                className="h-full bg-burgundy-700 transition-all rounded-full"
                 style={{ width: `${progress?.overallProgress || 0}%` }}
               />
             </div>
@@ -1284,36 +1249,7 @@ function CourseSidebar({
                         <span className="text-[13px] font-medium line-clamp-2">{section.title}</span>
                       </button>
 
-                      {/* Sub-page indicators in paged mode */}
-                      {pagedMode && isCurrent && (() => {
-                        const sectionPages = groupBlocksIntoPages(section.contentBlocks || []);
-                        if (sectionPages.length <= 1) return null;
-                        return (
-                          <div className="ml-8 mt-1 mb-1 flex flex-col gap-0.5">
-                            {sectionPages.map((pg, pi) => {
-                              const label = pg[0]?.block?.type === 'sectionDivider'
-                                ? pg[0].block.title
-                                : `Part ${pi + 1}`;
-                              return (
-                                <button
-                                  key={pi}
-                                  onClick={() => onPageChange(pi)}
-                                  className={`flex items-center gap-2 px-2 py-1 rounded text-left transition-colors ${
-                                    pi === currentPage
-                                      ? 'bg-burgundy-100 text-burgundy-700'
-                                      : 'text-navy-400 hover:text-navy-600 hover:bg-stone-50'
-                                  }`}
-                                >
-                                  <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${
-                                    pi === currentPage ? 'bg-burgundy-600' : 'bg-stone-300'
-                                  }`} />
-                                  <span className="text-[11px] font-medium truncate">{label}</span>
-                                </button>
-                              );
-                            })}
-                          </div>
-                        );
-                      })()}
+                      {/* Sub-page indicators removed — scroll mode is default */}
                     </li>
                   );
                 });
@@ -1440,7 +1376,7 @@ export default function CourseViewer({ courseSlug }) {
   }, []);
 
   // Accessibility: font size class for main content area
-  const fontSizeClass = a11y.fontSize === 'x-large' ? 'text-lg' : a11y.fontSize === 'large' ? 'text-base' : 'text-sm';
+  const fontSizeClass = a11y.fontSize === 'x-large' ? 'text-xl' : a11y.fontSize === 'large' ? 'text-lg' : 'text-base';
   const hcClass = a11y.highContrast ? 'high-contrast' : '';
 
   if (loading) {
@@ -1515,12 +1451,10 @@ export default function CourseViewer({ courseSlug }) {
           >
             <Menu className="w-5 h-5" />
           </button>
-          
-          <div className="flex-1 lg:hidden text-center">
-            <span className="font-medium text-navy-700 text-sm">
-              {currentView === 'assessment' ? 'Final Assessment' : currentView === 'references' ? 'References' : currentSection?.title}
-            </span>
-          </div>
+
+          <h1 className="text-lg font-semibold text-navy-700 text-center flex-1">
+            {currentView === 'assessment' ? 'Final Assessment' : currentView === 'references' ? 'References' : currentSection?.title}
+          </h1>
 
           <div className="flex items-center gap-1">
             <button
