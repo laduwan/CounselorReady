@@ -5,9 +5,10 @@
  */
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { 
-  ChevronLeft, ChevronRight, Menu, X, BookOpen, Clock, Award, 
+  ChevronLeft, ChevronRight, Menu, X, BookOpen, Clock, Award,
   CheckCircle2, Circle, Play, Lock, AlertCircle, Download,
-  BarChart3, Home, Settings, LogOut, User, Type, Eye, Volume2
+  BarChart3, Home, Settings, LogOut, User, Type, Eye, Volume2,
+  Layers, ChevronsRight
 } from 'lucide-react';
 import { safeHTML } from '../utils/sanitize';
 import {
@@ -26,7 +27,8 @@ import {
   ScenarioTree,
   FlashcardDeck,
   VideoEmbed,
-  ImageBlock
+  ImageBlock,
+  KnowledgeCheckModal
 } from './InteractiveCourseComponents';
 
 // ============================================================================
@@ -219,6 +221,45 @@ function AccessibilityToolbar({ settings, onUpdate }) {
 }
 
 // ============================================================================
+// COLLAPSIBLE TEXT BLOCK — long text content gets a "Read more" toggle
+// ============================================================================
+function TextBlock({ rawHTML, isLong, proseSize, a11y, speakText }) {
+  const [expanded, setExpanded] = useState(!isLong);
+
+  return (
+    <div className="bg-white rounded-xl border border-stone-200 overflow-hidden">
+      <div className={`px-6 py-5 ${proseSize} prose-slate max-w-none ${!expanded ? 'max-h-48 overflow-hidden relative' : ''}`}>
+        {a11y?.narration && (
+          <button
+            onClick={() => speakText(rawHTML)}
+            className="mb-2 flex items-center gap-1.5 text-xs font-medium text-burgundy-600 hover:text-burgundy-800 transition-colors"
+            aria-label="Read this section aloud"
+          >
+            <Volume2 className="w-3.5 h-3.5" /> Read Aloud
+          </button>
+        )}
+        <div dangerouslySetInnerHTML={{ __html: safeHTML(rawHTML) }} />
+        {!expanded && (
+          <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-white to-transparent" />
+        )}
+      </div>
+      {isLong && (
+        <button
+          onClick={() => setExpanded(!expanded)}
+          className="w-full px-6 py-3 text-sm font-semibold text-burgundy-700 hover:text-burgundy-900 bg-stone-50 border-t border-stone-200 flex items-center justify-center gap-2 transition-colors"
+        >
+          {expanded ? (
+            <><ChevronLeft className="w-4 h-4 rotate-90" /> Show Less</>
+          ) : (
+            <><ChevronRight className="w-4 h-4 rotate-90" /> Read More</>
+          )}
+        </button>
+      )}
+    </div>
+  );
+}
+
+// ============================================================================
 // CONTENT BLOCK RENDERER
 // ============================================================================
 function ContentBlockRenderer({ 
@@ -266,31 +307,37 @@ function ContentBlockRenderer({
 
     case 'matching':
       return (
-        <MatchingExercise
-          pairs={block.matchingPairs}
-          instructions={block.matchingInstructions}
-          onComplete={(correct, total) => handleInteractionComplete(correct === total, correct / total)}
-        />
+        <KnowledgeCheckModal type="matching" completed={isCompleted}>
+          <MatchingExercise
+            pairs={block.matchingPairs}
+            instructions={block.matchingInstructions}
+            onComplete={(correct, total) => handleInteractionComplete(correct === total, correct / total)}
+          />
+        </KnowledgeCheckModal>
       );
 
     case 'multipleChoice':
       return (
-        <MultipleChoice
-          question={block.question}
-          options={block.options}
-          explanation={block.explanation}
-          onAnswer={(isCorrect) => handleInteractionComplete(isCorrect, isCorrect ? 1 : 0)}
-        />
+        <KnowledgeCheckModal type="multipleChoice" completed={isCompleted}>
+          <MultipleChoice
+            question={block.question}
+            options={block.options}
+            explanation={block.explanation}
+            onAnswer={(isCorrect) => handleInteractionComplete(isCorrect, isCorrect ? 1 : 0)}
+          />
+        </KnowledgeCheckModal>
       );
 
     case 'multiSelect':
       return (
-        <MultiSelect
-          question={block.question}
-          options={block.options}
-          explanation={block.explanation}
-          onAnswer={(isCorrect) => handleInteractionComplete(isCorrect, isCorrect ? 1 : 0)}
-        />
+        <KnowledgeCheckModal type="multiSelect" completed={isCompleted}>
+          <MultiSelect
+            question={block.question}
+            options={block.options}
+            explanation={block.explanation}
+            onAnswer={(isCorrect) => handleInteractionComplete(isCorrect, isCorrect ? 1 : 0)}
+          />
+        </KnowledgeCheckModal>
       );
 
     case 'imageText':
@@ -314,21 +361,11 @@ function ContentBlockRenderer({
         />
       );
 
-    case 'text':
-      return (
-        <div className={`${proseSize} prose-slate max-w-none`}>
-          {a11y?.narration && (
-            <button 
-              onClick={() => speakText(block.textContent || block.content || '')}
-              className="mb-2 flex items-center gap-1.5 text-xs font-medium text-burgundy-600 hover:text-burgundy-800 transition-colors"
-              aria-label="Read this section aloud"
-            >
-              <Volume2 className="w-3.5 h-3.5" /> Read Aloud
-            </button>
-          )}
-          <div dangerouslySetInnerHTML={{ __html: safeHTML(block.textContent || block.content || '') }} />
-        </div>
-      );
+    case 'text': {
+      const rawHTML = block.textContent || block.content || '';
+      const isLong = rawHTML.length > 1200;
+      return <TextBlock rawHTML={rawHTML} isLong={isLong} proseSize={proseSize} a11y={a11y} speakText={speakText} />;
+    }
 
     case 'video':
       return (
@@ -343,62 +380,74 @@ function ContentBlockRenderer({
 
     case 'cardSort':
       return (
-        <CardSort
-          categories={block.categories}
-          cards={block.cards}
-          instructions={block.instructions}
-          explanation={block.explanation}
-          onComplete={(correct, total) => handleInteractionComplete(correct === total, correct / total)}
-        />
+        <KnowledgeCheckModal type="cardSort" completed={isCompleted}>
+          <CardSort
+            categories={block.categories}
+            cards={block.cards}
+            instructions={block.instructions}
+            explanation={block.explanation}
+            onComplete={(correct, total) => handleInteractionComplete(correct === total, correct / total)}
+          />
+        </KnowledgeCheckModal>
       );
 
     case 'sequencing':
       return (
-        <Sequencing
-          steps={block.steps}
-          instructions={block.instructions}
-          explanation={block.explanation}
-          onComplete={(correct, total) => handleInteractionComplete(correct === total, correct / total)}
-        />
+        <KnowledgeCheckModal type="sequencing" completed={isCompleted}>
+          <Sequencing
+            steps={block.steps}
+            instructions={block.instructions}
+            explanation={block.explanation}
+            onComplete={(correct, total) => handleInteractionComplete(correct === total, correct / total)}
+          />
+        </KnowledgeCheckModal>
       );
 
     case 'hotspot':
       return (
-        <Hotspot
-          hotspots={block.hotspots}
-          hotspotImage={block.hotspotImage}
-          imageDescription={block.imageDescription}
-          instructions={block.instructions}
-          onComplete={(count) => handleInteractionComplete(true, 1)}
-        />
+        <KnowledgeCheckModal type="hotspot" completed={isCompleted}>
+          <Hotspot
+            hotspots={block.hotspots}
+            hotspotImage={block.hotspotImage}
+            imageDescription={block.imageDescription}
+            instructions={block.instructions}
+            onComplete={(count) => handleInteractionComplete(true, 1)}
+          />
+        </KnowledgeCheckModal>
       );
 
     case 'timeline':
       return (
-        <Timeline
-          events={block.events}
-          instructions={block.instructions}
-          onComplete={(correct, total) => handleInteractionComplete(correct === total, correct / total)}
-        />
+        <KnowledgeCheckModal type="timeline" completed={isCompleted}>
+          <Timeline
+            events={block.events}
+            instructions={block.instructions}
+            onComplete={(correct, total) => handleInteractionComplete(correct === total, correct / total)}
+          />
+        </KnowledgeCheckModal>
       );
 
     case 'scenarioTree':
       return (
-        <ScenarioTree
-          scenarioTitle={block.scenarioTitle}
-          startNode={block.startNode}
-          nodes={block.nodes}
-          onComplete={() => handleInteractionComplete(true, 1)}
-        />
+        <KnowledgeCheckModal type="scenarioTree" completed={isCompleted}>
+          <ScenarioTree
+            scenarioTitle={block.scenarioTitle}
+            startNode={block.startNode}
+            nodes={block.nodes}
+            onComplete={() => handleInteractionComplete(true, 1)}
+          />
+        </KnowledgeCheckModal>
       );
 
     case 'flashcardDeck':
       return (
-        <FlashcardDeck
-          flashcards={block.flashcards}
-          instructions={block.instructions}
-          onComplete={(count) => handleInteractionComplete(true, 1)}
-        />
+        <KnowledgeCheckModal type="flashcardDeck" completed={isCompleted}>
+          <FlashcardDeck
+            flashcards={block.flashcards}
+            instructions={block.instructions}
+            onComplete={(count) => handleInteractionComplete(true, 1)}
+          />
+        </KnowledgeCheckModal>
       );
 
     case 'videoEmbed':
@@ -435,7 +484,7 @@ function ContentBlockRenderer({
           <textarea
             placeholder="Take a moment to reflect and write your thoughts here..."
             aria-label={`Reflection: ${block.question}`}
-            style={{ width: '100%', minHeight: 120, padding: 12, borderRadius: 10, border: '1px solid #E8E4DF', fontSize: 14, fontFamily: 'inherit', resize: 'vertical', boxSizing: 'border-box' }}
+            style={{ width: '100%', minHeight: 80, padding: 12, borderRadius: 10, border: '1px solid #E8E4DF', fontSize: 14, fontFamily: 'inherit', resize: 'vertical', boxSizing: 'border-box' }}
             onChange={(e) => {
               if (e.target.value.length >= (block.minLength || 50)) {
                 handleInteractionComplete(true, 1);
@@ -474,21 +523,67 @@ function ContentBlockRenderer({
 }
 
 // ============================================================================
+// BLOCK GROUPING — splits content blocks into digestible pages
+// ============================================================================
+function groupBlocksIntoPages(blocks, maxPerPage = 3) {
+  const pages = [];
+  let current = [];
+
+  blocks.forEach((block, i) => {
+    // Section dividers always start a new page
+    if (block.type === 'sectionDivider' && current.length > 0) {
+      pages.push(current);
+      current = [];
+    }
+
+    current.push({ block, originalIndex: i });
+
+    // Interactive blocks (modals) get their own page
+    const isInteractive = ['matching', 'multipleChoice', 'multiSelect', 'cardSort',
+      'sequencing', 'hotspot', 'timeline', 'scenarioTree', 'flashcardDeck'].includes(block.type);
+
+    if (isInteractive) {
+      pages.push(current);
+      current = [];
+    } else if (current.length >= maxPerPage) {
+      pages.push(current);
+      current = [];
+    }
+  });
+
+  if (current.length > 0) pages.push(current);
+  return pages;
+}
+
+// ============================================================================
 // SECTION VIEW
 // ============================================================================
-function SectionView({ 
-  course, 
-  section, 
+function SectionView({
+  course,
+  section,
   sectionIndex,
   progress,
   onNavigate,
   onProgressUpdate,
-  a11y
+  a11y,
+  pagedMode,
+  currentPage,
+  onPageChange
 }) {
   const [viewedBlocks, setViewedBlocks] = useState(new Set(progress?.viewedBlocks || []));
   const [completedBlocks, setCompletedBlocks] = useState(new Set(progress?.completedBlocks || []));
   const [showQuiz, setShowQuiz] = useState(false);
   const [sessionStartTime] = useState(Date.now());
+
+  // Paging
+  const pages = useMemo(() => groupBlocksIntoPages(section.contentBlocks), [section.contentBlocks]);
+  const totalPages = pages.length;
+  const safePage = Math.min(currentPage || 0, totalPages - 1);
+
+  // Reset page when section changes
+  useEffect(() => {
+    if (onPageChange) onPageChange(0);
+  }, [sectionIndex]);
 
   // Track block views via intersection observer
   const observerRef = React.useRef(null);
@@ -581,28 +676,77 @@ function SectionView({
 
       {/* Content Blocks */}
       {!showQuiz ? (
-        <div className="space-y-6">
-          {section.contentBlocks.map((block, index) => (
-            <div 
-              key={index}
-              data-block-index={index}
+        <div className="space-y-5">
+          {/* Paged mode: page indicator */}
+          {pagedMode && totalPages > 1 && (
+            <div className="flex items-center justify-between bg-white rounded-lg border border-forest-100 px-4 py-2">
+              <span className="text-xs font-medium text-navy-500">
+                Page {safePage + 1} of {totalPages}
+              </span>
+              <div className="flex gap-1.5">
+                {pages.map((_, pi) => (
+                  <button
+                    key={pi}
+                    onClick={() => onPageChange(pi)}
+                    className={`w-2 h-2 rounded-full transition-all ${
+                      pi === safePage ? 'bg-burgundy-600 scale-125' : pi < safePage ? 'bg-hunter-400' : 'bg-stone-300'
+                    }`}
+                    aria-label={`Go to page ${pi + 1}`}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {(pagedMode ? pages[safePage] || [] : section.contentBlocks.map((block, i) => ({ block, originalIndex: i }))).map(({ block, originalIndex }) => (
+            <div
+              key={originalIndex}
+              data-block-index={originalIndex}
               ref={(el) => el && observerRef.current?.observe(el)}
               className="animate-fadeIn"
             >
               <ContentBlockRenderer
                 block={block}
-                blockIndex={index}
+                blockIndex={originalIndex}
                 sectionIndex={sectionIndex}
                 courseSlug={course.slug}
                 onComplete={handleBlockComplete}
-                isCompleted={completedBlocks.has(index)}
+                isCompleted={completedBlocks.has(originalIndex)}
                 a11y={a11y}
               />
             </div>
           ))}
 
-          {/* Section Quiz CTA */}
-          {section.hasQuiz && !quizPassed && (
+          {/* Paged navigation */}
+          {pagedMode && totalPages > 1 && (
+            <div className="flex items-center justify-between pt-4">
+              <button
+                onClick={() => onPageChange(safePage - 1)}
+                disabled={safePage === 0}
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                  safePage === 0 ? 'text-slate-300 cursor-not-allowed' : 'text-navy-600 hover:bg-stone-100 border border-forest-200'
+                }`}
+              >
+                <ChevronLeft className="w-4 h-4" /> Back
+              </button>
+
+              {safePage < totalPages - 1 ? (
+                <button
+                  onClick={() => { onPageChange(safePage + 1); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                  className="flex items-center gap-2 px-6 py-2.5 bg-burgundy-800 hover:bg-burgundy-700 text-white rounded-lg text-sm font-semibold transition-colors"
+                >
+                  Continue <ChevronsRight className="w-4 h-4" />
+                </button>
+              ) : (
+                <span className="text-xs font-medium text-hunter-600 flex items-center gap-1">
+                  <CheckCircle2 className="w-4 h-4" /> All content on this section
+                </span>
+              )}
+            </div>
+          )}
+
+          {/* Section Quiz CTA — show at end (scroll mode always, paged mode only on last page) */}
+          {(!pagedMode || safePage === totalPages - 1) && section.hasQuiz && !quizPassed && (
             <div className="bg-hunter-50 border border-hunter-200 rounded-xl px-5 py-4 flex items-center justify-between gap-4">
               <div>
                 <h3 className="text-sm font-bold text-navy-700">Section Quiz</h3>
@@ -624,7 +768,7 @@ function SectionView({
             </div>
           )}
 
-          {quizPassed && (
+          {(!pagedMode || safePage === totalPages - 1) && quizPassed && (
             <div className="bg-hunter-50 border border-hunter-200 rounded-xl px-5 py-3 flex items-center gap-3">
               <CheckCircle2 className="w-5 h-5 text-hunter-600 flex-shrink-0" />
               <div>
@@ -995,13 +1139,16 @@ function ReferencesView({ course, onBack }) {
 // ============================================================================
 // SIDEBAR
 // ============================================================================
-function CourseSidebar({ 
-  course, 
-  progress, 
+function CourseSidebar({
+  course,
+  progress,
   currentView,
   onNavigate,
   isOpen,
-  onClose 
+  onClose,
+  pagedMode,
+  currentPage,
+  onPageChange
 }) {
   return (
     <>
@@ -1121,6 +1268,37 @@ function CourseSidebar({
                         </div>
                         <span className="text-[13px] font-medium line-clamp-2">{section.title}</span>
                       </button>
+
+                      {/* Sub-page indicators in paged mode */}
+                      {pagedMode && isCurrent && (() => {
+                        const sectionPages = groupBlocksIntoPages(section.contentBlocks);
+                        if (sectionPages.length <= 1) return null;
+                        return (
+                          <div className="ml-8 mt-1 mb-1 flex flex-col gap-0.5">
+                            {sectionPages.map((pg, pi) => {
+                              const label = pg[0]?.block?.type === 'sectionDivider'
+                                ? pg[0].block.title
+                                : `Part ${pi + 1}`;
+                              return (
+                                <button
+                                  key={pi}
+                                  onClick={() => onPageChange(pi)}
+                                  className={`flex items-center gap-2 px-2 py-1 rounded text-left transition-colors ${
+                                    pi === currentPage
+                                      ? 'bg-burgundy-100 text-burgundy-700'
+                                      : 'text-navy-400 hover:text-navy-600 hover:bg-stone-50'
+                                  }`}
+                                >
+                                  <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${
+                                    pi === currentPage ? 'bg-burgundy-600' : 'bg-stone-300'
+                                  }`} />
+                                  <span className="text-[11px] font-medium truncate">{label}</span>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        );
+                      })()}
                     </li>
                   );
                 });
@@ -1192,6 +1370,8 @@ export default function CourseViewer({ courseSlug }) {
   const [error, setError] = useState(null);
   const [currentView, setCurrentView] = useState('section'); // 'section' | 'assessment' | 'references'
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [pagedMode, setPagedMode] = useState(false);
+  const [currentPage, setCurrentPage] = useState(0);
   const [a11y, setA11y] = useState({
     fontSize: 'normal',
     highContrast: false,
@@ -1292,6 +1472,9 @@ export default function CourseViewer({ courseSlug }) {
         onNavigate={handleNavigate}
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
+        pagedMode={pagedMode}
+        currentPage={currentPage}
+        onPageChange={setCurrentPage}
       />
 
       {/* Main Content */}
@@ -1313,6 +1496,14 @@ export default function CourseViewer({ courseSlug }) {
           </div>
 
           <div className="flex items-center gap-1">
+            <button
+              onClick={() => setPagedMode(!pagedMode)}
+              className={`p-2 rounded-lg transition-colors ${pagedMode ? 'bg-burgundy-100 text-burgundy-700' : 'text-navy-400 hover:text-navy-600'}`}
+              aria-label={pagedMode ? 'Switch to scroll mode' : 'Switch to paged mode'}
+              title={pagedMode ? 'Scroll mode' : 'Paged mode'}
+            >
+              <Layers className="w-5 h-5" />
+            </button>
             <AccessibilityToolbar settings={a11y} onUpdate={setA11y} />
             <a href="/dashboard" className="p-2 text-navy-400 hover:text-navy-600" aria-label="Return to dashboard">
               <Home className="w-5 h-5" />
@@ -1343,6 +1534,9 @@ export default function CourseViewer({ courseSlug }) {
               onNavigate={handleNavigate}
               onProgressUpdate={refreshProgress}
               a11y={a11y}
+              pagedMode={pagedMode}
+              currentPage={currentPage}
+              onPageChange={setCurrentPage}
             />
           )}
         </div>
