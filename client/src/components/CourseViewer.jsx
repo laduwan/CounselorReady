@@ -34,17 +34,26 @@ import {
 // ============================================================================
 // API SERVICE
 // ============================================================================
-const API_BASE = '/api/interactive-courses';
+const API_BASE = import.meta.env.VITE_API_URL
+  ? `${import.meta.env.VITE_API_URL}/interactive-courses`
+  : 'https://api.counselorready.com/api/interactive-courses';
+
+function authHeaders(extra = {}) {
+  const token = localStorage.getItem('token');
+  const headers = { 'Content-Type': 'application/json', ...extra };
+  if (token) headers.Authorization = `Bearer ${token}`;
+  return headers;
+}
 
 const api = {
   async getCourse(slug) {
-    const res = await fetch(`${API_BASE}/slug/${slug}`, { credentials: 'include' });
+    const res = await fetch(`${API_BASE}/slug/${slug}`, { headers: authHeaders() });
     if (!res.ok) throw new Error('Course not found');
     return res.json();
   },
-  
+
   async getProgress(slug) {
-    const res = await fetch(`${API_BASE}/${slug}/progress`, { credentials: 'include' });
+    const res = await fetch(`${API_BASE}/${slug}/progress`, { headers: authHeaders() });
     if (!res.ok) return null;
     return res.json();
   },
@@ -52,8 +61,7 @@ const api = {
   async updateSectionProgress(slug, sectionIndex, data) {
     const res = await fetch(`${API_BASE}/${slug}/sections/${sectionIndex}/progress`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
+      headers: authHeaders(),
       body: JSON.stringify(data)
     });
     if (!res.ok) throw new Error('Failed to update progress');
@@ -63,8 +71,7 @@ const api = {
   async submitSectionQuiz(slug, sectionIndex, answers, timeSpent) {
     const res = await fetch(`${API_BASE}/${slug}/sections/${sectionIndex}/quiz`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
+      headers: authHeaders(),
       body: JSON.stringify({ answers, timeSpent })
     });
     if (!res.ok) throw new Error('Failed to submit quiz');
@@ -74,8 +81,7 @@ const api = {
   async submitAssessment(slug, answers, timeUsed, questionOrder) {
     const res = await fetch(`${API_BASE}/${slug}/assessment/submit`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
+      headers: authHeaders(),
       body: JSON.stringify({ answers, timeUsed, questionOrder })
     });
     if (!res.ok) throw new Error('Failed to submit assessment');
@@ -86,8 +92,7 @@ const api = {
     try {
       await fetch(`${API_BASE}/${slug}/interaction`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
+        headers: authHeaders(),
         body: JSON.stringify(interaction)
       });
     } catch (err) {
