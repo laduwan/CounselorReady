@@ -5,9 +5,10 @@
  */
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { 
-  ChevronLeft, ChevronRight, Menu, X, BookOpen, Clock, Award, 
+  ChevronLeft, ChevronRight, Menu, X, BookOpen, Clock, Award,
   CheckCircle2, Circle, Play, Lock, AlertCircle, Download,
-  BarChart3, Home, Settings, LogOut, User, Type, Eye, Volume2
+  BarChart3, Home, Settings, LogOut, User, Type, Eye, Volume2,
+  Layers, ChevronsRight
 } from 'lucide-react';
 import { safeHTML } from '../utils/sanitize';
 import {
@@ -522,21 +523,67 @@ function ContentBlockRenderer({
 }
 
 // ============================================================================
+// BLOCK GROUPING — splits content blocks into digestible pages
+// ============================================================================
+function groupBlocksIntoPages(blocks, maxPerPage = 3) {
+  const pages = [];
+  let current = [];
+
+  blocks.forEach((block, i) => {
+    // Section dividers always start a new page
+    if (block.type === 'sectionDivider' && current.length > 0) {
+      pages.push(current);
+      current = [];
+    }
+
+    current.push({ block, originalIndex: i });
+
+    // Interactive blocks (modals) get their own page
+    const isInteractive = ['matching', 'multipleChoice', 'multiSelect', 'cardSort',
+      'sequencing', 'hotspot', 'timeline', 'scenarioTree', 'flashcardDeck'].includes(block.type);
+
+    if (isInteractive) {
+      pages.push(current);
+      current = [];
+    } else if (current.length >= maxPerPage) {
+      pages.push(current);
+      current = [];
+    }
+  });
+
+  if (current.length > 0) pages.push(current);
+  return pages;
+}
+
+// ============================================================================
 // SECTION VIEW
 // ============================================================================
-function SectionView({ 
-  course, 
-  section, 
+function SectionView({
+  course,
+  section,
   sectionIndex,
   progress,
   onNavigate,
   onProgressUpdate,
-  a11y
+  a11y,
+  pagedMode,
+  currentPage,
+  onPageChange
 }) {
   const [viewedBlocks, setViewedBlocks] = useState(new Set(progress?.viewedBlocks || []));
   const [completedBlocks, setCompletedBlocks] = useState(new Set(progress?.completedBlocks || []));
   const [showQuiz, setShowQuiz] = useState(false);
   const [sessionStartTime] = useState(Date.now());
+
+  // Paging
+  const pages = useMemo(() => groupBlocksIntoPages(section.contentBlocks), [section.contentBlocks]);
+  const totalPages = pages.length;
+  const safePage = Math.min(currentPage || 0, totalPages - 1);
+
+  // Reset page when section changes
+  useEffect(() => {
+    if (onPageChange) onPageChange(0);
+  }, [sectionIndex]);
 
   // Track block views via intersection observer
   const observerRef = React.useRef(null);
@@ -630,27 +677,76 @@ function SectionView({
       {/* Content Blocks */}
       {!showQuiz ? (
         <div className="space-y-5">
-          {section.contentBlocks.map((block, index) => (
+          {/* Paged mode: page indicator */}
+          {pagedMode && totalPages > 1 && (
+            <div className="flex items-center justify-between bg-white rounded-lg border border-forest-100 px-4 py-2">
+              <span className="text-xs font-medium text-navy-500">
+                Page {safePage + 1} of {totalPages}
+              </span>
+              <div className="flex gap-1.5">
+                {pages.map((_, pi) => (
+                  <button
+                    key={pi}
+                    onClick={() => onPageChange(pi)}
+                    className={`w-2 h-2 rounded-full transition-all ${
+                      pi === safePage ? 'bg-burgundy-600 scale-125' : pi < safePage ? 'bg-hunter-400' : 'bg-stone-300'
+                    }`}
+                    aria-label={`Go to page ${pi + 1}`}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {(pagedMode ? pages[safePage] || [] : section.contentBlocks.map((block, i) => ({ block, originalIndex: i }))).map(({ block, originalIndex }) => (
             <div
-              key={index}
-              data-block-index={index}
+              key={originalIndex}
+              data-block-index={originalIndex}
               ref={(el) => el && observerRef.current?.observe(el)}
               className="animate-fadeIn"
             >
               <ContentBlockRenderer
                 block={block}
-                blockIndex={index}
+                blockIndex={originalIndex}
                 sectionIndex={sectionIndex}
                 courseSlug={course.slug}
                 onComplete={handleBlockComplete}
-                isCompleted={completedBlocks.has(index)}
+                isCompleted={completedBlocks.has(originalIndex)}
                 a11y={a11y}
               />
             </div>
           ))}
 
-          {/* Section Quiz CTA */}
-          {section.hasQuiz && !quizPassed && (
+          {/* Paged navigation */}
+          {pagedMode && totalPages > 1 && (
+            <div className="flex items-center justify-between pt-4">
+              <button
+                onClick={() => onPageChange(safePage - 1)}
+                disabled={safePage === 0}
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                  safePage === 0 ? 'text-slate-300 cursor-not-allowed' : 'text-navy-600 hover:bg-stone-100 border border-forest-200'
+                }`}
+              >
+                <ChevronLeft className="w-4 h-4" /> Back
+              </button>
+
+              {safePage < totalPages - 1 ? (
+                <button
+                  onClick={() => { onPageChange(safePage + 1); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                  className="flex items-center gap-2 px-6 py-2.5 bg-burgundy-800 hover:bg-burgundy-700 text-white rounded-lg text-sm font-semibold transition-colors"
+                >
+                  Continue <ChevronsRight className="w-4 h-4" />
+                </button>
+              ) : (
+                <span className="text-xs font-medium text-hunter-600 flex items-center gap-1">
+                  <CheckCircle2 className="w-4 h-4" /> All content on this section
+                </span>
+              )}
+            </div>
+          )}
+
+          {/* Section Quiz CTA — show at end (scroll mode always, paged mode only on last page) */}
+          {(!pagedMode || safePage === totalPages - 1) && section.hasQuiz && !quizPassed && (
             <div className="bg-hunter-50 border border-hunter-200 rounded-xl px-5 py-4 flex items-center justify-between gap-4">
               <div>
                 <h3 className="text-sm font-bold text-navy-700">Section Quiz</h3>
@@ -672,7 +768,7 @@ function SectionView({
             </div>
           )}
 
-          {quizPassed && (
+          {(!pagedMode || safePage === totalPages - 1) && quizPassed && (
             <div className="bg-hunter-50 border border-hunter-200 rounded-xl px-5 py-3 flex items-center gap-3">
               <CheckCircle2 className="w-5 h-5 text-hunter-600 flex-shrink-0" />
               <div>
@@ -1043,13 +1139,16 @@ function ReferencesView({ course, onBack }) {
 // ============================================================================
 // SIDEBAR
 // ============================================================================
-function CourseSidebar({ 
-  course, 
-  progress, 
+function CourseSidebar({
+  course,
+  progress,
   currentView,
   onNavigate,
   isOpen,
-  onClose 
+  onClose,
+  pagedMode,
+  currentPage,
+  onPageChange
 }) {
   return (
     <>
@@ -1169,6 +1268,37 @@ function CourseSidebar({
                         </div>
                         <span className="text-[13px] font-medium line-clamp-2">{section.title}</span>
                       </button>
+
+                      {/* Sub-page indicators in paged mode */}
+                      {pagedMode && isCurrent && (() => {
+                        const sectionPages = groupBlocksIntoPages(section.contentBlocks);
+                        if (sectionPages.length <= 1) return null;
+                        return (
+                          <div className="ml-8 mt-1 mb-1 flex flex-col gap-0.5">
+                            {sectionPages.map((pg, pi) => {
+                              const label = pg[0]?.block?.type === 'sectionDivider'
+                                ? pg[0].block.title
+                                : `Part ${pi + 1}`;
+                              return (
+                                <button
+                                  key={pi}
+                                  onClick={() => onPageChange(pi)}
+                                  className={`flex items-center gap-2 px-2 py-1 rounded text-left transition-colors ${
+                                    pi === currentPage
+                                      ? 'bg-burgundy-100 text-burgundy-700'
+                                      : 'text-navy-400 hover:text-navy-600 hover:bg-stone-50'
+                                  }`}
+                                >
+                                  <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${
+                                    pi === currentPage ? 'bg-burgundy-600' : 'bg-stone-300'
+                                  }`} />
+                                  <span className="text-[11px] font-medium truncate">{label}</span>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        );
+                      })()}
                     </li>
                   );
                 });
@@ -1240,6 +1370,8 @@ export default function CourseViewer({ courseSlug }) {
   const [error, setError] = useState(null);
   const [currentView, setCurrentView] = useState('section'); // 'section' | 'assessment' | 'references'
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [pagedMode, setPagedMode] = useState(false);
+  const [currentPage, setCurrentPage] = useState(0);
   const [a11y, setA11y] = useState({
     fontSize: 'normal',
     highContrast: false,
@@ -1340,6 +1472,9 @@ export default function CourseViewer({ courseSlug }) {
         onNavigate={handleNavigate}
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
+        pagedMode={pagedMode}
+        currentPage={currentPage}
+        onPageChange={setCurrentPage}
       />
 
       {/* Main Content */}
@@ -1361,6 +1496,14 @@ export default function CourseViewer({ courseSlug }) {
           </div>
 
           <div className="flex items-center gap-1">
+            <button
+              onClick={() => setPagedMode(!pagedMode)}
+              className={`p-2 rounded-lg transition-colors ${pagedMode ? 'bg-burgundy-100 text-burgundy-700' : 'text-navy-400 hover:text-navy-600'}`}
+              aria-label={pagedMode ? 'Switch to scroll mode' : 'Switch to paged mode'}
+              title={pagedMode ? 'Scroll mode' : 'Paged mode'}
+            >
+              <Layers className="w-5 h-5" />
+            </button>
             <AccessibilityToolbar settings={a11y} onUpdate={setA11y} />
             <a href="/dashboard" className="p-2 text-navy-400 hover:text-navy-600" aria-label="Return to dashboard">
               <Home className="w-5 h-5" />
@@ -1391,6 +1534,9 @@ export default function CourseViewer({ courseSlug }) {
               onNavigate={handleNavigate}
               onProgressUpdate={refreshProgress}
               a11y={a11y}
+              pagedMode={pagedMode}
+              currentPage={currentPage}
+              onPageChange={setCurrentPage}
             />
           )}
         </div>
