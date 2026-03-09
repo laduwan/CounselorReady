@@ -141,10 +141,10 @@ const COURSE = {
           order: 3,
           question: "DBT was originally developed to address which clinical problem?",
           options: [
-            "A) The lack of effective treatments for generalized anxiety disorder",
-            "B) Treatment of chronically suicidal individuals, particularly those with Borderline Personality Disorder",
-            "C) Medication management for clients with bipolar disorder",
-            "D) The absence of group therapy models in community mental health settings"
+            "The lack of effective treatments for generalized anxiety disorder",
+            "Treatment of chronically suicidal individuals, particularly those with Borderline Personality Disorder",
+            "Medication management for clients with bipolar disorder",
+            "The absence of group therapy models in community mental health settings"
           ],
           correctAnswer: 1,
           explanation: "DBT was specifically developed by Marsha Linehan in the late 1980s to treat chronically suicidal individuals with BPD, a population for whom standard CBT proved insufficient. The core problem was that change-focused interventions felt invalidating while purely acceptance-based approaches failed to produce behavioral progress.",
@@ -155,10 +155,10 @@ const COURSE = {
           order: 4,
           question: "Which three intellectual traditions does DBT integrate?",
           options: [
-            "A) Psychoanalysis, humanistic therapy, and narrative therapy",
-            "B) Cognitive-behavioral therapy, dialectical philosophy, and Zen Buddhist contemplative practices",
-            "C) Gestalt therapy, existentialism, and positive psychology",
-            "D) Acceptance and Commitment Therapy, EMDR, and motivational interviewing"
+            "Psychoanalysis, humanistic therapy, and narrative therapy",
+            "Cognitive-behavioral therapy, dialectical philosophy, and Zen Buddhist contemplative practices",
+            "Gestalt therapy, existentialism, and positive psychology",
+            "Acceptance and Commitment Therapy, EMDR, and motivational interviewing"
           ],
           correctAnswer: 1,
           explanation: "DBT integrates cognitive-behavioral therapy (its empirical foundation), dialectical philosophy (the idea that opposing truths can be synthesized), and Zen Buddhist contemplative practices (particularly radical acceptance and mindfulness). This integration is what distinguishes DBT from standard CBT.",
@@ -204,10 +204,10 @@ const COURSE = {
           order: 2,
           question: "According to biosocial theory, emotional dysregulation results from which of the following?",
           options: [
-            "A) A biological predisposition toward emotional vulnerability alone",
-            "B) An invalidating social environment alone",
-            "C) The ongoing transaction between biological emotional vulnerability and an invalidating social environment",
-            "D) Genetic inheritance of personality disorder traits"
+            "A biological predisposition toward emotional vulnerability alone",
+            "An invalidating social environment alone",
+            "The ongoing transaction between biological emotional vulnerability and an invalidating social environment",
+            "Genetic inheritance of personality disorder traits"
           ],
           correctAnswer: 2,
           explanation: "Biosocial theory specifically holds that neither biological vulnerability nor environmental invalidation alone is sufficient. It is the ongoing transaction—the continuous interaction between the two factors over time—that creates and maintains pervasive emotional dysregulation.",
@@ -234,10 +234,10 @@ const COURSE = {
           order: 4,
           question: "Which of the following best illustrates a dialectical therapeutic response to a client who says, 'Nothing I do matters—I'll never get better'?",
           options: [
-            "A) 'Let's look at the evidence for and against that belief.'",
-            "B) 'I understand how much pain you're in right now.'",
-            "C) 'I hear how much pain you're in, AND the fact that you're here talking to me is itself evidence that some part of you is still reaching for change.'",
-            "D) 'You shouldn't think that way—you have made progress.'"
+            "'Let's look at the evidence for and against that belief.'",
+            "'I understand how much pain you're in right now.'",
+            "'I hear how much pain you're in, AND the fact that you're here talking to me is itself evidence that some part of you is still reaching for change.'",
+            "'You shouldn't think that way—you have made progress.'"
           ],
           correctAnswer: 2,
           explanation: "A dialectical response synthesizes both validation and change simultaneously—it acknowledges the pain as real while also honoring the evidence of the client's continued effort. This is the hallmark of dialectical therapeutic communication: holding two truths at once rather than choosing one side.",
@@ -248,10 +248,10 @@ const COURSE = {
           order: 5,
           question: "Which of the following statements about the invalidating environment is most consistent with biosocial theory?",
           options: [
-            "A) Invalidating environments are always the result of intentional parental neglect or abuse",
-            "B) Invalidating environments only affect individuals with biological emotional vulnerability",
-            "C) Invalidating environments arise from caregivers who may be well-intentioned but lack understanding of emotional sensitivity",
-            "D) Cultural factors are irrelevant to the concept of invalidating environments"
+            "Invalidating environments are always the result of intentional parental neglect or abuse",
+            "Invalidating environments only affect individuals with biological emotional vulnerability",
+            "Invalidating environments arise from caregivers who may be well-intentioned but lack understanding of emotional sensitivity",
+            "Cultural factors are irrelevant to the concept of invalidating environments"
           ],
           correctAnswer: 2,
           explanation: "Biosocial theory is explicit that the invalidating environment does not require malicious intent. Many invalidating environments arise from caregivers doing their best with limited understanding of emotional sensitivity. Cultural norms also play a significant role in defining what constitutes invalidation.",

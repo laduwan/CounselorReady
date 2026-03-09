@@ -227,7 +227,7 @@ const COURSE_DATA = {
           "A paraphilic disorder"
         ],
         correctAnswer: 2,
-        explanation: ""
+        explanation: "The correct answer is an impulse control disorder. The ICD-11 classifies CSBD under impulse control disorders (F63.8), reflecting a cautious, evidence-informed approach rather than adopting the addiction framework that lacks sufficient empirical validation. While the addiction model (option B) has been influential in treatment communities, neither the DSM-5 nor the ICD-11 validated it as a diagnostic category for sexual behavior."
       },
       {
         question: "AASECT's official position on sex addiction is:",
@@ -239,7 +239,7 @@ const COURSE_DATA = {
           "Sex addiction treatment should follow the 12-step model exclusively"
         ],
         correctAnswer: 1,
-        explanation: ""
+        explanation: "The correct answer is that there is insufficient empirical evidence to support sex addiction as a clinical diagnosis. AASECT's official position statement explicitly states this, representing a competing perspective within the clinical field that challenges the addiction framework. Option A is incorrect because it directly contradicts AASECT's position, which questions the very validity of sexual addiction as a diagnostic category."
       },
       {
         question: "The primary distinguishing feature of compulsive sexual behavior disorder in ICD-11 is:",
@@ -251,7 +251,7 @@ const COURSE_DATA = {
           "Sexual behavior involving paraphilic interests"
         ],
         correctAnswer: 1,
-        explanation: ""
+        explanation: "The correct answer is persistent failure to control intense sexual urges causing marked distress or functional impairment. The ICD-11 criteria require both subjective loss of control over sexual urges and clinically significant distress or impairment in functioning, persisting for at least six months. Option A (high frequency regardless of distress) is incorrect because frequency alone does not constitute CSBD; a person with high sexual desire who lacks subjective loss of control and distress does not meet criteria."
       },
       {
         question: "Which assessment instrument was specifically developed for hypersexual behavior in men:",
