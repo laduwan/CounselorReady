@@ -282,7 +282,7 @@ const COURSE_DATA = {
           "Irreversible changes requiring surgical management"
         ],
         correctAnswer: 1,
-        explanation: ""
+        explanation: "The correct answer is that GSM produces vulvovaginal changes causing sexual pain that is treatable. GSM results from estrogen decline and affects approximately 50% of postmenopausal women, producing symptoms that respond well to local estrogen therapy, lubricants, and vaginal moisturizers. The option stating it affects fewer than 10% of postmenopausal women significantly underestimates its prevalence and contradicts the course's emphasis on GSM as a common, clinically important condition."
       },
       {
         question: "Sexual health clinical practice with LGBTQ+ clients requires:",
@@ -294,7 +294,7 @@ const COURSE_DATA = {
           "Automatic referral to LGBTQ+-specialized providers"
         ],
         correctAnswer: 1,
-        explanation: ""
+        explanation: "The correct answer is affirming identities while applying culturally humble individualized assessment. The course emphasizes that LGBTQ+ clients require both affirmation of their sexual and gender identities and individualized clinical attention that accounts for minority stress and healthcare discrimination experiences. Applying heteronormative models with minor modifications is incorrect because same-sex and gender-diverse relationships have specific dynamics that mainstream frameworks do not adequately address."
       },
       {
         question: "The most clinically reliable predictor of sexual satisfaction in long-term partnerships is:",
@@ -306,7 +306,7 @@ const COURSE_DATA = {
           "Matching desire levels between partners"
         ],
         correctAnswer: 2,
-        explanation: ""
+        explanation: "The correct answer is quality of emotional intimacy and communication. Research consistently shows that relational factors, particularly emotional connection and open communication about sexual needs, are more predictive of sexual satisfaction than frequency or the absence of dysfunction. Frequency of sexual activity is a common but incorrect assumption, as couples with strong emotional intimacy report high satisfaction even with lower frequency."
       },
       {
         question: "When a child discloses sexual abuse, the immediate clinical obligation is:",
@@ -318,7 +318,7 @@ const COURSE_DATA = {
           "Refer to a forensic interviewer before reporting"
         ],
         correctAnswer: 2,
-        explanation: ""
+        explanation: "The correct answer is to make a mandated report to CPS without delay. Mental health professionals are mandated reporters, and upon disclosure of child sexual abuse, the legal and ethical obligation is to report immediately to Child Protective Services. Conducting a forensic interview first is incorrect because forensic interviewing is the role of trained forensic specialists, and delaying the report to conduct one would violate mandated reporting requirements."
       },
       {
         question: "Erectile concerns in a 58-year-old man with type 2 diabetes most likely reflect:",
@@ -330,7 +330,7 @@ const COURSE_DATA = {
           "Normal aging changes not requiring assessment"
         ],
         correctAnswer: 2,
-        explanation: ""
+        explanation: "The correct answer is a biopsychosocial presentation requiring integrated assessment. Diabetes produces sexual dysfunction through both vascular and neurological pathways, while age-related changes, psychological factors such as performance anxiety, and medication effects all interact. Attributing the concern exclusively to vascular factors is incorrect because it ignores the neurological, psychological, and pharmacological contributors that the biopsychosocial model identifies as essential to comprehensive formulation."
       },
       {
         question: "Directed masturbation is the evidence-based first-line intervention for:",
@@ -342,7 +342,7 @@ const COURSE_DATA = {
           "Genito-pelvic pain/penetration disorder"
         ],
         correctAnswer: 2,
-        explanation: ""
+        explanation: "The correct answer is female orgasmic disorder. Directed masturbation is a structured, progressive self-stimulation protocol that is well-established as the first-line evidence-based treatment for female orgasmic disorder, with high efficacy rates. Genito-pelvic pain/penetration disorder is incorrect because its first-line treatments typically involve pelvic floor physical therapy, graduated exposure, and pain management rather than directed masturbation."
       },
       {
         question: "The most common medication class associated with sexual dysfunction is:",
@@ -354,7 +354,7 @@ const COURSE_DATA = {
           "Benzodiazepines"
         ],
         correctAnswer: 1,
-        explanation: ""
+        explanation: "The correct answer is antidepressants, specifically SSRIs and SNRIs. The course identifies that these medications produce sexual side effects in 30-40% of users, including reduced desire, arousal difficulties, and delayed orgasm, significantly affecting medication adherence and quality of life. Antihypertensives can also cause sexual dysfunction but are not as frequently associated with it as SSRIs/SNRIs in clinical mental health populations."
       },
       {
         question: "Comprehensive sexual health assessment includes:",
@@ -366,7 +366,7 @@ const COURSE_DATA = {
           "Current concerns only, without developmental context"
         ],
         correctAnswer: 1,
-        explanation: ""
+        explanation: "The correct answer is sexual functioning, identity, relationship context, and relevant medical/psychosocial history. The course emphasizes that comprehensive assessment must attend to the specific nature and duration of concerns, biopsychosocial contributors, developmental and relational context, and medical, pharmacological, and trauma history. Assessing sexual functioning only is incorrect because it omits the identity, relational, and psychosocial dimensions that are essential to biopsychosocial formulation."
       },
       {
         question: "GSM is relevant to clinical practice because:",
@@ -378,7 +378,7 @@ const COURSE_DATA = {
           "It is primarily a psychological condition"
         ],
         correctAnswer: 1,
-        explanation: ""
+        explanation: "The correct answer is that many postmenopausal women experience GSM and it is highly treatable. Approximately 50% of postmenopausal women are affected, and symptoms respond well to local estrogen, lubricants, vaginal moisturizers, and pelvic floor therapy. The option that it affects only women with prior sexual dysfunction is incorrect because GSM is caused by estrogen decline during menopause and can affect any postmenopausal woman regardless of prior sexual functioning."
       },
       {
         question: "Sexual interest and activity in older adults:",
@@ -390,7 +390,7 @@ const COURSE_DATA = {
           "Should not be assessed to respect older adults' privacy"
         ],
         correctAnswer: 1,
-        explanation: ""
+        explanation: "The correct answer is that sexual interest and activity continues for many individuals into the seventh and eighth decades. Lindau et al. (2007) found that 73% of adults aged 57-64 and 53% aged 65-74 reported sexual activity in the past year, with most reporting sex remained important to quality of life. The option that it typically ceases after age 65 reflects ageist assumptions contradicted by research documenting ongoing sexual interest and activity well into later life."
       },
       {
         question: "Normative adolescent sexual development includes:",
@@ -402,7 +402,7 @@ const COURSE_DATA = {
           "Sexual activity with older adults as exploration"
         ],
         correctAnswer: 1,
-        explanation: ""
+        explanation: "The correct answer is development of sexual identity and beginning sexual experimentation. The course identifies adolescence as encompassing physical maturation, sexual identity development, initiation of sexual experimentation, and navigating sexuality socially, all as normative developmental processes. Complete sexual abstinence as the only developmentally appropriate path until adulthood is incorrect because the course notes that comprehensive sexuality education supporting healthy development is associated with better outcomes than abstinence-only approaches."
       },
     ]
   },

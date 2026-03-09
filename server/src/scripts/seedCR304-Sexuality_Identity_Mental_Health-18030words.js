@@ -279,7 +279,7 @@ const COURSE_DATA = {
           "It provides a legal rather than clinical framework for understanding discrimination"
         ],
         correctAnswer: 1,
-        explanation: ""
+        explanation: "The correct answer is that multiple marginalized identities produce compound effects not captured by examining each in isolation. Crenshaw's intersectionality framework is clinically essential because LGBTQ+ clients who hold multiple marginalized identities (e.g., LGBTQ+ people of color) experience compound minority stress — what Balsam et al. (2011) termed 'cultural victimization' — that cannot be understood by examining race or sexual orientation separately. The option that intersectionality establishes a hierarchy of oppression is incorrect because the framework explicitly rejects hierarchical comparisons and instead focuses on how intersecting identities create unique, compounded experiences of marginalization."
       },
       {
         question: "Affirming clinical practice with bisexual clients requires attention to which specific clinical concern:",
@@ -291,7 +291,7 @@ const COURSE_DATA = {
           "Exclusively higher rates of mental health concerns compared to gay and lesbian individuals"
         ],
         correctAnswer: 1,
-        explanation: ""
+        explanation: "The correct answer is biphobia and invalidation from both heterosexual and LGBTQ+ communities. Research consistently shows bisexual individuals have higher rates of depression, anxiety, and suicidal behavior than either gay/lesbian or heterosexual individuals, driven substantially by biphobia from heterosexual communities that may not accept bisexuality as valid and from LGBTQ+ communities that may regard it as a transitional phase. The option about higher rates of substance use than gay men or lesbians, while potentially partially true, does not capture the core clinical concern of dual-community invalidation and monosexism that is specific to bisexual minority stress."
       },
       {
         question: "An affirming clinical approach to sexual orientation and gender identity holds that:",
@@ -303,7 +303,7 @@ const COURSE_DATA = {
           "Religious identity always takes precedence over sexual orientation or gender identity"
         ],
         correctAnswer: 1,
-        explanation: ""
+        explanation: "The correct answer is that LGBTQ+ identities are normal, healthy human variations requiring affirmation rather than pathology. APA (2012, 2015) and ACA guidelines specifically require that licensed mental health practitioners provide affirming clinical services, framing affirmation as a professional ethical obligation rather than an optional clinical orientation. The option that clinicians should remain neutral is incorrect because neutrality toward LGBTQ+ identity implicitly treats it as something about which reasonable clinical disagreement exists, which contradicts the professional consensus that LGBTQ+ identities are healthy variations that do not require clinical questioning."
       },
       {
         question: "The clinical concept of 'coming out' is best understood as:",
@@ -315,7 +315,7 @@ const COURSE_DATA = {
           "A process that is uniformly positive in its mental health effects"
         ],
         correctAnswer: 1,
-        explanation: ""
+        explanation: "The correct answer is that coming out is a lifelong, contextually recursive process that is never fully complete. The clinical literature has moved from linear developmental models to more complex models recognizing that each new relationship, life context, and social environment presents the coming-out decision anew, requiring ongoing assessment of the safety, costs, and benefits of disclosure. The option describing it as a single discrete event is incorrect because coming out involves continuous contextual decisions across the lifespan, not a one-time disclosure."
       },
       {
         question: "LGBTQ+ clients of color face which specific clinical pattern:",
@@ -327,7 +327,7 @@ const COURSE_DATA = {
           "Lower rates of family rejection than white LGBTQ+ youth"
         ],
         correctAnswer: 1,
-        explanation: ""
+        explanation: "The correct answer is compound minority stress from multiple intersecting marginalized identities. Balsam et al. (2011) described the experience of LGBTQ+ people of color as 'cultural victimization,' involving racism in LGBTQ+ spaces and homophobia/transphobia in communities of color, which produces compounded mental health effects. The option suggesting lower rates of mental health concerns is incorrect because intersectional research consistently shows that LGBTQ+ people of color experience additive and compounding stressors, not reduced ones, as a result of navigating multiple forms of marginalization simultaneously."
       },
       {
         question: "The clinical use of LGBTQ+ affirmative therapy contraindicates:",
@@ -339,7 +339,7 @@ const COURSE_DATA = {
           "Any practice that attempts to change, minimize, or eliminate LGBTQ+ identity"
         ],
         correctAnswer: 3,
-        explanation: ""
+        explanation: "The correct answer is any practice that attempts to change, minimize, or eliminate LGBTQ+ identity. LGBTQ+ affirmative therapy is fundamentally incompatible with conversion therapy or any approach that seeks to alter a client's sexual orientation or gender identity, as all major professional organizations identify such practices as harmful and unethical. The option about exploring religious and cultural context is incorrect as a contraindication because affirming therapy fully supports exploring these dimensions of a client's experience; it only prohibits practices aimed at changing the identity itself."
       },
       {
         question: "Two-Spirit identity is best understood as:",
@@ -351,7 +351,7 @@ const COURSE_DATA = {
           "A non-binary gender identity equivalent to non-binary Western identities"
         ],
         correctAnswer: 1,
-        explanation: ""
+        explanation: "The correct answer is a pan-Indigenous term encompassing cultural and spiritual roles that do not map to Western LGBTQ+ categories. Two-Spirit identities are culturally specific roles with particular ceremonial, social, and spiritual functions within specific tribal communities, and they are experienced and understood within Indigenous cultural frameworks rather than Western sexual and gender identity frameworks. The option describing Two-Spirit as a synonym for bisexuality is incorrect because Two-Spirit encompasses cultural and spiritual dimensions that extend far beyond Western categories of sexual orientation."
       },
       {
         question: "The minority stress model predicts that LGBTQ+ health disparities are primarily caused by:",
@@ -363,7 +363,7 @@ const COURSE_DATA = {
           "Inadequate access to general healthcare regardless of sexual orientation or gender identity"
         ],
         correctAnswer: 1,
-        explanation: ""
+        explanation: "The correct answer is chronic stress arising from stigma, discrimination, and prejudice in the social environment. Meyer's (2003) minority stress model specifically attributes LGBTQ+ health disparities to the chronic stress produced by living in a stigmatizing social environment, not to any inherent vulnerability within LGBTQ+ individuals themselves. The option citing inherent psychological vulnerabilities is incorrect because the minority stress model explicitly rejects individual pathology explanations and instead locates the cause of health disparities in the social environment of prejudice and discrimination."
       },
       {
         question: "Family acceptance and rejection affect LGBTQ+ youth outcomes through which mechanism:",
@@ -375,7 +375,7 @@ const COURSE_DATA = {
           "Access to peer support from other LGBTQ+ youth"
         ],
         correctAnswer: 1,
-        explanation: ""
+        explanation: "The correct answer is the degree to which family responses validate or invalidate the youth's identity and self-worth. Ryan et al. (2009) demonstrated that specific family behaviors of acceptance and rejection directly predict mental health outcomes, with family acceptance serving as an active protective factor independent of the reduction of rejection. The option citing genetic transmission of resilience is incorrect because the research identifies family acceptance and rejection as psychosocial mechanisms operating through validation and invalidation of identity, not through genetic or biological pathways."
       },
       {
         question: "Affirming clinical assessment with LGBTQ+ clients distinguishes between:",
@@ -387,7 +387,7 @@ const COURSE_DATA = {
           "LGBTQ+ clients who can benefit from therapy and those who cannot"
         ],
         correctAnswer: 1,
-        explanation: ""
+        explanation: "The correct answer is distinguishing between identity-related concerns requiring affirmation and clinical mental health concerns requiring treatment. Affirming assessment recognizes that gender identity and sexual orientation are not pathologies requiring clinical modification, while simultaneously attending to genuine clinical conditions such as depression, anxiety, and PTSD that may be driven by minority stress. The option about distinguishing clients who can benefit from therapy from those who cannot is incorrect because affirming assessment is not about screening clients in or out of therapy, but about correctly identifying what requires affirmation versus what requires clinical intervention."
       },
     ]
   },

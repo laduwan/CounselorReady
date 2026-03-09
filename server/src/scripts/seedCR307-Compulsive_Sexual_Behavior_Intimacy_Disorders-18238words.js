@@ -263,7 +263,7 @@ const COURSE_DATA = {
           "Compulsive Sexual Behavior Inventory (CSBI)"
         ],
         correctAnswer: 1,
-        explanation: ""
+        explanation: "The correct answer is the Hypersexual Behavior Inventory (HBI). The HBI is a 19-item measure developed specifically for assessing hypersexual behavior in men, as described in Reid and colleagues' (2011) psychometric development study. The Sexual Compulsivity Scale (option A) is a general 10-item sexual compulsivity measure not specifically designed for men, making it the most plausible but incorrect alternative."
       },
       {
         question: "The neurobiological model most supported by current research positions problematic sexual behavior as:",
@@ -275,7 +275,7 @@ const COURSE_DATA = {
           "Exclusively a paraphilic disorder with different neurobiology from other compulsive behaviors"
         ],
         correctAnswer: 1,
-        explanation: ""
+        explanation: "The correct answer is that CSBD involves reward circuitry in ways that may parallel impulsive/compulsive mechanisms without meeting full addiction criteria. Neuroimaging research by Voon and colleagues (2014) found increased activation in the amygdala, ventral striatum, and dorsal anterior cingulate, but the field has not confirmed full addiction model criteria such as consistent tolerance and withdrawal phenomena. Option A is incorrect because research has identified important disanalogies with substance use disorders that prevent equating CSBD with a primary dopaminergic addiction."
       },
       {
         question: "Problematic pornography use is most accurately described as:",
@@ -287,7 +287,7 @@ const COURSE_DATA = {
           "A normal variation in sexual behavior that should never be pathologized"
         ],
         correctAnswer: 1,
-        explanation: ""
+        explanation: "The correct answer is a subcategory of CSBD in which pornography is the primary sexual behavior of concern. Problematic pornography use is characterized by subjective loss of control, distress, and functional impairment related to pornography use, and it is clinically understood as a specific presentation within the broader CSBD framework. Option A is incorrect because problematic pornography use is not a validated diagnostic category in the DSM-5, which did not include any form of hypersexual or compulsive sexual behavior diagnosis."
       },
       {
         question: "Partner trauma — the distress experienced by partners of individuals with CSBD — most closely resembles:",
@@ -299,7 +299,7 @@ const COURSE_DATA = {
           "Dependent personality disorder"
         ],
         correctAnswer: 2,
-        explanation: ""
+        explanation: "The correct answer is post-traumatic stress disorder in its symptom profile. Research by Steffens and Rennie (2006) documented that many partners of individuals with compulsive sexual behavior met PTSD criteria following disclosure, experiencing intrusive thoughts, hypervigilance, avoidance of intimacy, and significant trust disruption. Adjustment disorder (option B) is incorrect because the severity and specific trauma symptom profile observed in partners goes beyond what adjustment disorder captures, warranting trauma-informed clinical intervention."
       },
       {
         question: "Acceptance and Commitment Therapy (ACT) addresses compulsive sexual behavior through:",
@@ -311,7 +311,7 @@ const COURSE_DATA = {
           "Systematic desensitization of sexual urges"
         ],
         correctAnswer: 1,
-        explanation: ""
+        explanation: "The correct answer is values clarification and psychological flexibility to reduce experiential avoidance driving compulsive behavior. ACT conceptualizes compulsive sexual behavior as an experiential avoidance strategy -- a behavioral escape from unwanted internal states such as loneliness, anxiety, and shame -- and builds psychological flexibility and values-driven behavioral alternatives. Option A (behavioral extinction through abstinence) is incorrect because ACT does not aim to extinguish urges through abstinence but rather develops the capacity to hold uncomfortable experiences without reacting through compulsive avoidance."
       },
       {
         question: "Intimacy avoidance as a clinical pattern is most directly associated with:",
@@ -323,7 +323,7 @@ const COURSE_DATA = {
           "Sexual trauma as the only causal pathway"
         ],
         correctAnswer: 0,
-        explanation: ""
+        explanation: "The correct answer is insecure attachment, particularly dismissive-avoidant attachment style, developed through early relational experiences. The course identifies dismissive-avoidant attachment as the pattern most directly associated with intimacy avoidance, as individuals who learned that emotional dependence is unsafe develop defensive self-reliance and deactivation of the attachment system in response to intimacy. Option D (sexual trauma as the only causal pathway) is incorrect because while trauma can contribute to intimacy avoidance, the attachment framework identifies multiple developmental pathways including consistent caregiver unavailability and rejection of attachment needs."
       },
       {
         question: "The ethical obligation regarding sex addiction terminology in clinical documentation is to:",
@@ -335,7 +335,7 @@ const COURSE_DATA = {
           "Avoid documentation of sexual behavior concerns entirely"
         ],
         correctAnswer: 0,
-        explanation: ""
+        explanation: "The correct answer is to use ICD-11 CSBD criteria rather than 'sexual addiction' given the lack of DSM-5/ICD-11 validation. Because 'sexual addiction' is not a validated diagnostic category in either the DSM-5 or ICD-11, clinicians have an ethical obligation to use evidence-based diagnostic terminology in clinical documentation rather than unsupported diagnostic labels. Option B (exclusively using the client's preferred terminology) is incorrect because while client language matters therapeutically, clinical documentation must adhere to validated diagnostic frameworks regardless of client preference."
       },
       {
         question: "Motivational interviewing is particularly valuable in compulsive sexual behavior clinical work because:",
@@ -347,7 +347,7 @@ const COURSE_DATA = {
           "It is required by ethical guidelines for this population"
         ],
         correctAnswer: 1,
-        explanation: ""
+        explanation: "The correct answer is that MI addresses the ambivalence about behavior change that is common and clinically significant in this population. Ambivalence about change is nearly universal in CSBD because individuals may experience the behavior as partially ego-syntonic or may present under external pressure rather than internal motivation, and MI's non-judgmental, evocative stance creates conditions for internal motivation to develop. Option C is incorrect because MI is not required by ethical guidelines; rather, it is indicated by the clinical characteristics of the population."
       },
       {
         question: "The sexual double bind describes:",
@@ -359,7 +359,7 @@ const COURSE_DATA = {
           "The situation in which treatment increases awareness of sexual urges temporarily"
         ],
         correctAnswer: 1,
-        explanation: ""
+        explanation: "The correct answer is the clinical dynamic in which sexual behavior is driven by both compulsive urges and shame about those urges. The sexual double bind describes how the shame about sexual behavior paradoxically maintains the compulsive cycle, as both the urge and the shame are powerfully motivating forces that reinforce one another. Option C (the paradox of recommending abstinence) is incorrect because the sexual double bind refers specifically to the internal psychological dynamic between compulsive urges and shame, not to a treatment planning dilemma."
       },
       {
         question: "Intimacy disorder in the context of compulsive sexual behavior is best described as:",
@@ -371,7 +371,7 @@ const COURSE_DATA = {
           "Personality disorder that precludes the formation of intimate relationships"
         ],
         correctAnswer: 1,
-        explanation: ""
+        explanation: "The correct answer is deficits in emotional intimacy capacity that drive compulsive sexual behavior as a substitute for genuine connection. The course emphasizes that compulsive sexual behavior often substitutes for authentic emotional intimacy, providing a form of connection that avoids the vulnerability of genuine relational closeness, and that treating only the compulsive behavior without addressing underlying intimacy deficits produces incomplete recovery. Option A (absence of sexual desire for intimate partners) is incorrect because intimacy disorder in this context refers to emotional intimacy capacity deficits, not to sexual desire or dysfunction per se."
       },
       {
         question: "Relapse prevention in CSBD treatment is most effective when it:",
@@ -383,7 +383,7 @@ const COURSE_DATA = {
           "Focuses primarily on shame reduction without behavioral components"
         ],
         correctAnswer: 1,
-        explanation: ""
+        explanation: "The correct answer is that relapse prevention addresses individual triggers, high-risk situations, and values-based behavioral alternatives alongside social support. The cognitive-behavioral relapse prevention model identifies specific high-risk situations -- including emotional states, interpersonal contexts, and environmental cues -- and develops individualized coping plans with practical strategies and accountability structures. Option A (focusing exclusively on abstinence from all sexual behavior) is incorrect because effective relapse prevention is individualized and values-based rather than requiring blanket abstinence from all sexual activity."
       },
       {
         question: "The clinical standard of care for couples affected by CSBD disclosure:",
@@ -395,7 +395,7 @@ const COURSE_DATA = {
           "Requires assessment of both partners for addiction disorders"
         ],
         correctAnswer: 1,
-        explanation: ""
+        explanation: "The correct answer is staged treatment: individual stabilization for the CSBD partner, crisis support for the affected partner, and couples work when both are ready. The course describes a staged approach beginning with individual stabilization and partner crisis support, followed by couples work only after both partners have achieved sufficient individual stabilization. Option A (requiring immediate couples therapy) is incorrect because initiating couples work before individual stabilization risks overwhelming both partners and undermining the therapeutic process."
       },
     ]
   },
