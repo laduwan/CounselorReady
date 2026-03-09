@@ -141,10 +141,10 @@ const COURSE = {
           order: 3,
           question: "DBT was originally developed to address which clinical problem?",
           options: [
-            "A) The lack of effective treatments for generalized anxiety disorder",
-            "B) Treatment of chronically suicidal individuals, particularly those with Borderline Personality Disorder",
-            "C) Medication management for clients with bipolar disorder",
-            "D) The absence of group therapy models in community mental health settings"
+            "The lack of effective treatments for generalized anxiety disorder",
+            "Treatment of chronically suicidal individuals, particularly those with Borderline Personality Disorder",
+            "Medication management for clients with bipolar disorder",
+            "The absence of group therapy models in community mental health settings"
           ],
           correctAnswer: 1,
           explanation: "DBT was specifically developed by Marsha Linehan in the late 1980s to treat chronically suicidal individuals with BPD, a population for whom standard CBT proved insufficient. The core problem was that change-focused interventions felt invalidating while purely acceptance-based approaches failed to produce behavioral progress.",
@@ -155,10 +155,10 @@ const COURSE = {
           order: 4,
           question: "Which three intellectual traditions does DBT integrate?",
           options: [
-            "A) Psychoanalysis, humanistic therapy, and narrative therapy",
-            "B) Cognitive-behavioral therapy, dialectical philosophy, and Zen Buddhist contemplative practices",
-            "C) Gestalt therapy, existentialism, and positive psychology",
-            "D) Acceptance and Commitment Therapy, EMDR, and motivational interviewing"
+            "Psychoanalysis, humanistic therapy, and narrative therapy",
+            "Cognitive-behavioral therapy, dialectical philosophy, and Zen Buddhist contemplative practices",
+            "Gestalt therapy, existentialism, and positive psychology",
+            "Acceptance and Commitment Therapy, EMDR, and motivational interviewing"
           ],
           correctAnswer: 1,
           explanation: "DBT integrates cognitive-behavioral therapy (its empirical foundation), dialectical philosophy (the idea that opposing truths can be synthesized), and Zen Buddhist contemplative practices (particularly radical acceptance and mindfulness). This integration is what distinguishes DBT from standard CBT.",
@@ -204,10 +204,10 @@ const COURSE = {
           order: 2,
           question: "According to biosocial theory, emotional dysregulation results from which of the following?",
           options: [
-            "A) A biological predisposition toward emotional vulnerability alone",
-            "B) An invalidating social environment alone",
-            "C) The ongoing transaction between biological emotional vulnerability and an invalidating social environment",
-            "D) Genetic inheritance of personality disorder traits"
+            "A biological predisposition toward emotional vulnerability alone",
+            "An invalidating social environment alone",
+            "The ongoing transaction between biological emotional vulnerability and an invalidating social environment",
+            "Genetic inheritance of personality disorder traits"
           ],
           correctAnswer: 2,
           explanation: "Biosocial theory specifically holds that neither biological vulnerability nor environmental invalidation alone is sufficient. It is the ongoing transaction—the continuous interaction between the two factors over time—that creates and maintains pervasive emotional dysregulation.",
@@ -234,10 +234,10 @@ const COURSE = {
           order: 4,
           question: "Which of the following best illustrates a dialectical therapeutic response to a client who says, 'Nothing I do matters—I'll never get better'?",
           options: [
-            "A) 'Let's look at the evidence for and against that belief.'",
-            "B) 'I understand how much pain you're in right now.'",
-            "C) 'I hear how much pain you're in, AND the fact that you're here talking to me is itself evidence that some part of you is still reaching for change.'",
-            "D) 'You shouldn't think that way—you have made progress.'"
+            "'Let's look at the evidence for and against that belief.'",
+            "'I understand how much pain you're in right now.'",
+            "'I hear how much pain you're in, AND the fact that you're here talking to me is itself evidence that some part of you is still reaching for change.'",
+            "'You shouldn't think that way—you have made progress.'"
           ],
           correctAnswer: 2,
           explanation: "A dialectical response synthesizes both validation and change simultaneously—it acknowledges the pain as real while also honoring the evidence of the client's continued effort. This is the hallmark of dialectical therapeutic communication: holding two truths at once rather than choosing one side.",
@@ -248,10 +248,10 @@ const COURSE = {
           order: 5,
           question: "Which of the following statements about the invalidating environment is most consistent with biosocial theory?",
           options: [
-            "A) Invalidating environments are always the result of intentional parental neglect or abuse",
-            "B) Invalidating environments only affect individuals with biological emotional vulnerability",
-            "C) Invalidating environments arise from caregivers who may be well-intentioned but lack understanding of emotional sensitivity",
-            "D) Cultural factors are irrelevant to the concept of invalidating environments"
+            "Invalidating environments are always the result of intentional parental neglect or abuse",
+            "Invalidating environments only affect individuals with biological emotional vulnerability",
+            "Invalidating environments arise from caregivers who may be well-intentioned but lack understanding of emotional sensitivity",
+            "Cultural factors are irrelevant to the concept of invalidating environments"
           ],
           correctAnswer: 2,
           explanation: "Biosocial theory is explicit that the invalidating environment does not require malicious intent. Many invalidating environments arise from caregivers doing their best with limited understanding of emotional sensitivity. Cultural norms also play a significant role in defining what constitutes invalidation.",
@@ -311,10 +311,10 @@ const COURSE = {
           order: 3,
           question: "What is the primary purpose of phone coaching in comprehensive DBT?",
           options: [
-            "A) To conduct crisis counseling and assess suicidal risk between sessions",
-            "B) To provide between-session therapy for unresolved therapeutic issues",
-            "C) To help clients apply DBT skills in real-time during situations that trigger self-destructive urges",
-            "D) To check in on homework completion and diary card recording"
+            "To conduct crisis counseling and assess suicidal risk between sessions",
+            "To provide between-session therapy for unresolved therapeutic issues",
+            "To help clients apply DBT skills in real-time during situations that trigger self-destructive urges",
+            "To check in on homework completion and diary card recording"
           ],
           correctAnswer: 2,
           explanation: "Phone coaching serves skills generalization — helping clients apply already-learned skills in the moment when they need them most. It is explicitly not crisis counseling or between-session therapy. The calls are brief (5–15 minutes) and highly focused on skill identification and application.",
@@ -325,10 +325,10 @@ const COURSE = {
           order: 4,
           question: "In the DBT treatment target hierarchy, what is always the first priority in individual therapy sessions?",
           options: [
-            "A) Quality-of-life-interfering behaviors such as substance use or relationship problems",
-            "B) Reviewing the diary card and skills homework",
-            "C) Life-threatening behaviors including suicidal ideation and self-harm",
-            "D) Therapy-interfering behaviors such as missed sessions"
+            "Quality-of-life-interfering behaviors such as substance use or relationship problems",
+            "Reviewing the diary card and skills homework",
+            "Life-threatening behaviors including suicidal ideation and self-harm",
+            "Therapy-interfering behaviors such as missed sessions"
           ],
           correctAnswer: 2,
           explanation: "Life-threatening behaviors are always first in the DBT hierarchy. If a client has engaged in suicidal behavior, self-harm, or homicidal behavior since the last session, this becomes the session focus regardless of what other issues are present. This unwavering prioritization communicates that the client's life matters above all other therapeutic goals.",
@@ -339,10 +339,10 @@ const COURSE = {
           order: 5,
           question: "What is the primary function of the therapist consultation team in DBT?",
           options: [
-            "A) To monitor client progress and adjust treatment plans",
-            "B) To supervise interns and unlicensed staff",
-            "C) To treat the therapist — providing support, fidelity monitoring, and burnout prevention",
-            "D) To coordinate billing and administrative functions across the program"
+            "To monitor client progress and adjust treatment plans",
+            "To supervise interns and unlicensed staff",
+            "To treat the therapist — providing support, fidelity monitoring, and burnout prevention",
+            "To coordinate billing and administrative functions across the program"
           ],
           correctAnswer: 2,
           explanation: "The consultation team is the component that treats the therapist, not the client. Linehan recognized that clinicians working with severely dysregulated clients are at high risk for burnout. The team provides a validating, structured environment for therapists to process reactions, receive feedback, and maintain dialectical balance in their therapeutic stance.",
@@ -381,10 +381,10 @@ const COURSE = {
           order: 2,
           question: "A client arrives at session furious about a conflict with their partner and says, 'I'm done. I'm going to pack my bags tonight.' Which state of mind is the client most likely operating from?",
           options: [
-            "A) Reasonable Mind — they have analyzed the relationship and made a logical decision",
-            "B) Wise Mind — they are honoring both their emotions and their values",
-            "C) Emotion Mind — their current emotional state is controlling their thinking and decision-making",
-            "D) Reflective Mind — they are processing the situation before acting"
+            "Reasonable Mind — they have analyzed the relationship and made a logical decision",
+            "Wise Mind — they are honoring both their emotions and their values",
+            "Emotion Mind — their current emotional state is controlling their thinking and decision-making",
+            "Reflective Mind — they are processing the situation before acting"
           ],
           correctAnswer: 2,
           explanation: "The client is in Emotion Mind — their intense anger is driving an impulsive decision. In Emotion Mind, emotions feel like facts ('I'm done' feels certain and true) and action urges feel like reasonable plans. The therapeutic response would be to validate the pain while helping the client access Wise Mind before making major decisions.",
@@ -408,10 +408,10 @@ const COURSE = {
           order: 4,
           question: "A client tells their therapist: 'I noticed my jaw clenching when my coworker started talking about the deadline. I felt heat rising in my chest and I had the urge to interrupt.' Which 'What' skill is the client demonstrating?",
           options: [
-            "A) Participate — the client is fully engaged in the work situation",
-            "B) Observe — the client is noticing internal and external experiences without immediately reacting",
-            "C) Describe — the client is labeling their experience in factual, specific language",
-            "D) Effectively — the client is doing what works in the situation"
+            "Participate — the client is fully engaged in the work situation",
+            "Observe — the client is noticing internal and external experiences without immediately reacting",
+            "Describe — the client is labeling their experience in factual, specific language",
+            "Effectively — the client is doing what works in the situation"
           ],
           correctAnswer: 1,
           explanation: "The client is demonstrating Observe — noticing physical sensations, emotional states, and action urges without immediately reacting to them. This is the first and foundational What skill: paying attention to experience in real time, creating the space between stimulus and response. Note that they are noticing, not yet labeling (which would be Describe).",
@@ -422,10 +422,10 @@ const COURSE = {
           order: 5,
           question: "Which 'How' skill involves doing what works in a situation rather than doing what feels fair or principled?",
           options: [
-            "A) Non-Judgmentally",
-            "B) One-Mindfully",
-            "C) Effectively",
-            "D) Radically"
+            "Non-Judgmentally",
+            "One-Mindfully",
+            "Effectively",
+            "Radically"
           ],
           correctAnswer: 2,
           explanation: "Effectively is the How skill that asks clients to prioritize outcomes over adherence to what feels right or principled. It doesn't mean abandoning values—it means being strategic about how to pursue those values. A client in a custody hearing who feels rage acts effectively by remaining composed, not because their anger is wrong but because composure produces the outcome that matters most.",
@@ -470,10 +470,10 @@ const COURSE = {
           order: 2,
           question: "Which physiological mechanism makes the Temperature skill in TIPP effective for rapidly reducing emotional arousal?",
           options: [
-            "A) It triggers the release of endorphins, which counteract cortisol",
-            "B) It activates the mammalian dive reflex, producing an automatic parasympathetic nervous system response",
-            "C) It distracts attention from emotional pain by creating physical discomfort",
-            "D) It reduces core body temperature, which is associated with decreased anxiety"
+            "It triggers the release of endorphins, which counteract cortisol",
+            "It activates the mammalian dive reflex, producing an automatic parasympathetic nervous system response",
+            "It distracts attention from emotional pain by creating physical discomfort",
+            "It reduces core body temperature, which is associated with decreased anxiety"
           ],
           correctAnswer: 1,
           explanation: "The Temperature skill specifically works by activating the mammalian dive reflex — a hardwired physiological response that automatically slows heart rate and adjusts blood pressure when cold water contacts the face (particularly around the eyes and cheeks). This parasympathetic response directly reduces the physiological arousal that amplifies emotional intensity.",
@@ -484,10 +484,10 @@ const COURSE = {
           order: 3,
           question: "Which of the following best describes the concept of Radical Acceptance in DBT?",
           options: [
-            "A) Approving of painful events and agreeing that they should have happened",
-            "B) Fully accepting reality as it is without fighting, denying, or judging it, while not necessarily approving of it",
-            "C) Passively giving up on efforts to change difficult circumstances",
-            "D) Using positive self-talk to reframe painful experiences as opportunities for growth"
+            "Approving of painful events and agreeing that they should have happened",
+            "Fully accepting reality as it is without fighting, denying, or judging it, while not necessarily approving of it",
+            "Passively giving up on efforts to change difficult circumstances",
+            "Using positive self-talk to reframe painful experiences as opportunities for growth"
           ],
           correctAnswer: 1,
           explanation: "Radical Acceptance means fully acknowledging reality as it is — not approving of it, not agreeing it should have happened, and not giving up on change. The distinction is critical: refusing to accept reality doesn't change reality, it only adds the suffering of fighting against what has already occurred. Acceptance is the prerequisite for effective action, not a substitute for it.",
@@ -498,10 +498,10 @@ const COURSE = {
           order: 4,
           question: "A client in acute emotional crisis has been engaging in self-harm when overwhelmed. Which distress tolerance strategies would be most appropriate to teach FIRST for immediate crisis management?",
           options: [
-            "A) Radical Acceptance and Turning the Mind",
-            "B) TIPP skills — specifically Temperature and Paced Breathing",
-            "C) The Pros and Cons exercise completed during the crisis",
-            "D) DEAR MAN to communicate needs to support system"
+            "Radical Acceptance and Turning the Mind",
+            "TIPP skills — specifically Temperature and Paced Breathing",
+            "The Pros and Cons exercise completed during the crisis",
+            "DEAR MAN to communicate needs to support system"
           ],
           correctAnswer: 1,
           explanation: "TIPP skills are the fastest-acting interventions in the DBT toolkit because they work directly on the physiology — specifically Temperature and Paced Breathing can produce measurable relief within seconds to minutes. Reality acceptance skills are valuable but require more cognitive capacity than is available during acute crisis. Pros and Cons must be completed in advance, not during the crisis.",
@@ -546,10 +546,10 @@ const COURSE = {
           order: 2,
           question: "In the DBT model of emotions, at which point does the skill of 'Check the Facts' intervene in the emotional cycle?",
           options: [
-            "A) At the prompting event, before any emotional response has occurred",
-            "B) At the interpretation stage, examining whether the meaning assigned to the event is accurate",
-            "C) At the action urge stage, before the behavior occurs",
-            "D) At the behavior stage, after the emotional response has fully developed"
+            "At the prompting event, before any emotional response has occurred",
+            "At the interpretation stage, examining whether the meaning assigned to the event is accurate",
+            "At the action urge stage, before the behavior occurs",
+            "At the behavior stage, after the emotional response has fully developed"
           ],
           correctAnswer: 1,
           explanation: "Check the Facts intervenes at the interpretation stage — the point where the person assigns meaning to the prompting event. Because the same event can generate very different emotions depending on interpretation, correcting an inaccurate interpretation can fundamentally change the emotional response. This makes the interpretation stage one of the highest-leverage intervention points in the emotional cycle.",
@@ -560,10 +560,10 @@ const COURSE = {
           order: 3,
           question: "A client feels intense anger after their manager publicly criticized their work in a team meeting. After using Check the Facts, the client determines that the criticism was factually inaccurate and professionally inappropriate. Which emotion regulation skill is most appropriate next?",
           options: [
-            "A) Opposite Action — act gently and take a step back because the emotion is too intense",
-            "B) Problem Solving — the emotion fits the facts, so address the real-world situation",
-            "C) Radical Acceptance — accept that the criticism happened and move on",
-            "D) Paced Breathing — reduce the physiological arousal before taking any action"
+            "Opposite Action — act gently and take a step back because the emotion is too intense",
+            "Problem Solving — the emotion fits the facts, so address the real-world situation",
+            "Radical Acceptance — accept that the criticism happened and move on",
+            "Paced Breathing — reduce the physiological arousal before taking any action"
           ],
           correctAnswer: 1,
           explanation: "When Check the Facts determines that the emotion FITS the facts — the criticism was genuinely inappropriate — Problem Solving is indicated. Using Opposite Action (acting gently) when the emotion is justified would be invalidating, dismissing a legitimate emotional signal. The client should channel the justified anger into effective action: identifying options and implementing a plan to address the actual problem.",
@@ -574,10 +574,10 @@ const COURSE = {
           order: 4,
           question: "Which of the following are components of the ABC PLEASE skills?",
           options: [
-            "A) Accumulate positive experiences, Build mastery, Cope ahead",
-            "B) Analyze thoughts, Breathe mindfully, Check the facts",
-            "C) Accept reality, Balance emotions, Create safety",
-            "D) Assert needs, Build relationships, Communicate effectively"
+            "Accumulate positive experiences, Build mastery, Cope ahead",
+            "Analyze thoughts, Breathe mindfully, Check the facts",
+            "Accept reality, Balance emotions, Create safety",
+            "Assert needs, Build relationships, Communicate effectively"
           ],
           correctAnswer: 0,
           explanation: "ABC stands for Accumulate positive experiences, Build mastery, and Cope ahead. PLEASE refers to treating PhysicaL illness, balanced Eating, avoiding mood-Altering substances, balanced Sleep, and Exercise. Together, these proactive skills build long-term emotional resilience by improving the baseline conditions of the client's daily life.",
@@ -639,10 +639,10 @@ const COURSE = {
           order: 2,
           question: "A client needs to ask their supervisor for a schedule change to accommodate therapy appointments. They feel anxious about the request and worried about being perceived as difficult. Which interpersonal effectiveness framework should they primarily use?",
           options: [
-            "A) GIVE — to focus on maintaining the relationship with their supervisor",
-            "B) FAST — to maintain their self-respect while making the request",
-            "C) DEAR MAN — to effectively make the request and get the schedule change",
-            "D) Radical Acceptance — to accept that they may not get what they need"
+            "GIVE — to focus on maintaining the relationship with their supervisor",
+            "FAST — to maintain their self-respect while making the request",
+            "DEAR MAN — to effectively make the request and get the schedule change",
+            "Radical Acceptance — to accept that they may not get what they need"
           ],
           correctAnswer: 2,
           explanation: "DEAR MAN is the objective effectiveness skill — designed specifically for making requests and getting needs met. The client has a clear objective (the schedule change) and should use DEAR MAN to communicate it clearly and effectively. GIVE would be used alongside DEAR MAN to preserve the relationship, and FAST to maintain self-respect, but the primary framework for achieving the objective is DEAR MAN.",
@@ -653,10 +653,10 @@ const COURSE = {
           order: 3,
           question: "A client has a tendency to over-apologize when making reasonable requests of their family members. Which FAST skill specifically addresses this pattern?",
           options: [
-            "A) Fair — being fair to both yourself and the other person",
-            "B) (no) Apologies — not over-apologizing for having needs or making reasonable requests",
-            "C) Stick to Values — maintaining core values under pressure",
-            "D) Truthful — being honest about your needs"
+            "Fair — being fair to both yourself and the other person",
+            "(no) Apologies — not over-apologizing for having needs or making reasonable requests",
+            "Stick to Values — maintaining core values under pressure",
+            "Truthful — being honest about your needs"
           ],
           correctAnswer: 1,
           explanation: "The 'A' in FAST stands for (no) Apologies — specifically the instruction not to over-apologize for existing, having needs, or making reasonable requests. Excessive apologizing communicates that your needs are not legitimate and undermines your credibility in the interaction. The skill is to apologize when you have genuinely wronged someone, but not for simply having boundaries or needs.",
@@ -667,10 +667,10 @@ const COURSE = {
           order: 4,
           question: "Which factors should increase the intensity of a client's assertion, according to the interpersonal effectiveness intensity scale?",
           options: [
-            "A) When the request is low priority and the relationship is casual",
-            "B) When the need is important, the request is reasonable, and little harm will result from asking",
-            "C) When the client feels intensely emotional and is in Emotion Mind",
-            "D) When the relationship is at risk of ending regardless of the outcome"
+            "When the request is low priority and the relationship is casual",
+            "When the need is important, the request is reasonable, and little harm will result from asking",
+            "When the client feels intensely emotional and is in Emotion Mind",
+            "When the relationship is at risk of ending regardless of the outcome"
           ],
           correctAnswer: 1,
           explanation: "The intensity of assertion should increase when: the need is important, the request is reasonable and ethical, it is the appropriate time and place, there is evidence the request will be heard, and little harm will result from asking. The intensity should decrease when the situation is reversed — low priority needs in fragile relationships warrant lower assertiveness.",
@@ -712,10 +712,10 @@ const COURSE = {
           order: 2,
           question: "Which criticism addresses the concern that DBT's concept of radical acceptance may be problematic for individuals facing systemic oppression?",
           options: [
-            "A) The resource intensity limitation — not enough clinicians are trained",
-            "B) The cultural applicability limitation — accepting systemic injustice is fundamentally different from accepting personal loss",
-            "C) The fidelity drift limitation — clinicians are using DBT-informed approaches incorrectly",
-            "D) The client burden limitation — the treatment demands too much of clients"
+            "The resource intensity limitation — not enough clinicians are trained",
+            "The cultural applicability limitation — accepting systemic injustice is fundamentally different from accepting personal loss",
+            "The fidelity drift limitation — clinicians are using DBT-informed approaches incorrectly",
+            "The client burden limitation — the treatment demands too much of clients"
           ],
           correctAnswer: 1,
           explanation: "The cultural applicability criticism specifically raises concern that radical acceptance may be applied inappropriately to clients from marginalized communities. Accepting the reality of systemic oppression — racism, discrimination, structural inequality — is fundamentally different from accepting a personal loss. The clinician must be sensitive to this distinction and ensure that radical acceptance does not become a tool for encouraging clients to accommodate injustice.",
@@ -726,10 +726,10 @@ const COURSE = {
           order: 3,
           question: "A clinician describes their practice as 'DBT-informed' but only occasionally teaches mindfulness skills and does not use diary cards, behavioral chain analysis, or group skills training. What limitation does this example illustrate?",
           options: [
-            "A) Resource intensity — the clinician lacks the staff to implement full DBT",
-            "B) Fidelity drift — selective use of DBT components without the full treatment structure",
-            "C) Diagnostic stigma — the clinician is avoiding formal DBT to protect clients from the BPD label",
-            "D) Treatment duration — the clinician is implementing only the first phase of DBT"
+            "Resource intensity — the clinician lacks the staff to implement full DBT",
+            "Fidelity drift — selective use of DBT components without the full treatment structure",
+            "Diagnostic stigma — the clinician is avoiding formal DBT to protect clients from the BPD label",
+            "Treatment duration — the clinician is implementing only the first phase of DBT"
           ],
           correctAnswer: 1,
           explanation: "Fidelity drift refers to the gradual erosion of the comprehensive treatment structure as clinicians selectively adopt individual components while abandoning the full model. While integrating DBT skills is legitimate, the concern is that cherry-picking components without the structural container may produce inferior outcomes. Transparency with clients about what level of DBT is being provided is ethically essential.",
