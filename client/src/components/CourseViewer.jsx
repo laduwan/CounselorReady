@@ -1154,6 +1154,17 @@ function CourseSidebar({
   const pct = progress?.overallProgress || 0;
   const allComplete = progress?.sectionProgress?.every(s => s.status === 'completed');
 
+  // Count interactive elements across all sections
+  const INTERACTIVE_TYPES = ['matching', 'multipleChoice', 'multiSelect', 'cardSort',
+    'sequencing', 'hotspot', 'timeline', 'scenarioTree', 'flashcardDeck'];
+  const totalInteractive = course.sections.reduce((sum, section) => {
+    const blocks = section.contentBlocks || section.content_blocks || [];
+    return sum + blocks.filter(b => INTERACTIVE_TYPES.includes(b.type)).length;
+  }, 0);
+  const completedInteractive = progress?.sectionProgress?.reduce((sum, sp) => {
+    return sum + (sp?.completedBlocks?.length || 0);
+  }, 0) || 0;
+
   return (
     <>
       {/* Overlay for mobile */}
@@ -1193,7 +1204,7 @@ function CourseSidebar({
               <div>
                 <div className="text-[11px] font-semibold" style={{ opacity: 0.9 }}>{completedCount} of {totalCount} complete</div>
                 <div className="text-[10px]" style={{ opacity: 0.6 }}>
-                  {allComplete ? 'All sections complete' : `Section ${(progress?.currentSectionIndex || 0) + 1} in progress`}
+                  {allComplete ? 'All sections complete' : `${totalInteractive} interactive element${totalInteractive !== 1 ? 's' : ''}`}
                 </div>
               </div>
             </div>
