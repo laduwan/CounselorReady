@@ -61,8 +61,8 @@ const api = {
   },
 
   async updateSectionProgress(slug, sectionIndex, data) {
-    const res = await fetch(`${API_BASE}/${slug}/sections/${sectionIndex}/progress`, {
-      method: 'POST',
+    const res = await fetch(`${API_BASE}/${slug}/progress/section/${sectionIndex}`, {
+      method: 'PUT',
       headers: authHeaders(),
       body: JSON.stringify(data)
     });
@@ -72,7 +72,7 @@ const api = {
   },
 
   async submitSectionQuiz(slug, sectionIndex, answers, timeSpent) {
-    const res = await fetch(`${API_BASE}/${slug}/sections/${sectionIndex}/quiz`, {
+    const res = await fetch(`${API_BASE}/${slug}/progress/section/${sectionIndex}/quiz`, {
       method: 'POST',
       headers: authHeaders(),
       body: JSON.stringify({ answers, timeSpent })
@@ -83,7 +83,7 @@ const api = {
   },
 
   async submitAssessment(slug, answers, timeUsed, questionOrder) {
-    const res = await fetch(`${API_BASE}/${slug}/assessment/submit`, {
+    const res = await fetch(`${API_BASE}/${slug}/assessment`, {
       method: 'POST',
       headers: authHeaders(),
       body: JSON.stringify({ answers, timeUsed, questionOrder })
@@ -95,7 +95,7 @@ const api = {
 
   async logInteraction(slug, interaction) {
     try {
-      await fetch(`${API_BASE}/${slug}/interaction`, {
+      await fetch(`${API_BASE}/${slug}/progress/interaction`, {
         method: 'POST',
         headers: authHeaders(),
         body: JSON.stringify(interaction)
