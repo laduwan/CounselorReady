@@ -350,62 +350,74 @@ function ContentBlockRenderer({
 
     case 'cardSort':
       return (
-        <CardSort
-          categories={block.categories}
-          cards={block.cards}
-          instructions={block.instructions}
-          explanation={block.explanation}
-          onComplete={(correct, total) => handleInteractionComplete(correct === total, correct / total)}
-        />
+        <KnowledgeCheckModal type="cardSort" completed={isCompleted}>
+          <CardSort
+            categories={block.categories}
+            cards={block.cards}
+            instructions={block.instructions}
+            explanation={block.explanation}
+            onComplete={(correct, total) => handleInteractionComplete(correct === total, correct / total)}
+          />
+        </KnowledgeCheckModal>
       );
 
     case 'sequencing':
       return (
-        <Sequencing
-          steps={block.steps}
-          instructions={block.instructions}
-          explanation={block.explanation}
-          onComplete={(correct, total) => handleInteractionComplete(correct === total, correct / total)}
-        />
+        <KnowledgeCheckModal type="sequencing" completed={isCompleted}>
+          <Sequencing
+            steps={block.steps}
+            instructions={block.instructions}
+            explanation={block.explanation}
+            onComplete={(correct, total) => handleInteractionComplete(correct === total, correct / total)}
+          />
+        </KnowledgeCheckModal>
       );
 
     case 'hotspot':
       return (
-        <Hotspot
-          hotspots={block.hotspots}
-          hotspotImage={block.hotspotImage}
-          imageDescription={block.imageDescription}
-          instructions={block.instructions}
-          onComplete={(count) => handleInteractionComplete(true, 1)}
-        />
+        <KnowledgeCheckModal type="hotspot" completed={isCompleted}>
+          <Hotspot
+            hotspots={block.hotspots}
+            hotspotImage={block.hotspotImage}
+            imageDescription={block.imageDescription}
+            instructions={block.instructions}
+            onComplete={(count) => handleInteractionComplete(true, 1)}
+          />
+        </KnowledgeCheckModal>
       );
 
     case 'timeline':
       return (
-        <Timeline
-          events={block.events}
-          instructions={block.instructions}
-          onComplete={(correct, total) => handleInteractionComplete(correct === total, correct / total)}
-        />
+        <KnowledgeCheckModal type="timeline" completed={isCompleted}>
+          <Timeline
+            events={block.events}
+            instructions={block.instructions}
+            onComplete={(correct, total) => handleInteractionComplete(correct === total, correct / total)}
+          />
+        </KnowledgeCheckModal>
       );
 
     case 'scenarioTree':
       return (
-        <ScenarioTree
-          scenarioTitle={block.scenarioTitle}
-          startNode={block.startNode}
-          nodes={block.nodes}
-          onComplete={() => handleInteractionComplete(true, 1)}
-        />
+        <KnowledgeCheckModal type="scenarioTree" completed={isCompleted}>
+          <ScenarioTree
+            scenarioTitle={block.scenarioTitle}
+            startNode={block.startNode}
+            nodes={block.nodes}
+            onComplete={() => handleInteractionComplete(true, 1)}
+          />
+        </KnowledgeCheckModal>
       );
 
     case 'flashcardDeck':
       return (
-        <FlashcardDeck
-          flashcards={block.flashcards}
-          instructions={block.instructions}
-          onComplete={(count) => handleInteractionComplete(true, 1)}
-        />
+        <KnowledgeCheckModal type="flashcardDeck" completed={isCompleted}>
+          <FlashcardDeck
+            flashcards={block.flashcards}
+            instructions={block.instructions}
+            onComplete={(count) => handleInteractionComplete(true, 1)}
+          />
+        </KnowledgeCheckModal>
       );
 
     case 'videoEmbed':
