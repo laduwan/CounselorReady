@@ -6,6 +6,8 @@
 // pages/InteractiveCourseCatalog.jsx
 // Displays available interactive courses for enrollment
 // =====================================================
+// @lock-file: Layout structure, color scheme, and visual design of this page are LOCKED.
+// Do NOT change classNames, color values, gradients, spacing, grid layout, or component hierarchy.
 
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
@@ -101,11 +103,12 @@ const InteractiveCourseCatalog = () => {
     );
   }
 
+  // @lock-start: Page layout, heading, filter bar, and grid structure
   return (
     <div>
       {/* Page heading */}
       <div className="mb-6">
-        <h1 className="font-display text-3xl font-semibold text-burgundy-900">CE Course Library</h1>
+        <h1 className="font-display text-3xl font-semibold text-burgundy-900 mb-2">CE Course Library</h1>
         <p className="text-forest-600">
           Earn continuing education credits with our professionally designed courses.
         </p>
@@ -113,7 +116,7 @@ const InteractiveCourseCatalog = () => {
 
       {/* Filters */}
       <div className="mb-6">
-        <div className="bg-white rounded-xl shadow-sm p-4 flex flex-wrap gap-4 items-center border border-forest-100">
+        <div className="bg-white rounded-xl shadow-sm p-6 flex flex-wrap gap-4 items-center border border-burgundy-100">
           {/* Search */}
           <div className="relative flex-1 min-w-64">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-forest-400" />
@@ -193,8 +196,10 @@ const InteractiveCourseCatalog = () => {
       </div>
     </div>
   );
+  // @lock-end
 };
 
+// @lock-start: CourseCard — colors, gradient, pills, spacing, and visual hierarchy
 // Course Card Component (Grid View)
 const CourseCard = ({ course, progress, onClick }) => {
   const isEnrolled = !!progress;
@@ -206,9 +211,9 @@ const CourseCard = ({ course, progress, onClick }) => {
       onClick={onClick}
       className="bg-white rounded-xl shadow-sm hover:shadow-lg transition-all cursor-pointer overflow-hidden border border-burgundy-100 group"
     >
-      {/* Thumbnail — gradient green to rose with deep rose book icon */}
-      <div className="h-48 bg-gradient-to-br from-hunter-100 to-burgundy-200 relative flex items-center justify-center">
-        <BookOpen className="h-16 w-16 text-burgundy-500" />
+      {/* Thumbnail — gradient burgundy to forest with soft book icon */}
+      <div className="h-48 bg-gradient-to-br from-burgundy-100 to-forest-100 relative flex items-center justify-center">
+        <BookOpen className="h-16 w-16 text-burgundy-300" />
         {isCompleted && (
           <div className="absolute top-3 right-3 bg-hunter-600 text-white px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1">
             <CheckCircle className="h-3 w-3" />
@@ -227,7 +232,7 @@ const CourseCard = ({ course, progress, onClick }) => {
 
       {/* Content */}
       <div className="p-5">
-        <h3 className="font-display text-lg font-semibold text-burgundy-900 group-hover:text-burgundy-700 transition-colors line-clamp-2 mb-2">
+        <h3 className="font-display text-xl font-semibold text-burgundy-900 group-hover:text-burgundy-700 transition-colors line-clamp-2 mb-2">
           {course.title}
         </h3>
 
@@ -265,20 +270,19 @@ const CourseCard = ({ course, progress, onClick }) => {
           <span>{course.totalEstimatedTime || 60} min</span>
         </div>
 
-        {/* Action */}
-        <div className="pt-4 border-t border-forest-100">
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-burgundy-800">
-              {isCompleted ? 'Review Course' : isEnrolled ? 'Continue Learning' : 'Start Course'}
-            </span>
-            <ChevronRight className="h-5 w-5 text-burgundy-700 group-hover:translate-x-1 transition-transform" />
-          </div>
+        {/* Action — full-width burgundy button bar */}
+        <div className="mt-auto">
+          <button className="w-full bg-burgundy-800 hover:bg-burgundy-900 text-white font-semibold px-4 py-2 rounded-xl transition-colors">
+            {isCompleted ? 'Review Course' : isEnrolled ? 'Continue Learning' : 'View Details'}
+          </button>
         </div>
       </div>
     </div>
   );
 };
+// @lock-end
 
+// @lock-start: CourseListItem — colors, icon, pills, progress bar, and visual hierarchy
 // Course List Item Component (List View)
 const CourseListItem = ({ course, progress, onClick }) => {
   const isEnrolled = !!progress;
@@ -354,5 +358,6 @@ const CourseListItem = ({ course, progress, onClick }) => {
     </div>
   );
 };
+// @lock-end
 
 export default InteractiveCourseCatalog;

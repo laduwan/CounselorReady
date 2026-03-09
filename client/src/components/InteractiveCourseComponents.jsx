@@ -312,13 +312,13 @@ export function ImageTextCard({ image, imageAlt, title, content, imagePosition =
   return (
     <div style={{ background: B.card, borderRadius: 16, overflow: 'hidden', border: `${highlight ? 2 : 1}px solid ${highlight ? B.green : B.border}`, boxShadow: highlight ? `0 0 0 3px ${B.greenBg}` : '0 2px 8px rgba(0,0,0,0.06)' }}>
       <div style={{ display: 'flex', flexDirection: imagePosition === 'right' ? 'row-reverse' : 'row' }}>
-        <div style={{ width: '40%', minHeight: 180, background: B.greenBg, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ width: '35%', minHeight: 140, background: B.greenBg, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           {image ? <img src={image} alt={imageAlt || title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : (
-            <div style={{ textAlign: 'center', padding: 24 }}><BookOpen size={48} color={B.green + '44'} /><p style={{ fontSize: 12, color: B.light, marginTop: 8 }}>Course Content</p></div>
+            <div style={{ textAlign: 'center', padding: 20 }}><BookOpen size={36} color={B.green + '44'} /><p style={{ fontSize: 11, color: B.light, marginTop: 6 }}>Course Content</p></div>
           )}
         </div>
-        <div style={{ flex: 1, padding: 24 }}>
-          <h3 style={{ fontSize: 19, fontWeight: 700, color: B.navy, marginBottom: 12 }}>{title}</h3>
+        <div style={{ flex: 1, padding: 20 }}>
+          <h3 style={{ fontSize: 17, fontWeight: 700, color: B.navy, marginBottom: 10 }}>{title}</h3>
           {typeof content === 'string' ? <p style={{ color: B.muted, lineHeight: 1.7, fontSize: 14 }}>{content}</p> : content}
         </div>
       </div>
@@ -331,14 +331,14 @@ export function ImageTextCard({ image, imageAlt, title, content, imagePosition =
 // ============================================================================
 export function SectionDivider({ title, subtitle, sectionNumber }) {
   return (
-    <div style={{ position: 'relative', padding: '48px 0' }}>
+    <div style={{ position: 'relative', padding: '28px 0' }}>
       <div style={{ position: 'absolute', top: '50%', left: 0, right: 0, height: 2, background: B.border }}></div>
       <div style={{ position: 'relative', display: 'flex', justifyContent: 'center' }}>
-        <div style={{ background: B.burgundy, borderRadius: 16, padding: '20px 32px', boxShadow: '0 4px 16px rgba(107,29,52,0.2)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-            {sectionNumber && <div style={{ width: 48, height: 48, borderRadius: '50%', background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><span style={{ fontSize: 22, fontWeight: 800, color: '#fff' }}>{sectionNumber}</span></div>}
+        <div style={{ background: B.burgundy, borderRadius: 12, padding: '14px 24px', boxShadow: '0 4px 16px rgba(107,29,52,0.2)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            {sectionNumber && <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><span style={{ fontSize: 16, fontWeight: 800, color: '#fff' }}>{sectionNumber}</span></div>}
             <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}><BookOpen size={20} color="rgba(255,255,255,0.6)" /><h2 style={{ fontSize: 19, fontWeight: 700, color: '#fff', margin: 0 }}>{title}</h2></div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}><BookOpen size={16} color="rgba(255,255,255,0.6)" /><h2 style={{ fontSize: 16, fontWeight: 700, color: '#fff', margin: 0 }}>{title}</h2></div>
               {subtitle && <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: 13, marginTop: 4 }}>{subtitle}</p>}
             </div>
           </div>
@@ -902,5 +902,109 @@ export function ImageBlock({ imageUrl, imageAltText, imageCaption, imageSize = '
       )}
       {imageCaption && <figcaption style={{ marginTop: 8, fontSize: 13, color: B.muted, fontStyle: 'italic', maxWidth: w, display: 'inline-block' }}>{imageCaption}</figcaption>}
     </figure>
+  );
+}
+
+// ============================================================================
+// KNOWLEDGE CHECK MODAL — compact trigger + popup overlay
+// ============================================================================
+export function KnowledgeCheckModal({ type, completed, children }) {
+  const [open, setOpen] = useState(false);
+
+  const labels = {
+    matching: 'Matching Exercise',
+    multipleChoice: 'Knowledge Check',
+    multiSelect: 'Multi-Select Check',
+    cardSort: 'Card Sort Activity',
+    sequencing: 'Sequencing Activity',
+    hotspot: 'Hotspot Activity',
+    timeline: 'Timeline Activity',
+    scenarioTree: 'Clinical Scenario',
+    flashcardDeck: 'Flashcard Deck',
+  };
+  const label = labels[type] || 'Interactive Activity';
+
+  return (
+    <>
+      {/* Compact inline trigger */}
+      <button
+        onClick={() => setOpen(true)}
+        style={{
+          ...btnReset,
+          width: '100%',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 12,
+          padding: '14px 20px',
+          margin: '20px 0',
+          borderRadius: 12,
+          border: `2px solid ${completed ? B.ok : B.burgundy}44`,
+          background: completed ? B.okBg : B.burgundyBg,
+          transition: 'all 0.2s',
+          boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
+        }}
+      >
+        <div style={{
+          width: 32, height: 32, borderRadius: '50%',
+          background: completed ? B.ok : B.burgundy,
+          display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0
+        }}>
+          {completed
+            ? <CheckCircle2 size={16} style={{ color: '#fff' }} />
+            : <AlertCircle size={16} style={{ color: '#fff' }} />
+          }
+        </div>
+        <div style={{ flex: 1, textAlign: 'left' }}>
+          <span style={{ fontWeight: 700, fontSize: 14, color: completed ? B.ok : B.burgundy }}>
+            {completed ? `${label} — Completed` : label}
+          </span>
+          <span style={{ display: 'block', fontSize: 12, color: B.muted, marginTop: 2 }}>
+            {completed ? 'Click to review' : 'Click to open'}
+          </span>
+        </div>
+        <ArrowRight size={18} style={{ color: completed ? B.ok : B.burgundy, flexShrink: 0 }} />
+      </button>
+
+      {/* Modal overlay */}
+      {open && (
+        <div
+          style={{
+            position: 'fixed', inset: 0, zIndex: 9999,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            background: 'rgba(0,0,0,0.5)',
+            padding: 16,
+          }}
+          onClick={(e) => { if (e.target === e.currentTarget) setOpen(false); }}
+        >
+          <div style={{
+            background: B.bg, borderRadius: 16,
+            width: '100%', maxWidth: 640, maxHeight: '85vh',
+            overflowY: 'auto', position: 'relative',
+            boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
+          }}>
+            {/* Close button */}
+            <button
+              onClick={() => setOpen(false)}
+              style={{
+                ...btnReset,
+                position: 'sticky', top: 12, float: 'right', marginRight: 12, marginTop: 12,
+                width: 32, height: 32, borderRadius: '50%',
+                background: B.card, border: `1px solid ${B.border}`,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                zIndex: 1,
+                boxShadow: '0 2px 6px rgba(0,0,0,0.1)',
+              }}
+            >
+              <X size={16} style={{ color: B.muted }} />
+            </button>
+
+            {/* Render the actual knowledge check component */}
+            <div style={{ padding: 4 }}>
+              {children}
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
