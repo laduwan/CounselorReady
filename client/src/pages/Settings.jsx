@@ -1,8 +1,3 @@
-/**
- * Copyright (c) 2026 CounselorReady, a subsidiary of Ga Integrated Therapeutic Perspectives, LLC.
- * All rights reserved. Proprietary and confidential.
- * Unauthorized copying or distribution is strictly prohibited.
- */
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
@@ -41,7 +36,7 @@ export default function Settings() {
                 onClick={() => setActiveTab(tab.id)}
                 className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                   activeTab === tab.id
-                    ? 'bg-burgundy-100 text-burgundy-700'
+                    ? 'bg-moss-50 text-moss-600'
                     : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                 }`}
               >
@@ -91,10 +86,10 @@ function ProfileSettings({ user }) {
   return (
     <div className="card">
       <h2 className="text-lg font-semibold text-gray-900 mb-6">Profile Information</h2>
-      
+
       {message.text && (
         <div className={`mb-4 p-3 rounded-lg flex items-center gap-2 text-sm ${
-          message.type === 'success' 
+          message.type === 'success'
             ? 'bg-green-50 border border-green-200 text-green-700'
             : 'bg-red-50 border border-red-200 text-red-700'
         }`}>
@@ -200,7 +195,7 @@ function NotificationSettings({ user }) {
 
       {message.text && (
         <div className={`mb-4 p-3 rounded-lg flex items-center gap-2 text-sm ${
-          message.type === 'success' 
+          message.type === 'success'
             ? 'bg-green-50 border border-green-200 text-green-700'
             : 'bg-red-50 border border-red-200 text-red-700'
         }`}>
@@ -218,7 +213,7 @@ function NotificationSettings({ user }) {
           <button
             onClick={() => setSettings(prev => ({ ...prev, emailReminders: !prev.emailReminders }))}
             className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-              settings.emailReminders ? 'bg-burgundy-700' : 'bg-gray-200'
+              settings.emailReminders ? 'bg-moss-600' : 'bg-gray-200'
             }`}
           >
             <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
@@ -235,7 +230,7 @@ function NotificationSettings({ user }) {
           <button
             onClick={() => setSettings(prev => ({ ...prev, marketingEmails: !prev.marketingEmails }))}
             className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-              settings.marketingEmails ? 'bg-burgundy-700' : 'bg-gray-200'
+              settings.marketingEmails ? 'bg-moss-600' : 'bg-gray-200'
             }`}
           >
             <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
@@ -292,9 +287,9 @@ function SubscriptionSettings({ user, hasSubscription }) {
           <div>
             <div className="flex items-center gap-2 mb-1">
               <span className="text-xl font-bold text-gray-900">
-                {plan === 'free' ? 'Free' : 
+                {plan === 'free' ? 'Free' :
                  plan === 'pro_monthly' ? 'Pro Monthly' :
-                 plan === 'pro_annual' ? 'Pro Annual' : 
+                 plan === 'pro_annual' ? 'Pro Annual' :
                  plan === 'lifetime' ? 'Lifetime' : 'Free'}
               </span>
               <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${
@@ -302,8 +297,8 @@ function SubscriptionSettings({ user, hasSubscription }) {
                 status === 'trial' ? 'bg-blue-100 text-blue-700' :
                 'bg-gray-100 text-gray-700'
               }`}>
-                {status === 'trial' ? 'Trial' : 
-                 status === 'active' ? 'Active' : 
+                {status === 'trial' ? 'Trial' :
+                 status === 'active' ? 'Active' :
                  status === 'lifetime' ? 'Lifetime' :
                  status === 'canceled' ? 'Canceled' : 'Expired'}
               </span>
@@ -322,9 +317,9 @@ function SubscriptionSettings({ user, hasSubscription }) {
         </div>
 
         {!hasSubscription && (
-          <div className="bg-burgundy-100 rounded-lg p-4 mb-6">
-            <h3 className="font-medium text-burgundy-900 mb-2">Upgrade to Pro</h3>
-            <ul className="space-y-2 text-sm text-burgundy-800 mb-4">
+          <div className="bg-moss-50 rounded-lg p-4 mb-6">
+            <h3 className="font-medium text-moss-900 mb-2">Upgrade to Pro</h3>
+            <ul className="space-y-2 text-sm text-moss-700 mb-4">
               <li className="flex items-center gap-2">
                 <CheckCircle className="w-4 h-4" />
                 All courses included
@@ -380,7 +375,7 @@ function SecuritySettings() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (formData.newPassword !== formData.confirmPassword) {
       setMessage({ type: 'error', text: 'New passwords do not match' });
       return;
@@ -414,7 +409,7 @@ function SecuritySettings() {
 
       {message.text && (
         <div className={`mb-4 p-3 rounded-lg flex items-center gap-2 text-sm ${
-          message.type === 'success' 
+          message.type === 'success'
             ? 'bg-green-50 border border-green-200 text-green-700'
             : 'bg-red-50 border border-red-200 text-red-700'
         }`}>
