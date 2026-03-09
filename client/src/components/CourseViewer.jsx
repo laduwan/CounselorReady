@@ -49,13 +49,15 @@ const api = {
   async getCourse(slug) {
     const res = await fetch(`${API_BASE}/slug/${slug}`, { headers: authHeaders() });
     if (!res.ok) throw new Error('Course not found');
-    return res.json();
+    const json = await res.json();
+    return json.data || json;
   },
 
   async getProgress(slug) {
     const res = await fetch(`${API_BASE}/${slug}/progress`, { headers: authHeaders() });
     if (!res.ok) return null;
-    return res.json();
+    const json = await res.json();
+    return json.data || json;
   },
 
   async updateSectionProgress(slug, sectionIndex, data) {
@@ -65,7 +67,8 @@ const api = {
       body: JSON.stringify(data)
     });
     if (!res.ok) throw new Error('Failed to update progress');
-    return res.json();
+    const json = await res.json();
+    return json.data || json;
   },
 
   async submitSectionQuiz(slug, sectionIndex, answers, timeSpent) {
@@ -75,7 +78,8 @@ const api = {
       body: JSON.stringify({ answers, timeSpent })
     });
     if (!res.ok) throw new Error('Failed to submit quiz');
-    return res.json();
+    const json = await res.json();
+    return json.data || json;
   },
 
   async submitAssessment(slug, answers, timeUsed, questionOrder) {
@@ -85,7 +89,8 @@ const api = {
       body: JSON.stringify({ answers, timeUsed, questionOrder })
     });
     if (!res.ok) throw new Error('Failed to submit assessment');
-    return res.json();
+    const json = await res.json();
+    return json.data || json;
   },
 
   async logInteraction(slug, interaction) {
@@ -1451,6 +1456,18 @@ export default function CourseViewer({ courseSlug }) {
           <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
           <h2 className="text-xl font-bold text-navy-700 mb-2">Error Loading Course</h2>
           <p className="text-navy-500">{error}</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!course.sections || course.sections.length === 0) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-stone-50">
+        <div className="text-center">
+          <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+          <h2 className="text-xl font-bold text-navy-700 mb-2">Course Content Unavailable</h2>
+          <p className="text-navy-500">This course has no sections yet.</p>
         </div>
       </div>
     );
