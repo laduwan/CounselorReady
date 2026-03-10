@@ -29,6 +29,7 @@ import GroupLicenseDashboard from './pages/GroupLicenseDashboard';
 import Recommendations from './pages/Recommendations';
 import LegacyVault from './pages/LegacyVault';
 import CourseQuickEdit from './pages/CourseQuickEdit';
+import FileViewerPage from './pages/FileViewerPage';
 
 // Components
 import Layout from './components/Layout';
@@ -189,6 +190,11 @@ function AppRoutes() {
       <Route path="/legacy-vault" element={
         <ProtectedRoute>
           <Layout><LegacyVault /></Layout>
+        </ProtectedRoute>
+      } />
+      <Route path="/file-viewer" element={
+        <ProtectedRoute>
+          <Layout><FileViewerPage /></Layout>
         </ProtectedRoute>
       } />
 
