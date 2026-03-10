@@ -1,0 +1,185 @@
+/**
+ * Copyright (c) 2026 CounselorReady, a subsidiary of Ga Integrated Therapeutic Perspectives, LLC.
+ * All rights reserved. Proprietary and confidential.
+ * Unauthorized copying or distribution is strictly prohibited.
+ */
+import { useState, useEffect } from 'react';
+import { useAuth } from '../context/AuthContext';
+import api from '../services/api';
+import { Users, TrendingUp, BookOpen, Award, ExternalLink, Copy, Check } from 'lucide-react';
+
+const BURGUNDY = '#6B1D34';
+const BURGUNDY_LIGHT = '#fdf5f6';
+const HUNTER = '#4A7C59';
+
+export default function PartnerDashboard() {
+  const { user } = useAuth();
+  const [partner, setPartner] = useState(null);
+  const [stats, setStats] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    async function load() {
+      try {
+        // Get partner info from localStorage slug or user association
+        const slug = localStorage.getItem('cr_partner_slug');
+        if (slug) {
+          const { data } = await api.get(`/partners/slug/${slug}`);
+          setPartner(data.partner);
+        }
+
+        // Fetch partner stats if admin
+        if (user?.role === 'admin' && user?.partnerId) {
+          const { data } = await api.get(`/partners/${user.partnerId}`);
+          setPartner(data.partner);
+        }
+      } catch { /* silent */ }
+      setLoading(false);
+    }
+    load();
+  }, [user]);
+
+  function copyLink() {
+    if (!partner) return;
+    const url = `${window.location.origin}/register?partner=${partner.slug}`;
+    navigator.clipboard.writeText(url);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2" style={{ borderColor: BURGUNDY }} />
+      </div>
+    );
+  }
+
+  if (!partner) {
+    return (
+      <div className="text-center py-20 text-stone-500">
+        <p className="text-lg font-medium">No partner account found</p>
+        <p className="text-sm mt-1">This page is available to whitelabel distribution partners.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          {partner.branding?.logoUrl ? (
+            <img src={partner.branding.logoUrl} alt={partner.name} className="h-12 w-auto rounded-lg" />
+          ) : (
+            <div className="w-12 h-12 rounded-lg flex items-center justify-center text-white font-bold text-xl"
+              style={{ background: partner.branding?.primaryColor || BURGUNDY }}>
+              {partner.name.charAt(0)}
+            </div>
+          )}
+          <div>
+            <h1 className="text-2xl font-bold" style={{ color: BURGUNDY, fontFamily: "'Cormorant Garamond', Georgia, serif" }}>
+              {partner.branding?.companyName || partner.name}
+            </h1>
+            <p className="text-sm text-stone-500">{partner.branding?.tagline || 'Whitelabel Partner Dashboard'}</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Quick Stats */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="card p-5">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ background: BURGUNDY_LIGHT }}>
+              <Users className="w-5 h-5" style={{ color: BURGUNDY }} />
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-stone-900">{partner.userCount || 0}</p>
+              <p className="text-xs text-stone-500">Total Users</p>
+            </div>
+          </div>
+        </div>
+        <div className="card p-5">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ background: '#f0fdf4' }}>
+              <TrendingUp className="w-5 h-5" style={{ color: HUNTER }} />
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-stone-900">{partner.active ? 'Active' : 'Paused'}</p>
+              <p className="text-xs text-stone-500">Partner Status</p>
+            </div>
+          </div>
+        </div>
+        <div className="card p-5">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ background: '#fef3c7' }}>
+              <Award className="w-5 h-5" style={{ color: '#d97706' }} />
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-stone-900 capitalize">{partner.defaultPlan || 'Free'}</p>
+              <p className="text-xs text-stone-500">Default Plan</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Distribution Link */}
+      <div className="card p-5">
+        <h2 className="text-sm font-semibold text-stone-900 mb-3">Your Distribution Links</h2>
+        <div className="space-y-3">
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-stone-500 w-20">Register:</span>
+            <code className="flex-1 text-xs bg-stone-50 px-3 py-2 rounded-lg text-stone-700 border border-stone-200 truncate">
+              {window.location.origin}/register?partner={partner.slug}
+            </code>
+            <button onClick={copyLink}
+              className="flex items-center gap-1 px-3 py-2 text-xs font-medium rounded-lg transition-colors"
+              style={{ background: BURGUNDY_LIGHT, color: BURGUNDY }}>
+              {copied ? <><Check className="w-3 h-3" /> Copied</> : <><Copy className="w-3 h-3" /> Copy</>}
+            </button>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-stone-500 w-20">Login:</span>
+            <code className="flex-1 text-xs bg-stone-50 px-3 py-2 rounded-lg text-stone-700 border border-stone-200 truncate">
+              {window.location.origin}/login?partner={partner.slug}
+            </code>
+          </div>
+        </div>
+      </div>
+
+      {/* Partner Details */}
+      <div className="card p-5">
+        <h2 className="text-sm font-semibold text-stone-900 mb-3">Partner Details</h2>
+        <dl className="grid grid-cols-2 gap-x-6 gap-y-3 text-sm">
+          <div>
+            <dt className="text-stone-500 text-xs">Slug</dt>
+            <dd className="text-stone-900 font-mono">{partner.slug}</dd>
+          </div>
+          {partner.contact?.email && (
+            <div>
+              <dt className="text-stone-500 text-xs">Email</dt>
+              <dd className="text-stone-900">{partner.contact.email}</dd>
+            </div>
+          )}
+          {partner.contact?.website && (
+            <div>
+              <dt className="text-stone-500 text-xs">Website</dt>
+              <dd>
+                <a href={partner.contact.website} target="_blank" rel="noopener noreferrer"
+                  className="flex items-center gap-1" style={{ color: BURGUNDY }}>
+                  {partner.contact.website.replace(/^https?:\/\//, '')}
+                  <ExternalLink className="w-3 h-3" />
+                </a>
+              </dd>
+            </div>
+          )}
+          <div>
+            <dt className="text-stone-500 text-xs">Created</dt>
+            <dd className="text-stone-900">{new Date(partner.createdAt).toLocaleDateString()}</dd>
+          </div>
+        </dl>
+      </div>
+    </div>
+  );
+}
