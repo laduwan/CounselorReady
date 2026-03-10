@@ -57,6 +57,8 @@ import gamificationRoutes from './routes/gamification.js';
 import notificationsRoutes from './routes/notifications.js';
 import legacyVaultRoutes from './routes/legacyVault.js';
 import adminStatsRoutes from './routes/adminStats.js';
+// ── Whitelabel partner routes ──
+import partnersRoutes from './routes/partners.js';
 // Import services
 import { initializeScheduler } from './services/notificationScheduler.js';
 
@@ -255,6 +257,7 @@ app.use('/api/gamification', gamificationRoutes);
 app.use('/api/notifications', notificationsRoutes);
 app.use('/api/legacy-vault', legacyVaultRoutes);
 app.use('/api/admin/stats', adminStatsRoutes);
+app.use('/api/partners', partnersRoutes);
 
 // Static templates directory intentionally NOT served publicly
 // Certificate assets (signature.png, certificate_template.pdf) are loaded

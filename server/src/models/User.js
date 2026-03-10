@@ -147,6 +147,12 @@ const userSchema = new mongoose.Schema({
     }
   },
   
+  // Whitelabel partner association
+  partnerId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Partner'
+  },
+
   // Metadata
   emailVerified: { type: Boolean, default: false },
   emailVerificationToken: { type: String },
