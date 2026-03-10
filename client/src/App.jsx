@@ -29,6 +29,7 @@ import GroupLicenseDashboard from './pages/GroupLicenseDashboard';
 import Recommendations from './pages/Recommendations';
 import LegacyVault from './pages/LegacyVault';
 import CourseQuickEdit from './pages/CourseQuickEdit';
+import ThumbnailManager from './pages/ThumbnailManager';
 
 // Components
 import Layout from './components/Layout';
@@ -201,6 +202,11 @@ function AppRoutes() {
       <Route path="/admin/course-quick-edit" element={
         <AdminRoute>
           <Layout><CourseQuickEdit /></Layout>
+        </AdminRoute>
+      } />
+      <Route path="/admin/thumbnails" element={
+        <AdminRoute>
+          <Layout><ThumbnailManager /></Layout>
         </AdminRoute>
       } />
       
