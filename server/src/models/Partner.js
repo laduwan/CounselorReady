@@ -26,7 +26,8 @@ const partnerSchema = new mongoose.Schema({
     logoUrl: { type: String },
     primaryColor: { type: String, default: '#6B1D34' },
     companyName: { type: String },
-    tagline: { type: String }
+    tagline: { type: String },
+    customDomain: { type: String, lowercase: true, trim: true }
   },
 
   // Contact
@@ -57,6 +58,7 @@ const partnerSchema = new mongoose.Schema({
 
 partnerSchema.index({ slug: 1 });
 partnerSchema.index({ active: 1 });
+partnerSchema.index({ 'branding.customDomain': 1 });
 
 const Partner = mongoose.model('Partner', partnerSchema);
 

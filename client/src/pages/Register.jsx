@@ -3,9 +3,10 @@
  * All rights reserved. Proprietary and confidential.
  * Unauthorized copying or distribution is strictly prohibited.
  */
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import api from '../services/api';
 import { Eye, EyeOff, AlertCircle, CheckCircle } from 'lucide-react';
 
 const US_STATES = [
@@ -27,9 +28,23 @@ export default function Register() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  
+  const [partner, setPartner] = useState(null);
+
   const { register } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Detect partner from URL ?partner=slug
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const slug = params.get('partner');
+    if (slug) {
+      localStorage.setItem('cr_partner_slug', slug);
+      api.get(`/partners/slug/${slug}`)
+        .then(({ data }) => setPartner(data.partner))
+        .catch(() => setPartner(null));
+    }
+  }, [location.search]);
 
   const handleChange = (e) => {
     setFormData(prev => ({
@@ -50,7 +65,10 @@ export default function Register() {
     setLoading(true);
     
     try {
-      await register(formData);
+      const payload = { ...formData };
+      const slug = new URLSearchParams(location.search).get('partner') || localStorage.getItem('cr_partner_slug');
+      if (slug) payload.partnerSlug = slug;
+      await register(payload);
       navigate('/dashboard');
     } catch (err) {
       setError(err.response?.data?.error || 'Registration failed. Please try again.');

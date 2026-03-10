@@ -29,6 +29,8 @@ import GroupLicenseDashboard from './pages/GroupLicenseDashboard';
 import Recommendations from './pages/Recommendations';
 import LegacyVault from './pages/LegacyVault';
 import CourseQuickEdit from './pages/CourseQuickEdit';
+import AdminPartners from './pages/AdminPartners';
+import PartnerDashboard from './pages/PartnerDashboard';
 
 // Components
 import Layout from './components/Layout';
@@ -203,7 +205,17 @@ function AppRoutes() {
           <Layout><CourseQuickEdit /></Layout>
         </AdminRoute>
       } />
-      
+      <Route path="/admin/partners" element={
+        <AdminRoute>
+          <Layout><AdminPartners /></Layout>
+        </AdminRoute>
+      } />
+      <Route path="/partner-dashboard" element={
+        <ProtectedRoute>
+          <Layout><PartnerDashboard /></Layout>
+        </ProtectedRoute>
+      } />
+
       {/* Catch all */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
