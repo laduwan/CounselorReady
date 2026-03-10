@@ -303,8 +303,8 @@ function ContentBlockRenderer({
   }, [a11y?.narration]);
 
   // Font size class
-  const textSizeClass = a11y?.fontSize === 'x-large' ? 'text-xl' : a11y?.fontSize === 'large' ? 'text-lg' : 'text-base';
-  const proseSize = a11y?.fontSize === 'x-large' ? 'prose-xl' : a11y?.fontSize === 'large' ? 'prose-lg' : 'prose-base';
+  const textSizeClass = a11y?.fontSize === 'x-large' ? 'text-2xl' : a11y?.fontSize === 'large' ? 'text-xl' : 'text-lg';
+  const proseSize = a11y?.fontSize === 'x-large' ? 'prose-xl' : a11y?.fontSize === 'large' ? 'prose-xl' : 'prose-lg';
 
   switch (block.type) {
     case 'accordion':
@@ -1511,7 +1511,7 @@ export default function CourseViewer({ courseSlug }) {
   }, []);
 
   // Accessibility: font size class for main content area
-  const fontSizeClass = a11y.fontSize === 'x-large' ? 'text-xl' : a11y.fontSize === 'large' ? 'text-lg' : 'text-base';
+  const fontSizeClass = a11y.fontSize === 'x-large' ? 'text-2xl' : a11y.fontSize === 'large' ? 'text-xl' : 'text-lg';
   const hcClass = a11y.highContrast ? 'high-contrast' : '';
 
   if (loading) {
@@ -1684,27 +1684,6 @@ const styles = `
 }
 @media (prefers-reduced-motion: reduce) {
   .animate-fadeIn { animation: none; }
-}
-
-/* APA heading hierarchy */
-.prose h2, .cr-content h2 {
-  font-family: "Cormorant Garamond", serif !important;
-  font-weight: 600 !important;
-  font-size: 1.75rem !important;
-  color: #284157 !important;
-  margin: 2rem 0 1rem 0;
-}
-.prose h3, .cr-content h3 {
-  font-weight: 700 !important;
-  font-size: 1.25rem !important;
-  color: #4A7C59 !important;
-  margin: 1.5rem 0 0.75rem 0;
-}
-.prose h4, .cr-content h4 {
-  font-weight: 600 !important;
-  font-size: 1.1rem !important;
-  color: #284157 !important;
-  margin: 1.25rem 0 0.5rem 0;
 }
 
 /* Table styling */
