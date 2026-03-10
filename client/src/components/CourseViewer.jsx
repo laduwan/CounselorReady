@@ -1102,15 +1102,31 @@ function ReferencesView({ course, onBack }) {
 
       <div className="bg-white rounded-2xl border border-forest-200 shadow-sm p-6 lg:p-8">
         <ol className="space-y-4">
-          {course.references.map((ref, index) => (
-            <li
-              key={index}
-              className="text-sm text-navy-600 leading-relaxed pl-10"
-              style={{ textIndent: '-2.25rem' }}
-            >
-              {ref}
-            </li>
-          ))}
+          {course.references.map((ref, index) => {
+            // References can be plain strings or objects {title, author, year, source, citation}
+            let citation;
+            if (typeof ref === 'string') {
+              citation = ref;
+            } else if (ref && typeof ref === 'object') {
+              citation = ref.citation || [
+                ref.author,
+                ref.year ? `(${ref.year})` : null,
+                ref.title ? `${ref.title}.` : null,
+                ref.source
+              ].filter(Boolean).join(' ');
+            } else {
+              citation = String(ref || '');
+            }
+            return (
+              <li
+                key={index}
+                className="text-sm text-navy-600 leading-relaxed pl-10"
+                style={{ textIndent: '-2.25rem' }}
+              >
+                {citation}
+              </li>
+            );
+          })}
         </ol>
       </div>
     </div>
@@ -1447,6 +1463,114 @@ function ResourceFAB({ resources }) {
 }
 
 // ============================================================================
+// DATA NORMALIZER — handles both modules[] and sections[] course formats
+// ============================================================================
+function normalizeCourse(raw) {
+  if (!raw) return raw;
+  const course = { ...raw };
+
+  // Normalize modules → sections if needed
+  if (!course.sections && course.modules) {
+    course.sections = course.modules;
+  }
+
+  // Ensure sections is always an array
+  if (!Array.isArray(course.sections)) {
+    course.sections = [];
+  }
+
+  // Normalize each section's content blocks
+  course.sections = course.sections.map((section, si) => {
+    const s = { ...section };
+
+    // Normalize content_blocks → contentBlocks
+    if (!s.contentBlocks && s.content_blocks) {
+      s.contentBlocks = s.content_blocks;
+    }
+    if (!Array.isArray(s.contentBlocks)) {
+      s.contentBlocks = [];
+    }
+
+    // Ensure section has a title
+    if (!s.title) s.title = s.name || `Section ${si + 1}`;
+
+    // Ensure module grouping label exists
+    if (!s.module && s.title) s.module = s.title;
+
+    // Normalize content blocks
+    s.contentBlocks = s.contentBlocks.map(block => {
+      const b = { ...block };
+
+      // Ensure text blocks have textContent
+      if (b.type === 'text' && !b.textContent && b.content) {
+        b.textContent = b.content;
+      }
+
+      // Normalize multipleChoice / multiSelect options from string[] to {text, isCorrect}[]
+      if ((b.type === 'multipleChoice' || b.type === 'multiSelect') && b.options?.length > 0) {
+        if (typeof b.options[0] === 'string') {
+          const correctIdx = b.correctAnswer;
+          b.options = b.options.map((opt, i) => ({
+            text: opt,
+            isCorrect: i === correctIdx
+          }));
+        } else if (b.options[0] && typeof b.options[0] === 'object' && !('isCorrect' in b.options[0]) && b.correctAnswer !== undefined) {
+          // Options are objects with text but no isCorrect
+          b.options = b.options.map((opt, i) => ({
+            ...opt,
+            isCorrect: i === b.correctAnswer
+          }));
+        }
+      }
+
+      // Normalize reflection block: prompt → question
+      if (b.type === 'reflection' && b.prompt && !b.question) {
+        b.question = b.prompt;
+      }
+
+      return b;
+    });
+
+    // Normalize quiz questions similarly
+    if (s.quizQuestions?.length > 0) {
+      s.quizQuestions = s.quizQuestions.map(q => {
+        if (!q.options?.length) return q;
+        const nq = { ...q };
+        if (typeof nq.options[0] === 'string') {
+          const correctIdx = nq.correctAnswer;
+          nq.options = nq.options.map((opt, i) => ({
+            text: opt,
+            isCorrect: i === correctIdx
+          }));
+        }
+        return nq;
+      });
+    }
+
+    return s;
+  });
+
+  // Normalize assessment questions
+  if (course.assessment?.questions?.length > 0) {
+    course.assessment = { ...course.assessment };
+    course.assessment.questions = course.assessment.questions.map(q => {
+      if (!q.options?.length) return q;
+      const nq = { ...q };
+      if (typeof nq.options[0] === 'string') {
+        const correctIdx = nq.correctAnswer;
+        nq.options = nq.options.map((opt, i) => ({
+          text: opt,
+          isCorrect: i === correctIdx
+        }));
+      }
+      return nq;
+    });
+  }
+
+  return course;
+}
+
+// ============================================================================
 // MAIN COURSE VIEWER
 // ============================================================================
 export default function CourseViewer({ courseSlug }) {
@@ -1467,11 +1591,11 @@ export default function CourseViewer({ courseSlug }) {
   useEffect(() => {
     async function loadCourse() {
       try {
-        const [courseData, progressData] = await Promise.all([
+        const [rawCourseData, progressData] = await Promise.all([
           api.getCourse(courseSlug),
           api.getProgress(courseSlug)
         ]);
-        setCourse(courseData);
+        setCourse(normalizeCourse(rawCourseData));
         setProgress(progressData);
       } catch (err) {
         setError(err.message);
