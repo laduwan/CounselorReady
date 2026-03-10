@@ -9,11 +9,12 @@
 // @lock-file: Layout structure, color scheme, and visual design of this page are LOCKED.
 // Do NOT change classNames, color values, gradients, spacing, grid layout, or component hierarchy.
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   BookOpen, Clock, ChevronRight, Search,
-  Filter, Grid, List, Star, Users, CheckCircle
+  Filter, Grid, List, Star, Users, CheckCircle,
+  X, Award, Layers, Maximize2, Minimize2, Square
 } from 'lucide-react';
 import api from '../services/api';
 
@@ -24,6 +25,8 @@ const InteractiveCourseCatalog = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [viewMode, setViewMode] = useState('grid');
+  const [cardSize, setCardSize] = useState('md'); // 'sm' | 'md' | 'lg'
+  const [previewCourse, setPreviewCourse] = useState(null); // course for popup modal
   const [userProgress, setUserProgress] = useState({});
   const navigate = useNavigate();
 
@@ -77,8 +80,21 @@ const InteractiveCourseCatalog = () => {
   };
 
   const handleCourseClick = (course) => {
+    setPreviewCourse(course);
+  };
+
+  const handleStartCourse = (course) => {
+    setPreviewCourse(null);
     navigate(`/learn/${course.slug}`);
   };
+
+  const gridColsClass = viewMode === 'grid'
+    ? cardSize === 'sm'
+      ? 'grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4'
+      : cardSize === 'lg'
+        ? 'grid grid-cols-1 md:grid-cols-1 lg:grid-cols-2 gap-8'
+        : 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'
+    : null;
 
   if (loading) {
     return (
@@ -161,6 +177,33 @@ const InteractiveCourseCatalog = () => {
               <List className="h-5 w-5" />
             </button>
           </div>
+
+          {/* Card Size Toggle (grid view only) */}
+          {viewMode === 'grid' && (
+            <div className="flex border border-forest-200 rounded-lg overflow-hidden">
+              <button
+                onClick={() => setCardSize('sm')}
+                className={`p-2 ${cardSize === 'sm' ? 'bg-burgundy-800 text-white' : 'bg-white text-forest-600'}`}
+                title="Small cards"
+              >
+                <Minimize2 className="h-5 w-5" />
+              </button>
+              <button
+                onClick={() => setCardSize('md')}
+                className={`p-2 ${cardSize === 'md' ? 'bg-burgundy-800 text-white' : 'bg-white text-forest-600'}`}
+                title="Medium cards"
+              >
+                <Square className="h-5 w-5" />
+              </button>
+              <button
+                onClick={() => setCardSize('lg')}
+                className={`p-2 ${cardSize === 'lg' ? 'bg-burgundy-800 text-white' : 'bg-white text-forest-600'}`}
+                title="Large cards"
+              >
+                <Maximize2 className="h-5 w-5" />
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
@@ -172,13 +215,14 @@ const InteractiveCourseCatalog = () => {
             <p className="mt-4 text-forest-600">No courses found matching your criteria</p>
           </div>
         ) : viewMode === 'grid' ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className={gridColsClass}>
             {filteredCourses.map(course => (
               <CourseCard
                 key={course._id}
                 course={course}
                 progress={getProgressForCourse(course._id)}
                 onClick={() => handleCourseClick(course)}
+                cardSize={cardSize}
               />
             ))}
           </div>
@@ -195,6 +239,16 @@ const InteractiveCourseCatalog = () => {
           </div>
         )}
       </div>
+
+      {/* Course Preview Modal */}
+      {previewCourse && (
+        <CoursePreviewModal
+          course={previewCourse}
+          progress={getProgressForCourse(previewCourse._id)}
+          onClose={() => setPreviewCourse(null)}
+          onStart={() => handleStartCourse(previewCourse)}
+        />
+      )}
     </div>
   );
   // @lock-end
@@ -202,10 +256,14 @@ const InteractiveCourseCatalog = () => {
 
 // @lock-start: CourseCard — colors, gradient, pills, spacing, and visual hierarchy
 // Course Card Component (Grid View)
-const CourseCard = ({ course, progress, onClick }) => {
+const CourseCard = ({ course, progress, onClick, cardSize = 'md' }) => {
   const isEnrolled = !!progress;
   const isCompleted = progress?.status === 'completed' || progress?.status === 'certified';
   const primaryCategory = course.ceuCategories?.[0] || (course.categories?.[0] ? { hours: course.ceHours, category: course.categories[0] } : null);
+
+  const thumbHeight = cardSize === 'sm' ? 'h-32' : cardSize === 'lg' ? 'h-64' : 'h-48';
+  const iconSize = cardSize === 'sm' ? 'h-10 w-10' : cardSize === 'lg' ? 'h-20 w-20' : 'h-16 w-16';
+  const titleSize = cardSize === 'sm' ? 'text-base' : cardSize === 'lg' ? 'text-2xl' : 'text-xl';
 
   return (
     <div
@@ -213,8 +271,8 @@ const CourseCard = ({ course, progress, onClick }) => {
       className="bg-white rounded-xl shadow-sm hover:shadow-lg transition-all cursor-pointer overflow-hidden border border-burgundy-100 group"
     >
       {/* Thumbnail — gradient burgundy to forest with soft book icon */}
-      <div className="h-48 bg-gradient-to-br from-burgundy-100 to-forest-100 relative flex items-center justify-center">
-        <BookOpen className="h-16 w-16 text-burgundy-300" />
+      <div className={`${thumbHeight} bg-gradient-to-br from-burgundy-100 to-forest-100 relative flex items-center justify-center`}>
+        <BookOpen className={`${iconSize} text-burgundy-300`} />
         {isCompleted && (
           <div className="absolute top-3 right-3 bg-hunter-600 text-white px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1">
             <CheckCircle className="h-3 w-3" />
@@ -233,11 +291,11 @@ const CourseCard = ({ course, progress, onClick }) => {
 
       {/* Content */}
       <div className="p-5">
-        <h3 className="font-display text-xl font-semibold text-burgundy-900 group-hover:text-burgundy-700 transition-colors line-clamp-2 mb-2">
+        <h3 className={`font-display ${titleSize} font-semibold text-burgundy-900 group-hover:text-burgundy-700 transition-colors line-clamp-2 mb-2`}>
           {course.title}
         </h3>
 
-        <p className="text-sm text-forest-500 line-clamp-2 mb-4">
+        <p className={`text-sm text-forest-500 mb-4 ${cardSize === 'sm' ? 'line-clamp-1' : cardSize === 'lg' ? 'line-clamp-4' : 'line-clamp-2'}`}>
           {course.description}
         </p>
 
@@ -360,5 +418,140 @@ const CourseListItem = ({ course, progress, onClick }) => {
   );
 };
 // @lock-end
+
+// Course Preview Modal — popup with course details before navigating
+const CoursePreviewModal = ({ course, progress, onClose, onStart }) => {
+  const modalRef = useRef(null);
+  const isEnrolled = !!progress;
+  const isCompleted = progress?.status === 'completed' || progress?.status === 'certified';
+  const primaryCategory = course.ceuCategories?.[0] || (course.categories?.[0] ? { hours: course.ceHours, category: course.categories[0] } : null);
+
+  // Close on backdrop click
+  const handleBackdropClick = (e) => {
+    if (modalRef.current && !modalRef.current.contains(e.target)) {
+      onClose();
+    }
+  };
+
+  // Close on Escape
+  useEffect(() => {
+    const handleKey = (e) => { if (e.key === 'Escape') onClose(); };
+    document.addEventListener('keydown', handleKey);
+    return () => document.removeEventListener('keydown', handleKey);
+  }, [onClose]);
+
+  const sectionCount = course.sections?.length || course.modules?.length || 0;
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+      onClick={handleBackdropClick}
+    >
+      <div
+        ref={modalRef}
+        className="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto animate-in fade-in"
+      >
+        {/* Header gradient */}
+        <div className="h-40 bg-gradient-to-br from-burgundy-100 to-forest-100 relative flex items-center justify-center rounded-t-2xl">
+          <BookOpen className="h-16 w-16 text-burgundy-300" />
+          <button
+            onClick={onClose}
+            className="absolute top-3 right-3 bg-white/80 hover:bg-white rounded-full p-1.5 transition-colors"
+          >
+            <X className="h-5 w-5 text-burgundy-700" />
+          </button>
+          {isCompleted && (
+            <div className="absolute top-3 left-3 bg-hunter-600 text-white px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1">
+              <CheckCircle className="h-3 w-3" />
+              Completed
+            </div>
+          )}
+        </div>
+
+        {/* Body */}
+        <div className="p-6">
+          <h2 className="font-display text-2xl font-semibold text-burgundy-900 mb-2">
+            {course.title}
+          </h2>
+
+          <p className="text-forest-600 text-sm mb-4 leading-relaxed">
+            {course.description}
+          </p>
+
+          {/* Info pills */}
+          <div className="flex flex-wrap items-center gap-2 mb-4">
+            {(course.ceHours || course.ceuHours) && (
+              <span className="bg-honey-100 text-honey-700 px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1">
+                <Award className="h-3.5 w-3.5" />
+                {course.ceHours || course.ceuHours} CE Hours
+              </span>
+            )}
+            {primaryCategory && (
+              <span className="bg-forest-100 text-forest-700 px-3 py-1 rounded-full text-xs font-medium">
+                {primaryCategory.category}
+              </span>
+            )}
+            {(course.ceuApprovalNumber || course.ceHours) && (
+              <span className="bg-burgundy-100 text-burgundy-700 px-3 py-1 rounded-full text-xs font-medium">
+                CE #{course.ceuApprovalNumber || '7760'}
+              </span>
+            )}
+            <span className="flex items-center gap-1 text-xs text-forest-500">
+              <Clock className="h-3.5 w-3.5" />
+              {course.totalEstimatedTime || 60} min
+            </span>
+          </div>
+
+          {/* Section list */}
+          {sectionCount > 0 && (
+            <div className="mb-5">
+              <h3 className="text-sm font-semibold text-burgundy-800 mb-2 flex items-center gap-1.5">
+                <Layers className="h-4 w-4" />
+                Course Content ({sectionCount} {sectionCount === 1 ? 'section' : 'sections'})
+              </h3>
+              <ul className="space-y-1">
+                {(course.sections || course.modules || []).slice(0, 8).map((section, i) => (
+                  <li key={i} className="text-sm text-forest-600 flex items-center gap-2">
+                    <span className="w-5 h-5 rounded-full bg-burgundy-100 text-burgundy-700 flex items-center justify-center text-xs font-medium flex-shrink-0">
+                      {i + 1}
+                    </span>
+                    {section.title || section.name || `Section ${i + 1}`}
+                  </li>
+                ))}
+                {sectionCount > 8 && (
+                  <li className="text-xs text-forest-400 pl-7">+ {sectionCount - 8} more sections</li>
+                )}
+              </ul>
+            </div>
+          )}
+
+          {/* Progress bar if enrolled */}
+          {isEnrolled && !isCompleted && (
+            <div className="mb-5">
+              <div className="flex justify-between text-sm mb-1">
+                <span className="text-forest-600">Progress</span>
+                <span className="font-medium text-burgundy-700">{progress.progress || 0}%</span>
+              </div>
+              <div className="w-full h-2.5 bg-stone-200 rounded-full">
+                <div
+                  className="h-full bg-burgundy-600 rounded-full transition-all"
+                  style={{ width: `${progress.progress || 0}%` }}
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Action button */}
+          <button
+            onClick={onStart}
+            className="w-full bg-burgundy-800 hover:bg-burgundy-900 text-white font-semibold px-4 py-3 rounded-xl transition-colors text-lg"
+          >
+            {isCompleted ? 'Review Course' : isEnrolled ? 'Continue Learning' : 'Start Course'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 export default InteractiveCourseCatalog;
