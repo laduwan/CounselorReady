@@ -8,6 +8,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 import { Menu, X, ChevronDown, LogOut, Settings, ShieldCheck, Trophy, Users, Star, ClipboardList, MoreHorizontal, Bell, Lock } from 'lucide-react';
+import PoweredByBadge from './PoweredByBadge';
 
 // React routes use Link; external static HTML pages use <a>
 const navLinks = [
@@ -43,11 +44,27 @@ export default function Layout({ children }) {
   const [notifOpen, setNotifOpen]       = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount]   = useState(0);
+  const [partner, setPartner]           = useState(null);
   const { user, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
 
   const handleLogout = () => { logout(); navigate('/'); };
+
+  // Detect whitelabel partner from URL ?partner=slug
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const slug = params.get('partner');
+    if (slug) {
+      localStorage.setItem('cr_partner_slug', slug);
+    }
+    const storedSlug = slug || localStorage.getItem('cr_partner_slug');
+    if (storedSlug) {
+      api.get(`/partners/slug/${storedSlug}`)
+        .then(({ data }) => setPartner(data.partner))
+        .catch(() => { setPartner(null); localStorage.removeItem('cr_partner_slug'); });
+    }
+  }, [location.search]);
 
   // Fetch unread notifications
   useEffect(() => {
@@ -98,17 +115,28 @@ export default function Layout({ children }) {
       <header style={{ background: 'white', borderBottom: '1px solid #e7e5e4', position: 'sticky', top: 0, zIndex: 40, boxShadow: '0 1px 3px rgba(107,29,52,0.08)' }}>
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
 
-          {/* Logo */}
+          {/* Logo — shows partner branding when whitelabel is active */}
           <Link to="/dashboard" className="flex items-center gap-3 flex-shrink-0">
-            <div style={{ width: 40, height: 40, borderRadius: '0.75rem', background: '#6B1D34', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 8px rgba(107,29,52,0.25)' }}>
-              <span style={{ position: 'relative', display: 'inline-block', width: 22, height: 22 }}>
-                <span style={{ color: GOLD, position: 'absolute', top: -3, left: 0, fontFamily: "'Cormorant Garamond', Georgia, serif", fontWeight: 700, fontSize: 17 }}>C</span>
-                <span style={{ color: '#7A9E84', position: 'absolute', top: 4, left: 6, fontFamily: "'Cormorant Garamond', Georgia, serif", fontWeight: 700, fontSize: 14 }}>R</span>
-              </span>
-            </div>
-            <span style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontWeight: 600, fontSize: '1.35rem', letterSpacing: '0.015em' }}>
-              <span style={{ color: BURGUNDY }}>Counselor</span><span style={{ color: HUNTER }}>Ready</span>
-            </span>
+            {partner?.branding?.logoUrl ? (
+              <>
+                <img src={partner.branding.logoUrl} alt={partner.branding.companyName || partner.name} style={{ height: 36, width: 'auto', borderRadius: '0.5rem' }} />
+                <span style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontWeight: 600, fontSize: '1.35rem', letterSpacing: '0.015em', color: partner.branding.primaryColor || BURGUNDY }}>
+                  {partner.branding.companyName || partner.name}
+                </span>
+              </>
+            ) : (
+              <>
+                <div style={{ width: 40, height: 40, borderRadius: '0.75rem', background: '#6B1D34', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 8px rgba(107,29,52,0.25)' }}>
+                  <span style={{ position: 'relative', display: 'inline-block', width: 22, height: 22 }}>
+                    <span style={{ color: GOLD, position: 'absolute', top: -3, left: 0, fontFamily: "'Cormorant Garamond', Georgia, serif", fontWeight: 700, fontSize: 17 }}>C</span>
+                    <span style={{ color: '#7A9E84', position: 'absolute', top: 4, left: 6, fontFamily: "'Cormorant Garamond', Georgia, serif", fontWeight: 700, fontSize: 14 }}>R</span>
+                  </span>
+                </div>
+                <span style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontWeight: 600, fontSize: '1.35rem', letterSpacing: '0.015em' }}>
+                  <span style={{ color: BURGUNDY }}>Counselor</span><span style={{ color: HUNTER }}>Ready</span>
+                </span>
+              </>
+            )}
           </Link>
 
           {/* Desktop Nav */}
@@ -349,6 +377,9 @@ export default function Layout({ children }) {
       <main id="main-content" className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
         {children}
       </main>
+
+      {/* Powered-by badge for whitelabel partners */}
+      {partner && <PoweredByBadge />}
     </div>
   );
 }
