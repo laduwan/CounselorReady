@@ -656,7 +656,40 @@ function SectionView({
 
   return (
     <div className="max-w-4xl mx-auto">
-      {/* Content Blocks — scroll mode default, paged mode optional */}
+      {/* Section Header */}
+      <div className="mb-8">
+        <div className="flex items-center gap-3 text-sm text-navy-500 mb-2">
+          <span>Section {sectionIndex + 1} of {course.sections.length}</span>
+          <span>•</span>
+          <span className="flex items-center gap-1">
+            <Clock className="w-4 h-4" />
+            {section.estimatedTime || 15} min
+          </span>
+        </div>
+        <h1 className="text-3xl font-bold text-navy-700">{section.title}</h1>
+        {section.description && (
+          <p className="text-navy-500 mt-2">{section.description}</p>
+        )}
+      </div>
+
+      {/* Progress indicator */}
+      <div className="mb-6 bg-white rounded-xl border border-forest-200 p-4">
+        <div className="flex items-center justify-between text-sm mb-2">
+          <span className="text-navy-600">Section Progress</span>
+          <span className="font-semibold text-burgundy-700">
+            {viewedBlocks.size}/{contentBlocks.length} viewed
+            {interactiveBlockCount > 0 && ` • ${completedBlocks.size}/${interactiveBlockCount} completed`}
+          </span>
+        </div>
+        <div className="h-2 bg-stone-100 rounded-full overflow-hidden">
+          <div
+            className="h-full bg-honey-400 transition-all rounded-full"
+            style={{ width: `${contentBlocks.length > 0 ? (viewedBlocks.size / contentBlocks.length) * 100 : 0}%` }}
+          />
+        </div>
+      </div>
+
+      {/* Content Blocks */}
       {!showQuiz ? (
         <div className="space-y-5">
           {/* Paged mode indicator (only when paged mode active) */}
@@ -774,15 +807,15 @@ function SectionView({
         />
       )}
 
-      {/* Section Navigation — simple Previous / Next */}
-      <div className="mt-8 pt-6 border-t border-forest-200 flex justify-between">
+      {/* Section Navigation */}
+      <div className="mt-12 pt-6 border-t border-forest-200 flex items-center justify-between">
         <button
           onClick={() => onNavigate(sectionIndex - 1)}
           disabled={sectionIndex === 0}
-          className={`flex items-center gap-2 px-4 py-2 transition-colors ${
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
             sectionIndex === 0
-              ? 'opacity-50 cursor-not-allowed text-navy-400'
-              : 'text-navy-600 hover:text-burgundy-700'
+              ? 'text-slate-300 cursor-not-allowed'
+              : 'text-navy-600 hover:bg-stone-100'
           }`}
         >
           <ChevronLeft className="w-5 h-5" />
@@ -792,22 +825,22 @@ function SectionView({
         {isLastSection && canProceed ? (
           <button
             onClick={() => onNavigate('assessment')}
-            className="flex items-center gap-2 px-6 py-2 bg-burgundy-700 text-white rounded-lg hover:bg-burgundy-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex items-center gap-2 px-6 py-3 bg-hunter-600 hover:bg-hunter-700 text-white font-semibold rounded-xl transition-colors"
           >
-            Next
-            <ChevronRight className="w-5 h-5" />
+            Take Final Assessment
+            <Award className="w-5 h-5" />
           </button>
         ) : (
           <button
             onClick={() => onNavigate(sectionIndex + 1)}
             disabled={!canProceed}
-            className={`flex items-center gap-2 px-6 py-2 rounded-lg transition-colors ${
+            className={`flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-colors ${
               canProceed
-                ? 'bg-burgundy-700 hover:bg-burgundy-800 text-white'
-                : 'opacity-50 cursor-not-allowed bg-burgundy-700 text-white'
+                ? 'bg-burgundy-800 hover:bg-burgundy-700 text-white'
+                : 'bg-stone-200 text-forest-400 cursor-not-allowed'
             }`}
           >
-            Next
+            {canProceed ? 'Next Section' : 'Complete quiz to continue'}
             <ChevronRight className="w-5 h-5" />
           </button>
         )}
