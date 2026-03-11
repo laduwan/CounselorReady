@@ -30,6 +30,7 @@ import Recommendations from './pages/Recommendations';
 import LegacyVault from './pages/LegacyVault';
 import CourseQuickEdit from './pages/CourseQuickEdit';
 import ThumbnailManager from './pages/ThumbnailManager';
+import AdminBulkUpload from './pages/AdminBulkUpload';
 
 // Components
 import Layout from './components/Layout';
@@ -207,6 +208,11 @@ function AppRoutes() {
       <Route path="/admin/thumbnails" element={
         <AdminRoute>
           <Layout><ThumbnailManager /></Layout>
+        </AdminRoute>
+      } />
+      <Route path="/admin/bulk-upload" element={
+        <AdminRoute>
+          <Layout><AdminBulkUpload /></Layout>
         </AdminRoute>
       } />
       
