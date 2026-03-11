@@ -143,7 +143,7 @@ export default function CourseView() {
             {/* Lesson content viewer */}
             {activeLesson && canAccessLesson(activeLesson) ? (
               <div className="card mb-6">
-                <h2 className="text-xl font-semibold text-navy-500 mb-4">{activeLesson.title}</h2>
+                <h2 className="font-display text-xl font-semibold text-burgundy-800 mb-4">{activeLesson.title}</h2>
 
                 {activeLesson.type === 'video' && activeLesson.videoUrl && (
                   <div className="aspect-video bg-navy-800 rounded-lg mb-4">
@@ -206,7 +206,7 @@ export default function CourseView() {
             {/* Progress card */}
             {enrollment?.enrolled && (
               <div className="card mb-6">
-                <h3 className="font-semibold text-navy-500 mb-3">Your Progress</h3>
+                <h3 className="font-display text-lg font-semibold text-burgundy-800 mb-3">Your Progress</h3>
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-forest-600">Completed</span>
                   <span className="font-medium text-burgundy-700">{enrollment.percentComplete}%</span>
@@ -222,7 +222,7 @@ export default function CourseView() {
 
             {/* Course outline */}
             <div className="card">
-              <h3 className="font-semibold text-navy-500 mb-4">Course Content</h3>
+              <h3 className="font-display text-lg font-semibold text-burgundy-800 mb-4">Course Content</h3>
               <div className="space-y-2">
                 {course.modules?.map((module) => (
                   <div key={module._id} className="border border-forest-100 rounded-lg overflow-hidden">
@@ -352,7 +352,7 @@ export default function CourseView() {
         {/* Course description */}
         {course.description && (
           <div className="mb-8">
-            <h3 className="font-semibold text-navy-500 mb-2">About This Course</h3>
+            <h3 className="font-display text-lg font-semibold text-burgundy-800 mb-2">About This Course</h3>
             <p className="text-forest-600 leading-relaxed">{course.description}</p>
           </div>
         )}
@@ -376,7 +376,7 @@ export default function CourseView() {
         {/* Course outline preview */}
         {course.modules?.length > 0 && (
           <div className="mb-8">
-            <h3 className="font-semibold text-navy-500 mb-3">Course Content</h3>
+            <h3 className="font-display text-lg font-semibold text-burgundy-800 mb-3">Course Content</h3>
             <div className="space-y-2">
               {course.modules.map((module, idx) => (
                 <div key={module._id} className="flex items-center gap-3 p-3 bg-stone-50 rounded-lg">
