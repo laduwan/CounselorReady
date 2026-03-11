@@ -1,3 +1,8 @@
+/**
+ * Copyright (c) 2026 CounselorReady, a subsidiary of Ga Integrated Therapeutic Perspectives, LLC.
+ * All rights reserved. Proprietary and confidential.
+ * Unauthorized copying or distribution is strictly prohibited.
+ */
 #!/usr/bin/env node
 /**
  * seedFromMarkdownSources.js
@@ -22,6 +27,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
+import { compareWordCounts } from '../../utils/contentValidator.js';
 dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
@@ -117,30 +123,128 @@ function generateSlug(title) {
 
 function markdownToHtml(md) {
   if (!md) return '';
-  let html = md
-    // Headers
-    .replace(/^#### (.+)$/gm, '<h4>$1</h4>')
-    .replace(/^### (.+)$/gm, '<h3>$1</h3>')
-    .replace(/^## (.+)$/gm, '<h2>$1</h2>')
-    .replace(/^# (.+)$/gm, '<h1>$1</h1>')
-    // Bold & italic
-    .replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>')
-    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-    .replace(/\*(.+?)\*/g, '<em>$1</em>')
+  const lines = md.split('\n');
+  const result = [];
+  let inBulletList = false;
+  let inNumberedList = false;
+  let inTable = false;
+  let tableRows = [];
+
+  function applyInline(text) {
+    return text
+      .replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>')
+      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+      .replace(/(?<![a-zA-Z:\/])\*([^*\n]+)\*(?![a-zA-Z])/g, '<em>$1</em>')
+      .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>');
+  }
+
+  function flushTable() {
+    if (inTable && tableRows.length > 0) {
+      let tableHtml = '<table style="width:100%;border-collapse:collapse;margin:12px 0;">';
+      tableRows.forEach((row, idx) => {
+        const cells = row.split('|').filter(c => c.trim());
+        if (idx === 0) {
+          tableHtml += '<thead><tr>' + cells.map(c => `<th>${applyInline(c.trim())}</th>`).join('') + '</tr></thead><tbody>';
+        } else {
+          tableHtml += '<tr>' + cells.map(c => `<td>${applyInline(c.trim())}</td>`).join('') + '</tr>';
+        }
+      });
+      tableHtml += '</tbody></table>';
+      result.push(tableHtml);
+      tableRows = [];
+      inTable = false;
+    }
+  }
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+
+    if (!line) {
+      // Close open lists on blank lines
+      if (inBulletList) { result.push('</ul>'); inBulletList = false; }
+      if (inNumberedList) { result.push('</ol>'); inNumberedList = false; }
+      flushTable();
+      continue;
+    }
+
+    // Horizontal rules
+    if (/^---+$/.test(line)) {
+      if (inBulletList) { result.push('</ul>'); inBulletList = false; }
+      if (inNumberedList) { result.push('</ol>'); inNumberedList = false; }
+      flushTable();
+      result.push('<hr/>');
+      continue;
+    }
+
+    // Table rows
+    if (/^\|/.test(line)) {
+      if (inBulletList) { result.push('</ul>'); inBulletList = false; }
+      if (inNumberedList) { result.push('</ol>'); inNumberedList = false; }
+      if (/^\|[-\s|:]+\|$/.test(line)) continue; // skip separator
+      inTable = true;
+      tableRows.push(line);
+      continue;
+    } else if (inTable) {
+      flushTable();
+    }
+
+    // Headings
+    if (line.startsWith('#### ')) {
+      if (inBulletList) { result.push('</ul>'); inBulletList = false; }
+      if (inNumberedList) { result.push('</ol>'); inNumberedList = false; }
+      result.push(`<h4>${applyInline(line.substring(5))}</h4>`);
+    } else if (line.startsWith('### ')) {
+      if (inBulletList) { result.push('</ul>'); inBulletList = false; }
+      if (inNumberedList) { result.push('</ol>'); inNumberedList = false; }
+      result.push(`<h2>${applyInline(line.substring(4))}</h2>`);
+    } else if (line.startsWith('## ')) {
+      if (inBulletList) { result.push('</ul>'); inBulletList = false; }
+      if (inNumberedList) { result.push('</ol>'); inNumberedList = false; }
+      result.push(`<h2>${applyInline(line.substring(3))}</h2>`);
+    } else if (line.startsWith('# ')) {
+      if (inBulletList) { result.push('</ul>'); inBulletList = false; }
+      if (inNumberedList) { result.push('</ol>'); inNumberedList = false; }
+      result.push(`<h1>${applyInline(line.substring(2))}</h1>`);
+    }
     // Blockquotes
-    .replace(/^> (.+)$/gm, '<blockquote><p>$1</p></blockquote>')
-    // Lists  
-    .replace(/^- (.+)$/gm, '<li>$1</li>')
-    .replace(/^\* (.+)$/gm, '<li>$1</li>')
-    .replace(/^\d+\. (.+)$/gm, '<li>$1</li>')
-    // Paragraphs (non-empty lines that aren't already HTML)
-    .replace(/^(?!<[hbluo]|$)(.+)$/gm, '<p>$1</p>')
-    // Clean up multiple newlines
-    .replace(/\n{3,}/g, '\n\n')
-    // Wrap consecutive <li> in <ul>
-    .replace(/(<li>.*?<\/li>\n?)+/g, '<ul>$&</ul>');
-    
-  return html.trim();
+    else if (line.startsWith('> ')) {
+      if (inBulletList) { result.push('</ul>'); inBulletList = false; }
+      if (inNumberedList) { result.push('</ol>'); inNumberedList = false; }
+      result.push(`<blockquote><p>${applyInline(line.substring(2))}</p></blockquote>`);
+    }
+    // Bullet list items
+    else if (line.startsWith('- ') || line.startsWith('* ')) {
+      if (inNumberedList) { result.push('</ol>'); inNumberedList = false; }
+      if (!inBulletList) { result.push('<ul>'); inBulletList = true; }
+      result.push(`<li>${applyInline(line.substring(2))}</li>`);
+    }
+    // Numbered list items
+    else if (/^\d+\.\s/.test(line)) {
+      if (inBulletList) { result.push('</ul>'); inBulletList = false; }
+      if (!inNumberedList) { result.push('<ol>'); inNumberedList = true; }
+      const content = line.replace(/^\d+\.\s+/, '');
+      result.push(`<li>${applyInline(content)}</li>`);
+    }
+    // APA reference entries
+    else if (/^[A-Z][a-z]+,\s+[A-Z]/.test(line) && /\(\d{4}\)/.test(line)) {
+      if (inBulletList) { result.push('</ul>'); inBulletList = false; }
+      if (inNumberedList) { result.push('</ol>'); inNumberedList = false; }
+      result.push(`<p class="cr-reference">${applyInline(line)}</p>`);
+    }
+    // Regular paragraph
+    else {
+      if (inBulletList) { result.push('</ul>'); inBulletList = false; }
+      if (inNumberedList) { result.push('</ol>'); inNumberedList = false; }
+      result.push(`<p>${applyInline(line)}</p>`);
+    }
+  }
+
+  // Close any open lists
+  if (inBulletList) result.push('</ul>');
+  if (inNumberedList) result.push('</ol>');
+  flushTable();
+
+  return result.join('\n');
 }
 
 function stripHtml(html) {
@@ -175,21 +279,34 @@ function parseMarkdownToModules(content, filename) {
     });
   }
 
-  // Extract references
+  // Extract references — preserve full APA 7th edition citations
   const references = [];
-  const refSection = content.match(/(?:references|bibliography|works cited)[\s\S]*$/i);
+  const refSection = content.match(/(?:^#{1,2}\s*(?:references|bibliography|works?\s*cited))\s*\n([\s\S]*?)(?=\n#{1,2}\s|\n---\s*$|$)/im);
   if (refSection) {
-    const refLines = refSection[0].match(/^(?:\d+\.\s+|[-•]\s+)?[A-Z][^.\n]*\(\d{4}\)[^.\n]*\./gm) || [];
-    for (const ref of refLines.slice(0, 20)) {
-      const authorMatch = ref.match(/^(?:\d+\.\s+|[-•]\s+)?(.+?)\s*\(/);
-      const yearMatch = ref.match(/\((\d{4})\)/);
-      const titleMatch = ref.match(/\)\.\s*(.+?)\.\s/);
-      const sourceMatch = ref.match(/\.\s*([^.]+)\.\s*$/);
+    const refContent = refSection[1] || refSection[0];
+    // Split by double newlines (each reference is separated by blank lines)
+    // or by lines starting with a new author entry
+    const rawEntries = refContent.split(/\n\n+/).filter(e => e.trim().length > 15);
+
+    for (const rawEntry of rawEntries.slice(0, 30)) {
+      const entry = rawEntry.trim().replace(/\n\s*/g, ' ').replace(/\s{2,}/g, ' ');
+      // Skip lines that are just the header
+      if (/^(?:references|bibliography|works?\s*cited)\s*$/i.test(entry)) continue;
+      // Strip leading numbering or bullets
+      const cleaned = entry.replace(/^(?:\d+[\.\)]\s+|[-•]\s+)/, '').trim();
+      if (cleaned.length < 15) continue;
+
+      // Try to parse structured APA fields
+      const authorMatch = cleaned.match(/^(.+?)\s*\(\d{4}/);
+      const yearMatch = cleaned.match(/\((\d{4}[a-z]?)\)/);
+      const titleMatch = cleaned.match(/\)\.\s*(.+?)(?:\.\s|$)/);
+
       references.push({
-        author: authorMatch?.[1]?.trim() || 'Author',
+        author: authorMatch?.[1]?.trim() || cleaned.substring(0, 60),
         year: parseInt(yearMatch?.[1]) || 2020,
-        title: titleMatch?.[1]?.trim() || ref.substring(0, 100),
-        source: sourceMatch?.[1]?.trim() || 'Journal'
+        title: titleMatch?.[1]?.replace(/\*+/g, '').trim() || cleaned.substring(0, 120),
+        source: cleaned, // Preserve the FULL APA citation as source for reuse
+        fullCitation: cleaned // Keep the complete APA entry intact
       });
     }
   }
@@ -283,11 +400,14 @@ function extractKnowledgeChecks(mdContent) {
 
 /**
  * Convert a parsed module to rich contentBlocks
+ * CRITICAL: Preserve ALL content. Never discard text blocks.
+ * Per GOLD_STANDARD_SPEC §18.1: Never strip content, never summarize.
+ * Each text block should be ≤1,500 words per spec §3.2.
  */
 function moduleToContentBlocks(mod, totalModules) {
   const blocks = [];
   const html = markdownToHtml(mod.rawContent);
-  
+
   // Section divider
   blocks.push({
     type: 'sectionDivider',
@@ -296,50 +416,83 @@ function moduleToContentBlocks(mod, totalModules) {
     subtitle: mod.title,
     accessibility: { role: 'heading', ariaLevel: 2 }
   });
-  
-  // Split content by h2/h3 headings
+
+  // Split content by h2/h3 headings into logical sections
   const sections = html.split(/(?=<h[23][^>]*>)/i).filter(s => s.trim());
-  
-  let sectionCount = 0;
+
   for (const section of sections) {
     const wordCount = countWords(section);
-    if (wordCount < 20) continue;
-    
-    sectionCount++;
-    
-    // For sections with h3 subsections, create accordion
-    const h3Parts = section.split(/(?=<h3[^>]*>)/i).filter(s => s.trim());
-    
-    if (h3Parts.length > 3 && wordCount > 600) {
-      // Lead text block
-      if (countWords(h3Parts[0]) > 30) {
+    if (wordCount < 10) continue;
+
+    // For very long sections (>1500 words), split into multiple text blocks
+    // but NEVER discard content
+    if (wordCount > 1500) {
+      // Split on h3 sub-headings to create natural breaks
+      const h3Parts = section.split(/(?=<h3[^>]*>)/i).filter(s => s.trim());
+
+      if (h3Parts.length > 1) {
+        // Lead text block (intro before first h3)
+        if (countWords(h3Parts[0]) > 10) {
+          blocks.push({
+            type: 'text',
+            content: h3Parts[0].trim(),
+            accessibility: { role: 'article' }
+          });
+        }
+
+        // Create accordion ONLY for short concept definitions (3-5 items, each < 150 words)
+        // Otherwise keep as separate text blocks to preserve full content
+        const shortItems = h3Parts.slice(1).filter(p => countWords(p) < 150);
+        const longItems = h3Parts.slice(1).filter(p => countWords(p) >= 150);
+
+        // Short items → accordion (if 3-5 items, per spec §7)
+        if (shortItems.length >= 3 && shortItems.length <= 7) {
+          const items = [];
+          for (const part of shortItems) {
+            const titleMatch = part.match(/<h3[^>]*>(.*?)<\/h3>/i);
+            if (titleMatch) {
+              items.push({
+                title: stripHtml(titleMatch[1]),
+                content: part.replace(titleMatch[0], '').trim()
+              });
+            }
+          }
+          if (items.length >= 2) {
+            blocks.push({
+              type: 'accordion',
+              accordionItems: items,
+              accessibility: { role: 'region', ariaLabel: 'Expandable content sections' }
+            });
+          }
+        } else {
+          // Short items that don't fit accordion criteria — keep as text blocks
+          for (const part of shortItems) {
+            blocks.push({
+              type: 'text',
+              content: part.trim(),
+              accessibility: { role: 'article' }
+            });
+          }
+        }
+
+        // Long items → always individual text blocks (NEVER compress into accordion)
+        for (const part of longItems) {
+          blocks.push({
+            type: 'text',
+            content: part.trim(),
+            accessibility: { role: 'article' }
+          });
+        }
+      } else {
+        // No h3 sub-headings — keep as one text block (large but intact)
         blocks.push({
           type: 'text',
-          content: h3Parts[0].trim(),
+          content: section.trim(),
           accessibility: { role: 'article' }
         });
       }
-      
-      // Accordion for subsections
-      const items = [];
-      for (let i = 1; i < h3Parts.length; i++) {
-        const titleMatch = h3Parts[i].match(/<h3[^>]*>(.*?)<\/h3>/i);
-        if (titleMatch) {
-          items.push({
-            title: stripHtml(titleMatch[1]),
-            content: h3Parts[i].replace(titleMatch[0], '').trim()
-          });
-        }
-      }
-      if (items.length >= 2) {
-        blocks.push({
-          type: 'accordion',
-          accordionItems: items,
-          accessibility: { role: 'region', ariaLabel: `Expandable content sections` }
-        });
-      }
     } else {
-      // Regular text block
+      // Normal-sized section — keep as one text block
       blocks.push({
         type: 'text',
         content: section.trim(),
@@ -347,7 +500,7 @@ function moduleToContentBlocks(mod, totalModules) {
       });
     }
   }
-  
+
   // Extract and add knowledge checks from raw markdown
   const checks = extractKnowledgeChecks(mod.rawContent);
   for (const check of checks.slice(0, 3)) {
@@ -359,7 +512,7 @@ function moduleToContentBlocks(mod, totalModules) {
       accessibility: { ariaLabel: 'Knowledge check', announceCorrect: true }
     });
   }
-  
+
   // Add reflection
   blocks.push({
     type: 'reflection',
@@ -367,7 +520,7 @@ function moduleToContentBlocks(mod, totalModules) {
     minLength: 50,
     accessibility: { role: 'textbox', ariaLabel: `Reflection for Module ${mod.order}` }
   });
-  
+
   return blocks;
 }
 
@@ -488,7 +641,11 @@ async function main() {
           passingScore: 80,
           maxAttempts: 3
         },
-        references: references.length > 0 ? references : [],
+        // Store full APA citations as strings (schema is [String])
+        // Preserve complete citation text for ACEP compliance and reuse
+        references: references.length > 0
+          ? references.map(r => r.fullCitation || `${r.author} (${r.year}). ${r.title}. ${r.source}`)
+          : [],
         settings: {
           passingScore: 80,
           certificateEnabled: true,
@@ -506,6 +663,25 @@ async function main() {
         seededFrom: filename
       };
 
+      // Content preservation check — compare source word count to processed output
+      let processedWords = 0;
+      for (const mod of interactiveModules) {
+        for (const block of (mod.contentBlocks || [])) {
+          processedWords += countWords(block.content || block.textContent || '');
+          if (block.accordionItems) {
+            for (const item of block.accordionItems) {
+              processedWords += countWords(item.content || '');
+            }
+          }
+        }
+      }
+
+      const comparison = compareWordCounts(wordCount, processedWords, meta?.title || filename);
+      if (!comparison.ok) {
+        console.log(`   ⚠️  ${comparison.message}`);
+        console.log(`   ⚠️  Content loss detected — review markdownToHtml conversion`);
+      }
+
       // Upsert
       await collection.updateOne(
         { slug },
@@ -516,7 +692,7 @@ async function main() {
       const blockCount = interactiveModules.reduce((sum, m) => sum + m.contentBlocks.length, 0);
       const assessQs = courseData.assessment.questions.length;
       console.log(`   ✅ Seeded: ${slug}`);
-      console.log(`      ${ceHours} CE | ${wordCount.toLocaleString()} words | ${modules.length} modules | ${blockCount} blocks | ${assessQs} Qs\n`);
+      console.log(`      ${ceHours} CE | ${wordCount.toLocaleString()} source words → ${processedWords.toLocaleString()} processed | ${modules.length} modules | ${blockCount} blocks | ${assessQs} Qs\n`);
       seeded++;
 
     } catch (err) {

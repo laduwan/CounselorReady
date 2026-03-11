@@ -1,20 +1,18 @@
+/**
+ * Copyright (c) 2026 CounselorReady, a subsidiary of Ga Integrated Therapeutic Perspectives, LLC.
+ * All rights reserved. Proprietary and confidential.
+ * Unauthorized copying or distribution is strictly prohibited.
+ */
 // routes/adminStats.js
 // Admin dashboard statistics and overview
 
 import express from 'express';
 import mongoose from 'mongoose';
-import { protect } from '../middleware/auth.js';
+import { protect, requireAdmin } from '../middleware/auth.js';
 
 const router = express.Router();
 
-// Admin check middleware
-const adminOnly = (req, res, next) => {
-  if (req.user && req.user.role === 'admin') {
-    next();
-  } else {
-    res.status(403).json({ success: false, error: { message: 'Admin access required' } });
-  }
-};
+const adminOnly = requireAdmin;
 
 /**
  * GET /api/admin/stats/overview
@@ -65,17 +63,15 @@ router.get('/overview', protect, adminOnly, async (req, res) => {
     const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
     const [recentRegular, recentInteractive] = await Promise.all([
       db.collection('usercourseprogresses').countDocuments({
-        $or: [{ status: 'completed' }, { completed: true }, { progress: 100 }],
-        $or: [
-          { completedAt: { $gte: sevenDaysAgo } },
-          { updatedAt: { $gte: sevenDaysAgo } }
+        $and: [
+          { $or: [{ status: 'completed' }, { completed: true }, { progress: 100 }] },
+          { $or: [{ completedAt: { $gte: sevenDaysAgo } }, { updatedAt: { $gte: sevenDaysAgo } }] }
         ]
       }),
       db.collection('interactivecourseprogresses').countDocuments({
-        $or: [{ status: 'completed' }, { completed: true }, { progress: 100 }],
-        $or: [
-          { completedAt: { $gte: sevenDaysAgo } },
-          { updatedAt: { $gte: sevenDaysAgo } }
+        $and: [
+          { $or: [{ status: 'completed' }, { completed: true }, { progress: 100 }] },
+          { $or: [{ completedAt: { $gte: sevenDaysAgo } }, { updatedAt: { $gte: sevenDaysAgo } }] }
         ]
       })
     ]);

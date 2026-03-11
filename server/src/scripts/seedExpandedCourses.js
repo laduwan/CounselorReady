@@ -1,3 +1,8 @@
+/**
+ * Copyright (c) 2026 CounselorReady, a subsidiary of Ga Integrated Therapeutic Perspectives, LLC.
+ * All rights reserved. Proprietary and confidential.
+ * Unauthorized copying or distribution is strictly prohibited.
+ */
 #!/usr/bin/env node
 /**
  * seedExpandedCourses.js
@@ -399,8 +404,8 @@ function markdownToHtml(md) {
     .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
     .replace(/\*(.+?)\*/g, '<em>$1</em>')
     .replace(/^####\s+(.+)$/gm, '<h4>$1</h4>')
-    .replace(/^###\s+(.+)$/gm, '<h3>$1</h3>')
-    .replace(/^##\s+(.+)$/gm, '<h3>$1</h3>')
+    .replace(/^###\s+(.+)$/gm, '<h2>$1</h2>')
+    .replace(/^##\s+(.+)$/gm, '<h2>$1</h2>')
     .replace(/^[-*]\s+(.+)$/gm, '<li>$1</li>')
     .replace(/(<li>.*<\/li>\n?)+/g, '<ul>$&</ul>')
     .replace(/^\d+\.\s+(.+)$/gm, '<li>$1</li>')

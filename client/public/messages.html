@@ -5,49 +5,72 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Messages - CounselorReady</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
   <script>
     tailwind.config = {
       theme: {
         extend: {
           colors: {
             burgundy: {
-              50: '#fdf2f4', 100: '#fce7ea', 200: '#f9d0d7', 300: '#f4a9b6',
-              400: '#ec7a8e', 500: '#e04d6a', 600: '#cb2d52', 700: '#ab2145',
-              800: '#8f1e3d', 900: '#6b1d34', 950: '#440c1c'
+              50: '#fdf5f6', 100: '#fae8eb', 200: '#f5d0d6', 300: '#eba9b5',
+              400: '#dd768a', 500: '#c94d65', 600: '#a83350', 700: '#8b2542',
+              800: '#6b1d34', 900: '#4a1524', 950: '#2d0a14'
             },
             forest: {
-              50: '#f3f6f4', 100: '#e3eae5', 200: '#c8d5cc', 300: '#a3b8a9',
-              400: '#7a9682', 500: '#5a7962', 600: '#47614e', 700: '#3a4f40',
-              800: '#314136', 900: '#34503d', 950: '#171f19'
-            }
+              50: '#f3f6f4', 100: '#e3ebe5', 200: '#c8d7cc', 300: '#a1bba8',
+              400: '#759a7f', 500: '#547c5f', 600: '#4A7C59', 700: '#34503d',
+              800: '#2b4133', 900: '#1f3025', 950: '#121c16'
+            },
+            hunter: { 100: '#e8f0ea', 500: '#4A7C59', 600: '#3d6649' },
+            honey: { 100: '#fef3d1', 400: '#D4A855', 500: '#c99a4a' },
+            gold: { 50: '#fefce8', 100: '#fef9c3', 200: '#fef08a', 300: '#fde047', 400: '#facc15', 500: '#d4a012' }
           }
         }
       }
     }
   </script>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Lato:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Source+Serif+Pro:wght@400;600;700&family=Source+Sans+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    body { font-family: 'Lato', sans-serif; }
-    h1, h2, h3 { font-family: 'Cormorant Garamond', serif; }
+    body { font-family: 'Source Sans Pro', system-ui, sans-serif; }
+    .font-display { font-family: 'Source Serif Pro', Georgia, serif; }
+    h1, h2, h3 { font-family: 'Source Serif Pro', Georgia, serif; }
   </style>
 </head>
 <body class="bg-stone-50 min-h-screen">
   <!-- Header -->
   <header class="bg-white border-b border-stone-200 sticky top-0 z-50">
     <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-      <a href="dashboard.html" class="flex items-center gap-3">
-        <div class="w-10 h-10 bg-gradient-to-br from-burgundy-800 to-forest-700 rounded-xl flex items-center justify-center text-white font-bold text-lg">CR</div>
-        <span class="text-xl font-semibold text-burgundy-800">CounselorReady</span>
+      <a href="/" class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl flex items-center justify-center shadow-md" style="background: linear-gradient(135deg, #8b2542, #6b1d34);">
+          <span class="font-display font-bold text-lg" style="position: relative; display: inline-block; width: 22px; height: 22px;"><span style="color: #D4A855; position: absolute; top: -3px; left: 0;">C</span><span style="color: #4A7C59; position: absolute; top: 5px; left: 6px;">R</span></span>
+        </div>
+        <span class="font-display font-semibold text-xl">
+          <span class="text-burgundy-800">Counselor</span><span class="text-forest-600">Ready</span>
+        </span>
       </a>
-      <nav class="flex items-center gap-6">
-        <a href="dashboard.html" class="text-hunter-600 hover:text-hunter-700">Dashboard</a>
-        <a href="courses.html" class="text-hunter-600 hover:text-hunter-700">Courses</a>
-        <a href="credentials.html" class="text-hunter-600 hover:text-hunter-700">Credentials</a>
-        <a href="certificates.html" class="text-hunter-600 hover:text-hunter-700">CE Certificates</a>
-        <a href="messages.html" class="text-burgundy-700 font-semibold">Messages</a>
+      <nav class="hidden md:flex items-center gap-8">
+        <a href="/dashboard.html" class="text-forest-600 hover:text-forest-800 transition-colors">Dashboard</a>
+        <a href="/courses.html" class="text-forest-600 hover:text-forest-800 transition-colors">Courses</a>
+        <a href="/credentials.html" class="text-forest-600 hover:text-forest-800 transition-colors">Credentials</a>
+        <a href="/certificates.html" class="text-forest-600 hover:text-forest-800 transition-colors">CE Certificates</a>
+        <a href="/messages.html" class="text-burgundy-800 font-medium border-b-2 border-burgundy-700 pb-1">Messages</a>
       </nav>
+      <div class="flex items-center gap-4">
+        <button onclick="toggleUserMenu()" class="flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-forest-50 transition-colors">
+          <div class="w-8 h-8 bg-burgundy-100 rounded-full flex items-center justify-center">
+            <span id="userInitial" class="text-burgundy-700 font-semibold text-sm">?</span>
+          </div>
+          <svg class="w-4 h-4 text-forest-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+          </svg>
+        </button>
+        <div id="userMenu" class="hidden absolute right-6 top-16 bg-white rounded-xl shadow-xl border border-burgundy-100 py-2 w-48 z-50">
+          <a href="/settings.html" class="block px-4 py-2 text-forest-700 hover:bg-forest-50 transition-colors">Settings</a>
+          <a href="/subscription.html" class="block px-4 py-2 text-forest-700 hover:bg-forest-50 transition-colors">Subscription</a>
+          <hr class="my-2 border-burgundy-100">
+          <button onclick="logout()" class="w-full text-left px-4 py-2 text-burgundy-700 hover:bg-burgundy-50 transition-colors">Sign Out</button>
+        </div>
+      </div>
     </div>
   </header>
 
@@ -150,6 +173,16 @@
       </div>
       
       <form id="newMessageForm" class="p-6 space-y-5">
+        <!-- Admin: To Field with Autocomplete (hidden for non-admins) -->
+        <div id="adminToField" class="hidden">
+          <label class="block text-sm font-medium text-forest-700 mb-2">To *</label>
+          <div class="relative">
+            <input type="text" id="toField" placeholder="Start typing a name or email..." autocomplete="off" class="w-full px-4 py-3 border border-stone-300 rounded-xl focus:ring-2 focus:ring-burgundy-500 focus:border-burgundy-500 outline-none">
+            <div id="autocompleteResults" class="absolute top-full left-0 right-0 bg-white border border-stone-300 rounded-xl mt-1 shadow-lg z-10 hidden max-h-60 overflow-y-auto"></div>
+          </div>
+          <div id="selectedRecipients" class="flex flex-wrap gap-2 mt-2"></div>
+        </div>
+
         <!-- Type -->
         <div>
           <label class="block text-sm font-medium text-forest-700 mb-2">What can we help with?</label>
@@ -202,9 +235,26 @@
   </div>
 
   <script>
+    // User menu
+    function toggleUserMenu() {
+      document.getElementById('userMenu').classList.toggle('hidden');
+    }
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('button') && !e.target.closest('#userMenu')) {
+        document.getElementById('userMenu')?.classList.add('hidden');
+      }
+    });
+    function logout() {
+      localStorage.removeItem('token');
+      window.location.href = '/login.html';
+    }
+
     const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://api.counselorready.com';
     let currentConversationId = null;
     let selectedFiles = [];
+    let isAdmin = false;
+    let selectedRecipients = [];
+    let searchTimeout = null;
 
     // Check auth
     const token = localStorage.getItem('token');
@@ -212,8 +262,99 @@
       window.location.href = 'login.html';
     }
 
+    // Check if user is admin and show recipient field
+    async function checkAdminStatus() {
+      try {
+        const response = await fetch(`${API_URL}/api/auth/me`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await response.json();
+        if (data.role === 'admin') {
+          isAdmin = true;
+          document.getElementById('adminToField').classList.remove('hidden');
+          setupAdminAutocomplete();
+        }
+        // Set user initial
+        const initial = (data.name || data.email || '?').substring(0, 1).toUpperCase();
+        document.getElementById('userInitial').textContent = initial;
+      } catch (err) {
+        console.log('Could not check admin status');
+      }
+    }
+
+    function setupAdminAutocomplete() {
+      const toField = document.getElementById('toField');
+      toField.addEventListener('input', (e) => {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => searchUsers(e.target.value), 300);
+      });
+      toField.addEventListener('blur', () => {
+        setTimeout(() => document.getElementById('autocompleteResults').classList.add('hidden'), 200);
+      });
+    }
+
+    async function searchUsers(query) {
+      if (query.length < 2) {
+        document.getElementById('autocompleteResults').classList.add('hidden');
+        return;
+      }
+      try {
+        const response = await fetch(`${API_URL}/api/announcements/admin/users?search=${encodeURIComponent(query)}&limit=10`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await response.json();
+        renderAutocomplete(data.users || []);
+      } catch (error) {
+        console.error('Search users error:', error);
+      }
+    }
+
+    function renderAutocomplete(users) {
+      const container = document.getElementById('autocompleteResults');
+      if (users.length === 0) {
+        container.innerHTML = '<div class="p-3 text-forest-500 text-sm">No users found</div>';
+      } else {
+        container.innerHTML = users.map(user => `
+          <button type="button" onclick="selectRecipient('${user._id}', '${user.name.replace(/'/g, "\\'")}', '${user.email}')" class="w-full text-left p-3 hover:bg-stone-50 flex items-center gap-3 border-b border-stone-100 last:border-0">
+            <div class="w-8 h-8 bg-burgundy-100 rounded-full flex items-center justify-center text-burgundy-700 font-bold text-xs">
+              ${(user.name || 'U').substring(0, 2).toUpperCase()}
+            </div>
+            <div>
+              <p class="font-medium text-forest-900">${user.name || 'Unknown'}</p>
+              <p class="text-sm text-forest-500">${user.email}</p>
+            </div>
+          </button>
+        `).join('');
+      }
+      container.classList.remove('hidden');
+    }
+
+    function selectRecipient(id, name, email) {
+      if (selectedRecipients.find(r => r.id === id)) return;
+      selectedRecipients.push({ id, name, email });
+      renderSelectedRecipients();
+      document.getElementById('toField').value = '';
+      document.getElementById('autocompleteResults').classList.add('hidden');
+    }
+
+    function removeRecipient(id) {
+      selectedRecipients = selectedRecipients.filter(r => r.id !== id);
+      renderSelectedRecipients();
+    }
+
+    function renderSelectedRecipients() {
+      const container = document.getElementById('selectedRecipients');
+      container.innerHTML = selectedRecipients.map(r => `
+        <span class="inline-flex items-center gap-1 px-3 py-1 bg-burgundy-100 text-burgundy-800 rounded-full text-sm">
+          ${r.name}
+          <button type="button" onclick="removeRecipient('${r.id}')" class="hover:text-burgundy-600">&times;</button>
+        </span>
+      `).join('');
+    }
+
     // Load conversations on page load
     document.addEventListener('DOMContentLoaded', () => {
+      checkAdminStatus();
       loadConversations();
       setupEventListeners();
       startAutoRefresh();
@@ -457,7 +598,12 @@
       formData.append('type', document.getElementById('messageType').value);
       formData.append('subject', document.getElementById('messageSubject').value);
       formData.append('body', document.getElementById('messageBody').value);
-      
+
+      // If admin is sending to specific recipients
+      if (isAdmin && selectedRecipients.length > 0) {
+        formData.append('userIds', JSON.stringify(selectedRecipients.map(r => r.id)));
+      }
+
       selectedFiles.forEach(file => {
         formData.append('attachments', file);
       });
@@ -526,7 +672,9 @@
       document.getElementById('newMessageModal').classList.remove('hidden');
       document.getElementById('newMessageForm').reset();
       selectedFiles = [];
+      selectedRecipients = [];
       document.getElementById('attachmentList').innerHTML = '';
+      if (isAdmin) renderSelectedRecipients();
     }
 
     function closeNewMessageModal() {

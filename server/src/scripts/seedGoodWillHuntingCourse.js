@@ -1,4 +1,9 @@
 /**
+ * Copyright (c) 2026 CounselorReady, a subsidiary of Ga Integrated Therapeutic Perspectives, LLC.
+ * All rights reserved. Proprietary and confidential.
+ * Unauthorized copying or distribution is strictly prohibited.
+ */
+/**
  * CounselorReady CE Course Seed File
  * Course: Good Will Hunting - Trauma, Attachment, and the Therapeutic Alliance
  * CE Hours: 1.0
@@ -157,7 +162,7 @@ const courseData = {
 
 <p>Throughout this course, we will analyze specific scenes and interactions through the lens of contemporary trauma theory, attachment research, and evidence-based practice. Our goal is not to idealize the therapy depicted in the film, but rather to use it as a springboard for deeper clinical reflection and skill development. By examining what works, what raises questions, and what might be done differently, clinicians can enhance their own capacity to work effectively with clients who present with similar histories of abuse, neglect, and relational trauma.</p>
 
-<h3>The Clinical Relevance of Will Hunting's Presentation</h3>
+<h2>The Clinical Relevance of Will Hunting's Presentation</h2>
 
 <p>Will Hunting presents with a constellation of features that will be familiar to any clinician who works with adult survivors of childhood maltreatment. His history includes severe physical abuse in multiple foster placements, emotional neglect, abandonment by biological parents, and chronic instability in caregiving relationships. These experiences occurred during critical developmental windows for attachment formation, identity development, and emotional regulation capacity.</p>
 
@@ -185,7 +190,7 @@ const courseData = {
         },
         {
           type: "text",
-          content: `<h3>The Therapeutic Frame: Context for Analysis</h3>
+          content: `<h2>The Therapeutic Frame: Context for Analysis</h2>
 
 <p>Before diving into clinical analysis, it is important to establish the context in which the therapy occurs. Will is mandated to treatment as a condition of avoiding incarceration for assault. He has already been through multiple therapists, each of whom he has "defeated" through various combinations of manipulation, intimidation, and intellectual dominance. His mathematics professor, Gerald Lambeau, brings in his former college roommate Sean Maguire as something of a last resort—not because Sean is a renowned trauma specialist, but because Lambeau believes Sean's own life experiences might equip him to reach Will in ways others have not.</p>
 
@@ -193,7 +198,7 @@ const courseData = {
 
 <p>Understanding this context helps us appreciate both the achievements and limitations of what unfolds. The therapy depicted is not a model of technical precision or adherence to manualized protocols. Rather, it is a portrayal of how authentic human connection—offered with consistency, patience, and genuine care—can penetrate defenses that have resisted more conventional approaches. The question for clinicians is how to harness the healing power of relationship while maintaining appropriate boundaries and clinical rigor.</p>
 
-<h3>Overview of Course Structure</h3>
+<h2>Overview of Course Structure</h2>
 
 <p>This course is organized into four modules, each focusing on a different aspect of the clinical material presented in the film. Module 1 (which you are currently reading) provides context and introduces the key themes we will explore. Module 2 examines Will's attachment pattern and trauma presentation through the lens of attachment theory and complex trauma research. Module 3 analyzes Sean Maguire's therapeutic approach, identifying both effective interventions and areas requiring critical examination. Module 4 synthesizes the material through clinical vignettes and case applications, allowing participants to practice applying these concepts to their own clinical work.</p>
 
@@ -250,7 +255,7 @@ const courseData = {
           type: "text",
           content: `<p>To understand Will Hunting clinically, we must examine his presentation through the interconnected lenses of attachment theory and complex trauma. These frameworks help explain not only why Will behaves as he does, but also what he needs from therapy to heal. In this module, we will analyze Will's attachment pattern, explore the developmental impact of his trauma history, and consider the implications for therapeutic intervention.</p>
 
-<h3>Attachment Theory: A Brief Review</h3>
+<h2>Attachment Theory: A Brief Review</h2>
 
 <p>Attachment theory, originally developed by John Bowlby and empirically validated through Mary Ainsworth's research, posits that early experiences with caregivers create internal working models—mental templates that shape how individuals approach relationships throughout life. These working models contain expectations about whether others will be available and responsive, and whether the self is worthy of care and protection.</p>
 
@@ -258,7 +263,7 @@ const courseData = {
 
 <p>While attachment patterns are established in infancy, they persist into adulthood and significantly influence romantic relationships, friendships, and the therapeutic relationship. Adult attachment research has identified corresponding adult patterns: secure, preoccupied (anxious), dismissive (avoidant), and fearful-avoidant (disorganized). Understanding a client's attachment pattern provides crucial information for tailoring therapeutic approach and anticipating challenges in the therapeutic relationship.</p>
 
-<h3>Will Hunting's Attachment Pattern</h3>
+<h2>Will Hunting's Attachment Pattern</h2>
 
 <p>Will demonstrates a predominantly <strong>dismissive-avoidant attachment pattern</strong> with elements of disorganization. This pattern is characterized by defensive self-sufficiency, emotional distance, devaluation of attachment needs, and difficulty accessing and expressing vulnerability. Individuals with dismissive attachment have learned that relying on others leads to disappointment or harm, so they protect themselves by minimizing the importance of close relationships and maintaining rigid emotional independence.</p>
 
@@ -296,7 +301,7 @@ const courseData = {
         },
         {
           type: "text",
-          content: `<h3>Complex Trauma and Developmental Impact</h3>
+          content: `<h2>Complex Trauma and Developmental Impact</h2>
 
 <p>Will's attachment disruption did not occur in isolation—it developed in the context of severe and repeated trauma during critical developmental periods. The concept of <strong>complex trauma</strong> (sometimes called developmental trauma or Type II trauma) refers to prolonged, repeated traumatic experiences that typically occur within the caregiving system during childhood. Unlike single-incident trauma, complex trauma occurs when the child is dependent on the very individuals who are causing harm, creating profound disruptions in multiple domains of development.</p>
 
@@ -327,7 +332,7 @@ const courseData = {
         },
         {
           type: "text",
-          content: `<h3>The Neurobiology of Early Trauma</h3>
+          content: `<h2>The Neurobiology of Early Trauma</h2>
 
 <p>Contemporary neuroscience has illuminated the biological mechanisms through which early trauma shapes brain development and stress response systems. Understanding these mechanisms helps clinicians appreciate why trauma survivors respond as they do and informs appropriate intervention strategies.</p>
 
@@ -337,7 +342,7 @@ const courseData = {
 
 <p>Will's explosive anger, his difficulty tolerating emotional intensity, and his reliance on avoidance and intellectualization as regulatory strategies all reflect the impact of developmental trauma on regulatory capacity. His nervous system learned to respond to potential threat with hypervigilance and to overwhelming emotion with shutdown or explosive release. These patterns, wired into his neurobiology through years of adaptation to a dangerous environment, do not simply disappear because the environment has changed.</p>
 
-<h3>Implications for Therapeutic Intervention</h3>
+<h2>Implications for Therapeutic Intervention</h2>
 
 <p>Understanding Will's attachment pattern and trauma presentation has direct implications for therapeutic intervention. Effective treatment must address both the attachment disruption and the trauma sequelae, recognizing that these are interconnected rather than separate issues.</p>
 
@@ -411,7 +416,7 @@ const courseData = {
           type: "text",
           content: `<p>Sean Maguire's therapeutic work with Will Hunting offers rich material for clinical analysis. In this module, we will examine Sean's approach through the lens of contemporary evidence-based practice, identifying elements that align with effective trauma treatment and those that raise legitimate clinical questions. Our goal is neither to uncritically celebrate Sean's methods nor to dismiss them, but to engage thoughtfully with what the film portrays and extract applicable lessons for our own practice.</p>
 
-<h3>The Therapeutic Alliance: Research Foundation</h3>
+<h2>The Therapeutic Alliance: Research Foundation</h2>
 
 <p>Before analyzing Sean's specific interventions, it is essential to establish the research context for understanding therapeutic relationships. Decades of psychotherapy research have consistently demonstrated that the therapeutic alliance is one of the strongest predictors of treatment outcome, regardless of therapeutic modality. The alliance accounts for approximately 5-8% of the variance in outcomes—a seemingly modest figure that actually represents a substantial effect given the complexity of psychotherapy.</p>
 
@@ -419,7 +424,7 @@ const courseData = {
 
 <p>For trauma survivors with attachment disruption, the bond component assumes particular importance. These clients come to therapy with working models that expect relationships to be dangerous, unreliable, or ultimately disappointing. The therapeutic relationship offers an opportunity to develop new working models through repeated experiences that disconfirm these expectations. However, this process takes time and requires the therapist to navigate the client's testing behavior without retaliating, withdrawing, or confirming negative expectations.</p>
 
-<h3>What Sean Does Effectively</h3>
+<h2>What Sean Does Effectively</h2>
 
 <p>Despite—or perhaps because of—his unorthodox methods, Sean demonstrates several therapeutically effective approaches in his work with Will:</p>
 
@@ -453,7 +458,7 @@ const courseData = {
         },
         {
           type: "text",
-          content: `<h3>Elements Requiring Critical Examination</h3>
+          content: `<h2>Elements Requiring Critical Examination</h2>
 
 <p>While Sean's approach proves effective in the film's narrative, several elements warrant critical examination and should not be uncritically adopted as clinical models:</p>
 
@@ -465,7 +470,7 @@ const courseData = {
 
 <p><strong>Lack of Formal Assessment and Treatment Planning:</strong> The film shows little evidence of formal trauma assessment, treatment planning, or documentation. While narrative films cannot capture every aspect of clinical work, clinicians must remember that effective treatment typically includes systematic assessment, clear treatment goals, and ongoing evaluation of progress. Sean's intuitive, relationship-based approach works within the film's narrative but would need to be complemented by more structured clinical practices in actual treatment.</p>
 
-<h3>The Therapeutic Alliance in Action: Scene Analysis</h3>
+<h2>The Therapeutic Alliance in Action: Scene Analysis</h2>
 
 <p>Let us examine a specific scene through the lens of Bordin's alliance components. In the bench scene at the park, Sean responds to Will's personal attack from the previous session. Rather than interpreting or defending, Sean shares his perspective directly:</p>
 
@@ -539,7 +544,7 @@ const courseData = {
           type: "text",
           content: `<p>This final module provides opportunities to apply the concepts explored throughout this course to clinical scenarios. Through vignettes, decision points, and reflective exercises, you will practice identifying attachment patterns, implementing trauma-informed interventions, and navigating the challenges of building therapeutic alliance with resistant clients. These applications bridge the gap between theoretical understanding and clinical skill.</p>
 
-<h3>Clinical Vignette 1: The Testing Phase</h3>
+<h2>Clinical Vignette 1: The Testing Phase</h2>
 
 <p><strong>Client Presentation:</strong> Marcus, a 28-year-old software engineer, was referred to therapy by his employer's EAP following a verbal altercation with his supervisor. In your third session, Marcus arrives fifteen minutes late, makes dismissive comments about therapy being "a waste of time," and when you attempt to explore his work relationships, he launches into an intellectual analysis of organizational psychology that fills the remaining time. As he's leaving, hand on the doorknob, he pauses and says quietly, "I bet you can't wait to get rid of me like everyone else."</p>
 
@@ -554,7 +559,7 @@ const courseData = {
         },
         {
           type: "text",
-          content: `<h3>Clinical Vignette 2: The Disclosure Crisis</h3>
+          content: `<h2>Clinical Vignette 2: The Disclosure Crisis</h2>
 
 <p><strong>Client Presentation:</strong> Elena, a 34-year-old teacher, has been in therapy with you for six months. She initially presented with anxiety and relationship difficulties. Over time, a picture of childhood emotional neglect has emerged, though she has minimized its impact. In today's session, she suddenly discloses severe childhood sexual abuse that she has never told anyone. She is visibly distressed but also dissociated, speaking in a flat affect about horrific events. At the end of her disclosure, she says, "You probably think I'm disgusting now. I shouldn't have said anything."</p>
 
@@ -567,7 +572,7 @@ const courseData = {
 
 <p>This response: validates the courage of disclosure; directly addresses shame by naming continued respect; notices dissociation without pathologizing it; attends to safety; and affirms ongoing relationship and client pacing. It follows trauma-informed principles of safety, trustworthiness, collaboration, and empowerment.</p>
 
-<h3>Clinical Vignette 3: Therapeutic Rupture and Repair</h3>
+<h2>Clinical Vignette 3: Therapeutic Rupture and Repair</h2>
 
 <p><strong>Client Presentation:</strong> After four months of productive therapy, David, a 40-year-old with history of foster care placement and attachment disruption, learns that you will be taking a two-week vacation. In the sessions leading up to your absence, David becomes increasingly hostile, missing appointments and, when present, criticizing your approach. Upon your return, David states, "I knew you'd leave eventually. Everyone does. I don't know why I bothered coming back."</p>
 
@@ -612,7 +617,7 @@ const courseData = {
         },
         {
           type: "text",
-          content: `<h3>Integration: What Makes Therapy Healing for Trauma Survivors?</h3>
+          content: `<h2>Integration: What Makes Therapy Healing for Trauma Survivors?</h2>
 
 <p>As we conclude this course, let us synthesize the core elements that enable therapeutic healing for clients with histories of attachment disruption and complex trauma:</p>
 
@@ -626,7 +631,7 @@ const courseData = {
 
 <p><strong>The Therapist's Use of Self:</strong> The therapist's authentic, boundaried self-presence serves as both model and tool. When therapists can tolerate their own emotional responses, manage their countertransference, and remain genuinely present without hiding behind technique, they offer clients an experience of a regulated, authentic human being who can handle difficult emotions without falling apart or retaliating. This modeling is itself therapeutic.</p>
 
-<h3>Course Summary and Continuing Learning</h3>
+<h2>Course Summary and Continuing Learning</h2>
 
 <p>Through our analysis of Good Will Hunting, we have explored the intersection of attachment disruption and complex trauma, examined therapeutic approaches that foster healing relationships, and practiced applying these concepts to clinical scenarios. The film, while imperfect as a clinical model, offers a powerful portrayal of how consistent, authentic therapeutic presence can penetrate defenses and create conditions for profound change.</p>
 

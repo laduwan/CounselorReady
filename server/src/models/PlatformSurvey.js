@@ -1,3 +1,8 @@
+/**
+ * Copyright (c) 2026 CounselorReady, a subsidiary of Ga Integrated Therapeutic Perspectives, LLC.
+ * All rights reserved. Proprietary and confidential.
+ * Unauthorized copying or distribution is strictly prohibited.
+ */
 import mongoose from 'mongoose';
 
 // Platform-wide satisfaction and NPS tracking
@@ -142,7 +147,7 @@ platformSurveySchema.statics.getSatisfactionAverages = async function(startDate,
   ]);
   
   if (results.length === 0) {
-    return { total: 0 };
+    return { total: 0, avgSatisfaction: 0, avgCourseQuality: 0, avgEaseOfUse: 0, avgValueForMoney: 0, avgCustomerSupport: 0, avgCeTracking: 0, avgCertificateProcess: 0 };
   }
   
   const data = results[0];

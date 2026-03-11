@@ -1,3 +1,8 @@
+/**
+ * Copyright (c) 2026 CounselorReady, a subsidiary of Ga Integrated Therapeutic Perspectives, LLC.
+ * All rights reserved. Proprietary and confidential.
+ * Unauthorized copying or distribution is strictly prohibited.
+ */
 // adminAI.js — Admin AI generation (quiz, course, module)
 import express from 'express';
 import Anthropic from '@anthropic-ai/sdk';
@@ -775,12 +780,21 @@ MODULE ${moduleNumber || 1} of ${totalModules || 6}: ${moduleTitle}
 CATEGORY: ${catName}
 TOTAL COURSE CE HOURS: ${ceHours || 3}
 
-${sourceContent ? `SOURCE CONTENT TO EXPAND:\n${sourceContent.substring(0, 3000)}\n` : ''}
+${sourceContent ? `SOURCE CONTENT TO EXPAND:\n${sourceContent.substring(0, 5000)}\n` : ''}
 ${additionalNotes ? `ADDITIONAL NOTES: ${additionalNotes}\n` : ''}
 
 CRITICAL WORD COUNT REQUIREMENT:
 This module MUST contain at least ${wordsForModule.toLocaleString()} words of educational content.
 NBCC requires 6,000 words per CE credit hour. Do NOT write brief summaries - write FULL textbook-quality content.
+
+${sourceContent ? `KNOWLEDGE CHECK PLACEMENT FROM SOURCE:
+If the source content contains questions, quizzes, knowledge checks, or assessment items, you MUST:
+- Preserve their approximate position relative to surrounding content topics
+- Place each knowledge check AFTER the content section it tests (same as the original)
+- Do NOT move all questions to the end — keep them distributed where the original author placed them
+` : ''}
+CRITICAL LAYOUT RULE: Distribute quiz questions THROUGHOUT the content. Do NOT place all questions at the end.
+Each question should appear in the "questions" array with a "afterSection" field indicating which <h3> section it should follow.
 
 Return ONLY valid JSON in this exact structure:
 {
@@ -794,6 +808,7 @@ Return ONLY valid JSON in this exact structure:
       "options": ["Option A", "Option B", "Option C", "Option D"],
       "correctAnswer": 0,
       "explanation": "Why this is correct with content reference",
+      "afterSection": "Key Concepts",
       "points": 1
     }
   ]` : ''}
@@ -807,8 +822,10 @@ CONTENT REQUIREMENTS:
 - Reference the ACA Code of Ethics where relevant
 - Include research citations in the text (author, year format)
 ${generateQuiz !== false ? `- Generate 3-5 quiz questions that test comprehension and application
+- Distribute questions throughout — each should test the content section it follows
 - Mix question types: multiple_choice, multiple_select, true_false
-- Include detailed explanations for all answers` : ''}
+- Include detailed explanations for all answers
+- Set "afterSection" to the <h3> heading the question relates to` : ''}
 
 Return ONLY the JSON object, no markdown code blocks.`;
 

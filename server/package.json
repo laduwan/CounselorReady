@@ -2,12 +2,18 @@
   "name": "counselorready-server",
   "version": "1.0.0",
   "description": "CounselorReady API Server",
+  "license": "UNLICENSED",
+  "author": "CounselorReady, a subsidiary of Ga Integrated Therapeutic Perspectives, LLC",
   "main": "src/index.js",
   "type": "module",
   "scripts": {
     "dev": "node --watch src/index.js",
     "start": "node src/index.js",
-    "seed": "node src/utils/seed.js"
+    "seed": "node src/utils/seed.js",
+    "seed:validate": "node src/scripts/seedAndValidateCourses.js",
+    "seed:validate:fix": "node src/scripts/seedAndValidateCourses.js --fix",
+    "seed:validate:dry": "node src/scripts/seedAndValidateCourses.js --dry-run",
+    "seed:validate:only": "node src/scripts/seedAndValidateCourses.js --validate-only"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.24.0",
@@ -28,6 +34,8 @@
     "multer": "^1.4.5-lts.1",
     "node-cron": "^3.0.3",
     "uuid": "^9.0.1",
+    "@aws-sdk/client-s3": "^3.525.0",
+    "@aws-sdk/s3-request-presigner": "^3.525.0",
     "cloudinary": "^1.41.0",
     "helmet": "^7.1.0",
     "express-rate-limit": "^7.1.5"

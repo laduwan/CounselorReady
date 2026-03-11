@@ -1,3 +1,4 @@
+[CounselorReady_Gold_Standard_Course_Spec.md](https://github.com/user-attachments/files/25776224/CounselorReady_Gold_Standard_Course_Spec.md)
 # CounselorReady Gold Standard Course Template Spec
 ## Version 1.0 — March 5, 2026
 

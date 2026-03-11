@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Hub - CounselorReady</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            burgundy: { 50: '#fdf5f6', 100: '#fae8eb', 200: '#f5d0d6', 600: '#8b2542', 700: '#7a2039', 800: '#6b1d34', 900: '#4a1524' },
+            forest: { 50: '#f3f6f4', 100: '#e3ebe5', 500: '#547c5f', 600: '#4A7C59', 700: '#34503d' },
+            hunter: { 100: '#e8f0ea', 500: '#4A7C59', 600: '#3d6649' },
+            honey: { 100: '#fef3d1', 400: '#D4A855', 500: '#c99a4a' },
+            gold: { 50: '#fefce8', 400: '#facc15', 500: '#d4a012' }
+          }
+        }
+      }
+    }
+  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Source+Serif+Pro:wght@400;600;700&family=Source+Sans+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/lib/fontawesome/css/all.min.css">
+  <style>
+    body { font-family: 'Source Sans Pro', system-ui, sans-serif; }
+    .font-display { font-family: 'Source Serif Pro', Georgia, serif; }
+    .admin-card { transition: all 0.2s; }
+    .admin-card:hover { transform: translateY(-2px); box-shadow: 0 8px 25px -5px rgba(0,0,0,0.1); }
+  </style>
+</head>
+<body class="bg-stone-50 min-h-screen">
+
+  <!-- Admin Header -->
+  <header class="bg-burgundy-800 text-white sticky top-0 z-50 shadow-lg">
+    <div class="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <div class="w-9 h-9 bg-white/10 rounded-lg flex items-center justify-center">
+          <span class="font-display font-bold"><span class="text-honey-400">C</span><span class="text-hunter-500">R</span></span>
+        </div>
+        <div>
+          <span class="font-display font-semibold text-lg">
+            <span class="text-burgundy-200">Counselor</span><span class="text-hunter-500">Ready</span>
+          </span>
+          <span class="ml-2 text-xs bg-honey-400 text-burgundy-900 px-2 py-0.5 rounded-full font-semibold">ADMIN</span>
+        </div>
+      </div>
+      <div class="flex items-center gap-4">
+        <span class="text-burgundy-200 text-sm" id="adminEmail">Admin</span>
+        <a href="/dashboard" class="text-burgundy-200 hover:text-white text-sm flex items-center gap-1">
+          <i class="fas fa-arrow-left"></i> Exit Admin
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <div class="flex">
+    <!-- Sidebar -->
+    <aside class="w-64 bg-burgundy-800 min-h-[calc(100vh-52px)] sticky top-[52px] p-4">
+      <nav class="space-y-1">
+        <a href="/admin.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg bg-burgundy-700 text-white">
+          <i class="fas fa-th-large w-5"></i>
+          Admin Hub
+        </a>
+        <a href="/admin-analytics.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <i class="fas fa-chart-line w-5"></i>
+          Analytics
+        </a>
+        <a href="/admin-users.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <i class="fas fa-users w-5"></i>
+          Users
+        </a>
+        <a href="/admin-courses.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <i class="fas fa-book w-5"></i>
+          Courses
+        </a>
+        <a href="/admin-messages.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <i class="fas fa-envelope w-5"></i>
+          Messages
+        </a>
+        <a href="/admin-credentials.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <i class="fas fa-id-card w-5"></i>
+          Credentials
+        </a>
+        <a href="/admin-hardship.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <i class="fas fa-hand-holding-heart w-5"></i>
+          Hardship
+        </a>
+        <a href="/admin-coupons.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <i class="fas fa-tags w-5"></i>
+          Coupons
+        </a>
+        <a href="/admin-integrations.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <i class="fas fa-plug w-5"></i>
+          Integrations
+        </a>
+        <a href="/admin-migration.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <i class="fas fa-database w-5"></i>
+          Migration
+        </a>
+        <a href="/admin-help.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <i class="fas fa-question-circle w-5"></i>
+          Help Center
+        </a>
+      </nav>
+    </aside>
+
+  <main class="flex-1 p-8">
+
+    <!-- Page Title -->
+    <div class="mb-8">
+      <h1 class="font-display text-3xl font-bold text-burgundy-800">Admin Hub</h1>
+      <p class="text-stone-500 mt-1">Manage your platform from one place</p>
+    </div>
+
+    <!-- Quick Stats (loaded from API) -->
+    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-10" id="statsGrid">
+      <div class="bg-white rounded-xl border border-stone-200 p-4 text-center">
+        <p class="text-2xl font-bold text-burgundy-800" id="statUsers">--</p>
+        <p class="text-xs text-stone-500 mt-1">Total Users</p>
+      </div>
+      <div class="bg-white rounded-xl border border-stone-200 p-4 text-center">
+        <p class="text-2xl font-bold text-forest-600" id="statActive">--</p>
+        <p class="text-xs text-stone-500 mt-1">Active (30d)</p>
+      </div>
+      <div class="bg-white rounded-xl border border-stone-200 p-4 text-center">
+        <p class="text-2xl font-bold text-burgundy-800" id="statCourses">--</p>
+        <p class="text-xs text-stone-500 mt-1">Courses</p>
+      </div>
+      <div class="bg-white rounded-xl border border-stone-200 p-4 text-center">
+        <p class="text-2xl font-bold text-forest-600" id="statCompletions">--</p>
+        <p class="text-xs text-stone-500 mt-1">Completions</p>
+      </div>
+      <div class="bg-white rounded-xl border border-stone-200 p-4 text-center">
+        <p class="text-2xl font-bold text-honey-500" id="statCEHours">--</p>
+        <p class="text-xs text-stone-500 mt-1">CE Hours Issued</p>
+      </div>
+      <div class="bg-white rounded-xl border border-stone-200 p-4 text-center">
+        <p class="text-2xl font-bold text-forest-600" id="statCerts">--</p>
+        <p class="text-xs text-stone-500 mt-1">Certificates</p>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════ -->
+    <!-- SECTION 1: USERS                       -->
+    <!-- ═══════════════════════════════════════ -->
+    <div class="mb-10">
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-8 h-8 bg-burgundy-100 rounded-lg flex items-center justify-center">
+          <i class="fas fa-users text-burgundy-700 text-sm"></i>
+        </div>
+        <h2 class="font-display text-xl font-semibold text-burgundy-800">Users</h2>
+      </div>
+      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <a href="/admin-users.html" class="admin-card bg-white rounded-xl border border-stone-200 p-5 block">
+          <div class="flex items-center gap-3 mb-2">
+            <i class="fas fa-users-cog text-burgundy-600"></i>
+            <h3 class="font-semibold text-stone-800">User Management</h3>
+          </div>
+          <p class="text-sm text-stone-500">View, search, and manage all platform users. Edit profiles, subscriptions, and roles.</p>
+        </a>
+        <a href="/admin-hardship.html" class="admin-card bg-white rounded-xl border border-stone-200 p-5 block">
+          <div class="flex items-center gap-3 mb-2">
+            <i class="fas fa-hand-holding-heart text-burgundy-600"></i>
+            <h3 class="font-semibold text-stone-800">Hardship Pauses</h3>
+          </div>
+          <p class="text-sm text-stone-500">Manage VIP hardship pause requests. Review, approve, and track pause history.</p>
+        </a>
+        <a href="/admin-messages.html" class="admin-card bg-white rounded-xl border border-stone-200 p-5 block">
+          <div class="flex items-center gap-3 mb-2">
+            <i class="fas fa-envelope text-burgundy-600"></i>
+            <h3 class="font-semibold text-stone-800">Messages</h3>
+          </div>
+          <p class="text-sm text-stone-500">View and respond to user support messages and inquiries.</p>
+        </a>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════ -->
+    <!-- SECTION 2: COURSES & MODULES           -->
+    <!-- ═══════════════════════════════════════ -->
+    <div class="mb-10">
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-8 h-8 bg-forest-100 rounded-lg flex items-center justify-center">
+          <i class="fas fa-book text-forest-700 text-sm"></i>
+        </div>
+        <h2 class="font-display text-xl font-semibold text-burgundy-800">Courses & Modules</h2>
+      </div>
+      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <a href="/admin-courses.html" class="admin-card bg-white rounded-xl border border-stone-200 p-5 block">
+          <div class="flex items-center gap-3 mb-2">
+            <i class="fas fa-th-list text-forest-600"></i>
+            <h3 class="font-semibold text-stone-800">Course Library</h3>
+          </div>
+          <p class="text-sm text-stone-500">Browse, edit, publish, and archive all courses. View enrollment and completion stats.</p>
+        </a>
+        <a href="/admin-course-preview.html" class="admin-card bg-white rounded-xl border border-stone-200 p-5 block">
+          <div class="flex items-center gap-3 mb-2">
+            <i class="fas fa-eye text-forest-600"></i>
+            <h3 class="font-semibold text-stone-800">Course Preview</h3>
+          </div>
+          <p class="text-sm text-stone-500">Preview interactive courses as a learner would experience them before publishing.</p>
+        </a>
+        <a href="/admin-course-edit.html" class="admin-card bg-white rounded-xl border border-stone-200 p-5 block">
+          <div class="flex items-center gap-3 mb-2">
+            <i class="fas fa-edit text-forest-600"></i>
+            <h3 class="font-semibold text-stone-800">Course Editor</h3>
+          </div>
+          <p class="text-sm text-stone-500">Edit course content, sections, knowledge checks, and assessments.</p>
+        </a>
+        <a href="/admin/course-builder" class="admin-card bg-white rounded-xl border border-stone-200 p-5 block">
+          <div class="flex items-center gap-3 mb-2">
+            <i class="fas fa-magic text-forest-600"></i>
+            <h3 class="font-semibold text-stone-800">AI Course Builder</h3>
+          </div>
+          <p class="text-sm text-stone-500">Generate full courses from a topic using AI. Build sections, activities, and assessments automatically.</p>
+        </a>
+        <a href="/admin-bulk-upload.html" class="admin-card bg-white rounded-xl border border-stone-200 p-5 block">
+          <div class="flex items-center gap-3 mb-2">
+            <i class="fas fa-upload text-forest-600"></i>
+            <h3 class="font-semibold text-stone-800">Bulk Upload</h3>
+          </div>
+          <p class="text-sm text-stone-500">Upload DOCX, PDF, or ZIP files to auto-create courses with AI parsing.</p>
+        </a>
+        <a href="/admin-video-upload.html" class="admin-card bg-white rounded-xl border border-stone-200 p-5 block">
+          <div class="flex items-center gap-3 mb-2">
+            <i class="fas fa-video text-forest-600"></i>
+            <h3 class="font-semibold text-stone-800">Video Upload</h3>
+          </div>
+          <p class="text-sm text-stone-500">Upload and manage course videos for video-based CE modules.</p>
+        </a>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════ -->
+    <!-- SECTION 3: CE & CREDENTIALS            -->
+    <!-- ═══════════════════════════════════════ -->
+    <div class="mb-10">
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-8 h-8 bg-honey-100 rounded-lg flex items-center justify-center">
+          <i class="fas fa-certificate text-honey-500 text-sm"></i>
+        </div>
+        <h2 class="font-display text-xl font-semibold text-burgundy-800">CE Hours & Credentials</h2>
+      </div>
+      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <a href="/admin-credentials.html" class="admin-card bg-white rounded-xl border border-stone-200 p-5 block">
+          <div class="flex items-center gap-3 mb-2">
+            <i class="fas fa-id-card text-honey-500"></i>
+            <h3 class="font-semibold text-stone-800">Credential Templates</h3>
+          </div>
+          <p class="text-sm text-stone-500">Manage state license templates, CE requirements, and renewal rules across all 50 states + DC.</p>
+        </a>
+        <a href="/admin-coupons.html" class="admin-card bg-white rounded-xl border border-stone-200 p-5 block">
+          <div class="flex items-center gap-3 mb-2">
+            <i class="fas fa-tags text-honey-500"></i>
+            <h3 class="font-semibold text-stone-800">Coupons & Promotions</h3>
+          </div>
+          <p class="text-sm text-stone-500">Create discount codes, promotional pricing, and subscription offers.</p>
+        </a>
+        <a href="/admin-analytics.html" class="admin-card bg-white rounded-xl border border-stone-200 p-5 block">
+          <div class="flex items-center gap-3 mb-2">
+            <i class="fas fa-chart-bar text-honey-500"></i>
+            <h3 class="font-semibold text-stone-800">Analytics & Reports</h3>
+          </div>
+          <p class="text-sm text-stone-500">Completion rates, CE hour distribution, learner evaluations, and revenue reports.</p>
+        </a>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════ -->
+    <!-- SECTION 4: PLATFORM TOOLS              -->
+    <!-- ═══════════════════════════════════════ -->
+    <div class="mb-10">
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-8 h-8 bg-stone-100 rounded-lg flex items-center justify-center">
+          <i class="fas fa-tools text-stone-600 text-sm"></i>
+        </div>
+        <h2 class="font-display text-xl font-semibold text-burgundy-800">Platform Tools</h2>
+      </div>
+      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <a href="/admin-integrations.html" class="admin-card bg-white rounded-xl border border-stone-200 p-5 block">
+          <div class="flex items-center gap-3 mb-2">
+            <i class="fas fa-plug text-stone-600"></i>
+            <h3 class="font-semibold text-stone-800">Integrations</h3>
+          </div>
+          <p class="text-sm text-stone-500">CE Broker, LTI, SCORM, xAPI, Stripe, and third-party service connections.</p>
+        </a>
+        <a href="/admin-migration.html" class="admin-card bg-white rounded-xl border border-stone-200 p-5 block">
+          <div class="flex items-center gap-3 mb-2">
+            <i class="fas fa-database text-stone-600"></i>
+            <h3 class="font-semibold text-stone-800">Data Migration</h3>
+          </div>
+          <p class="text-sm text-stone-500">Import users and courses from TalentLMS, CSV, JSON, or SCORM packages.</p>
+        </a>
+        <a href="/admin-import.html" class="admin-card bg-white rounded-xl border border-stone-200 p-5 block">
+          <div class="flex items-center gap-3 mb-2">
+            <i class="fas fa-file-import text-stone-600"></i>
+            <h3 class="font-semibold text-stone-800">Import Tool</h3>
+          </div>
+          <p class="text-sm text-stone-500">Bulk import data from external systems and spreadsheets.</p>
+        </a>
+        <a href="/admin-help.html" class="admin-card bg-white rounded-xl border border-stone-200 p-5 block">
+          <div class="flex items-center gap-3 mb-2">
+            <i class="fas fa-question-circle text-stone-600"></i>
+            <h3 class="font-semibold text-stone-800">Help Center</h3>
+          </div>
+          <p class="text-sm text-stone-500">Manage FAQ articles and help documentation for users.</p>
+        </a>
+        <a href="/admin-help-articles.html" class="admin-card bg-white rounded-xl border border-stone-200 p-5 block">
+          <div class="flex items-center gap-3 mb-2">
+            <i class="fas fa-newspaper text-stone-600"></i>
+            <h3 class="font-semibold text-stone-800">Help Articles</h3>
+          </div>
+          <p class="text-sm text-stone-500">Create and edit help articles, guides, and support documentation.</p>
+        </a>
+      </div>
+    </div>
+
+  </main>
+  </div>
+
+  <script>
+    const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://api.counselorready.com';
+    const token = localStorage.getItem('token');
+
+    // Auth check
+    if (!token) {
+      window.location.href = '/login';
+    }
+
+    // Load admin email
+    try {
+      fetch(`${API_URL}/api/auth/me`, { headers: { 'Authorization': `Bearer ${token}` } })
+        .then(r => r.json())
+        .then(data => {
+          const user = data.user || data;
+          if (user.role !== 'admin') {
+            window.location.href = '/dashboard';
+            return;
+          }
+          document.getElementById('adminEmail').textContent = user.email || 'Admin';
+        })
+        .catch(() => {});
+    } catch(e) {}
+
+    // Load stats
+    fetch(`${API_URL}/api/admin/stats/overview`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    })
+    .then(r => {
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      const ct = r.headers.get('content-type') || '';
+      if (!ct.includes('application/json')) throw new Error('API returned HTML — check API_URL');
+      return r.json();
+    })
+    .then(result => {
+      if (result.success && result.data) {
+        const d = result.data;
+        document.getElementById('statUsers').textContent = d.users?.total?.toLocaleString() || '0';
+        document.getElementById('statActive').textContent = d.users?.active?.toLocaleString() || '0';
+        document.getElementById('statCourses').textContent =
+          ((d.courses?.total || 0) + (d.courses?.interactive || 0)).toLocaleString();
+        document.getElementById('statCompletions').textContent = d.completions?.total?.toLocaleString() || '0';
+        document.getElementById('statCEHours').textContent = d.ceHours?.total?.toLocaleString() || '0';
+        document.getElementById('statCerts').textContent = d.completions?.certificates?.toLocaleString() || '0';
+      } else {
+        throw new Error('API returned success=false');
+      }
+    })
+    .catch(err => {
+      console.error('Failed to load stats:', err);
+      ['statUsers','statActive','statCourses','statCompletions','statCEHours','statCerts'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) { el.textContent = '!'; el.title = err.message; }
+      });
+    });
+  </script>
+</body>
+</html>

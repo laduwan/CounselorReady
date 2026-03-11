@@ -1,9 +1,15 @@
+/**
+ * Copyright (c) 2026 CounselorReady, a subsidiary of Ga Integrated Therapeutic Perspectives, LLC.
+ * All rights reserved. Proprietary and confidential.
+ * Unauthorized copying or distribution is strictly prohibited.
+ */
 import express from 'express';
 import { protect } from '../middleware/auth.js';
 import Course from '../models/Course.js';
 import PlatformSurvey from '../models/PlatformSurvey.js';
 import UserCourseProgress from '../models/UserCourseProgress.js';
 import User from '../models/User.js';
+import UserActivity from '../models/UserActivity.js';
 
 const router = express.Router();
 
@@ -510,8 +516,10 @@ router.get('/admin/overview', protect, async (req, res) => {
         $project: {
           _id: '$course._id',
           title: '$course.title',
-          'analytics.enrollments': '$enrollments',
-          'analytics.avgRating': '$course.analytics.avgRating'
+          analytics: {
+            enrollments: '$enrollments',
+            avgRating: '$course.analytics.avgRating'
+          }
         }
       }
     ]);
@@ -663,6 +671,311 @@ router.get('/admin/export', protect, async (req, res) => {
   } catch (error) {
     console.error('Export error:', error);
     res.status(500).json({ error: 'Failed to export data' });
+  }
+});
+
+// ============================================
+// CONVERSION FUNNEL
+// ============================================
+
+// @route   GET /api/analytics/admin/funnel
+// @desc    Get conversion funnel data (registration → enrollment → payment → course start → completion)
+// @access  Private (Admin)
+router.get('/admin/funnel', protect, async (req, res) => {
+  try {
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Admin access required' });
+    }
+
+    const days = parseInt(req.query.days) || 90;
+    const since = new Date();
+    since.setDate(since.getDate() - days);
+
+    // Stage 1: Registered users
+    const registeredCount = await User.countDocuments({
+      createdAt: { $gte: since }
+    });
+
+    // Stage 2: Users who enrolled in at least one course
+    const enrolledUsers = await UserCourseProgress.distinct('userId', {
+      enrolledAt: { $gte: since }
+    });
+    const enrolledCount = enrolledUsers.length;
+
+    // Stage 3: Users who made a payment (have active/trialing subscription or bought a course)
+    const paidCount = await User.countDocuments({
+      createdAt: { $gte: since },
+      $or: [
+        { 'subscription.status': { $in: ['active', 'trialing'] } },
+        { stripeCustomerId: { $exists: true, $ne: null } }
+      ]
+    });
+
+    // Stage 4: Users who started a course (status in_progress or completed)
+    const startedUsers = await UserCourseProgress.distinct('userId', {
+      enrolledAt: { $gte: since },
+      status: { $in: ['in_progress', 'completed'] }
+    });
+    const startedCount = startedUsers.length;
+
+    // Stage 5: Users who completed at least one course
+    const completedUsers = await UserCourseProgress.distinct('userId', {
+      completedAt: { $gte: since },
+      status: 'completed'
+    });
+    const completedCount = completedUsers.length;
+
+    // Build funnel stages with conversion rates
+    const stages = [
+      { stage: 'Signed Up', count: registeredCount, rate: 100 },
+      { stage: 'Enrolled', count: enrolledCount, rate: registeredCount > 0 ? Math.round((enrolledCount / registeredCount) * 100) : 0 },
+      { stage: 'Made Payment', count: paidCount, rate: registeredCount > 0 ? Math.round((paidCount / registeredCount) * 100) : 0 },
+      { stage: 'Began Course', count: startedCount, rate: registeredCount > 0 ? Math.round((startedCount / registeredCount) * 100) : 0 },
+      { stage: 'Completed Course', count: completedCount, rate: registeredCount > 0 ? Math.round((completedCount / registeredCount) * 100) : 0 }
+    ];
+
+    // Step-to-step drop-off
+    const dropoffs = [];
+    for (let i = 1; i < stages.length; i++) {
+      const prev = stages[i - 1].count;
+      const curr = stages[i].count;
+      dropoffs.push({
+        from: stages[i - 1].stage,
+        to: stages[i].stage,
+        dropped: prev - curr,
+        stepRate: prev > 0 ? Math.round((curr / prev) * 100) : 0
+      });
+    }
+
+    // Average time between funnel stages
+    const avgTimes = await getAverageFunnelTimes(since);
+
+    res.json({ stages, dropoffs, avgTimes, period: { days, since } });
+  } catch (error) {
+    console.error('Funnel analytics error:', error);
+    res.status(500).json({ error: 'Failed to get funnel data' });
+  }
+});
+
+// Helper: calculate average time between funnel stages
+async function getAverageFunnelTimes(since) {
+  try {
+    const result = await UserCourseProgress.aggregate([
+      { $match: { enrolledAt: { $gte: since } } },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'userId',
+          foreignField: '_id',
+          as: 'user'
+        }
+      },
+      { $unwind: '$user' },
+      {
+        $group: {
+          _id: null,
+          avgRegistrationToEnrollment: {
+            $avg: { $subtract: ['$enrolledAt', '$user.createdAt'] }
+          },
+          avgEnrollmentToStart: {
+            $avg: {
+              $cond: [
+                { $ne: ['$status', 'not_started'] },
+                { $subtract: [
+                  { $ifNull: [{ $arrayElemAt: ['$lessonsCompleted.completedAt', 0] }, '$enrolledAt'] },
+                  '$enrolledAt'
+                ]},
+                null
+              ]
+            }
+          },
+          avgStartToCompletion: {
+            $avg: {
+              $cond: [
+                { $eq: ['$status', 'completed'] },
+                { $subtract: ['$completedAt', '$enrolledAt'] },
+                null
+              ]
+            }
+          }
+        }
+      }
+    ]);
+
+    if (!result.length) return {};
+
+    const ms = result[0];
+    const toHours = (val) => val ? Math.round((val / (1000 * 60 * 60)) * 10) / 10 : null;
+
+    return {
+      registrationToEnrollment: toHours(ms.avgRegistrationToEnrollment),
+      enrollmentToStart: toHours(ms.avgEnrollmentToStart),
+      startToCompletion: toHours(ms.avgStartToCompletion)
+    };
+  } catch {
+    return {};
+  }
+}
+
+// @route   GET /api/analytics/admin/funnel/trend
+// @desc    Get funnel stage counts over time (for chart)
+// @access  Private (Admin)
+router.get('/admin/funnel/trend', protect, async (req, res) => {
+  try {
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Admin access required' });
+    }
+
+    const days = parseInt(req.query.days) || 90;
+    const since = new Date();
+    since.setDate(since.getDate() - days);
+
+    // Group by week
+    const registrations = await User.aggregate([
+      { $match: { createdAt: { $gte: since } } },
+      {
+        $group: {
+          _id: { $dateToString: { format: '%Y-%U', date: '$createdAt' } },
+          count: { $sum: 1 }
+        }
+      },
+      { $sort: { _id: 1 } }
+    ]);
+
+    const enrollments = await UserCourseProgress.aggregate([
+      { $match: { enrolledAt: { $gte: since } } },
+      {
+        $group: {
+          _id: { $dateToString: { format: '%Y-%U', date: '$enrolledAt' } },
+          count: { $sum: 1 },
+          uniqueUsers: { $addToSet: '$userId' }
+        }
+      },
+      {
+        $project: {
+          _id: 1,
+          count: 1,
+          uniqueUsers: { $size: '$uniqueUsers' }
+        }
+      },
+      { $sort: { _id: 1 } }
+    ]);
+
+    const completions = await UserCourseProgress.aggregate([
+      { $match: { completedAt: { $gte: since }, status: 'completed' } },
+      {
+        $group: {
+          _id: { $dateToString: { format: '%Y-%U', date: '$completedAt' } },
+          count: { $sum: 1 },
+          uniqueUsers: { $addToSet: '$userId' }
+        }
+      },
+      {
+        $project: {
+          _id: 1,
+          count: 1,
+          uniqueUsers: { $size: '$uniqueUsers' }
+        }
+      },
+      { $sort: { _id: 1 } }
+    ]);
+
+    res.json({ registrations, enrollments, completions });
+  } catch (error) {
+    console.error('Funnel trend error:', error);
+    res.status(500).json({ error: 'Failed to get funnel trend' });
+  }
+});
+
+// ============================================
+// USER ACTIVITY TIMELINE
+// ============================================
+
+// @route   GET /api/analytics/admin/user/:userId/timeline
+// @desc    Get full activity timeline for a specific user
+// @access  Private (Admin)
+router.get('/admin/user/:userId/timeline', protect, async (req, res) => {
+  try {
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Admin access required' });
+    }
+
+    const { userId } = req.params;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 50;
+    const type = req.query.type;
+
+    const filter = { userId };
+    if (type) filter.type = type;
+
+    const [activities, total, user] = await Promise.all([
+      UserActivity.find(filter)
+        .sort({ timestamp: -1 })
+        .skip((page - 1) * limit)
+        .limit(limit)
+        .populate('courseId', 'title slug'),
+      UserActivity.countDocuments(filter),
+      User.findById(userId).select('email profile.firstName profile.lastName createdAt subscription lastLoginAt')
+    ]);
+
+    res.json({
+      user: user ? {
+        _id: user._id,
+        email: user.email,
+        name: `${user.profile?.firstName || ''} ${user.profile?.lastName || ''}`.trim(),
+        memberSince: user.createdAt,
+        lastLogin: user.lastLoginAt,
+        subscription: user.subscription?.status
+      } : null,
+      activities,
+      pagination: { page, limit, total, pages: Math.ceil(total / limit) }
+    });
+  } catch (error) {
+    console.error('User timeline error:', error);
+    res.status(500).json({ error: 'Failed to get user timeline' });
+  }
+});
+
+// @route   GET /api/analytics/admin/activity/search
+// @desc    Search activities across all users (from UserActivity collection)
+// @access  Private (Admin)
+router.get('/admin/activity/search', protect, async (req, res) => {
+  try {
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Admin access required' });
+    }
+
+    const { type, email, days, page = 1, limit = 50 } = req.query;
+    const filter = {};
+
+    if (type) filter.type = type;
+    if (days) {
+      const since = new Date();
+      since.setDate(since.getDate() - parseInt(days));
+      filter.timestamp = { $gte: since };
+    }
+    if (email) filter.userEmail = { $regex: email, $options: 'i' };
+
+    const [activities, total] = await Promise.all([
+      UserActivity.find(filter)
+        .sort({ timestamp: -1 })
+        .skip((parseInt(page) - 1) * parseInt(limit))
+        .limit(parseInt(limit)),
+      UserActivity.countDocuments(filter)
+    ]);
+
+    res.json({
+      activities,
+      pagination: {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        total,
+        pages: Math.ceil(total / parseInt(limit))
+      }
+    });
+  } catch (error) {
+    console.error('Activity search error:', error);
+    res.status(500).json({ error: 'Failed to search activities' });
   }
 });
 

@@ -1,3 +1,8 @@
+/**
+ * Copyright (c) 2026 CounselorReady, a subsidiary of Ga Integrated Therapeutic Perspectives, LLC.
+ * All rights reserved. Proprietary and confidential.
+ * Unauthorized copying or distribution is strictly prohibited.
+ */
 // bulkCourseRepair.js
 // Run with: node src/data/bulkCourseRepair.js [command]
 // Commands: diagnose, fix-pricing, fix-empty-modules, convert-videos, report

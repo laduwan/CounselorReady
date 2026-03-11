@@ -1,8 +1,14 @@
+/**
+ * Copyright (c) 2026 CounselorReady, a subsidiary of Ga Integrated Therapeutic Perspectives, LLC.
+ * All rights reserved. Proprietary and confidential.
+ * Unauthorized copying or distribution is strictly prohibited.
+ */
 import express from 'express';
 import Stripe from 'stripe';
 import User from '../models/User.js';
 import Course from '../models/Course.js';
 import { protect } from '../middleware/auth.js';
+import { logActivity, ACTIVITY_TYPES } from '../services/activityTrackingService.js';
 
 const router = express.Router();
 
@@ -576,11 +582,21 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
             await User.findByIdAndUpdate(userId, {
               $addToSet: { purchasedCourses: courseId }
             });
+            const buyer = await User.findById(userId).select('email profile.firstName');
+            logActivity(ACTIVITY_TYPES.PAYMENT_SUCCEEDED, {
+              courseId,
+              amount: session.amount_total,
+              type: 'course_purchase'
+            }, {
+              userId,
+              userName: buyer?.profile?.firstName || '',
+              userEmail: buyer?.email || ''
+            }).catch(() => {});
             console.log(`Course ${courseId} purchased by user ${userId}`);
           }
           break;
         }
-        
+
         // Handle subscription purchase
         if (userId && plan) {
           await User.findByIdAndUpdate(userId, {
@@ -590,6 +606,16 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
             'subscription.currentPeriodStart': new Date(),
             'subscription.currentPeriodEnd': new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
           });
+          const subscriber = await User.findById(userId).select('email profile.firstName');
+          logActivity(ACTIVITY_TYPES.PAYMENT_SUCCEEDED, {
+            plan,
+            amount: session.amount_total,
+            type: 'subscription'
+          }, {
+            userId,
+            userName: subscriber?.profile?.firstName || '',
+            userEmail: subscriber?.email || ''
+          }).catch(() => {});
           console.log(`Subscription activated for user ${userId}: ${plan}`);
         }
         break;

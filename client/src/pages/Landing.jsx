@@ -1,3 +1,8 @@
+/**
+ * Copyright (c) 2026 CounselorReady, a subsidiary of Ga Integrated Therapeutic Perspectives, LLC.
+ * All rights reserved. Proprietary and confidential.
+ * Unauthorized copying or distribution is strictly prohibited.
+ */
 import { Link } from 'react-router-dom';
 
 export default function Landing() {
@@ -22,7 +27,7 @@ export default function Landing() {
       <header style={{ borderBottom: '1px solid #d5e1d7', background: 'rgba(255,255,255,0.8)', backdropFilter: 'blur(8px)', position: 'sticky', top: 0, zIndex: 50 }}>
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #8b2542, #6b1d34)', boxShadow: '0 4px 12px rgba(107,29,52,0.3)' }}>
+            <div className="w-11 h-11 rounded-xl flex items-center justify-center" style={{ background: '#6B1D34', boxShadow: '0 4px 12px rgba(107,29,52,0.3)' }}>
               <span style={{ position: 'relative', display: 'inline-block', width: 28, height: 28 }}>
                 <span style={{ color: '#D4A855', position: 'absolute', top: -4, left: 0, fontFamily: "'Cormorant Garamond', Georgia, serif", fontWeight: 700, fontSize: 20 }}>C</span>
                 <span style={{ color: '#4A7C59', position: 'absolute', top: 6, left: 8, fontFamily: "'Cormorant Garamond', Georgia, serif", fontWeight: 700, fontSize: 16 }}>R</span>
@@ -39,7 +44,7 @@ export default function Landing() {
           </nav>
           <div className="flex items-center gap-4">
             <Link to="/login" style={{ color: '#355E3B' }} className="text-sm font-medium hover:opacity-70 transition-opacity">Sign in</Link>
-            <Link to="/register" className="text-white text-sm font-medium px-5 py-2 rounded-lg hover:opacity-90 transition-opacity" style={{ background: 'linear-gradient(to right, #355E3B, #4A7C59)' }}>
+            <Link to="/register" className="text-white text-sm font-medium px-5 py-2 rounded-lg hover:opacity-90 transition-opacity" style={{ background: '#4A7C59' }}>
               Start Free Trial
             </Link>
           </div>
@@ -48,7 +53,7 @@ export default function Landing() {
 
       {/* ── HERO ── */}
       <section className="relative py-24 px-4 overflow-hidden">
-        <div className="absolute inset-0" style={{ background: 'linear-gradient(135deg, #fafaf9 0%, rgba(250,232,235,0.3) 50%, rgba(234,240,235,0.2) 100%)' }}></div>
+        <div className="absolute inset-0" style={{ background: '#fafaf9' }}></div>
         <div className="absolute top-20 right-10 w-72 h-72 rounded-full blur-3xl" style={{ background: 'rgba(212,168,85,0.15)' }}></div>
         <div className="absolute bottom-10 left-10 w-96 h-96 rounded-full blur-3xl" style={{ background: 'rgba(56,170,246,0.1)' }}></div>
         <div className="absolute top-32 left-20 w-2 h-2 rounded-full float-animation" style={{ background: '#D4A855' }}></div>
@@ -62,7 +67,7 @@ export default function Landing() {
 
           <h1 className="mb-6 leading-tight" style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 'clamp(2.5rem, 6vw, 4.5rem)', fontWeight: 600, color: '#2d0a14' }}>
             Your CE Credits.<br />
-            <span style={{ background: 'linear-gradient(to right, #355E3B, #4A7C59)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+            <span style={{ color: '#4A7C59' }}>
               Finally Organized.
             </span>
           </h1>
@@ -72,7 +77,7 @@ export default function Landing() {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <Link to="/register" className="group text-white text-lg font-medium px-8 py-4 rounded-xl flex items-center gap-3 transition-all" style={{ background: 'linear-gradient(to right, #8b2542, #6b1d34)', boxShadow: '0 20px 40px rgba(107,29,52,0.25)' }}>
+            <Link to="/register" className="group text-white text-lg font-medium px-8 py-4 rounded-xl flex items-center gap-3 transition-all" style={{ background: '#6B1D34', boxShadow: '0 20px 40px rgba(107,29,52,0.25)' }}>
               Start 7-Day Free Trial
               <svg className="w-5 h-5" style={{ transition: 'transform 0.2s' }} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
             </Link>
@@ -100,10 +105,10 @@ export default function Landing() {
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[
-              { label: 'Courses', sub: 'ACEP #7760', bg: 'linear-gradient(135deg, #8b2542, #6b1d34)', textColor: '#fae8eb', icon: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /> },
-              { label: 'Tracker', sub: 'Multi-state tracking', bg: 'linear-gradient(135deg, #355E3B, #2D4F33)', textColor: '#d5e1d7', icon: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /> },
-              { label: 'Storage', sub: 'Certificate vault', bg: 'linear-gradient(135deg, #284157, #2c3e50)', textColor: '#cbd5e1', icon: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" /> },
-              { label: 'Audit Ready', sub: 'One-click packages', bg: 'linear-gradient(135deg, #c49545, #D4A855)', textColor: '#4a1524', icon: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /> },
+              { label: 'Courses', sub: 'ACEP #7760', bg: '#6B1D34', textColor: '#fae8eb', icon: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /> },
+              { label: 'Tracker', sub: 'Multi-state tracking', bg: '#355E3B', textColor: '#d5e1d7', icon: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /> },
+              { label: 'Storage', sub: 'Certificate vault', bg: '#284157', textColor: '#cbd5e1', icon: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" /> },
+              { label: 'Audit Ready', sub: 'One-click packages', bg: '#D4A855', textColor: '#4a1524', icon: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /> },
             ].map((item) => (
               <div key={item.label} className="card-hover" style={{ background: item.bg, borderRadius: '1rem', padding: '1.5rem', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', aspectRatio: '1', cursor: 'pointer' }}>
                 <div style={{ width: 64, height: 64, background: 'rgba(255,255,255,0.12)', borderRadius: '0.75rem', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1rem' }}>
@@ -118,9 +123,9 @@ export default function Landing() {
       </section>
 
       {/* ── STATS ── */}
-      <section className="py-20 px-4 relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #4a1524 0%, #6b1d34 50%, #1F3825 100%)' }}>
+      <section className="py-20 px-4 relative overflow-hidden" style={{ background: '#6B1D34' }}>
         <div className="bg-texture absolute inset-0 opacity-5"></div>
-        <div className="absolute top-0 left-0 right-0 h-1" style={{ background: 'linear-gradient(to right, #D4A855, #38aaf6, #D4A855)' }}></div>
+        <div className="absolute top-0 left-0 right-0 h-1" style={{ background: '#D4A855' }}></div>
         <div className="max-w-6xl mx-auto relative z-10 grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
           {[['50', 'States Supported'], ['24/7', 'Access Anytime'], ['100%', 'Online Courses'], ['Free', '7-Day Trial']].map(([num, label]) => (
             <div key={label} className="p-6">
@@ -207,9 +212,9 @@ export default function Landing() {
             </div>
 
             {/* VIP */}
-            <div className="relative rounded-2xl p-6 text-white shadow-2xl card-hover overflow-hidden" style={{ background: 'linear-gradient(135deg, #6b1d34, #8b2542, #1F3825)' }}>
+            <div className="relative rounded-2xl p-6 text-white shadow-2xl card-hover overflow-hidden" style={{ background: '#6B1D34' }}>
               <div className="bg-texture absolute inset-0 opacity-5"></div>
-              <div className="absolute top-0 left-0 right-0 h-1" style={{ background: 'linear-gradient(to right, #D4A855, #4A7C59)' }}></div>
+              <div className="absolute top-0 left-0 right-0 h-1" style={{ background: '#D4A855' }}></div>
               <div className="relative z-10">
                 <div className="font-medium uppercase text-sm tracking-wide mb-3" style={{ color: '#D4A855' }}>VIP</div>
                 <div className="flex items-baseline gap-1 mb-2">
@@ -254,9 +259,9 @@ export default function Landing() {
       </section>
 
       {/* ── CTA ── */}
-      <section className="py-24 px-4 relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #2D4F33, #355E3B, #6b1d34)' }}>
+      <section className="py-24 px-4 relative overflow-hidden" style={{ background: '#355E3B' }}>
         <div className="bg-texture absolute inset-0 opacity-5"></div>
-        <div className="absolute bottom-0 left-0 right-0 h-1" style={{ background: 'linear-gradient(to right, #D4A855, #38aaf6, #D4A855)' }}></div>
+        <div className="absolute bottom-0 left-0 right-0 h-1" style={{ background: '#D4A855' }}></div>
         <div className="max-w-3xl mx-auto text-center relative z-10">
           <h2 className="mb-4" style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 'clamp(1.75rem, 4vw, 2.5rem)', fontWeight: 600, color: 'white' }}>
             Ready to simplify your CE tracking?
@@ -276,7 +281,7 @@ export default function Landing() {
         <div className="max-w-6xl mx-auto">
           <div className="flex flex-col md:flex-row justify-between items-center gap-8 mb-8">
             <div className="flex items-center gap-3">
-              <div className="w-11 h-11 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #8b2542, #6b1d34)' }}>
+              <div className="w-11 h-11 rounded-xl flex items-center justify-center" style={{ background: '#6B1D34' }}>
                 <span style={{ position: 'relative', display: 'inline-block', width: 28, height: 28 }}>
                   <span style={{ color: '#D4A855', position: 'absolute', top: -4, left: 0, fontFamily: "'Cormorant Garamond', Georgia, serif", fontWeight: 700, fontSize: 20 }}>C</span>
                   <span style={{ color: '#4A7C59', position: 'absolute', top: 6, left: 8, fontFamily: "'Cormorant Garamond', Georgia, serif", fontWeight: 700, fontSize: 16 }}>R</span>

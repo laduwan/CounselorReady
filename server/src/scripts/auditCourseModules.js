@@ -1,3 +1,8 @@
+/**
+ * Copyright (c) 2026 CounselorReady, a subsidiary of Ga Integrated Therapeutic Perspectives, LLC.
+ * All rights reserved. Proprietary and confidential.
+ * Unauthorized copying or distribution is strictly prohibited.
+ */
 // auditCourseModules.js - Show word count per module for the 4 "Nearly There" courses
 // Run: node src/scripts/auditCourseModules.js
 

@@ -1,3 +1,8 @@
+/**
+ * Copyright (c) 2026 CounselorReady, a subsidiary of Ga Integrated Therapeutic Perspectives, LLC.
+ * All rights reserved. Proprietary and confidential.
+ * Unauthorized copying or distribution is strictly prohibited.
+ */
 // reseedFromMarkdown_v3.js — Uses updateOne/$set (proven to work) instead of save()
 // Run: node src/scripts/reseedFromMarkdown_v3.js
 
@@ -6,6 +11,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
+import { compareWordCounts } from '../utils/contentValidator.js';
 dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
@@ -13,46 +19,127 @@ const __dirname = path.dirname(__filename);
 const MONGO_URI = process.env.MONGODB_URI || process.env.MONGO_URI;
 
 function markdownToHtml(md) {
+  if (!md) return '';
   const lines = md.split('\n');
   const result = [];
-  for (const raw of lines) {
-    const line = raw.trim();
-    if (!line || line === '---') continue;
-    if (line.startsWith('#### ')) {
-      result.push(`<h4>${line.substring(5)}</h4>`);
-    } else if (line.startsWith('### ')) {
-      result.push(`<h3>${line.substring(4)}</h3>`);
-    } else if (line.startsWith('## ')) {
-      result.push(`<h3>${line.substring(3)}</h3>`);
-    } else if (line.startsWith('# ')) {
-      result.push(`<h2>${line.substring(2)}</h2>`);
-    } else if (line.startsWith('- ') || line.startsWith('* ')) {
-      let item = line.substring(2);
-      item = item.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-      item = item.replace(/\*(.+?)\*/g, '<em>$1</em>');
-      result.push(`<p>• ${item}</p>`);
-    } else if (line.startsWith('> ')) {
-      let quote = line.substring(2);
-      quote = quote.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-      quote = quote.replace(/\*(.+?)\*/g, '<em>$1</em>');
-      result.push(`<blockquote><p>${quote}</p></blockquote>`);
-    } else if (/^\|/.test(line)) {
-      if (!/^\|[-\s|:]+\|$/.test(line)) {
-        const cells = line.split('|').filter(c => c.trim()).map(c => c.trim()).join(' | ');
-        result.push(`<p>${cells}</p>`);
-      }
-    } else if (/^\d+\./.test(line)) {
-      let item = line;
-      item = item.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-      item = item.replace(/\*(.+?)\*/g, '<em>$1</em>');
-      result.push(`<p>${item}</p>`);
-    } else {
-      let p = line;
-      p = p.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-      p = p.replace(/\*(.+?)\*/g, '<em>$1</em>');
-      result.push(`<p>${p}</p>`);
+  let inTable = false;
+  let tableRows = [];
+  let inList = false;
+  let listType = null; // 'ul' or 'ol'
+  let listItems = [];
+
+  function flushList() {
+    if (inList && listItems.length > 0) {
+      const tag = listType || 'ul';
+      result.push(`<${tag}>${listItems.join('')}</${tag}>`);
+      listItems = [];
+      inList = false;
+      listType = null;
     }
   }
+
+  function flushTable() {
+    if (inTable && tableRows.length > 0) {
+      let tableHtml = '<table style="width:100%;border-collapse:collapse;margin:12px 0;">';
+      tableRows.forEach((row, idx) => {
+        const cells = row.split('|').filter(c => c.trim());
+        if (idx === 0) {
+          tableHtml += '<thead><tr>' + cells.map(c => `<th>${applyInline(c.trim())}</th>`).join('') + '</tr></thead><tbody>';
+        } else {
+          tableHtml += '<tr>' + cells.map(c => `<td>${applyInline(c.trim())}</td>`).join('') + '</tr>';
+        }
+      });
+      tableHtml += '</tbody></table>';
+      result.push(tableHtml);
+      tableRows = [];
+      inTable = false;
+    }
+  }
+
+  function applyInline(text) {
+    return text
+      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+      .replace(/(?<![a-zA-Z:\/])\*([^*\n]+)\*(?![a-zA-Z])/g, '<em>$1</em>')
+      .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>');
+  }
+
+  for (let i = 0; i < lines.length; i++) {
+    const raw = lines[i];
+    const line = raw.trim();
+
+    // Preserve empty lines as paragraph breaks (don't skip them)
+    if (!line) {
+      flushList();
+      flushTable();
+      continue;
+    }
+
+    // Horizontal rules — preserve as visual separator
+    if (/^---+$/.test(line)) {
+      flushList();
+      flushTable();
+      result.push('<hr/>');
+      continue;
+    }
+
+    // Table rows
+    if (/^\|/.test(line)) {
+      flushList();
+      // Skip separator rows (|---|---|)
+      if (/^\|[-\s|:]+\|$/.test(line)) {
+        continue;
+      }
+      inTable = true;
+      tableRows.push(line);
+      continue;
+    } else if (inTable) {
+      flushTable();
+    }
+
+    // Headings
+    if (line.startsWith('#### ')) {
+      flushList();
+      result.push(`<h4>${applyInline(line.substring(5))}</h4>`);
+    } else if (line.startsWith('### ')) {
+      flushList();
+      result.push(`<h3>${applyInline(line.substring(4))}</h3>`);
+    } else if (line.startsWith('## ')) {
+      flushList();
+      result.push(`<h2>${applyInline(line.substring(3))}</h2>`);
+    } else if (line.startsWith('# ')) {
+      flushList();
+      result.push(`<h2>${applyInline(line.substring(2))}</h2>`);
+    }
+    // Bullet lists — collect into proper <ul>
+    else if (line.startsWith('- ') || line.startsWith('* ')) {
+      if (!inList || listType !== 'ul') { flushList(); inList = true; listType = 'ul'; }
+      listItems.push(`<li>${applyInline(line.substring(2))}</li>`);
+    }
+    // Numbered lists — collect into proper <ol>
+    else if (/^\d+\.\s/.test(line)) {
+      if (!inList || listType !== 'ol') { flushList(); inList = true; listType = 'ol'; }
+      const content = line.replace(/^\d+\.\s+/, '');
+      listItems.push(`<li>${applyInline(content)}</li>`);
+    }
+    // Blockquotes
+    else if (line.startsWith('> ')) {
+      flushList();
+      result.push(`<blockquote><p>${applyInline(line.substring(2))}</p></blockquote>`);
+    }
+    // APA reference entries — preserve with cr-reference class
+    else if (/^[A-Z][a-z]+,\s+[A-Z]/.test(line) && /\(\d{4}\)/.test(line)) {
+      flushList();
+      result.push(`<p class="cr-reference">${applyInline(line)}</p>`);
+    }
+    // Regular paragraph
+    else {
+      flushList();
+      result.push(`<p>${applyInline(line)}</p>`);
+    }
+  }
+
+  flushList();
+  flushTable();
   return result.join('\n');
 }
 
@@ -212,6 +299,15 @@ async function run() {
       for (const l of m.lessons) afterWords += countWords(l.content);
     }
     totalAfter += afterWords;
+
+    // Content preservation check — refuse to save if significant content loss
+    const comparison = compareWordCounts(fileWords, afterWords, existing.title);
+    if (!comparison.ok) {
+      console.log(`  ⚠️  ${comparison.message}`);
+      console.log(`  ⚠️  SKIPPING DB UPDATE — pipeline would strip content. Review markdownToHtml.`);
+      console.log('');
+      continue;
+    }
 
     // Use updateOne with $set — this is what works
     const result = await db.collection('courses').updateOne(

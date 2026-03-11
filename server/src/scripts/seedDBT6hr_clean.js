@@ -1,3 +1,8 @@
+/**
+ * Copyright (c) 2026 CounselorReady, a subsidiary of Ga Integrated Therapeutic Perspectives, LLC.
+ * All rights reserved. Proprietary and confidential.
+ * Unauthorized copying or distribution is strictly prohibited.
+ */
 #!/usr/bin/env node
 /**
  * seedDBT6hr_clean.js
@@ -141,7 +146,7 @@ const courseData = {
         // ─── Text: Overview ────────────────────────────────
         {
           type: "text",
-          content: `<h3>A Multi-Modal Treatment System</h3>
+          content: `<h2>A Multi-Modal Treatment System</h2>
 <p>Comprehensive DBT is not a single intervention; it is an integrated treatment system composed of four distinct but interdependent components. Each component serves a specific therapeutic function, and the model was designed so that the components work together synergistically to address the complex needs of clients with pervasive emotion dysregulation. Understanding the role of each component is essential even for clinicians who plan to implement only DBT-informed interventions, because it illuminates the therapeutic logic behind the full model and helps clinicians identify which elements may be most beneficial for their specific practice contexts.</p>
 <p>Standard comprehensive DBT was originally designed as a one-year outpatient treatment program, though the duration may be extended based on clinical need. During this year, clients typically attend weekly individual therapy sessions (approximately 50–60 minutes), weekly group skills training sessions (approximately 2–2.5 hours), and have access to between-session phone coaching with their individual therapist. Simultaneously, therapists participate in a weekly consultation team meeting. This level of treatment intensity reflects Linehan's recognition that clients with severe emotion dysregulation need more than a single weekly therapy hour to acquire, practice, and generalize new behavioral skills.</p>`,
           accessibility: { role: "article", ariaLabel: "Overview of comprehensive DBT structure" }
@@ -150,7 +155,7 @@ const courseData = {
         // ─── Text: Component 1 — Individual Therapy ────────
         {
           type: "text",
-          content: `<h3>Component 1: Individual Therapy</h3>
+          content: `<h2>Component 1: Individual Therapy</h2>
 <p>Individual therapy is the primary arena for applying DBT skills to the specific problems in a client's life. Unlike some therapeutic approaches where the content of sessions is driven primarily by what the client wants to discuss, DBT individual therapy follows a structured hierarchy of treatment targets. This hierarchy ensures that the most dangerous and life-threatening behaviors are addressed first, followed by therapy-interfering behaviors, followed by quality-of-life-interfering behaviors, and finally by the acquisition of behavioral skills.</p>
 <p>The treatment target hierarchy in standard DBT is organized as follows. The first priority is always life-threatening behaviors, including suicidal ideation, suicide attempts, self-harm, and homicidal ideation or behavior. If a client has engaged in or is at imminent risk of life-threatening behavior, this becomes the focus of the session regardless of what other issues the client or therapist might prefer to discuss. The second priority is therapy-interfering behaviors—actions by either the client or the therapist that undermine the therapeutic process. For the client, this might include missing sessions, coming late, not completing homework assignments, or behaving in ways that push the therapist toward burnout. For the therapist, this might include being late, being unprepared, or failing to return phone calls. The third priority is quality-of-life-interfering behaviors, such as substance use, financial mismanagement, unsafe sexual behavior, housing instability, or other patterns that prevent the client from building a life worth living. The fourth priority is increasing behavioral skills—helping the client apply the skills learned in group training to their daily life.</p>
 <p>Within each session, the DBT individual therapist uses a structured tool called the diary card to identify which treatment targets are active. The diary card is a daily self-monitoring form that clients complete between sessions, tracking emotions, urges (including urges to self-harm or use substances), specific target behaviors, and use of DBT skills. Reviewing the diary card at the beginning of each session allows the therapist and client to quickly identify the highest-priority targets and ensures that treatment stays focused and goal-directed rather than drifting into less critical material.</p>
@@ -161,7 +166,7 @@ const courseData = {
         // ─── Text: Component 2 — Group Skills Training ─────
         {
           type: "text",
-          content: `<h3>Component 2: Group Skills Training</h3>
+          content: `<h2>Component 2: Group Skills Training</h2>
 <p>Group skills training is the educational component of DBT. It functions more like a class than traditional group therapy. The skills training group is typically led by two co-facilitators and meets weekly for approximately 2 to 2.5 hours. Over the course of the treatment year, the group cycles through the four core skill modules: Mindfulness (taught at the beginning of each module cycle), Distress Tolerance, Emotion Regulation, and Interpersonal Effectiveness.</p>
 <p>The distinction between skills training and group therapy is important. In traditional group therapy, members process emotions, share experiences, provide feedback to one another, and develop interpersonal insight through group dynamics. In DBT skills training, the primary focus is on teaching specific behavioral skills through instruction, modeling, role-play, and homework assignments. While group leaders certainly create a validating and supportive atmosphere, the group is not designed as a space for extensive processing of individual members' personal crises. If a group member is in crisis, the group leaders will briefly validate and redirect, encouraging the member to address the crisis with their individual therapist.</p>
 <p>Each skill module is structured with clear learning objectives, practice exercises, and between-session homework assignments. Homework is a critical component of skills training because behavioral skills cannot be learned through instruction alone—they must be practiced in real-world contexts. Group members are expected to practice assigned skills between sessions and report on their practice at the beginning of the next group meeting.</p>`,
@@ -171,11 +176,11 @@ const courseData = {
         // ─── Text: Components 3 & 4 ───────────────────────
         {
           type: "text",
-          content: `<h3>Component 3: Phone Coaching</h3>
+          content: `<h2>Component 3: Phone Coaching</h2>
 <p>Phone coaching is perhaps the most misunderstood component of comprehensive DBT. It is not crisis counseling, and it is not between-session therapy. Phone coaching is a brief, focused intervention designed to help clients apply DBT skills in the moment when they need them most—during real-life situations that trigger urges toward self-destructive behavior or emotional overwhelm.</p>
 <p>The purpose of phone coaching is skills generalization. A typical phone coaching call lasts 5 to 15 minutes and follows a structured format: the client describes the situation, the therapist helps the client identify which skill to use, the client practices or commits to practicing the skill, and the call ends.</p>
 <p>An important clinical rule in DBT phone coaching is the 24-hour rule: if a client has engaged in self-harm or other target behaviors, they must wait 24 hours before contacting the therapist for phone coaching. This rule exists to avoid inadvertently reinforcing self-destructive behavior with therapeutic attention. The rule does not apply to genuine suicidal crises, which always warrant immediate contact.</p>
-<h3>Component 4: Therapist Consultation Team</h3>
+<h2>Component 4: Therapist Consultation Team</h2>
 <p>The therapist consultation team is often the least discussed but arguably the most innovative component of comprehensive DBT. It is the component that treats the therapist, not the client. Linehan recognized early in her work that treating chronically suicidal, emotionally intense, and interpersonally demanding clients takes an enormous toll on therapists. Without systematic support, clinicians working with this population are at high risk for burnout, compassion fatigue, loss of therapeutic effectiveness, and ultimately dropping out of the work altogether.</p>
 <p>The consultation team meets weekly, typically for one to two hours, and consists of all therapists within a DBT program. It provides clinical case consultation, emotional support, fidelity monitoring, and burnout prevention. The team operates under agreements that mirror the dialectical stance: accept a dialectical philosophy, maintain a nonjudgmental stance, adopt the agreement that all members are doing the best they can and simultaneously need to do better, and search for the grain of truth in each perspective.</p>`,
           accessibility: { role: "article", ariaLabel: "Components 3 and 4: Phone Coaching and Consultation Team" }
@@ -275,7 +280,7 @@ const courseData = {
         // ─── Section Summary ───────────────────────────────
         {
           type: "text",
-          content: `<h3>Module Summary</h3>
+          content: `<h2>Module Summary</h2>
 <p>In this module, you examined the four components of comprehensive DBT and the specific therapeutic function each one serves. Individual therapy provides a structured, hierarchy-driven space for applying skills to personal targets. Group skills training teaches the four core skill modules through an educational format. Phone coaching bridges the gap between learning skills and applying them in real-world crises. The therapist consultation team sustains the effectiveness and well-being of the professionals delivering treatment. You also explored key differences between DBT and standard CBT, deepening your understanding of when and why a DBT-informed approach may be clinically indicated.</p>`,
           accessibility: { role: "article", ariaLabel: "Module 1 summary" }
         }
@@ -313,7 +318,7 @@ const courseData = {
         // ─── Text: Evidence Base ───────────────────────────
         {
           type: "text",
-          content: `<h3>The Evidence Base for DBT</h3>
+          content: `<h2>The Evidence Base for DBT</h2>
 <p>DBT is among the most extensively researched psychotherapeutic approaches in the mental health field. Over three decades of research have produced a substantial body of evidence supporting its efficacy across multiple clinical populations and treatment settings. As clinicians committed to evidence-based practice, it is essential to understand both the strengths and the boundaries of this evidence.</p>
 <p>The strongest evidence for DBT exists in the treatment of Borderline Personality Disorder. Multiple randomized controlled trials (RCTs) have demonstrated that DBT, compared to treatment as usual, significantly reduces the frequency and severity of self-harm and suicide attempts, decreases psychiatric hospitalizations, reduces treatment dropout rates, decreases depression and hopelessness, and improves overall social and global functioning. Linehan's original 1991 RCT, along with subsequent replications by independent research groups (Verheul et al., 2003; Linehan et al., 2006; McMain et al., 2009), established DBT as the gold standard treatment for BPD with chronic suicidality.</p>
 <p>Beyond BPD, DBT has accumulated promising evidence for the treatment of several other conditions. DBT has been adapted for eating disorders (DBT-ED), with research showing reductions in binge eating, purging, and restrictive eating behaviors. Adaptations for substance use disorders (DBT-SUD) have demonstrated reductions in substance use when combined with standard substance abuse treatment. Research on DBT for depression, including treatment-resistant depression, has shown improvements in depressive symptoms and emotion regulation capacity. Studies on DBT for PTSD have been conducted, often integrating prolonged exposure within the DBT framework (DBT-PE). Preliminary evidence also supports DBT adaptations for adolescents (DBT-A), older adults, individuals with ADHD, and clients with intellectual disabilities.</p>
@@ -360,7 +365,7 @@ const courseData = {
         // ─── Text: Integration Strategies ──────────────────
         {
           type: "text",
-          content: `<h3>Integrating DBT-Informed Strategies Into Your Practice</h3>
+          content: `<h2>Integrating DBT-Informed Strategies Into Your Practice</h2>
 <p>Given the limitations described above, many clinicians will choose to integrate specific DBT strategies into their existing practice rather than implementing the full comprehensive model. This is a legitimate and often appropriate clinical decision, provided it is done thoughtfully, transparently, and with awareness of the distinction between comprehensive DBT and DBT-informed practice.</p>
 <p>When integrating DBT-informed strategies, consider focusing on the skills most relevant to your client population. If you work primarily with anxiety, the mindfulness and distress tolerance modules may be most immediately applicable. If your clients struggle with chronic interpersonal conflict, the interpersonal effectiveness skills may be the most valuable starting point. If emotion dysregulation is pervasive, a thorough grounding in all four modules will serve you best.</p>
 <p>Practical steps for integration include: incorporating diary cards or simplified mood tracking tools into your practice; teaching TIPP skills as a first-line intervention for clients in acute distress; using the Check the Facts and Opposite Action framework to enhance cognitive-behavioral work; introducing radical acceptance language for clients struggling with grief, loss, or unchangeable circumstances; using DEAR MAN role-plays to prepare clients for difficult interpersonal conversations; and adopting the dialectical stance of balancing validation with change in all therapeutic interactions.</p>
@@ -436,7 +441,7 @@ const courseData = {
         // ─── Module Summary ────────────────────────────────
         {
           type: "text",
-          content: `<h3>Module Summary and Course Conclusion</h3>
+          content: `<h2>Module Summary and Course Conclusion</h2>
 <p>In this module, you examined the evidence base supporting DBT across multiple clinical populations, with particular attention to the distinction between robust evidence for BPD and more preliminary evidence for other conditions. You engaged with seven specific limitations and criticisms of DBT, including resource intensity, cultural limitations, sample diversity concerns, fidelity drift, diagnostic stigma, client burden, and therapist sustainability. You also explored practical strategies for integrating DBT-informed skills into your existing practice.</p>
 <p>As you move forward, remember that the most fundamental contribution of DBT to the mental health field may not be any single technique or skill module, but rather the dialectical stance itself: the simultaneous embrace of acceptance and change, the refusal to choose between validating your client's pain and pushing for meaningful behavioral progress.</p>
 <p>You are now prepared to proceed to the final assessment. The assessment consists of 20 questions covering material from all course modules. A score of 80% or higher is required to pass, and you have up to 3 attempts. Upon passing, you will complete the required course evaluation and attestation before receiving your certificate of completion.</p>`,
@@ -477,7 +482,7 @@ const courseData = {
         // ─── Intro Text ───────────────────────────────────
         {
           type: "text",
-          content: `<h3>DBT Glossary of Key Terms</h3>
+          content: `<h2>DBT Glossary of Key Terms</h2>
 <p>The following glossary contains 35 essential DBT terms organized alphabetically. Expand each panel to review the definition. You must expand all panels to complete this section. Following the glossary, you will complete a scenario-based matching exercise that tests your ability to apply the correct DBT skill to clinical situations across all four modules.</p>`,
           accessibility: { role: "article", ariaLabel: "Glossary introduction" }
         },
@@ -657,7 +662,7 @@ const courseData = {
         // ─── Text: Matching Exercise Intro ─────────────────
         {
           type: "text",
-          content: `<h3>"Which Skill Would You Use?"</h3>
+          content: `<h2>"Which Skill Would You Use?"</h2>
 <p>This exercise presents 12 clinical scenarios and asks you to identify the most appropriate DBT skill or skill set for each situation. Each scenario draws from real-world clinical presentations. Read each scenario carefully, consider the client's specific needs in that moment, and select the best-fit skill from the options provided.</p>`,
           accessibility: { role: "article", ariaLabel: "Clinical matching exercise introduction" }
         },

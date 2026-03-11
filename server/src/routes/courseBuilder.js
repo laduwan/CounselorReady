@@ -1,4 +1,9 @@
 /**
+ * Copyright (c) 2026 CounselorReady, a subsidiary of Ga Integrated Therapeutic Perspectives, LLC.
+ * All rights reserved. Proprietary and confidential.
+ * Unauthorized copying or distribution is strictly prohibited.
+ */
+/**
  * courseBuilder.js - AI Course Builder API Routes
  * 
  * Generates ACEP-compliant CE courses using Anthropic Claude API
@@ -681,9 +686,17 @@ router.post('/save', protect, adminOnly, async (req, res) => {
   try {
     const courseData = req.body;
     const Course = (await import('../models/Course.js')).default;
-    
+
     delete courseData._wordCount;
     delete courseData._requiredWords;
+
+    // Handle ACEP override — allow publishing without ACEP provider
+    if (courseData.acepOverride) {
+      delete courseData.acepProvider;
+      courseData.ceProvider = courseData.ceProvider || null;
+      courseData.acepNumber = courseData.acepNumber || null;
+    }
+    delete courseData.acepOverride;
 
     let existing = await Course.findOne({ slug: courseData.slug });
     

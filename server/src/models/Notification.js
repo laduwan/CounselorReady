@@ -1,3 +1,8 @@
+/**
+ * Copyright (c) 2026 CounselorReady, a subsidiary of Ga Integrated Therapeutic Perspectives, LLC.
+ * All rights reserved. Proprietary and confidential.
+ * Unauthorized copying or distribution is strictly prohibited.
+ */
 import mongoose from 'mongoose';
 
 const notificationSchema = new mongoose.Schema({
@@ -9,7 +14,7 @@ const notificationSchema = new mongoose.Schema({
   },
   type: {
     type: String,
-    enum: ['credential_expiring', 'ce_reminder', 'course_completed', 'system', 'welcome'],
+    enum: ['credential_expiring', 'ce_reminder', 'course_completed', 'system', 'welcome', 'info', 'badge_earned', 'referral', 'supervision'],
     required: true
   },
   title: {
@@ -43,6 +48,12 @@ const notificationSchema = new mongoose.Schema({
   },
   actionUrl: {
     type: String
+  },
+  link: {
+    type: String
+  },
+  readAt: {
+    type: Date
   },
   metadata: {
     type: mongoose.Schema.Types.Mixed

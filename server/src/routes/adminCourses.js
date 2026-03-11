@@ -1,3 +1,8 @@
+/**
+ * Copyright (c) 2026 CounselorReady, a subsidiary of Ga Integrated Therapeutic Perspectives, LLC.
+ * All rights reserved. Proprietary and confidential.
+ * Unauthorized copying or distribution is strictly prohibited.
+ */
 // adminCourses.js — Admin course management, credentials, broadcasts, enrollments
 import express from 'express';
 import multer from 'multer';
@@ -930,7 +935,7 @@ router.get('/enrollments/search', protect, adminOnly, async (req, res) => {
 router.get('/courses', protect, adminOnly, async (req, res) => {
   try {
     const courses = await Course.find()
-      .select('title slug category ceuHours ceHours status enrollmentCount createdAt isExternal externalUrl importType source wordCount moduleCount price ceuCategories modules')
+      .select('title slug category ceuHours ceHours status enrollmentCount createdAt isExternal externalUrl importType source wordCount moduleCount price ceuCategories modules courseCode')
       .sort({ createdAt: -1 })
       .lean();
 

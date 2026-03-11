@@ -1,3 +1,8 @@
+/**
+ * Copyright (c) 2026 CounselorReady, a subsidiary of Ga Integrated Therapeutic Perspectives, LLC.
+ * All rights reserved. Proprietary and confidential.
+ * Unauthorized copying or distribution is strictly prohibited.
+ */
 // DROP INTO: /client/src/components/InteractiveCourseComponents.jsx
 // CounselorReady Brand: Burgundy #6B1D34 | Green #4A7C59 | Gold #D4A855 | Navy #284157
 // ALL 16 LEARNER BLOCK TYPES
@@ -118,19 +123,22 @@ export function MatchingExercise({ pairs, instructions = "Drag each term to its 
   const avail = terms.filter(t => !used.includes(t.id));
 
   return (
-    <div style={{ background: B.card, borderRadius: 16, border: `1px solid ${B.border}`, overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
-      <div style={{ background: `linear-gradient(135deg, ${B.green}, ${B.greenLt})`, padding: '16px 24px' }}>
-        <h3 style={{ color: '#fff', fontWeight: 700, fontSize: 17, margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}><GripVertical size={20} /> Matching Exercise</h3>
-        <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: 13, marginTop: 4 }}>{instructions}</p>
-      </div>
-      <div style={{ padding: 24 }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
+    <div style={{ background: B.burgundyBg, borderRadius: 16, borderLeft: `4px solid ${B.burgundy}`, overflow: 'hidden', margin: '24px 0' }}>
+      <div style={{ padding: '20px 24px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
+          <div style={{ width: 28, height: 28, borderRadius: '50%', background: B.burgundy, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <GripVertical size={14} style={{ color: '#fff' }} />
+          </div>
+          <span style={{ fontSize: 13, fontWeight: 700, color: B.burgundy, letterSpacing: '0.02em' }}>Check Your Understanding</span>
+        </div>
+        <p style={{ fontSize: 14, color: B.muted, marginBottom: 20, marginLeft: 38 }}>{instructions}</p>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, background: B.card, borderRadius: 12, padding: 20, border: `1px solid ${B.border}` }}>
           <div>
-            <h4 style={{ fontWeight: 600, color: B.navy, marginBottom: 12, fontSize: 14 }}>Terms</h4>
+            <h4 style={{ fontWeight: 700, color: B.navy, marginBottom: 10, fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Terms</h4>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {avail.map(t => (
                 <div key={t.id} draggable={!done} onDragStart={(e) => { setDragged(t); e.dataTransfer.effectAllowed = 'move'; }}
-                  style={{ padding: '12px 16px', background: B.greenBg, border: `2px solid ${B.green}33`, borderRadius: 10, cursor: done ? 'default' : 'grab', fontWeight: 500, color: B.green, fontSize: 14, opacity: done ? 0.5 : 1 }}>
+                  style={{ padding: '10px 14px', background: B.greenBg, border: `2px solid ${B.green}44`, borderRadius: 10, cursor: done ? 'default' : 'grab', fontWeight: 600, color: B.green, fontSize: 14, opacity: done ? 0.5 : 1, transition: 'box-shadow 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
                   {t.term}
                 </div>
               ))}
@@ -138,18 +146,18 @@ export function MatchingExercise({ pairs, instructions = "Drag each term to its 
             </div>
           </div>
           <div>
-            <h4 style={{ fontWeight: 600, color: B.navy, marginBottom: 12, fontSize: 14 }}>Definitions</h4>
+            <h4 style={{ fontWeight: 700, color: B.navy, marginBottom: 10, fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Definitions</h4>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {defs.map(d => {
                 const m = matches[d.id]; const ok = show && m?.term === d.term; const bad = show && m && m.term !== d.term;
                 return (
                   <div key={d.id} onDragOver={(e) => e.preventDefault()} onDrop={(e) => { e.preventDefault(); if (dragged && !matches[d.id]) setMatches(p => ({ ...p, [d.id]: dragged })); setDragged(null); }}
-                    style={{ minHeight: 60, padding: '12px 16px', borderRadius: 10, border: `2px dashed ${m ? (ok ? B.ok : bad ? B.err : B.gold) : B.border}`, background: m ? (ok ? B.okBg : bad ? B.errBg : B.goldBg) : B.navyBg }}>
-                    <p style={{ fontSize: 13, color: B.muted, marginBottom: m ? 8 : 0 }}>{d.definition}</p>
+                    style={{ minHeight: 56, padding: '10px 14px', borderRadius: 10, border: `2px dashed ${m ? (ok ? B.ok : bad ? B.err : B.gold) : B.border}`, background: m ? (ok ? B.okBg : bad ? B.errBg : B.goldBg) : B.bg, transition: 'border-color 0.2s, background 0.2s' }}>
+                    <p style={{ fontSize: 13, color: B.muted, marginBottom: m ? 8 : 0, lineHeight: 1.5 }}>{d.definition}</p>
                     {m && (
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 12px', borderRadius: 6, background: ok ? 'rgba(5,150,105,0.12)' : bad ? 'rgba(220,38,38,0.12)' : B.goldBg }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '5px 10px', borderRadius: 6, background: ok ? 'rgba(5,150,105,0.12)' : bad ? 'rgba(220,38,38,0.12)' : B.goldBg }}>
                         <span style={{ fontWeight: 600, fontSize: 13, color: ok ? B.ok : bad ? B.err : '#92400E' }}>{m.term}</span>
-                        {!done && <button onClick={() => setMatches(p => { const n = {...p}; delete n[d.id]; return n; })} style={{ ...btnReset, background: 'none', color: B.light, padding: 2 }}><X size={16} /></button>}
+                        {!done && <button onClick={() => setMatches(p => { const n = {...p}; delete n[d.id]; return n; })} style={{ ...btnReset, background: 'none', color: B.light, padding: 2 }}><X size={14} /></button>}
                         {show && (ok ? <CheckCircle2 size={16} color={B.ok} /> : <X size={16} color={B.err} />)}
                       </div>
                     )}
@@ -159,17 +167,17 @@ export function MatchingExercise({ pairs, instructions = "Drag each term to its 
             </div>
           </div>
         </div>
-        <div style={{ marginTop: 24, paddingTop: 16, borderTop: `1px solid ${B.border}`, display: 'flex', justifyContent: show ? 'space-between' : 'flex-end', alignItems: 'center' }}>
+        <div style={{ marginTop: 20, display: 'flex', justifyContent: show ? 'space-between' : 'flex-end', alignItems: 'center' }}>
           {show ? (
             <>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 16px', borderRadius: 10, background: score === pairs.length ? B.okBg : B.goldBg }}>
-                <Award size={20} color={score === pairs.length ? B.ok : B.gold} /><span style={{ fontWeight: 700 }}>Score: {score}/{pairs.length} ({Math.round(score/pairs.length*100)}%)</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 16px', borderRadius: 10, background: score === pairs.length ? B.okBg : B.goldBg, border: `1px solid ${score === pairs.length ? B.ok : B.gold}22` }}>
+                <Award size={18} color={score === pairs.length ? B.ok : B.gold} /><span style={{ fontWeight: 700, fontSize: 14, color: score === pairs.length ? B.ok : '#92400E' }}>Score: {score}/{pairs.length}</span>
               </div>
-              <button onClick={reset} style={{ ...btnReset, display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px', background: B.navyBg, borderRadius: 10, fontWeight: 600, color: B.navy }}><RotateCcw size={16} /> Try Again</button>
+              <button onClick={reset} style={{ ...btnReset, display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px', background: B.card, border: `1.5px solid ${B.border}`, borderRadius: 10, fontWeight: 600, fontSize: 14, color: B.navy }}><RotateCcw size={15} /> Try Again</button>
             </>
           ) : (
             <button onClick={check} disabled={Object.keys(matches).length !== defs.length}
-              style={{ ...btnReset, display: 'flex', alignItems: 'center', gap: 8, padding: '10px 24px', borderRadius: 10, fontWeight: 700, fontSize: 14, background: Object.keys(matches).length === defs.length ? B.green : B.border, color: Object.keys(matches).length === defs.length ? '#fff' : B.light }}>
+              style={{ ...btnReset, display: 'flex', alignItems: 'center', gap: 8, padding: '10px 22px', borderRadius: 10, fontWeight: 700, fontSize: 14, background: Object.keys(matches).length === defs.length ? B.burgundy : B.border, color: Object.keys(matches).length === defs.length ? '#fff' : B.light, boxShadow: Object.keys(matches).length === defs.length ? '0 2px 8px rgba(107,29,52,0.25)' : 'none', transition: 'all 0.2s' }}>
               <Check size={16} /> Check Answers
             </button>
           )}
@@ -187,42 +195,45 @@ export function MultipleChoice({ question, options, explanation, onAnswer }) {
   const [sub, setSub] = useState(false);
   const ok = sel !== null && options[sel]?.isCorrect;
   return (
-    <div style={{ background: B.card, borderRadius: 16, border: `1px solid ${B.border}`, overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
-      <div style={{ background: `linear-gradient(135deg, ${B.navy}, ${B.navyLt})`, padding: '16px 24px' }}>
-        <h3 style={{ color: '#fff', fontWeight: 700, fontSize: 17, margin: 0 }}>Question</h3>
-      </div>
-      <div style={{ padding: 24 }}>
-        <p style={{ fontSize: 17, color: B.navy, fontWeight: 600, marginBottom: 24 }}>{question}</p>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+    <div style={{ background: B.burgundyBg, borderRadius: 16, borderLeft: `4px solid ${B.burgundy}`, overflow: 'hidden', margin: '24px 0' }}>
+      <div style={{ padding: '20px 24px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
+          <div style={{ width: 28, height: 28, borderRadius: '50%', background: B.burgundy, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <CheckCircle2 size={14} style={{ color: '#fff' }} />
+          </div>
+          <span style={{ fontSize: 13, fontWeight: 700, color: B.burgundy, letterSpacing: '0.02em' }}>Check Your Understanding</span>
+        </div>
+        <p style={{ fontSize: 16, color: B.navy, fontWeight: 600, marginBottom: 16, lineHeight: 1.6, marginLeft: 38 }}>{question}</p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginLeft: 38 }}>
           {options.map((o, i) => {
             const s = sel === i; const gc = sub && o.isCorrect; const bc = sub && s && !o.isCorrect;
             return (
               <button key={i} onClick={() => !sub && setSel(i)} disabled={sub}
-                style={{ ...btnReset, width: '100%', textAlign: 'left', padding: '16px 20px', borderRadius: 12, border: `2px solid ${gc ? B.ok : bc ? B.err : s ? B.green : B.border}`, background: gc ? B.okBg : bc ? B.errBg : s ? B.greenBg : B.bg, display: 'flex', alignItems: 'center', gap: 14 }}>
-                <div style={{ width: 32, height: 32, borderRadius: '50%', border: `2px solid ${gc ? B.ok : bc ? B.err : s ? B.green : B.border}`, background: gc ? B.ok : bc ? B.err : s ? B.green : 'transparent', color: (gc||bc||s) ? '#fff' : B.muted, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  {gc ? <Check size={16} /> : bc ? <X size={16} /> : <span style={{ fontSize: 14, fontWeight: 600 }}>{String.fromCharCode(65+i)}</span>}
+                style={{ ...btnReset, width: '100%', textAlign: 'left', padding: '12px 16px', borderRadius: 10, border: `2px solid ${gc ? B.ok : bc ? B.err : s ? B.burgundy : B.border}`, background: gc ? B.okBg : bc ? B.errBg : s ? 'rgba(107,29,52,0.06)' : B.card, display: 'flex', alignItems: 'center', gap: 12, transition: 'all 0.15s', boxShadow: s ? '0 2px 8px rgba(107,29,52,0.12)' : '0 1px 2px rgba(0,0,0,0.04)' }}>
+                <div style={{ width: 26, height: 26, borderRadius: '50%', border: `2px solid ${gc ? B.ok : bc ? B.err : s ? B.burgundy : B.border}`, background: gc ? B.ok : bc ? B.err : s ? B.burgundy : 'transparent', color: (gc||bc||s) ? '#fff' : B.muted, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.15s' }}>
+                  {gc ? <Check size={13} /> : bc ? <X size={13} /> : <span style={{ fontSize: 12, fontWeight: 700 }}>{String.fromCharCode(65+i)}</span>}
                 </div>
-                <span style={{ fontWeight: 500, color: gc ? B.ok : bc ? B.err : B.text }}>{o.text}</span>
+                <span style={{ fontWeight: 500, fontSize: 15, color: gc ? B.ok : bc ? B.err : B.text, lineHeight: 1.4 }}>{o.text}</span>
               </button>
             );
           })}
         </div>
         {sub && explanation && (
-          <div style={{ marginTop: 24, padding: 16, borderRadius: 12, background: ok ? B.okBg : B.goldBg, display: 'flex', alignItems: 'flex-start', gap: 12 }}>
-            <Info size={20} style={{ color: ok ? B.ok : B.gold, marginTop: 2, flexShrink: 0 }} />
+          <div style={{ marginTop: 16, marginLeft: 38, padding: 16, borderRadius: 12, background: ok ? B.okBg : B.goldBg, border: `1px solid ${ok ? B.ok : B.gold}22`, display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+            <Info size={18} style={{ color: ok ? B.ok : B.gold, marginTop: 2, flexShrink: 0 }} />
             <div>
-              <p style={{ fontWeight: 700, color: ok ? B.ok : '#92400E', margin: 0 }}>{ok ? 'Correct!' : 'Explanation'}</p>
-              <p style={{ fontSize: 13, color: ok ? B.ok : '#92400E', marginTop: 4 }}>{explanation}</p>
+              <p style={{ fontWeight: 700, fontSize: 14, color: ok ? B.ok : '#92400E', margin: 0 }}>{ok ? 'Correct!' : 'Not quite — here\'s why:'}</p>
+              <p style={{ fontSize: 14, color: ok ? B.ok : '#92400E', marginTop: 4, lineHeight: 1.5 }}>{explanation}</p>
             </div>
           </div>
         )}
-        <div style={{ marginTop: 24, paddingTop: 16, borderTop: `1px solid ${B.border}`, display: 'flex', justifyContent: 'flex-end' }}>
+        <div style={{ marginTop: 16, marginLeft: 38, display: 'flex', justifyContent: 'flex-end' }}>
           {sub ? (
-            <button onClick={() => { setSel(null); setSub(false); }} style={{ ...btnReset, display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px', background: B.navyBg, borderRadius: 10, fontWeight: 600, color: B.navy }}><RotateCcw size={16} /> Try Again</button>
+            <button onClick={() => { setSel(null); setSub(false); }} style={{ ...btnReset, display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px', background: B.card, border: `1.5px solid ${B.border}`, borderRadius: 10, fontWeight: 600, fontSize: 14, color: B.navy }}><RotateCcw size={15} /> Try Again</button>
           ) : (
             <button onClick={() => { setSub(true); if (onAnswer) onAnswer(ok); }} disabled={sel === null}
-              style={{ ...btnReset, display: 'flex', alignItems: 'center', gap: 8, padding: '10px 24px', borderRadius: 10, fontWeight: 700, fontSize: 14, background: sel !== null ? B.green : B.border, color: sel !== null ? '#fff' : B.light }}>
-              Submit Answer <ArrowRight size={16} />
+              style={{ ...btnReset, display: 'flex', alignItems: 'center', gap: 8, padding: '10px 22px', borderRadius: 10, fontWeight: 700, fontSize: 14, background: sel !== null ? B.burgundy : B.border, color: sel !== null ? '#fff' : B.light, boxShadow: sel !== null ? '0 2px 8px rgba(107,29,52,0.25)' : 'none', transition: 'all 0.2s' }}>
+              Submit <ArrowRight size={15} />
             </button>
           )}
         </div>
@@ -244,43 +255,48 @@ export function MultiSelect({ question, options, explanation, onAnswer }) {
   const perfect = cc === tc && ic === 0;
 
   return (
-    <div style={{ background: B.card, borderRadius: 16, border: `1px solid ${B.border}`, overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
-      <div style={{ background: `linear-gradient(135deg, ${B.navy}, ${B.navyLt})`, padding: '16px 24px' }}>
-        <h3 style={{ color: '#fff', fontWeight: 700, fontSize: 17, margin: 0 }}>Select All That Apply</h3>
-      </div>
-      <div style={{ padding: 24 }}>
-        <p style={{ fontSize: 17, color: B.navy, fontWeight: 600, marginBottom: 8 }}>{question}</p>
-        <p style={{ fontSize: 13, color: B.muted, marginBottom: 24 }}>Select all correct answers</p>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+    <div style={{ background: B.burgundyBg, borderRadius: 16, borderLeft: `4px solid ${B.burgundy}`, overflow: 'hidden', margin: '24px 0' }}>
+      <div style={{ padding: '20px 24px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
+          <div style={{ width: 28, height: 28, borderRadius: '50%', background: B.burgundy, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <CheckCircle2 size={14} style={{ color: '#fff' }} />
+          </div>
+          <div>
+            <span style={{ fontSize: 13, fontWeight: 700, color: B.burgundy, letterSpacing: '0.02em' }}>Check Your Understanding</span>
+            <span style={{ fontSize: 12, color: B.muted, marginLeft: 8 }}>(Select all that apply)</span>
+          </div>
+        </div>
+        <p style={{ fontSize: 16, color: B.navy, fontWeight: 600, marginBottom: 16, lineHeight: 1.6, marginLeft: 38 }}>{question}</p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginLeft: 38 }}>
           {options.map((o, i) => {
             const s = sel.has(i); const gc = sub && o.isCorrect && s; const bc = sub && !o.isCorrect && s; const miss = sub && o.isCorrect && !s;
             return (
               <button key={i} onClick={() => toggle(i)} disabled={sub}
-                style={{ ...btnReset, width: '100%', textAlign: 'left', padding: '16px 20px', borderRadius: 12, border: `2px solid ${gc ? B.ok : bc ? B.err : miss ? B.gold : s ? B.green : B.border}`, background: gc ? B.okBg : bc ? B.errBg : miss ? B.goldBg : s ? B.greenBg : B.bg, display: 'flex', alignItems: 'center', gap: 14 }}>
-                <div style={{ width: 24, height: 24, borderRadius: 6, border: `2px solid ${gc ? B.ok : bc ? B.err : miss ? B.gold : s ? B.green : B.border}`, background: gc ? B.ok : bc ? B.err : miss ? B.gold : s ? B.green : 'transparent', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  {(s || miss) && <Check size={14} />}
+                style={{ ...btnReset, width: '100%', textAlign: 'left', padding: '12px 16px', borderRadius: 10, border: `2px solid ${gc ? B.ok : bc ? B.err : miss ? B.gold : s ? B.burgundy : B.border}`, background: gc ? B.okBg : bc ? B.errBg : miss ? B.goldBg : s ? 'rgba(107,29,52,0.06)' : B.card, display: 'flex', alignItems: 'center', gap: 12, transition: 'all 0.15s', boxShadow: s ? '0 2px 8px rgba(107,29,52,0.12)' : '0 1px 2px rgba(0,0,0,0.04)' }}>
+                <div style={{ width: 22, height: 22, borderRadius: 6, border: `2px solid ${gc ? B.ok : bc ? B.err : miss ? B.gold : s ? B.burgundy : B.border}`, background: gc ? B.ok : bc ? B.err : miss ? B.gold : s ? B.burgundy : 'transparent', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.15s' }}>
+                  {(s || miss) && <Check size={13} />}
                 </div>
-                <span style={{ fontWeight: 500, color: gc ? B.ok : bc ? B.err : miss ? '#92400E' : B.text }}>{o.text}</span>
+                <span style={{ fontWeight: 500, fontSize: 15, color: gc ? B.ok : bc ? B.err : miss ? '#92400E' : B.text, lineHeight: 1.4 }}>{o.text}</span>
               </button>
             );
           })}
         </div>
         {sub && (
-          <div style={{ marginTop: 24, padding: 16, borderRadius: 12, background: perfect ? B.okBg : B.goldBg, display: 'flex', alignItems: 'flex-start', gap: 12 }}>
-            <Info size={20} style={{ color: perfect ? B.ok : B.gold, marginTop: 2, flexShrink: 0 }} />
+          <div style={{ marginTop: 16, marginLeft: 38, padding: 16, borderRadius: 12, background: perfect ? B.okBg : B.goldBg, border: `1px solid ${perfect ? B.ok : B.gold}22`, display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+            <Info size={18} style={{ color: perfect ? B.ok : B.gold, marginTop: 2, flexShrink: 0 }} />
             <div>
-              <p style={{ fontWeight: 700, color: perfect ? B.ok : '#92400E', margin: 0 }}>{perfect ? 'Perfect!' : `${cc}/${tc} correct`}</p>
-              {explanation && <p style={{ fontSize: 13, color: perfect ? B.ok : '#92400E', marginTop: 4 }}>{explanation}</p>}
+              <p style={{ fontWeight: 700, fontSize: 14, color: perfect ? B.ok : '#92400E', margin: 0 }}>{perfect ? 'Perfect!' : `${cc}/${tc} correct`}</p>
+              {explanation && <p style={{ fontSize: 14, color: perfect ? B.ok : '#92400E', marginTop: 4, lineHeight: 1.5 }}>{explanation}</p>}
             </div>
           </div>
         )}
-        <div style={{ marginTop: 24, paddingTop: 16, borderTop: `1px solid ${B.border}`, display: 'flex', justifyContent: 'flex-end' }}>
+        <div style={{ marginTop: 16, marginLeft: 38, display: 'flex', justifyContent: 'flex-end' }}>
           {sub ? (
-            <button onClick={() => { setSel(new Set()); setSub(false); }} style={{ ...btnReset, display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px', background: B.navyBg, borderRadius: 10, fontWeight: 600, color: B.navy }}><RotateCcw size={16} /> Try Again</button>
+            <button onClick={() => { setSel(new Set()); setSub(false); }} style={{ ...btnReset, display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px', background: B.card, border: `1.5px solid ${B.border}`, borderRadius: 10, fontWeight: 600, fontSize: 14, color: B.navy }}><RotateCcw size={15} /> Try Again</button>
           ) : (
             <button onClick={() => { setSub(true); if (onAnswer) onAnswer(perfect); }} disabled={sel.size === 0}
-              style={{ ...btnReset, display: 'flex', alignItems: 'center', gap: 8, padding: '10px 24px', borderRadius: 10, fontWeight: 700, fontSize: 14, background: sel.size > 0 ? B.green : B.border, color: sel.size > 0 ? '#fff' : B.light }}>
-              Submit Answer <ArrowRight size={16} />
+              style={{ ...btnReset, display: 'flex', alignItems: 'center', gap: 8, padding: '10px 22px', borderRadius: 10, fontWeight: 700, fontSize: 14, background: sel.size > 0 ? B.burgundy : B.border, color: sel.size > 0 ? '#fff' : B.light, boxShadow: sel.size > 0 ? '0 2px 8px rgba(107,29,52,0.25)' : 'none', transition: 'all 0.2s' }}>
+              Submit <ArrowRight size={15} />
             </button>
           )}
         </div>
@@ -296,13 +312,13 @@ export function ImageTextCard({ image, imageAlt, title, content, imagePosition =
   return (
     <div style={{ background: B.card, borderRadius: 16, overflow: 'hidden', border: `${highlight ? 2 : 1}px solid ${highlight ? B.green : B.border}`, boxShadow: highlight ? `0 0 0 3px ${B.greenBg}` : '0 2px 8px rgba(0,0,0,0.06)' }}>
       <div style={{ display: 'flex', flexDirection: imagePosition === 'right' ? 'row-reverse' : 'row' }}>
-        <div style={{ width: '40%', minHeight: 180, background: `linear-gradient(135deg, ${B.greenBg}, ${B.navyBg})`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ width: '35%', minHeight: 140, background: B.greenBg, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           {image ? <img src={image} alt={imageAlt || title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : (
-            <div style={{ textAlign: 'center', padding: 24 }}><BookOpen size={48} color={B.green + '44'} /><p style={{ fontSize: 12, color: B.light, marginTop: 8 }}>Course Content</p></div>
+            <div style={{ textAlign: 'center', padding: 20 }}><BookOpen size={36} color={B.green + '44'} /><p style={{ fontSize: 11, color: B.light, marginTop: 6 }}>Course Content</p></div>
           )}
         </div>
-        <div style={{ flex: 1, padding: 24 }}>
-          <h3 style={{ fontSize: 19, fontWeight: 700, color: B.navy, marginBottom: 12 }}>{title}</h3>
+        <div style={{ flex: 1, padding: 20 }}>
+          <h3 style={{ fontSize: 17, fontWeight: 700, color: B.navy, marginBottom: 10 }}>{title}</h3>
           {typeof content === 'string' ? <p style={{ color: B.muted, lineHeight: 1.7, fontSize: 14 }}>{content}</p> : content}
         </div>
       </div>
@@ -315,14 +331,14 @@ export function ImageTextCard({ image, imageAlt, title, content, imagePosition =
 // ============================================================================
 export function SectionDivider({ title, subtitle, sectionNumber }) {
   return (
-    <div style={{ position: 'relative', padding: '48px 0' }}>
+    <div style={{ position: 'relative', padding: '28px 0' }}>
       <div style={{ position: 'absolute', top: '50%', left: 0, right: 0, height: 2, background: B.border }}></div>
       <div style={{ position: 'relative', display: 'flex', justifyContent: 'center' }}>
-        <div style={{ background: `linear-gradient(135deg, ${B.burgundy}, ${B.burgundyLt})`, borderRadius: 16, padding: '20px 32px', boxShadow: '0 4px 16px rgba(107,29,52,0.2)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-            {sectionNumber && <div style={{ width: 48, height: 48, borderRadius: '50%', background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><span style={{ fontSize: 22, fontWeight: 800, color: '#fff' }}>{sectionNumber}</span></div>}
+        <div style={{ background: B.burgundy, borderRadius: 12, padding: '14px 24px', boxShadow: '0 4px 16px rgba(107,29,52,0.2)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            {sectionNumber && <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><span style={{ fontSize: 16, fontWeight: 800, color: '#fff' }}>{sectionNumber}</span></div>}
             <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}><BookOpen size={20} color="rgba(255,255,255,0.6)" /><h2 style={{ fontSize: 19, fontWeight: 700, color: '#fff', margin: 0 }}>{title}</h2></div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}><BookOpen size={16} color="rgba(255,255,255,0.6)" /><h2 style={{ fontSize: 16, fontWeight: 700, color: '#fff', margin: 0 }}>{title}</h2></div>
               {subtitle && <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: 13, marginTop: 4 }}>{subtitle}</p>}
             </div>
           </div>
@@ -359,7 +375,7 @@ export function TimedAssessment({ title = "Final Assessment", questions, timeLim
 
   if (!started) return (
     <div style={{ background: B.card, borderRadius: 16, border: `1px solid ${B.border}`, overflow: 'hidden' }}>
-      <div style={{ background: `linear-gradient(135deg, ${B.burgundy}, ${B.burgundyLt})`, padding: '16px 24px' }}><h3 style={{ color: '#fff', fontWeight: 700, fontSize: 19, margin: 0 }}>{title}</h3></div>
+      <div style={{ background: B.burgundy, padding: '16px 24px' }}><h3 style={{ color: '#fff', fontWeight: 700, fontSize: 19, margin: 0 }}>{title}</h3></div>
       <div style={{ padding: 32, textAlign: 'center' }}>
         <div style={{ width: 80, height: 80, borderRadius: '50%', background: B.burgundyBg, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px' }}><Clock size={40} color={B.burgundy} /></div>
         <h4 style={{ fontSize: 22, fontWeight: 700, color: B.navy, marginBottom: 8 }}>Ready to Begin?</h4>
@@ -393,7 +409,7 @@ export function TimedAssessment({ title = "Final Assessment", questions, timeLim
   const q = questions[cq]; const warn = time < 300;
   return (
     <div style={{ background: B.card, borderRadius: 16, border: `1px solid ${B.border}`, overflow: 'hidden' }}>
-      <div style={{ background: `linear-gradient(135deg, ${B.burgundy}, ${B.burgundyLt})`, padding: '16px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      <div style={{ background: B.burgundy, padding: '16px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <h3 style={{ color: '#fff', fontWeight: 700, fontSize: 17, margin: 0 }}>{title}</h3>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 14px', borderRadius: 8, background: warn ? 'rgba(220,38,38,0.3)' : 'rgba(255,255,255,0.15)', color: warn ? '#FCA5A5' : '#fff' }}><Clock size={16} /><span style={{ fontFamily: 'monospace', fontWeight: 700 }}>{fmt(time)}</span></div>
       </div>
@@ -443,14 +459,14 @@ export function ProgressTracker({ sections, currentSection, completedSections, t
   const pct = Math.round((completedSections.length / sections.length) * 100);
   return (
     <div style={{ background: B.card, borderRadius: 16, border: `1px solid ${B.border}`, overflow: 'hidden' }}>
-      <div style={{ background: `linear-gradient(135deg, ${B.green}, ${B.greenLt})`, padding: '16px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div style={{ background: B.green, padding: '16px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <h3 style={{ color: '#fff', fontWeight: 700, fontSize: 17, margin: 0 }}>Course Progress</h3>
         <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: 13 }}>{totalTimeEstimate}</span>
       </div>
       <div style={{ padding: 24 }}>
         <div style={{ marginBottom: 24 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}><span style={{ fontSize: 13, fontWeight: 500, color: B.muted }}>Overall Progress</span><span style={{ fontSize: 13, fontWeight: 700, color: B.green }}>{pct}%</span></div>
-          <div style={{ height: 10, background: B.navyBg, borderRadius: 6, overflow: 'hidden' }}><div style={{ height: '100%', background: `linear-gradient(90deg, ${B.green}, ${B.greenLt})`, borderRadius: 6, width: `${pct}%`, transition: 'width 0.5s' }} /></div>
+          <div style={{ height: 10, background: B.navyBg, borderRadius: 6, overflow: 'hidden' }}><div style={{ height: '100%', background: B.green, borderRadius: 6, width: `${pct}%`, transition: 'width 0.5s' }} /></div>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
           {sections.map((s, i) => {
@@ -492,7 +508,7 @@ export function CardSort({ categories = [], cards = [], instructions = "Sort eac
 
   return (
     <div style={{ background: B.card, borderRadius: 16, border: `1px solid ${B.border}`, overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
-      <div style={{ background: `linear-gradient(135deg, ${B.green}, ${B.greenLt})`, padding: '16px 24px' }}>
+      <div style={{ background: B.green, padding: '16px 24px' }}>
         <h3 style={{ color: '#fff', fontWeight: 700, fontSize: 17, margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}><GripVertical size={20} /> Card Sort Activity</h3>
         <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: 13, marginTop: 4 }}>{instructions}</p>
       </div>
@@ -568,7 +584,7 @@ export function Sequencing({ steps = [], instructions = "Arrange the steps in th
 
   return (
     <div style={{ background: B.card, borderRadius: 16, border: `1px solid ${B.border}`, overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
-      <div style={{ background: `linear-gradient(135deg, ${B.navy}, ${B.navyLt})`, padding: '16px 24px' }}>
+      <div style={{ background: B.navy, padding: '16px 24px' }}>
         <h3 style={{ color: '#fff', fontWeight: 700, fontSize: 17, margin: 0 }}>📋 Sequencing Activity</h3>
         <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 13, marginTop: 4 }}>{instructions}</p>
       </div>
@@ -621,7 +637,7 @@ export function Hotspot({ hotspots = [], hotspotImage, imageDescription, instruc
 
   return (
     <div style={{ background: B.card, borderRadius: 16, border: `1px solid ${B.border}`, overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
-      <div style={{ background: `linear-gradient(135deg, ${B.burgundy}, ${B.burgundyLt})`, padding: '16px 24px' }}>
+      <div style={{ background: B.burgundy, padding: '16px 24px' }}>
         <h3 style={{ color: '#fff', fontWeight: 700, fontSize: 17, margin: 0 }}>🎯 Hotspot Activity</h3>
         <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: 13, marginTop: 4 }}>{instructions}</p>
         <span style={{ display: 'inline-block', marginTop: 8, background: 'rgba(255,255,255,0.2)', color: '#fff', borderRadius: 20, padding: '3px 12px', fontSize: 12, fontWeight: 600 }}>{Object.keys(rev).length}/{hotspots.length} discovered</span>
@@ -669,7 +685,7 @@ export function Timeline({ events = [], instructions = "Arrange events in chrono
 
   return (
     <div style={{ background: B.card, borderRadius: 16, border: `1px solid ${B.border}`, overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
-      <div style={{ background: `linear-gradient(135deg, ${B.green}, ${B.greenLt})`, padding: '16px 24px' }}>
+      <div style={{ background: B.green, padding: '16px 24px' }}>
         <h3 style={{ color: '#fff', fontWeight: 700, fontSize: 17, margin: 0 }}>📅 Timeline Activity</h3>
         <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: 13, marginTop: 4 }}>{instructions}</p>
       </div>
@@ -725,7 +741,7 @@ export function ScenarioTree({ scenarioTitle, startNode, nodes = {}, onComplete 
 
   return (
     <div style={{ background: B.card, borderRadius: 16, border: `1px solid ${B.border}`, overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
-      <div style={{ background: `linear-gradient(135deg, ${B.burgundy}, ${B.burgundyLt})`, padding: '16px 24px' }}>
+      <div style={{ background: B.burgundy, padding: '16px 24px' }}>
         <h3 style={{ color: '#fff', fontWeight: 700, fontSize: 17, margin: 0 }}>🔀 {scenarioTitle || 'Clinical Scenario'}</h3>
         <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 13, marginTop: 4 }}>Step {hist.length + 1}</p>
       </div>
@@ -782,7 +798,7 @@ export function FlashcardDeck({ flashcards = [], instructions, onComplete }) {
 
   return (
     <div style={{ background: B.card, borderRadius: 16, border: `1px solid ${B.border}`, overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
-      <div style={{ background: `linear-gradient(135deg, ${B.gold}, ${B.goldLt})`, padding: '16px 24px' }}>
+      <div style={{ background: B.gold, padding: '16px 24px' }}>
         <h3 style={{ color: '#fff', fontWeight: 700, fontSize: 17, margin: 0 }}>🃏 Flashcard Deck</h3>
         {instructions && <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: 13, marginTop: 4 }}>{instructions}</p>}
         <span style={{ display: 'inline-block', marginTop: 8, background: 'rgba(255,255,255,0.25)', color: '#fff', borderRadius: 20, padding: '3px 12px', fontSize: 12, fontWeight: 600 }}>{seen.size}/{flashcards.length} reviewed</span>
@@ -822,7 +838,7 @@ export function VideoEmbed({ videoUrl, videoTitle, videoDuration, markers = [], 
 
   return (
     <div style={{ background: B.card, borderRadius: 16, border: `1px solid ${B.border}`, overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
-      <div style={{ background: `linear-gradient(135deg, ${B.navy}, #1E293B)`, padding: '16px 24px' }}>
+      <div style={{ background: B.navy, padding: '16px 24px' }}>
         <h3 style={{ color: '#fff', fontWeight: 700, fontSize: 17, margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}><Play size={20} /> {videoTitle || 'Video Content'}</h3>
         {videoDuration && <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 13, marginTop: 4 }}>Duration: {videoDuration}</p>}
       </div>
@@ -886,5 +902,109 @@ export function ImageBlock({ imageUrl, imageAltText, imageCaption, imageSize = '
       )}
       {imageCaption && <figcaption style={{ marginTop: 8, fontSize: 13, color: B.muted, fontStyle: 'italic', maxWidth: w, display: 'inline-block' }}>{imageCaption}</figcaption>}
     </figure>
+  );
+}
+
+// ============================================================================
+// KNOWLEDGE CHECK MODAL — compact trigger + popup overlay
+// ============================================================================
+export function KnowledgeCheckModal({ type, completed, children }) {
+  const [open, setOpen] = useState(false);
+
+  const labels = {
+    matching: 'Matching Exercise',
+    multipleChoice: 'Knowledge Check',
+    multiSelect: 'Multi-Select Check',
+    cardSort: 'Card Sort Activity',
+    sequencing: 'Sequencing Activity',
+    hotspot: 'Hotspot Activity',
+    timeline: 'Timeline Activity',
+    scenarioTree: 'Clinical Scenario',
+    flashcardDeck: 'Flashcard Deck',
+  };
+  const label = labels[type] || 'Interactive Activity';
+
+  return (
+    <>
+      {/* Compact inline trigger */}
+      <button
+        onClick={() => setOpen(true)}
+        style={{
+          ...btnReset,
+          width: '100%',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 12,
+          padding: '14px 20px',
+          margin: '20px 0',
+          borderRadius: 12,
+          border: `2px solid ${completed ? B.ok : B.burgundy}44`,
+          background: completed ? B.okBg : B.burgundyBg,
+          transition: 'all 0.2s',
+          boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
+        }}
+      >
+        <div style={{
+          width: 32, height: 32, borderRadius: '50%',
+          background: completed ? B.ok : B.burgundy,
+          display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0
+        }}>
+          {completed
+            ? <CheckCircle2 size={16} style={{ color: '#fff' }} />
+            : <AlertCircle size={16} style={{ color: '#fff' }} />
+          }
+        </div>
+        <div style={{ flex: 1, textAlign: 'left' }}>
+          <span style={{ fontWeight: 700, fontSize: 14, color: completed ? B.ok : B.burgundy }}>
+            {completed ? `${label} — Completed` : label}
+          </span>
+          <span style={{ display: 'block', fontSize: 12, color: B.muted, marginTop: 2 }}>
+            {completed ? 'Click to review' : 'Click to open'}
+          </span>
+        </div>
+        <ArrowRight size={18} style={{ color: completed ? B.ok : B.burgundy, flexShrink: 0 }} />
+      </button>
+
+      {/* Modal overlay */}
+      {open && (
+        <div
+          style={{
+            position: 'fixed', inset: 0, zIndex: 9999,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            background: 'rgba(0,0,0,0.5)',
+            padding: 16,
+          }}
+          onClick={(e) => { if (e.target === e.currentTarget) setOpen(false); }}
+        >
+          <div style={{
+            background: B.bg, borderRadius: 16,
+            width: '100%', maxWidth: 640, maxHeight: '85vh',
+            overflowY: 'auto', position: 'relative',
+            boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
+          }}>
+            {/* Close button */}
+            <button
+              onClick={() => setOpen(false)}
+              style={{
+                ...btnReset,
+                position: 'sticky', top: 12, float: 'right', marginRight: 12, marginTop: 12,
+                width: 32, height: 32, borderRadius: '50%',
+                background: B.card, border: `1px solid ${B.border}`,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                zIndex: 1,
+                boxShadow: '0 2px 6px rgba(0,0,0,0.1)',
+              }}
+            >
+              <X size={16} style={{ color: B.muted }} />
+            </button>
+
+            {/* Render the actual knowledge check component */}
+            <div style={{ padding: 4 }}>
+              {children}
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
