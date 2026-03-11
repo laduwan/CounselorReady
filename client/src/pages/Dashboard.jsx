@@ -23,7 +23,11 @@ import {
   ClipboardList,
   Star,
   Sparkles,
-  X
+  X,
+  Calendar,
+  Bell,
+  Users,
+  Lock
 } from 'lucide-react';
 
 export default function Dashboard() {
@@ -246,6 +250,55 @@ export default function Dashboard() {
                   <Trophy className="w-6 h-6 text-white" />
                 </div>
                 <span className="text-honey-800 font-medium text-sm">Achievements</span>
+              </Link>
+
+              <Link to="/ce-planner" className="flex flex-col items-center p-4 rounded-xl bg-stone-100 hover:bg-stone-200 transition-colors group">
+                <div className="w-12 h-12 bg-stone-600 rounded-xl flex items-center justify-center mb-3 group-hover:scale-105 transition-transform">
+                  <Calendar className="w-6 h-6 text-white" />
+                </div>
+                <span className="text-stone-700 font-medium text-sm">CE Planner</span>
+              </Link>
+
+              <Link to="/insurance-tracker" className="flex flex-col items-center p-4 rounded-xl bg-burgundy-50 hover:bg-burgundy-100 transition-colors group">
+                <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-3 group-hover:scale-105 transition-transform" style={{ background: '#6B1D34' }}>
+                  <ShieldCheck className="w-6 h-6 text-white" />
+                </div>
+                <span className="text-burgundy-800 font-medium text-sm">Insurance</span>
+              </Link>
+
+              <Link to="/board-alerts" className="flex flex-col items-center p-4 rounded-xl bg-forest-50 hover:bg-forest-100 transition-colors group">
+                <div className="w-12 h-12 bg-forest-600 rounded-xl flex items-center justify-center mb-3 group-hover:scale-105 transition-transform">
+                  <Bell className="w-6 h-6 text-white" />
+                </div>
+                <span className="text-forest-800 font-medium text-sm">Board Alerts</span>
+              </Link>
+
+              <Link to="/organization" className="flex flex-col items-center p-4 rounded-xl bg-honey-50 hover:bg-honey-100 transition-colors group">
+                <div className="w-12 h-12 bg-honey-500 rounded-xl flex items-center justify-center mb-3 group-hover:scale-105 transition-transform">
+                  <Users className="w-6 h-6 text-white" />
+                </div>
+                <span className="text-honey-800 font-medium text-sm">Organization</span>
+              </Link>
+
+              <Link to="/group-licenses" className="flex flex-col items-center p-4 rounded-xl bg-stone-100 hover:bg-stone-200 transition-colors group">
+                <div className="w-12 h-12 bg-stone-600 rounded-xl flex items-center justify-center mb-3 group-hover:scale-105 transition-transform">
+                  <Users className="w-6 h-6 text-white" />
+                </div>
+                <span className="text-stone-700 font-medium text-sm">Group Licenses</span>
+              </Link>
+
+              <Link to="/legacy-vault" className="flex flex-col items-center p-4 rounded-xl bg-burgundy-50 hover:bg-burgundy-100 transition-colors group">
+                <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-3 group-hover:scale-105 transition-transform" style={{ background: '#6B1D34' }}>
+                  <Lock className="w-6 h-6 text-white" />
+                </div>
+                <span className="text-burgundy-800 font-medium text-sm">Legacy Vault</span>
+              </Link>
+
+              <Link to="/referrals" className="flex flex-col items-center p-4 rounded-xl bg-forest-50 hover:bg-forest-100 transition-colors group">
+                <div className="w-12 h-12 bg-forest-600 rounded-xl flex items-center justify-center mb-3 group-hover:scale-105 transition-transform">
+                  <Star className="w-6 h-6 text-white" />
+                </div>
+                <span className="text-forest-800 font-medium text-sm">Referrals</span>
               </Link>
             </div>
           </div>
