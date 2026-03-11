@@ -558,7 +558,13 @@ function ContentBlockRenderer({
       );
 
     case 'text': {
-      const rawHTML = block.textContent || block.content || '';
+      let rawHTML = block.textContent || block.content || '';
+      // Guard: if content is an object/array (bad seed data), stringify it instead of crashing
+      if (typeof rawHTML !== 'string') {
+        rawHTML = Array.isArray(rawHTML) 
+          ? rawHTML.map(r => typeof r === 'string' ? r : (r?.formatted || r?.text || r?.title || JSON.stringify(r))).join('<br/>') 
+          : String(rawHTML);
+      }
       const isLong = rawHTML.length > 1200;
       return <TextBlock rawHTML={rawHTML} isLong={isLong} proseSize={proseSize} a11y={a11y} speakText={speakText} />;
     }
@@ -690,6 +696,23 @@ function ContentBlockRenderer({
           <p style={{ fontSize: 12, color: '#6B7280', marginTop: 6 }}>
             Minimum {block.minLength || 50} characters to complete
           </p>
+        </div>
+      );
+
+    case 'references':
+      return (
+        <div style={{ background: '#fff', borderRadius: 16, padding: 24, border: '1px solid #E8E4DF' }}>
+          <h3 style={{ fontWeight: 700, color: '#284157', marginBottom: 16 }}>References</h3>
+          <div className="cr-references" style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            {(Array.isArray(block.references) ? block.references : Array.isArray(block.content) ? block.content : []).map((ref, i) => (
+              <p key={i} className="cr-reference" style={{ fontSize: 14, color: '#444', lineHeight: 1.7, paddingLeft: 36, textIndent: -36 }}>
+                {typeof ref === 'string' ? ref : String(ref?.formatted || ref?.text || ref?.title || JSON.stringify(ref))}
+              </p>
+            ))}
+            {typeof block.content === 'string' && (
+              <div dangerouslySetInnerHTML={{ __html: safeHTML(block.content) }} />
+            )}
+          </div>
         </div>
       );
 
@@ -1294,7 +1317,11 @@ function ReferencesView({ course, onBack }) {
               className="text-sm text-navy-600 leading-relaxed pl-10"
               style={{ textIndent: '-2.25rem' }}
             >
-              {typeof ref === 'string' ? ref : ref?.text || ref?.title || JSON.stringify(ref)}
+              {typeof ref === 'string' 
+                ? ref 
+                : ref?.formatted || ref?.text || ref?.title 
+                  ? String(ref?.formatted || ref?.text || ref?.title)
+                  : JSON.stringify(ref)}
             </li>
           ))}
         </ol>
