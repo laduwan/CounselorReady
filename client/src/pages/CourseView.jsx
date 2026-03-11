@@ -127,7 +127,7 @@ export default function CourseView() {
         {/* Back to overview */}
         <button
           onClick={() => setViewingContent(false)}
-          className="flex items-center gap-2 text-forest-600 hover:text-navy-600 mb-6"
+          className="flex items-center gap-2 text-forest-600 hover:text-navy-700 mb-6"
         >
           <ArrowLeft className="w-4 h-4" />
           Back to Overview
@@ -143,7 +143,7 @@ export default function CourseView() {
             {/* Lesson content viewer */}
             {activeLesson && canAccessLesson(activeLesson) ? (
               <div className="card mb-6">
-                <h2 className="font-display text-xl font-semibold text-navy-600 mb-4">{activeLesson.title}</h2>
+                <h2 className="font-display text-xl font-semibold text-navy-700 mb-4">{activeLesson.title}</h2>
 
                 {activeLesson.type === 'video' && activeLesson.videoUrl && (
                   <div className="aspect-video bg-navy-800 rounded-lg mb-4">
@@ -206,7 +206,7 @@ export default function CourseView() {
             {/* Progress card */}
             {enrollment?.enrolled && (
               <div className="card mb-6">
-                <h3 className="font-display text-lg font-semibold text-navy-600 mb-3">Your Progress</h3>
+                <h3 className="font-display text-lg font-semibold text-navy-700 mb-3">Your Progress</h3>
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-forest-600">Completed</span>
                   <span className="font-medium text-burgundy-700">{enrollment.percentComplete}%</span>
@@ -222,7 +222,7 @@ export default function CourseView() {
 
             {/* Course outline */}
             <div className="card">
-              <h3 className="font-display text-lg font-semibold text-navy-600 mb-4">Course Content</h3>
+              <h3 className="font-display text-lg font-semibold text-navy-700 mb-4">Course Content</h3>
               <div className="space-y-2">
                 {course.modules?.map((module) => (
                   <div key={module._id} className="border border-forest-100 rounded-lg overflow-hidden">
@@ -230,7 +230,7 @@ export default function CourseView() {
                       onClick={() => toggleModule(module._id)}
                       className="w-full flex items-center justify-between p-3 hover:bg-stone-50 transition-colors"
                     >
-                      <span className="font-medium text-navy-600 text-left">{module.title}</span>
+                      <span className="font-medium text-navy-700 text-left">{module.title}</span>
                       {expandedModules[module._id] ? (
                         <ChevronDown className="w-4 h-4 text-forest-400" />
                       ) : (
@@ -298,7 +298,7 @@ export default function CourseView() {
       {/* Back button */}
       <button
         onClick={() => navigate('/courses')}
-        className="flex items-center gap-2 text-forest-600 hover:text-navy-600 mb-6"
+        className="flex items-center gap-2 text-forest-600 hover:text-navy-700 mb-6"
       >
         <ArrowLeft className="w-4 h-4" />
         Back to Courses
@@ -352,7 +352,7 @@ export default function CourseView() {
         {/* Course description */}
         {course.description && (
           <div className="mb-8">
-            <h3 className="font-display text-lg font-semibold text-navy-600 mb-2">About This Course</h3>
+            <h3 className="font-display text-lg font-semibold text-navy-700 mb-2">About This Course</h3>
             <p className="text-forest-600 leading-relaxed">{course.description}</p>
           </div>
         )}
@@ -376,7 +376,7 @@ export default function CourseView() {
         {/* Course outline preview */}
         {course.modules?.length > 0 && (
           <div className="mb-8">
-            <h3 className="font-display text-lg font-semibold text-navy-600 mb-3">Course Content</h3>
+            <h3 className="font-display text-lg font-semibold text-navy-700 mb-3">Course Content</h3>
             <div className="space-y-2">
               {course.modules.map((module, idx) => (
                 <div key={module._id} className="flex items-center gap-3 p-3 bg-stone-50 rounded-lg">
@@ -384,7 +384,7 @@ export default function CourseView() {
                     {idx + 1}
                   </span>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-navy-600 truncate">{module.title}</p>
+                    <p className="text-sm font-medium text-navy-700 truncate">{module.title}</p>
                     <p className="text-xs text-forest-500">{module.lessons?.length || 0} lessons</p>
                   </div>
                 </div>
