@@ -114,6 +114,8 @@ const CourseQuickEdit = () => {
         <p className="text-forest-600">Edit course descriptions and metadata. Changes appear immediately on the catalog.</p>
       </div>
 
+      <h2 className="font-display text-xl font-semibold text-burgundy-800 mb-3">All Courses</h2>
+
       {courses.length === 0 ? (
         <div className="text-center py-12">
           <BookOpen className="h-12 w-12 text-forest-300 mx-auto" />
@@ -156,6 +158,7 @@ const CourseQuickEdit = () => {
                 {/* Expanded edit form */}
                 {isExpanded && (
                   <div className="border-t border-forest-100 p-5 space-y-4">
+                    <h3 className="font-display text-lg font-semibold text-burgundy-800">Edit Details</h3>
                     {/* Description */}
                     <div>
                       <label className="block text-sm font-medium text-burgundy-800 mb-1">
