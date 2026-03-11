@@ -35,6 +35,7 @@ import interactiveCourseRoutes from './routes/interactiveCourseRoutes.js';
 import cebrokerRoutes from './routes/cebroker.js';
 import helpRoutes from './routes/help.js';
 import bulkUploadRoutes from './routes/bulkUpload.js';
+import toolsRoutes from './routes/tools.js';
 // ── Previously unregistered routes (wiring audit fix 2026-03-04) ──
 import aiRoutes from './routes/ai.js';
 import aiCourseGeneratorRoutes from './routes/aiCourseGenerator.js';
@@ -255,6 +256,7 @@ app.use('/api/gamification', gamificationRoutes);
 app.use('/api/notifications', notificationsRoutes);
 app.use('/api/legacy-vault', legacyVaultRoutes);
 app.use('/api/admin/stats', adminStatsRoutes);
+app.use('/api/tools', toolsRoutes);
 
 // Static templates directory intentionally NOT served publicly
 // Certificate assets (signature.png, certificate_template.pdf) are loaded
