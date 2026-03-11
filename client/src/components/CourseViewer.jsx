@@ -8,7 +8,7 @@ import {
   ChevronLeft, ChevronRight, Menu, X, BookOpen, Clock, Award,
   CheckCircle2, Circle, Play, Lock, AlertCircle, Download,
   BarChart3, Home, Settings, LogOut, User, Type, Eye, Volume2,
-  Layers, ChevronsRight
+  Layers, ChevronsRight, Moon, Pause, Crosshair, AlignJustify, Minus, Globe
 } from 'lucide-react';
 import { safeHTML } from '../utils/sanitize';
 import {
@@ -128,7 +128,7 @@ function AccessibilityToolbar({ settings, onUpdate }) {
         <>
           <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
           <div 
-            className="absolute right-0 top-full mt-2 w-72 bg-white rounded-xl shadow-lg border border-forest-200 z-50 p-4"
+            className="absolute right-0 top-full mt-2 w-72 bg-white rounded-xl shadow-lg border border-forest-200 z-50 p-4 max-h-[80vh] overflow-y-auto"
             role="dialog"
             aria-label="Accessibility settings"
           >
@@ -194,8 +194,34 @@ function AccessibilityToolbar({ settings, onUpdate }) {
               </button>
             </div>
 
+            {/* Dark Mode */}
+            <div className="mb-4">
+              <button
+                onClick={() => onUpdate({ ...settings, darkMode: !settings.darkMode })}
+                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                  settings.darkMode
+                    ? 'bg-navy-800 text-white'
+                    : 'bg-stone-100 text-navy-600 hover:bg-stone-200'
+                }`}
+                role="switch"
+                aria-checked={settings.darkMode}
+              >
+                <span className="flex items-center gap-2">
+                  <Moon className="w-4 h-4" />
+                  Dark Mode
+                </span>
+                <span className={`w-9 h-5 rounded-full relative transition-colors ${
+                  settings.darkMode ? 'bg-hunter-600' : 'bg-forest-200'
+                }`}>
+                  <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-transform ${
+                    settings.darkMode ? 'left-4' : 'left-0.5'
+                  }`} />
+                </span>
+              </button>
+            </div>
+
             {/* Narration / Read Aloud */}
-            <div className="mb-2">
+            <div className="mb-4">
               <button
                 onClick={() => onUpdate({ ...settings, narration: !settings.narration })}
                 className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
@@ -218,6 +244,166 @@ function AccessibilityToolbar({ settings, onUpdate }) {
                   }`} />
                 </span>
               </button>
+            </div>
+
+            {/* Dyslexia-Friendly Font */}
+            <div className="mb-4">
+              <button
+                onClick={() => onUpdate({ ...settings, dyslexiaFont: !settings.dyslexiaFont })}
+                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                  settings.dyslexiaFont
+                    ? 'bg-navy-800 text-white'
+                    : 'bg-stone-100 text-navy-600 hover:bg-stone-200'
+                }`}
+                role="switch"
+                aria-checked={settings.dyslexiaFont}
+              >
+                <span className="flex items-center gap-2">
+                  <Type className="w-4 h-4" />
+                  Dyslexia Font
+                </span>
+                <span className={`w-9 h-5 rounded-full relative transition-colors ${
+                  settings.dyslexiaFont ? 'bg-hunter-600' : 'bg-forest-200'
+                }`}>
+                  <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-transform ${
+                    settings.dyslexiaFont ? 'left-4' : 'left-0.5'
+                  }`} />
+                </span>
+              </button>
+            </div>
+
+            {/* Reduced Motion */}
+            <div className="mb-4">
+              <button
+                onClick={() => onUpdate({ ...settings, reducedMotion: !settings.reducedMotion })}
+                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                  settings.reducedMotion
+                    ? 'bg-navy-800 text-white'
+                    : 'bg-stone-100 text-navy-600 hover:bg-stone-200'
+                }`}
+                role="switch"
+                aria-checked={settings.reducedMotion}
+              >
+                <span className="flex items-center gap-2">
+                  <Pause className="w-4 h-4" />
+                  Reduced Motion
+                </span>
+                <span className={`w-9 h-5 rounded-full relative transition-colors ${
+                  settings.reducedMotion ? 'bg-hunter-600' : 'bg-forest-200'
+                }`}>
+                  <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-transform ${
+                    settings.reducedMotion ? 'left-4' : 'left-0.5'
+                  }`} />
+                </span>
+              </button>
+            </div>
+
+            {/* Enhanced Focus */}
+            <div className="mb-4">
+              <button
+                onClick={() => onUpdate({ ...settings, enhancedFocus: !settings.enhancedFocus })}
+                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                  settings.enhancedFocus
+                    ? 'bg-navy-800 text-white'
+                    : 'bg-stone-100 text-navy-600 hover:bg-stone-200'
+                }`}
+                role="switch"
+                aria-checked={settings.enhancedFocus}
+              >
+                <span className="flex items-center gap-2">
+                  <Crosshair className="w-4 h-4" />
+                  Enhanced Focus
+                </span>
+                <span className={`w-9 h-5 rounded-full relative transition-colors ${
+                  settings.enhancedFocus ? 'bg-hunter-600' : 'bg-forest-200'
+                }`}>
+                  <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-transform ${
+                    settings.enhancedFocus ? 'left-4' : 'left-0.5'
+                  }`} />
+                </span>
+              </button>
+            </div>
+
+            {/* Line Spacing */}
+            <div className="mb-4">
+              <label className="text-sm font-medium text-navy-600 mb-2 block">
+                <AlignJustify className="w-4 h-4 inline mr-1" />
+                Line Spacing
+              </label>
+              <div className="flex gap-2">
+                {[
+                  { label: 'Compact', value: 'compact' },
+                  { label: 'Normal', value: 'normal' },
+                  { label: 'Relaxed', value: 'relaxed' },
+                ].map(opt => (
+                  <button
+                    key={opt.value}
+                    onClick={() => onUpdate({ ...settings, lineSpacing: opt.value })}
+                    className={`flex-1 py-2 rounded-lg text-xs font-semibold transition-colors ${
+                      settings.lineSpacing === opt.value
+                        ? 'bg-burgundy-800 text-white'
+                        : 'bg-stone-100 text-navy-600 hover:bg-stone-200'
+                    }`}
+                    aria-label={`${opt.value} line spacing`}
+                    aria-pressed={settings.lineSpacing === opt.value}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Reading Guide */}
+            <div className="mb-4">
+              <button
+                onClick={() => onUpdate({ ...settings, readingGuide: !settings.readingGuide })}
+                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                  settings.readingGuide
+                    ? 'bg-navy-800 text-white'
+                    : 'bg-stone-100 text-navy-600 hover:bg-stone-200'
+                }`}
+                role="switch"
+                aria-checked={settings.readingGuide}
+              >
+                <span className="flex items-center gap-2">
+                  <Minus className="w-4 h-4" />
+                  Reading Guide
+                </span>
+                <span className={`w-9 h-5 rounded-full relative transition-colors ${
+                  settings.readingGuide ? 'bg-hunter-600' : 'bg-forest-200'
+                }`}>
+                  <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-transform ${
+                    settings.readingGuide ? 'left-4' : 'left-0.5'
+                  }`} />
+                </span>
+              </button>
+            </div>
+
+            {/* Translate */}
+            <div className="mb-2">
+              <label className="text-sm font-medium text-navy-600 mb-2 block">
+                <Globe className="w-4 h-4 inline mr-1" />
+                Translate
+              </label>
+              <select
+                value={settings.language}
+                onChange={(e) => onUpdate({ ...settings, language: e.target.value })}
+                className="w-full py-2 px-3 rounded-lg text-sm font-medium bg-stone-100 text-navy-600 border-none focus:ring-2 focus:ring-burgundy-500 appearance-none cursor-pointer"
+                aria-label="Select language for translation"
+              >
+                <option value="">English (Original)</option>
+                <option value="es">Español (Spanish)</option>
+                <option value="fr">Français (French)</option>
+                <option value="de">Deutsch (German)</option>
+                <option value="pt">Português (Portuguese)</option>
+                <option value="zh-CN">中文 (Chinese)</option>
+                <option value="ja">日本語 (Japanese)</option>
+                <option value="ko">한국어 (Korean)</option>
+                <option value="ar">العربية (Arabic)</option>
+                <option value="vi">Tiếng Việt (Vietnamese)</option>
+                <option value="ht">Kreyòl Ayisyen (Haitian Creole)</option>
+                <option value="ru">Русский (Russian)</option>
+              </select>
             </div>
 
             <p className="text-xs text-forest-400 mt-3 pt-3 border-t border-slate-100">
@@ -303,8 +489,8 @@ function ContentBlockRenderer({
   }, [a11y?.narration]);
 
   // Font size class
-  const textSizeClass = a11y?.fontSize === 'x-large' ? 'text-xl' : a11y?.fontSize === 'large' ? 'text-lg' : 'text-base';
-  const proseSize = a11y?.fontSize === 'x-large' ? 'prose-xl' : a11y?.fontSize === 'large' ? 'prose-lg' : 'prose-base';
+  const textSizeClass = a11y?.fontSize === 'x-large' ? 'text-2xl' : a11y?.fontSize === 'large' ? 'text-xl' : 'text-lg';
+  const proseSize = a11y?.fontSize === 'x-large' ? 'prose-xl' : a11y?.fontSize === 'large' ? 'prose-xl' : 'prose-lg';
 
   switch (block.type) {
     case 'accordion':
@@ -1108,7 +1294,8 @@ function ReferencesView({ course, onBack }) {
               className="text-sm text-navy-600 leading-relaxed pl-10"
               style={{ textIndent: '-2.25rem' }}
             >
-              {typeof ref === 'string' ? ref : ref?.text || ref?.title || JSON.stringify}            </li>
+              {typeof ref === 'string' ? ref : ref?.text || ref?.title || JSON.stringify(ref)}
+            </li>
           ))}
         </ol>
       </div>
@@ -1449,7 +1636,14 @@ export default function CourseViewer({ courseSlug }) {
   const [a11y, setA11y] = useState({
     fontSize: 'normal',
     highContrast: false,
+    darkMode: false,
     narration: false,
+    dyslexiaFont: false,
+    reducedMotion: false,
+    enhancedFocus: false,
+    lineSpacing: 'normal',
+    readingGuide: false,
+    language: '',
   });
 
   useEffect(() => {
@@ -1477,6 +1671,60 @@ export default function CourseViewer({ courseSlug }) {
     };
   }, []);
 
+  // Google Translate integration
+  useEffect(() => {
+    // Load Google Translate script once
+    if (!document.getElementById('google-translate-script')) {
+      window.googleTranslateElementInit = () => {
+        new window.google.translate.TranslateElement(
+          { pageLanguage: 'en', autoDisplay: false },
+          'google_translate_element'
+        );
+      };
+      const script = document.createElement('script');
+      script.id = 'google-translate-script';
+      script.src = '//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit';
+      document.body.appendChild(script);
+    }
+  }, []);
+
+  // Trigger translation when language changes
+  useEffect(() => {
+    const trySetLanguage = (attempts = 0) => {
+      const frame = document.querySelector('.goog-te-menu-frame');
+      const combo = document.querySelector('.goog-te-combo');
+
+      if (combo) {
+        combo.value = a11y.language;
+        combo.dispatchEvent(new Event('change'));
+        return;
+      }
+
+      // Google Translate may not be loaded yet — retry
+      if (attempts < 20) {
+        setTimeout(() => trySetLanguage(attempts + 1), 300);
+      }
+    };
+
+    if (a11y.language) {
+      trySetLanguage();
+    } else {
+      // Reset to English — remove translation
+      const banner = document.querySelector('.goog-te-banner-frame');
+      if (banner) {
+        const restore = banner.contentDocument?.querySelector('.goog-close-link');
+        if (restore) restore.click();
+      }
+      // Also try cookie approach
+      document.cookie = 'googtrans=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC';
+      const combo = document.querySelector('.goog-te-combo');
+      if (combo) {
+        combo.value = '';
+        combo.dispatchEvent(new Event('change'));
+      }
+    }
+  }, [a11y.language]);
+
   const refreshProgress = useCallback(async () => {
     try {
       const progressData = await api.getProgress(courseSlug);
@@ -1499,8 +1747,13 @@ export default function CourseViewer({ courseSlug }) {
   }, []);
 
   // Accessibility: font size class for main content area
-  const fontSizeClass = a11y.fontSize === 'x-large' ? 'text-xl' : a11y.fontSize === 'large' ? 'text-lg' : 'text-base';
+  const fontSizeClass = a11y.fontSize === 'x-large' ? 'text-2xl' : a11y.fontSize === 'large' ? 'text-xl' : 'text-lg';
   const hcClass = a11y.highContrast ? 'high-contrast' : '';
+  const dmClass = a11y.darkMode ? 'dark-mode' : '';
+  const dyslexiaClass = a11y.dyslexiaFont ? 'dyslexia-font' : '';
+  const motionClass = a11y.reducedMotion ? 'reduced-motion' : '';
+  const focusClass = a11y.enhancedFocus ? 'focus-visible-enhanced' : '';
+  const lineSpacingClass = a11y.lineSpacing === 'relaxed' ? 'leading-relaxed-mode' : a11y.lineSpacing === 'compact' ? 'leading-compact-mode' : '';
 
   if (loading) {
     return (
@@ -1541,7 +1794,9 @@ export default function CourseViewer({ courseSlug }) {
   const currentSectionProgress = progress?.sectionProgress?.[progress?.currentSectionIndex || 0];
 
   return (
-    <div className={`min-h-screen flex ${hcClass}`} style={{ background: '#F5F5DC' }}>
+    <div className={`min-h-screen flex ${hcClass} ${dmClass} ${dyslexiaClass} ${motionClass} ${focusClass} ${lineSpacingClass}`} style={{ background: '#F5F5DC' }}>
+      {/* Hidden Google Translate element */}
+      <div id="google_translate_element" style={{ position: 'absolute', top: -9999, left: -9999, opacity: 0, pointerEvents: 'none' }} />
       {/* Skip to content link */}
       <a 
         href="#main-content" 
@@ -1657,7 +1912,42 @@ export default function CourseViewer({ courseSlug }) {
 
       {/* Resource FAB */}
       {course.resources?.length > 0 && <ResourceFAB resources={course.resources} />}
+
+      {/* Reading Guide — horizontal bar follows mouse */}
+      {a11y.readingGuide && <ReadingGuide />}
     </div>
+  );
+}
+
+// ============================================================================
+// READING GUIDE — horizontal highlight bar that follows the mouse
+// ============================================================================
+function ReadingGuide() {
+  const [y, setY] = useState(-100);
+
+  useEffect(() => {
+    const handler = (e) => setY(e.clientY);
+    window.addEventListener('mousemove', handler);
+    return () => window.removeEventListener('mousemove', handler);
+  }, []);
+
+  return (
+    <div
+      style={{
+        position: 'fixed',
+        left: 0,
+        right: 0,
+        top: y - 16,
+        height: 32,
+        background: 'rgba(212, 168, 85, 0.15)',
+        borderTop: '2px solid rgba(212, 168, 85, 0.4)',
+        borderBottom: '2px solid rgba(212, 168, 85, 0.4)',
+        pointerEvents: 'none',
+        zIndex: 9999,
+        transition: 'top 0.05s linear',
+      }}
+      aria-hidden="true"
+    />
   );
 }
 
@@ -1771,6 +2061,102 @@ const styles = `
 .high-contrast .prose * {
   color: #000 !important;
 }
+
+/* Dark Mode */
+.dark-mode {
+  background: #1a1a2e !important;
+}
+.dark-mode header {
+  background: #16213e !important;
+  border-color: #0f3460 !important;
+}
+.dark-mode main > div {
+  background: #1a1a2e !important;
+}
+.dark-mode h1,
+.dark-mode h2,
+.dark-mode h3,
+.dark-mode h4 {
+  color: #e8d5b7 !important;
+}
+.dark-mode p,
+.dark-mode span,
+.dark-mode li,
+.dark-mode td,
+.dark-mode th,
+.dark-mode label {
+  color: #d4d4d4 !important;
+}
+.dark-mode .prose * {
+  color: #d4d4d4 !important;
+}
+.dark-mode .prose h1,
+.dark-mode .prose h2,
+.dark-mode .prose h3,
+.dark-mode .prose h4 {
+  color: #e8d5b7 !important;
+}
+.dark-mode .prose strong {
+  color: #f0e6d3 !important;
+}
+.dark-mode .prose a {
+  color: #7eb8da !important;
+}
+.dark-mode button {
+  border-color: #0f3460 !important;
+}
+.dark-mode textarea,
+.dark-mode input {
+  background: #16213e !important;
+  color: #d4d4d4 !important;
+  border-color: #0f3460 !important;
+}
+
+/* Line Spacing Modes */
+.leading-relaxed-mode p,
+.leading-relaxed-mode li,
+.leading-relaxed-mode span,
+.leading-relaxed-mode td,
+.leading-relaxed-mode .prose * {
+  line-height: 2.2 !important;
+}
+.leading-compact-mode p,
+.leading-compact-mode li,
+.leading-compact-mode span,
+.leading-compact-mode td,
+.leading-compact-mode .prose * {
+  line-height: 1.4 !important;
+}
+
+/* Dyslexia-Friendly Font */
+.dyslexia-font,
+.dyslexia-font * {
+  font-family: 'OpenDyslexic', 'Comic Sans MS', 'Arial', sans-serif !important;
+  letter-spacing: 0.05em;
+  word-spacing: 0.15em;
+}
+
+/* Reduced Motion */
+.reduced-motion *,
+.reduced-motion *::before,
+.reduced-motion *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+}
+
+/* Enhanced Focus Indicators */
+.focus-visible-enhanced *:focus-visible {
+  outline: 3px solid #8B2542 !important;
+  outline-offset: 2px !important;
+  box-shadow: 0 0 0 4px rgba(139, 37, 66, 0.3) !important;
+}
+
+/* Hide Google Translate default UI */
+.goog-te-banner-frame { display: none !important; }
+.goog-te-gadget { display: none !important; }
+body { top: 0 !important; }
+.skiptranslate { display: none !important; }
 `;
 
 // Inject styles
