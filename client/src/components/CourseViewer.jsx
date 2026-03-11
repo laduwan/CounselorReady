@@ -1108,8 +1108,7 @@ function ReferencesView({ course, onBack }) {
               className="text-sm text-navy-600 leading-relaxed pl-10"
               style={{ textIndent: '-2.25rem' }}
             >
-              {ref}
-            </li>
+              {typeof ref === 'string' ? ref : ref?.text || ref?.title || JSON.stringify}            </li>
           ))}
         </ol>
       </div>
