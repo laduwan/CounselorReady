@@ -1,3 +1,8 @@
+/**
+ * Copyright (c) 2026 CounselorReady, a subsidiary of Ga Integrated Therapeutic Perspectives, LLC.
+ * All rights reserved. Proprietary and confidential.
+ * Unauthorized copying or distribution is strictly prohibited.
+ */
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
@@ -35,6 +40,23 @@ import aiRoutes from './routes/ai.js';
 import aiCourseGeneratorRoutes from './routes/aiCourseGenerator.js';
 import courseBuilderRoutes from './routes/courseBuilder.js';
 import narrationRoutes from './routes/narration.js';
+import uploadsRoutes from './routes/uploads.js';
+import imageUploadRoutes from './routes/imageUpload.js';
+// ── New feature routes (2026-03-06) ──
+import organizationsRoutes from './routes/organizations.js';
+import cePlannerRoutes from './routes/cePlanner.js';
+import insuranceCredentialsRoutes from './routes/insuranceCredentials.js';
+import auditKitRoutes from './routes/auditKit.js';
+import boardAlertsRoutes from './routes/boardAlerts.js';
+// ── New feature routes (2026-03-06 batch 2) ──
+import groupLicensesRoutes from './routes/groupLicenses.js';
+import recommendationsRoutes from './routes/recommendations.js';
+import supervisionRoutes from './routes/supervision.js';
+import referralsRoutes from './routes/referrals.js';
+import gamificationRoutes from './routes/gamification.js';
+import notificationsRoutes from './routes/notifications.js';
+import legacyVaultRoutes from './routes/legacyVault.js';
+import adminStatsRoutes from './routes/adminStats.js';
 // Import services
 import { initializeScheduler } from './services/notificationScheduler.js';
 
@@ -216,6 +238,23 @@ app.use('/api/ai', aiRoutes);
 app.use('/api/ai-course-generator', aiCourseGeneratorRoutes);
 app.use('/api/course-builder', courseBuilderRoutes);
 app.use('/api/narration', narrationRoutes);
+app.use('/api/uploads', uploadsRoutes);
+app.use('/api/images', imageUploadRoutes);
+// ── New feature routes (2026-03-06) ──
+app.use('/api/organizations', organizationsRoutes);
+app.use('/api/ce-planner', cePlannerRoutes);
+app.use('/api/insurance-credentials', insuranceCredentialsRoutes);
+app.use('/api/audit-kit', auditKitRoutes);
+app.use('/api/board-alerts', boardAlertsRoutes);
+// ── New feature routes (2026-03-06 batch 2) ──
+app.use('/api/group-licenses', groupLicensesRoutes);
+app.use('/api/recommendations', recommendationsRoutes);
+app.use('/api/supervision', supervisionRoutes);
+app.use('/api/referrals', referralsRoutes);
+app.use('/api/gamification', gamificationRoutes);
+app.use('/api/notifications', notificationsRoutes);
+app.use('/api/legacy-vault', legacyVaultRoutes);
+app.use('/api/admin/stats', adminStatsRoutes);
 
 // Static templates directory intentionally NOT served publicly
 // Certificate assets (signature.png, certificate_template.pdf) are loaded

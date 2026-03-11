@@ -1,3 +1,8 @@
+/**
+ * Copyright (c) 2026 CounselorReady, a subsidiary of Ga Integrated Therapeutic Perspectives, LLC.
+ * All rights reserved. Proprietary and confidential.
+ * Unauthorized copying or distribution is strictly prohibited.
+ */
 import express from 'express';
 import crypto from 'crypto';
 import { Resend } from 'resend';
@@ -132,9 +137,17 @@ router.post('/login', async (req, res) => {
     }
     
     await user.save();
-    
+
     const token = generateToken(user._id);
-    
+
+    // Log login activity (fire and forget)
+    logActivity(ACTIVITY_TYPES.USER_LOGIN, {}, {
+      notifyAdmin: false,
+      userId: user._id,
+      userName: user.profile?.firstName || '',
+      userEmail: user.email
+    }).catch(() => {});
+
     res.json({
       message: 'Login successful',
       token,

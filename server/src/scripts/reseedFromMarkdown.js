@@ -1,3 +1,8 @@
+/**
+ * Copyright (c) 2026 CounselorReady, a subsidiary of Ga Integrated Therapeutic Perspectives, LLC.
+ * All rights reserved. Proprietary and confidential.
+ * Unauthorized copying or distribution is strictly prohibited.
+ */
 // reseedFromMarkdown.js — Re-load 7 courses from expanded markdown files on Render
 // Reads directly from src/scripts/courseMarkdown/ — no embedded content needed
 // Run: node src/scripts/reseedFromMarkdown.js

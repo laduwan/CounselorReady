@@ -1,4 +1,9 @@
 /**
+ * Copyright (c) 2026 CounselorReady, a subsidiary of Ga Integrated Therapeutic Perspectives, LLC.
+ * All rights reserved. Proprietary and confidential.
+ * Unauthorized copying or distribution is strictly prohibited.
+ */
+/**
  * CounselorReady Course Seed File
  * Course: Mastering TeleMental Health: Compliant Virtual Practice in Georgia
  * CE Hours: 6.0
@@ -92,7 +97,7 @@ const TELEMENTAL_COURSE = {
         },
         {
           type: "text",
-          content: `<h3>Course Learning Objectives</h3>
+          content: `<h2>Course Learning Objectives</h2>
 
 <p><strong>Course:</strong> Mastering TeleMental Health: Compliant Virtual Practice in Georgia<br/>
 <strong>CE Hours:</strong> 6.0 | <strong>NBCC ACEP Provider:</strong> #7760<br/>
@@ -117,7 +122,7 @@ const TELEMENTAL_COURSE = {
         },
         {
           type: "text",
-          content: `<h3>Why Georgia Regulations Matter for Your Virtual Practice</h3>
+          content: `<h2>Why Georgia Regulations Matter for Your Virtual Practice</h2>
 
 <p>If you are a licensed professional counselor in Georgia providing services via telehealth, the regulatory landscape is not optional reading — it is the foundation your entire practice sits on. The Georgia Composite Board of Professional Counselors, Social Workers, and Marriage and Family Therapists governs licensure, continuing education, and practice standards for LPCs, LAPCs, LCSWs, and LMFTs across the state. Every telehealth session you conduct, every informed consent document you present, and every emergency protocol you maintain must align with these regulations.</p>
 
@@ -127,7 +132,7 @@ const TELEMENTAL_COURSE = {
         },
         {
           type: "text",
-          content: `<h3>The 35-Hour Biennial Requirement</h3>
+          content: `<h2>The 35-Hour Biennial Requirement</h2>
 
 <p>Licensed Professional Counselors in Georgia must complete 35 continuing education units (CEUs) every two years — the biennial renewal cycle. Licensed Associate Professional Counselors must complete 17.5 CEUs annually during their supervised practice period. These are not suggestions. Failure to complete the required hours before your renewal date can result in administrative penalties, license lapse, or formal disciplinary action by the Composite Board.</p>
 
@@ -143,7 +148,7 @@ const TELEMENTAL_COURSE = {
         },
         {
           type: "text",
-          content: `<h3>The Audit Process: What Actually Happens</h3>
+          content: `<h2>The Audit Process: What Actually Happens</h2>
 
 <p>Understanding the Georgia Composite Board's audit process removes fear and replaces it with preparedness. The Board conducts random audits during each renewal cycle. Selection is random — being audited does not mean you are suspected of anything. It is a routine compliance verification mechanism similar to an IRS audit. However, the consequences of failing an audit are serious enough that every practitioner should maintain audit-ready records at all times.</p>
 
@@ -160,7 +165,7 @@ const TELEMENTAL_COURSE = {
         },
         {
           type: "text",
-          content: `<h3>Telehealth-Specific Regulatory Developments</h3>
+          content: `<h2>Telehealth-Specific Regulatory Developments</h2>
 
 <p>Georgia's regulatory landscape for telehealth has evolved rapidly since 2020, and practitioners must stay current with changes that directly affect their practice. Prior to the COVID-19 pandemic, Georgia had relatively limited telehealth regulations for mental health professionals. The emergency waivers issued during the pandemic temporarily relaxed many requirements — including platform restrictions, interstate practice limitations, and certain informed consent provisions. As these waivers have expired, practitioners must ensure they are operating under current regulations, not pandemic-era emergency provisions.</p>
 
@@ -193,7 +198,7 @@ const TELEMENTAL_COURSE = {
         },
         {
           type: "text",
-          content: `<h3>Telehealth Competency: Georgia's Evolving Standard</h3>
+          content: `<h2>Telehealth Competency: Georgia's Evolving Standard</h2>
 
 <p>Georgia regulations now specify minimum competency requirements for telehealth practice that go beyond simply knowing how to operate Zoom. The state recognizes that telehealth is a distinct modality of service delivery requiring specific knowledge and skills — not just the same therapy with a screen in between. These competency areas include technical proficiency with HIPAA-compliant platforms, understanding of privacy protections specific to digital communication, development of emergency procedures for remote clients, and awareness of cultural considerations unique to virtual service delivery.</p>
 
@@ -252,7 +257,7 @@ const TELEMENTAL_COURSE = {
         },
         {
           type: "text",
-          content: `<h3>Strategic CE Planning for Telehealth Practitioners</h3>
+          content: `<h2>Strategic CE Planning for Telehealth Practitioners</h2>
 
 <p>Effective continuing education planning begins with honest self-assessment. Before browsing CE catalogs, sit down and evaluate your actual competency gaps. Where do you feel confident in your telehealth practice? Where do you avoid certain situations because you are not sure how to handle them? A counselor who is uncomfortable managing technology failures during crisis situations has a clear CE priority. A counselor who has never reviewed their platform's Business Associate Agreement has a compliance gap that needs addressing.</p>
 
@@ -317,7 +322,7 @@ const TELEMENTAL_COURSE = {
         },
         {
           type: "text",
-          content: `<h3>Understanding Professional Development as a Clinical Obligation</h3>
+          content: `<h2>Understanding Professional Development as a Clinical Obligation</h2>
 
 <p>Professional development in telehealth extends beyond regulatory compliance — it is a clinical and ethical obligation rooted in the fundamental principle that clients deserve a competent practitioner. The ACA Code of Ethics, Section C.2.f, does not frame continuing education as a bureaucratic requirement to be minimally satisfied. It frames ongoing learning as a professional duty that directly impacts the quality of care clients receive.</p>
 
@@ -369,7 +374,7 @@ const TELEMENTAL_COURSE = {
         },
         {
           type: "text",
-          content: `<h3>Your Platform Is Your Office — Choose Accordingly</h3>
+          content: `<h2>Your Platform Is Your Office — Choose Accordingly</h2>
 
 <p>When you practice in person, you make deliberate decisions about your office space. You choose a location with soundproofing, a waiting area that provides privacy, a locked file cabinet for records, and a door that closes. You would not conduct therapy in a coffee shop with your notes spread across a communal table. Yet many clinicians transition to telehealth without applying the same level of scrutiny to their virtual environment.</p>
 
@@ -383,7 +388,7 @@ const TELEMENTAL_COURSE = {
         },
         {
           type: "text",
-          content: `<h3>Evaluating Platforms: A Systematic Approach</h3>
+          content: `<h2>Evaluating Platforms: A Systematic Approach</h2>
 
 <p>Choosing a telehealth platform should be a systematic evaluation process, not a decision based on which platform your colleague recommended or which one has the best marketing. The platform you select will define your clinical workflow, your clients' experience, and your compliance posture for as long as you use it. Take the time to evaluate options against specific criteria before committing.</p>
 
@@ -402,7 +407,7 @@ const TELEMENTAL_COURSE = {
         },
         {
           type: "text",
-          content: `<h3>The Business Associate Agreement: Your Most Important Document</h3>
+          content: `<h2>The Business Associate Agreement: Your Most Important Document</h2>
 
 <p>Before you use any platform for telehealth, you need a signed Business Associate Agreement (BAA). This is non-negotiable. Under HIPAA, any entity that handles protected health information (PHI) on your behalf is a Business Associate. Your telehealth platform handles PHI — video of therapy sessions, potentially recorded content, chat messages, scheduling information with client names and appointment details. Without a BAA, you are in violation of HIPAA regardless of how secure the platform claims to be.</p>
 
@@ -467,7 +472,7 @@ const TELEMENTAL_COURSE = {
         },
         {
           type: "text",
-          content: `<h3>Setting Up Your Virtual Office: Technical Requirements</h3>
+          content: `<h2>Setting Up Your Virtual Office: Technical Requirements</h2>
 
 <p>Beyond platform selection, your physical and technical setup directly impacts clinical quality and compliance. Think of this as designing your virtual office with the same intentionality you would apply to a physical space. Every element — from your internet connection to your lighting to your chair — affects the clinical experience your client receives.</p>
 
@@ -516,7 +521,7 @@ const TELEMENTAL_COURSE = {
         },
         {
           type: "text",
-          content: `<h3>Security Practices Beyond the Platform</h3>
+          content: `<h2>Security Practices Beyond the Platform</h2>
 
 <p>A HIPAA-compliant platform is necessary but not sufficient. Your security practices must extend across your entire digital workflow. Think of platform security as one layer in a multi-layer protection system. If any layer fails, the others must compensate — and if too many layers are weak, a breach becomes inevitable rather than merely possible.</p>
 
@@ -599,7 +604,7 @@ const TELEMENTAL_COURSE = {
         },
         {
           type: "text",
-          content: `<h3>Informed Consent Is Not a Form — It Is a Process</h3>
+          content: `<h2>Informed Consent Is Not a Form — It Is a Process</h2>
 
 <p>Many clinicians treat informed consent as a document — a form the client signs at intake and then files away. This approach is insufficient for in-person practice and dangerously inadequate for telehealth. Informed consent is an ongoing process of ensuring that your client understands what they are agreeing to, what the risks and benefits are, and what their alternatives are. In telehealth, this process is more complex because the risks are different, the technology introduces variables the client may not understand, and the legal landscape shifts depending on where the client is sitting.</p>
 
@@ -621,7 +626,7 @@ const TELEMENTAL_COURSE = {
         },
         {
           type: "text",
-          content: `<h3>Telehealth-Specific Consent Elements</h3>
+          content: `<h2>Telehealth-Specific Consent Elements</h2>
 
 <p>Your telehealth informed consent must address each of the following areas. This is not an exhaustive list — your specific practice may require additional elements — but these represent the floor for competent telehealth informed consent.</p>
 
@@ -709,7 +714,7 @@ const TELEMENTAL_COURSE = {
         },
         {
           type: "text",
-          content: `<h3>ACA Code of Ethics: Key Sections for Telehealth Practice</h3>
+          content: `<h2>ACA Code of Ethics: Key Sections for Telehealth Practice</h2>
 
 <p>The ACA Code of Ethics provides the ethical framework within which all counseling practice occurs, including telehealth. Several sections are particularly relevant to virtual service delivery. Understanding these sections is not academic — they are the standards against which your practice will be evaluated if a complaint is filed, a lawsuit is brought, or a licensing board reviews your conduct.</p>
 
@@ -773,7 +778,7 @@ const TELEMENTAL_COURSE = {
         },
         {
           type: "text",
-          content: `<h3>Boundary Management in the Virtual Therapy Room</h3>
+          content: `<h2>Boundary Management in the Virtual Therapy Room</h2>
 
 <p>Telehealth introduces boundary challenges that do not exist in traditional practice. When therapy happens in your client's bedroom, on their couch, or in their car, the therapeutic frame shifts in ways that affect the clinical relationship. Understanding and proactively managing these boundary shifts is essential for maintaining clinical effectiveness and ethical practice.</p>
 
@@ -847,7 +852,7 @@ const TELEMENTAL_COURSE = {
         },
         {
           type: "text",
-          content: `<h3>Therapeutic Presence Through a Screen</h3>
+          content: `<h2>Therapeutic Presence Through a Screen</h2>
 
 <p>Therapeutic presence — your ability to be fully engaged, attuned, and emotionally available to your client — is the foundation of effective therapy regardless of modality. Research consistently demonstrates that the quality of the therapeutic alliance is the strongest predictor of positive outcomes across theoretical orientations. In telehealth, creating and maintaining therapeutic presence requires deliberate adaptation because the medium itself introduces barriers that do not exist in person.</p>
 
@@ -875,7 +880,7 @@ const TELEMENTAL_COURSE = {
         },
         {
           type: "text",
-          content: `<h3>Conducting Mental Status Examinations Virtually</h3>
+          content: `<h2>Conducting Mental Status Examinations Virtually</h2>
 
 <p>The mental status examination (MSE) is a cornerstone of clinical assessment, and adapting it for telehealth requires understanding what you can and cannot reliably observe through a camera. The MSE is not a standardized test — it is a structured clinical observation that documents the client's current cognitive, emotional, and behavioral presentation. Each domain of the MSE must be considered in terms of what the telehealth medium preserves, what it degrades, and what it eliminates entirely.</p>
 
@@ -913,7 +918,7 @@ const TELEMENTAL_COURSE = {
         },
         {
           type: "text",
-          content: `<h3>The Evidence Base for Telehealth Effectiveness</h3>
+          content: `<h2>The Evidence Base for Telehealth Effectiveness</h2>
 
 <p>Clinical decisions about whether to offer telehealth, to whom, and for which conditions should be informed by the growing research base on telemental health effectiveness. Practitioners who default to either 'telehealth works for everything' or 'telehealth is inferior to in-person therapy' are both operating outside the evidence. The reality is more nuanced, and your clinical practice should reflect that nuance.</p>
 
@@ -941,7 +946,7 @@ const TELEMENTAL_COURSE = {
         },
         {
           type: "text",
-          content: `<h3>Adapting Evidence-Based Interventions for Virtual Delivery</h3>
+          content: `<h2>Adapting Evidence-Based Interventions for Virtual Delivery</h2>
 
 <p>Most evidence-based therapeutic interventions can be adapted for telehealth, but adaptation requires intentionality rather than simple transfer. The assumption that 'it works the same online' is both empirically unsupported and clinically risky. Research on telehealth CBT, for example, shows comparable outcomes to in-person delivery — but the studies that demonstrate this used structured adaptations, not identical protocols delivered through a screen.</p>
 
@@ -992,7 +997,7 @@ const TELEMENTAL_COURSE = {
         },
         {
           type: "text",
-          content: `<h3>Special Populations: Telehealth Considerations</h3>
+          content: `<h2>Special Populations: Telehealth Considerations</h2>
 
 <p>Telehealth does not affect all populations equally. As a clinician committed to equitable practice, you must consider how virtual service delivery creates both opportunities and barriers for different client groups. The ethical principle of justice — ensuring fair and equitable access to services — requires active attention to these disparities rather than passive assumption that telehealth is universally accessible.</p>
 
@@ -1106,7 +1111,7 @@ const TELEMENTAL_COURSE = {
         },
         {
           type: "text",
-          content: `<h3>The Reality of Virtual Crisis Response</h3>
+          content: `<h2>The Reality of Virtual Crisis Response</h2>
 
 <p>A client is sobbing on camera. Through ragged breaths, they tell you they have a loaded gun in the nightstand drawer next to them. You are in your home office in Atlanta. They are in their apartment in Macon — or maybe Savannah, or maybe a hotel room in Alabama where they traveled for work. You cannot physically intervene. You cannot block the door, remove the weapon, or drive them to an emergency room. All you have is your voice, your screen, and whatever crisis protocols you established before this moment.</p>
 
@@ -1130,7 +1135,7 @@ const TELEMENTAL_COURSE = {
         },
         {
           type: "text",
-          content: `<h3>Pre-Session Safety Protocols</h3>
+          content: `<h2>Pre-Session Safety Protocols</h2>
 
 <p>Effective crisis response in telehealth begins before the crisis occurs — ideally before the first session ever starts. The following protocols should be established during intake and verified at the start of every session.</p>
 
@@ -1159,7 +1164,7 @@ const TELEMENTAL_COURSE = {
         },
         {
           type: "text",
-          content: `<h3>Suicide Risk Assessment in the Telehealth Context</h3>
+          content: `<h2>Suicide Risk Assessment in the Telehealth Context</h2>
 
 <p>Conducting a thorough suicide risk assessment through video requires the same clinical skills as in-person assessment, with additional considerations for the telehealth modality. The core framework remains unchanged: assess risk factors, protective factors, warning signs, intent, plan specificity, access to means, timeline, and history of attempts. What changes is the method of gathering this information and the limitations you must acknowledge.</p>
 
@@ -1199,7 +1204,7 @@ const TELEMENTAL_COURSE = {
         },
         {
           type: "text",
-          content: `<h3>Managing Technology Failures During Crisis</h3>
+          content: `<h2>Managing Technology Failures During Crisis</h2>
 
 <p>The nightmare scenario: you are in the middle of a crisis intervention and the video connection drops. The screen freezes, the audio cuts out, and your client — who just disclosed suicidal ideation with a plan — is suddenly unreachable. What happens next depends on protocols you established before this moment.</p>
 
@@ -1253,7 +1258,7 @@ const TELEMENTAL_COURSE = {
         },
         {
           type: "text",
-          content: `<h3>Lethal Means Counseling in Telehealth</h3>
+          content: `<h2>Lethal Means Counseling in Telehealth</h2>
 
 <p>Lethal means counseling — the practice of collaboratively reducing access to lethal means during periods of acute risk — takes on unique dimensions in telehealth. In person, you can walk a client through removing medications from their home while sitting with them in the office. In telehealth, you are asking a client to restrict their own access to means while you watch through a screen, unable to physically assist or verify compliance.</p>
 
@@ -1278,7 +1283,7 @@ const TELEMENTAL_COURSE = {
         },
         {
           type: "text",
-          content: `<h3>Cross-Jurisdictional Emergency Coordination</h3>
+          content: `<h2>Cross-Jurisdictional Emergency Coordination</h2>
 
 <p>One of the most complex aspects of telehealth crisis intervention is coordinating emergency services across jurisdictions. When your client is in a different city, county, or state than you are, dispatching help requires navigating systems you may be unfamiliar with.</p>
 
@@ -1375,7 +1380,7 @@ const TELEMENTAL_COURSE = {
         },
         {
           type: "text",
-          content: `<h3>Sustainability Is Not Optional</h3>
+          content: `<h2>Sustainability Is Not Optional</h2>
 
 <p>The initial rush to telehealth adoption during the COVID-19 pandemic prioritized access over sustainability. Counselors converted dining rooms into offices, figured out Zoom on the fly, and kept seeing clients because clients needed them. That urgency was appropriate for a crisis. It is not a sustainable practice model.</p>
 
@@ -1385,7 +1390,7 @@ const TELEMENTAL_COURSE = {
         },
         {
           type: "text",
-          content: `<h3>Practice Model Decisions</h3>
+          content: `<h2>Practice Model Decisions</h2>
 
 <h4>Full Telehealth Practice</h4>
 <p>A fully virtual practice eliminates office overhead — no rent, no utilities, no commute, no furnishing costs. It provides geographic flexibility, allowing you to serve clients across a wide area (within your licensing jurisdiction). It can reduce scheduling friction because both you and the client eliminate travel time. However, it may limit your client population — some clients are not appropriate for telehealth, and some populations are better served in person. It requires strong home office infrastructure and disciplined boundary management because your workplace never 'closes.'</p>
@@ -1412,7 +1417,7 @@ const TELEMENTAL_COURSE = {
         },
         {
           type: "text",
-          content: `<h3>Business and Financial Considerations</h3>
+          content: `<h2>Business and Financial Considerations</h2>
 
 <h4>Telehealth Billing and Reimbursement</h4>
 <p>Billing for telehealth services requires understanding specific coding and documentation requirements that differ from in-person billing. The most commonly used telehealth-specific elements include Place of Service (POS) codes, telehealth modifiers, and documentation of the technology used.</p>
@@ -1435,7 +1440,7 @@ const TELEMENTAL_COURSE = {
         },
         {
           type: "text",
-          content: `<h3>Telehealth Documentation Best Practices</h3>
+          content: `<h2>Telehealth Documentation Best Practices</h2>
 
 <p>Documentation for telehealth sessions must include everything required for in-person documentation PLUS telehealth-specific elements. This additional documentation burden is real but necessary — it protects you during audits, supports continuity of care, and demonstrates compliance with telehealth-specific standards of practice.</p>
 
@@ -1456,7 +1461,7 @@ const TELEMENTAL_COURSE = {
         },
         {
           type: "text",
-          content: `<h3>Setting Boundaries in a Home-Based Practice</h3>
+          content: `<h2>Setting Boundaries in a Home-Based Practice</h2>
 
 <p>When your office is your home, every boundary must be explicit because none of them are structural. In a commercial office, the building itself creates boundaries — you arrive, you work, you leave. At home, you wake up and your office is already there. Your last session ends and your family life immediately starts, in the same space. Without deliberate boundary construction, work seeps into everything.</p>
 
@@ -1483,7 +1488,7 @@ const TELEMENTAL_COURSE = {
         },
         {
           type: "text",
-          content: `<h3>Preventing Telehealth Burnout</h3>
+          content: `<h2>Preventing Telehealth Burnout</h2>
 
 <h4>Screen Fatigue: The Science and the Solutions</h4>
 <p>Video sessions are more cognitively demanding than in-person sessions. Research on 'Zoom fatigue' — a phenomenon studied extensively since 2020 by Stanford University's Virtual Human Interaction Lab and other research groups — identifies several contributing factors: constant close-up eye contact is unnaturally intense (in normal conversation, people look away frequently; on video, they are positioned in a perpetual close-up gaze), seeing your own face continuously creates self-evaluative stress (imagine having a mirror placed in front of you during every conversation you have all day), reduced mobility (you must stay in the camera frame) limits natural movement and creates physical tension, and the cognitive load of processing nonverbal cues through a degraded medium is higher than in person because your brain is working harder to extract information from compressed visual and auditory signals.</p>
@@ -1540,7 +1545,7 @@ const TELEMENTAL_COURSE = {
         },
         {
           type: "text",
-          content: `<h3>Professional Organizations and Continued Growth</h3>
+          content: `<h2>Professional Organizations and Continued Growth</h2>
 
 <p>Ongoing professional development in telehealth is not a luxury — it is a clinical obligation. The technology evolves, the regulations change, the research base grows, and your competency must keep pace. Several professional organizations provide telehealth-specific resources, training, and community that can anchor your professional development plan.</p>
 
@@ -1561,7 +1566,7 @@ const TELEMENTAL_COURSE = {
         },
         {
           type: "text",
-          content: `<h3>Liability, Malpractice, and Risk Management</h3>
+          content: `<h2>Liability, Malpractice, and Risk Management</h2>
 
 <p>Telehealth practice carries liability considerations that are distinct from — and in some cases additional to — the liability profile of in-person practice. Understanding these risks is not about practicing defensively at the expense of clinical care. It is about practicing competently within a modality that introduces variables your malpractice insurance policy may not have been designed to cover.</p>
 
@@ -1587,7 +1592,7 @@ const TELEMENTAL_COURSE = {
         },
         {
           type: "text",
-          content: `<h3>The Future of Telehealth in Georgia</h3>
+          content: `<h2>The Future of Telehealth in Georgia</h2>
 
 <p>Telehealth is not going away. It is now a permanent feature of the mental health service delivery landscape. The question for Georgia practitioners is not whether to practice telehealth but how to practice it with excellence.</p>
 

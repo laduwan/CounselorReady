@@ -1,3 +1,8 @@
+/**
+ * Copyright (c) 2026 CounselorReady, a subsidiary of Ga Integrated Therapeutic Perspectives, LLC.
+ * All rights reserved. Proprietary and confidential.
+ * Unauthorized copying or distribution is strictly prohibited.
+ */
 // scripts/seedInteractiveCourses.js
 // Seeds the interactive courses (TIC, Ethics, Crisis) into MongoDB
 // Run: node src/scripts/seedInteractiveCourses.js
@@ -123,7 +128,7 @@ const traumaInformedCareCourse = {
         {
           type: "text",
           order: 2,
-          textContent: "<h3>What is Trauma-Informed Care?</h3><p>Trauma-Informed Care (TIC) is a treatment framework that involves understanding, recognizing, and responding to the effects of all types of trauma. It emphasizes physical, psychological, and emotional safety for both providers and survivors, and creates opportunities for survivors to rebuild a sense of control and empowerment.</p><p>According to the World Health Organization, approximately <strong>70% of adults</strong> worldwide have experienced at least one traumatic event in their lifetime. This staggering statistic underscores why trauma-informed approaches are essential in clinical practice.</p>"
+          textContent: "<h2>What is Trauma-Informed Care?</h2><p>Trauma-Informed Care (TIC) is a treatment framework that involves understanding, recognizing, and responding to the effects of all types of trauma. It emphasizes physical, psychological, and emotional safety for both providers and survivors, and creates opportunities for survivors to rebuild a sense of control and empowerment.</p><p>According to the World Health Organization, approximately <strong>70% of adults</strong> worldwide have experienced at least one traumatic event in their lifetime. This staggering statistic underscores why trauma-informed approaches are essential in clinical practice.</p>"
         },
         {
           type: "accordion",
@@ -328,7 +333,7 @@ const traumaInformedCareCourse = {
         {
           type: "text",
           order: 2,
-          textContent: "<h3>The Importance of Trauma-Informed Assessment</h3><p>Proper assessment is crucial for identifying trauma history and its effects. Assessment should be conducted in a safe, supportive environment with clear explanation of purpose and how information will be used.</p>"
+          textContent: "<h2>The Importance of Trauma-Informed Assessment</h2><p>Proper assessment is crucial for identifying trauma history and its effects. Assessment should be conducted in a safe, supportive environment with clear explanation of purpose and how information will be used.</p>"
         },
         {
           type: "accordion",
@@ -385,7 +390,7 @@ const traumaInformedCareCourse = {
         {
           type: "text",
           order: 2,
-          textContent: "<h3>Moving Toward Implementation</h3><p>Implementing TIC requires organizational commitment, training, and ongoing support. Success depends on leadership buy-in, staff training, policy changes, and continuous quality improvement.</p>"
+          textContent: "<h2>Moving Toward Implementation</h2><p>Implementing TIC requires organizational commitment, training, and ongoing support. Success depends on leadership buy-in, staff training, policy changes, and continuous quality improvement.</p>"
         },
         {
           type: "accordion",
@@ -587,7 +592,7 @@ const neurobiologyOfTraumaCourse = {
         {
           type: "text",
           order: 2,
-          textContent: "<h3>Why Neurobiology Matters in Trauma Treatment</h3><p>Understanding the neurobiology of trauma transforms how we approach treatment. When clinicians understand what happens in the brain during and after traumatic experiences, they can better explain symptoms to clients, select appropriate interventions, and instill hope for recovery through neuroplasticity.</p><p>Trauma is not just a psychological phenomenon—it fundamentally alters brain structure and function. These changes explain many trauma symptoms that might otherwise seem puzzling or irrational.</p>"
+          textContent: "<h2>Why Neurobiology Matters in Trauma Treatment</h2><p>Understanding the neurobiology of trauma transforms how we approach treatment. When clinicians understand what happens in the brain during and after traumatic experiences, they can better explain symptoms to clients, select appropriate interventions, and instill hope for recovery through neuroplasticity.</p><p>Trauma is not just a psychological phenomenon—it fundamentally alters brain structure and function. These changes explain many trauma symptoms that might otherwise seem puzzling or irrational.</p>"
         },
         {
           type: "accordion",
@@ -653,7 +658,7 @@ const neurobiologyOfTraumaCourse = {
         {
           type: "text",
           order: 2,
-          textContent: "<h3>The HPA Axis</h3><p>The Hypothalamic-Pituitary-Adrenal (HPA) axis is the body's central stress response system. When the amygdala detects a threat, it triggers a cascade of hormonal responses designed to prepare the body for survival.</p>"
+          textContent: "<h2>The HPA Axis</h2><p>The Hypothalamic-Pituitary-Adrenal (HPA) axis is the body's central stress response system. When the amygdala detects a threat, it triggers a cascade of hormonal responses designed to prepare the body for survival.</p>"
         },
         {
           type: "accordion",
@@ -737,7 +742,7 @@ const neurobiologyOfTraumaCourse = {
         {
           type: "text",
           order: 2,
-          textContent: "<h3>How Trauma Disrupts Memory</h3><p>Traumatic memories are processed differently than ordinary memories. During trauma, the hippocampus (responsible for contextualizing and storing memories) may be impaired by high cortisol levels, while the amygdala (which processes emotional significance) remains hyperactive. This creates fragmented, emotionally intense memories without proper context.</p>"
+          textContent: "<h2>How Trauma Disrupts Memory</h2><p>Traumatic memories are processed differently than ordinary memories. During trauma, the hippocampus (responsible for contextualizing and storing memories) may be impaired by high cortisol levels, while the amygdala (which processes emotional significance) remains hyperactive. This creates fragmented, emotionally intense memories without proper context.</p>"
         },
         {
           type: "accordion",
@@ -807,7 +812,7 @@ const neurobiologyOfTraumaCourse = {
         {
           type: "text",
           order: 2,
-          textContent: "<h3>The Brain Can Change</h3><p>Neuroplasticity—the brain's ability to reorganize and form new neural connections—provides the foundation for trauma recovery. The same neural mechanisms that created trauma responses can be harnessed to build new, healthier patterns. This is the biological basis for hope in trauma treatment.</p>"
+          textContent: "<h2>The Brain Can Change</h2><p>Neuroplasticity—the brain's ability to reorganize and form new neural connections—provides the foundation for trauma recovery. The same neural mechanisms that created trauma responses can be harnessed to build new, healthier patterns. This is the biological basis for hope in trauma treatment.</p>"
         },
         {
           type: "accordion",
@@ -883,7 +888,7 @@ const neurobiologyOfTraumaCourse = {
         {
           type: "text",
           order: 2,
-          textContent: "<h3>Integrating Neuroscience into Treatment</h3><p>Understanding trauma neurobiology transforms clinical practice. Clinicians can use this knowledge to inform assessment, guide intervention selection, provide psychoeducation, and help clients make sense of their experiences.</p>"
+          textContent: "<h2>Integrating Neuroscience into Treatment</h2><p>Understanding trauma neurobiology transforms clinical practice. Clinicians can use this knowledge to inform assessment, guide intervention selection, provide psychoeducation, and help clients make sense of their experiences.</p>"
         },
         {
           type: "accordion",
@@ -1071,7 +1076,7 @@ const ethicsCourse = {
         {
           type: "text",
           order: 2,
-          textContent: "<h3>Why Ethics Matter</h3><p>Ethics form the foundation of professional counseling practice. They protect clients, guide practitioners, and uphold the integrity of the profession. Understanding and applying ethical principles is not just a regulatory requirement—it's essential for client welfare and professional excellence.</p>"
+          textContent: "<h2>Why Ethics Matter</h2><p>Ethics form the foundation of professional counseling practice. They protect clients, guide practitioners, and uphold the integrity of the profession. Understanding and applying ethical principles is not just a regulatory requirement—it's essential for client welfare and professional excellence.</p>"
         },
         {
           type: "accordion",
@@ -1177,7 +1182,7 @@ const crisisCourse = {
         {
           type: "text",
           order: 2,
-          textContent: "<h3>What is a Crisis?</h3><p>A crisis is a state of psychological disequilibrium in which a person's usual coping mechanisms are overwhelmed. Crises are time-limited but can result in significant harm if not properly addressed. Understanding crisis theory is essential for effective intervention.</p>"
+          textContent: "<h2>What is a Crisis?</h2><p>A crisis is a state of psychological disequilibrium in which a person's usual coping mechanisms are overwhelmed. Crises are time-limited but can result in significant harm if not properly addressed. Understanding crisis theory is essential for effective intervention.</p>"
         },
         {
           type: "accordion",

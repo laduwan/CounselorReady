@@ -5,7 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin Courses - CounselorReady</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
   <script>
     tailwind.config = {
       theme: {
@@ -14,34 +14,35 @@
             burgundy: { 50:'#fdf2f5',100:'#fce7ed',200:'#f8cfdb',300:'#f2a8be',700:'#8b2542',800:'#6b1d34',900:'#4a1524',950:'#2d0a14' },
             forest: { 50:'#f2f7f4',100:'#e0ede5',200:'#c3dccc',300:'#98c3a9',400:'#6ba881',500:'#4a7c59',600:'#3d6549',700:'#33523d',800:'#2b4233' },
             gold: { 50:'#fdf9ef',100:'#faf0d5',400:'#e4b54e',500:'#d4a855',600:'#b8893a',700:'#996b2e' },
-            navy: { 500:'#284157',600:'#1F3345',700:'#172736' }
+            navy: { 500:'#284157',600:'#1F3345',700:'#172736' },
+            hunter: { 100: '#e8f0ea', 500: '#4A7C59', 600: '#3d6649' },
+            honey: { 100: '#fef3d1', 400: '#D4A855', 500: '#c99a4a' }
           }
         }
       }
     }
   </script>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Lato:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Source+Serif+Pro:wght@400;600;700&family=Source+Sans+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/lib/fontawesome/css/all.min.css">
   <style>
-    body { font-family: 'Lato', system-ui, sans-serif; }
-    .font-display { font-family: 'Cormorant Garamond', Georgia, serif; }
+    body { font-family: 'Source Sans Pro', system-ui, sans-serif; }
+    .font-display { font-family: 'Source Serif Pro', Georgia, serif; }
   </style>
 </head>
 <body class="bg-stone-50 min-h-screen">
 
   <!-- Admin Header -->
-  <header class="bg-burgundy-900 text-white sticky top-0 z-50">
-    <div class="max-w-full px-6 py-3 flex items-center justify-between">
+  <header class="bg-burgundy-800 text-white sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
       <div class="flex items-center gap-4">
-        <div class="w-9 h-9 bg-burgundy-800 rounded-lg flex items-center justify-center relative overflow-hidden">
-          <span class="font-display font-bold text-gold-400 absolute" style="font-size:16px;top:2px;left:5px;">C</span>
-          <span class="font-display font-bold text-forest-400 absolute" style="font-size:16px;bottom:2px;left:13px;">R</span>
+        <div class="w-9 h-9 bg-white/10 rounded-lg flex items-center justify-center">
+          <span class="font-display font-bold"><span class="text-honey-400">C</span><span class="text-hunter-500">R</span></span>
         </div>
         <div>
           <span class="font-display font-semibold text-lg">
-            <span style="color:#f2a8be">Counselor</span><span style="color:#98c3a9">Ready</span>
+            <span class="text-burgundy-200">Counselor</span><span class="text-hunter-500">Ready</span>
           </span>
-          <span class="ml-2 text-xs bg-gold-500 text-white px-2 py-0.5 rounded-full font-semibold">ADMIN</span>
+          <span class="ml-2 text-xs bg-honey-400 text-white px-2 py-0.5 rounded-full font-semibold">ADMIN</span>
         </div>
       </div>
       <div class="flex items-center gap-4 text-sm">
@@ -57,6 +58,10 @@
     <!-- Sidebar -->
 <aside class="w-64 bg-burgundy-800 min-h-[calc(100vh-52px)] sticky top-[52px] p-4">
     <nav class="space-y-1">
+      <a href="/admin.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+        <i class="fas fa-th-large w-5"></i>
+        Admin Hub
+      </a>
       <a href="/admin-analytics.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
         <i class="fas fa-chart-line w-5"></i>
         Analytics
@@ -98,36 +103,7 @@
         Help Center
       </a>
     </nav>
-  </aside>      <nav class="space-y-1 text-sm">
-        <a href="/admin-courses.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-burgundy-50 text-burgundy-800 font-medium">
-          <i class="fas fa-book w-4 text-burgundy-600"></i> Courses
-        </a>
-        <a href="/admin-users.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
-          <i class="fas fa-users w-4"></i> Users
-        </a>
-        <a href="/admin-analytics.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
-          <i class="fas fa-chart-line w-4"></i> Analytics
-        </a>
-        <a href="/admin-messages.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
-          <i class="fas fa-envelope w-4"></i> Messages
-        </a>
-        <a href="/admin-credentials.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
-          <i class="fas fa-id-card w-4"></i> Credentials
-        </a>
-        <a href="/admin-hardship.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
-          <i class="fas fa-hand-holding-heart w-4"></i> Hardship
-        </a>
-        <a href="/admin-integrations.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
-          <i class="fas fa-plug w-4"></i> Integrations
-        </a>
-        <a href="/admin-migration.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
-          <i class="fas fa-database w-4"></i> Migration
-        </a>
-        <a href="/admin-help.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
-          <i class="fas fa-question-circle w-4"></i> Help Center
-        </a>
-      </nav>
-    </aside>
+  </aside>
 
     <!-- Main Content -->
     <main class="flex-1 p-6 min-w-0">
@@ -589,9 +565,10 @@
             </div>
           </div>
           <div class="flex items-center gap-4 text-sm flex-wrap">
-            <span class="text-forest-600"><strong class="text-forest-800">${sections}</strong> modules</span>
-            <span class="text-forest-300">·</span>
+            ${c.courseCode ? `<span class="font-mono text-xs px-2 py-0.5 rounded bg-forest-50 text-forest-700 border border-forest-200">${esc(c.courseCode)}</span><span class="text-forest-300">·</span>` : ''}
             <span class="text-forest-600"><strong class="text-forest-800">${ceHours}</strong> CE hrs</span>
+            <span class="text-forest-300">·</span>
+            <span class="text-forest-600"><strong class="text-forest-800">${sections}</strong> modules</span>
             <span class="text-forest-300">·</span>
             <span class="text-forest-600"><strong class="text-forest-800">${c._words.toLocaleString()}</strong> words</span>
             ${target > 0 ? `

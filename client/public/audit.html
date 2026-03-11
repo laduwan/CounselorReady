@@ -5,7 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CE Audit Report - CounselorReady</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
   <script>
     tailwind.config = {
       theme: {
@@ -266,7 +266,7 @@
     async function loadUser() {
       const token = localStorage.getItem('token');
       try {
-        const response = await fetch(`${API_URL}/api/users/me`, {
+        const response = await fetch(`${API_URL}/api/auth/me`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         user = await response.json();

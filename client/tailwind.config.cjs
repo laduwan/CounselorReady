@@ -6,6 +6,7 @@ module.exports = {
   ],
   theme: {
     extend: {
+      // @lock-start: CounselorReady brand colors — do not modify
       colors: {
         // ═══════════════════════════════════════════════
         // CounselorReady Unified Palette v1.0
@@ -105,19 +106,26 @@ module.exports = {
           800: '#6B1D34',
         },
         stone: {
-          50:  '#F5F5DC',
-          100: '#EDEDD0',
-          200: '#E2E2BE',
-          300: '#D4D4A4',
+          50:  '#F8F7F4',
+          100: '#F5F5F4',
+          200: '#E7E5E4',
+          300: '#D6D3D1',
           400: '#A8A29E',
           500: '#78716C',
+          600: '#57534E',
+          700: '#44403C',
+          800: '#292524',
+          900: '#1C1917',
         },
       },
+      // @lock-end
+      // @lock-start: Brand fonts — do not modify
       fontFamily: {
         display: ['Cormorant Garamond', 'Georgia', 'serif'],
         sans: ['Lato', 'system-ui', 'sans-serif'],
         body: ['Lato', 'system-ui', 'sans-serif'],
       },
+      // @lock-end
     },
   },
   plugins: [],

@@ -1,3 +1,8 @@
+/**
+ * Copyright (c) 2026 CounselorReady, a subsidiary of Ga Integrated Therapeutic Perspectives, LLC.
+ * All rights reserved. Proprietary and confidential.
+ * Unauthorized copying or distribution is strictly prohibited.
+ */
 import mongoose from 'mongoose';
 
 // ============================================
@@ -134,6 +139,7 @@ const courseSchema = new mongoose.Schema({
   },
   title: { type: String, required: true },
   subtitle: { type: String },
+  courseCode: { type: String, trim: true },
   description: { type: String, required: true },
   thumbnail: { type: String },
   

@@ -1,3 +1,8 @@
+/**
+ * Copyright (c) 2026 CounselorReady, a subsidiary of Ga Integrated Therapeutic Perspectives, LLC.
+ * All rights reserved. Proprietary and confidential.
+ * Unauthorized copying or distribution is strictly prohibited.
+ */
 import { createContext, useContext, useState, useEffect } from 'react';
 import api from '../services/api';
 
@@ -6,6 +11,7 @@ const AuthContext = createContext(null);
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [serverWaking, setServerWaking] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -18,20 +24,42 @@ export function AuthProvider({ children }) {
   }, []);
 
   const fetchUser = async () => {
-    // Timeout after 8 seconds — if API is cold-starting, don't block forever
-    const timeout = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error('timeout')), 8000)
-    );
-    try {
-      const { data } = await Promise.race([api.get('/auth/me'), timeout]);
-      setUser(data.user);
-    } catch (error) {
-      // On timeout or error, clear token so user sees login page cleanly
-      localStorage.removeItem('token');
-      delete api.defaults.headers.common['Authorization'];
-    } finally {
-      setLoading(false);
+    // Retry up to 3 times with increasing timeouts for Render cold starts
+    const attempts = [
+      { timeout: 10000, delay: 0 },
+      { timeout: 20000, delay: 2000 },
+      { timeout: 30000, delay: 3000 },
+    ];
+
+    for (let i = 0; i < attempts.length; i++) {
+      const { timeout: ms, delay } = attempts[i];
+      if (delay > 0) {
+        setServerWaking(true);
+        await new Promise(r => setTimeout(r, delay));
+      }
+
+      try {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), ms);
+        const { data } = await api.get('/auth/me', { signal: controller.signal });
+        clearTimeout(timer);
+        setUser(data.user);
+        setServerWaking(false);
+        setLoading(false);
+        return;
+      } catch (error) {
+        // If it's not a timeout/network error, don't retry (e.g. 401 = bad token)
+        if (error.response?.status === 401) break;
+        if (i === attempts.length - 1) break; // last attempt
+        // Otherwise retry
+      }
     }
+
+    // All attempts failed — clear token
+    localStorage.removeItem('token');
+    delete api.defaults.headers.common['Authorization'];
+    setServerWaking(false);
+    setLoading(false);
   };
 
   const login = async (email, password) => {
@@ -59,6 +87,7 @@ export function AuthProvider({ children }) {
   const value = {
     user,
     loading,
+    serverWaking,
     login,
     register,
     logout,

@@ -1,8 +1,14 @@
+/**
+ * Copyright (c) 2026 CounselorReady, a subsidiary of Ga Integrated Therapeutic Perspectives, LLC.
+ * All rights reserved. Proprietary and confidential.
+ * Unauthorized copying or distribution is strictly prohibited.
+ */
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { 
-  ChevronLeft, ChevronRight, Menu, X, BookOpen, Clock, Award, 
+  ChevronLeft, ChevronRight, Menu, X, BookOpen, Clock, Award,
   CheckCircle2, Circle, Play, Lock, AlertCircle, Download,
-  BarChart3, Home, Settings, LogOut, User, Type, Eye, Volume2
+  BarChart3, Home, Settings, LogOut, User, Type, Eye, Volume2,
+  Layers, ChevronsRight, Moon, Pause, Crosshair, AlignJustify, Minus, Globe
 } from 'lucide-react';
 import { safeHTML } from '../utils/sanitize';
 import {
@@ -21,66 +27,77 @@ import {
   ScenarioTree,
   FlashcardDeck,
   VideoEmbed,
-  ImageBlock
+  ImageBlock,
+  KnowledgeCheckModal
 } from './InteractiveCourseComponents';
 
 // ============================================================================
 // API SERVICE
 // ============================================================================
-const API_BASE = '/api/interactive-courses';
+const API_BASE = import.meta.env.VITE_API_URL
+  ? `${import.meta.env.VITE_API_URL}/interactive-courses`
+  : 'https://api.counselorready.com/api/interactive-courses';
+
+function authHeaders(extra = {}) {
+  const token = localStorage.getItem('token');
+  const headers = { 'Content-Type': 'application/json', ...extra };
+  if (token) headers.Authorization = `Bearer ${token}`;
+  return headers;
+}
 
 const api = {
   async getCourse(slug) {
-    const res = await fetch(`${API_BASE}/slug/${slug}`, { credentials: 'include' });
+    const res = await fetch(`${API_BASE}/slug/${slug}`, { headers: authHeaders() });
     if (!res.ok) throw new Error('Course not found');
-    return res.json();
+    const json = await res.json();
+    return json.data || json;
   },
-  
+
   async getProgress(slug) {
-    const res = await fetch(`${API_BASE}/${slug}/progress`, { credentials: 'include' });
+    const res = await fetch(`${API_BASE}/${slug}/progress`, { headers: authHeaders() });
     if (!res.ok) return null;
-    return res.json();
+    const json = await res.json();
+    return json.data || json;
   },
 
   async updateSectionProgress(slug, sectionIndex, data) {
-    const res = await fetch(`${API_BASE}/${slug}/sections/${sectionIndex}/progress`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
+    const res = await fetch(`${API_BASE}/${slug}/progress/section/${sectionIndex}`, {
+      method: 'PUT',
+      headers: authHeaders(),
       body: JSON.stringify(data)
     });
     if (!res.ok) throw new Error('Failed to update progress');
-    return res.json();
+    const json = await res.json();
+    return json.data || json;
   },
 
   async submitSectionQuiz(slug, sectionIndex, answers, timeSpent) {
-    const res = await fetch(`${API_BASE}/${slug}/sections/${sectionIndex}/quiz`, {
+    const res = await fetch(`${API_BASE}/${slug}/progress/section/${sectionIndex}/quiz`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
+      headers: authHeaders(),
       body: JSON.stringify({ answers, timeSpent })
     });
     if (!res.ok) throw new Error('Failed to submit quiz');
-    return res.json();
+    const json = await res.json();
+    return json.data || json;
   },
 
   async submitAssessment(slug, answers, timeUsed, questionOrder) {
-    const res = await fetch(`${API_BASE}/${slug}/assessment/submit`, {
+    const res = await fetch(`${API_BASE}/${slug}/assessment`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
+      headers: authHeaders(),
       body: JSON.stringify({ answers, timeUsed, questionOrder })
     });
     if (!res.ok) throw new Error('Failed to submit assessment');
-    return res.json();
+    const json = await res.json();
+    return json.data || json;
   },
 
   async logInteraction(slug, interaction) {
     try {
-      await fetch(`${API_BASE}/${slug}/interaction`, {
+      await fetch(`${API_BASE}/${slug}/progress/interaction`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
+        headers: authHeaders(),
         body: JSON.stringify(interaction)
       });
     } catch (err) {
@@ -111,13 +128,13 @@ function AccessibilityToolbar({ settings, onUpdate }) {
         <>
           <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
           <div 
-            className="absolute right-0 top-full mt-2 w-72 bg-white rounded-xl shadow-lg border border-slate-200 z-50 p-4"
+            className="absolute right-0 top-full mt-2 w-72 bg-white rounded-xl shadow-lg border border-forest-200 z-50 p-4 max-h-[80vh] overflow-y-auto"
             role="dialog"
             aria-label="Accessibility settings"
           >
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-bold text-navy-700 text-sm">Accessibility Options</h3>
-              <button onClick={() => setIsOpen(false)} className="text-slate-400 hover:text-navy-600">
+              <button onClick={() => setIsOpen(false)} className="text-forest-400 hover:text-navy-600">
                 <X className="w-4 h-4" />
               </button>
             </div>
@@ -140,7 +157,7 @@ function AccessibilityToolbar({ settings, onUpdate }) {
                     className={`flex-1 py-2 rounded-lg font-semibold transition-colors ${opt.size} ${
                       settings.fontSize === opt.value
                         ? 'bg-burgundy-800 text-white'
-                        : 'bg-slate-100 text-navy-600 hover:bg-slate-200'
+                        : 'bg-stone-100 text-navy-600 hover:bg-stone-200'
                     }`}
                     aria-label={`${opt.value} text size`}
                     aria-pressed={settings.fontSize === opt.value}
@@ -158,7 +175,7 @@ function AccessibilityToolbar({ settings, onUpdate }) {
                 className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                   settings.highContrast
                     ? 'bg-navy-800 text-white'
-                    : 'bg-slate-100 text-navy-600 hover:bg-slate-200'
+                    : 'bg-stone-100 text-navy-600 hover:bg-stone-200'
                 }`}
                 role="switch"
                 aria-checked={settings.highContrast}
@@ -168,7 +185,7 @@ function AccessibilityToolbar({ settings, onUpdate }) {
                   High Contrast
                 </span>
                 <span className={`w-9 h-5 rounded-full relative transition-colors ${
-                  settings.highContrast ? 'bg-hunter-600' : 'bg-slate-300'
+                  settings.highContrast ? 'bg-hunter-600' : 'bg-forest-200'
                 }`}>
                   <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-transform ${
                     settings.highContrast ? 'left-4' : 'left-0.5'
@@ -177,14 +194,40 @@ function AccessibilityToolbar({ settings, onUpdate }) {
               </button>
             </div>
 
+            {/* Dark Mode */}
+            <div className="mb-4">
+              <button
+                onClick={() => onUpdate({ ...settings, darkMode: !settings.darkMode })}
+                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                  settings.darkMode
+                    ? 'bg-navy-800 text-white'
+                    : 'bg-stone-100 text-navy-600 hover:bg-stone-200'
+                }`}
+                role="switch"
+                aria-checked={settings.darkMode}
+              >
+                <span className="flex items-center gap-2">
+                  <Moon className="w-4 h-4" />
+                  Dark Mode
+                </span>
+                <span className={`w-9 h-5 rounded-full relative transition-colors ${
+                  settings.darkMode ? 'bg-hunter-600' : 'bg-forest-200'
+                }`}>
+                  <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-transform ${
+                    settings.darkMode ? 'left-4' : 'left-0.5'
+                  }`} />
+                </span>
+              </button>
+            </div>
+
             {/* Narration / Read Aloud */}
-            <div className="mb-2">
+            <div className="mb-4">
               <button
                 onClick={() => onUpdate({ ...settings, narration: !settings.narration })}
                 className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                   settings.narration
                     ? 'bg-navy-800 text-white'
-                    : 'bg-slate-100 text-navy-600 hover:bg-slate-200'
+                    : 'bg-stone-100 text-navy-600 hover:bg-stone-200'
                 }`}
                 role="switch"
                 aria-checked={settings.narration}
@@ -194,7 +237,7 @@ function AccessibilityToolbar({ settings, onUpdate }) {
                   Read Aloud (TTS)
                 </span>
                 <span className={`w-9 h-5 rounded-full relative transition-colors ${
-                  settings.narration ? 'bg-hunter-600' : 'bg-slate-300'
+                  settings.narration ? 'bg-hunter-600' : 'bg-forest-200'
                 }`}>
                   <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-transform ${
                     settings.narration ? 'left-4' : 'left-0.5'
@@ -203,11 +246,210 @@ function AccessibilityToolbar({ settings, onUpdate }) {
               </button>
             </div>
 
-            <p className="text-xs text-slate-400 mt-3 pt-3 border-t border-slate-100">
+            {/* Dyslexia-Friendly Font */}
+            <div className="mb-4">
+              <button
+                onClick={() => onUpdate({ ...settings, dyslexiaFont: !settings.dyslexiaFont })}
+                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                  settings.dyslexiaFont
+                    ? 'bg-navy-800 text-white'
+                    : 'bg-stone-100 text-navy-600 hover:bg-stone-200'
+                }`}
+                role="switch"
+                aria-checked={settings.dyslexiaFont}
+              >
+                <span className="flex items-center gap-2">
+                  <Type className="w-4 h-4" />
+                  Dyslexia Font
+                </span>
+                <span className={`w-9 h-5 rounded-full relative transition-colors ${
+                  settings.dyslexiaFont ? 'bg-hunter-600' : 'bg-forest-200'
+                }`}>
+                  <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-transform ${
+                    settings.dyslexiaFont ? 'left-4' : 'left-0.5'
+                  }`} />
+                </span>
+              </button>
+            </div>
+
+            {/* Reduced Motion */}
+            <div className="mb-4">
+              <button
+                onClick={() => onUpdate({ ...settings, reducedMotion: !settings.reducedMotion })}
+                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                  settings.reducedMotion
+                    ? 'bg-navy-800 text-white'
+                    : 'bg-stone-100 text-navy-600 hover:bg-stone-200'
+                }`}
+                role="switch"
+                aria-checked={settings.reducedMotion}
+              >
+                <span className="flex items-center gap-2">
+                  <Pause className="w-4 h-4" />
+                  Reduced Motion
+                </span>
+                <span className={`w-9 h-5 rounded-full relative transition-colors ${
+                  settings.reducedMotion ? 'bg-hunter-600' : 'bg-forest-200'
+                }`}>
+                  <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-transform ${
+                    settings.reducedMotion ? 'left-4' : 'left-0.5'
+                  }`} />
+                </span>
+              </button>
+            </div>
+
+            {/* Enhanced Focus */}
+            <div className="mb-4">
+              <button
+                onClick={() => onUpdate({ ...settings, enhancedFocus: !settings.enhancedFocus })}
+                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                  settings.enhancedFocus
+                    ? 'bg-navy-800 text-white'
+                    : 'bg-stone-100 text-navy-600 hover:bg-stone-200'
+                }`}
+                role="switch"
+                aria-checked={settings.enhancedFocus}
+              >
+                <span className="flex items-center gap-2">
+                  <Crosshair className="w-4 h-4" />
+                  Enhanced Focus
+                </span>
+                <span className={`w-9 h-5 rounded-full relative transition-colors ${
+                  settings.enhancedFocus ? 'bg-hunter-600' : 'bg-forest-200'
+                }`}>
+                  <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-transform ${
+                    settings.enhancedFocus ? 'left-4' : 'left-0.5'
+                  }`} />
+                </span>
+              </button>
+            </div>
+
+            {/* Line Spacing */}
+            <div className="mb-4">
+              <label className="text-sm font-medium text-navy-600 mb-2 block">
+                <AlignJustify className="w-4 h-4 inline mr-1" />
+                Line Spacing
+              </label>
+              <div className="flex gap-2">
+                {[
+                  { label: 'Compact', value: 'compact' },
+                  { label: 'Normal', value: 'normal' },
+                  { label: 'Relaxed', value: 'relaxed' },
+                ].map(opt => (
+                  <button
+                    key={opt.value}
+                    onClick={() => onUpdate({ ...settings, lineSpacing: opt.value })}
+                    className={`flex-1 py-2 rounded-lg text-xs font-semibold transition-colors ${
+                      settings.lineSpacing === opt.value
+                        ? 'bg-burgundy-800 text-white'
+                        : 'bg-stone-100 text-navy-600 hover:bg-stone-200'
+                    }`}
+                    aria-label={`${opt.value} line spacing`}
+                    aria-pressed={settings.lineSpacing === opt.value}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Reading Guide */}
+            <div className="mb-4">
+              <button
+                onClick={() => onUpdate({ ...settings, readingGuide: !settings.readingGuide })}
+                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                  settings.readingGuide
+                    ? 'bg-navy-800 text-white'
+                    : 'bg-stone-100 text-navy-600 hover:bg-stone-200'
+                }`}
+                role="switch"
+                aria-checked={settings.readingGuide}
+              >
+                <span className="flex items-center gap-2">
+                  <Minus className="w-4 h-4" />
+                  Reading Guide
+                </span>
+                <span className={`w-9 h-5 rounded-full relative transition-colors ${
+                  settings.readingGuide ? 'bg-hunter-600' : 'bg-forest-200'
+                }`}>
+                  <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-transform ${
+                    settings.readingGuide ? 'left-4' : 'left-0.5'
+                  }`} />
+                </span>
+              </button>
+            </div>
+
+            {/* Translate */}
+            <div className="mb-2">
+              <label className="text-sm font-medium text-navy-600 mb-2 block">
+                <Globe className="w-4 h-4 inline mr-1" />
+                Translate
+              </label>
+              <select
+                value={settings.language}
+                onChange={(e) => onUpdate({ ...settings, language: e.target.value })}
+                className="w-full py-2 px-3 rounded-lg text-sm font-medium bg-stone-100 text-navy-600 border-none focus:ring-2 focus:ring-burgundy-500 appearance-none cursor-pointer"
+                aria-label="Select language for translation"
+              >
+                <option value="">English (Original)</option>
+                <option value="es">Español (Spanish)</option>
+                <option value="fr">Français (French)</option>
+                <option value="de">Deutsch (German)</option>
+                <option value="pt">Português (Portuguese)</option>
+                <option value="zh-CN">中文 (Chinese)</option>
+                <option value="ja">日本語 (Japanese)</option>
+                <option value="ko">한국어 (Korean)</option>
+                <option value="ar">العربية (Arabic)</option>
+                <option value="vi">Tiếng Việt (Vietnamese)</option>
+                <option value="ht">Kreyòl Ayisyen (Haitian Creole)</option>
+                <option value="ru">Русский (Russian)</option>
+              </select>
+            </div>
+
+            <p className="text-xs text-forest-400 mt-3 pt-3 border-t border-slate-100">
               Settings apply to this session only.
             </p>
           </div>
         </>
+      )}
+    </div>
+  );
+}
+
+// ============================================================================
+// COLLAPSIBLE TEXT BLOCK — long text content gets a "Read more" toggle
+// ============================================================================
+function TextBlock({ rawHTML, isLong, proseSize, a11y, speakText }) {
+  const [expanded, setExpanded] = useState(!isLong);
+
+  return (
+    <div className="bg-white rounded-xl border border-stone-200 overflow-hidden">
+      <div className={`px-6 py-5 ${proseSize} prose-slate max-w-none ${!expanded ? 'max-h-48 overflow-hidden relative' : ''}`}>
+        {a11y?.narration && (
+          <button
+            onClick={() => speakText(rawHTML)}
+            className="mb-2 flex items-center gap-1.5 text-xs font-medium text-burgundy-600 hover:text-burgundy-800 transition-colors"
+            aria-label="Read this section aloud"
+          >
+            <Volume2 className="w-3.5 h-3.5" /> Read Aloud
+          </button>
+        )}
+        <div dangerouslySetInnerHTML={{ __html: safeHTML(rawHTML) }} />
+        {!expanded && (
+          <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-white to-transparent" />
+        )}
+      </div>
+      {isLong && (
+        <button
+          onClick={() => setExpanded(!expanded)}
+          className="w-full px-6 py-3 text-sm font-semibold text-burgundy-700 hover:text-burgundy-900 bg-stone-50 border-t border-stone-200 flex items-center justify-center gap-2 transition-colors"
+        >
+          {expanded ? (
+            <><ChevronLeft className="w-4 h-4 rotate-90" /> Show Less</>
+          ) : (
+            <><ChevronRight className="w-4 h-4 rotate-90" /> Read More</>
+          )}
+        </button>
       )}
     </div>
   );
@@ -247,8 +489,8 @@ function ContentBlockRenderer({
   }, [a11y?.narration]);
 
   // Font size class
-  const textSizeClass = a11y?.fontSize === 'x-large' ? 'text-lg' : a11y?.fontSize === 'large' ? 'text-base' : 'text-sm';
-  const proseSize = a11y?.fontSize === 'x-large' ? 'prose-lg' : a11y?.fontSize === 'large' ? 'prose-base' : 'prose';
+  const textSizeClass = a11y?.fontSize === 'x-large' ? 'text-2xl' : a11y?.fontSize === 'large' ? 'text-xl' : 'text-lg';
+  const proseSize = a11y?.fontSize === 'x-large' ? 'prose-xl' : a11y?.fontSize === 'large' ? 'prose-xl' : 'prose-lg';
 
   switch (block.type) {
     case 'accordion':
@@ -261,31 +503,37 @@ function ContentBlockRenderer({
 
     case 'matching':
       return (
-        <MatchingExercise
-          pairs={block.matchingPairs}
-          instructions={block.matchingInstructions}
-          onComplete={(correct, total) => handleInteractionComplete(correct === total, correct / total)}
-        />
+        <KnowledgeCheckModal type="matching" completed={isCompleted}>
+          <MatchingExercise
+            pairs={block.matchingPairs}
+            instructions={block.matchingInstructions}
+            onComplete={(correct, total) => handleInteractionComplete(correct === total, correct / total)}
+          />
+        </KnowledgeCheckModal>
       );
 
     case 'multipleChoice':
       return (
-        <MultipleChoice
-          question={block.question}
-          options={block.options}
-          explanation={block.explanation}
-          onAnswer={(isCorrect) => handleInteractionComplete(isCorrect, isCorrect ? 1 : 0)}
-        />
+        <KnowledgeCheckModal type="multipleChoice" completed={isCompleted}>
+          <MultipleChoice
+            question={block.question}
+            options={block.options}
+            explanation={block.explanation}
+            onAnswer={(isCorrect) => handleInteractionComplete(isCorrect, isCorrect ? 1 : 0)}
+          />
+        </KnowledgeCheckModal>
       );
 
     case 'multiSelect':
       return (
-        <MultiSelect
-          question={block.question}
-          options={block.options}
-          explanation={block.explanation}
-          onAnswer={(isCorrect) => handleInteractionComplete(isCorrect, isCorrect ? 1 : 0)}
-        />
+        <KnowledgeCheckModal type="multiSelect" completed={isCompleted}>
+          <MultiSelect
+            question={block.question}
+            options={block.options}
+            explanation={block.explanation}
+            onAnswer={(isCorrect) => handleInteractionComplete(isCorrect, isCorrect ? 1 : 0)}
+          />
+        </KnowledgeCheckModal>
       );
 
     case 'imageText':
@@ -309,21 +557,11 @@ function ContentBlockRenderer({
         />
       );
 
-    case 'text':
-      return (
-        <div className={`${proseSize} prose-slate max-w-none`}>
-          {a11y?.narration && (
-            <button 
-              onClick={() => speakText(block.textContent || block.content || '')}
-              className="mb-2 flex items-center gap-1.5 text-xs font-medium text-burgundy-600 hover:text-burgundy-800 transition-colors"
-              aria-label="Read this section aloud"
-            >
-              <Volume2 className="w-3.5 h-3.5" /> Read Aloud
-            </button>
-          )}
-          <div dangerouslySetInnerHTML={{ __html: safeHTML(block.textContent || block.content || '') }} />
-        </div>
-      );
+    case 'text': {
+      const rawHTML = block.textContent || block.content || '';
+      const isLong = rawHTML.length > 1200;
+      return <TextBlock rawHTML={rawHTML} isLong={isLong} proseSize={proseSize} a11y={a11y} speakText={speakText} />;
+    }
 
     case 'video':
       return (
@@ -338,62 +576,74 @@ function ContentBlockRenderer({
 
     case 'cardSort':
       return (
-        <CardSort
-          categories={block.categories}
-          cards={block.cards}
-          instructions={block.instructions}
-          explanation={block.explanation}
-          onComplete={(correct, total) => handleInteractionComplete(correct === total, correct / total)}
-        />
+        <KnowledgeCheckModal type="cardSort" completed={isCompleted}>
+          <CardSort
+            categories={block.categories}
+            cards={block.cards}
+            instructions={block.instructions}
+            explanation={block.explanation}
+            onComplete={(correct, total) => handleInteractionComplete(correct === total, correct / total)}
+          />
+        </KnowledgeCheckModal>
       );
 
     case 'sequencing':
       return (
-        <Sequencing
-          steps={block.steps}
-          instructions={block.instructions}
-          explanation={block.explanation}
-          onComplete={(correct, total) => handleInteractionComplete(correct === total, correct / total)}
-        />
+        <KnowledgeCheckModal type="sequencing" completed={isCompleted}>
+          <Sequencing
+            steps={block.steps}
+            instructions={block.instructions}
+            explanation={block.explanation}
+            onComplete={(correct, total) => handleInteractionComplete(correct === total, correct / total)}
+          />
+        </KnowledgeCheckModal>
       );
 
     case 'hotspot':
       return (
-        <Hotspot
-          hotspots={block.hotspots}
-          hotspotImage={block.hotspotImage}
-          imageDescription={block.imageDescription}
-          instructions={block.instructions}
-          onComplete={(count) => handleInteractionComplete(true, 1)}
-        />
+        <KnowledgeCheckModal type="hotspot" completed={isCompleted}>
+          <Hotspot
+            hotspots={block.hotspots}
+            hotspotImage={block.hotspotImage}
+            imageDescription={block.imageDescription}
+            instructions={block.instructions}
+            onComplete={(count) => handleInteractionComplete(true, 1)}
+          />
+        </KnowledgeCheckModal>
       );
 
     case 'timeline':
       return (
-        <Timeline
-          events={block.events}
-          instructions={block.instructions}
-          onComplete={(correct, total) => handleInteractionComplete(correct === total, correct / total)}
-        />
+        <KnowledgeCheckModal type="timeline" completed={isCompleted}>
+          <Timeline
+            events={block.events}
+            instructions={block.instructions}
+            onComplete={(correct, total) => handleInteractionComplete(correct === total, correct / total)}
+          />
+        </KnowledgeCheckModal>
       );
 
     case 'scenarioTree':
       return (
-        <ScenarioTree
-          scenarioTitle={block.scenarioTitle}
-          startNode={block.startNode}
-          nodes={block.nodes}
-          onComplete={() => handleInteractionComplete(true, 1)}
-        />
+        <KnowledgeCheckModal type="scenarioTree" completed={isCompleted}>
+          <ScenarioTree
+            scenarioTitle={block.scenarioTitle}
+            startNode={block.startNode}
+            nodes={block.nodes}
+            onComplete={() => handleInteractionComplete(true, 1)}
+          />
+        </KnowledgeCheckModal>
       );
 
     case 'flashcardDeck':
       return (
-        <FlashcardDeck
-          flashcards={block.flashcards}
-          instructions={block.instructions}
-          onComplete={(count) => handleInteractionComplete(true, 1)}
-        />
+        <KnowledgeCheckModal type="flashcardDeck" completed={isCompleted}>
+          <FlashcardDeck
+            flashcards={block.flashcards}
+            instructions={block.instructions}
+            onComplete={(count) => handleInteractionComplete(true, 1)}
+          />
+        </KnowledgeCheckModal>
       );
 
     case 'videoEmbed':
@@ -430,7 +680,7 @@ function ContentBlockRenderer({
           <textarea
             placeholder="Take a moment to reflect and write your thoughts here..."
             aria-label={`Reflection: ${block.question}`}
-            style={{ width: '100%', minHeight: 120, padding: 12, borderRadius: 10, border: '1px solid #E8E4DF', fontSize: 14, fontFamily: 'inherit', resize: 'vertical', boxSizing: 'border-box' }}
+            style={{ width: '100%', minHeight: 80, padding: 12, borderRadius: 10, border: '1px solid #E8E4DF', fontSize: 14, fontFamily: 'inherit', resize: 'vertical', boxSizing: 'border-box' }}
             onChange={(e) => {
               if (e.target.value.length >= (block.minLength || 50)) {
                 handleInteractionComplete(true, 1);
@@ -469,21 +719,72 @@ function ContentBlockRenderer({
 }
 
 // ============================================================================
+// BLOCK GROUPING — splits content blocks into digestible pages
+// ============================================================================
+function groupBlocksIntoPages(blocks, maxPerPage = 3) {
+  if (!blocks || blocks.length === 0) return [];
+  const pages = [];
+  let current = [];
+
+  blocks.forEach((block, i) => {
+    // Section dividers always start a new page
+    if (block.type === 'sectionDivider' && current.length > 0) {
+      pages.push(current);
+      current = [];
+    }
+
+    current.push({ block, originalIndex: i });
+
+    // Interactive blocks (modals) get their own page
+    const isInteractive = ['matching', 'multipleChoice', 'multiSelect', 'cardSort',
+      'sequencing', 'hotspot', 'timeline', 'scenarioTree', 'flashcardDeck'].includes(block.type);
+
+    if (isInteractive) {
+      pages.push(current);
+      current = [];
+    } else if (current.length >= maxPerPage) {
+      pages.push(current);
+      current = [];
+    }
+  });
+
+  if (current.length > 0) pages.push(current);
+  return pages;
+}
+
+// ============================================================================
 // SECTION VIEW
 // ============================================================================
-function SectionView({ 
-  course, 
-  section, 
+function SectionView({
+  course,
+  section,
   sectionIndex,
   progress,
   onNavigate,
   onProgressUpdate,
-  a11y
+  a11y,
+  pagedMode,
+  currentPage,
+  onPageChange
 }) {
   const [viewedBlocks, setViewedBlocks] = useState(new Set(progress?.viewedBlocks || []));
   const [completedBlocks, setCompletedBlocks] = useState(new Set(progress?.completedBlocks || []));
   const [showQuiz, setShowQuiz] = useState(false);
   const [sessionStartTime] = useState(Date.now());
+
+  if (!section) return null;
+
+  const contentBlocks = section.contentBlocks || [];
+
+  // Paging
+  const pages = useMemo(() => groupBlocksIntoPages(contentBlocks), [contentBlocks]);
+  const totalPages = pages.length;
+  const safePage = Math.min(currentPage || 0, totalPages - 1);
+
+  // Reset page when section changes
+  useEffect(() => {
+    if (onPageChange) onPageChange(0);
+  }, [sectionIndex]);
 
   // Track block views via intersection observer
   const observerRef = React.useRef(null);
@@ -524,16 +825,16 @@ function SectionView({
     }
   }, []);
 
-  const interactiveBlockCount = section.contentBlocks.filter(
+  const interactiveBlockCount = contentBlocks.filter(
     b => ['matching', 'multipleChoice', 'multiSelect'].includes(b.type)
   ).length;
 
-  const allInteractiveComplete = section.contentBlocks.every((block, i) => {
+  const allInteractiveComplete = contentBlocks.every((block, i) => {
     if (!['matching', 'multipleChoice', 'multiSelect'].includes(block.type)) return true;
     return completedBlocks.has(i);
   });
 
-  const canTakeQuiz = section.hasQuiz && viewedBlocks.size >= section.contentBlocks.length && allInteractiveComplete;
+  const canTakeQuiz = section.hasQuiz && viewedBlocks.size >= contentBlocks.length && allInteractiveComplete;
   const quizPassed = progress?.quizPassed;
 
   const isLastSection = sectionIndex === course.sections.length - 1;
@@ -541,87 +842,106 @@ function SectionView({
 
   return (
     <div className="max-w-4xl mx-auto">
-      {/* Section Header */}
-      <div className="mb-8">
-        <div className="flex items-center gap-3 text-sm text-navy-500 mb-2">
-          <span>Section {sectionIndex + 1} of {course.sections.length}</span>
-          <span>•</span>
-          <span className="flex items-center gap-1">
-            <Clock className="w-4 h-4" />
-            {section.estimatedTime} min
-          </span>
-        </div>
-        <h1 className="text-3xl font-bold text-navy-700">{section.title}</h1>
-        {section.description && (
-          <p className="text-navy-500 mt-2">{section.description}</p>
-        )}
-      </div>
-
-      {/* Progress indicator */}
-      <div className="mb-6 bg-white rounded-xl border border-slate-200 p-4">
-        <div className="flex items-center justify-between text-sm mb-2">
-          <span className="text-navy-600">Section Progress</span>
-          <span className="font-semibold text-burgundy-700">
-            {viewedBlocks.size}/{section.contentBlocks.length} viewed
-            {interactiveBlockCount > 0 && ` • ${completedBlocks.size}/${interactiveBlockCount} completed`}
-          </span>
-        </div>
-        <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
-          <div 
-            className="h-full bg-burgundy-700 transition-all rounded-full"
-            style={{ width: `${(viewedBlocks.size / section.contentBlocks.length) * 100}%` }}
-          />
-        </div>
-      </div>
-
-      {/* Content Blocks */}
+      {/* Content Blocks — scroll mode default, paged mode optional */}
       {!showQuiz ? (
-        <div className="space-y-8">
-          {section.contentBlocks.map((block, index) => (
-            <div 
-              key={index}
-              data-block-index={index}
+        <div className="space-y-5">
+          {/* Paged mode indicator (only when paged mode active) */}
+          {pagedMode && totalPages > 1 && (
+            <div className="flex items-center justify-between bg-white rounded-lg border border-forest-100 px-4 py-2">
+              <span className="text-xs font-medium text-navy-500">
+                Page {safePage + 1} of {totalPages}
+              </span>
+              <div className="flex gap-1.5">
+                {pages.map((_, pi) => (
+                  <button
+                    key={pi}
+                    onClick={() => onPageChange(pi)}
+                    className={`w-2 h-2 rounded-full transition-all ${
+                      pi === safePage ? 'bg-burgundy-600 scale-125' : pi < safePage ? 'bg-hunter-400' : 'bg-stone-300'
+                    }`}
+                    aria-label={`Go to page ${pi + 1}`}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {(pagedMode ? pages[safePage] || [] : contentBlocks.map((block, i) => ({ block, originalIndex: i }))).map(({ block, originalIndex }) => (
+            <div
+              key={originalIndex}
+              data-block-index={originalIndex}
               ref={(el) => el && observerRef.current?.observe(el)}
               className="animate-fadeIn"
             >
               <ContentBlockRenderer
                 block={block}
-                blockIndex={index}
+                blockIndex={originalIndex}
                 sectionIndex={sectionIndex}
                 courseSlug={course.slug}
                 onComplete={handleBlockComplete}
-                isCompleted={completedBlocks.has(index)}
+                isCompleted={completedBlocks.has(originalIndex)}
                 a11y={a11y}
               />
             </div>
           ))}
 
+          {/* Paged navigation (only when paged mode active) */}
+          {pagedMode && totalPages > 1 && (
+            <div className="flex items-center justify-between pt-4">
+              <button
+                onClick={() => onPageChange(safePage - 1)}
+                disabled={safePage === 0}
+                className={`flex items-center gap-2 px-4 py-2 transition-colors ${
+                  safePage === 0 ? 'opacity-50 cursor-not-allowed text-navy-400' : 'text-navy-600 hover:text-burgundy-700'
+                }`}
+              >
+                <ChevronLeft className="w-4 h-4" /> Back
+              </button>
+              {safePage < totalPages - 1 ? (
+                <button
+                  onClick={() => { onPageChange(safePage + 1); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                  className="flex items-center gap-2 px-6 py-2 bg-burgundy-700 hover:bg-burgundy-800 text-white rounded-lg text-sm font-semibold transition-colors"
+                >
+                  Continue <ChevronRight className="w-4 h-4" />
+                </button>
+              ) : (
+                <span className="text-xs font-medium text-hunter-600 flex items-center gap-1">
+                  <CheckCircle2 className="w-4 h-4" /> All content viewed
+                </span>
+              )}
+            </div>
+          )}
+
           {/* Section Quiz CTA */}
-          {section.hasQuiz && !quizPassed && (
-            <div className="bg-hunter-50 border border-hunter-200 rounded-2xl p-6 text-center">
-              <h3 className="text-xl font-bold text-navy-700 mb-2">Section Quiz</h3>
-              <p className="text-navy-500 mb-4">
-                Complete all content and activities above to unlock the section quiz.
-              </p>
+          {(!pagedMode || safePage === totalPages - 1) && section.hasQuiz && !quizPassed && (
+            <div className="bg-hunter-50 border border-hunter-200 rounded-xl px-5 py-4 flex items-center justify-between gap-4">
+              <div>
+                <h3 className="text-sm font-bold text-navy-700">Section Quiz</h3>
+                <p className="text-xs text-navy-400 mt-0.5">
+                  {canTakeQuiz ? 'Ready to test your knowledge' : `Complete all content first (${viewedBlocks.size}/${contentBlocks.length})`}
+                </p>
+              </div>
               <button
                 onClick={() => setShowQuiz(true)}
                 disabled={!canTakeQuiz}
-                className={`px-6 py-3 rounded-xl font-semibold transition-all ${
+                className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all flex-shrink-0 ${
                   canTakeQuiz
                     ? 'bg-hunter-600 hover:bg-hunter-700 text-white'
-                    : 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                    : 'bg-stone-200 text-forest-400 cursor-not-allowed'
                 }`}
               >
-                {canTakeQuiz ? 'Take Quiz' : `Complete all content first (${viewedBlocks.size}/${section.contentBlocks.length})`}
+                Take Quiz
               </button>
             </div>
           )}
 
-          {quizPassed && (
-            <div className="bg-hunter-50 border border-hunter-200 rounded-2xl p-6 text-center">
-              <CheckCircle2 className="w-12 h-12 text-hunter-600 mx-auto mb-3" />
-              <h3 className="text-xl font-bold text-hunter-700 mb-2">Section Complete!</h3>
-              <p className="text-hunter-600">You passed the section quiz.</p>
+          {(!pagedMode || safePage === totalPages - 1) && quizPassed && (
+            <div className="bg-hunter-50 border border-hunter-200 rounded-xl px-5 py-3 flex items-center gap-3">
+              <CheckCircle2 className="w-5 h-5 text-hunter-600 flex-shrink-0" />
+              <div>
+                <span className="text-sm font-bold text-hunter-700">Section Complete</span>
+                <span className="text-xs text-hunter-600 ml-2">Quiz passed</span>
+              </div>
             </div>
           )}
         </div>
@@ -640,15 +960,15 @@ function SectionView({
         />
       )}
 
-      {/* Navigation */}
-      <div className="mt-12 pt-6 border-t border-slate-200 flex items-center justify-between">
+      {/* Section Navigation — simple Previous / Next */}
+      <div className="mt-8 pt-6 border-t border-forest-200 flex justify-between">
         <button
           onClick={() => onNavigate(sectionIndex - 1)}
           disabled={sectionIndex === 0}
-          className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+          className={`flex items-center gap-2 px-4 py-2 transition-colors ${
             sectionIndex === 0
-              ? 'text-slate-300 cursor-not-allowed'
-              : 'text-navy-600 hover:bg-slate-100'
+              ? 'opacity-50 cursor-not-allowed text-navy-400'
+              : 'text-navy-600 hover:text-burgundy-700'
           }`}
         >
           <ChevronLeft className="w-5 h-5" />
@@ -658,22 +978,22 @@ function SectionView({
         {isLastSection && canProceed ? (
           <button
             onClick={() => onNavigate('assessment')}
-            className="flex items-center gap-2 px-6 py-3 bg-hunter-600 hover:bg-hunter-700 text-white font-semibold rounded-xl transition-colors"
+            className="flex items-center gap-2 px-6 py-2 bg-burgundy-700 text-white rounded-lg hover:bg-burgundy-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Take Final Assessment
-            <Award className="w-5 h-5" />
+            Next
+            <ChevronRight className="w-5 h-5" />
           </button>
         ) : (
           <button
             onClick={() => onNavigate(sectionIndex + 1)}
             disabled={!canProceed}
-            className={`flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-colors ${
+            className={`flex items-center gap-2 px-6 py-2 rounded-lg transition-colors ${
               canProceed
-                ? 'bg-burgundy-800 hover:bg-burgundy-700 text-white'
-                : 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                ? 'bg-burgundy-700 hover:bg-burgundy-800 text-white'
+                : 'opacity-50 cursor-not-allowed bg-burgundy-700 text-white'
             }`}
           >
-            {canProceed ? 'Next Section' : 'Complete quiz to continue'}
+            Next
             <ChevronRight className="w-5 h-5" />
           </button>
         )}
@@ -705,33 +1025,33 @@ function SectionQuiz({ section, courseSlug, sectionIndex, onComplete, onBack }) 
 
   if (submitted && results) {
     return (
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-lg p-8 text-center">
-        <div className={`w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 ${
-          results.passed ? 'bg-hunter-100' : 'bg-honey-100'
+      <div className="bg-burgundy-50/60 rounded-2xl border-l-4 border-burgundy-700 p-6 text-center my-6">
+        <div className={`w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4 ${
+          results.passed ? 'bg-hunter-100 ring-4 ring-hunter-50' : 'bg-honey-100 ring-4 ring-honey-50'
         }`}>
           {results.passed ? (
-            <CheckCircle2 className="w-10 h-10 text-hunter-600" />
+            <CheckCircle2 className="w-7 h-7 text-hunter-600" />
           ) : (
-            <AlertCircle className="w-10 h-10 text-honey-600" />
+            <AlertCircle className="w-7 h-7 text-honey-600" />
           )}
         </div>
-        <h2 className="text-2xl font-bold text-navy-700 mb-2">
+        <h2 className="text-xl font-bold text-navy-700 mb-2">
           {results.passed ? 'Quiz Passed!' : 'Keep Trying!'}
         </h2>
-        <p className="text-navy-500 mb-4">
+        <p className="text-sm text-navy-500 mb-1">
           You scored {results.score}/{results.totalQuestions} ({results.percentage}%)
         </p>
-        <p className="text-sm text-navy-400 mb-6">
-          {results.passed 
+        <p className="text-xs text-navy-400 mb-5">
+          {results.passed
             ? 'You can now proceed to the next section.'
             : `You need ${Math.round(section.quizPassThreshold * 100)}% to pass.`}
         </p>
         <button
           onClick={() => onComplete(results)}
-          className={`px-6 py-3 rounded-xl font-semibold ${
+          className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all shadow-sm ${
             results.passed
-              ? 'bg-hunter-600 hover:bg-hunter-700 text-white'
-              : 'bg-slate-100 hover:bg-slate-200 text-navy-600'
+              ? 'bg-burgundy-800 hover:bg-burgundy-700 text-white shadow-burgundy-200'
+              : 'bg-white hover:bg-stone-50 text-navy-600 border border-forest-200'
           }`}
         >
           {results.passed ? 'Continue' : 'Review Content & Retry'}
@@ -743,66 +1063,71 @@ function SectionQuiz({ section, courseSlug, sectionIndex, onComplete, onBack }) 
   const question = section.quizQuestions[currentQuestion];
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 shadow-lg overflow-hidden">
-      <div className="bg-burgundy-800 px-6 py-4 flex items-center justify-between">
-        <h3 className="text-white font-bold">Section Quiz</h3>
-        <span className="text-burgundy-200 text-sm">
-          Question {currentQuestion + 1} of {section.quizQuestions.length}
+    <div className="bg-burgundy-50/60 rounded-2xl border-l-4 border-burgundy-700 overflow-hidden my-6">
+      <div className="px-6 py-4 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="w-7 h-7 rounded-full bg-burgundy-700 flex items-center justify-center">
+            <CheckCircle2 className="w-3.5 h-3.5 text-white" />
+          </div>
+          <h3 className="text-sm font-bold text-burgundy-800 tracking-wide">Check Your Understanding</h3>
+        </div>
+        <span className="text-burgundy-400 text-xs font-semibold bg-white px-2.5 py-1 rounded-full">
+          {currentQuestion + 1} of {section.quizQuestions.length}
         </span>
       </div>
 
-      <div className="p-6">
-        <p className="text-lg text-navy-700 font-medium mb-6">{question.question}</p>
+      <div className="px-6 pb-6 pl-16">
+        <p className="text-base text-navy-700 font-semibold mb-5 leading-relaxed">{question.question}</p>
 
-        <div className="space-y-3 mb-8">
+        <div className="space-y-3 mb-5">
           {question.options.map((option, index) => (
             <button
               key={index}
               onClick={() => setAnswers(prev => ({ ...prev, [currentQuestion]: index }))}
-              className={`w-full text-left px-5 py-4 rounded-xl border-2 transition-all flex items-center gap-4 ${
+              className={`w-full text-left px-4 py-3 rounded-xl border-2 transition-all flex items-center gap-3.5 text-[15px] ${
                 answers[currentQuestion] === index
-                  ? 'bg-burgundy-50 border-burgundy-500'
-                  : 'bg-slate-50 border-slate-200 hover:border-burgundy-300'
+                  ? 'bg-burgundy-50 border-burgundy-600 shadow-sm shadow-burgundy-100'
+                  : 'bg-white border-forest-200 hover:border-burgundy-300 hover:shadow-sm'
               }`}
             >
-              <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
+              <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all ${
                 answers[currentQuestion] === index
                   ? 'bg-burgundy-700 border-burgundy-700 text-white'
-                  : 'border-slate-300'
+                  : 'border-forest-300'
               }`}>
-                {answers[currentQuestion] === index && <CheckCircle2 className="w-4 h-4" />}
+                {answers[currentQuestion] === index ? <CheckCircle2 className="w-3.5 h-3.5" /> : <span className="text-xs font-bold text-forest-400">{String.fromCharCode(65 + index)}</span>}
               </div>
-              <span className="text-navy-600">{option.text}</span>
+              <span className="text-navy-600 leading-snug">{option.text}</span>
             </button>
           ))}
         </div>
 
-        <div className="flex items-center justify-between pt-4 border-t border-slate-200">
+        <div className="flex items-center justify-between pt-4 border-t border-burgundy-100">
           <button
             onClick={onBack}
-            className="text-navy-500 hover:text-navy-700"
+            className="text-xs text-navy-500 hover:text-navy-700 font-medium"
           >
             ← Back to Content
           </button>
 
-          <div className="flex gap-3">
+          <div className="flex gap-2.5">
             {currentQuestion > 0 && (
               <button
                 onClick={() => setCurrentQuestion(prev => prev - 1)}
-                className="px-4 py-2 text-navy-600 hover:bg-slate-100 rounded-lg"
+                className="px-4 py-2 text-sm text-navy-600 hover:bg-white rounded-xl border border-forest-200 font-medium transition-all"
               >
                 Previous
               </button>
             )}
-            
+
             {currentQuestion < section.quizQuestions.length - 1 ? (
               <button
                 onClick={() => setCurrentQuestion(prev => prev + 1)}
                 disabled={answers[currentQuestion] === undefined}
-                className={`px-4 py-2 rounded-lg ${
+                className={`px-4 py-2 text-sm rounded-xl font-bold transition-all ${
                   answers[currentQuestion] !== undefined
-                    ? 'bg-burgundy-800 hover:bg-burgundy-700 text-white'
-                    : 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                    ? 'bg-burgundy-800 hover:bg-burgundy-700 text-white shadow-sm shadow-burgundy-200'
+                    : 'bg-stone-200 text-forest-400 cursor-not-allowed'
                 }`}
               >
                 Next
@@ -811,13 +1136,13 @@ function SectionQuiz({ section, courseSlug, sectionIndex, onComplete, onBack }) 
               <button
                 onClick={handleSubmit}
                 disabled={Object.keys(answers).length < section.quizQuestions.length}
-                className={`px-6 py-2 rounded-lg font-semibold ${
+                className={`px-5 py-2 text-sm rounded-xl font-bold transition-all ${
                   Object.keys(answers).length >= section.quizQuestions.length
-                    ? 'bg-hunter-600 hover:bg-hunter-700 text-white'
-                    : 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                    ? 'bg-burgundy-800 hover:bg-burgundy-700 text-white shadow-sm shadow-burgundy-200'
+                    : 'bg-stone-200 text-forest-400 cursor-not-allowed'
                 }`}
               >
-                Submit Quiz
+                Submit
               </button>
             )}
           </div>
@@ -901,7 +1226,7 @@ function AssessmentView({ course, progress, onComplete, onBack }) {
         <div className="flex gap-4 justify-center">
           <button
             onClick={onBack}
-            className="px-6 py-3 bg-slate-100 hover:bg-slate-200 text-navy-600 font-semibold rounded-xl transition-colors"
+            className="px-6 py-3 bg-stone-100 hover:bg-stone-200 text-navy-600 font-semibold rounded-xl transition-colors"
           >
             Review Content
           </button>
@@ -942,143 +1267,357 @@ function AssessmentView({ course, progress, onComplete, onBack }) {
 }
 
 // ============================================================================
+// REFERENCES VIEW
+// ============================================================================
+function ReferencesView({ course, onBack }) {
+  return (
+    <div className="max-w-4xl mx-auto">
+      <div className="mb-8">
+        <button
+          onClick={onBack}
+          className="text-navy-500 hover:text-navy-700 flex items-center gap-2 mb-4"
+        >
+          <ChevronLeft className="w-4 h-4" />
+          Back to Course
+        </button>
+        <h1 className="text-3xl font-bold text-navy-700">References</h1>
+        <p className="text-navy-500 mt-2">
+          {course.references.length} citations supporting this course material
+        </p>
+      </div>
+
+      <div className="bg-white rounded-2xl border border-forest-200 shadow-sm p-6 lg:p-8">
+        <ol className="space-y-4">
+          {course.references.map((ref, index) => (
+            <li
+              key={index}
+              className="text-sm text-navy-600 leading-relaxed pl-10"
+              style={{ textIndent: '-2.25rem' }}
+            >
+              {typeof ref === 'string' ? ref : ref?.text || ref?.title || JSON.stringify(ref)}
+            </li>
+          ))}
+        </ol>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================================
 // SIDEBAR
 // ============================================================================
-function CourseSidebar({ 
-  course, 
-  progress, 
+function ProgressRing({ progress, size = 36 }) {
+  const radius = 15;
+  const circumference = 2 * Math.PI * radius;
+  const offset = circumference - (progress / 100) * circumference;
+  return (
+    <div className="relative flex-shrink-0" style={{ width: size, height: size }}>
+      <svg width={size} height={size} viewBox="0 0 36 36" style={{ transform: 'rotate(-90deg)' }}>
+        <circle cx="18" cy="18" r={radius} fill="none" stroke="rgba(255,255,255,.15)" strokeWidth="3" />
+        <circle cx="18" cy="18" r={radius} fill="none" stroke="#D4A855" strokeWidth="3" strokeLinecap="round"
+          strokeDasharray={circumference} strokeDashoffset={offset} style={{ transition: 'stroke-dashoffset 0.4s ease' }} />
+      </svg>
+      <span className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[10px] font-bold" style={{ color: '#D4A855' }}>
+        {progress}%
+      </span>
+    </div>
+  );
+}
+
+function CourseSidebar({
+  course,
+  progress,
   currentView,
   onNavigate,
   isOpen,
-  onClose 
+  onClose,
+  pagedMode,
+  currentPage,
+  onPageChange
 }) {
+  const completedCount = progress?.sectionProgress?.filter(s => s.status === 'completed').length || 0;
+  const totalCount = course.sections.length;
+  const pct = progress?.overallProgress || 0;
+  const allComplete = progress?.sectionProgress?.every(s => s.status === 'completed');
+
   return (
     <>
       {/* Overlay for mobile */}
       {isOpen && (
-        <div 
+        <div
           className="fixed inset-0 bg-black/50 z-40 lg:hidden"
           onClick={onClose}
         />
       )}
-      
+
       <aside className={`
-        fixed top-0 left-0 h-full w-80 bg-white border-r border-slate-200 z-50
+        fixed top-0 left-0 h-full w-72 z-50
         transform transition-transform duration-300
         lg:relative lg:transform-none
         ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-      `}>
+      `} style={{ background: '#F5F5DC', boxShadow: '2px 0 12px rgba(0,0,0,0.06)' }}>
         <div className="h-full flex flex-col">
-          {/* Header */}
-          <div className="p-4 border-b border-slate-200">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="font-bold text-navy-700 line-clamp-2">{course.title}</h2>
-              <button onClick={onClose} className="lg:hidden text-slate-400 hover:text-navy-600">
-                <X className="w-5 h-5" />
-              </button>
+          {/* Burgundy Gradient Header */}
+          <div className="flex-shrink-0" style={{ padding: '16px 18px 14px', background: 'linear-gradient(135deg, #6B1D34, #4A1020)', color: '#fff' }}>
+            <div className="flex items-center justify-between mb-2">
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wide" style={{ background: 'rgba(255,255,255,.15)', letterSpacing: '0.5px' }}>
+                {course.ceHours} CE Hours
+              </span>
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] opacity-70">{course.category || ''}</span>
+                <button onClick={onClose} className="lg:hidden text-white/60 hover:text-white">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
             </div>
-            <div className="flex items-center gap-3 text-sm text-navy-400">
-              <span className="flex items-center gap-1">
-                <Clock className="w-4 h-4" />
-                {Math.round(course.totalEstimatedTime / 60)}h
-              </span>
-              <span className="flex items-center gap-1">
-                <Award className="w-4 h-4" />
-                {course.ceHours} CE
-              </span>
+            <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '17px', fontWeight: 700, lineHeight: 1.25, margin: '0 0 14px', color: '#fff' }}>
+              {course.title}
+            </h2>
+
+            <div className="flex items-center gap-3 mb-2.5">
+              <ProgressRing progress={pct} />
+              <div>
+                <div className="text-[11px] font-semibold" style={{ opacity: 0.9 }}>{completedCount} of {totalCount} complete</div>
+                <div className="text-[10px]" style={{ opacity: 0.6 }}>
+                  {allComplete ? 'All sections complete' : `Section ${(progress?.currentSectionIndex || 0) + 1} in progress`}
+                </div>
+              </div>
+            </div>
+
+            <div className="rounded-sm overflow-hidden" style={{ height: 4, background: 'rgba(255,255,255,.15)' }}>
+              <div className="h-full rounded-sm transition-all duration-400" style={{ width: `${pct}%`, background: 'linear-gradient(90deg, #D4A855, #EACD86)' }} />
             </div>
           </div>
 
-          {/* Progress */}
-          <div className="p-4 border-b border-slate-200">
-            <div className="flex items-center justify-between text-sm mb-2">
-              <span className="text-navy-600">Progress</span>
-              <span className="font-bold text-burgundy-700">{progress?.overallProgress || 0}%</span>
-            </div>
-            <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
-              <div 
-                className="h-full bg-burgundy-700 transition-all rounded-full"
-                style={{ width: `${progress?.overallProgress || 0}%` }}
-              />
-            </div>
-          </div>
+          {/* Sections Nav — card-based modules */}
+          <nav className="flex-1 overflow-y-auto p-2.5" aria-label="Course sections">
+            {(() => {
+              let lastModule = null;
+              // Group sections by module
+              const modules = [];
+              course.sections.forEach((section, index) => {
+                const mod = section.module || 'Course Sections';
+                if (mod !== lastModule) {
+                  modules.push({ name: mod, sections: [] });
+                  lastModule = mod;
+                }
+                modules[modules.length - 1].sections.push({ section, index });
+              });
 
-          {/* Sections */}
-          <nav className="flex-1 overflow-y-auto p-4" aria-label="Course sections">
-            <ul className="space-y-2">
-              {course.sections.map((section, index) => {
-                const sectionProgress = progress?.sectionProgress?.[index];
-                const isCompleted = sectionProgress?.status === 'completed';
-                const isCurrent = currentView === 'section' && progress?.currentSectionIndex === index;
-                const isLocked = index > 0 && progress?.sectionProgress?.[index - 1]?.status !== 'completed';
+              return modules.map((mod, mi) => {
+                const modCompleted = mod.sections.filter(({ index }) => progress?.sectionProgress?.[index]?.status === 'completed').length;
+                const modTotal = mod.sections.length;
+                const modDone = modCompleted === modTotal;
+                const modHasActive = mod.sections.some(({ index }) => currentView === 'section' && progress?.currentSectionIndex === index);
 
                 return (
-                  <li key={index}>
-                    <button
-                      onClick={() => !isLocked && onNavigate(index)}
-                      disabled={isLocked}
-                      aria-current={isCurrent ? 'step' : undefined}
-                      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-colors ${
-                        isCurrent
-                          ? 'bg-burgundy-50 text-burgundy-800'
-                          : isLocked
-                            ? 'text-slate-300 cursor-not-allowed'
-                            : 'text-navy-600 hover:bg-slate-50'
-                      }`}
-                    >
-                      <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 ${
-                        isCompleted
-                          ? 'bg-hunter-600 text-white'
-                          : isCurrent
-                            ? 'bg-burgundy-700 text-white'
-                            : isLocked
-                              ? 'bg-slate-100 text-slate-300'
-                              : 'bg-slate-200 text-navy-500'
-                      }`}>
-                        {isCompleted ? (
-                          <CheckCircle2 className="w-4 h-4" />
-                        ) : isLocked ? (
-                          <Lock className="w-3 h-3" />
-                        ) : (
-                          <span className="text-xs font-semibold">{index + 1}</span>
-                        )}
-                      </div>
-                      <span className="text-sm font-medium line-clamp-2">{section.title}</span>
-                    </button>
-                  </li>
-                );
-              })}
+                  <div key={mi} className="mb-2 rounded-lg overflow-hidden" style={{ background: '#fff', border: '1px solid #E2E2BE' }}>
+                    {/* Module header bar */}
+                    <div className="flex items-center justify-between px-3.5 py-2" style={{
+                      fontSize: '10px', fontWeight: 700, letterSpacing: '0.5px', textTransform: 'uppercase',
+                      background: modDone ? 'rgba(74,124,89,0.08)' : 'transparent',
+                      color: modDone ? '#4A7C59' : modHasActive ? '#284157' : '#9CA3AF'
+                    }}>
+                      <span>{mod.name}</span>
+                      {modDone ? (
+                        <span className="flex items-center justify-center rounded-full text-white" style={{ width: 16, height: 16, background: '#4A7C59', fontSize: 9 }}>
+                          <CheckCircle2 className="w-2.5 h-2.5" />
+                        </span>
+                      ) : (
+                        <span style={{ fontSize: 9 }}>{modCompleted}/{modTotal}</span>
+                      )}
+                    </div>
 
-              {/* Final Assessment */}
-              <li className="pt-4 mt-4 border-t border-slate-200">
-                <button
-                  onClick={() => onNavigate('assessment')}
-                  disabled={!progress?.sectionProgress?.every(s => s.status === 'completed')}
-                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-colors ${
-                    currentView === 'assessment'
-                      ? 'bg-hunter-50 text-hunter-700'
-                      : progress?.sectionProgress?.every(s => s.status === 'completed')
-                        ? 'text-navy-600 hover:bg-slate-50'
-                        : 'text-slate-300 cursor-not-allowed'
-                  }`}
-                >
-                  <div className={`w-6 h-6 rounded-full flex items-center justify-center ${
-                    currentView === 'assessment'
-                      ? 'bg-hunter-600 text-white'
-                      : progress?.sectionProgress?.every(s => s.status === 'completed')
-                        ? 'bg-honey-400 text-white'
-                        : 'bg-slate-100 text-slate-300'
-                  }`}>
-                    <Award className="w-3.5 h-3.5" />
+                    {/* Section items */}
+                    {mod.sections.map(({ section, index }) => {
+                      const sectionProgress = progress?.sectionProgress?.[index];
+                      const isCompleted = sectionProgress?.status === 'completed';
+                      const isCurrent = currentView === 'section' && progress?.currentSectionIndex === index;
+                      const isLocked = index > 0 && progress?.sectionProgress?.[index - 1]?.status !== 'completed';
+
+                      return (
+                        <button
+                          key={index}
+                          onClick={() => !isLocked && onNavigate(index)}
+                          disabled={isLocked}
+                          aria-current={isCurrent ? 'step' : undefined}
+                          className="w-full flex items-center gap-2 text-left transition-colors"
+                          style={{
+                            padding: '8px 14px',
+                            borderTop: '1px solid #EDEDD0',
+                            borderLeft: isCurrent ? '3px solid #6B1D34' : '3px solid transparent',
+                            background: isCurrent ? '#FDF5F7' : isCompleted ? 'rgba(74,124,89,0.06)' : 'transparent',
+                            opacity: isLocked ? 0.5 : 1,
+                            cursor: isLocked ? 'not-allowed' : 'pointer',
+                            minHeight: 44,
+                          }}
+                        >
+                          <div className="flex items-center justify-center rounded-full flex-shrink-0" style={{
+                            width: 18, height: 18, fontSize: 9, fontWeight: 700,
+                            background: isCompleted ? '#4A7C59' : isCurrent ? '#6B1D34' : '#EDEDD0',
+                            color: isCompleted || isCurrent ? '#fff' : isLocked ? '#9CA3AF' : '#6B7280',
+                          }}>
+                            {isCompleted ? (
+                              <CheckCircle2 className="w-2.5 h-2.5" />
+                            ) : isLocked ? (
+                              <Lock className="w-2 h-2" />
+                            ) : (
+                              <span>{index + 1}</span>
+                            )}
+                          </div>
+                          <span style={{
+                            fontSize: '12.5px',
+                            color: isCurrent ? '#6B1D34' : '#284157',
+                            fontWeight: isCurrent ? 600 : 400,
+                          }} className="line-clamp-2">{section.title}</span>
+                        </button>
+                      );
+                    })}
                   </div>
-                  <span className="text-sm font-medium">Final Assessment</span>
-                </button>
-              </li>
-            </ul>
+                );
+              });
+            })()}
           </nav>
+
+          {/* Take Final Exam button */}
+          {allComplete && (
+            <div className="p-4 flex-shrink-0" style={{ borderTop: '1px solid #E2E2BE', background: '#fff' }}>
+              <button
+                onClick={() => onNavigate('assessment')}
+                className="w-full flex items-center justify-center gap-2 px-4 py-3 text-white font-semibold rounded-lg transition-colors"
+                style={{ background: '#6B1D34' }}
+                onMouseEnter={e => e.currentTarget.style.background = '#560019'}
+                onMouseLeave={e => e.currentTarget.style.background = '#6B1D34'}
+              >
+                <CheckCircle2 className="w-5 h-5" />
+                Take Final Exam
+              </button>
+            </div>
+          )}
+
+          {/* Provider footer */}
+          <div className="flex-shrink-0 px-4 py-2.5" style={{ borderTop: '1px solid #E2E2BE', background: '#fff' }}>
+            <div className="text-center" style={{ fontSize: 9, color: '#6B7280', fontFamily: "'Cormorant Garamond', serif", letterSpacing: '0.5px', fontStyle: 'italic' }}>
+              NBCC Approved Provider #7760 · GAITP LLC
+            </div>
+          </div>
         </div>
       </aside>
     </>
+  );
+}
+
+// ============================================================================
+// CE TIMER FOOTER
+// ============================================================================
+function CETimerFooter({ course, progress, onStartAssessment }) {
+  const [elapsed, setElapsed] = useState(0);
+  const [startTime] = useState(() => Date.now());
+
+  const requiredSeconds = (course.ceHours || 0) * 3600;
+  const allComplete = progress?.sectionProgress?.every(s => s.status === 'completed');
+  const timerDone = elapsed >= requiredSeconds;
+
+  useEffect(() => {
+    if (!requiredSeconds) return;
+    const interval = setInterval(() => {
+      setElapsed(Math.floor((Date.now() - startTime) / 1000));
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [requiredSeconds, startTime]);
+
+  if (!requiredSeconds) return null;
+
+  const remaining = Math.max(0, requiredSeconds - elapsed);
+  const hrs = Math.floor(remaining / 3600);
+  const mins = Math.floor((remaining % 3600) / 60);
+  const secs = remaining % 60;
+  const timeStr = `${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+
+  return (
+    <footer
+      className="ce-timer-footer fixed bottom-0 z-40"
+      style={{
+        left: 288, right: 0, background: '#fff',
+        borderTop: '2px solid #E2E2BE', padding: '0.875rem 2rem',
+        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+        boxShadow: '0 -2px 8px rgba(0,0,0,.05)',
+      }}
+    >
+      <div className="flex items-center gap-4">
+        <span style={{ fontSize: '1.5rem' }} aria-hidden="true">&#9201;</span>
+        <div>
+          <div style={{ fontWeight: 600, color: '#2C2C2C', fontSize: '0.875rem' }}>Required Course Time</div>
+          <div style={{ fontSize: '1.25rem', fontWeight: 700, color: '#6B1D34', fontVariantNumeric: 'tabular-nums' }} aria-live="polite">
+            {timeStr}
+          </div>
+        </div>
+      </div>
+      <button
+        onClick={onStartAssessment}
+        disabled={!allComplete || !timerDone}
+        style={{
+          background: (!allComplete || !timerDone) ? '#6B7280' : '#6B1D34',
+          color: '#fff', border: 'none', padding: '0.75rem 2rem',
+          borderRadius: 6, fontWeight: 700, fontSize: '1rem',
+          cursor: (!allComplete || !timerDone) ? 'not-allowed' : 'pointer',
+          opacity: (!allComplete || !timerDone) ? 0.6 : 1,
+          fontFamily: "'Lato', sans-serif", transition: 'all 0.2s',
+        }}
+      >
+        {timerDone ? 'Final Post-Test' : 'Final Post-Test (Locked)'}
+      </button>
+    </footer>
+  );
+}
+
+// ============================================================================
+// RESOURCE FAB
+// ============================================================================
+function ResourceFAB({ resources }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="fixed z-50" style={{ bottom: 24, right: 24 }}>
+      {open && (
+        <>
+          <div className="fixed inset-0" onClick={() => setOpen(false)} />
+          <div className="absolute bottom-16 right-0 w-72 bg-white rounded-lg p-4" style={{ boxShadow: '0 4px 16px rgba(0,0,0,.12)' }}>
+            <div style={{ fontWeight: 700, color: '#284157', marginBottom: '0.75rem', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+              Course Resources
+            </div>
+            {resources.map((res, i) => (
+              <a
+                key={i}
+                href={res.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-3 p-3 rounded-md transition-all no-underline"
+                style={{ color: '#2C2C2C', minHeight: 44 }}
+                onMouseEnter={e => { e.currentTarget.style.background = '#F5F5DC'; e.currentTarget.style.transform = 'translateX(4px)'; }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.transform = 'translateX(0)'; }}
+              >
+                <Download className="w-5 h-5 flex-shrink-0" style={{ color: '#284157' }} />
+                <span style={{ fontWeight: 500, fontSize: '0.875rem' }}>{res.title || res.name || 'Download'}</span>
+              </a>
+            ))}
+          </div>
+        </>
+      )}
+      <button
+        onClick={() => setOpen(!open)}
+        className="flex items-center justify-center rounded-full transition-all"
+        style={{
+          width: 56, height: 56, background: '#284157', color: '#fff',
+          border: 'none', cursor: 'pointer', boxShadow: '0 4px 12px rgba(40,65,87,.3)',
+          fontSize: '1.5rem',
+        }}
+        onMouseEnter={e => { e.currentTarget.style.background = '#1F3345'; e.currentTarget.style.transform = 'scale(1.05)'; }}
+        onMouseLeave={e => { e.currentTarget.style.background = '#284157'; e.currentTarget.style.transform = 'scale(1)'; }}
+        aria-label="Open downloadable resources"
+      >
+        <Download className="w-6 h-6" />
+      </button>
+    </div>
   );
 }
 
@@ -1090,12 +1629,21 @@ export default function CourseViewer({ courseSlug }) {
   const [progress, setProgress] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [currentView, setCurrentView] = useState('section'); // 'section' | 'assessment'
+  const [currentView, setCurrentView] = useState('section'); // 'section' | 'assessment' | 'references'
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [pagedMode, setPagedMode] = useState(false);
+  const [currentPage, setCurrentPage] = useState(0);
   const [a11y, setA11y] = useState({
     fontSize: 'normal',
     highContrast: false,
+    darkMode: false,
     narration: false,
+    dyslexiaFont: false,
+    reducedMotion: false,
+    enhancedFocus: false,
+    lineSpacing: 'normal',
+    readingGuide: false,
+    language: '',
   });
 
   useEffect(() => {
@@ -1123,6 +1671,60 @@ export default function CourseViewer({ courseSlug }) {
     };
   }, []);
 
+  // Google Translate integration
+  useEffect(() => {
+    // Load Google Translate script once
+    if (!document.getElementById('google-translate-script')) {
+      window.googleTranslateElementInit = () => {
+        new window.google.translate.TranslateElement(
+          { pageLanguage: 'en', autoDisplay: false },
+          'google_translate_element'
+        );
+      };
+      const script = document.createElement('script');
+      script.id = 'google-translate-script';
+      script.src = '//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit';
+      document.body.appendChild(script);
+    }
+  }, []);
+
+  // Trigger translation when language changes
+  useEffect(() => {
+    const trySetLanguage = (attempts = 0) => {
+      const frame = document.querySelector('.goog-te-menu-frame');
+      const combo = document.querySelector('.goog-te-combo');
+
+      if (combo) {
+        combo.value = a11y.language;
+        combo.dispatchEvent(new Event('change'));
+        return;
+      }
+
+      // Google Translate may not be loaded yet — retry
+      if (attempts < 20) {
+        setTimeout(() => trySetLanguage(attempts + 1), 300);
+      }
+    };
+
+    if (a11y.language) {
+      trySetLanguage();
+    } else {
+      // Reset to English — remove translation
+      const banner = document.querySelector('.goog-te-banner-frame');
+      if (banner) {
+        const restore = banner.contentDocument?.querySelector('.goog-close-link');
+        if (restore) restore.click();
+      }
+      // Also try cookie approach
+      document.cookie = 'googtrans=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC';
+      const combo = document.querySelector('.goog-te-combo');
+      if (combo) {
+        combo.value = '';
+        combo.dispatchEvent(new Event('change'));
+      }
+    }
+  }, [a11y.language]);
+
   const refreshProgress = useCallback(async () => {
     try {
       const progressData = await api.getProgress(courseSlug);
@@ -1135,6 +1737,8 @@ export default function CourseViewer({ courseSlug }) {
   const handleNavigate = useCallback((target) => {
     if (target === 'assessment') {
       setCurrentView('assessment');
+    } else if (target === 'references') {
+      setCurrentView('references');
     } else if (typeof target === 'number') {
       setProgress(prev => ({ ...prev, currentSectionIndex: target }));
       setCurrentView('section');
@@ -1143,12 +1747,17 @@ export default function CourseViewer({ courseSlug }) {
   }, []);
 
   // Accessibility: font size class for main content area
-  const fontSizeClass = a11y.fontSize === 'x-large' ? 'text-lg' : a11y.fontSize === 'large' ? 'text-base' : 'text-sm';
+  const fontSizeClass = a11y.fontSize === 'x-large' ? 'text-2xl' : a11y.fontSize === 'large' ? 'text-xl' : 'text-lg';
   const hcClass = a11y.highContrast ? 'high-contrast' : '';
+  const dmClass = a11y.darkMode ? 'dark-mode' : '';
+  const dyslexiaClass = a11y.dyslexiaFont ? 'dyslexia-font' : '';
+  const motionClass = a11y.reducedMotion ? 'reduced-motion' : '';
+  const focusClass = a11y.enhancedFocus ? 'focus-visible-enhanced' : '';
+  const lineSpacingClass = a11y.lineSpacing === 'relaxed' ? 'leading-relaxed-mode' : a11y.lineSpacing === 'compact' ? 'leading-compact-mode' : '';
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+      <div className="min-h-screen flex items-center justify-center" style={{ background: '#F5F5DC' }}>
         <div className="text-center">
           <div className="w-12 h-12 border-4 border-burgundy-700 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
           <p className="text-navy-500">Loading course...</p>
@@ -1159,7 +1768,7 @@ export default function CourseViewer({ courseSlug }) {
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+      <div className="min-h-screen flex items-center justify-center" style={{ background: '#F5F5DC' }}>
         <div className="text-center">
           <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
           <h2 className="text-xl font-bold text-navy-700 mb-2">Error Loading Course</h2>
@@ -1169,11 +1778,25 @@ export default function CourseViewer({ courseSlug }) {
     );
   }
 
+  if (!course.sections || course.sections.length === 0) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ background: '#F5F5DC' }}>
+        <div className="text-center">
+          <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+          <h2 className="text-xl font-bold text-navy-700 mb-2">Course Content Unavailable</h2>
+          <p className="text-navy-500">This course has no sections yet.</p>
+        </div>
+      </div>
+    );
+  }
+
   const currentSection = course.sections[progress?.currentSectionIndex || 0];
   const currentSectionProgress = progress?.sectionProgress?.[progress?.currentSectionIndex || 0];
 
   return (
-    <div className={`min-h-screen bg-slate-50 flex ${hcClass}`}>
+    <div className={`min-h-screen flex ${hcClass} ${dmClass} ${dyslexiaClass} ${motionClass} ${focusClass} ${lineSpacingClass}`} style={{ background: '#F5F5DC' }}>
+      {/* Hidden Google Translate element */}
+      <div id="google_translate_element" style={{ position: 'absolute', top: -9999, left: -9999, opacity: 0, pointerEvents: 'none' }} />
       {/* Skip to content link */}
       <a 
         href="#main-content" 
@@ -1190,41 +1813,57 @@ export default function CourseViewer({ courseSlug }) {
         onNavigate={handleNavigate}
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
+        pagedMode={pagedMode}
+        currentPage={currentPage}
+        onPageChange={setCurrentPage}
       />
 
       {/* Main Content */}
       <main className="flex-1 min-w-0" id="main-content">
-        {/* Top bar */}
-        <header className="bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between sticky top-0 z-30">
+        {/* Top bar — eggshell with serif title */}
+        <header className="sticky top-0 z-30 flex items-center justify-center" style={{ background: '#F5F5DC', padding: '1rem 2rem', borderBottom: '2px solid #E5E5DC' }}>
           <button
             onClick={() => setSidebarOpen(true)}
-            className="lg:hidden p-2 text-navy-600 hover:text-navy-800"
+            className="lg:hidden p-2"
+            style={{ color: '#284157' }}
             aria-label="Open course navigation"
           >
-            <Menu className="w-5 h-5" />
+            <Menu className="w-6 h-6" />
           </button>
-          
-          <div className="flex-1 lg:hidden text-center">
-            <span className="font-medium text-navy-700 text-sm">
-              {currentView === 'assessment' ? 'Final Assessment' : currentSection?.title}
-            </span>
-          </div>
 
-          <div className="flex items-center gap-1">
+          <h1 className="flex-1 text-center m-0" style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '1.75rem', fontWeight: 700, color: '#6B1D34' }}>
+            {currentView === 'assessment' ? 'Final Assessment' : currentView === 'references' ? 'References' : currentSection?.title}
+          </h1>
+
+          <div className="flex items-center gap-1 flex-shrink-0">
+            <button
+              onClick={() => setPagedMode(!pagedMode)}
+              className={`p-2 rounded-lg transition-colors ${pagedMode ? 'bg-burgundy-100 text-burgundy-700' : 'hover:text-burgundy-700'}`}
+              style={{ color: pagedMode ? undefined : '#9CA3AF' }}
+              aria-label={pagedMode ? 'Switch to scroll mode' : 'Switch to paged mode'}
+              title={pagedMode ? 'Scroll mode' : 'Paged mode'}
+            >
+              <Layers className="w-5 h-5" />
+            </button>
             <AccessibilityToolbar settings={a11y} onUpdate={setA11y} />
-            <a href="/dashboard" className="p-2 text-navy-400 hover:text-navy-600" aria-label="Return to dashboard">
+            <a href="/dashboard" className="p-2 hover:text-burgundy-700 transition-colors" style={{ color: '#9CA3AF' }} aria-label="Return to dashboard">
               <Home className="w-5 h-5" />
             </a>
           </div>
         </header>
 
         {/* Content */}
-        <div className={`p-6 lg:p-8 ${fontSizeClass}`}>
+        <div className={`p-6 lg:p-8 pb-24 ${fontSizeClass}`} style={{ background: '#F5F5DC', minHeight: 'calc(100vh - 80px)' }}>
           {currentView === 'assessment' ? (
             <AssessmentView
               course={course}
               progress={progress}
               onComplete={refreshProgress}
+              onBack={() => handleNavigate(course.sections.length - 1)}
+            />
+          ) : currentView === 'references' ? (
+            <ReferencesView
+              course={course}
               onBack={() => handleNavigate(course.sections.length - 1)}
             />
           ) : (
@@ -1236,11 +1875,79 @@ export default function CourseViewer({ courseSlug }) {
               onNavigate={handleNavigate}
               onProgressUpdate={refreshProgress}
               a11y={a11y}
+              pagedMode={pagedMode}
+              currentPage={currentPage}
+              onPageChange={setCurrentPage}
             />
           )}
         </div>
       </main>
+
+      {/* Vertical References Tab — right edge */}
+      {course.references?.length > 0 && currentView !== 'references' && (
+        <button
+          onClick={() => handleNavigate('references')}
+          className="fixed z-50 hover:opacity-90 transition-opacity"
+          style={{
+            right: 0, top: '50%', transform: 'translateY(-50%)',
+            background: '#284157', color: '#fff', border: 'none',
+            padding: '16px 10px', borderRadius: '8px 0 0 8px',
+            cursor: 'pointer', fontWeight: 600, fontSize: '0.8rem',
+            writingMode: 'vertical-rl', textOrientation: 'mixed',
+            boxShadow: '-2px 0 8px rgba(0,0,0,.12)',
+          }}
+          aria-label="Open reference list"
+        >
+          <BookOpen className="w-3.5 h-3.5 mb-1.5" style={{ transform: 'rotate(90deg)' }} />
+          References
+        </button>
+      )}
+
+      {/* CE Timer Footer */}
+      <CETimerFooter
+        course={course}
+        progress={progress}
+        onStartAssessment={() => handleNavigate('assessment')}
+      />
+
+      {/* Resource FAB */}
+      {course.resources?.length > 0 && <ResourceFAB resources={course.resources} />}
+
+      {/* Reading Guide — horizontal bar follows mouse */}
+      {a11y.readingGuide && <ReadingGuide />}
     </div>
+  );
+}
+
+// ============================================================================
+// READING GUIDE — horizontal highlight bar that follows the mouse
+// ============================================================================
+function ReadingGuide() {
+  const [y, setY] = useState(-100);
+
+  useEffect(() => {
+    const handler = (e) => setY(e.clientY);
+    window.addEventListener('mousemove', handler);
+    return () => window.removeEventListener('mousemove', handler);
+  }, []);
+
+  return (
+    <div
+      style={{
+        position: 'fixed',
+        left: 0,
+        right: 0,
+        top: y - 16,
+        height: 32,
+        background: 'rgba(212, 168, 85, 0.15)',
+        borderTop: '2px solid rgba(212, 168, 85, 0.4)',
+        borderBottom: '2px solid rgba(212, 168, 85, 0.4)',
+        pointerEvents: 'none',
+        zIndex: 9999,
+        transition: 'top 0.05s linear',
+      }}
+      aria-hidden="true"
+    />
   );
 }
 
@@ -1255,6 +1962,77 @@ const styles = `
 }
 @media (prefers-reduced-motion: reduce) {
   .animate-fadeIn { animation: none; }
+}
+
+/* APA heading hierarchy */
+.prose h2, .cr-content h2 {
+  font-family: "Cormorant Garamond", serif !important;
+  font-weight: 600 !important;
+  font-size: 1.75rem !important;
+  color: #284157 !important;
+  margin: 2rem 0 1rem 0;
+}
+.prose h3, .cr-content h3 {
+  font-weight: 700 !important;
+  font-size: 1.25rem !important;
+  color: #4A7C59 !important;
+  margin: 1.5rem 0 0.75rem 0;
+}
+.prose h4, .cr-content h4 {
+  font-weight: 600 !important;
+  font-size: 1.1rem !important;
+  color: #284157 !important;
+  margin: 1.25rem 0 0.5rem 0;
+}
+
+/* Table styling */
+.prose table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5rem 0;
+  font-size: 0.925rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  overflow: hidden;
+}
+.prose th {
+  background: #f0f4f1;
+  color: #284157;
+  font-weight: 700;
+  text-align: left;
+  padding: 12px 16px;
+  border-bottom: 2px solid #4A7C59;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+.prose td {
+  padding: 10px 16px;
+  border-bottom: 1px solid #e5e7eb;
+  color: #475569;
+  line-height: 1.6;
+  vertical-align: top;
+}
+.prose tr:nth-child(even) { background: #fafaf8; }
+.prose tr:hover { background: rgba(74, 124, 89, 0.04); }
+
+/* Blockquote / Clinical Vignette */
+.prose blockquote {
+  border-left: 4px solid #D4A855;
+  background: rgba(212, 168, 85, 0.06);
+  padding: 16px 20px;
+  margin: 1.5rem 0;
+  border-radius: 0 8px 8px 0;
+  font-style: italic;
+  color: #475569;
+}
+
+/* CE Timer responsive */
+@media (max-width: 1024px) {
+  .ce-timer-footer { left: 0 !important; }
+}
+@media (max-width: 768px) {
+  .ce-timer-footer { flex-direction: column !important; gap: 0.75rem !important; padding: 0.75rem 1rem !important; }
 }
 
 /* High Contrast Mode */
@@ -1283,6 +2061,102 @@ const styles = `
 .high-contrast .prose * {
   color: #000 !important;
 }
+
+/* Dark Mode */
+.dark-mode {
+  background: #1a1a2e !important;
+}
+.dark-mode header {
+  background: #16213e !important;
+  border-color: #0f3460 !important;
+}
+.dark-mode main > div {
+  background: #1a1a2e !important;
+}
+.dark-mode h1,
+.dark-mode h2,
+.dark-mode h3,
+.dark-mode h4 {
+  color: #e8d5b7 !important;
+}
+.dark-mode p,
+.dark-mode span,
+.dark-mode li,
+.dark-mode td,
+.dark-mode th,
+.dark-mode label {
+  color: #d4d4d4 !important;
+}
+.dark-mode .prose * {
+  color: #d4d4d4 !important;
+}
+.dark-mode .prose h1,
+.dark-mode .prose h2,
+.dark-mode .prose h3,
+.dark-mode .prose h4 {
+  color: #e8d5b7 !important;
+}
+.dark-mode .prose strong {
+  color: #f0e6d3 !important;
+}
+.dark-mode .prose a {
+  color: #7eb8da !important;
+}
+.dark-mode button {
+  border-color: #0f3460 !important;
+}
+.dark-mode textarea,
+.dark-mode input {
+  background: #16213e !important;
+  color: #d4d4d4 !important;
+  border-color: #0f3460 !important;
+}
+
+/* Line Spacing Modes */
+.leading-relaxed-mode p,
+.leading-relaxed-mode li,
+.leading-relaxed-mode span,
+.leading-relaxed-mode td,
+.leading-relaxed-mode .prose * {
+  line-height: 2.2 !important;
+}
+.leading-compact-mode p,
+.leading-compact-mode li,
+.leading-compact-mode span,
+.leading-compact-mode td,
+.leading-compact-mode .prose * {
+  line-height: 1.4 !important;
+}
+
+/* Dyslexia-Friendly Font */
+.dyslexia-font,
+.dyslexia-font * {
+  font-family: 'OpenDyslexic', 'Comic Sans MS', 'Arial', sans-serif !important;
+  letter-spacing: 0.05em;
+  word-spacing: 0.15em;
+}
+
+/* Reduced Motion */
+.reduced-motion *,
+.reduced-motion *::before,
+.reduced-motion *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+}
+
+/* Enhanced Focus Indicators */
+.focus-visible-enhanced *:focus-visible {
+  outline: 3px solid #8B2542 !important;
+  outline-offset: 2px !important;
+  box-shadow: 0 0 0 4px rgba(139, 37, 66, 0.3) !important;
+}
+
+/* Hide Google Translate default UI */
+.goog-te-banner-frame { display: none !important; }
+.goog-te-gadget { display: none !important; }
+body { top: 0 !important; }
+.skiptranslate { display: none !important; }
 `;
 
 // Inject styles

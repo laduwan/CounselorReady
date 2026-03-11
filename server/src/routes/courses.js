@@ -1,3 +1,8 @@
+/**
+ * Copyright (c) 2026 CounselorReady, a subsidiary of Ga Integrated Therapeutic Perspectives, LLC.
+ * All rights reserved. Proprietary and confidential.
+ * Unauthorized copying or distribution is strictly prohibited.
+ */
 import express from 'express';
 import Course from '../models/Course.js';
 import UserCourseProgress from '../models/UserCourseProgress.js';
@@ -514,9 +519,24 @@ router.post('/:id/lessons/:lessonId/complete', protect, async (req, res) => {
       return res.status(404).json({ error: 'Not enrolled in this course' });
     }
     
+    const prevStatus = progress.status;
+
     // Mark lesson complete
     await progress.completeLesson(req.params.lessonId, course);
-    
+
+    // Log course_started when user begins their first lesson
+    if (prevStatus === 'not_started' && progress.status === 'in_progress') {
+      logActivity(ACTIVITY_TYPES.COURSE_STARTED, {
+        courseId: course._id,
+        courseName: course.title
+      }, {
+        notifyAdmin: false,
+        userId: req.user._id,
+        userName: req.user.profile?.firstName || '',
+        userEmail: req.user.email
+      }).catch(() => {});
+    }
+
     res.json({
       message: 'Lesson marked complete',
       progress: {

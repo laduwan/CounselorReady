@@ -1,15 +1,33 @@
-import { useState } from 'react';
+/**
+ * Copyright (c) 2026 CounselorReady, a subsidiary of Ga Integrated Therapeutic Perspectives, LLC.
+ * All rights reserved. Proprietary and confidential.
+ * Unauthorized copying or distribution is strictly prohibited.
+ */
+import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Menu, X, ChevronDown, LogOut, Settings, ShieldCheck } from 'lucide-react';
+import api from '../services/api';
+import { Menu, X, ChevronDown, LogOut, Settings, ShieldCheck, Trophy, Users, Star, ClipboardList, MoreHorizontal, Bell, Lock } from 'lucide-react';
 
 // React routes use Link; external static HTML pages use <a>
 const navLinks = [
-  { name: 'Dashboard',       href: '/dashboard',        static: false },
-  { name: 'Courses',         href: '/courses',           static: false },
-  { name: 'Credentials',     href: '/credentials',       static: false },
-  { name: 'CE Certificates', href: '/certificates.html', static: true  },
-  { name: 'Messages',        href: '/messages.html',     static: true  },
+  { name: 'Dashboard',       href: '/dashboard',          static: false },
+  { name: 'Courses',         href: '/courses',            static: false },
+  { name: 'Credentials',     href: '/credentials',        static: false },
+  { name: 'CE Planner',      href: '/ce-planner',         static: false },
+  { name: 'Audit Kit',       href: '/audit-kit',          static: false },
+  { name: 'Alerts',          href: '/board-alerts',       static: false },
+];
+
+const moreLinks = [
+  { name: 'Supervision',      href: '/supervision',        icon: ClipboardList },
+  { name: 'Insurance',        href: '/insurance-tracker',   icon: ShieldCheck },
+  { name: 'Achievements',     href: '/achievements',        icon: Trophy },
+  { name: 'Referrals',        href: '/referrals',           icon: Star },
+  { name: 'Recommendations',  href: '/recommendations',     icon: Star },
+  { name: 'Team',             href: '/organization',        icon: Users },
+  { name: 'Group Licenses',   href: '/group-licenses',      icon: Users },
+  { name: 'Legacy Vault',     href: '/legacy-vault',         icon: Lock },
 ];
 
 const BURGUNDY      = '#6B1D34';
@@ -21,11 +39,48 @@ const GOLD          = '#D4A855';
 export default function Layout({ children }) {
   const [mobileOpen, setMobileOpen]   = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [moreMenuOpen, setMoreMenuOpen] = useState(false);
+  const [notifOpen, setNotifOpen]       = useState(false);
+  const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount]   = useState(0);
   const { user, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
 
   const handleLogout = () => { logout(); navigate('/'); };
+
+  // Fetch unread notifications
+  useEffect(() => {
+    let mounted = true;
+    async function fetchNotifs() {
+      try {
+        const { data } = await api.get('/notifications?limit=8');
+        if (mounted) {
+          setNotifications(data.notifications || []);
+          setUnreadCount(data.unreadCount || 0);
+        }
+      } catch { /* silent */ }
+    }
+    fetchNotifs();
+    const interval = setInterval(fetchNotifs, 60000);
+    return () => { mounted = false; clearInterval(interval); };
+  }, []);
+
+  async function markAllRead() {
+    try {
+      await api.patch('/notifications/read-all');
+      setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+      setUnreadCount(0);
+    } catch { /* silent */ }
+  }
+
+  async function markRead(id) {
+    try {
+      await api.patch(`/notifications/${id}/read`);
+      setNotifications(prev => prev.map(n => n._id === id ? { ...n, read: true } : n));
+      setUnreadCount(prev => Math.max(0, prev - 1));
+    } catch { /* silent */ }
+  }
 
   const isActive = (href) =>
     location.pathname === href ||
@@ -45,13 +100,13 @@ export default function Layout({ children }) {
 
           {/* Logo */}
           <Link to="/dashboard" className="flex items-center gap-3 flex-shrink-0">
-            <div style={{ width: 40, height: 40, borderRadius: '0.75rem', background: 'linear-gradient(135deg, #8B2542, #6B1D34)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 8px rgba(107,29,52,0.25)' }}>
-              <span style={{ position: 'relative', display: 'inline-block', width: 22, height: 22 }}>
-                <span style={{ color: GOLD, position: 'absolute', top: -3, left: 0, fontFamily: "'Cormorant Garamond', Georgia, serif", fontWeight: 700, fontSize: 17 }}>C</span>
-                <span style={{ color: '#7A9E84', position: 'absolute', top: 4, left: 6, fontFamily: "'Cormorant Garamond', Georgia, serif", fontWeight: 700, fontSize: 14 }}>R</span>
+            <div style={{ width: 42, height: 42, borderRadius: '0.75rem', background: '#6B1D34', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 8px rgba(107,29,52,0.25)' }}>
+              <span style={{ position: 'relative', display: 'inline-block', width: 24, height: 24 }}>
+                <span style={{ color: GOLD, position: 'absolute', top: -3, left: 0, fontFamily: "'Cormorant Garamond', Georgia, serif", fontWeight: 700, fontSize: 19 }}>C</span>
+                <span style={{ color: '#7A9E84', position: 'absolute', top: 4, left: 6, fontFamily: "'Cormorant Garamond', Georgia, serif", fontWeight: 700, fontSize: 16 }}>R</span>
               </span>
             </div>
-            <span style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontWeight: 600, fontSize: '1.35rem', letterSpacing: '0.015em' }}>
+            <span style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontWeight: 600, fontSize: '1.5rem', letterSpacing: '0.015em' }}>
               <span style={{ color: BURGUNDY }}>Counselor</span><span style={{ color: HUNTER }}>Ready</span>
             </span>
           </Link>
@@ -84,6 +139,53 @@ export default function Layout({ children }) {
                 </Link>
               );
             })}
+
+            {/* More dropdown */}
+            <div className="relative">
+              <button
+                onClick={() => setMoreMenuOpen(!moreMenuOpen)}
+                style={{
+                  padding: '0.5rem 0.875rem',
+                  borderRadius: '0.5rem',
+                  fontSize: '0.875rem',
+                  fontWeight: 500,
+                  transition: 'all 0.15s',
+                  color: moreLinks.some(l => isActive(l.href)) ? BURGUNDY : '#78716c',
+                  background: moreLinks.some(l => isActive(l.href)) ? BURGUNDY_LIGHT : 'transparent',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.25rem',
+                }}
+                onMouseEnter={e => { if (!moreLinks.some(l => isActive(l.href))) e.target.style.background = '#f5f5f4'; }}
+                onMouseLeave={e => { if (!moreLinks.some(l => isActive(l.href))) e.target.style.background = moreLinks.some(l => isActive(l.href)) ? BURGUNDY_LIGHT : 'transparent'; }}
+              >
+                More <ChevronDown className="w-3.5 h-3.5" />
+              </button>
+
+              {moreMenuOpen && (
+                <>
+                  <div className="fixed inset-0 z-10" onClick={() => setMoreMenuOpen(false)} />
+                  <div className="absolute left-0 top-full mt-2 w-52 bg-white rounded-xl shadow-lg border border-stone-200 py-1 z-20">
+                    {moreLinks.map((link) => {
+                      const active = isActive(link.href);
+                      const Icon = link.icon;
+                      return (
+                        <Link
+                          key={link.href}
+                          to={link.href}
+                          onClick={() => setMoreMenuOpen(false)}
+                          className="flex items-center gap-2.5 px-4 py-2.5 text-sm transition-colors hover:bg-stone-50"
+                          style={{ color: active ? BURGUNDY : '#57534e', fontWeight: active ? 600 : 400 }}
+                        >
+                          <Icon className="w-4 h-4" style={{ color: active ? BURGUNDY : '#a8a29e' }} />
+                          {link.name}
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </>
+              )}
+            </div>
           </nav>
 
           {/* Right side */}
@@ -91,18 +193,71 @@ export default function Layout({ children }) {
 
             {/* Admin badge */}
             {isAdmin && (
-              <a href="/admin-users.html"
+              <a href="/admin.html"
                 className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors"
                 style={{ background: BURGUNDY_LIGHT, color: BURGUNDY }}>
                 <ShieldCheck className="w-3.5 h-3.5" /> Admin
               </a>
             )}
 
+            {/* Notification bell */}
+            <div className="relative">
+              <button
+                onClick={() => { setNotifOpen(!notifOpen); setUserMenuOpen(false); }}
+                className="relative p-2 rounded-lg transition-colors hover:bg-stone-100"
+                aria-label={`Notifications${unreadCount > 0 ? ` (${unreadCount} unread)` : ''}`}
+              >
+                <Bell className="w-5 h-5" style={{ color: '#78716c' }} />
+                {unreadCount > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 w-4.5 h-4.5 flex items-center justify-center text-[10px] font-bold text-white rounded-full"
+                    style={{ background: BURGUNDY, minWidth: 18, height: 18, padding: '0 4px' }}>
+                    {unreadCount > 9 ? '9+' : unreadCount}
+                  </span>
+                )}
+              </button>
+
+              {notifOpen && (
+                <>
+                  <div className="fixed inset-0 z-10" onClick={() => setNotifOpen(false)} />
+                  <div className="absolute right-0 top-full mt-2 w-80 bg-white rounded-xl shadow-lg border border-stone-200 z-20 overflow-hidden">
+                    <div className="flex items-center justify-between px-4 py-3 border-b border-stone-100">
+                      <span className="text-sm font-semibold text-stone-900">Notifications</span>
+                      {unreadCount > 0 && (
+                        <button onClick={markAllRead} className="text-xs font-medium hover:underline" style={{ color: BURGUNDY }}>
+                          Mark all read
+                        </button>
+                      )}
+                    </div>
+                    <div className="max-h-80 overflow-y-auto">
+                      {notifications.length > 0 ? notifications.map(n => (
+                        <button
+                          key={n._id}
+                          onClick={() => { if (!n.read) markRead(n._id); if (n.link) { navigate(n.link); setNotifOpen(false); } }}
+                          className={`w-full text-left px-4 py-3 border-b border-stone-50 hover:bg-stone-50 transition-colors ${!n.read ? 'bg-burgundy-50/40' : ''}`}
+                        >
+                          <div className="flex items-start gap-2">
+                            {!n.read && <span className="w-2 h-2 rounded-full mt-1.5 flex-shrink-0" style={{ background: BURGUNDY }} />}
+                            <div className={!n.read ? '' : 'ml-4'}>
+                              <p className="text-sm font-medium text-stone-900 line-clamp-1">{n.title}</p>
+                              <p className="text-xs text-stone-500 line-clamp-2">{n.message}</p>
+                              <p className="text-xs text-stone-400 mt-1">{new Date(n.createdAt).toLocaleDateString()}</p>
+                            </div>
+                          </div>
+                        </button>
+                      )) : (
+                        <div className="px-4 py-8 text-center text-sm text-stone-400">No notifications yet</div>
+                      )}
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+
             {/* User menu */}
             <div className="relative">
               <button onClick={() => setUserMenuOpen(!userMenuOpen)}
                 className="flex items-center gap-2 p-1 rounded-lg transition-colors hover:bg-stone-100">
-                <div style={{ width: 32, height: 32, borderRadius: '50%', background: `linear-gradient(135deg, #8B2542, ${BURGUNDY})`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: '0.75rem', fontWeight: 600 }}>
+                <div style={{ width: 32, height: 32, borderRadius: '50%', background: BURGUNDY, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: '0.75rem', fontWeight: 600 }}>
                   {initials}
                 </div>
                 <span className="hidden md:block text-sm font-medium text-stone-700 max-w-[120px] truncate">
@@ -126,7 +281,7 @@ export default function Layout({ children }) {
                       )}
                     </div>
                     {isAdmin && (
-                      <a href="/admin-users.html"
+                      <a href="/admin.html"
                         className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-stone-50 transition-colors"
                         style={{ color: BURGUNDY }}>
                         <ShieldCheck className="w-4 h-4" /> Admin Panel
@@ -156,7 +311,7 @@ export default function Layout({ children }) {
 
         {/* Mobile Nav */}
         {mobileOpen && (
-          <div className="lg:hidden border-t border-stone-200 bg-white px-4 py-3 space-y-1">
+          <div className="lg:hidden border-t border-stone-200 bg-white px-4 py-3 space-y-1 max-h-[70vh] overflow-y-auto">
             {navLinks.map((link) => {
               const active = !link.static && isActive(link.href);
               const style = { display: 'block', padding: '0.625rem 1rem', borderRadius: '0.5rem', fontSize: '0.875rem', fontWeight: 500, textDecoration: 'none', color: active ? BURGUNDY : '#57534e', background: active ? BURGUNDY_LIGHT : 'transparent' };
@@ -166,8 +321,23 @@ export default function Layout({ children }) {
                 <Link key={link.href} to={link.href} onClick={() => setMobileOpen(false)} style={style}>{link.name}</Link>
               );
             })}
+            <div className="border-t border-stone-100 my-2 pt-2">
+              <p className="px-3 py-1 text-xs font-semibold text-stone-400 uppercase tracking-wider">More</p>
+              {moreLinks.map((link) => {
+                const active = isActive(link.href);
+                const Icon = link.icon;
+                return (
+                  <Link key={link.href} to={link.href} onClick={() => setMobileOpen(false)}
+                    className="flex items-center gap-2.5"
+                    style={{ display: 'flex', padding: '0.625rem 1rem', borderRadius: '0.5rem', fontSize: '0.875rem', fontWeight: 500, textDecoration: 'none', color: active ? BURGUNDY : '#57534e', background: active ? BURGUNDY_LIGHT : 'transparent' }}>
+                    <Icon className="w-4 h-4" style={{ color: active ? BURGUNDY : '#a8a29e' }} />
+                    {link.name}
+                  </Link>
+                );
+              })}
+            </div>
             {isAdmin && (
-              <a href="/admin-users.html" style={{ display: 'block', padding: '0.625rem 1rem', borderRadius: '0.5rem', fontSize: '0.875rem', fontWeight: 500, color: BURGUNDY, background: BURGUNDY_LIGHT }}>
+              <a href="/admin.html" style={{ display: 'block', padding: '0.625rem 1rem', borderRadius: '0.5rem', fontSize: '0.875rem', fontWeight: 500, color: BURGUNDY, background: BURGUNDY_LIGHT }}>
                 Admin Panel
               </a>
             )}

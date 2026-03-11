@@ -1,3 +1,8 @@
+/**
+ * Copyright (c) 2026 CounselorReady, a subsidiary of Ga Integrated Therapeutic Perspectives, LLC.
+ * All rights reserved. Proprietary and confidential.
+ * Unauthorized copying or distribution is strictly prohibited.
+ */
 // seedStandardCourses_batch2.js
 // Run with: node src/data/seedStandardCourses_batch2.js
 // Courses: Trauma Foundations, Suicide Assessment, Psychopharmacology for Counselors
@@ -54,7 +59,7 @@ const courses = [
 
 <p>The distinction between a stressful event and a traumatic event lies in the nervous system's response. Stressful events activate the stress response, which resolves when the stressor ends. Traumatic events overwhelm the nervous system's capacity to process and integrate the experience, leaving the person stuck in a state of threat response even after the danger has passed. This is why trauma survivors may react to benign triggers as though they are still in danger — neurologically, their system has not registered that the threat is over.</p>
 
-<h3>Types of Trauma</h3>
+<h2>Types of Trauma</h2>
 
 <p><strong>Acute trauma</strong> results from a single overwhelming event — a car accident, assault, natural disaster, or sudden loss. The event has a clear beginning and end, though its psychological effects may persist long afterward. Acute trauma is often what people picture when they hear the word "trauma," but it represents only one category of traumatic experience.</p>
 
@@ -64,7 +69,7 @@ const courses = [
 
 <p><strong>Secondary or vicarious trauma</strong> affects individuals who are exposed to others' traumatic material — therapists, first responders, medical personnel, journalists covering war or disaster, and family members of trauma survivors. The cumulative impact of bearing witness to others' trauma can produce symptoms similar to direct trauma exposure. Clinicians working with trauma populations must attend to their own secondary trauma exposure as a matter of professional sustainability and ethical practice.</p>
 
-<h3>Prevalence and Clinical Implications</h3>
+<h2>Prevalence and Clinical Implications</h2>
 
 <p>Trauma is not rare. Population studies consistently find that the majority of adults have experienced at least one potentially traumatic event in their lifetime, with estimates ranging from 60% to 90% depending on how trauma is defined and measured. Adverse Childhood Experiences (ACE) research demonstrates that childhood trauma is particularly common: approximately two-thirds of adults report at least one ACE, and one in six report four or more. The ACE studies further demonstrate a dose-response relationship between childhood adversity and adult health outcomes — more ACEs predict higher rates of mental illness, substance use, chronic disease, and early death.</p>
 
@@ -85,7 +90,7 @@ const courses = [
 
 <p>Understanding the neurobiology of trauma transforms clinical practice. When clinicians understand what is happening in the brain and nervous system of a traumatized client, behaviors that might otherwise seem baffling, frustrating, or even manipulative become comprehensible as predictable neurobiological responses to overwhelming stress. This understanding also guides intervention — we cannot talk someone out of a neurobiological state, but we can use body-based and relational interventions to shift the nervous system toward regulation.</p>
 
-<h3>The Stress Response System</h3>
+<h2>The Stress Response System</h2>
 
 <p>The human stress response system evolved to protect us from danger. When the brain perceives a threat, the amygdala — a small, almond-shaped structure deep in the brain — initiates a cascade of neurochemical events that prepare the body for survival. The hypothalamic-pituitary-adrenal (HPA) axis releases stress hormones including cortisol and adrenaline. Heart rate increases, breathing becomes rapid and shallow, blood flow shifts from the digestive and reproductive systems to large muscle groups, and the immune system activates inflammatory responses. This is the fight-or-flight response that has allowed humans to survive predators, conflicts, and environmental dangers throughout our evolutionary history.</p>
 
@@ -93,7 +98,7 @@ const courses = [
 
 <p>Trauma disrupts this natural recovery process. When an experience is overwhelming — when the threat is too intense, too prolonged, or occurs when the person is too young or helpless to respond effectively — the stress response becomes dysregulated. The nervous system may remain stuck in a state of chronic hyperarousal (as though the threat is ongoing) or may collapse into hypoarousal (shutdown). In either case, the natural oscillation between activation and recovery is disrupted.</p>
 
-<h3>Brain Structures Affected by Trauma</h3>
+<h2>Brain Structures Affected by Trauma</h2>
 
 <p>Neuroimaging research has identified consistent patterns of brain change in individuals with trauma histories. The <strong>prefrontal cortex</strong>, responsible for executive functions including reasoning, planning, impulse control, and emotional regulation, shows decreased activity in traumatized individuals. This helps explain why trauma survivors often struggle with decision-making, emotional control, and thinking clearly under stress — the brain region responsible for these functions is literally offline.</p>
 
@@ -103,7 +108,7 @@ const courses = [
 
 <p>Broca's area, the brain region responsible for putting experiences into words, shows decreased activity during traumatic recall. This helps explain why trauma survivors often struggle to verbalize their experiences — the trauma is encoded in sensory, emotional, and somatic memory but not in narrative form. "Talk therapy" alone may be insufficient precisely because the trauma was never encoded in language-accessible memory.</p>
 
-<h3>The Window of Tolerance</h3>
+<h2>The Window of Tolerance</h2>
 
 <p>Dan Siegel's concept of the "window of tolerance" provides a clinically useful framework for understanding trauma's impact on nervous system regulation. The window of tolerance is the zone of optimal arousal — the range within which a person can experience and integrate emotions without becoming overwhelmed or shutting down. Within this window, we can think clearly, relate to others, manage stress, and engage with life's challenges.</p>
 
@@ -113,7 +118,7 @@ const courses = [
 
 <p>Trauma narrows the window of tolerance. Events that would be mildly stressful for someone with a wide window can push a trauma survivor into hyperarousal or hypoarousal. The narrowed window means the person spends less time in optimal functioning and more time in dysregulated states. A primary goal of trauma treatment is widening the window of tolerance so that the client can remain regulated across a broader range of experiences.</p>
 
-<h3>Polyvagal Theory</h3>
+<h2>Polyvagal Theory</h2>
 
 <p>Stephen Porges's polyvagal theory provides additional neuroscience grounding for trauma work. Porges describes three hierarchically organized response systems mediated by the vagus nerve. The most recently evolved system — the ventral vagal or "social engagement" system — supports calm connection with others, clear thinking, and flexible responses. This is the system that operates when we feel safe.</p>
 
@@ -136,7 +141,7 @@ const courses = [
 
 <p>Assessment is a necessary component of trauma treatment, but it carries risk. Asking about traumatic experiences can activate trauma responses, overwhelm clients who are not yet stabilized, or retraumatize through insensitive questioning. Trauma-sensitive assessment balances the need for clinical information with the imperative to do no harm. This requires careful attention to timing, pacing, framing, and the client's moment-to-moment responses.</p>
 
-<h3>Principles of Trauma-Sensitive Assessment</h3>
+<h2>Principles of Trauma-Sensitive Assessment</h2>
 
 <p><strong>Informed consent is essential.</strong> Before asking about trauma history, explain why you are asking, what you will do with the information, and that the client can decline to answer any question or stop at any time. This is not merely an ethical formality — it is a clinical intervention that establishes the client's control over their own narrative. Many trauma survivors have had their boundaries violated and their control taken away; beginning assessment by explicitly establishing their right to say no is itself therapeutic.</p>
 
@@ -146,7 +151,7 @@ const courses = [
 
 <p><strong>Normalize without minimizing.</strong> When clients disclose trauma, acknowledge the significance of what they have shared without dramatic reactions that might feel overwhelming or shameful. "Thank you for trusting me with that. What you went through was serious, and I can see why it has affected you" validates the experience without sensationalizing it or implying that the client is damaged. Avoid responses that minimize ("At least you survived") or that inadvertently convey that the disclosure was too much for you to handle.</p>
 
-<h3>Screening Tools</h3>
+<h2>Screening Tools</h2>
 
 <p>Standardized screening tools can supplement clinical interview and ensure systematic assessment of trauma history and symptoms. The <strong>ACE (Adverse Childhood Experiences) questionnaire</strong> assesses 10 categories of childhood adversity including abuse, neglect, and household dysfunction. While not a diagnostic tool, ACE scores provide a quick indicator of developmental trauma exposure and correlate with adult health outcomes.</p>
 
@@ -156,7 +161,7 @@ const courses = [
 
 <p>The <strong>Dissociative Experiences Scale (DES)</strong> screens for dissociative symptoms including amnesia, depersonalization, derealization, and absorption. High dissociation scores have implications for treatment planning, as highly dissociative clients may require specialized approaches and longer stabilization phases before trauma processing.</p>
 
-<h3>Assessing Safety and Stabilization Needs</h3>
+<h2>Assessing Safety and Stabilization Needs</h2>
 
 <p>Before any trauma processing can occur, the client must have adequate safety and stabilization. Assessment should include current safety: Is the client currently in danger? Are they in an abusive relationship, unstable housing, or other unsafe circumstances? Trauma processing with a client who is still being traumatized is contraindicated — the first priority is establishing safety in the present.</p>
 
@@ -179,37 +184,37 @@ const courses = [
 
 <p>The Substance Abuse and Mental Health Services Administration (SAMHSA) has articulated six principles that guide trauma-informed approaches across settings. These principles apply not only to individual clinical encounters but to organizational culture, policies, and physical environments. Trauma-informed care is not a specific treatment modality but a framework that shapes how all services are delivered.</p>
 
-<h3>Safety</h3>
+<h2>Safety</h2>
 
 <p>The first principle is safety — ensuring physical and emotional safety for clients and staff throughout the organization. For trauma survivors whose fundamental experience was that the world is dangerous and people cannot be trusted, establishing safety is the foundation upon which all other work depends. Safety includes the physical environment (Is the space welcoming? Are there private areas for conversation? Is the waiting room calm rather than chaotic?), interpersonal interactions (Do staff communicate respectfully? Are client concerns taken seriously?), and organizational practices (Are policies applied consistently? Are boundaries clear?).</p>
 
 <p>Safety also means predictability. Trauma often involves experiences that were unpredictable and out of the survivor's control. Organizations can foster safety by being consistent, transparent, and reliable — following through on commitments, explaining what will happen before it happens, and avoiding surprises that might activate threat responses.</p>
 
-<h3>Trustworthiness and Transparency</h3>
+<h2>Trustworthiness and Transparency</h2>
 
 <p>The second principle emphasizes building trust through transparent operations and decision-making. Many trauma survivors have been betrayed by people or institutions that should have protected them. Trust is not assumed but earned through consistent, honest behavior over time. Transparency means explaining the reasons behind decisions, acknowledging mistakes openly, and providing clear information about what clients can expect.</p>
 
 <p>In clinical settings, trustworthiness includes maintaining clear boundaries, honoring confidentiality, following through on commitments, and being honest even when the truth is uncomfortable. It also means acknowledging the limits of what you can offer rather than overpromising. A clinician who says "I'll try to find that resource for you" and then follows up — even if just to say "I couldn't find it" — builds more trust than one who promises and then forgets.</p>
 
-<h3>Peer Support</h3>
+<h2>Peer Support</h2>
 
 <p>The third principle recognizes the value of peer support — connections with others who have lived experience of trauma and recovery. Peer support challenges the isolation that trauma often produces and provides models of recovery that professional relationships cannot offer. When a trauma survivor meets someone who has walked a similar path and emerged with a meaningful life, it communicates hope in a way that professional reassurance cannot match.</p>
 
 <p>Organizations can integrate peer support through peer counselors, support groups, peer-led programming, and recovery communities. In clinical settings, referring clients to peer support resources complements professional treatment and helps build the social connections that are protective against trauma's long-term effects.</p>
 
-<h3>Collaboration and Mutuality</h3>
+<h2>Collaboration and Mutuality</h2>
 
 <p>The fourth principle emphasizes partnership and shared decision-making, recognizing that healing happens in relationships and that power differentials between staff and clients should be minimized. Trauma often involves experiences of powerlessness; trauma-informed care deliberately redistributes power by involving clients in treatment planning, respecting their expertise on their own lives, and treating them as partners rather than passive recipients of services.</p>
 
 <p>Collaboration extends to staff relationships as well. Organizations that practice trauma-informed care attend to how staff interact with each other, recognizing that hierarchical, punitive, or controlling organizational cultures are antithetical to trauma-informed principles — and that staff who are treated poorly will struggle to treat clients well.</p>
 
-<h3>Empowerment, Voice, and Choice</h3>
+<h2>Empowerment, Voice, and Choice</h2>
 
 <p>The fifth principle focuses on strengthening clients' autonomy and self-determination. Trauma often strips away a sense of control and agency; trauma-informed care intentionally restores it. This means offering choices wherever possible (even small choices like where to sit or when to schedule appointments), supporting client goals rather than imposing professional agendas, and recognizing and building on client strengths rather than focusing exclusively on deficits.</p>
 
 <p>Empowerment also means creating opportunities for clients to develop skills and competencies that support their recovery. Rather than fostering dependence on services, trauma-informed organizations aim to build client capacity for self-determination. The question shifts from "What services does this client need?" to "What does this client need to build a life they value?"</p>
 
-<h3>Cultural, Historical, and Gender Issues</h3>
+<h2>Cultural, Historical, and Gender Issues</h2>
 
 <p>The sixth principle requires attention to cultural, historical, and gender-related factors that shape trauma exposure and response. Trauma does not occur in a vacuum — it is shaped by social context including race, ethnicity, gender, sexual orientation, immigration status, and historical experiences of group-based oppression. A Black client's response to police presence, a refugee's response to authority figures, a survivor of domestic violence's response to male providers — all are shaped by cultural and historical context that must be understood and respected.</p>
 
@@ -230,7 +235,7 @@ const courses = [
 
 <p>Stabilization is the essential first phase of trauma treatment. Before any processing of traumatic memories can occur safely, the client must have adequate capacity to regulate their nervous system, stay present in the current moment, and contain distressing material between sessions. Grounding and containment skills provide this foundation. These are not preliminary techniques to be discarded once "real" treatment begins — they are lifelong tools that support ongoing recovery and resilience.</p>
 
-<h3>Grounding Techniques</h3>
+<h2>Grounding Techniques</h2>
 
 <p>Grounding techniques anchor the client in the present moment and in their physical body, counteracting the dissociation, flashbacks, and time-confusion that characterize traumatic activation. When a client is triggered, their nervous system has essentially time-traveled back to the traumatic event — grounding brings them back to the present, where they are safe.</p>
 
@@ -242,7 +247,7 @@ const courses = [
 
 <p><strong>Orientation statements</strong> explicitly remind the client of present-moment reality: "My name is [name]. I am [age] years old. I am sitting in my therapist's office. Today is [date]. The trauma happened in the past. I am safe right now." These statements counteract the time-confusion of flashbacks by asserting present-moment facts. They can be written on a card for the client to carry and read during moments of activation.</p>
 
-<h3>Containment Techniques</h3>
+<h2>Containment Techniques</h2>
 
 <p>Containment techniques help clients manage intrusive traumatic material between sessions. Trauma processing often stirs up distressing memories and emotions that can feel overwhelming if they flood into daily life without boundaries. Containment provides a way to acknowledge the material while setting it aside until it can be addressed in the safety of the therapeutic relationship.</p>
 
@@ -252,7 +257,7 @@ const courses = [
 
 <p><strong>Safe place imagery</strong> provides a mental refuge when distress becomes overwhelming. The client develops a detailed imaginal representation of a place — real or imagined — where they feel completely safe. They engage all senses: what they see, hear, smell, feel, and perhaps taste in this safe place. The safe place becomes a resource they can access whenever they need to regulate, a mental shelter from the storm of traumatic activation.</p>
 
-<h3>Building a Coping Toolkit</h3>
+<h2>Building a Coping Toolkit</h2>
 
 <p>Effective stabilization means helping each client develop a personalized repertoire of coping skills. What works varies by individual — some clients respond best to physical grounding, others to cognitive techniques, others to imagery. The therapist's role is to introduce a range of options and help the client identify which work best for them.</p>
 
@@ -275,7 +280,7 @@ const courses = [
 
 <p>Dissociation is a protective mechanism that allows the mind to escape overwhelming experiences when physical escape is impossible. During trauma, dissociation may have been lifesaving — the child who could mentally leave her body during abuse, the accident victim who felt like he was watching from outside himself. After trauma, dissociation often persists as an automatic response to stress, triggered by reminders of the original trauma or by any experience that approaches the threshold of tolerability. Understanding dissociation is essential for trauma clinicians because it affects how clients experience therapy and how treatment should be modified.</p>
 
-<h3>Recognizing Dissociation</h3>
+<h2>Recognizing Dissociation</h2>
 
 <p>Dissociation exists on a continuum from mild (daydreaming, highway hypnosis) to severe (dissociative identity disorder). In clinical settings, the signs of dissociative activation include:</p>
 
@@ -291,7 +296,7 @@ const courses = [
 
 <p><strong>Memory gaps:</strong> After a dissociative episode, the client may have little or no memory of what occurred during the dissociated period.</p>
 
-<h3>Responding to Dissociation in Session</h3>
+<h2>Responding to Dissociation in Session</h2>
 
 <p>When you observe signs of dissociation, the first priority is helping the client return to present-moment awareness. This is done gently, without startle or alarm, using grounding techniques and relational connection.</p>
 
@@ -305,7 +310,7 @@ const courses = [
 
 <p><strong>Slow down:</strong> If discussion of traumatic material triggered the dissociation, shift to less activating topics or to present-focused conversation until the client is fully present again. Continuing to process trauma with a dissociated client is ineffective and potentially harmful — the processing cannot be integrated, and pushing forward can deepen dissociation or cause flooding.</p>
 
-<h3>Modifying Treatment for Dissociative Clients</h3>
+<h2>Modifying Treatment for Dissociative Clients</h2>
 
 <p>Clients with significant dissociative symptoms often require longer stabilization phases before trauma processing. They need more extensive grounding skills, more robust containment strategies, and more gradual pacing of trauma work. Approaches that work well for non-dissociative trauma clients may overwhelm dissociative clients or trigger dissociative defenses that prevent integration.</p>
 
@@ -400,7 +405,7 @@ const courses = [
 
 <p>Suicide is a significant public health concern that affects every demographic group and touches virtually every clinician's practice. Understanding the scope of the problem, the populations most affected, and the conceptual frameworks that guide assessment and intervention is foundational knowledge for all mental health professionals. This module provides that foundation while acknowledging that statistics represent individual lives lost and families devastated — the human dimension must never be reduced to numbers alone.</p>
 
-<h3>Current Epidemiology</h3>
+<h2>Current Epidemiology</h2>
 
 <p>Suicide is the 10th leading cause of death in the United States, claiming approximately 48,000 lives annually — one death approximately every 11 minutes. For every completed suicide, there are approximately 25 suicide attempts. The suicide rate has increased significantly over the past two decades, rising approximately 35% between 1999 and 2020 before beginning to stabilize. This increase has affected most demographic groups but has been particularly pronounced in certain populations.</p>
 
@@ -410,7 +415,7 @@ const courses = [
 
 <p>Veterans represent another elevated-risk population, dying by suicide at 1.5 times the rate of non-veteran adults. Firearms account for an even higher proportion of veteran suicides (approximately 70%) compared to the general population. Access to lethal means is a critical risk factor across populations.</p>
 
-<h3>Conceptual Frameworks</h3>
+<h2>Conceptual Frameworks</h2>
 
 <p>Several theoretical frameworks inform our understanding of suicide. Thomas Joiner's <strong>Interpersonal Theory of Suicide</strong> proposes that lethal suicidal behavior requires the intersection of three factors: thwarted belongingness (feeling disconnected from others), perceived burdensomeness (believing oneself to be a liability), and acquired capability (reduced fear of death and increased pain tolerance, often developed through repeated exposure to painful or provocative experiences). This framework explains why many people with suicidal ideation do not attempt — they may have the desire but lack the capability — and why capability, once acquired, persists as a risk factor.</p>
 
@@ -418,7 +423,7 @@ const courses = [
 
 <p>The <strong>Fluid Vulnerability Theory</strong> (Rudd) describes suicide risk as fluctuating rather than static, with baseline vulnerability interacting with acute stressors to produce episodic elevations in risk. This framework underscores the importance of assessing both chronic risk factors and acute exacerbations, and of recognizing that risk level can change rapidly.</p>
 
-<h3>Moving Beyond Prediction to Prevention</h3>
+<h2>Moving Beyond Prediction to Prevention</h2>
 
 <p>A critical paradigm shift in contemporary suicidology is the movement from prediction to prevention. Research consistently demonstrates that clinicians cannot reliably predict which individuals will die by suicide — the base rate is too low and the risk factors too common for accurate individual prediction. This does not mean assessment is useless; it means that assessment should focus on identifying modifiable risk factors, implementing interventions to reduce risk, and developing safety plans to manage crises — rather than attempting to categorize patients into discrete risk levels.</p>
 
@@ -439,7 +444,7 @@ const courses = [
 
 <p>Comprehensive suicide assessment requires understanding both the factors that increase risk and those that protect against it. Risk and protective factors interact dynamically — the same individual may have elevated risk due to certain factors while being buffered by others. Assessment aims to map this terrain for each individual client, identifying both vulnerabilities to address and strengths to leverage.</p>
 
-<h3>Static Risk Factors</h3>
+<h2>Static Risk Factors</h2>
 
 <p>Static risk factors are historical or demographic factors that cannot be changed. They represent baseline vulnerability that must be considered in assessment but cannot be directly targeted by intervention.</p>
 
@@ -451,7 +456,7 @@ const courses = [
 
 <p><strong>History of psychiatric hospitalization</strong> represents both a marker of illness severity and a risk factor in itself — the period immediately following discharge is extremely high-risk, with studies showing suicide rates 100-200 times the population average in the first week post-discharge.</p>
 
-<h3>Dynamic Risk Factors (Acute Warning Signs)</h3>
+<h2>Dynamic Risk Factors (Acute Warning Signs)</h2>
 
 <p>Dynamic risk factors fluctuate over time and are often the focus of intervention because they can potentially be modified. Acute warning signs signal imminent elevation of risk.</p>
 
@@ -467,7 +472,7 @@ const courses = [
 
 <p><strong>Access to lethal means</strong> — particularly firearms — dramatically increases risk. Firearm access is associated with a 3-4 fold increase in suicide risk, and firearm suicides have a case fatality rate exceeding 80%, compared to approximately 5% for overdose. Means restriction counseling is one of the most effective suicide prevention interventions.</p>
 
-<h3>Protective Factors</h3>
+<h2>Protective Factors</h2>
 
 <p>Protective factors buffer against suicide risk and should be assessed and strengthened as part of comprehensive care. Identifying what keeps a client alive is as important as identifying what threatens their life.</p>
 
@@ -496,7 +501,7 @@ const courses = [
 
 <p>Effective suicide assessment combines standardized screening instruments with skilled clinical interviewing. Screening tools provide systematic coverage and documentation; clinical interview provides nuance, context, and therapeutic engagement. Neither alone is sufficient — they complement each other.</p>
 
-<h3>Screening Instruments</h3>
+<h2>Screening Instruments</h2>
 
 <p>The <strong>Columbia-Suicide Severity Rating Scale (C-SSRS)</strong> is one of the most widely used and well-validated screening instruments. It assesses suicidal ideation on a 5-point scale from passive ideation ("wish you were dead") through active ideation with specific plan and intent. It also assesses suicidal behavior including actual attempts, interrupted attempts, aborted attempts, and preparatory behavior. The C-SSRS takes approximately 5-10 minutes to administer and provides a structured framework that ensures key areas are covered.</p>
 
@@ -506,7 +511,7 @@ const courses = [
 
 <p>The <strong>Suicide Behaviors Questionnaire-Revised (SBQ-R)</strong> is a brief self-report measure that assesses lifetime ideation and attempts, past-year ideation, communication of intent, and self-reported likelihood of future attempt. It provides a total score that can be compared to clinical cutoffs, useful for tracking risk over time.</p>
 
-<h3>The Clinical Interview</h3>
+<h2>The Clinical Interview</h2>
 
 <p>Screening instruments identify that further assessment is needed; the clinical interview provides that assessment. The interview explores ideation, plan, intent, and capability in depth, while simultaneously building rapport and gathering clinical context.</p>
 
@@ -539,7 +544,7 @@ const courses = [
 
 <p>Safety planning is a collaborative intervention that provides clients with a personalized, written plan for managing suicidal crises. The Stanley-Brown Safety Planning Intervention, developed by Barbara Stanley and Gregory Brown, is the most widely used and well-validated approach. Research demonstrates that safety planning reduces suicide attempts and increases treatment engagement. Unlike "no-suicide contracts" (which have no evidence of effectiveness and create false reassurance), safety planning is an active, skill-based intervention.</p>
 
-<h3>Principles of Safety Planning</h3>
+<h2>Principles of Safety Planning</h2>
 
 <p>Safety plans should be developed <strong>collaboratively</strong> — the client is the expert on what will work for them, and a plan imposed by the clinician is unlikely to be used. The clinician guides the process, offers suggestions, and problem-solves barriers, but the client's voice is central.</p>
 
@@ -549,7 +554,7 @@ const courses = [
 
 <p>Plans should be <strong>accessible</strong> — physically present and easy to find during crisis. A plan stored in a file cabinet or saved to an obscure folder on a phone will not be used. The plan should be on the client's refrigerator, in their wallet, on their phone's home screen, or wherever they will see it when distressed.</p>
 
-<h3>The Six Steps</h3>
+<h2>The Six Steps</h2>
 
 <p><strong>Step 1: Warning signs.</strong> The client identifies personal cues that a crisis may be developing — thoughts, feelings, behaviors, or situations that indicate they should consult the safety plan. Examples: "Thinking about my ex for more than an hour," "Drinking alone," "Not getting out of bed," "Feeling like nothing matters." These warning signs are the trigger to pull out the plan and begin working through the steps.</p>
 
@@ -563,7 +568,7 @@ const courses = [
 
 <p><strong>Step 6: Making the environment safe.</strong> This step addresses means restriction — reducing access to lethal methods during crisis. If firearms are present, the plan might include giving them to a trusted person, storing them at a gun range, or using a lockbox with the combination held by someone else. Medications that could be used for overdose might be limited to small quantities or held by someone else. The clinician works collaboratively to identify feasible means restriction strategies that the client is willing to implement.</p>
 
-<h3>Reviewing and Revising Safety Plans</h3>
+<h2>Reviewing and Revising Safety Plans</h2>
 
 <p>Safety plans are living documents that should be reviewed regularly and revised as circumstances change. Review the plan at each session: "Let's look at your safety plan. Have you had to use it? Did it work? Does anything need to be updated?" Strategies that did not work should be replaced. People who have become unavailable should be substituted. New strategies that the client has discovered should be added.</p>
 
@@ -584,7 +589,7 @@ const courses = [
 
 <p>Thorough documentation of suicide assessment serves multiple functions: it communicates important clinical information to other providers, supports continuity of care, demonstrates the clinician's reasoning process, and provides legal protection by showing that appropriate care was provided. Documentation should be completed as soon as possible after the assessment, while details are fresh, and should reflect the complexity of clinical decision-making.</p>
 
-<h3>Elements of Documentation</h3>
+<h2>Elements of Documentation</h2>
 
 <p><strong>Presenting concerns and context:</strong> Document the circumstances that prompted the assessment — presenting complaints, screening results, observed behavior, or collateral report. "Client presented reporting increased depression and passive suicidal ideation. PHQ-9 score 18, Item 9 positive (2 - 'more than half the days')."</p>
 
@@ -600,7 +605,7 @@ const courses = [
 
 <p><strong>Plan and follow-up:</strong> Document the plan going forward. "Client will call if suicidal ideation increases or any intent develops. Return appointment scheduled for [date]. Will coordinate with psychiatrist regarding medication review. Will reassess at each session."</p>
 
-<h3>Documentation Don'ts</h3>
+<h2>Documentation Don'ts</h2>
 
 <p><strong>Don't use reassuring language that oversimplifies.</strong> "Patient denies suicidal ideation" without further detail provides no clinical information and no protection. The absence of suicidal ideation at one moment does not mean absence of risk.</p>
 
@@ -619,7 +624,7 @@ const courses = [
 
 <p>When assessment reveals acute, imminent risk — the client has active intent and plan, means are accessible, and they do not feel able to maintain safety — immediate intervention is required. Even when risk is not imminent, suicide assessment initiates an ongoing process of monitoring, intervention, and follow-up that extends throughout treatment.</p>
 
-<h3>Acute Crisis Intervention</h3>
+<h2>Acute Crisis Intervention</h2>
 
 <p><strong>Do not leave the client alone</strong> until safety is established. If the client is in your office, they stay with you until the crisis is resolved or they are transferred to a higher level of care. If you learn of the crisis by phone, stay on the line while activating emergency response.</p>
 
@@ -631,7 +636,7 @@ const courses = [
 
 <p><strong>Warm handoffs to higher levels of care.</strong> If transferring to an emergency room or inpatient unit, provide direct communication to receiving providers rather than just sending paperwork. Accompany the client or stay on the line until they arrive if possible. Transition points are high-risk periods; continuity of care matters.</p>
 
-<h3>Post-Hospitalization Care</h3>
+<h2>Post-Hospitalization Care</h2>
 
 <p>The period immediately following psychiatric hospitalization is extremely high-risk — suicide rates are 100-200 times population average in the first week post-discharge. Clinicians should:</p>
 
@@ -643,7 +648,7 @@ const courses = [
 
 <p><strong>Coordinate with prescribers</strong> about medication follow-up. Ensure the client has medications, can fill prescriptions, and has a plan for psychiatric follow-up.</p>
 
-<h3>Ongoing Risk Monitoring</h3>
+<h2>Ongoing Risk Monitoring</h2>
 
 <p>Suicide assessment is not a one-time event but an ongoing process. At every session with a client with elevated risk:</p>
 
@@ -744,13 +749,13 @@ const courses = [
 
 <p>Counselors and other non-prescribing mental health professionals may wonder why they need to understand psychiatric medications. The answer is simple: the majority of clients seeking mental health treatment are taking psychotropic medications, and understanding these medications enhances every aspect of clinical care. Knowledge of psychopharmacology is not about expanding scope of practice or replacing prescribers — it is about being a more effective, integrated, and collaborative clinician.</p>
 
-<h3>The Reality of Combined Treatment</h3>
+<h2>The Reality of Combined Treatment</h2>
 
 <p>Research consistently demonstrates that for many conditions, combined treatment — psychotherapy plus medication — produces better outcomes than either alone. Depression, anxiety disorders, bipolar disorder, and psychotic disorders are commonly treated with medication, often in conjunction with therapy. As a counselor, you will regularly work with clients who take one or more psychiatric medications. Understanding what these medications do, how they work, and what side effects to expect makes you a better partner in their care.</p>
 
 <p>Consider the clinical situations you may encounter: A client reports their antidepressant "isn't working" after one week. A client wants to stop their mood stabilizer because they feel "fine now." A client mentions a new symptom that could be a medication side effect or a worsening of their condition. A client asks you whether they should take the medication their doctor prescribed. Each of these situations requires medication knowledge to navigate effectively — not to prescribe or adjust medications, but to provide accurate information, identify issues requiring prescriber attention, and support informed client decision-making.</p>
 
-<h3>Enhancing Therapeutic Alliance and Treatment</h3>
+<h2>Enhancing Therapeutic Alliance and Treatment</h2>
 
 <p>Clients often have questions, concerns, and ambivalence about psychiatric medications. They may have experienced stigma, encountered negative media portrayals, or had previous bad experiences with medications. When counselors understand medications, they can address misconceptions, validate legitimate concerns, and provide balanced information that supports client autonomy without undermining medical treatment.</p>
 
@@ -758,7 +763,7 @@ const courses = [
 
 <p>Medication knowledge also informs therapy itself. Understanding that antidepressants typically take 4-6 weeks to reach full effect helps counselors provide realistic expectations and support clients through the waiting period. Knowing that benzodiazepines can interfere with exposure therapy outcomes influences treatment planning. Understanding that lithium requires blood level monitoring explains why a client must have regular lab work. This knowledge shapes clinical decision-making in direct and practical ways.</p>
 
-<h3>Scope of Practice Boundaries</h3>
+<h2>Scope of Practice Boundaries</h2>
 
 <p>Understanding medications does not expand a counselor's scope of practice. Counselors should not recommend specific medications, suggest dosage changes, or advise clients to discontinue medications. These are prescriber decisions. However, counselors can and should: educate clients about general medication principles, help clients develop questions for their prescribers, identify concerning symptoms that require prescriber notification, support medication adherence through motivational and practical interventions, and collaborate with prescribers as part of the treatment team.</p>
 
@@ -779,7 +784,7 @@ const courses = [
 
 <p>Antidepressants are among the most commonly prescribed psychiatric medications, used not only for depression but also for anxiety disorders, OCD, chronic pain, insomnia, and other conditions. Understanding the major classes of antidepressants, their mechanisms, and their clinical characteristics helps counselors support clients through treatment and recognize issues requiring medical attention.</p>
 
-<h3>SSRIs: Selective Serotonin Reuptake Inhibitors</h3>
+<h2>SSRIs: Selective Serotonin Reuptake Inhibitors</h2>
 
 <p>SSRIs are typically first-line medications for depression and anxiety due to their relatively favorable side effect profile and safety in overdose. Common SSRIs include fluoxetine (Prozac), sertraline (Zoloft), paroxetine (Paxil), citalopram (Celexa), escitalopram (Lexapro), and fluvoxamine (Luvox).</p>
 
@@ -791,7 +796,7 @@ const courses = [
 
 <p><strong>Discontinuation syndrome:</strong> Stopping SSRIs abruptly (especially short half-life medications like paroxetine) can produce discontinuation symptoms: dizziness, "brain zaps," flu-like symptoms, irritability, and insomnia. This is not addiction — it is physiological adaptation. Medications should be tapered gradually under prescriber supervision.</p>
 
-<h3>SNRIs: Serotonin-Norepinephrine Reuptake Inhibitors</h3>
+<h2>SNRIs: Serotonin-Norepinephrine Reuptake Inhibitors</h2>
 
 <p>SNRIs block reuptake of both serotonin and norepinephrine. Common SNRIs include venlafaxine (Effexor), duloxetine (Cymbalta), desvenlafaxine (Pristiq), and levomilnacipran (Fetzima).</p>
 
@@ -799,7 +804,7 @@ const courses = [
 
 <p><strong>Side effects:</strong> Similar to SSRIs plus potential for increased blood pressure (requires monitoring, especially at higher doses of venlafaxine), increased sweating, and more significant discontinuation symptoms. Venlafaxine XR has a short half-life and must be tapered carefully.</p>
 
-<h3>Other Antidepressants</h3>
+<h2>Other Antidepressants</h2>
 
 <p><strong>Bupropion (Wellbutrin):</strong> Works on dopamine and norepinephrine, with no serotonin activity. Unique among antidepressants for having no sexual side effects and sometimes improving sexual function. Also used for smoking cessation (as Zyban) and may help with attention and energy. Can lower seizure threshold — contraindicated in eating disorders and alcohol withdrawal. Activating; can worsen anxiety in some patients.</p>
 
@@ -811,7 +816,7 @@ const courses = [
 
 <p><strong>MAOIs (Monoamine Oxidase Inhibitors):</strong> Older medications (phenelzine, tranylcypromine) that are very effective but require strict dietary restrictions to avoid dangerous hypertensive crisis — foods containing tyramine (aged cheese, cured meats, fermented foods) must be avoided. Reserved for treatment-resistant cases.</p>
 
-<h3>Clinical Implications for Counselors</h3>
+<h2>Clinical Implications for Counselors</h2>
 
 <p>When clients are starting antidepressants, counselors should help them understand the delayed onset of action and early side effects. Support them through the "it gets worse before it gets better" period. Watch for signs of activation or worsening (especially in the first few weeks — risk of suicidal behavior may increase before depression lifts). If a client reports a new medication "isn't working" after one week, educate about timeline and encourage patience while also validating their distress.</p>
 
@@ -832,7 +837,7 @@ const courses = [
 
 <p>Anxiety disorders are the most common psychiatric conditions, and multiple medication classes are used in their treatment. Understanding the different approaches to medicating anxiety helps counselors support clients and recognize when medication may be helping or hindering their progress.</p>
 
-<h3>Benzodiazepines</h3>
+<h2>Benzodiazepines</h2>
 
 <p>Benzodiazepines — including alprazolam (Xanax), lorazepam (Ativan), clonazepam (Klonopin), and diazepam (Valium) — are rapid-acting anti-anxiety medications that work by enhancing the effect of GABA, the brain's primary inhibitory neurotransmitter. They produce immediate relief, which makes them both clinically valuable and potentially problematic.</p>
 
@@ -844,19 +849,19 @@ const courses = [
 
 <p><strong>Current prescribing trends:</strong> Due to these concerns, many prescribers are moving away from routine benzodiazepine use, particularly for long-term treatment. SSRIs and SNRIs are preferred for ongoing anxiety management. Benzodiazepines may be used short-term while waiting for antidepressants to take effect, for breakthrough symptoms, or in specific situations where their benefits outweigh risks.</p>
 
-<h3>Buspirone</h3>
+<h2>Buspirone</h2>
 
 <p>Buspirone (BuSpar) is a non-benzodiazepine anxiolytic that works on serotonin receptors. Unlike benzodiazepines, it does not produce immediate relief — it requires 2-4 weeks of consistent use to become effective. It does not cause dependence, sedation, or cognitive impairment, and does not interact dangerously with alcohol.</p>
 
 <p><strong>Clinical reality:</strong> Buspirone is often disappointing for patients who expect the immediate relief of benzodiazepines. It works best for patients who have never used benzodiazepines and who can wait for gradual onset of effect. For generalized anxiety disorder, it can be effective, but patient expectations must be managed.</p>
 
-<h3>Antidepressants for Anxiety</h3>
+<h2>Antidepressants for Anxiety</h2>
 
 <p>SSRIs and SNRIs are first-line medications for most anxiety disorders, including generalized anxiety disorder, social anxiety disorder, panic disorder, and OCD. They take 4-8 weeks to reach full effect but do not produce dependence and address the underlying neurobiological processes rather than just suppressing symptoms.</p>
 
 <p>An important clinical nuance: SSRIs can initially increase anxiety ("activation") before reducing it. Starting at low doses and titrating slowly helps minimize this effect. Counselors should warn clients about this possibility and encourage them to persist through the initial adjustment.</p>
 
-<h3>Other Medications Used for Anxiety</h3>
+<h2>Other Medications Used for Anxiety</h2>
 
 <p><strong>Hydroxyzine (Vistaril/Atarax):</strong> An antihistamine with anxiolytic effects. Non-addictive alternative to benzodiazepines. Causes sedation, which can be therapeutic for sleep but impairing during the day.</p>
 
@@ -866,7 +871,7 @@ const courses = [
 
 <p><strong>Pregabalin (Lyrica):</strong> Related to gabapentin, FDA-approved for generalized anxiety disorder in Europe (not the US). Controlled substance due to abuse potential. Sometimes used when other options have failed.</p>
 
-<h3>Implications for Counseling Practice</h3>
+<h2>Implications for Counseling Practice</h2>
 
 <p>When clients are prescribed benzodiazepines for anxiety, counselors should monitor for signs of dependence and discuss the role of medications in the context of overall treatment. For clients undergoing exposure-based treatment, coordinate with prescribers about whether and how medication use might interact with therapy goals.</p>
 
@@ -889,7 +894,7 @@ const courses = [
 
 <p>Bipolar disorder is primarily managed with medication — psychotherapy alone is not sufficient to prevent mood episodes, though therapy is an important adjunct for psychoeducation, medication adherence, and management of interpersonal and lifestyle factors. Mood stabilizers reduce the frequency and severity of manic, hypomanic, and depressive episodes. Understanding these medications helps counselors support clients through what is often a complex, long-term medication journey.</p>
 
-<h3>Lithium</h3>
+<h2>Lithium</h2>
 
 <p>Lithium has been the gold standard for bipolar disorder since the 1970s. It is effective for acute mania, maintenance treatment, and — importantly — has the strongest evidence for reducing suicide risk of any psychiatric medication. Despite the availability of newer medications, lithium remains a first-line option for many patients.</p>
 
@@ -901,7 +906,7 @@ const courses = [
 
 <p><strong>Clinical implications:</strong> Clients on lithium need consistent hydration and salt intake — dehydration or low sodium can cause lithium levels to rise dangerously. NSAIDs (ibuprofen, naproxen) and some blood pressure medications can increase lithium levels. Clients should be educated to contact their prescriber if they experience vomiting, diarrhea, or illness that might affect hydration.</p>
 
-<h3>Anticonvulsants as Mood Stabilizers</h3>
+<h2>Anticonvulsants as Mood Stabilizers</h2>
 
 <p>Several anticonvulsant medications have mood-stabilizing properties and are commonly used for bipolar disorder, either alone or in combination with lithium or other agents.</p>
 
@@ -911,11 +916,11 @@ const courses = [
 
 <p><strong>Lamotrigine (Lamictal):</strong> Particularly effective for bipolar depression and maintenance, with less efficacy for acute mania. Generally well-tolerated with minimal weight gain or cognitive effects. Critical concern: must be titrated very slowly because of risk of Stevens-Johnson syndrome, a potentially fatal skin reaction. Rash developing during lamotrigine initiation requires immediate medical evaluation.</p>
 
-<h3>Atypical Antipsychotics</h3>
+<h2>Atypical Antipsychotics</h2>
 
 <p>Several atypical antipsychotics are FDA-approved for bipolar disorder, both for acute mania and for maintenance. These include quetiapine (Seroquel), olanzapine (Zyprexa), aripiprazole (Abilify), and risperidone (Risperdal). They may be used alone or as adjuncts to traditional mood stabilizers. The side effect profiles (discussed in the antipsychotics module) must be weighed against benefits.</p>
 
-<h3>Medication Adherence in Bipolar Disorder</h3>
+<h2>Medication Adherence in Bipolar Disorder</h2>
 
 <p>Medication non-adherence is one of the greatest challenges in bipolar disorder treatment. Studies suggest that 30-50% of patients do not take medications as prescribed. Reasons include: side effects (particularly weight gain, cognitive dulling, and sexual effects), missing the highs of hypomania or mania, feeling "fine" and questioning the need for medication during stable periods, stigma about taking psychiatric medications, and denial about having a chronic illness.</p>
 
@@ -938,7 +943,7 @@ const courses = [
 
 <p>Antipsychotic medications are used to treat psychotic symptoms (delusions, hallucinations, disorganized thinking) in conditions including schizophrenia, schizoaffective disorder, psychotic depression, and psychosis secondary to medical conditions or substances. They are also widely used for bipolar disorder, as adjuncts in treatment-resistant depression, for severe anxiety, for agitation in dementia, and in various off-label applications. Understanding both their benefits and their significant side effects is important for any clinician working with clients who take these medications.</p>
 
-<h3>Typical (First-Generation) Antipsychotics</h3>
+<h2>Typical (First-Generation) Antipsychotics</h2>
 
 <p>First-generation antipsychotics (FGAs), developed in the 1950s, include medications like haloperidol (Haldol), chlorpromazine (Thorazine), and perphenazine (Trilafon). They work primarily by blocking dopamine D2 receptors.</p>
 
@@ -946,7 +951,7 @@ const courses = [
 
 <p><strong>Side effects:</strong> The major concern with FGAs is extrapyramidal symptoms (EPS) — movement disorders resulting from dopamine blockade in motor pathways. These include akathisia (internal restlessness, inability to sit still — extremely distressing and associated with suicidality if untreated), dystonia (sudden muscle contractions, potentially affecting the neck, eyes, or throat), parkinsonism (tremor, rigidity, slowed movement), and tardive dyskinesia (involuntary movements, often of the face and tongue, potentially irreversible). Tardive dyskinesia risk increases with duration of use and may persist even after medication discontinuation.</p>
 
-<h3>Atypical (Second-Generation) Antipsychotics</h3>
+<h2>Atypical (Second-Generation) Antipsychotics</h2>
 
 <p>Second-generation antipsychotics (SGAs), introduced in the 1990s, were developed with the hope of reducing EPS while maintaining efficacy. Common SGAs include risperidone (Risperdal), olanzapine (Zyprexa), quetiapine (Seroquel), aripiprazole (Abilify), ziprasidone (Geodon), lurasidone (Latuda), paliperidone (Invega), clozapine (Clozaril), and brexpiprazole (Rexulti).</p>
 
@@ -958,11 +963,11 @@ const courses = [
 
 <p><strong>Other effects:</strong> Prolactin elevation (risperidone, especially — can cause breast enlargement, lactation, sexual dysfunction, and bone density loss), QTc prolongation (cardiac risk with ziprasidone and others), and anticholinergic effects (dry mouth, constipation, urinary retention).</p>
 
-<h3>Clozapine: A Special Case</h3>
+<h2>Clozapine: A Special Case</h2>
 
 <p>Clozapine (Clozaril) is the most effective antipsychotic, uniquely effective for treatment-resistant schizophrenia, and reduces suicide risk in schizophrenia patients. However, it carries a risk of agranulocytosis (dangerous drop in white blood cells) that requires mandatory weekly-to-monthly blood monitoring. It is reserved for patients who have not responded to other antipsychotics due to this monitoring burden and its metabolic effects.</p>
 
-<h3>Clinical Implications for Counselors</h3>
+<h2>Clinical Implications for Counselors</h2>
 
 <p><strong>Recognize side effects:</strong> Counselors may be the first to notice side effects that clients have not reported to prescribers. Akathisia presents as agitation and restlessness — not to be confused with anxiety or psychotic agitation. Weight gain occurs gradually and may not be mentioned unless asked. Sedation may be normalized by clients but may be contributing to functional impairment.</p>
 
@@ -987,7 +992,7 @@ const courses = [
 
 <p>ADHD and sleep disorders frequently co-occur with other mental health conditions and may themselves present for treatment. Understanding medications for these conditions helps counselors support comprehensive care.</p>
 
-<h3>Stimulant Medications for ADHD</h3>
+<h2>Stimulant Medications for ADHD</h2>
 
 <p>Stimulants remain the most effective medications for ADHD, with response rates of approximately 70-80%. They include methylphenidate formulations (Ritalin, Concerta, Focalin, Daytrana) and amphetamine formulations (Adderall, Vyvanse, Dexedrine).</p>
 
@@ -997,7 +1002,7 @@ const courses = [
 
 <p><strong>Abuse potential:</strong> Stimulants are Schedule II controlled substances with abuse potential. However, research suggests that treating ADHD with stimulants actually reduces risk of substance use disorders, likely by reducing the impulsivity and self-medication behaviors associated with untreated ADHD. Diversion (giving or selling medication to others) is a concern, particularly among college students.</p>
 
-<h3>Non-Stimulant ADHD Medications</h3>
+<h2>Non-Stimulant ADHD Medications</h2>
 
 <p><strong>Atomoxetine (Strattera):</strong> A norepinephrine reuptake inhibitor that is not a controlled substance. Takes several weeks to reach full effect. May be preferred when stimulants are contraindicated, when there is substance use history, or when stimulant side effects are intolerable.</p>
 
@@ -1005,7 +1010,7 @@ const courses = [
 
 <p><strong>Viloxazine (Qelbree):</strong> A newer non-stimulant option, also working on norepinephrine.</p>
 
-<h3>Sleep Medications</h3>
+<h2>Sleep Medications</h2>
 
 <p>Sleep disturbance is common in mental health conditions and significantly impacts treatment outcomes. Multiple medication classes are used for insomnia:</p>
 
@@ -1021,7 +1026,7 @@ const courses = [
 
 <p><strong>Sedating antidepressants and antipsychotics:</strong> Mirtazapine and quetiapine are often prescribed off-label for sleep, particularly when depression or other conditions are comorbid. Important to consider whether the full side effect profile is warranted for sleep alone.</p>
 
-<h3>Clinical Implications</h3>
+<h2>Clinical Implications</h2>
 
 <p>When clients report sleep problems, explore behavioral factors before assuming medication is needed. Sleep hygiene, cognitive techniques, and CBT-I (cognitive behavioral therapy for insomnia) are first-line treatments with no side effects and durable benefits. Medications are appropriate when behavioral approaches are insufficient, but they work best in conjunction with sleep hygiene attention.</p>
 
@@ -1036,7 +1041,7 @@ const courses = [
 
 <p>Effective mental health care often requires collaboration between prescribers (psychiatrists, psychiatric nurse practitioners, primary care physicians) and non-prescribing clinicians (counselors, psychologists, social workers). This collaboration improves outcomes by ensuring comprehensive care, facilitating communication about symptoms and side effects, and presenting a unified treatment approach to clients.</p>
 
-<h3>Communication Practices</h3>
+<h2>Communication Practices</h2>
 
 <p><strong>Establish contact:</strong> At intake, identify who prescribes your client's psychiatric medications and obtain consent to communicate. A simple release of information opens the door to collaborative care. Not all prescribers are equally responsive, but attempting contact establishes you as part of the treatment team.</p>
 
@@ -1046,7 +1051,7 @@ const courses = [
 
 <p><strong>Be specific and clinical:</strong> Prescribers respond best to specific, behavioral descriptions rather than general impressions. "Client reports sleeping 3-4 hours nightly, has decreased appetite, and tearfulness increased this week — PHQ-9 score increased from 10 to 17" is more useful than "Client seems more depressed."</p>
 
-<h3>Supporting Medication Adherence</h3>
+<h2>Supporting Medication Adherence</h2>
 
 <p>Adherence to psychiatric medication is notoriously poor, with estimates suggesting that 40-60% of patients do not take medications as prescribed. Counselors can support adherence through several approaches:</p>
 
@@ -1058,7 +1063,7 @@ const courses = [
 
 <p><strong>Address stigma:</strong> Some clients resist medication due to internalized stigma about psychiatric treatment. Normalize medication use as one tool among many, compare to medical treatments for other conditions, and respect client autonomy while providing accurate information.</p>
 
-<h3>When Concerns Arise</h3>
+<h2>When Concerns Arise</h2>
 
 <p>If you have concerns about a client's medication treatment — the medication does not seem to be helping, side effects seem excessive, or you suspect interactions with substance use — communicate these to the prescriber. Frame observations clinically and avoid language that could be perceived as criticizing the prescriber's decisions.</p>
 
@@ -1066,7 +1071,7 @@ const courses = [
 
 <p>If you suspect a prescriber is behaving inappropriately (prescribing dangerously, romantic involvement with patient, practicing outside competence), this becomes an ethical issue that may require reporting to licensing boards after consultation with supervisors or ethics consultants.</p>
 
-<h3>Integrated Care Models</h3>
+<h2>Integrated Care Models</h2>
 
 <p>Increasingly, mental health care occurs in integrated settings where prescribers and therapists work in the same clinic with shared electronic records and regular case conferences. This model facilitates collaboration and improves outcomes. Even in traditional settings with separate prescribers and therapists, adopting an integrated mindset — viewing yourself as part of a treatment team rather than an isolated provider — improves client care. Your role in monitoring symptoms, supporting adherence, and communicating with prescribers is essential to comprehensive treatment.</p>`
           },
