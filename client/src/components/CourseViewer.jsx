@@ -1991,55 +1991,38 @@ const styles = `
   .animate-fadeIn { animation: none; }
 }
 
-/* APA heading hierarchy */
+/* APA heading hierarchy — headings must be visually stronger than body text */
 .prose h2, .cr-content h2 {
   font-family: "Cormorant Garamond", serif !important;
   font-weight: 700 !important;
-  font-size: 1.85rem !important;
+  font-size: 2.1rem !important;
   color: #284157 !important;
   margin: 2.25rem 0 1rem 0;
   padding-bottom: 0.5rem;
-  border-bottom: 2px solid rgba(74, 124, 89, 0.2);
+  border-bottom: 2px solid rgba(74, 124, 89, 0.25);
   letter-spacing: -0.01em;
-  line-height: 1.3 !important;
+  line-height: 1.25 !important;
 }
 .prose h3, .cr-content h3 {
   font-family: "Cormorant Garamond", serif !important;
   font-weight: 700 !important;
-  font-size: 1.35rem !important;
+  font-size: 1.6rem !important;
   color: #4A7C59 !important;
   margin: 1.75rem 0 0.75rem 0;
   letter-spacing: -0.005em;
-  line-height: 1.35 !important;
+  line-height: 1.3 !important;
 }
 .prose h4, .cr-content h4 {
   font-weight: 700 !important;
-  font-size: 1.15rem !important;
+  font-size: 1.25rem !important;
   color: #284157 !important;
   margin: 1.5rem 0 0.5rem 0;
-  text-transform: uppercase;
-  letter-spacing: 0.02em;
-  font-size: 0.95rem !important;
+  letter-spacing: 0.01em;
+  line-height: 1.35 !important;
 }
 .prose p, .cr-content p {
   margin-bottom: 1rem;
   line-height: 1.8;
-}
-.prose p + p {
-  margin-top: 0.25rem;
-}
-.prose h2 + p, .cr-content h2 + p,
-.prose h3 + p, .cr-content h3 + p,
-.prose h4 + p, .cr-content h4 + p {
-  margin-top: 0.5rem;
-}
-.prose ul, .prose ol {
-  margin: 0.75rem 0 1.25rem 0;
-  padding-left: 1.5rem;
-}
-.prose li {
-  margin-bottom: 0.4rem;
-  line-height: 1.7;
 }
 
 /* Table styling */
