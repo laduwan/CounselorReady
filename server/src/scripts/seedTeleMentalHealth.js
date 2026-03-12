@@ -106,17 +106,14 @@ const TELEMENTAL_COURSE = {
 
 <p>Upon successful completion of this course, participants will be able to:</p>
 
-<p><strong>Objective 1:</strong> Identify Georgia-specific continuing education requirements for LPCs including the 35 CEU biennial mandate, Category A/B distinctions, and telehealth competency standards established by the Georgia Composite Board.</p>
-
-<p><strong>Objective 2:</strong> Evaluate telehealth platforms against HIPAA compliance requirements including encryption standards, Business Associate Agreements, and minimum technical specifications for clinical use.</p>
-
-<p><strong>Objective 3:</strong> Develop telehealth-specific informed consent documents addressing technology risks, privacy limitations, emergency protocols, and interstate practice restrictions consistent with ACA Code of Ethics and Georgia regulations.</p>
-
-<p><strong>Objective 4:</strong> Adapt clinical assessment and intervention techniques for virtual service delivery including mental status examinations, therapeutic presence, and evidence-based treatment modifications.</p>
-
-<p><strong>Objective 5:</strong> Implement a structured crisis intervention protocol for telehealth settings including cross-jurisdictional emergency coordination, technology failure contingency plans, and remote safety planning.</p>
-
-<p><strong>Objective 6:</strong> Design a sustainable telehealth practice model incorporating boundary-setting strategies, burnout prevention techniques, business considerations, and ongoing professional development planning.</p>
+<ol>
+<li>Identify Georgia-specific continuing education requirements for LPCs including the 35 CEU biennial mandate, Category A/B distinctions, and telehealth competency standards established by the Georgia Composite Board.</li>
+<li>Evaluate telehealth platforms against HIPAA compliance requirements including encryption standards, Business Associate Agreements, and minimum technical specifications for clinical use.</li>
+<li>Develop telehealth-specific informed consent documents addressing technology risks, privacy limitations, emergency protocols, and interstate practice restrictions consistent with ACA Code of Ethics and Georgia regulations.</li>
+<li>Adapt clinical assessment and intervention techniques for virtual service delivery including mental status examinations, therapeutic presence, and evidence-based treatment modifications.</li>
+<li>Implement a structured crisis intervention protocol for telehealth settings including cross-jurisdictional emergency coordination, technology failure contingency plans, and remote safety planning.</li>
+<li>Design a sustainable telehealth practice model incorporating boundary-setting strategies, burnout prevention techniques, business considerations, and ongoing professional development planning.</li>
+</ol>
 
 <p><em>This course requires a passing score of 80% on the final assessment to receive CE credit. You will have up to 3 attempts to pass the assessment.</em></p>`
         },
@@ -124,9 +121,13 @@ const TELEMENTAL_COURSE = {
           type: "text",
           content: `<h2>Why Georgia Regulations Matter for Your Virtual Practice</h2>
 
-<p>If you are a licensed professional counselor in Georgia providing services via telehealth, the regulatory landscape is not optional reading — it is the foundation your entire practice sits on. The Georgia Composite Board of Professional Counselors, Social Workers, and Marriage and Family Therapists governs licensure, continuing education, and practice standards for LPCs, LAPCs, LCSWs, and LMFTs across the state. Every telehealth session you conduct, every informed consent document you present, and every emergency protocol you maintain must align with these regulations.</p>
+<p>If you are a licensed professional counselor in Georgia providing services via telehealth, the regulatory landscape is not optional reading — it is the foundation your entire practice sits on. The Georgia Composite Board of Professional Counselors, Social Workers, and Marriage and Family Therapists governs licensure, continuing education, and practice standards for LPCs, LAPCs, LCSWs, and LMFTs across the state.</p>
 
-<p>Georgia has been notably proactive in establishing telehealth-specific competency requirements compared to many other states. This is not bureaucratic overhead — it reflects the reality that providing therapy through a screen introduces clinical, legal, and ethical complexities that do not exist in a traditional office setting. A counselor who is excellent in person may be unprepared for the moment a client's video freezes during a suicidal disclosure, or the legal implications of a client who logs in from a hotel room in a state where the counselor holds no license.</p>
+<p>Every telehealth session you conduct, every informed consent document you present, and every emergency protocol you maintain must align with these regulations.</p>
+
+<p>Georgia has been notably proactive in establishing telehealth-specific competency requirements compared to many other states. This is not bureaucratic overhead — it reflects the reality that providing therapy through a screen introduces clinical, legal, and ethical complexities that do not exist in a traditional office setting.</p>
+
+<p>A counselor who is excellent in person may be unprepared for the moment a client's video freezes during a suicidal disclosure, or the legal implications of a client who logs in from a hotel room in a state where the counselor holds no license.</p>
 
 <p>This module establishes the regulatory framework you need to practice with confidence. We will cover the specific CE requirements, the distinction between Category A and Category B activities, and the telehealth competency standards that Georgia now expects every practitioner to demonstrate.</p>`
         },
@@ -134,7 +135,9 @@ const TELEMENTAL_COURSE = {
           type: "text",
           content: `<h2>The 35-Hour Biennial Requirement</h2>
 
-<p>Licensed Professional Counselors in Georgia must complete 35 continuing education units (CEUs) every two years — the biennial renewal cycle. Licensed Associate Professional Counselors must complete 17.5 CEUs annually during their supervised practice period. These are not suggestions. Failure to complete the required hours before your renewal date can result in administrative penalties, license lapse, or formal disciplinary action by the Composite Board.</p>
+<p>Licensed Professional Counselors in Georgia must complete 35 continuing education units (CEUs) every two years — the biennial renewal cycle. Licensed Associate Professional Counselors must complete 17.5 CEUs annually during their supervised practice period.</p>
+
+<p>These are not suggestions. Failure to complete the required hours before your renewal date can result in administrative penalties, license lapse, or formal disciplinary action by the Composite Board.</p>
 
 <p>The Composite Board conducts random audits of continuing education compliance. If selected, you must produce certificates of completion for every CE activity you are claiming. The audit is not a courtesy request — it is a regulatory proceeding, and incomplete or missing documentation can lead to consequences ranging from required remediation to license suspension. This is why documentation of CE activities is as important as completing them.</p>
 
