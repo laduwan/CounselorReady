@@ -166,21 +166,9 @@ const courseData = {
 
 <p>Will Hunting presents with a constellation of features that will be familiar to any clinician who works with adult survivors of childhood maltreatment. His history includes severe physical abuse in multiple foster placements, emotional neglect, abandonment by biological parents, and chronic instability in caregiving relationships. These experiences occurred during critical developmental windows for attachment formation, identity development, and emotional regulation capacity.</p>
 
-<p>The behavioral manifestations of this history are equally recognizable. Will pushes people away before they can abandon him—a protective strategy that made perfect sense in his childhood environment but now prevents him from experiencing the connection he desperately needs. Specific indicators include:</p>
+<p>The behavioral manifestations of this history are equally recognizable: explosive anger that emerges suddenly and disproportionately, a pattern of sabotaging relationships when they become too intimate, defensive intellectualization that keeps others at arm's length, hypervigilance to potential threat or betrayal, and a deep conviction of his own unworthiness despite evidence to the contrary. Will pushes people away before they can abandon him—a protective strategy that made perfect sense in his childhood environment but now prevents him from experiencing the connection he desperately needs.</p>
 
-<ul>
-<li>Explosive anger that emerges suddenly and disproportionately</li>
-<li>A pattern of sabotaging relationships when they become too intimate</li>
-<li>Defensive intellectualization that keeps others at arm's length</li>
-<li>Hypervigilance to potential threat or betrayal</li>
-<li>A deep conviction of his own unworthiness despite evidence to the contrary</li>
-</ul>
-
-<h3>Intelligence in Service of Avoidance</h3>
-
-<p>What makes Will's case particularly instructive is the contrast between his extraordinary cognitive abilities and his profound emotional wounds. His intellectual gifts have allowed him to construct elaborate defenses, to outmaneuver previous therapists, and to maintain a sense of control and superiority that protects his vulnerable core.</p>
-
-<p>Yet these same defenses prevent him from accessing the healing relationships and experiences that could transform his life. This dynamic—intelligence in service of avoidance—is common among high-functioning trauma survivors and presents particular challenges for therapeutic engagement.</p>`
+<p>What makes Will's case particularly instructive is the contrast between his extraordinary cognitive abilities and his profound emotional wounds. His intellectual gifts have allowed him to construct elaborate defenses, to outmaneuver previous therapists, and to maintain a sense of control and superiority that protects his vulnerable core. Yet these same defenses prevent him from accessing the healing relationships and experiences that could transform his life. This dynamic—intelligence in service of avoidance—is common among high-functioning trauma survivors and presents particular challenges for therapeutic engagement.</p>`
         },
         {
           type: "accordion",
@@ -281,29 +269,13 @@ const courseData = {
 
 <p>The behavioral indicators of Will's dismissive attachment are pervasive throughout the film. Consider the following manifestations:</p>
 
-<h3>Intellectualization as Defense</h3>
+<p><strong>Intellectualization as Defense:</strong> Will uses his exceptional cognitive abilities to maintain emotional distance. When therapists or others attempt to connect with him emotionally, he redirects to intellectual discourse, demonstrates his superior knowledge, or engages in verbal sparring that keeps the interaction in the realm of ideas rather than feelings. This intellectualization serves a protective function—it allows him to feel in control and avoids the vulnerability that emotional engagement would require.</p>
 
-<p>Will uses his exceptional cognitive abilities to maintain emotional distance. When therapists or others attempt to connect with him emotionally, he redirects to intellectual discourse, demonstrates his superior knowledge, or engages in verbal sparring that keeps the interaction in the realm of ideas rather than feelings.</p>
+<p><strong>Preemptive Rejection:</strong> Will consistently pushes people away before they can abandon him. His sabotage of the relationship with Skylar is the clearest example: as their connection deepens and she invites him to California, he picks a devastating fight and drives her away. From Will's internal logic, this preemptive rejection is self-protective—it hurts less to reject than to be rejected. But this strategy, developed in response to actual abandonment and abuse, now prevents him from experiencing the consistent, loving relationships that could disconfirm his negative expectations.</p>
 
-<p>This intellectualization serves a protective function—it allows him to feel in control and avoids the vulnerability that emotional engagement would require.</p>
+<p><strong>Testing Behavior:</strong> Will repeatedly tests others to confirm his expectation that they will ultimately fail him. With therapists, he does this by attempting to manipulate, shock, or outmaneuver them. With Sean, he researches Sean's personal life and makes cruel comments designed to provoke rejection. With Skylar, he tests whether she will leave when confronted with his wounds. These tests are simultaneously attempts to confirm negative expectations and unconscious hopes that someone will prove those expectations wrong.</p>
 
-<h3>Preemptive Rejection</h3>
-
-<p>Will consistently pushes people away before they can abandon him. His sabotage of the relationship with Skylar is the clearest example: as their connection deepens and she invites him to California, he picks a devastating fight and drives her away.</p>
-
-<p>From Will's internal logic, this preemptive rejection is self-protective—it hurts less to reject than to be rejected. But this strategy, developed in response to actual abandonment and abuse, now prevents him from experiencing the consistent, loving relationships that could disconfirm his negative expectations.</p>
-
-<h3>Testing Behavior</h3>
-
-<p>Will repeatedly tests others to confirm his expectation that they will ultimately fail him. With therapists, he does this by attempting to manipulate, shock, or outmaneuver them. With Sean, he researches Sean's personal life and makes cruel comments designed to provoke rejection.</p>
-
-<p>With Skylar, he tests whether she will leave when confronted with his wounds. These tests are simultaneously attempts to confirm negative expectations and unconscious hopes that someone will prove those expectations wrong.</p>
-
-<h3>Denial of Attachment Needs</h3>
-
-<p>Will explicitly denies needing others, asserting his independence and self-sufficiency. His statement that he doesn't need therapy, doesn't need help, and is "doing fine" despite clear evidence to the contrary reflects the dismissive pattern's characteristic minimization of attachment needs.</p>
-
-<p>Yet his anger, his violence, and his self-sabotaging behavior reveal the unmet attachment needs that lie beneath the defensive surface.</p>`
+<p><strong>Denial of Attachment Needs:</strong> Will explicitly denies needing others, asserting his independence and self-sufficiency. His statement that he doesn't need therapy, doesn't need help, and is "doing fine" despite clear evidence to the contrary reflects the dismissive pattern's characteristic minimization of attachment needs. Yet his anger, his violence, and his self-sabotaging behavior reveal the unmet attachment needs that lie beneath the defensive surface.</p>`
         },
         {
           type: "accordion",
@@ -335,31 +307,17 @@ const courseData = {
 
 <p>Judith Herman's seminal work on complex trauma identified a constellation of features that go beyond the symptoms of PTSD as traditionally defined. These include:</p>
 
-<h3>Alterations in Regulation of Affect and Impulses</h3>
+<p><strong>Alterations in Regulation of Affect and Impulses:</strong> Complex trauma survivors often struggle with emotional dysregulation, including difficulty identifying feelings, managing intense emotions, and modulating impulses. Will's explosive anger—which emerges suddenly and disproportionately—reflects this regulatory difficulty. His violence is not calculated or controlled; it erupts when emotional intensity exceeds his capacity to contain it.</p>
 
-<p>Complex trauma survivors often struggle with emotional dysregulation, including difficulty identifying feelings, managing intense emotions, and modulating impulses. Will's explosive anger—which emerges suddenly and disproportionately—reflects this regulatory difficulty. His violence is not calculated or controlled; it erupts when emotional intensity exceeds his capacity to contain it.</p>
+<p><strong>Alterations in Attention or Consciousness:</strong> Dissociative symptoms, including depersonalization, derealization, and amnesia, are common in complex trauma. While the film does not emphasize dissociative features, Will's capacity to compartmentalize his genius from his emotional life, and his apparent disconnection from the full impact of his abuse history, may reflect dissociative processes.</p>
 
-<h3>Alterations in Attention or Consciousness</h3>
+<p><strong>Alterations in Self-Perception:</strong> Complex trauma profoundly impacts identity and self-concept. Survivors often carry chronic shame, a sense of being permanently damaged, beliefs that they are fundamentally different from others, and deep convictions of unworthiness. Will's statement "I don't owe it to myself. Owe it to myself? What the fuck does that even mean?" reflects his inability to value himself or believe he deserves good things. His insistence that he belongs in South Boston working construction—despite his mathematical genius—stems from a self-concept shaped by abuse.</p>
 
-<p>Dissociative symptoms, including depersonalization, derealization, and amnesia, are common in complex trauma. While the film does not emphasize dissociative features, Will's capacity to compartmentalize his genius from his emotional life, and his apparent disconnection from the full impact of his abuse history, may reflect dissociative processes.</p>
+<p><strong>Alterations in Perception of the Perpetrator:</strong> Survivors may show preoccupation with the perpetrator, idealization of the perpetrator, or paradoxical gratitude toward abusers. Will's complex feelings about his foster parents, his reluctance to fully condemn them, and his minimization of abuse ("The fuckin' bastards stuck a knife in me. They were tough guys, you know?") reflect this complicated relationship with perpetrators.</p>
 
-<h3>Alterations in Self-Perception</h3>
+<p><strong>Alterations in Relations with Others:</strong> Difficulty with trust, intimacy, and appropriate boundaries characterizes complex trauma survivors. Will's relational difficulties—pushing away those who care for him, testing others constantly, expecting betrayal—reflect these alterations. His isolation and limited social connections stem from his trauma-based difficulty forming and maintaining close relationships.</p>
 
-<p>Complex trauma profoundly impacts identity and self-concept. Survivors often carry chronic shame, a sense of being permanently damaged, beliefs that they are fundamentally different from others, and deep convictions of unworthiness.</p>
-
-<p>Will's statement "I don't owe it to myself. Owe it to myself? What the fuck does that even mean?" reflects his inability to value himself or believe he deserves good things. His insistence that he belongs in South Boston working construction—despite his mathematical genius—stems from a self-concept shaped by abuse.</p>
-
-<h3>Alterations in Perception of the Perpetrator</h3>
-
-<p>Survivors may show preoccupation with the perpetrator, idealization of the perpetrator, or paradoxical gratitude toward abusers. Will's complex feelings about his foster parents, his reluctance to fully condemn them, and his minimization of abuse ("The fuckin' bastards stuck a knife in me. They were tough guys, you know?") reflect this complicated relationship with perpetrators.</p>
-
-<h3>Alterations in Relations with Others</h3>
-
-<p>Difficulty with trust, intimacy, and appropriate boundaries characterizes complex trauma survivors. Will's relational difficulties—pushing away those who care for him, testing others constantly, expecting betrayal—reflect these alterations. His isolation and limited social connections stem from his trauma-based difficulty forming and maintaining close relationships.</p>
-
-<h3>Alterations in Systems of Meaning</h3>
-
-<p>Complex trauma often shatters assumptions about the world's benevolence, the self's worthiness, and life's meaningfulness. Will's cynicism, his dismissal of opportunity, and his apparent lack of future orientation reflect the existential impact of his early experiences.</p>`
+<p><strong>Alterations in Systems of Meaning:</strong> Complex trauma often shatters assumptions about the world's benevolence, the self's worthiness, and life's meaningfulness. Will's cynicism, his dismissal of opportunity, and his apparent lack of future orientation reflect the existential impact of his early experiences.</p>`
         },
         {
           type: "matching",
@@ -378,15 +336,7 @@ const courseData = {
 
 <p>Contemporary neuroscience has illuminated the biological mechanisms through which early trauma shapes brain development and stress response systems. Understanding these mechanisms helps clinicians appreciate why trauma survivors respond as they do and informs appropriate intervention strategies.</p>
 
-<p>The developing brain is experience-dependent—it is shaped by the environments it encounters during critical periods of development. When those environments include chronic stress, fear, and unpredictability, the brain adapts in ways that prioritize survival.</p>
-
-<p>Key neurobiological impacts include:</p>
-
-<ul>
-<li>The stress response system (hypothalamic-pituitary-adrenal axis) may become chronically activated or dysregulated.</li>
-<li>Brain regions involved in emotional regulation, such as the prefrontal cortex, may develop differently.</li>
-<li>The threat-detection system, centered in the amygdala, may become hypervigilant.</li>
-</ul>
+<p>The developing brain is experience-dependent—it is shaped by the environments it encounters during critical periods of development. When those environments include chronic stress, fear, and unpredictability, the brain adapts in ways that prioritize survival. The stress response system (hypothalamic-pituitary-adrenal axis) may become chronically activated or dysregulated. Brain regions involved in emotional regulation, such as the prefrontal cortex, may develop differently. The threat-detection system, centered in the amygdala, may become hypervigilant.</p>
 
 <p>Allan Schore's work on affect regulation and the developing brain emphasizes the critical role of early attachment relationships in developing the capacity to regulate emotional states. When caregivers provide consistent, attuned responses to an infant's distress, the child develops internal representations of how emotions can be managed and soothed. When caregiving is frightening, inconsistent, or absent, these regulatory capacities do not fully develop, leaving the individual vulnerable to emotional dysregulation throughout life.</p>
 
@@ -478,35 +428,15 @@ const courseData = {
 
 <p>Despite—or perhaps because of—his unorthodox methods, Sean demonstrates several therapeutically effective approaches in his work with Will:</p>
 
-<h3>Unwavering Consistency and Presence</h3>
+<p><strong>Unwavering Consistency and Presence:</strong> Throughout Will's testing behavior, provocations, and withdrawal, Sean remains consistently present. He shows up for sessions. He does not retaliate when Will attacks him personally. He does not give up when Will is resistant. This consistency is precisely what Will's early relationships lacked and what his attachment system needs to begin developing new expectations. The research on therapeutic alliance consistently emphasizes the therapist's ability to maintain a stable, reliable presence even when the client's behavior makes this difficult.</p>
 
-<p>Throughout Will's testing behavior, provocations, and withdrawal, Sean remains consistently present. He shows up for sessions. He does not retaliate when Will attacks him personally. He does not give up when Will is resistant.</p>
+<p><strong>Appropriate Confrontation Without Rejection:</strong> One of Sean's most significant interventions occurs after Will's personal attack about Sean's deceased wife. Rather than terminating treatment, retaliating with cruelty, or pretending the attack didn't happen, Sean confronts Will directly: "You're a tough kid. And I ask you about war, you'd probably throw Shakespeare at me, right? 'Once more unto the breach, dear friends.' But you've never been near one." Sean names Will's defensive pattern while making clear that he sees through the facade to the wounded person beneath. This confrontation carries respect rather than contempt—Sean is challenging Will to be more authentic, not punishing him for his defenses.</p>
 
-<p>This consistency is precisely what Will's early relationships lacked and what his attachment system needs to begin developing new expectations. The research on therapeutic alliance consistently emphasizes the therapist's ability to maintain a stable, reliable presence even when the client's behavior makes this difficult.</p>
+<p><strong>The Use of Silence:</strong> In a pivotal scene, Sean simply waits for Will to speak. This use of therapeutic silence can be powerful with clients who are accustomed to controlling interactions through verbal dominance. By declining to fill the silence, Sean communicates that he is willing to wait, that he can tolerate the discomfort, and that the pace of disclosure belongs to Will. For a client like Will, who uses words as weapons and shields, the therapist's comfortable silence can disarm defensive strategies and create space for something genuine to emerge.</p>
 
-<h3>Appropriate Confrontation Without Rejection</h3>
+<p><strong>Authentic Self-Disclosure:</strong> Sean shares personal information about his own life—his marriage, his wife's death, his own struggles with loss. This self-disclosure is controversial from some clinical perspectives, and we will examine the concerns it raises. However, in context, Sean's disclosure serves to level the playing field, to demonstrate that he too is human and vulnerable, and to model the kind of authentic engagement he is asking of Will. For a client who has successfully maintained distance from multiple therapists, Sean's willingness to be known—not just to know—may have been essential to building trust.</p>
 
-<p>One of Sean's most significant interventions occurs after Will's personal attack about Sean's deceased wife. Rather than terminating treatment, retaliating with cruelty, or pretending the attack didn't happen, Sean confronts Will directly: "You're a tough kid. And I ask you about war, you'd probably throw Shakespeare at me, right? 'Once more unto the breach, dear friends.' But you've never been near one."</p>
-
-<p>Sean names Will's defensive pattern while making clear that he sees through the facade to the wounded person beneath. This confrontation carries respect rather than contempt—Sean is challenging Will to be more authentic, not punishing him for his defenses.</p>
-
-<h3>The Use of Silence</h3>
-
-<p>In a pivotal scene, Sean simply waits for Will to speak. This use of therapeutic silence can be powerful with clients who are accustomed to controlling interactions through verbal dominance.</p>
-
-<p>By declining to fill the silence, Sean communicates that he is willing to wait, that he can tolerate the discomfort, and that the pace of disclosure belongs to Will. For a client like Will, who uses words as weapons and shields, the therapist's comfortable silence can disarm defensive strategies and create space for something genuine to emerge.</p>
-
-<h3>Authentic Self-Disclosure</h3>
-
-<p>Sean shares personal information about his own life—his marriage, his wife's death, his own struggles with loss. This self-disclosure is controversial from some clinical perspectives, and we will examine the concerns it raises.</p>
-
-<p>However, in context, Sean's disclosure serves to level the playing field, to demonstrate that he too is human and vulnerable, and to model the kind of authentic engagement he is asking of Will. For a client who has successfully maintained distance from multiple therapists, Sean's willingness to be known—not just to know—may have been essential to building trust.</p>
-
-<h3>The "Not Your Fault" Intervention</h3>
-
-<p>Perhaps the film's most famous therapeutic moment occurs when Sean repeatedly tells Will, "It's not your fault," eventually breaking through Will's intellectual defenses to release deep grief. This intervention represents a <strong>corrective emotional experience</strong>—an interaction that differs from the client's expectations based on past relationships and thereby begins to shift internal working models.</p>
-
-<p>Will intellectually knew the abuse was not his fault; countless people had probably told him so. But Sean's repetition, his persistence, his emotional presence in the moment, allowed this knowledge to move from intellectual understanding to felt experience.</p>`
+<p><strong>The "Not Your Fault" Intervention:</strong> Perhaps the film's most famous therapeutic moment occurs when Sean repeatedly tells Will, "It's not your fault," eventually breaking through Will's intellectual defenses to release deep grief. This intervention represents a <strong>corrective emotional experience</strong>—an interaction that differs from the client's expectations based on past relationships and thereby begins to shift internal working models. Will intellectually knew the abuse was not his fault; countless people had probably told him so. But Sean's repetition, his persistence, his emotional presence in the moment, allowed this knowledge to move from intellectual understanding to felt experience.</p>`
         },
         {
           type: "accordion",
@@ -532,27 +462,13 @@ const courseData = {
 
 <p>While Sean's approach proves effective in the film's narrative, several elements warrant critical examination and should not be uncritically adopted as clinical models:</p>
 
-<h3>Boundary Ambiguity</h3>
+<p><strong>Boundary Ambiguity:</strong> The therapy occurs in a context of multiple boundary complications. Sean has a prior relationship with the referring professor. By the end of the film, the therapeutic relationship has evolved into something resembling friendship, with Sean attending Will's going-away gathering. While the film portrays this positively, such boundary flexibility raises legitimate concerns about role confusion, the impact on therapeutic frame, and the message it sends about professional relationships. In real practice, such boundary crossings would require careful ethical consideration and documentation.</p>
 
-<p>The therapy occurs in a context of multiple boundary complications. Sean has a prior relationship with the referring professor. By the end of the film, the therapeutic relationship has evolved into something resembling friendship, with Sean attending Will's going-away gathering.</p>
+<p><strong>Therapist's Own Unresolved Issues:</strong> Sean is grieving his wife's death and has his own attachment-related wounds. While his personal experience may increase empathy and authenticity, unprocessed therapist issues can also lead to countertransference enactments, projection onto the client, or using the therapy to meet the therapist's needs rather than the client's. The film suggests Sean's work with Will is healing for Sean as well—this can occur in therapy, but it should not be the primary purpose or an unexamined dynamic.</p>
 
-<p>While the film portrays this positively, such boundary flexibility raises legitimate concerns about role confusion, the impact on therapeutic frame, and the message it sends about professional relationships. In real practice, such boundary crossings would require careful ethical consideration and documentation.</p>
+<p><strong>Physical Intimidation:</strong> In one scene, Sean grabs Will by the throat after Will's personal attack. While the film frames this as a turning point that establishes Sean's strength and authenticity, any physical contact of this nature in actual clinical practice would be ethically and legally problematic. This moment reflects cinematic drama rather than clinical reality and should not be emulated.</p>
 
-<h3>Therapist's Own Unresolved Issues</h3>
-
-<p>Sean is grieving his wife's death and has his own attachment-related wounds. While his personal experience may increase empathy and authenticity, unprocessed therapist issues can also lead to countertransference enactments, projection onto the client, or using the therapy to meet the therapist's needs rather than the client's.</p>
-
-<p>The film suggests Sean's work with Will is healing for Sean as well—this can occur in therapy, but it should not be the primary purpose or an unexamined dynamic.</p>
-
-<h3>Physical Intimidation</h3>
-
-<p>In one scene, Sean grabs Will by the throat after Will's personal attack. While the film frames this as a turning point that establishes Sean's strength and authenticity, any physical contact of this nature in actual clinical practice would be ethically and legally problematic. This moment reflects cinematic drama rather than clinical reality and should not be emulated.</p>
-
-<h3>Lack of Formal Assessment and Treatment Planning</h3>
-
-<p>The film shows little evidence of formal trauma assessment, treatment planning, or documentation. While narrative films cannot capture every aspect of clinical work, clinicians must remember that effective treatment typically includes systematic assessment, clear treatment goals, and ongoing evaluation of progress.</p>
-
-<p>Sean's intuitive, relationship-based approach works within the film's narrative but would need to be complemented by more structured clinical practices in actual treatment.</p>
+<p><strong>Lack of Formal Assessment and Treatment Planning:</strong> The film shows little evidence of formal trauma assessment, treatment planning, or documentation. While narrative films cannot capture every aspect of clinical work, clinicians must remember that effective treatment typically includes systematic assessment, clear treatment goals, and ongoing evaluation of progress. Sean's intuitive, relationship-based approach works within the film's narrative but would need to be complemented by more structured clinical practices in actual treatment.</p>
 
 <h2>The Therapeutic Alliance in Action: Scene Analysis</h2>
 
@@ -560,18 +476,9 @@ const courseData = {
 
 <p>"You're just a kid. You don't have the faintest idea what you're talking about... You've never been out of Boston... If I asked you about art, you'd probably give me the skinny on every art book ever written... But I bet you can't tell me what it smells like in the Sistine Chapel... If I asked you about love, you'd probably quote me a sonnet. But you've never looked at a woman and been totally vulnerable..."</p>
 
-<p>This monologue accomplishes several therapeutic tasks:</p>
+<p>This monologue accomplishes several therapeutic tasks. It establishes Sean's boundaries (his life experience cannot be reduced to Will's intellectual analysis). It models authentic emotional expression. It challenges Will's defenses while communicating genuine interest in who Will really is beneath those defenses. And it begins building the emotional bond component of the alliance by demonstrating that Sean sees Will clearly—both his gifts and his limitations—and remains engaged rather than intimidated or put off.</p>
 
-<ul>
-<li>It establishes Sean's boundaries (his life experience cannot be reduced to Will's intellectual analysis).</li>
-<li>It models authentic emotional expression.</li>
-<li>It challenges Will's defenses while communicating genuine interest in who Will really is beneath those defenses.</li>
-<li>It begins building the emotional bond component of the alliance by demonstrating that Sean sees Will clearly—both his gifts and his limitations—and remains engaged rather than intimidated or put off.</li>
-</ul>
-
-<p>The bond component strengthens further through subsequent sessions as Sean proves willing to wait through Will's silence, to share his own vulnerabilities, and to remain present despite Will's testing.</p>
-
-<p>The goals and tasks components emerge more gradually—Will initially has no goals for therapy, and the implicit task is simply to show up. Over time, as trust develops, the goals expand to include Will's capacity to form intimate relationships, pursue his potential, and integrate his trauma history.</p>`
+<p>The bond component strengthens further through subsequent sessions as Sean proves willing to wait through Will's silence, to share his own vulnerabilities, and to remain present despite Will's testing. The goals and tasks components emerge more gradually—Will initially has no goals for therapy, and the implicit task is simply to show up. Over time, as trust develops, the goals expand to include Will's capacity to form intimate relationships, pursue his potential, and integrate his trauma history.</p>`
         },
         {
           type: "multipleChoice",
@@ -663,17 +570,7 @@ const courseData = {
 
 <p>An effective response addresses multiple levels: the content of what was shared, the emotional state Elena is in, and the relational meaning of the disclosure. For example: "I'm really glad you trusted me enough to share this. What happened to you was not your fault, and nothing you've told me changes my respect for you. I also notice you seem kind of far away right now—that makes sense given how painful this is. Before we end today, I want to make sure you're feeling grounded enough to leave safely. We can talk more about this at your pace."</p>
 
-<p>This response:</p>
-
-<ul>
-<li>Validates the courage of disclosure</li>
-<li>Directly addresses shame by naming continued respect</li>
-<li>Notices dissociation without pathologizing it</li>
-<li>Attends to safety</li>
-<li>Affirms ongoing relationship and client pacing</li>
-</ul>
-
-<p>It follows trauma-informed principles of safety, trustworthiness, collaboration, and empowerment.</p>
+<p>This response: validates the courage of disclosure; directly addresses shame by naming continued respect; notices dissociation without pathologizing it; attends to safety; and affirms ongoing relationship and client pacing. It follows trauma-informed principles of safety, trustworthiness, collaboration, and empowerment.</p>
 
 <h2>Clinical Vignette 3: Therapeutic Rupture and Repair</h2>
 
@@ -684,14 +581,7 @@ const courseData = {
 <p><strong>Clinical Considerations:</strong></p>
 <p>David's response is entirely understandable given his history: every significant relationship has ended in loss or abandonment. The vacation activated his attachment system, and his hostility represents both a protest against the anticipated loss and a preemptive defense against the pain of abandonment.</p>
 
-<p>The repair process involves several elements:</p>
-
-<ul>
-<li>Acknowledging the impact of the absence ("I understand that my being away was really hard for you")</li>
-<li>Validating his response without pathologizing ("It makes a lot of sense that you'd be angry and want to protect yourself")</li>
-<li>Differentiating this relationship from past ones ("I came back. I'm here. I'm not going away")</li>
-<li>Using the rupture as material for therapeutic exploration ("Can we talk about what the last few weeks have been like for you?")</li>
-</ul>
+<p>The repair process involves several elements: acknowledging the impact of the absence ("I understand that my being away was really hard for you"); validating his response without pathologizing ("It makes a lot of sense that you'd be angry and want to protect yourself"); differentiating this relationship from past ones ("I came back. I'm here. I'm not going away"); and using the rupture as material for therapeutic exploration ("Can we talk about what the last few weeks have been like for you?").</p>
 
 <p>This rupture-repair sequence can ultimately strengthen the alliance by demonstrating that anger does not destroy relationships and that the therapist can survive the client's distress without retaliating or abandoning. Each successfully navigated rupture builds new working models of relationship.</p>`
         },
@@ -731,35 +621,15 @@ const courseData = {
 
 <p>As we conclude this course, let us synthesize the core elements that enable therapeutic healing for clients with histories of attachment disruption and complex trauma:</p>
 
-<h3>The Reliable Relationship</h3>
+<p><strong>The Reliable Relationship:</strong> Perhaps the most fundamental healing element is the therapist's consistent, reliable presence over time. For clients whose early relationships were characterized by unpredictability, neglect, or harm, the therapist's ongoing availability—showing up session after session, surviving the client's anger and testing, remaining engaged despite defenses—provides the experiential foundation for new working models. This is not about perfect attunement but about good-enough consistency and repair when ruptures occur.</p>
 
-<p>Perhaps the most fundamental healing element is the therapist's consistent, reliable presence over time. For clients whose early relationships were characterized by unpredictability, neglect, or harm, the therapist's ongoing availability—showing up session after session, surviving the client's anger and testing, remaining engaged despite defenses—provides the experiential foundation for new working models.</p>
+<p><strong>Corrective Emotional Experiences:</strong> Healing occurs when the therapeutic relationship offers experiences that differ from what the client's history has led them to expect. Will expected rejection when he revealed his wounds; Sean remained present. David expected abandonment when his therapist returned from vacation; the therapist came back and addressed what happened. Each of these unexpected outcomes, accumulating over time, gradually shifts the implicit expectations that drive defensive behavior.</p>
 
-<p>This is not about perfect attunement but about good-enough consistency and repair when ruptures occur.</p>
+<p><strong>Making the Implicit Explicit:</strong> Much of what trauma survivors struggle with operates outside conscious awareness—automatic defensive reactions, implicit expectations of relationships, body-based stress responses. Therapy helps by making these implicit patterns explicit, bringing them into awareness where they can be examined, understood, and ultimately modified. Sean's bench monologue does this when he names Will's defensive patterns while communicating continued regard.</p>
 
-<h3>Corrective Emotional Experiences</h3>
+<p><strong>Respecting Pacing and Defenses:</strong> Effective trauma treatment respects the client's pace and honors the protective function of defenses. Pushing too fast toward emotional material can overwhelm regulatory capacity and re-traumatize. Moving too slowly may collude with avoidance. The skilled therapist works at the edge of the client's window of tolerance, gradually expanding capacity while maintaining safety.</p>
 
-<p>Healing occurs when the therapeutic relationship offers experiences that differ from what the client's history has led them to expect. Will expected rejection when he revealed his wounds; Sean remained present. David expected abandonment when his therapist returned from vacation; the therapist came back and addressed what happened.</p>
-
-<p>Each of these unexpected outcomes, accumulating over time, gradually shifts the implicit expectations that drive defensive behavior.</p>
-
-<h3>Making the Implicit Explicit</h3>
-
-<p>Much of what trauma survivors struggle with operates outside conscious awareness—automatic defensive reactions, implicit expectations of relationships, body-based stress responses. Therapy helps by making these implicit patterns explicit, bringing them into awareness where they can be examined, understood, and ultimately modified.</p>
-
-<p>Sean's bench monologue does this when he names Will's defensive patterns while communicating continued regard.</p>
-
-<h3>Respecting Pacing and Defenses</h3>
-
-<p>Effective trauma treatment respects the client's pace and honors the protective function of defenses. Pushing too fast toward emotional material can overwhelm regulatory capacity and re-traumatize. Moving too slowly may collude with avoidance.</p>
-
-<p>The skilled therapist works at the edge of the client's window of tolerance, gradually expanding capacity while maintaining safety.</p>
-
-<h3>The Therapist's Use of Self</h3>
-
-<p>The therapist's authentic, boundaried self-presence serves as both model and tool. When therapists can tolerate their own emotional responses, manage their countertransference, and remain genuinely present without hiding behind technique, they offer clients an experience of a regulated, authentic human being who can handle difficult emotions without falling apart or retaliating.</p>
-
-<p>This modeling is itself therapeutic.</p>
+<p><strong>The Therapist's Use of Self:</strong> The therapist's authentic, boundaried self-presence serves as both model and tool. When therapists can tolerate their own emotional responses, manage their countertransference, and remain genuinely present without hiding behind technique, they offer clients an experience of a regulated, authentic human being who can handle difficult emotions without falling apart or retaliating. This modeling is itself therapeutic.</p>
 
 <h2>Course Summary and Continuing Learning</h2>
 
