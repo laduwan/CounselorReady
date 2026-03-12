@@ -139,15 +139,28 @@ const TELEMENTAL_COURSE = {
 
 <p>These are not suggestions. Failure to complete the required hours before your renewal date can result in administrative penalties, license lapse, or formal disciplinary action by the Composite Board.</p>
 
-<p>The Composite Board conducts random audits of continuing education compliance. If selected, you must produce certificates of completion for every CE activity you are claiming. The audit is not a courtesy request — it is a regulatory proceeding, and incomplete or missing documentation can lead to consequences ranging from required remediation to license suspension. This is why documentation of CE activities is as important as completing them.</p>
+<p>The Composite Board conducts random audits of continuing education compliance. If selected, you must produce certificates of completion for every CE activity you are claiming.</p>
+
+<p>The audit is not a courtesy request — it is a regulatory proceeding, and incomplete or missing documentation can lead to consequences ranging from required remediation to license suspension. This is why documentation of CE activities is as important as completing them.</p>
 
 <p>The 35-hour requirement is divided between two categories of approved activities. Understanding this distinction is critical because not all CE activities carry equal weight with the Board, and many practitioners discover too late that their carefully curated CE portfolio does not meet the categorical requirements.</p>
 
 <h4>Category A Activities</h4>
-<p>Category A represents the highest level of approved continuing education. These activities are typically graduate-level coursework, professional conferences, and intensive training programs that directly relate to counseling theory, practice, or ethics. Category A activities must be delivered by qualified instructors and adhere to established learning objectives. NBCC-approved providers — including CounselorReady as ACEP #7760 — automatically qualify as Category A. Most state licensing boards and national professional organizations offer Category A programming.</p>
+<p>Category A represents the highest level of approved continuing education. These activities are typically graduate-level coursework, professional conferences, and intensive training programs that directly relate to counseling theory, practice, or ethics.</p>
+
+<p>Category A activities must be delivered by qualified instructors and adhere to established learning objectives. NBCC-approved providers — including CounselorReady as ACEP #7760 — automatically qualify as Category A. Most state licensing boards and national professional organizations offer Category A programming.</p>
 
 <h4>Category B Activities</h4>
-<p>Category B encompasses broader professional development opportunities that may not directly address core counseling competencies but enhance overall clinical effectiveness. Examples include certain online webinars, self-study programs, peer consultation documentation, and professional reading programs. Category B activities typically have a cap — meaning you cannot fulfill your entire 35-hour requirement with Category B alone. Check the current Board rules for the specific cap, as this has changed over time.</p>`
+<p>Category B encompasses broader professional development opportunities that may not directly address core counseling competencies but enhance overall clinical effectiveness. Examples include:</p>
+
+<ul>
+<li>Certain online webinars</li>
+<li>Self-study programs</li>
+<li>Peer consultation documentation</li>
+<li>Professional reading programs</li>
+</ul>
+
+<p>Category B activities typically have a cap — meaning you cannot fulfill your entire 35-hour requirement with Category B alone. Check the current Board rules for the specific cap, as this has changed over time.</p>`
         },
         {
           type: "text",
@@ -155,14 +168,48 @@ const TELEMENTAL_COURSE = {
 
 <p>Understanding the Georgia Composite Board's audit process removes fear and replaces it with preparedness. The Board conducts random audits during each renewal cycle. Selection is random — being audited does not mean you are suspected of anything. It is a routine compliance verification mechanism similar to an IRS audit. However, the consequences of failing an audit are serious enough that every practitioner should maintain audit-ready records at all times.</p>
 
-<p>When selected for audit, you will receive a notification — typically via mail or through the online licensure portal — specifying which renewal period is being audited and what documentation you must provide. You will have a defined window (usually 30 days) to submit your documentation. The Board is looking for certificates of completion for every CE hour you claimed on your renewal application. Each certificate should show: the title of the CE activity, the provider name and approval number, the number of CE hours awarded, the date of completion, and your name as the participant.</p>
+<p>When selected for audit, you will receive a notification — typically via mail or through the online licensure portal — specifying which renewal period is being audited and what documentation you must provide. You will have a defined window (usually 30 days) to submit your documentation.</p>
 
-<p>Common audit failures include: certificates that do not show the provider's approval number, courses completed outside the renewal period being counted toward the current period, ethics hours completed through asynchronous formats (which Georgia does not accept), and incomplete records where some certificates are missing entirely. The most frustrating audit failure is the practitioner who actually completed all required hours but cannot prove it because they did not retain certificates. Digital storage is your friend — maintain a cloud-based folder with scanned copies of every CE certificate, organized by renewal period.</p>
+<h3>What the Board Requires on Each Certificate</h3>
+<p>The Board is looking for certificates of completion for every CE hour you claimed on your renewal application. Each certificate should show:</p>
 
-<p>If your audit reveals deficiencies, the Board may require you to complete additional CE hours within a specified timeframe, place your license on probationary status pending remediation, assess administrative fees, or in severe cases of non-compliance or falsification, pursue formal disciplinary action including license suspension or revocation. The severity of the response depends on the nature and extent of the deficiency. A practitioner who is missing two certificates has a different problem than one who fabricated CE records.</p>
+<ul>
+<li>The title of the CE activity</li>
+<li>The provider name and approval number</li>
+<li>The number of CE hours awarded</li>
+<li>The date of completion</li>
+<li>Your name as the participant</li>
+</ul>
+
+<h3>Common Audit Failures</h3>
+<p>Common audit failures include:</p>
+
+<ul>
+<li>Certificates that do not show the provider's approval number</li>
+<li>Courses completed outside the renewal period being counted toward the current period</li>
+<li>Ethics hours completed through asynchronous formats (which Georgia does not accept)</li>
+<li>Incomplete records where some certificates are missing entirely</li>
+</ul>
+
+<p>The most frustrating audit failure is the practitioner who actually completed all required hours but cannot prove it because they did not retain certificates. Digital storage is your friend — maintain a cloud-based folder with scanned copies of every CE certificate, organized by renewal period.</p>
+
+<p>If your audit reveals deficiencies, the Board may:</p>
+
+<ul>
+<li>Require you to complete additional CE hours within a specified timeframe</li>
+<li>Place your license on probationary status pending remediation</li>
+<li>Assess administrative fees</li>
+<li>In severe cases of non-compliance or falsification, pursue formal disciplinary action including license suspension or revocation</li>
+</ul>
+
+<p>The severity of the response depends on the nature and extent of the deficiency. A practitioner who is missing two certificates has a different problem than one who fabricated CE records.</p>
 
 <h4>Practical Audit Preparation Strategies</h4>
-<p>Maintain a CE tracking spreadsheet that includes every activity, date, hours, provider, format (synchronous vs. asynchronous), and category (A or B). Update this spreadsheet within 48 hours of completing each activity while the information is fresh. Store certificates in a dedicated digital folder — Google Drive, Dropbox, or your EHR system's document storage — with consistent naming conventions (e.g., "2025-03-15_NBCC_Ethics-Telehealth_3hrs.pdf"). At the midpoint of each renewal cycle, review your tracking spreadsheet against your certificate folder to identify any gaps while there is still time to address them. Before submitting your renewal application, do a final reconciliation to ensure that every hour you are claiming is supported by a retrievable certificate.</p>
+<p>Maintain a CE tracking spreadsheet that includes every activity, date, hours, provider, format (synchronous vs. asynchronous), and category (A or B). Update this spreadsheet within 48 hours of completing each activity while the information is fresh.</p>
+
+<p>Store certificates in a dedicated digital folder — Google Drive, Dropbox, or your EHR system's document storage — with consistent naming conventions (e.g., "2025-03-15_NBCC_Ethics-Telehealth_3hrs.pdf"). At the midpoint of each renewal cycle, review your tracking spreadsheet against your certificate folder to identify any gaps while there is still time to address them.</p>
+
+<p>Before submitting your renewal application, do a final reconciliation to ensure that every hour you are claiming is supported by a retrievable certificate.</p>
 
 <p>Consider maintaining a professional development journal alongside your CE records. While not required by the Board, a brief reflection after each CE activity — what you learned, how you plan to implement it, what questions remain — serves two purposes: it demonstrates genuine engagement with the material if ever questioned, and it significantly improves your actual retention and application of CE content. Research on continuing education effectiveness consistently shows that practitioners who actively reflect on learning integrate more new knowledge into their practice than those who passively accumulate hours.</p>`
         },
