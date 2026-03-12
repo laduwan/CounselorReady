@@ -5,6 +5,7 @@
  */
 import express from 'express';
 import UserCredential from '../models/UserCredential.js';
+import Certificate from '../models/Certificate.js';
 import CredentialTemplate from '../models/CredentialTemplate.js';
 import InteractiveCourse from '../models/InteractiveCourse.js';
 import UserCourseProgress from '../models/UserCourseProgress.js';
@@ -25,6 +26,52 @@ router.get('/plan', async (req, res) => {
         plan: [],
         message: 'Add your credentials first to get a personalized CE plan.'
       });
+    }
+
+    // Auto-sync certificates into credentials before building the plan
+    // This pulls data from both credentials page AND certificates page
+    const certificates = await Certificate.find({
+      userId,
+      isRevoked: { $ne: true }
+    });
+
+    if (certificates.length > 0) {
+      for (const credential of credentials) {
+        let credentialUpdated = false;
+
+        for (const cert of certificates) {
+          const isExplicitlyLinked = cert.credentials && cert.credentials.some(credId =>
+            credId.toString() === credential._id.toString()
+          );
+          const isPlatformCert = cert.source === 'platform';
+
+          // Apply explicitly linked certs and platform-generated certs
+          if (!isExplicitlyLinked && !isPlatformCert) continue;
+
+          // Skip if already logged (no duplicates)
+          const alreadyLogged = credential.ceuLogs.some(log =>
+            log.certificateId && log.certificateId.toString() === cert._id.toString()
+          );
+          if (alreadyLogged) continue;
+
+          credential.ceuLogs.push({
+            date: cert.completionDate,
+            hours: cert.ceHours || 0,
+            category: cert.category || 'General',
+            source: isPlatformCert ? 'internal' : 'external',
+            certificateId: cert._id,
+            courseId: cert.courseId || null,
+            description: cert.title,
+            provider: cert.provider || 'CounselorReady'
+          });
+          credentialUpdated = true;
+        }
+
+        if (credentialUpdated) {
+          credential.recalculateProgress();
+          await credential.save();
+        }
+      }
     }
 
     // Get available courses
@@ -111,8 +158,11 @@ router.get('/plan', async (req, res) => {
     plan.sort((a, b) => urgencyOrder[a.urgency] - urgencyOrder[b.urgency]);
 
     // Overall summary
+    const totalCertificateHours = certificates.reduce((sum, c) => sum + (c.ceHours || 0), 0);
     const summary = {
       totalCredentials: credentials.length,
+      totalCertificates: certificates.length,
+      totalCertificateHours,
       totalHoursRemaining: plan.reduce((sum, p) => sum + p.totalHoursRemaining, 0),
       nearestDeadline: plan.length > 0 ? plan[0].expirationDate : null,
       credentialsByUrgency: {
@@ -135,10 +185,12 @@ router.get('/stats', async (req, res) => {
   try {
     const userId = req.user._id;
     const credentials = await UserCredential.find({ userId, status: { $ne: 'renewed' } });
+    const certificates = await Certificate.find({ userId, isRevoked: { $ne: true } });
 
     const now = new Date();
     const stats = {
       totalCredentials: credentials.length,
+      totalCertificates: certificates.length,
       totalHoursRemaining: 0,
       nearestDeadline: null,
       nearestCredentialName: null,
