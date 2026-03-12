@@ -311,10 +311,11 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
 .cr-nav-item.completed { color: var(--cr-text-secondary); }
 
 .cr-nav-dot {
-  width: 24px; height: 24px; border-radius: 50%;
+  min-width: 28px; height: 24px; border-radius: 12px;
+  padding: 0 4px; box-sizing: border-box;
   border: 2px solid var(--cr-border);
   display: flex; align-items: center; justify-content: center;
-  font-size: 11px; font-weight: 700; flex-shrink: 0;
+  font-size: 10px; font-weight: 700; flex-shrink: 0;
   transition: all var(--cr-transition);
   background: var(--cr-surface); color: var(--cr-text-muted);
 }
@@ -327,6 +328,24 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
 .cr-nav-item.completed .cr-nav-dot {
   background: var(--cr-green); border-color: var(--cr-green); color: #fff;
 }
+
+/* Sub-heading nav items (H2s within a section) */
+.cr-nav-sub {
+  display: flex; align-items: center; gap: 8px;
+  padding: 5px 18px 5px 52px;
+  cursor: pointer;
+  border: none; background: none; width: 100%; text-align: left;
+  font-size: 12px; color: var(--cr-text-muted);
+  transition: color var(--cr-transition), background var(--cr-transition);
+  min-height: 28px;
+  border-left: 3px solid transparent;
+}
+.cr-nav-sub:hover { color: var(--cr-navy); background: rgba(40,65,87,0.04); }
+.cr-nav-sub::before {
+  content: '—'; font-size: 10px; color: var(--cr-border);
+}
+.cr-nav-subs { overflow: hidden; max-height: 0; transition: max-height 0.3s ease; }
+.cr-nav-subs.open { max-height: 800px; }
 
 
 /* Assessment nav item */
@@ -2218,27 +2237,68 @@ function makeNavItem(i) {
   const isCompleted = completedSections.has(i);
   const isVisited = visitedSections.has(i);
   
+  const frag = document.createDocumentFragment();
+  
   const btn = document.createElement('button');
   btn.className = 'cr-nav-item' + (isActive ? ' active' : '') + (isCompleted ? ' completed' : '') + (isVisited && !isCompleted ? ' visited' : '');
-  btn.onclick = () => goToSection(i);
+  btn.setAttribute('data-action', 'goToSection');
+  btn.setAttribute('data-idx', i);
   
-  // Clean up title — strip module prefix, use sectionDivider title if different from module
+  // Clean up title — strip module prefix
   let title = section.title || 'Section ' + (i + 1);
-  // Remove "Module N: " prefix
   title = title.replace(/^Module\s+\d+\s*[:—–\-]\s*/i, '').trim();
-  // If title is empty after stripping, use a section number
   if (!title) title = 'Section ' + (i + 1);
   
-  // Compute display number (excluding overview sections)
-  const overviewCount = course.sections.filter((s, idx) => idx < i && s._isOverview).length;
-  const displayNum = i - overviewCount;
+  // Module-relative numbering: 1.1, 1.2, 2.1, etc.
+  let displayNum;
+  if (section._moduleIndex != null && section._subIndex != null) {
+    displayNum = (section._moduleIndex + 1) + '.' + (section._subIndex + 1);
+  } else {
+    const overviewCount = course.sections.filter((s, idx) => idx < i && s._isOverview).length;
+    displayNum = i - overviewCount;
+  }
   
   btn.innerHTML = `
     <span class="cr-nav-dot">${isCompleted ? '✓' : displayNum}</span>
     <span style="line-height:1.3">${esc(title)}</span>
   `;
   btn.setAttribute('aria-current', isActive ? 'step' : 'false');
-  return btn;
+  frag.appendChild(btn);
+  
+  // Extract H2 sub-headings from this section's content blocks
+  const h2s = [];
+  (section.contentBlocks || []).forEach(block => {
+    if (block.type === 'text' && block.content) {
+      const matches = block.content.match(/<h2[^>]*>([^<]+)<\/h2>/gi);
+      if (matches) {
+        matches.forEach(m => {
+          const text = m.replace(/<[^>]+>/g, '').trim();
+          if (text && text.length < 80) h2s.push(text);
+        });
+      }
+    }
+  });
+  
+  // Add sub-heading nav items (collapsed unless active)
+  if (h2s.length > 0) {
+    const subsContainer = document.createElement('div');
+    subsContainer.className = 'cr-nav-subs' + (isActive ? ' open' : '');
+    subsContainer.dataset.sectionIdx = i;
+    
+    h2s.forEach(h2Text => {
+      const sub = document.createElement('button');
+      sub.className = 'cr-nav-sub';
+      sub.textContent = h2Text;
+      sub.setAttribute('data-action', 'scrollToH2');
+      sub.setAttribute('data-section', i);
+      sub.setAttribute('data-heading', h2Text);
+      subsContainer.appendChild(sub);
+    });
+    
+    frag.appendChild(subsContainer);
+  }
+  
+  return frag;
 }
 
 function detectModuleGroups() {
@@ -2303,6 +2363,37 @@ function goToSection(i) {
   closeSidebar();
   window.scrollTo({ top: 0, behavior: 'smooth' });
   srAnnounce('Now viewing: ' + (course.sections[i]?.title || 'Section ' + (i + 1)));
+}
+
+function scrollToH2(sectionIdx, headingText) {
+  // Navigate to the section first if not already there
+  if (currentSectionIndex !== sectionIdx) {
+    if (currentView === 'assessment') currentView = 'section';
+    completedSections.add(currentSectionIndex);
+    visitedSections.add(sectionIdx);
+    currentSectionIndex = sectionIdx;
+    buildSectionNav();
+    renderCurrentSection();
+    updateProgress();
+    closeSidebar();
+  }
+  // Find and scroll to the H2 with matching text
+  setTimeout(() => {
+    const area = document.getElementById('crContentArea');
+    const h2s = area.querySelectorAll('h2');
+    for (const h2 of h2s) {
+      if (h2.textContent.trim() === headingText) {
+        h2.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        // Flash highlight
+        h2.style.transition = 'background 0.3s';
+        h2.style.background = 'rgba(212,168,85,0.2)';
+        h2.style.borderRadius = '4px';
+        h2.style.padding = '4px 8px';
+        setTimeout(() => { h2.style.background = ''; h2.style.padding = ''; }, 1500);
+        return;
+      }
+    }
+  }, 100);
 }
 
 function prevSection() {
@@ -2599,7 +2690,7 @@ function renderBlock(block, index) {
     case 'text': return renderText(wrap, block);
     case 'imageText': return renderImageText(wrap, block);
     case 'image': return renderImage(wrap, block);
-    case 'accordion': return renderAccordion(wrap, block);
+    case 'accordion': return renderAccordion(wrap, block, index);
     case 'multipleChoice': return renderMultipleChoice(wrap, block, index);
     case 'multiSelect': return renderMultiSelect(wrap, block, index);
     case 'matching': return renderMatching(wrap, block, index);
@@ -2667,7 +2758,7 @@ function renderImage(wrap, block) {
 }
 
 // ─── ACCORDION ───
-function renderAccordion(wrap, block) {
+function renderAccordion(wrap, block, index) {
   const items = block.accordionItems || [];
   let html = '<div class="cr-accordion">';
   items.forEach((item, i) => {
@@ -4069,12 +4160,51 @@ function parseMarkdownToCourse(text, filename) {
       }
     });
     
-    course.sections.push({
-      title: moduleTitle,
-      _moduleTitle: moduleTitle,
-      _moduleIndex: mi,
-      contentBlocks: blocks
+    // Split blocks into navigable sections on H2 boundaries
+    // Module divider merges into first content section
+    var curBlocks = [];
+    var curTitle = moduleTitle.replace(/^MODULE\s+\d+\s*[:—–\-]\s*/i, '');
+    var subIdx = 0;
+    
+    function pushSec() {
+      if (curBlocks.length === 0) return;
+      // Skip sections that are only a sectionDivider with no content
+      if (curBlocks.length === 1 && curBlocks[0].type === 'sectionDivider') return;
+      course.sections.push({
+        title: curTitle,
+        _moduleTitle: moduleTitle,
+        _moduleIndex: mi,
+        _subIndex: subIdx,
+        contentBlocks: curBlocks
+      });
+      curBlocks = [];
+      subIdx++;
+    }
+    
+    blocks.forEach(function(block) {
+      // sectionDivider always starts the buffer (merges into first section)
+      if (block.type === 'sectionDivider') {
+        curBlocks.push(block);
+        return;
+      }
+      
+      // Text block starting with H2 = new navigable section boundary
+      if (block.type === 'text' && block.content) {
+        var h2m = block.content.match(/^<h2>([^<]+)<\/h2>/);
+        if (h2m && curBlocks.length > 0) {
+          // Only flush if we have real content (not just a divider waiting)
+          var hasContent = curBlocks.some(function(b) { return b.type !== 'sectionDivider'; });
+          if (hasContent) {
+            pushSec();
+          }
+          curTitle = h2m[1].replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>');
+        }
+      }
+      
+      curBlocks.push(block);
     });
+    
+    pushSec(); // flush last section
   });
   
   // ── PHASE 4: Process FINAL ASSESSMENT zone ──
@@ -4867,6 +4997,7 @@ document.addEventListener('click', function(e) {
     case 'prevSection': prevSection(); break;
     case 'nextSection': nextSection(); break;
     case 'goToSection': goToSection(idx); break;
+    case 'scrollToH2': scrollToH2(parseInt(el.dataset.section), el.dataset.heading); break;
     case 'showAssessment': showAssessment(); break;
     
     // ─── Assessment ───
