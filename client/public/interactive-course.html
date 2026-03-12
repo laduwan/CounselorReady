@@ -2847,6 +2847,7 @@ function submitMC(id, correctIdx) {
   const submitBtn = el.querySelector('.cr-kc-submit');
   if (submitBtn) submitBtn.style.display = 'none';
   srAnnounce(selected === correctIdx ? 'Correct!' : 'Incorrect. The correct answer is shown.');
+  if (selected === correctIdx) updateObjectivesFromKC('mc-' + id);
 }
 
 // ─── MULTI SELECT ───
@@ -2902,6 +2903,11 @@ function submitMS(id) {
   if (explEl) explEl.classList.add('show');
   const submitBtn = el.querySelector('.cr-kc-submit');
   if (submitBtn) submitBtn.style.display = 'none';
+  
+  // Check if all selections were correct
+  const selectedIdxs = [...el.querySelectorAll('.cr-kc-option.selected')].map((o, _, arr) => parseInt(o.dataset.idx));
+  const allCorrect = correctIdxs.length === selectedIdxs.length && correctIdxs.every(ci => selectedIdxs.includes(ci));
+  if (allCorrect) updateObjectivesFromKC('ms-' + id);
 }
 
 // ─── MATCHING ───
@@ -2956,6 +2962,7 @@ function selectMatchDef(id, defIdx) {
     if (state.matched.size === state.total) {
       srAnnounce('All pairs matched correctly!');
       document.getElementById(id + '-status').innerHTML = '✓ All matched!';
+      updateObjectivesFromKC('match-' + id);
     }
   } else {
     // Wrong match — brief flash
@@ -3143,13 +3150,16 @@ function csTapCategory(e, id) {
 
 function csCheck(id) {
   const el = document.getElementById(id);
+  let allCorrect = true;
   el.querySelectorAll('.cr-cardsort-card').forEach(card => {
     const cat = card.closest('.cr-cardsort-category');
-    if (!cat) return;
+    if (!cat) { allCorrect = false; return; }
     const isCorrect = cat.dataset.category === card.dataset.correct;
     card.classList.add(isCorrect ? 'correct' : 'incorrect');
+    if (!isCorrect) allCorrect = false;
   });
   document.getElementById(id + '-explanation').classList.add('show');
+  if (allCorrect) updateObjectivesFromKC('cs-' + id);
 }
 
 // ─── SEQUENCING ───
@@ -3205,6 +3215,7 @@ function seqCheck(id) {
   
   document.getElementById(id + '-explanation').classList.add('show');
   srAnnounce(allCorrect ? 'All in correct order!' : 'Some items are out of order.');
+  if (allCorrect) updateObjectivesFromKC('seq-' + id);
 }
 
 // ─── TIMELINE ───
@@ -4709,6 +4720,39 @@ function toggleGlossary() {
 // FEATURE: LEARNING OBJECTIVES TRACKER
 // ═══════════════════════════════════════════════════════════════
 let checkedObjectives = new Set();
+let correctKCIds = new Set();
+
+function countTotalKCs() {
+  if (!course?.sections) return 0;
+  let count = 0;
+  course.sections.forEach(s => {
+    (s.contentBlocks || []).forEach(b => {
+      if (['multipleChoice','multiSelect','matching','cardSort','sequencing','knowledgeCheck'].includes(b.type)) {
+        count += b.type === 'knowledgeCheck' ? (b.questions?.length || 1) : 1;
+      }
+    });
+  });
+  return count;
+}
+
+function updateObjectivesFromKC(kcId) {
+  if (!course?.objectives?.length) return;
+  correctKCIds.add(kcId);
+  saveState('correctKCs', [...correctKCIds]);
+  
+  const totalKCs = countTotalKCs();
+  if (totalKCs === 0) return;
+  
+  const ratio = correctKCIds.size / totalKCs;
+  const objectivesToCheck = Math.min(course.objectives.length, Math.floor(ratio * course.objectives.length));
+  
+  // Check off objectives from the top proportionally
+  for (let i = 0; i < objectivesToCheck; i++) {
+    checkedObjectives.add(i);
+  }
+  saveState('objectives', [...checkedObjectives]);
+  renderObjectivesTracker();
+}
 
 function renderObjectivesTracker() {
   const tracker = document.getElementById('crObjectivesTracker');
@@ -4721,6 +4765,8 @@ function renderObjectivesTracker() {
   // Load from localStorage
   const saved = loadState('objectives');
   if (saved) checkedObjectives = new Set(saved);
+  const savedKCs = loadState('correctKCs');
+  if (savedKCs) correctKCIds = new Set(savedKCs);
   
   const pct = Math.round((checkedObjectives.size / course.objectives.length) * 100);
   
