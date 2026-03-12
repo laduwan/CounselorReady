@@ -250,9 +250,20 @@ const TELEMENTAL_COURSE = {
           type: "text",
           content: `<h2>Telehealth Competency: Georgia's Evolving Standard</h2>
 
-<p>Georgia regulations now specify minimum competency requirements for telehealth practice that go beyond simply knowing how to operate Zoom. The state recognizes that telehealth is a distinct modality of service delivery requiring specific knowledge and skills — not just the same therapy with a screen in between. These competency areas include technical proficiency with HIPAA-compliant platforms, understanding of privacy protections specific to digital communication, development of emergency procedures for remote clients, and awareness of cultural considerations unique to virtual service delivery.</p>
+<p>Georgia regulations now specify minimum competency requirements for telehealth practice that go beyond simply knowing how to operate Zoom. The state recognizes that telehealth is a distinct modality of service delivery requiring specific knowledge and skills — not just the same therapy with a screen in between.</p>
 
-<p>The telehealth competency standard represents the profession's most recent regulatory evolution. For decades, continuing education mandates focused primarily on credit hour accumulation. A counselor could technically fulfill their requirement by sitting through 35 hours of content with minimal engagement. Contemporary approaches — and Georgia's current regulatory posture — emphasize competency demonstration, ethical decision-making, and specialized skill development. Simply logging telehealth hours does not demonstrate competency; you must be able to articulate your emergency procedures, explain your platform's security features, and demonstrate that you understand the legal boundaries of interstate practice.</p>
+<p>These competency areas include:</p>
+
+<ul>
+<li>Technical proficiency with HIPAA-compliant platforms</li>
+<li>Understanding of privacy protections specific to digital communication</li>
+<li>Development of emergency procedures for remote clients</li>
+<li>Awareness of cultural considerations unique to virtual service delivery</li>
+</ul>
+
+<p>The telehealth competency standard represents the profession's most recent regulatory evolution. For decades, continuing education mandates focused primarily on credit hour accumulation. A counselor could technically fulfill their requirement by sitting through 35 hours of content with minimal engagement.</p>
+
+<p>Contemporary approaches — and Georgia's current regulatory posture — emphasize competency demonstration, ethical decision-making, and specialized skill development. Simply logging telehealth hours does not demonstrate competency; you must be able to articulate your emergency procedures, explain your platform's security features, and demonstrate that you understand the legal boundaries of interstate practice.</p>
 
 <p>The Georgia Composite Board's position aligns with national trends driven by the COVID-19 pandemic, which forced rapid telehealth adoption across the profession. Before 2020, telehealth was a niche modality. By 2021, the majority of mental health services were delivered virtually. This rapid shift exposed massive competency gaps — practitioners who had never conducted a virtual session were suddenly doing all their work online, often without adequate training in the unique clinical, ethical, and technical challenges involved.</p>
 
@@ -270,9 +281,18 @@ const TELEMENTAL_COURSE = {
 <p>The fifth domain is <strong>emergency and crisis competency in remote settings</strong> — the ability to manage crisis situations when you are physically separated from your client. This includes safety planning, lethal means counseling through video, coordinating emergency services across jurisdictions, managing technology failures during crisis, and maintaining therapeutic connection during high-intensity clinical moments through a digital medium.</p>
 
 <h4>Self-Assessment: Where Do You Stand?</h4>
-<p>Honest self-assessment is the starting point for meaningful competency development. Rate yourself in each domain not based on your confidence, but based on specific behavioral indicators. For clinical competency: Have you received specific training in adapting interventions for video delivery? Can you describe three specific ways your clinical approach differs in telehealth versus in-person? Have you practiced MSE adaptations for video assessment? For technical competency: Can you troubleshoot a frozen video without ending the session? Do you know how to use your platform's screen sharing, whiteboard, and chat functions fluently? Can you explain your platform's encryption to a client in plain language?</p>
+<p>Honest self-assessment is the starting point for meaningful competency development. Rate yourself in each domain not based on your confidence, but based on specific behavioral indicators.</p>
 
-<p>For regulatory competency: Can you name the specific Georgia Composite Board rules that apply to your telehealth practice? Do you know your platform's BAA terms? Can you articulate the Counseling Compact's requirements? For ethical competency: Have you updated your informed consent for telehealth-specific elements? Do you have a documented policy for digital boundaries? Have you considered equity and access for your specific client population? For crisis competency: Do you verify location at every session? Do you have jurisdiction-specific emergency numbers for each client? Have you practiced your technology failure protocol?</p>
+<h3>Self-Assessment Questions by Domain</h3>
+<p><strong>Clinical competency:</strong> Have you received specific training in adapting interventions for video delivery? Can you describe three specific ways your clinical approach differs in telehealth versus in-person? Have you practiced MSE adaptations for video assessment?</p>
+
+<p><strong>Technical competency:</strong> Can you troubleshoot a frozen video without ending the session? Do you know how to use your platform's screen sharing, whiteboard, and chat functions fluently? Can you explain your platform's encryption to a client in plain language?</p>
+
+<p><strong>Regulatory competency:</strong> Can you name the specific Georgia Composite Board rules that apply to your telehealth practice? Do you know your platform's BAA terms? Can you articulate the Counseling Compact's requirements?</p>
+
+<p><strong>Ethical competency:</strong> Have you updated your informed consent for telehealth-specific elements? Do you have a documented policy for digital boundaries? Have you considered equity and access for your specific client population?</p>
+
+<p><strong>Crisis competency:</strong> Do you verify location at every session? Do you have jurisdiction-specific emergency numbers for each client? Have you practiced your technology failure protocol?</p>
 
 <p>Where you identify gaps, create a specific plan to address them. 'I need to improve my crisis competency' is not a plan. 'I will complete a telehealth crisis intervention training by March 15, update my safety planning template to include telehealth-specific elements by March 20, and verify emergency contact information for all current telehealth clients by March 25' is a plan. Specificity drives action; vague intentions drive procrastination.</p>`
         },
