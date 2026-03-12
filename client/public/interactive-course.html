@@ -1976,6 +1976,11 @@ let ttsUtterance = null;
 function loadCourse(data) {
   if (!data) { showError('No course data provided'); return; }
   
+  console.log('=== CReady Debug ===');
+  console.log('has modules:', !!data.modules, 'has sections:', !!data.sections);
+  console.log('modules count:', data.modules?.length, 'sections count:', data.sections?.length);
+  if (data.sections?.[0]) console.log('first section title:', data.sections[0].title, 'blocks:', data.sections[0].contentBlocks?.length);
+  
   // ── Normalize: passThreshold → passingScore ──
   if (data.assessment) {
     if (data.assessment.passThreshold && !data.assessment.passingScore) {
@@ -2117,6 +2122,10 @@ function loadCourse(data) {
     showError('Course has no sections or modules');
     return;
   }
+  
+  console.log('=== After normalization ===');
+  console.log('sections:', data.sections.length);
+  data.sections.forEach((s, i) => console.log('[' + i + ']', s.title, '_moduleTitle:', s._moduleTitle, 'blocks:', s.contentBlocks?.length));
   
   // ── Extract assessment from inline quiz blocks if top-level is empty ──
   if (!data.assessment?.questions?.length) {
