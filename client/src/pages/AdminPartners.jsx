@@ -23,9 +23,13 @@ export default function AdminPartners() {
 
   const [form, setForm] = useState({
     name: '', slug: '', active: true, defaultPlan: 'free',
-    branding: { logoUrl: '', primaryColor: '#6B1D34', companyName: '', tagline: '' },
+    branding: { logoUrl: '', primaryColor: '#6B1D34', companyName: '', tagline: '', customDomain: '' },
     contact: { email: '', website: '', phone: '' }
   });
+
+  const [viewingUsers, setViewingUsers] = useState(null); // partner id
+  const [partnerUsers, setPartnerUsers] = useState([]);
+  const [usersLoading, setUsersLoading] = useState(false);
 
   useEffect(() => { fetchPartners(); }, []);
 
@@ -43,7 +47,7 @@ export default function AdminPartners() {
   function resetForm() {
     setForm({
       name: '', slug: '', active: true, defaultPlan: 'free',
-      branding: { logoUrl: '', primaryColor: '#6B1D34', companyName: '', tagline: '' },
+      branding: { logoUrl: '', primaryColor: '#6B1D34', companyName: '', tagline: '', customDomain: '' },
       contact: { email: '', website: '', phone: '' }
     });
     setEditing(null);
@@ -57,7 +61,7 @@ export default function AdminPartners() {
       slug: partner.slug,
       active: partner.active,
       defaultPlan: partner.defaultPlan || 'free',
-      branding: { logoUrl: '', primaryColor: '#6B1D34', companyName: '', tagline: '', ...partner.branding },
+      branding: { logoUrl: '', primaryColor: '#6B1D34', companyName: '', tagline: '', customDomain: '', ...partner.branding },
       contact: { email: '', website: '', phone: '', ...partner.contact }
     });
     setEditing(partner._id);
@@ -101,6 +105,16 @@ export default function AdminPartners() {
       await api.put(`/partners/${partner._id}`, { active: !partner.active });
       fetchPartners();
     } catch { /* silent */ }
+  }
+
+  async function fetchPartnerUsers(partnerId) {
+    setViewingUsers(partnerId);
+    setUsersLoading(true);
+    try {
+      const { data } = await api.get(`/partners/${partnerId}/users`);
+      setPartnerUsers(data.users || []);
+    } catch { setPartnerUsers([]); }
+    finally { setUsersLoading(false); }
   }
 
   function copyLink(slug) {
@@ -178,6 +192,13 @@ export default function AdminPartners() {
                     <input value={form.branding.logoUrl} onChange={e => setForm({ ...form, branding: { ...form.branding, logoUrl: e.target.value } })}
                       placeholder="https://..."
                       className="w-full px-3 py-2 border border-stone-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-burgundy-300" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-stone-600 mb-1">Custom Domain</label>
+                    <input value={form.branding.customDomain} onChange={e => setForm({ ...form, branding: { ...form.branding, customDomain: e.target.value.toLowerCase().replace(/\s/g, '') } })}
+                      placeholder="ce.theirsite.com"
+                      className="w-full px-3 py-2 border border-stone-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-burgundy-300" />
+                    <p className="text-xs text-stone-400 mt-1">Partner points CNAME here for custom domain access</p>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
@@ -285,11 +306,16 @@ export default function AdminPartners() {
                   <span className="font-mono">/{p.slug}</span>
                   <span className="flex items-center gap-1"><Users className="w-3 h-3" /> {p.userCount || 0} users</span>
                   <span className="capitalize">{p.defaultPlan} plan</span>
+                  {p.branding?.customDomain && <span className="font-mono text-stone-400">{p.branding.customDomain}</span>}
                 </div>
               </div>
 
               {/* Actions */}
               <div className="flex items-center gap-1 flex-shrink-0">
+                <button onClick={() => fetchPartnerUsers(p._id)} title="View users"
+                  className="p-2 rounded-lg hover:bg-stone-100 transition-colors text-stone-500">
+                  <Users className="w-4 h-4" />
+                </button>
                 <button onClick={() => copyLink(p.slug)} title="Copy partner link"
                   className="p-2 rounded-lg hover:bg-stone-100 transition-colors text-stone-500">
                   {copiedSlug === p.slug ? <Check className="w-4 h-4 text-green-600" /> : <Copy className="w-4 h-4" />}
@@ -310,6 +336,56 @@ export default function AdminPartners() {
             </div>
           ))}
         </div>
+      )}
+      {/* Users Modal */}
+      {viewingUsers && (
+        <>
+          <div className="fixed inset-0 bg-black/30 z-40" onClick={() => setViewingUsers(null)} />
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div className="bg-white rounded-xl shadow-xl w-full max-w-lg max-h-[80vh] overflow-hidden flex flex-col">
+              <div className="flex items-center justify-between p-4 border-b border-stone-100">
+                <h2 className="text-lg font-bold" style={{ color: BURGUNDY }}>
+                  Partner Users ({partnerUsers.length})
+                </h2>
+                <button onClick={() => setViewingUsers(null)} className="p-1 hover:bg-stone-100 rounded">
+                  <X className="w-5 h-5 text-stone-500" />
+                </button>
+              </div>
+              <div className="flex-1 overflow-y-auto p-4">
+                {usersLoading ? (
+                  <div className="text-center py-8 text-stone-400">Loading users...</div>
+                ) : partnerUsers.length === 0 ? (
+                  <div className="text-center py-8 text-stone-400">No users yet</div>
+                ) : (
+                  <div className="space-y-2">
+                    {partnerUsers.map(u => (
+                      <div key={u._id} className="flex items-center gap-3 p-3 rounded-lg bg-stone-50">
+                        <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold"
+                          style={{ background: BURGUNDY }}>
+                          {(u.profile?.firstName || u.email || '?').charAt(0).toUpperCase()}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-stone-900 truncate">
+                            {u.profile?.firstName} {u.profile?.lastName}
+                          </p>
+                          <p className="text-xs text-stone-500 truncate">{u.email}</p>
+                        </div>
+                        <div className="text-right flex-shrink-0">
+                          <p className="text-xs font-medium capitalize" style={{ color: BURGUNDY }}>
+                            {u.subscription?.plan || 'free'}
+                          </p>
+                          <p className="text-xs text-stone-400">
+                            {new Date(u.createdAt).toLocaleDateString()}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </>
       )}
     </div>
   );

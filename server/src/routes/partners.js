@@ -4,6 +4,7 @@
  * Unauthorized copying or distribution is strictly prohibited.
  */
 import express from 'express';
+import mongoose from 'mongoose';
 import Partner from '../models/Partner.js';
 import User from '../models/User.js';
 import { protect, requireAdmin } from '../middleware/auth.js';
@@ -125,6 +126,66 @@ router.put('/:id', protect, requireAdmin, async (req, res) => {
 
     await partner.save();
     res.json({ partner });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ── Admin: list users for a partner ──
+router.get('/:id/users', protect, requireAdmin, async (req, res) => {
+  try {
+    const users = await User.find({ partnerId: req.params.id })
+      .select('email profile.firstName profile.lastName subscription.plan subscription.status createdAt')
+      .sort({ createdAt: -1 })
+      .lean();
+
+    res.json({ users, total: users.length });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ── Admin: partner-scoped analytics ──
+router.get('/:id/stats', protect, requireAdmin, async (req, res) => {
+  try {
+    const partnerId = new mongoose.Types.ObjectId(req.params.id);
+    const db = mongoose.connection.db;
+
+    // Get all user IDs for this partner
+    const partnerUsers = await User.find({ partnerId }).select('_id').lean();
+    const userIds = partnerUsers.map(u => u._id);
+
+    const totalUsers = userIds.length;
+
+    // Active users (logged in within last 30 days)
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    const activeUsers = await User.countDocuments({
+      partnerId,
+      lastLoginAt: { $gte: thirtyDaysAgo }
+    });
+
+    // Course completions from both progress collections
+    let coursesCompleted = 0;
+    let ceHoursEarned = 0;
+
+    if (userIds.length > 0) {
+      const [regularCompletions, interactiveCompletions] = await Promise.all([
+        db.collection('usercourseprogresses').aggregate([
+          { $match: { userId: { $in: userIds }, completed: true } },
+          { $group: { _id: null, count: { $sum: 1 }, hours: { $sum: { $ifNull: ['$ceHours', 0] } } } }
+        ]).toArray(),
+        db.collection('interactivecourseprogresses').aggregate([
+          { $match: { userId: { $in: userIds }, completed: true } },
+          { $group: { _id: null, count: { $sum: 1 }, hours: { $sum: { $ifNull: ['$ceHours', 0] } } } }
+        ]).toArray()
+      ]);
+
+      coursesCompleted = (regularCompletions[0]?.count || 0) + (interactiveCompletions[0]?.count || 0);
+      ceHoursEarned = (regularCompletions[0]?.hours || 0) + (interactiveCompletions[0]?.hours || 0);
+    }
+
+    res.json({ totalUsers, activeUsers, coursesCompleted, ceHoursEarned });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

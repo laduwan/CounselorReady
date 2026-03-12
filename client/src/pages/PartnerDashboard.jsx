@@ -22,17 +22,31 @@ export default function PartnerDashboard() {
   useEffect(() => {
     async function load() {
       try {
+        let partnerData = null;
+
         // Get partner info from localStorage slug or user association
         const slug = localStorage.getItem('cr_partner_slug');
         if (slug) {
           const { data } = await api.get(`/partners/slug/${slug}`);
-          setPartner(data.partner);
+          partnerData = data.partner;
         }
 
         // Fetch partner stats if admin
         if (user?.role === 'admin' && user?.partnerId) {
           const { data } = await api.get(`/partners/${user.partnerId}`);
-          setPartner(data.partner);
+          partnerData = data.partner;
+        }
+
+        if (partnerData) {
+          setPartner(partnerData);
+
+          // Fetch analytics if we have an id and user is admin
+          if (partnerData._id && user?.role === 'admin') {
+            try {
+              const { data: statsData } = await api.get(`/partners/${partnerData._id}/stats`);
+              setStats(statsData);
+            } catch { /* stats fetch is non-critical */ }
+          }
         }
       } catch { /* silent */ }
       setLoading(false);
@@ -88,14 +102,14 @@ export default function PartnerDashboard() {
       </div>
 
       {/* Quick Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <div className="card p-5">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ background: BURGUNDY_LIGHT }}>
               <Users className="w-5 h-5" style={{ color: BURGUNDY }} />
             </div>
             <div>
-              <p className="text-2xl font-bold text-stone-900">{partner.userCount || 0}</p>
+              <p className="text-2xl font-bold text-stone-900">{stats?.totalUsers ?? partner.userCount ?? 0}</p>
               <p className="text-xs text-stone-500">Total Users</p>
             </div>
           </div>
@@ -106,8 +120,19 @@ export default function PartnerDashboard() {
               <TrendingUp className="w-5 h-5" style={{ color: HUNTER }} />
             </div>
             <div>
-              <p className="text-2xl font-bold text-stone-900">{partner.active ? 'Active' : 'Paused'}</p>
-              <p className="text-xs text-stone-500">Partner Status</p>
+              <p className="text-2xl font-bold text-stone-900">{stats?.activeUsers ?? (partner.active ? 'Active' : 'Paused')}</p>
+              <p className="text-xs text-stone-500">{stats ? 'Active (30d)' : 'Partner Status'}</p>
+            </div>
+          </div>
+        </div>
+        <div className="card p-5">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ background: '#eff6ff' }}>
+              <BookOpen className="w-5 h-5" style={{ color: '#2563eb' }} />
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-stone-900">{stats?.coursesCompleted ?? '--'}</p>
+              <p className="text-xs text-stone-500">Courses Completed</p>
             </div>
           </div>
         </div>
@@ -117,8 +142,8 @@ export default function PartnerDashboard() {
               <Award className="w-5 h-5" style={{ color: '#d97706' }} />
             </div>
             <div>
-              <p className="text-2xl font-bold text-stone-900 capitalize">{partner.defaultPlan || 'Free'}</p>
-              <p className="text-xs text-stone-500">Default Plan</p>
+              <p className="text-2xl font-bold text-stone-900">{stats?.ceHoursEarned ?? '--'}</p>
+              <p className="text-xs text-stone-500">CE Hours Earned</p>
             </div>
           </div>
         </div>
