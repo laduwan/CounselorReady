@@ -6,7 +6,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
-import { Plus, Edit2, Trash2, Users, ExternalLink, Eye, EyeOff, Copy, Check, X } from 'lucide-react';
+import { Plus, Edit2, Trash2, Users, ExternalLink, Eye, EyeOff, Copy, Check, X, BookOpen, UserPlus } from 'lucide-react';
 
 const BURGUNDY = '#6B1D34';
 const BURGUNDY_LIGHT = '#fdf5f6';
@@ -30,6 +30,14 @@ export default function AdminPartners() {
   const [viewingUsers, setViewingUsers] = useState(null); // partner id
   const [partnerUsers, setPartnerUsers] = useState([]);
   const [usersLoading, setUsersLoading] = useState(false);
+
+  const [viewingCourses, setViewingCourses] = useState(null);
+  const [partnerCourses, setPartnerCourses] = useState([]);
+  const [coursesLoading, setCoursesLoading] = useState(false);
+
+  const [showSetAdmin, setShowSetAdmin] = useState(null);
+  const [adminEmail, setAdminEmail] = useState('');
+  const [adminMsg, setAdminMsg] = useState('');
 
   useEffect(() => { fetchPartners(); }, []);
 
@@ -122,6 +130,28 @@ export default function AdminPartners() {
     navigator.clipboard.writeText(url);
     setCopiedSlug(slug);
     setTimeout(() => setCopiedSlug(null), 2000);
+  }
+
+  async function fetchPartnerCourses(partnerId) {
+    setViewingCourses(partnerId);
+    setCoursesLoading(true);
+    try {
+      const { data } = await api.get(`/partners/${partnerId}/courses`);
+      setPartnerCourses(data.courses || []);
+    } catch { setPartnerCourses([]); }
+    finally { setCoursesLoading(false); }
+  }
+
+  async function handleSetAdmin(partnerId) {
+    if (!adminEmail) return;
+    setAdminMsg('');
+    try {
+      const { data } = await api.post(`/partners/${partnerId}/set-admin`, { email: adminEmail });
+      setAdminMsg(data.message);
+      setAdminEmail('');
+    } catch (err) {
+      setAdminMsg(err.response?.data?.error || 'Failed to set admin');
+    }
   }
 
   if (user?.role !== 'admin') {
@@ -316,6 +346,14 @@ export default function AdminPartners() {
                   className="p-2 rounded-lg hover:bg-stone-100 transition-colors text-stone-500">
                   <Users className="w-4 h-4" />
                 </button>
+                <button onClick={() => fetchPartnerCourses(p._id)} title="View courses"
+                  className="p-2 rounded-lg hover:bg-stone-100 transition-colors text-stone-500">
+                  <BookOpen className="w-4 h-4" />
+                </button>
+                <button onClick={() => { setShowSetAdmin(p._id); setAdminEmail(''); setAdminMsg(''); }} title="Set partner admin"
+                  className="p-2 rounded-lg hover:bg-stone-100 transition-colors text-stone-500">
+                  <UserPlus className="w-4 h-4" />
+                </button>
                 <button onClick={() => copyLink(p.slug)} title="Copy partner link"
                   className="p-2 rounded-lg hover:bg-stone-100 transition-colors text-stone-500">
                   {copiedSlug === p.slug ? <Check className="w-4 h-4 text-green-600" /> : <Copy className="w-4 h-4" />}
@@ -337,6 +375,87 @@ export default function AdminPartners() {
           ))}
         </div>
       )}
+      {/* Courses Modal */}
+      {viewingCourses && (
+        <>
+          <div className="fixed inset-0 bg-black/30 z-40" onClick={() => setViewingCourses(null)} />
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div className="bg-white rounded-xl shadow-xl w-full max-w-lg max-h-[80vh] overflow-hidden flex flex-col">
+              <div className="flex items-center justify-between p-4 border-b border-stone-100">
+                <h2 className="text-lg font-bold" style={{ color: BURGUNDY }}>
+                  Partner Courses ({partnerCourses.length})
+                </h2>
+                <button onClick={() => setViewingCourses(null)} className="p-1 hover:bg-stone-100 rounded">
+                  <X className="w-5 h-5 text-stone-500" />
+                </button>
+              </div>
+              <div className="flex-1 overflow-y-auto p-4">
+                {coursesLoading ? (
+                  <div className="text-center py-8 text-stone-400">Loading courses...</div>
+                ) : partnerCourses.length === 0 ? (
+                  <div className="text-center py-8 text-stone-400">No courses yet</div>
+                ) : (
+                  <div className="space-y-2">
+                    {partnerCourses.map(c => (
+                      <div key={c._id} className="flex items-center gap-3 p-3 rounded-lg bg-stone-50">
+                        <BookOpen className="w-5 h-5 flex-shrink-0" style={{ color: BURGUNDY }} />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-stone-900 truncate">{c.title}</p>
+                          <div className="flex items-center gap-3 text-xs text-stone-500 mt-0.5">
+                            <span>{c.ceHours} CE hrs</span>
+                            <span className={c.status === 'published' ? 'text-green-600' : 'text-amber-600'}>{c.status}</span>
+                          </div>
+                        </div>
+                        <div className="text-right flex-shrink-0 text-xs text-stone-500">
+                          <p>{c.enrollments || 0} enrolled</p>
+                          <p>{c.completions || 0} completed</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Set Admin Modal */}
+      {showSetAdmin && (
+        <>
+          <div className="fixed inset-0 bg-black/30 z-40" onClick={() => setShowSetAdmin(null)} />
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div className="bg-white rounded-xl shadow-xl w-full max-w-sm p-6 space-y-4">
+              <h2 className="text-lg font-bold" style={{ color: BURGUNDY }}>Set Partner Admin</h2>
+              <p className="text-sm text-stone-500">Enter the email of an existing user to promote them to partner admin.</p>
+              <input
+                type="email"
+                value={adminEmail}
+                onChange={e => setAdminEmail(e.target.value)}
+                className="w-full px-3 py-2 border border-stone-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-burgundy-300"
+                placeholder="user@example.com"
+              />
+              {adminMsg && (
+                <p className={`text-sm ${adminMsg.includes('Failed') || adminMsg.includes('not found') ? 'text-red-600' : 'text-green-600'}`}>
+                  {adminMsg}
+                </p>
+              )}
+              <div className="flex justify-end gap-3">
+                <button onClick={() => setShowSetAdmin(null)}
+                  className="px-4 py-2 text-sm text-stone-600 hover:bg-stone-100 rounded-lg transition-colors">
+                  Close
+                </button>
+                <button onClick={() => handleSetAdmin(showSetAdmin)}
+                  className="px-4 py-2 text-sm text-white rounded-lg font-medium transition-colors"
+                  style={{ background: BURGUNDY }}>
+                  Promote
+                </button>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+
       {/* Users Modal */}
       {viewingUsers && (
         <>
