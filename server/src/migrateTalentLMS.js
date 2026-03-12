@@ -431,63 +431,35 @@ async function migrate() {
     { projection: { slug: 1, courseCode: 1, title: 1, _id: 1 } }
   ).toArray();
 
-  // Build multiple lookup maps — courses may match by courseCode, slug, or title
   const courseIdByCode = new Map();
   const courseIdBySlug = new Map();
-  const courseIdByTitleLower = new Map();
   for (const c of crCourses) {
     if (c.courseCode) courseIdByCode.set(c.courseCode, c._id);
     if (c.slug) courseIdBySlug.set(c.slug, c._id);
-    if (c.title) courseIdByTitleLower.set(c.title.toLowerCase(), c._id);
+  }
+  // Map CR codes to known DB slugs
+  const slugMap = {
+    'CR-TMH601': 'mastering-telemental-health-an-essential-guide-to-a-compliant-virtual-healthcare-practice-in-georgia-mkkycoyo',
+    'CR-ETH301': 'ethics-and-professional-boundaries-in-counseling-practice',
+    'CR-308': 'neurobiology-of-trauma',
+  };
+  for (const [code, slug] of Object.entries(slugMap)) {
+    if (courseIdBySlug.has(slug)) courseIdByCode.set(code, courseIdBySlug.get(slug));
   }
   log(`Found ${crCourses.length} CR courses in interactivecourses`, 'info');
-  // Debug: show slugs containing key terms
-  const relevantSlugs = crCourses
-    .filter(c => /ethic|teleme|trauma|neuro|cultur/i.test(c.slug || c.title || ''))
-    .map(c => `${c.slug} → "${(c.title || '').slice(0, 50)}"`)
-    .join('\n    ');
-  if (relevantSlugs) log(`Relevant slugs in DB:\n    ${relevantSlugs}`, 'info');
-
-  // Exact slug mappings from DB query
-  const SLUG_HINTS = {
-    'CR-TMH601': ['mastering-telemental-health-an-essential-guide-to-a-compliant-virtual-healthcare-practice-in-georgia-mkkycoyo'],
-    'CR-ETH301': ['ethics-and-professional-boundaries-in-counseling-practice'],
-    'CR-308':    ['neurobiology-of-trauma'],
-    'CR-602':    [],  // Does not exist in DB yet
-  };
-
-  function findCourseId(crCode) {
-    // 1. Try courseCode field
-    if (courseIdByCode.has(crCode)) return courseIdByCode.get(crCode);
-    // 2. Try exact slug match
-    const hints = SLUG_HINTS[crCode] || [];
-    for (const hint of hints) {
-      if (courseIdBySlug.has(hint)) return courseIdBySlug.get(hint);
-    }
-    // 3. Try title substring from COURSE_MAP
-    const mapping = Object.values(COURSE_MAP).find(m => m.crCode === crCode);
-    if (mapping) {
-      const titleLower = mapping.crTitle.toLowerCase();
-      for (const [t, id] of courseIdByTitleLower) {
-        if (t.includes(titleLower) || titleLower.includes(t)) return id;
-      }
-    }
-    return null;
-  }
 
   const courseResults = { mapped: [], missing: [] };
   for (const [tlmsName, mapping] of Object.entries(COURSE_MAP)) {
-    const crCourseId = findCourseId(mapping.crCode);
+    const crCourseId = courseIdByCode.get(mapping.crCode);
     if (crCourseId) {
       courseResults.mapped.push({ tlms: tlmsName.slice(0, 50), cr: mapping.crCode, crId: crCourseId });
-      courseIdByCode.set(mapping.crCode, crCourseId); // cache for Phase 3
     } else {
       courseResults.missing.push({ tlms: tlmsName.slice(0, 50), cr: mapping.crCode });
     }
   }
 
   for (const m of courseResults.mapped) {
-    log(`${m.cr} ← ${m.tlms}... (${m.crId})`, 'success');
+    log(`${m.cr} ← ${m.tlms}...`, 'success');
   }
   for (const m of courseResults.missing) {
     log(`${m.cr} NOT FOUND in DB — completions will still log with title/hours (no courseId link)`, 'warn');
