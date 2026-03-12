@@ -27,7 +27,9 @@ const partnerSchema = new mongoose.Schema({
     primaryColor: { type: String, default: '#6B1D34' },
     companyName: { type: String },
     tagline: { type: String },
-    customDomain: { type: String, lowercase: true, trim: true }
+    customDomain: { type: String, lowercase: true, trim: true },
+    colorScheme: { type: String, default: 'burgundy' },
+    accentColor: { type: String, default: '#D4A855' }
   },
 
   // Contact

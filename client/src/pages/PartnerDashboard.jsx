@@ -173,6 +173,43 @@ export default function PartnerDashboard() {
         </div>
       </div>
 
+      {/* Course Performance */}
+      {stats?.courseBreakdown?.length > 0 && (
+        <div className="card p-5">
+          <h2 className="text-sm font-semibold text-stone-900 mb-3">Course Performance</h2>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-stone-200">
+                  <th className="text-left py-2 px-3 text-xs font-medium text-stone-500">Course</th>
+                  <th className="text-right py-2 px-3 text-xs font-medium text-stone-500">Enrollments</th>
+                  <th className="text-right py-2 px-3 text-xs font-medium text-stone-500">Completions</th>
+                  <th className="text-right py-2 px-3 text-xs font-medium text-stone-500">Rate</th>
+                </tr>
+              </thead>
+              <tbody>
+                {stats.courseBreakdown.map(course => (
+                  <tr key={course.courseId} className="border-b border-stone-100 last:border-0">
+                    <td className="py-2.5 px-3 text-stone-900 font-medium">{course.title}</td>
+                    <td className="py-2.5 px-3 text-right text-stone-600">{course.enrollments}</td>
+                    <td className="py-2.5 px-3 text-right text-stone-600">{course.completions}</td>
+                    <td className="py-2.5 px-3 text-right">
+                      <span className="inline-block px-2 py-0.5 rounded-full text-xs font-medium"
+                        style={{
+                          background: course.completionRate >= 70 ? '#f0fdf4' : course.completionRate >= 40 ? '#fef3c7' : '#fef2f2',
+                          color: course.completionRate >= 70 ? HUNTER : course.completionRate >= 40 ? '#d97706' : '#dc2626'
+                        }}>
+                        {course.completionRate}%
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
       {/* Partner Details */}
       <div className="card p-5">
         <h2 className="text-sm font-semibold text-stone-900 mb-3">Partner Details</h2>

@@ -7,8 +7,9 @@ import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
-import { Menu, X, ChevronDown, LogOut, Settings, ShieldCheck, Trophy, Users, Star, ClipboardList, MoreHorizontal, Bell, Lock } from 'lucide-react';
+import { Menu, X, ChevronDown, LogOut, Settings, ShieldCheck, Trophy, Users, Star, ClipboardList, MoreHorizontal, Bell, Lock, Palette, BookOpen } from 'lucide-react';
 import PoweredByBadge from './PoweredByBadge';
+import CRPromoCard from './CRPromoCard';
 
 // React routes use Link; external static HTML pages use <a>
 const navLinks = [
@@ -108,6 +109,7 @@ export default function Layout({ children }) {
   const lastName  = user?.profile?.lastName  || user?.lastName  || '';
   const initials  = `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase() || 'U';
   const isAdmin   = user?.role === 'admin' || user?.isAdmin;
+  const isPartnerAdmin = user?.role === 'partner_admin' || isAdmin;
 
   return (
     <div className="min-h-screen bg-stone-50">
@@ -309,6 +311,20 @@ export default function Layout({ children }) {
                         </span>
                       )}
                     </div>
+                    {isPartnerAdmin && (
+                      <>
+                        <Link to="/partner/courses" onClick={() => setUserMenuOpen(false)}
+                          className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-stone-50 transition-colors"
+                          style={{ color: BURGUNDY }}>
+                          <BookOpen className="w-4 h-4" /> Course Admin
+                        </Link>
+                        <Link to="/partner/branding" onClick={() => setUserMenuOpen(false)}
+                          className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-stone-50 transition-colors"
+                          style={{ color: BURGUNDY }}>
+                          <Palette className="w-4 h-4" /> Branding
+                        </Link>
+                      </>
+                    )}
                     {isAdmin && (
                       <a href="/admin.html"
                         className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-stone-50 transition-colors"
@@ -365,6 +381,23 @@ export default function Layout({ children }) {
                 );
               })}
             </div>
+            {isPartnerAdmin && (
+              <div className="border-t border-stone-100 my-2 pt-2">
+                <p className="px-3 py-1 text-xs font-semibold text-stone-400 uppercase tracking-wider">Partner Admin</p>
+                <Link to="/partner/courses" onClick={() => setMobileOpen(false)}
+                  className="flex items-center gap-2.5"
+                  style={{ display: 'flex', padding: '0.625rem 1rem', borderRadius: '0.5rem', fontSize: '0.875rem', fontWeight: 500, textDecoration: 'none', color: isActive('/partner/courses') ? BURGUNDY : '#57534e', background: isActive('/partner/courses') ? BURGUNDY_LIGHT : 'transparent' }}>
+                  <BookOpen className="w-4 h-4" style={{ color: isActive('/partner/courses') ? BURGUNDY : '#a8a29e' }} />
+                  Course Admin
+                </Link>
+                <Link to="/partner/branding" onClick={() => setMobileOpen(false)}
+                  className="flex items-center gap-2.5"
+                  style={{ display: 'flex', padding: '0.625rem 1rem', borderRadius: '0.5rem', fontSize: '0.875rem', fontWeight: 500, textDecoration: 'none', color: isActive('/partner/branding') ? BURGUNDY : '#57534e', background: isActive('/partner/branding') ? BURGUNDY_LIGHT : 'transparent' }}>
+                  <Palette className="w-4 h-4" style={{ color: isActive('/partner/branding') ? BURGUNDY : '#a8a29e' }} />
+                  Branding
+                </Link>
+              </div>
+            )}
             {isAdmin && (
               <a href="/admin.html" style={{ display: 'block', padding: '0.625rem 1rem', borderRadius: '0.5rem', fontSize: '0.875rem', fontWeight: 500, color: BURGUNDY, background: BURGUNDY_LIGHT }}>
                 Admin Panel
@@ -377,6 +410,11 @@ export default function Layout({ children }) {
       {/* Page content */}
       <main id="main-content" className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
         {children}
+        {partner && (
+          <div className="mt-8">
+            <CRPromoCard />
+          </div>
+        )}
       </main>
 
       {/* Powered-by badge for whitelabel partners */}

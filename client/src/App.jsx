@@ -31,6 +31,8 @@ import LegacyVault from './pages/LegacyVault';
 import CourseQuickEdit from './pages/CourseQuickEdit';
 import AdminPartners from './pages/AdminPartners';
 import PartnerDashboard from './pages/PartnerDashboard';
+import PartnerBrandingSettings from './pages/PartnerBrandingSettings';
+import PartnerCourseAdmin from './pages/PartnerCourseAdmin';
 
 // Components
 import Layout from './components/Layout';
@@ -76,6 +78,16 @@ function AdminRoute({ children }) {
   if (loading) return <LoadingScreen />;
   if (!isAuthenticated) return <Navigate to="/login" replace />;
   if (user?.role !== 'admin') return <Navigate to="/courses" replace />;
+  return children;
+}
+
+// Partner Admin Route wrapper (admin or partner_admin)
+function PartnerAdminRoute({ children }) {
+  const { isAuthenticated, loading, user } = useAuth();
+
+  if (loading) return <LoadingScreen />;
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
+  if (user?.role !== 'admin' && user?.role !== 'partner_admin') return <Navigate to="/courses" replace />;
   return children;
 }
 
@@ -214,6 +226,16 @@ function AppRoutes() {
         <ProtectedRoute>
           <Layout><PartnerDashboard /></Layout>
         </ProtectedRoute>
+      } />
+      <Route path="/partner/branding" element={
+        <PartnerAdminRoute>
+          <Layout><PartnerBrandingSettings /></Layout>
+        </PartnerAdminRoute>
+      } />
+      <Route path="/partner/courses" element={
+        <PartnerAdminRoute>
+          <Layout><PartnerCourseAdmin /></Layout>
+        </PartnerAdminRoute>
       } />
 
       {/* Catch all */}
