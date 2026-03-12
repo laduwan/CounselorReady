@@ -1991,7 +1991,7 @@ const styles = `
   .animate-fadeIn { animation: none; }
 }
 
-/* APA heading hierarchy */
+/* APA heading hierarchy — subheadings ≈2px above paragraph text */
 .prose h2, .cr-content h2 {
   font-family: "Cormorant Garamond", serif !important;
   font-weight: 600 !important;
@@ -2001,15 +2001,20 @@ const styles = `
 }
 .prose h3, .cr-content h3 {
   font-weight: 700 !important;
-  font-size: 1.25rem !important;
+  font-size: 1.375rem !important;
   color: #4A7C59 !important;
   margin: 1.5rem 0 0.75rem 0;
 }
 .prose h4, .cr-content h4 {
   font-weight: 600 !important;
-  font-size: 1.1rem !important;
+  font-size: 1.25rem !important;
   color: #284157 !important;
   margin: 1.25rem 0 0.5rem 0;
+}
+
+/* Paragraph spacing in course content */
+.prose p + p, .cr-content p + p {
+  margin-top: 1em;
 }
 
 /* Table styling */
