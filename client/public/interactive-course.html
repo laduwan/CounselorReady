@@ -2081,11 +2081,14 @@ function loadCourse(data) {
       const blocks = section.contentBlocks || [];
       const dividerCount = blocks.filter(b => b.type === 'sectionDivider').length;
       
+      // Always tag with _moduleTitle for nav grouping
+      const moduleTitle = section.title || 'Section ' + (si + 1);
+      
       // If section has multiple sectionDividers, split it
       if (dividerCount > 1) {
         let currentBlocks = [];
         let currentTitle = section.title;
-        const moduleTitle = section.title;
+        let subIdx = 0;
         
         blocks.forEach(block => {
           if (block.type === 'sectionDivider') {
@@ -2094,7 +2097,8 @@ function loadCourse(data) {
                 title: currentTitle,
                 contentBlocks: currentBlocks,
                 _moduleTitle: moduleTitle,
-                _moduleIndex: si
+                _moduleIndex: si,
+                _subIndex: subIdx++
               });
             }
             currentTitle = block.title || moduleTitle;
@@ -2108,10 +2112,15 @@ function loadCourse(data) {
             title: currentTitle,
             contentBlocks: currentBlocks,
             _moduleTitle: moduleTitle,
-            _moduleIndex: si
+            _moduleIndex: si,
+            _subIndex: subIdx
           });
         }
       } else {
+        // Single section — tag it so nav can find it
+        section._moduleTitle = moduleTitle;
+        section._moduleIndex = si;
+        section._subIndex = 0;
         expanded.push(section);
       }
     });
@@ -2154,6 +2163,7 @@ function loadCourse(data) {
   
   // Build UI
   document.getElementById('crLoading').style.display = 'none';
+  document.getElementById('crError').style.display = 'none';
   document.getElementById('crApp').style.display = 'grid';
   closeParser();
   
@@ -2204,12 +2214,15 @@ function showError(msg) {
 // SIDEBAR & NAVIGATION
 // ═══════════════════════════════════════════════════════════════
 function buildSectionNav() {
+  try {
   const nav = document.getElementById('crSectionNav');
   nav.innerHTML = '';
   
   // Filter out overview sections for nav
   const navSections = course.sections.map((s, i) => ({ section: s, index: i })).filter(s => !s.section._isOverview);
   const completedCount = navSections.filter(s => completedSections.has(s.index)).length;
+  
+  console.log('buildSectionNav: navSections=' + navSections.length + ', total sections=' + course.sections.length);
   
   // "COURSE SECTIONS X/Y" label
   const label = document.createElement('div');
@@ -2238,6 +2251,7 @@ function buildSectionNav() {
       nav.appendChild(makeNavItem(index));
     });
   }
+  } catch(e) { console.error('buildSectionNav error:', e); }
 }
 
 function makeNavItem(i) {
@@ -2331,7 +2345,10 @@ function detectModuleGroups() {
       }
     });
     
-    if (groups.length > 1) return groups;
+    // Only return groups if at least one group has multiple sub-sections
+    // (meaning real module→subsection structure, not just 1:1 section→module)
+    const hasMultiSectionGroup = groups.some(g => g.sections.length > 1);
+    if (hasMultiSectionGroup && groups.length > 1) return groups;
     if (groups.length === 1 && groups[0].sections.length > 1) return groups;
     return [];
   }
