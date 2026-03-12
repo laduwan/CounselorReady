@@ -12,6 +12,7 @@
 /admin.html              /admin.html              200
 /admin-*.html            /admin-*.html            200
 /about.html              /about.html              200
+/tools/*                 /tools/:splat            200
 
 # SPA catch-all (must be LAST)
 /*    /index.html   200
