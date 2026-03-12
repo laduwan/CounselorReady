@@ -29,6 +29,7 @@ const moreLinks = [
   { name: 'Team',             href: '/organization',        icon: Users },
   { name: 'Group Licenses',   href: '/group-licenses',      icon: Users },
   { name: 'Legacy Vault',     href: '/legacy-vault',         icon: Lock },
+  { name: 'Partner Portal',  href: '/partner-dashboard',    icon: Star },
 ];
 
 const BURGUNDY      = '#6B1D34';
