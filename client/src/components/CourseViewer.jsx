@@ -424,7 +424,7 @@ function TextBlock({ rawHTML, isLong, proseSize, a11y, speakText }) {
 
   return (
     <div className="bg-white rounded-xl border border-stone-200 overflow-hidden">
-      <div className={`px-6 py-5 ${proseSize} prose-slate max-w-none ${!expanded ? 'max-h-48 overflow-hidden relative' : ''}`}>
+      <div className={`px-6 py-5 prose ${proseSize} prose-slate max-w-none ${!expanded ? 'max-h-48 overflow-hidden relative' : ''}`}>
         {a11y?.narration && (
           <button
             onClick={() => speakText(rawHTML)}
@@ -561,10 +561,12 @@ function ContentBlockRenderer({
       let rawHTML = block.textContent || block.content || '';
       // Guard: if content is an object/array (bad seed data), stringify it instead of crashing
       if (typeof rawHTML !== 'string') {
-        rawHTML = Array.isArray(rawHTML) 
-          ? rawHTML.map(r => typeof r === 'string' ? r : (r?.formatted || r?.text || r?.title || JSON.stringify(r))).join('<br/>') 
+        rawHTML = Array.isArray(rawHTML)
+          ? rawHTML.map(r => typeof r === 'string' ? r : (r?.formatted || r?.text || r?.title || JSON.stringify(r))).join('<br/>')
           : String(rawHTML);
       }
+      // Strip Pulse Check sections (Pre-Module, Post-Module, Post-Course) and their rating tables
+      rawHTML = rawHTML.replace(/<h[2-4][^>]*>[^<]*Pulse\s+Check[^<]*<\/h[2-4]>[\s\S]*?(?=<h[2-4]|$)/gi, '');
       const isLong = rawHTML.length > 1200;
       return <TextBlock rawHTML={rawHTML} isLong={isLong} proseSize={proseSize} a11y={a11y} speakText={speakText} />;
     }

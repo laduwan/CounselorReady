@@ -63,9 +63,27 @@ function markdownToHtml(md) {
       .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>');
   }
 
+  let skipPulseCheck = false;
+
   for (let i = 0; i < lines.length; i++) {
     const raw = lines[i];
     const line = raw.trim();
+
+    // Skip Pre-Module Pulse Check and Post-Course Pulse Check sections entirely
+    if (/^#{1,4}\s.*Pulse\s+Check/i.test(line)) {
+      flushList();
+      flushTable();
+      skipPulseCheck = true;
+      continue;
+    }
+    // Stop skipping when we hit the next heading that isn't a Pulse Check
+    if (skipPulseCheck && /^#{1,4}\s/.test(line) && !/Pulse\s+Check/i.test(line)) {
+      skipPulseCheck = false;
+      // Fall through to process this heading normally
+    }
+    if (skipPulseCheck) {
+      continue;
+    }
 
     // Preserve empty lines as paragraph breaks (don't skip them)
     if (!line) {
