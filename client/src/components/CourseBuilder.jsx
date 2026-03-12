@@ -5,7 +5,7 @@
  */
 // DROP INTO: /client/src/components/CourseBuilder.jsx
 
-import React, { useState, useCallback, useRef, useEffect } from "react";
+import React, { useState, useCallback, useRef, useEffect, useMemo } from "react";
 import jsPDF from "jspdf";
 import NarrationPanel from "./NarrationPanel.jsx";
 import { safeHTML } from "../utils/sanitize";
@@ -13,7 +13,10 @@ import {
   Sparkles, FileText, CheckCircle, Upload, Plus, Trash2, GripVertical,
   ChevronDown, ChevronRight, AlertTriangle, Check, X, Loader2,
   BookOpen, Brain, ClipboardCheck, ArrowUp, ArrowDown, Copy,
-  Settings, Eye, Wand2, FileUp, BarChart3, Zap, Save, Download
+  Settings, Eye, Wand2, FileUp, BarChart3, Zap, Save, Download,
+  Clock, RotateCcw, History, Clipboard, Calendar, TrendingUp,
+  Users, Award, PlayCircle, ChevronUp, ChevronLeft, ChevronsUp, ChevronsDown,
+  CheckSquare, Square, FolderDown, FolderUp, RefreshCw, Layers
 } from "lucide-react";
 
 // ─── Brand Colors ───
@@ -912,6 +915,8 @@ function ContentEditor({ courseData, setCourseData }) {
   const [enriching, setEnriching] = useState(false);
   const [enrichProgress, setEnrichProgress] = useState("");
   const [floatingMenuOpen, setFloatingMenuOpen] = useState(false);
+  const [selectedBlocks, setSelectedBlocks] = useState(new Set());
+  const [bulkMode, setBulkMode] = useState(false);
   const editorPanelRef = useRef(null);
 
   const API_BASE = import.meta.env.VITE_API_URL || "https://api.counselorready.com/api";
@@ -969,6 +974,73 @@ function ContentEditor({ courseData, setCourseData }) {
     newModules[activeModule] = { ...newModules[activeModule], blocks: newBlocks };
     setCourseData({ ...courseData, modules: newModules });
     setEditingBlock(blockIndex + 1);
+  };
+
+  // ── Bulk Operations ──
+  const toggleBlockSelection = (index) => {
+    const newSel = new Set(selectedBlocks);
+    if (newSel.has(index)) newSel.delete(index);
+    else newSel.add(index);
+    setSelectedBlocks(newSel);
+  };
+
+  const selectAllBlocks = () => {
+    if (selectedBlocks.size === (currentModule.blocks || []).length) {
+      setSelectedBlocks(new Set());
+    } else {
+      setSelectedBlocks(new Set((currentModule.blocks || []).map((_, i) => i)));
+    }
+  };
+
+  const bulkMoveBlocks = (direction) => {
+    if (selectedBlocks.size === 0) return;
+    const sorted = [...selectedBlocks].sort((a, b) => direction === "up" ? a - b : b - a);
+    const newModules = [...modules];
+    const newBlocks = [...(newModules[activeModule].blocks || [])];
+
+    for (const idx of sorted) {
+      const target = idx + (direction === "up" ? -1 : 1);
+      if (target < 0 || target >= newBlocks.length) continue;
+      if (selectedBlocks.has(target)) continue;
+      [newBlocks[idx], newBlocks[target]] = [newBlocks[target], newBlocks[idx]];
+    }
+
+    newModules[activeModule] = { ...newModules[activeModule], blocks: newBlocks };
+    setCourseData({ ...courseData, modules: newModules });
+
+    // Update selection indices
+    const newSel = new Set();
+    for (const idx of selectedBlocks) {
+      const target = idx + (direction === "up" ? -1 : 1);
+      if (target >= 0 && target < newBlocks.length && !selectedBlocks.has(target)) {
+        newSel.add(target);
+      } else {
+        newSel.add(idx);
+      }
+    }
+    setSelectedBlocks(newSel);
+  };
+
+  const bulkDeleteBlocks = () => {
+    if (selectedBlocks.size === 0) return;
+    if (!confirm(`Delete ${selectedBlocks.size} selected blocks?`)) return;
+    const newModules = [...modules];
+    const newBlocks = (newModules[activeModule].blocks || []).filter((_, i) => !selectedBlocks.has(i));
+    newModules[activeModule] = { ...newModules[activeModule], blocks: newBlocks };
+    setCourseData({ ...courseData, modules: newModules });
+    setSelectedBlocks(new Set());
+    setEditingBlock(null);
+  };
+
+  const bulkMoveToModule = (targetModuleIndex) => {
+    if (selectedBlocks.size === 0 || targetModuleIndex === activeModule) return;
+    const newModules = [...modules];
+    const movedBlocks = (newModules[activeModule].blocks || []).filter((_, i) => selectedBlocks.has(i));
+    const remainingBlocks = (newModules[activeModule].blocks || []).filter((_, i) => !selectedBlocks.has(i));
+    newModules[activeModule] = { ...newModules[activeModule], blocks: remainingBlocks };
+    newModules[targetModuleIndex] = { ...newModules[targetModuleIndex], blocks: [...(newModules[targetModuleIndex].blocks || []), ...movedBlocks] };
+    setCourseData({ ...courseData, modules: newModules });
+    setSelectedBlocks(new Set());
   };
 
   const updateModuleTitle = (newTitle) => {
@@ -1323,7 +1395,13 @@ function ContentEditor({ courseData, setCourseData }) {
               boxShadow: isSelected ? `0 0 0 2px ${C.burgundy}22` : "none",
             }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 14px", cursor: "pointer" }}
-                onClick={() => setEditingBlock(isSelected ? null : i)}>
+                onClick={() => bulkMode ? toggleBlockSelection(i) : setEditingBlock(isSelected ? null : i)}>
+                {bulkMode && (
+                  <span onClick={(e) => { e.stopPropagation(); toggleBlockSelection(i); }}
+                    style={{ width: 18, height: 18, borderRadius: 4, border: `2px solid ${selectedBlocks.has(i) ? C.burgundy : C.border}`, background: selectedBlocks.has(i) ? C.burgundy : "transparent", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0 }}>
+                    {selectedBlocks.has(i) && <Check size={12} color="#fff" />}
+                  </span>
+                )}
                 <span style={{ cursor: "grab", color: C.textLight, fontSize: 12 }}>⠿</span>
                 <span style={{ width: 26, height: 26, borderRadius: 6, background: cfg.color + "14", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13 }}>{cfg.icon}</span>
                 <span style={{ fontWeight: 600, fontSize: 13, flex: 1, color: C.navy, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{cfg.label}</span>
@@ -1541,10 +1619,48 @@ function ContentEditor({ courseData, setCourseData }) {
               </button>
             </div>
 
+            {/* Bulk select toggle */}
+            <button onClick={() => { setBulkMode(!bulkMode); setSelectedBlocks(new Set()); }}
+              title={bulkMode ? "Exit bulk mode" : "Bulk select blocks"}
+              style={{ ...S.btnSecondary, fontSize: 11, padding: "5px 10px", background: bulkMode ? C.burgundyFaded : "transparent", borderColor: bulkMode ? C.burgundy : C.border, color: bulkMode ? C.burgundy : C.navy }}>
+              <CheckSquare size={12} /> Bulk
+            </button>
+
             <span style={S.badge(C.green)}>{(currentModule.blocks || []).filter(b => KNOWLEDGE_CHECK_TYPES.includes(b.type)).length} KC</span>
             <span style={{ fontSize: 12, color: C.textMuted }}>{(currentModule.blocks || []).length} blocks</span>
           </div>
         </div>
+
+        {/* Bulk Operations Bar */}
+        {bulkMode && (
+          <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 16px", background: C.burgundyFaded, borderRadius: 10, marginBottom: 12, border: `1px solid ${C.burgundy}22` }}>
+            <button onClick={selectAllBlocks} style={{ ...S.btnSecondary, fontSize: 11, padding: "5px 10px" }}>
+              {selectedBlocks.size === (currentModule.blocks || []).length ? <><CheckSquare size={11} /> Deselect All</> : <><Square size={11} /> Select All</>}
+            </button>
+            <span style={{ fontSize: 12, color: C.burgundy, fontWeight: 600 }}>{selectedBlocks.size} selected</span>
+            <div style={{ flex: 1 }} />
+            <button onClick={() => bulkMoveBlocks("up")} disabled={selectedBlocks.size === 0} style={{ ...S.btnSecondary, fontSize: 11, padding: "5px 8px", opacity: selectedBlocks.size === 0 ? 0.4 : 1 }} title="Move selected up">
+              <ChevronsUp size={12} /> Up
+            </button>
+            <button onClick={() => bulkMoveBlocks("down")} disabled={selectedBlocks.size === 0} style={{ ...S.btnSecondary, fontSize: 11, padding: "5px 8px", opacity: selectedBlocks.size === 0 ? 0.4 : 1 }} title="Move selected down">
+              <ChevronsDown size={12} /> Down
+            </button>
+            {modules.length > 1 && (
+              <select
+                onChange={(e) => { if (e.target.value !== "") bulkMoveToModule(parseInt(e.target.value)); e.target.value = ""; }}
+                style={{ ...S.input, width: "auto", padding: "4px 8px", fontSize: 11 }}
+                disabled={selectedBlocks.size === 0}>
+                <option value="">Move to module...</option>
+                {modules.map((m, i) => i !== activeModule && (
+                  <option key={i} value={i}>{m.title || `Module ${i + 1}`}</option>
+                ))}
+              </select>
+            )}
+            <button onClick={bulkDeleteBlocks} disabled={selectedBlocks.size === 0} style={{ ...S.btnDanger, fontSize: 11, padding: "5px 10px", opacity: selectedBlocks.size === 0 ? 0.4 : 1 }}>
+              <Trash2 size={11} /> Delete ({selectedBlocks.size})
+            </button>
+          </div>
+        )}
 
         {/* Content based on view mode */}
         {previewMode === "full" ? (
@@ -2888,6 +3004,47 @@ export default function CourseBuilderV2() {
     return () => { if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current); };
   }, [hasUnsavedChanges, courseData]);
 
+  // ── localStorage Draft Recovery ──
+  const DRAFT_KEY = "cr_draft_" + (courseId || "new");
+  useEffect(() => {
+    // Save draft to localStorage every 10 seconds
+    const interval = setInterval(() => {
+      const totalBlocks = (courseData.modules || []).reduce((s, m) => s + (m.blocks || []).length, 0);
+      if (totalBlocks > 0) {
+        try {
+          localStorage.setItem(DRAFT_KEY, JSON.stringify({ data: courseData, timestamp: Date.now() }));
+        } catch (e) { /* quota exceeded */ }
+      }
+    }, 10000);
+    return () => clearInterval(interval);
+  }, [courseData, DRAFT_KEY]);
+
+  // Check for recoverable draft on mount
+  useEffect(() => {
+    try {
+      const draft = localStorage.getItem(DRAFT_KEY);
+      if (draft) {
+        const { data, timestamp } = JSON.parse(draft);
+        const age = Date.now() - timestamp;
+        // If draft is less than 24 hours old and has content
+        if (age < 86400000 && data?.modules?.length > 0) {
+          const totalDraftBlocks = data.modules.reduce((s, m) => s + (m.blocks || []).length, 0);
+          const totalCurrentBlocks = (courseData.modules || []).reduce((s, m) => s + (m.blocks || []).length, 0);
+          if (totalDraftBlocks > totalCurrentBlocks && totalCurrentBlocks <= 1) {
+            const hours = Math.floor(age / 3600000);
+            const mins = Math.floor((age % 3600000) / 60000);
+            const timeAgo = hours > 0 ? `${hours}h ${mins}m ago` : `${mins}m ago`;
+            if (confirm(`A draft of "${data.title}" was found (saved ${timeAgo}, ${totalDraftBlocks} blocks). Recover it?`)) {
+              setCourseData(data);
+              setSaveMsg("✓ Draft recovered");
+              setTimeout(() => setSaveMsg(null), 4000);
+            }
+          }
+        }
+      }
+    } catch (e) { /* ignore */ }
+  }, []);
+
   // ── Load existing course when ?id= is in URL ──
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -3100,6 +3257,10 @@ export default function CourseBuilderV2() {
     { label: "References", icon: "📚", badge: refCount > 0 ? `${refCount}` : null, badgeColor: C.navy, needsContent: !hasContent },
     { label: "ACEP Checker", icon: "📋", badge: null, needsContent: !hasContent },
     { label: "Narration", icon: "🎙️", badge: null, needsContent: !hasContent },
+    { label: "Preview", icon: "👁️", badge: null, needsContent: !hasContent },
+    { label: "Drip Schedule", icon: "📅", badge: null, needsContent: !hasContent },
+    { label: "Analytics", icon: "📊", badge: null, needsContent: !hasContent },
+    { label: "Versions", icon: "🕐", badge: null },
   ];
 
   return (
@@ -3164,6 +3325,68 @@ export default function CourseBuilderV2() {
             const a = document.createElement("a"); a.href = URL.createObjectURL(blob);
             a.download = `${courseData.title?.replace(/[^a-z0-9]/gi, "_") || "course"}.json`; a.click();
           }}>💾 JSON</button>
+          {/* Clone Course */}
+          <button style={{ ...S.btnSecondary, borderColor: "rgba(255,255,255,0.2)", color: "#fff", fontSize: 12 }} onClick={() => {
+            const cloneTitle = prompt("Title for the cloned course:", `${courseData.title} (Copy)`);
+            if (!cloneTitle) return;
+            const cloned = JSON.parse(JSON.stringify(courseData));
+            cloned.title = cloneTitle;
+            cloned._id = undefined;
+            cloned.id = undefined;
+            cloned.slug = cloneTitle.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+            cloned.status = "draft";
+            cloned.isPublished = false;
+            setCourseData(cloned);
+            setCourseId(null);
+            setHasUnsavedChanges(true);
+            setSaveMsg("✓ Course cloned — save to create a new copy");
+            setTimeout(() => setSaveMsg(null), 5000);
+          }}>
+            <Copy size={13} /> Clone
+          </button>
+          {/* Import Course from JSON */}
+          <button style={{ ...S.btnSecondary, borderColor: "rgba(255,255,255,0.2)", color: "#fff", fontSize: 12 }} onClick={() => {
+            const input = document.createElement("input");
+            input.type = "file";
+            input.accept = ".json";
+            input.onchange = async (e) => {
+              const file = e.target.files?.[0];
+              if (!file) return;
+              try {
+                const text = await file.text();
+                const data = JSON.parse(text);
+                if (!data.title && !data.modules) {
+                  alert("Invalid course file. Must contain title and modules.");
+                  return;
+                }
+                // Ensure modules have ids
+                if (data.modules) {
+                  data.modules = data.modules.map((m, i) => ({
+                    ...m,
+                    id: m.id || uid(),
+                    number: m.number || i + 1,
+                    blocks: (m.blocks || m.contentBlocks || []).map(b => ({ ...b, id: b.id || uid() }))
+                  }));
+                }
+                // Clear server IDs so it saves as new
+                data._id = undefined;
+                data.id = undefined;
+                data.status = "draft";
+                data.isPublished = false;
+                setCourseData(prev => ({ ...prev, ...data }));
+                setCourseId(null);
+                setHasUnsavedChanges(true);
+                setActiveTab(2);
+                setSaveMsg(`✓ Imported "${data.title}" — ${(data.modules || []).length} modules`);
+                setTimeout(() => setSaveMsg(null), 5000);
+              } catch (err) {
+                alert("Failed to parse JSON file: " + err.message);
+              }
+            };
+            input.click();
+          }}>
+            <FolderUp size={13} /> Import
+          </button>
           <button style={{ ...S.btnSecondary, borderColor: "rgba(255,255,255,0.25)", color: "#fff", fontSize: 12 }} onClick={() => saveCourse(false)} disabled={saving}>
             <Save size={13} /> {saving ? "Saving..." : "Save Draft"}
           </button>
@@ -3205,6 +3428,10 @@ export default function CourseBuilderV2() {
         {activeTab === 4 && <ReferencesManager courseData={courseData} setCourseData={wrappedSetCourseData} />}
         {activeTab === 5 && <ACEPChecker courseData={courseData} acepOverride={acepOverride} />}
         {activeTab === 6 && <NarrationTab courseData={courseData} setCourseData={wrappedSetCourseData} />}
+        {activeTab === 7 && <LivePreviewPanel courseData={courseData} />}
+        {activeTab === 8 && <DripScheduleTab courseData={courseData} setCourseData={wrappedSetCourseData} />}
+        {activeTab === 9 && <AnalyticsDashboard courseData={courseData} />}
+        {activeTab === 10 && <VersionHistory courseData={courseData} setCourseData={wrappedSetCourseData} />}
 
       </div>
       )}
@@ -3767,5 +3994,740 @@ function NarrationTab({ courseData, setCourseData }) {
         setCourseData(prev => ({ ...prev, modules }));
       }}
     />
+  );
+}
+
+
+// ═══════════════════════════════════════════════════════════
+// LIVE PREVIEW PANEL — Full learner-view preview of course
+// ═══════════════════════════════════════════════════════════
+function LivePreviewPanel({ courseData }) {
+  const [currentSection, setCurrentSection] = useState(0);
+  const modules = courseData?.modules || [];
+
+  if (!modules.length) {
+    return (
+      <div style={{ ...S.card, textAlign: "center", padding: 60 }}>
+        <PlayCircle size={40} color={C.textLight} />
+        <h3 style={{ color: C.navy, marginTop: 16 }}>No Content to Preview</h3>
+        <p style={{ color: C.textMuted, fontSize: 14 }}>Generate or import course content first.</p>
+      </div>
+    );
+  }
+
+  const mod = modules[currentSection] || modules[0];
+  const blocks = mod.blocks || [];
+
+  const renderLearnerBlock = (block, i) => {
+    switch (block.type) {
+      case "sectionDivider":
+        return (
+          <div key={i} style={{ background: "linear-gradient(135deg, #6B1D34, #4A1524)", borderRadius: 14, padding: "28px 32px", marginBottom: 24, color: "#fff" }}>
+            <div style={{ fontSize: 12, fontWeight: 700, opacity: 0.7, textTransform: "uppercase", letterSpacing: 1 }}>Section {block.sectionNumber || i + 1}</div>
+            <h2 style={{ fontSize: 26, fontWeight: 700, margin: "8px 0 4px" }}>{block.title || "Untitled Section"}</h2>
+            {block.subtitle && <p style={{ fontSize: 14, opacity: 0.8, margin: 0 }}>{block.subtitle}</p>}
+          </div>
+        );
+      case "text":
+        return (
+          <div key={i} style={{ fontSize: 16, lineHeight: 1.8, color: C.text, marginBottom: 24, padding: "0 4px" }}
+            dangerouslySetInnerHTML={{ __html: safeHTML(block.content || "<em>Empty text block</em>") }} />
+        );
+      case "imageText":
+        return (
+          <div key={i} style={{ display: "flex", gap: 24, flexDirection: block.imagePosition === "right" ? "row-reverse" : "row", alignItems: "flex-start", marginBottom: 24, background: block.highlight ? C.goldFaded : "transparent", padding: block.highlight ? 20 : 0, borderRadius: 12 }}>
+            {block.image && <img src={block.image} alt={block.imageAlt || ""} style={{ width: "40%", borderRadius: 12, boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }} />}
+            <div style={{ flex: 1 }}>
+              {block.title && <h3 style={{ color: C.navy, fontSize: 20, fontWeight: 700, marginBottom: 8 }}>{block.title}</h3>}
+              <div style={{ fontSize: 15, lineHeight: 1.7 }} dangerouslySetInnerHTML={{ __html: safeHTML(block.content || "") }} />
+            </div>
+          </div>
+        );
+      case "image":
+        return (
+          <figure key={i} style={{ textAlign: block.imageAlignment || "center", margin: "24px 0" }}>
+            {block.imageUrl && <img src={block.imageUrl} alt={block.imageAltText || ""} style={{ maxWidth: block.imageSize === "small" ? "40%" : block.imageSize === "medium" ? "60%" : "90%", borderRadius: 12, boxShadow: "0 4px 12px rgba(0,0,0,0.08)" }} />}
+            {block.imageCaption && <figcaption style={{ fontSize: 13, color: C.textMuted, marginTop: 8, fontStyle: "italic" }}>{block.imageCaption}</figcaption>}
+          </figure>
+        );
+      case "accordion":
+        return (
+          <div key={i} style={{ marginBottom: 24 }}>
+            {(block.accordionItems || []).map((item, j) => (
+              <AccordionPreviewItem key={j} item={item} />
+            ))}
+          </div>
+        );
+      case "multipleChoice":
+      case "multiSelect":
+        return (
+          <div key={i} style={{ background: "#fff", border: `1px solid ${C.border}`, borderRadius: 12, padding: 24, marginBottom: 24, borderLeft: `4px solid ${C.burgundy}` }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: C.burgundy, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 8 }}>
+              {block.type === "multiSelect" ? "Select All That Apply" : "Knowledge Check"}
+            </div>
+            <div style={{ fontSize: 16, fontWeight: 600, color: C.navy, marginBottom: 16, lineHeight: 1.5 }}>{block.question || "Question?"}</div>
+            {(block.options || []).map((opt, j) => (
+              <div key={j} style={{ padding: "12px 16px", marginBottom: 8, borderRadius: 8, border: `1px solid ${C.border}`, background: "#fff", fontSize: 14, cursor: "pointer", display: "flex", alignItems: "center", gap: 10 }}>
+                <span style={{ width: 20, height: 20, borderRadius: block.type === "multiSelect" ? 4 : 10, border: `2px solid ${C.border}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }} />
+                {opt.text}
+              </div>
+            ))}
+          </div>
+        );
+      case "matching":
+        return (
+          <div key={i} style={{ background: "#fff", border: `1px solid ${C.border}`, borderRadius: 12, padding: 24, marginBottom: 24, borderLeft: `4px solid ${C.navy}` }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: C.navy, textTransform: "uppercase", marginBottom: 8 }}>Matching Exercise</div>
+            {block.matchingInstructions && <p style={{ fontSize: 14, color: C.textMuted, marginBottom: 16 }}>{block.matchingInstructions}</p>}
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+              <div>
+                <div style={{ fontSize: 11, fontWeight: 700, color: C.burgundy, marginBottom: 8 }}>TERMS</div>
+                {(block.matchingPairs || []).map((p, j) => (
+                  <div key={j} style={{ padding: "10px 14px", marginBottom: 6, borderRadius: 8, background: C.burgundyFaded, fontSize: 13, fontWeight: 600 }}>{p.term}</div>
+                ))}
+              </div>
+              <div>
+                <div style={{ fontSize: 11, fontWeight: 700, color: C.green, marginBottom: 8 }}>DEFINITIONS</div>
+                {(block.matchingPairs || []).sort(() => Math.random() - 0.5).map((p, j) => (
+                  <div key={j} style={{ padding: "10px 14px", marginBottom: 6, borderRadius: 8, background: C.greenFaded, fontSize: 13 }}>{p.definition}</div>
+                ))}
+              </div>
+            </div>
+          </div>
+        );
+      case "reflection":
+        return (
+          <div key={i} style={{ background: C.greenFaded, borderRadius: 12, padding: 24, marginBottom: 24, borderLeft: `4px solid ${C.green}` }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: C.green, textTransform: "uppercase", marginBottom: 8 }}>Reflection</div>
+            <div style={{ fontSize: 16, fontWeight: 500, color: C.navy, marginBottom: 16, lineHeight: 1.5 }}>{block.question || "Reflect on..."}</div>
+            <textarea disabled placeholder="Type your response here..." style={{ width: "100%", minHeight: 100, padding: 14, borderRadius: 8, border: `1px solid ${C.border}`, fontSize: 14, fontFamily: "inherit", resize: "vertical", boxSizing: "border-box", background: "#fff" }} />
+            {block.minLength && <div style={{ fontSize: 12, color: C.textMuted, marginTop: 6 }}>Minimum {block.minLength} characters required</div>}
+          </div>
+        );
+      case "resources":
+        return (
+          <div key={i} style={{ background: C.goldFaded, borderRadius: 12, padding: 24, marginBottom: 24, borderLeft: `4px solid ${C.gold}` }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: C.gold, textTransform: "uppercase", marginBottom: 12 }}>Resources</div>
+            {(block.resources || []).map((r, j) => (
+              <div key={j} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 0", borderBottom: j < (block.resources || []).length - 1 ? `1px solid rgba(212,168,85,0.2)` : "none" }}>
+                <Download size={14} color={C.navy} />
+                <span style={{ fontSize: 14, color: C.navy, fontWeight: 500 }}>{r.title || r.url}</span>
+                <span style={{ fontSize: 11, color: C.textLight, marginLeft: "auto", textTransform: "uppercase" }}>{r.type}</span>
+              </div>
+            ))}
+          </div>
+        );
+      case "cardSort":
+        return (
+          <div key={i} style={{ background: "#fff", border: `1px solid ${C.border}`, borderRadius: 12, padding: 24, marginBottom: 24, borderLeft: `4px solid #0284C7` }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: "#0284C7", textTransform: "uppercase", marginBottom: 8 }}>Card Sort Activity</div>
+            <p style={{ fontSize: 14, color: C.textMuted, marginBottom: 16 }}>{block.instructions || "Sort the cards into the correct categories."}</p>
+            <div style={{ display: "flex", gap: 16 }}>
+              {(block.categories || []).map((cat, j) => (
+                <div key={j} style={{ flex: 1, background: C.bg, borderRadius: 8, padding: 12, minHeight: 80 }}>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: C.navy, textAlign: "center", marginBottom: 8 }}>{cat}</div>
+                </div>
+              ))}
+            </div>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 12 }}>
+              {(block.cards || []).map((card, j) => (
+                <div key={j} style={{ padding: "8px 14px", background: "#fff", border: `1px solid ${C.border}`, borderRadius: 8, fontSize: 13, cursor: "grab" }}>{card.text}</div>
+              ))}
+            </div>
+          </div>
+        );
+      case "sequencing":
+        return (
+          <div key={i} style={{ background: "#fff", border: `1px solid ${C.border}`, borderRadius: 12, padding: 24, marginBottom: 24, borderLeft: `4px solid ${C.navy}` }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: C.navy, textTransform: "uppercase", marginBottom: 8 }}>Sequencing Activity</div>
+            <p style={{ fontSize: 14, color: C.textMuted, marginBottom: 16 }}>{block.instructions || "Arrange the steps in the correct order."}</p>
+            {(block.steps || []).sort(() => Math.random() - 0.5).map((step, j) => (
+              <div key={j} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", marginBottom: 6, background: C.bg, borderRadius: 8, cursor: "grab" }}>
+                <GripVertical size={14} color={C.textLight} />
+                <span style={{ fontSize: 14 }}>{step.text}</span>
+              </div>
+            ))}
+          </div>
+        );
+      case "flashcardDeck":
+        return (
+          <div key={i} style={{ background: "#fff", border: `1px solid ${C.border}`, borderRadius: 12, padding: 24, marginBottom: 24, borderLeft: `4px solid ${C.amber}` }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: C.amber, textTransform: "uppercase", marginBottom: 12 }}>Flashcard Deck</div>
+            <p style={{ fontSize: 14, color: C.textMuted, marginBottom: 12 }}>{block.instructions || "Click cards to reveal the answer."}</p>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: 12 }}>
+              {(block.flashcards || []).slice(0, 4).map((fc, j) => (
+                <div key={j} style={{ background: "linear-gradient(135deg, #6B1D34, #8B2D4A)", color: "#fff", borderRadius: 10, padding: 20, minHeight: 80, display: "flex", alignItems: "center", justifyContent: "center", textAlign: "center", fontSize: 14, fontWeight: 500, cursor: "pointer" }}>
+                  {fc.front}
+                </div>
+              ))}
+            </div>
+            {(block.flashcards || []).length > 4 && <div style={{ fontSize: 12, color: C.textMuted, marginTop: 8, textAlign: "center" }}>+{(block.flashcards || []).length - 4} more cards</div>}
+          </div>
+        );
+      case "videoEmbed":
+        return (
+          <div key={i} style={{ marginBottom: 24 }}>
+            <div style={{ background: "#000", borderRadius: 12, padding: "56.25% 0 0 0", position: "relative" }}>
+              <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", color: "#fff", textAlign: "center" }}>
+                <PlayCircle size={48} />
+                <div style={{ marginTop: 8, fontSize: 14 }}>{block.videoTitle || "Video"}</div>
+              </div>
+            </div>
+            {block.markers?.length > 0 && (
+              <div style={{ display: "flex", gap: 8, marginTop: 8, overflowX: "auto" }}>
+                {block.markers.map((m, j) => (
+                  <div key={j} style={{ padding: "4px 10px", background: C.bg, borderRadius: 6, fontSize: 12, whiteSpace: "nowrap", cursor: "pointer" }}>
+                    <span style={{ color: C.burgundy, fontWeight: 600 }}>{m.time}</span> {m.label}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        );
+      default:
+        return (
+          <div key={i} style={{ background: C.bg, borderRadius: 12, padding: 20, marginBottom: 24, borderLeft: `4px solid ${C.textLight}` }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: C.textMuted, textTransform: "uppercase", marginBottom: 4 }}>{(BLOCK_TYPES.find(b => b.type === block.type) || {}).label || block.type}</div>
+            <div style={{ fontSize: 13, color: C.textMuted }}>{block.instructions || block.question || block.scenarioTitle || "Interactive content block"}</div>
+          </div>
+        );
+    }
+  };
+
+  return (
+    <div>
+      <div style={{ ...S.card, marginBottom: 16 }}>
+        <div style={S.cardHeader}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <PlayCircle size={20} color={C.burgundy} />
+            <span style={{ fontWeight: 700, fontSize: 16 }}>Learner Preview</span>
+          </div>
+          <span style={{ fontSize: 12, color: C.textMuted }}>This is how students will see your course</span>
+        </div>
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "240px 1fr", gap: 16 }}>
+        {/* Section Nav */}
+        <div style={{ ...S.card, position: "sticky", top: 20, alignSelf: "start" }}>
+          <div style={{ padding: "12px 14px", borderBottom: `1px solid ${C.borderLight}` }}>
+            <span style={{ fontWeight: 700, fontSize: 13, color: C.navy }}>Course Sections</span>
+          </div>
+          {modules.map((mod, i) => (
+            <div key={i} onClick={() => setCurrentSection(i)}
+              style={{ padding: "10px 14px", cursor: "pointer", borderLeft: i === currentSection ? `3px solid ${C.burgundy}` : "3px solid transparent", background: i === currentSection ? C.burgundyFaded : "transparent", fontSize: 13, fontWeight: i === currentSection ? 600 : 400, color: i === currentSection ? C.burgundy : C.textMuted }}>
+              {mod.title?.replace(/^Module \d+:\s*/, "") || `Module ${i + 1}`}
+            </div>
+          ))}
+
+          {/* Progress Summary */}
+          <div style={{ padding: 14, borderTop: `1px solid ${C.borderLight}` }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: C.textLight, textTransform: "uppercase", marginBottom: 8 }}>Course Stats</div>
+            <div style={{ fontSize: 12, color: C.textMuted, lineHeight: 1.8 }}>
+              <div>{modules.length} modules</div>
+              <div>{modules.reduce((s, m) => s + (m.blocks || []).length, 0)} content blocks</div>
+              <div>{modules.reduce((s, m) => s + (m.blocks || []).reduce((bs, b) => bs + countBlockWords(b), 0), 0).toLocaleString()} words</div>
+              <div>{courseData.ceHours || 3} CE hours</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Content Area */}
+        <div style={{ background: C.card, borderRadius: 12, border: `1px solid ${C.border}`, padding: 32 }}>
+          {/* Course Header */}
+          {currentSection === 0 && (
+            <div style={{ marginBottom: 32, paddingBottom: 24, borderBottom: `1px solid ${C.borderLight}` }}>
+              <h1 style={{ color: C.burgundy, fontSize: 28, fontWeight: 800, margin: 0, lineHeight: 1.3 }}>{courseData.title || "Untitled Course"}</h1>
+              {courseData.description && <p style={{ color: C.textMuted, fontSize: 15, marginTop: 8, lineHeight: 1.6 }}>{courseData.description}</p>}
+              <div style={{ display: "flex", gap: 16, marginTop: 12 }}>
+                {courseData.ceHours && <span style={S.badge(C.burgundy)}><Clock size={12} /> {courseData.ceHours} CE Hours</span>}
+                {courseData.level && <span style={S.badge(C.navy)}>{courseData.level}</span>}
+                {courseData.category && <span style={S.badge(C.green)}>{courseData.category}</span>}
+              </div>
+              {courseData.objectives?.length > 0 && (
+                <div style={{ marginTop: 20 }}>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: C.navy, marginBottom: 8 }}>Learning Objectives</div>
+                  <ul style={{ margin: 0, paddingLeft: 20, fontSize: 14, color: C.text, lineHeight: 1.7 }}>
+                    {courseData.objectives.map((obj, j) => <li key={j} style={{ marginBottom: 4 }}>{obj}</li>)}
+                  </ul>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Module blocks */}
+          {blocks.map((block, i) => renderLearnerBlock(block, i))}
+
+          {/* Navigation */}
+          <div style={{ display: "flex", justifyContent: "space-between", marginTop: 32, paddingTop: 20, borderTop: `1px solid ${C.borderLight}` }}>
+            <button
+              onClick={() => setCurrentSection(Math.max(0, currentSection - 1))}
+              disabled={currentSection === 0}
+              style={{ ...S.btnSecondary, opacity: currentSection === 0 ? 0.4 : 1 }}>
+              <ChevronLeft size={14} /> Previous
+            </button>
+            <span style={{ fontSize: 13, color: C.textMuted, alignSelf: "center" }}>
+              Module {currentSection + 1} of {modules.length}
+            </span>
+            <button
+              onClick={() => setCurrentSection(Math.min(modules.length - 1, currentSection + 1))}
+              disabled={currentSection === modules.length - 1}
+              style={{ ...S.btnPrimary, opacity: currentSection === modules.length - 1 ? 0.4 : 1 }}>
+              Next <ChevronRight size={14} />
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function AccordionPreviewItem({ item }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div style={{ border: `1px solid ${C.border}`, borderRadius: 10, marginBottom: 8, overflow: "hidden", background: "#fff" }}>
+      <button onClick={() => setOpen(!open)}
+        style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 18px", background: open ? C.burgundyFaded : C.bg, border: "none", cursor: "pointer", textAlign: "left", fontFamily: "inherit" }}>
+        <span style={{ fontWeight: 600, fontSize: 15, color: C.navy }}>{item.title || "Untitled"}</span>
+        {open ? <ChevronUp size={16} color={C.textMuted} /> : <ChevronDown size={16} color={C.textMuted} />}
+      </button>
+      {open && (
+        <div style={{ padding: "14px 18px", fontSize: 14, lineHeight: 1.7, color: C.text }}
+          dangerouslySetInnerHTML={{ __html: safeHTML(item.content || "") }} />
+      )}
+    </div>
+  );
+}
+
+
+// ═══════════════════════════════════════════════════════════
+// DRIP SCHEDULE TAB — Configure timed content release
+// ═══════════════════════════════════════════════════════════
+function DripScheduleTab({ courseData, setCourseData }) {
+  const modules = courseData?.modules || [];
+  const settings = courseData?.settings || {};
+  const dripEnabled = settings.dripEnabled || false;
+  const dripSchedule = settings.dripSchedule || [];
+
+  const toggleDrip = () => {
+    setCourseData({
+      ...courseData,
+      settings: { ...settings, dripEnabled: !dripEnabled }
+    });
+  };
+
+  const updateModuleDrip = (moduleIndex, days) => {
+    const newSchedule = [...dripSchedule];
+    const existing = newSchedule.findIndex(d => d.moduleIndex === moduleIndex);
+    if (existing >= 0) {
+      newSchedule[existing] = { ...newSchedule[existing], daysAfterEnrollment: days };
+    } else {
+      newSchedule.push({ moduleIndex, daysAfterEnrollment: days });
+    }
+    setCourseData({
+      ...courseData,
+      settings: { ...settings, dripSchedule: newSchedule }
+    });
+  };
+
+  const getDripDays = (moduleIndex) => {
+    const entry = dripSchedule.find(d => d.moduleIndex === moduleIndex);
+    return entry ? entry.daysAfterEnrollment : moduleIndex * 7; // Default: 1 week per module
+  };
+
+  const applyPreset = (preset) => {
+    const newSchedule = modules.map((_, i) => ({
+      moduleIndex: i,
+      daysAfterEnrollment: preset === "weekly" ? i * 7
+        : preset === "biweekly" ? i * 14
+        : preset === "daily" ? i
+        : preset === "immediate" ? 0
+        : i * 7
+    }));
+    setCourseData({
+      ...courseData,
+      settings: { ...settings, dripEnabled: true, dripSchedule: newSchedule }
+    });
+  };
+
+  if (!modules.length) {
+    return (
+      <div style={{ ...S.card, textAlign: "center", padding: 60 }}>
+        <Calendar size={40} color={C.textLight} />
+        <h3 style={{ color: C.navy, marginTop: 16 }}>No Modules to Schedule</h3>
+        <p style={{ color: C.textMuted, fontSize: 14 }}>Create course content first.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <div style={S.card}>
+        <div style={S.cardHeader}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <Calendar size={20} color={C.navy} />
+            <span style={{ fontWeight: 700, fontSize: 16 }}>Drip Schedule</span>
+          </div>
+          <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}>
+            <span style={{ fontSize: 13, fontWeight: 500, color: dripEnabled ? C.green : C.textMuted }}>
+              {dripEnabled ? "Enabled" : "Disabled"}
+            </span>
+            <div onClick={toggleDrip}
+              style={{ width: 44, height: 24, borderRadius: 12, background: dripEnabled ? C.green : C.border, position: "relative", cursor: "pointer", transition: "background 0.2s" }}>
+              <div style={{ width: 20, height: 20, borderRadius: 10, background: "#fff", position: "absolute", top: 2, left: dripEnabled ? 22 : 2, transition: "left 0.2s", boxShadow: "0 1px 3px rgba(0,0,0,0.2)" }} />
+            </div>
+          </label>
+        </div>
+        <div style={S.cardBody}>
+          <p style={{ color: C.textMuted, fontSize: 14, marginBottom: 20, lineHeight: 1.6 }}>
+            Control when modules become available to learners after enrollment. Each module unlocks after the specified number of days.
+          </p>
+
+          {/* Presets */}
+          <div style={{ display: "flex", gap: 8, marginBottom: 24 }}>
+            <span style={{ fontSize: 13, fontWeight: 600, color: C.navy, alignSelf: "center", marginRight: 8 }}>Presets:</span>
+            {[
+              { key: "immediate", label: "All at Once" },
+              { key: "daily", label: "Daily" },
+              { key: "weekly", label: "Weekly" },
+              { key: "biweekly", label: "Bi-Weekly" },
+            ].map(p => (
+              <button key={p.key} onClick={() => applyPreset(p.key)}
+                style={{ ...S.btnSecondary, fontSize: 12, padding: "6px 14px" }}>
+                {p.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Module Schedule */}
+          {modules.map((mod, i) => {
+            const days = getDripDays(i);
+            return (
+              <div key={i} style={{ display: "flex", alignItems: "center", gap: 16, padding: "12px 16px", borderRadius: 10, marginBottom: 8, background: i % 2 === 0 ? C.bg : "transparent", border: `1px solid ${C.borderLight}` }}>
+                <div style={{ width: 28, height: 28, borderRadius: 8, background: C.burgundyFaded, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, color: C.burgundy }}>{i + 1}</div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 14, fontWeight: 600, color: C.navy, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{mod.title || `Module ${i + 1}`}</div>
+                  <div style={{ fontSize: 12, color: C.textLight }}>{(mod.blocks || []).length} blocks</div>
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  {i === 0 ? (
+                    <span style={S.badge(C.green)}>Available Immediately</span>
+                  ) : (
+                    <>
+                      <span style={{ fontSize: 13, color: C.textMuted }}>Unlocks after</span>
+                      <input type="number" min="0" value={days}
+                        onChange={(e) => updateModuleDrip(i, parseInt(e.target.value) || 0)}
+                        disabled={!dripEnabled}
+                        style={{ ...S.input, width: 70, textAlign: "center", padding: "6px 8px", opacity: dripEnabled ? 1 : 0.5 }} />
+                      <span style={{ fontSize: 13, color: C.textMuted }}>days</span>
+                    </>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Visual Timeline */}
+      {dripEnabled && (
+        <div style={S.card}>
+          <div style={S.cardHeader}>
+            <span style={{ fontWeight: 700, fontSize: 15, color: C.navy }}>Release Timeline</span>
+          </div>
+          <div style={{ padding: 20 }}>
+            <div style={{ position: "relative", paddingLeft: 24 }}>
+              {modules.map((mod, i) => {
+                const days = getDripDays(i);
+                return (
+                  <div key={i} style={{ display: "flex", gap: 16, marginBottom: i < modules.length - 1 ? 0 : 0, paddingBottom: i < modules.length - 1 ? 24 : 0, position: "relative" }}>
+                    {/* Timeline line */}
+                    {i < modules.length - 1 && <div style={{ position: "absolute", left: -16, top: 24, bottom: 0, width: 2, background: C.border }} />}
+                    {/* Timeline dot */}
+                    <div style={{ position: "absolute", left: -20, top: 4, width: 10, height: 10, borderRadius: 5, background: i === 0 ? C.green : C.burgundy, border: "2px solid #fff", boxShadow: `0 0 0 2px ${i === 0 ? C.green : C.burgundy}` }} />
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: C.navy }}>{mod.title?.replace(/^Module \d+:\s*/, "") || `Module ${i + 1}`}</div>
+                      <div style={{ fontSize: 12, color: C.textLight }}>
+                        {days === 0 ? "Day 0 — Enrollment" : `Day ${days}`}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+
+// ═══════════════════════════════════════════════════════════
+// COURSE VERSION HISTORY — Snapshots of course state
+// ═══════════════════════════════════════════════════════════
+function VersionHistory({ courseData, setCourseData }) {
+  const [versions, setVersions] = useState([]);
+  const [selectedVersion, setSelectedVersion] = useState(null);
+  const [showDiff, setShowDiff] = useState(false);
+
+  // Load versions from localStorage
+  useEffect(() => {
+    const key = `cr_versions_${courseData?.slug || courseData?.title || "default"}`;
+    try {
+      const saved = localStorage.getItem(key);
+      if (saved) setVersions(JSON.parse(saved));
+    } catch (e) { /* ignore */ }
+  }, [courseData?.slug, courseData?.title]);
+
+  const saveVersion = (label = "") => {
+    const key = `cr_versions_${courseData?.slug || courseData?.title || "default"}`;
+    const snapshot = {
+      id: uid(),
+      timestamp: new Date().toISOString(),
+      label: label || `Version ${versions.length + 1}`,
+      moduleCount: (courseData.modules || []).length,
+      blockCount: (courseData.modules || []).reduce((s, m) => s + (m.blocks || []).length, 0),
+      wordCount: (courseData.modules || []).reduce((s, m) => s + (m.blocks || []).reduce((bs, b) => bs + countBlockWords(b), 0), 0),
+      examQuestions: (courseData.assessment?.questions || []).length,
+      data: JSON.parse(JSON.stringify(courseData))
+    };
+    const updated = [snapshot, ...versions].slice(0, 20); // Keep last 20 versions
+    setVersions(updated);
+    try { localStorage.setItem(key, JSON.stringify(updated)); } catch (e) { /* quota exceeded */ }
+  };
+
+  const restoreVersion = (version) => {
+    if (!confirm(`Restore "${version.label}"? Your current changes will be saved as a snapshot first.`)) return;
+    saveVersion("Auto-save before restore");
+    setCourseData(version.data);
+    setSelectedVersion(null);
+  };
+
+  const deleteVersion = (versionId) => {
+    const key = `cr_versions_${courseData?.slug || courseData?.title || "default"}`;
+    const updated = versions.filter(v => v.id !== versionId);
+    setVersions(updated);
+    try { localStorage.setItem(key, JSON.stringify(updated)); } catch (e) { /* ignore */ }
+  };
+
+  return (
+    <div>
+      <div style={S.card}>
+        <div style={S.cardHeader}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <History size={20} color={C.navy} />
+            <span style={{ fontWeight: 700, fontSize: 16 }}>Version History</span>
+          </div>
+          <button style={S.btnPrimary} onClick={() => {
+            const label = prompt("Version label (optional):", `v${versions.length + 1} — ${new Date().toLocaleDateString()}`);
+            if (label !== null) saveVersion(label);
+          }}>
+            <Save size={14} /> Save Snapshot
+          </button>
+        </div>
+        <div style={S.cardBody}>
+          <p style={{ color: C.textMuted, fontSize: 14, marginBottom: 20, lineHeight: 1.6 }}>
+            Save snapshots of your course at key milestones. Restore any previous version instantly. Up to 20 versions stored locally.
+          </p>
+
+          {versions.length === 0 ? (
+            <div style={{ textAlign: "center", padding: 40, color: C.textLight }}>
+              <History size={32} />
+              <p style={{ marginTop: 12, fontSize: 14 }}>No versions saved yet. Click "Save Snapshot" to create your first version.</p>
+            </div>
+          ) : (
+            <div>
+              {versions.map((v, i) => (
+                <div key={v.id} style={{ display: "flex", alignItems: "center", gap: 16, padding: "14px 16px", borderRadius: 10, marginBottom: 8, background: selectedVersion === v.id ? C.burgundyFaded : (i % 2 === 0 ? C.bg : "transparent"), border: `1px solid ${selectedVersion === v.id ? C.burgundy + "44" : C.borderLight}`, cursor: "pointer" }}
+                  onClick={() => setSelectedVersion(selectedVersion === v.id ? null : v.id)}>
+                  <div style={{ width: 32, height: 32, borderRadius: 8, background: i === 0 ? C.greenFaded : C.burgundyFaded, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    {i === 0 ? <Clock size={14} color={C.green} /> : <History size={14} color={C.burgundy} />}
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 14, fontWeight: 600, color: C.navy }}>{v.label}</div>
+                    <div style={{ fontSize: 12, color: C.textLight }}>
+                      {new Date(v.timestamp).toLocaleString()} · {v.moduleCount} modules · {v.blockCount} blocks · {v.wordCount?.toLocaleString()} words
+                      {v.examQuestions > 0 && ` · ${v.examQuestions} exam questions`}
+                    </div>
+                  </div>
+                  <div style={{ display: "flex", gap: 6 }}>
+                    <button onClick={(e) => { e.stopPropagation(); restoreVersion(v); }}
+                      style={{ ...S.btnSecondary, fontSize: 11, padding: "5px 10px" }}>
+                      <RotateCcw size={11} /> Restore
+                    </button>
+                    <button onClick={(e) => { e.stopPropagation(); deleteVersion(v.id); }}
+                      style={{ ...S.btnDanger, fontSize: 11, padding: "5px 10px" }}>
+                      <Trash2 size={11} />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+
+// ═══════════════════════════════════════════════════════════
+// ANALYTICS DASHBOARD — Course engagement overview
+// ═══════════════════════════════════════════════════════════
+function AnalyticsDashboard({ courseData }) {
+  const [analytics, setAnalytics] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  const API_BASE = import.meta.env.VITE_API_URL || "https://api.counselorready.com/api";
+  const getToken = () => localStorage.getItem("token");
+
+  const courseId = courseData?._id || courseData?.id;
+
+  useEffect(() => {
+    if (!courseId) return;
+    setLoading(true);
+    (async () => {
+      try {
+        const res = await fetch(`${API_BASE}/course-builder/analytics/${courseId}`, {
+          headers: { Authorization: `Bearer ${getToken()}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setAnalytics(data);
+        } else {
+          setError("Could not load analytics. Course may not have any enrollments yet.");
+        }
+      } catch (err) {
+        setError("Failed to connect to analytics service.");
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, [courseId]);
+
+  // Content analytics (always available from courseData)
+  const modules = courseData?.modules || [];
+  const totalBlocks = modules.reduce((s, m) => s + (m.blocks || []).length, 0);
+  const totalWords = modules.reduce((s, m) => s + (m.blocks || []).reduce((bs, b) => bs + countBlockWords(b), 0), 0);
+  const totalKC = modules.reduce((s, m) => s + (m.blocks || []).filter(b => KNOWLEDGE_CHECK_TYPES.includes(b.type)).length, 0);
+  const totalEngagement = modules.reduce((s, m) => s + (m.blocks || []).filter(b => ENGAGEMENT_TYPES.includes(b.type)).length, 0);
+  const examQuestions = (courseData.assessment?.questions || []).length;
+
+  const blockTypeCounts = {};
+  modules.forEach(m => {
+    (m.blocks || []).forEach(b => {
+      blockTypeCounts[b.type] = (blockTypeCounts[b.type] || 0) + 1;
+    });
+  });
+
+  const StatCard = ({ icon, label, value, color, subtext }) => (
+    <div style={{ background: "#fff", borderRadius: 12, border: `1px solid ${C.borderLight}`, padding: 20, flex: 1, minWidth: 140 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+        {icon}
+        <span style={{ fontSize: 12, fontWeight: 600, color: C.textMuted, textTransform: "uppercase" }}>{label}</span>
+      </div>
+      <div style={{ fontSize: 28, fontWeight: 800, color: color || C.navy }}>{value}</div>
+      {subtext && <div style={{ fontSize: 12, color: C.textLight, marginTop: 4 }}>{subtext}</div>}
+    </div>
+  );
+
+  return (
+    <div>
+      {/* Content Stats */}
+      <div style={S.card}>
+        <div style={S.cardHeader}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <BarChart3 size={20} color={C.navy} />
+            <span style={{ fontWeight: 700, fontSize: 16 }}>Course Analytics</span>
+          </div>
+        </div>
+        <div style={S.cardBody}>
+          <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 24 }}>
+            <StatCard icon={<BookOpen size={16} color={C.burgundy} />} label="Modules" value={modules.length} color={C.burgundy} />
+            <StatCard icon={<Layers size={16} color={C.green} />} label="Content Blocks" value={totalBlocks} color={C.green} />
+            <StatCard icon={<FileText size={16} color={C.navy} />} label="Total Words" value={totalWords.toLocaleString()} color={C.navy} subtext={`${courseData.ceHours || 3} CE hours (${(totalWords / (courseData.ceHours || 3)).toFixed(0)} words/hr)`} />
+            <StatCard icon={<Brain size={16} color={C.burgundy} />} label="Knowledge Checks" value={totalKC} color={C.burgundy} />
+            <StatCard icon={<ClipboardCheck size={16} color={C.gold} />} label="Exam Questions" value={examQuestions} color={C.gold} />
+          </div>
+
+          {/* Block Type Breakdown */}
+          <div style={{ marginBottom: 24 }}>
+            <h4 style={{ fontSize: 14, fontWeight: 700, color: C.navy, marginBottom: 12 }}>Block Type Distribution</h4>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 8 }}>
+              {Object.entries(blockTypeCounts).sort((a, b) => b[1] - a[1]).map(([type, count]) => {
+                const cfg = BLOCK_TYPES.find(b => b.type === type) || { label: type, icon: "?", color: C.textMuted };
+                const pct = totalBlocks > 0 ? (count / totalBlocks * 100).toFixed(0) : 0;
+                return (
+                  <div key={type} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 12px", borderRadius: 8, background: C.bg }}>
+                    <span style={{ fontSize: 16 }}>{cfg.icon}</span>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: 12, fontWeight: 600, color: C.navy }}>{cfg.label}</div>
+                      <div style={{ height: 4, borderRadius: 2, background: C.border, marginTop: 3 }}>
+                        <div style={{ height: 4, borderRadius: 2, background: cfg.color, width: `${pct}%`, transition: "width 0.3s" }} />
+                      </div>
+                    </div>
+                    <span style={{ fontSize: 13, fontWeight: 700, color: cfg.color }}>{count}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Per-Module Stats */}
+          <h4 style={{ fontSize: 14, fontWeight: 700, color: C.navy, marginBottom: 12 }}>Module Breakdown</h4>
+          <div style={{ overflowX: "auto" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+              <thead>
+                <tr style={{ borderBottom: `2px solid ${C.border}` }}>
+                  <th style={{ textAlign: "left", padding: "8px 12px", fontWeight: 700, color: C.navy }}>#</th>
+                  <th style={{ textAlign: "left", padding: "8px 12px", fontWeight: 700, color: C.navy }}>Module</th>
+                  <th style={{ textAlign: "center", padding: "8px 12px", fontWeight: 700, color: C.navy }}>Blocks</th>
+                  <th style={{ textAlign: "center", padding: "8px 12px", fontWeight: 700, color: C.navy }}>Words</th>
+                  <th style={{ textAlign: "center", padding: "8px 12px", fontWeight: 700, color: C.navy }}>KC</th>
+                  <th style={{ textAlign: "center", padding: "8px 12px", fontWeight: 700, color: C.navy }}>Engagement</th>
+                </tr>
+              </thead>
+              <tbody>
+                {modules.map((mod, i) => {
+                  const blocks = mod.blocks || [];
+                  const words = blocks.reduce((s, b) => s + countBlockWords(b), 0);
+                  const kc = blocks.filter(b => KNOWLEDGE_CHECK_TYPES.includes(b.type)).length;
+                  const eng = blocks.filter(b => ENGAGEMENT_TYPES.includes(b.type)).length;
+                  return (
+                    <tr key={i} style={{ borderBottom: `1px solid ${C.borderLight}`, background: i % 2 === 0 ? C.bg : "transparent" }}>
+                      <td style={{ padding: "10px 12px", fontWeight: 600, color: C.burgundy }}>{i + 1}</td>
+                      <td style={{ padding: "10px 12px", maxWidth: 300, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{mod.title || `Module ${i + 1}`}</td>
+                      <td style={{ padding: "10px 12px", textAlign: "center" }}>{blocks.length}</td>
+                      <td style={{ padding: "10px 12px", textAlign: "center" }}>{words.toLocaleString()}</td>
+                      <td style={{ padding: "10px 12px", textAlign: "center", color: kc >= 2 ? C.green : C.danger, fontWeight: 600 }}>{kc}</td>
+                      <td style={{ padding: "10px 12px", textAlign: "center" }}>{eng}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Enrollment Analytics (from API) */}
+          {courseId && (
+            <div style={{ marginTop: 24, paddingTop: 20, borderTop: `1px solid ${C.borderLight}` }}>
+              <h4 style={{ fontSize: 14, fontWeight: 700, color: C.navy, marginBottom: 12 }}>Enrollment Data</h4>
+              {loading && <div style={{ textAlign: "center", padding: 20 }}><Loader2 size={24} style={{ animation: "spin 1s linear infinite", color: C.burgundy }} /></div>}
+              {error && <div style={{ padding: 16, background: C.goldFaded, borderRadius: 8, fontSize: 13, color: C.navy }}>{error}</div>}
+              {analytics && (
+                <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+                  <StatCard icon={<Users size={16} color={C.green} />} label="Enrollments" value={analytics.enrollments || 0} color={C.green} />
+                  <StatCard icon={<Award size={16} color={C.gold} />} label="Completions" value={analytics.completions || 0} color={C.gold} subtext={analytics.enrollments > 0 ? `${((analytics.completions || 0) / analytics.enrollments * 100).toFixed(0)}% completion rate` : ""} />
+                  <StatCard icon={<TrendingUp size={16} color={C.burgundy} />} label="Avg Score" value={analytics.avgScore ? `${analytics.avgScore}%` : "N/A"} color={C.burgundy} />
+                  <StatCard icon={<Clock size={16} color={C.navy} />} label="Avg Time" value={analytics.avgTimeSpent ? `${Math.round(analytics.avgTimeSpent / 60)}m` : "N/A"} color={C.navy} />
+                </div>
+              )}
+              {!courseId && <p style={{ color: C.textMuted, fontSize: 13 }}>Save the course to see enrollment analytics.</p>}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
   );
 }
