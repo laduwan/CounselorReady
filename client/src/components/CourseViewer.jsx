@@ -1,4 +1,4 @@
-/**
+**
  * Copyright (c) 2026 CounselorReady, a subsidiary of Ga Integrated Therapeutic Perspectives, LLC.
  * All rights reserved. Proprietary and confidential.
  * Unauthorized copying or distribution is strictly prohibited.
@@ -30,6 +30,12 @@ import {
   ImageBlock,
   KnowledgeCheckModal
 } from './InteractiveCourseComponents';
+useEffect(() => {
+  const slug = params.slug;
+  if (slug) {
+    window.location.href = '/interactive-course.html?slug=' + slug;
+  }
+}, []);
 
 // ============================================================================
 // API SERVICE
