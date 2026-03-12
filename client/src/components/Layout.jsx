@@ -13,6 +13,7 @@ import { Menu, X, ChevronDown, LogOut, Settings, ShieldCheck, Trophy, Users, Sta
 const navLinks = [
   { name: 'Dashboard',       href: '/dashboard',          static: false },
   { name: 'Courses',         href: '/courses',            static: false },
+  { name: 'Free Tools',      href: '/tools/index.html',   static: true  },
   { name: 'Credentials',     href: '/credentials',        static: false },
   { name: 'CE Planner',      href: '/ce-planner',         static: false },
   { name: 'Audit Kit',       href: '/audit-kit',          static: false },
