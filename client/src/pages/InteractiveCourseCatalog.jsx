@@ -213,7 +213,7 @@ const CourseCard = ({ course, progress, onClick }) => {
       className="bg-white rounded-xl shadow-sm hover:shadow-lg transition-all cursor-pointer overflow-hidden border border-burgundy-100 group"
     >
       {/* Thumbnail — gradient burgundy to forest with soft book icon */}
-      <div className="h-48 bg-gradient-to-br from-burgundy-300 to-dustyrose-200 relative flex items-center justify-center">
+      <div className="h-48 bg-gradient-to-br from-burgundy-200 to-forest-200 relative flex items-center justify-center">
         <BookOpen className="h-16 w-16 text-burgundy-300" />
         {isCompleted && (
           <div className="absolute top-3 right-3 bg-hunter-600 text-white px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1">
