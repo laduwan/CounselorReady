@@ -1320,7 +1320,7 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
   position: fixed; right: 0; top: 40%;
   transform: translateY(-50%) rotate(180deg);
   writing-mode: vertical-rl;
-  background: var(--cr-burgundy);
+  background: #2B6CB0;
   color: #fff;
   padding: 14px 8px;
   font-size: 12px; font-weight: 700;
@@ -1329,13 +1329,13 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
   border-radius: 0 0 8px 8px;
   cursor: pointer;
   z-index: 50;
-  box-shadow: -2px 0 8px rgba(107,29,52,0.2);
+  box-shadow: -2px 0 8px rgba(43,108,176,0.25);
   transition: background var(--cr-transition);
   border: none;
   display: none;
   min-height: auto; min-width: auto;
 }
-.cr-refs-tab:hover { background: var(--cr-burgundy-light); }
+.cr-refs-tab:hover { background: #2C5282; }
 .cr-refs-tab.visible { display: block; }
 
 .cr-refs-panel {
@@ -1391,7 +1391,7 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
   position: fixed; right: 0; top: 58%;
   transform: translateY(-50%) rotate(180deg);
   writing-mode: vertical-rl;
-  background: var(--cr-navy);
+  background: #3182CE;
   color: #fff;
   padding: 14px 8px;
   font-size: 12px; font-weight: 700;
@@ -1400,13 +1400,13 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
   border-radius: 0 0 8px 8px;
   cursor: pointer;
   z-index: 50;
-  box-shadow: -2px 0 8px rgba(40,65,87,0.2);
+  box-shadow: -2px 0 8px rgba(49,130,206,0.25);
   transition: background var(--cr-transition);
   border: none;
   display: none;
   min-height: auto; min-width: auto;
 }
-.cr-resources-tab:hover { background: var(--cr-navy-light); }
+.cr-resources-tab:hover { background: #2B6CB0; }
 .cr-resources-tab.visible { display: block; }
 
 .cr-resources-panel {
@@ -1476,35 +1476,6 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
 /* ═══════════════════════════════════════════════════════════════
    LEARNING OBJECTIVES TRACKER
    ═══════════════════════════════════════════════════════════════ */
-.cr-objectives-panel {
-  background: var(--cr-burgundy-faded);
-  border: 1px solid var(--cr-burgundy);
-  border-radius: var(--cr-radius);
-  padding: 20px; margin-bottom: 28px;
-}
-.cr-objectives-title {
-  font-family: var(--cr-font-display); font-weight: 700;
-  font-size: 1.1em; color: var(--cr-burgundy);
-  margin-bottom: 12px; display: flex; align-items: center; gap: 8px;
-}
-.cr-obj-item {
-  display: flex; align-items: flex-start; gap: 10px;
-  padding: 8px 0; font-size: 0.9em; line-height: 1.4;
-  cursor: pointer; transition: opacity 0.2s;
-}
-.cr-obj-check {
-  width: 22px; height: 22px; min-width: 22px;
-  border: 2px solid var(--cr-burgundy);
-  border-radius: 6px; display: flex;
-  align-items: center; justify-content: center;
-  font-size: 14px; color: transparent;
-  transition: all 0.2s; margin-top: 1px;
-}
-.cr-obj-item.checked .cr-obj-check {
-  background: var(--cr-green); border-color: var(--cr-green); color: #fff;
-}
-.cr-obj-item.checked { opacity: 0.6; }
-
 /* ═══════════════════════════════════════════════════════════════
    TEXT HIGHLIGHTING & ANNOTATIONS
    ═══════════════════════════════════════════════════════════════ */
@@ -1721,7 +1692,7 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
     </div>
     
     <!-- Learning objectives tracker (injected on first content section) -->
-    <div id="crObjectivesTracker"></div>
+    <!-- Learning objectives tracker removed -->
     
     <!-- Section content rendered here -->
     <div id="crContentArea"></div>
@@ -1974,11 +1945,6 @@ let ttsUtterance = null;
 function loadCourse(data) {
   if (!data) { showError('No course data provided'); return; }
   
-  console.log('=== CReady Debug ===');
-  console.log('has modules:', !!data.modules, 'has sections:', !!data.sections);
-  console.log('modules count:', data.modules?.length, 'sections count:', data.sections?.length);
-  if (data.sections?.[0]) console.log('first section title:', data.sections[0].title, 'blocks:', data.sections[0].contentBlocks?.length);
-  
   // ── Normalize: passThreshold → passingScore ──
   if (data.assessment) {
     if (data.assessment.passThreshold && !data.assessment.passingScore) {
@@ -2130,10 +2096,6 @@ function loadCourse(data) {
     return;
   }
   
-  console.log('=== After normalization ===');
-  console.log('sections:', data.sections.length);
-  data.sections.forEach((s, i) => console.log('[' + i + ']', s.title, '_moduleTitle:', s._moduleTitle, 'blocks:', s.contentBlocks?.length));
-  
   // ── Extract assessment from inline quiz blocks if top-level is empty ──
   if (!data.assessment?.questions?.length) {
     // Walk all sections/contentBlocks looking for isExam: true quiz blocks
@@ -2227,8 +2189,6 @@ function buildSectionNav() {
   // Filter out overview sections for nav
   const navSections = course.sections.map((s, i) => ({ section: s, index: i })).filter(s => !s.section._isOverview);
   const completedCount = navSections.filter(s => completedSections.has(s.index)).length;
-  
-  console.log('buildSectionNav: navSections=' + navSections.length + ', total sections=' + course.sections.length);
   
   // "COURSE SECTIONS X/Y" label
   const label = document.createElement('div');
@@ -4788,37 +4748,8 @@ function updateObjectivesFromKC(kcId) {
   renderObjectivesTracker();
 }
 
-function renderObjectivesTracker() {
-  const tracker = document.getElementById('crObjectivesTracker');
-  if (!tracker || !course?.objectives?.length) { if (tracker) tracker.innerHTML = ''; return; }
-  
-  // Only show on content sections (not overview, not assessment)
-  const section = course.sections[currentSectionIndex];
-  if (section?._isOverview || currentView === 'assessment') { tracker.innerHTML = ''; return; }
-  
-  // Load from localStorage
-  const saved = loadState('objectives');
-  if (saved) checkedObjectives = new Set(saved);
-  const savedKCs = loadState('correctKCs');
-  if (savedKCs) correctKCIds = new Set(savedKCs);
-  
-  const pct = Math.round((checkedObjectives.size / course.objectives.length) * 100);
-  
-  tracker.innerHTML = `<div class="cr-objectives-panel">
-    <div class="cr-objectives-title">🎯 Learning Objectives <span style="font-weight:400;font-size:0.8em;color:var(--cr-text-muted);margin-left:auto">${checkedObjectives.size}/${course.objectives.length} (${pct}%)</span></div>
-    ${course.objectives.map((obj, i) => `<div class="cr-obj-item ${checkedObjectives.has(i) ? 'checked' : ''}" data-action="toggleObjective" data-idx="${i}">
-      <span class="cr-obj-check">${checkedObjectives.has(i) ? '✓' : ''}</span>
-      <span>${esc(obj)}</span>
-    </div>`).join('')}
-  </div>`;
-}
-
-function toggleObjective(idx) {
-  if (checkedObjectives.has(idx)) checkedObjectives.delete(idx);
-  else checkedObjectives.add(idx);
-  saveState('objectives', [...checkedObjectives]);
-  renderObjectivesTracker();
-}
+function renderObjectivesTracker() { /* removed */ }
+function toggleObjective() { /* removed */ }
 
 // ═══════════════════════════════════════════════════════════════
 // FEATURE: PROGRESS BOOKMARKS (localStorage)
