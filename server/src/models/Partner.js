@@ -49,6 +49,32 @@ const partnerSchema = new mongoose.Schema({
     default: 'free'
   },
 
+  // Domain verification
+  domainVerification: {
+    verificationToken: { type: String },
+    verified: { type: Boolean, default: false },
+    verifiedAt: { type: Date },
+    lastCheckAt: { type: Date }
+  },
+
+  // Billing
+  billing: {
+    stripeCustomerId: { type: String },
+    stripeSubscriptionId: { type: String },
+    plan: {
+      type: String,
+      enum: ['free', 'basic', 'professional', 'enterprise'],
+      default: 'free'
+    },
+    status: {
+      type: String,
+      enum: ['active', 'trial', 'past_due', 'canceled', 'inactive'],
+      default: 'trial'
+    },
+    trialEndsAt: { type: Date },
+    currentPeriodEnd: { type: Date }
+  },
+
   // Admin who created this partner
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
