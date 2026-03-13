@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clinical Note Writer — CounselorReady</title>
+<meta name="description" content="Free AI-powered clinical note writer for therapists. Generate SOAP, DAP, BIRP, and Narrative notes from session bullet points.">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Lato:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --burgundy: #6B1D34;
+  --burgundy-light: #8B3A54;
+  --burgundy-deep: #4A1224;
+  --rose: #D0768A;
+  --green: #4A7C59;
+  --green-light: #5A9469;
+  --gold: #D4A855;
+  --navy: #284157;
+  --navy-deep: #1A2D3D;
+  --stone: #EDEADF;
+  --cream: #F9F6EF;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Lato','Segoe UI',sans-serif;background:var(--stone);color:#2A2A2A;line-height:1.6;-webkit-font-smoothing:antialiased}
+
+/* HERO */
+.hero{background:linear-gradient(145deg,var(--burgundy-deep) 0%,var(--burgundy) 50%,var(--burgundy-light) 100%);padding:20px 28px 22px;position:relative;overflow:hidden;border-bottom:2px solid var(--gold)}
+.hero::before{content:'';position:absolute;top:0;left:0;right:0;bottom:0;background:radial-gradient(ellipse at 30% 20%,rgba(212,168,85,0.06) 0%,transparent 60%)}
+.hero-inner{max-width:760px;margin:0 auto;position:relative;z-index:1}
+.hero-back{display:inline-flex;align-items:center;gap:6px;color:rgba(255,255,255,0.55);font-size:12px;font-weight:600;text-decoration:none;letter-spacing:.5px;margin-bottom:10px;transition:color .15s}
+.hero-back:hover{color:rgba(255,255,255,0.85)}
+.hero-logo{font-family:'Cormorant Garamond',Georgia,serif;font-weight:700;font-size:22px;letter-spacing:-0.5px;margin-bottom:3px}
+.hero h1{font-family:'Cormorant Garamond',Georgia,serif;font-size:24px;font-weight:700;color:#fff;margin-bottom:4px;line-height:1.2}
+.hero p{font-size:13px;color:rgba(255,255,255,0.6);max-width:520px;line-height:1.5}
+.hero-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);padding:4px 12px;border-radius:6px;color:rgba(255,255,255,0.65);font-size:11px;font-weight:600;margin-top:8px}
+
+/* LAYOUT */
+.main{max-width:760px;margin:0 auto;padding:28px 20px 60px}
+
+/* FORM CARD */
+.form-card{background:#fff;border-radius:14px;padding:28px;border:1px solid #E8E4D8;box-shadow:0 2px 10px rgba(0,0,0,0.06);margin-bottom:24px}
+.form-card h2{font-family:'Cormorant Garamond',Georgia,serif;font-size:20px;font-weight:700;color:var(--navy);margin-bottom:20px;padding-bottom:12px;border-bottom:1px solid #E8E4D8}
+
+/* FORMAT SELECTOR */
+.format-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:20px}
+.format-btn{padding:10px 6px;border:1.5px solid #D5CFC0;border-radius:8px;background:#fff;font-family:'Lato',sans-serif;font-size:12px;font-weight:700;color:#555;cursor:pointer;text-align:center;transition:all .15s;letter-spacing:.5px}
+.format-btn:hover{border-color:var(--burgundy);color:var(--burgundy)}
+.format-btn.active{border-color:var(--burgundy);background:rgba(107,29,52,0.06);color:var(--burgundy)}
+.format-desc{font-size:11.5px;color:#888;margin-bottom:20px;padding:8px 12px;background:var(--cream);border-radius:6px;min-height:32px;line-height:1.5}
+
+/* FORM FIELDS */
+.field{margin-bottom:16px}
+.field label{display:block;font-size:12px;font-weight:700;color:var(--navy);margin-bottom:6px;letter-spacing:.3px;text-transform:uppercase}
+.field label span{font-weight:400;color:#999;text-transform:none;letter-spacing:0;margin-left:4px}
+.field textarea,.field input[type=text],.field input[type=number],.field select{width:100%;padding:10px 12px;border:1.5px solid #D5CFC0;border-radius:8px;font-family:'Lato',sans-serif;font-size:13.5px;color:#2A2A2A;background:#fff;transition:border-color .15s;outline:none}
+.field textarea:focus,.field input:focus,.field select:focus{border-color:var(--burgundy)}
+.field textarea{resize:vertical;min-height:140px;line-height:1.6}
+.char-count{font-size:11px;color:#aaa;text-align:right;margin-top:4px}
+.char-count.warn{color:#c94d65}
+
+/* MODALITIES */
+.modalities-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.mod-label{display:flex;align-items:center;gap:7px;font-size:12.5px;color:#444;cursor:pointer;padding:5px 8px;border-radius:6px;border:1px solid #E0DBD0;background:#fff;transition:all .15s}
+.mod-label:hover{border-color:var(--green);color:var(--green)}
+.mod-label input{accent-color:var(--burgundy);width:14px;height:14px;cursor:pointer;flex-shrink:0}
+.mod-label.checked{border-color:var(--burgundy);background:rgba(107,29,52,0.04);color:var(--burgundy)}
+
+/* ROW */
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+
+/* SUBMIT */
+.submit-btn{width:100%;padding:14px;background:linear-gradient(135deg,var(--burgundy),var(--burgundy-light));color:#fff;border:none;border-radius:10px;font-family:'Lato',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:all .2s;box-shadow:0 3px 12px rgba(107,29,52,0.25);display:flex;align-items:center;justify-content:center;gap:10px}
+.submit-btn:hover:not(:disabled){box-shadow:0 5px 18px rgba(107,29,52,0.35);transform:translateY(-1px)}
+.submit-btn:disabled{opacity:.6;cursor:default;transform:none}
+.submit-btn .spinner{width:18px;height:18px;border:2.5px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;display:none}
+.submit-btn.loading .spinner{display:block}
+.submit-btn.loading .btn-text{display:none}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* RATE LIMIT BAR */
+.rate-info{display:flex;align-items:center;justify-content:space-between;font-size:11.5px;color:#888;margin-top:10px;padding:8px 12px;background:var(--cream);border-radius:6px}
+.rate-info .tier-badge{padding:2px 8px;border-radius:4px;font-weight:700;font-size:10px;background:rgba(107,29,52,0.08);color:var(--burgundy);text-transform:uppercase;letter-spacing:.5px}
+
+/* RESULT */
+.result-card{background:#fff;border-radius:14px;border:1px solid #E8E4D8;box-shadow:0 2px 10px rgba(0,0,0,0.06);overflow:hidden;display:none}
+.result-card.visible{display:block}
+.result-header{padding:16px 22px;background:linear-gradient(135deg,var(--cream),#fff);border-bottom:1px solid #E8E4D8;display:flex;align-items:center;justify-content:space-between}
+.result-header h3{font-family:'Cormorant Garamond',Georgia,serif;font-size:18px;font-weight:700;color:var(--navy)}
+.copy-btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;background:var(--green);color:#fff;border:none;border-radius:7px;font-family:'Lato',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s}
+.copy-btn:hover{background:var(--green-light)}
+.copy-btn.copied{background:#4A7C59;opacity:.8}
+.result-body{padding:22px;white-space:pre-wrap;font-size:13.5px;line-height:1.8;color:#333;font-family:'Lato',sans-serif}
+
+/* DISCLAIMER */
+.disclaimer{font-size:11px;color:#aaa;text-align:center;margin-top:10px;line-height:1.6}
+
+/* ERROR / RATE LIMIT */
+.alert{padding:14px 18px;border-radius:10px;font-size:13px;line-height:1.6;margin-bottom:16px;display:none}
+.alert.visible{display:block}
+.alert-error{background:rgba(201,77,101,0.08);border:1px solid rgba(201,77,101,0.2);color:#8B1A2E}
+.alert-limit{background:rgba(212,168,85,0.1);border:1px solid rgba(212,168,85,0.3);color:#7A5C1E}
+.alert strong{font-weight:700}
+.upgrade-link{display:inline-flex;align-items:center;gap:5px;margin-top:8px;padding:6px 14px;background:linear-gradient(135deg,var(--gold),#C49A40);color:var(--burgundy-deep);border-radius:7px;font-size:12px;font-weight:700;text-decoration:none;transition:all .15s}
+.upgrade-link:hover{box-shadow:0 3px 10px rgba(212,168,85,0.35)}
+
+/* FOOTER */
+.page-footer{text-align:center;padding:20px;font-size:11.5px;color:#999;line-height:1.7}
+.footer-logo{font-family:'Cormorant Garamond',Georgia,serif;font-weight:700;font-size:15px}
+
+@media(max-width:600px){
+  .format-grid{grid-template-columns:repeat(2,1fr)}
+  .modalities-grid{grid-template-columns:repeat(2,1fr)}
+  .field-row{grid-template-columns:1fr}
+  .hero{padding:18px 16px 20px}
+  .main{padding:20px 14px 40px}
+  .form-card{padding:20px 16px}
+}
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-inner">
+    <a href="/tools/" class="hero-back">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+      All Free Tools
+    </a>
+    <div class="hero-logo"><span style="color:#D0768A">Counselor</span><span style="color:#5A9469">Ready</span></div>
+    <h1>Clinical Note Writer</h1>
+    <p>Enter your session bullet points. Select your format. Get a polished clinical note in seconds.</p>
+    <div class="hero-badge">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#D4A855" stroke-width="2"><path d="M12 22s-8-4.5-8-11.8A8 8 0 0 1 12 2a8 8 0 0 1 8 8.2c0 7.3-8 11.8-8 11.8z"/><circle cx="12" cy="10" r="3"/></svg>
+      No data stored &nbsp;·&nbsp; 15 notes/day free &nbsp;·&nbsp; No login required
+    </div>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- ERROR ALERT -->
+  <div class="alert alert-error" id="errorAlert"></div>
+  <!-- RATE LIMIT ALERT -->
+  <div class="alert alert-limit" id="limitAlert"></div>
+
+  <!-- FORM -->
+  <div class="form-card">
+    <h2>Generate Note</h2>
+
+    <!-- FORMAT -->
+    <div class="field">
+      <label>Note Format</label>
+      <div class="format-grid">
+        <button class="format-btn active" data-format="SOAP" onclick="selectFormat(this)">SOAP</button>
+        <button class="format-btn" data-format="DAP" onclick="selectFormat(this)">DAP</button>
+        <button class="format-btn" data-format="BIRP" onclick="selectFormat(this)">BIRP</button>
+        <button class="format-btn" data-format="NARRATIVE" onclick="selectFormat(this)">Narrative</button>
+      </div>
+      <div class="format-desc" id="formatDesc">Subjective · Objective · Assessment · Plan — The most widely accepted format for mental health documentation.</div>
+    </div>
+
+    <!-- BULLET POINTS -->
+    <div class="field">
+      <label>Session Bullet Points <span>(required)</span></label>
+      <textarea id="bulletPoints" placeholder="Enter your session notes as bullet points. Example:&#10;• Client reported increased anxiety since last session&#10;• Practiced box breathing — client rated 7/10 effectiveness&#10;• Explored CBT thought records around work stress&#10;• Client denied SI/HI&#10;• Plan: continue exposure hierarchy, practice sleep hygiene" oninput="updateCharCount()" maxlength="5000"></textarea>
+      <div class="char-count" id="charCount">0 / 5,000</div>
+    </div>
+
+    <!-- SESSION TYPE + DURATION -->
+    <div class="field-row">
+      <div class="field">
+        <label>Session Type</label>
+        <select id="sessionType">
+          <option value="">Not specified</option>
+          <option value="Individual">Individual</option>
+          <option value="Couples">Couples</option>
+          <option value="Family">Family</option>
+          <option value="Group">Group</option>
+          <option value="Intake/Assessment">Intake / Assessment</option>
+          <option value="Crisis Intervention">Crisis Intervention</option>
+          <option value="Telehealth">Telehealth</option>
+          <option value="Case Management">Case Management</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Duration <span>(minutes)</span></label>
+        <input type="number" id="duration" value="50" min="1" max="480" placeholder="50">
+      </div>
+    </div>
+
+    <!-- MODALITIES -->
+    <div class="field">
+      <label>Modalities Used <span>(select all that apply)</span></label>
+      <div class="modalities-grid" id="modalitiesGrid">
+        <!-- populated by JS -->
+      </div>
+    </div>
+
+    <!-- DIAGNOSIS + RISK -->
+    <div class="field-row">
+      <div class="field">
+        <label>Primary Diagnosis <span>(optional)</span></label>
+        <input type="text" id="diagnosis" placeholder="e.g. F41.1 GAD, F33.1 MDD">
+      </div>
+      <div class="field">
+        <label>Risk Level</label>
+        <select id="riskLevel">
+          <option value="None identified">None identified</option>
+          <option value="Low">Low</option>
+          <option value="Moderate">Moderate</option>
+          <option value="High">High</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- CLIENT INITIALS -->
+    <div class="field">
+      <label>Client Initials <span>(optional — used in note instead of full name)</span></label>
+      <input type="text" id="clientInitials" placeholder="e.g. J.D." maxlength="6" style="max-width:140px">
+    </div>
+
+    <button class="submit-btn" id="submitBtn" onclick="generateNote()">
+      <span class="btn-text">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle;margin-right:4px"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+        Generate Note
+      </span>
+      <span class="spinner"></span>
+    </button>
+
+    <div class="rate-info" id="rateInfo">
+      <span>Usage today: <strong id="rateUsed">—</strong> / <strong id="rateLimit">—</strong></span>
+      <span class="tier-badge" id="rateTier">—</span>
+    </div>
+    <p class="disclaimer">This tool generates draft notes only. Review and edit every note before saving to your EHR. Do not include full names, dates of birth, or other PHI in your bullet points.</p>
+  </div>
+
+  <!-- RESULT -->
+  <div class="result-card" id="resultCard">
+    <div class="result-header">
+      <h3 id="resultTitle">Generated Note</h3>
+      <button class="copy-btn" id="copyBtn" onclick="copyNote()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+        Copy
+      </button>
+    </div>
+    <div class="result-body" id="resultBody"></div>
+  </div>
+
+</div>
+
+<!-- FOOTER -->
+<div class="page-footer">
+  <span class="footer-logo"><span style="color:var(--burgundy)">Counselor</span><span style="color:var(--green)">Ready</span></span>
+  — Free clinical tools for the independent practitioner.<br>
+  CounselorReady does not store session notes or generated content.<br>
+  &copy; 2025 GA Integrated Therapeutic Perspectives LLC (GAITP LLC). All rights reserved. | NBCC ACEP Provider #7760
+</div>
+
+<script>
+const FORMAT_DESCS = {
+  SOAP: 'Subjective · Objective · Assessment · Plan — The most widely accepted format for mental health documentation.',
+  DAP: 'Data · Assessment · Plan — Streamlined format popular in community mental health and EHR systems.',
+  BIRP: 'Behavior · Intervention · Response · Plan — Common in substance use and behavioral health settings.',
+  NARRATIVE: 'Narrative — Free-flowing clinical prose. Good for intakes, summaries, and complex presentations.'
+};
+
+const MODALITIES = [
+  'CBT','DBT','EMDR','Psychodynamic','Person-Centered',
+  'Solution-Focused','Motivational Interviewing','Narrative Therapy',
+  'ACT','Gestalt','Play Therapy','Somatic Experiencing','IFS','EFT','TF-CBT'
+];
+
+let selectedFormat = 'SOAP';
+let noteText = '';
+
+// Build modalities checkboxes
+(function() {
+  const grid = document.getElementById('modalitiesGrid');
+  MODALITIES.forEach(mod => {
+    const lbl = document.createElement('label');
+    lbl.className = 'mod-label';
+    lbl.innerHTML = `<input type="checkbox" value="${mod}" onchange="toggleMod(this)"> ${mod}`;
+    grid.appendChild(lbl);
+  });
+})();
+
+function selectFormat(btn) {
+  document.querySelectorAll('.format-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  selectedFormat = btn.dataset.format;
+  document.getElementById('formatDesc').textContent = FORMAT_DESCS[selectedFormat];
+}
+
+function toggleMod(cb) {
+  cb.parentElement.classList.toggle('checked', cb.checked);
+}
+
+function updateCharCount() {
+  const len = document.getElementById('bulletPoints').value.length;
+  const el = document.getElementById('charCount');
+  el.textContent = `${len.toLocaleString()} / 5,000`;
+  el.classList.toggle('warn', len > 4500);
+}
+
+function showError(msg) {
+  const el = document.getElementById('errorAlert');
+  el.innerHTML = msg;
+  el.classList.add('visible');
+  document.getElementById('limitAlert').classList.remove('visible');
+}
+
+function showRateLimit(data) {
+  const el = document.getElementById('limitAlert');
+  el.innerHTML = `<strong>Daily limit reached.</strong> ${data.message || ''}<br>${data.upgrade || ''}<br><a href="/register" class="upgrade-link">Upgrade Account →</a>`;
+  el.classList.add('visible');
+  document.getElementById('errorAlert').classList.remove('visible');
+}
+
+function updateRateInfo(tier, remaining, limit) {
+  const used = limit === 'unlimited' ? 0 : (limit - remaining);
+  document.getElementById('rateUsed').textContent = limit === 'unlimited' ? '∞' : used;
+  document.getElementById('rateLimit').textContent = limit === 'unlimited' ? 'unlimited' : limit;
+  document.getElementById('rateTier').textContent = tier;
+}
+
+async function generateNote() {
+  const bulletPoints = document.getElementById('bulletPoints').value.trim();
+  if (!bulletPoints) {
+    showError('Please enter your session bullet points before generating a note.');
+    return;
+  }
+
+  const modalities = Array.from(document.querySelectorAll('#modalitiesGrid input:checked')).map(cb => cb.value);
+
+  const body = {
+    format: selectedFormat,
+    bulletPoints,
+    sessionType: document.getElementById('sessionType').value,
+    duration: document.getElementById('duration').value || '50',
+    modalities,
+    diagnosis: document.getElementById('diagnosis').value.trim(),
+    riskLevel: document.getElementById('riskLevel').value,
+    clientInitials: document.getElementById('clientInitials').value.trim()
+  };
+
+  // UI: loading state
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  btn.classList.add('loading');
+  document.getElementById('errorAlert').classList.remove('visible');
+  document.getElementById('limitAlert').classList.remove('visible');
+  document.getElementById('resultCard').classList.remove('visible');
+
+  try {
+    const res = await fetch('/api/tools/generate-note', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+
+    const data = await res.json();
+
+    if (res.status === 429) {
+      showRateLimit(data);
+      return;
+    }
+
+    if (!res.ok) {
+      showError(`<strong>Error:</strong> ${data.error || 'Something went wrong. Please try again.'}`);
+      return;
+    }
+
+    // Success
+    noteText = data.note;
+    document.getElementById('resultTitle').textContent = `${data.format} Note`;
+    document.getElementById('resultBody').textContent = noteText;
+    document.getElementById('resultCard').classList.add('visible');
+    document.getElementById('resultCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+    updateRateInfo(data.tier, data.remaining, data.limit);
+
+  } catch (err) {
+    showError('<strong>Network error.</strong> Please check your connection and try again.');
+  } finally {
+    btn.disabled = false;
+    btn.classList.remove('loading');
+  }
+}
+
+async function copyNote() {
+  if (!noteText) return;
+  try {
+    await navigator.clipboard.writeText(noteText);
+    const btn = document.getElementById('copyBtn');
+    btn.classList.add('copied');
+    btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Copied!';
+    setTimeout(() => {
+      btn.classList.remove('copied');
+      btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copy';
+    }, 2000);
+  } catch {
+    // Fallback for older browsers
+    const ta = document.createElement('textarea');
+    ta.value = noteText;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+  }
+}
+
+// Load initial rate info on page load (non-blocking)
+fetch('/api/tools/note-limit')
+  .then(r => r.ok ? r.json() : null)
+  .then(data => {
+    if (data) updateRateInfo(data.tier, data.remaining === 'unlimited' ? Infinity : data.remaining, data.limit === 'unlimited' ? 'unlimited' : data.limit);
+  })
+  .catch(() => {});
+</script>
+</body>
+</html>

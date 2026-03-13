@@ -711,6 +711,12 @@
 
         case 'text':
           var rawText = block.content || block.textContent || '';
+          // Guard: if content is object/array (bad seed data), convert to string
+          if (typeof rawText !== 'string') {
+            rawText = Array.isArray(rawText)
+              ? rawText.map(function(r) { return typeof r === 'string' ? r : (r.formatted || r.text || r.title || JSON.stringify(r)); }).join('<br/>')
+              : String(rawText);
+          }
           var isHtmlContent = /<[a-z][\s\S]*>/i.test(rawText);
           var hasMarkdownHeadings = /(?:^|<p>\s*)#{1,6}\s/m.test(rawText);
           var renderedText = !isHtmlContent
@@ -1179,6 +1185,20 @@
               </div>
             </div>
           `;
+          break;
+
+        case 'references':
+          var refs = Array.isArray(block.references) ? block.references : Array.isArray(block.content) ? block.content : [];
+          var refsHtml = '';
+          if (refs.length) {
+            refsHtml = refs.map(function(ref) {
+              var text = typeof ref === 'string' ? ref : (ref.formatted || ref.text || ref.title || JSON.stringify(ref));
+              return '<p class="cr-reference" style="padding-left:36px;text-indent:-36px;font-size:14px;color:#444;line-height:1.7;margin-bottom:6px">' + text + '</p>';
+            }).join('');
+          } else if (typeof block.content === 'string') {
+            refsHtml = block.content;
+          }
+          div.innerHTML = '<div class="bg-white rounded-xl border border-slate-200 p-6"><h3 class="font-semibold text-slate-800 mb-4">References</h3><div class="cr-references">' + refsHtml + '</div></div>';
           break;
 
         default:
