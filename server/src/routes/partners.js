@@ -13,7 +13,8 @@ import Partner from '../models/Partner.js';
 import User from '../models/User.js';
 import InteractiveCourse from '../models/InteractiveCourse.js';
 import { protect, requireAdmin, requirePartnerAdmin } from '../middleware/auth.js';
-import { enforceCourseQuota, enforceUserQuota, enforceCustomDomainFeature, enforceBulkUploadFeature, getPartnerUsage, getPlanLimits } from '../middleware/quotaEnforcement.js';
+import { enforceCourseQuota, enforceUserQuota, enforceCustomDomainFeature, enforceBulkUploadFeature, getPartnerUsage } from '../middleware/quotaEnforcement.js';
+import { PARTNER_PLANS, getPlanLimits } from '../utils/planLimits.js';
 
 const stripe = process.env.STRIPE_SECRET_KEY ? new Stripe(process.env.STRIPE_SECRET_KEY) : null;
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -718,13 +719,6 @@ router.post('/my/domain/verify-check', protect, requirePartnerAdmin, async (req,
 // ══════════════════════════════════════════════
 // PARTNER BILLING
 // ══════════════════════════════════════════════
-
-const PARTNER_PLANS = {
-  starter: { name: 'Starter', price: 99, introPrice: 49, introMonths: 2, maxCourses: 10, maxUsers: 100 },
-  growth: { name: 'Growth', price: 199, introPrice: 99, introMonths: 2, maxCourses: 50, maxUsers: 500 },
-  professional: { name: 'Professional', price: 399, introPrice: null, introMonths: 0, maxCourses: 200, maxUsers: 5000 },
-  enterprise: { name: 'Enterprise', price: 799, introPrice: null, introMonths: 0, maxCourses: -1, maxUsers: -1 }
-};
 
 // ── Partner admin: get billing info ──
 router.get('/my/billing', protect, requirePartnerAdmin, async (req, res) => {
