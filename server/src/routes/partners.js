@@ -13,6 +13,7 @@ import Partner from '../models/Partner.js';
 import User from '../models/User.js';
 import InteractiveCourse from '../models/InteractiveCourse.js';
 import { protect, requireAdmin, requirePartnerAdmin } from '../middleware/auth.js';
+import { enforceCourseQuota, enforceUserQuota, enforceCustomDomainFeature, enforceBulkUploadFeature, getPartnerUsage, getPlanLimits } from '../middleware/quotaEnforcement.js';
 
 const stripe = process.env.STRIPE_SECRET_KEY ? new Stripe(process.env.STRIPE_SECRET_KEY) : null;
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -139,7 +140,7 @@ router.get('/my/courses', protect, requirePartnerAdmin, async (req, res) => {
 });
 
 // ── Partner admin: create course ──
-router.post('/my/courses', protect, requirePartnerAdmin, async (req, res) => {
+router.post('/my/courses', protect, requirePartnerAdmin, enforceCourseQuota, async (req, res) => {
   try {
     const partnerId = req.partnerId || req.user.partnerId;
     const { title, description, ceHours, slug, sections, assessment, objectives, presenter, references, targetAudience, categories, tags } = req.body;
@@ -569,7 +570,7 @@ router.get('/slug/:slug/courses', async (req, res) => {
 // ══════════════════════════════════════════════
 
 // ── Partner admin: bulk upload courses via JSON ──
-router.post('/my/courses/bulk', protect, requirePartnerAdmin, async (req, res) => {
+router.post('/my/courses/bulk', protect, requirePartnerAdmin, enforceBulkUploadFeature, enforceCourseQuota, async (req, res) => {
   try {
     const partnerId = req.partnerId || req.user.partnerId;
     const { courses } = req.body;
@@ -636,7 +637,7 @@ router.post('/my/courses/bulk', protect, requirePartnerAdmin, async (req, res) =
 // ══════════════════════════════════════════════
 
 // ── Partner admin: initiate domain verification ──
-router.post('/my/domain/verify-init', protect, requirePartnerAdmin, async (req, res) => {
+router.post('/my/domain/verify-init', protect, requirePartnerAdmin, enforceCustomDomainFeature, async (req, res) => {
   try {
     const partnerId = req.partnerId || req.user.partnerId;
     const partner = await Partner.findById(partnerId);
@@ -866,47 +867,68 @@ router.post('/my/billing/portal', protect, requirePartnerAdmin, async (req, res)
 // PARTNER WELCOME EMAIL
 // ══════════════════════════════════════════════
 
+// Helper: build partner-branded email HTML
+function buildPartnerEmail({ brandColor, companyName, logoUrl, tagline, heading, body, buttonText, buttonUrl, footerText }) {
+  return `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+      <div style="background: ${brandColor}; padding: 30px; text-align: center;">
+        ${logoUrl ? `<img src="${logoUrl}" alt="${companyName}" style="height: 48px; margin-bottom: 8px;">` : ''}
+        <h1 style="color: #fff; margin: 0; font-size: 24px;">${companyName}</h1>
+        ${tagline ? `<p style="color: rgba(255,255,255,0.8); margin: 8px 0 0 0; font-size: 14px;">${tagline}</p>` : ''}
+      </div>
+      <div style="padding: 30px; background: #fff;">
+        <h2 style="color: ${brandColor};">${heading}</h2>
+        <p style="color: #333; line-height: 1.6;">${body}</p>
+        <div style="text-align: center; margin: 30px 0;">
+          <a href="${buttonUrl}" style="background: ${brandColor}; color: #fff; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">
+            ${buttonText}
+          </a>
+        </div>
+        <p style="color: #666; font-size: 14px;">${footerText}</p>
+      </div>
+      <div style="background: #f5f5f5; padding: 20px; text-align: center; font-size: 12px; color: #666;">
+        <p style="margin: 0 0 4px 0;">Powered by <a href="https://counselorready.com" style="color: #6B1D34; text-decoration: none; font-weight: 600;">CounselorReady</a></p>
+        <p style="margin: 0;">NBCC ACEP #7760 | © ${new Date().getFullYear()} GA Integrated Therapeutic Perspectives LLC</p>
+      </div>
+    </div>
+  `;
+}
+
+// Apply template variable substitution
+function applyTemplateVars(str, vars) {
+  let result = str;
+  for (const [key, value] of Object.entries(vars)) {
+    result = result.replace(new RegExp(`\\{\\{${key}\\}\\}`, 'g'), value);
+  }
+  return result;
+}
+
 // Send welcome email to newly registered partner user
 async function sendPartnerWelcomeEmail(user, partner) {
   try {
     const brandColor = partner.branding?.primaryColor || '#6B1D34';
     const companyName = partner.branding?.companyName || partner.name;
     const loginUrl = `${process.env.CLIENT_URL || 'https://counselorready.com'}/login?partner=${partner.slug}`;
+    const firstName = user.profile?.firstName || 'there';
+
+    const vars = { firstName, companyName };
+    const tpl = partner.emailTemplates?.welcome || {};
 
     await resend.emails.send({
       from: 'CounselorReady <noreply@counselorready.com>',
       to: user.email,
-      subject: `Welcome to ${companyName}!`,
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <div style="background: ${brandColor}; padding: 30px; text-align: center;">
-            ${partner.branding?.logoUrl
-              ? `<img src="${partner.branding.logoUrl}" alt="${companyName}" style="height: 48px; margin-bottom: 8px;">`
-              : ''}
-            <h1 style="color: #fff; margin: 0; font-size: 24px;">${companyName}</h1>
-            ${partner.branding?.tagline ? `<p style="color: rgba(255,255,255,0.8); margin: 8px 0 0 0; font-size: 14px;">${partner.branding.tagline}</p>` : ''}
-          </div>
-          <div style="padding: 30px; background: #fff;">
-            <h2 style="color: ${brandColor};">Welcome, ${user.profile?.firstName || 'there'}!</h2>
-            <p style="color: #333; line-height: 1.6;">
-              Your account has been created on ${companyName}'s learning platform.
-              You're all set to start exploring courses and earning CE credits.
-            </p>
-            <div style="text-align: center; margin: 30px 0;">
-              <a href="${loginUrl}" style="background: ${brandColor}; color: #fff; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">
-                Start Learning
-              </a>
-            </div>
-            <p style="color: #666; font-size: 14px;">
-              If you need help, contact your administrator or reach out to us.
-            </p>
-          </div>
-          <div style="background: #f5f5f5; padding: 20px; text-align: center; font-size: 12px; color: #666;">
-            <p style="margin: 0 0 4px 0;">Powered by <a href="https://counselorready.com" style="color: #6B1D34; text-decoration: none; font-weight: 600;">CounselorReady</a></p>
-            <p style="margin: 0;">NBCC ACEP #7760 | © ${new Date().getFullYear()} GA Integrated Therapeutic Perspectives LLC</p>
-          </div>
-        </div>
-      `
+      subject: applyTemplateVars(tpl.subject || `Welcome to ${companyName}!`, vars),
+      html: buildPartnerEmail({
+        brandColor,
+        companyName,
+        logoUrl: partner.branding?.logoUrl,
+        tagline: partner.branding?.tagline,
+        heading: applyTemplateVars(tpl.heading || `Welcome, ${firstName}!`, vars),
+        body: applyTemplateVars(tpl.body || `Your account has been created on ${companyName}'s learning platform. You're all set to start exploring courses and earning CE credits.`, vars),
+        buttonText: tpl.buttonText || 'Start Learning',
+        buttonUrl: loginUrl,
+        footerText: applyTemplateVars(tpl.footerText || 'If you need help, contact your administrator or reach out to us.', vars)
+      })
     });
   } catch (err) {
     console.error('Partner welcome email failed (non-blocking):', err.message);
@@ -951,7 +973,7 @@ router.get('/my/users', protect, requirePartnerAdmin, async (req, res) => {
 });
 
 // ── Partner admin: invite users via email ──
-router.post('/my/users/invite', protect, requirePartnerAdmin, async (req, res) => {
+router.post('/my/users/invite', protect, requirePartnerAdmin, enforceUserQuota, async (req, res) => {
   try {
     const partnerId = req.partnerId || req.user.partnerId;
     const partner = await Partner.findById(partnerId);
@@ -968,6 +990,8 @@ router.post('/my/users/invite', protect, requirePartnerAdmin, async (req, res) =
     const brandColor = partner.branding?.primaryColor || '#6B1D34';
     const companyName = partner.branding?.companyName || partner.name;
     const registerUrl = `${process.env.CLIENT_URL || 'https://counselorready.com'}/register?partner=${partner.slug}`;
+    const inviterName = req.user.profile?.firstName || 'Your administrator';
+    const invTpl = partner.emailTemplates?.invitation || {};
 
     const results = { sent: [], errors: [] };
 
@@ -990,39 +1014,22 @@ router.post('/my/users/invite', protect, requirePartnerAdmin, async (req, res) =
           continue;
         }
 
+        const vars = { inviterName, companyName };
         await resend.emails.send({
           from: 'CounselorReady <noreply@counselorready.com>',
           to: trimmed,
-          subject: `You're invited to ${companyName}`,
-          html: `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-              <div style="background: ${brandColor}; padding: 30px; text-align: center;">
-                ${partner.branding?.logoUrl
-                  ? `<img src="${partner.branding.logoUrl}" alt="${companyName}" style="height: 48px; margin-bottom: 8px;">`
-                  : ''}
-                <h1 style="color: #fff; margin: 0; font-size: 24px;">${companyName}</h1>
-              </div>
-              <div style="padding: 30px; background: #fff;">
-                <h2 style="color: ${brandColor};">You're Invited!</h2>
-                <p style="color: #333; line-height: 1.6;">
-                  ${req.user.profile?.firstName || 'Your administrator'} has invited you to join ${companyName} on CounselorReady,
-                  where you can access continuing education courses and earn CE credits.
-                </p>
-                <div style="text-align: center; margin: 30px 0;">
-                  <a href="${registerUrl}" style="background: ${brandColor}; color: #fff; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">
-                    Create Your Account
-                  </a>
-                </div>
-                <p style="color: #666; font-size: 14px;">
-                  This invitation was sent from ${companyName}. If you don't recognize this, you can safely ignore this email.
-                </p>
-              </div>
-              <div style="background: #f5f5f5; padding: 20px; text-align: center; font-size: 12px; color: #666;">
-                <p style="margin: 0 0 4px 0;">Powered by <a href="https://counselorready.com" style="color: #6B1D34; text-decoration: none; font-weight: 600;">CounselorReady</a></p>
-                <p style="margin: 0;">NBCC ACEP #7760</p>
-              </div>
-            </div>
-          `
+          subject: applyTemplateVars(invTpl.subject || `You're invited to ${companyName}`, vars),
+          html: buildPartnerEmail({
+            brandColor,
+            companyName,
+            logoUrl: partner.branding?.logoUrl,
+            tagline: partner.branding?.tagline,
+            heading: applyTemplateVars(invTpl.heading || `You're Invited!`, vars),
+            body: applyTemplateVars(invTpl.body || `${inviterName} has invited you to join ${companyName} on CounselorReady, where you can access continuing education courses and earn CE credits.`, vars),
+            buttonText: invTpl.buttonText || 'Create Your Account',
+            buttonUrl: registerUrl,
+            footerText: applyTemplateVars(invTpl.footerText || `This invitation was sent from ${companyName}. If you don't recognize this, you can safely ignore this email.`, vars)
+          })
         });
 
         results.sent.push(trimmed);
@@ -1142,6 +1149,368 @@ router.get('/my/stats', protect, requirePartnerAdmin, async (req, res) => {
       : 0;
 
     res.json({ totalUsers, activeUsers, coursesCompleted, ceHoursEarned, courseBreakdown, recentEnrollments });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ══════════════════════════════════════════════
+// QUOTA STATUS
+// ══════════════════════════════════════════════
+
+// ── Partner admin: get quota/usage status ──
+router.get('/my/quota', protect, requirePartnerAdmin, async (req, res) => {
+  try {
+    const partnerId = req.partnerId || req.user.partnerId;
+    const partner = await Partner.findById(partnerId).lean();
+    if (!partner) return res.status(404).json({ error: 'Partner not found' });
+
+    const plan = partner.billing?.plan || 'free';
+    const limits = getPlanLimits(plan);
+    const usage = await getPartnerUsage(partnerId);
+
+    res.json({
+      plan,
+      limits,
+      usage,
+      courseQuota: {
+        used: usage.courses,
+        limit: limits.maxCourses,
+        remaining: limits.maxCourses === -1 ? Infinity : Math.max(0, limits.maxCourses - usage.courses),
+        percentage: limits.maxCourses === -1 ? 0 : Math.round((usage.courses / limits.maxCourses) * 100)
+      },
+      userQuota: {
+        used: usage.users,
+        limit: limits.maxUsers,
+        remaining: limits.maxUsers === -1 ? Infinity : Math.max(0, limits.maxUsers - usage.users),
+        percentage: limits.maxUsers === -1 ? 0 : Math.round((usage.users / limits.maxUsers) * 100)
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ══════════════════════════════════════════════
+// PARTNER ONBOARDING
+// ══════════════════════════════════════════════
+
+// ── Partner admin: get onboarding checklist status ──
+router.get('/my/onboarding', protect, requirePartnerAdmin, async (req, res) => {
+  try {
+    const partnerId = req.partnerId || req.user.partnerId;
+    const partner = await Partner.findById(partnerId).lean();
+    if (!partner) return res.status(404).json({ error: 'Partner not found' });
+
+    const [courseCount, userCount] = await Promise.all([
+      InteractiveCourse.countDocuments({ partnerId }),
+      User.countDocuments({ partnerId })
+    ]);
+
+    const steps = [
+      {
+        id: 'branding',
+        title: 'Customize branding',
+        description: 'Add your logo, colors, and company info',
+        completed: !!(partner.branding?.logoUrl || partner.branding?.companyName),
+        link: '/partner/branding'
+      },
+      {
+        id: 'course',
+        title: 'Add your first course',
+        description: 'Create or upload a continuing education course',
+        completed: courseCount > 0,
+        link: '/partner/courses'
+      },
+      {
+        id: 'users',
+        title: 'Invite team members',
+        description: 'Send invitations to your staff or learners',
+        completed: userCount > 1, // >1 because the admin counts as 1
+        link: '/partner/users'
+      },
+      {
+        id: 'billing',
+        title: 'Set up billing',
+        description: 'Choose a plan that fits your organization',
+        completed: !!(partner.billing?.stripeSubscriptionId) || partner.billing?.plan !== 'free',
+        link: '/partner/billing'
+      },
+      {
+        id: 'domain',
+        title: 'Configure custom domain (optional)',
+        description: 'Use your own domain for a fully branded experience',
+        completed: !!partner.domainVerification?.verified,
+        link: '/partner/domain',
+        optional: true
+      }
+    ];
+
+    const completedCount = steps.filter(s => s.completed).length;
+    const requiredSteps = steps.filter(s => !s.optional);
+    const requiredCompleted = requiredSteps.filter(s => s.completed).length;
+
+    res.json({
+      steps,
+      progress: {
+        completed: completedCount,
+        total: steps.length,
+        requiredCompleted,
+        requiredTotal: requiredSteps.length,
+        percentage: Math.round((requiredCompleted / requiredSteps.length) * 100),
+        allRequiredDone: requiredCompleted === requiredSteps.length
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ══════════════════════════════════════════════
+// EMAIL TEMPLATE CUSTOMIZATION
+// ══════════════════════════════════════════════
+
+// ── Partner admin: get/update email templates ──
+router.get('/my/email-templates', protect, requirePartnerAdmin, async (req, res) => {
+  try {
+    const partnerId = req.partnerId || req.user.partnerId;
+    const partner = await Partner.findById(partnerId).lean();
+    if (!partner) return res.status(404).json({ error: 'Partner not found' });
+
+    const templates = partner.emailTemplates || {};
+    const brandColor = partner.branding?.primaryColor || '#6B1D34';
+    const companyName = partner.branding?.companyName || partner.name;
+
+    res.json({
+      templates: {
+        welcome: {
+          subject: templates.welcome?.subject || `Welcome to ${companyName}!`,
+          heading: templates.welcome?.heading || `Welcome, {{firstName}}!`,
+          body: templates.welcome?.body || `Your account has been created on ${companyName}'s learning platform. You're all set to start exploring courses and earning CE credits.`,
+          buttonText: templates.welcome?.buttonText || 'Start Learning',
+          footerText: templates.welcome?.footerText || 'If you need help, contact your administrator or reach out to us.'
+        },
+        invitation: {
+          subject: templates.invitation?.subject || `You're invited to ${companyName}`,
+          heading: templates.invitation?.heading || `You're Invited!`,
+          body: templates.invitation?.body || `{{inviterName}} has invited you to join ${companyName} on CounselorReady, where you can access continuing education courses and earn CE credits.`,
+          buttonText: templates.invitation?.buttonText || 'Create Your Account',
+          footerText: templates.invitation?.footerText || `This invitation was sent from ${companyName}. If you don't recognize this, you can safely ignore this email.`
+        }
+      },
+      brandColor,
+      companyName
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.put('/my/email-templates', protect, requirePartnerAdmin, async (req, res) => {
+  try {
+    const partnerId = req.partnerId || req.user.partnerId;
+    const partner = await Partner.findById(partnerId);
+    if (!partner) return res.status(404).json({ error: 'Partner not found' });
+
+    const { welcome, invitation } = req.body;
+
+    if (!partner.emailTemplates) partner.emailTemplates = {};
+
+    if (welcome) {
+      partner.emailTemplates.welcome = {
+        subject: (welcome.subject || '').slice(0, 200),
+        heading: (welcome.heading || '').slice(0, 200),
+        body: (welcome.body || '').slice(0, 1000),
+        buttonText: (welcome.buttonText || '').slice(0, 50),
+        footerText: (welcome.footerText || '').slice(0, 500)
+      };
+    }
+
+    if (invitation) {
+      partner.emailTemplates.invitation = {
+        subject: (invitation.subject || '').slice(0, 200),
+        heading: (invitation.heading || '').slice(0, 200),
+        body: (invitation.body || '').slice(0, 1000),
+        buttonText: (invitation.buttonText || '').slice(0, 50),
+        footerText: (invitation.footerText || '').slice(0, 500)
+      };
+    }
+
+    partner.markModified('emailTemplates');
+    await partner.save();
+
+    res.json({ message: 'Email templates updated', templates: partner.emailTemplates });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ══════════════════════════════════════════════
+// EXPORTABLE REPORTS
+// ══════════════════════════════════════════════
+
+// ── Partner admin: export user report as CSV ──
+router.get('/my/reports/users', protect, requirePartnerAdmin, async (req, res) => {
+  try {
+    const partnerId = req.partnerId || req.user.partnerId;
+    const format = req.query.format || 'csv';
+
+    const users = await User.find({ partnerId })
+      .select('email profile.firstName profile.lastName role subscription.plan subscription.status lastLoginAt emailVerified createdAt')
+      .sort({ createdAt: -1 })
+      .lean();
+
+    if (format === 'csv') {
+      const headers = ['Email', 'First Name', 'Last Name', 'Role', 'Plan', 'Status', 'Email Verified', 'Last Login', 'Joined'];
+      const rows = users.map(u => [
+        u.email,
+        u.profile?.firstName || '',
+        u.profile?.lastName || '',
+        u.role || 'user',
+        u.subscription?.plan || 'free',
+        u.subscription?.status || 'unknown',
+        u.emailVerified ? 'Yes' : 'No',
+        u.lastLoginAt ? new Date(u.lastLoginAt).toISOString().split('T')[0] : 'Never',
+        new Date(u.createdAt).toISOString().split('T')[0]
+      ]);
+
+      const csv = [headers.join(','), ...rows.map(r => r.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','))].join('\n');
+
+      res.setHeader('Content-Type', 'text/csv');
+      res.setHeader('Content-Disposition', `attachment; filename="users-report-${new Date().toISOString().split('T')[0]}.csv"`);
+      return res.send(csv);
+    }
+
+    // JSON fallback
+    res.json({ users, total: users.length });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ── Partner admin: export course performance report ──
+router.get('/my/reports/courses', protect, requirePartnerAdmin, async (req, res) => {
+  try {
+    const partnerId = req.partnerId || req.user.partnerId;
+    const format = req.query.format || 'csv';
+    const db = mongoose.connection.db;
+
+    const courses = await InteractiveCourse.find({ partnerId })
+      .select('title slug ceHours status publishedAt totalEstimatedTime')
+      .sort({ createdAt: -1 })
+      .lean();
+
+    const courseIds = courses.map(c => c._id);
+    let enrollMap = {};
+    let completeMap = {};
+
+    if (courseIds.length > 0) {
+      const [enrollments, completions] = await Promise.all([
+        db.collection('interactivecourseprogresses').aggregate([
+          { $match: { courseId: { $in: courseIds } } },
+          { $group: { _id: '$courseId', count: { $sum: 1 } } }
+        ]).toArray(),
+        db.collection('interactivecourseprogresses').aggregate([
+          { $match: { courseId: { $in: courseIds }, completed: true } },
+          { $group: { _id: '$courseId', count: { $sum: 1 } } }
+        ]).toArray()
+      ]);
+      enrollMap = Object.fromEntries(enrollments.map(e => [e._id.toString(), e.count]));
+      completeMap = Object.fromEntries(completions.map(c => [c._id.toString(), c.count]));
+    }
+
+    const reportData = courses.map(c => ({
+      title: c.title,
+      slug: c.slug,
+      ceHours: c.ceHours,
+      status: c.status || 'draft',
+      enrollments: enrollMap[c._id.toString()] || 0,
+      completions: completeMap[c._id.toString()] || 0,
+      completionRate: (enrollMap[c._id.toString()] || 0) > 0
+        ? Math.round(((completeMap[c._id.toString()] || 0) / enrollMap[c._id.toString()]) * 100)
+        : 0,
+      publishedAt: c.publishedAt ? new Date(c.publishedAt).toISOString().split('T')[0] : 'Not published'
+    }));
+
+    if (format === 'csv') {
+      const headers = ['Course Title', 'Slug', 'CE Hours', 'Status', 'Enrollments', 'Completions', 'Completion Rate (%)', 'Published Date'];
+      const rows = reportData.map(c => [
+        c.title, c.slug, c.ceHours, c.status, c.enrollments, c.completions, c.completionRate, c.publishedAt
+      ]);
+
+      const csv = [headers.join(','), ...rows.map(r => r.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','))].join('\n');
+
+      res.setHeader('Content-Type', 'text/csv');
+      res.setHeader('Content-Disposition', `attachment; filename="courses-report-${new Date().toISOString().split('T')[0]}.csv"`);
+      return res.send(csv);
+    }
+
+    res.json({ courses: reportData, total: reportData.length });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ── Partner admin: export CE hours / completion report ──
+router.get('/my/reports/completions', protect, requirePartnerAdmin, async (req, res) => {
+  try {
+    const partnerId = req.partnerId || req.user.partnerId;
+    const format = req.query.format || 'csv';
+    const db = mongoose.connection.db;
+
+    // Get partner users
+    const users = await User.find({ partnerId })
+      .select('email profile.firstName profile.lastName')
+      .lean();
+    const userIds = users.map(u => u._id);
+    const userMap = Object.fromEntries(users.map(u => [u._id.toString(), u]));
+
+    // Get partner courses
+    const courses = await InteractiveCourse.find({ partnerId })
+      .select('title ceHours')
+      .lean();
+    const courseMap = Object.fromEntries(courses.map(c => [c._id.toString(), c]));
+
+    // Get all progress records for these users on these courses
+    let progressRecords = [];
+    if (userIds.length > 0) {
+      progressRecords = await db.collection('interactivecourseprogresses').find({
+        userId: { $in: userIds },
+        courseId: { $in: courses.map(c => c._id) }
+      }).toArray();
+    }
+
+    const reportData = progressRecords.map(p => {
+      const user = userMap[p.userId?.toString()];
+      const course = courseMap[p.courseId?.toString()];
+      return {
+        email: user?.email || 'Unknown',
+        firstName: user?.profile?.firstName || '',
+        lastName: user?.profile?.lastName || '',
+        courseTitle: course?.title || 'Unknown',
+        ceHours: course?.ceHours || 0,
+        completed: p.completed ? 'Yes' : 'No',
+        progressPercent: p.progressPercent || 0,
+        completedAt: p.completedAt ? new Date(p.completedAt).toISOString().split('T')[0] : '',
+        enrolledAt: p.enrolledAt ? new Date(p.enrolledAt).toISOString().split('T')[0] : ''
+      };
+    });
+
+    if (format === 'csv') {
+      const headers = ['Email', 'First Name', 'Last Name', 'Course', 'CE Hours', 'Completed', 'Progress %', 'Completed Date', 'Enrolled Date'];
+      const rows = reportData.map(r => [
+        r.email, r.firstName, r.lastName, r.courseTitle, r.ceHours,
+        r.completed, r.progressPercent, r.completedAt, r.enrolledAt
+      ]);
+
+      const csv = [headers.join(','), ...rows.map(r => r.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','))].join('\n');
+
+      res.setHeader('Content-Type', 'text/csv');
+      res.setHeader('Content-Disposition', `attachment; filename="completions-report-${new Date().toISOString().split('T')[0]}.csv"`);
+      return res.send(csv);
+    }
+
+    res.json({ completions: reportData, total: reportData.length });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

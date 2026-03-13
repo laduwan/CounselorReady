@@ -75,6 +75,24 @@ const partnerSchema = new mongoose.Schema({
     currentPeriodEnd: { type: Date }
   },
 
+  // Email template customization
+  emailTemplates: {
+    welcome: {
+      subject: { type: String },
+      heading: { type: String },
+      body: { type: String },
+      buttonText: { type: String },
+      footerText: { type: String }
+    },
+    invitation: {
+      subject: { type: String },
+      heading: { type: String },
+      body: { type: String },
+      buttonText: { type: String },
+      footerText: { type: String }
+    }
+  },
+
   // Admin who created this partner
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,

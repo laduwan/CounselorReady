@@ -15,6 +15,7 @@ import Certificate from '../models/Certificate.js';
 import Evaluation from '../models/Evaluation.js';
 import User from '../models/User.js';
 import { protect } from '../middleware/auth.js';
+import { attachTenantScope } from '../middleware/tenantScope.js';
 import { generateCertificate, generateCertificateNumber } from '../utils/certificate.js';
 
 const router = express.Router();
@@ -51,14 +52,37 @@ router.get('/', async (req, res) => {
     if (status && status !== 'all') {
       query.status = status;
     }
-    
+
     if (category) query.categories = category;
     if (tag) query.tags = tag;
+
+    const conditions = [];
+
+    // Search filter
     if (search) {
-      query.$or = [
-        { title: { $regex: search, $options: 'i' } },
-        { description: { $regex: search, $options: 'i' } }
-      ];
+      conditions.push({
+        $or: [
+          { title: { $regex: search, $options: 'i' } },
+          { description: { $regex: search, $options: 'i' } }
+        ]
+      });
+    }
+
+    // Tenant scoping: partner users see platform courses + their partner's courses
+    // Platform admins and non-partner users see all courses (no filter)
+    const partnerContext = req.partner?._id || req.user?.partnerId;
+    if (partnerContext && req.user?.role !== 'admin') {
+      conditions.push({
+        $or: [
+          { partnerId: { $exists: false } },
+          { partnerId: null },
+          { partnerId: partnerContext }
+        ]
+      });
+    }
+
+    if (conditions.length > 0) {
+      query.$and = conditions;
     }
 
     const courses = await Course.find(query)
