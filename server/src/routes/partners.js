@@ -5,10 +5,17 @@
  */
 import express from 'express';
 import mongoose from 'mongoose';
+import crypto from 'crypto';
+import dns from 'dns/promises';
+import Stripe from 'stripe';
+import { Resend } from 'resend';
 import Partner from '../models/Partner.js';
 import User from '../models/User.js';
 import InteractiveCourse from '../models/InteractiveCourse.js';
 import { protect, requireAdmin, requirePartnerAdmin } from '../middleware/auth.js';
+
+const stripe = process.env.STRIPE_SECRET_KEY ? new Stripe(process.env.STRIPE_SECRET_KEY) : null;
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 const router = express.Router();
 
@@ -67,13 +74,21 @@ router.put('/my-branding', protect, requirePartnerAdmin, async (req, res) => {
       return res.status(404).json({ error: 'Partner not found' });
     }
 
-    const { logoUrl, primaryColor, companyName, tagline, colorScheme, accentColor } = req.body;
+    const { logoUrl, primaryColor, companyName, tagline, colorScheme, accentColor, customDomain } = req.body;
     if (logoUrl !== undefined) partner.branding.logoUrl = logoUrl;
     if (primaryColor !== undefined) partner.branding.primaryColor = primaryColor;
     if (companyName !== undefined) partner.branding.companyName = companyName;
     if (tagline !== undefined) partner.branding.tagline = tagline;
     if (colorScheme !== undefined) partner.branding.colorScheme = colorScheme;
     if (accentColor !== undefined) partner.branding.accentColor = accentColor;
+    if (customDomain !== undefined) {
+      partner.branding.customDomain = customDomain;
+      // Reset domain verification when domain changes
+      if (partner.domainVerification?.verified && partner.branding.customDomain !== customDomain) {
+        partner.domainVerification.verified = false;
+        partner.domainVerification.verifiedAt = null;
+      }
+    }
 
     await partner.save();
     res.json({ partner });
@@ -500,5 +515,370 @@ router.get('/:id/courses/:courseId/analytics', protect, requireAdmin, async (req
     res.status(500).json({ error: error.message });
   }
 });
+
+// ══════════════════════════════════════════════
+// PARTNER COURSE CATALOG (public for partner users)
+// ══════════════════════════════════════════════
+
+// ── Public: list published courses for a partner ──
+router.get('/slug/:slug/courses', async (req, res) => {
+  try {
+    const partner = await Partner.findOne({
+      slug: req.params.slug.toLowerCase(),
+      active: true
+    });
+    if (!partner) {
+      return res.status(404).json({ error: 'Partner not found' });
+    }
+
+    const { search, category, page = 1, limit = 50 } = req.query;
+    const query = { partnerId: partner._id, status: 'published' };
+
+    if (search) {
+      query.$or = [
+        { title: { $regex: search, $options: 'i' } },
+        { description: { $regex: search, $options: 'i' } }
+      ];
+    }
+    if (category) query.categories = category;
+
+    const courses = await InteractiveCourse.find(query)
+      .select('title slug description thumbnail ceHours totalEstimatedTime categories tags status')
+      .sort({ publishedAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(parseInt(limit))
+      .lean();
+
+    const total = await InteractiveCourse.countDocuments(query);
+
+    res.json({
+      partner: {
+        name: partner.name,
+        branding: partner.branding
+      },
+      courses,
+      pagination: { page: parseInt(page), limit: parseInt(limit), total, pages: Math.ceil(total / limit) }
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ══════════════════════════════════════════════
+// BULK COURSE UPLOAD
+// ══════════════════════════════════════════════
+
+// ── Partner admin: bulk upload courses via JSON ──
+router.post('/my/courses/bulk', protect, requirePartnerAdmin, async (req, res) => {
+  try {
+    const partnerId = req.partnerId || req.user.partnerId;
+    const { courses } = req.body;
+
+    if (!Array.isArray(courses) || courses.length === 0) {
+      return res.status(400).json({ error: 'courses array is required' });
+    }
+    if (courses.length > 50) {
+      return res.status(400).json({ error: 'Maximum 50 courses per upload' });
+    }
+
+    const results = { created: [], errors: [] };
+
+    for (let i = 0; i < courses.length; i++) {
+      const c = courses[i];
+      try {
+        if (!c.title || !c.description || !c.ceHours) {
+          results.errors.push({ index: i, title: c.title || `Row ${i + 1}`, error: 'Title, description, and CE hours are required' });
+          continue;
+        }
+
+        const slug = c.slug || c.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+        const existing = await InteractiveCourse.findOne({ slug });
+        if (existing) {
+          results.errors.push({ index: i, title: c.title, error: `Slug "${slug}" already exists` });
+          continue;
+        }
+
+        const course = await InteractiveCourse.create({
+          title: c.title,
+          slug,
+          description: c.description,
+          ceHours: c.ceHours,
+          partnerId,
+          objectives: c.objectives || [],
+          categories: c.categories || [],
+          tags: c.tags || [],
+          presenter: c.presenter || {},
+          targetAudience: c.targetAudience || [],
+          sections: c.sections || [],
+          assessment: c.assessment || {},
+          references: c.references || [],
+          author: c.author || req.user.email,
+          status: c.status === 'published' ? 'published' : 'draft'
+        });
+
+        results.created.push({ _id: course._id, title: course.title, slug: course.slug });
+      } catch (err) {
+        results.errors.push({ index: i, title: c.title || `Row ${i + 1}`, error: err.message });
+      }
+    }
+
+    res.status(201).json({
+      message: `${results.created.length} created, ${results.errors.length} failed`,
+      ...results
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ══════════════════════════════════════════════
+// DOMAIN VERIFICATION
+// ══════════════════════════════════════════════
+
+// ── Partner admin: initiate domain verification ──
+router.post('/my/domain/verify-init', protect, requirePartnerAdmin, async (req, res) => {
+  try {
+    const partnerId = req.partnerId || req.user.partnerId;
+    const partner = await Partner.findById(partnerId);
+    if (!partner) return res.status(404).json({ error: 'Partner not found' });
+
+    const domain = partner.branding?.customDomain;
+    if (!domain) {
+      return res.status(400).json({ error: 'Set a custom domain in branding settings first' });
+    }
+
+    // Generate verification token
+    const token = crypto.randomBytes(16).toString('hex');
+    partner.domainVerification = {
+      verificationToken: token,
+      verified: false,
+      verifiedAt: null,
+      lastCheckAt: null
+    };
+    await partner.save();
+
+    res.json({
+      domain,
+      verificationType: 'TXT',
+      recordName: `_cr-verify.${domain}`,
+      recordValue: `cr-verify=${token}`,
+      instructions: `Add a TXT record to your DNS:\n  Name: _cr-verify.${domain}\n  Value: cr-verify=${token}\n\nThen click "Check Verification" once DNS has propagated (usually 5-60 minutes).`
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ── Partner admin: check domain verification ──
+router.post('/my/domain/verify-check', protect, requirePartnerAdmin, async (req, res) => {
+  try {
+    const partnerId = req.partnerId || req.user.partnerId;
+    const partner = await Partner.findById(partnerId);
+    if (!partner) return res.status(404).json({ error: 'Partner not found' });
+
+    const domain = partner.branding?.customDomain;
+    const token = partner.domainVerification?.verificationToken;
+    if (!domain || !token) {
+      return res.status(400).json({ error: 'Domain verification not initiated' });
+    }
+
+    partner.domainVerification.lastCheckAt = new Date();
+
+    try {
+      const records = await dns.resolveTxt(`_cr-verify.${domain}`);
+      const found = records.flat().some(r => r.includes(`cr-verify=${token}`));
+
+      if (found) {
+        partner.domainVerification.verified = true;
+        partner.domainVerification.verifiedAt = new Date();
+        await partner.save();
+        return res.json({ verified: true, domain, message: 'Domain verified successfully!' });
+      }
+
+      await partner.save();
+      return res.json({
+        verified: false,
+        domain,
+        message: 'TXT record not found. DNS changes can take up to 48 hours to propagate.'
+      });
+    } catch (dnsErr) {
+      await partner.save();
+      return res.json({
+        verified: false,
+        domain,
+        message: 'Could not resolve DNS records. Make sure the TXT record is added and try again later.'
+      });
+    }
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ══════════════════════════════════════════════
+// PARTNER BILLING
+// ══════════════════════════════════════════════
+
+const PARTNER_PLANS = {
+  free: { name: 'Free', price: 0, maxCourses: 3, maxUsers: 50 },
+  basic: { name: 'Basic', price: 49, maxCourses: 20, maxUsers: 500 },
+  professional: { name: 'Professional', price: 149, maxCourses: 100, maxUsers: 5000 },
+  enterprise: { name: 'Enterprise', price: 399, maxCourses: -1, maxUsers: -1 }
+};
+
+// ── Partner admin: get billing info ──
+router.get('/my/billing', protect, requirePartnerAdmin, async (req, res) => {
+  try {
+    const partnerId = req.partnerId || req.user.partnerId;
+    const partner = await Partner.findById(partnerId);
+    if (!partner) return res.status(404).json({ error: 'Partner not found' });
+
+    const courseCount = await InteractiveCourse.countDocuments({ partnerId });
+    const userCount = await User.countDocuments({ partnerId });
+    const currentPlan = partner.billing?.plan || 'free';
+
+    res.json({
+      billing: partner.billing || { plan: 'free', status: 'trial' },
+      plans: PARTNER_PLANS,
+      usage: {
+        courses: courseCount,
+        maxCourses: PARTNER_PLANS[currentPlan].maxCourses,
+        users: userCount,
+        maxUsers: PARTNER_PLANS[currentPlan].maxUsers
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ── Partner admin: create checkout session for plan upgrade ──
+router.post('/my/billing/checkout', protect, requirePartnerAdmin, async (req, res) => {
+  try {
+    if (!stripe) return res.status(503).json({ error: 'Payment service unavailable' });
+
+    const partnerId = req.partnerId || req.user.partnerId;
+    const partner = await Partner.findById(partnerId);
+    if (!partner) return res.status(404).json({ error: 'Partner not found' });
+
+    const { plan } = req.body;
+    if (!plan || !PARTNER_PLANS[plan] || plan === 'free') {
+      return res.status(400).json({ error: 'Invalid plan selected' });
+    }
+
+    // Create or retrieve Stripe customer
+    let customerId = partner.billing?.stripeCustomerId;
+    if (!customerId) {
+      const customer = await stripe.customers.create({
+        email: partner.contact?.email || req.user.email,
+        name: partner.name,
+        metadata: { partnerId: partnerId.toString() }
+      });
+      customerId = customer.id;
+      if (!partner.billing) partner.billing = {};
+      partner.billing.stripeCustomerId = customerId;
+      await partner.save();
+    }
+
+    const session = await stripe.checkout.sessions.create({
+      customer: customerId,
+      mode: 'subscription',
+      line_items: [{
+        price_data: {
+          currency: 'usd',
+          product_data: {
+            name: `CounselorReady Partner - ${PARTNER_PLANS[plan].name}`,
+            description: `Up to ${PARTNER_PLANS[plan].maxCourses === -1 ? 'unlimited' : PARTNER_PLANS[plan].maxCourses} courses, ${PARTNER_PLANS[plan].maxUsers === -1 ? 'unlimited' : PARTNER_PLANS[plan].maxUsers} users`
+          },
+          unit_amount: PARTNER_PLANS[plan].price * 100,
+          recurring: { interval: 'month' }
+        },
+        quantity: 1
+      }],
+      metadata: { partnerId: partnerId.toString(), plan },
+      success_url: `${process.env.CLIENT_URL || 'https://counselorready.com'}/partner/billing?success=true`,
+      cancel_url: `${process.env.CLIENT_URL || 'https://counselorready.com'}/partner/billing?canceled=true`
+    });
+
+    res.json({ url: session.url });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ── Partner admin: open Stripe billing portal ──
+router.post('/my/billing/portal', protect, requirePartnerAdmin, async (req, res) => {
+  try {
+    if (!stripe) return res.status(503).json({ error: 'Payment service unavailable' });
+
+    const partnerId = req.partnerId || req.user.partnerId;
+    const partner = await Partner.findById(partnerId);
+    if (!partner?.billing?.stripeCustomerId) {
+      return res.status(400).json({ error: 'No billing account found. Subscribe to a plan first.' });
+    }
+
+    const session = await stripe.billingPortal.sessions.create({
+      customer: partner.billing.stripeCustomerId,
+      return_url: `${process.env.CLIENT_URL || 'https://counselorready.com'}/partner/billing`
+    });
+
+    res.json({ url: session.url });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ══════════════════════════════════════════════
+// PARTNER WELCOME EMAIL
+// ══════════════════════════════════════════════
+
+// Send welcome email to newly registered partner user
+async function sendPartnerWelcomeEmail(user, partner) {
+  try {
+    const brandColor = partner.branding?.primaryColor || '#6B1D34';
+    const companyName = partner.branding?.companyName || partner.name;
+    const loginUrl = `${process.env.CLIENT_URL || 'https://counselorready.com'}/login?partner=${partner.slug}`;
+
+    await resend.emails.send({
+      from: 'CounselorReady <noreply@counselorready.com>',
+      to: user.email,
+      subject: `Welcome to ${companyName}!`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <div style="background: ${brandColor}; padding: 30px; text-align: center;">
+            ${partner.branding?.logoUrl
+              ? `<img src="${partner.branding.logoUrl}" alt="${companyName}" style="height: 48px; margin-bottom: 8px;">`
+              : ''}
+            <h1 style="color: #fff; margin: 0; font-size: 24px;">${companyName}</h1>
+            ${partner.branding?.tagline ? `<p style="color: rgba(255,255,255,0.8); margin: 8px 0 0 0; font-size: 14px;">${partner.branding.tagline}</p>` : ''}
+          </div>
+          <div style="padding: 30px; background: #fff;">
+            <h2 style="color: ${brandColor};">Welcome, ${user.profile?.firstName || 'there'}!</h2>
+            <p style="color: #333; line-height: 1.6;">
+              Your account has been created on ${companyName}'s learning platform.
+              You're all set to start exploring courses and earning CE credits.
+            </p>
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="${loginUrl}" style="background: ${brandColor}; color: #fff; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">
+                Start Learning
+              </a>
+            </div>
+            <p style="color: #666; font-size: 14px;">
+              If you need help, contact your administrator or reach out to us.
+            </p>
+          </div>
+          <div style="background: #f5f5f5; padding: 20px; text-align: center; font-size: 12px; color: #666;">
+            <p style="margin: 0 0 4px 0;">Powered by <a href="https://counselorready.com" style="color: #6B1D34; text-decoration: none; font-weight: 600;">CounselorReady</a></p>
+            <p style="margin: 0;">NBCC ACEP #7760 | © ${new Date().getFullYear()} GA Integrated Therapeutic Perspectives LLC</p>
+          </div>
+        </div>
+      `
+    });
+  } catch (err) {
+    console.error('Partner welcome email failed (non-blocking):', err.message);
+  }
+}
+
+// Export for use in auth.js
+export { sendPartnerWelcomeEmail };
 
 export default router;

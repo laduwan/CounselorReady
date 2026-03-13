@@ -230,10 +230,11 @@ router.post('/:id/enroll', protect, async (req, res) => {
       return res.json({ success: true, message: 'Already enrolled', data: progress });
     }
 
-    // Create new enrollment
+    // Create new enrollment (include partnerId from course or user for analytics scoping)
     progress = new CourseProgress({
       userId: req.user._id,
       courseId: course._id,
+      partnerId: course.partnerId || req.user.partnerId || undefined,
       sectionProgress: course.sections.map((section, index) => ({
         sectionId: section._id,
         sectionIndex: index,

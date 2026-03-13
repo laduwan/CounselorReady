@@ -34,6 +34,10 @@ import AdminPartners from './pages/AdminPartners';
 import PartnerDashboard from './pages/PartnerDashboard';
 import PartnerBrandingSettings from './pages/PartnerBrandingSettings';
 import PartnerCourseAdmin from './pages/PartnerCourseAdmin';
+import PartnerCourseCatalog from './pages/PartnerCourseCatalog';
+import PartnerBulkUpload from './pages/PartnerBulkUpload';
+import PartnerBilling from './pages/PartnerBilling';
+import PartnerDomainSettings from './pages/PartnerDomainSettings';
 import ThumbnailManager from './pages/ThumbnailManager';
 import AdminBulkUpload from './pages/AdminBulkUpload';
 
@@ -299,6 +303,26 @@ function AppRoutes() {
       <Route path="/partner/courses" element={
         <PartnerAdminRoute>
           <Layout><PartnerCourseAdmin /></Layout>
+        </PartnerAdminRoute>
+      } />
+      <Route path="/partner/courses/catalog" element={
+        <ProtectedRoute>
+          <Layout><PartnerCourseCatalog /></Layout>
+        </ProtectedRoute>
+      } />
+      <Route path="/partner/bulk-upload" element={
+        <PartnerAdminRoute>
+          <Layout><PartnerBulkUpload /></Layout>
+        </PartnerAdminRoute>
+      } />
+      <Route path="/partner/billing" element={
+        <PartnerAdminRoute>
+          <Layout><PartnerBilling /></Layout>
+        </PartnerAdminRoute>
+      } />
+      <Route path="/partner/domain" element={
+        <PartnerAdminRoute>
+          <Layout><PartnerDomainSettings /></Layout>
         </PartnerAdminRoute>
       } />
 
