@@ -16,6 +16,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-Frame-Options" content="SAMEORIGIN">
+<meta http-equiv="Content-Security-Policy" content="frame-ancestors 'self' https://counselorready.com">
 <title>CReady™ Viewer | CounselorReady</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Lato:ital,wght@0,300;0,400;0,700;0,900;1,400&family=OpenDyslexic:wght@400;700&display=swap" rel="stylesheet">
@@ -123,6 +125,11 @@
   transition-duration: 0.01ms !important;
   scroll-behavior: auto !important;
 }
+
+/* Color Vision Deficiency Modes */
+[data-color-vision="deuteranopia"] { filter: url('#cr-cvd-deuteranopia'); }
+[data-color-vision="protanopia"] { filter: url('#cr-cvd-protanopia'); }
+[data-color-vision="tritanopia"] { filter: url('#cr-cvd-tritanopia'); }
 
 /* Enhanced Focus */
 [data-enhanced-focus="true"] *:focus-visible {
@@ -1487,6 +1494,47 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
   position: relative;
 }
 .cr-highlight:hover { background: rgba(212, 168, 85, 0.5); }
+
+/* TTS sentence highlighting */
+.cr-tts-active {
+  background: rgba(212, 168, 85, 0.15);
+  border-left: 3px solid var(--cr-gold);
+  padding-left: 8px;
+  border-radius: 4px;
+  transition: background 0.3s ease, border-left 0.3s ease;
+}
+
+/* Glossary hover tooltips */
+.cr-glossary-term {
+  color: var(--cr-burgundy);
+  cursor: help;
+  border-bottom: 1px dotted var(--cr-burgundy);
+}
+.cr-tooltip {
+  display: none;
+  position: absolute; bottom: calc(100% + 6px); left: 50%; transform: translateX(-50%);
+  background: var(--cr-navy); color: #fff;
+  padding: 8px 12px; border-radius: 8px;
+  font-size: 13px; font-weight: 400; line-height: 1.4;
+  max-width: 300px; width: max-content;
+  z-index: 100; pointer-events: none;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+.cr-tooltip::after {
+  content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%);
+  border: 6px solid transparent; border-top-color: var(--cr-navy);
+}
+.cr-glossary-term:hover .cr-tooltip,
+.cr-glossary-term:focus .cr-tooltip { display: block; }
+
+/* Chunked content mode */
+.cr-chunk-nav {
+  display: flex; align-items: center; justify-content: center; gap: 16px;
+  padding: 20px 0; margin-top: 20px;
+  border-top: 1px solid var(--cr-border);
+}
+.cr-chunk-count { font-size: 13px; color: var(--cr-text-muted); min-width: 60px; text-align: center; }
+
 .cr-highlight-note {
   position: absolute; bottom: 100%; left: 0;
   background: var(--cr-navy); color: #fff;
@@ -1564,7 +1612,22 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script>if(window.pdfjsLib)pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';</script>
 </head>
-<body data-text-size="medium" data-line-spacing="normal" data-dyslexia="false" data-high-contrast="false" data-dark-mode="false" data-reduced-motion="false" data-enhanced-focus="false" data-reading-guide="false">
+<body data-text-size="medium" data-line-spacing="normal" data-dyslexia="false" data-high-contrast="false" data-dark-mode="false" data-reduced-motion="false" data-enhanced-focus="false" data-reading-guide="false" data-color-vision="none" data-chunked="false">
+
+<!-- SVG Color Vision Deficiency Filters -->
+<svg style="position:absolute;width:0;height:0" aria-hidden="true">
+  <defs>
+    <filter id="cr-cvd-deuteranopia">
+      <feColorMatrix type="matrix" values="0.625 0.375 0 0 0  0.7 0.3 0 0 0  0 0.3 0.7 0 0  0 0 0 1 0"/>
+    </filter>
+    <filter id="cr-cvd-protanopia">
+      <feColorMatrix type="matrix" values="0.567 0.433 0 0 0  0.558 0.442 0 0 0  0 0.242 0.758 0 0  0 0 0 1 0"/>
+    </filter>
+    <filter id="cr-cvd-tritanopia">
+      <feColorMatrix type="matrix" values="0.95 0.05 0 0 0  0 0.433 0.567 0 0  0 0.475 0.525 0 0  0 0 0 1 0"/>
+    </filter>
+  </defs>
+</svg>
 
 <!-- Skip Link -->
 <a href="#cr-content" class="cr-skip-link">Skip to course content</a>
@@ -1778,6 +1841,21 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
     <label>Reading Guide</label>
     <div class="cr-toggle" id="toggle-reading-guide" data-action="toggleBool" data-setting="reading-guide" role="switch" aria-checked="false" tabindex="0"></div>
   </div>
+  
+  <div class="cr-a11y-option">
+    <label>Color Vision</label>
+    <div class="cr-segment" data-setting="color-vision">
+      <button data-action="setSetting" data-setting="color-vision" data-value="none" data-val="none" class="active" style="font-size:10px">None</button>
+      <button data-action="setSetting" data-setting="color-vision" data-value="deuteranopia" data-val="deuteranopia" style="font-size:10px" title="Red-green (most common)">R-G</button>
+      <button data-action="setSetting" data-setting="color-vision" data-value="protanopia" data-val="protanopia" style="font-size:10px" title="Red-blind">Red</button>
+      <button data-action="setSetting" data-setting="color-vision" data-value="tritanopia" data-val="tritanopia" style="font-size:10px" title="Blue-yellow">B-Y</button>
+    </div>
+  </div>
+  
+  <div class="cr-a11y-option">
+    <label>Chunked Reading</label>
+    <div class="cr-toggle" id="toggle-chunked" data-action="toggleBool" data-setting="chunked" role="switch" aria-checked="false" tabindex="0"></div>
+  </div>
 </div>
 
 <!-- GLOSSARY BUTTON -->
@@ -1873,6 +1951,149 @@ let currentView = 'section'; // 'section' | 'assessment'
 let assessmentState = { answers: {}, submitted: false, score: null, attempts: 0 };
 let ttsActive = false;
 let ttsUtterance = null;
+
+// ═══════════════════════════════════════════════════════════════
+// CONTENT PROTECTION — © 2026 GAITP LLC
+// ═══════════════════════════════════════════════════════════════
+
+// 1. Right-click deterrent on course content
+document.addEventListener('contextmenu', function(e) {
+  if (e.target.closest('#crContentArea, .cr-main')) {
+    e.preventDefault();
+  }
+});
+// Block text selection copy on course content
+document.addEventListener('copy', function(e) {
+  if (document.activeElement?.closest('#crContentArea, .cr-main')) {
+    e.preventDefault();
+    e.clipboardData?.setData('text/plain', '© CounselorReady — Content copying is not permitted.');
+  }
+});
+// Block Ctrl+S, Ctrl+U (view source), Ctrl+Shift+I on content
+document.addEventListener('keydown', function(e) {
+  if ((e.ctrlKey || e.metaKey) && ['s','u'].includes(e.key.toLowerCase())) {
+    e.preventDefault();
+  }
+});
+
+// 2. iframe frame-busting (complements CSP header)
+if (window.self !== window.top) {
+  try {
+    if (!document.referrer.includes('counselorready.com')) {
+      window.top.location = window.self.location;
+    }
+  } catch(e) { document.body.innerHTML = '<h1 style="text-align:center;padding:40px;font-family:sans-serif">This content cannot be displayed in a frame.</h1>'; }
+}
+
+// 3. Console warning
+console.log('%c⚠️ STOP', 'color:#6B1D34;font-size:48px;font-weight:bold');
+console.log('%cThis is a protected CounselorReady™ learning environment.\nUnauthorized access, copying, or redistribution of course content is prohibited.\n© 2026 GAITP LLC — NBCC ACEP Provider #7760', 'color:#4A7C59;font-size:14px');
+
+// 4. Content watermarking — invisible user ID embedded in rendered content
+function watermarkContent() {
+  var area = document.getElementById('crContentArea');
+  if (!area || area.querySelector('.cr-wm')) return;
+  var token = localStorage.getItem('token');
+  var uid = 'anon';
+  if (token) {
+    try { uid = JSON.parse(atob(token.split('.')[1])).id || JSON.parse(atob(token.split('.')[1])).userId || 'u'; } catch(e) {}
+  }
+  var ts = Date.now().toString(36);
+  var wm = document.createElement('span');
+  wm.className = 'cr-wm';
+  wm.style.cssText = 'position:absolute;left:-9999px;font-size:1px;color:transparent;pointer-events:none;user-select:none;opacity:0;';
+  wm.textContent = 'cr-' + uid + '-' + ts;
+  wm.setAttribute('aria-hidden', 'true');
+  area.style.position = area.style.position || 'relative';
+  area.appendChild(wm);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// FEATURE: GLOSSARY HOVER TOOLTIPS
+// ═══════════════════════════════════════════════════════════════
+function annotateGlossaryTerms() {
+  if (!glossaryTerms || glossaryTerms.length === 0) return;
+  var area = document.getElementById('crContentArea');
+  if (!area) return;
+  
+  // Build a lookup map
+  var termMap = {};
+  glossaryTerms.forEach(function(g) { termMap[g.term.toLowerCase()] = g.definition; });
+  
+  // Find <strong> and <b> elements in content
+  area.querySelectorAll('strong, b').forEach(function(el) {
+    if (el.closest('.cr-glossary-panel, .cr-tts-active, .cr-section-divider, .cr-nav-buttons')) return;
+    if (el.querySelector('.cr-tooltip')) return; // already annotated
+    var text = el.textContent.trim();
+    var def = termMap[text.toLowerCase()];
+    if (def && def.length > 10) {
+      el.classList.add('cr-glossary-term');
+      el.setAttribute('tabindex', '0');
+      el.setAttribute('aria-label', text + ': ' + def);
+      // Create tooltip
+      var tip = document.createElement('span');
+      tip.className = 'cr-tooltip';
+      tip.textContent = def;
+      tip.setAttribute('role', 'tooltip');
+      el.style.position = 'relative';
+      el.appendChild(tip);
+    }
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// FEATURE: CHUNKED CONTENT MODE
+// ═══════════════════════════════════════════════════════════════
+function applyChunkedMode() {
+  if (document.body.getAttribute('data-chunked') !== 'true') return;
+  var area = document.getElementById('crContentArea');
+  if (!area) return;
+  
+  // Collect all direct children blocks
+  var blocks = Array.from(area.children).filter(function(el) {
+    return !el.classList.contains('cr-wm') && !el.classList.contains('cr-chunk-nav') && el.offsetHeight > 0;
+  });
+  if (blocks.length <= 1) return;
+  
+  // Hide all except first
+  var currentChunk = 0;
+  blocks.forEach(function(b, i) {
+    b.setAttribute('data-chunk-idx', i);
+    b.style.display = i === 0 ? '' : 'none';
+  });
+  
+  // Add chunk navigation
+  var nav = document.createElement('div');
+  nav.className = 'cr-chunk-nav';
+  nav.innerHTML = '<button class="cr-btn cr-btn-secondary cr-chunk-prev" disabled>← Back</button>' +
+    '<span class="cr-chunk-count">1 / ' + blocks.length + '</span>' +
+    '<button class="cr-btn cr-btn-primary cr-chunk-next">Continue →</button>';
+  area.appendChild(nav);
+  
+  var prevBtn = nav.querySelector('.cr-chunk-prev');
+  var nextBtn = nav.querySelector('.cr-chunk-next');
+  var countEl = nav.querySelector('.cr-chunk-count');
+  
+  function showChunk(idx) {
+    blocks.forEach(function(b, i) { b.style.display = i === idx ? '' : 'none'; });
+    currentChunk = idx;
+    countEl.textContent = (idx + 1) + ' / ' + blocks.length;
+    prevBtn.disabled = idx === 0;
+    nextBtn.textContent = idx === blocks.length - 1 ? '✓ Done' : 'Continue →';
+    nextBtn.disabled = idx >= blocks.length;
+    blocks[idx].scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+  
+  prevBtn.addEventListener('click', function() { if (currentChunk > 0) showChunk(currentChunk - 1); });
+  nextBtn.addEventListener('click', function() {
+    if (currentChunk < blocks.length - 1) showChunk(currentChunk + 1);
+    else {
+      // Done — show all blocks and remove chunk nav
+      blocks.forEach(function(b) { b.style.display = ''; });
+      nav.remove();
+    }
+  });
+}
 
 // ═══════════════════════════════════════════════════════════════
 // INITIALIZATION
@@ -2399,6 +2620,24 @@ function nextSection() {
 }
 
 function showAssessment() {
+  // Assessment lock — if enabled, require all sections visited first
+  if (course.settings?.lockAssessment !== false) {
+    // Default: locked. Set course.settings.lockAssessment = false to unlock
+    const navSections = course.sections.filter(s => !s._isOverview);
+    const allVisited = navSections.every((s, i) => {
+      const realIdx = course.sections.indexOf(s);
+      return visitedSections.has(realIdx) || completedSections.has(realIdx);
+    });
+    if (!allVisited) {
+      const visited = navSections.filter((s, i) => {
+        const realIdx = course.sections.indexOf(s);
+        return visitedSections.has(realIdx) || completedSections.has(realIdx);
+      }).length;
+      alert('Please complete all course sections before taking the assessment.\n\n' +
+        visited + ' of ' + navSections.length + ' sections visited.');
+      return;
+    }
+  }
   currentView = 'assessment';
   completedSections.add(currentSectionIndex);
   renderAssessment();
@@ -2482,6 +2721,8 @@ function toggleBool(setting) {
     toggle.classList.toggle('on', newVal);
     toggle.setAttribute('aria-checked', newVal);
   }
+  // Re-render if chunked mode changed
+  if (setting === 'chunked') renderCurrentSection();
 }
 
 function toggleReadAloud() {
@@ -2516,25 +2757,47 @@ function getTTSSpeed() {
 function readCurrentSection() {
   if (!ttsActive || !('speechSynthesis' in window)) return;
   speechSynthesis.cancel();
+  clearTTSHighlights();
   
   const area = document.getElementById('crContentArea');
-  const text = area.innerText.replace(/[✓★⚙️♿🕐📖💭🎯📁⚠️🖍️📝📄💾🌐🖨️🔄⏸⏹]/g, '').trim();
-  if (!text) return;
+  // Collect all text nodes from paragraphs and headings
+  var textNodes = [];
+  area.querySelectorAll('p, h2, h3, li, .cr-prose p, .cr-prose li, .cr-kc-question').forEach(function(el) {
+    var text = el.innerText.replace(/[✓★⚙️♿🕐📖💭🎯📁⚠️🖍️📝📄💾🌐🖨️🔄⏸⏹]/g, '').trim();
+    if (text.length > 2) textNodes.push({ el: el, text: text });
+  });
+  if (textNodes.length === 0) return;
   
-  ttsUtterance = new SpeechSynthesisUtterance(text);
-  ttsUtterance.volume = getTTSVolume();
-  ttsUtterance.rate = getTTSSpeed();
-  ttsUtterance.pitch = 1;
+  var nodeIdx = 0;
+  function speakNext() {
+    if (nodeIdx >= textNodes.length) {
+      clearTTSHighlights();
+      var pauseBtn = document.querySelector('[data-action="ttsPause"]');
+      if (pauseBtn) pauseBtn.textContent = '▶';
+      return;
+    }
+    var node = textNodes[nodeIdx];
+    // Highlight current element
+    clearTTSHighlights();
+    node.el.classList.add('cr-tts-active');
+    node.el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    
+    ttsUtterance = new SpeechSynthesisUtterance(node.text);
+    ttsUtterance.volume = getTTSVolume();
+    ttsUtterance.rate = getTTSSpeed();
+    ttsUtterance.pitch = 1;
+    ttsUtterance.onend = function() { nodeIdx++; speakNext(); };
+    ttsUtterance.onerror = function() { nodeIdx++; speakNext(); };
+    speechSynthesis.speak(ttsUtterance);
+  }
   
-  ttsUtterance.onend = function() {
-    const pauseBtn = document.querySelector('[data-action="ttsPause"]');
-    if (pauseBtn) pauseBtn.textContent = '▶';
-  };
-  
-  speechSynthesis.speak(ttsUtterance);
-  
-  const pauseBtn = document.querySelector('[data-action="ttsPause"]');
+  speakNext();
+  var pauseBtn = document.querySelector('[data-action="ttsPause"]');
   if (pauseBtn) pauseBtn.textContent = '⏸';
+}
+
+function clearTTSHighlights() {
+  document.querySelectorAll('.cr-tts-active').forEach(function(el) { el.classList.remove('cr-tts-active'); });
 }
 
 function ttsPause() {
@@ -2552,6 +2815,7 @@ function ttsPause() {
 function ttsStop() {
   if (!('speechSynthesis' in window)) return;
   speechSynthesis.cancel();
+  clearTTSHighlights();
   const pauseBtn = document.querySelector('[data-action="ttsPause"]');
   if (pauseBtn) pauseBtn.textContent = '▶';
 }
@@ -2655,6 +2919,9 @@ function renderCurrentSection() {
   saveProgress();
   renderObjectivesTracker();
   restoreHighlights();
+  watermarkContent();
+  annotateGlossaryTerms();
+  applyChunkedMode();
   const _toolbar = document.getElementById('crToolbar');
   if (_toolbar) _toolbar.style.display = (section && !section._isOverview && currentView === 'section') ? 'flex' : 'none';
 }
