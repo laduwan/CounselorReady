@@ -39,6 +39,9 @@ import PartnerBulkUpload from './pages/PartnerBulkUpload';
 import PartnerBilling from './pages/PartnerBilling';
 import PartnerDomainSettings from './pages/PartnerDomainSettings';
 import PartnerUserManagement from './pages/PartnerUserManagement';
+import PartnerOnboarding from './pages/PartnerOnboarding';
+import PartnerEmailTemplates from './pages/PartnerEmailTemplates';
+import PartnerReports from './pages/PartnerReports';
 import ThumbnailManager from './pages/ThumbnailManager';
 import AdminBulkUpload from './pages/AdminBulkUpload';
 
@@ -329,6 +332,21 @@ function AppRoutes() {
       <Route path="/partner/users" element={
         <PartnerAdminRoute>
           <Layout><PartnerUserManagement /></Layout>
+        </PartnerAdminRoute>
+      } />
+      <Route path="/partner/onboarding" element={
+        <PartnerAdminRoute>
+          <Layout><PartnerOnboarding /></Layout>
+        </PartnerAdminRoute>
+      } />
+      <Route path="/partner/email-templates" element={
+        <PartnerAdminRoute>
+          <Layout><PartnerEmailTemplates /></Layout>
+        </PartnerAdminRoute>
+      } />
+      <Route path="/partner/reports" element={
+        <PartnerAdminRoute>
+          <Layout><PartnerReports /></Layout>
         </PartnerAdminRoute>
       } />
 

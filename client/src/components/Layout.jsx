@@ -7,7 +7,7 @@ import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
-import { Menu, X, ChevronDown, LogOut, Settings, ShieldCheck, Trophy, Users, Star, ClipboardList, MoreHorizontal, Bell, Lock, Palette, BookOpen, Globe, CreditCard, Upload } from 'lucide-react';
+import { Menu, X, ChevronDown, LogOut, Settings, ShieldCheck, Trophy, Users, Star, ClipboardList, MoreHorizontal, Bell, Lock, Palette, BookOpen, Globe, CreditCard, Upload, Rocket, Mail, BarChart3 } from 'lucide-react';
 import PoweredByBadge from './PoweredByBadge';
 import CRPromoCard from './CRPromoCard';
 
@@ -413,12 +413,15 @@ export default function Layout({ children }) {
               <div className="border-t border-stone-100 my-2 pt-2">
                 <p className="px-3 py-1 text-xs font-semibold text-stone-400 uppercase tracking-wider">Partner Admin</p>
                 {[
+                  { to: '/partner/onboarding', icon: Rocket, label: 'Getting Started' },
                   { to: '/partner/courses', icon: BookOpen, label: 'Course Admin' },
                   { to: '/partner/bulk-upload', icon: Upload, label: 'Bulk Upload' },
                   { to: '/partner/branding', icon: Palette, label: 'Branding' },
+                  { to: '/partner/email-templates', icon: Mail, label: 'Email Templates' },
                   { to: '/partner/domain', icon: Globe, label: 'Custom Domain' },
                   { to: '/partner/billing', icon: CreditCard, label: 'Billing' },
                   { to: '/partner/users', icon: Users, label: 'Users' },
+                  { to: '/partner/reports', icon: BarChart3, label: 'Reports' },
                 ].map(({ to, icon: Icon, label }) => (
                   <Link key={to} to={to} onClick={() => setMobileOpen(false)}
                     className="flex items-center gap-2.5"
