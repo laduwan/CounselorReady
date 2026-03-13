@@ -1708,6 +1708,51 @@ Thank you for your commitment to having the conversations that matter, even when
 
 # POST-TEST QUESTIONS
 
+---
+
+## QUICK CLINICAL REFERENCE: SENTENCE STEMS FOR DIFFICULT CONVERSATIONS
+
+Having ready language makes difficult conversations easier to initiate. Here are tested phrases for common elephant scenarios:
+
+### Opening the Conversation
+
+- "There's something I've been thinking about bringing up, and I want to make sure we have time to discuss it. Is now a good time?"
+- "I care about our work together, and there's something I think we should talk about—even though it might be uncomfortable."
+- "I've noticed something that I think might be important. Can we explore it together?"
+- "I want to be honest with you about something I've observed."
+
+### Addressing Specific Issues
+
+**For attendance/boundary issues:**
+- "I've noticed a pattern of [specific behavior]. I'm curious what's behind it."
+- "When you [behavior], I find myself wondering if something is getting in the way of our work."
+
+**For lack of progress:**
+- "I want to check in about how you feel things are going. From my end, I'm not seeing the progress I'd hoped for, and I want to understand what's happening."
+- "I've been thinking about whether our current approach is working. What's your sense?"
+
+**For alliance strain:**
+- "Something feels different between us lately. Am I reading that correctly?"
+- "I want to ask about something that happened last session. When I said [X], I noticed [client's reaction]. What was that like for you?"
+
+**For cultural differences:**
+- "I'm aware that I'm a [your identity] working with you as a [client's identity]. I wonder if there are ways my perspective might be missing something important about your experience."
+
+### After the Conversation
+
+- "Thank you for being willing to talk about this with me."
+- "How are you feeling about what we just discussed?"
+- "Is there anything else you want to say about this before we move on?"
+
+### When It Doesn't Go Well
+
+Sometimes clients react defensively or the conversation doesn't resolve. Remember:
+- You can always return to it later
+- The attempt matters even when the outcome isn't ideal
+- Seek consultation if you're stuck
+- The relationship can often survive imperfect conversations
+
+
 **Instructions:** Select the best answer for each question. A score of 80% or higher is required to receive CE credit.
 
 1. According to the course, "elephants in the room" in therapy refer to:
