@@ -63,7 +63,7 @@ const partnerSchema = new mongoose.Schema({
     stripeSubscriptionId: { type: String },
     plan: {
       type: String,
-      enum: ['free', 'basic', 'professional', 'enterprise'],
+      enum: ['free', 'starter', 'growth', 'professional', 'enterprise'],
       default: 'free'
     },
     status: {
