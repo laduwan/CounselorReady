@@ -37,13 +37,14 @@ async function findCourseByIdOrSlug(param) {
  */
 router.get('/', async (req, res) => {
   try {
-    const { 
-      category, 
-      tag, 
-      search, 
+    const {
+      category,
+      tag,
+      search,
+      contentArea,
       status = 'published',
-      page = 1, 
-      limit = 10 
+      page = 1,
+      limit = 10
     } = req.query;
 
     const query = {};
@@ -51,9 +52,10 @@ router.get('/', async (req, res) => {
     if (status && status !== 'all') {
       query.status = status;
     }
-    
+
     if (category) query.categories = category;
     if (tag) query.tags = tag;
+    if (contentArea) query.contentArea = contentArea;
     if (search) {
       query.$or = [
         { title: { $regex: search, $options: 'i' } },
@@ -62,7 +64,7 @@ router.get('/', async (req, res) => {
     }
 
     const courses = await Course.find(query)
-      .select('title slug description thumbnail ceHours totalEstimatedTime categories tags wordCount sectionCount moduleCount assessmentQuestionCount ceuCategories accessType price pricingTier status ceuHours ceuApprovalNumber courseCode')
+      .select('title slug description thumbnail ceHours totalEstimatedTime categories tags wordCount sectionCount moduleCount assessmentQuestionCount ceuCategories accessType price pricingTier status ceuHours ceuApprovalNumber courseCode contentArea contentAreaDisplay')
       .sort({ publishedAt: -1 })
       .skip((page - 1) * limit)
       .limit(parseInt(limit));

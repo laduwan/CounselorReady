@@ -23,6 +23,7 @@ const InteractiveCourseCatalog = () => {
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [selectedContentArea, setSelectedContentArea] = useState('All');
   const [viewMode, setViewMode] = useState('grid');
   const [userProgress, setUserProgress] = useState({});
   const navigate = useNavigate();
@@ -64,12 +65,17 @@ const InteractiveCourseCatalog = () => {
 
   const categories = ['all', ...new Set(courses.flatMap(c => c.categories || []))];
 
+  const contentAreas = ['All', ...new Set(courses.map(c => c.contentArea || c.contentAreaDisplay).filter(Boolean))];
+
   const filteredCourses = courses.filter(course => {
     const matchesSearch = course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          course.description.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = selectedCategory === 'all' ||
                            (course.categories && course.categories.includes(selectedCategory));
-    return matchesSearch && matchesCategory;
+    const matchesContentArea = selectedContentArea === 'All' ||
+                              course.contentArea === selectedContentArea ||
+                              course.contentAreaDisplay === selectedContentArea;
+    return matchesSearch && matchesCategory && matchesContentArea;
   });
 
   const getProgressForCourse = (courseId) => {
@@ -114,6 +120,25 @@ const InteractiveCourseCatalog = () => {
           Earn continuing education credits with our professionally designed courses.
         </p>
       </div>
+
+      {/* Content Area Filter Pills */}
+      {contentAreas.length > 1 && (
+        <div className="mb-4 flex gap-2 overflow-x-auto pb-2 scrollbar-thin">
+          {contentAreas.map(area => (
+            <button
+              key={area}
+              onClick={() => setSelectedContentArea(area)}
+              className={`whitespace-nowrap px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                selectedContentArea === area
+                  ? 'bg-burgundy-800 text-white'
+                  : 'bg-stone-100 text-hunter-700 border border-stone-200 hover:bg-stone-200'
+              }`}
+            >
+              {area}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Filters */}
       <div className="mb-6">

@@ -135,6 +135,10 @@ const CourseSchema = new mongoose.Schema({
   targetAudience: [String],
   categories: [String],
   tags: [String],
+
+  // Content area for filtering
+  contentArea: { type: String },
+  contentAreaDisplay: { type: String },
   
   // Requirements
   prerequisites: [{ type: mongoose.Schema.Types.ObjectId, ref: 'InteractiveCourse' }],

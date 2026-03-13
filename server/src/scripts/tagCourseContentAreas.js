@@ -1,11 +1,17 @@
 #!/usr/bin/env node
 /**
  * tagCourseContentAreas.js
- * 
+ *
  * Tags every course in interactivecourses with a proper contentArea
- * based on title/content keywords. Maps to NBCC Content Areas + 
- * state-specific categories (Supervision, Telehealth).
- * 
+ * based on title/content keywords.
+ *
+ * Content Areas:
+ *   Ethics, Supervision, Telehealth, Crisis & Safety,
+ *   Trauma & Neuroscience, Multicultural & Social Justice,
+ *   Addiction & Recovery, Evidence-Based Treatment,
+ *   Geriatric Mental Health, Clinical Skills, Psychopharmacology,
+ *   Documentation & Billing, Career Development, Wellness & Prevention
+ *
  * Run: node src/scripts/tagCourseContentAreas.js
  */
 
@@ -14,93 +20,212 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const MONGODB_URI = process.env.MONGODB_URI;
-if (!MONGODB_URI) { console.error('❌ MONGODB_URI not found'); process.exit(1); }
+if (!MONGODB_URI) { console.error('MONGODB_URI not found'); process.exit(1); }
 
-// Content area mapping rules — order matters (first match wins)
+// ============================================
+// EXPLICIT SLUG MAPPINGS (highest priority)
+// ============================================
+const SLUG_MAP = {
+  // --- Ethics ---
+  'navigating-ethical-dilemmas': 'Ethics',
+  'digital-mental-health-ethics': 'Ethics',
+  'advanced-ethics-clinical-decisions': 'Ethics',
+  'ethics-mental-health-counseling': 'Ethics',
+  'ethics-essentials': 'Ethics',
+  'ethics-professional-boundaries-counseling': 'Ethics',
+  'cultural-competence-ethics-risk-reduction-cr601': 'Ethics',
+  'mandated-reporter-duty': 'Ethics',
+
+  // --- Supervision ---
+  'it-takes-a-village-consultation-referral': 'Supervision',
+
+  // --- Telehealth ---
+  'telehealth-best-practices': 'Telehealth',
+  'mastering-telemental-health-an-essential-guide-to-a-compliant-virtual-healthcare-practice-in-georgia-mkkycoyo': 'Telehealth',
+
+  // --- Crisis & Safety ---
+  'suicide-assessment-safety-planning': 'Crisis & Safety',
+  'suicide-risk-assessment-comprehensive': 'Crisis & Safety',
+  'crisis-intervention-lpcs': 'Crisis & Safety',
+  'suicide-risk-assessment-interactive': 'Crisis & Safety',
+  'suicide-risk-assessment-evidence-based-approaches': 'Crisis & Safety',
+  'crisis-intervention-suicide-prevention-comprehensive': 'Crisis & Safety',
+  'still-standing-geriatric-suicide-risk-assessment-safety-planning': 'Crisis & Safety',
+  'walking-on-eggshells-high-conflict-clients': 'Crisis & Safety',
+
+  // --- Trauma & Neuroscience ---
+  'trauma-informed-care-foundations': 'Trauma & Neuroscience',
+  'trauma-informed-anxiety-treatment': 'Trauma & Neuroscience',
+  'tf-cbt-children-adolescents': 'Trauma & Neuroscience',
+  'emdr-comprehensive-training': 'Trauma & Neuroscience',
+  'sexual-trauma-specialized-treatment': 'Trauma & Neuroscience',
+  'sexual-trauma-assessment-treatment': 'Trauma & Neuroscience',
+  'neurobiology-of-trauma': 'Trauma & Neuroscience',
+  'trauma-informed-care': 'Trauma & Neuroscience',
+  'trauma-informed-care-foundations-clinical-practice': 'Trauma & Neuroscience',
+  'trauma-informed-anxiety-cr202': 'Trauma & Neuroscience',
+  'small-warriors-big-battles-parental-incarceration': 'Trauma & Neuroscience',
+  'beyond-the-uniform-first-responder-families': 'Trauma & Neuroscience',
+  'when-it-rains-it-pours-multiple-stressors': 'Trauma & Neuroscience',
+
+  // --- Multicultural & Social Justice ---
+  'cultural-humility-clinical-practice': 'Multicultural & Social Justice',
+  'multicultural-counseling-competencies': 'Multicultural & Social Justice',
+  'neurodiversity-affirming-therapy': 'Multicultural & Social Justice',
+  'cultural-competency': 'Multicultural & Social Justice',
+  'sexuality-identity-mental-health-lgbtq': 'Multicultural & Social Justice',
+
+  // --- Addiction & Recovery ---
+  'harm-reduction-substance-use': 'Addiction & Recovery',
+  'co-occurring-disorders-treatment': 'Addiction & Recovery',
+  'substance-use-recovery-coach-certification': 'Addiction & Recovery',
+  '28-days-later-understanding-addiction-recovery': 'Addiction & Recovery',
+  'seasoned-and-struggling-substance-use-disorders-older-adults': 'Addiction & Recovery',
+  'compulsive-sexual-behavior-intimacy-disorders': 'Addiction & Recovery',
+
+  // --- Evidence-Based Treatment ---
+  'cbt-toolbox-core-techniques': 'Evidence-Based Treatment',
+  'dbt-skills-in-action': 'Evidence-Based Treatment',
+  'motivational-interviewing-art': 'Evidence-Based Treatment',
+  'treating-anxiety-evidence-based': 'Evidence-Based Treatment',
+  'dbt-complete-skills-training': 'Evidence-Based Treatment',
+  'schema-therapy-comprehensive': 'Evidence-Based Treatment',
+  'sfbt-couples-therapy': 'Evidence-Based Treatment',
+  'personality-disorders-dbt-skills': 'Evidence-Based Treatment',
+  'narrative-therapy-fundamentals': 'Evidence-Based Treatment',
+  'dbt-skills-training-comprehensive': 'Evidence-Based Treatment',
+  'narrative-therapy-techniques': 'Evidence-Based Treatment',
+  'motivational-interviewing-core-skills': 'Evidence-Based Treatment',
+  'motivational-interviewing-ambivalence-to-action': 'Evidence-Based Treatment',
+  'cognitive-reframing-anxiety-cr203': 'Evidence-Based Treatment',
+  'systemic-family-therapy': 'Evidence-Based Treatment',
+  'attachment-theory-therapy-lifespan': 'Evidence-Based Treatment',
+  'eating-disorders-evidence-based-treatment': 'Evidence-Based Treatment',
+
+  // --- Geriatric Mental Health ---
+  'unretiring-the-self-identity-purpose-depression-older-adults': 'Geriatric Mental Health',
+  'the-long-goodbye-dementia-grief-family-systems': 'Geriatric Mental Health',
+  'the-final-chapter-end-of-life-counseling-death-anxiety-meaning-making': 'Geriatric Mental Health',
+  'fading-voices-lasting-connections-cr-sp-402': 'Geriatric Mental Health',
+  'grief-counseling-lifespan': 'Geriatric Mental Health',
+  'grief-bereavement-counseling-certification': 'Geriatric Mental Health',
+  'divorce-recovery-support-certification': 'Geriatric Mental Health',
+
+  // --- Clinical Skills ---
+  'active-listening-skills': 'Clinical Skills',
+  'therapeutic-rapport': 'Clinical Skills',
+  'mindfulness-introduction': 'Clinical Skills',
+  'clinical-assessment-diagnosis-dsm5': 'Clinical Skills',
+  'chronic-pain-mind-body-treatment': 'Clinical Skills',
+  'perinatal-mental-health': 'Clinical Skills',
+  'elephant-in-the-room-difficult-conversations': 'Clinical Skills',
+  'sexual-health-across-the-lifespan': 'Clinical Skills',
+  'sex-therapy-foundations': 'Clinical Skills',
+  'adoptive-foster-family-support-certification': 'Clinical Skills',
+  'blended-family-transition-support-certification': 'Clinical Skills',
+  'eating-disorder-recovery-coach-certification': 'Clinical Skills',
+  'beautiful-mind': 'Clinical Skills',
+  'black-swan': 'Clinical Skills',
+  'ordinary-people': 'Clinical Skills',
+  'sixth-sense': 'Clinical Skills',
+  'good-will-hunting-trauma-attachment': 'Clinical Skills',
+  'eternal-sunshine-neuroscience-romantic-reconnection-cr405': 'Clinical Skills',
+
+  // --- Psychopharmacology ---
+  'psychiatric-medications-basics': 'Psychopharmacology',
+  'psychopharmacology-mental-health': 'Psychopharmacology',
+  'psychopharmacology-for-counselors': 'Psychopharmacology',
+
+  // --- Documentation & Billing ---
+  'clinical-documentation-effective': 'Documentation & Billing',
+  'clinical-documentation': 'Documentation & Billing',
+
+  // --- Career Development ---
+  'ncmhce-study-starter': 'Career Development',
+
+  // --- Wellness & Prevention ---
+  'self-care-clinicians': 'Wellness & Prevention',
+};
+
+// Regex fallback rules for courses not in SLUG_MAP (order matters — first match wins)
 const RULES = [
-  { pattern: /ethic|boundar|dual.relat|consent|confidential|mandated.report|professional.practice/i, area: 'Ethics', nbcc: 8 },
-  { pattern: /supervis|cpcs|acs|mentor|oversight/i, area: 'Supervision', nbcc: 8 },
-  { pattern: /telehealth|telement|virtual.practice|online.therap|remote.counsel/i, area: 'Telehealth', nbcc: 1 },
-  { pattern: /suicid|crisis|safety.plan|1013|involuntary|baker.act|5150|risk.assess/i, area: 'Crisis & Safety', nbcc: 1 },
-  { pattern: /trauma|ptsd|neuro|brain|inside.out|wound|resilience/i, area: 'Trauma & Neuroscience', nbcc: 1 },
-  { pattern: /cultur|multicult|divers|immigr|refugee|competenc|translat|racial|lgbtq|equity/i, area: 'Multicultural & Social Justice', nbcc: 3 },
-  { pattern: /addict|substance|recovery|28.days|sobriet|alcohol|opioid/i, area: 'Addiction & Recovery', nbcc: 1 },
-  { pattern: /dbt|dialectic|cbt|cognitive.behav|mindful|accept|behav.therap/i, area: 'Evidence-Based Treatment', nbcc: 1 },
-  { pattern: /geriatr|older.adult|aging|dementia|elder|retire|long.goodbye|final.chapter/i, area: 'Geriatric Mental Health', nbcc: 2 },
-  { pattern: /couple|marriage|family|relat|attach|intimacy|reconnect/i, area: 'Couples & Family', nbcc: 1 },
-  { pattern: /career|vocational|occupation|job|employ/i, area: 'Career Development', nbcc: 5 },
-  { pattern: /assess|diagnos|dsm|testing|measure|psychometric/i, area: 'Assessment & Diagnosis', nbcc: 6 },
-  { pattern: /motivat|interview|ambival|mi.skill|change.talk/i, area: 'Clinical Skills', nbcc: 1 },
-  { pattern: /psychopharm|medicat|prescrib|pharmacol/i, area: 'Psychopharmacology', nbcc: 1 },
-  { pattern: /document|billing|superbill|insurance|coding|icd|cpt/i, area: 'Documentation & Billing', nbcc: 8 },
-  { pattern: /narrat|therap.technique|rapport|listen|session|eggshell|elephant|village|rain/i, area: 'Clinical Skills', nbcc: 1 },
-  { pattern: /beautiful.mind|good.will|pursuit|black.swan|sixth.sense|ordinary.people|eternal.sunshine/i, area: 'Clinical Skills', nbcc: 1 },
-  { pattern: /self.care|burnout|wellness|prevent/i, area: 'Wellness & Prevention', nbcc: 9 },
-  { pattern: /ai.in|artificial.intell|technology/i, area: 'Ethics', nbcc: 8 },
+  { pattern: /ethic|boundar|dual.relat|consent|confidential|mandated.report|professional.practice/i, area: 'Ethics' },
+  { pattern: /supervis|cpcs|acs|mentor|oversight|consult.*referral|collaborat.*care/i, area: 'Supervision' },
+  { pattern: /telehealth|telement|virtual.practice|online.therap|remote.counsel/i, area: 'Telehealth' },
+  { pattern: /suicid|crisis|safety.plan|involuntary|risk.assess|high.conflict/i, area: 'Crisis & Safety' },
+  { pattern: /trauma|ptsd|neuro.*trauma|emdr|wound|resilience|incarcerat|first.respond/i, area: 'Trauma & Neuroscience' },
+  { pattern: /cultur|multicult|divers|immigr|refugee|racial|lgbtq|equity|neurodivers|identity/i, area: 'Multicultural & Social Justice' },
+  { pattern: /addict|substance|recovery|sobriet|alcohol|opioid|harm.reduction|co.occur/i, area: 'Addiction & Recovery' },
+  { pattern: /cbt|dbt|dialectic|cognitive.behav|motivat.*interview|schema|narrative|solution.focus|exposure|behav.*activ/i, area: 'Evidence-Based Treatment' },
+  { pattern: /geriatr|older.adult|aging|dementia|elder|retire|long.goodbye|final.chapter|end.of.life|grief|bereave/i, area: 'Geriatric Mental Health' },
+  { pattern: /psychopharm|medicat|prescrib|pharmacol/i, area: 'Psychopharmacology' },
+  { pattern: /document|billing|superbill|insurance|coding|icd|cpt/i, area: 'Documentation & Billing' },
+  { pattern: /career|vocational|ncmhce|licensure|study.starter/i, area: 'Career Development' },
+  { pattern: /self.care|burnout|wellness|prevent|compassion.fatigue/i, area: 'Wellness & Prevention' },
+  { pattern: /listen|rapport|mindful|session|assess|diagnos|dsm|couple|family|attach|intimate|sex|perinat/i, area: 'Clinical Skills' },
 ];
 
-const DEFAULT_AREA = 'Clinical Practice';
-const DEFAULT_NBCC = 1;
+function detectContentArea(slug, title, description) {
+  // 1. Try explicit slug mapping
+  if (SLUG_MAP[slug]) return SLUG_MAP[slug];
 
-function detectContentArea(title, description) {
-  var text = (title + ' ' + (description || '')).toLowerCase();
-  for (var rule of RULES) {
-    if (rule.pattern.test(text)) {
-      return { area: rule.area, nbccArea: rule.nbcc };
-    }
+  // 2. Regex fallback on title + description
+  const text = (title + ' ' + (description || '')).toLowerCase();
+  for (const rule of RULES) {
+    if (rule.pattern.test(text)) return rule.area;
   }
-  return { area: DEFAULT_AREA, nbccArea: DEFAULT_NBCC };
+
+  // 3. Default
+  return 'Clinical Skills';
 }
 
 async function run() {
   await mongoose.connect(MONGODB_URI);
-  console.log('✅ Connected to MongoDB');
-  var db = mongoose.connection.db;
-  var col = db.collection('interactivecourses');
-  
-  var courses = await col.find({}).toArray();
-  console.log('Courses: ' + courses.length + '\n');
-  
-  var updated = 0, unchanged = 0;
-  
-  for (var c of courses) {
-    var detected = detectContentArea(c.title || '', c.description || '');
-    var current = c.contentArea || c.ceCategory || c.category || '';
-    
-    if (current === detected.area) {
-      console.log('✓ ' + c.title.substring(0, 55) + ' → ' + current);
+  console.log('Connected to MongoDB\n');
+  const db = mongoose.connection.db;
+  const col = db.collection('interactivecourses');
+
+  const courses = await col.find({}).toArray();
+  console.log(`Found ${courses.length} courses\n`);
+
+  let updated = 0;
+  let unchanged = 0;
+
+  for (const c of courses) {
+    const area = detectContentArea(c.slug || '', c.title || '', c.description || '');
+    const current = c.contentArea || '';
+
+    if (current === area) {
+      console.log(`  [ok] ${(c.title || '').substring(0, 60)} -> ${current}`);
       unchanged++;
     } else {
       await col.updateOne(
         { _id: c._id },
-        { $set: { 
-          contentArea: detected.area, 
-          nbccContentArea: detected.nbccArea,
-          updatedAt: new Date() 
-        }}
+        { $set: { contentArea: area, contentAreaDisplay: area, updatedAt: new Date() } }
       );
-      console.log('✏️  ' + c.title.substring(0, 55) + ' → ' + detected.area + (current ? ' (was: ' + current + ')' : ' (was empty)'));
+      console.log(`  [set] ${(c.title || '').substring(0, 60)} -> ${area}${current ? ` (was: ${current})` : ''}`);
       updated++;
     }
   }
-  
-  console.log('\n' + '═'.repeat(50));
-  console.log('Updated: ' + updated + ' | Already correct: ' + unchanged);
-  console.log('═'.repeat(50));
-  
-  // Summary by category
-  var tagged = await col.find({}).toArray();
-  var counts = {};
-  for (var t of tagged) {
-    var a = t.contentArea || 'UNTAGGED';
+
+  // Summary
+  console.log('\n' + '='.repeat(50));
+  console.log(`Updated: ${updated} | Already correct: ${unchanged}`);
+  console.log('='.repeat(50));
+
+  // Distribution
+  const tagged = await col.find({}).toArray();
+  const counts = {};
+  for (const t of tagged) {
+    const a = t.contentArea || 'UNTAGGED';
     counts[a] = (counts[a] || 0) + 1;
   }
   console.log('\nContent Area Distribution:');
-  Object.entries(counts).sort(function(a,b) { return b[1] - a[1]; }).forEach(function(e) {
-    console.log('  ' + e[1] + 'x ' + e[0]);
-  });
-  
+  Object.entries(counts)
+    .sort((a, b) => b[1] - a[1])
+    .forEach(([area, count]) => console.log(`  ${count}x ${area}`));
+
   process.exit();
 }
 
-run().catch(function(e) { console.error('❌', e); process.exit(1); });
+run().catch(e => { console.error('Error:', e); process.exit(1); });
