@@ -719,10 +719,10 @@ router.post('/my/domain/verify-check', protect, requirePartnerAdmin, async (req,
 // ══════════════════════════════════════════════
 
 const PARTNER_PLANS = {
-  free: { name: 'Free', price: 0, maxCourses: 3, maxUsers: 50 },
-  basic: { name: 'Basic', price: 49, maxCourses: 20, maxUsers: 500 },
-  professional: { name: 'Professional', price: 149, maxCourses: 100, maxUsers: 5000 },
-  enterprise: { name: 'Enterprise', price: 399, maxCourses: -1, maxUsers: -1 }
+  starter: { name: 'Starter', price: 99, introPrice: 49, introMonths: 2, maxCourses: 10, maxUsers: 100 },
+  growth: { name: 'Growth', price: 199, introPrice: 99, introMonths: 2, maxCourses: 50, maxUsers: 500 },
+  professional: { name: 'Professional', price: 399, introPrice: null, introMonths: 0, maxCourses: 200, maxUsers: 5000 },
+  enterprise: { name: 'Enterprise', price: 799, introPrice: null, introMonths: 0, maxCourses: -1, maxUsers: -1 }
 };
 
 // ── Partner admin: get billing info ──
@@ -779,25 +779,60 @@ router.post('/my/billing/checkout', protect, requirePartnerAdmin, async (req, re
       await partner.save();
     }
 
-    const session = await stripe.checkout.sessions.create({
+    const planDetails = PARTNER_PLANS[plan];
+    const isNewPartner = !partner.billing?.stripeSubscriptionId;
+    const hasIntro = isNewPartner && planDetails.introPrice && planDetails.introMonths;
+
+    // Build subscription with optional intro pricing phase
+    const sessionConfig = {
       customer: customerId,
       mode: 'subscription',
-      line_items: [{
-        price_data: {
-          currency: 'usd',
-          product_data: {
-            name: `CounselorReady Partner - ${PARTNER_PLANS[plan].name}`,
-            description: `Up to ${PARTNER_PLANS[plan].maxCourses === -1 ? 'unlimited' : PARTNER_PLANS[plan].maxCourses} courses, ${PARTNER_PLANS[plan].maxUsers === -1 ? 'unlimited' : PARTNER_PLANS[plan].maxUsers} users`
-          },
-          unit_amount: PARTNER_PLANS[plan].price * 100,
-          recurring: { interval: 'month' }
-        },
-        quantity: 1
-      }],
       metadata: { partnerId: partnerId.toString(), plan },
       success_url: `${process.env.CLIENT_URL || 'https://counselorready.com'}/partner/billing?success=true`,
       cancel_url: `${process.env.CLIENT_URL || 'https://counselorready.com'}/partner/billing?canceled=true`
-    });
+    };
+
+    if (hasIntro) {
+      // Use subscription_data with trial-like intro via phases isn't available in checkout,
+      // so we use a coupon for the intro period discount
+      const couponAmount = (planDetails.price - planDetails.introPrice) * 100;
+      const coupon = await stripe.coupons.create({
+        amount_off: couponAmount,
+        currency: 'usd',
+        duration: 'repeating',
+        duration_in_months: planDetails.introMonths,
+        name: `${planDetails.name} Intro - $${planDetails.introPrice}/mo for ${planDetails.introMonths} months`
+      });
+
+      sessionConfig.line_items = [{
+        price_data: {
+          currency: 'usd',
+          product_data: {
+            name: `CounselorReady Partner - ${planDetails.name}`,
+            description: `Up to ${planDetails.maxCourses === -1 ? 'unlimited' : planDetails.maxCourses} courses, ${planDetails.maxUsers === -1 ? 'unlimited' : planDetails.maxUsers} users`
+          },
+          unit_amount: planDetails.price * 100,
+          recurring: { interval: 'month' }
+        },
+        quantity: 1
+      }];
+      sessionConfig.discounts = [{ coupon: coupon.id }];
+    } else {
+      sessionConfig.line_items = [{
+        price_data: {
+          currency: 'usd',
+          product_data: {
+            name: `CounselorReady Partner - ${planDetails.name}`,
+            description: `Up to ${planDetails.maxCourses === -1 ? 'unlimited' : planDetails.maxCourses} courses, ${planDetails.maxUsers === -1 ? 'unlimited' : planDetails.maxUsers} users`
+          },
+          unit_amount: planDetails.price * 100,
+          recurring: { interval: 'month' }
+        },
+        quantity: 1
+      }];
+    }
+
+    const session = await stripe.checkout.sessions.create(sessionConfig);
 
     res.json({ url: session.url });
   } catch (error) {

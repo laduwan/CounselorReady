@@ -12,15 +12,15 @@ const BURGUNDY = '#6B1D34';
 const HUNTER = '#4A7C59';
 
 const PLAN_ICONS = {
-  free: Zap,
-  basic: Star,
+  starter: Zap,
+  growth: Star,
   professional: Crown,
   enterprise: Crown
 };
 
 const PLAN_COLORS = {
-  free: '#78716c',
-  basic: '#1D4ED8',
+  starter: '#1D4ED8',
+  growth: HUNTER,
   professional: BURGUNDY,
   enterprise: '#7C3AED'
 };
@@ -168,10 +168,21 @@ export default function PartnerBilling() {
               <div className="text-center mb-4 pt-2">
                 <Icon className="w-8 h-8 mx-auto mb-2" style={{ color }} />
                 <h3 className="font-bold text-stone-900">{plan.name}</h3>
-                <p className="text-2xl font-bold mt-1" style={{ color }}>
-                  {plan.price === 0 ? 'Free' : `$${plan.price}`}
-                  {plan.price > 0 && <span className="text-xs font-normal text-stone-400">/mo</span>}
-                </p>
+                {plan.introPrice ? (
+                  <div className="mt-1">
+                    <p className="text-2xl font-bold" style={{ color }}>
+                      ${plan.introPrice}<span className="text-xs font-normal text-stone-400">/mo</span>
+                    </p>
+                    <p className="text-[10px] text-stone-400 mt-0.5">
+                      for first {plan.introMonths} months, then ${plan.price}/mo
+                    </p>
+                  </div>
+                ) : (
+                  <p className="text-2xl font-bold mt-1" style={{ color }}>
+                    {plan.price === 0 ? 'Free' : `$${plan.price}`}
+                    {plan.price > 0 && <span className="text-xs font-normal text-stone-400">/mo</span>}
+                  </p>
+                )}
               </div>
 
               <ul className="space-y-2 text-xs text-stone-600 mb-5">
@@ -181,16 +192,20 @@ export default function PartnerBilling() {
                 </li>
                 <li className="flex items-center gap-2">
                   <Check className="w-3 h-3 flex-shrink-0" style={{ color }} />
-                  {plan.maxUsers === -1 ? 'Unlimited' : `Up to ${plan.maxUsers}`} users
+                  {plan.maxUsers === -1 ? 'Unlimited' : `Up to ${plan.maxUsers.toLocaleString()}`} users
                 </li>
                 <li className="flex items-center gap-2">
                   <Check className="w-3 h-3 flex-shrink-0" style={{ color }} />
                   Custom branding
                 </li>
-                {key !== 'free' && (
+                <li className="flex items-center gap-2">
+                  <Check className="w-3 h-3 flex-shrink-0" style={{ color }} />
+                  Analytics dashboard
+                </li>
+                {(key === 'growth' || key === 'professional' || key === 'enterprise') && (
                   <li className="flex items-center gap-2">
                     <Check className="w-3 h-3 flex-shrink-0" style={{ color }} />
-                    Analytics dashboard
+                    Bulk course upload
                   </li>
                 )}
                 {(key === 'professional' || key === 'enterprise') && (
@@ -210,10 +225,6 @@ export default function PartnerBilling() {
               {isCurrent ? (
                 <div className="text-center text-xs font-medium py-2 rounded-lg" style={{ background: color + '10', color }}>
                   Active Plan
-                </div>
-              ) : key === 'free' ? (
-                <div className="text-center text-xs font-medium py-2 rounded-lg text-stone-400 bg-stone-50">
-                  Included
                 </div>
               ) : (
                 <button
