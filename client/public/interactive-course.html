@@ -224,21 +224,21 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
 /* Sidebar header — burgundy gradient */
 .cr-sidebar-header {
   background: linear-gradient(160deg, var(--cr-burgundy) 0%, #4A1224 100%);
-  padding: 18px; color: #fff;
+  padding: 12px 14px; color: #fff;
 }
 .cr-sidebar-ce-badge {
   display: inline-block; background: var(--cr-green);
-  color: #fff; font-size: 11px; font-weight: 700;
-  padding: 3px 10px; border-radius: 12px; margin-bottom: 10px;
+  color: #fff; font-size: 10px; font-weight: 700;
+  padding: 2px 8px; border-radius: 10px;
 }
 .cr-sidebar-course-title {
   font-family: var(--cr-font-display);
-  font-size: 15px; font-weight: 700; color: #fff;
-  line-height: 1.3;
+  font-size: 13px; font-weight: 700; color: #fff;
+  line-height: 1.25;
 }
 .cr-sidebar-viewer-label {
-  font-size: 9px; text-transform: uppercase; letter-spacing: 0.12em;
-  color: rgba(255,255,255,0.5); margin-top: 6px;
+  font-size: 8px; text-transform: uppercase; letter-spacing: 0.1em;
+  color: rgba(255,255,255,0.4); margin-top: 4px;
 }
 
 /* Progress ring + text row */
@@ -1607,26 +1607,24 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
   <aside class="cr-sidebar" id="crSidebar" role="navigation" aria-label="Course sections">
     <!-- Burgundy header with progress -->
     <div class="cr-sidebar-header">
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
         <div class="cr-sidebar-ce-badge" id="crCeBadge"></div>
-        <div class="cr-sidebar-content-area" id="crContentArea" style="font-size:10px;color:rgba(255,255,255,0.6);text-transform:uppercase;letter-spacing:0.08em"></div>
+        <div id="crContentArea" style="font-size:9px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:0.06em"></div>
       </div>
       <div class="cr-sidebar-course-title" id="crSidebarTitle"></div>
-      <!-- Progress ring inside header -->
-      <div style="display:flex;align-items:center;gap:10px;margin-top:12px">
-        <div class="cr-progress-ring">
-          <svg width="38" height="38" viewBox="0 0 38 38">
-            <circle cx="19" cy="19" r="15" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="3"/>
-            <circle id="crProgressRing" cx="19" cy="19" r="15" fill="none" stroke="var(--cr-gold)" stroke-width="3" stroke-linecap="round" stroke-dasharray="94.2" stroke-dashoffset="94.2" style="transform:rotate(-90deg);transform-origin:center;transition:stroke-dashoffset 0.5s ease"/>
+      <div style="display:flex;align-items:center;gap:8px;margin-top:8px">
+        <div class="cr-progress-ring" style="width:32px;height:32px">
+          <svg width="32" height="32" viewBox="0 0 32 32">
+            <circle cx="16" cy="16" r="13" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="2.5"/>
+            <circle id="crProgressRing" cx="16" cy="16" r="13" fill="none" stroke="var(--cr-gold)" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="81.7" stroke-dashoffset="81.7" style="transform:rotate(-90deg);transform-origin:center;transition:stroke-dashoffset 0.5s ease"/>
           </svg>
-          <div class="cr-progress-ring-text" id="crProgressPct" style="color:#fff;font-size:10px">0%</div>
+          <div class="cr-progress-ring-text" id="crProgressPct" style="color:#fff;font-size:9px">0%</div>
         </div>
         <div style="flex:1">
-          <div id="crProgressMain" style="font-size:12px;font-weight:600;color:#fff">0 of 0 complete</div>
-          <div id="crProgressSub" style="font-size:10px;color:rgba(255,255,255,0.6);margin-top:1px">Section 1 in progress</div>
+          <div id="crProgressMain" style="font-size:11px;font-weight:600;color:#fff">0 of 0 complete</div>
+          <div id="crProgressSub" style="font-size:9px;color:rgba(255,255,255,0.5);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px">Section 1</div>
         </div>
       </div>
-      <div class="cr-sidebar-viewer-label">CReady™ Viewer</div>
     </div>
     <!-- Thin progress bar -->
     <div class="cr-progress-bar"><div class="cr-progress-fill" id="crProgressFill"></div></div>
@@ -2422,10 +2420,10 @@ function updateProgress() {
   const bar = document.getElementById('crProgressFill');
   if (bar) bar.style.width = pct + '%';
   
-  // Progress ring (circumference = 2πr = 2*π*15 ≈ 94.2)
+  // Progress ring (circumference = 2πr = 2*π*13 ≈ 81.7)
   const ring = document.getElementById('crProgressRing');
   if (ring) {
-    const circumference = 94.2;
+    const circumference = 81.7;
     ring.setAttribute('stroke-dashoffset', circumference - (circumference * pct / 100));
   }
   
