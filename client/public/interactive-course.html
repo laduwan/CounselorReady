@@ -1637,7 +1637,7 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
         <span>Final Assessment</span>
       </button>
     </div>
-    <!-- Translation -->
+    <!-- Translation + PDF -->
     <div class="cr-translate-bar" id="crTranslateBar" style="display:none">
       <span>🌐</span>
       <select id="crLangSelect" data-action="noop">
@@ -1652,6 +1652,11 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
         <option value="ht">Kreyòl Ayisyen</option>
         <option value="so">Soomaali</option>
       </select>
+      <span style="flex:1"></span>
+      <button data-action="exportPDF" style="display:flex;align-items:center;gap:4px;padding:4px 10px;border:1px solid var(--cr-border);border-radius:6px;background:none;cursor:pointer;font-size:11px;color:var(--cr-text-secondary)" title="Export as PDF">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="9 15 12 18 15 15"/></svg>
+        PDF
+      </button>
     </div>
     <!-- Copyright only -->
     <div style="padding:6px 16px 8px;font-size:8px;color:var(--cr-text-muted);text-align:center;line-height:1.4;border-top:1px solid var(--cr-border)">
@@ -1675,16 +1680,6 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
   <!-- MAIN CONTENT -->
   <main class="cr-main" id="cr-content" role="main">
     <!-- Section toolbar -->
-    <div class="cr-toolbar" id="crToolbar" style="display:none">
-      <button class="cr-toolbar-btn" data-action="printSection">🖨️ Print Section</button>
-      <button class="cr-toolbar-btn" data-action="exportPDF">📄 Export as PDF</button>
-      <span style="flex:1"></span>
-      <button class="cr-toolbar-btn" data-action="downloadCourseText" title="Download course text">📄 .txt</button>
-      <button class="cr-toolbar-btn" data-action="downloadCourseJSON" title="Download course data">💾 .json</button>
-    </div>
-    
-    <!-- Learning objectives tracker (injected on first content section) -->
-    <!-- Learning objectives tracker removed -->
     
     <!-- Section content rendered here -->
     <div id="crContentArea"></div>
