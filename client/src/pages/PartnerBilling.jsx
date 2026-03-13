@@ -6,7 +6,7 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import api from '../services/api';
-import { CreditCard, Check, Zap, Star, Crown, ExternalLink } from 'lucide-react';
+import { CreditCard, Check, Zap, Star, Crown, ExternalLink, X } from 'lucide-react';
 
 const BURGUNDY = '#6B1D34';
 const HUNTER = '#4A7C59';
@@ -32,6 +32,7 @@ export default function PartnerBilling() {
   const [usage, setUsage] = useState(null);
   const [loading, setLoading] = useState(true);
   const [checkoutLoading, setCheckoutLoading] = useState(null);
+  const [error, setError] = useState(null);
   const [successMsg, setSuccessMsg] = useState('');
 
   useEffect(() => {
@@ -45,7 +46,9 @@ export default function PartnerBilling() {
       setBilling(data.billing);
       setPlans(data.plans);
       setUsage(data.usage);
-    } catch { /* silent */ }
+    } catch (err) {
+      setError(err.response?.data?.error || 'Failed to load billing information');
+    }
     setLoading(false);
   }
 
@@ -55,7 +58,7 @@ export default function PartnerBilling() {
       const { data } = await api.post('/partners/my/billing/checkout', { plan });
       if (data.url) window.location.href = data.url;
     } catch (err) {
-      alert(err.response?.data?.error || 'Checkout failed');
+      setError(err.response?.data?.error || 'Checkout failed. Please try again.');
     }
     setCheckoutLoading(null);
   }
@@ -65,7 +68,7 @@ export default function PartnerBilling() {
       const { data } = await api.post('/partners/my/billing/portal');
       if (data.url) window.location.href = data.url;
     } catch (err) {
-      alert(err.response?.data?.error || 'Could not open billing portal');
+      setError(err.response?.data?.error || 'Could not open billing portal');
     }
   }
 
@@ -91,6 +94,15 @@ export default function PartnerBilling() {
       {successMsg && (
         <div className="p-3 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm flex items-center gap-2">
           <Check className="w-4 h-4" /> {successMsg}
+        </div>
+      )}
+
+      {error && (
+        <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm flex items-center justify-between">
+          <span>{error}</span>
+          <button onClick={() => setError(null)} className="text-red-400 hover:text-red-600 ml-2">
+            <X className="w-4 h-4" />
+          </button>
         </div>
       )}
 

@@ -19,6 +19,7 @@ export default function PartnerDashboard() {
   const [stats, setStats] = useState(null);
   const [onboarding, setOnboarding] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
@@ -57,7 +58,9 @@ export default function PartnerDashboard() {
             } catch { /* stats fetch is non-critical */ }
           }
         }
-      } catch { /* silent */ }
+      } catch (err) {
+        setError(err.response?.data?.error || 'Failed to load partner data');
+      }
       setLoading(false);
     }
     load();
@@ -75,6 +78,18 @@ export default function PartnerDashboard() {
     return (
       <div className="flex items-center justify-center py-20">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2" style={{ borderColor: BURGUNDY }} />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-20">
+        <p className="text-lg font-medium text-red-700">Something went wrong</p>
+        <p className="text-sm text-stone-500 mt-1">{error}</p>
+        <button onClick={() => window.location.reload()} className="mt-4 px-4 py-2 text-sm rounded-lg border border-stone-300 text-stone-600 hover:bg-stone-50">
+          Try Again
+        </button>
       </div>
     );
   }

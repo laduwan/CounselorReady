@@ -15,6 +15,7 @@ export default function PartnerUserManagement() {
   const [users, setUsers] = useState([]);
   const [total, setTotal] = useState(0);
   const [search, setSearch] = useState('');
+  const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
 
@@ -39,13 +40,26 @@ export default function PartnerUserManagement() {
       const { data } = await api.get(`/partners/my/users?${params}`);
       setUsers(data.users || []);
       setTotal(data.pagination?.total || 0);
-    } catch { /* silent */ }
+    } catch (err) {
+      setError(err.response?.data?.error || 'Failed to load users');
+    }
     setLoading(false);
   }
 
   async function handleInvite() {
     const emails = emailInput.split(/[,\n]+/).map(e => e.trim()).filter(Boolean);
     if (emails.length === 0) return;
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const invalid = emails.filter(e => !emailRegex.test(e));
+    if (invalid.length > 0) {
+      setInviteResult({
+        message: `Invalid email format: ${invalid.join(', ')}`,
+        sent: [],
+        errors: invalid.map(e => ({ email: e, error: 'Invalid email format' }))
+      });
+      return;
+    }
 
     setInviteLoading(true);
     setInviteResult(null);
@@ -67,7 +81,9 @@ export default function PartnerUserManagement() {
     try {
       await api.delete(`/partners/my/users/${userId}`);
       loadUsers();
-    } catch { /* silent */ }
+    } catch (err) {
+      setError(err.response?.data?.error || 'Failed to remove user');
+    }
     setRemoving(null);
   }
 
@@ -88,6 +104,15 @@ export default function PartnerUserManagement() {
           <Mail className="w-4 h-4" /> Invite Users
         </button>
       </div>
+
+      {error && (
+        <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm flex items-center justify-between">
+          <span>{error}</span>
+          <button onClick={() => setError(null)} className="text-red-400 hover:text-red-600 ml-2">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
 
       {/* Invite Panel */}
       {showInvite && (
