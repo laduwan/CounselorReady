@@ -1634,25 +1634,28 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
 
   <!-- SIDEBAR -->
   <aside class="cr-sidebar" id="crSidebar" role="navigation" aria-label="Course sections">
-    <!-- Burgundy header -->
+    <!-- Burgundy header with progress -->
     <div class="cr-sidebar-header">
-      <div class="cr-sidebar-ce-badge" id="crCeBadge"></div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        <div class="cr-sidebar-ce-badge" id="crCeBadge"></div>
+        <div class="cr-sidebar-content-area" id="crContentArea" style="font-size:10px;color:rgba(255,255,255,0.6);text-transform:uppercase;letter-spacing:0.08em"></div>
+      </div>
       <div class="cr-sidebar-course-title" id="crSidebarTitle"></div>
+      <!-- Progress ring inside header -->
+      <div style="display:flex;align-items:center;gap:10px;margin-top:12px">
+        <div class="cr-progress-ring">
+          <svg width="38" height="38" viewBox="0 0 38 38">
+            <circle cx="19" cy="19" r="15" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="3"/>
+            <circle id="crProgressRing" cx="19" cy="19" r="15" fill="none" stroke="var(--cr-gold)" stroke-width="3" stroke-linecap="round" stroke-dasharray="94.2" stroke-dashoffset="94.2" style="transform:rotate(-90deg);transform-origin:center;transition:stroke-dashoffset 0.5s ease"/>
+          </svg>
+          <div class="cr-progress-ring-text" id="crProgressPct" style="color:#fff;font-size:10px">0%</div>
+        </div>
+        <div style="flex:1">
+          <div id="crProgressMain" style="font-size:12px;font-weight:600;color:#fff">0 of 0 complete</div>
+          <div id="crProgressSub" style="font-size:10px;color:rgba(255,255,255,0.6);margin-top:1px">Section 1 in progress</div>
+        </div>
+      </div>
       <div class="cr-sidebar-viewer-label">CReady™ Viewer</div>
-    </div>
-    <!-- Progress ring + info -->
-    <div class="cr-sidebar-progress" id="crSidebarProgress">
-      <div class="cr-progress-ring">
-        <svg width="44" height="44" viewBox="0 0 44 44">
-          <circle class="cr-progress-ring-bg" cx="22" cy="22" r="18"/>
-          <circle class="cr-progress-ring-fill" id="crProgressRing" cx="22" cy="22" r="18" stroke-dasharray="113.1" stroke-dashoffset="113.1"/>
-        </svg>
-        <div class="cr-progress-ring-text" id="crProgressPct">0%</div>
-      </div>
-      <div class="cr-progress-info">
-        <div class="cr-progress-info-main" id="crProgressMain">0 of 0 complete</div>
-        <div class="cr-progress-info-sub" id="crProgressSub">Section 1 in progress</div>
-      </div>
     </div>
     <!-- Thin progress bar -->
     <div class="cr-progress-bar"><div class="cr-progress-fill" id="crProgressFill"></div></div>
@@ -1662,18 +1665,6 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
       <button class="cr-nav-item" id="crNavAssessBtn" data-action="showAssessment">
         <span class="cr-nav-dot" style="background:var(--cr-gold);border-color:var(--cr-gold);color:#fff">★</span>
         <span>Final Assessment</span>
-      </button>
-    </div>
-    <!-- Download Deliverables -->
-    <div id="crDownloads" style="display:none;border-top:1px solid var(--cr-border);padding:12px 20px">
-      <p style="font-size:0.75em;text-transform:uppercase;letter-spacing:0.08em;color:var(--cr-text-muted);margin-bottom:8px;font-weight:700">Downloads</p>
-      <button class="cr-nav-item" data-action="downloadCourseText" style="font-size:12px;padding:8px 12px;min-height:36px">
-        <span style="font-size:16px">📄</span>
-        <span>Course Text (.txt)</span>
-      </button>
-      <button class="cr-nav-item" data-action="downloadCourseJSON" style="font-size:12px;padding:8px 12px;min-height:36px">
-        <span style="font-size:16px">💾</span>
-        <span>Course Data (.json)</span>
       </button>
     </div>
     <!-- Translation -->
@@ -1692,10 +1683,17 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
         <option value="so">Soomaali</option>
       </select>
     </div>
-    <!-- Copyright -->
-    <div style="padding:10px 20px;font-size:9px;color:var(--cr-text-muted);text-align:center;border-top:1px solid var(--cr-border);line-height:1.4">
-      <span style="font-weight:700">CReady™ Viewer</span><br>
-      © 2026 GAITP LLC · NBCC ACEP #7760<br>
+    <!-- Footer: downloads + copyright -->
+    <div style="border-top:1px solid var(--cr-border);padding:8px 16px;display:none;align-items:center;gap:6px" id="crDownloads">
+      <button class="cr-nav-item" data-action="downloadCourseText" style="font-size:11px;padding:4px 8px;min-height:28px;flex:1" title="Download course text">
+        <span>📄</span> <span>.txt</span>
+      </button>
+      <button class="cr-nav-item" data-action="downloadCourseJSON" style="font-size:11px;padding:4px 8px;min-height:28px;flex:1" title="Download course data">
+        <span>💾</span> <span>.json</span>
+      </button>
+    </div>
+    <div style="padding:6px 16px 8px;font-size:8px;color:var(--cr-text-muted);text-align:center;line-height:1.4">
+      <span style="font-weight:700">CReady™ Viewer</span> · © 2026 GAITP LLC · ACEP #7760<br>
       <span style="font-family:var(--cr-font-display)"><span style="color:var(--cr-burgundy)">Counselor</span><span style="color:var(--cr-green)">Ready</span></span>™ Learn. License. Lead.®
     </div>
   </aside>
@@ -2176,13 +2174,21 @@ function loadCourse(data) {
   if (badge && ceHrs) badge.textContent = ceHrs + ' CE Hours';
   else if (badge) badge.style.display = 'none';
   
+  // Content area label
+  const areaEl = document.getElementById('crContentArea');
+  if (areaEl) {
+    const area = course.contentArea || course.category || course.ceCategory || '';
+    if (area) areaEl.textContent = area;
+    else areaEl.style.display = 'none';
+  }
+  
   // Show assessment nav if assessment exists
   if (course.assessment?.questions?.length > 0) {
     document.getElementById('crNavAssessment').style.display = 'block';
   }
   
   // Show downloads
-  document.getElementById('crDownloads').style.display = 'block';
+  document.getElementById('crDownloads').style.display = 'flex';
   
   // TTS button
   if ('speechSynthesis' in window) {
@@ -2456,10 +2462,10 @@ function updateProgress() {
   const bar = document.getElementById('crProgressFill');
   if (bar) bar.style.width = pct + '%';
   
-  // Progress ring (circumference = 2πr = 2*π*18 ≈ 113.1)
+  // Progress ring (circumference = 2πr = 2*π*15 ≈ 94.2)
   const ring = document.getElementById('crProgressRing');
   if (ring) {
-    const circumference = 113.1;
+    const circumference = 94.2;
     ring.setAttribute('stroke-dashoffset', circumference - (circumference * pct / 100));
   }
   
@@ -2475,8 +2481,10 @@ function updateProgress() {
   if (subEl) {
     const currentSection = course.sections[currentSectionIndex];
     if (currentSection && !currentSection._isOverview) {
-      const navIdx = navSections.indexOf(currentSection) + 1;
-      subEl.textContent = `Section ${navIdx} in progress`;
+      let secTitle = currentSection.title || '';
+      // Truncate if too long
+      if (secTitle.length > 40) secTitle = secTitle.substring(0, 38) + '…';
+      subEl.textContent = secTitle || 'Section ' + (currentSectionIndex + 1);
     } else {
       subEl.textContent = 'Course overview';
     }
