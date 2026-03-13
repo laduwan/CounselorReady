@@ -30,6 +30,10 @@ import GroupLicenseDashboard from './pages/GroupLicenseDashboard';
 import Recommendations from './pages/Recommendations';
 import LegacyVault from './pages/LegacyVault';
 import CourseQuickEdit from './pages/CourseQuickEdit';
+import AdminPartners from './pages/AdminPartners';
+import PartnerDashboard from './pages/PartnerDashboard';
+import PartnerBrandingSettings from './pages/PartnerBrandingSettings';
+import PartnerCourseAdmin from './pages/PartnerCourseAdmin';
 import ThumbnailManager from './pages/ThumbnailManager';
 import AdminBulkUpload from './pages/AdminBulkUpload';
 
@@ -128,6 +132,16 @@ function AdminRoute({ children }) {
   if (loading) return <LoadingScreen />;
   if (!isAuthenticated) return <Navigate to="/login" replace />;
   if (user?.role !== 'admin') return <Navigate to="/courses" replace />;
+  return children;
+}
+
+// Partner Admin Route wrapper (admin or partner_admin)
+function PartnerAdminRoute({ children }) {
+  const { isAuthenticated, loading, user } = useAuth();
+
+  if (loading) return <LoadingScreen />;
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
+  if (user?.role !== 'admin' && user?.role !== 'partner_admin') return <Navigate to="/courses" replace />;
   return children;
 }
 
@@ -257,6 +271,11 @@ function AppRoutes() {
           <Layout><CourseQuickEdit /></Layout>
         </AdminRoute>
       } />
+      <Route path="/admin/partners" element={
+        <AdminRoute>
+          <Layout><AdminPartners /></Layout>
+        </AdminRoute>
+      } />
       <Route path="/admin/thumbnails" element={
         <AdminRoute>
           <Layout><ThumbnailManager /></Layout>
@@ -266,6 +285,21 @@ function AppRoutes() {
         <AdminRoute>
           <Layout><AdminBulkUpload /></Layout>
         </AdminRoute>
+      } />
+      <Route path="/partner-dashboard" element={
+        <ProtectedRoute>
+          <Layout><PartnerDashboard /></Layout>
+        </ProtectedRoute>
+      } />
+      <Route path="/partner/branding" element={
+        <PartnerAdminRoute>
+          <Layout><PartnerBrandingSettings /></Layout>
+        </PartnerAdminRoute>
+      } />
+      <Route path="/partner/courses" element={
+        <PartnerAdminRoute>
+          <Layout><PartnerCourseAdmin /></Layout>
+        </PartnerAdminRoute>
       } />
 
       {/*
@@ -280,7 +314,7 @@ function AppRoutes() {
       <Route path="/tools/*" element={<StaticPageFallback />} />
       <Route path="/interactive-course.html" element={<StaticPageFallback />} />
       <Route path="/interactive-courses.html" element={<StaticPageFallback />} />
-      
+
       {/* Catch all — unknown routes go home */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

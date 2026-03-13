@@ -153,6 +153,9 @@ const CourseSchema = new mongoose.Schema({
   // References (ACEP required) - supports both string citations and {title, author, year, source, citation} objects
   references: [mongoose.Schema.Types.Mixed],
   
+  // Partner ownership (optional — set when partner creates course)
+  partnerId: { type: mongoose.Schema.Types.ObjectId, ref: 'Partner' },
+
   // Metadata
   author: String,
   publishedAt: Date,
