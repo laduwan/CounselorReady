@@ -49,6 +49,14 @@ function CourseViewerWrapper() {
   return <CourseViewer courseSlug={slug} />;
 }
 
+// Redirect to static HTML pages
+function RedirectToStatic({ path }) {
+  useEffect(() => {
+    window.location.replace(path);
+  }, [path]);
+  return null;
+}
+
 // Loading screen with server wake-up awareness
 function LoadingScreen() {
   const { serverWaking } = useAuth();
@@ -166,10 +174,10 @@ function AppRoutes() {
         <PublicRoute><Register /></PublicRoute>
       } />
       
-      {/* Protected routes */}
+      {/* Protected routes - Redirected to static HTML */}
       <Route path="/dashboard" element={
         <ProtectedRoute>
-          <Layout><Dashboard /></Layout>
+          <RedirectToStatic path="/dashboard.html" />
         </ProtectedRoute>
       } />
       <Route path="/courses" element={
@@ -193,12 +201,22 @@ function AppRoutes() {
       
       <Route path="/credentials" element={
         <ProtectedRoute>
-          <Layout><Credentials /></Layout>
+          <RedirectToStatic path="/credentials.html" />
+        </ProtectedRoute>
+      } />
+      <Route path="/certificates" element={
+        <ProtectedRoute>
+          <RedirectToStatic path="/certificates.html" />
+        </ProtectedRoute>
+      } />
+      <Route path="/messages" element={
+        <ProtectedRoute>
+          <RedirectToStatic path="/messages.html" />
         </ProtectedRoute>
       } />
       <Route path="/settings" element={
         <ProtectedRoute>
-          <Layout><Settings /></Layout>
+          <RedirectToStatic path="/settings.html" />
         </ProtectedRoute>
       } />
 
