@@ -1,4 +1,9 @@
 /**
+ * Copyright (c) 2026 CounselorReady, a subsidiary of Ga Integrated Therapeutic Perspectives, LLC.
+ * All rights reserved. Proprietary and confidential.
+ * Unauthorized copying or distribution is strictly prohibited.
+ */
+/**
  * Debug script: dump sample quiz-like content from the DB
  * to understand the actual format stored in MongoDB.
  *
