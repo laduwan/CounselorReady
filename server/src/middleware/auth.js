@@ -63,6 +63,18 @@ export const requireAdmin = async (req, res, next) => {
   next();
 };
 
+// Require partner_admin or admin role
+export const requirePartnerAdmin = async (req, res, next) => {
+  if (req.user.role === 'admin') {
+    return next();
+  }
+  if (req.user.role === 'partner_admin' && req.user.partnerId) {
+    req.partnerId = req.user.partnerId;
+    return next();
+  }
+  return res.status(403).json({ error: 'Partner admin access required' });
+};
+
 // Optional auth - attach user if token exists, but don't require it
 export const optionalAuth = async (req, res, next) => {
   try {

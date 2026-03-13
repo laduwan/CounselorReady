@@ -147,6 +147,12 @@ const userSchema = new mongoose.Schema({
     }
   },
   
+  // Whitelabel partner association
+  partnerId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Partner'
+  },
+
   // Metadata
   emailVerified: { type: Boolean, default: false },
   emailVerificationToken: { type: String },
@@ -154,7 +160,7 @@ const userSchema = new mongoose.Schema({
   passwordResetExpires: { type: Date },
   role: {
     type: String,
-    enum: ['user', 'admin'],
+    enum: ['user', 'admin', 'partner_admin'],
     default: 'user'
   },
   lastLoginAt: { type: Date },
