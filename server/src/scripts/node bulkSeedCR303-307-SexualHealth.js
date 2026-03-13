@@ -1,4 +1,9 @@
 /**
+ * Copyright (c) 2026 CounselorReady, a subsidiary of Ga Integrated Therapeutic Perspectives, LLC.
+ * All rights reserved. Proprietary and confidential.
+ * Unauthorized copying or distribution is strictly prohibited.
+ */
+/**
  * CounselorReady — Bulk Seed Runner
  * Sexual Health CE Series: CR-303 through CR-307
  * 5 courses × 3 CE hours = 15 CE hours total
