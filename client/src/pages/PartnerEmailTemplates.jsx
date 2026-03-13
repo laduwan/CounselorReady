@@ -14,6 +14,8 @@ export default function PartnerEmailTemplates() {
   const [brandColor, setBrandColor] = useState(BURGUNDY);
   const [companyName, setCompanyName] = useState('');
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [saveError, setSaveError] = useState(null);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [previewType, setPreviewType] = useState(null);
@@ -29,7 +31,9 @@ export default function PartnerEmailTemplates() {
       setTemplates(data.templates);
       setBrandColor(data.brandColor);
       setCompanyName(data.companyName);
-    } catch { /* silent */ }
+    } catch (err) {
+      setError(err.response?.data?.error || 'Failed to load email templates');
+    }
     setLoading(false);
   }
 
@@ -46,9 +50,10 @@ export default function PartnerEmailTemplates() {
     try {
       await api.put('/partners/my/email-templates', templates);
       setSaved(true);
+      setSaveError(null);
       setTimeout(() => setSaved(false), 3000);
     } catch (err) {
-      alert(err.response?.data?.error || 'Failed to save templates');
+      setSaveError(err.response?.data?.error || 'Failed to save templates');
     }
     setSaving(false);
   }
@@ -77,6 +82,18 @@ export default function PartnerEmailTemplates() {
     return (
       <div className="flex items-center justify-center py-20">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2" style={{ borderColor: BURGUNDY }} />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-20">
+        <p className="text-lg font-medium text-red-700">Something went wrong</p>
+        <p className="text-sm text-stone-500 mt-1">{error}</p>
+        <button onClick={() => { setError(null); loadTemplates(); }} className="mt-4 px-4 py-2 text-sm rounded-lg border border-stone-300 text-stone-600 hover:bg-stone-50">
+          Try Again
+        </button>
       </div>
     );
   }
@@ -244,6 +261,12 @@ export default function PartnerEmailTemplates() {
           </button>
         </div>
       </div>
+
+      {saveError && (
+        <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+          {saveError}
+        </div>
+      )}
 
       {renderSection('welcome', 'Welcome Email')}
       {renderSection('invitation', 'Invitation Email')}

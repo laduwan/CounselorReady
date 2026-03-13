@@ -28,7 +28,7 @@ export default function PartnerOnboarding() {
       try {
         const { data: result } = await api.get('/partners/my/onboarding');
         setData(result);
-      } catch { /* silent */ }
+      } catch { /* onboarding status shown as fallback below */ }
       setLoading(false);
     }
     load();

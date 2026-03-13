@@ -21,6 +21,7 @@ export default function PartnerDomainSettings() {
   const [instructions, setInstructions] = useState(null);
   const [copied, setCopied] = useState(null);
   const [domain, setDomain] = useState('');
+  const [error, setError] = useState(null);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -34,7 +35,9 @@ export default function PartnerDomainSettings() {
         setPartner(data.partner);
         setDomain(data.partner?.branding?.customDomain || '');
       }
-    } catch { /* silent */ }
+    } catch (err) {
+      setError(err.response?.data?.error || 'Failed to load domain settings');
+    }
     setLoading(false);
   }
 
@@ -43,9 +46,11 @@ export default function PartnerDomainSettings() {
     setSaving(true);
     try {
       await api.put('/partners/my-branding', { customDomain: domain.toLowerCase().trim() });
-      // Re-fetch partner to get updated data
+      setError(null);
       await loadPartner();
-    } catch { /* silent */ }
+    } catch (err) {
+      setError(err.response?.data?.error || 'Failed to save domain');
+    }
     setSaving(false);
   }
 
@@ -85,6 +90,18 @@ export default function PartnerDomainSettings() {
     return (
       <div className="flex items-center justify-center py-20">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2" style={{ borderColor: BURGUNDY }} />
+      </div>
+    );
+  }
+
+  if (error && !partner) {
+    return (
+      <div className="text-center py-20">
+        <p className="text-lg font-medium text-red-700">Something went wrong</p>
+        <p className="text-sm text-stone-500 mt-1">{error}</p>
+        <button onClick={() => { setError(null); loadPartner(); }} className="mt-4 px-4 py-2 text-sm rounded-lg border border-stone-300 text-stone-600 hover:bg-stone-50">
+          Try Again
+        </button>
       </div>
     );
   }
@@ -131,6 +148,10 @@ export default function PartnerDomainSettings() {
             </button>
           </div>
         </div>
+
+        {error && partner && (
+          <p className="mt-2 text-xs text-red-600">{error}</p>
+        )}
 
         {currentDomain && (
           <div className="mt-3 flex items-center gap-2 text-sm">

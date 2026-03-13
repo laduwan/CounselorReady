@@ -5,7 +5,7 @@
  */
 import { useState, useEffect } from 'react';
 import api from '../services/api';
-import { Download, Users, BookOpen, Award, FileText, BarChart3, RefreshCw } from 'lucide-react';
+import { Download, Users, BookOpen, Award, FileText, BarChart3, RefreshCw, X } from 'lucide-react';
 
 const BURGUNDY = '#6B1D34';
 const HUNTER = '#4A7C59';
@@ -13,6 +13,7 @@ const HUNTER = '#4A7C59';
 export default function PartnerReports() {
   const [quota, setQuota] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [downloading, setDownloading] = useState(null);
 
   useEffect(() => {
@@ -23,7 +24,9 @@ export default function PartnerReports() {
     try {
       const { data } = await api.get('/partners/my/quota');
       setQuota(data);
-    } catch { /* silent */ }
+    } catch (err) {
+      setError(err.response?.data?.error || 'Failed to load quota data');
+    }
     setLoading(false);
   }
 
@@ -44,7 +47,7 @@ export default function PartnerReports() {
       a.remove();
       window.URL.revokeObjectURL(url);
     } catch (err) {
-      alert(err.response?.data?.error || `Failed to download ${type} report`);
+      setError(err.response?.data?.error || `Failed to download ${type} report`);
     }
     setDownloading(null);
   }
@@ -100,6 +103,15 @@ export default function PartnerReports() {
           <RefreshCw className="w-3 h-3" /> Refresh
         </button>
       </div>
+
+      {error && (
+        <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm flex items-center justify-between">
+          <span>{error}</span>
+          <button onClick={() => setError(null)} className="text-red-400 hover:text-red-600 ml-2 flex-shrink-0">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
 
       {/* Usage Summary */}
       {quota && (

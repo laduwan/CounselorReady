@@ -18,6 +18,8 @@ export default function PartnerCourseCatalog() {
   const [partnerInfo, setPartnerInfo] = useState(null);
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [enrollError, setEnrollError] = useState(null);
   const [enrolledCourses, setEnrolledCourses] = useState({});
 
   useEffect(() => {
@@ -33,7 +35,9 @@ export default function PartnerCourseCatalog() {
       const { data } = await api.get(`/partners/slug/${slug}/courses`);
       setCourses(data.courses || []);
       setPartnerInfo(data.partner || null);
-    } catch { /* silent */ }
+    } catch (err) {
+      setError(err.response?.data?.error || 'Failed to load courses');
+    }
     setLoading(false);
   }
 
@@ -43,14 +47,17 @@ export default function PartnerCourseCatalog() {
       const map = {};
       (data.data || []).forEach(p => { map[p.courseId] = p; });
       setEnrolledCourses(map);
-    } catch { /* silent */ }
+    } catch { /* progress load is non-critical */ }
   }
 
   async function handleEnroll(courseId) {
     try {
       await api.post(`/interactive-courses/${courseId}/enroll`);
+      setEnrollError(null);
       loadProgress();
-    } catch { /* silent */ }
+    } catch (err) {
+      setEnrollError(err.response?.data?.error || 'Failed to enroll. Please try again.');
+    }
   }
 
   const filtered = courses.filter(c =>
@@ -64,6 +71,18 @@ export default function PartnerCourseCatalog() {
     return (
       <div className="flex items-center justify-center py-20">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2" style={{ borderColor: primaryColor }} />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-20">
+        <p className="text-lg font-medium text-red-700">Something went wrong</p>
+        <p className="text-sm text-stone-500 mt-1">{error}</p>
+        <button onClick={() => { setError(null); loadCourses(); }} className="mt-4 px-4 py-2 text-sm rounded-lg border border-stone-300 text-stone-600 hover:bg-stone-50">
+          Try Again
+        </button>
       </div>
     );
   }
@@ -100,6 +119,12 @@ export default function PartnerCourseCatalog() {
           style={{ '--tw-ring-color': primaryColor }}
         />
       </div>
+
+      {enrollError && (
+        <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+          {enrollError}
+        </div>
+      )}
 
       {/* Course Grid */}
       {filtered.length === 0 ? (
