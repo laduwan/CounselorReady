@@ -210,6 +210,8 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
   border-right: 1px solid var(--cr-border);
   display: flex; flex-direction: column;
   overflow: hidden; z-index: 40;
+  grid-column: 1;
+  grid-row: 1 / -1;
 }
 @media (max-width: 1024px) {
   .cr-sidebar {
@@ -383,6 +385,9 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
   margin: 0 auto;
   padding: 12px 32px 80px;
   width: 100%;
+  grid-column: 2;
+  grid-row: 1 / -1;
+  align-self: start;
 }
 @media (max-width: 640px) { .cr-main { padding: 10px 16px 60px; } }
 
