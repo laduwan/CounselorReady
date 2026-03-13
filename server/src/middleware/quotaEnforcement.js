@@ -6,15 +6,7 @@
 import Partner from '../models/Partner.js';
 import User from '../models/User.js';
 import InteractiveCourse from '../models/InteractiveCourse.js';
-
-// Plan limits — mirrors PARTNER_PLANS in partners.js
-const PLAN_LIMITS = {
-  free: { maxCourses: 0, maxUsers: 0, customDomain: false, bulkUpload: false },
-  starter: { maxCourses: 10, maxUsers: 100, customDomain: false, bulkUpload: false },
-  growth: { maxCourses: 50, maxUsers: 500, customDomain: false, bulkUpload: true },
-  professional: { maxCourses: 200, maxUsers: 5000, customDomain: true, bulkUpload: true },
-  enterprise: { maxCourses: -1, maxUsers: -1, customDomain: true, bulkUpload: true }
-};
+import { PLAN_LIMITS } from '../utils/planLimits.js';
 
 /**
  * Helper: resolve partner from request
@@ -39,9 +31,7 @@ export async function getPartnerUsage(partnerId) {
 /**
  * Get plan limits for a partner
  */
-export function getPlanLimits(plan) {
-  return PLAN_LIMITS[plan] || PLAN_LIMITS.free;
-}
+export { getPlanLimits } from '../utils/planLimits.js';
 
 /**
  * Middleware: enforce course creation quota
