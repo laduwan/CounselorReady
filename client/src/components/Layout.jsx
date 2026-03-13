@@ -15,6 +15,7 @@ import CRPromoCard from './CRPromoCard';
 const navLinks = [
   { name: 'Dashboard',       href: '/dashboard',          static: false },
   { name: 'Courses',         href: '/courses',            static: false },
+  { name: 'Free Tools',      href: '/tools/index.html',   static: true  },
   { name: 'Credentials',     href: '/credentials',        static: false },
   { name: 'CE Planner',      href: '/ce-planner',         static: false },
   { name: 'Audit Kit',       href: '/audit-kit',          static: false },
@@ -129,13 +130,13 @@ export default function Layout({ children }) {
               </>
             ) : (
               <>
-                <div style={{ width: 40, height: 40, borderRadius: '0.75rem', background: '#6B1D34', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 8px rgba(107,29,52,0.25)' }}>
-                  <span style={{ position: 'relative', display: 'inline-block', width: 22, height: 22 }}>
-                    <span style={{ color: GOLD, position: 'absolute', top: -3, left: 0, fontFamily: "'Cormorant Garamond', Georgia, serif", fontWeight: 700, fontSize: 17 }}>C</span>
-                    <span style={{ color: '#7A9E84', position: 'absolute', top: 4, left: 6, fontFamily: "'Cormorant Garamond', Georgia, serif", fontWeight: 700, fontSize: 14 }}>R</span>
+                <div style={{ width: 42, height: 42, borderRadius: '0.75rem', background: '#6B1D34', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 8px rgba(107,29,52,0.25)' }}>
+                  <span style={{ position: 'relative', display: 'inline-block', width: 24, height: 24 }}>
+                    <span style={{ color: GOLD, position: 'absolute', top: -3, left: 0, fontFamily: "'Cormorant Garamond', Georgia, serif", fontWeight: 700, fontSize: 19 }}>C</span>
+                    <span style={{ color: '#7A9E84', position: 'absolute', top: 4, left: 6, fontFamily: "'Cormorant Garamond', Georgia, serif", fontWeight: 700, fontSize: 16 }}>R</span>
                   </span>
                 </div>
-                <span style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontWeight: 600, fontSize: '1.35rem', letterSpacing: '0.015em' }}>
+                <span style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontWeight: 600, fontSize: '1.5rem', letterSpacing: '0.015em' }}>
                   <span style={{ color: BURGUNDY }}>Counselor</span><span style={{ color: HUNTER }}>Ready</span>
                 </span>
               </>

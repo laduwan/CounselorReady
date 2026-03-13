@@ -1,13 +1,4 @@
 <!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8">
-<script>
-  // Redirect to full player, preserving slug parameter
-  const params = new URLSearchParams(window.location.search);
-  const slug = params.get('slug');
-  window.location.replace('/interactive-course.html' + (slug ? '?slug=' + slug : ''));
-</script>
-</head>
-<script src="/js/footer.js"></script><body></body>
-</html>
+<html><head><script>
+window.location.replace('/interactive-course.html' + window.location.search);
+</script></head><body></body></html>

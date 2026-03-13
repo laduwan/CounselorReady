@@ -3,7 +3,8 @@
  * All rights reserved. Proprietary and confidential.
  * Unauthorized copying or distribution is strictly prohibited.
  */
-import { BrowserRouter, Routes, Route, Navigate, useParams } from 'react-router-dom';
+import { useEffect } from 'react';
+import { BrowserRouter, Routes, Route, Navigate, useParams, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { CRFooter } from './utils/copyright.jsx';
 import ErrorBoundary from './components/ErrorBoundary';
@@ -33,6 +34,8 @@ import AdminPartners from './pages/AdminPartners';
 import PartnerDashboard from './pages/PartnerDashboard';
 import PartnerBrandingSettings from './pages/PartnerBrandingSettings';
 import PartnerCourseAdmin from './pages/PartnerCourseAdmin';
+import ThumbnailManager from './pages/ThumbnailManager';
+import AdminBulkUpload from './pages/AdminBulkUpload';
 
 // Components
 import Layout from './components/Layout';
@@ -58,6 +61,57 @@ function LoadingScreen() {
           <p className="text-gray-400 text-xs mt-1">This may take up to 30 seconds on first visit</p>
         </div>
       )}
+    </div>
+  );
+}
+
+/**
+ * StaticPageFallback — handles URLs for static HTML pages that React Router
+ * should NOT control (e.g. /tools/*, *.html admin pages).
+ *
+ * If Render incorrectly serves index.html for a static file path, React Router
+ * catches it here instead of the catch-all redirect to "/". This component
+ * attempts ONE hard navigation to force the browser to request the file directly.
+ * If that fails (infinite loop protection), it shows a clickable fallback link.
+ */
+function StaticPageFallback() {
+  const location = useLocation();
+  const url = location.pathname + location.search + location.hash;
+
+  useEffect(() => {
+    // One-time redirect attempt — prevents infinite loop
+    const key = '__cr_static_retry__' + location.pathname;
+    if (!sessionStorage.getItem(key)) {
+      sessionStorage.setItem(key, '1');
+      // Clean up after 10 seconds so user can retry later
+      setTimeout(() => sessionStorage.removeItem(key), 10000);
+      window.location.replace(url);
+      return;
+    }
+    // If we're here, the hard navigation already failed once — remove flag
+    sessionStorage.removeItem(key);
+  }, [location.pathname, url]);
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-stone-50" style={{ fontFamily: "'Lato', system-ui, sans-serif" }}>
+      <div className="text-center max-w-md px-6">
+        <div className="w-16 h-16 mx-auto mb-6 rounded-2xl flex items-center justify-center" style={{ background: '#6B1D34' }}>
+          <span style={{ position: 'relative', display: 'inline-block', width: 28, height: 28 }}>
+            <span style={{ color: '#D4A855', position: 'absolute', top: -4, left: 0, fontFamily: "'Cormorant Garamond', Georgia, serif", fontWeight: 700, fontSize: 20 }}>C</span>
+            <span style={{ color: '#4A7C59', position: 'absolute', top: 6, left: 8, fontFamily: "'Cormorant Garamond', Georgia, serif", fontWeight: 700, fontSize: 16 }}>R</span>
+          </span>
+        </div>
+        <h1 className="text-xl font-semibold mb-3" style={{ color: '#44403c', fontFamily: "'Cormorant Garamond', Georgia, serif" }}>
+          Loading page...
+        </h1>
+        <p className="text-sm mb-6" style={{ color: '#78716c' }}>
+          If this page doesn't load automatically,{' '}
+          <a href={url} style={{ color: '#6B1D34', fontWeight: 600, textDecoration: 'underline' }}>
+            click here to open it directly
+          </a>.
+        </p>
+        <a href="/" className="text-sm" style={{ color: '#4A7C59' }}>← Back to CounselorReady</a>
+      </div>
     </div>
   );
 }
@@ -222,6 +276,16 @@ function AppRoutes() {
           <Layout><AdminPartners /></Layout>
         </AdminRoute>
       } />
+      <Route path="/admin/thumbnails" element={
+        <AdminRoute>
+          <Layout><ThumbnailManager /></Layout>
+        </AdminRoute>
+      } />
+      <Route path="/admin/bulk-upload" element={
+        <AdminRoute>
+          <Layout><AdminBulkUpload /></Layout>
+        </AdminRoute>
+      } />
       <Route path="/partner-dashboard" element={
         <ProtectedRoute>
           <Layout><PartnerDashboard /></Layout>
@@ -238,7 +302,20 @@ function AppRoutes() {
         </PartnerAdminRoute>
       } />
 
-      {/* Catch all */}
+      {/*
+        ═══════════════════════════════════════════════════════
+        STATIC PAGE SAFETY NET
+        These routes catch URLs for static HTML files that
+        Render should serve directly. If Render's SPA catch-all
+        incorrectly serves index.html, these prevent a silent
+        redirect to "/" (the white page bug).
+        ═══════════════════════════════════════════════════════
+      */}
+      <Route path="/tools/*" element={<StaticPageFallback />} />
+      <Route path="/interactive-course.html" element={<StaticPageFallback />} />
+      <Route path="/interactive-courses.html" element={<StaticPageFallback />} />
+
+      {/* Catch all — unknown routes go home */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

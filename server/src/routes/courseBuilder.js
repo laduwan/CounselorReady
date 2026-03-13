@@ -719,4 +719,139 @@ router.post('/save', protect, adminOnly, async (req, res) => {
   }
 });
 
+// ═══════════════════════════════════════════════════════════════════
+// ANALYTICS ENDPOINT — Course engagement data
+// ═══════════════════════════════════════════════════════════════════
+router.get('/analytics/:courseId', protect, adminOnly, async (req, res) => {
+  try {
+    const { courseId } = req.params;
+
+    // Try to import progress models
+    let CourseProgress;
+    try {
+      const mod = await import('../models/InteractiveCourse.js');
+      CourseProgress = mod.CourseProgress;
+    } catch (e) {
+      // Fallback to UserCourseProgress
+      try {
+        CourseProgress = (await import('../models/UserCourseProgress.js')).default;
+      } catch (e2) {
+        return res.json({ enrollments: 0, completions: 0, avgScore: null, avgTimeSpent: null });
+      }
+    }
+
+    if (!CourseProgress) {
+      return res.json({ enrollments: 0, completions: 0, avgScore: null, avgTimeSpent: null });
+    }
+
+    const allProgress = await CourseProgress.find({ courseId }).lean();
+    const enrollments = allProgress.length;
+    const completions = allProgress.filter(p => p.status === 'completed' || p.overallProgress >= 100).length;
+
+    let totalScore = 0;
+    let scoreCount = 0;
+    let totalTime = 0;
+    let timeCount = 0;
+
+    allProgress.forEach(p => {
+      if (p.bestAssessmentScore != null) {
+        totalScore += p.bestAssessmentScore;
+        scoreCount++;
+      }
+      if (p.totalTimeSpent) {
+        totalTime += p.totalTimeSpent;
+        timeCount++;
+      }
+    });
+
+    res.json({
+      enrollments,
+      completions,
+      avgScore: scoreCount > 0 ? Math.round(totalScore / scoreCount) : null,
+      avgTimeSpent: timeCount > 0 ? Math.round(totalTime / timeCount) : null,
+      completionRate: enrollments > 0 ? Math.round(completions / enrollments * 100) : 0,
+    });
+
+  } catch (error) {
+    console.error('Analytics error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ═══════════════════════════════════════════════════════════════════
+// CLONE ENDPOINT — Duplicate a course
+// ═══════════════════════════════════════════════════════════════════
+router.post('/clone/:courseId', protect, adminOnly, async (req, res) => {
+  try {
+    const { courseId } = req.params;
+    const { title } = req.body;
+    const Course = (await import('../models/Course.js')).default;
+
+    const original = await Course.findById(courseId).lean();
+    if (!original) {
+      return res.status(404).json({ error: 'Course not found' });
+    }
+
+    // Remove MongoDB metadata
+    delete original._id;
+    delete original.__v;
+    delete original.createdAt;
+    delete original.updatedAt;
+
+    // Set new metadata
+    original.title = title || `${original.title} (Copy)`;
+    original.slug = slugify(original.title) + '-' + Date.now().toString(36);
+    original.status = 'draft';
+    original.isPublished = false;
+    original.views = 0;
+    original.uniqueViews = 0;
+    original.enrollments = 0;
+    original.completions = 0;
+
+    const cloned = new Course(original);
+    cloned.createdAt = new Date();
+    cloned.updatedAt = new Date();
+    await cloned.save();
+
+    res.json({ success: true, course: cloned });
+
+  } catch (error) {
+    console.error('Clone course error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ═══════════════════════════════════════════════════════════════════
+// BACKUP/EXPORT ENDPOINT — Full course export with metadata
+// ═══════════════════════════════════════════════════════════════════
+router.get('/export/:courseId', protect, adminOnly, async (req, res) => {
+  try {
+    const { courseId } = req.params;
+    const Course = (await import('../models/Course.js')).default;
+
+    const course = await Course.findById(courseId).lean();
+    if (!course) {
+      return res.status(404).json({ error: 'Course not found' });
+    }
+
+    // Add export metadata
+    const exportData = {
+      _exportVersion: 1,
+      _exportDate: new Date().toISOString(),
+      _platform: 'CounselorReady',
+      ...course
+    };
+
+    // Remove server-specific fields
+    delete exportData._id;
+    delete exportData.__v;
+
+    res.json(exportData);
+
+  } catch (error) {
+    console.error('Export course error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 export default router;
