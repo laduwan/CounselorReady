@@ -170,8 +170,9 @@ const CourseSchema = new mongoose.Schema({
   totalEstimatedTime: Number, // in minutes
   totalContentBlocks: Number,
   totalQuizQuestions: Number,
-  wordCount: Number // pre-computed for admin dashboard
-  
+  wordCount: Number, // pre-computed for admin dashboard
+  rawMarkdown: { type: String }
+
 }, { timestamps: true });
 
 // Pre-save hook to calculate totals
