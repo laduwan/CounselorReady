@@ -6,7 +6,8 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
-import { Users, TrendingUp, BookOpen, Award, ExternalLink, Copy, Check } from 'lucide-react';
+import { Users, TrendingUp, BookOpen, Award, ExternalLink, Copy, Check, UserPlus } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const BURGUNDY = '#6B1D34';
 const BURGUNDY_LIGHT = '#fdf5f6';
@@ -31,8 +32,8 @@ export default function PartnerDashboard() {
           partnerData = data.partner;
         }
 
-        // Fetch partner stats if admin
-        if (user?.role === 'admin' && user?.partnerId) {
+        // Fetch partner stats if admin or partner_admin
+        if ((user?.role === 'admin' || user?.role === 'partner_admin') && user?.partnerId) {
           const { data } = await api.get(`/partners/${user.partnerId}`);
           partnerData = data.partner;
         }
@@ -40,10 +41,13 @@ export default function PartnerDashboard() {
         if (partnerData) {
           setPartner(partnerData);
 
-          // Fetch analytics if we have an id and user is admin
-          if (partnerData._id && user?.role === 'admin') {
+          // Fetch analytics — use /my/stats for partner admins, /:id/stats for platform admins
+          if (partnerData._id && (user?.role === 'admin' || user?.role === 'partner_admin')) {
             try {
-              const { data: statsData } = await api.get(`/partners/${partnerData._id}/stats`);
+              const endpoint = user?.role === 'admin'
+                ? `/partners/${partnerData._id}/stats`
+                : '/partners/my/stats';
+              const { data: statsData } = await api.get(endpoint);
               setStats(statsData);
             } catch { /* stats fetch is non-critical */ }
           }
@@ -148,6 +152,38 @@ export default function PartnerDashboard() {
           </div>
         </div>
       </div>
+
+      {/* Quick Actions */}
+      {(user?.role === 'admin' || user?.role === 'partner_admin') && (
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <Link to="/partner/courses" className="card p-3 text-center hover:shadow-md transition-shadow">
+            <BookOpen className="w-5 h-5 mx-auto mb-1" style={{ color: BURGUNDY }} />
+            <p className="text-xs font-medium text-stone-700">Manage Courses</p>
+          </Link>
+          <Link to="/partner/users" className="card p-3 text-center hover:shadow-md transition-shadow">
+            <UserPlus className="w-5 h-5 mx-auto mb-1" style={{ color: HUNTER }} />
+            <p className="text-xs font-medium text-stone-700">Manage Users</p>
+          </Link>
+          <Link to="/partner/bulk-upload" className="card p-3 text-center hover:shadow-md transition-shadow">
+            <BookOpen className="w-5 h-5 mx-auto mb-1" style={{ color: '#2563eb' }} />
+            <p className="text-xs font-medium text-stone-700">Bulk Upload</p>
+          </Link>
+          <Link to="/partner/billing" className="card p-3 text-center hover:shadow-md transition-shadow">
+            <Award className="w-5 h-5 mx-auto mb-1" style={{ color: '#d97706' }} />
+            <p className="text-xs font-medium text-stone-700">Billing</p>
+          </Link>
+        </div>
+      )}
+
+      {/* Recent Activity */}
+      {stats?.recentEnrollments > 0 && (
+        <div className="card p-4 flex items-center gap-3" style={{ background: '#f0fdf4', borderColor: '#bbf7d0' }}>
+          <TrendingUp className="w-5 h-5" style={{ color: HUNTER }} />
+          <p className="text-sm text-stone-700">
+            <span className="font-bold" style={{ color: HUNTER }}>{stats.recentEnrollments}</span> new enrollment{stats.recentEnrollments !== 1 ? 's' : ''} in the last 7 days
+          </p>
+        </div>
+      )}
 
       {/* Distribution Link */}
       <div className="card p-5">

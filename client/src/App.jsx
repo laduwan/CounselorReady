@@ -38,6 +38,7 @@ import PartnerCourseCatalog from './pages/PartnerCourseCatalog';
 import PartnerBulkUpload from './pages/PartnerBulkUpload';
 import PartnerBilling from './pages/PartnerBilling';
 import PartnerDomainSettings from './pages/PartnerDomainSettings';
+import PartnerUserManagement from './pages/PartnerUserManagement';
 import ThumbnailManager from './pages/ThumbnailManager';
 import AdminBulkUpload from './pages/AdminBulkUpload';
 
@@ -323,6 +324,11 @@ function AppRoutes() {
       <Route path="/partner/domain" element={
         <PartnerAdminRoute>
           <Layout><PartnerDomainSettings /></Layout>
+        </PartnerAdminRoute>
+      } />
+      <Route path="/partner/users" element={
+        <PartnerAdminRoute>
+          <Layout><PartnerUserManagement /></Layout>
         </PartnerAdminRoute>
       } />
 
