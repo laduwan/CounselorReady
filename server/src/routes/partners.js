@@ -878,6 +878,240 @@ async function sendPartnerWelcomeEmail(user, partner) {
   }
 }
 
+// ══════════════════════════════════════════════
+// PARTNER USER MANAGEMENT
+// ══════════════════════════════════════════════
+
+// ── Partner admin: list users in their organization ──
+router.get('/my/users', protect, requirePartnerAdmin, async (req, res) => {
+  try {
+    const partnerId = req.partnerId || req.user.partnerId;
+    const { search, page = 1, limit = 50, sort = '-createdAt' } = req.query;
+
+    const query = { partnerId };
+    if (search) {
+      query.$or = [
+        { email: { $regex: search, $options: 'i' } },
+        { 'profile.firstName': { $regex: search, $options: 'i' } },
+        { 'profile.lastName': { $regex: search, $options: 'i' } }
+      ];
+    }
+
+    const users = await User.find(query)
+      .select('email profile.firstName profile.lastName role subscription.plan subscription.status lastLoginAt emailVerified createdAt')
+      .sort(sort)
+      .skip((page - 1) * limit)
+      .limit(parseInt(limit))
+      .lean();
+
+    const total = await User.countDocuments(query);
+
+    res.json({
+      users,
+      pagination: { page: parseInt(page), limit: parseInt(limit), total, pages: Math.ceil(total / limit) }
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ── Partner admin: invite users via email ──
+router.post('/my/users/invite', protect, requirePartnerAdmin, async (req, res) => {
+  try {
+    const partnerId = req.partnerId || req.user.partnerId;
+    const partner = await Partner.findById(partnerId);
+    if (!partner) return res.status(404).json({ error: 'Partner not found' });
+
+    const { emails } = req.body;
+    if (!Array.isArray(emails) || emails.length === 0) {
+      return res.status(400).json({ error: 'emails array is required' });
+    }
+    if (emails.length > 50) {
+      return res.status(400).json({ error: 'Maximum 50 invitations per request' });
+    }
+
+    const brandColor = partner.branding?.primaryColor || '#6B1D34';
+    const companyName = partner.branding?.companyName || partner.name;
+    const registerUrl = `${process.env.CLIENT_URL || 'https://counselorready.com'}/register?partner=${partner.slug}`;
+
+    const results = { sent: [], errors: [] };
+
+    for (const email of emails) {
+      try {
+        const trimmed = email.trim().toLowerCase();
+        if (!trimmed || !trimmed.includes('@')) {
+          results.errors.push({ email, error: 'Invalid email address' });
+          continue;
+        }
+
+        // Check if user already exists
+        const existing = await User.findOne({ email: trimmed });
+        if (existing) {
+          if (existing.partnerId?.toString() === partnerId.toString()) {
+            results.errors.push({ email: trimmed, error: 'Already a member' });
+          } else {
+            results.errors.push({ email: trimmed, error: 'Account exists with different organization' });
+          }
+          continue;
+        }
+
+        await resend.emails.send({
+          from: 'CounselorReady <noreply@counselorready.com>',
+          to: trimmed,
+          subject: `You're invited to ${companyName}`,
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+              <div style="background: ${brandColor}; padding: 30px; text-align: center;">
+                ${partner.branding?.logoUrl
+                  ? `<img src="${partner.branding.logoUrl}" alt="${companyName}" style="height: 48px; margin-bottom: 8px;">`
+                  : ''}
+                <h1 style="color: #fff; margin: 0; font-size: 24px;">${companyName}</h1>
+              </div>
+              <div style="padding: 30px; background: #fff;">
+                <h2 style="color: ${brandColor};">You're Invited!</h2>
+                <p style="color: #333; line-height: 1.6;">
+                  ${req.user.profile?.firstName || 'Your administrator'} has invited you to join ${companyName} on CounselorReady,
+                  where you can access continuing education courses and earn CE credits.
+                </p>
+                <div style="text-align: center; margin: 30px 0;">
+                  <a href="${registerUrl}" style="background: ${brandColor}; color: #fff; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">
+                    Create Your Account
+                  </a>
+                </div>
+                <p style="color: #666; font-size: 14px;">
+                  This invitation was sent from ${companyName}. If you don't recognize this, you can safely ignore this email.
+                </p>
+              </div>
+              <div style="background: #f5f5f5; padding: 20px; text-align: center; font-size: 12px; color: #666;">
+                <p style="margin: 0 0 4px 0;">Powered by <a href="https://counselorready.com" style="color: #6B1D34; text-decoration: none; font-weight: 600;">CounselorReady</a></p>
+                <p style="margin: 0;">NBCC ACEP #7760</p>
+              </div>
+            </div>
+          `
+        });
+
+        results.sent.push(trimmed);
+      } catch (err) {
+        results.errors.push({ email, error: 'Failed to send invitation' });
+      }
+    }
+
+    res.json({
+      message: `${results.sent.length} invitation(s) sent, ${results.errors.length} failed`,
+      ...results
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ── Partner admin: remove user from organization ──
+router.delete('/my/users/:userId', protect, requirePartnerAdmin, async (req, res) => {
+  try {
+    const partnerId = req.partnerId || req.user.partnerId;
+    const targetUser = await User.findOne({ _id: req.params.userId, partnerId });
+    if (!targetUser) {
+      return res.status(404).json({ error: 'User not found in your organization' });
+    }
+
+    // Don't allow removing yourself
+    if (targetUser._id.toString() === req.user._id.toString()) {
+      return res.status(400).json({ error: 'Cannot remove yourself' });
+    }
+
+    targetUser.partnerId = undefined;
+    await targetUser.save();
+
+    res.json({ message: 'User removed from organization' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ── Partner admin: get own stats (same as admin /:id/stats but scoped) ──
+router.get('/my/stats', protect, requirePartnerAdmin, async (req, res) => {
+  try {
+    const partnerId = req.partnerId || req.user.partnerId;
+    const db = mongoose.connection.db;
+
+    const partnerUsers = await User.find({ partnerId }).select('_id').lean();
+    const userIds = partnerUsers.map(u => u._id);
+    const totalUsers = userIds.length;
+
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    const activeUsers = await User.countDocuments({
+      partnerId,
+      lastLoginAt: { $gte: thirtyDaysAgo }
+    });
+
+    let coursesCompleted = 0;
+    let ceHoursEarned = 0;
+
+    if (userIds.length > 0) {
+      const [regularCompletions, interactiveCompletions] = await Promise.all([
+        db.collection('usercourseprogresses').aggregate([
+          { $match: { userId: { $in: userIds }, completed: true } },
+          { $group: { _id: null, count: { $sum: 1 }, hours: { $sum: { $ifNull: ['$ceHours', 0] } } } }
+        ]).toArray(),
+        db.collection('interactivecourseprogresses').aggregate([
+          { $match: { userId: { $in: userIds }, completed: true } },
+          { $group: { _id: null, count: { $sum: 1 }, hours: { $sum: { $ifNull: ['$ceHours', 0] } } } }
+        ]).toArray()
+      ]);
+
+      coursesCompleted = (regularCompletions[0]?.count || 0) + (interactiveCompletions[0]?.count || 0);
+      ceHoursEarned = (regularCompletions[0]?.hours || 0) + (interactiveCompletions[0]?.hours || 0);
+    }
+
+    const partnerCourses = await InteractiveCourse.find({ partnerId })
+      .select('title slug ceHours status')
+      .lean();
+
+    let courseBreakdown = [];
+    if (partnerCourses.length > 0) {
+      const courseIds = partnerCourses.map(c => c._id);
+      const [courseEnrollments, courseCompletions] = await Promise.all([
+        db.collection('interactivecourseprogresses').aggregate([
+          { $match: { courseId: { $in: courseIds } } },
+          { $group: { _id: '$courseId', count: { $sum: 1 } } }
+        ]).toArray(),
+        db.collection('interactivecourseprogresses').aggregate([
+          { $match: { courseId: { $in: courseIds }, completed: true } },
+          { $group: { _id: '$courseId', count: { $sum: 1 } } }
+        ]).toArray()
+      ]);
+
+      const enrollMap = Object.fromEntries(courseEnrollments.map(e => [e._id.toString(), e.count]));
+      const completeMap = Object.fromEntries(courseCompletions.map(c => [c._id.toString(), c.count]));
+
+      courseBreakdown = partnerCourses.map(c => ({
+        courseId: c._id,
+        title: c.title,
+        enrollments: enrollMap[c._id.toString()] || 0,
+        completions: completeMap[c._id.toString()] || 0,
+        completionRate: (enrollMap[c._id.toString()] || 0) > 0
+          ? Math.round(((completeMap[c._id.toString()] || 0) / enrollMap[c._id.toString()]) * 100)
+          : 0
+      }));
+    }
+
+    // Recent enrollments (last 7 days)
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    const recentEnrollments = userIds.length > 0
+      ? await db.collection('interactivecourseprogresses').countDocuments({
+          userId: { $in: userIds },
+          enrolledAt: { $gte: sevenDaysAgo }
+        })
+      : 0;
+
+    res.json({ totalUsers, activeUsers, coursesCompleted, ceHoursEarned, courseBreakdown, recentEnrollments });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Export for use in auth.js
 export { sendPartnerWelcomeEmail };
 

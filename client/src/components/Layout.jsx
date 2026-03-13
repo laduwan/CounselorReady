@@ -339,7 +339,19 @@ export default function Layout({ children }) {
                           style={{ color: BURGUNDY }}>
                           <CreditCard className="w-4 h-4" /> Billing
                         </Link>
+                        <Link to="/partner/users" onClick={() => setUserMenuOpen(false)}
+                          className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-stone-50 transition-colors"
+                          style={{ color: BURGUNDY }}>
+                          <Users className="w-4 h-4" /> Users
+                        </Link>
                       </>
+                    )}
+                    {!isPartnerAdmin && user?.partnerId && (
+                      <Link to="/partner/courses/catalog" onClick={() => setUserMenuOpen(false)}
+                        className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-stone-50 transition-colors"
+                        style={{ color: HUNTER }}>
+                        <BookOpen className="w-4 h-4" /> Organization Courses
+                      </Link>
                     )}
                     {isAdmin && (
                       <a href="/admin.html"
@@ -406,6 +418,7 @@ export default function Layout({ children }) {
                   { to: '/partner/branding', icon: Palette, label: 'Branding' },
                   { to: '/partner/domain', icon: Globe, label: 'Custom Domain' },
                   { to: '/partner/billing', icon: CreditCard, label: 'Billing' },
+                  { to: '/partner/users', icon: Users, label: 'Users' },
                 ].map(({ to, icon: Icon, label }) => (
                   <Link key={to} to={to} onClick={() => setMobileOpen(false)}
                     className="flex items-center gap-2.5"
@@ -414,6 +427,16 @@ export default function Layout({ children }) {
                     {label}
                   </Link>
                 ))}
+              </div>
+            )}
+            {!isPartnerAdmin && user?.partnerId && (
+              <div className="border-t border-stone-100 my-2 pt-2">
+                <Link to="/partner/courses/catalog" onClick={() => setMobileOpen(false)}
+                  className="flex items-center gap-2.5"
+                  style={{ display: 'flex', padding: '0.625rem 1rem', borderRadius: '0.5rem', fontSize: '0.875rem', fontWeight: 500, textDecoration: 'none', color: isActive('/partner/courses/catalog') ? HUNTER : '#57534e', background: isActive('/partner/courses/catalog') ? '#f0fdf4' : 'transparent' }}>
+                  <BookOpen className="w-4 h-4" style={{ color: isActive('/partner/courses/catalog') ? HUNTER : '#a8a29e' }} />
+                  Organization Courses
+                </Link>
               </div>
             )}
             {isAdmin && (
