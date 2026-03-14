@@ -36,6 +36,7 @@ import PartnerBrandingSettings from './pages/PartnerBrandingSettings';
 import PartnerCourseAdmin from './pages/PartnerCourseAdmin';
 import ThumbnailManager from './pages/ThumbnailManager';
 import AdminBulkUpload from './pages/AdminBulkUpload';
+import ScholarlyArticles from './pages/ScholarlyArticles';
 
 // Components
 import Layout from './components/Layout';
@@ -272,6 +273,11 @@ function AppRoutes() {
         </ProtectedRoute>
       } />
 
+      <Route path="/scholarly-articles" element={
+        <ProtectedRoute>
+          <Layout><ScholarlyArticles /></Layout>
+        </ProtectedRoute>
+      } />
       <Route path="/legacy-vault" element={
         <ProtectedRoute>
           <Layout><LegacyVault /></Layout>
