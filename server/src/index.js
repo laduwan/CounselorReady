@@ -63,6 +63,8 @@ import partnersRoutes from './routes/partners.js';
 import rawMarkdownRoutes from './routes/rawMarkdownRoute.js';
 // Import services
 import { initializeScheduler } from './services/notificationScheduler.js';
+// Gamification integration (response interceptor — no existing code changed)
+import gamificationIntegration from './middleware/gamificationIntegration.js';
 
 // ES Module fix for __dirname
 const __filename = fileURLToPath(import.meta.url);
@@ -164,6 +166,9 @@ app.use('/api/admin/module/generate', aiLimiter);
 app.use('/api/payments/webhook', express.raw({ type: 'application/json' }));
 app.use(express.json({ limit: '15mb' }));
 app.use(express.urlencoded({ extended: true, limit: '15mb' }));
+
+// Gamification response interceptor (before routes, after body parsing)
+app.use(gamificationIntegration);
 
 // Request logging (development)
 if (process.env.NODE_ENV !== 'production') {
