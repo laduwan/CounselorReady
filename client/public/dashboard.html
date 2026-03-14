@@ -5,7 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dashboard - CounselorReady</title>
-  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
       theme: {
@@ -18,7 +18,7 @@
             },
             forest: {
               50: '#f3f6f4', 100: '#e3ebe5', 200: '#c8d7cc', 300: '#a1bba8',
-              400: '#759a7f', 500: '#547c5f', 600: '#4A7C59', 700: '#34503d',
+              400: '#759a7f', 500: '#547c5f', 600: '#40634a', 700: '#34503d',
               800: '#2b4133', 900: '#1f3025', 950: '#121c16'
             },
             gold: {
@@ -38,7 +38,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Lato:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/lib/fontawesome/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     body { font-family: 'Lato', system-ui, sans-serif; }
     .font-display { font-family: 'Cormorant Garamond', Georgia, serif; }
@@ -61,7 +61,7 @@
     }
     .announcement-update {
       background: linear-gradient(135deg, #f3f6f4 0%, #e3ebe5 100%);
-      border-color: #4A7C59;
+      border-color: #40634a;
     }
     .announcement-info {
       background: linear-gradient(135deg, #fdf9f0 0%, #f9f0db 100%);
@@ -158,29 +158,6 @@
       </a>
     </div>
 
-    <!-- Founders Banner (shown for migrated users) -->
-    <div id="foundersBanner" class="hidden mb-6 bg-gradient-to-r from-burgundy-50 via-gold-50 to-forest-50 border border-gold-400 rounded-xl p-4 relative overflow-hidden">
-      <div class="absolute top-0 right-0 w-32 h-32 bg-gold-200/30 rounded-full -translate-y-1/2 translate-x-1/2"></div>
-      <div class="relative flex items-center justify-between">
-        <div class="flex items-center gap-4">
-          <div class="w-12 h-12 bg-gradient-to-br from-gold-400 to-gold-600 rounded-full flex items-center justify-center shadow-lg">
-            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/>
-            </svg>
-          </div>
-          <div>
-            <p class="font-semibold text-burgundy-800">Welcome, Founding Member! 🎉</p>
-            <p class="text-forest-700 text-sm">Use code <span class="font-bold text-burgundy-700 bg-burgundy-100 px-2 py-0.5 rounded">FOUNDERS50</span> for 50% off your subscription. <span class="text-forest-500">Expires July 21, 2026</span></p>
-          </div>
-        </div>
-        <button onclick="dismissFoundersBanner()" class="text-forest-400 hover:text-forest-600 p-2 transition-colors" title="Dismiss">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-          </svg>
-        </button>
-      </div>
-    </div>
-
     <!-- Announcements Section -->
     <div id="announcementsSection" class="hidden mb-6 space-y-3">
       <!-- Announcements will be inserted here dynamically -->
@@ -217,61 +194,61 @@
     </div>
 
     <!-- Stats Grid -->
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
       <!-- CE Hours -->
-      <div class="bg-white rounded-xl p-4 border border-burgundy-100 shadow-sm">
-        <div class="flex items-center justify-between mb-2">
-          <span class="text-forest-600 text-xs">CE Hours Earned</span>
-          <div class="w-7 h-7 bg-forest-100 rounded-lg flex items-center justify-center">
-            <svg class="w-3.5 h-3.5 text-forest-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div class="bg-white rounded-xl p-5 border border-burgundy-100 shadow-sm">
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-forest-600 text-sm">CE Hours Earned</span>
+          <div class="w-8 h-8 bg-forest-100 rounded-lg flex items-center justify-center">
+            <svg class="w-4 h-4 text-forest-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
             </svg>
           </div>
         </div>
-        <p class="font-display text-2xl font-semibold text-burgundy-900" id="totalHours">0</p>
-        <p class="text-forest-500 text-xs">This cycle</p>
+        <p class="font-display text-3xl font-semibold text-burgundy-900" id="totalHours">0</p>
+        <p class="text-forest-500 text-sm">This cycle</p>
       </div>
 
       <!-- Courses Completed -->
-      <div class="bg-white rounded-xl p-4 border border-burgundy-100 shadow-sm">
-        <div class="flex items-center justify-between mb-2">
-          <span class="text-forest-600 text-xs">Courses Completed</span>
-          <div class="w-7 h-7 bg-burgundy-100 rounded-lg flex items-center justify-center">
-            <svg class="w-3.5 h-3.5 text-burgundy-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div class="bg-white rounded-xl p-5 border border-burgundy-100 shadow-sm">
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-forest-600 text-sm">Courses Completed</span>
+          <div class="w-8 h-8 bg-burgundy-100 rounded-lg flex items-center justify-center">
+            <svg class="w-4 h-4 text-burgundy-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
             </svg>
           </div>
         </div>
-        <p class="font-display text-2xl font-semibold text-burgundy-900" id="coursesCompleted">0</p>
-        <p class="text-forest-500 text-xs">All time</p>
+        <p class="font-display text-3xl font-semibold text-burgundy-900" id="coursesCompleted">0</p>
+        <p class="text-forest-500 text-sm">All time</p>
       </div>
 
       <!-- Certificates -->
-      <div class="bg-white rounded-xl p-4 border border-burgundy-100 shadow-sm">
-        <div class="flex items-center justify-between mb-2">
-          <span class="text-forest-600 text-xs">Certificates Stored</span>
-          <div class="w-7 h-7 bg-gold-100 rounded-lg flex items-center justify-center">
-            <svg class="w-3.5 h-3.5 text-gold-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div class="bg-white rounded-xl p-5 border border-burgundy-100 shadow-sm">
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-forest-600 text-sm">Certificates Stored</span>
+          <div class="w-8 h-8 bg-gold-100 rounded-lg flex items-center justify-center">
+            <svg class="w-4 h-4 text-gold-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
             </svg>
           </div>
         </div>
-        <p class="font-display text-2xl font-semibold text-burgundy-900" id="certificatesCount">0</p>
-        <p class="text-forest-500 text-xs">Uploaded</p>
+        <p class="font-display text-3xl font-semibold text-burgundy-900" id="certificatesCount">0</p>
+        <p class="text-forest-500 text-sm">Uploaded</p>
       </div>
 
       <!-- Credentials -->
-      <div class="bg-white rounded-xl p-4 border border-burgundy-100 shadow-sm">
-        <div class="flex items-center justify-between mb-2">
-          <span class="text-forest-600 text-xs">Active Credentials</span>
-          <div class="w-7 h-7 bg-forest-100 rounded-lg flex items-center justify-center">
-            <svg class="w-3.5 h-3.5 text-forest-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div class="bg-white rounded-xl p-5 border border-burgundy-100 shadow-sm">
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-forest-600 text-sm">Active Credentials</span>
+          <div class="w-8 h-8 bg-forest-100 rounded-lg flex items-center justify-center">
+            <svg class="w-4 h-4 text-forest-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/>
             </svg>
           </div>
         </div>
-        <p class="font-display text-2xl font-semibold text-burgundy-900" id="credentialsCount">0</p>
-        <p class="text-forest-500 text-xs">Tracked</p>
+        <p class="font-display text-3xl font-semibold text-burgundy-900" id="credentialsCount">0</p>
+        <p class="text-forest-500 text-sm">Tracked</p>
       </div>
     </div>
 
@@ -294,7 +271,7 @@
               <span class="text-burgundy-800 font-medium text-sm">Browse Courses</span>
             </a>
             
-            <a href="/credentials.html" class="flex flex-col items-center p-4 rounded-xl bg-forest-50 hover:bg-forest-100 transition-colors group">
+            <a href="/upload.html" class="flex flex-col items-center p-4 rounded-xl bg-forest-50 hover:bg-forest-100 transition-colors group">
               <div class="w-12 h-12 rounded-xl flex items-center justify-center" style="background: linear-gradient(135deg, #8b2542, #6b1d34); mb-3 group-hover:scale-105 transition-transform">
                 <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
@@ -497,7 +474,7 @@
         <div class="bg-gradient-to-br from-burgundy-800 to-burgundy-900 rounded-xl p-6 text-white">
           <h3 class="font-display text-lg font-semibold mb-2">Need Help?</h3>
           <p class="text-burgundy-200 text-sm mb-4">Questions about CE requirements or using the platform?</p>
-          <a href="/cdn-cgi/l/email-protection#d8abada8a8b7aaac98bbb7adb6abbdb4b7aaaabdb9bca1f6bbb7b5" class="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+          <a href="mailto:support@counselorready.com" class="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 px-4 py-2 rounded-lg text-sm font-medium transition-colors">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
             </svg>
@@ -663,7 +640,7 @@
     </div>
   </footer>
 
-  <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+  <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
     const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://api.counselorready.com';
     let consultStatus = null;
     
@@ -702,11 +679,6 @@
           document.getElementById('trialBanner').classList.remove('hidden');
           document.getElementById('trialDays').textContent = daysLeft;
         }
-      }
-      
-      // Show founders banner for migrated users
-      if (user.migratedFrom === 'talentlms' && !localStorage.getItem('foundersBannerDismissed')) {
-        document.getElementById('foundersBanner').classList.remove('hidden');
       }
       
       // Fetch dashboard data
@@ -850,8 +822,8 @@
               <span class="text-forest-700 font-medium">${cred.name}${cred.state ? ` (${cred.state})` : ''}</span>
               <span class="text-forest-600 text-sm">${cred.completed}/${cred.required} hrs</span>
             </div>
-            <div class="w-full bg-forest-100 rounded-full h-1">
-              <div class="bg-burgundy-600 h-1 rounded-full transition-all" style="width: ${cred.percent}%"></div>
+            <div class="w-full bg-forest-100 rounded-full h-2">
+              <div class="bg-burgundy-600 h-2 rounded-full transition-all" style="width: ${cred.percent}%"></div>
             </div>
           </div>
         `).join('');
@@ -898,11 +870,6 @@
           const timeAgo = getTimeAgo(new Date(a.date));
           const subtitle = a.type === 'certificate' ? `+${a.ceHours} CE hours` : (a.type === 'course_complete' ? 'Course completed!' : `${a.progress}% complete`);
           
-          // Resume button for in-progress courses
-          const resumeBtn = (a.type === 'course_progress' && a.slug) 
-            ? `<a href="/interactive-course.html?slug=${a.slug}" class="px-3 py-1 bg-burgundy-700 hover:bg-burgundy-800 text-white text-xs font-medium rounded-lg">Resume</a>`
-            : '';
-          
           return `
             <div class="flex items-center gap-4 p-3 rounded-lg bg-stone-50">
               <div class="w-10 h-10 ${bgColor} rounded-lg flex items-center justify-center">
@@ -912,7 +879,6 @@
                 <p class="text-forest-700">${a.title}</p>
                 <p class="text-forest-500 text-sm">${subtitle}</p>
               </div>
-              ${resumeBtn}
               <span class="text-forest-400 text-xs">${timeAgo}</span>
             </div>
           `;
@@ -1358,19 +1324,8 @@
       
       setTimeout(() => {
         alert.classList.add('hidden');
-      }, 300);
-    }
-    
-    function dismissFoundersBanner() {
-      const banner = document.getElementById('foundersBanner');
-      banner.style.transition = 'opacity 0.3s, transform 0.3s';
-      banner.style.opacity = '0';
-      banner.style.transform = 'translateY(-10px)';
-      
-      localStorage.setItem('foundersBannerDismissed', 'true');
-      
-      setTimeout(() => {
-        banner.classList.add('hidden');
+        alert.style.opacity = '';
+        alert.style.transform = '';
       }, 300);
     }
   </script>
