@@ -61,6 +61,8 @@ import adminStatsRoutes from './routes/adminStats.js';
 // ── Whitelabel partner routes ──
 import partnersRoutes from './routes/partners.js';
 import rawMarkdownRoutes from './routes/rawMarkdownRoute.js';
+// ── Scholarly articles integration ──
+import scholarlyArticlesRoutes from './routes/scholarlyArticles.js';
 // Import services
 import { initializeScheduler } from './services/notificationScheduler.js';
 
@@ -158,6 +160,7 @@ app.use('/api/ai-course-generator/', aiLimiter);
 app.use('/api/admin/quiz/generate', aiLimiter);
 app.use('/api/admin/course/generate', aiLimiter);
 app.use('/api/admin/module/generate', aiLimiter);
+app.use('/api/scholarly-articles/article/*/generate-quiz', aiLimiter);
 
 // Body parsing middleware
 // Stripe webhook needs raw body, so we handle it before json parsing
@@ -262,6 +265,8 @@ app.use('/api/admin/stats', adminStatsRoutes);
 app.use('/api/partners', partnersRoutes);
 app.use('/api/tools', toolsRoutes);
 app.use('/api/rawmd', rawMarkdownRoutes);
+// ── Scholarly articles ──
+app.use('/api/scholarly-articles', scholarlyArticlesRoutes);
 
 // Static templates directory intentionally NOT served publicly
 // Certificate assets (signature.png, certificate_template.pdf) are loaded
