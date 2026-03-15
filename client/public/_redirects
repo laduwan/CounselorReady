@@ -1,22 +1,19 @@
 # ═══════════════════════════════════════════════════════════════
 # CounselorReady _redirects
-# Static HTML pages served directly — React ONLY handles
-# /learn/:slug, /courses/:slug, and /admin/course-builder
+# Lines above the catch-all serve static HTML directly.
+# Everything else falls through to React SPA.
 # ═══════════════════════════════════════════════════════════════
 
-# Bare paths → static HTML (stops React from hijacking)
+# Static HTML pages — served directly, bypass React
 /dashboard           /dashboard.html           200
-/courses             /courses.html             200
 /certificates        /certificates.html        200
-/credentials         /credentials.html         200
 /messages            /messages.html            200
-/settings            /settings.html            200
 /welcome             /welcome.html             200
 /audit               /audit.html               200
 /login               /login.html               200
 /register            /register.html            200
 
-# Admin bare paths → static HTML
+# Admin static HTML pages
 /admin-courses       /admin-courses.html       200
 /admin-users         /admin-users.html         200
 /admin-analytics     /admin-analytics.html     200
@@ -27,13 +24,13 @@
 /admin-coupons       /admin-coupons.html       200
 /admin-help          /admin-help.html          200
 /admin-migration     /admin-migration.html     200
+/admin-course-preview /admin-course-preview.html 200
 
 # Course viewer
 /interactive-course  /interactive-course.html  200
 
-# React SPA — ONLY these routes go to React
-/learn/*             /index.html               200
-/admin/course-builder /index.html              200
-
-# Fallback — everything else to landing or 404
+# React SPA catch-all — handles /courses, /credentials, /settings,
+# /ce-planner, /supervision, /achievements, /referrals, /recommendations,
+# /organization, /group-licenses, /insurance-tracker, /legacy-vault,
+# /board-alerts, /audit-kit, /partner-dashboard, /learn/*, /admin/*
 /*                   /index.html               200

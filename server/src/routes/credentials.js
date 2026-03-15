@@ -277,15 +277,20 @@ router.post('/sync', protect, async (req, res) => {
       // 2. Platform-generated certificates (source: 'platform')
       // 3. All certificates if we want to auto-apply
       for (const cert of certificates) {
-        const isExplicitlyLinked = cert.credentials && cert.credentials.some(credId => 
+        const isExplicitlyLinked = cert.credentials && cert.credentials.some(credId =>
           credId.toString() === credential._id.toString()
         );
         const isPlatformCert = cert.source === 'platform';
-        
-        // Skip if not applicable
-        // For explicitly linked certs - always apply
-        // For platform certs - apply to active credentials
-        if (!isExplicitlyLinked && !isPlatformCert) {
+
+        // Match uploaded certs by category to credential requirements
+        const certCategory = (cert.category || 'General').toLowerCase().replace(/[-_]/g, ' ');
+        const hasRequirements = credential.requirements && credential.requirements.length > 0;
+        const matchesCategory = !hasRequirements || credential.requirements.some(req =>
+          req.category.toLowerCase().replace(/[-_]/g, ' ') === certCategory
+        ) || certCategory === 'general';
+
+        // Apply explicitly linked, platform-generated, or category-matched certs
+        if (!isExplicitlyLinked && !isPlatformCert && !matchesCategory) {
           continue;
         }
         
