@@ -4,9 +4,10 @@
  * Unauthorized copying or distribution is strictly prohibited.
  */
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
-import { Calendar, Clock, Target, AlertTriangle, CheckCircle, BookOpen, ArrowRight, TrendingUp, FileText, Award } from 'lucide-react';
+import { Calendar, Clock, Target, AlertTriangle, CheckCircle, BookOpen, ArrowLeft, ArrowRight, TrendingUp, FileText, Award } from 'lucide-react';
 
 const urgencyColors = {
   expired: { bg: 'bg-red-50', text: 'text-red-700', border: 'border-red-200', badge: 'bg-red-100 text-red-800' },
@@ -46,6 +47,7 @@ export default function CEPlanner() {
   if (error) {
     return (
       <div>
+        <Link to="/credentials" className="inline-flex items-center gap-1.5 text-sm text-stone-500 hover:text-burgundy-700 mb-3 transition-colors"><ArrowLeft className="w-4 h-4" />Credentials</Link>
         <h1 className="text-2xl font-bold text-gray-900 mb-6">CE Planner</h1>
         <div className="bg-white rounded-xl border border-red-200 p-12 text-center">
           <AlertTriangle className="w-12 h-12 mx-auto text-red-400 mb-4" />
@@ -62,6 +64,7 @@ export default function CEPlanner() {
   if (!planData || planData.plan?.length === 0) {
     return (
       <div>
+        <Link to="/credentials" className="inline-flex items-center gap-1.5 text-sm text-stone-500 hover:text-burgundy-700 mb-3 transition-colors"><ArrowLeft className="w-4 h-4" />Credentials</Link>
         <h1 className="text-2xl font-bold text-gray-900 mb-6">CE Planner</h1>
         <div className="bg-white rounded-xl border p-12 text-center">
           <Target className="w-12 h-12 mx-auto text-gray-300 mb-4" />
