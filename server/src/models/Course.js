@@ -254,6 +254,29 @@ const courseSchema = new mongoose.Schema({
       daysAfterEnrollment: { type: Number }
     }],
     certificateEnabled: { type: Boolean, default: true },
+    certificateCustomization: {
+      // Layout
+      layout: { type: String, enum: ['classic', 'modern', 'elegant', 'minimal'], default: 'classic' },
+      orientation: { type: String, enum: ['landscape', 'portrait'], default: 'landscape' },
+      // Colors
+      borderColor: { type: String, default: '#10B981' },
+      accentColor: { type: String, default: '#06B6D4' },
+      headerColor: { type: String, default: '#1e293b' },
+      textColor: { type: String, default: '#64748b' },
+      backgroundColor: { type: String, default: '#f8fafc' },
+      // Branding
+      logoUrl: { type: String },
+      showNbccLogo: { type: Boolean, default: true },
+      signatureUrl: { type: String },
+      signerName: { type: String, default: 'CounselorReady' },
+      signerTitle: { type: String, default: 'NBCC Provider ACEP #7760' },
+      // Content
+      certificateTitle: { type: String, default: 'Certificate of Completion' },
+      customFooter: { type: String },
+      showVerificationCode: { type: Boolean, default: true },
+      showCeHours: { type: Boolean, default: true },
+      showCompletionDate: { type: Boolean, default: true }
+    },
     passingScore: { type: Number, default: 70 },
     
     // Quiz/Test Retake Settings
