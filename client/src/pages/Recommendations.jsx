@@ -4,7 +4,8 @@
  * Unauthorized copying or distribution is strictly prohibited.
  */
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
 import api from '../services/api';
 
 export default function Recommendations() {
@@ -31,6 +32,7 @@ export default function Recommendations() {
 
   return (
     <div className="max-w-4xl mx-auto" role="main" aria-label="Smart CE Recommendations">
+      <Link to="/courses" className="inline-flex items-center gap-1.5 text-sm text-stone-500 hover:text-burgundy-700 mb-3 transition-colors"><ArrowLeft className="w-4 h-4" />Courses</Link>
       <h1 className="text-2xl font-bold text-gray-900 mb-1">Smart CE Recommendations</h1>
       <p className="text-gray-600 mb-6">Personalized course suggestions based on your credentials and requirements</p>
 

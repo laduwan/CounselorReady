@@ -4,8 +4,9 @@
  * Unauthorized copying or distribution is strictly prohibited.
  */
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import api from '../services/api';
-import { Shield, Plus, ChevronDown, ChevronUp, Trash2, Edit3, CheckCircle, Clock, XCircle, FileText, ExternalLink } from 'lucide-react';
+import { Shield, Plus, ChevronDown, ChevronUp, Trash2, Edit3, CheckCircle, Clock, XCircle, FileText, ExternalLink, ArrowLeft } from 'lucide-react';
 
 const STATUS_CONFIG = {
   not_started: { label: 'Not Started', color: 'bg-gray-100 text-gray-700', icon: Clock },
@@ -131,6 +132,7 @@ export default function InsuranceTracker() {
 
   return (
     <div>
+      <Link to="/supervision" className="inline-flex items-center gap-1.5 text-sm text-stone-500 hover:text-burgundy-700 mb-3 transition-colors"><ArrowLeft className="w-4 h-4" />Practice</Link>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-gray-900">Insurance Panel Tracker</h1>
         <button onClick={() => { resetForm(); setShowForm(!showForm); }}
