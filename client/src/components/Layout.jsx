@@ -7,31 +7,16 @@ import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
-import { Menu, X, ChevronDown, LogOut, Settings, ShieldCheck, Trophy, Users, Star, ClipboardList, MoreHorizontal, Bell, Lock, Palette, BookOpen } from 'lucide-react';
+import { Menu, X, ChevronDown, LogOut, Settings, ShieldCheck, Users, Bell, Palette, BookOpen } from 'lucide-react';
 import PoweredByBadge from './PoweredByBadge';
 import CRPromoCard from './CRPromoCard';
 
 // React routes use Link; external static HTML pages use <a>
 const navLinks = [
-  { name: 'Dashboard',       href: '/dashboard',          static: false },
-  { name: 'Courses',         href: '/courses',            static: false },
-  { name: 'Free Tools',      href: '/tools/index.html',   static: true  },
-  { name: 'Credentials',     href: '/credentials',        static: false },
-  { name: 'CE Planner',      href: '/ce-planner',         static: false },
-  { name: 'Audit Kit',       href: '/audit-kit',          static: false },
-  { name: 'Alerts',          href: '/board-alerts',       static: false },
-];
-
-const moreLinks = [
-  { name: 'Supervision',      href: '/supervision',        icon: ClipboardList },
-  { name: 'Insurance',        href: '/insurance-tracker',   icon: ShieldCheck },
-  { name: 'Achievements',     href: '/achievements',        icon: Trophy },
-  { name: 'Referrals',        href: '/referrals',           icon: Star },
-  { name: 'Recommendations',  href: '/recommendations',     icon: Star },
-  { name: 'Team',             href: '/organization',        icon: Users },
-  { name: 'Group Licenses',   href: '/group-licenses',      icon: Users },
-  { name: 'Legacy Vault',     href: '/legacy-vault',         icon: Lock },
-  { name: 'Partner Portal',  href: '/partner-dashboard',    icon: Star },
+  { name: 'Dashboard',            href: '/dashboard',    static: false },
+  { name: 'Courses',              href: '/courses',      static: false },
+  { name: 'Education & Tracking', href: '/ce-planner',   static: false },
+  { name: 'Practice & Group',     href: '/supervision',  static: false },
 ];
 
 const BURGUNDY      = '#6B1D34';
@@ -43,7 +28,7 @@ const GOLD          = '#D4A855';
 export default function Layout({ children }) {
   const [mobileOpen, setMobileOpen]   = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
-  const [moreMenuOpen, setMoreMenuOpen] = useState(false);
+
   const [notifOpen, setNotifOpen]       = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount]   = useState(0);
@@ -136,7 +121,7 @@ export default function Layout({ children }) {
                     <span style={{ color: '#7A9E84', position: 'absolute', top: 4, left: 6, fontFamily: "'Cormorant Garamond', Georgia, serif", fontWeight: 700, fontSize: 16 }}>R</span>
                   </span>
                 </div>
-                <span style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontWeight: 600, fontSize: '1.5rem', letterSpacing: '0.015em' }}>
+                <span style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontWeight: 600, fontSize: '1.625rem', letterSpacing: '0.015em' }}>
                   <span style={{ color: BURGUNDY }}>Counselor</span><span style={{ color: HUNTER }}>Ready</span>
                 </span>
               </>
@@ -172,52 +157,7 @@ export default function Layout({ children }) {
               );
             })}
 
-            {/* More dropdown */}
-            <div className="relative">
-              <button
-                onClick={() => setMoreMenuOpen(!moreMenuOpen)}
-                style={{
-                  padding: '0.5rem 0.875rem',
-                  borderRadius: '0.5rem',
-                  fontSize: '0.875rem',
-                  fontWeight: 500,
-                  transition: 'all 0.15s',
-                  color: moreLinks.some(l => isActive(l.href)) ? BURGUNDY : '#78716c',
-                  background: moreLinks.some(l => isActive(l.href)) ? BURGUNDY_LIGHT : 'transparent',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.25rem',
-                }}
-                onMouseEnter={e => { if (!moreLinks.some(l => isActive(l.href))) e.target.style.background = '#f5f5f4'; }}
-                onMouseLeave={e => { if (!moreLinks.some(l => isActive(l.href))) e.target.style.background = moreLinks.some(l => isActive(l.href)) ? BURGUNDY_LIGHT : 'transparent'; }}
-              >
-                More <ChevronDown className="w-3.5 h-3.5" />
-              </button>
 
-              {moreMenuOpen && (
-                <>
-                  <div className="fixed inset-0 z-10" onClick={() => setMoreMenuOpen(false)} />
-                  <div className="absolute left-0 top-full mt-2 w-52 bg-white rounded-xl shadow-lg border border-stone-200 py-1 z-20">
-                    {moreLinks.map((link) => {
-                      const active = isActive(link.href);
-                      const Icon = link.icon;
-                      return (
-                        <Link
-                          key={link.href}
-                          to={link.href}
-                          onClick={() => setMoreMenuOpen(false)}
-                          className="flex items-center gap-2.5 px-4 py-2.5 text-sm transition-colors hover:bg-stone-50"
-                          style={{ color: active ? BURGUNDY : '#57534e', fontWeight: active ? 600 : 400 }}
-                        >
-                          <Icon className="w-4 h-4" style={{ color: active ? BURGUNDY : '#a8a29e' }} />
-                          {link.name}
-                        </Link>
-                      );
-                    })}
-                  </div>
-                </>
-              )}
-            </div>
           </nav>
 
           {/* Right side */}
@@ -367,21 +307,6 @@ export default function Layout({ children }) {
                 <Link key={link.href} to={link.href} onClick={() => setMobileOpen(false)} style={style}>{link.name}</Link>
               );
             })}
-            <div className="border-t border-stone-100 my-2 pt-2">
-              <p className="px-3 py-1 text-xs font-semibold text-stone-400 uppercase tracking-wider">More</p>
-              {moreLinks.map((link) => {
-                const active = isActive(link.href);
-                const Icon = link.icon;
-                return (
-                  <Link key={link.href} to={link.href} onClick={() => setMobileOpen(false)}
-                    className="flex items-center gap-2.5"
-                    style={{ display: 'flex', padding: '0.625rem 1rem', borderRadius: '0.5rem', fontSize: '0.875rem', fontWeight: 500, textDecoration: 'none', color: active ? BURGUNDY : '#57534e', background: active ? BURGUNDY_LIGHT : 'transparent' }}>
-                    <Icon className="w-4 h-4" style={{ color: active ? BURGUNDY : '#a8a29e' }} />
-                    {link.name}
-                  </Link>
-                );
-              })}
-            </div>
             {isPartnerAdmin && (
               <div className="border-t border-stone-100 my-2 pt-2">
                 <p className="px-3 py-1 text-xs font-semibold text-stone-400 uppercase tracking-wider">Partner Admin</p>
