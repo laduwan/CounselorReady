@@ -36,6 +36,8 @@ import PartnerBrandingSettings from './pages/PartnerBrandingSettings';
 import PartnerCourseAdmin from './pages/PartnerCourseAdmin';
 import ThumbnailManager from './pages/ThumbnailManager';
 import AdminBulkUpload from './pages/AdminBulkUpload';
+import ResearchReadyCE from './pages/ResearchReadyCE';
+import AdminResearchReady from './pages/AdminResearchReady';
 
 // Components
 import Layout from './components/Layout';
@@ -277,6 +279,11 @@ function AppRoutes() {
           <Layout><LegacyVault /></Layout>
         </ProtectedRoute>
       } />
+      <Route path="/research-ready" element={
+        <ProtectedRoute>
+          <Layout><ResearchReadyCE /></Layout>
+        </ProtectedRoute>
+      } />
 
       {/* Admin routes */}
       <Route path="/admin/course-builder" element={
@@ -302,6 +309,11 @@ function AppRoutes() {
       <Route path="/admin/bulk-upload" element={
         <AdminRoute>
           <Layout><AdminBulkUpload /></Layout>
+        </AdminRoute>
+      } />
+      <Route path="/admin/research-ready" element={
+        <AdminRoute>
+          <Layout><AdminResearchReady /></Layout>
         </AdminRoute>
       } />
       <Route path="/partner-dashboard" element={
