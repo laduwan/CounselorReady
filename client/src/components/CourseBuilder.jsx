@@ -3349,6 +3349,7 @@ export default function CourseBuilderV2() {
     { label: "Media", icon: "🖼️", badge: null },
     { label: "Export", icon: "📦", badge: null, needsContent: !hasContent },
     { label: "Adaptive", icon: "🔀", badge: null, needsContent: !hasContent },
+    { label: "Certificate", icon: "🏆", badge: null, needsContent: !hasContent },
   ];
 
   return (
@@ -3523,6 +3524,7 @@ export default function CourseBuilderV2() {
         {activeTab === 11 && <MediaLibrary courseData={courseData} setCourseData={wrappedSetCourseData} />}
         {activeTab === 12 && <ExportPanel courseData={courseData} />}
         {activeTab === 13 && <AdaptivePathsEditor courseData={courseData} setCourseData={wrappedSetCourseData} />}
+        {activeTab === 14 && <CertificateCustomizer courseData={courseData} setCourseData={wrappedSetCourseData} />}
 
       </div>
       )}
@@ -5554,6 +5556,269 @@ function AnalyticsDashboard({ courseData }) {
               {!courseId && <p style={{ color: C.textMuted, fontSize: 13 }}>Save the course to see enrollment analytics.</p>}
             </div>
           )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════
+// CERTIFICATE CUSTOMIZER
+// ═══════════════════════════════════════════════════════════════
+function CertificateCustomizer({ courseData, setCourseData }) {
+  const cert = courseData.settings?.certificateCustomization || {};
+
+  const update = (field, value) => {
+    setCourseData(prev => ({
+      ...prev,
+      settings: {
+        ...prev.settings,
+        certificateCustomization: {
+          ...(prev.settings?.certificateCustomization || {}),
+          [field]: value
+        }
+      }
+    }));
+  };
+
+  const colorField = (label, field, defaultVal) => (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+      <input
+        type="color"
+        value={cert[field] || defaultVal}
+        onChange={e => update(field, e.target.value)}
+        style={{ width: 36, height: 36, border: '1px solid #ddd', borderRadius: 6, cursor: 'pointer', padding: 2 }}
+      />
+      <div>
+        <div style={{ fontSize: 13, fontWeight: 600, color: C.navy }}>{label}</div>
+        <div style={{ fontSize: 11, color: C.textMuted }}>{cert[field] || defaultVal}</div>
+      </div>
+    </div>
+  );
+
+  const selectField = (label, field, options, defaultVal) => (
+    <div style={{ marginBottom: 14 }}>
+      <label style={{ fontSize: 13, fontWeight: 600, color: C.navy, display: 'block', marginBottom: 4 }}>{label}</label>
+      <select
+        value={cert[field] || defaultVal}
+        onChange={e => update(field, e.target.value)}
+        style={{ ...S.input, padding: '8px 12px' }}
+      >
+        {options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+      </select>
+    </div>
+  );
+
+  const textField = (label, field, defaultVal, placeholder) => (
+    <div style={{ marginBottom: 14 }}>
+      <label style={{ fontSize: 13, fontWeight: 600, color: C.navy, display: 'block', marginBottom: 4 }}>{label}</label>
+      <input
+        type="text"
+        value={cert[field] ?? defaultVal}
+        onChange={e => update(field, e.target.value)}
+        placeholder={placeholder || ''}
+        style={{ ...S.input, padding: '8px 12px' }}
+      />
+    </div>
+  );
+
+  const toggleField = (label, field, defaultVal = true) => (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
+      <input
+        type="checkbox"
+        checked={cert[field] ?? defaultVal}
+        onChange={e => update(field, e.target.checked)}
+        style={{ width: 18, height: 18, accentColor: C.burgundy }}
+      />
+      <span style={{ fontSize: 13, color: C.navy }}>{label}</span>
+    </div>
+  );
+
+  const previewBorder = cert.borderColor || '#10B981';
+  const previewAccent = cert.accentColor || '#06B6D4';
+  const previewBg = cert.backgroundColor || '#f8fafc';
+  const previewHeader = cert.headerColor || '#1e293b';
+  const previewText = cert.textColor || '#64748b';
+  const layout = cert.layout || 'classic';
+
+  return (
+    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24, padding: 4 }}>
+      {/* Left: Settings */}
+      <div>
+        <h3 style={{ fontSize: 16, fontWeight: 700, color: C.navy, marginBottom: 16, fontFamily: 'Georgia, serif' }}>Certificate Design</h3>
+
+        {selectField('Layout Style', 'layout', [
+          { value: 'classic', label: 'Classic \u2014 Double border with centered text' },
+          { value: 'modern', label: 'Modern \u2014 Top/bottom accent bars' },
+          { value: 'elegant', label: 'Elegant \u2014 Large borders, larger typography' },
+          { value: 'minimal', label: 'Minimal \u2014 Clean lines, understated' }
+        ], 'classic')}
+
+        {selectField('Orientation', 'orientation', [
+          { value: 'landscape', label: 'Landscape' },
+          { value: 'portrait', label: 'Portrait' }
+        ], 'landscape')}
+
+        <div style={{ marginTop: 20, marginBottom: 8, fontSize: 14, fontWeight: 700, color: C.navy }}>Colors</div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+          {colorField('Border', 'borderColor', '#10B981')}
+          {colorField('Accent', 'accentColor', '#06B6D4')}
+          {colorField('Header Text', 'headerColor', '#1e293b')}
+          {colorField('Body Text', 'textColor', '#64748b')}
+          {colorField('Background', 'backgroundColor', '#f8fafc')}
+        </div>
+
+        <div style={{ marginTop: 20, marginBottom: 8, fontSize: 14, fontWeight: 700, color: C.navy }}>Branding</div>
+        {textField('Certificate Title', 'certificateTitle', 'Certificate of Completion', 'Certificate of Completion')}
+        {textField('Signer Name', 'signerName', 'CounselorReady', 'Name that appears on signature line')}
+        {textField('Signer Title', 'signerTitle', 'NBCC Provider ACEP #7760', 'Title below signature')}
+        {textField('Custom Footer', 'customFooter', '', 'Leave blank for default footer')}
+        {textField('Logo URL', 'logoUrl', '', 'Cloudinary URL for logo image')}
+        {textField('Signature Image URL', 'signatureUrl', '', 'Cloudinary URL for signature image')}
+
+        <div style={{ marginTop: 20, marginBottom: 8, fontSize: 14, fontWeight: 700, color: C.navy }}>Display Options</div>
+        {toggleField('Show NBCC Provider Info', 'showNbccLogo', true)}
+        {toggleField('Show CE Hours', 'showCeHours', true)}
+        {toggleField('Show Completion Date', 'showCompletionDate', true)}
+        {toggleField('Show Verification Code', 'showVerificationCode', true)}
+
+        <div style={{ marginTop: 20, padding: 12, background: 'rgba(74,124,89,0.06)', borderRadius: 8, fontSize: 12, color: C.textMuted }}>
+          These settings are applied when certificates are generated for learners who complete this course. Changes apply to future certificates only.
+        </div>
+      </div>
+
+      {/* Right: Live Preview */}
+      <div>
+        <h3 style={{ fontSize: 16, fontWeight: 700, color: C.navy, marginBottom: 16, fontFamily: 'Georgia, serif' }}>Preview</h3>
+        <div style={{
+          background: previewBg,
+          borderRadius: 12,
+          padding: layout === 'minimal' ? 24 : 16,
+          border: '1px solid #e5e7eb',
+          aspectRatio: (cert.orientation || 'landscape') === 'landscape' ? '11/8.5' : '8.5/11',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          position: 'relative',
+          overflow: 'hidden',
+          boxShadow: '0 4px 20px rgba(0,0,0,0.08)'
+        }}>
+          {(layout === 'classic' || layout === 'elegant') && (
+            <>
+              <div style={{ position: 'absolute', inset: 8, border: `2px solid ${previewBorder}`, borderRadius: 4, pointerEvents: 'none' }} />
+              <div style={{ position: 'absolute', inset: 14, border: `1px solid ${previewAccent}`, borderRadius: 2, pointerEvents: 'none' }} />
+            </>
+          )}
+          {layout === 'modern' && (
+            <>
+              <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 6, background: previewBorder }} />
+              <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 6, background: previewBorder }} />
+            </>
+          )}
+          {layout === 'minimal' && (
+            <>
+              <div style={{ position: 'absolute', top: 16, left: 24, right: 24, height: 1, background: previewBorder }} />
+              <div style={{ position: 'absolute', bottom: 16, left: 24, right: 24, height: 1, background: previewBorder }} />
+            </>
+          )}
+
+          <div style={{ textAlign: 'center', padding: '8px 16px' }}>
+            <div style={{ fontSize: 8, color: previewText, letterSpacing: 2, marginBottom: 2 }}>COUNSELORREADY</div>
+            {(cert.showNbccLogo !== false) && (
+              <div style={{ fontSize: 6, color: '#94a3b8', marginBottom: 6 }}>NBCC ACEP #7760</div>
+            )}
+            <div style={{
+              fontSize: layout === 'elegant' ? 16 : 14,
+              fontWeight: 700,
+              color: previewHeader,
+              fontFamily: 'Georgia, serif',
+              marginBottom: 6
+            }}>
+              {cert.certificateTitle || 'Certificate of Completion'}
+            </div>
+            {layout !== 'minimal' && (
+              <div style={{ width: 80, height: 1, background: previewBorder, margin: '0 auto 8px' }} />
+            )}
+            <div style={{ fontSize: 7, color: previewText, marginBottom: 4 }}>This certifies that</div>
+            <div style={{ fontSize: 12, fontWeight: 700, color: previewHeader, marginBottom: 4 }}>Jane Doe, LPC</div>
+            <div style={{ fontSize: 7, color: previewText, marginBottom: 4 }}>has successfully completed</div>
+            <div style={{ fontSize: 9, fontWeight: 700, color: previewHeader, marginBottom: 6 }}>
+              {courseData.title || 'Course Title'}
+            </div>
+            {(cert.showCeHours !== false) && (
+              <div style={{ fontSize: 7, color: previewText }}>{courseData.ceHours || courseData.ceuHours || 3} CE Hours</div>
+            )}
+            {(cert.showCompletionDate !== false) && (
+              <div style={{ fontSize: 7, color: previewText }}>Completed on March 15, 2026</div>
+            )}
+            <div style={{ fontSize: 6, color: '#94a3b8', marginTop: 4 }}>Certificate #CR-2026-000001</div>
+            {(cert.showVerificationCode !== false) && (
+              <div style={{ fontSize: 5, color: '#94a3b8', marginTop: 2 }}>Verification: counselorready.com/verify/abc123</div>
+            )}
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 12, padding: '0 12px' }}>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ width: 50, borderTop: '1px solid #cbd5e1', marginBottom: 2 }} />
+                <div style={{ fontSize: 6, color: previewHeader }}>{courseData.presenter?.name || 'Instructor'}</div>
+              </div>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ width: 50, borderTop: '1px solid #cbd5e1', marginBottom: 2 }} />
+                <div style={{ fontSize: 6, color: previewHeader }}>{cert.signerName || 'CounselorReady'}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Preset Themes */}
+        <div style={{ marginTop: 20 }}>
+          <div style={{ fontSize: 14, fontWeight: 700, color: C.navy, marginBottom: 10 }}>Quick Themes</div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+            {[
+              { name: 'CounselorReady', border: '#10B981', accent: '#06B6D4', bg: '#f8fafc', header: '#1e293b', text: '#64748b', layout: 'classic' },
+              { name: 'Burgundy & Gold', border: '#8B2542', accent: '#D4A855', bg: '#faf8f5', header: '#6B1D34', text: '#555555', layout: 'elegant' },
+              { name: 'Forest', border: '#4A7C59', accent: '#6B8F71', bg: '#f5f8f5', header: '#2d4a35', text: '#556B5B', layout: 'classic' },
+              { name: 'Navy Professional', border: '#284157', accent: '#3d6b8e', bg: '#f8f9fb', header: '#1a2d3d', text: '#5a6b7d', layout: 'modern' },
+              { name: 'Warm Minimal', border: '#c4956a', accent: '#d4a97a', bg: '#fefcf9', header: '#3d2e1e', text: '#7a6b5a', layout: 'minimal' },
+              { name: 'Royal Purple', border: '#6B46C1', accent: '#9F7AEA', bg: '#faf8ff', header: '#44337A', text: '#6B5B95', layout: 'elegant' }
+            ].map(theme => (
+              <button
+                key={theme.name}
+                onClick={() => {
+                  setCourseData(prev => ({
+                    ...prev,
+                    settings: {
+                      ...prev.settings,
+                      certificateCustomization: {
+                        ...(prev.settings?.certificateCustomization || {}),
+                        borderColor: theme.border,
+                        accentColor: theme.accent,
+                        backgroundColor: theme.bg,
+                        headerColor: theme.header,
+                        textColor: theme.text,
+                        layout: theme.layout
+                      }
+                    }
+                  }));
+                }}
+                style={{
+                  padding: '10px 12px',
+                  border: '1px solid #e5e7eb',
+                  borderRadius: 8,
+                  background: '#fff',
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                  transition: 'all 0.15s'
+                }}
+              >
+                <div style={{ display: 'flex', gap: 4, marginBottom: 4 }}>
+                  <span style={{ width: 12, height: 12, borderRadius: '50%', background: theme.border, display: 'inline-block' }} />
+                  <span style={{ width: 12, height: 12, borderRadius: '50%', background: theme.accent, display: 'inline-block' }} />
+                  <span style={{ width: 12, height: 12, borderRadius: '50%', background: theme.bg, display: 'inline-block', border: '1px solid #ddd' }} />
+                </div>
+                <div style={{ fontSize: 12, fontWeight: 600, color: C.navy }}>{theme.name}</div>
+              </button>
+            ))}
+          </div>
         </div>
       </div>
     </div>

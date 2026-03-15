@@ -4213,6 +4213,71 @@ function showAdaptiveModal(message, targetSectionIndex) {
 }
 
 // ═══════════════════════════════════════════════════════════════
+// CERTIFICATE REQUEST
+// ═══════════════════════════════════════════════════════════════
+function requestCertificate() {
+  if (!course?._id && !course?.slug) {
+    // Fallback for embedded/file-loaded courses
+    if (window.parent !== window) {
+      window.parent.postMessage({ type: 'REQUEST_CERTIFICATE' }, '*');
+    } else {
+      alert('Certificate generation requires a saved course.');
+    }
+    return;
+  }
+
+  const token = localStorage.getItem('token');
+  if (!token) {
+    alert('Please log in to request your certificate.');
+    return;
+  }
+
+  const base = crApiBase || (location.origin.includes('localhost') ? 'http://localhost:5000' : 'https://api.counselorready.com');
+  const courseId = course._id;
+  if (!courseId) {
+    alert('Course ID not available. Please reload the page.');
+    return;
+  }
+
+  // Show loading
+  const btn = document.querySelector('[data-action="requestCertificate"]');
+  if (btn) { btn.disabled = true; btn.textContent = 'Generating...'; }
+
+  fetch(`${base}/api/certificates/generate/${courseId}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (data.success && data.certificate) {
+      // Show success modal with download link
+      showAdaptiveModal(
+        `Your certificate has been generated! Certificate #${data.certificate.certificateNumber}`,
+        null
+      );
+      // Replace button with download link
+      if (btn) {
+        btn.textContent = 'Download Certificate';
+        btn.disabled = false;
+        btn.dataset.action = 'downloadCert';
+        btn.dataset.url = data.certificate.fileUrl;
+      }
+    } else if (data.certificate) {
+      // Already exists
+      showAdaptiveModal('Your certificate has already been generated.', null);
+      if (btn) { btn.disabled = false; btn.textContent = 'Get Certificate'; }
+    } else {
+      showAdaptiveModal(data.error || 'Failed to generate certificate.', null);
+      if (btn) { btn.disabled = false; btn.textContent = 'Get Certificate'; }
+    }
+  })
+  .catch(err => {
+    showAdaptiveModal('Network error. Please try again.', null);
+    if (btn) { btn.disabled = false; btn.textContent = 'Get Certificate'; }
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════
 // PARSER / FILE LOADER
 // ═══════════════════════════════════════════════════════════════
 function showParser() {
@@ -5687,11 +5752,10 @@ document.addEventListener('click', function(e) {
     
     // ─── Certificate ───
     case 'requestCertificate':
-      if (window.parent !== window) {
-        window.parent.postMessage({ type: 'REQUEST_CERTIFICATE' }, '*');
-      } else {
-        alert('Certificate generation available when embedded in CounselorReady');
-      }
+      requestCertificate();
+      break;
+    case 'downloadCert':
+      if (el.dataset.url) window.open(el.dataset.url, '_blank');
       break;
   }
 });
