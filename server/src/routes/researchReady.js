@@ -358,7 +358,7 @@ router.post('/complete', protect, async (req, res) => {
             source: 'internal',
             courseId: course._id,
             certificateId: certificate._id,
-            description: `Research Ready CE: ${course.title}`,
+            description: `Researched-N-Ready CE: ${course.title}`,
             provider: 'CounselorReady'
           });
           cred.totalCEUsCompleted = (cred.totalCEUsCompleted || 0) + course.ceHours;

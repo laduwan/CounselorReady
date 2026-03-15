@@ -52,7 +52,7 @@ function ResearchReadyRecs({ deficits }) {
           <div className="flex items-center gap-2 mb-2">
             <Beaker className="w-4 h-4 text-burgundy-600" />
             <h3 className="text-sm font-medium text-burgundy-800">
-              Research Ready CE — Fill your {category} deficit
+              Researched-N-Ready CE — Fill your {category} deficit
             </h3>
           </div>
           <div className="space-y-2">
@@ -63,7 +63,7 @@ function ResearchReadyRecs({ deficits }) {
                   <BookOpen className="w-4 h-4 text-burgundy-600" />
                   <div>
                     <p className="text-sm font-medium text-gray-900 line-clamp-1">{article.title}</p>
-                    <p className="text-xs text-gray-500">{article.ceHours} CE hours &bull; {article.year} &bull; Research Ready</p>
+                    <p className="text-xs text-gray-500">{article.ceHours} CE hours &bull; {article.year} &bull; Researched-N-Ready</p>
                   </div>
                 </div>
                 <ArrowRight className="w-4 h-4 text-burgundy-600 flex-shrink-0" />
@@ -264,7 +264,7 @@ export default function CEPlanner() {
                 </div>
               )}
 
-              {/* Research Ready CE Recommendations */}
+              {/* Researched-N-Ready CE Recommendations */}
               {item.categoryBreakdown.filter(c => c.remaining > 0).length > 0 && (
                 <ResearchReadyRecs deficits={item.categoryBreakdown.filter(c => c.remaining > 0)} />
               )}

@@ -210,7 +210,7 @@ export default function Dashboard() {
             </div>
             <div className="flex-1 min-w-0">
               <h3 className="font-display text-lg font-semibold text-burgundy-900 mb-0.5">
-                Research-Ready CE
+                Researched-N-Ready CE
               </h3>
               <p className="text-forest-600 text-sm">
                 Search peer-reviewed articles, verify currency, and build CE courses — all backed by scholarly research.
@@ -336,7 +336,7 @@ export default function Dashboard() {
                 <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-3 group-hover:scale-105 transition-transform" style={{ background: 'linear-gradient(135deg, #8B2542, #6B1D34)' }}>
                   <Search className="w-6 h-6 text-white" />
                 </div>
-                <span className="text-burgundy-800 font-medium text-sm">Research CE</span>
+                <span className="text-burgundy-800 font-medium text-sm">Researched-N-Ready</span>
               </Link>
             </div>
           </div>
