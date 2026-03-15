@@ -13,10 +13,26 @@ import CRPromoCard from './CRPromoCard';
 
 // React routes use Link; external static HTML pages use <a>
 const navLinks = [
-  { name: 'Dashboard',            href: '/dashboard',    static: false },
-  { name: 'Courses',              href: '/courses',      static: false },
-  { name: 'Education & Tracking', href: '/ce-planner',   static: false },
-  { name: 'Practice & Group',     href: '/supervision',  static: false },
+  { name: 'Dashboard', href: '/dashboard' },
+  { name: 'Courses', href: '/courses', children: [
+    { name: 'Browse Courses',    href: '/courses' },
+    { name: 'Recommendations',   href: '/recommendations' },
+    { name: 'Achievements',      href: '/achievements' },
+  ]},
+  { name: 'Credentials', href: '/credentials', children: [
+    { name: 'My Credentials',    href: '/credentials' },
+    { name: 'CE Planner',        href: '/ce-planner' },
+    { name: 'Audit Kit',         href: '/audit-kit' },
+    { name: 'Board Alerts',      href: '/board-alerts' },
+  ]},
+  { name: 'Practice', href: '/supervision', children: [
+    { name: 'Supervision',       href: '/supervision' },
+    { name: 'Insurance Tracker', href: '/insurance-tracker' },
+  ]},
+  { name: 'Team', href: '/organization', children: [
+    { name: 'Organization',      href: '/organization' },
+    { name: 'Group Licenses',    href: '/group-licenses' },
+  ]},
 ];
 
 const BURGUNDY      = '#6B1D34';
@@ -28,6 +44,7 @@ const GOLD          = '#D4A855';
 export default function Layout({ children }) {
   const [mobileOpen, setMobileOpen]   = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [openDropdown, setOpenDropdown] = useState(null);
 
   const [notifOpen, setNotifOpen]       = useState(false);
   const [notifications, setNotifications] = useState([]);
@@ -91,6 +108,12 @@ export default function Layout({ children }) {
     location.pathname === href ||
     (href !== '/dashboard' && location.pathname.startsWith(href));
 
+  const isGroupActive = (link) => {
+    if (isActive(link.href)) return true;
+    if (link.children) return link.children.some(child => isActive(child.href));
+    return false;
+  };
+
   const firstName = user?.profile?.firstName || user?.firstName || '';
   const lastName  = user?.profile?.lastName  || user?.lastName  || '';
   const initials  = `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase() || 'U';
@@ -131,7 +154,8 @@ export default function Layout({ children }) {
           {/* Desktop Nav */}
           <nav className="hidden lg:flex items-center gap-1">
             {navLinks.map((link) => {
-              const active = !link.static && isActive(link.href);
+              const active = isGroupActive(link);
+              const hasChildren = link.children && link.children.length > 0;
               const style = {
                 padding: '0.5rem 0.875rem',
                 borderRadius: '0.5rem',
@@ -141,23 +165,61 @@ export default function Layout({ children }) {
                 transition: 'all 0.15s',
                 color: active ? BURGUNDY : '#78716c',
                 background: active ? BURGUNDY_LIGHT : 'transparent',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.25rem',
               };
-              return link.static ? (
-                <a key={link.href} href={link.href} style={style}
-                  onMouseEnter={e => { if (!active) e.target.style.background = '#f5f5f4'; }}
-                  onMouseLeave={e => { if (!active) e.target.style.background = 'transparent'; }}>
-                  {link.name}
-                </a>
-              ) : (
-                <Link key={link.href} to={link.href} style={style}
-                  onMouseEnter={e => { if (!active) e.target.style.background = '#f5f5f4'; }}
-                  onMouseLeave={e => { if (!active) e.target.style.background = 'transparent'; }}>
-                  {link.name}
-                </Link>
+
+              if (!hasChildren) {
+                return (
+                  <Link key={link.href} to={link.href} style={style}
+                    onMouseEnter={e => { if (!active) e.currentTarget.style.background = '#f5f5f4'; }}
+                    onMouseLeave={e => { if (!active) e.currentTarget.style.background = 'transparent'; }}>
+                    {link.name}
+                  </Link>
+                );
+              }
+
+              return (
+                <div key={link.name} className="relative"
+                  onMouseEnter={() => setOpenDropdown(link.name)}
+                  onMouseLeave={() => setOpenDropdown(null)}>
+                  <Link to={link.href} style={style}
+                    onMouseEnter={e => { if (!active) e.currentTarget.style.background = '#f5f5f4'; }}
+                    onMouseLeave={e => { if (!active) e.currentTarget.style.background = 'transparent'; }}>
+                    {link.name}
+                    <ChevronDown style={{ width: 14, height: 14, opacity: 0.5, transition: 'transform 0.15s', transform: openDropdown === link.name ? 'rotate(180deg)' : 'rotate(0)' }} />
+                  </Link>
+                  {openDropdown === link.name && (
+                    <div style={{ position: 'absolute', top: '100%', left: 0, paddingTop: 4, zIndex: 50 }}>
+                      <div style={{ background: 'white', borderRadius: '0.75rem', border: '1px solid #e7e5e4', boxShadow: '0 4px 12px rgba(0,0,0,0.08)', padding: '0.25rem 0', minWidth: 180 }}>
+                        {link.children.map(child => {
+                          const childActive = isActive(child.href);
+                          return (
+                            <Link key={child.href} to={child.href}
+                              onClick={() => setOpenDropdown(null)}
+                              style={{
+                                display: 'block',
+                                padding: '0.5rem 1rem',
+                                fontSize: '0.8125rem',
+                                fontWeight: childActive ? 600 : 400,
+                                color: childActive ? BURGUNDY : '#57534e',
+                                background: childActive ? BURGUNDY_LIGHT : 'transparent',
+                                textDecoration: 'none',
+                                transition: 'background 0.1s',
+                              }}
+                              onMouseEnter={e => { if (!childActive) e.target.style.background = '#f5f5f4'; }}
+                              onMouseLeave={e => { if (!childActive) e.target.style.background = 'transparent'; }}>
+                              {child.name}
+                            </Link>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </div>
               );
             })}
-
-
           </nav>
 
           {/* Right side */}
@@ -299,12 +361,28 @@ export default function Layout({ children }) {
         {mobileOpen && (
           <div className="lg:hidden border-t border-stone-200 bg-white px-4 py-3 space-y-1 max-h-[70vh] overflow-y-auto">
             {navLinks.map((link) => {
-              const active = !link.static && isActive(link.href);
-              const style = { display: 'block', padding: '0.625rem 1rem', borderRadius: '0.5rem', fontSize: '0.875rem', fontWeight: 500, textDecoration: 'none', color: active ? BURGUNDY : '#57534e', background: active ? BURGUNDY_LIGHT : 'transparent' };
-              return link.static ? (
-                <a key={link.href} href={link.href} style={style}>{link.name}</a>
-              ) : (
-                <Link key={link.href} to={link.href} onClick={() => setMobileOpen(false)} style={style}>{link.name}</Link>
+              const active = isGroupActive(link);
+              const linkStyle = { display: 'block', padding: '0.625rem 1rem', borderRadius: '0.5rem', fontSize: '0.875rem', fontWeight: 500, textDecoration: 'none', color: active ? BURGUNDY : '#57534e', background: active ? BURGUNDY_LIGHT : 'transparent' };
+
+              if (!link.children) {
+                return <Link key={link.href} to={link.href} onClick={() => setMobileOpen(false)} style={linkStyle}>{link.name}</Link>;
+              }
+
+              return (
+                <div key={link.name}>
+                  <Link to={link.href} onClick={() => setMobileOpen(false)} style={linkStyle}>{link.name}</Link>
+                  <div style={{ paddingLeft: '1rem' }}>
+                    {link.children.filter(child => child.href !== link.href).map(child => {
+                      const childActive = isActive(child.href);
+                      return (
+                        <Link key={child.href} to={child.href} onClick={() => setMobileOpen(false)}
+                          style={{ display: 'block', padding: '0.375rem 1rem', borderRadius: '0.375rem', fontSize: '0.8125rem', fontWeight: childActive ? 600 : 400, textDecoration: 'none', color: childActive ? BURGUNDY : '#78716c', background: childActive ? BURGUNDY_LIGHT : 'transparent' }}>
+                          {child.name}
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </div>
               );
             })}
             {isPartnerAdmin && (
