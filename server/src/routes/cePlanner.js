@@ -79,7 +79,7 @@ router.get('/plan', async (req, res) => {
       .select('title slug ceHours category sections.title metadata');
 
     // Get user's completed courses
-    const completedProgress = await UserCourseProgress.find({ userId, completed: true });
+    const completedProgress = await UserCourseProgress.find({ userId, status: 'completed' });
     const completedCourseIds = new Set(completedProgress.map(p => p.courseId.toString()));
 
     // Build plan per credential
