@@ -22,6 +22,19 @@ import PartnerBrandingSettings from './pages/PartnerBrandingSettings';
 import PartnerCourseAdmin from './pages/PartnerCourseAdmin';
 import ThumbnailManager from './pages/ThumbnailManager';
 import AdminBulkUpload from './pages/AdminBulkUpload';
+import CEPlanner from './pages/CEPlanner';
+import AuditKit from './pages/AuditKit';
+import BoardAlerts from './pages/BoardAlerts';
+import SupervisionTracker from './pages/SupervisionTracker';
+import InsuranceTracker from './pages/InsuranceTracker';
+import Gamification from './pages/Gamification';
+import Referrals from './pages/Referrals';
+import Recommendations from './pages/Recommendations';
+import OrganizationDashboard from './pages/OrganizationDashboard';
+import GroupLicenseDashboard from './pages/GroupLicenseDashboard';
+import LegacyVault from './pages/LegacyVault';
+import Credentials from './pages/Credentials';
+import Settings from './pages/Settings';
 
 // Components
 import Layout from './components/Layout';
@@ -220,6 +233,49 @@ function AppRoutes() {
         <PartnerAdminRoute>
           <Layout><PartnerCourseAdmin /></Layout>
         </PartnerAdminRoute>
+      } />
+
+      {/* ══════════════════════════════════════════════════════════════
+          USER FEATURE PAGES — wired from Layout.jsx navLinks/moreLinks
+          ══════════════════════════════════════════════════════════════ */}
+      <Route path="/credentials" element={
+        <ProtectedRoute><Layout><Credentials /></Layout></ProtectedRoute>
+      } />
+      <Route path="/settings" element={
+        <ProtectedRoute><Layout><Settings /></Layout></ProtectedRoute>
+      } />
+      <Route path="/ce-planner" element={
+        <ProtectedRoute><Layout><CEPlanner /></Layout></ProtectedRoute>
+      } />
+      <Route path="/audit-kit" element={
+        <ProtectedRoute><Layout><AuditKit /></Layout></ProtectedRoute>
+      } />
+      <Route path="/board-alerts" element={
+        <ProtectedRoute><Layout><BoardAlerts /></Layout></ProtectedRoute>
+      } />
+      <Route path="/supervision" element={
+        <ProtectedRoute><Layout><SupervisionTracker /></Layout></ProtectedRoute>
+      } />
+      <Route path="/insurance-tracker" element={
+        <ProtectedRoute><Layout><InsuranceTracker /></Layout></ProtectedRoute>
+      } />
+      <Route path="/achievements" element={
+        <ProtectedRoute><Layout><Gamification /></Layout></ProtectedRoute>
+      } />
+      <Route path="/referrals" element={
+        <ProtectedRoute><Layout><Referrals /></Layout></ProtectedRoute>
+      } />
+      <Route path="/recommendations" element={
+        <ProtectedRoute><Layout><Recommendations /></Layout></ProtectedRoute>
+      } />
+      <Route path="/organization" element={
+        <ProtectedRoute><Layout><OrganizationDashboard /></Layout></ProtectedRoute>
+      } />
+      <Route path="/group-licenses" element={
+        <ProtectedRoute><Layout><GroupLicenseDashboard /></Layout></ProtectedRoute>
+      } />
+      <Route path="/legacy-vault" element={
+        <ProtectedRoute><Layout><LegacyVault /></Layout></ProtectedRoute>
       } />
 
       {/* ══════════════════════════════════════════════════════════════
