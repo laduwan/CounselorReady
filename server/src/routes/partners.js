@@ -74,7 +74,8 @@ router.get('/admin/analytics', protect, requireAdmin, async (req, res) => {
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-    const [userCounts, activeUserCounts, courseCountsByPartner] = await Promise.all([
+    // Partner user counts + active users
+    const [userCounts, activeUserCounts] = await Promise.all([
       User.aggregate([
         { $match: { partnerId: { $exists: true, $ne: null } } },
         { $group: { _id: '$partnerId', total: { $sum: 1 } } }
@@ -82,48 +83,74 @@ router.get('/admin/analytics', protect, requireAdmin, async (req, res) => {
       User.aggregate([
         { $match: { partnerId: { $exists: true, $ne: null }, lastLoginAt: { $gte: thirtyDaysAgo } } },
         { $group: { _id: '$partnerId', active: { $sum: 1 } } }
-      ]),
-      InteractiveCourse.aggregate([
-        { $match: { partnerId: { $exists: true, $ne: null } } },
-        { $group: { _id: '$partnerId', count: { $sum: 1 } } }
       ])
     ]);
 
     const userCountMap = Object.fromEntries(userCounts.map(u => [u._id.toString(), u.total]));
     const activeMap = Object.fromEntries(activeUserCounts.map(u => [u._id.toString(), u.active]));
-    const courseCountMap = Object.fromEntries(courseCountsByPartner.map(c => [c._id.toString(), c.count]));
 
-    const allPartnerUserIds = await User.find({ partnerId: { $exists: true, $ne: null } })
-      .select('_id partnerId').lean();
+    // Partner-owned courses with status breakdown
+    const partnerCourses = await InteractiveCourse.find({ partnerId: { $exists: true, $ne: null } })
+      .select('partnerId status ceHours title')
+      .lean();
 
+    const coursesByPartner = {};
+    const publishedByPartner = {};
+    const ceOfferedByPartner = {};
+    const courseIdsByPartner = {};
+    for (const c of partnerCourses) {
+      const pid = c.partnerId.toString();
+      coursesByPartner[pid] = (coursesByPartner[pid] || 0) + 1;
+      if (c.status === 'published') {
+        publishedByPartner[pid] = (publishedByPartner[pid] || 0) + 1;
+        ceOfferedByPartner[pid] = (ceOfferedByPartner[pid] || 0) + (c.ceHours || 0);
+      }
+      if (!courseIdsByPartner[pid]) courseIdsByPartner[pid] = [];
+      courseIdsByPartner[pid].push(c._id);
+    }
+
+    // Enrollments & completions on partner-owned courses (by ANY user, not just partner users)
+    const allPartnerCourseIds = partnerCourses.map(c => c._id);
+    const enrollmentsByPartner = {};
     const completionsByPartner = {};
-    const ceHoursByPartner = {};
+    const ceEarnedByPartner = {};
 
-    if (allPartnerUserIds.length > 0) {
-      const allUserIds = allPartnerUserIds.map(u => u._id);
-      const [regularCompletions, interactiveCompletions] = await Promise.all([
-        db.collection('usercourseprogresses').aggregate([
-          { $match: { userId: { $in: allUserIds }, completed: true } },
-          { $group: { _id: '$userId', count: { $sum: 1 }, hours: { $sum: { $ifNull: ['$ceHours', 0] } } } }
+    if (allPartnerCourseIds.length > 0) {
+      const [enrollments, completions] = await Promise.all([
+        db.collection('interactivecourseprogresses').aggregate([
+          { $match: { courseId: { $in: allPartnerCourseIds } } },
+          { $group: { _id: '$courseId', count: { $sum: 1 } } }
         ]).toArray(),
         db.collection('interactivecourseprogresses').aggregate([
-          { $match: { userId: { $in: allUserIds }, completed: true } },
-          { $group: { _id: '$userId', count: { $sum: 1 }, hours: { $sum: { $ifNull: ['$ceHours', 0] } } } }
+          { $match: { courseId: { $in: allPartnerCourseIds }, completed: true } },
+          { $group: { _id: '$courseId', count: { $sum: 1 }, hours: { $sum: { $ifNull: ['$ceHours', 0] } } } }
         ]).toArray()
       ]);
 
-      const userToPartner = Object.fromEntries(allPartnerUserIds.map(u => [u._id.toString(), u.partnerId.toString()]));
-      for (const c of [...regularCompletions, ...interactiveCompletions]) {
-        const pid = userToPartner[c._id.toString()];
+      // Map course enrollments/completions back to owning partner
+      const courseToPartner = Object.fromEntries(
+        partnerCourses.map(c => [c._id.toString(), c.partnerId.toString()])
+      );
+      for (const e of enrollments) {
+        const pid = courseToPartner[e._id.toString()];
+        if (pid) enrollmentsByPartner[pid] = (enrollmentsByPartner[pid] || 0) + e.count;
+      }
+      for (const c of completions) {
+        const pid = courseToPartner[c._id.toString()];
         if (pid) {
           completionsByPartner[pid] = (completionsByPartner[pid] || 0) + c.count;
-          ceHoursByPartner[pid] = (ceHoursByPartner[pid] || 0) + c.hours;
+          ceEarnedByPartner[pid] = (ceEarnedByPartner[pid] || 0) + c.hours;
         }
       }
     }
 
+    // Build per-partner response
     const partners = allPartners.map(p => {
       const pid = p._id.toString();
+      const totalCourses = coursesByPartner[pid] || 0;
+      const published = publishedByPartner[pid] || 0;
+      const enrollments = enrollmentsByPartner[pid] || 0;
+      const completions = completionsByPartner[pid] || 0;
       return {
         _id: p._id,
         name: p.name,
@@ -135,22 +162,36 @@ router.get('/admin/analytics', protect, requireAdmin, async (req, res) => {
         createdAt: p.createdAt,
         totalUsers: userCountMap[pid] || 0,
         activeUsers: activeMap[pid] || 0,
-        courseCount: courseCountMap[pid] || 0,
-        completions: completionsByPartner[pid] || 0,
-        ceHoursEarned: Math.round((ceHoursByPartner[pid] || 0) * 10) / 10
+        coursesCreated: totalCourses,
+        coursesPublished: published,
+        coursesDraft: totalCourses - published,
+        ceHoursOffered: Math.round((ceOfferedByPartner[pid] || 0) * 10) / 10,
+        enrollments,
+        completions,
+        ceHoursEarned: Math.round((ceEarnedByPartner[pid] || 0) * 10) / 10,
+        completionRate: enrollments > 0 ? Math.round((completions / enrollments) * 100) : 0
       };
     });
 
-    partners.sort((a, b) => b.totalUsers - a.totalUsers);
+    partners.sort((a, b) => b.enrollments - a.enrollments);
+
+    // Platform course count (shared courses without partnerId)
+    const platformCourseCount = await InteractiveCourse.countDocuments({
+      $or: [{ partnerId: { $exists: false } }, { partnerId: null }],
+      status: 'published'
+    });
 
     const summary = {
       totalPartners: allPartners.length,
       activePartners: allPartners.filter(p => p.active).length,
       totalPartnerUsers: Object.values(userCountMap).reduce((a, b) => a + b, 0),
       totalActiveUsers: Object.values(activeMap).reduce((a, b) => a + b, 0),
-      totalCourses: Object.values(courseCountMap).reduce((a, b) => a + b, 0),
+      totalCoursesCreated: Object.values(coursesByPartner).reduce((a, b) => a + b, 0),
+      totalCoursesPublished: Object.values(publishedByPartner).reduce((a, b) => a + b, 0),
+      totalEnrollments: Object.values(enrollmentsByPartner).reduce((a, b) => a + b, 0),
       totalCompletions: Object.values(completionsByPartner).reduce((a, b) => a + b, 0),
-      totalCEHours: Math.round(Object.values(ceHoursByPartner).reduce((a, b) => a + b, 0) * 10) / 10
+      totalCEHoursEarned: Math.round(Object.values(ceEarnedByPartner).reduce((a, b) => a + b, 0) * 10) / 10,
+      platformCoursesShared: platformCourseCount
     };
 
     res.json({ partners, summary });
