@@ -7,12 +7,15 @@ import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
-import { Menu, X, ChevronDown, LogOut, Settings, ShieldCheck, Trophy, Users, Star, ClipboardList, MoreHorizontal, Bell, Lock } from 'lucide-react';
+import { Menu, X, ChevronDown, LogOut, Settings, ShieldCheck, Trophy, Users, Star, ClipboardList, MoreHorizontal, Bell, Lock, Palette, BookOpen } from 'lucide-react';
+import PoweredByBadge from './PoweredByBadge';
+import CRPromoCard from './CRPromoCard';
 
 // React routes use Link; external static HTML pages use <a>
 const navLinks = [
   { name: 'Dashboard',       href: '/dashboard',          static: false },
   { name: 'Courses',         href: '/courses',            static: false },
+  { name: 'Free Tools',      href: '/tools/index.html',   static: true  },
   { name: 'Credentials',     href: '/credentials',        static: false },
   { name: 'CE Planner',      href: '/ce-planner',         static: false },
   { name: 'Audit Kit',       href: '/audit-kit',          static: false },
@@ -28,6 +31,7 @@ const moreLinks = [
   { name: 'Team',             href: '/organization',        icon: Users },
   { name: 'Group Licenses',   href: '/group-licenses',      icon: Users },
   { name: 'Legacy Vault',     href: '/legacy-vault',         icon: Lock },
+  { name: 'Partner Portal',  href: '/partner-dashboard',    icon: Star },
 ];
 
 const BURGUNDY      = '#6B1D34';
@@ -43,11 +47,27 @@ export default function Layout({ children }) {
   const [notifOpen, setNotifOpen]       = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount]   = useState(0);
+  const [partner, setPartner]           = useState(null);
   const { user, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
 
   const handleLogout = () => { logout(); navigate('/'); };
+
+  // Detect whitelabel partner from URL ?partner=slug
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const slug = params.get('partner');
+    if (slug) {
+      localStorage.setItem('cr_partner_slug', slug);
+    }
+    const storedSlug = slug || localStorage.getItem('cr_partner_slug');
+    if (storedSlug) {
+      api.get(`/partners/slug/${storedSlug}`)
+        .then(({ data }) => setPartner(data.partner))
+        .catch(() => { setPartner(null); localStorage.removeItem('cr_partner_slug'); });
+    }
+  }, [location.search]);
 
   // Fetch unread notifications
   useEffect(() => {
@@ -90,6 +110,7 @@ export default function Layout({ children }) {
   const lastName  = user?.profile?.lastName  || user?.lastName  || '';
   const initials  = `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase() || 'U';
   const isAdmin   = user?.role === 'admin' || user?.isAdmin;
+  const isPartnerAdmin = user?.role === 'partner_admin' || isAdmin;
 
   return (
     <div className="min-h-screen bg-stone-50">
@@ -98,17 +119,28 @@ export default function Layout({ children }) {
       <header style={{ background: 'white', borderBottom: '1px solid #e7e5e4', position: 'sticky', top: 0, zIndex: 40, boxShadow: '0 1px 3px rgba(107,29,52,0.08)' }}>
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
 
-          {/* Logo */}
+          {/* Logo — shows partner branding when whitelabel is active */}
           <Link to="/dashboard" className="flex items-center gap-3 flex-shrink-0">
-            <div style={{ width: 42, height: 42, borderRadius: '0.75rem', background: '#6B1D34', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 8px rgba(107,29,52,0.25)' }}>
-              <span style={{ position: 'relative', display: 'inline-block', width: 24, height: 24 }}>
-                <span style={{ color: GOLD, position: 'absolute', top: -3, left: 0, fontFamily: "'Cormorant Garamond', Georgia, serif", fontWeight: 700, fontSize: 19 }}>C</span>
-                <span style={{ color: '#7A9E84', position: 'absolute', top: 4, left: 6, fontFamily: "'Cormorant Garamond', Georgia, serif", fontWeight: 700, fontSize: 16 }}>R</span>
-              </span>
-            </div>
-            <span style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontWeight: 600, fontSize: '1.5rem', letterSpacing: '0.015em' }}>
-              <span style={{ color: BURGUNDY }}>Counselor</span><span style={{ color: HUNTER }}>Ready</span>
-            </span>
+            {partner?.branding?.logoUrl ? (
+              <>
+                <img src={partner.branding.logoUrl} alt={partner.branding.companyName || partner.name} style={{ height: 36, width: 'auto', borderRadius: '0.5rem' }} />
+                <span style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontWeight: 600, fontSize: '1.35rem', letterSpacing: '0.015em', color: partner.branding.primaryColor || BURGUNDY }}>
+                  {partner.branding.companyName || partner.name}
+                </span>
+              </>
+            ) : (
+              <>
+                <div style={{ width: 42, height: 42, borderRadius: '0.75rem', background: '#6B1D34', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 8px rgba(107,29,52,0.25)' }}>
+                  <span style={{ position: 'relative', display: 'inline-block', width: 24, height: 24 }}>
+                    <span style={{ color: GOLD, position: 'absolute', top: -3, left: 0, fontFamily: "'Cormorant Garamond', Georgia, serif", fontWeight: 700, fontSize: 19 }}>C</span>
+                    <span style={{ color: '#7A9E84', position: 'absolute', top: 4, left: 6, fontFamily: "'Cormorant Garamond', Georgia, serif", fontWeight: 700, fontSize: 16 }}>R</span>
+                  </span>
+                </div>
+                <span style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontWeight: 600, fontSize: '1.5rem', letterSpacing: '0.015em' }}>
+                  <span style={{ color: BURGUNDY }}>Counselor</span><span style={{ color: HUNTER }}>Ready</span>
+                </span>
+              </>
+            )}
           </Link>
 
           {/* Desktop Nav */}
@@ -280,6 +312,20 @@ export default function Layout({ children }) {
                         </span>
                       )}
                     </div>
+                    {isPartnerAdmin && (
+                      <>
+                        <Link to="/partner/courses" onClick={() => setUserMenuOpen(false)}
+                          className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-stone-50 transition-colors"
+                          style={{ color: BURGUNDY }}>
+                          <BookOpen className="w-4 h-4" /> Course Admin
+                        </Link>
+                        <Link to="/partner/branding" onClick={() => setUserMenuOpen(false)}
+                          className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-stone-50 transition-colors"
+                          style={{ color: BURGUNDY }}>
+                          <Palette className="w-4 h-4" /> Branding
+                        </Link>
+                      </>
+                    )}
                     {isAdmin && (
                       <a href="/admin.html"
                         className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-stone-50 transition-colors"
@@ -336,6 +382,23 @@ export default function Layout({ children }) {
                 );
               })}
             </div>
+            {isPartnerAdmin && (
+              <div className="border-t border-stone-100 my-2 pt-2">
+                <p className="px-3 py-1 text-xs font-semibold text-stone-400 uppercase tracking-wider">Partner Admin</p>
+                <Link to="/partner/courses" onClick={() => setMobileOpen(false)}
+                  className="flex items-center gap-2.5"
+                  style={{ display: 'flex', padding: '0.625rem 1rem', borderRadius: '0.5rem', fontSize: '0.875rem', fontWeight: 500, textDecoration: 'none', color: isActive('/partner/courses') ? BURGUNDY : '#57534e', background: isActive('/partner/courses') ? BURGUNDY_LIGHT : 'transparent' }}>
+                  <BookOpen className="w-4 h-4" style={{ color: isActive('/partner/courses') ? BURGUNDY : '#a8a29e' }} />
+                  Course Admin
+                </Link>
+                <Link to="/partner/branding" onClick={() => setMobileOpen(false)}
+                  className="flex items-center gap-2.5"
+                  style={{ display: 'flex', padding: '0.625rem 1rem', borderRadius: '0.5rem', fontSize: '0.875rem', fontWeight: 500, textDecoration: 'none', color: isActive('/partner/branding') ? BURGUNDY : '#57534e', background: isActive('/partner/branding') ? BURGUNDY_LIGHT : 'transparent' }}>
+                  <Palette className="w-4 h-4" style={{ color: isActive('/partner/branding') ? BURGUNDY : '#a8a29e' }} />
+                  Branding
+                </Link>
+              </div>
+            )}
             {isAdmin && (
               <a href="/admin.html" style={{ display: 'block', padding: '0.625rem 1rem', borderRadius: '0.5rem', fontSize: '0.875rem', fontWeight: 500, color: BURGUNDY, background: BURGUNDY_LIGHT }}>
                 Admin Panel
@@ -348,7 +411,15 @@ export default function Layout({ children }) {
       {/* Page content */}
       <main id="main-content" className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
         {children}
+        {partner && (
+          <div className="mt-8">
+            <CRPromoCard />
+          </div>
+        )}
       </main>
+
+      {/* Powered-by badge for whitelabel partners */}
+      {partner && <PoweredByBadge />}
     </div>
   );
 }

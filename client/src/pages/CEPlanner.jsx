@@ -6,7 +6,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
-import { Calendar, Clock, Target, AlertTriangle, CheckCircle, BookOpen, ArrowRight, TrendingUp } from 'lucide-react';
+import { Calendar, Clock, Target, AlertTriangle, CheckCircle, BookOpen, ArrowRight, TrendingUp, FileText, Award } from 'lucide-react';
 
 const urgencyColors = {
   expired: { bg: 'bg-red-50', text: 'text-red-700', border: 'border-red-200', badge: 'bg-red-100 text-red-800' },
@@ -49,6 +49,7 @@ export default function CEPlanner() {
           <Target className="w-12 h-12 mx-auto text-gray-300 mb-4" />
           <h2 className="text-lg font-semibold text-gray-700 mb-2">No Credentials Found</h2>
           <p className="text-gray-500 mb-4">{planData?.message || 'Add your credentials first to get a personalized CE plan.'}</p>
+          <p className="text-gray-400 text-sm mb-6">Your CE plan automatically pulls data from your credentials and certificates.</p>
           <a href="/credentials" className="inline-flex items-center gap-2 px-4 py-2 bg-burgundy-700 text-white rounded-lg hover:bg-burgundy-800 text-sm">
             Add Credentials <ArrowRight className="w-4 h-4" />
           </a>
@@ -62,6 +63,16 @@ export default function CEPlanner() {
   return (
     <div>
       <h1 className="text-2xl font-bold text-gray-900 mb-6">CE Planner</h1>
+
+      {/* Data Source Banner */}
+      {summary.totalCertificates > 0 && (
+        <div className="bg-burgundy-50 border border-burgundy-200 rounded-xl p-3 mb-4 flex items-center gap-3">
+          <FileText className="w-5 h-5 text-burgundy-600 flex-shrink-0" />
+          <p className="text-sm text-burgundy-800">
+            Your plan includes data from <strong>{summary.totalCredentials} credential{summary.totalCredentials !== 1 ? 's' : ''}</strong> and <strong>{summary.totalCertificates} certificate{summary.totalCertificates !== 1 ? 's' : ''}</strong> ({summary.totalCertificateHours} CE hours logged).
+          </p>
+        </div>
+      )}
 
       {/* Summary Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
@@ -125,6 +136,8 @@ export default function CEPlanner() {
                     {item.state && `${item.state} \u2022 `}
                     Expires: {item.expirationDate ? new Date(item.expirationDate).toLocaleDateString() : 'N/A'}
                     {item.daysUntilExpiration !== null && ` (${item.daysUntilExpiration} days)`}
+                    {' \u2022 '}
+                    <span className="text-burgundy-600">Auto-synced from your credentials & certificates</span>
                   </p>
                 </div>
                 {item.suggestedHoursPerWeek && (

@@ -1,35 +1,10 @@
 /**
  * Copyright (c) 2026 CounselorReady, a subsidiary of Ga Integrated Therapeutic Perspectives, LLC.
  * All rights reserved. Proprietary and confidential.
- * Unauthorized copying or distribution is strictly prohibited.
+ * CReady™ Viewer — © 2026 GAITP LLC
  */
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { 
-  ChevronLeft, ChevronRight, Menu, X, BookOpen, Clock, Award,
-  CheckCircle2, Circle, Play, Lock, AlertCircle, Download,
-  BarChart3, Home, Settings, LogOut, User, Type, Eye, Volume2,
-  Layers, ChevronsRight
-} from 'lucide-react';
-import { safeHTML } from '../utils/sanitize';
-import {
-  Accordion,
-  MatchingExercise,
-  MultipleChoice,
-  MultiSelect,
-  ImageTextCard,
-  SectionDivider,
-  TimedAssessment,
-  ProgressTracker,
-  CardSort,
-  Sequencing,
-  Hotspot,
-  Timeline,
-  ScenarioTree,
-  FlashcardDeck,
-  VideoEmbed,
-  ImageBlock,
-  KnowledgeCheckModal
-} from './InteractiveCourseComponents';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useParams } from 'react-router-dom';
 
 // ============================================================================
 // API SERVICE
@@ -604,42 +579,6 @@ function SectionView({
 
   // Track block views via intersection observer
   const observerRef = React.useRef(null);
-
-  useEffect(() => {
-    observerRef.current = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            const blockIndex = parseInt(entry.target.dataset.blockIndex);
-            if (!isNaN(blockIndex)) {
-              setViewedBlocks(prev => new Set([...prev, blockIndex]));
-            }
-          }
-        });
-      },
-      { threshold: 0.5 }
-    );
-
-    return () => observerRef.current?.disconnect();
-  }, []);
-
-  // Save progress on unmount or section change
-  useEffect(() => {
-    return () => {
-      const timeSpent = Math.round((Date.now() - sessionStartTime) / 1000);
-      api.updateSectionProgress(course.slug, sectionIndex, {
-        viewedBlocks: Array.from(viewedBlocks),
-        completedBlocks: Array.from(completedBlocks),
-        timeSpent
-      }).then(onProgressUpdate).catch(console.error);
-    };
-  }, [viewedBlocks, completedBlocks]);
-
-  const handleBlockComplete = useCallback((blockIndex, isCorrect) => {
-    if (isCorrect) {
-      setCompletedBlocks(prev => new Set([...prev, blockIndex]));
-    }
-  }, []);
 
   const interactiveBlockCount = contentBlocks.filter(
     b => ['matching', 'multipleChoice', 'multiSelect'].includes(b.type)
@@ -1813,4 +1752,17 @@ if (typeof document !== 'undefined') {
   const styleSheet = document.createElement('style');
   styleSheet.textContent = styles;
   document.head.appendChild(styleSheet);
+}
+
+// React Router redirect — used when navigating to /course/:slug in the SPA
+export function CourseViewerRedirect() {
+  const { slug } = useParams();
+
+  useEffect(() => {
+    if (slug) {
+      window.location.href = '/interactive-course.html?slug=' + slug;
+    }
+  }, [slug]);
+
+  return null;
 }

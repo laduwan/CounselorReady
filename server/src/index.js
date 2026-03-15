@@ -1,3 +1,4 @@
+
 /**
  * Copyright (c) 2026 CounselorReady, a subsidiary of Ga Integrated Therapeutic Perspectives, LLC.
  * All rights reserved. Proprietary and confidential.
@@ -35,6 +36,7 @@ import interactiveCourseRoutes from './routes/interactiveCourseRoutes.js';
 import cebrokerRoutes from './routes/cebroker.js';
 import helpRoutes from './routes/help.js';
 import bulkUploadRoutes from './routes/bulkUpload.js';
+import toolsRoutes from './routes/tools.js';
 // ── Previously unregistered routes (wiring audit fix 2026-03-04) ──
 import aiRoutes from './routes/ai.js';
 import aiCourseGeneratorRoutes from './routes/aiCourseGenerator.js';
@@ -57,6 +59,10 @@ import gamificationRoutes from './routes/gamification.js';
 import notificationsRoutes from './routes/notifications.js';
 import legacyVaultRoutes from './routes/legacyVault.js';
 import adminStatsRoutes from './routes/adminStats.js';
+// ── Whitelabel partner routes ──
+import partnersRoutes from './routes/partners.js';
+import rawMarkdownRoutes from './routes/rawMarkdownRoute.js';
+import dashboardRoutes from './routes/dashboard.js';
 // Import services
 import { initializeScheduler } from './services/notificationScheduler.js';
 
@@ -255,6 +261,10 @@ app.use('/api/gamification', gamificationRoutes);
 app.use('/api/notifications', notificationsRoutes);
 app.use('/api/legacy-vault', legacyVaultRoutes);
 app.use('/api/admin/stats', adminStatsRoutes);
+app.use('/api/partners', partnersRoutes);
+app.use('/api/tools', toolsRoutes);
+app.use('/api/rawmd', rawMarkdownRoutes);
+app.use('/api/dashboard', dashboardRoutes);
 
 // Static templates directory intentionally NOT served publicly
 // Certificate assets (signature.png, certificate_template.pdf) are loaded
@@ -358,6 +368,7 @@ const startServer = async () => {
 
 startServer().catch(err => {
   console.error('Failed to start server:', err);
+  process.exit(1);
   process.exit(1);
 });
 
