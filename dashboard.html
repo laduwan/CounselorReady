@@ -385,7 +385,7 @@
         const [certsR, credsR, progR] = await Promise.all([
           fetch(`${API_URL}/api/certificates`, { headers: { Authorization: `Bearer ${token}` } }),
           fetch(`${API_URL}/api/credentials`, { headers: { Authorization: `Bearer ${token}` } }),
-          fetch(`${API_URL}/api/interactive-courses/my-progress`, { headers: { Authorization: `Bearer ${token}` } }).catch(() => null),
+          fetch(`${API_URL}/api/interactive-courses/user/my-courses`, { headers: { Authorization: `Bearer ${token}` } }).catch(() => null),
         ]);
         if (certsR.ok) {
           const c = await certsR.json(), list = Array.isArray(c) ? c : (c.certificates || []);
@@ -400,7 +400,7 @@
         }
         if (progR?.ok) {
           const p = await progR.json();
-          document.getElementById('coursesCompleted').textContent = Array.isArray(p) ? p.filter(x => x.completed || x.assessmentPassed).length : 0;
+          const list=p.data||(Array.isArray(p)?p:[]);document.getElementById('coursesCompleted').textContent=list.filter(x=>x.status==='completed').length;
         }
       } catch (e) { console.error('Stats:', e); }
     }
@@ -446,18 +446,17 @@
 
     async function loadRecentActivity() {
       try {
-        const res = await fetch(`${API_URL}/api/interactive-courses/my-progress`, { headers: { Authorization: `Bearer ${token}` } });
+        const res = await fetch(`${API_URL}/api/interactive-courses/user/my-courses`, { headers: { Authorization: `Bearer ${token}` } });
         if (!res.ok) return;
         const prog = await res.json();
-        if (!Array.isArray(prog) || !prog.length) return;
+        const progList=prog.data||(Array.isArray(prog)?prog:[]);if(!progList.length) return;
         const el = document.getElementById('activityList');
-        const recent = prog.filter(p => p.course).sort((a, b) => new Date(b.lastAccessed||b.updatedAt||0) - new Date(a.lastAccessed||a.updatedAt||0)).slice(0, 5);
+        const recent = progList.filter(p => p.course).sort((a, b) => new Date(b.lastAccessedAt||0) - new Date(a.lastAccessedAt||0)).slice(0, 5);
         if (!recent.length) return;
         el.innerHTML = recent.map(p => {
           const c = p.course, t = c.title||'Untitled', ce = c.ceHours||'';
-          const done = p.completed||p.assessmentPassed;
-          const tot = c.sections?.length||0, comp = p.completedSections?.length||0;
-          const pct = tot > 0 ? Math.round((comp/tot)*100) : 0;
+          const done = p.status==='completed';
+          const pct = Math.round(p.progress||0);
           return `<a href="/learn/${c.slug||c._id}" class="activity-row flex items-center gap-3 p-3 rounded-lg group">
             <div class="w-9 h-9 ${done?'bg-hunter-100':'bg-burgundy-50'} rounded-lg flex items-center justify-center flex-shrink-0">
               ${done
