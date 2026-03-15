@@ -99,10 +99,10 @@
             <!-- Navigation -->
             <nav class="hidden md:flex items-center gap-8">
                 <a href="/dashboard.html" class="text-burgundy-800 font-medium border-b-2 border-burgundy-700 pb-1">Dashboard</a>
-                <a href="/courses.html" class="text-hunter-600 hover:text-hunter-800 transition-colors">Courses</a>
-                <a href="/credentials.html" class="text-hunter-600 hover:text-hunter-800 transition-colors">Credentials</a>
-                <a href="/certificates.html" class="text-hunter-600 hover:text-hunter-800 transition-colors">CE Certificates</a>
-                <a href="/messages.html" class="text-hunter-600 hover:text-hunter-800 transition-colors">Messages</a>
+                <a href="/courses.html" class="text-hunter-700 hover:text-hunter-900 transition-colors">Courses</a>
+                <a href="/credentials.html" class="text-hunter-700 hover:text-hunter-900 transition-colors">Credentials</a>
+                <a href="/certificates.html" class="text-hunter-700 hover:text-hunter-900 transition-colors">CE Certificates</a>
+                <a href="/messages.html" class="text-hunter-700 hover:text-hunter-900 transition-colors">Messages</a>
             </nav>
 
             <!-- User Menu -->
@@ -352,14 +352,13 @@
                     </div>
                 </div>
 
-                <!-- Recent Activity -->
                 <div class="bg-white rounded-xl border border-burgundy-100 shadow-sm p-6">
                     <h2 class="font-display text-xl font-semibold text-burgundy-900 mb-4">Recent Activity</h2>
                     <div id="recentActivity" class="space-y-3">
                         <!-- Loaded dynamically -->
                         <div class="flex items-center gap-4 p-3 rounded-lg bg-stone-50">
-                            <div class="w-10 h-10 bg-hunter-100 rounded-lg flex items-center justify-center">
-                                <svg class="w-5 h-5 text-hunter-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <div class="w-10 h-10 bg-honey-100 rounded-lg flex items-center justify-center">
+                                <svg class="w-5 h-5 text-honey-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
                                 </svg>
                             </div>
@@ -369,7 +368,6 @@
                         </div>
                     </div>
                 </div>
-            </div>
 
             <!-- Right Sidebar -->
             <div class="space-y-6">
@@ -521,9 +519,9 @@
                             const timeText = daysAgo === 0 ? 'today' : daysAgo === 1 ? 'yesterday' : `${daysAgo}d ago`;
                             
                             return `
-                                <div class="flex items-center gap-4 p-3 rounded-lg bg-stone-50 hover:bg-hunter-50 transition-colors">
-                                    <div class="w-10 h-10 bg-hunter-100 rounded-lg flex items-center justify-center">
-                                        <svg class="w-5 h-5 text-hunter-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <div class="flex items-center gap-4 p-3 rounded-lg bg-stone-50 hover:bg-honey-50 transition-colors">
+                                    <div class="w-10 h-10 bg-honey-100 rounded-lg flex items-center justify-center">
+                                        <svg class="w-5 h-5 text-honey-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
                                         </svg>
                                     </div>
