@@ -284,7 +284,8 @@ router.post('/sync', protect, async (req, res) => {
 
         // Match uploaded certs by category to credential requirements
         const certCategory = (cert.category || 'General').toLowerCase().replace(/[-_]/g, ' ');
-        const matchesCategory = credential.requirements.some(req =>
+        const hasRequirements = credential.requirements && credential.requirements.length > 0;
+        const matchesCategory = !hasRequirements || credential.requirements.some(req =>
           req.category.toLowerCase().replace(/[-_]/g, ' ') === certCategory
         ) || certCategory === 'general';
 
