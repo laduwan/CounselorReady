@@ -45,8 +45,15 @@ router.get('/plan', async (req, res) => {
           );
           const isPlatformCert = cert.source === 'platform';
 
-          // Apply explicitly linked certs and platform-generated certs
-          if (!isExplicitlyLinked && !isPlatformCert) continue;
+          // Match uploaded certs by category to credential requirements
+          const certCategory = (cert.category || 'General').toLowerCase().replace(/[-_]/g, ' ');
+          const hasRequirements = credential.requirements && credential.requirements.length > 0;
+          const matchesCategory = !hasRequirements || credential.requirements.some(req =>
+            req.category.toLowerCase().replace(/[-_]/g, ' ') === certCategory
+          ) || certCategory === 'general';
+
+          // Apply explicitly linked, platform-generated, or category-matched certs
+          if (!isExplicitlyLinked && !isPlatformCert && !matchesCategory) continue;
 
           // Skip if already logged (no duplicates)
           const alreadyLogged = credential.ceuLogs.some(log =>

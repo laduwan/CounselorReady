@@ -4,6 +4,8 @@
  * Unauthorized copying or distribution is strictly prohibited.
  */
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
 import api from '../services/api';
 
 const ICON_MAP = {
@@ -52,6 +54,7 @@ export default function GamificationPage() {
 
   return (
     <div className="max-w-5xl mx-auto" role="main" aria-label="Achievements & Progress">
+      <Link to="/courses" className="inline-flex items-center gap-1.5 text-sm text-stone-500 hover:text-burgundy-700 mb-3 transition-colors"><ArrowLeft className="w-4 h-4" />Courses</Link>
       <h1 className="text-2xl font-bold text-gray-900 mb-1">Achievements & Progress</h1>
       <p className="text-gray-600 mb-6">Track your learning journey and earn badges</p>
 
