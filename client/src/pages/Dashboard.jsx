@@ -27,7 +27,9 @@ import {
   Calendar,
   Bell,
   Users,
-  Lock
+  Lock,
+  Search,
+  FlaskConical
 } from 'lucide-react';
 
 export default function Dashboard() {
@@ -193,6 +195,35 @@ export default function Dashboard() {
         </div>
       </div>
 
+      {/* Research-Ready CE Feature Card */}
+      <Link
+        to="/research-ready"
+        className="block mb-8 group"
+      >
+        <div className="relative overflow-hidden rounded-xl border border-burgundy-100 shadow-sm bg-white hover:shadow-md transition-all">
+          <div className="absolute top-0 right-0 w-64 h-64 opacity-[0.04] pointer-events-none">
+            <FlaskConical className="w-full h-full text-burgundy-900" />
+          </div>
+          <div className="flex items-center gap-5 p-6">
+            <div className="flex-shrink-0 w-14 h-14 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #8B2542, #6B1D34)' }}>
+              <Search className="w-7 h-7 text-white" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <h3 className="font-display text-lg font-semibold text-burgundy-900 mb-0.5">
+                Research-Ready CE
+              </h3>
+              <p className="text-forest-600 text-sm">
+                Search peer-reviewed articles, verify currency, and build CE courses — all backed by scholarly research.
+              </p>
+            </div>
+            <div className="flex-shrink-0 flex items-center gap-2 bg-burgundy-700 hover:bg-burgundy-800 text-white text-sm font-medium px-5 py-2.5 rounded-lg transition-colors group-hover:bg-burgundy-800">
+              Get Started
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+            </div>
+          </div>
+        </div>
+      </Link>
+
       {/* Main Grid: 2/3 left + 1/3 right */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
@@ -299,6 +330,13 @@ export default function Dashboard() {
                   <Star className="w-6 h-6 text-white" />
                 </div>
                 <span className="text-forest-800 font-medium text-sm">Referrals</span>
+              </Link>
+
+              <Link to="/research-ready" className="flex flex-col items-center p-4 rounded-xl bg-burgundy-50 hover:bg-burgundy-100 transition-colors group">
+                <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-3 group-hover:scale-105 transition-transform" style={{ background: 'linear-gradient(135deg, #8B2542, #6B1D34)' }}>
+                  <Search className="w-6 h-6 text-white" />
+                </div>
+                <span className="text-burgundy-800 font-medium text-sm">Research CE</span>
               </Link>
             </div>
           </div>
