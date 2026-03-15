@@ -213,11 +213,11 @@ const CourseCard = ({ course, progress, onClick }) => {
       className="bg-white rounded-xl shadow-sm hover:shadow-lg transition-all cursor-pointer overflow-hidden border border-burgundy-100 group"
     >
       {/* Thumbnail — course image or gradient fallback */}
-      <div className="h-48 bg-gradient-to-br from-burgundy-200 to-forest-200 relative flex items-center justify-center overflow-hidden">
+      <div className="h-48 bg-gradient-to-br from-forest-100 to-burgundy-200 relative flex items-center justify-center overflow-hidden">
         {course.thumbnail ? (
-          <img src={course.thumbnail} alt={course.title} className="w-full h-full object-cover object-top" />
+          <img src={course.thumbnail} alt={course.title} className="w-full h-full object-cover" />
         ) : (
-          <BookOpen className="h-16 w-16 text-burgundy-300" />
+          <BookOpen className="h-16 w-16 text-burgundy-500" />
         )}
         {isCompleted && (
           <div className="absolute top-3 right-3 bg-hunter-600 text-white px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1">
