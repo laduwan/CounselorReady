@@ -3027,6 +3027,331 @@ function ImportTab({ onImported }) {
 
 
 // ═══════════════════════════════════════════════════════════
+// RESEARCH SYNTHESIS TAB — Scholarly DB search + meta/comparative analysis
+// ═══════════════════════════════════════════════════════════
+function ResearchSynthesisTab({ onGenerated }) {
+  const [step, setStep] = useState("search"); // search | select | synthesize | review
+  const [topic, setTopic] = useState("");
+  const [yearFrom, setYearFrom] = useState(2015);
+  const [searchResults, setSearchResults] = useState([]);
+  const [selectedArticles, setSelectedArticles] = useState([]);
+  const [analysisType, setAnalysisType] = useState("meta-analysis");
+  const [ceHours, setCeHours] = useState(2);
+  const [synthesis, setSynthesis] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const token = localStorage.getItem("token");
+  const headers = { "Content-Type": "application/json", Authorization: `Bearer ${token}` };
+
+  const searchArticles = async () => {
+    if (!topic.trim()) return;
+    setLoading(true);
+    setError("");
+    try {
+      const res = await fetch("/api/course-builder/research/search", {
+        method: "POST", headers,
+        body: JSON.stringify({ query: topic, yearFrom, limit: 20 })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      setSearchResults(data.articles || []);
+      setStep("select");
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const toggleArticle = (article) => {
+    setSelectedArticles(prev => {
+      const exists = prev.find(a => (a.doi && a.doi === article.doi) || a.title === article.title);
+      if (exists) return prev.filter(a => a !== exists);
+      if (prev.length >= 15) return prev;
+      return [...prev, article];
+    });
+  };
+
+  const runSynthesis = async () => {
+    if (selectedArticles.length < 3) { setError("Select at least 3 articles"); return; }
+    setLoading(true);
+    setError("");
+    try {
+      const res = await fetch("/api/course-builder/research/synthesize", {
+        method: "POST", headers,
+        body: JSON.stringify({ topic, articles: selectedArticles, analysisType })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      setSynthesis(data.synthesis);
+      setStep("synthesize");
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const generateCourse = async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const res = await fetch("/api/course-builder/research/generate-course", {
+        method: "POST", headers,
+        body: JSON.stringify({ synthesis, articles: selectedArticles, ceHours, level: "Intermediate" })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      onGenerated(data);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const autoGenerate = async () => {
+    if (!topic.trim()) return;
+    setLoading(true);
+    setError("");
+    try {
+      const res = await fetch("/api/course-builder/research/auto-build", {
+        method: "POST", headers,
+        body: JSON.stringify({ topic, analysisType, ceHours, yearFrom })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      setSynthesis(data.synthesis);
+      setSelectedArticles(data.articles || []);
+      if (data.course) {
+        onGenerated(data.course);
+      } else {
+        setStep("synthesize");
+      }
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const sBox = { background: C.card, border: `1px solid ${C.border}`, borderRadius: 12, padding: 24, marginBottom: 16 };
+
+  return (
+    <div style={{ padding: 24 }}>
+      <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 26, fontWeight: 700, color: C.burgundy, marginBottom: 4 }}>
+        Research Synthesis Course Builder
+      </h2>
+      <p style={{ color: C.textMuted, fontSize: 14, marginBottom: 24 }}>
+        Search scholarly databases (CrossRef + OpenAlex), run meta-analysis or comparative analysis, and generate a CEU course from the research.
+      </p>
+
+      {error && (
+        <div style={{ background: C.dangerFaded, border: `1px solid ${C.danger}`, borderRadius: 8, padding: "10px 16px", marginBottom: 16, color: C.danger, fontSize: 13 }}>
+          {error}
+        </div>
+      )}
+
+      {/* Step indicator */}
+      <div style={{ display: "flex", gap: 8, marginBottom: 24 }}>
+        {["Search Topic", "Select Articles", "Synthesize", "Generate Course"].map((label, i) => {
+          const stepNames = ["search", "select", "synthesize", "review"];
+          const currentIdx = stepNames.indexOf(step);
+          const isActive = i === currentIdx;
+          const isDone = i < currentIdx;
+          return (
+            <div key={i} style={{
+              flex: 1, padding: "8px 12px", borderRadius: 8, textAlign: "center", fontSize: 12, fontWeight: 600,
+              background: isActive ? C.burgundy : isDone ? C.greenFaded : C.burgundyFaded,
+              color: isActive ? "#fff" : isDone ? C.green : C.textMuted,
+              cursor: isDone ? "pointer" : "default"
+            }} onClick={() => isDone && setStep(stepNames[i])}>
+              {isDone ? "✓ " : ""}{label}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* ── STEP 1: SEARCH ── */}
+      {step === "search" && (
+        <div style={sBox}>
+          <h3 style={{ fontSize: 16, fontWeight: 600, color: C.text, marginBottom: 16 }}>Search Scholarly Databases</h3>
+          <div style={{ display: "flex", gap: 12, marginBottom: 16, flexWrap: "wrap" }}>
+            <input
+              value={topic} onChange={e => setTopic(e.target.value)}
+              placeholder="e.g., EMDR effectiveness for PTSD in adults"
+              onKeyDown={e => e.key === "Enter" && searchArticles()}
+              style={{ flex: 1, minWidth: 250, padding: "10px 14px", border: `1px solid ${C.border}`, borderRadius: 8, fontSize: 14 }}
+            />
+            <select value={yearFrom} onChange={e => setYearFrom(parseInt(e.target.value))}
+              style={{ padding: "10px 14px", border: `1px solid ${C.border}`, borderRadius: 8, fontSize: 14 }}>
+              {[2010, 2015, 2018, 2020, 2022].map(y => <option key={y} value={y}>From {y}</option>)}
+            </select>
+            <button onClick={searchArticles} disabled={loading || !topic.trim()}
+              style={{ padding: "10px 20px", background: C.burgundy, color: "#fff", border: "none", borderRadius: 8, fontWeight: 600, cursor: "pointer", opacity: loading ? 0.6 : 1 }}>
+              {loading ? "Searching..." : "Search"}
+            </button>
+          </div>
+
+          <div style={{ display: "flex", gap: 12, marginBottom: 16, alignItems: "center", flexWrap: "wrap" }}>
+            <label style={{ fontSize: 13, fontWeight: 600, color: C.textMuted }}>Analysis Type:</label>
+            <select value={analysisType} onChange={e => setAnalysisType(e.target.value)}
+              style={{ padding: "8px 12px", border: `1px solid ${C.border}`, borderRadius: 8, fontSize: 13 }}>
+              <option value="meta-analysis">Meta-Analysis (synthesize findings across studies)</option>
+              <option value="comparative">Comparative Analysis (compare/contrast approaches)</option>
+            </select>
+
+            <label style={{ fontSize: 13, fontWeight: 600, color: C.textMuted, marginLeft: 8 }}>CE Hours:</label>
+            <select value={ceHours} onChange={e => setCeHours(parseFloat(e.target.value))}
+              style={{ padding: "8px 12px", border: `1px solid ${C.border}`, borderRadius: 8, fontSize: 13 }}>
+              {[1, 1.5, 2, 3, 4, 6].map(h => <option key={h} value={h}>{h} CE</option>)}
+            </select>
+          </div>
+
+          <div style={{ borderTop: `1px solid ${C.borderLight}`, paddingTop: 16 }}>
+            <button onClick={autoGenerate} disabled={loading || !topic.trim()}
+              style={{ padding: "10px 20px", background: C.gold, color: C.text, border: "none", borderRadius: 8, fontWeight: 600, cursor: "pointer", opacity: loading ? 0.6 : 1 }}>
+              ⚡ Auto-Build (search → synthesize → generate in one step)
+            </button>
+            <span style={{ fontSize: 12, color: C.textMuted, marginLeft: 12 }}>Takes 2-4 minutes</span>
+          </div>
+        </div>
+      )}
+
+      {/* ── STEP 2: SELECT ARTICLES ── */}
+      {step === "select" && (
+        <div style={sBox}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+            <h3 style={{ fontSize: 16, fontWeight: 600, color: C.text }}>
+              Select Articles for Synthesis ({selectedArticles.length}/15 selected, min 3)
+            </h3>
+            <button onClick={runSynthesis} disabled={loading || selectedArticles.length < 3}
+              style={{ padding: "8px 20px", background: selectedArticles.length >= 3 ? C.burgundy : C.border, color: selectedArticles.length >= 3 ? "#fff" : C.textMuted, border: "none", borderRadius: 8, fontWeight: 600, cursor: selectedArticles.length >= 3 ? "pointer" : "default" }}>
+              {loading ? "Synthesizing..." : `Run ${analysisType === "comparative" ? "Comparative" : "Meta"} Analysis →`}
+            </button>
+          </div>
+
+          {searchResults.length === 0 && (
+            <p style={{ color: C.textMuted, fontSize: 14 }}>No results found. Try different search terms.</p>
+          )}
+
+          <div style={{ display: "flex", flexDirection: "column", gap: 8, maxHeight: 500, overflowY: "auto" }}>
+            {searchResults.map((article, i) => {
+              const isSelected = selectedArticles.some(a => (a.doi && a.doi === article.doi) || a.title === article.title);
+              return (
+                <div key={i} onClick={() => toggleArticle(article)} style={{
+                  padding: "12px 16px", border: `2px solid ${isSelected ? C.burgundy : C.border}`, borderRadius: 8,
+                  background: isSelected ? C.burgundyFaded : "#fff", cursor: "pointer", transition: "all 0.15s"
+                }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: 14, fontWeight: 600, color: C.text, marginBottom: 4 }}>{article.title}</div>
+                      <div style={{ fontSize: 12, color: C.textMuted }}>
+                        {article.authors && <span>{typeof article.authors === "string" ? article.authors : article.authors.slice(0, 3).join(", ")}</span>}
+                        {article.journal && <span> · {article.journal}</span>}
+                        {article.year && <span> ({article.year})</span>}
+                        {article.source && <span style={{ marginLeft: 8, padding: "1px 6px", background: article.source === "openalex" ? C.greenFaded : C.goldFaded, borderRadius: 4, fontSize: 10, fontWeight: 600 }}>{article.source}</span>}
+                      </div>
+                      {article.abstract && (
+                        <div style={{ fontSize: 12, color: C.textLight, marginTop: 4, lineHeight: 1.4, maxHeight: 40, overflow: "hidden" }}>
+                          {article.abstract.slice(0, 200)}...
+                        </div>
+                      )}
+                    </div>
+                    <div style={{ width: 24, height: 24, borderRadius: 4, border: `2px solid ${isSelected ? C.burgundy : C.border}`, background: isSelected ? C.burgundy : "transparent", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginLeft: 12 }}>
+                      {isSelected && <Check size={14} color="#fff" />}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* ── STEP 3: SYNTHESIS RESULTS ── */}
+      {step === "synthesize" && synthesis && (
+        <div style={sBox}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+            <h3 style={{ fontSize: 16, fontWeight: 600, color: C.text }}>
+              {synthesis.synthesisType === "comparative-analysis" ? "Comparative Analysis" : "Meta-Analysis"} Results
+            </h3>
+            <button onClick={generateCourse} disabled={loading}
+              style={{ padding: "8px 20px", background: C.burgundy, color: "#fff", border: "none", borderRadius: 8, fontWeight: 600, cursor: "pointer", opacity: loading ? 0.6 : 1 }}>
+              {loading ? "Generating Course..." : `Generate ${ceHours}-Hour CEU Course →`}
+            </button>
+          </div>
+
+          {/* Narrative summary */}
+          {synthesis.narrativeSummary && (
+            <div style={{ background: C.burgundyFaded, borderRadius: 8, padding: 16, marginBottom: 16, fontSize: 13, lineHeight: 1.6, color: C.text }}>
+              {synthesis.narrativeSummary}
+            </div>
+          )}
+
+          {/* Key themes / agreement points */}
+          {(synthesis.overarchingThemes || synthesis.pointsOfAgreement || []).length > 0 && (
+            <div style={{ marginBottom: 16 }}>
+              <h4 style={{ fontSize: 14, fontWeight: 600, color: C.burgundy, marginBottom: 8 }}>
+                {synthesis.overarchingThemes ? "Overarching Themes" : "Points of Agreement"}
+              </h4>
+              {(synthesis.overarchingThemes || synthesis.pointsOfAgreement).map((item, i) => (
+                <div key={i} style={{ padding: "8px 12px", background: "#fff", border: `1px solid ${C.borderLight}`, borderRadius: 6, marginBottom: 6, fontSize: 13 }}>
+                  <strong>{item.theme || item.point}</strong>
+                  {item.description && <span style={{ color: C.textMuted }}> — {item.description}</span>}
+                  {item.clinicalRelevance && <span style={{ color: C.textMuted }}> — {item.clinicalRelevance}</span>}
+                  {item.strengthOfEvidence && (
+                    <span style={{ marginLeft: 8, padding: "1px 6px", borderRadius: 4, fontSize: 10, fontWeight: 600,
+                      background: item.strengthOfEvidence === "strong" ? C.greenFaded : item.strengthOfEvidence === "moderate" ? C.goldFaded : C.burgundyFaded,
+                      color: item.strengthOfEvidence === "strong" ? C.green : item.strengthOfEvidence === "moderate" ? C.gold : C.burgundy
+                    }}>{item.strengthOfEvidence}</span>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Clinical implications */}
+          {(synthesis.clinicalImplications || synthesis.bestPracticeRecommendations || []).length > 0 && (
+            <div style={{ marginBottom: 16 }}>
+              <h4 style={{ fontSize: 14, fontWeight: 600, color: C.green, marginBottom: 8 }}>
+                {synthesis.clinicalImplications ? "Clinical Implications" : "Best Practice Recommendations"}
+              </h4>
+              <ul style={{ margin: 0, paddingLeft: 20, fontSize: 13, color: C.text }}>
+                {(synthesis.clinicalImplications || synthesis.bestPracticeRecommendations).map((item, i) => (
+                  <li key={i} style={{ marginBottom: 4, lineHeight: 1.5 }}>{item}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {/* Suggested course info */}
+          <div style={{ borderTop: `1px solid ${C.borderLight}`, paddingTop: 12, fontSize: 13, color: C.textMuted }}>
+            <strong>Suggested Title:</strong> {synthesis.suggestedCourseTitle} ·
+            <strong> Content Areas:</strong> {(synthesis.suggestedContentAreas || []).join(", ")} ·
+            <strong> Articles:</strong> {synthesis.articleCount || selectedArticles.length}
+          </div>
+        </div>
+      )}
+
+      {loading && (
+        <div style={{ textAlign: "center", padding: 40 }}>
+          <Loader2 size={28} style={{ animation: "spin 1s linear infinite", color: C.burgundy }} />
+          <p style={{ color: C.textMuted, marginTop: 12, fontSize: 14 }}>
+            {step === "search" ? "Searching scholarly databases..." :
+             step === "select" ? "Running AI synthesis analysis..." :
+             "Generating CEU course from research..."}
+          </p>
+          <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+        </div>
+      )}
+    </div>
+  );
+}
+
+
+// ═══════════════════════════════════════════════════════════
 // MAIN APP
 // ═══════════════════════════════════════════════════════════
 export default function CourseBuilderV2() {
@@ -3350,6 +3675,7 @@ export default function CourseBuilderV2() {
     { label: "Export", icon: "📦", badge: null, needsContent: !hasContent },
     { label: "Adaptive", icon: "🔀", badge: null, needsContent: !hasContent },
     { label: "Certificate", icon: "🏆", badge: null, needsContent: !hasContent },
+    { label: "Research", icon: "🔬", badge: null },
   ];
 
   return (
@@ -3525,6 +3851,7 @@ export default function CourseBuilderV2() {
         {activeTab === 12 && <ExportPanel courseData={courseData} />}
         {activeTab === 13 && <AdaptivePathsEditor courseData={courseData} setCourseData={wrappedSetCourseData} />}
         {activeTab === 14 && <CertificateCustomizer courseData={courseData} setCourseData={wrappedSetCourseData} />}
+        {activeTab === 15 && <ResearchSynthesisTab onGenerated={(data) => { wrappedSetCourseData(data); setActiveTab(2); }} />}
 
       </div>
       )}
