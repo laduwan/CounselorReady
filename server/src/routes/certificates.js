@@ -375,6 +375,68 @@ router.delete('/:id', protect, async (req, res) => {
   }
 });
 
+// GET /api/certificates/download-all - Download all certificates as ZIP
+router.get('/download-all', protect, async (req, res) => {
+  try {
+    const certificates = await Certificate.find({ userId: req.user._id, isRevoked: { $ne: true } });
+    if (!certificates.length) {
+      return res.status(404).json({ error: 'No certificates found' });
+    }
+
+    const AdmZip = (await import('adm-zip')).default;
+    const zip = new AdmZip();
+
+    // Fetch each certificate file and add to ZIP
+    let addedCount = 0;
+    for (const cert of certificates) {
+      try {
+        // Try to get the certificate PDF from Cloudinary
+        if (cert.cloudinaryPublicId) {
+          const url = cloudinary.url(cert.cloudinaryPublicId, {
+            resource_type: 'raw',
+            secure: true,
+            sign_url: true,
+            type: 'authenticated'
+          });
+          const response = await fetch(url);
+          if (response.ok) {
+            const buffer = Buffer.from(await response.arrayBuffer());
+            const filename = `${(cert.title || 'certificate').replace(/[^a-zA-Z0-9]/g, '_')}_${cert.certificateNumber || addedCount}.pdf`;
+            zip.addFile(filename, buffer);
+            addedCount++;
+            continue;
+          }
+        }
+        // Fallback: generate certificate PDF on the fly
+        if (cert.fileUrl) {
+          const response = await fetch(cert.fileUrl);
+          if (response.ok) {
+            const buffer = Buffer.from(await response.arrayBuffer());
+            const filename = `${(cert.title || 'certificate').replace(/[^a-zA-Z0-9]/g, '_')}_${cert.certificateNumber || addedCount}.pdf`;
+            zip.addFile(filename, buffer);
+            addedCount++;
+          }
+        }
+      } catch (fetchErr) {
+        console.error(`Failed to fetch certificate ${cert._id}:`, fetchErr.message);
+      }
+    }
+
+    if (addedCount === 0) {
+      return res.status(404).json({ error: 'No downloadable certificates found' });
+    }
+
+    const zipBuffer = zip.toBuffer();
+    res.setHeader('Content-Type', 'application/zip');
+    res.setHeader('Content-Disposition', 'attachment; filename="CounselorReady_Certificates.zip"');
+    res.setHeader('Content-Length', zipBuffer.length);
+    res.send(zipBuffer);
+  } catch (error) {
+    console.error('Bulk certificate download error:', error);
+    res.status(500).json({ error: 'Failed to create certificate bundle' });
+  }
+});
+
 // GET /api/certificates/transcript - Generate CE transcript PDF
 router.get('/transcript', protect, async (req, res) => {
   try {
