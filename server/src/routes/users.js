@@ -112,11 +112,34 @@ router.delete('/account', protect, async (req, res) => {
       return res.status(400).json({ error: 'Please confirm your email to delete account' });
     }
     
-    // TODO: Cancel Stripe subscription if active
-    // TODO: Delete related data (credentials, certificates, progress)
-    
+    const user = await User.findById(req.user._id);
+
+    // Cancel Stripe subscription if active
+    if (user.subscription?.stripeSubscriptionId) {
+      try {
+        const Stripe = (await import('stripe')).default;
+        const stripe = process.env.STRIPE_SECRET_KEY ? new Stripe(process.env.STRIPE_SECRET_KEY) : null;
+        if (stripe) {
+          await stripe.subscriptions.cancel(user.subscription.stripeSubscriptionId);
+          console.log(`Canceled Stripe subscription ${user.subscription.stripeSubscriptionId} for deleted user ${user._id}`);
+        }
+      } catch (stripeErr) {
+        console.error('Failed to cancel Stripe subscription on account deletion:', stripeErr.message);
+      }
+    }
+
+    // Delete related data
+    const Certificate = (await import('../models/Certificate.js')).default;
+    const UserCredential = (await import('../models/UserCredential.js')).default;
+    const UserCourseProgress = (await import('../models/UserCourseProgress.js')).default;
+    await Promise.all([
+      Certificate.deleteMany({ userId: req.user._id }),
+      UserCredential.deleteMany({ userId: req.user._id }),
+      UserCourseProgress.deleteMany({ userId: req.user._id }),
+    ]);
+
     await User.findByIdAndDelete(req.user._id);
-    
+
     res.json({ message: 'Account deleted successfully' });
   } catch (error) {
     console.error('Delete account error:', error);
@@ -339,9 +362,22 @@ router.post('/hardship-pause', protect, async (req, res) => {
       await user.save();
     }
     
-    // TODO: Pause Stripe subscription
-    // await pauseStripeSubscription(user.subscription.stripeSubscriptionId);
-    
+    // Pause Stripe subscription (set to cancel at period end, then reactivate on resume)
+    if (user.subscription?.stripeSubscriptionId) {
+      try {
+        const Stripe = (await import('stripe')).default;
+        const stripe = process.env.STRIPE_SECRET_KEY ? new Stripe(process.env.STRIPE_SECRET_KEY) : null;
+        if (stripe) {
+          await stripe.subscriptions.update(user.subscription.stripeSubscriptionId, {
+            pause_collection: { behavior: 'void' }
+          });
+          console.log(`Paused Stripe subscription ${user.subscription.stripeSubscriptionId} for hardship`);
+        }
+      } catch (stripeErr) {
+        console.error('Failed to pause Stripe subscription:', stripeErr.message);
+      }
+    }
+
     // Send confirmation email
     await sendHardshipPauseActivatedEmail(user._id);
     
@@ -378,9 +414,22 @@ router.post('/end-hardship-pause', protect, async (req, res) => {
       await user.save();
     }
     
-    // TODO: Resume Stripe subscription
-    // await resumeStripeSubscription(user.subscription.stripeSubscriptionId);
-    
+    // Resume Stripe subscription
+    if (user.subscription?.stripeSubscriptionId) {
+      try {
+        const Stripe = (await import('stripe')).default;
+        const stripe = process.env.STRIPE_SECRET_KEY ? new Stripe(process.env.STRIPE_SECRET_KEY) : null;
+        if (stripe) {
+          await stripe.subscriptions.update(user.subscription.stripeSubscriptionId, {
+            pause_collection: ''
+          });
+          console.log(`Resumed Stripe subscription ${user.subscription.stripeSubscriptionId} after hardship pause`);
+        }
+      } catch (stripeErr) {
+        console.error('Failed to resume Stripe subscription:', stripeErr.message);
+      }
+    }
+
     // Send confirmation email
     await sendPauseEndedEmail(user._id);
     
