@@ -891,16 +891,45 @@
       window.location.href = `/interactive-course.html?slug=${currentCourse.slug}`;
     }
     
-    // Purchase course individually
-    function purchaseCourse() {
+    // Purchase course individually via Stripe
+    async function purchaseCourse() {
       if (!currentUser) {
         window.location.href = `/login.html?redirect=${encodeURIComponent(window.location.href)}`;
         return;
       }
-      
-      // TODO: Implement individual course purchase with Stripe
-      alert('Individual course purchases coming soon! For now, subscribe for unlimited access.');
-      window.location.href = '/subscription.html';
+
+      if (!currentCourse?.price || currentCourse.price <= 0) {
+        alert('This course is not available for individual purchase. Subscribe for unlimited access.');
+        window.location.href = '/subscription.html';
+        return;
+      }
+
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`${API_BASE}/payments/purchase-course`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ courseId: currentCourse._id })
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          if (data.error === 'You have already purchased this course') {
+            window.location.href = `/interactive-course.html?slug=${currentCourse.slug}`;
+            return;
+          }
+          throw new Error(data.error || 'Purchase failed');
+        }
+        // Redirect to Stripe Checkout
+        if (data.url) {
+          window.location.href = data.url;
+        }
+      } catch (err) {
+        console.error('Purchase error:', err);
+        alert(err.message || 'Failed to start checkout. Please try again.');
+      }
     }
     
     // Helper functions
