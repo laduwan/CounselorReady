@@ -151,7 +151,8 @@ function AppRoutes() {
       <Route path="/register" element={
         <PublicRoute><Register /></PublicRoute>
       } />
-      
+      <Route path="/dashboard" element={<Navigate to="/dashboard.html" replace />} />
+
       {/* ══════════════════════════════════════════════════════════════
           COURSES ONLY - React handles interactive course player
           Everything else is static HTML
