@@ -17,9 +17,19 @@ import CourseView from './pages/CourseView';
 import InteractiveCourseCatalog from './pages/InteractiveCourseCatalog';
 import CourseQuickEdit from './pages/CourseQuickEdit';
 import AdminPartners from './pages/AdminPartners';
+import AdminPartnerAnalytics from './pages/AdminPartnerAnalytics';
 import PartnerDashboard from './pages/PartnerDashboard';
 import PartnerBrandingSettings from './pages/PartnerBrandingSettings';
 import PartnerCourseAdmin from './pages/PartnerCourseAdmin';
+import PartnerCourseCatalog from './pages/PartnerCourseCatalog';
+import PartnerBulkUpload from './pages/PartnerBulkUpload';
+import PartnerBilling from './pages/PartnerBilling';
+import PartnerDomainSettings from './pages/PartnerDomainSettings';
+import PartnerUserManagement from './pages/PartnerUserManagement';
+import PartnerOnboarding from './pages/PartnerOnboarding';
+import PartnerEmailTemplates from './pages/PartnerEmailTemplates';
+import PartnerReports from './pages/PartnerReports';
+import PartnerUserManual from './pages/PartnerUserManual';
 import ThumbnailManager from './pages/ThumbnailManager';
 import AdminBulkUpload from './pages/AdminBulkUpload';
 import CEPlanner from './pages/CEPlanner';
@@ -224,6 +234,11 @@ function AppRoutes() {
           <Layout><AdminPartners /></Layout>
         </AdminRoute>
       } />
+      <Route path="/admin/partner-analytics" element={
+        <AdminRoute>
+          <Layout><AdminPartnerAnalytics /></Layout>
+        </AdminRoute>
+      } />
       <Route path="/admin/thumbnails" element={
         <AdminRoute>
           <Layout><ThumbnailManager /></Layout>
@@ -252,6 +267,51 @@ function AppRoutes() {
       <Route path="/partner/courses" element={
         <PartnerAdminRoute>
           <Layout><PartnerCourseAdmin /></Layout>
+        </PartnerAdminRoute>
+      } />
+      <Route path="/partner/courses/catalog" element={
+        <ProtectedRoute>
+          <Layout><PartnerCourseCatalog /></Layout>
+        </ProtectedRoute>
+      } />
+      <Route path="/partner/bulk-upload" element={
+        <PartnerAdminRoute>
+          <Layout><PartnerBulkUpload /></Layout>
+        </PartnerAdminRoute>
+      } />
+      <Route path="/partner/billing" element={
+        <PartnerAdminRoute>
+          <Layout><PartnerBilling /></Layout>
+        </PartnerAdminRoute>
+      } />
+      <Route path="/partner/domain" element={
+        <PartnerAdminRoute>
+          <Layout><PartnerDomainSettings /></Layout>
+        </PartnerAdminRoute>
+      } />
+      <Route path="/partner/users" element={
+        <PartnerAdminRoute>
+          <Layout><PartnerUserManagement /></Layout>
+        </PartnerAdminRoute>
+      } />
+      <Route path="/partner/onboarding" element={
+        <PartnerAdminRoute>
+          <Layout><PartnerOnboarding /></Layout>
+        </PartnerAdminRoute>
+      } />
+      <Route path="/partner/email-templates" element={
+        <PartnerAdminRoute>
+          <Layout><PartnerEmailTemplates /></Layout>
+        </PartnerAdminRoute>
+      } />
+      <Route path="/partner/reports" element={
+        <PartnerAdminRoute>
+          <Layout><PartnerReports /></Layout>
+        </PartnerAdminRoute>
+      } />
+      <Route path="/partner/manual" element={
+        <PartnerAdminRoute>
+          <Layout><PartnerUserManual /></Layout>
         </PartnerAdminRoute>
       } />
 

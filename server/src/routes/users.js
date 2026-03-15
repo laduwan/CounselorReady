@@ -4,8 +4,13 @@
  * Unauthorized copying or distribution is strictly prohibited.
  */
 import express from 'express';
+import Stripe from 'stripe';
 import User from '../models/User.js';
 import { protect } from '../middleware/auth.js';
+
+const stripe = process.env.STRIPE_SECRET_KEY
+  ? new Stripe(process.env.STRIPE_SECRET_KEY)
+  : null;
 
 const router = express.Router();
 

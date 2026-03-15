@@ -1,3 +1,8 @@
+/**
+ * Copyright (c) 2026 CounselorReady, a subsidiary of Ga Integrated Therapeutic Perspectives, LLC.
+ * All rights reserved. Proprietary and confidential.
+ * Unauthorized copying or distribution is strictly prohibited.
+ */
 // CR-TMH601-Mastering_TeleMental_Health-41451words.js
 // Seed script for CounselorReady interactivecourses collection
 // Deploy: node CR-TMH601-Mastering_TeleMental_Health-41451words.js

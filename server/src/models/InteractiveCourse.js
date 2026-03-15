@@ -241,6 +241,7 @@ const SectionProgressSchema = new mongoose.Schema({
 const CourseProgressSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   courseId: { type: mongoose.Schema.Types.ObjectId, ref: 'InteractiveCourse', required: true },
+  partnerId: { type: mongoose.Schema.Types.ObjectId, ref: 'Partner' },
   
   // Section progress
   sectionProgress: [SectionProgressSchema],
