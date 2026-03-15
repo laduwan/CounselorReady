@@ -1,16 +1,13 @@
 # ═══════════════════════════════════════════════════════════════
 # CounselorReady _redirects
-# Static HTML pages served directly — React ONLY handles
-# /learn/:slug, /courses/:slug, and /admin/course-builder
+# Static HTML pages served directly — everything else falls
+# through to React SPA via the catch-all at the bottom
 # ═══════════════════════════════════════════════════════════════
 
 # Bare paths → static HTML (stops React from hijacking)
 /dashboard           /dashboard.html           200
-/courses             /courses.html             200
 /certificates        /certificates.html        200
-/credentials         /credentials.html         200
 /messages            /messages.html            200
-/settings            /settings.html            200
 /welcome             /welcome.html             200
 /audit               /audit.html               200
 /login               /login.html               200
@@ -31,9 +28,5 @@
 # Course viewer
 /interactive-course  /interactive-course.html  200
 
-# React SPA — ONLY these routes go to React
-/learn/*             /index.html               200
-/admin/course-builder /index.html              200
-
-# Fallback — everything else to landing or 404
+# Fallback — everything else to React SPA
 /*                   /index.html               200
