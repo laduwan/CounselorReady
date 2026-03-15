@@ -40,8 +40,9 @@ export default function SupervisionTracker() {
     try {
       setLoading(true);
       const { data } = await api.get('/supervision');
-      setLogs(data);
-      if (data.length > 0 && !selectedLog) setSelectedLog(data[0]);
+      setLogs(data.logs || (Array.isArray(data) ? data : []));
+      const logList = data.logs || (Array.isArray(data) ? data : []);
+      if (logList.length > 0 && !selectedLog) setSelectedLog(logList[0]);
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to load supervision logs');
     } finally {
