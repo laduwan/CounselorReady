@@ -16,7 +16,8 @@ import {
   Settings, Eye, Wand2, FileUp, BarChart3, Zap, Save, Download,
   Clock, RotateCcw, History, Clipboard, Calendar, TrendingUp,
   Users, Award, PlayCircle, ChevronUp, ChevronLeft, ChevronsUp, ChevronsDown,
-  CheckSquare, Square, FolderDown, FolderUp, RefreshCw, Layers
+  CheckSquare, Square, FolderDown, FolderUp, RefreshCw, Layers,
+  Image, Search, ExternalLink, Link2, Package, Share2, GitBranch, Filter
 } from "lucide-react";
 
 // ─── Brand Colors ───
@@ -62,7 +63,7 @@ const BLOCK_DEFAULTS = {
   sectionDivider: { title: "", sectionNumber: 1, subtitle: "" },
   text: { content: "" },
   imageText: { title: "", content: "", image: "", imageAlt: "", imagePosition: "left", highlight: false },
-  image: { imageUrl: "", imageAltText: "", imageCaption: "", imageSize: "large", imageAlignment: "center" },
+  image: { imageUrl: "", imageAltText: "", imageCaption: "", imageSize: "large", imageAlignment: "center", imageBorder: "none", imageShape: "default" },
   accordion: { accordionItems: [{ title: "", content: "" }] },
   multipleChoice: { question: "", options: [{ text: "", isCorrect: false }, { text: "", isCorrect: false }, { text: "", isCorrect: false }, { text: "", isCorrect: false }], explanation: "" },
   multiSelect: { question: "", options: [{ text: "", isCorrect: false }, { text: "", isCorrect: false }, { text: "", isCorrect: false }, { text: "", isCorrect: false }], explanation: "" },
@@ -442,30 +443,7 @@ function BlockEditor({ block, onChange }) {
 
     // ═══ NEW BLOCK TYPE #10: IMAGE ═══
     case "image":
-      return (
-        <div>
-          <CloudinaryUploader
-            onUpload={(d) => onChange({ imageUrl: d.url, imagePublicId: d.publicId, imageAltText: d.alt, imageWidth: d.width, imageHeight: d.height })}
-            context="course-image" currentImage={block.imageUrl} label="Upload Course Image"
-          />
-          <div style={{ ...S.grid2, marginTop: 12 }}>
-            <div><label style={S.label}>Caption</label><input style={S.input} value={block.imageCaption || ""} onChange={e => onChange({ imageCaption: e.target.value })} placeholder="Optional caption" /></div>
-            <div><label style={S.label}>Alt Text</label><input style={S.input} value={block.imageAltText || ""} onChange={e => onChange({ imageAltText: e.target.value })} placeholder="Describe for screen readers" /></div>
-          </div>
-          <div style={{ display: "flex", gap: 12, marginTop: 10 }}>
-            <div><label style={{ ...S.label, fontSize: 11 }}>Size</label>
-              <select style={{ ...S.input, width: "auto" }} value={block.imageSize || "large"} onChange={e => onChange({ imageSize: e.target.value })}>
-                <option value="small">Small (40%)</option><option value="medium">Medium (60%)</option><option value="large">Large (85%)</option><option value="full">Full Width</option>
-              </select>
-            </div>
-            <div><label style={{ ...S.label, fontSize: 11 }}>Alignment</label>
-              <select style={{ ...S.input, width: "auto" }} value={block.imageAlignment || "center"} onChange={e => onChange({ imageAlignment: e.target.value })}>
-                <option value="left">Left</option><option value="center">Center</option><option value="right">Right</option>
-              </select>
-            </div>
-          </div>
-        </div>
-      );
+      return <ImageBlockEditor block={block} onChange={onChange} />;
 
     // ═══ NEW BLOCK TYPE #11: CARD SORT ═══
     case "cardSort":
@@ -504,6 +482,113 @@ function BlockEditor({ block, onChange }) {
 // ═══════════════════════════════════════════════════════════
 // NEW BLOCK EDITORS
 // ═══════════════════════════════════════════════════════════
+
+// ═══ ENHANCED IMAGE BLOCK EDITOR ═══
+function ImageBlockEditor({ block, onChange }) {
+  const API_BASE = import.meta.env.VITE_API_URL || "https://api.counselorready.com/api";
+  const [showBrowser, setShowBrowser] = useState(false);
+  const [libraryImages, setLibraryImages] = useState([]);
+  const [browseLoading, setBrowseLoading] = useState(false);
+
+  const browseLibrary = async () => {
+    setShowBrowser(true);
+    if (libraryImages.length > 0) return;
+    setBrowseLoading(true);
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(`${API_BASE}/images/browse?max_results=100`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      const data = await res.json();
+      if (data.success) setLibraryImages(data.data.images || []);
+    } catch (err) { console.error("Browse failed:", err); }
+    finally { setBrowseLoading(false); }
+  };
+
+  const selectFromLibrary = (img) => {
+    onChange({ imageUrl: img.url, imagePublicId: img.publicId, imageAltText: img.alt || block.imageAltText, imageWidth: img.width, imageHeight: img.height });
+    setShowBrowser(false);
+  };
+
+  return (
+    <div>
+      <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+        <CloudinaryUploader
+          onUpload={(d) => onChange({ imageUrl: d.url, imagePublicId: d.publicId, imageAltText: d.alt, imageWidth: d.width, imageHeight: d.height })}
+          context="course-image" currentImage={block.imageUrl} label="Upload New Image"
+        />
+        <button onClick={browseLibrary} style={{ ...S.btnSecondary, alignSelf: "flex-start" }}>
+          <Image size={14} /> Browse Media Library
+        </button>
+      </div>
+
+      {/* Media Library Browser */}
+      {showBrowser && (
+        <div style={{ border: `1px solid ${C.borderLight}`, borderRadius: 10, marginBottom: 12, overflow: "hidden" }}>
+          <div style={{ padding: "8px 12px", background: C.bg, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <span style={{ fontSize: 13, fontWeight: 600, color: C.navy }}>Select from Media Library</span>
+            <button onClick={() => setShowBrowser(false)} style={{ background: "none", border: "none", cursor: "pointer" }}><X size={14} color={C.textMuted} /></button>
+          </div>
+          <div style={{ padding: 12, maxHeight: 240, overflowY: "auto" }}>
+            {browseLoading ? (
+              <div style={{ textAlign: "center", padding: 20 }}>
+                <Loader2 size={20} style={{ animation: "spin 1s linear infinite", color: C.burgundy }} />
+              </div>
+            ) : libraryImages.length === 0 ? (
+              <p style={{ textAlign: "center", color: C.textMuted, fontSize: 13 }}>No images found</p>
+            ) : (
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(100px, 1fr))", gap: 8 }}>
+                {libraryImages.map(img => (
+                  <div key={img.publicId} onClick={() => selectFromLibrary(img)}
+                    style={{ cursor: "pointer", borderRadius: 6, overflow: "hidden", border: `1px solid ${C.borderLight}`, transition: "all 0.15s" }}>
+                    <img src={img.thumbnailUrl || img.url} alt={img.alt || ""} style={{ width: "100%", height: 80, objectFit: "cover" }} loading="lazy" />
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      <div style={{ ...S.grid2, marginTop: 12 }}>
+        <div><label style={S.label}>Caption</label><input style={S.input} value={block.imageCaption || ""} onChange={e => onChange({ imageCaption: e.target.value })} placeholder="Optional caption" /></div>
+        <div><label style={S.label}>Alt Text</label><input style={S.input} value={block.imageAltText || ""} onChange={e => onChange({ imageAltText: e.target.value })} placeholder="Describe for screen readers" /></div>
+      </div>
+      <div style={{ display: "flex", gap: 12, marginTop: 10, flexWrap: "wrap" }}>
+        <div><label style={{ ...S.label, fontSize: 11 }}>Size</label>
+          <select style={{ ...S.input, width: "auto" }} value={block.imageSize || "large"} onChange={e => onChange({ imageSize: e.target.value })}>
+            <option value="small">Small (40%)</option><option value="medium">Medium (60%)</option><option value="large">Large (85%)</option><option value="full">Full Width</option>
+          </select>
+        </div>
+        <div><label style={{ ...S.label, fontSize: 11 }}>Alignment</label>
+          <select style={{ ...S.input, width: "auto" }} value={block.imageAlignment || "center"} onChange={e => onChange({ imageAlignment: e.target.value })}>
+            <option value="left">Left</option><option value="center">Center</option><option value="right">Right</option>
+          </select>
+        </div>
+        <div><label style={{ ...S.label, fontSize: 11 }}>Border</label>
+          <select style={{ ...S.input, width: "auto" }} value={block.imageBorder || "none"} onChange={e => onChange({ imageBorder: e.target.value })}>
+            <option value="none">None</option><option value="subtle">Subtle</option><option value="solid">Solid</option><option value="rounded">Rounded + Shadow</option>
+          </select>
+        </div>
+        <div><label style={{ ...S.label, fontSize: 11 }}>Shape</label>
+          <select style={{ ...S.input, width: "auto" }} value={block.imageShape || "default"} onChange={e => onChange({ imageShape: e.target.value })}>
+            <option value="default">Rectangle</option><option value="rounded">Rounded</option><option value="circle">Circle</option><option value="pill">Pill</option>
+          </select>
+        </div>
+      </div>
+      {/* Image URL input for pasting external URLs */}
+      <div style={{ marginTop: 10 }}>
+        <label style={{ ...S.label, fontSize: 11 }}>Or paste image URL directly</label>
+        <input
+          style={S.input}
+          value={block.imageUrl || ""}
+          onChange={e => onChange({ imageUrl: e.target.value })}
+          placeholder="https://example.com/image.jpg"
+        />
+      </div>
+    </div>
+  );
+}
 
 const CATEGORY_COLORS = ["#E11D48", "#6366F1", "#059669", "#D97706", "#0284C7", "#9333EA", "#DC2626", "#0891B2"];
 
@@ -3261,6 +3346,9 @@ export default function CourseBuilderV2() {
     { label: "Drip Schedule", icon: "📅", badge: null, needsContent: !hasContent },
     { label: "Analytics", icon: "📊", badge: null, needsContent: !hasContent },
     { label: "Versions", icon: "🕐", badge: null },
+    { label: "Media", icon: "🖼️", badge: null },
+    { label: "Export", icon: "📦", badge: null, needsContent: !hasContent },
+    { label: "Adaptive", icon: "🔀", badge: null, needsContent: !hasContent },
   ];
 
   return (
@@ -3432,6 +3520,9 @@ export default function CourseBuilderV2() {
         {activeTab === 8 && <DripScheduleTab courseData={courseData} setCourseData={wrappedSetCourseData} />}
         {activeTab === 9 && <AnalyticsDashboard courseData={courseData} />}
         {activeTab === 10 && <VersionHistory courseData={courseData} setCourseData={wrappedSetCourseData} />}
+        {activeTab === 11 && <MediaLibrary courseData={courseData} setCourseData={wrappedSetCourseData} />}
+        {activeTab === 12 && <ExportPanel courseData={courseData} />}
+        {activeTab === 13 && <AdaptivePathsEditor courseData={courseData} setCourseData={wrappedSetCourseData} />}
 
       </div>
       )}
@@ -4043,13 +4134,17 @@ function LivePreviewPanel({ courseData }) {
             </div>
           </div>
         );
-      case "image":
+      case "image": {
+        const imgBorder = block.imageBorder === "subtle" ? `1px solid ${C.borderLight}` : block.imageBorder === "solid" ? `2px solid ${C.border}` : "none";
+        const imgShadow = block.imageBorder === "rounded" ? "0 8px 24px rgba(0,0,0,0.12)" : "0 4px 12px rgba(0,0,0,0.08)";
+        const imgRadius = block.imageShape === "circle" ? "50%" : block.imageShape === "pill" ? 999 : block.imageShape === "rounded" ? 20 : 12;
         return (
           <figure key={i} style={{ textAlign: block.imageAlignment || "center", margin: "24px 0" }}>
-            {block.imageUrl && <img src={block.imageUrl} alt={block.imageAltText || ""} style={{ maxWidth: block.imageSize === "small" ? "40%" : block.imageSize === "medium" ? "60%" : "90%", borderRadius: 12, boxShadow: "0 4px 12px rgba(0,0,0,0.08)" }} />}
+            {block.imageUrl && <img src={block.imageUrl} alt={block.imageAltText || ""} style={{ maxWidth: block.imageSize === "small" ? "40%" : block.imageSize === "medium" ? "60%" : block.imageSize === "full" ? "100%" : "90%", borderRadius: imgRadius, boxShadow: imgShadow, border: imgBorder }} />}
             {block.imageCaption && <figcaption style={{ fontSize: 13, color: C.textMuted, marginTop: 8, fontStyle: "italic" }}>{block.imageCaption}</figcaption>}
           </figure>
         );
+      }
       case "accordion":
         return (
           <div key={i} style={{ marginBottom: 24 }}>
@@ -4302,6 +4397,739 @@ function AccordionPreviewItem({ item }) {
 // ═══════════════════════════════════════════════════════════
 // DRIP SCHEDULE TAB — Configure timed content release
 // ═══════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════
+// MEDIA LIBRARY
+// ═══════════════════════════════════════════════════════════
+function MediaLibrary({ courseData, setCourseData }) {
+  const API_BASE = import.meta.env.VITE_API_URL || "https://api.counselorready.com/api";
+  const [images, setImages] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [folder, setFolder] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [totalCount, setTotalCount] = useState(0);
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [copiedUrl, setCopiedUrl] = useState(null);
+  const [deleteConfirm, setDeleteConfirm] = useState(null);
+  const [showUpload, setShowUpload] = useState(false);
+
+  const FOLDERS = [
+    { value: "", label: "All Folders" },
+    { value: "counselorready/course-content", label: "Course Content" },
+    { value: "counselorready/course-thumbnails", label: "Thumbnails" },
+    { value: "counselorready/inline", label: "Inline Images" },
+    { value: "counselorready/hotspot-bg", label: "Hotspot Backgrounds" },
+  ];
+
+  const fetchImages = useCallback(async () => {
+    setLoading(true);
+    try {
+      const token = localStorage.getItem("token");
+      const params = new URLSearchParams({ max_results: "100" });
+      if (folder) params.set("folder", folder);
+      if (searchQuery) params.set("search", searchQuery);
+      const res = await fetch(`${API_BASE}/images/browse?${params}`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      const data = await res.json();
+      if (data.success) {
+        setImages(data.data.images || []);
+        setTotalCount(data.data.totalCount || 0);
+      }
+    } catch (err) {
+      console.error("Failed to browse images:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, [folder, searchQuery, API_BASE]);
+
+  useEffect(() => { fetchImages(); }, [fetchImages]);
+
+  const copyUrl = (url, id) => {
+    navigator.clipboard.writeText(url);
+    setCopiedUrl(id);
+    setTimeout(() => setCopiedUrl(null), 2000);
+  };
+
+  const deleteImage = async (publicId) => {
+    try {
+      const token = localStorage.getItem("token");
+      await fetch(`${API_BASE}/images/${encodeURIComponent(publicId)}`, {
+        method: "DELETE",
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      setImages(prev => prev.filter(img => img.publicId !== publicId));
+      setDeleteConfirm(null);
+      setSelectedImage(null);
+    } catch (err) {
+      console.error("Failed to delete image:", err);
+    }
+  };
+
+  const formatBytes = (bytes) => {
+    if (!bytes) return "N/A";
+    if (bytes < 1024) return bytes + " B";
+    if (bytes < 1048576) return (bytes / 1024).toFixed(1) + " KB";
+    return (bytes / 1048576).toFixed(1) + " MB";
+  };
+
+  return (
+    <div>
+      {/* Header Card */}
+      <div style={S.card}>
+        <div style={S.cardHeader}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <Image size={20} color={C.navy} />
+            <span style={{ fontWeight: 700, fontSize: 16 }}>Media Library</span>
+            <span style={S.badge(C.teal)}>{totalCount} images</span>
+          </div>
+          <div style={{ display: "flex", gap: 8 }}>
+            <button onClick={() => setShowUpload(!showUpload)} style={S.btnPrimary}>
+              <Upload size={14} /> Upload
+            </button>
+            <button onClick={fetchImages} style={S.btnSecondary}>
+              <RefreshCw size={14} /> Refresh
+            </button>
+          </div>
+        </div>
+
+        {/* Upload Area */}
+        {showUpload && (
+          <div style={{ padding: 20, borderBottom: `1px solid ${C.borderLight}`, background: C.greenFaded }}>
+            <CloudinaryUploader
+              onUpload={() => { setShowUpload(false); fetchImages(); }}
+              context="media-library"
+              label="Upload to Media Library"
+            />
+          </div>
+        )}
+
+        {/* Filters */}
+        <div style={{ padding: "12px 20px", borderBottom: `1px solid ${C.borderLight}`, display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <Filter size={14} color={C.textMuted} />
+            <select
+              value={folder}
+              onChange={(e) => setFolder(e.target.value)}
+              style={{ ...S.input, width: 200, padding: "6px 10px", fontSize: 13 }}
+            >
+              {FOLDERS.map(f => <option key={f.value} value={f.value}>{f.label}</option>)}
+            </select>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 6, flex: 1, minWidth: 200 }}>
+            <Search size={14} color={C.textMuted} />
+            <input
+              type="text"
+              placeholder="Search by filename or alt text..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              style={{ ...S.input, padding: "6px 10px", fontSize: 13 }}
+            />
+          </div>
+        </div>
+
+        {/* Image Grid */}
+        <div style={S.cardBody}>
+          {loading ? (
+            <div style={{ textAlign: "center", padding: 40 }}>
+              <Loader2 size={28} style={{ animation: "spin 1s linear infinite", color: C.burgundy }} />
+              <p style={{ color: C.textMuted, fontSize: 13, marginTop: 12 }}>Loading media...</p>
+            </div>
+          ) : images.length === 0 ? (
+            <div style={{ textAlign: "center", padding: 40 }}>
+              <Image size={40} color={C.textLight} />
+              <h3 style={{ color: C.navy, marginTop: 16 }}>No Images Found</h3>
+              <p style={{ color: C.textMuted, fontSize: 14 }}>Upload images or adjust your filters.</p>
+            </div>
+          ) : (
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: 12 }}>
+              {images.map((img) => (
+                <div
+                  key={img.publicId}
+                  onClick={() => setSelectedImage(img)}
+                  style={{
+                    borderRadius: 10, border: `1px solid ${C.borderLight}`, overflow: "hidden", cursor: "pointer",
+                    transition: "all 0.15s", background: "#fff",
+                    boxShadow: selectedImage?.publicId === img.publicId ? `0 0 0 2px ${C.burgundy}` : "none",
+                  }}
+                >
+                  <div style={{ width: "100%", height: 120, background: C.bg, display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
+                    <img
+                      src={img.thumbnailUrl || img.url}
+                      alt={img.alt || "Media"}
+                      style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "cover", width: "100%", height: "100%" }}
+                      loading="lazy"
+                    />
+                  </div>
+                  <div style={{ padding: "8px 10px" }}>
+                    <div style={{ fontSize: 11, color: C.navy, fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      {img.publicId.split("/").pop()}
+                    </div>
+                    <div style={{ fontSize: 10, color: C.textLight, marginTop: 2 }}>
+                      {img.width}×{img.height} · {formatBytes(img.bytes)} · {img.format}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Image Detail Modal */}
+      {selectedImage && (
+        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}
+          onClick={(e) => { if (e.target === e.currentTarget) setSelectedImage(null); }}>
+          <div style={{ background: "#fff", borderRadius: 16, maxWidth: 700, width: "100%", maxHeight: "90vh", overflow: "auto" }}>
+            <div style={{ padding: "16px 20px", borderBottom: `1px solid ${C.borderLight}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <span style={{ fontWeight: 700, fontSize: 16, color: C.navy }}>Image Details</span>
+              <button onClick={() => setSelectedImage(null)} style={{ background: "none", border: "none", cursor: "pointer", padding: 4 }}>
+                <X size={18} color={C.textMuted} />
+              </button>
+            </div>
+            <div style={{ padding: 20 }}>
+              <div style={{ background: C.bg, borderRadius: 10, padding: 12, marginBottom: 16, textAlign: "center" }}>
+                <img src={selectedImage.url} alt={selectedImage.alt || ""} style={{ maxWidth: "100%", maxHeight: 400, objectFit: "contain", borderRadius: 8 }} />
+              </div>
+              <div style={S.grid2}>
+                <div>
+                  <span style={S.label}>Dimensions</span>
+                  <p style={{ fontSize: 14, color: C.text }}>{selectedImage.width} × {selectedImage.height}px</p>
+                </div>
+                <div>
+                  <span style={S.label}>File Size</span>
+                  <p style={{ fontSize: 14, color: C.text }}>{formatBytes(selectedImage.bytes)}</p>
+                </div>
+                <div>
+                  <span style={S.label}>Format</span>
+                  <p style={{ fontSize: 14, color: C.text }}>{selectedImage.format?.toUpperCase()}</p>
+                </div>
+                <div>
+                  <span style={S.label}>Folder</span>
+                  <p style={{ fontSize: 14, color: C.text }}>{selectedImage.folder || "Unknown"}</p>
+                </div>
+              </div>
+              {selectedImage.alt && (
+                <div style={{ marginTop: 12 }}>
+                  <span style={S.label}>Alt Text</span>
+                  <p style={{ fontSize: 14, color: C.text }}>{selectedImage.alt}</p>
+                </div>
+              )}
+              <div style={{ marginTop: 16 }}>
+                <span style={S.label}>Image URLs</span>
+                {[
+                  { label: "Original", url: selectedImage.url },
+                  { label: "Thumbnail (200px)", url: selectedImage.thumbnailUrl },
+                ].filter(u => u.url).map(u => (
+                  <div key={u.label} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6, padding: "6px 10px", background: C.bg, borderRadius: 6 }}>
+                    <span style={{ fontSize: 11, fontWeight: 600, color: C.navy, minWidth: 100 }}>{u.label}</span>
+                    <input
+                      readOnly
+                      value={u.url}
+                      style={{ ...S.input, padding: "4px 8px", fontSize: 11, flex: 1, background: "#fff" }}
+                      onClick={(e) => e.target.select()}
+                    />
+                    <button onClick={() => copyUrl(u.url, u.label)} style={{ ...S.btnSecondary, padding: "4px 8px", fontSize: 11 }}>
+                      {copiedUrl === u.label ? <Check size={12} /> : <Copy size={12} />}
+                    </button>
+                  </div>
+                ))}
+              </div>
+              <div style={{ marginTop: 20, display: "flex", gap: 8, justifyContent: "flex-end" }}>
+                {deleteConfirm === selectedImage.publicId ? (
+                  <>
+                    <span style={{ fontSize: 13, color: C.danger, alignSelf: "center" }}>Delete permanently?</span>
+                    <button onClick={() => deleteImage(selectedImage.publicId)} style={{ ...S.btnDanger, padding: "8px 16px" }}>Yes, Delete</button>
+                    <button onClick={() => setDeleteConfirm(null)} style={S.btnSecondary}>Cancel</button>
+                  </>
+                ) : (
+                  <button onClick={() => setDeleteConfirm(selectedImage.publicId)} style={S.btnDanger}>
+                    <Trash2 size={12} /> Delete
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════
+// EXPORT PANEL (SCORM / LTI / xAPI)
+// ═══════════════════════════════════════════════════════════
+function ExportPanel({ courseData }) {
+  const API_BASE = import.meta.env.VITE_API_URL || "https://api.counselorready.com/api";
+  const courseId = courseData?._id;
+  const courseSlug = courseData?.slug;
+  const [scormLoading, setScormLoading] = useState(false);
+  const [manifestXml, setManifestXml] = useState(null);
+  const [copiedField, setCopiedField] = useState(null);
+
+  const copyToClipboard = (text, field) => {
+    navigator.clipboard.writeText(text);
+    setCopiedField(field);
+    setTimeout(() => setCopiedField(null), 2000);
+  };
+
+  const downloadScorm = async () => {
+    if (!courseId) return;
+    setScormLoading(true);
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(`${API_BASE}/scorm/export/${courseId}`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      if (!res.ok) throw new Error("Export failed");
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${courseSlug || "course"}_scorm.zip`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("SCORM export failed:", err);
+    } finally {
+      setScormLoading(false);
+    }
+  };
+
+  const previewManifest = async () => {
+    if (!courseId) return;
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(`${API_BASE}/scorm/preview/${courseId}`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      if (!res.ok) throw new Error("Preview failed");
+      const xml = await res.text();
+      setManifestXml(xml);
+    } catch (err) {
+      console.error("Manifest preview failed:", err);
+    }
+  };
+
+  const downloadCartridge = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/lti/cartridge`);
+      if (!res.ok) throw new Error("Failed to fetch cartridge");
+      const xml = await res.text();
+      const blob = new Blob([xml], { type: "application/xml" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "lti_cartridge.xml";
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("LTI cartridge download failed:", err);
+    }
+  };
+
+  if (!courseId) {
+    return (
+      <div style={{ ...S.card, textAlign: "center", padding: 60 }}>
+        <Package size={40} color={C.textLight} />
+        <h3 style={{ color: C.navy, marginTop: 16 }}>Save Course First</h3>
+        <p style={{ color: C.textMuted, fontSize: 14 }}>Save your course to enable export options.</p>
+      </div>
+    );
+  }
+
+  const ltiLaunchUrl = `${API_BASE.replace("/api", "")}/api/lti/launch`;
+  const ltiConfigUrl = `${API_BASE}/lti/config`;
+
+  return (
+    <div>
+      {/* SCORM Export */}
+      <div style={S.card}>
+        <div style={S.cardHeader}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <Package size={20} color={C.navy} />
+            <span style={{ fontWeight: 700, fontSize: 16 }}>SCORM 1.2 Export</span>
+          </div>
+        </div>
+        <div style={S.cardBody}>
+          <p style={{ color: C.textMuted, fontSize: 14, marginBottom: 16, lineHeight: 1.6 }}>
+            Export this course as a SCORM 1.2 package for use in external Learning Management Systems
+            like Canvas, Moodle, Blackboard, or any SCORM-compliant LMS.
+          </p>
+          <div style={{ display: "flex", gap: 10, marginBottom: 16 }}>
+            <button onClick={downloadScorm} disabled={scormLoading} style={{ ...S.btnPrimary, opacity: scormLoading ? 0.6 : 1 }}>
+              {scormLoading ? <Loader2 size={14} style={{ animation: "spin 1s linear infinite" }} /> : <Download size={14} />}
+              {scormLoading ? "Generating..." : "Download SCORM Package"}
+            </button>
+            <button onClick={previewManifest} style={S.btnSecondary}>
+              <Eye size={14} /> Preview Manifest
+            </button>
+          </div>
+          {manifestXml && (
+            <div style={{ marginTop: 12 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+                <span style={S.label}>imsmanifest.xml</span>
+                <button onClick={() => setManifestXml(null)} style={{ background: "none", border: "none", cursor: "pointer" }}>
+                  <X size={14} color={C.textMuted} />
+                </button>
+              </div>
+              <pre style={{ background: C.bg, borderRadius: 8, padding: 16, fontSize: 11, overflow: "auto", maxHeight: 300, border: `1px solid ${C.borderLight}`, whiteSpace: "pre-wrap", wordBreak: "break-all" }}>
+                {manifestXml}
+              </pre>
+            </div>
+          )}
+          <div style={{ marginTop: 16, padding: 12, background: C.goldFaded, borderRadius: 8 }}>
+            <p style={{ fontSize: 12, color: C.navy, lineHeight: 1.5 }}>
+              <strong>Compatibility:</strong> SCORM 1.2 is supported by virtually all LMS platforms.
+              The package includes the manifest, content pages, and tracking JavaScript.
+              Completion and score data will sync back to your LMS gradebook.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* LTI Configuration */}
+      <div style={S.card}>
+        <div style={S.cardHeader}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <Link2 size={20} color={C.navy} />
+            <span style={{ fontWeight: 700, fontSize: 16 }}>LTI 1.1 Integration</span>
+          </div>
+        </div>
+        <div style={S.cardBody}>
+          <p style={{ color: C.textMuted, fontSize: 14, marginBottom: 16, lineHeight: 1.6 }}>
+            Use LTI (Learning Tools Interoperability) to embed this course directly into
+            an external LMS. Grades are automatically passed back to the LMS gradebook.
+          </p>
+
+          {[
+            { label: "Launch URL", value: ltiLaunchUrl, field: "launch" },
+            { label: "Configuration URL", value: ltiConfigUrl, field: "config" },
+          ].map(item => (
+            <div key={item.field} style={{ marginBottom: 12 }}>
+              <span style={S.label}>{item.label}</span>
+              <div style={{ display: "flex", gap: 8 }}>
+                <input readOnly value={item.value} style={{ ...S.input, fontSize: 13, background: C.bg }} onClick={(e) => e.target.select()} />
+                <button onClick={() => copyToClipboard(item.value, item.field)} style={{ ...S.btnSecondary, padding: "8px 12px", whiteSpace: "nowrap" }}>
+                  {copiedField === item.field ? <><Check size={14} /> Copied</> : <><Copy size={14} /> Copy</>}
+                </button>
+              </div>
+            </div>
+          ))}
+
+          <div style={{ marginTop: 16, display: "flex", gap: 10 }}>
+            <button onClick={downloadCartridge} style={S.btnSecondary}>
+              <Download size={14} /> Download LTI Cartridge XML
+            </button>
+          </div>
+
+          <div style={{ marginTop: 16, padding: 12, background: C.goldFaded, borderRadius: 8 }}>
+            <p style={{ fontSize: 12, color: C.navy, lineHeight: 1.5 }}>
+              <strong>Setup:</strong> In your LMS, add an external tool using the Launch URL above.
+              You&apos;ll need the consumer key and secret configured in your CounselorReady environment settings.
+              LTI supports automatic user provisioning and grade passback.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* xAPI Info */}
+      <div style={S.card}>
+        <div style={S.cardHeader}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <Share2 size={20} color={C.navy} />
+            <span style={{ fontWeight: 700, fontSize: 16 }}>xAPI (Experience API)</span>
+          </div>
+        </div>
+        <div style={S.cardBody}>
+          <p style={{ color: C.textMuted, fontSize: 14, marginBottom: 16, lineHeight: 1.6 }}>
+            xAPI statements are automatically generated for learner activities when an LRS
+            (Learning Record Store) endpoint is configured.
+          </p>
+          <div style={{ marginBottom: 12 }}>
+            <span style={S.label}>Tracked Activities</span>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 6 }}>
+              {["Course Started", "Section Completed", "Quiz Attempted", "Quiz Passed", "Assessment Completed", "Course Completed", "Certificate Earned"].map(verb => (
+                <span key={verb} style={{ ...S.badge(C.teal), fontSize: 11 }}>{verb}</span>
+              ))}
+            </div>
+          </div>
+          <div style={{ padding: 12, background: C.goldFaded, borderRadius: 8 }}>
+            <p style={{ fontSize: 12, color: C.navy, lineHeight: 1.5 }}>
+              <strong>Configuration:</strong> Set the <code style={{ background: "#fff", padding: "1px 4px", borderRadius: 3 }}>XAPI_LRS_ENDPOINT</code>,{" "}
+              <code style={{ background: "#fff", padding: "1px 4px", borderRadius: 3 }}>XAPI_LRS_KEY</code>, and{" "}
+              <code style={{ background: "#fff", padding: "1px 4px", borderRadius: 3 }}>XAPI_LRS_SECRET</code>{" "}
+              environment variables to enable xAPI statement forwarding.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════
+// ADAPTIVE LEARNING PATHS
+// ═══════════════════════════════════════════════════════════
+function AdaptivePathsEditor({ courseData, setCourseData }) {
+  const settings = courseData?.settings || {};
+  const sections = courseData?.sections || [];
+  const adaptiveEnabled = settings.adaptiveEnabled || false;
+  const adaptiveRules = settings.adaptiveRules || [];
+
+  const updateSettings = (patch) => {
+    setCourseData({ ...courseData, settings: { ...settings, ...patch } });
+  };
+
+  const addRule = () => {
+    updateSettings({
+      adaptiveRules: [...adaptiveRules, {
+        sectionIndex: 0,
+        condition: "score_below",
+        threshold: 0.7,
+        action: "redirect",
+        targetSectionIndex: sections.length > 1 ? 1 : 0,
+        message: ""
+      }]
+    });
+  };
+
+  const updateRule = (index, patch) => {
+    const updated = [...adaptiveRules];
+    updated[index] = { ...updated[index], ...patch };
+    updateSettings({ adaptiveRules: updated });
+  };
+
+  const removeRule = (index) => {
+    updateSettings({ adaptiveRules: adaptiveRules.filter((_, i) => i !== index) });
+  };
+
+  // Get sections that have quizzes
+  const quizSections = sections.map((s, i) => ({ ...s, index: i })).filter(s => s.hasQuiz);
+
+  if (!sections.length) {
+    return (
+      <div style={{ ...S.card, textAlign: "center", padding: 60 }}>
+        <GitBranch size={40} color={C.textLight} />
+        <h3 style={{ color: C.navy, marginTop: 16 }}>No Sections Available</h3>
+        <p style={{ color: C.textMuted, fontSize: 14 }}>Create course content with quiz sections first.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      {/* Adaptive Paths Card */}
+      <div style={S.card}>
+        <div style={S.cardHeader}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <GitBranch size={20} color={C.navy} />
+            <span style={{ fontWeight: 700, fontSize: 16 }}>Adaptive Learning Paths</span>
+          </div>
+          <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}>
+            <span style={{ fontSize: 13, fontWeight: 500, color: adaptiveEnabled ? C.green : C.textMuted }}>
+              {adaptiveEnabled ? "Enabled" : "Disabled"}
+            </span>
+            <div onClick={() => updateSettings({ adaptiveEnabled: !adaptiveEnabled })}
+              style={{ width: 44, height: 24, borderRadius: 12, background: adaptiveEnabled ? C.green : C.border, position: "relative", cursor: "pointer", transition: "background 0.2s" }}>
+              <div style={{ width: 20, height: 20, borderRadius: 10, background: "#fff", position: "absolute", top: 2, left: adaptiveEnabled ? 22 : 2, transition: "left 0.2s", boxShadow: "0 1px 3px rgba(0,0,0,0.2)" }} />
+            </div>
+          </label>
+        </div>
+        <div style={S.cardBody}>
+          <p style={{ color: C.textMuted, fontSize: 14, marginBottom: 20, lineHeight: 1.6 }}>
+            Define conditional branching rules based on quiz scores. When a learner&apos;s quiz score triggers a rule,
+            they&apos;ll be directed to a specific section for remediation or allowed to skip ahead.
+          </p>
+
+          {quizSections.length === 0 && (
+            <div style={{ padding: 16, background: C.goldFaded, borderRadius: 8, marginBottom: 16 }}>
+              <p style={{ fontSize: 13, color: C.navy }}>
+                <AlertTriangle size={14} style={{ display: "inline", verticalAlign: "middle", marginRight: 6 }} />
+                No sections with quizzes found. Add quizzes to your sections to create adaptive rules.
+              </p>
+            </div>
+          )}
+
+          {/* Rules */}
+          {adaptiveRules.map((rule, i) => (
+            <div key={i} style={{ padding: 16, borderRadius: 10, border: `1px solid ${C.borderLight}`, marginBottom: 12, background: i % 2 === 0 ? C.bg : "transparent" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+                <span style={{ fontSize: 13, fontWeight: 700, color: C.burgundy }}>Rule {i + 1}</span>
+                <button onClick={() => removeRule(i)} style={S.btnDanger}><Trash2 size={12} /> Remove</button>
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                {/* Source Section */}
+                <div>
+                  <span style={S.label}>When quiz in section...</span>
+                  <select
+                    value={rule.sectionIndex}
+                    onChange={(e) => updateRule(i, { sectionIndex: parseInt(e.target.value) })}
+                    style={{ ...S.input, padding: "8px 10px", fontSize: 13 }}
+                  >
+                    {sections.map((s, si) => (
+                      <option key={si} value={si}>
+                        {si + 1}. {s.title || `Section ${si + 1}`} {s.hasQuiz ? "" : "(no quiz)"}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Condition */}
+                <div>
+                  <span style={S.label}>Condition</span>
+                  <select
+                    value={rule.condition}
+                    onChange={(e) => updateRule(i, { condition: e.target.value })}
+                    style={{ ...S.input, padding: "8px 10px", fontSize: 13 }}
+                  >
+                    <option value="score_below">Score Below Threshold</option>
+                    <option value="score_above">Score Above Threshold</option>
+                    <option value="failed">Quiz Failed</option>
+                  </select>
+                </div>
+
+                {/* Threshold */}
+                {rule.condition !== "failed" && (
+                  <div>
+                    <span style={S.label}>Threshold (%)</span>
+                    <input
+                      type="number"
+                      min="0" max="100" step="5"
+                      value={Math.round((rule.threshold || 0.7) * 100)}
+                      onChange={(e) => updateRule(i, { threshold: parseInt(e.target.value) / 100 })}
+                      style={{ ...S.input, padding: "8px 10px", fontSize: 13 }}
+                    />
+                  </div>
+                )}
+
+                {/* Action */}
+                <div>
+                  <span style={S.label}>Action</span>
+                  <select
+                    value={rule.action}
+                    onChange={(e) => updateRule(i, { action: e.target.value })}
+                    style={{ ...S.input, padding: "8px 10px", fontSize: 13 }}
+                  >
+                    <option value="redirect">Redirect to Section</option>
+                    <option value="require_review">Require Review</option>
+                    <option value="skip_ahead">Allow Skip Ahead</option>
+                  </select>
+                </div>
+
+                {/* Target Section */}
+                <div>
+                  <span style={S.label}>Target Section</span>
+                  <select
+                    value={rule.targetSectionIndex}
+                    onChange={(e) => updateRule(i, { targetSectionIndex: parseInt(e.target.value) })}
+                    style={{ ...S.input, padding: "8px 10px", fontSize: 13 }}
+                  >
+                    {sections.map((s, si) => (
+                      <option key={si} value={si}>
+                        {si + 1}. {s.title || `Section ${si + 1}`}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Message */}
+                <div style={{ gridColumn: "1 / -1" }}>
+                  <span style={S.label}>Message to Learner (optional)</span>
+                  <input
+                    type="text"
+                    value={rule.message || ""}
+                    onChange={(e) => updateRule(i, { message: e.target.value })}
+                    placeholder="e.g., We recommend reviewing the fundamentals before continuing."
+                    style={{ ...S.input, padding: "8px 10px", fontSize: 13 }}
+                  />
+                </div>
+              </div>
+
+              {/* Rule Summary */}
+              <div style={{ marginTop: 10, padding: "8px 12px", background: C.burgundyFaded, borderRadius: 6 }}>
+                <p style={{ fontSize: 12, color: C.burgundy, fontWeight: 500 }}>
+                  If quiz score in &quot;{sections[rule.sectionIndex]?.title || `Section ${rule.sectionIndex + 1}`}&quot;
+                  {rule.condition === "score_below" && ` is below ${Math.round((rule.threshold || 0.7) * 100)}%`}
+                  {rule.condition === "score_above" && ` is above ${Math.round((rule.threshold || 0.7) * 100)}%`}
+                  {rule.condition === "failed" && " fails"}
+                  , {rule.action === "redirect" ? "redirect" : rule.action === "skip_ahead" ? "allow skip" : "require review of"}{" "}
+                  &quot;{sections[rule.targetSectionIndex]?.title || `Section ${rule.targetSectionIndex + 1}`}&quot;
+                </p>
+              </div>
+            </div>
+          ))}
+
+          <button onClick={addRule} style={{ ...S.btnSecondary, marginTop: 8 }}>
+            <Plus size={14} /> Add Adaptive Rule
+          </button>
+        </div>
+      </div>
+
+      {/* Retake Policy Card */}
+      <div style={S.card}>
+        <div style={S.cardHeader}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <RotateCcw size={20} color={C.navy} />
+            <span style={{ fontWeight: 700, fontSize: 16 }}>Quiz Retake Policy</span>
+          </div>
+        </div>
+        <div style={S.cardBody}>
+          <div style={S.grid2}>
+            <div>
+              <span style={S.label}>Retake Policy</span>
+              <select
+                value={settings.retakePolicy || "unlimited"}
+                onChange={(e) => updateSettings({ retakePolicy: e.target.value })}
+                style={{ ...S.input, padding: "8px 10px", fontSize: 13 }}
+              >
+                <option value="unlimited">Unlimited Retakes</option>
+                <option value="limited">Limited Retakes</option>
+                <option value="first_final">First Attempt is Final</option>
+              </select>
+            </div>
+            {(settings.retakePolicy === "limited") && (
+              <div>
+                <span style={S.label}>Max Retakes</span>
+                <input
+                  type="number"
+                  min="1" max="10"
+                  value={settings.maxRetakes || 3}
+                  onChange={(e) => updateSettings({ maxRetakes: parseInt(e.target.value) })}
+                  style={{ ...S.input, padding: "8px 10px", fontSize: 13 }}
+                />
+              </div>
+            )}
+            <div>
+              <span style={S.label}>Score Policy</span>
+              <select
+                value={settings.scorePolicy || "highest"}
+                onChange={(e) => updateSettings({ scorePolicy: e.target.value })}
+                style={{ ...S.input, padding: "8px 10px", fontSize: 13 }}
+              >
+                <option value="highest">Keep Highest Score</option>
+                <option value="latest">Use Latest Score</option>
+                <option value="first">Use First Attempt</option>
+                <option value="average">Average All Attempts</option>
+              </select>
+            </div>
+            <div>
+              <span style={S.label}>Cooldown Between Retakes (minutes)</span>
+              <input
+                type="number"
+                min="0" max="1440" step="5"
+                value={settings.retakeCooldown || 0}
+                onChange={(e) => updateSettings({ retakeCooldown: parseInt(e.target.value) })}
+                style={{ ...S.input, padding: "8px 10px", fontSize: 13 }}
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function DripScheduleTab({ courseData, setCourseData }) {
   const modules = courseData?.modules || [];
   const settings = courseData?.settings || {};
