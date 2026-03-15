@@ -186,7 +186,7 @@
 
     async function loadUser(){try{const r=await fetch(`${API}/api/auth/me`,{headers:{Authorization:`Bearer ${T}`}});if(!r.ok)throw 0;const d=await r.json(),u=d.user||d,f=u.profile?.firstName||u.firstName||'',l=u.profile?.lastName||u.lastName||'';document.getElementById('welcomeMsg').textContent=`Welcome back, ${f||'there'}!`;document.getElementById('avatarInit').textContent=`${f.charAt(0)}${l.charAt(0)}`.toUpperCase()||'U';document.getElementById('avatarName').textContent=f||u.email?.split('@')[0]||'';document.getElementById('menuName').textContent=`${f} ${l}`.trim()||'User';document.getElementById('menuEmail').textContent=u.email||'';const p=u.subscription?.plan||'free';document.getElementById('menuPlan').textContent=p.charAt(0).toUpperCase()+p.slice(1)+' plan';if(u.role==='admin'||u.isAdmin){document.getElementById('adminBadge')?.classList.remove('hidden');document.getElementById('adminBadge')?.classList.add('flex');document.getElementById('adminMob')?.classList.remove('hidden');}localStorage.setItem('user',JSON.stringify(u));}catch(e){console.error(e);}}
 
-    async function loadStats(){try{const[cR,crR,pR]=await Promise.all([fetch(`${API}/api/certificates`,{headers:{Authorization:`Bearer ${T}`}}),fetch(`${API}/api/credentials`,{headers:{Authorization:`Bearer ${T}`}}),fetch(`${API}/api/interactive-courses/my-progress`,{headers:{Authorization:`Bearer ${T}`}}).catch(()=>null)]);if(cR.ok){const c=await cR.json(),l=Array.isArray(c)?c:(c.certificates||[]);document.getElementById('certificatesCount').textContent=l.length;const h=l.reduce((s,x)=>s+(parseFloat(x.ceHours)||0),0);document.getElementById('totalHours').textContent=h%1===0?h:h.toFixed(1);}if(crR.ok){const c=await crR.json(),l=Array.isArray(c)?c:(c.credentials||[]);document.getElementById('credentialsCount').textContent=l.length;renderProgress(l);renderRenewals(l);}if(pR?.ok){const p=await pR.json();if(Array.isArray(p)){document.getElementById('coursesCompleted').textContent=p.filter(x=>x.completed||x.assessmentPassed).length;renderCourses(p);}}}catch(e){console.error(e);}}
+    async function loadStats(){try{const[cR,crR,pR]=await Promise.all([fetch(`${API}/api/certificates`,{headers:{Authorization:`Bearer ${T}`}}),fetch(`${API}/api/credentials`,{headers:{Authorization:`Bearer ${T}`}}),fetch(`${API}/api/interactive-courses/user/my-courses`,{headers:{Authorization:`Bearer ${T}`}}).catch(()=>null)]);if(cR.ok){const c=await cR.json(),l=Array.isArray(c)?c:(c.certificates||[]);document.getElementById('certificatesCount').textContent=l.length;const h=l.reduce((s,x)=>s+(parseFloat(x.ceHours)||0),0);document.getElementById('totalHours').textContent=h%1===0?h:h.toFixed(1);}if(crR.ok){const c=await crR.json(),l=Array.isArray(c)?c:(c.credentials||[]);document.getElementById('credentialsCount').textContent=l.length;renderProgress(l);renderRenewals(l);}if(pR?.ok){const p=await pR.json();const list=p.data||p;if(Array.isArray(list)){document.getElementById('coursesCompleted').textContent=list.filter(x=>x.status==='completed').length;renderCourses(list);}}}catch(e){console.error(e);}}
 
     function renderProgress(c){
       const el=document.getElementById('progressList');if(!c.length)return;
@@ -209,12 +209,11 @@
       const el=document.getElementById('coursesList');
       const enrolled=progress.filter(p=>p.course);
       if(!enrolled.length)return;
-      enrolled.sort((a,b)=>{const ad=a.completed||a.assessmentPassed?1:0,bd=b.completed||b.assessmentPassed?1:0;if(ad!==bd)return ad-bd;return new Date(b.lastAccessed||b.updatedAt||0)-new Date(a.lastAccessed||a.updatedAt||0);});
+      enrolled.sort((a,b)=>{const ad=a.status==='completed'?1:0,bd=b.status==='completed'?1:0;if(ad!==bd)return ad-bd;return new Date(b.lastAccessedAt||0)-new Date(a.lastAccessedAt||0);});
       el.innerHTML=enrolled.slice(0,8).map(p=>{
         const c=p.course,t=c.title||'Untitled',ce=c.ceHours||'';
-        const done=p.completed||p.assessmentPassed;
-        const tot=c.sections?.length||0,comp=p.completedSections?.length||0;
-        const pct=tot>0?Math.round(comp/tot*100):0;
+        const done=p.status==='completed';
+        const pct=Math.round(p.progress||0);
         const slug=c.slug||c._id;
         return`<a href="/learn/${slug}" class="activity-row flex items-center gap-3 p-3 rounded-lg">
           <div class="w-10 h-10 ${done?'bg-hunter-100':'bg-burgundy-50'} rounded-lg flex items-center justify-center flex-shrink-0">
