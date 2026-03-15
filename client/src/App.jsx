@@ -35,6 +35,9 @@ import GroupLicenseDashboard from './pages/GroupLicenseDashboard';
 import LegacyVault from './pages/LegacyVault';
 import Credentials from './pages/Credentials';
 import Settings from './pages/Settings';
+import ResearchReadyCE from './pages/ResearchReadyCE';
+import AdminResearchReady from './pages/AdminResearchReady';
+import ScholarlyArticles from './pages/ScholarlyArticles';
 
 // Components
 import Layout from './components/Layout';
@@ -194,6 +197,18 @@ function AppRoutes() {
           ADMIN ROUTES - React tools for course management
           ══════════════════════════════════════════════════════════════ */}
       
+      <Route path="/research-ready" element={
+        <ProtectedRoute>
+          <Layout><ResearchReadyCE /></Layout>
+        </ProtectedRoute>
+      } />
+
+      <Route path="/scholarly-articles" element={
+        <ProtectedRoute>
+          <Layout><ScholarlyArticles /></Layout>
+        </ProtectedRoute>
+      } />
+
       <Route path="/admin/course-builder" element={
         <AdminRoute>
           <CourseBuilder />
@@ -217,6 +232,11 @@ function AppRoutes() {
       <Route path="/admin/bulk-upload" element={
         <AdminRoute>
           <Layout><AdminBulkUpload /></Layout>
+        </AdminRoute>
+      } />
+      <Route path="/admin/research-ready" element={
+        <AdminRoute>
+          <Layout><AdminResearchReady /></Layout>
         </AdminRoute>
       } />
       <Route path="/partner-dashboard" element={
