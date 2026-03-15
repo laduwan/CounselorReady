@@ -9,6 +9,7 @@ import User from '../models/User.js';
 import Course from '../models/Course.js';
 import { protect } from '../middleware/auth.js';
 import { logActivity, ACTIVITY_TYPES } from '../services/activityTrackingService.js';
+import { sendPaymentFailedEmail } from '../services/hardshipEmailService.js';
 
 const router = express.Router();
 
@@ -661,7 +662,12 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
             'subscription.status': 'past_due'
           });
           console.log(`Payment failed for user ${user._id}`);
-          // TODO: Send email notification about failed payment
+          // Send email notification about failed payment
+          try {
+            await sendPaymentFailedEmail(user._id);
+          } catch (emailErr) {
+            console.error('Failed to send payment failure email:', emailErr.message);
+          }
         }
         break;
       }
