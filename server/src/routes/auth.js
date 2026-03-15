@@ -7,6 +7,7 @@ import express from 'express';
 import crypto from 'crypto';
 import { Resend } from 'resend';
 import User from '../models/User.js';
+import Partner from '../models/Partner.js';
 import { protect, generateToken } from '../middleware/auth.js';
 import { logActivity, ACTIVITY_TYPES } from '../services/activityTrackingService.js';
 
@@ -16,7 +17,7 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 // Register
 router.post('/register', async (req, res) => {
   try {
-    const { email, password, firstName, lastName, state } = req.body;
+    const { email, password, firstName, lastName, state, partnerSlug } = req.body;
     
     if (!email || !password || !firstName) {
       return res.status(400).json({ error: 'Email, password, and first name are required' });
@@ -38,6 +39,17 @@ router.post('/register', async (req, res) => {
     const verificationToken = crypto.randomBytes(32).toString('hex');
     const verificationTokenHash = crypto.createHash('sha256').update(verificationToken).digest('hex');
 
+    // Resolve partner if slug provided
+    let partnerId;
+    let partnerPlan;
+    if (partnerSlug) {
+      const partner = await Partner.findOne({ slug: partnerSlug.toLowerCase(), active: true });
+      if (partner) {
+        partnerId = partner._id;
+        partnerPlan = partner.defaultPlan || 'free';
+      }
+    }
+
     const user = await User.create({
       email: email.toLowerCase(),
       passwordHash: password,
@@ -48,9 +60,10 @@ router.post('/register', async (req, res) => {
       },
       subscription: {
         status: 'trial',
-        plan: 'free',
+        plan: partnerPlan || 'free',
         trialEndsAt
       },
+      ...(partnerId && { partnerId }),
       emailVerified: false,
       emailVerificationToken: verificationTokenHash
     });
