@@ -4,6 +4,7 @@
  * Unauthorized copying or distribution is strictly prohibited.
  */
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 import { 
@@ -29,6 +30,7 @@ import {
 } from 'lucide-react';
 
 export default function Credentials() {
+  const navigate = useNavigate();
   const { hasSubscription } = useAuth();
   const [credentials, setCredentials] = useState([]);
   const [certificates, setCertificates] = useState([]);
@@ -154,6 +156,18 @@ export default function Credentials() {
           >
             CE Certificates <span className={`ml-2 px-2 py-0.5 rounded-full text-xs ${activeTab === 'certificates' ? 'bg-burgundy-100 text-burgundy-700' : 'bg-stone-200 text-stone-600'}`}>{certificates.length}</span>
           </button>
+          <button
+            onClick={() => navigate('/ce-planner')}
+            className="px-6 py-4 text-sm font-medium text-stone-600 hover:text-burgundy-600 hover:bg-stone-50 transition-colors"
+          >
+            CE Planner
+          </button>
+          <button
+            onClick={() => navigate('/audit-kit')}
+            className="px-6 py-4 text-sm font-medium text-stone-600 hover:text-burgundy-600 hover:bg-stone-50 transition-colors"
+          >
+            Audit Kit
+          </button>
         </div>
         <div className="p-6">
 
@@ -161,59 +175,50 @@ export default function Credentials() {
       {activeTab === 'credentials' && (
         <>
           {credentials.length > 0 ? (
-            <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {credentials.map((cred) => (
                 <div key={cred._id} className="border border-stone-200 rounded-xl p-5 hover:border-hunter-300 transition-colors">
-                  <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-4">
-                    <div className="flex items-start gap-4">
-                      <div className="w-16 h-16 rounded-full border-4 border-hunter-600 flex items-center justify-center bg-white flex-shrink-0">
-                        <span className="text-xl font-bold text-hunter-600">{cred.percentComplete}%</span>
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex items-start gap-3">
+                      <div className="w-12 h-12 rounded-full border-4 border-hunter-600 flex items-center justify-center bg-white flex-shrink-0">
+                        <span className="text-sm font-bold text-hunter-600">{cred.percentComplete}%</span>
                       </div>
                       <div>
-                        <h3 className="font-semibold text-stone-900 text-lg">{cred.name}</h3>
-                        <p className="text-sm text-stone-500">{cred.issuingBody}</p>
+                        <h3 className="font-semibold text-stone-900">{cred.name}</h3>
+                        <p className="text-xs text-stone-500">{cred.issuingBody}</p>
                         {cred.licenseNumber && (
-                          <p className="text-sm text-stone-500">#{cred.licenseNumber}</p>
+                          <p className="text-xs text-stone-500">#{cred.licenseNumber}</p>
                         )}
                       </div>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(cred.status)}`}>
+                    <div className="flex items-center gap-2">
+                      <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${getStatusColor(cred.status)}`}>
                         {getStatusLabel(cred.status)}
                       </span>
                       <button
-                        onClick={() => setShowScanModal('credential')}
-                        className="text-stone-400 hover:text-stone-600 text-sm py-1.5 px-3 rounded-lg transition-colors"
-                        title="Scan credential document"
-                      >
-                        <Scan className="w-4 h-4" />
-                      </button>
-                      <button
                         onClick={() => setShowLogCEUModal(cred)}
-                        className="btn-secondary text-sm py-1.5"
+                        className="btn-secondary text-xs py-1 px-2"
                       >
                         Log CEU
                       </button>
                     </div>
                   </div>
 
-                  <div className="text-sm text-stone-500 mb-3">
-                    <span>Expires: {formatDate(cred.expirationDate)}</span>
+                  <div className="text-xs text-stone-500 mb-2">
+                    Expires: {formatDate(cred.expirationDate)}
                     {cred.daysUntilExpiration > 0 && (
                       <span> ({cred.daysUntilExpiration} days)</span>
                     )}
                   </div>
 
-                  <div className="flex items-center justify-between">
-                    <div className="text-sm">
-                      <span className="font-medium text-hunter-700">{cred.totalCEUsCompleted}</span>
-                      <span className="text-stone-500">/{cred.totalCEUsRequired} CE hours</span>
-                    </div>
+                  <div className="flex items-center justify-between text-sm mb-2">
+                    <span className="font-medium text-hunter-700">{cred.totalCEUsCompleted}</span>
+                    <span className="text-stone-500">/{cred.totalCEUsRequired} CE hours</span>
                   </div>
                   {cred.requirements?.length > 0 && (
-                    <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 mt-3">
+                    <div className="grid grid-cols-2 gap-2">
                       {cred.requirements.map((req, idx) => (
-                        <div key={idx} className="flex items-center justify-between text-sm">
+                        <div key={idx} className="flex items-center justify-between text-xs">
                           <span className="text-stone-600">{req.category}</span>
                           <span className={req.hoursCompleted >= req.hoursRequired ? 'text-hunter-600' : 'text-stone-900'}>
                             {req.hoursCompleted}/{req.hoursRequired}
@@ -223,23 +228,6 @@ export default function Credentials() {
                           </span>
                         </div>
                       ))}
-                    </div>
-                  )}
-
-                  {cred.ceuLogs?.length > 0 && (
-                    <div className="mt-4 pt-4 border-t border-stone-100">
-                      <h4 className="text-sm font-medium text-stone-700 mb-2">Recent Activity</h4>
-                      <div className="space-y-2">
-                        {cred.ceuLogs.slice(-3).reverse().map((log, idx) => (
-                          <div key={idx} className="flex items-center justify-between text-sm">
-                            <div className="flex items-center gap-2">
-                              <FileText className="w-4 h-4 text-stone-400" />
-                              <span className="text-stone-700">{log.description}</span>
-                            </div>
-                            <span className="text-burgundy-700">+{log.hours} hrs</span>
-                          </div>
-                        ))}
-                      </div>
                     </div>
                   )}
                 </div>
@@ -277,7 +265,7 @@ export default function Credentials() {
       {activeTab === 'certificates' && (
         <>
           {certificates.length > 0 ? (
-            <div className="space-y-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {certificates.map((cert) => (
                 <div key={cert._id} className="border border-stone-200 rounded-xl p-5 hover:border-hunter-300 transition-colors">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
