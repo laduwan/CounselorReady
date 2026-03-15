@@ -31,6 +31,7 @@ import Recommendations from './pages/Recommendations';
 import LegacyVault from './pages/LegacyVault';
 import CourseQuickEdit from './pages/CourseQuickEdit';
 import AdminPartners from './pages/AdminPartners';
+import AdminPartnerAnalytics from './pages/AdminPartnerAnalytics';
 import PartnerDashboard from './pages/PartnerDashboard';
 import PartnerBrandingSettings from './pages/PartnerBrandingSettings';
 import PartnerCourseAdmin from './pages/PartnerCourseAdmin';
@@ -282,6 +283,11 @@ function AppRoutes() {
       <Route path="/admin/partners" element={
         <AdminRoute>
           <Layout><AdminPartners /></Layout>
+        </AdminRoute>
+      } />
+      <Route path="/admin/partner-analytics" element={
+        <AdminRoute>
+          <Layout><AdminPartnerAnalytics /></Layout>
         </AdminRoute>
       } />
       <Route path="/admin/thumbnails" element={

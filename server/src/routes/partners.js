@@ -63,6 +63,103 @@ router.get('/', protect, requireAdmin, async (req, res) => {
   }
 });
 
+// ── Admin: cross-partner analytics dashboard ──
+router.get('/admin/analytics', protect, requireAdmin, async (req, res) => {
+  try {
+    const db = mongoose.connection.db;
+    const allPartners = await Partner.find()
+      .select('name slug active billing branding.companyName createdAt')
+      .lean();
+
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    const [userCounts, activeUserCounts, courseCountsByPartner] = await Promise.all([
+      User.aggregate([
+        { $match: { partnerId: { $exists: true, $ne: null } } },
+        { $group: { _id: '$partnerId', total: { $sum: 1 } } }
+      ]),
+      User.aggregate([
+        { $match: { partnerId: { $exists: true, $ne: null }, lastLoginAt: { $gte: thirtyDaysAgo } } },
+        { $group: { _id: '$partnerId', active: { $sum: 1 } } }
+      ]),
+      InteractiveCourse.aggregate([
+        { $match: { partnerId: { $exists: true, $ne: null } } },
+        { $group: { _id: '$partnerId', count: { $sum: 1 } } }
+      ])
+    ]);
+
+    const userCountMap = Object.fromEntries(userCounts.map(u => [u._id.toString(), u.total]));
+    const activeMap = Object.fromEntries(activeUserCounts.map(u => [u._id.toString(), u.active]));
+    const courseCountMap = Object.fromEntries(courseCountsByPartner.map(c => [c._id.toString(), c.count]));
+
+    const allPartnerUserIds = await User.find({ partnerId: { $exists: true, $ne: null } })
+      .select('_id partnerId').lean();
+
+    const completionsByPartner = {};
+    const ceHoursByPartner = {};
+
+    if (allPartnerUserIds.length > 0) {
+      const allUserIds = allPartnerUserIds.map(u => u._id);
+      const [regularCompletions, interactiveCompletions] = await Promise.all([
+        db.collection('usercourseprogresses').aggregate([
+          { $match: { userId: { $in: allUserIds }, completed: true } },
+          { $group: { _id: '$userId', count: { $sum: 1 }, hours: { $sum: { $ifNull: ['$ceHours', 0] } } } }
+        ]).toArray(),
+        db.collection('interactivecourseprogresses').aggregate([
+          { $match: { userId: { $in: allUserIds }, completed: true } },
+          { $group: { _id: '$userId', count: { $sum: 1 }, hours: { $sum: { $ifNull: ['$ceHours', 0] } } } }
+        ]).toArray()
+      ]);
+
+      const userToPartner = Object.fromEntries(allPartnerUserIds.map(u => [u._id.toString(), u.partnerId.toString()]));
+      for (const c of [...regularCompletions, ...interactiveCompletions]) {
+        const pid = userToPartner[c._id.toString()];
+        if (pid) {
+          completionsByPartner[pid] = (completionsByPartner[pid] || 0) + c.count;
+          ceHoursByPartner[pid] = (ceHoursByPartner[pid] || 0) + c.hours;
+        }
+      }
+    }
+
+    const partners = allPartners.map(p => {
+      const pid = p._id.toString();
+      return {
+        _id: p._id,
+        name: p.name,
+        companyName: p.branding?.companyName || p.name,
+        slug: p.slug,
+        active: p.active,
+        plan: p.billing?.plan || 'free',
+        billingStatus: p.billing?.status || 'none',
+        createdAt: p.createdAt,
+        totalUsers: userCountMap[pid] || 0,
+        activeUsers: activeMap[pid] || 0,
+        courseCount: courseCountMap[pid] || 0,
+        completions: completionsByPartner[pid] || 0,
+        ceHoursEarned: Math.round((ceHoursByPartner[pid] || 0) * 10) / 10
+      };
+    });
+
+    partners.sort((a, b) => b.totalUsers - a.totalUsers);
+
+    const summary = {
+      totalPartners: allPartners.length,
+      activePartners: allPartners.filter(p => p.active).length,
+      totalPartnerUsers: Object.values(userCountMap).reduce((a, b) => a + b, 0),
+      totalActiveUsers: Object.values(activeMap).reduce((a, b) => a + b, 0),
+      totalCourses: Object.values(courseCountMap).reduce((a, b) => a + b, 0),
+      totalCompletions: Object.values(completionsByPartner).reduce((a, b) => a + b, 0),
+      totalCEHours: Math.round(Object.values(ceHoursByPartner).reduce((a, b) => a + b, 0) * 10) / 10
+    };
+
+    res.json({ partners, summary });
+  } catch (error) {
+    console.error('Partner analytics error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // ── Partner admin: update own branding ──
 router.put('/my-branding', protect, requirePartnerAdmin, async (req, res) => {
   try {
