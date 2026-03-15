@@ -43,6 +43,7 @@ import PartnerUserManagement from './pages/PartnerUserManagement';
 import PartnerOnboarding from './pages/PartnerOnboarding';
 import PartnerEmailTemplates from './pages/PartnerEmailTemplates';
 import PartnerReports from './pages/PartnerReports';
+import PartnerUserManual from './pages/PartnerUserManual';
 import ThumbnailManager from './pages/ThumbnailManager';
 import AdminBulkUpload from './pages/AdminBulkUpload';
 
@@ -353,6 +354,11 @@ function AppRoutes() {
       <Route path="/partner/reports" element={
         <PartnerAdminRoute>
           <Layout><PartnerReports /></Layout>
+        </PartnerAdminRoute>
+      } />
+      <Route path="/partner/manual" element={
+        <PartnerAdminRoute>
+          <Layout><PartnerUserManual /></Layout>
         </PartnerAdminRoute>
       } />
 

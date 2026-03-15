@@ -7,7 +7,7 @@ import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
-import { Menu, X, ChevronDown, LogOut, Settings, ShieldCheck, Trophy, Users, Star, ClipboardList, MoreHorizontal, Bell, Lock, Palette, BookOpen, Globe, CreditCard, Upload, Rocket, Mail, BarChart3 } from 'lucide-react';
+import { Menu, X, ChevronDown, LogOut, Settings, ShieldCheck, Trophy, Users, Star, ClipboardList, MoreHorizontal, Bell, Lock, Palette, BookOpen, Globe, CreditCard, Upload, Rocket, Mail, BarChart3, HelpCircle } from 'lucide-react';
 import PoweredByBadge from './PoweredByBadge';
 import CRPromoCard from './CRPromoCard';
 
@@ -422,6 +422,7 @@ export default function Layout({ children }) {
                   { to: '/partner/billing', icon: CreditCard, label: 'Billing' },
                   { to: '/partner/users', icon: Users, label: 'Users' },
                   { to: '/partner/reports', icon: BarChart3, label: 'Reports' },
+                  { to: '/partner/manual', icon: HelpCircle, label: 'Partner Manual' },
                 ].map(({ to, icon: Icon, label }) => (
                   <Link key={to} to={to} onClick={() => setMobileOpen(false)}
                     className="flex items-center gap-2.5"
