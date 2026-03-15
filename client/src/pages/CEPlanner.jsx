@@ -4,9 +4,10 @@
  * Unauthorized copying or distribution is strictly prohibited.
  */
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
-import { Calendar, Clock, Target, AlertTriangle, CheckCircle, BookOpen, ArrowRight, TrendingUp, FileText, Award, Beaker } from 'lucide-react';
+import { Calendar, Clock, Target, AlertTriangle, CheckCircle, BookOpen, ArrowLeft, ArrowRight, TrendingUp, FileText, Award, Beaker } from 'lucide-react';
 
 const urgencyColors = {
   expired: { bg: 'bg-red-50', text: 'text-red-700', border: 'border-red-200', badge: 'bg-red-100 text-red-800' },
@@ -79,6 +80,7 @@ function ResearchReadyRecs({ deficits }) {
 export default function CEPlanner() {
   const [planData, setPlanData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const loadPlan = async () => {
@@ -87,6 +89,7 @@ export default function CEPlanner() {
         setPlanData(data);
       } catch (err) {
         console.error('Failed to load CE plan:', err);
+        setError(err.response?.data?.error || err.message || 'Failed to load CE plan');
       } finally {
         setLoading(false);
       }
@@ -96,9 +99,27 @@ export default function CEPlanner() {
 
   if (loading) return <div className="flex justify-center py-12"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-burgundy-700"></div></div>;
 
+  if (error) {
+    return (
+      <div>
+        <Link to="/credentials" className="inline-flex items-center gap-1.5 text-sm text-stone-500 hover:text-burgundy-700 mb-3 transition-colors"><ArrowLeft className="w-4 h-4" />Credentials</Link>
+        <h1 className="text-2xl font-bold text-gray-900 mb-6">CE Planner</h1>
+        <div className="bg-white rounded-xl border border-red-200 p-12 text-center">
+          <AlertTriangle className="w-12 h-12 mx-auto text-red-400 mb-4" />
+          <h2 className="text-lg font-semibold text-gray-700 mb-2">Unable to Load CE Plan</h2>
+          <p className="text-gray-500 mb-4">{error}</p>
+          <button onClick={() => { setError(null); setLoading(true); api.get('/ce-planner/plan').then(({ data }) => setPlanData(data)).catch(e => setError(e.response?.data?.error || e.message)).finally(() => setLoading(false)); }} className="inline-flex items-center gap-2 px-4 py-2 bg-burgundy-700 text-white rounded-lg hover:bg-burgundy-800 text-sm">
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   if (!planData || planData.plan?.length === 0) {
     return (
       <div>
+        <Link to="/credentials" className="inline-flex items-center gap-1.5 text-sm text-stone-500 hover:text-burgundy-700 mb-3 transition-colors"><ArrowLeft className="w-4 h-4" />Credentials</Link>
         <h1 className="text-2xl font-bold text-gray-900 mb-6">CE Planner</h1>
         <div className="bg-white rounded-xl border p-12 text-center">
           <Target className="w-12 h-12 mx-auto text-gray-300 mb-4" />
