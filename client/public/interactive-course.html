@@ -571,6 +571,19 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
   margin-top: 4px;
 }
 
+/* Section Hero Image (auto-injected for 3+ CE courses) */
+.cr-section-hero {
+  width: 100%; height: 200px;
+  object-fit: cover; object-position: center top; border-radius: 12px;
+  margin: 0 0 24px 0;
+  opacity: 0.85;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  transition: opacity 0.3s ease;
+}
+.cr-section-hero:hover { opacity: 1; }
+[data-reduced-motion="true"] .cr-section-hero { transition: none; }
+@media print { .cr-section-hero { display: none; } }
+
 /* ═══════════════════════════════════════════════════════════════
    ACCORDION
    ═══════════════════════════════════════════════════════════════ */
@@ -1951,6 +1964,20 @@ let currentView = 'section'; // 'section' | 'assessment'
 let assessmentState = { answers: {}, submitted: false, score: null, attempts: 0 };
 let ttsActive = false;
 let ttsUtterance = null;
+let adaptiveUnlockedSections = new Set(); // Sections unlocked via adaptive learning rules
+let crApiBase = ''; // Set during course load for API calls
+
+// ── API helper for quiz/assessment endpoints ──
+function crApiFetch(path, body) {
+  const base = crApiBase || (location.origin.includes('localhost') ? 'http://localhost:5000' : 'https://api.counselorready.com');
+  const token = localStorage.getItem('token');
+  if (!token) return Promise.reject(new Error('Not authenticated'));
+  return fetch(`${base}${path}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+    body: JSON.stringify(body)
+  }).then(r => r.json().then(data => ({ ok: r.ok, status: r.status, data })));
+}
 
 // ═══════════════════════════════════════════════════════════════
 // CONTENT PROTECTION — © 2026 GAITP LLC
@@ -2120,8 +2147,9 @@ function applyChunkedMode() {
   
   if (slug) {
     const base = apiBase || (location.origin.includes('localhost') ? 'http://localhost:5000' : 'https://api.counselorready.com');
+    crApiBase = base; // Store for quiz/assessment API calls
     const token = localStorage.getItem('token');
-    
+
     // Auth required for platform courses
     if (!token && !apiBase) {
       window.location.href = `/login.html?redirect=${encodeURIComponent(window.location.href)}`;
@@ -2138,7 +2166,21 @@ function applyChunkedMode() {
         }
         return r.json();
       })
-      .then(data => loadCourse(data.data || data.course || data))
+      .then(data => {
+        var courseData = data.data || data.course || data;
+        // If main API didn't return rawMarkdown, try fallback route
+        if (!courseData.rawMarkdown) {
+          fetch(`${base}/api/rawmd/${slug}`, { headers })
+            .then(r => r.ok ? r.json() : { rawMarkdown: null })
+            .then(md => {
+              if (md && md.rawMarkdown) courseData.rawMarkdown = md.rawMarkdown;
+              loadCourse(courseData);
+            })
+            .catch(() => loadCourse(courseData));
+        } else {
+          loadCourse(courseData);
+        }
+      })
       .catch(e => { if (e.message !== 'auth') showError('Course not found: ' + slug); });
     return;
   }
@@ -2157,6 +2199,29 @@ function applyChunkedMode() {
 
 function loadCourse(data) {
   if (!data) { showError('No course data provided'); return; }
+  
+  // ── rawMarkdown: parse client-side, bypass pipeline entirely ──
+  if (data.rawMarkdown && data.rawMarkdown.length > 100) {
+    var parsed = parseMarkdownToCourse(data.rawMarkdown, (data.title || 'course') + '.md');
+    // Preserve API metadata that MD parser may not have
+    parsed.title = data.title || parsed.title;
+    parsed.slug = data.slug || parsed.slug;
+    parsed.ceHours = data.ceHours || data.ceuHours || parsed.ceHours;
+    parsed.contentArea = data.contentArea || data.category || parsed.contentArea;
+    parsed.objectives = data.objectives && data.objectives.length > 0 ? data.objectives : parsed.objectives;
+    parsed.description = data.description || parsed.description;
+    parsed.targetAudience = data.targetAudience || parsed.targetAudience;
+    parsed.thumbnail = data.thumbnail;
+    parsed.settings = data.settings;
+    if (data.assessment && data.assessment.questions && data.assessment.questions.length > 0) {
+      parsed.assessment = data.assessment;
+    }
+    if (data.references && data.references.length > 0) {
+      parsed.references = data.references;
+    }
+    data = parsed;
+    // Fall through to normal rendering below
+  }
   
   // ── Normalize: passThreshold → passingScore ──
   if (data.assessment) {
@@ -2972,14 +3037,105 @@ function renderBlock(block, index) {
 
 // ─── SECTION DIVIDER ───
 function renderSectionDivider(wrap, block) {
-  wrap.innerHTML = `<div class="cr-section-divider">
-    <div class="cr-section-divider-number">${block.sectionNumber || ''}</div>
-    <div>
-      <h2>${esc(block.title || '')}</h2>
-      ${block.subtitle ? '<p>' + esc(block.subtitle) + '</p>' : ''}
-    </div>
-  </div>`;
+  var heroHtml = '';
+  // Auto-inject hero image for courses 3+ CE hours
+  if (course && (course.ceHours || course.ceuHours || 0) >= 3) {
+    var imgUrl = getSectionHeroImage(block.title || '', block.sectionNumber || 1);
+    if (imgUrl) {
+      heroHtml = '<img class="cr-section-hero" src="' + imgUrl + '" alt="" loading="lazy" aria-hidden="true">';
+    }
+  }
+  wrap.innerHTML = '<div class="cr-section-divider">' +
+    '<div class="cr-section-divider-number">' + (block.sectionNumber || '') + '</div>' +
+    '<div>' +
+      '<h2>' + esc(block.title || '') + '</h2>' +
+      (block.subtitle ? '<p>' + esc(block.subtitle) + '</p>' : '') +
+    '</div>' +
+  '</div>' + heroHtml;
   return wrap;
+}
+
+// ─── SECTION HERO IMAGE BANK (POC-centered) ───
+var _heroImageBank = {
+  ethics: [
+    'https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=900&h=280&fit=crop&crop=top',
+    'https://images.unsplash.com/photo-1551836022-d5d88e9218df?w=900&h=280&fit=crop&crop=top',
+    'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=900&h=280&fit=crop&crop=top'
+  ],
+  trauma: [
+    'https://images.unsplash.com/photo-1559234938-b60fff04894d?w=900&h=280&fit=crop&crop=top',
+    'https://images.unsplash.com/photo-1604881991720-f91add269bed?w=900&h=280&fit=crop&crop=top',
+    'https://images.unsplash.com/photo-1531384441138-2736e62e0919?w=900&h=280&fit=crop&crop=top'
+  ],
+  clinical: [
+    'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=900&h=280&fit=crop&crop=top',
+    'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=900&h=280&fit=crop&crop=top',
+    'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=900&h=280&fit=crop&crop=top'
+  ],
+  multicultural: [
+    'https://images.unsplash.com/photo-1531206715517-5c0ba140b2b8?w=900&h=280&fit=crop&crop=top',
+    'https://images.unsplash.com/photo-1529333166437-7750a6dd5a70?w=900&h=280&fit=crop&crop=top',
+    'https://images.unsplash.com/photo-1543269865-cbf427effbad?w=900&h=280&fit=crop&crop=top',
+    'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=900&h=280&fit=crop&crop=top'
+  ],
+  crisis: [
+    'https://images.unsplash.com/photo-1573497019236-17f8177b81e8?w=900&h=280&fit=crop&crop=top',
+    'https://images.unsplash.com/photo-1609220136736-443140cffec6?w=900&h=280&fit=crop&crop=top',
+    'https://images.unsplash.com/photo-1469571486292-0ba58a3f068b?w=900&h=280&fit=crop&crop=top'
+  ],
+  mindfulness: [
+    'https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=900&h=280&fit=crop&crop=top',
+    'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=900&h=280&fit=crop&crop=top',
+    'https://images.unsplash.com/photo-1602192509154-0b900ee1f851?w=900&h=280&fit=crop&crop=top'
+  ],
+  addiction: [
+    'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=900&h=280&fit=crop&crop=top',
+    'https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=900&h=280&fit=crop&crop=top',
+    'https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?w=900&h=280&fit=crop&crop=top'
+  ],
+  geriatric: [
+    'https://images.unsplash.com/photo-1581579438747-104c53d7fbc4?w=900&h=280&fit=crop&crop=top',
+    'https://images.unsplash.com/photo-1516307365426-bea591f05011?w=900&h=280&fit=crop&crop=top',
+    'https://images.unsplash.com/photo-1577896851231-70ef18881754?w=900&h=280&fit=crop&crop=top'
+  ],
+  telehealth: [
+    'https://images.unsplash.com/photo-1591085686350-798c0f9faa7f?w=900&h=280&fit=crop&crop=top',
+    'https://images.unsplash.com/photo-1612349316228-5942a9b489c2?w=900&h=280&fit=crop&crop=top',
+    'https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=900&h=280&fit=crop&crop=top'
+  ],
+  general: [
+    'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=900&h=280&fit=crop&crop=top',
+    'https://images.unsplash.com/photo-1531206715517-5c0ba140b2b8?w=900&h=280&fit=crop&crop=top',
+    'https://images.unsplash.com/photo-1573164713714-d95e436ab8d6?w=900&h=280&fit=crop&crop=top',
+    'https://images.unsplash.com/photo-1551836022-d5d88e9218df?w=900&h=280&fit=crop&crop=top',
+    'https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=900&h=280&fit=crop&crop=top'
+  ]
+};
+
+function getSectionHeroImage(sectionTitle, sectionNum) {
+  // Skip overview/intro sections and conclusion
+  if (sectionNum <= 1) return null;
+  var title = (sectionTitle || '').toLowerCase();
+  var courseTitle = (course && course.title || '').toLowerCase();
+  var area = (course && (course.contentArea || course.category || course.ceCategory || '')).toLowerCase();
+  
+  // Detect category from course metadata + title keywords
+  var cat = 'general';
+  if (/ethic|boundar|dual.relat|consent|confidential/.test(courseTitle + ' ' + area)) cat = 'ethics';
+  else if (/trauma|ptsd|wound|neuro|inside.out|brain/.test(courseTitle + ' ' + area)) cat = 'trauma';
+  else if (/suicid|crisis|safety|risk.assess|1013|involuntary/.test(courseTitle + ' ' + area)) cat = 'crisis';
+  else if (/cultur|multicult|divers|immigr|refugee|competenc|translat/.test(courseTitle + ' ' + area)) cat = 'multicultural';
+  else if (/dbt|dialectic|mindful|meditat|accept/.test(courseTitle + ' ' + area)) cat = 'mindfulness';
+  else if (/addict|substance|recovery|28.days|sobriet/.test(courseTitle + ' ' + area)) cat = 'addiction';
+  else if (/geriatr|older.adult|aging|dementia|elder|retire/.test(courseTitle + ' ' + area)) cat = 'geriatric';
+  else if (/telehealth|telement|virtual|online.therap|remote/.test(courseTitle + ' ' + area)) cat = 'telehealth';
+  else if (/cbt|clin|therap|counsel|treat|interven|rapport/.test(courseTitle + ' ' + area)) cat = 'clinical';
+  
+  var bank = _heroImageBank[cat] || _heroImageBank.general;
+  // Use section number to rotate through bank (deterministic, no randomness)
+  var idx = ((sectionNum || 1) - 2) % bank.length;
+  if (idx < 0) idx = 0;
+  return bank[idx];
 }
 
 // ─── TEXT ───
@@ -3104,6 +3260,12 @@ function submitMC(id, correctIdx) {
   if (submitBtn) submitBtn.style.display = 'none';
   srAnnounce(selected === correctIdx ? 'Correct!' : 'Incorrect. The correct answer is shown.');
   if (selected === correctIdx) updateObjectivesFromKC('mc-' + id);
+
+  // Track for section quiz API (knowledge check IDs: kc-{secIdx}-{blockIdx}-q{qIdx})
+  const kcMatch = id.match(/^kc-(\d+)-\d+-q(\d+)$/);
+  if (kcMatch) {
+    recordSectionQuizAnswer(parseInt(kcMatch[1]), parseInt(kcMatch[2]), selected, selected === correctIdx);
+  }
 }
 
 // ─── MULTI SELECT ───
@@ -3164,6 +3326,12 @@ function submitMS(id) {
   const selectedIdxs = [...el.querySelectorAll('.cr-kc-option.selected')].map((o, _, arr) => parseInt(o.dataset.idx));
   const allCorrect = correctIdxs.length === selectedIdxs.length && correctIdxs.every(ci => selectedIdxs.includes(ci));
   if (allCorrect) updateObjectivesFromKC('ms-' + id);
+
+  // Track for section quiz API (knowledge check IDs: kc-{secIdx}-{blockIdx}-q{qIdx})
+  const kcMatch = id.match(/^kc-(\d+)-\d+-q(\d+)$/);
+  if (kcMatch) {
+    recordSectionQuizAnswer(parseInt(kcMatch[1]), parseInt(kcMatch[2]), selectedIdxs, allCorrect);
+  }
 }
 
 // ─── MATCHING ───
@@ -3615,6 +3783,11 @@ function renderKnowledgeCheck(wrap, block, blockIndex) {
   const id = `kc-${currentSectionIndex}-${blockIndex}`;
   const questions = block.questions || [];
   const showExpl = block.showExplanations !== false;
+
+  // Initialize section quiz tracking for backend API submission
+  if (questions.length > 0) {
+    initSectionQuizTracking(currentSectionIndex, questions.length);
+  }
   
   let html = `<div class="cr-card" id="${id}" style="border-left:4px solid var(--cr-burgundy)">
     <div style="font-family:var(--cr-font-display);font-weight:700;font-size:1.15em;color:var(--cr-burgundy);margin-bottom:16px;display:flex;align-items:center;gap:8px">
@@ -3813,8 +3986,55 @@ function assessmentSelect(qIdx, optIdx) {
 
 function submitAssessment() {
   const qs = course.assessment.questions;
+
+  // Try server-side scoring first (enforces attempt limits, score policy)
+  if (course.slug && localStorage.getItem('token')) {
+    const submitBtn = document.querySelector('[data-action="submitAssessment"]');
+    if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Submitting...'; }
+
+    crApiFetch(`/api/interactive-courses/${course.slug}/progress/assessment`, {
+      answers: assessmentState.answers,
+      timeUsed: 0
+    }).then(({ ok, data }) => {
+      if (!ok) {
+        // Server rejected — show error (e.g. no attempts remaining)
+        showAdaptiveModal(data.error || 'Assessment submission failed.', null);
+        if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Submit Assessment'; }
+        return;
+      }
+      // Use server-computed score
+      assessmentState.submitted = true;
+      assessmentState.score = data.percentage;
+      assessmentState.attempts = (data.attemptsRemaining !== undefined)
+        ? (course.assessment?.maxAttempts || 3) - data.attemptsRemaining
+        : assessmentState.attempts + 1;
+      assessmentState.serverData = data; // Store for result display
+      renderAssessmentResult();
+
+      // Notify parent
+      if (window.parent !== window) {
+        window.parent.postMessage({
+          type: 'ASSESSMENT_COMPLETE',
+          score: data.percentage,
+          passed: data.passed,
+          attempts: assessmentState.attempts
+        }, '*');
+      }
+    }).catch(() => {
+      // Network error — fall back to client-side scoring
+      submitAssessmentClientSide();
+    });
+    return;
+  }
+
+  // Fallback: client-side scoring (offline / file-loaded courses)
+  submitAssessmentClientSide();
+}
+
+function submitAssessmentClientSide() {
+  const qs = course.assessment.questions;
   let correct = 0;
-  
+
   qs.forEach((q, i) => {
     let correctIdx = 0;
     if (typeof q.correctAnswer === 'number') correctIdx = q.correctAnswer;
@@ -3824,15 +4044,14 @@ function submitAssessment() {
     }
     if (assessmentState.answers[i] === correctIdx) correct++;
   });
-  
+
   const score = Math.round((correct / qs.length) * 100);
   assessmentState.submitted = true;
   assessmentState.score = score;
   assessmentState.attempts++;
-  
+
   renderAssessmentResult();
-  
-  // Notify parent
+
   if (window.parent !== window) {
     window.parent.postMessage({
       type: 'ASSESSMENT_COMPLETE',
@@ -3846,10 +4065,12 @@ function submitAssessment() {
 function renderAssessmentResult() {
   const area = document.getElementById('crContentArea');
   const score = assessmentState.score;
-  const passing = course.assessment?.passingScore || 80;
+  const passing = course.assessment?.passingScore || course.assessment?.passThreshold ? Math.round((course.assessment.passThreshold || 0.8) * 100) : 80;
   const passed = score >= passing;
-  const maxAttempts = course.assessment?.maxAttempts || 3;
-  
+  const maxAttempts = course.assessment?.maxAttempts || course.assessment?.attemptsAllowed || 3;
+  const sd = assessmentState.serverData;
+  const attemptsRemaining = sd?.attemptsRemaining ?? (maxAttempts - assessmentState.attempts);
+
   let html = `<div class="cr-assessment-result ${passed ? 'passed' : 'failed'}">
     <h3>${passed ? '🎉 Congratulations!' : '📝 Not Quite'}</h3>
     <div class="score">${score}%</div>
@@ -3857,19 +4078,23 @@ function renderAssessmentResult() {
       ${passed ? 'You have passed the assessment.' : `You needed ${passing}% to pass.`}
     </p>
     <p style="font-size:0.85em;color:var(--cr-text-muted);margin-top:8px">
-      Attempt ${assessmentState.attempts} of ${maxAttempts}
+      ${attemptsRemaining > 0 ? `${attemptsRemaining} attempt(s) remaining` : 'No attempts remaining'}
     </p>`;
-  
-  if (!passed && assessmentState.attempts < maxAttempts) {
+
+  if (sd?.bestScore) {
+    html += `<p style="font-size:0.85em;color:var(--cr-text-muted);margin-top:4px">Best score: ${sd.bestScore}/${sd.totalQuestions}</p>`;
+  }
+
+  if (!passed && attemptsRemaining > 0) {
     html += `<button class="cr-btn cr-btn-primary" style="margin-top:20px" data-action="retryAssessment">Try Again</button>`;
   }
-  
+
   if (passed) {
     html += `<button class="cr-btn cr-btn-success" style="margin-top:20px" data-action="requestCertificate">
       Get Certificate
     </button>`;
   }
-  
+
   html += '<div style="margin-top:24px;font-size:10px;color:var(--cr-text-muted);text-align:center">Powered by CReady™ Viewer · © 2026 GAITP LLC · NBCC ACEP #7760</div>';
   html += '</div>';
   area.innerHTML = html;
@@ -3880,7 +4105,176 @@ function retryAssessment() {
   assessmentState.submitted = false;
   assessmentState.answers = {};
   assessmentState.score = null;
+  assessmentState.serverData = null;
   renderAssessment();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SECTION QUIZ API — server-side scoring + adaptive learning
+// ═══════════════════════════════════════════════════════════════
+
+// Track quiz answers per section for batched submission
+let sectionQuizState = {}; // { sectionIndex: { answers: {questionIndex: selectedOption}, total: N, answered: N } }
+
+function initSectionQuizTracking(sectionIndex, totalQuestions) {
+  if (!sectionQuizState[sectionIndex]) {
+    sectionQuizState[sectionIndex] = { answers: {}, total: totalQuestions, answered: 0 };
+  }
+}
+
+function recordSectionQuizAnswer(sectionIndex, questionIndex, selectedOption, isCorrect) {
+  const state = sectionQuizState[sectionIndex];
+  if (!state) return;
+  if (state.answers[questionIndex] !== undefined) return; // Already answered
+  state.answers[questionIndex] = selectedOption;
+  state.answered++;
+
+  // When all questions in this section's quiz are answered, submit to backend
+  if (state.answered >= state.total) {
+    submitSectionQuizToAPI(sectionIndex, state.answers);
+  }
+}
+
+function submitSectionQuizToAPI(sectionIndex, answers) {
+  if (!course.slug || !localStorage.getItem('token')) return;
+
+  crApiFetch(`/api/interactive-courses/${course.slug}/progress/section/${sectionIndex}/quiz`, {
+    answers,
+    timeSpent: 0
+  }).then(({ ok, data }) => {
+    if (!ok) {
+      // Show error (retake limit, cooldown, etc.)
+      if (data.error) showAdaptiveModal(data.error, null);
+      return;
+    }
+
+    // Handle adaptive learning action
+    if (data.adaptiveAction) {
+      const aa = data.adaptiveAction;
+      adaptiveUnlockedSections.add(aa.targetSectionIndex);
+      const targetTitle = course.sections[aa.targetSectionIndex]?.title || `Section ${aa.targetSectionIndex + 1}`;
+      let msg = aa.message || '';
+      if (aa.action === 'redirect') {
+        msg = msg || `Based on your score (${data.percentage}%), we recommend reviewing "${targetTitle}".`;
+      } else if (aa.action === 'require_review') {
+        msg = msg || `Please review "${targetTitle}" before continuing.`;
+      } else if (aa.action === 'skip_ahead') {
+        msg = msg || `Great score (${data.percentage}%)! You can skip ahead to "${targetTitle}".`;
+      }
+      showAdaptiveModal(msg, aa.targetSectionIndex);
+    }
+
+    // Show retake info if relevant
+    if (data.attemptsRemaining !== undefined && data.attemptsRemaining <= 2 && !data.passed) {
+      const infoEl = document.createElement('div');
+      infoEl.className = 'cr-quiz-info';
+      infoEl.style.cssText = 'text-align:center;padding:12px;margin-top:12px;font-size:0.85em;color:var(--cr-text-muted);background:rgba(139,37,66,0.05);border-radius:8px';
+      infoEl.textContent = `Score: ${data.percentage}% · ${data.attemptsRemaining} attempt(s) remaining`;
+      const area = document.getElementById('crContentArea');
+      if (area) area.appendChild(infoEl);
+    }
+  }).catch(() => {
+    // Network error — quiz already scored client-side, so no action needed
+  });
+}
+
+// ─── ADAPTIVE LEARNING MODAL ───
+function showAdaptiveModal(message, targetSectionIndex) {
+  // Remove existing modal if any
+  const existing = document.getElementById('crAdaptiveModal');
+  if (existing) existing.remove();
+
+  const modal = document.createElement('div');
+  modal.id = 'crAdaptiveModal';
+  modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:10000';
+  modal.innerHTML = `<div style="background:var(--cr-bg,#fff);border-radius:16px;padding:32px;max-width:480px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.3);text-align:center">
+    <div style="font-size:1.5em;margin-bottom:12px">🔀</div>
+    <h3 style="font-family:var(--cr-font-display,Georgia,serif);font-size:1.2em;color:var(--cr-navy,#1a1a2e);margin-bottom:16px">Adaptive Learning</h3>
+    <p style="color:var(--cr-text-secondary,#555);line-height:1.6;margin-bottom:24px">${esc(message)}</p>
+    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+      ${targetSectionIndex !== null ? `<button class="cr-btn cr-btn-primary" id="crAdaptiveGo" style="padding:10px 24px">Go to Section</button>` : ''}
+      <button class="cr-btn" id="crAdaptiveDismiss" style="padding:10px 24px;background:var(--cr-bg-alt,#f5f5f5);color:var(--cr-text,#333)">
+        ${targetSectionIndex !== null ? 'Stay Here' : 'OK'}
+      </button>
+    </div>
+  </div>`;
+  document.body.appendChild(modal);
+
+  document.getElementById('crAdaptiveDismiss').addEventListener('click', () => modal.remove());
+  const goBtn = document.getElementById('crAdaptiveGo');
+  if (goBtn && targetSectionIndex !== null) {
+    goBtn.addEventListener('click', () => {
+      modal.remove();
+      goToSection(targetSectionIndex);
+    });
+  }
+  // Close on backdrop click
+  modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// CERTIFICATE REQUEST
+// ═══════════════════════════════════════════════════════════════
+function requestCertificate() {
+  if (!course?._id && !course?.slug) {
+    // Fallback for embedded/file-loaded courses
+    if (window.parent !== window) {
+      window.parent.postMessage({ type: 'REQUEST_CERTIFICATE' }, '*');
+    } else {
+      alert('Certificate generation requires a saved course.');
+    }
+    return;
+  }
+
+  const token = localStorage.getItem('token');
+  if (!token) {
+    alert('Please log in to request your certificate.');
+    return;
+  }
+
+  const base = crApiBase || (location.origin.includes('localhost') ? 'http://localhost:5000' : 'https://api.counselorready.com');
+  const courseId = course._id;
+  if (!courseId) {
+    alert('Course ID not available. Please reload the page.');
+    return;
+  }
+
+  // Show loading
+  const btn = document.querySelector('[data-action="requestCertificate"]');
+  if (btn) { btn.disabled = true; btn.textContent = 'Generating...'; }
+
+  fetch(`${base}/api/certificates/generate/${courseId}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (data.success && data.certificate) {
+      // Show success modal with download link
+      showAdaptiveModal(
+        `Your certificate has been generated! Certificate #${data.certificate.certificateNumber}`,
+        null
+      );
+      // Replace button with download link
+      if (btn) {
+        btn.textContent = 'Download Certificate';
+        btn.disabled = false;
+        btn.dataset.action = 'downloadCert';
+        btn.dataset.url = data.certificate.fileUrl;
+      }
+    } else if (data.certificate) {
+      // Already exists
+      showAdaptiveModal('Your certificate has already been generated.', null);
+      if (btn) { btn.disabled = false; btn.textContent = 'Get Certificate'; }
+    } else {
+      showAdaptiveModal(data.error || 'Failed to generate certificate.', null);
+      if (btn) { btn.disabled = false; btn.textContent = 'Get Certificate'; }
+    }
+  })
+  .catch(err => {
+    showAdaptiveModal('Network error. Please try again.', null);
+    if (btn) { btn.disabled = false; btn.textContent = 'Get Certificate'; }
+  });
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -4426,6 +4820,49 @@ function parseMarkdownToCourse(text, filename) {
         blocks.push({ type: 'text', content: mdBlockParse(content) });
       }
     });
+    
+    // ── DISTRIBUTE KCs: one per content section instead of all at end ──
+    var kcBlocks = blocks.filter(function(b) { return b.type === 'knowledgeCheck' && b.questions && b.questions.length > 0; });
+    if (kcBlocks.length > 0) {
+      // Collect all KC questions
+      var allKCQs = [];
+      kcBlocks.forEach(function(kb) { allKCQs = allKCQs.concat(kb.questions); });
+      
+      // Remove original KC blocks from the array
+      for (var ri = blocks.length - 1; ri >= 0; ri--) {
+        if (blocks[ri].type === 'knowledgeCheck') blocks.splice(ri, 1);
+      }
+      
+      // Find content text blocks (ones with H2 headings = real content sections)
+      var contentIndices = [];
+      blocks.forEach(function(b, bi) {
+        if (b.type === 'text' && b.content && /^<h2>/.test(b.content)) contentIndices.push(bi);
+        // Also count accordions that follow text blocks as part of that section
+      });
+      
+      if (contentIndices.length > 0 && allKCQs.length > 0) {
+        // Distribute: assign questions round-robin to content sections
+        var insertions = []; // {afterIndex, question}
+        allKCQs.forEach(function(q, qi) {
+          var targetSection = contentIndices[qi % contentIndices.length];
+          // Find the last block belonging to this section (before next H2 or end)
+          var nextH2 = contentIndices.find(function(ci) { return ci > targetSection; });
+          var insertAt = nextH2 ? nextH2 - 1 : blocks.length - 1;
+          insertions.push({ afterIndex: insertAt, question: q });
+        });
+        
+        // Sort insertions by index descending so splicing doesn't shift indices
+        insertions.sort(function(a, b) { return b.afterIndex - a.afterIndex; });
+        insertions.forEach(function(ins) {
+          blocks.splice(ins.afterIndex + 1, 0, {
+            type: 'knowledgeCheck',
+            title: 'Knowledge Check',
+            showExplanations: true,
+            questions: [ins.question]
+          });
+        });
+      }
+    }
     
     // Split blocks into navigable sections on H2 boundaries
     // Module divider merges into first content section
@@ -5315,11 +5752,10 @@ document.addEventListener('click', function(e) {
     
     // ─── Certificate ───
     case 'requestCertificate':
-      if (window.parent !== window) {
-        window.parent.postMessage({ type: 'REQUEST_CERTIFICATE' }, '*');
-      } else {
-        alert('Certificate generation available when embedded in CounselorReady');
-      }
+      requestCertificate();
+      break;
+    case 'downloadCert':
+      if (el.dataset.url) window.open(el.dataset.url, '_blank');
       break;
   }
 });

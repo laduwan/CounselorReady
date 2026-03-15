@@ -212,9 +212,13 @@ const CourseCard = ({ course, progress, onClick }) => {
       onClick={onClick}
       className="bg-white rounded-xl shadow-sm hover:shadow-lg transition-all cursor-pointer overflow-hidden border border-burgundy-100 group"
     >
-      {/* Thumbnail — gradient burgundy to forest with soft book icon */}
-      <div className="h-48 bg-gradient-to-br from-burgundy-200 to-forest-200 relative flex items-center justify-center">
-        <BookOpen className="h-16 w-16 text-burgundy-300" />
+      {/* Thumbnail — course image or gradient fallback */}
+      <div className="h-48 bg-gradient-to-br from-forest-100 to-burgundy-200 relative flex items-center justify-center overflow-hidden">
+        {course.thumbnail ? (
+          <img src={course.thumbnail} alt={course.title} className="w-full h-full object-cover" />
+        ) : (
+          <BookOpen className="h-16 w-16 text-burgundy-500" />
+        )}
         {isCompleted && (
           <div className="absolute top-3 right-3 bg-hunter-600 text-white px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1">
             <CheckCircle className="h-3 w-3" />
@@ -296,9 +300,13 @@ const CourseListItem = ({ course, progress, onClick }) => {
       className="bg-white rounded-xl shadow-sm hover:shadow-md transition-all cursor-pointer p-5 border border-burgundy-100 group"
     >
       <div className="flex items-center gap-5">
-        {/* Icon — gradient green to rose */}
-        <div className="h-16 w-16 bg-gradient-to-br from-hunter-100 to-burgundy-200 rounded-lg flex items-center justify-center flex-shrink-0">
-          <BookOpen className="h-8 w-8 text-burgundy-500" />
+        {/* Icon — course thumbnail or gradient fallback */}
+        <div className="h-16 w-16 bg-gradient-to-br from-hunter-100 to-burgundy-200 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden">
+          {course.thumbnail ? (
+            <img src={course.thumbnail} alt={course.title} className="w-full h-full object-cover object-top rounded-lg" />
+          ) : (
+            <BookOpen className="h-8 w-8 text-burgundy-500" />
+          )}
         </div>
 
         {/* Content */}

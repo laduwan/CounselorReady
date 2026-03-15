@@ -701,7 +701,12 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
             $inc: { 'subscription.paymentFailureCount': 1 }
           });
           console.log(`Payment failed for user ${user._id}`);
-          await sendPaymentFailedEmail(user._id);
+          // Send email notification about failed payment
+          try {
+            await sendPaymentFailedEmail(user._id);
+          } catch (emailErr) {
+            console.error('Failed to send payment failure email:', emailErr.message);
+          }
         }
         break;
       }

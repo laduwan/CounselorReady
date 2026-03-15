@@ -117,26 +117,34 @@ router.delete('/account', protect, async (req, res) => {
       return res.status(400).json({ error: 'Please confirm your email to delete account' });
     }
     
-    // Cancel Stripe subscription if active
     const user = await User.findById(req.user._id);
-    if (stripe && user.stripeSubscriptionId) {
+
+    // Cancel Stripe subscription if active
+    if (user.subscription?.stripeSubscriptionId) {
       try {
-        await stripe.subscriptions.cancel(user.stripeSubscriptionId);
-        console.log(`Canceled Stripe subscription ${user.stripeSubscriptionId} for account deletion`);
+        const Stripe = (await import('stripe')).default;
+        const stripe = process.env.STRIPE_SECRET_KEY ? new Stripe(process.env.STRIPE_SECRET_KEY) : null;
+        if (stripe) {
+          await stripe.subscriptions.cancel(user.subscription.stripeSubscriptionId);
+          console.log(`Canceled Stripe subscription ${user.subscription.stripeSubscriptionId} for deleted user ${user._id}`);
+        }
       } catch (stripeErr) {
-        console.error('Failed to cancel Stripe subscription during account deletion:', stripeErr.message);
+        console.error('Failed to cancel Stripe subscription on account deletion:', stripeErr.message);
       }
     }
 
     // Delete related data
-    await Promise.allSettled([
-      UserCredential.deleteMany({ userId: req.user._id }),
+    const Certificate = (await import('../models/Certificate.js')).default;
+    const UserCredential = (await import('../models/UserCredential.js')).default;
+    const UserCourseProgress = (await import('../models/UserCourseProgress.js')).default;
+    await Promise.all([
       Certificate.deleteMany({ userId: req.user._id }),
+      UserCredential.deleteMany({ userId: req.user._id }),
       UserCourseProgress.deleteMany({ userId: req.user._id }),
     ]);
 
     await User.findByIdAndDelete(req.user._id);
-    
+
     res.json({ message: 'Account deleted successfully' });
   } catch (error) {
     console.error('Delete account error:', error);
@@ -359,21 +367,22 @@ router.post('/hardship-pause', protect, async (req, res) => {
       await user.save();
     }
     
-    // Pause Stripe subscription
-    if (stripe && user.subscription?.stripeSubscriptionId) {
+    // Pause Stripe subscription (set to cancel at period end, then reactivate on resume)
+    if (user.subscription?.stripeSubscriptionId) {
       try {
-        await stripe.subscriptions.update(user.subscription.stripeSubscriptionId, {
-          pause_collection: {
-            behavior: 'keep_as_draft',
-            resumes_at: Math.floor(user.hardshipPause.pauseEndDate.getTime() / 1000)
-          }
-        });
-        console.log(`Paused Stripe subscription for user ${user._id}`);
+        const Stripe = (await import('stripe')).default;
+        const stripe = process.env.STRIPE_SECRET_KEY ? new Stripe(process.env.STRIPE_SECRET_KEY) : null;
+        if (stripe) {
+          await stripe.subscriptions.update(user.subscription.stripeSubscriptionId, {
+            pause_collection: { behavior: 'void' }
+          });
+          console.log(`Paused Stripe subscription ${user.subscription.stripeSubscriptionId} for hardship`);
+        }
       } catch (stripeErr) {
         console.error('Failed to pause Stripe subscription:', stripeErr.message);
       }
     }
-    
+
     // Send confirmation email
     await sendHardshipPauseActivatedEmail(user._id);
     
@@ -411,17 +420,21 @@ router.post('/end-hardship-pause', protect, async (req, res) => {
     }
     
     // Resume Stripe subscription
-    if (stripe && user.subscription?.stripeSubscriptionId) {
+    if (user.subscription?.stripeSubscriptionId) {
       try {
-        await stripe.subscriptions.update(user.subscription.stripeSubscriptionId, {
-          pause_collection: ''
-        });
-        console.log(`Resumed Stripe subscription for user ${user._id}`);
+        const Stripe = (await import('stripe')).default;
+        const stripe = process.env.STRIPE_SECRET_KEY ? new Stripe(process.env.STRIPE_SECRET_KEY) : null;
+        if (stripe) {
+          await stripe.subscriptions.update(user.subscription.stripeSubscriptionId, {
+            pause_collection: ''
+          });
+          console.log(`Resumed Stripe subscription ${user.subscription.stripeSubscriptionId} after hardship pause`);
+        }
       } catch (stripeErr) {
         console.error('Failed to resume Stripe subscription:', stripeErr.message);
       }
     }
-    
+
     // Send confirmation email
     await sendPauseEndedEmail(user._id);
     

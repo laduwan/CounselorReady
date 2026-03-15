@@ -890,13 +890,16 @@ export function VideoEmbed({ videoUrl, videoTitle, videoDuration, markers = [], 
 // ============================================================================
 // 16. STANDALONE IMAGE
 // ============================================================================
-export function ImageBlock({ imageUrl, imageAltText, imageCaption, imageSize = 'large', imageAlignment = 'center', onComplete }) {
+export function ImageBlock({ imageUrl, imageAltText, imageCaption, imageSize = 'large', imageAlignment = 'center', imageBorder = 'none', imageShape = 'default', onComplete }) {
   useEffect(() => { if (onComplete) onComplete(); }, []);
   const w = { small: '40%', medium: '60%', large: '85%', full: '100%' }[imageSize] || '85%';
+  const border = imageBorder === 'subtle' ? '1px solid #E8E4DF' : imageBorder === 'solid' ? '2px solid #9CA3AF' : 'none';
+  const shadow = imageBorder === 'rounded' ? '0 8px 24px rgba(0,0,0,0.12)' : '0 2px 8px rgba(0,0,0,0.08)';
+  const radius = imageShape === 'circle' ? '50%' : imageShape === 'pill' ? 999 : imageShape === 'rounded' ? 20 : 12;
   return (
     <figure style={{ margin: '24px 0', textAlign: imageAlignment }}>
       {imageUrl ? (
-        <img src={imageUrl} alt={imageAltText || imageCaption || 'Course image'} style={{ width: w, maxWidth: '100%', borderRadius: 12, boxShadow: '0 2px 8px rgba(0,0,0,0.08)', display: 'inline-block' }} loading="lazy" />
+        <img src={imageUrl} alt={imageAltText || imageCaption || 'Course image'} style={{ width: w, maxWidth: '100%', borderRadius: radius, boxShadow: shadow, border, display: 'inline-block' }} loading="lazy" />
       ) : (
         <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: B.navyBg, borderRadius: 12, padding: 48, width: w }}><BookOpen size={48} color={B.border} /></div>
       )}
