@@ -283,6 +283,17 @@ const courseSchema = new mongoose.Schema({
       default: 'I attest that I personally completed this entire course, including all required activities and assessments, and that I did not receive unauthorized assistance.'
     },
     
+    // Adaptive Learning Paths
+    adaptiveEnabled: { type: Boolean, default: false },
+    adaptiveRules: [{
+      sectionIndex: { type: Number, required: true },
+      condition: { type: String, enum: ['score_below', 'score_above', 'failed'], required: true },
+      threshold: { type: Number, default: 0.7 },
+      action: { type: String, enum: ['redirect', 'require_review', 'skip_ahead'], required: true },
+      targetSectionIndex: { type: Number, required: true },
+      message: { type: String, default: '' }
+    }],
+
     // Narration / Text-to-Speech
     narrationEnabled: { type: Boolean, default: false },
     narrationVoice: { 

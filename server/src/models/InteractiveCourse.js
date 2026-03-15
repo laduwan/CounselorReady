@@ -224,11 +224,14 @@ const SectionProgressSchema = new mongoose.Schema({
   timeSpent: { type: Number, default: 0 }, // seconds
   
   // Status
-  status: { 
-    type: String, 
-    enum: ['not_started', 'in_progress', 'completed'], 
-    default: 'not_started' 
-  }
+  status: {
+    type: String,
+    enum: ['not_started', 'in_progress', 'completed'],
+    default: 'not_started'
+  },
+
+  // Adaptive learning — set when an adaptive rule unlocks this section out of order
+  adaptivelyUnlocked: { type: Boolean, default: false }
 });
 
 const CourseProgressSchema = new mongoose.Schema({

@@ -479,6 +479,8 @@ function ContentBlockRenderer({
           imageCaption={block.imageCaption}
           imageSize={block.imageSize}
           imageAlignment={block.imageAlignment}
+          imageBorder={block.imageBorder}
+          imageShape={block.imageShape}
           onComplete={() => handleInteractionComplete(true, 1)}
         />
       );
@@ -769,6 +771,11 @@ function SectionView({
               onProgressUpdate();
             }
             setShowQuiz(false);
+            // Handle adaptive redirect
+            if (results.navigateToSection !== undefined) {
+              onProgressUpdate();
+              setTimeout(() => onNavigate(results.navigateToSection), 300);
+            }
           }}
           onBack={() => setShowQuiz(false)}
         />
@@ -860,6 +867,31 @@ function SectionQuiz({ section, courseSlug, sectionIndex, onComplete, onBack }) 
             ? 'You can now proceed to the next section.'
             : `You need ${Math.round(section.quizPassThreshold * 100)}% to pass.`}
         </p>
+        {results.attemptsRemaining !== undefined && !results.passed && (
+          <p className="text-xs text-honey-600 mb-3 font-medium">
+            {results.attemptsRemaining > 0
+              ? `${results.attemptsRemaining} attempt(s) remaining`
+              : 'No attempts remaining'}
+          </p>
+        )}
+        {results.adaptiveAction && (
+          <div className="bg-honey-50 border border-honey-200 rounded-xl p-4 mb-4 text-left">
+            <p className="text-sm font-semibold text-navy-700 mb-1">
+              {results.adaptiveAction.action === 'redirect' && 'Recommended: Review Additional Material'}
+              {results.adaptiveAction.action === 'require_review' && 'Review Required'}
+              {results.adaptiveAction.action === 'skip_ahead' && 'You May Skip Ahead'}
+            </p>
+            {results.adaptiveAction.message && (
+              <p className="text-xs text-navy-500 mb-3">{results.adaptiveAction.message}</p>
+            )}
+            <button
+              onClick={() => onComplete({ ...results, navigateToSection: results.adaptiveAction.targetSectionIndex })}
+              className="px-4 py-2 rounded-lg text-xs font-bold bg-burgundy-700 hover:bg-burgundy-600 text-white transition-all"
+            >
+              {results.adaptiveAction.action === 'skip_ahead' ? 'Skip Ahead' : 'Go to Review Section'}
+            </button>
+          </div>
+        )}
         <button
           onClick={() => onComplete(results)}
           className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all shadow-sm ${
@@ -1247,7 +1279,9 @@ function CourseSidebar({
                       const sectionProgress = progress?.sectionProgress?.[index];
                       const isCompleted = sectionProgress?.status === 'completed';
                       const isCurrent = currentView === 'section' && progress?.currentSectionIndex === index;
-                      const isLocked = index > 0 && progress?.sectionProgress?.[index - 1]?.status !== 'completed';
+                      const isLocked = index > 0
+                        && progress?.sectionProgress?.[index - 1]?.status !== 'completed'
+                        && !progress?.sectionProgress?.[index]?.adaptivelyUnlocked;
 
                       return (
                         <button

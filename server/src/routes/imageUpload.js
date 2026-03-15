@@ -75,12 +75,35 @@ router.delete('/:publicId(*)', protect, requireAdmin, async (req, res) => {
 
 router.get('/browse', protect, requireAdmin, async (req, res) => {
   try {
-    const folder = req.query.folder || 'counselorready/course-content';
-    const result = await cloudinary.v2.search.expression(`folder:${folder}`).sort_by('created_at', 'desc').max_results(50).execute();
+    const folder = req.query.folder || '';
+    const search = req.query.search || '';
+    const limit = Math.min(parseInt(req.query.max_results) || 50, 200);
+
+    // Build Cloudinary search expression
+    const folders = folder
+      ? [folder]
+      : ['counselorready/course-content', 'counselorready/course-thumbnails', 'counselorready/inline', 'counselorready/hotspot-bg'];
+
+    const folderExpr = folders.map(f => `folder:${f}`).join(' OR ');
+    let expression = folders.length > 1 ? `(${folderExpr})` : folderExpr;
+    if (search) {
+      expression += ` AND (public_id:*${search}* OR context.alt:*${search}*)`;
+    }
+
+    const result = await cloudinary.v2.search
+      .expression(expression)
+      .sort_by('created_at', 'desc')
+      .max_results(limit)
+      .with_field('context')
+      .execute();
+
     res.json({ success: true, data: {
       images: result.resources.map(r => ({
         url: r.secure_url, publicId: r.public_id, width: r.width, height: r.height,
-        format: r.format, bytes: r.bytes, createdAt: r.created_at, alt: r.context?.custom?.alt || '',
+        format: r.format, bytes: r.bytes, createdAt: r.created_at,
+        alt: r.context?.custom?.alt || '',
+        folder: r.folder || '',
+        thumbnailUrl: cloudinary.v2.url(r.public_id, { width: 200, height: 200, crop: 'fill', quality: 'auto' }),
       })),
       totalCount: result.total_count,
     }});

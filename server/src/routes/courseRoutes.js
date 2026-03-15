@@ -328,6 +328,36 @@ router.post('/:slug/progress/section/:sectionIndex/quiz', protect, async (req, r
       return res.status(404).json({ error: 'Not enrolled in this course' });
     }
 
+    // Enforce retake policy
+    const sectionProg = progress.sectionProgress[sectionIndex];
+    const settings = course.settings || {};
+    if (sectionProg?.quizPassed) {
+      // Already passed — only allow retakes if policy permits
+      if (settings.retakePolicy === 'first_final') {
+        return res.status(400).json({ error: 'Quiz already passed. Retakes are not allowed under this policy.' });
+      }
+    }
+    if (settings.retakePolicy === 'limited' && sectionProg?.quizAttempts?.length >= (settings.maxRetakes || 3)) {
+      return res.status(400).json({
+        error: `Maximum retakes reached (${settings.maxRetakes || 3}). No more attempts allowed.`,
+        attemptsUsed: sectionProg.quizAttempts.length,
+        maxRetakes: settings.maxRetakes || 3
+      });
+    }
+    // Enforce retake cooldown (minutes)
+    if (settings.retakeCooldown > 0 && sectionProg?.quizAttempts?.length > 0) {
+      const lastAttempt = sectionProg.quizAttempts[sectionProg.quizAttempts.length - 1];
+      const cooldownMs = settings.retakeCooldown * 60 * 1000;
+      const timeSince = Date.now() - new Date(lastAttempt.attemptedAt).getTime();
+      if (timeSince < cooldownMs) {
+        const remainingMin = Math.ceil((cooldownMs - timeSince) / 60000);
+        return res.status(400).json({
+          error: `Please wait ${remainingMin} minute(s) before retaking this quiz.`,
+          cooldownRemaining: remainingMin
+        });
+      }
+    }
+
     // Calculate score
     let correctCount = 0;
     section.quizQuestions.forEach((q, i) => {
@@ -364,9 +394,21 @@ router.post('/:slug/progress/section/:sectionIndex/quiz', protect, async (req, r
       sectionProgress.quizPassed = true;
     }
 
-    // Update best score
-    if (!sectionProgress.bestQuizScore || correctCount > sectionProgress.bestQuizScore) {
+    // Update best score based on scorePolicy
+    const scorePolicy = settings.scorePolicy || 'highest';
+    if (scorePolicy === 'highest') {
+      if (!sectionProgress.bestQuizScore || correctCount > sectionProgress.bestQuizScore) {
+        sectionProgress.bestQuizScore = correctCount;
+      }
+    } else if (scorePolicy === 'latest') {
       sectionProgress.bestQuizScore = correctCount;
+    } else if (scorePolicy === 'first') {
+      if (sectionProgress.quizAttempts.length === 1) {
+        sectionProgress.bestQuizScore = correctCount;
+      }
+    } else if (scorePolicy === 'average') {
+      const totalScore = sectionProgress.quizAttempts.reduce((sum, a) => sum + a.score, 0);
+      sectionProgress.bestQuizScore = Math.round(totalScore / sectionProgress.quizAttempts.length);
     }
 
     // Check if section is now complete
@@ -388,7 +430,37 @@ router.post('/:slug/progress/section/:sectionIndex/quiz', protect, async (req, r
     }
     await progress.save();
 
-    res.json({
+    // Check adaptive learning rules
+    let adaptiveAction = null;
+    if (settings.adaptiveEnabled && settings.adaptiveRules?.length > 0) {
+      const secIdx = parseInt(sectionIndex);
+      const matchingRule = settings.adaptiveRules.find(rule => {
+        if (rule.sectionIndex !== secIdx) return false;
+        if (rule.condition === 'score_below' && score < rule.threshold) return true;
+        if (rule.condition === 'score_above' && score >= rule.threshold) return true;
+        if (rule.condition === 'failed' && !passed) return true;
+        return false;
+      });
+      if (matchingRule) {
+        adaptiveAction = {
+          action: matchingRule.action,
+          targetSectionIndex: matchingRule.targetSectionIndex,
+          message: matchingRule.message || '',
+          condition: matchingRule.condition,
+          threshold: matchingRule.threshold
+        };
+        // Mark target section as adaptively unlocked
+        if (matchingRule.action === 'redirect' || matchingRule.action === 'skip_ahead') {
+          const targetProg = progress.sectionProgress[matchingRule.targetSectionIndex];
+          if (targetProg && !targetProg.adaptivelyUnlocked) {
+            targetProg.adaptivelyUnlocked = true;
+          }
+        }
+        await progress.save();
+      }
+    }
+
+    const response = {
       score: correctCount,
       totalQuestions,
       percentage: Math.round(score * 100),
@@ -396,7 +468,15 @@ router.post('/:slug/progress/section/:sectionIndex/quiz', protect, async (req, r
       attemptsCount: sectionProgress.quizAttempts.length,
       bestScore: sectionProgress.bestQuizScore,
       sectionCompleted: sectionProgress.status === 'completed'
-    });
+    };
+    if (adaptiveAction) response.adaptiveAction = adaptiveAction;
+
+    // Include retake info
+    if (settings.retakePolicy === 'limited') {
+      response.attemptsRemaining = (settings.maxRetakes || 3) - sectionProgress.quizAttempts.length;
+    }
+
+    res.json(response);
   } catch (error) {
     console.error('Error submitting quiz:', error);
     res.status(500).json({ error: 'Failed to submit quiz' });
