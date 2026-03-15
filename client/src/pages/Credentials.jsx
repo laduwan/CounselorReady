@@ -108,22 +108,22 @@ export default function Credentials() {
   return (
     <div>
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Credentials & Certificates</h1>
-          <p className="text-gray-600">Track licenses, certifications, and CE certificates</p>
+          <h1 className="font-display text-4xl font-bold text-burgundy-900 mb-2">Credentials & CE Tracking</h1>
+          <p className="text-stone-600">Manage licenses, certifications, and continuing education hours</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-3">
           <button
             onClick={() => setShowScanModal('ce')}
-            className="flex items-center gap-2 px-4 py-2 bg-dustyrose-600 text-white rounded-lg hover:bg-dustyrose-700 transition-colors text-sm font-medium"
+            className="flex items-center gap-2 px-6 py-2.5 bg-hunter-600 text-white rounded-lg hover:bg-hunter-700 transition-colors text-sm font-medium whitespace-nowrap"
           >
-            <Scan className="w-4 h-4" />
+            <Scan className="w-5 h-5" />
             Scan Certificate
           </button>
           <button
             onClick={() => setShowAddModal(true)}
-            className="btn-primary flex items-center gap-2"
+            className="btn-primary flex items-center gap-2 whitespace-nowrap"
           >
             <Plus className="w-4 h-4" />
             Add Credential
@@ -132,34 +132,30 @@ export default function Credentials() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 mb-6 bg-gray-100 rounded-lg p-1 w-fit">
-        <button
-          onClick={() => setActiveTab('credentials')}
-          className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-            activeTab === 'credentials'
-              ? 'bg-white text-gray-900 shadow-sm'
-              : 'text-gray-600 hover:text-gray-900'
-          }`}
-        >
-          <span className="flex items-center gap-2">
-            <Award className="w-4 h-4" />
-            Credentials ({credentials.length})
-          </span>
-        </button>
-        <button
-          onClick={() => setActiveTab('certificates')}
-          className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-            activeTab === 'certificates'
-              ? 'bg-white text-gray-900 shadow-sm'
-              : 'text-gray-600 hover:text-gray-900'
-          }`}
-        >
-          <span className="flex items-center gap-2">
-            <FileText className="w-4 h-4" />
-            CE Certificates ({certificates.length})
-          </span>
-        </button>
-      </div>
+      <div className="bg-white rounded-xl border border-stone-200 overflow-hidden mb-6">
+        <div className="flex border-b border-stone-200">
+          <button
+            onClick={() => setActiveTab('credentials')}
+            className={`px-6 py-4 text-sm font-medium transition-colors ${
+              activeTab === 'credentials'
+                ? 'text-burgundy-700 border-b-2 border-burgundy-600 bg-burgundy-50'
+                : 'text-stone-600 hover:text-burgundy-600 hover:bg-stone-50'
+            }`}
+          >
+            My Credentials <span className={`ml-2 px-2 py-0.5 rounded-full text-xs ${activeTab === 'credentials' ? 'bg-burgundy-100 text-burgundy-700' : 'bg-stone-200 text-stone-600'}`}>{credentials.length}</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('certificates')}
+            className={`px-6 py-4 text-sm font-medium transition-colors ${
+              activeTab === 'certificates'
+                ? 'text-burgundy-700 border-b-2 border-burgundy-600 bg-burgundy-50'
+                : 'text-stone-600 hover:text-burgundy-600 hover:bg-stone-50'
+            }`}
+          >
+            CE Certificates <span className={`ml-2 px-2 py-0.5 rounded-full text-xs ${activeTab === 'certificates' ? 'bg-burgundy-100 text-burgundy-700' : 'bg-stone-200 text-stone-600'}`}>{certificates.length}</span>
+          </button>
+        </div>
+        <div className="p-6">
 
       {/* ── Credentials Tab ── */}
       {activeTab === 'credentials' && (
@@ -167,17 +163,17 @@ export default function Credentials() {
           {credentials.length > 0 ? (
             <div className="space-y-4">
               {credentials.map((cred) => (
-                <div key={cred._id} className="card">
+                <div key={cred._id} className="border border-stone-200 rounded-xl p-5 hover:border-hunter-300 transition-colors">
                   <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-4">
                     <div className="flex items-start gap-4">
-                      <div className="w-12 h-12 bg-dustyrose-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                        <Award className="w-6 h-6 text-dustyrose-600" />
+                      <div className="w-16 h-16 rounded-full border-4 border-hunter-600 flex items-center justify-center bg-white flex-shrink-0">
+                        <span className="text-xl font-bold text-hunter-600">{cred.percentComplete}%</span>
                       </div>
                       <div>
-                        <h3 className="font-semibold text-gray-900">{cred.name}</h3>
-                        <p className="text-sm text-gray-500">{cred.issuingBody}</p>
+                        <h3 className="font-semibold text-stone-900 text-lg">{cred.name}</h3>
+                        <p className="text-sm text-stone-500">{cred.issuingBody}</p>
                         {cred.licenseNumber && (
-                          <p className="text-sm text-gray-500">License #: {cred.licenseNumber}</p>
+                          <p className="text-sm text-stone-500">#{cred.licenseNumber}</p>
                         )}
                       </div>
                     </div>
@@ -187,7 +183,7 @@ export default function Credentials() {
                       </span>
                       <button
                         onClick={() => setShowScanModal('credential')}
-                        className="text-dustyrose-600 hover:text-dustyrose-700 text-sm py-1.5 px-3 border border-dustyrose-200 rounded-lg hover:bg-dustyrose-50 transition-colors"
+                        className="text-stone-400 hover:text-stone-600 text-sm py-1.5 px-3 rounded-lg transition-colors"
                         title="Scan credential document"
                       >
                         <Scan className="w-4 h-4" />
@@ -201,32 +197,25 @@ export default function Credentials() {
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2 text-sm text-gray-600 mb-4">
-                    <Calendar className="w-4 h-4" />
+                  <div className="text-sm text-stone-500 mb-3">
                     <span>Expires: {formatDate(cred.expirationDate)}</span>
                     {cred.daysUntilExpiration > 0 && (
-                      <span className="text-gray-400">({cred.daysUntilExpiration} days)</span>
+                      <span> ({cred.daysUntilExpiration} days)</span>
                     )}
                   </div>
 
-                  <div className="bg-gray-50 rounded-lg p-4">
-                    <div className="flex items-center justify-between mb-3">
-                      <span className="font-medium text-gray-900">CEU Progress</span>
-                      <span className="text-burgundy-700 font-medium">
-                        {cred.totalCEUsCompleted}/{cred.totalCEUsRequired} hours
-                      </span>
+                  <div className="flex items-center justify-between">
+                    <div className="text-sm">
+                      <span className="font-medium text-hunter-700">{cred.totalCEUsCompleted}</span>
+                      <span className="text-stone-500">/{cred.totalCEUsRequired} CE hours</span>
                     </div>
-                    <div className="h-2 bg-gray-200 rounded-full overflow-hidden mb-4">
-                      <div 
-                        className="h-full bg-burgundy-600 rounded-full" 
-                        style={{ width: `${cred.percentComplete}%` }}
-                      ></div>
-                    </div>
-                    <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                      {cred.requirements?.map((req, idx) => (
+                  </div>
+                  {cred.requirements?.length > 0 && (
+                    <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 mt-3">
+                      {cred.requirements.map((req, idx) => (
                         <div key={idx} className="flex items-center justify-between text-sm">
-                          <span className="text-gray-600">{req.category}</span>
-                          <span className={req.hoursCompleted >= req.hoursRequired ? 'text-green-600' : 'text-gray-900'}>
+                          <span className="text-stone-600">{req.category}</span>
+                          <span className={req.hoursCompleted >= req.hoursRequired ? 'text-hunter-600' : 'text-stone-900'}>
                             {req.hoursCompleted}/{req.hoursRequired}
                             {req.hoursCompleted >= req.hoursRequired && (
                               <CheckCircle className="w-3 h-3 inline ml-1" />
@@ -235,17 +224,17 @@ export default function Credentials() {
                         </div>
                       ))}
                     </div>
-                  </div>
+                  )}
 
                   {cred.ceuLogs?.length > 0 && (
-                    <div className="mt-4 pt-4 border-t border-gray-100">
-                      <h4 className="text-sm font-medium text-gray-700 mb-2">Recent Activity</h4>
+                    <div className="mt-4 pt-4 border-t border-stone-100">
+                      <h4 className="text-sm font-medium text-stone-700 mb-2">Recent Activity</h4>
                       <div className="space-y-2">
                         {cred.ceuLogs.slice(-3).reverse().map((log, idx) => (
                           <div key={idx} className="flex items-center justify-between text-sm">
                             <div className="flex items-center gap-2">
-                              <FileText className="w-4 h-4 text-gray-400" />
-                              <span className="text-gray-700">{log.description}</span>
+                              <FileText className="w-4 h-4 text-stone-400" />
+                              <span className="text-stone-700">{log.description}</span>
                             </div>
                             <span className="text-burgundy-700">+{log.hours} hrs</span>
                           </div>
@@ -257,16 +246,16 @@ export default function Credentials() {
               ))}
             </div>
           ) : (
-            <div className="card text-center py-12">
-              <Award className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No credentials yet</h3>
-              <p className="text-gray-500 mb-6">
+            <div className="border border-stone-200 rounded-xl text-center py-12 px-6">
+              <Award className="w-16 h-16 text-stone-300 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-stone-900 mb-2">No credentials yet</h3>
+              <p className="text-stone-500 mb-6">
                 Start tracking your licenses and certifications to stay on top of renewals.
               </p>
               <div className="flex items-center justify-center gap-3">
                 <button
                   onClick={() => setShowScanModal('credential')}
-                  className="flex items-center gap-2 px-4 py-2 bg-dustyrose-600 text-white rounded-lg hover:bg-dustyrose-700 transition-colors text-sm font-medium"
+                  className="flex items-center gap-2 px-4 py-2 bg-hunter-600 text-white rounded-lg hover:bg-hunter-700 transition-colors text-sm font-medium"
                 >
                   <Scan className="w-4 h-4" />
                   Scan Credential
@@ -290,16 +279,16 @@ export default function Credentials() {
           {certificates.length > 0 ? (
             <div className="space-y-3">
               {certificates.map((cert) => (
-                <div key={cert._id} className="card">
+                <div key={cert._id} className="border border-stone-200 rounded-xl p-5 hover:border-hunter-300 transition-colors">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div className="flex items-start gap-3 flex-1 min-w-0">
-                      <div className="w-10 h-10 bg-burgundy-200 rounded-lg flex items-center justify-center flex-shrink-0">
-                        <FileText className="w-5 h-5 text-burgundy-700" />
+                      <div className="w-10 h-10 bg-stone-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <FileText className="w-5 h-5 text-stone-600" />
                       </div>
                       <div className="min-w-0">
-                        <h3 className="font-medium text-gray-900 truncate">{cert.title}</h3>
-                        <p className="text-sm text-gray-500">{cert.provider}</p>
-                        <div className="flex flex-wrap items-center gap-3 mt-1 text-xs text-gray-500">
+                        <h3 className="font-medium text-stone-900 truncate">{cert.title}</h3>
+                        <p className="text-sm text-stone-500">{cert.provider}</p>
+                        <div className="flex flex-wrap items-center gap-3 mt-1 text-xs text-stone-500">
                           <span className="flex items-center gap-1">
                             <Calendar className="w-3 h-3" />
                             {formatDate(cert.completionDate)}
@@ -309,7 +298,7 @@ export default function Credentials() {
                             {cert.ceHours} CE hours
                           </span>
                           {cert.category && (
-                            <span className="px-2 py-0.5 bg-gray-100 rounded-full">
+                            <span className="px-2 py-0.5 bg-stone-100 text-stone-600 rounded-full">
                               {cert.category}
                             </span>
                           )}
@@ -331,7 +320,7 @@ export default function Credentials() {
                       {cert.fileUrl && (
                         <button
                           onClick={() => setShowCertViewer(cert)}
-                          className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-burgundy-700 border border-burgundy-300 rounded-lg hover:bg-burgundy-100 transition-colors"
+                          className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-hunter-600 border border-hunter-200 rounded-lg hover:bg-hunter-50 transition-colors"
                           title="View certificate"
                         >
                           <Eye className="w-4 h-4" />
@@ -340,7 +329,7 @@ export default function Credentials() {
                       )}
                       <button
                         onClick={() => handleDeleteCertificate(cert._id)}
-                        className="p-1.5 text-gray-400 hover:text-red-600 rounded-lg hover:bg-red-50 transition-colors"
+                        className="p-1.5 text-stone-400 hover:text-red-600 rounded-lg hover:bg-red-50 transition-colors"
                         title="Delete certificate"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -351,15 +340,15 @@ export default function Credentials() {
               ))}
             </div>
           ) : (
-            <div className="card text-center py-12">
-              <FileText className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No certificates yet</h3>
-              <p className="text-gray-500 mb-6">
+            <div className="border border-stone-200 rounded-xl text-center py-12 px-6">
+              <FileText className="w-16 h-16 text-stone-300 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-stone-900 mb-2">No certificates yet</h3>
+              <p className="text-stone-500 mb-6">
                 Upload or scan your CE certificates to keep them organized and track your hours.
               </p>
               <button
                 onClick={() => setShowScanModal('ce')}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-dustyrose-600 text-white rounded-lg hover:bg-dustyrose-700 transition-colors text-sm font-medium"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-hunter-600 text-white rounded-lg hover:bg-hunter-700 transition-colors text-sm font-medium"
               >
                 <Scan className="w-4 h-4" />
                 Scan Your First Certificate
@@ -368,6 +357,9 @@ export default function Credentials() {
           )}
         </>
       )}
+
+      </div>{/* end tab content padding */}
+      </div>{/* end tab container */}
 
       {/* Modals */}
       {showAddModal && (
