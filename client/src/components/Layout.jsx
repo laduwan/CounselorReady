@@ -16,6 +16,8 @@ const navLinks = [
   { name: 'Dashboard', href: '/dashboard' },
   { name: 'Courses', href: '/courses', children: [
     { name: 'Browse Courses',    href: '/courses' },
+    { name: 'Researched-n-Ready', href: '/research-ready' },
+    { name: 'Scholarly Articles', href: '/scholarly-articles' },
     { name: 'Recommendations',   href: '/recommendations' },
     { name: 'Achievements',      href: '/achievements' },
   ]},
