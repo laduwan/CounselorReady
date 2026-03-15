@@ -63,6 +63,8 @@ import adminStatsRoutes from './routes/adminStats.js';
 import partnersRoutes from './routes/partners.js';
 import rawMarkdownRoutes from './routes/rawMarkdownRoute.js';
 import dashboardRoutes from './routes/dashboard.js';
+// ── Research Ready CE ──
+import researchReadyRoutes from './routes/researchReady.js';
 // Import services
 import { initializeScheduler } from './services/notificationScheduler.js';
 
@@ -265,6 +267,11 @@ app.use('/api/partners', partnersRoutes);
 app.use('/api/tools', toolsRoutes);
 app.use('/api/rawmd', rawMarkdownRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+// ── Research Ready CE ──
+app.use('/api/research-ready', researchReadyRoutes);
+
+// Serve syllabus DOCX files
+app.use('/uploads/syllabi', express.static(path.join(__dirname, '../uploads/syllabi')));
 
 // Static templates directory intentionally NOT served publicly
 // Certificate assets (signature.png, certificate_template.pdf) are loaded
