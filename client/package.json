@@ -8,27 +8,34 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "0.24.3",
     "axios": "1.13.6",
+    "dompurify": "3.3.2",
     "jspdf": "2.5.2",
     "lucide-react": "0.294.0",
     "mammoth": "1.11.0",
     "pdfjs-dist": "5.5.207",
     "react": "18.3.1",
     "react-dom": "18.3.1",
-    "react-router-dom": "6.30.3",
-    "dompurify": "3.3.2"
+    "react-router-dom": "6.30.3"
   },
   "devDependencies": {
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.1",
     "@types/react": "18.3.28",
     "@types/react-dom": "18.3.7",
     "@vitejs/plugin-react": "4.7.0",
     "autoprefixer": "10.4.27",
+    "jsdom": "^28.1.0",
     "postcss": "8.5.8",
     "tailwindcss": "3.4.19",
-    "vite": "5.4.21"
+    "vite": "5.4.21",
+    "vitest": "^4.1.0"
   }
 }

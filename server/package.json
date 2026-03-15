@@ -13,7 +13,9 @@
     "seed:validate": "node src/scripts/seedAndValidateCourses.js",
     "seed:validate:fix": "node src/scripts/seedAndValidateCourses.js --fix",
     "seed:validate:dry": "node src/scripts/seedAndValidateCourses.js --dry-run",
-    "seed:validate:only": "node src/scripts/seedAndValidateCourses.js --validate-only"
+    "seed:validate:only": "node src/scripts/seedAndValidateCourses.js --validate-only",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.24.0",
@@ -40,5 +42,9 @@
     "stripe": "^14.10.0",
     "twilio": "^4.19.0",
     "uuid": "^9.0.1"
+  },
+  "devDependencies": {
+    "supertest": "^7.2.2",
+    "vitest": "^4.1.0"
   }
 }

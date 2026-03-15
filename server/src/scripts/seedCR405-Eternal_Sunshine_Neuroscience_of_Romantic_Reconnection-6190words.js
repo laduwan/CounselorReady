@@ -1,3 +1,8 @@
+/**
+ * Copyright (c) 2026 CounselorReady, a subsidiary of Ga Integrated Therapeutic Perspectives, LLC.
+ * All rights reserved. Proprietary and confidential.
+ * Unauthorized copying or distribution is strictly prohibited.
+ */
 // CR-405 | Eternal Sunshine of the Reconnected Mind: The Neuroscience and Clinical Practice of Rebuilding Romantic Bonds
 // 1 CE Hour | Movie-Themed (Clinical Skills) | ACEP Compliant | APA 7th Edition
 // NBCC ACEP Provider #7760 | GAITP LLC

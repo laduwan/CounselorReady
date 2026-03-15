@@ -61,6 +61,7 @@ import legacyVaultRoutes from './routes/legacyVault.js';
 import adminStatsRoutes from './routes/adminStats.js';
 // ── Whitelabel partner routes ──
 import partnersRoutes from './routes/partners.js';
+import { detectPartner } from './middleware/partner.js';
 import rawMarkdownRoutes from './routes/rawMarkdownRoute.js';
 import dashboardRoutes from './routes/dashboard.js';
 // ── Research Ready CE ──
@@ -106,7 +107,7 @@ app.use(cors({
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'X-Partner-Slug']
 }));
 
 // Security headers
@@ -171,6 +172,9 @@ app.use('/api/scholarly-articles/article/*/generate-quiz', aiLimiter);
 app.use('/api/payments/webhook', express.raw({ type: 'application/json' }));
 app.use(express.json({ limit: '15mb' }));
 app.use(express.urlencoded({ extended: true, limit: '15mb' }));
+
+// Partner detection — attach req.partner context for all API requests
+app.use('/api/', detectPartner);
 
 // Request logging (development)
 if (process.env.NODE_ENV !== 'production') {

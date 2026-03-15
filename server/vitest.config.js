@@ -3,4 +3,11 @@
  * All rights reserved. Proprietary and confidential.
  * Unauthorized copying or distribution is strictly prohibited.
  */
+import { defineConfig } from 'vitest/config';
 
+export default defineConfig({
+  test: {
+    globals: true,
+    environment: 'node',
+  },
+});

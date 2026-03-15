@@ -53,6 +53,8 @@ export default function PartnerBrandingSettings() {
     primaryColor: '#6B1D34',
     accentColor: '#D4A855',
   });
+  const [error, setError] = useState(null);
+  const [saveError, setSaveError] = useState(null);
   const [useCustomColors, setUseCustomColors] = useState(false);
 
   useEffect(() => {
@@ -85,7 +87,9 @@ export default function PartnerBrandingSettings() {
             accentColor: b.accentColor || '#D4A855',
           });
         }
-      } catch { /* silent */ }
+      } catch (err) {
+        setError(err.response?.data?.error || 'Failed to load branding settings');
+      }
       setLoading(false);
     }
     load();
@@ -115,8 +119,11 @@ export default function PartnerBrandingSettings() {
       });
       setPartner(data.partner);
       setSaved(true);
+      setSaveError(null);
       setTimeout(() => setSaved(false), 2000);
-    } catch { /* silent */ }
+    } catch (err) {
+      setSaveError(err.response?.data?.error || 'Failed to save branding settings');
+    }
     setSaving(false);
   }
 
@@ -124,6 +131,18 @@ export default function PartnerBrandingSettings() {
     return (
       <div className="flex items-center justify-center py-20">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2" style={{ borderColor: BURGUNDY }} />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-20">
+        <p className="text-lg font-medium text-red-700">Something went wrong</p>
+        <p className="text-sm text-stone-500 mt-1">{error}</p>
+        <button onClick={() => window.location.reload()} className="mt-4 px-4 py-2 text-sm rounded-lg border border-stone-300 text-stone-600 hover:bg-stone-50">
+          Try Again
+        </button>
       </div>
     );
   }
@@ -158,6 +177,12 @@ export default function PartnerBrandingSettings() {
           {saved ? <><Check className="w-4 h-4" /> Saved</> : <><Save className="w-4 h-4" /> {saving ? 'Saving...' : 'Save Changes'}</>}
         </button>
       </div>
+
+      {saveError && (
+        <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+          {saveError}
+        </div>
+      )}
 
       {/* Company Info */}
       <div className="card p-5">

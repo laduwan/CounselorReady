@@ -7,7 +7,7 @@ import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
-import { Menu, X, ChevronDown, LogOut, Settings, ShieldCheck, Users, Bell, Palette, BookOpen } from 'lucide-react';
+import { Menu, X, ChevronDown, LogOut, Settings, ShieldCheck, Trophy, Users, Star, ClipboardList, MoreHorizontal, Bell, Lock, Palette, BookOpen, Globe, CreditCard, Upload, Rocket, Mail, BarChart3, HelpCircle } from 'lucide-react';
 import PoweredByBadge from './PoweredByBadge';
 import CRPromoCard from './CRPromoCard';
 
@@ -321,12 +321,39 @@ export default function Layout({ children }) {
                           style={{ color: BURGUNDY }}>
                           <BookOpen className="w-4 h-4" /> Course Admin
                         </Link>
+                        <Link to="/partner/bulk-upload" onClick={() => setUserMenuOpen(false)}
+                          className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-stone-50 transition-colors"
+                          style={{ color: BURGUNDY }}>
+                          <Upload className="w-4 h-4" /> Bulk Upload
+                        </Link>
                         <Link to="/partner/branding" onClick={() => setUserMenuOpen(false)}
                           className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-stone-50 transition-colors"
                           style={{ color: BURGUNDY }}>
                           <Palette className="w-4 h-4" /> Branding
                         </Link>
+                        <Link to="/partner/domain" onClick={() => setUserMenuOpen(false)}
+                          className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-stone-50 transition-colors"
+                          style={{ color: BURGUNDY }}>
+                          <Globe className="w-4 h-4" /> Custom Domain
+                        </Link>
+                        <Link to="/partner/billing" onClick={() => setUserMenuOpen(false)}
+                          className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-stone-50 transition-colors"
+                          style={{ color: BURGUNDY }}>
+                          <CreditCard className="w-4 h-4" /> Billing
+                        </Link>
+                        <Link to="/partner/users" onClick={() => setUserMenuOpen(false)}
+                          className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-stone-50 transition-colors"
+                          style={{ color: BURGUNDY }}>
+                          <Users className="w-4 h-4" /> Users
+                        </Link>
                       </>
+                    )}
+                    {!isPartnerAdmin && user?.partnerId && (
+                      <Link to="/partner/courses/catalog" onClick={() => setUserMenuOpen(false)}
+                        className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-stone-50 transition-colors"
+                        style={{ color: HUNTER }}>
+                        <BookOpen className="w-4 h-4" /> Organization Courses
+                      </Link>
                     )}
                     {isAdmin && (
                       <a href="/admin.html"
@@ -388,17 +415,34 @@ export default function Layout({ children }) {
             {isPartnerAdmin && (
               <div className="border-t border-stone-100 my-2 pt-2">
                 <p className="px-3 py-1 text-xs font-semibold text-stone-400 uppercase tracking-wider">Partner Admin</p>
-                <Link to="/partner/courses" onClick={() => setMobileOpen(false)}
+                {[
+                  { to: '/partner/onboarding', icon: Rocket, label: 'Getting Started' },
+                  { to: '/partner/courses', icon: BookOpen, label: 'Course Admin' },
+                  { to: '/partner/bulk-upload', icon: Upload, label: 'Bulk Upload' },
+                  { to: '/partner/branding', icon: Palette, label: 'Branding' },
+                  { to: '/partner/email-templates', icon: Mail, label: 'Email Templates' },
+                  { to: '/partner/domain', icon: Globe, label: 'Custom Domain' },
+                  { to: '/partner/billing', icon: CreditCard, label: 'Billing' },
+                  { to: '/partner/users', icon: Users, label: 'Users' },
+                  { to: '/partner/reports', icon: BarChart3, label: 'Reports' },
+                  { to: '/partner/manual', icon: HelpCircle, label: 'Partner Manual' },
+                ].map(({ to, icon: Icon, label }) => (
+                  <Link key={to} to={to} onClick={() => setMobileOpen(false)}
+                    className="flex items-center gap-2.5"
+                    style={{ display: 'flex', padding: '0.625rem 1rem', borderRadius: '0.5rem', fontSize: '0.875rem', fontWeight: 500, textDecoration: 'none', color: isActive(to) ? BURGUNDY : '#57534e', background: isActive(to) ? BURGUNDY_LIGHT : 'transparent' }}>
+                    <Icon className="w-4 h-4" style={{ color: isActive(to) ? BURGUNDY : '#a8a29e' }} />
+                    {label}
+                  </Link>
+                ))}
+              </div>
+            )}
+            {!isPartnerAdmin && user?.partnerId && (
+              <div className="border-t border-stone-100 my-2 pt-2">
+                <Link to="/partner/courses/catalog" onClick={() => setMobileOpen(false)}
                   className="flex items-center gap-2.5"
-                  style={{ display: 'flex', padding: '0.625rem 1rem', borderRadius: '0.5rem', fontSize: '0.875rem', fontWeight: 500, textDecoration: 'none', color: isActive('/partner/courses') ? BURGUNDY : '#57534e', background: isActive('/partner/courses') ? BURGUNDY_LIGHT : 'transparent' }}>
-                  <BookOpen className="w-4 h-4" style={{ color: isActive('/partner/courses') ? BURGUNDY : '#a8a29e' }} />
-                  Course Admin
-                </Link>
-                <Link to="/partner/branding" onClick={() => setMobileOpen(false)}
-                  className="flex items-center gap-2.5"
-                  style={{ display: 'flex', padding: '0.625rem 1rem', borderRadius: '0.5rem', fontSize: '0.875rem', fontWeight: 500, textDecoration: 'none', color: isActive('/partner/branding') ? BURGUNDY : '#57534e', background: isActive('/partner/branding') ? BURGUNDY_LIGHT : 'transparent' }}>
-                  <Palette className="w-4 h-4" style={{ color: isActive('/partner/branding') ? BURGUNDY : '#a8a29e' }} />
-                  Branding
+                  style={{ display: 'flex', padding: '0.625rem 1rem', borderRadius: '0.5rem', fontSize: '0.875rem', fontWeight: 500, textDecoration: 'none', color: isActive('/partner/courses/catalog') ? HUNTER : '#57534e', background: isActive('/partner/courses/catalog') ? '#f0fdf4' : 'transparent' }}>
+                  <BookOpen className="w-4 h-4" style={{ color: isActive('/partner/courses/catalog') ? HUNTER : '#a8a29e' }} />
+                  Organization Courses
                 </Link>
               </div>
             )}

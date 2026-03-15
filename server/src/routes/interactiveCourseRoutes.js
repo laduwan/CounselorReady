@@ -15,16 +15,28 @@ import Certificate from '../models/Certificate.js';
 import Evaluation from '../models/Evaluation.js';
 import User from '../models/User.js';
 import { protect } from '../middleware/auth.js';
+import { attachTenantScope } from '../middleware/tenantScope.js';
 import { generateCertificate, generateCertificateNumber } from '../utils/certificate.js';
 
 const router = express.Router();
 
-// Helper: resolve course by ObjectId or slug
-async function findCourseByIdOrSlug(param) {
+// Apply tenant scoping to all routes — populates req.tenantFilter
+router.use(attachTenantScope);
+
+/**
+ * Helper: resolve course by ObjectId or slug, respecting tenant scope.
+ * Partner users can see platform courses (no partnerId) + their own partner's courses.
+ * Admins and non-partner users see all courses.
+ */
+function findCourseByIdOrSlug(param, tenantFilter = {}) {
+  const baseQuery = tenantFilter.partnerId
+    ? { $or: [{ partnerId: { $exists: false } }, { partnerId: null }, { partnerId: tenantFilter.partnerId }] }
+    : {};
+
   if (mongoose.Types.ObjectId.isValid(param)) {
-    return Course.findById(param);
+    return Course.findOne({ _id: param, ...baseQuery });
   }
-  return Course.findOne({ slug: param });
+  return Course.findOne({ slug: param, ...baseQuery });
 }
 
 // ============================================================================
@@ -51,14 +63,35 @@ router.get('/', async (req, res) => {
     if (status && status !== 'all') {
       query.status = status;
     }
-    
+
     if (category) query.categories = category;
     if (tag) query.tags = tag;
+
+    const conditions = [];
+
+    // Search filter
     if (search) {
-      query.$or = [
-        { title: { $regex: search, $options: 'i' } },
-        { description: { $regex: search, $options: 'i' } }
-      ];
+      conditions.push({
+        $or: [
+          { title: { $regex: search, $options: 'i' } },
+          { description: { $regex: search, $options: 'i' } }
+        ]
+      });
+    }
+
+    // Tenant scoping via middleware — partner users see platform + own courses
+    if (req.tenantFilter?.partnerId) {
+      conditions.push({
+        $or: [
+          { partnerId: { $exists: false } },
+          { partnerId: null },
+          { partnerId: req.tenantFilter.partnerId }
+        ]
+      });
+    }
+
+    if (conditions.length > 0) {
+      query.$and = conditions;
     }
 
     const courses = await Course.find(query)
@@ -91,9 +124,7 @@ router.get('/', async (req, res) => {
  */
 router.get('/slug/:slug', async (req, res) => {
   try {
-    const course = await Course.findOne({ 
-      slug: req.params.slug
-    });
+    const course = await findCourseByIdOrSlug(req.params.slug, req.tenantFilter);
 
     if (!course) {
       return res.status(404).json({ success: false, error: 'Course not found' });
@@ -112,7 +143,7 @@ router.get('/slug/:slug', async (req, res) => {
  */
 router.get('/:id', async (req, res) => {
   try {
-    const course = await findCourseByIdOrSlug(req.params.id);
+    const course = await findCourseByIdOrSlug(req.params.id, req.tenantFilter);
 
     if (!course) {
       return res.status(404).json({ success: false, error: 'Course not found' });
@@ -174,7 +205,7 @@ router.put('/:id', protect, async (req, res) => {
  */
 router.get('/:id/progress', protect, async (req, res) => {
   try {
-    const course = await findCourseByIdOrSlug(req.params.id);
+    const course = await findCourseByIdOrSlug(req.params.id, req.tenantFilter);
     if (!course) {
       return res.status(404).json({ success: false, error: 'Course not found' });
     }
@@ -230,10 +261,11 @@ router.post('/:id/enroll', protect, async (req, res) => {
       return res.json({ success: true, message: 'Already enrolled', data: progress });
     }
 
-    // Create new enrollment
+    // Create new enrollment (include partnerId from course or user for analytics scoping)
     progress = new CourseProgress({
       userId: req.user._id,
       courseId: course._id,
+      partnerId: course.partnerId || req.user.partnerId || undefined,
       sectionProgress: course.sections.map((section, index) => ({
         sectionId: section._id,
         sectionIndex: index,
@@ -266,7 +298,7 @@ router.post('/:id/assessment', protect, async (req, res) => {
   try {
     const { answers, score, passed, attempt, timeSpent } = req.body;
 
-    const course = await findCourseByIdOrSlug(req.params.id);
+    const course = await findCourseByIdOrSlug(req.params.id, req.tenantFilter);
     if (!course || !course.assessment) {
       return res.status(404).json({ success: false, error: 'Assessment not found' });
     }
@@ -383,7 +415,7 @@ router.post('/:id/evaluation', protect, async (req, res) => {
   try {
     const { responses } = req.body;
     
-    const course = await findCourseByIdOrSlug(req.params.id);
+    const course = await findCourseByIdOrSlug(req.params.id, req.tenantFilter);
     if (!course) {
       return res.status(404).json({ success: false, error: 'Course not found' });
     }
@@ -508,7 +540,7 @@ router.post('/:id/attestation', protect, async (req, res) => {
       });
     }
 
-    const course = await findCourseByIdOrSlug(req.params.id);
+    const course = await findCourseByIdOrSlug(req.params.id, req.tenantFilter);
     if (!course) {
       return res.status(404).json({ success: false, error: 'Course not found' });
     }
@@ -579,7 +611,7 @@ router.post('/:id/attestation', protect, async (req, res) => {
  */
 router.post('/:id/certificate', protect, async (req, res) => {
   try {
-    const course = await findCourseByIdOrSlug(req.params.id);
+    const course = await findCourseByIdOrSlug(req.params.id, req.tenantFilter);
     if (!course) {
       return res.status(404).json({ success: false, error: 'Course not found' });
     }
@@ -703,7 +735,7 @@ router.post('/:id/certificate', protect, async (req, res) => {
  */
 router.get('/:id/certificate/check', protect, async (req, res) => {
   try {
-    const course = await findCourseByIdOrSlug(req.params.id);
+    const course = await findCourseByIdOrSlug(req.params.id, req.tenantFilter);
     if (!course) {
       return res.status(404).json({ success: false, error: 'Course not found' });
     }
@@ -760,7 +792,7 @@ router.put('/:id/progress/section/:sectionIndex', protect, async (req, res) => {
     const { sectionIndex } = req.params;
     const { viewedBlocks, completedBlocks, timeSpent } = req.body;
 
-    const course = await findCourseByIdOrSlug(req.params.id);
+    const course = await findCourseByIdOrSlug(req.params.id, req.tenantFilter);
     if (!course) {
       return res.status(404).json({ success: false, error: 'Course not found' });
     }
@@ -843,7 +875,7 @@ router.post('/:id/progress/section/:sectionIndex/quiz', protect, async (req, res
     const { sectionIndex } = req.params;
     const { answers, timeSpent } = req.body;
 
-    const course = await findCourseByIdOrSlug(req.params.id);
+    const course = await findCourseByIdOrSlug(req.params.id, req.tenantFilter);
     if (!course) {
       return res.status(404).json({ success: false, error: 'Course not found' });
     }
@@ -950,7 +982,7 @@ router.post('/:id/progress/interaction', protect, async (req, res) => {
   try {
     const { sectionIndex, blockIndex, blockType, action, isCorrect, selectedOptions, score, timeSpent } = req.body;
 
-    const course = await findCourseByIdOrSlug(req.params.id);
+    const course = await findCourseByIdOrSlug(req.params.id, req.tenantFilter);
     if (!course) {
       return res.status(404).json({ success: false, error: 'Course not found' });
     }
