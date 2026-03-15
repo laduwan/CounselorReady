@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Treatment Plan Builder — CounselorReady Clinical Tools</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Lato:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--burgundy:#6B1D34;--burgundy-deep:#4A1525;--burgundy-light:#8B2D4A;--green:#4A7C59;--green-light:#5A9469;--gold:#D4A855;--navy:#284157;--cream:#F5F3EE;--rose:#D0768A}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Lato',sans-serif;background:#F8F7F4;color:#333;min-height:100vh}
+.hdr{background:linear-gradient(135deg,var(--burgundy-deep),var(--burgundy));padding:20px 28px;color:#fff;text-align:center}
+.hdr-top{display:flex;align-items:center;justify-content:center;gap:14px;margin-bottom:10px}
+.logo{font-family:'Cormorant Garamond',Georgia,serif;font-size:22px;font-weight:700}
+.hdr-title{font-family:'Cormorant Garamond',Georgia,serif;font-size:28px;font-weight:700;display:flex;align-items:center;gap:8px;justify-content:center}
+.hdr-sub{font-size:13px;color:rgba(255,255,255,.7);max-width:600px;margin:8px auto 0;line-height:1.5}
+.main{max-width:820px;margin:20px auto;padding:0 16px}
+.card{background:#fff;border-radius:14px;border:1px solid #D5CFC0;margin-bottom:16px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,.06)}
+.card-hdr{padding:16px 24px;border-bottom:1px solid #E0DBD0;display:flex;align-items:center;justify-content:space-between}
+.card-hdr h3{font-family:'Cormorant Garamond',Georgia,serif;font-size:20px;font-weight:700;color:var(--burgundy)}
+.card-body{padding:20px 24px}
+.card-step{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:4px 10px;border-radius:4px}
+.field{margin-bottom:16px}
+.field label{display:block;font-size:12px;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px}
+.hint{font-size:11.5px;color:#999;margin-bottom:6px;font-style:italic}
+.field input,.field select,.field textarea{width:100%;padding:10px 14px;border-radius:8px;border:1.5px solid #ddd;font-family:'Lato',sans-serif;font-size:14px;outline:none;transition:.2s}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--green)}
+.field textarea{resize:vertical;min-height:70px;line-height:1.6}
+.row{display:flex;gap:14px}
+.row .field{flex:1}
+.tg{display:flex;flex-wrap:wrap;gap:8px}
+.tg button{padding:8px 14px;border-radius:8px;border:1.5px solid #ddd;background:#fff;color:#666;font-size:12.5px;font-weight:500;cursor:pointer;transition:.15s;font-family:'Lato',sans-serif}
+.tg button:hover{border-color:#bbb}
+.tg button.on{border-color:var(--green);background:rgba(74,124,89,.08);color:var(--green);font-weight:700}
+.actions{display:flex;justify-content:space-between;padding:16px 0 0;border-top:1px solid #E8E4D8;margin-top:16px}
+.btn{padding:10px 22px;border-radius:8px;font-family:'Lato',sans-serif;font-size:13.5px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:.15s;border:none}
+.btn-gen{background:linear-gradient(135deg,var(--gold),#C49A40);color:var(--burgundy-deep);box-shadow:0 2px 8px rgba(212,168,85,.3)}
+.btn-gen:hover{box-shadow:0 3px 12px rgba(212,168,85,.4)}
+.btn-print{background:var(--navy);color:#fff}
+.btn-copy{background:var(--green);color:#fff}
+.btn-reset{background:transparent;border:1.5px solid #D5CFC0;color:var(--navy)}
+.output{background:#fff;border-radius:14px;border:1px solid #D5CFC0;overflow:hidden;box-shadow:0 3px 14px rgba(0,0,0,.08);margin-top:16px}
+.output-hdr{background:linear-gradient(135deg,var(--burgundy-deep),var(--burgundy));padding:16px 24px;color:#fff;display:flex;justify-content:space-between;align-items:center}
+.output-hdr h3{font-family:'Cormorant Garamond',Georgia,serif;font-size:20px}
+.output-body{padding:28px;font-size:14px;line-height:1.9;color:#333}
+.output-body h2{font-family:'Cormorant Garamond',Georgia,serif;font-size:18px;font-weight:700;color:var(--burgundy);margin:24px 0 8px;padding-bottom:4px;border-bottom:1px solid #eee}
+.output-body h2:first-child{margin-top:0}
+.output-body p{margin-bottom:12px}
+.output-body table{width:100%;border-collapse:collapse;margin:12px 0;font-size:13px}
+.output-body th{background:#F5F0F2;text-align:left;padding:8px 12px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;border-bottom:2px solid #E0DBD0}
+.output-body td{padding:8px 12px;border-bottom:1px solid #f0f0f0;vertical-align:top}
+.output-actions{display:flex;gap:10px;padding:16px 24px;background:var(--cream);border-top:1px solid #E0DBD0}
+.privacy{text-align:center;font-size:11px;color:#aaa;margin-top:16px;line-height:1.5}
+.footer{text-align:center;padding:24px;font-size:12px;color:#999;line-height:1.7;margin-top:20px;background:var(--navy);border-radius:12px;color:#aaa}
+.ce-pitch{background:rgba(107,29,52,.04);border:1px solid rgba(107,29,52,.1);border-radius:10px;padding:16px 20px;margin-top:16px;font-size:12.5px;color:#555;line-height:1.6}
+.ce-pitch strong{color:var(--burgundy)}
+.plan-counter{font-size:12px;font-weight:600;padding:4px 12px;background:rgba(74,124,89,.06);border-radius:20px;display:inline-block;margin:8px auto;text-align:center}
+@media(max-width:600px){.row{flex-direction:column;gap:0}.hdr-title{font-size:22px}}
+@media print{.hdr,.actions,.output-actions,.privacy,.footer,.ce-pitch,.card:not(.output),.plan-counter{display:none!important}.output{box-shadow:none;border:1px solid #ccc}.output-hdr{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+</style>
+</head>
+<body>
+<div class="hdr">
+<div class="hdr-top">
+<span class="logo"><span style="color:#D0768A">Counselor</span><span style="color:#5A9469">Ready</span></span>
+<span style="background:var(--gold);color:var(--burgundy-deep);font-size:10px;font-weight:700;padding:3px 10px;border-radius:4px;letter-spacing:.8px">CLINICAL TOOLS PLUS</span>
+</div>
+<div class="hdr-title">
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#D4A855" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+Treatment Plan Builder
+</div>
+<div class="hdr-sub">Evidence-based goals, measurable objectives, and modality-specific interventions — grounded in ACEP-approved clinical content.</div>
+</div>
+
+<main class="main">
+<div id="cr-plan-counter" class="plan-counter" style="display:block;text-align:center;margin:10px auto"></div>
+<div id="app"></div>
+<div class="privacy">CounselorReady does not capture, transmit, or retain any information entered here. All data stays in your browser.</div>
+<div class="footer">
+<span style="font-family:'Cormorant Garamond',Georgia,serif;font-weight:700;font-size:16px"><span style="color:var(--rose)">Counselor</span><span style="color:var(--green-light)">Ready</span></span> — Clinical tools for the independent practitioner.<br>
+&copy; 2026 GA Integrated Therapeutic Perspectives LLC (GAITP LLC). All rights reserved.
+</div>
+</main>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+// RATE LIMIT — 3 PLANS / DAY (FREE TIER)
+// ═══════════════════════════════════════════════════════════════
+const PLAN_LIMIT_KEY='cr_tx_plans',PLAN_DAILY_LIMIT=3;
+function getPlanUsage(){try{const r=localStorage.getItem(PLAN_LIMIT_KEY);if(!r)return{date:'',count:0};const d=JSON.parse(r);const t=new Date().toISOString().split('T')[0];return d.date!==t?{date:t,count:0}:d}catch{return{date:'',count:0}}}
+function recordPlanUse(){const t=new Date().toISOString().split('T')[0];const u=getPlanUsage();localStorage.setItem(PLAN_LIMIT_KEY,JSON.stringify({date:t,count:(u.date===t?u.count:0)+1}));updatePlanCounter()}
+function getRemainingPlans(){const u=getPlanUsage();const t=new Date().toISOString().split('T')[0];return u.date!==t?PLAN_DAILY_LIMIT:Math.max(0,PLAN_DAILY_LIMIT-u.count)}
+function checkPlanLimit(){if(getRemainingPlans()<=0){showPlanLimitModal();return false}recordPlanUse();return true}
+function updatePlanCounter(){const el=document.getElementById('cr-plan-counter');if(!el)return;const r=getRemainingPlans();el.textContent=r+' of '+PLAN_DAILY_LIMIT+' plans remaining today';el.style.color=r<=1?'var(--burgundy)':'var(--green)'}
+function showPlanLimitModal(){const x=document.getElementById('cr-plan-limit-modal');if(x)x.remove();const m=document.createElement('div');m.id='cr-plan-limit-modal';m.innerHTML='<div style="position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:10000;display:flex;align-items:center;justify-content:center;padding:20px"><div style="background:#fff;border-radius:16px;max-width:440px;width:100%;padding:32px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.2);position:relative"><button onclick="this.closest(\'#cr-plan-limit-modal\').remove()" style="position:absolute;top:12px;right:16px;background:none;border:none;font-size:20px;cursor:pointer;color:#999">&times;</button><div style="width:56px;height:56px;background:rgba(107,29,52,.08);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#6B1D34" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div><h3 style="font-family:\'Cormorant Garamond\',Georgia,serif;font-size:22px;color:#6B1D34;margin:0 0 8px">Daily Limit Reached</h3><p style="color:#555;font-size:14px;line-height:1.6;margin:0 0 20px">You have used all <strong>'+PLAN_DAILY_LIMIT+' free treatment plans</strong> for today. Plans reset at midnight.</p><div style="background:rgba(74,124,89,.04);border:1px solid rgba(74,124,89,.15);border-radius:10px;padding:16px;margin-bottom:20px;text-align:left"><p style="font-size:13px;font-weight:700;color:#4A7C59;margin:0 0 8px">Upgrade for unlimited plans:</p><div style="font-size:13px;color:#555;line-height:1.8">&bull; <strong>Clinical Tools Plus</strong> — $15.95/mo<br>&bull; <strong>Starter</strong> — $19.99/mo + CE courses<br>&bull; <strong>VIP</strong> — $49.99/mo — everything</div></div><a href="/subscription.html" style="display:inline-block;padding:12px 28px;background:linear-gradient(135deg,#4A7C59,#3d6a4b);color:#fff;border-radius:10px;text-decoration:none;font-weight:600;font-size:14px">View Plans</a><p style="font-size:12px;color:#999;margin:12px 0 0">Come back tomorrow for '+PLAN_DAILY_LIMIT+' more free plans</p></div></div>';document.body.appendChild(m)}
+
+// ═══════════════════════════════════════════════════════════════
+// CLINICAL KNOWLEDGE BASE — 10 DIAGNOSES
+// ═══════════════════════════════════════════════════════════════
+const KB={
+"Major Depressive Disorder":{
+  icd10:"F33.1",dsm5:"Major Depressive Disorder, Recurrent, Moderate",category:"Mood Disorders",
+  measures:[{name:"PHQ-9",cutoff:10},{name:"BDI-II",cutoff:20},{name:"OQ-45",cutoff:63}],
+  stageGuidance:{Precontemplation:"Focus on psychoeducation about depression, validate experience, avoid pushing for behavioral change",Contemplation:"Explore ambivalence, highlight discrepancy between values and current functioning",Preparation:"Collaborate on concrete goal-setting, identify barriers, build self-efficacy",Action:"Implement full CBT/BA protocol, monitor progress with validated measures",Maintenance:"Relapse prevention planning, identify early warning signs, taper session frequency"},
+  monitoringSchedule:"PHQ-9 every session; BDI-II monthly; OQ-45 per MBC protocol",
+  goals:[
+    {goal:"Reduce depressive symptoms to subclinical levels as measured by standardized assessment",
+     objectives:["Client will reduce PHQ-9 score from [baseline] to below 10 within 12 weeks","Client will increase engagement in pleasurable activities from [baseline] to 5+ per week within 8 weeks","Client will reduce frequency of negative automatic thoughts by 50% within 10 weeks as tracked in thought record","Client will report improved sleep quality (falling asleep within 30 minutes) on 5+ nights per week within 6 weeks"]},
+    {goal:"Develop and consistently apply cognitive coping skills for mood management",
+     objectives:["Client will identify 3+ cognitive distortions per week using thought records within 4 weeks","Client will generate 2+ balanced alternative thoughts per identified distortion within 6 weeks","Client will rate confidence in managing depressive episodes at 7+/10 within 12 weeks","Client will demonstrate ability to use behavioral activation independently when mood drops below 4/10"]},
+    {goal:"Restore occupational, social, and self-care functioning to pre-episode levels",
+     objectives:["Client will resume consistent work/school attendance (4+ days/week) within 8 weeks","Client will initiate 2+ social contacts per week within 10 weeks","Client will maintain daily self-care routine (hygiene, meals, exercise) for 4+ weeks consecutively","Client will report functional impairment rating below 3/10 on daily monitoring within 12 weeks"]}
+  ],
+  interventions:{
+    "CBT":["Cognitive restructuring targeting negative automatic thoughts (Beckian model)","Thought records with situation-thought-emotion-evidence-alternative structure","Behavioral experiments to test depressive predictions","Socratic questioning to examine evidence for negative beliefs","Downward arrow technique to identify core beliefs","Activity scheduling with mastery and pleasure ratings"],
+    "Behavioral Activation":["Activity monitoring and mood-activity correlation tracking","Values-based activity scheduling (Martell et al. protocol)","Graduated task assignment for low-motivation periods","TRAP-TRAC model (Trigger-Response-Avoidance Pattern → Trigger-Response-Alternative Coping)","Rumination cue detection and response plan","Environmental reward enrichment planning"],
+    "ACT":["Acceptance of difficult emotions without struggle or avoidance","Cognitive defusion techniques (leaves on a stream, 'I notice I am having the thought that...')","Values clarification and committed action planning","Present-moment awareness exercises","Self-as-context perspective-taking","Willingness and creative hopelessness exploration"],
+    "DBT":["Mindfulness skills (observe, describe, participate; one-mindfully, effectively)","Distress tolerance (TIPP, STOP, pros and cons)","Emotion regulation (check the facts, opposite action, accumulating positive experiences)","Interpersonal effectiveness (DEAR MAN, GIVE, FAST)"],
+    "Interpersonal":["Grief work and role transitions processing","Interpersonal role disputes identification and resolution","Communication analysis and skills training","Social skills building for interpersonal deficits"]
+  }
+},
+"Generalized Anxiety Disorder":{
+  icd10:"F41.1",dsm5:"Generalized Anxiety Disorder",category:"Anxiety Disorders",
+  measures:[{name:"GAD-7",cutoff:10},{name:"DASS-21",cutoff:14},{name:"OQ-45",cutoff:63}],
+  stageGuidance:{Precontemplation:"Psychoeducation on anxiety cycle, normalize experience",Contemplation:"Explore costs of avoidance, identify values blocked by anxiety",Preparation:"Build anxiety hierarchy, introduce coping skills",Action:"Full CBT/exposure protocol, systematic desensitization",Maintenance:"Relapse prevention, booster sessions"},
+  monitoringSchedule:"GAD-7 every session; DASS-21 monthly",
+  goals:[
+    {goal:"Reduce anxiety symptoms to subclinical levels as measured by standardized assessment",
+     objectives:["Client will reduce GAD-7 score from [baseline] to below 10 within 12 weeks","Client will reduce frequency of excessive worry episodes from [baseline] to 3 or fewer per week within 10 weeks","Client will demonstrate ability to use progressive muscle relaxation independently within 4 weeks","Client will identify and challenge 3+ worry-related cognitive distortions per week within 6 weeks"]},
+    {goal:"Develop effective anxiety management skills for daily use",
+     objectives:["Client will practice diaphragmatic breathing 2x daily for 5+ minutes within 2 weeks","Client will complete worry decision tree for 3+ worry episodes per week within 6 weeks","Client will implement designated worry time practice (15 min/day) within 4 weeks","Client will rate ability to tolerate uncertainty at 6+/10 within 10 weeks"]},
+    {goal:"Reduce avoidance behaviors and increase engagement in previously avoided activities",
+     objectives:["Client will complete exposure hierarchy of 10+ anxiety-provoking situations within 4 weeks","Client will complete 2+ exposure tasks per week from the hierarchy within 8 weeks","Client will eliminate 3+ safety behaviors identified in treatment within 10 weeks","Client will report engaging in specific avoided activity without significant distress within 12 weeks"]}
+  ],
+  interventions:{
+    "CBT":["Cognitive restructuring targeting catastrophic thinking and probability overestimation","Worry decision tree (Is the worry productive? Problem-solve or Let go)","Decatastrophizing and evidence examination","Behavioral experiments targeting intolerance of uncertainty","Psychoeducation on the anxiety cycle and fight-or-flight response"],
+    "Exposure":["Graduated exposure hierarchy development","In-vivo exposure to avoided situations","Imaginal exposure to worst-case scenarios","Interoceptive exposure to feared bodily sensations","Safety behavior elimination through exposure","Inhibitory learning model application"],
+    "ACT":["Acceptance of anxiety sensations without struggle","Defusion from anxious thoughts (passengers on the bus metaphor)","Values-driven behavioral commitments despite anxiety","Present-moment grounding exercises","Willingness to experience discomfort in service of values"],
+    "Relaxation/Somatic":["Progressive muscle relaxation (16-group, 8-group, 4-group)","Diaphragmatic breathing training","5-4-3-2-1 grounding technique","Body scan meditation","Applied relaxation for anticipatory anxiety"],
+    "DBT":["Mindfulness (observe, describe, participate)","Distress tolerance for acute anxiety (TIPP skills)","Emotion regulation (check the facts, opposite action)","Half-smile and willing hands"]
+  }
+},
+"PTSD":{
+  icd10:"F43.10",dsm5:"Posttraumatic Stress Disorder",category:"Trauma and Stressor-Related Disorders",
+  measures:[{name:"PCL-5",cutoff:33},{name:"LEC-5",cutoff:null},{name:"PHQ-9",cutoff:10},{name:"C-SSRS",cutoff:null}],
+  monitoringSchedule:"PCL-5 every session; PHQ-9 biweekly; C-SSRS as indicated",
+  goals:[
+    {goal:"Reduce trauma-related symptoms to subclinical levels",
+     objectives:["Client will reduce PCL-5 score from [baseline] to below 33 within 16 weeks","Client will reduce frequency of intrusive memories/flashbacks from [baseline] to 2 or fewer per week within 12 weeks","Client will report reduction in hyperarousal symptoms within 10 weeks","Client will reduce avoidance of trauma-related stimuli by engaging in 3+ previously avoided activities within 12 weeks"]},
+    {goal:"Process traumatic memories and develop adaptive trauma narrative",
+     objectives:["Client will complete full trauma account (written or verbal) by session 8","Client will identify and challenge 3+ stuck points related to safety, trust, power, esteem, or intimacy","Client will report reduction in guilt/shame ratings from [baseline] to 3/10 or below within 14 weeks","Client will demonstrate ability to discuss trauma material with manageable distress (SUDs below 4) within 16 weeks"]},
+    {goal:"Restore daily functioning and rebuild sense of safety",
+     objectives:["Client will establish consistent sleep routine (6+ hours, falling asleep within 45 min) within 8 weeks","Client will resume 2+ social activities per week within 10 weeks","Client will identify and implement 3+ grounding techniques for use during flashbacks within 4 weeks","Client will report restored sense of safety in daily environments at 7+/10 within 16 weeks"]}
+  ],
+  interventions:{
+    "CPT":["Cognitive Processing Therapy (12-session protocol)","Stuck point identification and Socratic challenging","ABC worksheets (Activating event, Belief, Consequence)","Challenging Questions and Patterns of Problematic Thinking worksheets","Trauma themes: safety, trust, power/control, esteem, intimacy"],
+    "PE":["Prolonged Exposure therapy (8-15 session protocol)","In-vivo exposure hierarchy for avoided situations","Imaginal exposure with processing (revisiting trauma narrative)","SUDs monitoring and habituation tracking","Post-exposure emotional processing"],
+    "EMDR":["EMDR 8-phase protocol (Shapiro)","Resource Development and Installation (RDI) for stabilization","Bilateral stimulation during trauma processing","Negative cognition to positive cognition reprocessing","Body scan for residual disturbance","Future template installation"],
+    "Somatic":["Polyvagal-informed stabilization (ventral vagal activation)","Somatic experiencing (pendulation, titration)","Grounding techniques (5-4-3-2-1, body scan, orienting)","Window of tolerance psychoeducation and monitoring","Breathwork for autonomic regulation"],
+    "DBT":["Distress tolerance skills for trauma triggers (TIPP, grounding)","Emotion regulation for trauma-related affect","Mindfulness of current emotions without judgment","Interpersonal effectiveness for boundary-setting"]
+  }
+},
+"Panic Disorder":{
+  icd10:"F41.0",dsm5:"Panic Disorder",category:"Anxiety Disorders",
+  measures:[{name:"PDSS",cutoff:8},{name:"GAD-7",cutoff:10},{name:"PHQ-9",cutoff:10}],
+  monitoringSchedule:"PDSS biweekly; GAD-7 every session",
+  goals:[
+    {goal:"Eliminate or significantly reduce panic attacks",
+     objectives:["Client will reduce panic attack frequency from [baseline] to 1 or fewer per month within 12 weeks","Client will reduce peak panic intensity from [baseline]/10 to 4/10 or below within 10 weeks","Client will demonstrate ability to apply coping skills during panic onset within 6 weeks","Client will reduce anticipatory anxiety about panic to 3/10 or below within 12 weeks"]},
+    {goal:"Eliminate agoraphobic avoidance and restore full daily mobility",
+     objectives:["Client will complete interoceptive exposure to all feared bodily sensations within 8 weeks","Client will engage in 3+ previously avoided situations per week without escape within 10 weeks","Client will independently travel to [specific avoided location] within 12 weeks","Client will eliminate all safety behaviors (carrying medication, needing companion) within 12 weeks"]}
+  ],
+  interventions:{
+    "CBT":["Psychoeducation on panic cycle (catastrophic misinterpretation model; Clark, 1986)","Cognitive restructuring of catastrophic body sensation interpretations","Interoceptive exposure (hyperventilation, spinning, breathing through straw)","In-vivo exposure to agoraphobic situations","Panic attack coping card development","Behavioral experiments testing feared outcomes"],
+    "ACT":["Acceptance of panic sensations as uncomfortable but not dangerous","Defusion from catastrophic thoughts about bodily sensations","Values-based exposure to avoided situations","Willingness stance toward anxiety and uncertainty"],
+    "Relaxation/Somatic":["Diaphragmatic breathing (4-7-8 technique)","Applied relaxation training (Ost protocol)","Progressive muscle relaxation","Body awareness training to normalize sensations"]
+  }
+},
+"Social Anxiety Disorder":{
+  icd10:"F40.10",dsm5:"Social Anxiety Disorder",category:"Anxiety Disorders",
+  measures:[{name:"LSAS",cutoff:30},{name:"SPIN",cutoff:19},{name:"GAD-7",cutoff:10}],
+  monitoringSchedule:"LSAS or SPIN monthly; GAD-7 every session",
+  goals:[
+    {goal:"Reduce social anxiety to enable full participation in social and occupational settings",
+     objectives:["Client will reduce LSAS score from [baseline] to below 30 within 14 weeks","Client will initiate 3+ social interactions per week without avoidance within 10 weeks","Client will complete a public speaking or group participation task with SUDs below 5 within 12 weeks","Client will eliminate 3+ safety behaviors (rehearsing, avoiding eye contact, excessive apologizing) within 10 weeks"]}
+  ],
+  interventions:{
+    "CBT":["Cognitive restructuring targeting anticipated negative evaluation","Video feedback to correct distorted self-imagery","Post-event processing reduction","Attention retraining (shifting from self-focus to task-focus)","Behavioral experiments in social situations"],
+    "Exposure":["Graduated social exposure hierarchy","Role-play and social skills rehearsal","In-session exposure to feared social scenarios","Deliberate social mishap exposure (shame attacking exercises)","Public speaking exposure progression"]
+  }
+},
+"Adjustment Disorder":{
+  icd10:"F43.20",dsm5:"Adjustment Disorder, Unspecified",category:"Trauma and Stressor-Related Disorders",
+  measures:[{name:"PHQ-9",cutoff:10},{name:"GAD-7",cutoff:10},{name:"OQ-45",cutoff:63}],
+  monitoringSchedule:"PHQ-9 and GAD-7 every session; OQ-45 monthly",
+  goals:[
+    {goal:"Develop adaptive coping strategies for identified stressor",
+     objectives:["Client will identify 3+ adaptive coping strategies for current stressor within 4 weeks","Client will reduce emotional distress related to stressor from [baseline]/10 to 4/10 or below within 8 weeks","Client will demonstrate problem-solving skills application to stressor-related challenges within 6 weeks","Client will report improved daily functioning (work, social, self-care) within 8 weeks"]},
+    {goal:"Process emotional response to stressor and build resilience",
+     objectives:["Client will articulate the personal meaning and impact of the stressor within 3 weeks","Client will identify and challenge 3+ unhelpful thinking patterns about the stressor within 6 weeks","Client will develop and begin implementing a personal action plan for managing the stressor within 6 weeks","Client will identify 2+ sources of social support and increase engagement with them within 8 weeks"]}
+  ],
+  interventions:{
+    "CBT":["Cognitive restructuring of stressor-related cognitions","Problem-solving therapy (D'Zurilla model)","Coping skills training","Stress inoculation training","Psychoeducation on adjustment and resilience"],
+    "Person-Centered":["Empathic exploration of stressor impact","Unconditional positive regard and validation","Facilitating emotional processing and meaning-making","Supporting client autonomy and self-determination"],
+    "Solution-Focused":["Miracle question and preferred future visualization","Exception-finding (When is the problem less severe?)","Scaling questions for progress monitoring","Strengths identification and amplification","Small step goal-setting"]
+  }
+},
+"Substance Use Disorder":{
+  icd10:"F10-F19",dsm5:"Substance Use Disorder (specify substance)",category:"Substance-Related Disorders",
+  measures:[{name:"AUDIT",cutoff:8},{name:"DAST-10",cutoff:3},{name:"PHQ-9",cutoff:10},{name:"ASAM",cutoff:null}],
+  monitoringSchedule:"AUDIT/DAST-10 monthly; PHQ-9 every session; ASAM level of care reassessment quarterly",
+  goals:[
+    {goal:"Achieve and maintain sustained abstinence or clinically significant reduction in substance use",
+     objectives:["Client will reduce substance use from [baseline] to abstinence or [target] within 12 weeks","Client will attend 3+ mutual support meetings per week within 4 weeks","Client will identify 5+ high-risk situations and develop coping plan for each within 6 weeks","Client will maintain [target] consecutive days of abstinence within 12 weeks"]},
+    {goal:"Develop relapse prevention skills and sustainable recovery lifestyle",
+     objectives:["Client will complete a detailed relapse prevention plan within 8 weeks","Client will identify and practice 3+ alternative coping strategies for cravings within 6 weeks","Client will establish 2+ substance-free social connections within 10 weeks","Client will develop and follow a structured daily recovery routine within 8 weeks"]}
+  ],
+  interventions:{
+    "MI":["Motivational Interviewing (express empathy, develop discrepancy, roll with resistance, support self-efficacy)","Readiness ruler and importance/confidence scaling","Decisional balance exploration","Change talk elicitation and amplification","Values-behavior discrepancy exploration"],
+    "CBT":["Functional analysis of substance use (triggers, thoughts, behaviors, consequences)","Cognitive restructuring of permission-giving thoughts","Drink/drug refusal skills training","Apparently irrelevant decisions (AIDs) identification","Urge surfing and craving management"],
+    "Relapse Prevention":["Marlatt relapse prevention model","High-risk situation identification and coping planning","Abstinence violation effect psychoeducation","Lifestyle balance assessment and modification","Emergency plan development","HALT awareness (Hungry, Angry, Lonely, Tired)"]
+  }
+},
+"Suicidal Ideation":{
+  icd10:"R45.851",dsm5:"Suicidal Ideation (screen with C-SSRS)",category:"Safety Concerns",
+  measures:[{name:"C-SSRS",cutoff:null},{name:"PHQ-9 Item 9",cutoff:1},{name:"SSI",cutoff:null}],
+  monitoringSchedule:"C-SSRS every session; PHQ-9 every session; safety plan review weekly",
+  goals:[
+    {goal:"Eliminate active suicidal ideation and establish comprehensive safety",
+     objectives:["Client will complete Stanley-Brown Safety Plan within session 1","Client will reduce frequency of suicidal thoughts from [baseline] to 2 or fewer per week within 8 weeks","Client will identify and implement 3+ reasons for living within 4 weeks","Client will demonstrate ability to use safety plan independently during crisis within 6 weeks"]},
+    {goal:"Address underlying factors contributing to suicidal ideation",
+     objectives:["Client will identify 3+ precipitating factors for suicidal ideation within 3 weeks","Client will develop and practice 3+ alternative coping responses for identified triggers within 8 weeks","Client will report improvement in hopelessness from [baseline] to 3/10 or below within 12 weeks","Client will establish 2+ sources of social support and communicate safety plan to them within 4 weeks"]}
+  ],
+  interventions:{
+    "Safety Planning":["Stanley-Brown Safety Planning Intervention (6-step protocol)","Means restriction counseling (CALM approach)","Crisis contact identification and rehearsal","Warning signs identification and monitoring","Coping strategies hierarchy development","Reasons for living inventory"],
+    "CBT-SP":["CBT for Suicide Prevention protocol","Hope kit development","Problem-solving therapy for suicidal crises","Cognitive restructuring of hopelessness and burdensomeness","Relapse prevention for suicidal crises","Survival and coping beliefs strengthening"],
+    "DBT":["Crisis survival skills (TIPP, distract with ACCEPTS)","Distress tolerance for suicidal urges","Diary card monitoring of suicidal ideation, self-harm urges, and emotions","Pros and cons of tolerating distress vs. acting on urges","Opposite action for shame and guilt","Chain analysis of suicidal crisis episodes"]
+  }
+},
+"Bipolar Disorder":{
+  icd10:"F31.9",dsm5:"Bipolar Disorder, Unspecified",category:"Mood Disorders",
+  measures:[{name:"MDQ",cutoff:7},{name:"YMRS",cutoff:12},{name:"PHQ-9",cutoff:10}],
+  monitoringSchedule:"Mood charting daily; PHQ-9 and YMRS every session",
+  goals:[
+    {goal:"Stabilize mood and maintain medication adherence",
+     objectives:["Client will maintain daily mood chart for 12+ consecutive weeks","Client will maintain medication adherence at 90%+ as tracked by self-report within 8 weeks","Client will identify 5+ early warning signs of mood episode and develop action plan within 6 weeks","Client will reduce frequency of mood episodes from [baseline] as confirmed by prescriber within 6 months"]}
+  ],
+  interventions:{
+    "Psychoeducation":["Bipolar disorder illness model education","Medication adherence strategies and motivational enhancement","Sleep hygiene and circadian rhythm stabilization (social rhythm therapy)","Early warning sign identification and action planning","Family psychoeducation and communication training"],
+    "CBT":["Cognitive restructuring of mood-dependent thinking","Activity scheduling balanced for energy management","Problem-solving for interpersonal and occupational challenges","Thought records adapted for mood states"],
+    "DBT":["Emotion regulation skills for mood instability","Mindfulness for observing mood shifts without reactive behavior","Distress tolerance for mixed/agitated states","Interpersonal effectiveness during mood episodes"]
+  }
+},
+"Relationship Distress":{
+  icd10:"Z63.0",dsm5:"Relationship Distress with Spouse or Intimate Partner",category:"Relational Problems",
+  measures:[{name:"DAS-7",cutoff:21},{name:"CSI-4",cutoff:13},{name:"OQ-45",cutoff:63}],
+  monitoringSchedule:"DAS-7 or CSI-4 every session; OQ-45 monthly",
+  goals:[
+    {goal:"Improve relationship satisfaction and communication quality",
+     objectives:["Couple will increase DAS-7 score from [baseline] to 21+ within 14 weeks","Partners will reduce frequency of escalated conflicts from [baseline] to 1 or fewer per week within 10 weeks","Partners will demonstrate 3+ active listening skills in session within 6 weeks","Partners will report 3+ positive interactions per day using Gottman 5:1 ratio within 12 weeks"]},
+    {goal:"Strengthen emotional connection and repair attachment injuries",
+     objectives:["Partners will identify primary attachment needs and communicate them effectively within 8 weeks","Couple will complete 2+ emotional bonding conversations per week using EFT hold me tight framework within 10 weeks","Partners will reduce negative interaction ratio to 5:1 within 12 weeks"]}
+  ],
+  interventions:{
+    "EFT":["Emotionally Focused Therapy — identify negative interaction cycle","De-escalation of pursue-withdraw pattern","Accessing underlying attachment emotions","Restructuring interactional positions","Consolidation and integration of new patterns"],
+    "Gottman":["Four Horsemen identification (criticism, contempt, defensiveness, stonewalling)","Antidotes training (gentle startup, appreciation, responsibility, self-soothing)","Love Maps and Fondness and Admiration exercises","Dreams Within Conflict exploration","Rituals of connection building"],
+    "Communication":["Active listening and reflective responding skills","I-statement training and assertive communication","Conflict de-escalation techniques (time-out protocol)","Emotional validation and empathy building"]
+  }
+}
+};
+
+const DEFAULT_MEASURES=[{name:"OQ-45",cutoff:63}];
+const DEFAULT_STAGES={Precontemplation:"Focus on rapport and psychoeducation",Contemplation:"Explore ambivalence",Preparation:"Set concrete goals",Action:"Implement full protocol",Maintenance:"Relapse prevention"};
+const DEFAULT_MONITORING="Validated measure every session per MBC protocol";
+
+// ═══════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════
+let selected=[],selectedModalities={},clientInitials="",reviewDate="";
+let stageOfChange={},baselineScores={},strengths="",protectiveFactors="",monitoringFreq="Every session";
+
+function el(id){return document.getElementById(id)}
+function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function toggleDx(dx){const i=selected.indexOf(dx);if(i>-1){selected.splice(i,1);delete selectedModalities[dx];delete stageOfChange[dx];delete baselineScores[dx]}else{selected.push(dx);selectedModalities[dx]=[];stageOfChange[dx]='Action';baselineScores[dx]={}}render()}
+function toggleMod(dx,mod){if(!selectedModalities[dx])selectedModalities[dx]=[];const a=selectedModalities[dx];const i=a.indexOf(mod);if(i>-1)a.splice(i,1);else a.push(mod);render()}
+function setBaseline(el){var dx=el.getAttribute('data-dx');var measure=el.getAttribute('data-measure');if(!baselineScores[dx])baselineScores[dx]={};baselineScores[dx][measure]=el.value}
+function setStage(dx,stage){stageOfChange[dx]=stage;render()}
+
+function render(){
+  const dxList=Object.keys(KB);
+  const categories=[...new Set(dxList.map(d=>KB[d].category))];
+  let html='<div class="card"><div class="card-hdr"><h3>Step 1 — Presenting Problems</h3><span class="card-step" style="background:rgba(107,29,52,.06);color:var(--burgundy)">Select All That Apply</span></div><div class="card-body"><div class="row" style="margin-bottom:12px"><div class="field"><label>Client Initials</label><input value="'+esc(clientInitials)+'" oninput="clientInitials=this.value" placeholder="e.g. J.D."></div><div class="field"><label>Target Review Date</label><input type="date" value="'+esc(reviewDate)+'" oninput="reviewDate=this.value"></div></div><div class="field"><label>Presenting Problems / Diagnoses</label><div class="hint">Select the diagnoses that apply. Each will generate suggested goals, objectives, and interventions.</div>';
+  categories.forEach(function(cat){
+    var dxs=dxList.filter(function(d){return KB[d].category===cat});
+    html+='<div style="margin:12px 0 6px;font-size:11px;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.8px">'+cat+'</div><div class="tg">';
+    dxs.forEach(function(dx){html+='<button class="'+(selected.includes(dx)?'on':'')+'" data-dx="'+esc(dx)+'" onclick="toggleDx(this.dataset.dx)">'+dx+' <span style="font-size:10px;opacity:.6">('+KB[dx].icd10+')</span></button>'});
+    html+='</div>';
+  });
+  html+='</div></div></div>';
+
+  if(selected.length){
+    // Step 2 — Clinical Foundations
+    html+='<div class="card"><div class="card-hdr"><h3>Step 2 — Clinical Foundations</h3><span class="card-step" style="background:rgba(212,168,85,.08);color:var(--gold)">Measurement-Based Care</span></div><div class="card-body"><div style="background:rgba(212,168,85,.06);border-radius:8px;padding:12px 16px;margin-bottom:18px;font-size:12px;color:#666;line-height:1.6;border-left:3px solid var(--gold)"><strong style="color:var(--gold)">Why this step matters:</strong> Measurement-Based Care (MBC) doubles therapy effect sizes compared to treatment as usual (Fortney et al., 2017).</div>';
+    selected.forEach(function(dx){
+      var d=KB[dx];
+      var measures=d.measures||DEFAULT_MEASURES;
+      if(!stageOfChange[dx])stageOfChange[dx]='Action';
+      if(!baselineScores[dx])baselineScores[dx]={};
+      html+='<div style="margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid #E8E4D8"><div style="font-size:14px;font-weight:700;color:var(--burgundy);margin-bottom:12px">'+dx+' <span style="font-size:12px;color:#999;font-weight:400">'+d.icd10+'</span></div>';
+      html+='<div class="field"><label>Baseline Scores</label><div class="row">';
+      measures.forEach(function(m){html+='<div class="field"><label style="font-size:11px">'+m.name+(m.cutoff?' (cutoff: '+m.cutoff+')':'')+'</label><input type="number" placeholder="Score" value="'+(baselineScores[dx][m.name]||'')+'" data-dx="'+esc(dx)+'" data-measure="'+esc(m.name)+'" oninput="setBaseline(this)"></div>'});
+      html+='</div></div>';
+      html+='<div class="field"><label>Stage of Change</label><div class="tg">';
+      ['Precontemplation','Contemplation','Preparation','Action','Maintenance'].forEach(function(s){html+='<button class="'+(stageOfChange[dx]===s?'on':'')+'" data-dx="'+esc(dx)+'" data-stage="'+s+'" onclick="setStage(this.dataset.dx,this.dataset.stage)">'+s+'</button>'});
+      html+='</div></div></div>';
+    });
+    html+='<div class="field"><label>Client Strengths</label><textarea placeholder="e.g. Motivated, insightful, strong family support, employed full-time..." oninput="strengths=this.value">'+esc(strengths)+'</textarea></div>';
+    html+='<div class="field"><label>Protective Factors</label><textarea placeholder="e.g. Stable housing, no substance use, supportive spouse..." oninput="protectiveFactors=this.value">'+esc(protectiveFactors)+'</textarea></div>';
+    html+='</div></div>';
+
+    // Step 3 — Modalities
+    html+='<div class="card"><div class="card-hdr"><h3>Step 3 — Treatment Modalities</h3><span class="card-step" style="background:rgba(74,124,89,.06);color:var(--green)">Per Diagnosis</span></div><div class="card-body"><div class="hint" style="margin-bottom:16px">Select the evidence-based interventions you plan to use for each diagnosis.</div>';
+    selected.forEach(function(dx){
+      var d=KB[dx];var mods=Object.keys(d.interventions);
+      html+='<div style="margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid #E8E4D8"><div style="font-size:14px;font-weight:700;color:var(--burgundy);margin-bottom:8px">'+dx+' <span style="font-size:12px;color:#999;font-weight:400">'+d.icd10+' — '+(stageOfChange[dx]||'Action')+' stage</span></div><div class="tg">';
+      mods.forEach(function(m){html+='<button class="'+((selectedModalities[dx]||[]).includes(m)?'on':'')+'" data-dx="'+esc(dx)+'" data-mod="'+esc(m)+'" onclick="toggleMod(this.dataset.dx,this.dataset.mod)">'+m+'</button>'});
+      html+='</div></div>';
+    });
+    html+='<div class="actions"><button class="btn btn-gen" onclick="if(checkPlanLimit()){generatePlan()}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg> Generate Treatment Plan</button></div></div></div>';
+  }
+  html+='<div id="planOutput"></div>';
+  el('app').innerHTML=html;
+}
+
+function generatePlan(){
+  var client=clientInitials||'Ct.';var review=reviewDate||'[Review Date]';var today=new Date().toLocaleDateString();
+  var p='<div class="output" id="planDoc"><div class="output-hdr"><h3>Individualized Treatment Plan</h3><span style="font-size:11px;opacity:.7">'+esc(client)+' — '+today+'</span></div><div class="output-body">';
+  p+='<h2>Client Information</h2><table><tr><th>Client</th><th>Date</th><th>Target Review</th><th>Diagnoses</th></tr><tr><td>'+esc(client)+'</td><td>'+today+'</td><td>'+esc(review)+'</td><td>'+selected.map(function(dx){return esc(KB[dx].icd10)+' '+esc(dx)}).join('<br>')+'</td></tr></table>';
+  if(strengths)p+='<h2>Client Strengths</h2><p>'+esc(strengths)+'</p>';
+  if(protectiveFactors)p+='<h2>Protective Factors</h2><p>'+esc(protectiveFactors)+'</p>';
+  p+='<p style="font-size:12px;color:var(--green);font-style:italic">Treatment alliance, goal consensus, and collaboration account for more outcome variance than specific techniques (Wampold, 2001).</p>';
+
+  var goalNum=0;
+  selected.forEach(function(dx){
+    var d=KB[dx];var mods=selectedModalities[dx]||[];var stage=stageOfChange[dx]||'Action';
+    var stageGuide=(d.stageGuidance||DEFAULT_STAGES)[stage]||'';
+    var monitoring=d.monitoringSchedule||DEFAULT_MONITORING;
+    p+='<h2>'+esc(dx)+' ('+esc(d.icd10)+') — '+esc(stage)+' Stage</h2>';
+    p+='<p style="font-size:12px;color:#888;margin-bottom:4px">'+esc(d.dsm5)+'</p>';
+    if(stageGuide)p+='<p style="font-size:12px;color:var(--green);margin-bottom:12px"><strong>Stage-matched guidance:</strong> '+esc(stageGuide)+'</p>';
+    p+='<table><tr><th style="width:40%">Goal</th><th>Measurable Objectives</th></tr>';
+    d.goals.forEach(function(g){
+      goalNum++;
+      var objectives=g.objectives.map(function(o){
+        var obj=o;var measures=d.measures||DEFAULT_MEASURES;
+        measures.forEach(function(m){var score=baselineScores[dx]?baselineScores[dx][m.name]:null;if(score)obj=obj.replace('[baseline]',score)});
+        return obj;
+      });
+      p+='<tr><td><strong>Goal '+goalNum+':</strong> '+esc(g.goal)+'</td><td>';
+      objectives.forEach(function(o,i){p+=(i+1)+'. '+esc(o)+'<br>'});
+      p+='</td></tr>';
+    });
+    p+='</table>';
+    if(mods.length){
+      p+='<table><tr><th style="width:25%">Modality</th><th>Specific Interventions</th></tr>';
+      mods.forEach(function(m){var ints=d.interventions[m]||[];p+='<tr><td><strong>'+esc(m)+'</strong></td><td>';ints.forEach(function(i){p+='&bull; '+esc(i)+'<br>'});p+='</td></tr>'});
+      p+='</table>';
+    }
+    p+='<p style="font-size:12px;color:#555;background:rgba(212,168,85,.06);padding:10px 14px;border-radius:6px;border-left:3px solid var(--gold);margin:12px 0"><strong style="color:var(--gold)">Monitoring Protocol:</strong> '+esc(monitoring)+'</p>';
+  });
+
+  p+='<h2>Clinical Frameworks</h2><table><tr><th>Framework</th><th>Application</th></tr><tr><td><strong>Measurement-Based Care</strong><br><span style="font-size:10px;color:#999">Lambert et al., 2003; Fortney et al., 2017</span></td><td>Routine outcome monitoring using validated measures to track progress and adjust treatment.</td></tr><tr><td><strong>Transtheoretical Model</strong><br><span style="font-size:10px;color:#999">Prochaska &amp; DiClemente, 1983</span></td><td>Interventions matched to readiness for change. Stage assessments guide pacing and technique selection.</td></tr><tr><td><strong>Common Factors Model</strong><br><span style="font-size:10px;color:#999">Wampold, 2001</span></td><td>Therapeutic alliance, goal consensus, and collaboration prioritized alongside specific techniques.</td></tr><tr><td><strong>SAMHSA Recovery Model</strong><br><span style="font-size:10px;color:#999">SAMHSA, 2012</span></td><td>Strengths-based, culturally responsive planning oriented toward recovery and wellness.</td></tr></table>';
+
+  p+='<h2>Signatures</h2><p>By signing below, the client and clinician confirm collaborative plan development.</p><p style="margin-top:16px">_________________________________________ &nbsp;&nbsp;&nbsp; _____________<br><em>Client Signature &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Date</em></p><p style="margin-top:16px">_________________________________________ &nbsp;&nbsp;&nbsp; _____________<br><em>Clinician Signature / Credentials &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Date</em></p><p style="margin-top:16px">_________________________________________ &nbsp;&nbsp;&nbsp; _____________<br><em>Supervisor Signature (if applicable) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Date</em></p>';
+
+  p+='</div><div class="output-actions"><button class="btn btn-print" onclick="printPlan()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg> Print</button><button class="btn btn-copy" onclick="copyPlan()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copy</button><button class="btn btn-reset" onclick="selected=[];selectedModalities={};stageOfChange={};baselineScores={};strengths=\'\';protectiveFactors=\'\';render()">Start Over</button></div></div>';
+  p+='<div class="ce-pitch"><strong>Go deeper:</strong> The interventions and frameworks in this plan come from CounselorReady NBCC-approved CE courses — including Evidence-Based Interventions for Anxiety &amp; Depression, Trauma-Informed Care, Suicide Risk Assessment, and Ethics &amp; Professional Boundaries. Earn credit while mastering these techniques. <a href="/courses" style="color:var(--burgundy);font-weight:700">Browse CE Courses</a></div>';
+
+  el('planOutput').innerHTML=p;
+  el('planOutput').scrollIntoView({behavior:'smooth'});
+}
+
+function printPlan(){var b=document.querySelector('.output-body');var w=window.open('','','width=800,height=1000');w.document.write('<html><head><title>Treatment Plan — '+esc(clientInitials||'Client')+'</title><style>body{font-family:Georgia,serif;padding:40px;font-size:12px;line-height:1.7;color:#222}h2{font-size:14px;margin:18px 0 6px;border-bottom:1px solid #ddd;padding-bottom:3px;color:#6B1D34}table{width:100%;border-collapse:collapse;margin:10px 0;font-size:12px}th{background:#f5f0f2;text-align:left;padding:6px 10px;font-size:10px;font-weight:700;text-transform:uppercase;border-bottom:2px solid #ddd}td{padding:6px 10px;border-bottom:1px solid #eee;vertical-align:top}strong{color:#284157}p{margin-bottom:8px}</style></head><body>'+b.innerHTML+'</body></html>');w.document.close();w.print()}
+
+function copyPlan(){var b=document.querySelector('.output-body');navigator.clipboard.writeText(b.innerText).then(function(){var btn=document.querySelector('.btn-copy');var o=btn.innerHTML;btn.innerHTML='Copied!';btn.style.background='var(--green)';setTimeout(function(){btn.innerHTML=o},2000)})}
+
+updatePlanCounter();
+render();
+</script>
+</body>
+</html>
