@@ -4,6 +4,8 @@
  * Unauthorized copying or distribution is strictly prohibited.
  */
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
 import api from '../services/api';
 
 export default function GroupLicenseDashboard() {
@@ -75,6 +77,7 @@ export default function GroupLicenseDashboard() {
 
   return (
     <div className="max-w-6xl mx-auto" role="main" aria-label="Group Licensing">
+      <Link to="/organization" className="inline-flex items-center gap-1.5 text-sm text-stone-500 hover:text-burgundy-700 mb-3 transition-colors"><ArrowLeft className="w-4 h-4" />Team</Link>
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Group Licensing</h1>
