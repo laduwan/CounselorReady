@@ -10,6 +10,7 @@ import Course from '../models/Course.js';
 import Partner from '../models/Partner.js';
 import { protect } from '../middleware/auth.js';
 import { logActivity, ACTIVITY_TYPES } from '../services/activityTrackingService.js';
+import { sendPaymentFailedEmail, sendPaymentRecoveredEmail } from '../services/hardshipEmailService.js';
 
 const router = express.Router();
 
@@ -695,10 +696,12 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
         const user = await User.findOne({ stripeCustomerId: customerId });
         if (user) {
           await User.findByIdAndUpdate(user._id, {
-            'subscription.status': 'past_due'
+            'subscription.status': 'past_due',
+            'subscription.paymentFailedAt': new Date(),
+            $inc: { 'subscription.paymentFailureCount': 1 }
           });
           console.log(`Payment failed for user ${user._id}`);
-          // TODO: Send email notification about failed payment
+          await sendPaymentFailedEmail(user._id);
         }
         break;
       }
@@ -706,14 +709,27 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
       case 'invoice.paid': {
         const invoice = event.data.object;
         const customerId = invoice.customer;
-        
+
         const user = await User.findOne({ stripeCustomerId: customerId });
         if (user) {
-          await User.findByIdAndUpdate(user._id, {
+          const wasRecovery = user.subscription?.status === 'past_due';
+          const updateFields = {
             'subscription.status': 'active',
             'subscription.currentPeriodEnd': new Date(invoice.lines.data[0]?.period?.end * 1000 || Date.now() + 30 * 24 * 60 * 60 * 1000)
-          });
-          console.log(`Invoice paid for user ${user._id}`);
+          };
+
+          if (wasRecovery) {
+            updateFields['subscription.paymentRecoveredAt'] = new Date();
+            updateFields['subscription.paymentFailedAt'] = null;
+            updateFields['subscription.paymentFailureCount'] = 0;
+          }
+
+          await User.findByIdAndUpdate(user._id, updateFields);
+          console.log(`Invoice paid for user ${user._id}${wasRecovery ? ' (recovered from past_due)' : ''}`);
+
+          if (wasRecovery) {
+            await sendPaymentRecoveredEmail(user._id);
+          }
         }
         break;
       }

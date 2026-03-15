@@ -74,7 +74,8 @@ const userSchema = new mongoose.Schema({
     
     // Payment failure tracking
     paymentFailedAt: { type: Date },
-    paymentFailureCount: { type: Number, default: 0 }
+    paymentFailureCount: { type: Number, default: 0 },
+    paymentRecoveredAt: { type: Date }
   },
   
   // Hardship Pause System (VIP perk)
