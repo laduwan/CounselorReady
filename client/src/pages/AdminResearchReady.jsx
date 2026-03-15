@@ -1,5 +1,5 @@
 /**
- * AdminResearchReady — Admin queue page for Research Ready CE courses.
+ * AdminResearchReady — Admin queue page for Researched-N-Ready CE courses.
  */
 import { useState, useEffect } from 'react';
 import api from '../services/api';
@@ -74,7 +74,7 @@ export default function AdminResearchReady() {
     <div>
       <div className="flex items-center gap-3 mb-6">
         <BookOpen className="w-6 h-6 text-burgundy-700" />
-        <h1 className="text-2xl font-bold text-gray-900">Research Ready CE Queue</h1>
+        <h1 className="text-2xl font-bold text-gray-900">Researched-N-Ready CE Queue</h1>
         <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-burgundy-100 text-burgundy-800">
           {courses.filter(c => c.status === 'pending_review').length} pending
         </span>
@@ -84,7 +84,7 @@ export default function AdminResearchReady() {
         <div className="bg-white rounded-xl border p-12 text-center">
           <Clock className="w-12 h-12 mx-auto text-gray-300 mb-4" />
           <h2 className="text-lg font-semibold text-gray-600 mb-2">No courses in queue</h2>
-          <p className="text-sm text-gray-400">Research Ready CE courses will appear here after generation.</p>
+          <p className="text-sm text-gray-400">Researched-N-Ready CE courses will appear here after generation.</p>
         </div>
       ) : (
         <div className="bg-white rounded-xl border overflow-hidden">

@@ -1,5 +1,5 @@
 /**
- * ResearchReadyCE — Learner search page for Research Ready CE articles.
+ * ResearchReadyCE — Learner search page for Researched-N-Ready CE articles.
  */
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
@@ -200,7 +200,7 @@ export default function ResearchReadyCE() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-1">Research Ready CE</h1>
+      <h1 className="text-2xl font-bold text-gray-900 mb-1">Researched-N-Ready CE</h1>
       <p className="text-sm text-gray-500 mb-6">
         Earn NBCC-approved CE credit by reading peer-reviewed scholarly articles. ACEP #7760
       </p>

@@ -155,7 +155,7 @@ export async function generateSyllabus({
             new TableRow({
               children: [
                 shadedCell('CE Format', LIGHT_GRAY, { bold: true }),
-                shadedCell(`Research Ready CE — ${course.format}`, WHITE),
+                shadedCell(`Researched-N-Ready CE — ${course.format}`, WHITE),
                 shadedCell('Completion Date', LIGHT_GRAY, { bold: true }),
                 shadedCell(completionDateStr, WHITE)
               ]

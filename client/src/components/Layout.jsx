@@ -30,7 +30,7 @@ const moreLinks = [
   { name: 'Recommendations',  href: '/recommendations',     icon: Star },
   { name: 'Team',             href: '/organization',        icon: Users },
   { name: 'Group Licenses',   href: '/group-licenses',      icon: Users },
-  { name: 'Research Ready',   href: '/research-ready',       icon: BookOpen },
+  { name: 'Researched-N-Ready', href: '/research-ready',     icon: BookOpen },
   { name: 'Legacy Vault',     href: '/legacy-vault',         icon: Lock },
   { name: 'Partner Portal',  href: '/partner-dashboard',    icon: Star },
 ];
