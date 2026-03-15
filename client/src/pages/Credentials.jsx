@@ -393,6 +393,7 @@ export default function Credentials() {
           mode={showScanModal}
           onClose={() => setShowScanModal(null)}
           onSuccess={() => { setShowScanModal(null); fetchData(); }}
+          credentials={credentials}
         />
       )}
 
@@ -411,7 +412,7 @@ export default function Credentials() {
 // Scan Certificate Modal — supports both CE certificates and credential docs
 // ─────────────────────────────────────────────────────────────────────────────
 
-function ScanCertificateModal({ mode, onClose, onSuccess }) {
+function ScanCertificateModal({ mode, onClose, onSuccess, credentials = [] }) {
   const [file, setFile] = useState(null);
   const [preview, setPreview] = useState(null);
   const [scanning, setScanning] = useState(false);
@@ -419,6 +420,7 @@ function ScanCertificateModal({ mode, onClose, onSuccess }) {
   const [extractedData, setExtractedData] = useState(null);
   const [error, setError] = useState('');
   const [dragOver, setDragOver] = useState(false);
+  const [selectedCredentials, setSelectedCredentials] = useState([]);
   const fileInputRef = useRef(null);
   const cameraInputRef = useRef(null);
 
@@ -503,6 +505,7 @@ function ScanCertificateModal({ mode, onClose, onSuccess }) {
         if (extractedData.approvingBody) formData.append('approvingBody', extractedData.approvingBody);
         if (extractedData.approvalNumber) formData.append('approvalNumber', extractedData.approvalNumber);
         if (extractedData.applicability) formData.append('applicability', extractedData.applicability);
+        if (selectedCredentials.length > 0) formData.append('credentials', JSON.stringify(selectedCredentials));
         await api.post('/certificates/upload', formData, {
           headers: { 'Content-Type': 'multipart/form-data' }
         });
@@ -668,6 +671,29 @@ function ScanCertificateModal({ mode, onClose, onSuccess }) {
                   {extractedData.learnerName && (
                     <div className="text-sm text-gray-500">
                       Certificate holder: <span className="font-medium text-gray-700">{extractedData.learnerName}</span>
+                    </div>
+                  )}
+                  {credentials.length > 0 && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Apply to Credentials</label>
+                      <p className="text-xs text-gray-500 mb-2">Select which credentials this certificate counts toward.</p>
+                      <div className="space-y-2">
+                        {credentials.map(cred => (
+                          <label key={cred._id} className="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-50 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={selectedCredentials.includes(cred._id)}
+                              onChange={(e) => {
+                                setSelectedCredentials(prev =>
+                                  e.target.checked ? [...prev, cred._id] : prev.filter(id => id !== cred._id)
+                                );
+                              }}
+                              className="rounded border-gray-300 text-burgundy-600 focus:ring-burgundy-500"
+                            />
+                            <span className="text-sm text-gray-800">{cred.name} {cred.state ? `(${cred.state})` : ''}</span>
+                          </label>
+                        ))}
+                      </div>
                     </div>
                   )}
                 </div>
