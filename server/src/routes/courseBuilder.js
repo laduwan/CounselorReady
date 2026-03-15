@@ -15,6 +15,8 @@
 import express from 'express';
 import Anthropic from '@anthropic-ai/sdk';
 import { protect } from '../middleware/auth.js';
+import { searchScholarlyDatabases, fetchArticlesForSynthesis } from '../services/scholarlySearch.js';
+import { synthesizeMetaAnalysis, synthesizeComparativeAnalysis, generateCourseFromSynthesis } from '../services/researchSynthesis.js';
 
 // Admin-only middleware (inline)
 const adminOnly = (req, res, next) => {
@@ -851,6 +853,192 @@ router.get('/export/:courseId', protect, adminOnly, async (req, res) => {
   } catch (error) {
     console.error('Export course error:', error);
     res.status(500).json({ error: error.message });
+  }
+});
+
+// ═══════════════════════════════════════════════════════════════════
+// RESEARCH-TO-COURSE PIPELINE — Scholarly database search + synthesis
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * POST /api/course-builder/research/search
+ * Search scholarly databases (CrossRef + OpenAlex) for articles on a topic.
+ */
+router.post('/research/search', protect, adminOnly, async (req, res) => {
+  try {
+    const { query, yearFrom = 2015, limit = 15, sources = 'both' } = req.body;
+
+    if (!query || query.trim().length < 3) {
+      return res.status(400).json({ error: 'Search query must be at least 3 characters' });
+    }
+
+    const articles = await searchScholarlyDatabases(query, {
+      yearFrom: parseInt(yearFrom),
+      limit: parseInt(limit),
+      sources
+    });
+
+    res.json({
+      query,
+      totalResults: articles.length,
+      articles
+    });
+  } catch (error) {
+    console.error('Research search error:', error);
+    res.status(500).json({ error: 'Scholarly database search failed: ' + error.message });
+  }
+});
+
+/**
+ * POST /api/course-builder/research/synthesize
+ * Run meta-analysis or comparative analysis on selected articles.
+ * Body: { topic, articles: [...], analysisType: 'meta-analysis' | 'comparative' }
+ */
+router.post('/research/synthesize', protect, adminOnly, async (req, res) => {
+  try {
+    const { topic, articles, analysisType = 'meta-analysis' } = req.body;
+
+    if (!topic) {
+      return res.status(400).json({ error: 'Topic is required' });
+    }
+    if (!articles || articles.length < 3) {
+      return res.status(400).json({ error: 'At least 3 articles are required for synthesis' });
+    }
+    if (articles.length > 20) {
+      return res.status(400).json({ error: 'Maximum 20 articles for synthesis' });
+    }
+
+    let synthesis;
+    if (analysisType === 'comparative') {
+      synthesis = await synthesizeComparativeAnalysis(articles, topic);
+    } else {
+      synthesis = await synthesizeMetaAnalysis(articles, topic);
+    }
+
+    res.json({
+      topic,
+      analysisType,
+      articleCount: articles.length,
+      synthesis
+    });
+  } catch (error) {
+    console.error('Research synthesis error:', error);
+    res.status(500).json({ error: 'Research synthesis failed: ' + error.message });
+  }
+});
+
+/**
+ * POST /api/course-builder/research/generate-course
+ * Generate a full CEU course from a completed synthesis.
+ * Body: { synthesis, articles, ceHours, level }
+ */
+router.post('/research/generate-course', protect, adminOnly, async (req, res) => {
+  try {
+    const { synthesis, articles, ceHours = 2, level = 'Intermediate' } = req.body;
+
+    if (!synthesis) {
+      return res.status(400).json({ error: 'Synthesis data is required' });
+    }
+    if (!articles || articles.length === 0) {
+      return res.status(400).json({ error: 'Source articles are required' });
+    }
+
+    const course = await generateCourseFromSynthesis(synthesis, articles, {
+      ceHours: parseFloat(ceHours),
+      level
+    });
+
+    // Add platform metadata
+    course.slug = slugify(course.title);
+    course.ceHours = parseFloat(ceHours);
+    course.level = level;
+    course.category = course.contentAreas?.[0] || 'Research & Program Evaluation';
+    course.deliveryMethod = 'online';
+    course.isPublished = false;
+    course.status = 'draft';
+    course.generatedFrom = 'research-synthesis';
+    course.acepProvider = { name: 'GA Integrated Therapeutic Perspectives LLC', number: '7760' };
+    course.presenter = {
+      name: 'CounselorReady',
+      credentials: 'NBCC ACEP #7760',
+      qualificationStatement: 'Content synthesized from peer-reviewed research by licensed mental health professionals.'
+    };
+    course._wordCount = countCourseWords(course);
+    course._requiredWords = ceHours * WORDS_PER_CE_HOUR;
+
+    res.json(course);
+  } catch (error) {
+    console.error('Research course generation error:', error);
+    res.status(500).json({ error: 'Course generation failed: ' + error.message });
+  }
+});
+
+/**
+ * POST /api/course-builder/research/auto-build
+ * One-click: search → synthesize → generate course.
+ * Body: { topic, analysisType, ceHours, level, yearFrom }
+ */
+router.post('/research/auto-build', protect, adminOnly, async (req, res) => {
+  try {
+    const {
+      topic,
+      analysisType = 'meta-analysis',
+      ceHours = 2,
+      level = 'Intermediate',
+      yearFrom = 2015
+    } = req.body;
+
+    if (!topic || topic.trim().length < 3) {
+      return res.status(400).json({ error: 'Topic must be at least 3 characters' });
+    }
+
+    // Step 1: Fetch articles
+    const articles = await fetchArticlesForSynthesis(topic, {
+      yearFrom: parseInt(yearFrom),
+      minArticles: 5,
+      maxArticles: 12
+    });
+
+    if (articles.length < 3) {
+      return res.status(404).json({
+        error: `Only found ${articles.length} articles. At least 3 are needed for synthesis.`,
+        articles
+      });
+    }
+
+    // Step 2: Synthesize
+    let synthesis;
+    if (analysisType === 'comparative') {
+      synthesis = await synthesizeComparativeAnalysis(articles, topic);
+    } else {
+      synthesis = await synthesizeMetaAnalysis(articles, topic);
+    }
+
+    // Step 3: Generate course
+    const course = await generateCourseFromSynthesis(synthesis, articles, {
+      ceHours: parseFloat(ceHours),
+      level
+    });
+
+    // Add platform metadata
+    course.slug = slugify(course.title);
+    course.ceHours = parseFloat(ceHours);
+    course.level = level;
+    course.category = course.contentAreas?.[0] || 'Research & Program Evaluation';
+    course.deliveryMethod = 'online';
+    course.isPublished = false;
+    course.status = 'draft';
+    course.generatedFrom = 'research-synthesis';
+    course.acepProvider = { name: 'GA Integrated Therapeutic Perspectives LLC', number: '7760' };
+
+    res.json({
+      articles: articles.map(a => ({ title: a.title, authors: a.authors, year: a.year, journal: a.journal, doi: a.doi })),
+      synthesis,
+      course
+    });
+  } catch (error) {
+    console.error('Auto-build error:', error);
+    res.status(500).json({ error: 'Auto-build failed: ' + error.message });
   }
 });
 
