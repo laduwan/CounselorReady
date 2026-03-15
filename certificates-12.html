@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CE Certificates - CounselorReady</title>
+    <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Lato:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        burgundy: {
+                            50: '#FDF2F5',
+                            100: '#FADED6',
+                            200: '#F5B8C4',
+                            300: '#E88A9E',
+                            400: '#D0607A',
+                            500: '#A83350',
+                            600: '#6B1D34',
+                            700: '#571828',
+                            800: '#43121E',
+                            900: '#2F0C15',
+                        },
+                        hunter: {
+                            50: '#F2F7F3',
+                            100: '#E0ECE3',
+                            200: '#C2D9C8',
+                            300: '#96BCA0',
+                            400: '#6B9E78',
+                            500: '#5A9469',
+                            600: '#4A7C59',
+                            700: '#3B6347',
+                            800: '#2D4C37',
+                            900: '#1F3526',
+                        },
+                        honey: {
+                            50: '#FFFDF5',
+                            100: '#FFF8E1',
+                            200: '#FFEDB3',
+                            300: '#FFDD7A',
+                            400: '#E8BF5E',
+                            500: '#D4A855',
+                            600: '#C49A40',
+                            700: '#A67F2D',
+                            800: '#876520',
+                            900: '#5C4414',
+                        },
+                        navy: {
+                            600: '#284157',
+                            700: '#1E3448',
+                        }
+                    },
+                    fontFamily: {
+                        display: ['Cormorant Garamond', 'Georgia', 'serif'],
+                        body: ['Lato', 'Helvetica Neue', 'Arial', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Lato', 'Helvetica Neue', 'Arial', sans-serif';
+        }
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Cormorant Garamond', 'Georgia', serif;
+        }
+    </style>
+</head>
+<body class="bg-[#FAF9F6] min-h-screen">
+    <!-- Header -->
+    <header class="bg-white border-b border-stone-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <!-- Logo -->
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-lg flex items-center justify-center" style="background: linear-gradient(135deg, #8b2542, #6b1d34);">
+                        <div class="relative w-full h-full flex items-center justify-center">
+                            <span class="absolute text-[17px] font-bold text-[#D0768A]" style="font-family: 'Cormorant Garamond', serif; z-index: 2; top: 7px; left: 7px;">C</span>
+                            <span class="absolute text-[14px] font-bold text-[#4A7C59]" style="font-family: 'Cormorant Garamond', serif; z-index: 1; top: 12px; left: 13px;">R</span>
+                        </div>
+                    </div>
+                    <span class="font-display text-xl font-semibold">
+                        <span class="text-burgundy-600">Counselor</span><span class="text-hunter-600">Ready</span>
+                    </span>
+                </div>
+
+                <!-- Navigation -->
+                <nav class="hidden md:flex items-center gap-8">
+                    <a href="/dashboard.html" class="text-stone-600 hover:text-hunter-600 text-sm transition-colors">Dashboard</a>
+                    <a href="/courses.html" class="text-stone-600 hover:text-hunter-600 text-sm transition-colors">Courses</a>
+                    <a href="/credentials.html" class="text-stone-600 hover:text-hunter-600 text-sm transition-colors">Credentials</a>
+                    <a href="/certificates.html" class="text-burgundy-600 font-medium border-b-2 border-burgundy-600 pb-1 text-sm">CE Certificates</a>
+                    <a href="/messages.html" class="text-stone-600 hover:text-hunter-600 text-sm transition-colors">Messages</a>
+                </nav>
+
+                <!-- User Menu -->
+                <div class="relative">
+                    <button id="userMenuButton" class="flex items-center gap-2 text-sm font-medium text-stone-700 hover:text-burgundy-600 transition-colors">
+                        <span class="hidden sm:inline" id="userName">U</span>
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                        </svg>
+                    </button>
+                    <div id="userMenu" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-stone-200 py-1 z-50">
+                        <a href="/settings.html" class="block px-4 py-2 text-sm text-stone-700 hover:bg-stone-50">Settings</a>
+                        <a href="#" onclick="handleSignOut()" class="block px-4 py-2 text-sm text-stone-700 hover:bg-stone-50">Sign Out</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Page Header -->
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
+            <div>
+                <h1 class="text-4xl font-bold text-burgundy-900 mb-2" style="font-family: 'Cormorant Garamond', serif;">CE Certificates</h1>
+                <p class="text-stone-600">Store proof of continuing education credits earned from courses and training.</p>
+            </div>
+            <div class="flex gap-3">
+                <button onclick="generateTranscript()" class="bg-honey-500 hover:bg-honey-600 text-white px-5 py-2.5 rounded-lg font-medium text-sm transition-colors flex items-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                    </svg>
+                    CE Transcript
+                </button>
+                <button onclick="openUploadModal()" class="bg-burgundy-600 hover:bg-burgundy-700 text-white px-5 py-2.5 rounded-lg font-medium text-sm transition-colors flex items-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                    </svg>
+                    Upload CE Certificate
+                </button>
+            </div>
+        </div>
+
+        <!-- Back to Dashboard Link -->
+        <div class="mb-6">
+            <a href="/dashboard.html" class="text-sm text-hunter-600 hover:text-hunter-700 flex items-center gap-1">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                </svg>
+                Back to Dashboard
+            </a>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
+            <div class="bg-white rounded-xl p-6 border border-stone-200">
+                <div class="flex items-center gap-3 mb-2">
+                    <div class="w-10 h-10 rounded-full bg-stone-100 flex items-center justify-center">
+                        <svg class="w-5 h-5 text-stone-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <div class="text-2xl font-bold text-stone-900" id="certificatesStored">11</div>
+                        <div class="text-sm text-stone-500">Certificates Stored</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl p-6 border border-stone-200">
+                <div class="flex items-center gap-3 mb-2">
+                    <div class="w-10 h-10 rounded-full bg-burgundy-50 flex items-center justify-center">
+                        <svg class="w-5 h-5 text-burgundy-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <div class="text-2xl font-bold text-stone-900" id="totalCeHours">53</div>
+                        <div class="text-sm text-stone-500">Total CE Hours</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl p-6 border border-stone-200">
+                <div class="flex items-center gap-3 mb-2">
+                    <div class="w-10 h-10 rounded-full bg-honey-100 flex items-center justify-center">
+                        <svg class="w-5 h-5 text-honey-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <div class="text-2xl font-bold text-stone-900" id="fromNbccAceps">11</div>
+                        <div class="text-sm text-stone-500">From NBCC ACEPs</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="bg-white rounded-xl p-4 border border-stone-200 mb-6">
+            <div class="flex flex-col sm:flex-row gap-4">
+                <div class="flex-1">
+                    <div class="relative">
+                        <input type="text" placeholder="Search certificates..." class="w-full pl-10 pr-4 py-2.5 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-burgundy-500 focus:border-burgundy-500">
+                        <svg class="w-5 h-5 text-stone-400 absolute left-3 top-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                        </svg>
+                    </div>
+                </div>
+                <select class="px-4 py-2.5 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-burgundy-500 focus:border-burgundy-500 bg-white">
+                    <option>All Years</option>
+                    <option>2026</option>
+                    <option>2025</option>
+                    <option>2024</option>
+                </select>
+                <select class="px-4 py-2.5 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-burgundy-500 focus:border-burgundy-500 bg-white">
+                    <option>Latest First</option>
+                    <option>Oldest First</option>
+                    <option>Most CE Hours</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Certificates Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="certificatesGrid">
+            <!-- Certificate Card 1 -->
+            <div class="bg-white rounded-xl border border-stone-200 hover:border-burgundy-300 hover:shadow-md transition-all p-5">
+                <div class="flex items-start gap-3 mb-4">
+                    <div class="w-12 h-12 rounded-lg bg-burgundy-50 flex items-center justify-center flex-shrink-0">
+                        <svg class="w-6 h-6 text-burgundy-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                        </svg>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <h3 class="font-semibold text-stone-900 mb-1 line-clamp-2">The Importance of Counselor Self-Awareness and Work Analysis Surveys for the Counseling Profession</h3>
+                        <p class="text-sm text-stone-500">National Board for Certified Counselors</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2 mb-3">
+                    <span class="text-xs px-2.5 py-1 bg-honey-100 text-honey-700 rounded-full font-medium">4.5 CE Hours</span>
+                    <span class="text-xs px-2.5 py-1 bg-hunter-100 text-hunter-700 rounded-full">NBCC</span>
+                </div>
+                <div class="flex items-center justify-between text-sm mb-3">
+                    <span class="text-stone-500">9/28/2025</span>
+                    <span class="text-stone-400">Verify: CR-AQ0882-0R0V</span>
+                </div>
+                <div class="flex gap-2">
+                    <button class="flex-1 text-stone-600 hover:text-burgundy-600 py-2 text-sm font-medium transition-colors flex items-center justify-center gap-1">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                        </svg>
+                    </button>
+                    <button class="flex-1 text-stone-600 hover:text-red-600 py-2 text-sm font-medium transition-colors flex items-center justify-center gap-1">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Certificate Card 2 -->
+            <div class="bg-white rounded-xl border border-stone-200 hover:border-burgundy-300 hover:shadow-md transition-all p-5">
+                <div class="flex items-start gap-3 mb-4">
+                    <div class="w-12 h-12 rounded-lg bg-burgundy-50 flex items-center justify-center flex-shrink-0">
+                        <svg class="w-6 h-6 text-burgundy-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                        </svg>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <h3 class="font-semibold text-stone-900 mb-1 line-clamp-2">Problematic Clinical Supervision Experiences and Case Scenarios</h3>
+                        <p class="text-sm text-stone-500">Peak Solutions, LLC</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2 mb-3">
+                    <span class="text-xs px-2.5 py-1 bg-honey-100 text-honey-700 rounded-full font-medium">6 CE Hours</span>
+                    <span class="text-xs px-2.5 py-1 bg-burgundy-100 text-burgundy-700 rounded-full">Supervision</span>
+                    <span class="text-xs px-2.5 py-1 bg-hunter-100 text-hunter-700 rounded-full">NBCC</span>
+                </div>
+                <div class="flex items-center justify-between text-sm mb-3">
+                    <span class="text-stone-500">7/19/2025</span>
+                    <span class="text-stone-400">Verify: CR-AM6225-KXGB</span>
+                </div>
+                <div class="flex gap-2">
+                    <button class="flex-1 text-stone-600 hover:text-burgundy-600 py-2 text-sm font-medium transition-colors flex items-center justify-center gap-1">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                        </svg>
+                    </button>
+                    <button class="flex-1 text-stone-600 hover:text-red-600 py-2 text-sm font-medium transition-colors flex items-center justify-center gap-1">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- More certificate cards would be loaded dynamically -->
+        </div>
+    </main>
+
+    <script>
+        const API_URL = window.location.hostname === 'localhost' 
+            ? 'http://localhost:5001' 
+            : 'https://counselorready-api.onrender.com';
+
+        // Auth check
+        const token = localStorage.getItem('token');
+        if (!token) {
+            window.location.href = '/login.html';
+        }
+
+        // User menu toggle
+        document.getElementById('userMenuButton').addEventListener('click', function(e) {
+            e.stopPropagation();
+            document.getElementById('userMenu').classList.toggle('hidden');
+        });
+
+        document.addEventListener('click', function() {
+            document.getElementById('userMenu').classList.add('hidden');
+        });
+
+        // Sign out
+        function handleSignOut() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            window.location.href = '/login.html';
+        }
+
+        function openUploadModal() {
+            alert('Upload certificate feature - coming soon!');
+        }
+
+        function generateTranscript() {
+            alert('Generate CE transcript feature - coming soon!');
+        }
+
+        // Load user data
+        async function loadUserData() {
+            try {
+                const response = await fetch(`${API_URL}/api/auth/me`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.ok) {
+                    const user = await response.json();
+                    document.getElementById('userName').textContent = user.firstName?.charAt(0) || 'U';
+                }
+            } catch (error) {
+                console.error('Error loading user data:', error);
+            }
+        }
+
+        // Load stats
+        async function loadStats() {
+            try {
+                const response = await fetch(`${API_URL}/api/users/dashboard`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    document.getElementById('certificatesStored').textContent = data.certificatesCount || '0';
+                    document.getElementById('totalCeHours').textContent = data.totalHours || '0';
+                    document.getElementById('fromNbccAceps').textContent = data.certificatesCount || '0';
+                }
+            } catch (error) {
+                console.error('Error loading stats:', error);
+            }
+        }
+
+        // Load certificates
+        async function loadCertificates() {
+            try {
+                const response = await fetch(`${API_URL}/api/certificates/`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.ok) {
+                    const certificates = await response.json();
+                    // TODO: Populate certificates grid with real data
+                    console.log('Certificates loaded:', certificates.length);
+                }
+            } catch (error) {
+                console.error('Error loading certificates:', error);
+            }
+        }
+
+        // Initialize
+        loadUserData();
+        loadStats();
+        loadCertificates();
+    </script>
+</body>
+</html>
