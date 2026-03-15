@@ -655,8 +655,13 @@ router.get('/hardship-metrics', protect, adminOnly, async (req, res) => {
     }
     const avgGraceDays = graceDaysCount > 0 ? Math.round(totalGraceDays / graceDaysCount) : 7;
     
-    // TODO: Track recovered payments via Stripe webhooks
-    const recoveredPaymentsThisMonth = 0;
+    // Count recovered payments this month
+    const startOfMonth = new Date();
+    startOfMonth.setDate(1);
+    startOfMonth.setHours(0, 0, 0, 0);
+    const recoveredPaymentsThisMonth = await User.countDocuments({
+      'subscription.paymentRecoveredAt': { $gte: startOfMonth }
+    });
     
     res.json({
       totalVipMembers,
