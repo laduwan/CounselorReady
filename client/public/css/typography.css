@@ -1,17 +1,9 @@
 /* ═══════════════════════════════════════════════════════════════════
-   CounselorReady Typography v1.0
+   CounselorReady Typography v2.0
    Depends on: design-tokens.css (must be loaded first)
-   
-   Deploy to: client/public/css/typography.css
-   
-   This file applies the typographic hierarchy defined in
-   CounselorReady_Color_Spec_v1.docx Section 5.
    ═══════════════════════════════════════════════════════════════════ */
 
-
-/* ── Google Fonts Import ──────────────────────────────────────────── */
 @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Lato:wght@300;400;600;700&display=swap');
-
 
 /* ── Base ─────────────────────────────────────────────────────────── */
 body {
@@ -24,7 +16,6 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
-
 
 /* ── Headings ─────────────────────────────────────────────────────── */
 h1, .cr-h1 {
@@ -68,30 +59,23 @@ h4, .cr-h4 {
   margin-bottom: var(--cr-space-sm);
 }
 
-/* Remove top margin when heading is first child (inside cards, panels) */
 h1:first-child, h2:first-child, h3:first-child, h4:first-child {
   margin-top: 0;
 }
-
 
 /* ── Body Text ────────────────────────────────────────────────────── */
 p {
   margin-bottom: var(--cr-space-md);
   line-height: var(--cr-leading-relaxed);
+  color: var(--cr-text);
 }
 
 p:last-child {
   margin-bottom: 0;
 }
 
-strong, b {
-  font-weight: 700;
-}
-
-em, i {
-  font-style: italic;
-}
-
+strong, b { font-weight: 700; }
+em, i { font-style: italic; }
 
 /* ── Small / Caption ──────────────────────────────────────────────── */
 small, .cr-small, .cr-caption {
@@ -100,17 +84,15 @@ small, .cr-small, .cr-caption {
   line-height: var(--cr-leading-normal);
 }
 
-
 /* ── Labels ───────────────────────────────────────────────────────── */
 .cr-label {
   font-family: var(--cr-font-body);
   font-size: var(--cr-text-label);
   font-weight: var(--cr-weight-label);
-  color: var(--cr-navy-500);
+  color: var(--cr-navy-600);
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
-
 
 /* ── Links ────────────────────────────────────────────────────────── */
 a {
@@ -123,7 +105,7 @@ a {
 
 a:hover {
   color: var(--cr-link-hover);
-  text-decoration-color: var(--cr-burgundy-800);
+  text-decoration-color: var(--cr-burgundy-600);
 }
 
 a:focus-visible {
@@ -131,7 +113,6 @@ a:focus-visible {
   outline-offset: 2px;
   border-radius: 2px;
 }
-
 
 /* ── Lists ────────────────────────────────────────────────────────── */
 ul, ol {
@@ -145,25 +126,21 @@ li {
 }
 
 li::marker {
-  color: var(--cr-green-500);
+  color: var(--cr-green-600);
 }
 
-
-/* ── Blockquotes (clinical vignettes, case examples) ──────────────── */
+/* ── Blockquotes ──────────────────────────────────────────────────── */
 blockquote {
-  border-left: 4px solid var(--cr-honey-400);
+  border-left: 4px solid var(--cr-honey-500);
   background: var(--cr-honey-50);
   padding: var(--cr-space-md) var(--cr-space-lg);
   margin: var(--cr-space-lg) 0;
   border-radius: 0 var(--cr-radius-sm) var(--cr-radius-sm) 0;
   font-style: italic;
-  color: var(--cr-navy-600);
+  color: var(--cr-text-secondary);
 }
 
-blockquote p:last-child {
-  margin-bottom: 0;
-}
-
+blockquote p:last-child { margin-bottom: 0; }
 
 /* ── Tables ───────────────────────────────────────────────────────── */
 table {
@@ -175,7 +152,7 @@ table {
 
 thead th {
   background: var(--cr-navy-50);
-  color: var(--cr-navy-500);
+  color: var(--cr-navy-600);
   font-weight: var(--cr-weight-label);
   text-align: left;
   padding: var(--cr-space-sm) var(--cr-space-md);
@@ -188,9 +165,10 @@ thead th {
 tbody td {
   padding: var(--cr-space-sm) var(--cr-space-md);
   border-bottom: 1px solid var(--cr-border-light);
+  color: var(--cr-text-secondary);
   vertical-align: top;
 }
 
 tbody tr:hover {
-  background: var(--cr-eggshell-50);
+  background: var(--cr-bg-alt);
 }
