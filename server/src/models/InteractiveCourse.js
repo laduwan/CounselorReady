@@ -170,8 +170,9 @@ const CourseSchema = new mongoose.Schema({
   totalEstimatedTime: Number, // in minutes
   totalContentBlocks: Number,
   totalQuizQuestions: Number,
-  wordCount: Number // pre-computed for admin dashboard
-  
+  wordCount: Number, // pre-computed for admin dashboard
+  rawMarkdown: { type: String }
+
 }, { timestamps: true });
 
 // Pre-save hook to calculate totals
@@ -227,11 +228,14 @@ const SectionProgressSchema = new mongoose.Schema({
   timeSpent: { type: Number, default: 0 }, // seconds
   
   // Status
-  status: { 
-    type: String, 
-    enum: ['not_started', 'in_progress', 'completed'], 
-    default: 'not_started' 
-  }
+  status: {
+    type: String,
+    enum: ['not_started', 'in_progress', 'completed'],
+    default: 'not_started'
+  },
+
+  // Adaptive learning — set when an adaptive rule unlocks this section out of order
+  adaptivelyUnlocked: { type: Boolean, default: false }
 });
 
 const CourseProgressSchema = new mongoose.Schema({

@@ -254,6 +254,29 @@ const courseSchema = new mongoose.Schema({
       daysAfterEnrollment: { type: Number }
     }],
     certificateEnabled: { type: Boolean, default: true },
+    certificateCustomization: {
+      // Layout
+      layout: { type: String, enum: ['classic', 'modern', 'elegant', 'minimal'], default: 'classic' },
+      orientation: { type: String, enum: ['landscape', 'portrait'], default: 'landscape' },
+      // Colors
+      borderColor: { type: String, default: '#10B981' },
+      accentColor: { type: String, default: '#06B6D4' },
+      headerColor: { type: String, default: '#1e293b' },
+      textColor: { type: String, default: '#64748b' },
+      backgroundColor: { type: String, default: '#f8fafc' },
+      // Branding
+      logoUrl: { type: String },
+      showNbccLogo: { type: Boolean, default: true },
+      signatureUrl: { type: String },
+      signerName: { type: String, default: 'CounselorReady' },
+      signerTitle: { type: String, default: 'NBCC Provider ACEP #7760' },
+      // Content
+      certificateTitle: { type: String, default: 'Certificate of Completion' },
+      customFooter: { type: String },
+      showVerificationCode: { type: Boolean, default: true },
+      showCeHours: { type: Boolean, default: true },
+      showCompletionDate: { type: Boolean, default: true }
+    },
     passingScore: { type: Number, default: 70 },
     
     // Quiz/Test Retake Settings
@@ -283,6 +306,17 @@ const courseSchema = new mongoose.Schema({
       default: 'I attest that I personally completed this entire course, including all required activities and assessments, and that I did not receive unauthorized assistance.'
     },
     
+    // Adaptive Learning Paths
+    adaptiveEnabled: { type: Boolean, default: false },
+    adaptiveRules: [{
+      sectionIndex: { type: Number, required: true },
+      condition: { type: String, enum: ['score_below', 'score_above', 'failed'], required: true },
+      threshold: { type: Number, default: 0.7 },
+      action: { type: String, enum: ['redirect', 'require_review', 'skip_ahead'], required: true },
+      targetSectionIndex: { type: Number, required: true },
+      message: { type: String, default: '' }
+    }],
+
     // Narration / Text-to-Speech
     narrationEnabled: { type: Boolean, default: false },
     narrationVoice: { 

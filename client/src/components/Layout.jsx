@@ -13,25 +13,26 @@ import CRPromoCard from './CRPromoCard';
 
 // React routes use Link; external static HTML pages use <a>
 const navLinks = [
-  { name: 'Dashboard',       href: '/dashboard',          static: false },
-  { name: 'Courses',         href: '/courses',            static: false },
-  { name: 'Free Tools',      href: '/tools/index.html',   static: true  },
-  { name: 'Credentials',     href: '/credentials',        static: false },
-  { name: 'CE Planner',      href: '/ce-planner',         static: false },
-  { name: 'Audit Kit',       href: '/audit-kit',          static: false },
-  { name: 'Alerts',          href: '/board-alerts',       static: false },
-];
-
-const moreLinks = [
-  { name: 'Supervision',      href: '/supervision',        icon: ClipboardList },
-  { name: 'Insurance',        href: '/insurance-tracker',   icon: ShieldCheck },
-  { name: 'Achievements',     href: '/achievements',        icon: Trophy },
-  { name: 'Referrals',        href: '/referrals',           icon: Star },
-  { name: 'Recommendations',  href: '/recommendations',     icon: Star },
-  { name: 'Team',             href: '/organization',        icon: Users },
-  { name: 'Group Licenses',   href: '/group-licenses',      icon: Users },
-  { name: 'Legacy Vault',     href: '/legacy-vault',         icon: Lock },
-  { name: 'Partner Portal',  href: '/partner-dashboard',    icon: Star },
+  { name: 'Dashboard', href: '/dashboard' },
+  { name: 'Courses', href: '/courses', children: [
+    { name: 'Browse Courses',    href: '/courses' },
+    { name: 'Recommendations',   href: '/recommendations' },
+    { name: 'Achievements',      href: '/achievements' },
+  ]},
+  { name: 'Credentials', href: '/credentials', children: [
+    { name: 'My Credentials',    href: '/credentials' },
+    { name: 'CE Planner',        href: '/ce-planner' },
+    { name: 'Audit Kit',         href: '/audit-kit' },
+    { name: 'Board Alerts',      href: '/board-alerts' },
+  ]},
+  { name: 'Practice', href: '/supervision', children: [
+    { name: 'Supervision',       href: '/supervision' },
+    { name: 'Insurance Tracker', href: '/insurance-tracker' },
+  ]},
+  { name: 'Team', href: '/organization', children: [
+    { name: 'Organization',      href: '/organization' },
+    { name: 'Group Licenses',    href: '/group-licenses' },
+  ]},
 ];
 
 const BURGUNDY      = '#6B1D34';
@@ -43,7 +44,8 @@ const GOLD          = '#D4A855';
 export default function Layout({ children }) {
   const [mobileOpen, setMobileOpen]   = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
-  const [moreMenuOpen, setMoreMenuOpen] = useState(false);
+  const [openDropdown, setOpenDropdown] = useState(null);
+
   const [notifOpen, setNotifOpen]       = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount]   = useState(0);
@@ -106,6 +108,12 @@ export default function Layout({ children }) {
     location.pathname === href ||
     (href !== '/dashboard' && location.pathname.startsWith(href));
 
+  const isGroupActive = (link) => {
+    if (isActive(link.href)) return true;
+    if (link.children) return link.children.some(child => isActive(child.href));
+    return false;
+  };
+
   const firstName = user?.profile?.firstName || user?.firstName || '';
   const lastName  = user?.profile?.lastName  || user?.lastName  || '';
   const initials  = `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase() || 'U';
@@ -136,8 +144,8 @@ export default function Layout({ children }) {
                     <span style={{ color: '#7A9E84', position: 'absolute', top: 4, left: 6, fontFamily: "'Cormorant Garamond', Georgia, serif", fontWeight: 700, fontSize: 16 }}>R</span>
                   </span>
                 </div>
-                <span style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontWeight: 600, fontSize: '1.5rem', letterSpacing: '0.015em' }}>
-                  <span style={{ color: BURGUNDY }}>Counselor</span><span style={{ color: HUNTER }}>Ready</span>
+                <span style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontWeight: 800, fontSize: '1.625rem', letterSpacing: '0.015em' }}>
+                  <span style={{ color: '#43121E' }}>Counselor</span><span style={{ color: '#2D4C37' }}>Ready</span>
                 </span>
               </>
             )}
@@ -146,7 +154,8 @@ export default function Layout({ children }) {
           {/* Desktop Nav */}
           <nav className="hidden lg:flex items-center gap-1">
             {navLinks.map((link) => {
-              const active = !link.static && isActive(link.href);
+              const active = isGroupActive(link);
+              const hasChildren = link.children && link.children.length > 0;
               const style = {
                 padding: '0.5rem 0.875rem',
                 borderRadius: '0.5rem',
@@ -156,68 +165,61 @@ export default function Layout({ children }) {
                 transition: 'all 0.15s',
                 color: active ? BURGUNDY : '#78716c',
                 background: active ? BURGUNDY_LIGHT : 'transparent',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.25rem',
               };
-              return link.static ? (
-                <a key={link.href} href={link.href} style={style}
-                  onMouseEnter={e => { if (!active) e.target.style.background = '#f5f5f4'; }}
-                  onMouseLeave={e => { if (!active) e.target.style.background = 'transparent'; }}>
-                  {link.name}
-                </a>
-              ) : (
-                <Link key={link.href} to={link.href} style={style}
-                  onMouseEnter={e => { if (!active) e.target.style.background = '#f5f5f4'; }}
-                  onMouseLeave={e => { if (!active) e.target.style.background = 'transparent'; }}>
-                  {link.name}
-                </Link>
+
+              if (!hasChildren) {
+                return (
+                  <Link key={link.href} to={link.href} style={style}
+                    onMouseEnter={e => { if (!active) e.currentTarget.style.background = '#f5f5f4'; }}
+                    onMouseLeave={e => { if (!active) e.currentTarget.style.background = 'transparent'; }}>
+                    {link.name}
+                  </Link>
+                );
+              }
+
+              return (
+                <div key={link.name} className="relative"
+                  onMouseEnter={() => setOpenDropdown(link.name)}
+                  onMouseLeave={() => setOpenDropdown(null)}>
+                  <Link to={link.href} style={style}
+                    onMouseEnter={e => { if (!active) e.currentTarget.style.background = '#f5f5f4'; }}
+                    onMouseLeave={e => { if (!active) e.currentTarget.style.background = 'transparent'; }}>
+                    {link.name}
+                    <ChevronDown style={{ width: 14, height: 14, opacity: 0.5, transition: 'transform 0.15s', transform: openDropdown === link.name ? 'rotate(180deg)' : 'rotate(0)' }} />
+                  </Link>
+                  {openDropdown === link.name && (
+                    <div style={{ position: 'absolute', top: '100%', left: 0, paddingTop: 4, zIndex: 50 }}>
+                      <div style={{ background: 'white', borderRadius: '0.75rem', border: '1px solid #e7e5e4', boxShadow: '0 4px 12px rgba(0,0,0,0.08)', padding: '0.25rem 0', minWidth: 180 }}>
+                        {link.children.map(child => {
+                          const childActive = isActive(child.href);
+                          return (
+                            <Link key={child.href} to={child.href}
+                              onClick={() => setOpenDropdown(null)}
+                              style={{
+                                display: 'block',
+                                padding: '0.5rem 1rem',
+                                fontSize: '0.8125rem',
+                                fontWeight: childActive ? 600 : 400,
+                                color: childActive ? BURGUNDY : '#57534e',
+                                background: childActive ? BURGUNDY_LIGHT : 'transparent',
+                                textDecoration: 'none',
+                                transition: 'background 0.1s',
+                              }}
+                              onMouseEnter={e => { if (!childActive) e.target.style.background = '#f5f5f4'; }}
+                              onMouseLeave={e => { if (!childActive) e.target.style.background = 'transparent'; }}>
+                              {child.name}
+                            </Link>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </div>
               );
             })}
-
-            {/* More dropdown */}
-            <div className="relative">
-              <button
-                onClick={() => setMoreMenuOpen(!moreMenuOpen)}
-                style={{
-                  padding: '0.5rem 0.875rem',
-                  borderRadius: '0.5rem',
-                  fontSize: '0.875rem',
-                  fontWeight: 500,
-                  transition: 'all 0.15s',
-                  color: moreLinks.some(l => isActive(l.href)) ? BURGUNDY : '#78716c',
-                  background: moreLinks.some(l => isActive(l.href)) ? BURGUNDY_LIGHT : 'transparent',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.25rem',
-                }}
-                onMouseEnter={e => { if (!moreLinks.some(l => isActive(l.href))) e.target.style.background = '#f5f5f4'; }}
-                onMouseLeave={e => { if (!moreLinks.some(l => isActive(l.href))) e.target.style.background = moreLinks.some(l => isActive(l.href)) ? BURGUNDY_LIGHT : 'transparent'; }}
-              >
-                More <ChevronDown className="w-3.5 h-3.5" />
-              </button>
-
-              {moreMenuOpen && (
-                <>
-                  <div className="fixed inset-0 z-10" onClick={() => setMoreMenuOpen(false)} />
-                  <div className="absolute left-0 top-full mt-2 w-52 bg-white rounded-xl shadow-lg border border-stone-200 py-1 z-20">
-                    {moreLinks.map((link) => {
-                      const active = isActive(link.href);
-                      const Icon = link.icon;
-                      return (
-                        <Link
-                          key={link.href}
-                          to={link.href}
-                          onClick={() => setMoreMenuOpen(false)}
-                          className="flex items-center gap-2.5 px-4 py-2.5 text-sm transition-colors hover:bg-stone-50"
-                          style={{ color: active ? BURGUNDY : '#57534e', fontWeight: active ? 600 : 400 }}
-                        >
-                          <Icon className="w-4 h-4" style={{ color: active ? BURGUNDY : '#a8a29e' }} />
-                          {link.name}
-                        </Link>
-                      );
-                    })}
-                  </div>
-                </>
-              )}
-            </div>
           </nav>
 
           {/* Right side */}
@@ -386,29 +388,30 @@ export default function Layout({ children }) {
         {mobileOpen && (
           <div className="lg:hidden border-t border-stone-200 bg-white px-4 py-3 space-y-1 max-h-[70vh] overflow-y-auto">
             {navLinks.map((link) => {
-              const active = !link.static && isActive(link.href);
-              const style = { display: 'block', padding: '0.625rem 1rem', borderRadius: '0.5rem', fontSize: '0.875rem', fontWeight: 500, textDecoration: 'none', color: active ? BURGUNDY : '#57534e', background: active ? BURGUNDY_LIGHT : 'transparent' };
-              return link.static ? (
-                <a key={link.href} href={link.href} style={style}>{link.name}</a>
-              ) : (
-                <Link key={link.href} to={link.href} onClick={() => setMobileOpen(false)} style={style}>{link.name}</Link>
+              const active = isGroupActive(link);
+              const linkStyle = { display: 'block', padding: '0.625rem 1rem', borderRadius: '0.5rem', fontSize: '0.875rem', fontWeight: 500, textDecoration: 'none', color: active ? BURGUNDY : '#57534e', background: active ? BURGUNDY_LIGHT : 'transparent' };
+
+              if (!link.children) {
+                return <Link key={link.href} to={link.href} onClick={() => setMobileOpen(false)} style={linkStyle}>{link.name}</Link>;
+              }
+
+              return (
+                <div key={link.name}>
+                  <Link to={link.href} onClick={() => setMobileOpen(false)} style={linkStyle}>{link.name}</Link>
+                  <div style={{ paddingLeft: '1rem' }}>
+                    {link.children.filter(child => child.href !== link.href).map(child => {
+                      const childActive = isActive(child.href);
+                      return (
+                        <Link key={child.href} to={child.href} onClick={() => setMobileOpen(false)}
+                          style={{ display: 'block', padding: '0.375rem 1rem', borderRadius: '0.375rem', fontSize: '0.8125rem', fontWeight: childActive ? 600 : 400, textDecoration: 'none', color: childActive ? BURGUNDY : '#78716c', background: childActive ? BURGUNDY_LIGHT : 'transparent' }}>
+                          {child.name}
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </div>
               );
             })}
-            <div className="border-t border-stone-100 my-2 pt-2">
-              <p className="px-3 py-1 text-xs font-semibold text-stone-400 uppercase tracking-wider">More</p>
-              {moreLinks.map((link) => {
-                const active = isActive(link.href);
-                const Icon = link.icon;
-                return (
-                  <Link key={link.href} to={link.href} onClick={() => setMobileOpen(false)}
-                    className="flex items-center gap-2.5"
-                    style={{ display: 'flex', padding: '0.625rem 1rem', borderRadius: '0.5rem', fontSize: '0.875rem', fontWeight: 500, textDecoration: 'none', color: active ? BURGUNDY : '#57534e', background: active ? BURGUNDY_LIGHT : 'transparent' }}>
-                    <Icon className="w-4 h-4" style={{ color: active ? BURGUNDY : '#a8a29e' }} />
-                    {link.name}
-                  </Link>
-                );
-              })}
-            </div>
             {isPartnerAdmin && (
               <div className="border-t border-stone-100 my-2 pt-2">
                 <p className="px-3 py-1 text-xs font-semibold text-stone-400 uppercase tracking-wider">Partner Admin</p>

@@ -4,8 +4,9 @@
  * Unauthorized copying or distribution is strictly prohibited.
  */
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import api from '../services/api';
-import { FileDown, CheckCircle, XCircle, FileText, Calendar, Award, BookOpen, Loader2 } from 'lucide-react';
+import { FileDown, CheckCircle, XCircle, FileText, Calendar, Award, BookOpen, Loader2, ArrowLeft } from 'lucide-react';
 
 export default function AuditKit() {
   const [auditData, setAuditData] = useState(null);
@@ -64,6 +65,7 @@ export default function AuditKit() {
 
   return (
     <div>
+      <Link to="/credentials" className="inline-flex items-center gap-1.5 text-sm text-stone-500 hover:text-burgundy-700 mb-3 transition-colors"><ArrowLeft className="w-4 h-4" />Credentials</Link>
       <h1 className="text-2xl font-bold text-gray-900 mb-2">Board Audit Preparation Kit</h1>
       <p className="text-gray-500 mb-6">Generate a comprehensive package of all your credentials, CE certificates, and compliance documentation — ready for board audit.</p>
 
@@ -116,7 +118,7 @@ export default function AuditKit() {
           </div>
 
           {/* Export Buttons */}
-          <div className="flex gap-3 mb-6">
+          <div className="flex flex-wrap gap-3 mb-6">
             <button onClick={downloadJSON} className="flex items-center gap-2 px-4 py-2 bg-white border rounded-lg text-sm hover:bg-gray-50">
               <FileDown className="w-4 h-4" /> Download Full Package (JSON)
             </button>

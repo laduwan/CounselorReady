@@ -1934,6 +1934,80 @@ _________________________________
 
 # POST-TEST QUESTIONS
 
+---
+
+## QUICK CLINICAL REFERENCE: MANAGING CHALLENGING MOMENTS
+
+### When a Client Is Escalating
+
+**Signs of escalation:**
+- Voice volume increasing
+- Speech becoming faster
+- Body tension visible
+- Direct challenges or accusations
+- Threatening statements
+
+**In-the-moment response:**
+1. **Lower your voice.** Speaking more quietly can de-escalate the interaction.
+2. **Slow your speech.** Model the calm you want to see.
+3. **Acknowledge the emotion.** "I can see you're really frustrated right now."
+4. **Avoid defending.** Defending feels like invalidation to an escalated client.
+5. **Name what's happening.** "Something shifted just now. Can we pause and talk about what's happening between us?"
+6. **Offer a break if needed.** "Would it help to take a five-minute break?"
+
+### When You're Feeling Triggered
+
+**Signs you're activated:**
+- Tightness in your chest or stomach
+- Urge to defend or explain
+- Feeling attacked or blamed
+- Wanting the session to end
+- Internal anger or resentment
+
+**In-the-moment response:**
+1. **Notice it.** Awareness is the first step.
+2. **Breathe.** One deep breath buys you time.
+3. **Ground.** Feel your feet on the floor.
+4. **Remind yourself:** "This is about their pain, not about me."
+5. **If needed, name it.** "I notice I'm having a reaction to what you said. Give me a moment."
+6. **Seek consultation afterward.** Don't process alone.
+
+### When the Session Goes Off the Rails
+
+Sometimes despite your best efforts, a session becomes unproductive—circular arguments, stonewalling, or crisis that consumes everything. Consider these options:
+
+**Metacommunicate:** "I notice we keep coming back to this same place. What do you think is happening?"
+
+**Pause the content:** "I want to table the content for a moment and check in about how this conversation is going."
+
+**Acknowledge the difficulty:** "This is really hard terrain we're in. I want us to find a way through it together."
+
+**End early if needed:** "I think we might do better to pause here today and pick this up next week when we've both had time to think."
+
+### After a Difficult Session
+
+**Within 24 hours:**
+- Brief processing with a colleague or supervisor
+- Review what happened with curiosity, not judgment
+- Identify what you might do differently
+- Note any countertransference to explore
+- Check in with yourself: how are you feeling?
+
+**Before next session:**
+- Consider whether a phone check-in is appropriate
+- Plan your opening—how will you address what happened?
+- Review your conceptualization—does it need updating?
+- Ensure adequate self-care between now and then
+
+### Remember
+
+Working with high-conflict clients is genuinely difficult. The fact that you find it challenging doesn't mean you're doing something wrong—it means you're human. These clients often have histories of relationships that failed them, and the intensity of their presentations reflects the depth of their pain.
+
+You cannot control their behavior. You can only control your response. And your consistent, boundaried, compassionate presence—session after session—may be exactly what they need to learn that relationships can survive conflict, that people can be trusted, that they are worthy of care.
+
+That is the work. It is hard. And it matters.
+
+
 **Instructions:** Select the best answer for each question. A score of 80% or higher is required to receive CE credit.
 
 1. According to the course, "high-conflict" refers to:
@@ -2179,3 +2253,16 @@ Zanarini, M. C. (2009). Psychotherapy of borderline personality disorder. *Acta 
 *This course was developed for CounselorReady by GA Integrated Therapeutic Perspectives LLC, NBCC ACEP Provider #7760.*
 
 *© 2024 GAITP LLC. All rights reserved.*
+
+---
+
+## Recommended Reading for Further Development
+
+For clinicians who want to deepen their skills with high-conflict clients, the following resources offer valuable guidance:
+
+- Linehan's *DBT Skills Training Manual* provides comprehensive validation and emotion regulation techniques
+- Gunderson's work on borderline personality disorder offers research-grounded clinical approaches  
+- The writings of Marsha Linehan on the biosocial model illuminate the origins of emotional dysregulation
+
+Continuing education in DBT, mentalization-based treatment, or transference-focused psychotherapy can significantly enhance your effectiveness with this population.
+

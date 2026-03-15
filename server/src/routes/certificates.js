@@ -9,6 +9,10 @@ import multer from 'multer';
 import { v2 as cloudinary } from 'cloudinary';
 import Certificate from '../models/Certificate.js';
 import { protect } from '../middleware/auth.js';
+import { generateCertificate, generateCertificateNumber } from '../utils/certificate.js';
+import User from '../models/User.js';
+import Course from '../models/Course.js';
+import { CourseProgress } from '../models/InteractiveCourse.js';
 
 // Use native fetch (Node 18+) — no need for node-fetch
 
@@ -322,21 +326,113 @@ router.post('/generate/:courseId', protect, async (req, res) => {
     if (existingCert) {
       return res.status(400).json({
         success: false,
-        error: 'Certificate already exists for this course'
+        error: 'Certificate already exists for this course',
+        certificate: existingCert
       });
     }
 
-    // Placeholder for certificate generation
-    res.status(400).json({
-      success: false,
-      error: 'Certificate generation temporarily disabled - feature under development'
+    // Get course and verify completion
+    const course = await Course.findById(courseId);
+    if (!course) {
+      return res.status(404).json({ success: false, error: 'Course not found' });
+    }
+
+    const progress = await CourseProgress.findOne({ userId, courseId });
+    if (!progress) {
+      return res.status(404).json({ success: false, error: 'Not enrolled in this course' });
+    }
+
+    // Verify eligibility
+    const allSectionsCompleted = progress.sectionProgress.every(s => s.status === 'completed');
+    const assessmentPassed = progress.assessmentPassed;
+    if (!allSectionsCompleted || !assessmentPassed) {
+      return res.status(400).json({
+        success: false,
+        error: 'Course not completed. All sections must be completed and assessment must be passed.'
+      });
+    }
+
+    // Get user info
+    const user = await User.findById(userId);
+    const holderName = user ? `${user.firstName || ''} ${user.lastName || ''}`.trim() : 'Student';
+
+    // Generate certificate number and verification code
+    const certNumber = await generateCertificateNumber();
+    const verificationCode = certNumber.replace('CR-', '').toLowerCase();
+
+    // Build customization from course settings
+    const customization = course.settings?.certificateCustomization || {};
+
+    // Generate PDF
+    const pdfBuffer = await generateCertificate({
+      holderName,
+      courseName: course.title,
+      completionDate: progress.completedAt || new Date(),
+      ceHours: course.ceHours || course.ceuHours || 0,
+      certificateNumber: certNumber,
+      instructorName: course.presenter?.name || 'CounselorReady',
+      acepNumber: course.acepNumber || 'ACEP #7760',
+      verificationCode,
+      customization
+    });
+
+    // Upload to Cloudinary
+    const uploadResult = await new Promise((resolve, reject) => {
+      const stream = cloudinary.uploader.upload_stream(
+        {
+          folder: `certificates/${userId}`,
+          resource_type: 'raw',
+          public_id: `cert_${certNumber.replace(/[^a-zA-Z0-9]/g, '_')}`,
+          format: 'pdf'
+        },
+        (error, result) => error ? reject(error) : resolve(result)
+      );
+      stream.end(pdfBuffer);
+    });
+
+    // Create certificate record
+    const certificate = await Certificate.create({
+      userId,
+      courseId,
+      title: course.title,
+      provider: 'CounselorReady',
+      completionDate: progress.completedAt || new Date(),
+      ceHours: course.ceHours || course.ceuHours || 0,
+      category: course.categories?.[0] || 'General',
+      nbccApproved: true,
+      approvingBody: 'NBCC',
+      approvalNumber: course.acepNumber || '7760',
+      acepNumber: course.acepNumber || '7760',
+      certificateNumber: certNumber,
+      fileUrl: uploadResult.secure_url,
+      fileKey: uploadResult.public_id,
+      cloudinaryPublicId: uploadResult.public_id,
+      source: 'platform',
+      verificationCode,
+      verificationUrl: `https://counselorready.com/verify/${verificationCode}`
+    });
+
+    // Update progress with certificate reference
+    progress.certificateId = certificate._id;
+    progress.certificateIssuedAt = new Date();
+    progress.status = 'certified';
+    await progress.save();
+
+    res.json({
+      success: true,
+      certificate: {
+        id: certificate._id,
+        certificateNumber: certNumber,
+        fileUrl: uploadResult.secure_url,
+        verificationCode
+      }
     });
 
   } catch (error) {
     console.error('Certificate generation error:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       success: false,
-      error: 'Failed to generate certificate' 
+      error: 'Failed to generate certificate'
     });
   }
 });
@@ -372,6 +468,68 @@ router.delete('/:id', protect, async (req, res) => {
   } catch (error) {
     console.error('Delete certificate error:', error);
     res.status(500).json({ error: 'Failed to delete certificate' });
+  }
+});
+
+// GET /api/certificates/download-all - Download all certificates as ZIP
+router.get('/download-all', protect, async (req, res) => {
+  try {
+    const certificates = await Certificate.find({ userId: req.user._id, isRevoked: { $ne: true } });
+    if (!certificates.length) {
+      return res.status(404).json({ error: 'No certificates found' });
+    }
+
+    const AdmZip = (await import('adm-zip')).default;
+    const zip = new AdmZip();
+
+    // Fetch each certificate file and add to ZIP
+    let addedCount = 0;
+    for (const cert of certificates) {
+      try {
+        // Try to get the certificate PDF from Cloudinary
+        if (cert.cloudinaryPublicId) {
+          const url = cloudinary.url(cert.cloudinaryPublicId, {
+            resource_type: 'raw',
+            secure: true,
+            sign_url: true,
+            type: 'authenticated'
+          });
+          const response = await fetch(url);
+          if (response.ok) {
+            const buffer = Buffer.from(await response.arrayBuffer());
+            const filename = `${(cert.title || 'certificate').replace(/[^a-zA-Z0-9]/g, '_')}_${cert.certificateNumber || addedCount}.pdf`;
+            zip.addFile(filename, buffer);
+            addedCount++;
+            continue;
+          }
+        }
+        // Fallback: generate certificate PDF on the fly
+        if (cert.fileUrl) {
+          const response = await fetch(cert.fileUrl);
+          if (response.ok) {
+            const buffer = Buffer.from(await response.arrayBuffer());
+            const filename = `${(cert.title || 'certificate').replace(/[^a-zA-Z0-9]/g, '_')}_${cert.certificateNumber || addedCount}.pdf`;
+            zip.addFile(filename, buffer);
+            addedCount++;
+          }
+        }
+      } catch (fetchErr) {
+        console.error(`Failed to fetch certificate ${cert._id}:`, fetchErr.message);
+      }
+    }
+
+    if (addedCount === 0) {
+      return res.status(404).json({ error: 'No downloadable certificates found' });
+    }
+
+    const zipBuffer = zip.toBuffer();
+    res.setHeader('Content-Type', 'application/zip');
+    res.setHeader('Content-Disposition', 'attachment; filename="CounselorReady_Certificates.zip"');
+    res.setHeader('Content-Length', zipBuffer.length);
+    res.send(zipBuffer);
+  } catch (error) {
+    console.error('Bulk certificate download error:', error);
+    res.status(500).json({ error: 'Failed to create certificate bundle' });
   }
 });
 
