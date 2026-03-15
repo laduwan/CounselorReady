@@ -65,6 +65,8 @@ import rawMarkdownRoutes from './routes/rawMarkdownRoute.js';
 import dashboardRoutes from './routes/dashboard.js';
 // ── Research Ready CE ──
 import researchReadyRoutes from './routes/researchReady.js';
+// ── Scholarly articles integration ──
+import scholarlyArticlesRoutes from './routes/scholarlyArticles.js';
 // Import services
 import { initializeScheduler } from './services/notificationScheduler.js';
 
@@ -162,6 +164,7 @@ app.use('/api/ai-course-generator/', aiLimiter);
 app.use('/api/admin/quiz/generate', aiLimiter);
 app.use('/api/admin/course/generate', aiLimiter);
 app.use('/api/admin/module/generate', aiLimiter);
+app.use('/api/scholarly-articles/article/*/generate-quiz', aiLimiter);
 
 // Body parsing middleware
 // Stripe webhook needs raw body, so we handle it before json parsing
@@ -272,6 +275,8 @@ app.use('/api/research-ready', researchReadyRoutes);
 
 // Serve syllabus DOCX files
 app.use('/uploads/syllabi', express.static(path.join(__dirname, '../uploads/syllabi')));
+// ── Scholarly articles ──
+app.use('/api/scholarly-articles', scholarlyArticlesRoutes);
 
 // Static templates directory intentionally NOT served publicly
 // Certificate assets (signature.png, certificate_template.pdf) are loaded
