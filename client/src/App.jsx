@@ -13,22 +13,8 @@ import ErrorBoundary from './components/ErrorBoundary';
 import Landing from './pages/Landing';
 import Login from './pages/Login';
 import Register from './pages/Register';
-import Dashboard from './pages/Dashboard';
 import CourseView from './pages/CourseView';
-import Credentials from './pages/Credentials';
-import Settings from './pages/Settings';
 import InteractiveCourseCatalog from './pages/InteractiveCourseCatalog';
-import OrganizationDashboard from './pages/OrganizationDashboard';
-import CEPlanner from './pages/CEPlanner';
-import InsuranceTracker from './pages/InsuranceTracker';
-import AuditKit from './pages/AuditKit';
-import BoardAlerts from './pages/BoardAlerts';
-import SupervisionTracker from './pages/SupervisionTracker';
-import GamificationPage from './pages/Gamification';
-import Referrals from './pages/Referrals';
-import GroupLicenseDashboard from './pages/GroupLicenseDashboard';
-import Recommendations from './pages/Recommendations';
-import LegacyVault from './pages/LegacyVault';
 import CourseQuickEdit from './pages/CourseQuickEdit';
 import AdminPartners from './pages/AdminPartners';
 import PartnerDashboard from './pages/PartnerDashboard';
@@ -47,14 +33,6 @@ import { AccessibilityProvider, SkipToContent, AccessibilityPanel } from './comp
 function CourseViewerWrapper() {
   const { slug } = useParams();
   return <CourseViewer courseSlug={slug} />;
-}
-
-// Redirect to static HTML pages
-function RedirectToStatic({ path }) {
-  useEffect(() => {
-    window.location.replace(path);
-  }, [path]);
-  return null;
 }
 
 // Loading screen with server wake-up awareness
@@ -174,12 +152,11 @@ function AppRoutes() {
         <PublicRoute><Register /></PublicRoute>
       } />
       
-      {/* Protected routes - Redirected to static HTML */}
-      <Route path="/dashboard" element={
-        <ProtectedRoute>
-          <RedirectToStatic path="/dashboard.html" />
-        </ProtectedRoute>
-      } />
+      {/* ══════════════════════════════════════════════════════════════
+          COURSES ONLY - React handles interactive course player
+          Everything else is static HTML
+          ══════════════════════════════════════════════════════════════ */}
+      
       <Route path="/courses" element={
         <ProtectedRoute>
           <Layout><InteractiveCourseCatalog /></Layout>
@@ -198,87 +175,11 @@ function AppRoutes() {
           <CourseViewerWrapper />
         </ProtectedRoute>
       } />
+
+      {/* ══════════════════════════════════════════════════════════════
+          ADMIN ROUTES - React tools for course management
+          ══════════════════════════════════════════════════════════════ */}
       
-      <Route path="/credentials" element={
-        <ProtectedRoute>
-          <RedirectToStatic path="/credentials.html" />
-        </ProtectedRoute>
-      } />
-      <Route path="/certificates" element={
-        <ProtectedRoute>
-          <RedirectToStatic path="/certificates.html" />
-        </ProtectedRoute>
-      } />
-      <Route path="/messages" element={
-        <ProtectedRoute>
-          <RedirectToStatic path="/messages.html" />
-        </ProtectedRoute>
-      } />
-      <Route path="/settings" element={
-        <ProtectedRoute>
-          <RedirectToStatic path="/settings.html" />
-        </ProtectedRoute>
-      } />
-
-      {/* New feature routes */}
-      <Route path="/organization" element={
-        <ProtectedRoute>
-          <Layout><OrganizationDashboard /></Layout>
-        </ProtectedRoute>
-      } />
-      <Route path="/ce-planner" element={
-        <ProtectedRoute>
-          <Layout><CEPlanner /></Layout>
-        </ProtectedRoute>
-      } />
-      <Route path="/insurance-tracker" element={
-        <ProtectedRoute>
-          <Layout><InsuranceTracker /></Layout>
-        </ProtectedRoute>
-      } />
-      <Route path="/audit-kit" element={
-        <ProtectedRoute>
-          <Layout><AuditKit /></Layout>
-        </ProtectedRoute>
-      } />
-      <Route path="/board-alerts" element={
-        <ProtectedRoute>
-          <Layout><BoardAlerts /></Layout>
-        </ProtectedRoute>
-      } />
-      <Route path="/supervision" element={
-        <ProtectedRoute>
-          <Layout><SupervisionTracker /></Layout>
-        </ProtectedRoute>
-      } />
-      <Route path="/achievements" element={
-        <ProtectedRoute>
-          <Layout><GamificationPage /></Layout>
-        </ProtectedRoute>
-      } />
-      <Route path="/referrals" element={
-        <ProtectedRoute>
-          <Layout><Referrals /></Layout>
-        </ProtectedRoute>
-      } />
-      <Route path="/group-licenses" element={
-        <ProtectedRoute>
-          <Layout><GroupLicenseDashboard /></Layout>
-        </ProtectedRoute>
-      } />
-      <Route path="/recommendations" element={
-        <ProtectedRoute>
-          <Layout><Recommendations /></Layout>
-        </ProtectedRoute>
-      } />
-
-      <Route path="/legacy-vault" element={
-        <ProtectedRoute>
-          <Layout><LegacyVault /></Layout>
-        </ProtectedRoute>
-      } />
-
-      {/* Admin routes */}
       <Route path="/admin/course-builder" element={
         <AdminRoute>
           <CourseBuilder />
@@ -320,16 +221,17 @@ function AppRoutes() {
         </PartnerAdminRoute>
       } />
 
-      {/*
-        ═══════════════════════════════════════════════════════
-        STATIC PAGE SAFETY NET
-        These routes catch URLs for static HTML files that
-        Render should serve directly. If Render's SPA catch-all
-        incorrectly serves index.html, these prevent a silent
-        redirect to "/" (the white page bug).
-        ═══════════════════════════════════════════════════════
-      */}
+      {/* ══════════════════════════════════════════════════════════════
+          STATIC PAGE SAFETY NET
+          Catch URLs for static HTML files if Render serves index.html
+          ══════════════════════════════════════════════════════════════ */}
+      
       <Route path="/tools/*" element={<StaticPageFallback />} />
+      <Route path="/dashboard.html" element={<StaticPageFallback />} />
+      <Route path="/credentials.html" element={<StaticPageFallback />} />
+      <Route path="/certificates.html" element={<StaticPageFallback />} />
+      <Route path="/messages.html" element={<StaticPageFallback />} />
+      <Route path="/settings.html" element={<StaticPageFallback />} />
       <Route path="/interactive-course.html" element={<StaticPageFallback />} />
       <Route path="/interactive-courses.html" element={<StaticPageFallback />} />
 
