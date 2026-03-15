@@ -37,6 +37,7 @@ import Credentials from './pages/Credentials';
 import Settings from './pages/Settings';
 import ResearchReadyCE from './pages/ResearchReadyCE';
 import AdminResearchReady from './pages/AdminResearchReady';
+import ScholarlyArticles from './pages/ScholarlyArticles';
 
 // Components
 import Layout from './components/Layout';
@@ -199,6 +200,12 @@ function AppRoutes() {
       <Route path="/research-ready" element={
         <ProtectedRoute>
           <Layout><ResearchReadyCE /></Layout>
+        </ProtectedRoute>
+      } />
+
+      <Route path="/scholarly-articles" element={
+        <ProtectedRoute>
+          <Layout><ScholarlyArticles /></Layout>
         </ProtectedRoute>
       } />
 
