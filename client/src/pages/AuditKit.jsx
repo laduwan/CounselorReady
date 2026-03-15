@@ -118,7 +118,7 @@ export default function AuditKit() {
           </div>
 
           {/* Export Buttons */}
-          <div className="flex gap-3 mb-6">
+          <div className="flex flex-wrap gap-3 mb-6">
             <button onClick={downloadJSON} className="flex items-center gap-2 px-4 py-2 bg-white border rounded-lg text-sm hover:bg-gray-50">
               <FileDown className="w-4 h-4" /> Download Full Package (JSON)
             </button>

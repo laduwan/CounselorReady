@@ -50,7 +50,7 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 px-4">
+    <div className="min-h-screen bg-stone-50 flex flex-col justify-center py-12 px-4">
       <div className="max-w-md mx-auto w-full">
         {/* Logo */}
         <div className="text-center mb-8">
