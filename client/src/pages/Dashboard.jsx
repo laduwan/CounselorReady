@@ -188,7 +188,7 @@ export default function Dashboard() {
             </div>
           </div>
           <p className="font-display text-2xl font-semibold text-burgundy-900">{totalCEHours}</p>
-          <p className="text-forest-500 text-xs">This cycle</p>
+          <p className="text-forest-500 text-xs">Current renewal period</p>
         </div>
 
         {/* Courses Completed */}
@@ -200,7 +200,7 @@ export default function Dashboard() {
             </div>
           </div>
           <p className="font-display text-2xl font-semibold text-burgundy-900">{completedCourses}</p>
-          <p className="text-forest-500 text-xs">All time</p>
+          <p className="text-forest-500 text-xs">Across all credentials</p>
         </div>
 
         {/* Certificates Stored */}
@@ -212,7 +212,7 @@ export default function Dashboard() {
             </div>
           </div>
           <p className="font-display text-2xl font-semibold text-burgundy-900">{certCount}</p>
-          <p className="text-forest-500 text-xs">Uploaded</p>
+          <p className="text-forest-500 text-xs">From all CE providers</p>
         </div>
 
         {/* Active Credentials */}
@@ -224,7 +224,7 @@ export default function Dashboard() {
             </div>
           </div>
           <p className="font-display text-2xl font-semibold text-burgundy-900">{totalCredentials}</p>
-          <p className="text-forest-500 text-xs">Tracked</p>
+          <p className="text-forest-500 text-xs">Licenses &amp; certifications</p>
         </div>
       </div>
 
