@@ -78,6 +78,9 @@ const __dirname = path.dirname(__filename);
 // Initialize Express app
 const app = express();
 
+// Trust first proxy (Render's load balancer) so rate limiters see real client IPs
+app.set('trust proxy', 1);
+
 // ===========================================
 // MIDDLEWARE
 // ===========================================
