@@ -426,9 +426,10 @@ router.post('/:id/enroll', ...protectAndScope, async (req, res) => {
 
 /**
  * POST /api/interactive-courses/:id/progress/assessment
+ * POST /api/interactive-courses/:id/assessment  (alias — legacy client path)
  * Submit final assessment attempt
  */
-router.post('/:id/progress/assessment', ...protectAndScope, async (req, res) => {
+router.post(['/:id/progress/assessment', '/:id/assessment'], ...protectAndScope, async (req, res) => {
   try {
     const { answers, timeUsed, questionOrder } = req.body;
 
