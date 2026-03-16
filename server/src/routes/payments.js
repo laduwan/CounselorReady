@@ -657,6 +657,18 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
             'subscription.cancelAtPeriodEnd': subscription.cancel_at_period_end,
             'subscription.currentPeriodEnd': new Date(subscription.current_period_end * 1000)
           });
+          // Notify admin when a new subscription becomes active
+          if (subscription.status === 'active') {
+            const subUser = await User.findById(userId).select('email profile.firstName');
+            logActivity(ACTIVITY_TYPES.SUBSCRIPTION_STARTED, {
+              plan: subscription.metadata?.plan || 'unknown',
+              status: subscription.status
+            }, {
+              userId,
+              userName: subUser?.profile?.firstName || '',
+              userEmail: subUser?.email || ''
+            }).catch(() => {});
+          }
           console.log(`Subscription updated for user ${userId}: ${subscription.status}`);
         }
         break;
@@ -679,11 +691,20 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
 
         // User subscription canceled
         if (userId) {
+          const canceledUser = await User.findById(userId).select('email profile.firstName subscription.plan');
+          const canceledPlan = canceledUser?.subscription?.plan || 'unknown';
           await User.findByIdAndUpdate(userId, {
             'subscription.plan': 'free',
             'subscription.status': 'canceled',
             stripeSubscriptionId: null
           });
+          logActivity(ACTIVITY_TYPES.SUBSCRIPTION_CANCELED, {
+            plan: canceledPlan
+          }, {
+            userId,
+            userName: canceledUser?.profile?.firstName || '',
+            userEmail: canceledUser?.email || ''
+          }).catch(() => {});
           console.log(`Subscription canceled for user ${userId}`);
         }
         break;
@@ -701,7 +722,15 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
             $inc: { 'subscription.paymentFailureCount': 1 }
           });
           console.log(`Payment failed for user ${user._id}`);
-          // Send email notification about failed payment
+          // Notify admin of payment failure
+          logActivity(ACTIVITY_TYPES.PAYMENT_FAILED, {
+            plan: user.subscription?.plan || 'unknown'
+          }, {
+            userId: user._id,
+            userName: user.profile?.firstName || '',
+            userEmail: user.email || ''
+          }).catch(() => {});
+          // Send email notification about failed payment to user
           try {
             await sendPaymentFailedEmail(user._id);
           } catch (emailErr) {

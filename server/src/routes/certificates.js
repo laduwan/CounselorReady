@@ -13,6 +13,7 @@ import { generateCertificate, generateCertificateNumber } from '../utils/certifi
 import User from '../models/User.js';
 import Course from '../models/Course.js';
 import { Course as InteractiveCourse, CourseProgress } from '../models/InteractiveCourse.js';
+import { logActivity, ACTIVITY_TYPES } from '../services/activityTrackingService.js';
 
 // Use native fetch (Node 18+) — no need for node-fetch
 
@@ -420,6 +421,17 @@ router.post('/generate/:courseId', protect, async (req, res) => {
     progress.certificateIssuedAt = new Date();
     progress.status = 'certified';
     await progress.save();
+
+    // Notify admin of certificate generation
+    logActivity(ACTIVITY_TYPES.CERTIFICATE_GENERATED, {
+      courseName: course.title,
+      certificateNumber: certNumber,
+      ceHours: course.ceHours || course.ceuHours || 0
+    }, {
+      userId,
+      userName: holderName,
+      userEmail: user?.email || ''
+    }).catch(() => {});
 
     res.json({
       success: true,

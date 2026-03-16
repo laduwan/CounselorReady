@@ -138,6 +138,18 @@ async function sendAdminNotification(type, data, userInfo) {
       title: 'Subscription Canceled',
       message: `<strong>${userName}</strong> canceled their <strong>${data.plan?.toUpperCase()}</strong> subscription.`
     },
+    [ACTIVITY_TYPES.PAYMENT_SUCCEEDED]: {
+      subject: `💰 Payment Received: ${userName || userEmail}`,
+      emoji: '💰',
+      title: 'Payment Received',
+      message: `<strong>${userName || userEmail}</strong> completed a payment of <strong>$${((data.amount || 0) / 100).toFixed(2)}</strong> (${data.type === 'course_purchase' ? 'course purchase' : data.plan?.toUpperCase() + ' subscription'}).`
+    },
+    [ACTIVITY_TYPES.PAYMENT_FAILED]: {
+      subject: `🚨 Payment Failed: ${userName || userEmail}`,
+      emoji: '🚨',
+      title: 'Payment Failed',
+      message: `<strong>${userName || userEmail}</strong>'s payment failed. Their subscription is now <strong>past due</strong>.`
+    },
     [ACTIVITY_TYPES.CERTIFICATE_GENERATED]: {
       subject: `📜 Certificate Generated: ${userName || userEmail}`,
       emoji: '📜',
