@@ -1726,7 +1726,7 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
         <option value="">Original</option>
         <option value="es">Español</option>
         <option value="fr">Français</option>
-        <option value="zh">中文</option>
+        <option value="zh-CN">中文</option>
         <option value="ko">한국어</option>
         <option value="ar">العربية</option>
         <option value="pt">Português</option>
@@ -5637,19 +5637,69 @@ function exportPDF() {
 // ═══════════════════════════════════════════════════════════════
 function initTranslation() {
   document.getElementById('crTranslateBar').style.display = 'flex';
-  
+
   const select = document.getElementById('crLangSelect');
   select.addEventListener('change', function() {
     const lang = this.value;
     if (!lang) {
-      // Reset to original
+      // Reset to original — remove Google Translate frame
+      const frame = document.querySelector('.goog-te-banner-frame');
+      if (frame) frame.style.display = 'none';
+      document.body.style.top = '';
+      // Restore by setting cookie to empty and reload
+      document.cookie = 'googtrans=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC';
+      document.cookie = 'googtrans=; path=/; domain=' + location.hostname + '; expires=Thu, 01 Jan 1970 00:00:00 UTC';
       location.reload();
       return;
     }
-    // Use Google Translate
+    // Set Google Translate cookie and trigger in-page translation
+    document.cookie = 'googtrans=/en/' + lang + '; path=/';
+    document.cookie = 'googtrans=/en/' + lang + '; path=/; domain=' + location.hostname;
+    if (window._crGtLoaded) {
+      // Already loaded — just reload to apply new language
+      location.reload();
+    } else {
+      _crLoadGoogleTranslate(lang);
+    }
+  });
+}
+
+function _crLoadGoogleTranslate(lang) {
+  // Hidden container for Google Translate Element
+  let container = document.getElementById('crGoogleTranslate');
+  if (!container) {
+    container = document.createElement('div');
+    container.id = 'crGoogleTranslate';
+    container.style.cssText = 'position:absolute;top:-9999px;left:-9999px;';
+    document.body.appendChild(container);
+  }
+  // Define the callback Google Translate expects
+  window.googleTranslateElementInit = function() {
+    new google.translate.TranslateElement({
+      pageLanguage: 'en',
+      includedLanguages: 'es,fr,zh-CN,ko,ar,pt,vi,ht,so',
+      layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+      autoDisplay: false
+    }, 'crGoogleTranslate');
+    window._crGtLoaded = true;
+
+    // Hide the Google Translate toolbar that appears at the top
+    const hideGtBar = setInterval(() => {
+      const frame = document.querySelector('.goog-te-banner-frame');
+      if (frame) { frame.style.display = 'none'; clearInterval(hideGtBar); }
+      document.body.style.top = '';
+    }, 200);
+    setTimeout(() => clearInterval(hideGtBar), 5000);
+  };
+  // Load the Google Translate script
+  const script = document.createElement('script');
+  script.src = 'https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit';
+  script.onerror = function() {
+    console.warn('Google Translate failed to load — falling back to new-tab mode');
     const gtUrl = `https://translate.google.com/translate?sl=en&tl=${lang}&u=${encodeURIComponent(location.href)}`;
     window.open(gtUrl, '_blank');
-  });
+  };
+  document.head.appendChild(script);
 }
 
 // ═══════════════════════════════════════════════════════════════
