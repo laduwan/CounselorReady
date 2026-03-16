@@ -160,12 +160,13 @@ const CourseSchema = new mongoose.Schema({
   author: String,
   publishedAt: Date,
   updatedAt: { type: Date, default: Date.now },
-  status: { 
-    type: String, 
-    enum: ['draft', 'published', 'archived'], 
-    default: 'draft' 
+  status: {
+    type: String,
+    enum: ['draft', 'published', 'archived'],
+    default: 'draft'
   },
-  
+  expiresAt: { type: Date, default: null, index: { expires: 0, sparse: true } },
+
   // Calculated fields
   totalEstimatedTime: Number, // in minutes
   totalContentBlocks: Number,
