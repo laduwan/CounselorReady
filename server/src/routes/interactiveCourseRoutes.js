@@ -16,6 +16,7 @@ import Evaluation from '../models/Evaluation.js';
 import User from '../models/User.js';
 import { protect } from '../middleware/auth.js';
 import { attachTenantScope } from '../middleware/tenantScope.js';
+import { logActivity, ACTIVITY_TYPES } from '../services/activityTrackingService.js';
 import { generateCertificate, generateCertificateNumber } from '../utils/certificate.js';
 
 const router = express.Router();
@@ -823,6 +824,18 @@ router.post('/:id/certificate', protect, async (req, res) => {
       progress.certificateIssuedAt = new Date();
       progress.status = 'certified';
       await progress.save();
+
+      // Notify admin of certificate generation
+      const certUser = await User.findById(req.user._id).select('email profile.firstName profile.lastName');
+      logActivity(ACTIVITY_TYPES.CERTIFICATE_GENERATED, {
+        courseName: course.title,
+        certificateNumber,
+        ceHours: course.ceHours || 1
+      }, {
+        userId: req.user._id,
+        userName: `${certUser?.profile?.firstName || ''} ${certUser?.profile?.lastName || ''}`.trim() || certUser?.email,
+        userEmail: certUser?.email || ''
+      }).catch(() => {});
     }
 
     // Send PDF
