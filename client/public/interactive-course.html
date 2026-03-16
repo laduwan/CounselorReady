@@ -2099,7 +2099,15 @@ async function crApi(method, path, body) {
   if (authToken) headers['Authorization'] = 'Bearer ' + authToken;
   const opts = { method, headers };
   if (body && method !== 'GET') opts.body = JSON.stringify(body);
-  const res = await fetch(API_BASE + path, opts);
+  let res;
+  try {
+    res = await fetch(API_BASE + path, opts);
+  } catch (networkErr) {
+    const err = new Error('Network error: ' + (networkErr.message || 'Unable to reach server'));
+    err.status = 0;
+    err.isNetwork = true;
+    throw err;
+  }
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
     const err = new Error(data.error || data.message || 'API error');
@@ -2318,8 +2326,11 @@ function applyChunkedMode() {
         const meRes = await crApi('GET', '/api/auth/me');
         authUser = meRes.user || meRes;
       } catch (e) {
-        authToken = null;
-        localStorage.removeItem('token');
+        // Only clear token on auth errors (401/403), not network failures
+        if (!e.isNetwork) {
+          authToken = null;
+          localStorage.removeItem('token');
+        }
       }
     }
     // Step B: Fetch course
@@ -2339,6 +2350,18 @@ function applyChunkedMode() {
       return;
     }
     courseId = courseData._id;
+    // If server returned gated/stripped content, set preview mode
+    if (courseData._isPreview) {
+      isPreviewMode = true;
+      if (authToken) {
+        // Authenticated but not enrolled — viewer will auto-enroll
+        loadCourse(courseData);
+      } else {
+        document.getElementById('crGateLogin').classList.add('visible');
+        loadCourse(courseData);
+      }
+      return;
+    }
     // Step C: No auth — show login gate, allow preview
     if (!authToken) {
       document.getElementById('crGateLogin').classList.add('visible');
