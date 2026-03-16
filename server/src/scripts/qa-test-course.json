@@ -101,7 +101,7 @@
           "type": "resources",
           "order": 1,
           "resources": [
-            { "title": "QA Resource Link", "url": "https://example.com", "type": "link" }
+            "QA Resource Link – https://example.com"
           ]
         }
       ]
