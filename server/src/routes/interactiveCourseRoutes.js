@@ -398,12 +398,12 @@ router.post('/:id/enroll', protect, async (req, res) => {
 // ============================================================================
 
 /**
- * POST /api/interactive-courses/:id/assessment
+ * POST /api/interactive-courses/:id/progress/assessment
  * Submit final assessment attempt
  */
-router.post('/:id/assessment', protect, async (req, res) => {
+router.post('/:id/progress/assessment', protect, async (req, res) => {
   try {
-    const { answers, score, passed, attempt, timeSpent } = req.body;
+    const { answers, score, passed, attempt, timeSpent, timeUsed } = req.body;
 
     const course = await findCourseByIdOrSlug(req.params.id, req.tenantFilter);
     if (!course || !course.assessment) {
@@ -440,31 +440,52 @@ router.post('/:id/assessment', protect, async (req, res) => {
     // Calculate score from answers if not provided
     let calculatedScore = score;
     let calculatedPassed = passed;
-    
-    if (answers && Array.isArray(answers)) {
-      let correctCount = 0;
-      const questions = course.assessment.questions;
-      
-      answers.forEach((answer, index) => {
-        const question = questions[answer.questionIndex] || questions[index];
-        if (!question) return;
-        
-        if (question.type === 'multiSelect') {
-          const correctIndices = question.options
-            .map((o, idx) => o.isCorrect ? idx : -1)
-            .filter(x => x >= 0);
-          const selectedIndices = answer.selectedOptions || [];
-          const isCorrect = correctIndices.length === selectedIndices.length &&
-            correctIndices.every(idx => selectedIndices.includes(idx));
-          if (isCorrect) correctCount++;
-        } else {
-          // multipleChoice
-          const correctIndex = question.options.findIndex(o => o.isCorrect);
-          if (answer.selectedOption === correctIndex) correctCount++;
-        }
-      });
+    const questions = course.assessment.questions;
 
-      calculatedScore = correctCount / questions.length;
+    if (answers && typeof answers === 'object') {
+      let correctCount = 0;
+
+      if (Array.isArray(answers)) {
+        // Array format: [{ questionIndex, selectedOption, selectedOptions }, ...]
+        answers.forEach((answer, index) => {
+          const question = questions[answer.questionIndex] || questions[index];
+          if (!question) return;
+
+          if (question.type === 'multiSelect') {
+            const correctIndices = question.options
+              .map((o, idx) => o.isCorrect ? idx : -1)
+              .filter(x => x >= 0);
+            const selectedIndices = answer.selectedOptions || [];
+            const isCorrect = correctIndices.length === selectedIndices.length &&
+              correctIndices.every(idx => selectedIndices.includes(idx));
+            if (isCorrect) correctCount++;
+          } else {
+            const correctIndex = question.options.findIndex(o => o.isCorrect);
+            if (answer.selectedOption === correctIndex) correctCount++;
+          }
+        });
+      } else {
+        // Object format from client: { "0": selectedOptionIdx, "1": selectedOptionIdx, ... }
+        for (const [qIdx, selectedOpt] of Object.entries(answers)) {
+          const question = questions[parseInt(qIdx)];
+          if (!question) continue;
+
+          if (question.type === 'multiSelect') {
+            const correctIndices = question.options
+              .map((o, idx) => o.isCorrect ? idx : -1)
+              .filter(x => x >= 0);
+            const selectedIndices = Array.isArray(selectedOpt) ? selectedOpt : [selectedOpt];
+            const isCorrect = correctIndices.length === selectedIndices.length &&
+              correctIndices.every(idx => selectedIndices.includes(idx));
+            if (isCorrect) correctCount++;
+          } else {
+            const correctIndex = question.options.findIndex(o => o.isCorrect);
+            if (selectedOpt === correctIndex) correctCount++;
+          }
+        }
+      }
+
+      calculatedScore = questions.length > 0 ? correctCount / questions.length : 0;
       calculatedPassed = calculatedScore >= (course.assessment.passThreshold || 0.8);
     }
 
@@ -476,7 +497,7 @@ router.post('/:id/assessment', protect, async (req, res) => {
       totalQuestions: course.assessment.questions.length,
       percentage: Math.round(calculatedScore * 100),
       passed: calculatedPassed,
-      timeUsed: timeSpent
+      timeUsed: timeSpent || timeUsed
     });
 
     progress.assessmentAttemptsRemaining--;
@@ -498,7 +519,8 @@ router.post('/:id/assessment', protect, async (req, res) => {
       success: true,
       data: {
         score: Math.round(calculatedScore * 100),
-        totalQuestions: course.assessment.questions.length,
+        percentage: Math.round(calculatedScore * 100),
+        totalQuestions: questions.length,
         passed: calculatedPassed,
         attemptsRemaining: progress.assessmentAttemptsRemaining,
         bestScore: progress.bestAssessmentScore

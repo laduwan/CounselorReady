@@ -403,12 +403,16 @@ router.post('/:id/enroll', protect, async (req, res) => {
       });
     }
     
-    // Create enrollment
-    const progress = await UserCourseProgress.create({
+    // Create enrollment — auto-delete progress after 60 min for smoke-test courses
+    const enrollData = {
       userId: req.user._id,
       courseId: course._id,
       unlockedModules: [course.modules[0]?._id] // Unlock first module
-    });
+    };
+    if (course.slug === 'qa-smoke-test-course') {
+      enrollData.autoDeleteAt = new Date(Date.now() + 60 * 60 * 1000);
+    }
+    const progress = await UserCourseProgress.create(enrollData);
     
     // Increment enrollment count and analytics
     course.enrollmentCount += 1;

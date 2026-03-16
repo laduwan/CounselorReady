@@ -4,12 +4,12 @@
  * Unauthorized copying or distribution is strictly prohibited.
  */
 // scripts/seedSmokeTestCourse.js
-// Seeds a temporary QA smoke-test course that auto-deletes via MongoDB TTL.
+// Seeds a permanent QA smoke-test course in the catalog.
+// Test results (UserCourseProgress) for this course auto-delete after 60 min via TTL.
 //
 // Usage:
-//   node src/scripts/seedSmokeTestCourse.js              # expires in 24 hours (default)
-//   EXPIRE_HOURS=2 node src/scripts/seedSmokeTestCourse.js  # expires in 2 hours
-//   node src/scripts/seedSmokeTestCourse.js --remove     # manually remove it now
+//   node src/scripts/seedSmokeTestCourse.js              # upsert the course
+//   node src/scripts/seedSmokeTestCourse.js --remove     # manually remove it
 // ================================================================
 
 import mongoose from 'mongoose';
@@ -39,23 +39,20 @@ async function removeCourse() {
 }
 
 async function seedCourse() {
-  const hours = parseInt(process.env.EXPIRE_HOURS || '24', 10);
-  const expiresAt = new Date(Date.now() + hours * 60 * 60 * 1000);
-
   // Remove any previous smoke-test course
   await removeCourse();
 
   const course = await Course.create({
     title: '[QA] Smoke Test Course',
     slug: SLUG,
-    description: 'Temporary course for QA testing. Auto-deletes via TTL.',
+    description: 'Permanent QA smoke-test course. Test results auto-delete after 60 minutes.',
     ceHours: 1,
     ceProvider: 'NBCC ACEP #7760',
     acepNumber: '7760',
     objectives: ['Verify course catalog display', 'Verify enrollment flow', 'Verify progress tracking'],
     status: 'published',
     publishedAt: new Date(),
-    expiresAt,
+    // No expiresAt — this course stays permanently in the catalog.
     author: 'QA Automation',
     presenter: {
       name: 'QA Tester',
@@ -75,7 +72,7 @@ async function seedCourse() {
           {
             type: 'text',
             order: 0,
-            textContent: '<p>This is a temporary QA smoke-test course. It will auto-delete at ' + expiresAt.toISOString() + '.</p>'
+            textContent: '<p>This is a permanent QA smoke-test course. Test results auto-delete after 60 minutes.</p>'
           },
           {
             type: 'multipleChoice',
@@ -129,8 +126,9 @@ async function seedCourse() {
   console.log(`  ID:         ${course._id}`);
   console.log(`  Slug:       ${course.slug}`);
   console.log(`  Status:     ${course.status}`);
-  console.log(`  Expires at: ${expiresAt.toISOString()} (${hours}h from now)`);
-  console.log(`\nThe course should now appear in the catalog. MongoDB will auto-delete it at expiry.`);
+  console.log(`  Permanent:  yes (no expiration)`);
+  console.log(`\nThe course is now permanently in the catalog.`);
+  console.log(`Test results (UserCourseProgress) for this course auto-delete after 60 min.`);
   console.log(`To remove manually: node src/scripts/seedSmokeTestCourse.js --remove`);
 }
 
