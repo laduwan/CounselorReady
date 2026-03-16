@@ -55,8 +55,8 @@
             <span class="font-display" style="color:#7A9E84;position:absolute;top:4px;left:6px;font-weight:700;font-size:16px">R</span>
           </span>
         </div>
-        <span class="font-display hidden sm:inline" style="font-weight:600;font-size:1.5rem;letter-spacing:.015em">
-          <span style="color:#6B1D34">Counselor</span><span style="color:#4A7C59">Ready</span>
+        <span class="font-display hidden sm:inline" style="font-weight:700;font-size:1.5rem;letter-spacing:.015em">
+          <span style="color:#6B1D34">Counselor</span><span style="color:#3D6A4A">Ready</span>
         </span>
       </a>
       <nav class="hidden lg:flex items-center gap-1">
@@ -106,6 +106,7 @@
       <a href="/dashboard.html" class="block px-4 py-2.5 rounded-lg text-sm font-semibold" style="color:#6B1D34;background:#FDF5F7">Dashboard</a>
       <a href="/courses" class="block px-4 py-2.5 rounded-lg text-sm" style="color:#57534e">Courses</a>
       <div style="padding-left:12px">
+        <a href="/research-ready" class="block px-4 py-2 rounded-lg text-sm" style="color:#78716c">Researched-N-Ready</a>
         <a href="/recommendations" class="block px-4 py-2 rounded-lg text-sm" style="color:#78716c">Recommendations</a>
         <a href="/achievements" class="block px-4 py-2 rounded-lg text-sm" style="color:#78716c">Achievements</a>
       </div>
@@ -144,6 +145,25 @@
       <div class="bg-white rounded-xl p-4 border border-burgundy-100 shadow-sm anim d3"><div class="flex items-center justify-between mb-2"><span class="text-navy-400 text-xs font-medium">Certificates Stored</span><div class="w-7 h-7 bg-honey-50 rounded-lg flex items-center justify-center"><svg class="w-3.5 h-3.5 text-honey-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg></div></div><p class="font-display text-2xl font-semibold text-burgundy-800" id="certificatesCount">0</p><p class="text-navy-300 text-xs">From all CE providers</p></div>
       <div class="bg-white rounded-xl p-4 border border-burgundy-100 shadow-sm anim d4"><div class="flex items-center justify-between mb-2"><span class="text-navy-400 text-xs font-medium">Active Credentials</span><div class="w-7 h-7 bg-navy-50 rounded-lg flex items-center justify-center"><svg class="w-3.5 h-3.5 text-navy-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/></svg></div></div><p class="font-display text-2xl font-semibold text-burgundy-800" id="credentialsCount">0</p><p class="text-navy-300 text-xs">Licenses &amp; certifications</p></div>
     </div>
+
+    <!-- Researched-N-Ready CE -->
+    <a href="/research-ready" class="block mb-6 group" style="text-decoration:none">
+      <div class="relative overflow-hidden rounded-xl border border-burgundy-100 shadow-sm bg-white hover:shadow-md transition-all">
+        <div style="position:absolute;top:0;right:0;width:256px;height:256px;opacity:.04;pointer-events:none">
+          <svg class="w-full h-full text-burgundy-800" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.75 3.104v5.714a2.25 2.25 0 01-.659 1.591L5 14.5M9.75 3.104c-.251.023-.501.05-.75.082m.75-.082a24.301 24.301 0 014.5 0m0 0v5.714c0 .597.237 1.17.659 1.591L19.8 15.3M14.25 3.104c.251.023.501.05.75.082M19.8 15.3l-1.57.393A9.065 9.065 0 0112 15a9.065 9.065 0 00-6.23.693L5 14.5m14.8.8l1.402 5.608c.168.673-.43 1.282-1.097 1.103l-3.2-.865a2.25 2.25 0 00-1.174.005l-3.096.88a2.25 2.25 0 01-1.174-.005l-3.2-.865c-.667-.179-1.265.43-1.097 1.103L5 14.5"/></svg>
+        </div>
+        <div class="flex items-center gap-5 p-5">
+          <div class="flex-shrink-0 w-14 h-14 rounded-xl flex items-center justify-center" style="background:linear-gradient(135deg,#8B2542,#6B1D34)">
+            <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+          </div>
+          <div class="flex-1 min-w-0">
+            <h3 class="font-display text-lg font-semibold text-burgundy-800 mb-0.5">Researched-N-Ready CE</h3>
+            <p class="text-navy-400 text-sm">Search peer-reviewed articles, verify currency, and build CE courses &mdash; all backed by scholarly research.</p>
+          </div>
+          <span class="flex-shrink-0 flex items-center gap-2 text-white text-sm font-medium px-5 py-2.5 rounded-lg" style="background:#6B1D34">Get Started <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg></span>
+        </div>
+      </div>
+    </a>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <div class="lg:col-span-2 space-y-6">
@@ -202,10 +222,23 @@
 
     async function loadStats(){try{const[cR,crR,pR]=await Promise.all([fetch(`${API}/api/certificates`,{headers:{Authorization:`Bearer ${T}`}}),fetch(`${API}/api/credentials`,{headers:{Authorization:`Bearer ${T}`}}),fetch(`${API}/api/interactive-courses/user/my-courses`,{headers:{Authorization:`Bearer ${T}`}}).catch(()=>null)]);if(cR.ok){const c=await cR.json(),l=Array.isArray(c)?c:(c.certificates||[]);document.getElementById('certificatesCount').textContent=l.length;const h=l.reduce((s,x)=>s+(parseFloat(x.ceHours)||0),0);document.getElementById('totalHours').textContent=h%1===0?h:h.toFixed(1);}if(crR.ok){const c=await crR.json(),l=Array.isArray(c)?c:(c.credentials||[]);document.getElementById('credentialsCount').textContent=l.length;renderProgress(l);renderRenewals(l);}if(pR?.ok){const p=await pR.json();const list=p.data||(Array.isArray(p)?p:[]);document.getElementById('coursesCompleted').textContent=list.filter(x=>x.status==='completed').length;renderCourses(list);}}catch(e){console.error(e);}}
 
+    function credLabel(x){
+      const generic=['state_license','national_cert','specialty_cert','training','custom','other'];
+      if(x.shortName)return x.shortName;
+      if(x.nickname)return x.nickname;
+      if(x.name&&!generic.includes(x.name))return x.name;
+      if(x.state&&x.code)return x.state+' '+x.code;
+      if(x.code)return x.code;
+      if(x.issuingBody&&x.code)return x.code+' ('+x.issuingBody+')';
+      if(x.issuingBody)return x.issuingBody;
+      const pretty={state_license:'State License',national_cert:'National Certification',specialty_cert:'Specialty Cert',training:'Training'};
+      return(x.state?x.state+' ':'')+(pretty[x.credentialType||x.name]||x.credentialType||'Credential');
+    }
+
     function renderProgress(c){
       const el=document.getElementById('progressList');if(!c.length)return;
       el.innerHTML=c.slice(0,6).map(x=>{
-        const n=x.name||x.nickname||x.code||x.credentialType||'Credential';
+        const n=credLabel(x);
         const e=x.totalCEUsCompleted||0,r=x.totalCEUsRequired||0;
         const p=r>0?Math.min(100,Math.round(e/r*100)):0;
         return`<div><div class="flex items-center justify-between mb-1"><span class="text-sm font-medium text-burgundy-800 truncate pr-2">${n}</span><span class="text-xs text-navy-400 flex-shrink-0">${e}/${r} hrs</span></div><div class="h-2 bg-stone-100 rounded-full overflow-hidden"><div class="progress-fill h-full rounded-full" style="width:${p}%;background:#284157"></div></div></div>`;
@@ -214,7 +247,7 @@
 
     function renderRenewals(c){
       const el=document.getElementById('renewalsList'),now=new Date();
-      const up=c.filter(x=>x.expirationDate).map(x=>({name:x.name||x.nickname||x.code||x.credentialType||'Credential',date:new Date(x.expirationDate)})).filter(x=>x.date>now).sort((a,b)=>a.date-b.date).slice(0,5);
+      const up=c.filter(x=>x.expirationDate).map(x=>({name:credLabel(x),date:new Date(x.expirationDate)})).filter(x=>x.date>now).sort((a,b)=>a.date-b.date).slice(0,5);
       if(!up.length)return;
       el.innerHTML=up.map(r=>{const d=Math.ceil((r.date-now)/864e5),u=d<=90,ds=r.date.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});return`<div class="flex items-center justify-between py-2"><div class="min-w-0"><p class="text-sm font-medium text-burgundy-800 truncate">${r.name}</p><p class="text-xs ${u?'text-burgundy-500 font-semibold':'text-navy-300'}">${ds}</p></div><span class="text-xs font-semibold px-2 py-0.5 rounded-full flex-shrink-0 ${u?'bg-burgundy-100 text-burgundy-700':'bg-hunter-50 text-hunter-600'}">${d}d</span></div>`;}).join('');
     }
