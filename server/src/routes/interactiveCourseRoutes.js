@@ -36,7 +36,7 @@ function findCourseByIdOrSlug(param, tenantFilter = {}) {
   if (mongoose.Types.ObjectId.isValid(param)) {
     return Course.findOne({ _id: param, ...baseQuery });
   }
-  return Course.findOne({ slug: param, ...baseQuery });
+  return Course.findOne({ $or: [{ slug: param }, { courseCode: param }], ...baseQuery });
 }
 
 // ============================================================================
@@ -195,7 +195,7 @@ router.get('/slug/:slug', async (req, res) => {
     if (!course) {
       const legacyDoc = await mongoose.connection.db
         .collection('courses')
-        .findOne({ slug: req.params.slug });
+        .findOne({ $or: [{ slug: req.params.slug }, { courseCode: req.params.slug }] });
 
       if (!legacyDoc) {
         return res.status(404).json({ success: false, error: 'Course not found' });
