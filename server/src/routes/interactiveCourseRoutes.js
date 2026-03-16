@@ -404,7 +404,7 @@ router.post('/:id/enroll', protect, async (req, res) => {
  */
 router.post('/:id/progress/assessment', protect, async (req, res) => {
   try {
-    const { answers, score, passed, attempt, timeSpent, timeUsed } = req.body;
+    const { answers, timeUsed, questionOrder } = req.body;
 
     const course = await findCourseByIdOrSlug(req.params.id, req.tenantFilter);
     if (!course || !course.assessment) {
@@ -427,7 +427,7 @@ router.post('/:id/progress/assessment', protect, async (req, res) => {
           viewedBlocks: [],
           completedBlocks: [],
           quizAttempts: [],
-          status: 'completed' // Mark as completed since they're taking assessment
+          status: 'completed'
         })),
         assessmentAttemptsRemaining: course.assessment?.attemptsAllowed || 3
       });
@@ -438,80 +438,63 @@ router.post('/:id/progress/assessment', protect, async (req, res) => {
       return res.status(400).json({ success: false, error: 'No attempts remaining' });
     }
 
-    // Calculate score from answers if not provided
-    let calculatedScore = score;
-    let calculatedPassed = passed;
+    // Calculate score — answers is always an object { "0": optIdx, "1": optIdx }
+    let correctCount = 0;
     const questions = course.assessment.questions;
 
     if (answers && typeof answers === 'object') {
-      let correctCount = 0;
+      const entries = Array.isArray(answers)
+        ? answers.map((a, i) => [String(a.questionIndex ?? i), a.selectedOption ?? a])
+        : Object.entries(answers);
 
-      if (Array.isArray(answers)) {
-        // Array format: [{ questionIndex, selectedOption, selectedOptions }, ...]
-        answers.forEach((answer, index) => {
-          const question = questions[answer.questionIndex] || questions[index];
-          if (!question) return;
+      for (const [qIdx, selectedOpt] of entries) {
+        const actualIndex = questionOrder ? questionOrder[qIdx] : parseInt(qIdx);
+        const question = questions[actualIndex];
+        if (!question) continue;
 
-          if (question.type === 'multiSelect') {
-            const correctIndices = question.options
-              .map((o, idx) => o.isCorrect ? idx : -1)
-              .filter(x => x >= 0);
-            const selectedIndices = answer.selectedOptions || [];
-            const isCorrect = correctIndices.length === selectedIndices.length &&
-              correctIndices.every(idx => selectedIndices.includes(idx));
-            if (isCorrect) correctCount++;
-          } else {
-            const correctIndex = question.options.findIndex(o => o.isCorrect);
-            if (answer.selectedOption === correctIndex) correctCount++;
-          }
-        });
-      } else {
-        // Object format from client: { "0": selectedOptionIdx, "1": selectedOptionIdx, ... }
-        for (const [qIdx, selectedOpt] of Object.entries(answers)) {
-          const question = questions[parseInt(qIdx)];
-          if (!question) continue;
-
-          if (question.type === 'multiSelect') {
-            const correctIndices = question.options
-              .map((o, idx) => o.isCorrect ? idx : -1)
-              .filter(x => x >= 0);
-            const selectedIndices = Array.isArray(selectedOpt) ? selectedOpt : [selectedOpt];
-            const isCorrect = correctIndices.length === selectedIndices.length &&
-              correctIndices.every(idx => selectedIndices.includes(idx));
-            if (isCorrect) correctCount++;
-          } else {
-            const correctIndex = question.options.findIndex(o => o.isCorrect);
-            if (selectedOpt === correctIndex) correctCount++;
-          }
+        if (question.type === 'multiSelect' || question.type === 'multiple_select') {
+          const correctIndices = question.options.map((o, idx) => o.isCorrect ? idx : -1).filter(x => x >= 0);
+          const selectedIndices = Array.isArray(selectedOpt) ? selectedOpt : [selectedOpt];
+          const isCorrect = correctIndices.length === selectedIndices.length &&
+            correctIndices.every(idx => selectedIndices.includes(idx));
+          if (isCorrect) correctCount++;
+        } else {
+          // multipleChoice / trueFalse — check by index
+          if (question.options[selectedOpt]?.isCorrect) correctCount++;
         }
       }
-
-      calculatedScore = questions.length > 0 ? correctCount / questions.length : 0;
-      calculatedPassed = calculatedScore >= (course.assessment.passThreshold || 0.8);
     }
+
+    const totalQuestions = questions.length;
+    const percentage = totalQuestions > 0 ? correctCount / totalQuestions : 0;
+    const passed = percentage >= (course.assessment.passThreshold || 0.8);
 
     // Record attempt
     progress.assessmentAttempts.push({
       attemptedAt: new Date(),
       answers,
-      score: Math.round(calculatedScore * 100),
-      totalQuestions: course.assessment.questions.length,
-      percentage: Math.round(calculatedScore * 100),
-      passed: calculatedPassed,
-      timeUsed: timeSpent || timeUsed
+      score: correctCount,
+      totalQuestions,
+      percentage: Math.round(percentage * 100),
+      passed,
+      timeUsed,
+      questionOrder
     });
 
     progress.assessmentAttemptsRemaining--;
 
-    if (calculatedPassed) {
+    if (passed) {
       progress.assessmentPassed = true;
-      // Don't mark as fully completed yet - need evaluation + attestation
     }
 
     // Update best score
-    const currentScore = Math.round(calculatedScore * course.assessment.questions.length);
-    if (!progress.bestAssessmentScore || currentScore > progress.bestAssessmentScore) {
-      progress.bestAssessmentScore = currentScore;
+    if (!progress.bestAssessmentScore || correctCount > progress.bestAssessmentScore) {
+      progress.bestAssessmentScore = correctCount;
+    }
+
+    // Recalculate overall progress
+    if (progress.calculateOverallProgress) {
+      progress.overallProgress = progress.calculateOverallProgress();
     }
 
     await progress.save();
@@ -519,17 +502,17 @@ router.post('/:id/progress/assessment', protect, async (req, res) => {
     res.json({
       success: true,
       data: {
-        score: Math.round(calculatedScore * 100),
-        percentage: Math.round(calculatedScore * 100),
-        totalQuestions: questions.length,
-        passed: calculatedPassed,
+        score: correctCount,
+        percentage: Math.round(percentage * 100),
+        totalQuestions,
+        passed,
         attemptsRemaining: progress.assessmentAttemptsRemaining,
         bestScore: progress.bestAssessmentScore
       }
     });
   } catch (error) {
-    console.error('Error submitting assessment:', error);
-    res.status(500).json({ success: false, error: 'Failed to submit assessment' });
+    console.error('Error submitting assessment:', error.message, error.stack);
+    res.status(500).json({ success: false, error: 'Failed to submit assessment', debug: error.message });
   }
 });
 
