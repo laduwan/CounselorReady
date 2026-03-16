@@ -1,0 +1,252 @@
+{
+  "title": "QA Smoke Test – Platform Verification",
+  "slug": "qa-smoke-test",
+  "description": "Internal 3-minute test course to verify CourseViewer rendering, CE timer, assessment gating, certificate generation, and analytics pipeline across all block types. Auto-deletes 60 minutes after creation.",
+  "ceHours": 0.5,
+  "ceProvider": "NBCC ACEP #7760",
+  "acepNumber": "7760",
+  "targetAudience": ["Internal QA"],
+  "categories": ["Testing"],
+  "tags": ["qa", "test", "internal", "auto-delete"],
+  "author": "CounselorReady QA",
+  "status": "draft",
+  "isTestCourse": true,
+  "totalEstimatedTime": 3,
+
+  "_qa": {
+    "autoDelete": true,
+    "ttlMinutes": 60,
+    "note": "Seed script should set expiresAt = new Date(Date.now() + 60 * 60 * 1000) at insert time. Requires MongoDB TTL index on expiresAt field."
+  },
+
+  "analytics": {
+    "trackEnrollment": true,
+    "trackSectionProgress": true,
+    "trackBlockInteractions": true,
+    "trackAssessmentAttempts": true,
+    "trackCertificateGeneration": true,
+    "trackTimerEvents": true
+  },
+  "sections": [
+    {
+      "title": "Section 1: Text & Divider Blocks",
+      "order": 1,
+      "estimatedTime": 1,
+      "contentBlocks": [
+        {
+          "type": "sectionDivider",
+          "order": 1,
+          "sectionNumber": 1,
+          "title": "Welcome to the QA Test",
+          "subtitle": "Verifying all block types render correctly"
+        },
+        {
+          "type": "text",
+          "order": 2,
+          "content": "<h2>Platform Verification</h2><p>This is a quick internal test course designed to confirm that every content block type renders correctly in the CourseViewer. If you can see this text with proper formatting, the <strong>text block</strong> is working.</p><p>Scroll through each section to verify rendering, then complete the final assessment to confirm the full learner pipeline.</p>"
+        },
+        {
+          "type": "imageText",
+          "order": 3,
+          "title": "Image + Text Block Test",
+          "content": "<p>This block should display an image on one side and this text on the other. The image position should default to left. If you see both the image placeholder and this text side by side, the <strong>imageText</strong> block is working.</p>",
+          "image": "https://placehold.co/400x300/2563eb/ffffff?text=ImageText+Block",
+          "imageAlt": "QA test placeholder image for imageText block",
+          "imagePosition": "left"
+        }
+      ]
+    },
+    {
+      "title": "Section 2: Interactive Blocks",
+      "order": 2,
+      "estimatedTime": 1,
+      "contentBlocks": [
+        {
+          "type": "sectionDivider",
+          "order": 1,
+          "sectionNumber": 2,
+          "title": "Interactive Elements",
+          "subtitle": "Testing accordion, matching, and flashcards"
+        },
+        {
+          "type": "accordion",
+          "order": 2,
+          "accordionItems": [
+            {
+              "title": "Accordion Item 1 – Click to Expand",
+              "content": "If you can read this after clicking, the accordion expand/collapse is working correctly."
+            },
+            {
+              "title": "Accordion Item 2 – Another Panel",
+              "content": "Multiple panels should be independently toggleable. Verify this one opens and closes without affecting Item 1."
+            },
+            {
+              "title": "Accordion Item 3 – Final Panel",
+              "content": "Three panels confirmed working. Accordion block passes QA."
+            }
+          ]
+        },
+        {
+          "type": "matching",
+          "order": 3,
+          "matchingInstructions": "Match each block type to its category. Drag or select to pair them.",
+          "matchingPairs": [
+            { "term": "Text", "definition": "Static content block" },
+            { "term": "Accordion", "definition": "Expandable/collapsible panels" },
+            { "term": "MultipleChoice", "definition": "Single-answer quiz question" },
+            { "term": "Matching", "definition": "Term-definition pairing activity" }
+          ]
+        },
+        {
+          "type": "flashcardDeck",
+          "order": 4,
+          "flashcards": [
+            { "id": "fc1", "front": "What does CE stand for?", "back": "Continuing Education" },
+            { "id": "fc2", "front": "What is the NBCC ACEP number?", "back": "#7760" },
+            { "id": "fc3", "front": "What passing threshold is standard?", "back": "70% (0.7) minimum" }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Section 3: Quiz & Advanced Blocks",
+      "order": 3,
+      "estimatedTime": 1,
+      "contentBlocks": [
+        {
+          "type": "sectionDivider",
+          "order": 1,
+          "sectionNumber": 3,
+          "title": "Quiz & Advanced Blocks",
+          "subtitle": "Testing multipleChoice, multiSelect, sequencing, and reflection"
+        },
+        {
+          "type": "multipleChoice",
+          "order": 2,
+          "question": "Which of the following is a valid CourseViewer block type?",
+          "options": [
+            { "text": "accordion", "isCorrect": true },
+            { "text": "dropdown", "isCorrect": false },
+            { "text": "carousel", "isCorrect": false },
+            { "text": "tooltip", "isCorrect": false }
+          ],
+          "explanation": "The accordion block is one of the 19 supported block types in CourseViewer."
+        },
+        {
+          "type": "multiSelect",
+          "order": 3,
+          "question": "Select ALL valid block types (choose more than one):",
+          "options": [
+            { "text": "text", "isCorrect": true },
+            { "text": "matching", "isCorrect": true },
+            { "text": "scenarioTree", "isCorrect": true },
+            { "text": "popupMenu", "isCorrect": false }
+          ],
+          "explanation": "text, matching, and scenarioTree are all valid block types. popupMenu does not exist."
+        },
+        {
+          "type": "sequencing",
+          "order": 4,
+          "steps": [
+            { "id": "s1", "text": "Learner enrolls in course", "order": 1 },
+            { "id": "s2", "text": "CE timer begins tracking", "order": 2 },
+            { "id": "s3", "text": "Learner completes all sections", "order": 3 },
+            { "id": "s4", "text": "Assessment unlocks", "order": 4 },
+            { "id": "s5", "text": "Certificate generated on pass", "order": 5 }
+          ]
+        },
+        {
+          "type": "reflection",
+          "order": 5,
+          "title": "Reflection Prompt",
+          "content": "Describe one thing you would check when verifying a new course renders correctly. (Minimum 10 words for QA testing.)",
+          "minLength": 10
+        },
+        {
+          "type": "resources",
+          "order": 6,
+          "resources": [
+            { "title": "CounselorReady Platform", "url": "https://counselorready.com", "type": "website" },
+            { "title": "NBCC Provider Policy", "url": "https://www.nbcc.org", "type": "link" }
+          ]
+        },
+        {
+          "type": "references",
+          "order": 7,
+          "references": [
+            {
+              "formatted": "CounselorReady. (2026). CourseViewer technical specification (Version 2.0). GA Integrated Therapeutic Perspectives LLC.",
+              "title": "CourseViewer technical specification",
+              "author": "CounselorReady",
+              "year": 2026,
+              "source": "GA Integrated Therapeutic Perspectives LLC"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "assessment": {
+    "title": "QA Smoke Test – Final Assessment",
+    "timeLimit": 5,
+    "passThreshold": 0.7,
+    "attemptsAllowed": 99,
+    "shuffleQuestions": false,
+    "shuffleOptions": false,
+    "questions": [
+      {
+        "question": "What is the purpose of this test course?",
+        "type": "multipleChoice",
+        "options": [
+          { "text": "To verify platform rendering and pipeline", "isCorrect": true },
+          { "text": "To earn CE credit", "isCorrect": false },
+          { "text": "To teach counseling theory", "isCorrect": false },
+          { "text": "To test Stripe payments", "isCorrect": false }
+        ],
+        "explanation": "This course exists solely to verify that all block types render and the learner pipeline works end-to-end."
+      },
+      {
+        "question": "How many block types does the CourseViewer support?",
+        "type": "multipleChoice",
+        "options": [
+          { "text": "8", "isCorrect": false },
+          { "text": "12", "isCorrect": false },
+          { "text": "19", "isCorrect": true },
+          { "text": "25", "isCorrect": false }
+        ],
+        "explanation": "The CourseViewer renderer supports 19 distinct content block types."
+      },
+      {
+        "question": "Which of the following are valid assessment question types?",
+        "type": "multiSelect",
+        "options": [
+          { "text": "multipleChoice", "isCorrect": true },
+          { "text": "trueFalse", "isCorrect": true },
+          { "text": "multiSelect", "isCorrect": true },
+          { "text": "essay", "isCorrect": false }
+        ],
+        "explanation": "The platform supports multipleChoice, trueFalse, and multiSelect question types in assessments."
+      },
+      {
+        "question": "The CE timer must complete before the assessment unlocks.",
+        "type": "trueFalse",
+        "options": [
+          { "text": "True", "isCorrect": true },
+          { "text": "False", "isCorrect": false }
+        ],
+        "explanation": "NBCC compliance requires the learner to spend the minimum required time before accessing the final assessment."
+      },
+      {
+        "question": "What is the minimum passing threshold for CounselorReady assessments?",
+        "type": "multipleChoice",
+        "options": [
+          { "text": "50%", "isCorrect": false },
+          { "text": "60%", "isCorrect": false },
+          { "text": "70%", "isCorrect": true },
+          { "text": "90%", "isCorrect": false }
+        ],
+        "explanation": "CounselorReady uses a 70% minimum passing threshold for post-course assessments."
+      }
+    ]
+  }
+}
