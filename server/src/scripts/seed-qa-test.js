@@ -1,15 +1,12 @@
 // ============================================================================
 // seed-qa-test.js
 // Seeds the QA smoke test course with a 60-minute TTL auto-delete.
-// Run: node seed-qa-test.js
+// Run from server/: node src/scripts/seed-qa-test.js
 // ============================================================================
 
 const mongoose = require('mongoose');
 const fs = require('fs');
 const path = require('path');
-
-// Update this to your actual model path
-const Course = require('./models/InteractiveCourse'); // adjust path as needed
 
 const MONGODB_URI = process.env.MONGODB_URI || 'your-mongodb-uri-here';
 
@@ -19,10 +16,8 @@ async function seedQATest() {
     console.log('✅ Connected to MongoDB\n');
 
     // ── Step 1: Ensure TTL index exists on expiresAt ──
-    // MongoDB TTL index automatically deletes docs when expiresAt passes.
-    // This is idempotent — safe to call every time.
     const collection = mongoose.connection.collection('interactivecourses');
-    
+
     try {
       await collection.createIndex(
         { expiresAt: 1 },
@@ -36,6 +31,10 @@ async function seedQATest() {
         throw err;
       }
     }
+
+    // ── Import ESM model dynamically (server uses "type": "module") ──
+    const mod = await import('../models/InteractiveCourse.js');
+    const Course = mod.Course || mod.default?.Course;
 
     // ── Step 2: Remove any previous QA test course ──
     const deleted = await Course.deleteMany({ slug: 'qa-smoke-test' });
@@ -62,7 +61,7 @@ async function seedQATest() {
     console.log(`   Slug:       ${course.slug}`);
     console.log(`   ID:         ${course._id}`);
     console.log(`   Sections:   ${course.sections.length}`);
-    console.log(`   Assessment:  ${course.assessment.questions.length} questions`);
+    console.log(`   Assessment: ${course.assessment.questions.length} questions`);
     console.log(`   Expires At: ${expiresAt.toLocaleString()}`);
     console.log(`   TTL:        60 minutes from now`);
     console.log(`\n── Analytics Checkpoints ──`);
@@ -75,10 +74,10 @@ async function seedQATest() {
     console.log(`\n⏰ Course will auto-delete at ${expiresAt.toLocaleString()}`);
     console.log(`   MongoDB TTL index handles cleanup — no cron needed.\n`);
 
-    // ── Step 4: Verify analytics fields are queryable ──
+    // ── Step 4: Verify block types are queryable ──
     const verify = await Course.findOne({ slug: 'qa-smoke-test' }).lean();
     const blockTypes = new Set();
-    verify.sections.forEach(s => 
+    verify.sections.forEach(s =>
       s.contentBlocks.forEach(b => blockTypes.add(b.type))
     );
     console.log(`── Block Types in Test Course (${blockTypes.size}) ──`);
