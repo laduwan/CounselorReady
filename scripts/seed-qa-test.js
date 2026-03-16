@@ -3,20 +3,13 @@
 /**
  * Seed script – inserts (or replaces) the QA smoke-test course.
  *
- * Usage:
+ * Usage (run from the repo root):
  *   MONGODB_URI="mongodb://..." node scripts/seed-qa-test.js
  */
 
-import { readFileSync } from 'fs';
-import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
-import mongoose from 'mongoose';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
-// Import the InteractiveCourse model (ESM)
-const { Course } = await import('../server/src/models/InteractiveCourse.js');
+const fs = require('fs');
+const path = require('path');
+const mongoose = require('mongoose');
 
 async function main() {
   const uri = process.env.MONGODB_URI;
@@ -37,6 +30,10 @@ async function main() {
   );
   console.log('TTL index on expiresAt ensured.');
 
+  // Import the ESM model dynamically
+  const mod = await import('../server/src/models/InteractiveCourse.js');
+  const Course = mod.Course || mod.default?.Course;
+
   // Delete any existing QA smoke-test document
   const deleted = await Course.deleteOne({ slug: 'qa-smoke-test' });
   if (deleted.deletedCount) {
@@ -44,7 +41,7 @@ async function main() {
   }
 
   // Read the course JSON
-  const raw = readFileSync(join(__dirname, 'qa-test-course.json'), 'utf-8');
+  const raw = fs.readFileSync(path.join(__dirname, 'qa-test-course.json'), 'utf-8');
   const courseData = JSON.parse(raw);
 
   // Set expiration to 60 minutes from now
