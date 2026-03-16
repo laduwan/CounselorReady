@@ -22,22 +22,89 @@ import { generateCertificate, generateCertificateNumber } from '../utils/certifi
 const router = express.Router();
 
 // Apply tenant scoping to all routes — populates req.tenantFilter
+// Note: For unauthenticated routes this sets a default filter.
+// For protected routes, we re-run attachTenantScope AFTER protect
+// so that req.user.partnerId is available for proper partner isolation.
 router.use(attachTenantScope);
+
+// Combined middleware: authenticate first, then re-scope with user context
+const protectAndScope = [protect, attachTenantScope];
 
 /**
  * Helper: resolve course by ObjectId or slug, respecting tenant scope.
  * Partner users can see platform courses (no partnerId) + their own partner's courses.
  * Admins and non-partner users see all courses.
  */
-function findCourseByIdOrSlug(param, tenantFilter = {}) {
-  const baseQuery = tenantFilter.partnerId
-    ? { $or: [{ partnerId: { $exists: false } }, { partnerId: null }, { partnerId: tenantFilter.partnerId }] }
-    : {};
+async function findCourseByIdOrSlug(param, tenantFilter = {}) {
+  const partnerConditions = tenantFilter.partnerId
+    ? [{ partnerId: { $exists: false } }, { partnerId: null }, { partnerId: tenantFilter.partnerId }]
+    : null;
 
+  let query;
   if (mongoose.Types.ObjectId.isValid(param)) {
-    return Course.findOne({ _id: param, ...baseQuery });
+    query = partnerConditions
+      ? { $and: [{ _id: param }, { $or: partnerConditions }] }
+      : { _id: param };
+  } else {
+    const slugConditions = [{ slug: param }, { courseCode: param }];
+    query = partnerConditions
+      ? { $and: [{ $or: slugConditions }, { $or: partnerConditions }] }
+      : { $or: slugConditions };
   }
-  return Course.findOne({ $or: [{ slug: param }, { courseCode: param }], ...baseQuery });
+
+  let course = await Course.findOne(query);
+
+  // Fallback: try legacy "courses" collection (same DB, different collection name)
+  if (!course) {
+    const legacyQuery = mongoose.Types.ObjectId.isValid(param)
+      ? { _id: new mongoose.Types.ObjectId(param) }
+      : { $or: [{ slug: param }, { courseCode: param }] };
+
+    const legacyDoc = await mongoose.connection.db
+      .collection('courses')
+      .findOne(legacyQuery);
+
+    if (legacyDoc) {
+      // Normalize legacy course into interactivecourses shape
+      const sections = (legacyDoc.modules || legacyDoc.sections || []).map((mod) => {
+        const contentBlocks = [
+          { type: 'sectionDivider', order: 0, title: mod.title },
+          ...(mod.lessons || mod.contentBlocks || []).map((item, i) => ({
+            type: item.type || 'text',
+            order: i + 1,
+            content: item.content,
+            textContent: item.textContent || item.content,
+            title: item.title,
+            ...item
+          }))
+        ];
+        return { ...mod, title: mod.title, contentBlocks, _id: mod._id };
+      });
+
+      course = {
+        _id: legacyDoc._id,
+        title: legacyDoc.title,
+        slug: legacyDoc.slug,
+        courseCode: legacyDoc.courseCode,
+        description: legacyDoc.description,
+        ceHours: legacyDoc.ceHours,
+        ceProvider: legacyDoc.ceProvider,
+        acepNumber: legacyDoc.acepNumber,
+        objectives: legacyDoc.objectives,
+        assessment: legacyDoc.assessment,
+        status: legacyDoc.status,
+        categories: legacyDoc.categories,
+        tags: legacyDoc.tags,
+        targetAudience: legacyDoc.targetAudience,
+        author: legacyDoc.author,
+        presenter: legacyDoc.presenter,
+        sections,
+        source: 'legacy'
+      };
+    }
+  }
+
+  return course;
 }
 
 // ============================================================================
@@ -190,52 +257,10 @@ router.get('/', async (req, res) => {
  */
 router.get('/slug/:slug', async (req, res) => {
   try {
-    let course = await findCourseByIdOrSlug(req.params.slug, req.tenantFilter);
+    const course = await findCourseByIdOrSlug(req.params.slug, req.tenantFilter);
 
-    // Fallback: try the legacy courses collection if not found in interactivecourses
     if (!course) {
-      const legacyDoc = await mongoose.connection.db
-        .collection('courses')
-        .findOne({ $or: [{ slug: req.params.slug }, { courseCode: req.params.slug }] });
-
-      if (!legacyDoc) {
-        return res.status(404).json({ success: false, error: 'Course not found' });
-      }
-
-      // Normalize legacy course into interactivecourses format
-      const sections = (legacyDoc.modules || []).map((mod, modIndex) => {
-        const contentBlocks = [
-          { type: 'sectionDivider', order: 0, title: mod.title },
-          ...(mod.lessons || []).map((lesson, lessonIndex) => ({
-            type: 'text',
-            order: lessonIndex + 1,
-            content: lesson.content,
-            title: lesson.title
-          }))
-        ];
-        return {
-          title: mod.title,
-          contentBlocks
-        };
-      });
-
-      course = {
-        _id: legacyDoc._id,
-        title: legacyDoc.title,
-        slug: legacyDoc.slug,
-        description: legacyDoc.description,
-        ceHours: legacyDoc.ceHours,
-        ceProvider: legacyDoc.ceProvider,
-        acepNumber: legacyDoc.acepNumber,
-        assessment: legacyDoc.assessment,
-        status: legacyDoc.status,
-        categories: legacyDoc.categories,
-        tags: legacyDoc.tags,
-        targetAudience: legacyDoc.targetAudience,
-        author: legacyDoc.author,
-        sections,
-        source: 'legacy'
-      };
+      return res.status(404).json({ success: false, error: 'Course not found' });
     }
 
     res.json({ success: true, data: course });
@@ -269,7 +294,7 @@ router.get('/:id', async (req, res) => {
  * Update course fields (publish/unpublish, metadata, etc.)
  * Syncs status and isPublished to prevent dual-field desync
  */
-router.put('/:id', protect, async (req, res) => {
+router.put('/:id', ...protectAndScope, async (req, res) => {
   try {
     const course = await Course.findById(req.params.id);
     if (!course) {
@@ -311,7 +336,7 @@ router.put('/:id', protect, async (req, res) => {
  * GET /api/interactive-courses/:id/progress
  * Get user's progress for a specific course
  */
-router.get('/:id/progress', protect, async (req, res) => {
+router.get('/:id/progress', ...protectAndScope, async (req, res) => {
   try {
     const course = await findCourseByIdOrSlug(req.params.id, req.tenantFilter);
     if (!course) {
@@ -352,7 +377,7 @@ router.get('/:id/progress', protect, async (req, res) => {
  * POST /api/interactive-courses/:id/enroll
  * Enroll user in a course
  */
-router.post('/:id/enroll', protect, async (req, res) => {
+router.post('/:id/enroll', ...protectAndScope, async (req, res) => {
   try {
     const course = await Course.findOne({ _id: req.params.id, status: 'published' });
     if (!course) {
@@ -402,7 +427,7 @@ router.post('/:id/enroll', protect, async (req, res) => {
  * POST /api/interactive-courses/:id/progress/assessment
  * Submit final assessment attempt
  */
-router.post('/:id/progress/assessment', protect, async (req, res) => {
+router.post('/:id/progress/assessment', ...protectAndScope, async (req, res) => {
   try {
     const { answers, timeUsed, questionOrder } = req.body;
 
@@ -524,7 +549,7 @@ router.post('/:id/progress/assessment', protect, async (req, res) => {
  * POST /api/interactive-courses/:id/evaluation
  * Submit course evaluation (required for NBCC compliance)
  */
-router.post('/:id/evaluation', protect, async (req, res) => {
+router.post('/:id/evaluation', ...protectAndScope, async (req, res) => {
   try {
     const { responses } = req.body;
     
@@ -642,7 +667,7 @@ router.post('/:id/evaluation', protect, async (req, res) => {
  * POST /api/interactive-courses/:id/attestation
  * Submit attestation statement (required before certificate)
  */
-router.post('/:id/attestation', protect, async (req, res) => {
+router.post('/:id/attestation', ...protectAndScope, async (req, res) => {
   try {
     const { agreed } = req.body;
     
@@ -722,7 +747,7 @@ router.post('/:id/attestation', protect, async (req, res) => {
  * POST /api/interactive-courses/:id/certificate
  * Generate and return certificate PDF
  */
-router.post('/:id/certificate', protect, async (req, res) => {
+router.post('/:id/certificate', ...protectAndScope, async (req, res) => {
   try {
     const course = await findCourseByIdOrSlug(req.params.id, req.tenantFilter);
     if (!course) {
@@ -858,7 +883,7 @@ router.post('/:id/certificate', protect, async (req, res) => {
  * GET /api/interactive-courses/:id/certificate/check
  * Check certificate eligibility status
  */
-router.get('/:id/certificate/check', protect, async (req, res) => {
+router.get('/:id/certificate/check', ...protectAndScope, async (req, res) => {
   try {
     const course = await findCourseByIdOrSlug(req.params.id, req.tenantFilter);
     if (!course) {
@@ -912,7 +937,7 @@ router.get('/:id/certificate/check', protect, async (req, res) => {
  * PUT /api/interactive-courses/:id/progress/section/:sectionIndex
  * Update section progress
  */
-router.put('/:id/progress/section/:sectionIndex', protect, async (req, res) => {
+router.put('/:id/progress/section/:sectionIndex', ...protectAndScope, async (req, res) => {
   try {
     const { sectionIndex } = req.params;
     const { viewedBlocks, completedBlocks, timeSpent } = req.body;
@@ -995,7 +1020,7 @@ router.put('/:id/progress/section/:sectionIndex', protect, async (req, res) => {
  * POST /api/interactive-courses/:id/progress/section/:sectionIndex/quiz
  * Submit section quiz attempt
  */
-router.post('/:id/progress/section/:sectionIndex/quiz', protect, async (req, res) => {
+router.post('/:id/progress/section/:sectionIndex/quiz', ...protectAndScope, async (req, res) => {
   try {
     const { sectionIndex } = req.params;
     const { answers, timeSpent } = req.body;
@@ -1103,7 +1128,7 @@ router.post('/:id/progress/section/:sectionIndex/quiz', protect, async (req, res
  * POST /api/interactive-courses/:id/progress/interaction
  * Log content interaction for analytics
  */
-router.post('/:id/progress/interaction', protect, async (req, res) => {
+router.post('/:id/progress/interaction', ...protectAndScope, async (req, res) => {
   try {
     const { sectionIndex, blockIndex, blockType, action, isCorrect, selectedOptions, score, timeSpent } = req.body;
 
@@ -1147,7 +1172,7 @@ router.post('/:id/progress/interaction', protect, async (req, res) => {
  * GET /api/interactive-courses/user/my-courses
  * Get all courses user is enrolled in with progress
  */
-router.get('/user/my-courses', protect, async (req, res) => {
+router.get('/user/my-courses', ...protectAndScope, async (req, res) => {
   try {
     const { status } = req.query;
 
