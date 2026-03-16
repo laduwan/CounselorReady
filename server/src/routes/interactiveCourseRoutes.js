@@ -14,7 +14,7 @@ import { Course, CourseProgress, ContentInteraction } from '../models/Interactiv
 import Certificate from '../models/Certificate.js';
 import Evaluation from '../models/Evaluation.js';
 import User from '../models/User.js';
-import { protect } from '../middleware/auth.js';
+import { protect, optionalAuth } from '../middleware/auth.js';
 import { attachTenantScope } from '../middleware/tenantScope.js';
 import { logActivity, ACTIVITY_TYPES } from '../services/activityTrackingService.js';
 import { generateCertificate, generateCertificateNumber } from '../utils/certificate.js';
@@ -106,6 +106,72 @@ async function findCourseByIdOrSlug(param, tenantFilter = {}) {
   }
 
   return course;
+}
+
+/**
+ * Helper: strip learning content for unauthenticated or unenrolled users.
+ * Returns full course for admins and enrolled users; metadata-only preview otherwise.
+ */
+async function gateContent(courseObj, user) {
+  // No user — preview mode
+  if (!user) return stripContent(courseObj);
+  // Admins always get full content
+  if (user.role === 'admin') return courseObj;
+  // Check enrollment
+  const progress = await CourseProgress.findOne({
+    userId: user._id,
+    courseId: courseObj._id
+  });
+  if (progress) {
+    // Enrolled — check access tier
+    const courseTier = courseObj.accessType || courseObj.pricingTier || 'free';
+    if (courseTier === 'free') return courseObj;
+    const userTier = user.subscription?.plan || 'free';
+    const userStatus = user.subscription?.status;
+    if (userStatus === 'active') {
+      const tierLevels = { free: 0, starter: 1, professional: 2, vip: 3 };
+      if ((tierLevels[userTier] || 0) >= (tierLevels[courseTier] || 0)) {
+        return courseObj;
+      }
+    }
+    // Check individual purchase
+    if (progress.purchased) return courseObj;
+  }
+  // Not enrolled or insufficient tier — return preview
+  return stripContent(courseObj);
+}
+/**
+ * Strip contentBlocks and assessment questions for preview mode.
+ * Keeps metadata, section titles, and sectionDivider blocks for nav rendering.
+ */
+function stripContent(courseObj) {
+  if (courseObj.sections) {
+    courseObj.sections = courseObj.sections.map(section => ({
+      title: section.title,
+      _id: section._id,
+      order: section.order,
+      contentBlocks: (section.contentBlocks || [])
+        .filter(block => block.type === 'sectionDivider')
+        .map(block => ({
+          type: block.type,
+          title: block.title,
+          subtitle: block.subtitle,
+          sectionNumber: block.sectionNumber
+        }))
+    }));
+  }
+  if (courseObj.assessment) {
+    courseObj.assessment = {
+      questionCount: courseObj.assessment.questions?.length || 0,
+      passingScore: courseObj.assessment.passingScore,
+      passThreshold: courseObj.assessment.passThreshold,
+      maxAttempts: courseObj.assessment.maxAttempts || courseObj.assessment.attemptsAllowed,
+      questions: []
+    };
+  }
+  delete courseObj.rawMarkdown;
+  courseObj._isPreview = true;
+  return courseObj;
 }
 
 // ============================================================================
@@ -256,7 +322,7 @@ router.get('/', async (req, res) => {
  * GET /api/interactive-courses/slug/:slug
  * Get full course details by slug
  */
-router.get('/slug/:slug', async (req, res) => {
+router.get('/slug/:slug', optionalAuth, async (req, res) => {
   try {
     const course = await findCourseByIdOrSlug(req.params.slug, req.tenantFilter);
 
@@ -264,7 +330,10 @@ router.get('/slug/:slug', async (req, res) => {
       return res.status(404).json({ success: false, error: 'Course not found' });
     }
 
-    res.json({ success: true, data: course });
+    // Content gating: check if user has access to full content
+    const courseObj = course.toObject ? course.toObject() : { ...course };
+    const gatedResponse = await gateContent(courseObj, req.user);
+    res.json({ success: true, data: gatedResponse });
   } catch (error) {
     console.error('Error fetching course:', error);
     res.status(500).json({ success: false, error: 'Failed to fetch course' });
@@ -275,7 +344,7 @@ router.get('/slug/:slug', async (req, res) => {
  * GET /api/interactive-courses/:id
  * Get full course details by ID
  */
-router.get('/:id', async (req, res) => {
+router.get('/:id', optionalAuth, async (req, res) => {
   try {
     const course = await findCourseByIdOrSlug(req.params.id, req.tenantFilter);
 
@@ -283,7 +352,10 @@ router.get('/:id', async (req, res) => {
       return res.status(404).json({ success: false, error: 'Course not found' });
     }
 
-    res.json({ success: true, data: course });
+    // Content gating: check if user has access to full content
+    const courseObj = course.toObject ? course.toObject() : { ...course };
+    const gatedResponse = await gateContent(courseObj, req.user);
+    res.json({ success: true, data: gatedResponse });
   } catch (error) {
     console.error('Error fetching course:', error);
     res.status(500).json({ success: false, error: 'Failed to fetch course' });
