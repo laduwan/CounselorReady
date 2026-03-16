@@ -12,7 +12,8 @@ import { protect } from '../middleware/auth.js';
 import { generateCertificate, generateCertificateNumber } from '../utils/certificate.js';
 import User from '../models/User.js';
 import Course from '../models/Course.js';
-import { CourseProgress } from '../models/InteractiveCourse.js';
+import { Course as InteractiveCourse, CourseProgress } from '../models/InteractiveCourse.js';
+import { logActivity, ACTIVITY_TYPES } from '../services/activityTrackingService.js';
 
 // Use native fetch (Node 18+) — no need for node-fetch
 
@@ -331,8 +332,11 @@ router.post('/generate/:courseId', protect, async (req, res) => {
       });
     }
 
-    // Get course and verify completion
-    const course = await Course.findById(courseId);
+    // Get course and verify completion (try both legacy and interactive models)
+    let course = await Course.findById(courseId);
+    if (!course) {
+      course = await InteractiveCourse.findById(courseId);
+    }
     if (!course) {
       return res.status(404).json({ success: false, error: 'Course not found' });
     }
@@ -417,6 +421,17 @@ router.post('/generate/:courseId', protect, async (req, res) => {
     progress.certificateIssuedAt = new Date();
     progress.status = 'certified';
     await progress.save();
+
+    // Notify admin of certificate generation
+    logActivity(ACTIVITY_TYPES.CERTIFICATE_GENERATED, {
+      courseName: course.title,
+      certificateNumber: certNumber,
+      ceHours: course.ceHours || course.ceuHours || 0
+    }, {
+      userId,
+      userName: holderName,
+      userEmail: user?.email || ''
+    }).catch(() => {});
 
     res.json({
       success: true,
