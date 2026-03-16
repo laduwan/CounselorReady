@@ -506,7 +506,36 @@ router.post(['/:id/progress/assessment', '/:id/assessment'], ...protectAndScope,
     const { answers, timeUsed, questionOrder } = req.body;
 
     const course = await findCourseByIdOrSlug(req.params.id, req.tenantFilter);
-    if (!course || !course.assessment) {
+    if (!course) {
+      return res.status(404).json({ success: false, error: 'Course not found' });
+    }
+    // Normalize: extract assessment from inline isExam quiz blocks if top-level is empty
+    if (!course.assessment || !course.assessment.questions || course.assessment.questions.length === 0) {
+      const inlineQuestions = [];
+      let inlineSettings = {};
+      const sections = course.sections || course.modules || [];
+      for (const section of sections) {
+        const blocks = section.contentBlocks || section.blocks || section.lessons || [];
+        for (const block of blocks) {
+          if ((block.type === 'quiz' || block.type === 'knowledgeCheck') && block.isExam) {
+            if (block.questions) inlineQuestions.push(...block.questions);
+            if (block.passingScore) inlineSettings.passingScore = block.passingScore;
+            if (block.passThreshold) inlineSettings.passThreshold = block.passThreshold;
+            if (block.maxAttempts) inlineSettings.maxAttempts = block.maxAttempts;
+          }
+        }
+      }
+      if (inlineQuestions.length > 0) {
+        course.assessment = {
+          questions: inlineQuestions,
+          passingScore: inlineSettings.passingScore || course.assessment?.passingScore || 80,
+          passThreshold: inlineSettings.passThreshold || course.assessment?.passThreshold || 0.8,
+          maxAttempts: inlineSettings.maxAttempts || course.assessment?.maxAttempts || 3,
+          attemptsAllowed: inlineSettings.maxAttempts || course.assessment?.attemptsAllowed || 3
+        };
+      }
+    }
+    if (!course.assessment || !course.assessment.questions || course.assessment.questions.length === 0) {
       return res.status(404).json({ success: false, error: 'Assessment not found' });
     }
 
