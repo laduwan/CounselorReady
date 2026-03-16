@@ -12,7 +12,7 @@ import { protect } from '../middleware/auth.js';
 import { generateCertificate, generateCertificateNumber } from '../utils/certificate.js';
 import User from '../models/User.js';
 import Course from '../models/Course.js';
-import { CourseProgress } from '../models/InteractiveCourse.js';
+import { Course as InteractiveCourse, CourseProgress } from '../models/InteractiveCourse.js';
 
 // Use native fetch (Node 18+) — no need for node-fetch
 
@@ -331,8 +331,11 @@ router.post('/generate/:courseId', protect, async (req, res) => {
       });
     }
 
-    // Get course and verify completion
-    const course = await Course.findById(courseId);
+    // Get course and verify completion (try both legacy and interactive models)
+    let course = await Course.findById(courseId);
+    if (!course) {
+      course = await InteractiveCourse.findById(courseId);
+    }
     if (!course) {
       return res.status(404).json({ success: false, error: 'Course not found' });
     }
