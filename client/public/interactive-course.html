@@ -1618,6 +1618,81 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
   .cr-highlight { background: none !important; border-bottom: 1px solid #999; }
   .cr-accordion-body { max-height: none !important; padding: 12px 0 !important; }
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   AUTH / ENROLLMENT GATE OVERLAYS
+   ═══════════════════════════════════════════════════════════════ */
+.cr-gate {
+  display: none;
+  position: fixed; inset: 0; z-index: 9999;
+  background: rgba(43, 43, 43, 0.85);
+  backdrop-filter: blur(6px);
+  align-items: center; justify-content: center;
+}
+.cr-gate.visible { display: flex; }
+.cr-gate-card {
+  background: var(--cr-surface);
+  border-radius: 16px;
+  padding: 40px;
+  max-width: 420px; width: 90%;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+}
+.cr-gate-card h2 {
+  font-family: var(--cr-font-display);
+  font-size: 1.6em; font-weight: 700;
+  color: var(--cr-burgundy);
+  margin-bottom: 12px;
+}
+.cr-gate-card p {
+  color: var(--cr-text-secondary);
+  margin-bottom: 24px;
+  line-height: 1.5;
+}
+.cr-gate-card .cr-btn { width: 100%; margin-bottom: 10px; padding: 14px; font-size: 1em; }
+.cr-gate-card .cr-gate-secondary {
+  display: inline-block; margin-top: 8px;
+  color: var(--cr-text-muted); font-size: 0.85em;
+  text-decoration: underline; cursor: pointer;
+}
+.cr-gate-card .cr-gate-secondary:hover { color: var(--cr-burgundy); }
+.cr-eval-form { text-align: left; }
+.cr-eval-question { margin-bottom: 20px; }
+.cr-eval-question label { display: block; font-weight: 700; color: var(--cr-text); margin-bottom: 8px; font-size: 0.95em; }
+.cr-eval-question .cr-eval-required { color: var(--cr-burgundy); margin-left: 4px; }
+.cr-eval-stars { display: flex; gap: 6px; }
+.cr-eval-stars input[type="radio"] { display: none; }
+.cr-eval-stars label.cr-eval-star {
+  font-size: 1.6em; cursor: pointer; color: var(--cr-border);
+  transition: color 0.15s; font-weight: 400; margin: 0;
+}
+.cr-eval-stars label.cr-eval-star.active { color: var(--cr-gold); }
+.cr-eval-stars label.cr-eval-star:hover { color: var(--cr-gold-light); }
+.cr-eval-form textarea {
+  width: 100%; padding: 12px; border: 1px solid var(--cr-border);
+  border-radius: 8px; font-family: var(--cr-font-body);
+  font-size: 0.9em; resize: vertical; min-height: 80px;
+}
+.cr-attestation-box {
+  background: var(--cr-stone); border: 1px solid var(--cr-border);
+  border-radius: var(--cr-radius); padding: 20px;
+  text-align: left; margin-bottom: 20px;
+  font-size: 0.9em; line-height: 1.6;
+  color: var(--cr-text-secondary);
+}
+.cr-attestation-check {
+  display: flex; align-items: flex-start; gap: 12px;
+  margin: 20px 0; text-align: left; cursor: pointer;
+}
+.cr-attestation-check input { margin-top: 4px; width: 20px; height: 20px; accent-color: var(--cr-burgundy); }
+.cr-cert-display { text-align: center; }
+.cr-cert-display .cr-cert-icon {
+  width: 72px; height: 72px; margin: 0 auto 20px;
+  background: var(--cr-green-faded); border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 32px;
+}
+.cr-cert-actions { display: flex; gap: 12px; justify-content: center; margin-top: 24px; flex-wrap: wrap; }
 </style>
 <!-- .docx parsing -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
@@ -1650,6 +1725,34 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
 
 <!-- Reading Guide -->
 <div class="cr-reading-guide" id="crReadingGuide"></div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     AUTH / ENROLLMENT GATES
+     ═══════════════════════════════════════════════════════════════ -->
+<div id="crGateLogin" class="cr-gate" role="dialog" aria-modal="true" aria-label="Login required">
+  <div class="cr-gate-card">
+    <h2>Sign In to Continue</h2>
+    <p>You need a CounselorReady account to access this course and earn CE credits.</p>
+    <button class="cr-btn cr-btn-primary" onclick="crGateRedirectLogin()">Sign In</button>
+    <button class="cr-btn" style="background:var(--cr-green);color:#fff" onclick="crGateRedirectRegister()">Create Free Account</button>
+    <span class="cr-gate-secondary" onclick="crGateDismiss()">Browse course preview</span>
+  </div>
+</div>
+<div id="crGateSubscription" class="cr-gate" role="dialog" aria-modal="true" aria-label="Subscription required">
+  <div class="cr-gate-card">
+    <h2>Subscription Required</h2>
+    <p>This course requires an active subscription. Upgrade to access all courses and earn CE credits.</p>
+    <button class="cr-btn cr-btn-primary" onclick="window.location.href='/subscription.html'">View Plans</button>
+    <span class="cr-gate-secondary" onclick="window.location.href='/courses.html'">Back to Courses</span>
+  </div>
+</div>
+<div id="crGateEnrolled" class="cr-gate" role="dialog" aria-label="Enrolled">
+  <div class="cr-gate-card">
+    <h2>You're Enrolled!</h2>
+    <p id="crGateEnrolledMsg">You've been enrolled in this course. Your progress will be saved automatically.</p>
+    <button class="cr-btn cr-btn-primary" onclick="document.getElementById('crGateEnrolled').classList.remove('visible')">Start Learning</button>
+  </div>
+</div>
 
 <!-- ═══════════════════════════════════════════════════════════════
      LOADING STATE
@@ -1959,24 +2062,82 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
 let course = null;
 let currentSectionIndex = 0;
 let completedSections = new Set();
-let visitedSections = new Set([0]); // First section always visited
-let currentView = 'section'; // 'section' | 'assessment'
+let visitedSections = new Set([0]);
+let currentView = 'section';
 let assessmentState = { answers: {}, submitted: false, score: null, attempts: 0 };
 let ttsActive = false;
 let ttsUtterance = null;
-let adaptiveUnlockedSections = new Set(); // Sections unlocked via adaptive learning rules
-let crApiBase = ''; // Set during course load for API calls
+// Auth & enrollment state
+let authToken = null;
+let authUser = null;
+let enrollmentData = null;
+let courseId = null;
+let isPreviewMode = false;
+let progressSyncQueue = [];
+let isSyncing = false;
+const API_BASE = location.origin.includes('localhost') ? 'http://localhost:5000' : 'https://api.counselorready.com';
+let adaptiveUnlockedSections = new Set();
+let crApiBase = '';
 
-// ── API helper for quiz/assessment endpoints ──
+// ── API helper for quiz/assessment endpoints (legacy) ──
 function crApiFetch(path, body, method) {
-  const base = crApiBase || (location.origin.includes('localhost') ? 'http://localhost:5000' : 'https://api.counselorready.com');
-  const token = localStorage.getItem('token');
+  const base = crApiBase || API_BASE;
+  const token = authToken || localStorage.getItem('token');
   if (!token) return Promise.reject(new Error('Not authenticated'));
   return fetch(`${base}${path}`, {
     method: method || 'POST',
     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
     body: JSON.stringify(body)
   }).then(r => r.json().then(data => ({ ok: r.ok, status: r.status, data })));
+}
+
+// ═══════════════════════════════════════════════════════════════
+// API HELPERS
+// ═══════════════════════════════════════════════════════════════
+async function crApi(method, path, body) {
+  const headers = { 'Content-Type': 'application/json' };
+  if (authToken) headers['Authorization'] = 'Bearer ' + authToken;
+  const opts = { method, headers };
+  if (body && method !== 'GET') opts.body = JSON.stringify(body);
+  const res = await fetch(API_BASE + path, opts);
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    const err = new Error(data.error || data.message || 'API error');
+    err.status = res.status;
+    err.code = data.code;
+    throw err;
+  }
+  return data;
+}
+function queueProgressSync(method, path, body) {
+  if (isPreviewMode || !authToken || !courseId) return;
+  progressSyncQueue.push({ method, path, body });
+  drainSyncQueue();
+}
+async function drainSyncQueue() {
+  if (isSyncing || progressSyncQueue.length === 0) return;
+  isSyncing = true;
+  while (progressSyncQueue.length > 0) {
+    const { method, path, body } = progressSyncQueue.shift();
+    try { await crApi(method, path, body); }
+    catch (e) { console.warn('Progress sync failed:', e.message); }
+  }
+  isSyncing = false;
+}
+// ═══════════════════════════════════════════════════════════════
+// AUTH GATE HELPERS
+// ═══════════════════════════════════════════════════════════════
+function crGateRedirectLogin() {
+  const returnUrl = encodeURIComponent(window.location.href);
+  window.location.href = '/login.html?redirect=' + returnUrl;
+}
+function crGateRedirectRegister() {
+  const returnUrl = encodeURIComponent(window.location.href);
+  window.location.href = '/register.html?redirect=' + returnUrl;
+}
+function crGateDismiss() {
+  document.getElementById('crGateLogin').classList.remove('visible');
+  isPreviewMode = true;
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -2123,75 +2284,124 @@ function applyChunkedMode() {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// INITIALIZATION
+// INITIALIZATION (with auth + enrollment gate)
 // ═══════════════════════════════════════════════════════════════
-(function init() {
-  // Check for course data sources
-  // 1. window.COURSE_DATA (inline)
+(async function init() {
+  // 1. window.COURSE_DATA (inline/embedded — skip auth)
   if (window.COURSE_DATA) {
+    isPreviewMode = true;
     loadCourse(window.COURSE_DATA);
     return;
   }
-  
-  // 2. URL params: ?json=URL or ?slug=SLUG or ?api=BASE_URL&slug=SLUG
   const params = new URLSearchParams(location.search);
   const jsonUrl = params.get('json');
   const slug = params.get('slug');
   const apiBase = params.get('api') || '';
-  
+  // JSON URL source — preview mode
   if (jsonUrl) {
-    fetch(jsonUrl).then(r => r.json()).then(data => loadCourse(data.data || data))
-      .catch(e => showError('Failed to load course: ' + e.message));
+    isPreviewMode = true;
+    try {
+      const r = await fetch(jsonUrl);
+      const data = await r.json();
+      loadCourse(data.data || data);
+    } catch (e) { showError('Failed to load course: ' + e.message); }
     return;
   }
-  
+  // Slug-based load — main user path
   if (slug) {
-    const base = apiBase || (location.origin.includes('localhost') ? 'http://localhost:5000' : 'https://api.counselorready.com');
-    crApiBase = base; // Store for quiz/assessment API calls
-    const token = localStorage.getItem('token');
-
-    // Auth required for platform courses
-    if (!token && !apiBase) {
-      window.location.href = `/login.html?redirect=${encodeURIComponent(window.location.href)}`;
+    const base = apiBase || API_BASE;
+    crApiBase = base;
+    // Step A: Check auth
+    authToken = localStorage.getItem('token');
+    if (authToken) {
+      try {
+        const meRes = await crApi('GET', '/api/auth/me');
+        authUser = meRes.user || meRes;
+      } catch (e) {
+        authToken = null;
+        localStorage.removeItem('token');
+      }
+    }
+    // Step B: Fetch course
+    let courseData;
+    try {
+      const headers = {};
+      if (authToken) headers['Authorization'] = 'Bearer ' + authToken;
+      const res = await fetch(base + '/api/interactive-courses/slug/' + slug, { headers });
+      const json = await res.json();
+      courseData = json.data || json.course || json;
+    } catch (e) {
+      showError('Course not found: ' + slug);
       return;
     }
-    
-    const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
-    
-    fetch(`${base}/api/interactive-courses/slug/${slug}`, { headers })
-      .then(r => {
-        if (r.status === 401) {
-          window.location.href = `/login.html?redirect=${encodeURIComponent(window.location.href)}`;
-          throw new Error('auth');
+    if (!courseData || !courseData._id) {
+      showError('Course not found: ' + slug);
+      return;
+    }
+    courseId = courseData._id;
+    // Step C: No auth — show login gate, allow preview
+    if (!authToken) {
+      document.getElementById('crGateLogin').classList.add('visible');
+      isPreviewMode = true;
+      loadCourse(courseData);
+      return;
+    }
+    // Step D: Check enrollment + restore progress
+    try {
+      const progress = await crApi('GET', '/api/interactive-courses/' + courseId + '/progress');
+      enrollmentData = progress;
+      if (progress.sectionsCompleted && progress.sectionsCompleted.length > 0) {
+        completedSections = new Set(progress.sectionsCompleted);
+      }
+      if (typeof progress.lastSectionViewed === 'number') {
+        currentSectionIndex = progress.lastSectionViewed;
+      }
+      if (progress.assessmentAttempts && progress.assessmentAttempts.length > 0) {
+        assessmentState.attempts = progress.assessmentAttempts.length;
+        const lastAttempt = progress.assessmentAttempts[progress.assessmentAttempts.length - 1];
+        if (lastAttempt.passed) {
+          assessmentState.submitted = true;
+          assessmentState.score = lastAttempt.score;
         }
-        return r.json();
-      })
-      .then(data => {
-        var courseData = data.data || data.course || data;
-        // If main API didn't return rawMarkdown, try fallback route
-        if (!courseData.rawMarkdown) {
-          fetch(`${base}/api/rawmd/${slug}`, { headers })
-            .then(r => r.ok ? r.json() : { rawMarkdown: null })
-            .then(md => {
-              if (md && md.rawMarkdown) courseData.rawMarkdown = md.rawMarkdown;
-              loadCourse(courseData);
-            })
-            .catch(() => loadCourse(courseData));
-        } else {
+      }
+      if (progress.visitedSections && progress.visitedSections.length > 0) {
+        visitedSections = new Set(progress.visitedSections);
+      }
+      loadCourse(courseData);
+      return;
+    } catch (e) {
+      if (e.status === 404 || e.status === 401) {
+        try {
+          const enrollRes = await crApi('POST', '/api/interactive-courses/' + courseId + '/enroll');
+          enrollmentData = enrollRes;
+          document.getElementById('crGateEnrolledMsg').textContent =
+            'You\'ve been enrolled in "' + (courseData.title || 'this course') + '". Your progress will be saved automatically.';
+          document.getElementById('crGateEnrolled').classList.add('visible');
           loadCourse(courseData);
+          return;
+        } catch (enrollErr) {
+          if (enrollErr.code === 'SUBSCRIPTION_REQUIRED' || enrollErr.status === 403) {
+            document.getElementById('crGateSubscription').classList.add('visible');
+            document.getElementById('crLoading').style.display = 'none';
+            return;
+          }
+          isPreviewMode = true;
+          loadCourse(courseData);
+          return;
         }
-      })
-      .catch(e => { if (e.message !== 'auth') showError('Course not found: ' + slug); });
-    return;
+      }
+      isPreviewMode = true;
+      loadCourse(courseData);
+      return;
+    }
   }
-  
-  // 3. postMessage (for iframe embedding)
+  // 3. postMessage (iframe embedding)
   window.addEventListener('message', (e) => {
     if (e.data && e.data.type === 'LOAD_COURSE') {
+      isPreviewMode = true;
       loadCourse(e.data.course);
     }
   });
-  
   // 4. No source — show parser
   document.getElementById('crLoading').style.display = 'none';
   showParser();
@@ -2626,32 +2836,17 @@ function detectModuleGroups() {
 }
 
 function goToSection(i) {
-  if (currentView === 'assessment') currentView = 'section';
-  syncSectionProgress(currentSectionIndex);
+  if (currentView === 'assessment' || currentView === 'evaluation' || currentView === 'attestation' || currentView === 'certificate') currentView = 'section';
   completedSections.add(currentSectionIndex);
   visitedSections.add(i);
   currentSectionIndex = i;
   buildSectionNav();
   renderCurrentSection();
   updateProgress();
+  syncSectionComplete(currentSectionIndex);
   closeSidebar();
   window.scrollTo({ top: 0, behavior: 'smooth' });
   srAnnounce('Now viewing: ' + (course.sections[i]?.title || 'Section ' + (i + 1)));
-}
-
-// Sync section progress to server (fire-and-forget)
-function syncSectionProgress(sectionIdx) {
-  if (!course?.slug || !localStorage.getItem('token')) return;
-  const section = course.sections[sectionIdx];
-  if (!section) return;
-  const totalBlocks = section.contentBlocks?.length || 0;
-  // Report all blocks as viewed (user navigated through the section)
-  const allBlockIndices = Array.from({ length: totalBlocks }, (_, i) => i);
-  crApiFetch(
-    `/api/interactive-courses/${course.slug}/progress/section/${sectionIdx}`,
-    { viewedBlocks: allBlockIndices, status: 'completed' },
-    'PUT'
-  ).catch(() => { /* non-critical: progress saved locally too */ });
 }
 
 function scrollToH2(sectionIdx, headingText) {
@@ -2686,13 +2881,16 @@ function scrollToH2(sectionIdx, headingText) {
 }
 
 function prevSection() {
-  if (currentView === 'assessment') { currentView = 'section'; renderCurrentSection(); return; }
+  if (currentView === 'assessment' || currentView === 'evaluation' || currentView === 'attestation' || currentView === 'certificate') {
+    currentView = 'section'; renderCurrentSection(); return;
+  }
   if (currentSectionIndex > 0) goToSection(currentSectionIndex - 1);
 }
 
 function nextSection() {
   if (currentView === 'assessment') return;
   completedSections.add(currentSectionIndex);
+  syncSectionComplete(currentSectionIndex);
   if (currentSectionIndex < course.sections.length - 1) {
     goToSection(currentSectionIndex + 1);
   } else if (course.assessment?.questions?.length > 0) {
@@ -2701,31 +2899,22 @@ function nextSection() {
 }
 
 function showAssessment() {
-  // Assessment lock — if enabled, require all sections visited first
-  if (course.settings?.lockAssessment !== false) {
-    // Default: locked. Set course.settings.lockAssessment = false to unlock
-    const navSections = course.sections.filter(s => !s._isOverview);
-    const allVisited = navSections.every((s, i) => {
-      const realIdx = course.sections.indexOf(s);
-      return visitedSections.has(realIdx) || completedSections.has(realIdx);
-    });
-    if (!allVisited) {
-      const visited = navSections.filter((s, i) => {
-        const realIdx = course.sections.indexOf(s);
-        return visitedSections.has(realIdx) || completedSections.has(realIdx);
-      }).length;
-      alert('Please complete all course sections before taking the assessment.\n\n' +
-        visited + ' of ' + navSections.length + ' sections visited.');
-      return;
-    }
-  }
   currentView = 'assessment';
-  syncSectionProgress(currentSectionIndex);
   completedSections.add(currentSectionIndex);
+  syncSectionComplete(currentSectionIndex);
   renderAssessment();
   updateProgress();
   buildSectionNav();
   window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+function syncSectionComplete(sectionIndex) {
+  if (!courseId) return;
+  queueProgressSync('PUT', '/api/interactive-courses/' + courseId + '/progress/section/' + sectionIndex, {
+    completed: true,
+    visitedSections: [...visitedSections],
+    completedSections: [...completedSections],
+    lastSectionViewed: currentSectionIndex
+  });
 }
 
 function updateProgress() {
@@ -4001,67 +4190,10 @@ function assessmentSelect(qIdx, optIdx) {
   renderAssessment();
 }
 
-function submitAssessment() {
-  const qs = course.assessment.questions;
-
-  // Try server-side scoring first (enforces attempt limits, score policy)
-  if (course.slug && localStorage.getItem('token')) {
-    const submitBtn = document.querySelector('[data-action="submitAssessment"]');
-    if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Submitting...'; }
-
-    // Convert answers object {qIdx: optIdx} to array format server expects
-    const answersArray = Object.entries(assessmentState.answers).map(([qIdx, optIdx]) => {
-      const q = qs[parseInt(qIdx)];
-      if (q && (q.type === 'multiSelect' || q.type === 'multiple_select')) {
-        return { questionIndex: parseInt(qIdx), selectedOptions: Array.isArray(optIdx) ? optIdx : [optIdx] };
-      }
-      return { questionIndex: parseInt(qIdx), selectedOption: optIdx };
-    });
-
-    crApiFetch(`/api/interactive-courses/${course.slug}/assessment`, {
-      answers: answersArray,
-      timeUsed: 0
-    }).then(({ ok, data }) => {
-      if (!ok) {
-        // Server rejected — show error (e.g. no attempts remaining)
-        showErrorModal(data.error || data.data?.error || 'Assessment submission failed.');
-        if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Submit Assessment'; }
-        return;
-      }
-      // Unwrap server response — server returns { success, data: { score, passed, ... } }
-      const result = data.data || data;
-      assessmentState.submitted = true;
-      assessmentState.score = result.percentage || result.score;
-      assessmentState.attempts = (result.attemptsRemaining !== undefined)
-        ? (course.assessment?.maxAttempts || 3) - result.attemptsRemaining
-        : assessmentState.attempts + 1;
-      assessmentState.serverData = result; // Store for result display
-      renderAssessmentResult();
-
-      // Notify parent
-      if (window.parent !== window) {
-        window.parent.postMessage({
-          type: 'ASSESSMENT_COMPLETE',
-          score: data.percentage,
-          passed: data.passed,
-          attempts: assessmentState.attempts
-        }, '*');
-      }
-    }).catch(() => {
-      // Network error — fall back to client-side scoring
-      submitAssessmentClientSide();
-    });
-    return;
-  }
-
-  // Fallback: client-side scoring (offline / file-loaded courses)
-  submitAssessmentClientSide();
-}
-
-function submitAssessmentClientSide() {
+async function submitAssessment() {
   const qs = course.assessment.questions;
   let correct = 0;
-
+  const answersForServer = [];
   qs.forEach((q, i) => {
     let correctIdx = 0;
     if (typeof q.correctAnswer === 'number') correctIdx = q.correctAnswer;
@@ -4070,20 +4202,34 @@ function submitAssessmentClientSide() {
       if (idx >= 0) correctIdx = idx;
     }
     if (assessmentState.answers[i] === correctIdx) correct++;
+    answersForServer.push({
+      questionIndex: i,
+      selectedOption: assessmentState.answers[i],
+      correct: assessmentState.answers[i] === correctIdx
+    });
   });
-
   const score = Math.round((correct / qs.length) * 100);
+  const passed = score >= (course.assessment.passingScore || 80);
   assessmentState.submitted = true;
   assessmentState.score = score;
   assessmentState.attempts++;
-
+  if (courseId && authToken && !isPreviewMode) {
+    try {
+      const result = await crApi('POST', '/api/interactive-courses/' + courseId + '/assessment', {
+        answers: answersForServer, score, passed,
+        attempt: assessmentState.attempts, timeSpent: 0
+      });
+      if (result.attemptsRemaining !== undefined) {
+        assessmentState.serverAttemptsRemaining = result.attemptsRemaining;
+      }
+    } catch (e) {
+      console.warn('Failed to save assessment to server:', e.message);
+    }
+  }
   renderAssessmentResult();
-
   if (window.parent !== window) {
     window.parent.postMessage({
-      type: 'ASSESSMENT_COMPLETE',
-      score,
-      passed: score >= (course.assessment.passingScore || 80),
+      type: 'ASSESSMENT_COMPLETE', score, passed,
       attempts: assessmentState.attempts
     }, '*');
   }
@@ -4092,48 +4238,197 @@ function submitAssessmentClientSide() {
 function renderAssessmentResult() {
   const area = document.getElementById('crContentArea');
   const score = assessmentState.score;
-  const passing = course.assessment?.passingScore || course.assessment?.passThreshold ? Math.round((course.assessment.passThreshold || 0.8) * 100) : 80;
+  const passing = course.assessment?.passingScore || 80;
   const passed = score >= passing;
-  const maxAttempts = course.assessment?.maxAttempts || course.assessment?.attemptsAllowed || 3;
-  const sd = assessmentState.serverData;
-  const attemptsRemaining = sd?.attemptsRemaining ?? (maxAttempts - assessmentState.attempts);
-
-  let html = `<div class="cr-assessment-result ${passed ? 'passed' : 'failed'}">
-    <h3>${passed ? '🎉 Congratulations!' : '📝 Not Quite'}</h3>
-    <div class="score">${score}%</div>
-    <p style="color:var(--cr-text-secondary);margin-top:12px">
-      ${passed ? 'You have passed the assessment.' : `You needed ${passing}% to pass.`}
-    </p>
-    <p style="font-size:0.85em;color:var(--cr-text-muted);margin-top:8px">
-      ${attemptsRemaining > 0 ? `${attemptsRemaining} attempt(s) remaining` : 'No attempts remaining'}
-    </p>`;
-
-  if (sd?.bestScore) {
-    html += `<p style="font-size:0.85em;color:var(--cr-text-muted);margin-top:4px">Best score: ${sd.bestScore}/${sd.totalQuestions}</p>`;
+  const maxAttempts = course.assessment?.maxAttempts || 3;
+  let html = '<div class="cr-assessment-result ' + (passed ? 'passed' : 'failed') + '">';
+  html += '<h3>' + (passed ? '🎉 Congratulations!' : '📝 Not Quite') + '</h3>';
+  html += '<div class="score">' + score + '%</div>';
+  html += '<p style="color:var(--cr-text-secondary);margin-top:12px">' + (passed ? 'You have passed the assessment.' : 'You needed ' + passing + '% to pass.') + '</p>';
+  html += '<p style="font-size:0.85em;color:var(--cr-text-muted);margin-top:8px">Attempt ' + assessmentState.attempts + ' of ' + maxAttempts + '</p>';
+  if (!passed && assessmentState.attempts < maxAttempts) {
+    html += '<button class="cr-btn cr-btn-primary" style="margin-top:20px" data-action="retryAssessment">Try Again</button>';
   }
-
-  if (!passed && attemptsRemaining > 0) {
-    html += `<button class="cr-btn cr-btn-primary" style="margin-top:20px" data-action="retryAssessment">Try Again</button>`;
-  }
-
   if (passed) {
-    html += `<button class="cr-btn cr-btn-success" style="margin-top:20px" data-action="showEvaluation">
-      Continue to Evaluation
-    </button>`;
+    if (isPreviewMode || !authToken) {
+      html += '<p style="margin-top:20px;color:var(--cr-text-muted);font-size:0.9em">Sign in to complete the evaluation and receive your certificate.</p>';
+      html += '<button class="cr-btn cr-btn-primary" style="margin-top:12px" onclick="crGateRedirectLogin()">Sign In</button>';
+    } else {
+      html += '<button class="cr-btn cr-btn-success" style="margin-top:20px" data-action="showEvaluation">Continue to Course Evaluation</button>';
+    }
   }
-
   html += '<div style="margin-top:24px;font-size:10px;color:var(--cr-text-muted);text-align:center">Powered by CReady™ Viewer · © 2026 GAITP LLC · NBCC ACEP #7760</div>';
   html += '</div>';
   area.innerHTML = html;
   document.getElementById('crNavButtons').style.display = 'none';
 }
-
 function retryAssessment() {
   assessmentState.submitted = false;
   assessmentState.answers = {};
   assessmentState.score = null;
-  assessmentState.serverData = null;
   renderAssessment();
+}
+// ═══════════════════════════════════════════════════════════════
+// NBCC ACEP COMPLETION FLOW: Evaluation → Attestation → Certificate
+// ═══════════════════════════════════════════════════════════════
+function showEvaluation() {
+  currentView = 'evaluation';
+  const area = document.getElementById('crContentArea');
+  document.getElementById('crNavButtons').style.display = 'none';
+  const evalQuestions = [
+    { id: 'relevance', text: 'The course content was relevant to my professional practice.', type: 'rating', required: true },
+    { id: 'objectives', text: 'The learning objectives were clearly stated and met.', type: 'rating', required: true },
+    { id: 'materials', text: 'The course materials were well-organized and easy to follow.', type: 'rating', required: true },
+    { id: 'assessment', text: 'The assessment accurately measured my learning.', type: 'rating', required: true },
+    { id: 'apply', text: 'I can apply the skills learned in this course to my practice.', type: 'rating', required: true },
+    { id: 'presenter', text: 'The presenter demonstrated expertise in the subject matter.', type: 'rating', required: true },
+    { id: 'valuable', text: 'What was the most valuable aspect of this course?', type: 'textarea', required: false },
+    { id: 'improve', text: 'What would you suggest to improve this course?', type: 'textarea', required: false }
+  ];
+  let html = '<div style="max-width:640px;margin:0 auto;padding:32px 0">';
+  html += '<h2 style="font-family:var(--cr-font-display);font-size:1.8em;font-weight:700;color:var(--cr-burgundy);text-align:center;margin-bottom:8px">Course Evaluation</h2>';
+  html += '<p style="text-align:center;color:var(--cr-text-secondary);margin-bottom:32px">This evaluation is required by NBCC for CE credit. Please rate your experience.</p>';
+  html += '<div class="cr-eval-form">';
+  evalQuestions.forEach(q => {
+    html += '<div class="cr-eval-question" data-eval-id="' + q.id + '" data-eval-required="' + q.required + '">';
+    html += '<label>' + q.text + (q.required ? '<span class="cr-eval-required">*</span>' : '') + '</label>';
+    if (q.type === 'rating') {
+      html += '<div class="cr-eval-stars">';
+      for (let s = 1; s <= 5; s++) {
+        html += '<input type="radio" name="eval-' + q.id + '" id="eval-' + q.id + '-' + s + '" value="' + s + '">';
+        html += '<label class="cr-eval-star" for="eval-' + q.id + '-' + s + '" onclick="crEvalStar(this, ' + s + ')">&#9733;</label>';
+      }
+      html += '</div>';
+    } else {
+      html += '<textarea id="eval-' + q.id + '" placeholder="Optional feedback..." rows="3"></textarea>';
+    }
+    html += '</div>';
+  });
+  html += '</div>';
+  html += '<button class="cr-btn cr-btn-primary" style="width:100%;margin-top:24px;padding:14px" data-action="submitEvaluation">Submit Evaluation</button>';
+  html += '<div style="margin-top:24px;font-size:10px;color:var(--cr-text-muted);text-align:center">NBCC ACEP Provider #7760 · Required for CE credit</div>';
+  html += '</div>';
+  area.innerHTML = html;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+function crEvalStar(el, rating) {
+  const container = el.parentElement;
+  container.querySelectorAll('.cr-eval-star').forEach((star, i) => {
+    star.classList.toggle('active', i < rating);
+  });
+}
+async function submitEvaluation() {
+  const responses = {};
+  let valid = true;
+  document.querySelectorAll('.cr-eval-question').forEach(q => {
+    const id = q.dataset.evalId;
+    const required = q.dataset.evalRequired === 'true';
+    const radio = q.querySelector('input[type="radio"]:checked');
+    const textarea = q.querySelector('textarea');
+    if (radio) responses[id] = parseInt(radio.value);
+    else if (textarea) responses[id] = textarea.value;
+    else responses[id] = null;
+    if (required && !responses[id]) valid = false;
+  });
+  if (!valid) {
+    alert('Please complete all required fields (marked with *).');
+    return;
+  }
+  if (courseId && authToken) {
+    try {
+      await crApi('POST', '/api/interactive-courses/' + courseId + '/evaluation', { responses });
+    } catch (e) {
+      console.warn('Failed to save evaluation:', e.message);
+      alert('Failed to submit evaluation. Please try again.');
+      return;
+    }
+  }
+  showAttestation();
+}
+function showAttestation() {
+  currentView = 'attestation';
+  const area = document.getElementById('crContentArea');
+  document.getElementById('crNavButtons').style.display = 'none';
+  const courseTitleSafe = (course.title || 'this course').replace(/</g, '&lt;');
+  const ceHours = course.ceHours || course.ceuHours || 1;
+  let html = '<div style="max-width:640px;margin:0 auto;padding:32px 0">';
+  html += '<h2 style="font-family:var(--cr-font-display);font-size:1.8em;font-weight:700;color:var(--cr-burgundy);text-align:center;margin-bottom:8px">Attestation</h2>';
+  html += '<p style="text-align:center;color:var(--cr-text-secondary);margin-bottom:24px">Please read and confirm the following statement to receive your certificate.</p>';
+  html += '<div class="cr-attestation-box">';
+  html += '<p><strong>Attestation of Completion</strong></p>';
+  html += '<p>I, <strong>' + (authUser?.firstName || '') + ' ' + (authUser?.lastName || '') + '</strong>, hereby attest that:</p>';
+  html += '<p>I have personally completed all components of <em>"' + courseTitleSafe + '"</em> (' + ceHours + ' CE hours), including reading all course materials, completing all interactive activities, and passing the final assessment.</p>';
+  html += '<p>I understand that this continuing education activity was provided by GAITP LLC (NBCC ACEP Provider #7760) and that ' + ceHours + ' continuing education hour(s) will be awarded upon completion.</p>';
+  html += '<p>I understand that falsifying this attestation may result in revocation of CE credits.</p>';
+  html += '</div>';
+  html += '<label class="cr-attestation-check">';
+  html += '<input type="checkbox" id="crAttestCheckbox" onchange="document.getElementById(\'crAttestBtn\').disabled = !this.checked">';
+  html += '<span>I have read, understand, and agree to the above attestation statement.</span>';
+  html += '</label>';
+  html += '<button id="crAttestBtn" class="cr-btn cr-btn-primary" style="width:100%;padding:14px" disabled data-action="submitAttestation">Confirm &amp; Get Certificate</button>';
+  html += '<div style="margin-top:24px;font-size:10px;color:var(--cr-text-muted);text-align:center">NBCC ACEP Provider #7760</div>';
+  html += '</div>';
+  area.innerHTML = html;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+async function submitAttestation() {
+  const checkbox = document.getElementById('crAttestCheckbox');
+  if (!checkbox || !checkbox.checked) {
+    alert('Please agree to the attestation statement.');
+    return;
+  }
+  if (courseId && authToken) {
+    try {
+      await crApi('POST', '/api/interactive-courses/' + courseId + '/attestation', { agreed: true });
+    } catch (e) {
+      console.warn('Failed to save attestation:', e.message);
+      alert('Failed to submit attestation. Please try again.');
+      return;
+    }
+  }
+  showCertificateView();
+}
+async function showCertificateView() {
+  currentView = 'certificate';
+  const area = document.getElementById('crContentArea');
+  document.getElementById('crNavButtons').style.display = 'none';
+  area.innerHTML = '<div style="text-align:center;padding:60px 0"><div class="cr-spinner" style="margin:0 auto 16px"></div><p style="color:var(--cr-text-muted)">Generating your certificate…</p></div>';
+  let certUrl = null;
+  let certNumber = null;
+  if (courseId && authToken) {
+    try {
+      const certRes = await crApi('POST', '/api/interactive-courses/' + courseId + '/certificate');
+      certUrl = certRes.pdfUrl || certRes.url || certRes.certificateUrl;
+      certNumber = certRes.certificateNumber || certRes.number;
+    } catch (e) {
+      console.warn('Certificate generation failed:', e.message);
+    }
+  }
+  const ceHours = course.ceHours || course.ceuHours || 1;
+  const courseTitleSafe = (course.title || 'Course').replace(/</g, '&lt;');
+  let html = '<div class="cr-cert-display" style="padding:40px 0;max-width:540px;margin:0 auto">';
+  html += '<div class="cr-cert-icon">&#127942;</div>';
+  html += '<h2 style="font-family:var(--cr-font-display);font-size:2em;font-weight:700;color:var(--cr-burgundy);margin-bottom:8px">Course Complete!</h2>';
+  html += '<p style="color:var(--cr-text-secondary);margin-bottom:4px">Congratulations on completing</p>';
+  html += '<p style="font-weight:700;color:var(--cr-text);font-size:1.1em;margin-bottom:16px">' + courseTitleSafe + '</p>';
+  html += '<p style="color:var(--cr-text-muted);font-size:0.9em">' + ceHours + ' CE Hour' + (ceHours !== 1 ? 's' : '') + ' earned · NBCC ACEP #7760</p>';
+  if (certNumber) {
+    html += '<p style="color:var(--cr-text-muted);font-size:0.85em;margin-top:8px">Certificate #' + certNumber + '</p>';
+  }
+  html += '<div class="cr-cert-actions">';
+  if (certUrl) {
+    html += '<a href="' + certUrl + '" target="_blank" class="cr-btn cr-btn-primary" style="padding:12px 24px">Download Certificate (PDF)</a>';
+  } else {
+    html += '<p style="color:var(--cr-text-muted);font-size:0.9em">Your certificate will be available in your <a href="/certificates.html" style="color:var(--cr-burgundy)">Certificates</a> dashboard.</p>';
+  }
+  html += '<a href="/courses.html" class="cr-btn" style="background:var(--cr-stone);color:var(--cr-text);border:1px solid var(--cr-border);padding:12px 24px">Browse More Courses</a>';
+  html += '</div>';
+  html += '<div style="margin-top:32px;font-size:10px;color:var(--cr-text-muted);text-align:center">Powered by CReady™ Viewer · © 2026 GAITP LLC · NBCC ACEP #7760</div></div>';
+  area.innerHTML = html;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  if (window.parent !== window) {
+    window.parent.postMessage({ type: 'CERTIFICATE_ISSUED', certUrl, certNumber }, '*');
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -4256,243 +4551,6 @@ function showAdaptiveModal(message, targetSectionIndex) {
   }
   // Close on backdrop click
   modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
-}
-
-// ═══════════════════════════════════════════════════════════════
-// EVALUATION FLOW (required before certificate)
-// ═══════════════════════════════════════════════════════════════
-function showEvaluation() {
-  const area = document.getElementById('crContentArea');
-  const evalQuestions = [
-    { id: 'contentQuality', question: 'Rate the quality of the course content', type: 'rating', required: true },
-    { id: 'relevance', question: 'How relevant was this course to your practice?', type: 'rating', required: true },
-    { id: 'presentation', question: 'Rate the presentation and organization', type: 'rating', required: true },
-    { id: 'engagement', question: 'How engaging was the course material?', type: 'rating', required: true },
-    { id: 'learningObjectives', question: 'Were the learning objectives met?', type: 'rating', required: true },
-    { id: 'wouldRecommend', question: 'Would you recommend this course to a colleague?', type: 'yes_no', required: true },
-    { id: 'whatWorkedWell', question: 'What worked well in this course?', type: 'text', required: false },
-    { id: 'suggestions', question: 'What suggestions do you have for improvement?', type: 'text', required: false }
-  ];
-
-  let html = `<div style="max-width:640px;margin:0 auto;padding:24px 0">
-    <h3 style="font-family:var(--cr-font-display,Georgia,serif);font-size:1.3em;color:var(--cr-navy,#1a1a2e);margin-bottom:8px">Course Evaluation</h3>
-    <p style="color:var(--cr-text-secondary,#555);font-size:0.9em;margin-bottom:24px">Please take a moment to evaluate this course. Your feedback helps us improve.</p>
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px;padding:16px;background:var(--cr-bg-alt,#f8f8f8);border-radius:12px;font-size:0.85em">
-      <div><span style="color:var(--cr-text-muted,#999)">Course</span><p style="font-weight:600;margin-top:2px">${esc(course.title)}</p></div>
-      <div><span style="color:var(--cr-text-muted,#999)">Date</span><p style="font-weight:600;margin-top:2px">${new Date().toLocaleDateString()}</p></div>
-      <div><span style="color:var(--cr-text-muted,#999)">CE Hours</span><p style="font-weight:600;margin-top:2px">${course.ceHours || course.ceuHours || 1}</p></div>
-    </div>`;
-
-  evalQuestions.forEach((q, i) => {
-    html += `<div class="cr-eval-q" data-id="${q.id}" data-required="${q.required}" style="padding:16px 0;${i > 0 ? 'border-top:1px solid var(--cr-border,#e5e5e5);' : ''}">
-      <label style="font-weight:600;color:var(--cr-text,#333)">${esc(q.question)}${q.required ? ' <span style="color:var(--cr-burgundy,#8B2542)">*</span>' : ''}</label>`;
-
-    if (q.type === 'rating') {
-      html += `<div style="display:flex;gap:8px;margin-top:8px">`;
-      for (let n = 1; n <= 5; n++) {
-        html += `<label style="flex:1;cursor:pointer">
-          <input type="radio" name="eval_${q.id}" value="${n}" style="display:none" class="cr-eval-radio">
-          <div class="cr-rating-btn" data-name="eval_${q.id}" data-val="${n}" style="text-align:center;padding:10px;border:2px solid var(--cr-border,#ddd);border-radius:8px;transition:all 0.2s;font-size:1.1em">${n}</div>
-        </label>`;
-      }
-      html += `</div><div style="display:flex;justify-content:space-between;font-size:0.75em;color:var(--cr-text-muted,#999);margin-top:4px"><span>Poor</span><span>Excellent</span></div>`;
-    } else if (q.type === 'yes_no') {
-      html += `<div style="display:flex;gap:16px;margin-top:8px">
-        <label style="display:flex;align-items:center;gap:6px;cursor:pointer"><input type="radio" name="eval_${q.id}" value="yes" class="cr-eval-radio"> Yes</label>
-        <label style="display:flex;align-items:center;gap:6px;cursor:pointer"><input type="radio" name="eval_${q.id}" value="no" class="cr-eval-radio"> No</label>
-      </div>`;
-    } else {
-      html += `<textarea name="eval_${q.id}" rows="3" placeholder="Your feedback..." style="width:100%;margin-top:8px;padding:10px 12px;border:1px solid var(--cr-border,#ddd);border-radius:8px;font-family:inherit;font-size:0.9em;resize:vertical"></textarea>`;
-    }
-    html += `</div>`;
-  });
-
-  html += `<button class="cr-btn cr-btn-primary" style="margin-top:20px;width:100%" data-action="submitEvaluation">Submit Evaluation</button>
-    </div>`;
-  area.innerHTML = html;
-
-  // Rating button click styling
-  area.addEventListener('click', function(e) {
-    const btn = e.target.closest('.cr-rating-btn');
-    if (!btn) return;
-    const name = btn.dataset.name;
-    area.querySelectorAll(`.cr-rating-btn[data-name="${name}"]`).forEach(b => {
-      b.style.borderColor = 'var(--cr-border,#ddd)';
-      b.style.background = 'transparent';
-      b.style.color = 'var(--cr-text,#333)';
-    });
-    btn.style.borderColor = 'var(--cr-burgundy,#8B2542)';
-    btn.style.background = 'var(--cr-burgundy,#8B2542)';
-    btn.style.color = '#fff';
-    // Check the hidden radio
-    const radio = btn.parentElement.querySelector('input[type="radio"]');
-    if (radio) radio.checked = true;
-  });
-}
-
-function submitEvaluation() {
-  const area = document.getElementById('crContentArea');
-  const responses = {};
-  const questions = area.querySelectorAll('.cr-eval-q');
-
-  for (const q of questions) {
-    const id = q.dataset.id;
-    const required = q.dataset.required === 'true';
-    let value = null;
-    const radio = q.querySelector('input[type="radio"]:checked');
-    const textarea = q.querySelector('textarea');
-    if (radio) value = radio.value;
-    else if (textarea) value = textarea.value;
-    if (required && (!value || value === '')) {
-      showAdaptiveModal('Please complete all required fields before submitting.', null);
-      return;
-    }
-    responses[id] = value;
-  }
-
-  const courseId = course._id || course.slug;
-  crApiFetch(`/api/interactive-courses/${courseId}/evaluation`, { responses })
-    .then(({ ok, data }) => {
-      if (!ok) {
-        showAdaptiveModal(data.error || 'Failed to submit evaluation.', null);
-        return;
-      }
-      showAttestation();
-    })
-    .catch(() => {
-      showAdaptiveModal('Network error submitting evaluation. Please try again.', null);
-    });
-}
-
-// ═══════════════════════════════════════════════════════════════
-// ATTESTATION FLOW (required before certificate)
-// ═══════════════════════════════════════════════════════════════
-function showAttestation() {
-  const area = document.getElementById('crContentArea');
-  area.innerHTML = `<div style="max-width:560px;margin:0 auto;padding:40px 0;text-align:center">
-    <div style="font-size:2em;margin-bottom:16px">📜</div>
-    <h3 style="font-family:var(--cr-font-display,Georgia,serif);font-size:1.3em;color:var(--cr-navy,#1a1a2e);margin-bottom:24px">Attestation Statement</h3>
-    <div style="background:var(--cr-bg-alt,#f8f8f8);border-radius:12px;padding:24px;text-align:left;margin-bottom:24px">
-      <p style="color:var(--cr-text,#333);line-height:1.7;font-size:0.95em">
-        I attest that I personally completed this entire course, including all required activities and assessments, and that I did not receive unauthorized assistance. I understand that falsifying this attestation may result in revocation of CE credits.
-      </p>
-    </div>
-    <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;text-align:left;margin-bottom:20px">
-      <input type="checkbox" id="crAttestCheckbox" style="margin-top:3px;width:20px;height:20px;accent-color:var(--cr-burgundy,#8B2542)">
-      <span style="color:var(--cr-text,#333);font-size:0.9em">I have read, understand, and agree to the above attestation statement.</span>
-    </label>
-    <button class="cr-btn cr-btn-primary" id="crAttestBtn" style="width:100%;opacity:0.5;cursor:not-allowed" disabled data-action="submitAttestation">
-      Agree &amp; Continue
-    </button>
-  </div>`;
-
-  const checkbox = document.getElementById('crAttestCheckbox');
-  const btn = document.getElementById('crAttestBtn');
-  checkbox.addEventListener('change', () => {
-    btn.disabled = !checkbox.checked;
-    btn.style.opacity = checkbox.checked ? '1' : '0.5';
-    btn.style.cursor = checkbox.checked ? 'pointer' : 'not-allowed';
-  });
-}
-
-function submitAttestation() {
-  const checkbox = document.getElementById('crAttestCheckbox');
-  if (!checkbox || !checkbox.checked) {
-    showAdaptiveModal('Please agree to the attestation statement.', null);
-    return;
-  }
-
-  const courseId = course._id || course.slug;
-  crApiFetch(`/api/interactive-courses/${courseId}/attestation`, { agreed: true })
-    .then(({ ok, data }) => {
-      if (!ok) {
-        showAdaptiveModal(data.error || 'Failed to submit attestation.', null);
-        return;
-      }
-      // Now show the certificate request
-      showCertificateReady();
-    })
-    .catch(() => {
-      showAdaptiveModal('Network error submitting attestation. Please try again.', null);
-    });
-}
-
-function showCertificateReady() {
-  const area = document.getElementById('crContentArea');
-  area.innerHTML = `<div style="max-width:560px;margin:0 auto;padding:40px 0;text-align:center">
-    <div style="font-size:2.5em;margin-bottom:16px">🎓</div>
-    <h3 style="font-family:var(--cr-font-display,Georgia,serif);font-size:1.3em;color:var(--cr-navy,#1a1a2e);margin-bottom:12px">You're all set!</h3>
-    <p style="color:var(--cr-text-secondary,#555);margin-bottom:8px">You've earned <strong>${course.ceHours || course.ceuHours || 1} CE hour(s)</strong>.</p>
-    <p style="color:var(--cr-text-muted,#999);font-size:0.85em;margin-bottom:24px">Click below to generate and download your certificate.</p>
-    <button class="cr-btn cr-btn-success" style="padding:14px 32px;font-size:1em" data-action="requestCertificate">
-      Get Certificate
-    </button>
-  </div>`;
-}
-
-// ═══════════════════════════════════════════════════════════════
-// CERTIFICATE REQUEST
-// ═══════════════════════════════════════════════════════════════
-function requestCertificate() {
-  if (!course?._id && !course?.slug) {
-    // Fallback for embedded/file-loaded courses
-    if (window.parent !== window) {
-      window.parent.postMessage({ type: 'REQUEST_CERTIFICATE' }, '*');
-    } else {
-      alert('Certificate generation requires a saved course.');
-    }
-    return;
-  }
-
-  const token = localStorage.getItem('token');
-  if (!token) {
-    alert('Please log in to request your certificate.');
-    return;
-  }
-
-  const base = crApiBase || (location.origin.includes('localhost') ? 'http://localhost:5000' : 'https://api.counselorready.com');
-  const courseId = course._id;
-  if (!courseId) {
-    alert('Course ID not available. Please reload the page.');
-    return;
-  }
-
-  // Show loading
-  const btn = document.querySelector('[data-action="requestCertificate"]');
-  if (btn) { btn.disabled = true; btn.textContent = 'Generating...'; }
-
-  fetch(`${base}/api/certificates/generate/${courseId}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }
-  })
-  .then(r => r.json())
-  .then(data => {
-    if (data.success && data.certificate) {
-      // Show success modal with download link
-      showAdaptiveModal(
-        `Your certificate has been generated! Certificate #${data.certificate.certificateNumber}`,
-        null
-      );
-      // Replace button with download link
-      if (btn) {
-        btn.textContent = 'Download Certificate';
-        btn.disabled = false;
-        btn.dataset.action = 'downloadCert';
-        btn.dataset.url = data.certificate.fileUrl;
-      }
-    } else if (data.certificate) {
-      // Already exists
-      showAdaptiveModal('Your certificate has already been generated.', null);
-      if (btn) { btn.disabled = false; btn.textContent = 'Get Certificate'; }
-    } else {
-      showAdaptiveModal(data.error || 'Failed to generate certificate.', null);
-      if (btn) { btn.disabled = false; btn.textContent = 'Get Certificate'; }
-    }
-  })
-  .catch(err => {
-    showAdaptiveModal('Network error. Please try again.', null);
-    if (btn) { btn.disabled = false; btn.textContent = 'Get Certificate'; }
-  });
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -5698,13 +5756,17 @@ function saveProgress() {
   saveState('visited', [...visitedSections]);
   saveState('view', currentView);
 }
-
 function restoreProgress() {
   if (!course) return;
+  // Server data already applied in init() — skip localStorage
+  if (enrollmentData && (enrollmentData.sectionsCompleted?.length > 0 || enrollmentData.lastSectionViewed !== undefined)) {
+    visitedSections.add(currentSectionIndex);
+    return;
+  }
+  // Fallback: localStorage (preview mode, offline)
   const section = loadState('section');
   const completed = loadState('completed');
   const visited = loadState('visited');
-  
   if (completed) completedSections = new Set(completed);
   if (visited) visitedSections = new Set(visited);
   if (section !== null && section < course.sections.length) {
@@ -6023,10 +6085,7 @@ document.addEventListener('click', function(e) {
     case 'submitEvaluation': submitEvaluation(); break;
     case 'submitAttestation': submitAttestation(); break;
     case 'requestCertificate':
-      requestCertificate();
-      break;
-    case 'downloadCert':
-      if (el.dataset.url) window.open(el.dataset.url, '_blank');
+      showCertificateView();
       break;
   }
 });
