@@ -117,7 +117,7 @@ router.post('/register', async (req, res) => {
         if (partnerDoc) {
           sendPartnerWelcomeEmail(user, partnerDoc);
         }
-      } catch { /* non-blocking */ }
+      } catch (err) { console.error('Partner welcome email failed:', err.message); }
     }
 
     const token = generateToken(user._id);
