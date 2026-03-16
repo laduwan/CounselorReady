@@ -3,8 +3,8 @@
 /**
  * Seed script – inserts (or replaces) the QA smoke-test course.
  *
- * Usage (run from the repo root):
- *   MONGODB_URI="mongodb://..." node scripts/seed-qa-test.js
+ * Usage (run from the server/ directory):
+ *   cd server && MONGODB_URI="mongodb://..." node scripts/seed-qa-test.js
  */
 
 const fs = require('fs');
@@ -31,7 +31,7 @@ async function main() {
   console.log('TTL index on expiresAt ensured.');
 
   // Import the ESM model dynamically
-  const mod = await import('../server/src/models/InteractiveCourse.js');
+  const mod = await import('../src/models/InteractiveCourse.js');
   const Course = mod.Course || mod.default?.Course;
 
   // Delete any existing QA smoke-test document
