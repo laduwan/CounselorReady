@@ -36,7 +36,7 @@ function findCourseByIdOrSlug(param, tenantFilter = {}) {
   if (mongoose.Types.ObjectId.isValid(param)) {
     return Course.findOne({ _id: param, ...baseQuery });
   }
-  return Course.findOne({ slug: param, ...baseQuery });
+  return Course.findOne({ $or: [{ slug: param }, { courseCode: param }], ...baseQuery });
 }
 
 // ============================================================================
@@ -49,13 +49,13 @@ function findCourseByIdOrSlug(param, tenantFilter = {}) {
  */
 router.get('/', async (req, res) => {
   try {
-    const { 
-      category, 
-      tag, 
-      search, 
+    const {
+      category,
+      tag,
+      search,
       status = 'published',
-      page = 1, 
-      limit = 10 
+      page = 1,
+      limit = 10
     } = req.query;
 
     const query = {};
@@ -94,6 +94,71 @@ router.get('/', async (req, res) => {
       query.$and = conditions;
     }
 
+    const isAdmin = req.user?.role === 'admin';
+
+    if (isAdmin) {
+      // Admin: merge results from both interactivecourses and legacy courses collections
+      const pageNum = parseInt(page);
+      const limitNum = parseInt(limit);
+
+      const [interactiveCourses, interactiveTotal] = await Promise.all([
+        Course.find(query)
+          .select('title slug description thumbnail ceHours totalEstimatedTime categories tags wordCount sectionCount moduleCount assessmentQuestionCount ceuCategories accessType price pricingTier status ceuHours ceuApprovalNumber courseCode')
+          .sort({ publishedAt: -1 })
+          .lean(),
+        Course.countDocuments(query)
+      ]);
+
+      // Build a matching filter for the legacy courses collection
+      const legacyFilter = {};
+      if (status && status !== 'all') legacyFilter.status = status;
+      if (category) legacyFilter.categories = category;
+      if (tag) legacyFilter.tags = tag;
+      if (search) {
+        legacyFilter.$or = [
+          { title: { $regex: search, $options: 'i' } },
+          { description: { $regex: search, $options: 'i' } }
+        ];
+      }
+
+      const legacyCollection = mongoose.connection.db.collection('courses');
+      const [legacyCourses, legacyTotal] = await Promise.all([
+        legacyCollection
+          .find(legacyFilter)
+          .project({ title: 1, slug: 1, description: 1, thumbnail: 1, ceHours: 1, totalEstimatedTime: 1, categories: 1, tags: 1, status: 1, publishedAt: 1 })
+          .sort({ publishedAt: -1 })
+          .toArray(),
+        legacyCollection.countDocuments(legacyFilter)
+      ]);
+
+      // Tag each source and merge
+      const taggedInteractive = interactiveCourses.map(c => ({ ...c, source: 'interactive' }));
+      const taggedLegacy = legacyCourses.map(c => ({ ...c, source: 'legacy' }));
+      const merged = [...taggedInteractive, ...taggedLegacy];
+
+      // Sort combined by publishedAt descending
+      merged.sort((a, b) => {
+        const dateA = a.publishedAt ? new Date(a.publishedAt) : new Date(0);
+        const dateB = b.publishedAt ? new Date(b.publishedAt) : new Date(0);
+        return dateB - dateA;
+      });
+
+      const combinedTotal = interactiveTotal + legacyTotal;
+      const paginatedData = merged.slice((pageNum - 1) * limitNum, pageNum * limitNum);
+
+      return res.json({
+        success: true,
+        data: paginatedData,
+        pagination: {
+          page: pageNum,
+          limit: limitNum,
+          total: combinedTotal,
+          pages: Math.ceil(combinedTotal / limitNum)
+        }
+      });
+    }
+
+    // Non-admin: only published interactivecourses
     const courses = await Course.find(query)
       .select('title slug description thumbnail ceHours totalEstimatedTime categories tags wordCount sectionCount moduleCount assessmentQuestionCount ceuCategories accessType price pricingTier status ceuHours ceuApprovalNumber courseCode')
       .sort({ publishedAt: -1 })
@@ -124,10 +189,52 @@ router.get('/', async (req, res) => {
  */
 router.get('/slug/:slug', async (req, res) => {
   try {
-    const course = await findCourseByIdOrSlug(req.params.slug, req.tenantFilter);
+    let course = await findCourseByIdOrSlug(req.params.slug, req.tenantFilter);
 
+    // Fallback: try the legacy courses collection if not found in interactivecourses
     if (!course) {
-      return res.status(404).json({ success: false, error: 'Course not found' });
+      const legacyDoc = await mongoose.connection.db
+        .collection('courses')
+        .findOne({ $or: [{ slug: req.params.slug }, { courseCode: req.params.slug }] });
+
+      if (!legacyDoc) {
+        return res.status(404).json({ success: false, error: 'Course not found' });
+      }
+
+      // Normalize legacy course into interactivecourses format
+      const sections = (legacyDoc.modules || []).map((mod, modIndex) => {
+        const contentBlocks = [
+          { type: 'sectionDivider', order: 0, title: mod.title },
+          ...(mod.lessons || []).map((lesson, lessonIndex) => ({
+            type: 'text',
+            order: lessonIndex + 1,
+            content: lesson.content,
+            title: lesson.title
+          }))
+        ];
+        return {
+          title: mod.title,
+          contentBlocks
+        };
+      });
+
+      course = {
+        _id: legacyDoc._id,
+        title: legacyDoc.title,
+        slug: legacyDoc.slug,
+        description: legacyDoc.description,
+        ceHours: legacyDoc.ceHours,
+        ceProvider: legacyDoc.ceProvider,
+        acepNumber: legacyDoc.acepNumber,
+        assessment: legacyDoc.assessment,
+        status: legacyDoc.status,
+        categories: legacyDoc.categories,
+        tags: legacyDoc.tags,
+        targetAudience: legacyDoc.targetAudience,
+        author: legacyDoc.author,
+        sections,
+        source: 'legacy'
+      };
     }
 
     res.json({ success: true, data: course });
