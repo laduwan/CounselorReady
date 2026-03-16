@@ -1277,3 +1277,6 @@ router.get('/user/my-courses', ...protectAndScope, async (req, res) => {
 });
 
 export default router;
+
+// Test-only exports
+export { gateContent as _gateContent, stripContent as _stripContent };
