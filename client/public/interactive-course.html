@@ -3992,7 +3992,7 @@ function submitAssessment() {
     const submitBtn = document.querySelector('[data-action="submitAssessment"]');
     if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Submitting...'; }
 
-    crApiFetch(`/api/interactive-courses/${course.slug}/progress/assessment`, {
+    crApiFetch(`/api/interactive-courses/${course.slug}/assessment`, {
       answers: assessmentState.answers,
       timeUsed: 0
     }).then(({ ok, data }) => {
