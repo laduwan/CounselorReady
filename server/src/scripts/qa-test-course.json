@@ -6,7 +6,7 @@
   "ceHours": 0.5,
   "ceProvider": "NBCC ACEP #7760",
   "acepNumber": "7760",
-  "status": "draft",
+  "status": "published",
   "isTestCourse": true,
   "objectives": [
     "Verify all block types render without errors"
