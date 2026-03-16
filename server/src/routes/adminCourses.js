@@ -570,7 +570,7 @@ router.post('/broadcast', protect, adminOnly, async (req, res) => {
       affectedCount = await User.countDocuments();
     } else if (audience === 'by_credential' && (targetStates?.length || targetCredentials?.length)) {
       // This is a rough estimate
-      const UserCredential = require('../models/UserCredential.js').default;
+      const UserCredential = (await import('../models/UserCredential.js')).default;
       const query = {};
       if (targetStates?.length) query.state = { $in: targetStates };
       if (targetCredentials?.length) query.credentialCode = { $in: targetCredentials };

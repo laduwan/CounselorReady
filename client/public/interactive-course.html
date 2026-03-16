@@ -1968,12 +1968,12 @@ let adaptiveUnlockedSections = new Set(); // Sections unlocked via adaptive lear
 let crApiBase = ''; // Set during course load for API calls
 
 // ── API helper for quiz/assessment endpoints ──
-function crApiFetch(path, body) {
+function crApiFetch(path, body, method) {
   const base = crApiBase || (location.origin.includes('localhost') ? 'http://localhost:5000' : 'https://api.counselorready.com');
   const token = localStorage.getItem('token');
   if (!token) return Promise.reject(new Error('Not authenticated'));
   return fetch(`${base}${path}`, {
-    method: 'POST',
+    method: method || 'POST',
     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
     body: JSON.stringify(body)
   }).then(r => r.json().then(data => ({ ok: r.ok, status: r.status, data })));
@@ -2627,6 +2627,7 @@ function detectModuleGroups() {
 
 function goToSection(i) {
   if (currentView === 'assessment') currentView = 'section';
+  syncSectionProgress(currentSectionIndex);
   completedSections.add(currentSectionIndex);
   visitedSections.add(i);
   currentSectionIndex = i;
@@ -2636,6 +2637,21 @@ function goToSection(i) {
   closeSidebar();
   window.scrollTo({ top: 0, behavior: 'smooth' });
   srAnnounce('Now viewing: ' + (course.sections[i]?.title || 'Section ' + (i + 1)));
+}
+
+// Sync section progress to server (fire-and-forget)
+function syncSectionProgress(sectionIdx) {
+  if (!course?.slug || !localStorage.getItem('token')) return;
+  const section = course.sections[sectionIdx];
+  if (!section) return;
+  const totalBlocks = section.contentBlocks?.length || 0;
+  // Report all blocks as viewed (user navigated through the section)
+  const allBlockIndices = Array.from({ length: totalBlocks }, (_, i) => i);
+  crApiFetch(
+    `/api/interactive-courses/${course.slug}/progress/section/${sectionIdx}`,
+    { viewedBlocks: allBlockIndices, status: 'completed' },
+    'PUT'
+  ).catch(() => { /* non-critical: progress saved locally too */ });
 }
 
 function scrollToH2(sectionIdx, headingText) {
@@ -2704,6 +2720,7 @@ function showAssessment() {
     }
   }
   currentView = 'assessment';
+  syncSectionProgress(currentSectionIndex);
   completedSections.add(currentSectionIndex);
   renderAssessment();
   updateProgress();
@@ -4090,8 +4107,8 @@ function renderAssessmentResult() {
   }
 
   if (passed) {
-    html += `<button class="cr-btn cr-btn-success" style="margin-top:20px" data-action="requestCertificate">
-      Get Certificate
+    html += `<button class="cr-btn cr-btn-success" style="margin-top:20px" data-action="showEvaluation">
+      Continue to Evaluation
     </button>`;
   }
 
@@ -4210,6 +4227,178 @@ function showAdaptiveModal(message, targetSectionIndex) {
   }
   // Close on backdrop click
   modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// EVALUATION FLOW (required before certificate)
+// ═══════════════════════════════════════════════════════════════
+function showEvaluation() {
+  const area = document.getElementById('crContentArea');
+  const evalQuestions = [
+    { id: 'contentQuality', question: 'Rate the quality of the course content', type: 'rating', required: true },
+    { id: 'relevance', question: 'How relevant was this course to your practice?', type: 'rating', required: true },
+    { id: 'presentation', question: 'Rate the presentation and organization', type: 'rating', required: true },
+    { id: 'engagement', question: 'How engaging was the course material?', type: 'rating', required: true },
+    { id: 'learningObjectives', question: 'Were the learning objectives met?', type: 'rating', required: true },
+    { id: 'wouldRecommend', question: 'Would you recommend this course to a colleague?', type: 'yes_no', required: true },
+    { id: 'whatWorkedWell', question: 'What worked well in this course?', type: 'text', required: false },
+    { id: 'suggestions', question: 'What suggestions do you have for improvement?', type: 'text', required: false }
+  ];
+
+  let html = `<div style="max-width:640px;margin:0 auto;padding:24px 0">
+    <h3 style="font-family:var(--cr-font-display,Georgia,serif);font-size:1.3em;color:var(--cr-navy,#1a1a2e);margin-bottom:8px">Course Evaluation</h3>
+    <p style="color:var(--cr-text-secondary,#555);font-size:0.9em;margin-bottom:24px">Please take a moment to evaluate this course. Your feedback helps us improve.</p>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px;padding:16px;background:var(--cr-bg-alt,#f8f8f8);border-radius:12px;font-size:0.85em">
+      <div><span style="color:var(--cr-text-muted,#999)">Course</span><p style="font-weight:600;margin-top:2px">${esc(course.title)}</p></div>
+      <div><span style="color:var(--cr-text-muted,#999)">Date</span><p style="font-weight:600;margin-top:2px">${new Date().toLocaleDateString()}</p></div>
+      <div><span style="color:var(--cr-text-muted,#999)">CE Hours</span><p style="font-weight:600;margin-top:2px">${course.ceHours || course.ceuHours || 1}</p></div>
+    </div>`;
+
+  evalQuestions.forEach((q, i) => {
+    html += `<div class="cr-eval-q" data-id="${q.id}" data-required="${q.required}" style="padding:16px 0;${i > 0 ? 'border-top:1px solid var(--cr-border,#e5e5e5);' : ''}">
+      <label style="font-weight:600;color:var(--cr-text,#333)">${esc(q.question)}${q.required ? ' <span style="color:var(--cr-burgundy,#8B2542)">*</span>' : ''}</label>`;
+
+    if (q.type === 'rating') {
+      html += `<div style="display:flex;gap:8px;margin-top:8px">`;
+      for (let n = 1; n <= 5; n++) {
+        html += `<label style="flex:1;cursor:pointer">
+          <input type="radio" name="eval_${q.id}" value="${n}" style="display:none" class="cr-eval-radio">
+          <div class="cr-rating-btn" data-name="eval_${q.id}" data-val="${n}" style="text-align:center;padding:10px;border:2px solid var(--cr-border,#ddd);border-radius:8px;transition:all 0.2s;font-size:1.1em">${n}</div>
+        </label>`;
+      }
+      html += `</div><div style="display:flex;justify-content:space-between;font-size:0.75em;color:var(--cr-text-muted,#999);margin-top:4px"><span>Poor</span><span>Excellent</span></div>`;
+    } else if (q.type === 'yes_no') {
+      html += `<div style="display:flex;gap:16px;margin-top:8px">
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer"><input type="radio" name="eval_${q.id}" value="yes" class="cr-eval-radio"> Yes</label>
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer"><input type="radio" name="eval_${q.id}" value="no" class="cr-eval-radio"> No</label>
+      </div>`;
+    } else {
+      html += `<textarea name="eval_${q.id}" rows="3" placeholder="Your feedback..." style="width:100%;margin-top:8px;padding:10px 12px;border:1px solid var(--cr-border,#ddd);border-radius:8px;font-family:inherit;font-size:0.9em;resize:vertical"></textarea>`;
+    }
+    html += `</div>`;
+  });
+
+  html += `<button class="cr-btn cr-btn-primary" style="margin-top:20px;width:100%" data-action="submitEvaluation">Submit Evaluation</button>
+    </div>`;
+  area.innerHTML = html;
+
+  // Rating button click styling
+  area.addEventListener('click', function(e) {
+    const btn = e.target.closest('.cr-rating-btn');
+    if (!btn) return;
+    const name = btn.dataset.name;
+    area.querySelectorAll(`.cr-rating-btn[data-name="${name}"]`).forEach(b => {
+      b.style.borderColor = 'var(--cr-border,#ddd)';
+      b.style.background = 'transparent';
+      b.style.color = 'var(--cr-text,#333)';
+    });
+    btn.style.borderColor = 'var(--cr-burgundy,#8B2542)';
+    btn.style.background = 'var(--cr-burgundy,#8B2542)';
+    btn.style.color = '#fff';
+    // Check the hidden radio
+    const radio = btn.parentElement.querySelector('input[type="radio"]');
+    if (radio) radio.checked = true;
+  });
+}
+
+function submitEvaluation() {
+  const area = document.getElementById('crContentArea');
+  const responses = {};
+  const questions = area.querySelectorAll('.cr-eval-q');
+
+  for (const q of questions) {
+    const id = q.dataset.id;
+    const required = q.dataset.required === 'true';
+    let value = null;
+    const radio = q.querySelector('input[type="radio"]:checked');
+    const textarea = q.querySelector('textarea');
+    if (radio) value = radio.value;
+    else if (textarea) value = textarea.value;
+    if (required && (!value || value === '')) {
+      showAdaptiveModal('Please complete all required fields before submitting.', null);
+      return;
+    }
+    responses[id] = value;
+  }
+
+  const courseId = course._id || course.slug;
+  crApiFetch(`/api/interactive-courses/${courseId}/evaluation`, { responses })
+    .then(({ ok, data }) => {
+      if (!ok) {
+        showAdaptiveModal(data.error || 'Failed to submit evaluation.', null);
+        return;
+      }
+      showAttestation();
+    })
+    .catch(() => {
+      showAdaptiveModal('Network error submitting evaluation. Please try again.', null);
+    });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ATTESTATION FLOW (required before certificate)
+// ═══════════════════════════════════════════════════════════════
+function showAttestation() {
+  const area = document.getElementById('crContentArea');
+  area.innerHTML = `<div style="max-width:560px;margin:0 auto;padding:40px 0;text-align:center">
+    <div style="font-size:2em;margin-bottom:16px">📜</div>
+    <h3 style="font-family:var(--cr-font-display,Georgia,serif);font-size:1.3em;color:var(--cr-navy,#1a1a2e);margin-bottom:24px">Attestation Statement</h3>
+    <div style="background:var(--cr-bg-alt,#f8f8f8);border-radius:12px;padding:24px;text-align:left;margin-bottom:24px">
+      <p style="color:var(--cr-text,#333);line-height:1.7;font-size:0.95em">
+        I attest that I personally completed this entire course, including all required activities and assessments, and that I did not receive unauthorized assistance. I understand that falsifying this attestation may result in revocation of CE credits.
+      </p>
+    </div>
+    <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;text-align:left;margin-bottom:20px">
+      <input type="checkbox" id="crAttestCheckbox" style="margin-top:3px;width:20px;height:20px;accent-color:var(--cr-burgundy,#8B2542)">
+      <span style="color:var(--cr-text,#333);font-size:0.9em">I have read, understand, and agree to the above attestation statement.</span>
+    </label>
+    <button class="cr-btn cr-btn-primary" id="crAttestBtn" style="width:100%;opacity:0.5;cursor:not-allowed" disabled data-action="submitAttestation">
+      Agree &amp; Continue
+    </button>
+  </div>`;
+
+  const checkbox = document.getElementById('crAttestCheckbox');
+  const btn = document.getElementById('crAttestBtn');
+  checkbox.addEventListener('change', () => {
+    btn.disabled = !checkbox.checked;
+    btn.style.opacity = checkbox.checked ? '1' : '0.5';
+    btn.style.cursor = checkbox.checked ? 'pointer' : 'not-allowed';
+  });
+}
+
+function submitAttestation() {
+  const checkbox = document.getElementById('crAttestCheckbox');
+  if (!checkbox || !checkbox.checked) {
+    showAdaptiveModal('Please agree to the attestation statement.', null);
+    return;
+  }
+
+  const courseId = course._id || course.slug;
+  crApiFetch(`/api/interactive-courses/${courseId}/attestation`, { agreed: true })
+    .then(({ ok, data }) => {
+      if (!ok) {
+        showAdaptiveModal(data.error || 'Failed to submit attestation.', null);
+        return;
+      }
+      // Now show the certificate request
+      showCertificateReady();
+    })
+    .catch(() => {
+      showAdaptiveModal('Network error submitting attestation. Please try again.', null);
+    });
+}
+
+function showCertificateReady() {
+  const area = document.getElementById('crContentArea');
+  area.innerHTML = `<div style="max-width:560px;margin:0 auto;padding:40px 0;text-align:center">
+    <div style="font-size:2.5em;margin-bottom:16px">🎓</div>
+    <h3 style="font-family:var(--cr-font-display,Georgia,serif);font-size:1.3em;color:var(--cr-navy,#1a1a2e);margin-bottom:12px">You're all set!</h3>
+    <p style="color:var(--cr-text-secondary,#555);margin-bottom:8px">You've earned <strong>${course.ceHours || course.ceuHours || 1} CE hour(s)</strong>.</p>
+    <p style="color:var(--cr-text-muted,#999);font-size:0.85em;margin-bottom:24px">Click below to generate and download your certificate.</p>
+    <button class="cr-btn cr-btn-success" style="padding:14px 32px;font-size:1em" data-action="requestCertificate">
+      Get Certificate
+    </button>
+  </div>`;
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -5800,7 +5989,10 @@ document.addEventListener('click', function(e) {
     case 'ttsStop': ttsStop(); break;
     case 'ttsRestart': ttsRestart(); break;
     
-    // ─── Certificate ───
+    // ─── Evaluation / Attestation / Certificate ───
+    case 'showEvaluation': showEvaluation(); break;
+    case 'submitEvaluation': submitEvaluation(); break;
+    case 'submitAttestation': submitAttestation(); break;
     case 'requestCertificate':
       requestCertificate();
       break;
