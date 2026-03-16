@@ -14,7 +14,7 @@
 
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
-import { Course } from '../models/InteractiveCourse.js';
+import { Course, CourseProgress } from '../models/InteractiveCourse.js';
 
 dotenv.config();
 
@@ -121,6 +121,17 @@ async function seedCourse() {
       ]
     }
   });
+
+  // Ensure a TTL index exists on CourseProgress so test results auto-clean.
+  // The index deletes documents whose smokeTestExpiresAt has passed.
+  try {
+    await CourseProgress.collection.createIndex(
+      { smokeTestExpiresAt: 1 },
+      { expireAfterSeconds: 0, sparse: true }
+    );
+  } catch {
+    // Index may already exist — ignore
+  }
 
   console.log(`\nSmoke-test course seeded:`);
   console.log(`  ID:         ${course._id}`);
