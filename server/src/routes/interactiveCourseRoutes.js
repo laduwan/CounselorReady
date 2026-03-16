@@ -34,6 +34,7 @@ const protectAndScope = [protect, attachTenantScope];
  * Helper: resolve course by ObjectId or slug, respecting tenant scope.
  * Partner users can see platform courses (no partnerId) + their own partner's courses.
  * Admins and non-partner users see all courses.
+ * Falls back to the legacy "courses" collection when not found in interactivecourses.
  */
 async function findCourseByIdOrSlug(param, tenantFilter = {}) {
   const partnerConditions = tenantFilter.partnerId
