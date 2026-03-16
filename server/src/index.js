@@ -37,6 +37,7 @@ import cebrokerRoutes from './routes/cebroker.js';
 import helpRoutes from './routes/help.js';
 import bulkUploadRoutes from './routes/bulkUpload.js';
 import toolsRoutes from './routes/tools.js';
+import toolRoutes from './routes/toolRoutes.js';
 // ── Previously unregistered routes (wiring audit fix 2026-03-04) ──
 import aiRoutes from './routes/ai.js';
 import aiCourseGeneratorRoutes from './routes/aiCourseGenerator.js';
@@ -275,6 +276,7 @@ app.use('/api/legacy-vault', legacyVaultRoutes);
 app.use('/api/admin/stats', adminStatsRoutes);
 app.use('/api/partners', partnersRoutes);
 app.use('/api/tools', toolsRoutes);
+app.use('/api/tools', toolRoutes);
 app.use('/api/rawmd', rawMarkdownRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 // ── Research Ready CE ──
