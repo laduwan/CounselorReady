@@ -4,9 +4,14 @@
 // Run from server/: node src/scripts/seed-qa-test.js
 // ============================================================================
 
-const mongoose = require('mongoose');
-const fs = require('fs');
-const path = require('path');
+import mongoose from 'mongoose';
+import { readFileSync } from 'fs';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
+import { Course } from '../models/InteractiveCourse.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const MONGODB_URI = process.env.MONGODB_URI || 'your-mongodb-uri-here';
 
@@ -32,10 +37,6 @@ async function seedQATest() {
       }
     }
 
-    // ── Import ESM model dynamically (server uses "type": "module") ──
-    const mod = await import('../models/InteractiveCourse.js');
-    const Course = mod.Course || mod.default?.Course;
-
     // ── Step 2: Remove any previous QA test course ──
     const deleted = await Course.deleteMany({ slug: 'qa-smoke-test' });
     if (deleted.deletedCount > 0) {
@@ -44,7 +45,7 @@ async function seedQATest() {
 
     // ── Step 3: Load and seed the test course ──
     const courseData = JSON.parse(
-      fs.readFileSync(path.join(__dirname, 'qa-test-course.json'), 'utf-8')
+      readFileSync(join(__dirname, 'qa-test-course.json'), 'utf-8')
     );
 
     // Set the 60-minute expiration from NOW
