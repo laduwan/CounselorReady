@@ -177,20 +177,7 @@ function CloudinaryUploader({ onUpload, context = "general", currentImage = null
       setPreview(result.thumbnailUrl || result.url);
       onUpload(result);
     } catch (err) {
-      // Fallback to local preview if API unavailable
-      try {
-        const url = URL.createObjectURL(file);
-        const img = new Image();
-        img.onload = () => {
-          const fallback = { url, publicId: `${context}_${Date.now()}`, width: img.width, height: img.height, alt, thumbnailUrl: url, mediumUrl: url, largeUrl: url };
-          setPreview(url);
-          onUpload(fallback);
-        };
-        img.onerror = () => setError("Failed to load image");
-        img.src = url;
-      } catch (e2) {
-        setError(err.message || "Upload failed");
-      }
+      setError(err.message || "Upload failed — check Cloudinary credentials");
     } finally {
       setUploading(false);
     }
