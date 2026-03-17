@@ -4,9 +4,11 @@
  * Unauthorized copying or distribution is strictly prohibited.
  */
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useImpersonate } from '../context/ImpersonateContext';
 import api from '../services/api';
-import { Plus, Edit2, Trash2, Users, ExternalLink, Eye, EyeOff, Copy, Check, X, BookOpen, UserPlus } from 'lucide-react';
+import { Plus, Edit2, Trash2, Users, ExternalLink, Eye, EyeOff, Copy, Check, X, BookOpen, UserPlus, MonitorPlay } from 'lucide-react';
 
 const BURGUNDY = '#6B1D34';
 const BURGUNDY_LIGHT = '#fdf5f6';
@@ -14,6 +16,8 @@ const HUNTER = '#4A7C59';
 
 export default function AdminPartners() {
   const { user } = useAuth();
+  const { startImpersonating } = useImpersonate();
+  const navigate = useNavigate();
   const [partners, setPartners] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -351,6 +355,11 @@ export default function AdminPartners() {
 
               {/* Actions */}
               <div className="flex items-center gap-1 flex-shrink-0">
+                <button onClick={() => { startImpersonating(p._id, p.name); navigate('/partner/onboarding'); }}
+                  title="View as Partner"
+                  className="p-2 rounded-lg hover:bg-indigo-50 transition-colors text-indigo-500">
+                  <MonitorPlay className="w-4 h-4" />
+                </button>
                 <button onClick={() => fetchPartnerUsers(p._id)} title="View users"
                   className="p-2 rounded-lg hover:bg-stone-100 transition-colors text-stone-500">
                   <Users className="w-4 h-4" />

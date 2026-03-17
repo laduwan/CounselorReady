@@ -6,6 +6,7 @@
 import { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useParams, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { ImpersonateProvider } from './context/ImpersonateContext';
 import { CRFooter } from './utils/copyright.jsx';
 import ErrorBoundary from './components/ErrorBoundary';
 
@@ -385,7 +386,9 @@ function App() {
         <BrowserRouter>
           <SkipToContent />
           <AuthProvider>
-            <AppRoutes />
+            <ImpersonateProvider>
+              <AppRoutes />
+            </ImpersonateProvider>
           </AuthProvider>
           <AccessibilityPanel />
           <CRFooter />

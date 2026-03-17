@@ -66,6 +66,11 @@ export const requireAdmin = async (req, res, next) => {
 // Require partner_admin or admin role
 export const requirePartnerAdmin = async (req, res, next) => {
   if (req.user.role === 'admin') {
+    // Support "View as Partner" impersonation for admins
+    const impersonateId = req.headers['x-partner-id'];
+    if (impersonateId) {
+      req.partnerId = impersonateId;
+    }
     return next();
   }
   if (req.user.role === 'partner_admin' && req.user.partnerId) {
