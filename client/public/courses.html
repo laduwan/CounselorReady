@@ -1,17 +1,3 @@
-<!--
-  ╔═══════════════════════════════════════════════════════════════════════╗
-  ║  COURSE PAGE — APPROVED DESIGN                                      ║
-  ║                                                                     ║
-  ║  This page's layout, color palette (burgundy / forest / honey),     ║
-  ║  typography, card structure, and gradient treatment are the          ║
-  ║  canonical course page design. Do NOT alter the visual design       ║
-  ║  unless explicitly requested by the product owner.                  ║
-  ║                                                                     ║
-  ║  Tailwind color config: burgundy, forest, honey (from design-tokens)║
-  ║  Fonts: Cormorant Garamond (display) + Lato (body)                  ║
-  ║  Last approved: 2026-03-08                                          ║
-  ╚═══════════════════════════════════════════════════════════════════════╝
--->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -32,14 +18,10 @@
             },
             forest: {
               50: '#f3f6f4', 100: '#e3ebe5', 200: '#c8d7cc', 300: '#a1bba8',
-              400: '#759a7f', 500: '#547c5f', 600: '#4A7C59', 700: '#34503d',
+              400: '#759a7f', 500: '#547c5f', 600: '#40634a', 700: '#34503d',
               800: '#2b4133', 900: '#1f3025', 950: '#121c16'
             },
-            honey: {
-              50: '#FDF9F0', 100: '#F9F0DB', 200: '#F3E0B5', 300: '#EACD86',
-              400: '#D4A855', 500: '#C49545', 600: '#A67936', 700: '#865E2C',
-              800: '#6B4A25'
-            }
+            gold: { 50: '#fefce8', 100: '#fef9c3', 200: '#fef08a', 300: '#fde047', 400: '#facc15', 500: '#d4a012' }
           },
           fontFamily: {
             'display': ['Cormorant Garamond', 'Georgia', 'serif'],
@@ -60,27 +42,27 @@
 <body class="bg-stone-50 min-h-screen">
   
   <!-- Header -->
-  <header class="bg-white border-b border-forest-100 sticky top-0 z-50">
+  <header class="bg-white border-b border-hunter-100 sticky top-0 z-50">
     <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
       <a href="/" class="flex items-center gap-3">
         <div class="w-10 h-10 rounded-xl flex items-center justify-center shadow-md" style="background: linear-gradient(135deg, #8b2542, #6b1d34);">
           <span class="font-display font-bold text-lg" style="position: relative; display: inline-block; width: 22px; height: 22px;"><span style="color: #D4A855; position: absolute; top: -3px; left: 0;">C</span><span style="color: #4A7C59; position: absolute; top: 5px; left: 6px;">R</span></span>
         </div>
         <span class="font-display font-semibold text-xl">
-          <span class="text-burgundy-800">Counselor</span><span class="text-forest-600">Ready</span>
+          <span class="text-burgundy-800">Counselor</span><span class="text-hunter-600">Ready</span>
         </span>
       </a>
       
       <nav class="hidden md:flex items-center gap-8">
-        <a href="/dashboard.html" class="text-forest-600 hover:text-forest-700 transition-colors">Dashboard</a>
+        <a href="/dashboard.html" class="text-hunter-600 hover:text-hunter-700 transition-colors">Dashboard</a>
         <a href="/courses.html" class="text-burgundy-800 font-medium border-b-2 border-burgundy-700 pb-1">Courses</a>
-        <a href="/credentials.html" class="text-forest-600 hover:text-forest-700 transition-colors">Credentials</a>
-        <a href="/certificates.html" class="text-forest-600 hover:text-forest-700 transition-colors">CE Certificates</a>
-        <a href="/messages.html" class="text-forest-600 hover:text-forest-700 transition-colors">Messages</a>
+        <a href="/credentials.html" class="text-hunter-600 hover:text-hunter-700 transition-colors">Credentials</a>
+        <a href="/certificates.html" class="text-hunter-600 hover:text-hunter-700 transition-colors">CE Certificates</a>
+        <a href="/messages.html" class="text-hunter-600 hover:text-hunter-700 transition-colors">Messages</a>
       </nav>
 
       <div class="flex items-center gap-4">
-        <a href="/dashboard.html" class="text-forest-600 hover:text-forest-700 text-sm">
+        <a href="/dashboard.html" class="text-hunter-600 hover:text-hunter-700 text-sm">
           ← Back to Dashboard
         </a>
       </div>
@@ -211,11 +193,11 @@
         
         return `
           <div class="bg-white rounded-xl border border-burgundy-100 shadow-sm overflow-hidden hover:shadow-lg transition-shadow">
-            <!-- Thumbnail — gradient green to rose with deep rose book icon -->
-            <div class="h-48 bg-gradient-to-br from-forest-100 to-burgundy-200 flex items-center justify-center">
-              ${course.thumbnail ?
+            <!-- Thumbnail -->
+            <div class="h-48 bg-gradient-to-br from-burgundy-100 to-forest-100 flex items-center justify-center">
+              ${course.thumbnail ? 
                 `<img src="${course.thumbnail}" alt="${course.title}" class="w-full h-full object-cover">` :
-                `<svg class="w-16 h-16 text-burgundy-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                `<svg class="w-16 h-16 text-burgundy-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
                 </svg>`
               }
@@ -228,42 +210,34 @@
               
               ${course.subtitle ? `<p class="text-forest-600 text-sm mb-3">${course.subtitle}</p>` : ''}
               
-              <!-- Description (sage) -->
-              <p class="text-forest-600 text-sm mb-4 line-clamp-2">${course.description}</p>
+              <!-- Description -->
+              <p class="text-forest-500 text-sm mb-4 line-clamp-2">${course.description}</p>
 
-              <!-- Meta Info Pills -->
+              <!-- Meta Info -->
               <div class="flex flex-wrap items-center gap-2 mb-4">
                 ${course.ceHours || course.ceuHours ? `
-                  <span class="bg-honey-100 text-honey-700 px-2 py-1 rounded-full text-xs font-medium">
+                  <span class="bg-gold-100 text-gold-700 px-2 py-1 rounded-full text-xs font-medium">
                     ${course.ceHours || course.ceuHours} CE Hours
                   </span>
                 ` : ''}
-
+                
                 ${categoryLabel ? `
                   <span class="bg-forest-100 text-forest-700 px-2 py-1 rounded-full text-xs font-medium">
                     ${categoryLabel}
                   </span>
                 ` : ''}
-
+                
                 ${course.ceuApprovalNumber || (course.ceHours ? "7760" : null) ? `
                   <span class="bg-burgundy-100 text-burgundy-700 px-2 py-1 rounded-full text-xs font-medium">
                     CE #${course.ceuApprovalNumber || (course.ceHours ? "7760" : null)}
                   </span>
                 ` : ''}
-
+                
                 ${isFree ? `
-                  <span class="bg-forest-100 text-forest-700 px-2 py-1 rounded-full text-xs font-medium">
+                  <span class="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs font-medium">
                     FREE
                   </span>
                 ` : ''}
-              </div>
-
-              <!-- Duration with clock icon -->
-              <div class="flex items-center gap-1 text-sm text-forest-500 mb-4">
-                <svg class="w-4 h-4 text-forest-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                </svg>
-                <span>${course.totalEstimatedTime || 60} min</span>
               </div>
 
               <!-- Progress Bar (if enrolled) -->
