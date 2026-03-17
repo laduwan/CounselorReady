@@ -168,13 +168,22 @@ export default function AdminPartners() {
           </h1>
           <p className="text-sm text-stone-500 mt-1">Create and manage whitelabel distribution partners</p>
         </div>
-        <button
-          onClick={() => { resetForm(); setShowForm(true); }}
-          className="flex items-center gap-2 px-4 py-2 text-white rounded-lg text-sm font-medium transition-colors"
-          style={{ background: BURGUNDY }}
-        >
-          <Plus className="w-4 h-4" /> Add Partner
-        </button>
+        <div className="flex items-center gap-3">
+          <a
+            href="/admin/partner-analytics"
+            className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border transition-colors"
+            style={{ color: HUNTER, borderColor: HUNTER }}
+          >
+            <Eye className="w-4 h-4" /> Analytics
+          </a>
+          <button
+            onClick={() => { resetForm(); setShowForm(true); }}
+            className="flex items-center gap-2 px-4 py-2 text-white rounded-lg text-sm font-medium transition-colors"
+            style={{ background: BURGUNDY }}
+          >
+            <Plus className="w-4 h-4" /> Add Partner
+          </button>
+        </div>
       </div>
 
       {error && (

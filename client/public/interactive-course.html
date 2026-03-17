@@ -574,7 +574,7 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
 /* Section Hero Image (auto-injected for 3+ CE courses) */
 .cr-section-hero {
   width: 100%; height: 200px;
-  object-fit: cover; object-position: center 30%; border-radius: 12px;
+  object-fit: cover; object-position: center top; border-radius: 12px;
   margin: 0 0 24px 0;
   opacity: 0.85;
   box-shadow: 0 2px 8px rgba(0,0,0,0.08);
@@ -1618,6 +1618,81 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
   .cr-highlight { background: none !important; border-bottom: 1px solid #999; }
   .cr-accordion-body { max-height: none !important; padding: 12px 0 !important; }
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   AUTH / ENROLLMENT GATE OVERLAYS
+   ═══════════════════════════════════════════════════════════════ */
+.cr-gate {
+  display: none;
+  position: fixed; inset: 0; z-index: 9999;
+  background: rgba(43, 43, 43, 0.85);
+  backdrop-filter: blur(6px);
+  align-items: center; justify-content: center;
+}
+.cr-gate.visible { display: flex; }
+.cr-gate-card {
+  background: var(--cr-surface);
+  border-radius: 16px;
+  padding: 40px;
+  max-width: 420px; width: 90%;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+}
+.cr-gate-card h2 {
+  font-family: var(--cr-font-display);
+  font-size: 1.6em; font-weight: 700;
+  color: var(--cr-burgundy);
+  margin-bottom: 12px;
+}
+.cr-gate-card p {
+  color: var(--cr-text-secondary);
+  margin-bottom: 24px;
+  line-height: 1.5;
+}
+.cr-gate-card .cr-btn { width: 100%; margin-bottom: 10px; padding: 14px; font-size: 1em; }
+.cr-gate-card .cr-gate-secondary {
+  display: inline-block; margin-top: 8px;
+  color: var(--cr-text-muted); font-size: 0.85em;
+  text-decoration: underline; cursor: pointer;
+}
+.cr-gate-card .cr-gate-secondary:hover { color: var(--cr-burgundy); }
+.cr-eval-form { text-align: left; }
+.cr-eval-question { margin-bottom: 20px; }
+.cr-eval-question label { display: block; font-weight: 700; color: var(--cr-text); margin-bottom: 8px; font-size: 0.95em; }
+.cr-eval-question .cr-eval-required { color: var(--cr-burgundy); margin-left: 4px; }
+.cr-eval-stars { display: flex; gap: 6px; }
+.cr-eval-stars input[type="radio"] { display: none; }
+.cr-eval-stars label.cr-eval-star {
+  font-size: 1.6em; cursor: pointer; color: var(--cr-border);
+  transition: color 0.15s; font-weight: 400; margin: 0;
+}
+.cr-eval-stars label.cr-eval-star.active { color: var(--cr-gold); }
+.cr-eval-stars label.cr-eval-star:hover { color: var(--cr-gold-light); }
+.cr-eval-form textarea {
+  width: 100%; padding: 12px; border: 1px solid var(--cr-border);
+  border-radius: 8px; font-family: var(--cr-font-body);
+  font-size: 0.9em; resize: vertical; min-height: 80px;
+}
+.cr-attestation-box {
+  background: var(--cr-stone); border: 1px solid var(--cr-border);
+  border-radius: var(--cr-radius); padding: 20px;
+  text-align: left; margin-bottom: 20px;
+  font-size: 0.9em; line-height: 1.6;
+  color: var(--cr-text-secondary);
+}
+.cr-attestation-check {
+  display: flex; align-items: flex-start; gap: 12px;
+  margin: 20px 0; text-align: left; cursor: pointer;
+}
+.cr-attestation-check input { margin-top: 4px; width: 20px; height: 20px; accent-color: var(--cr-burgundy); }
+.cr-cert-display { text-align: center; }
+.cr-cert-display .cr-cert-icon {
+  width: 72px; height: 72px; margin: 0 auto 20px;
+  background: var(--cr-green-faded); border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 32px;
+}
+.cr-cert-actions { display: flex; gap: 12px; justify-content: center; margin-top: 24px; flex-wrap: wrap; }
 </style>
 <!-- .docx parsing -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
@@ -1650,6 +1725,34 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
 
 <!-- Reading Guide -->
 <div class="cr-reading-guide" id="crReadingGuide"></div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     AUTH / ENROLLMENT GATES
+     ═══════════════════════════════════════════════════════════════ -->
+<div id="crGateLogin" class="cr-gate" role="dialog" aria-modal="true" aria-label="Login required">
+  <div class="cr-gate-card">
+    <h2>Sign In to Continue</h2>
+    <p>You need a CounselorReady account to access this course and earn CE credits.</p>
+    <button class="cr-btn cr-btn-primary" onclick="crGateRedirectLogin()">Sign In</button>
+    <button class="cr-btn" style="background:var(--cr-green);color:#fff" onclick="crGateRedirectRegister()">Create Free Account</button>
+    <span class="cr-gate-secondary" onclick="crGateDismiss()">Browse course preview</span>
+  </div>
+</div>
+<div id="crGateSubscription" class="cr-gate" role="dialog" aria-modal="true" aria-label="Subscription required">
+  <div class="cr-gate-card">
+    <h2>Subscription Required</h2>
+    <p>This course requires an active subscription. Upgrade to access all courses and earn CE credits.</p>
+    <button class="cr-btn cr-btn-primary" onclick="window.location.href='/subscription.html'">View Plans</button>
+    <span class="cr-gate-secondary" onclick="window.location.href='/courses.html'">Back to Courses</span>
+  </div>
+</div>
+<div id="crGateEnrolled" class="cr-gate" role="dialog" aria-label="Enrolled">
+  <div class="cr-gate-card">
+    <h2>You're Enrolled!</h2>
+    <p id="crGateEnrolledMsg">You've been enrolled in this course. Your progress will be saved automatically.</p>
+    <button class="cr-btn cr-btn-primary" onclick="document.getElementById('crGateEnrolled').classList.remove('visible')">Start Learning</button>
+  </div>
+</div>
 
 <!-- ═══════════════════════════════════════════════════════════════
      LOADING STATE
@@ -1726,7 +1829,7 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
         <option value="">Original</option>
         <option value="es">Español</option>
         <option value="fr">Français</option>
-        <option value="zh">中文</option>
+        <option value="zh-CN">中文</option>
         <option value="ko">한국어</option>
         <option value="ar">العربية</option>
         <option value="pt">Português</option>
@@ -1959,11 +2062,91 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
 let course = null;
 let currentSectionIndex = 0;
 let completedSections = new Set();
-let visitedSections = new Set([0]); // First section always visited
-let currentView = 'section'; // 'section' | 'assessment'
+let visitedSections = new Set([0]);
+let currentView = 'section';
 let assessmentState = { answers: {}, submitted: false, score: null, attempts: 0 };
 let ttsActive = false;
 let ttsUtterance = null;
+// Auth & enrollment state
+let authToken = null;
+let authUser = null;
+let enrollmentData = null;
+let courseId = null;
+let isPreviewMode = false;
+let progressSyncQueue = [];
+let isSyncing = false;
+const API_BASE = location.origin.includes('localhost') ? 'http://localhost:5000' : 'https://api.counselorready.com';
+let adaptiveUnlockedSections = new Set();
+let crApiBase = '';
+
+// ── API helper for quiz/assessment endpoints (legacy) ──
+function crApiFetch(path, body, method) {
+  const base = crApiBase || API_BASE;
+  const token = authToken || localStorage.getItem('token');
+  if (!token) return Promise.reject(new Error('Not authenticated'));
+  return fetch(`${base}${path}`, {
+    method: method || 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+    body: JSON.stringify(body)
+  }).then(r => r.json().then(data => ({ ok: r.ok, status: r.status, data })));
+}
+
+// ═══════════════════════════════════════════════════════════════
+// API HELPERS
+// ═══════════════════════════════════════════════════════════════
+async function crApi(method, path, body) {
+  const headers = { 'Content-Type': 'application/json' };
+  if (authToken) headers['Authorization'] = 'Bearer ' + authToken;
+  const opts = { method, headers };
+  if (body && method !== 'GET') opts.body = JSON.stringify(body);
+  let res;
+  try {
+    res = await fetch(API_BASE + path, opts);
+  } catch (networkErr) {
+    const err = new Error('Network error: ' + (networkErr.message || 'Unable to reach server'));
+    err.status = 0;
+    err.isNetwork = true;
+    throw err;
+  }
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    const err = new Error(data.error || data.message || 'API error');
+    err.status = res.status;
+    err.code = data.code;
+    throw err;
+  }
+  return data;
+}
+function queueProgressSync(method, path, body) {
+  if (isPreviewMode || !authToken || !courseId) return;
+  progressSyncQueue.push({ method, path, body });
+  drainSyncQueue();
+}
+async function drainSyncQueue() {
+  if (isSyncing || progressSyncQueue.length === 0) return;
+  isSyncing = true;
+  while (progressSyncQueue.length > 0) {
+    const { method, path, body } = progressSyncQueue.shift();
+    try { await crApi(method, path, body); }
+    catch (e) { console.warn('Progress sync failed:', e.message); }
+  }
+  isSyncing = false;
+}
+// ═══════════════════════════════════════════════════════════════
+// AUTH GATE HELPERS
+// ═══════════════════════════════════════════════════════════════
+function crGateRedirectLogin() {
+  const returnUrl = encodeURIComponent(window.location.href);
+  window.location.href = '/login.html?redirect=' + returnUrl;
+}
+function crGateRedirectRegister() {
+  const returnUrl = encodeURIComponent(window.location.href);
+  window.location.href = '/register.html?redirect=' + returnUrl;
+}
+function crGateDismiss() {
+  document.getElementById('crGateLogin').classList.remove('visible');
+  isPreviewMode = true;
+}
 
 // ═══════════════════════════════════════════════════════════════
 // CONTENT PROTECTION — © 2026 GAITP LLC
@@ -2109,74 +2292,139 @@ function applyChunkedMode() {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// INITIALIZATION
+// INITIALIZATION (with auth + enrollment gate)
 // ═══════════════════════════════════════════════════════════════
-(function init() {
-  // Check for course data sources
-  // 1. window.COURSE_DATA (inline)
+(async function init() {
+  // 1. window.COURSE_DATA (inline/embedded — skip auth)
   if (window.COURSE_DATA) {
+    isPreviewMode = true;
     loadCourse(window.COURSE_DATA);
     return;
   }
-  
-  // 2. URL params: ?json=URL or ?slug=SLUG or ?api=BASE_URL&slug=SLUG
   const params = new URLSearchParams(location.search);
   const jsonUrl = params.get('json');
   const slug = params.get('slug');
   const apiBase = params.get('api') || '';
-  
+  // JSON URL source — preview mode
   if (jsonUrl) {
-    fetch(jsonUrl).then(r => r.json()).then(data => loadCourse(data.data || data))
-      .catch(e => showError('Failed to load course: ' + e.message));
+    isPreviewMode = true;
+    try {
+      const r = await fetch(jsonUrl);
+      const data = await r.json();
+      loadCourse(data.data || data);
+    } catch (e) { showError('Failed to load course: ' + e.message); }
     return;
   }
-  
+  // Slug-based load — main user path
   if (slug) {
-    const base = apiBase || (location.origin.includes('localhost') ? 'http://localhost:5000' : 'https://api.counselorready.com');
-    const token = localStorage.getItem('token');
-    
-    // Auth required for platform courses
-    if (!token && !apiBase) {
-      window.location.href = `/login.html?redirect=${encodeURIComponent(window.location.href)}`;
+    const base = apiBase || API_BASE;
+    crApiBase = base;
+    // Step A: Check auth
+    authToken = localStorage.getItem('token');
+    if (authToken) {
+      try {
+        const meRes = await crApi('GET', '/api/auth/me');
+        authUser = meRes.user || meRes;
+      } catch (e) {
+        // Only clear token on auth errors (401/403), not network failures
+        if (!e.isNetwork) {
+          authToken = null;
+          localStorage.removeItem('token');
+        }
+      }
+    }
+    // Step B: Fetch course
+    let courseData;
+    try {
+      const headers = {};
+      if (authToken) headers['Authorization'] = 'Bearer ' + authToken;
+      const res = await fetch(base + '/api/interactive-courses/slug/' + slug, { headers });
+      const json = await res.json();
+      courseData = json.data || json.course || json;
+    } catch (e) {
+      showError('Course not found: ' + slug);
       return;
     }
-    
-    const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
-    
-    fetch(`${base}/api/interactive-courses/slug/${slug}`, { headers })
-      .then(r => {
-        if (r.status === 401) {
-          window.location.href = `/login.html?redirect=${encodeURIComponent(window.location.href)}`;
-          throw new Error('auth');
+    if (!courseData || !courseData._id) {
+      showError('Course not found: ' + slug);
+      return;
+    }
+    courseId = courseData._id;
+    // If server returned gated/stripped content, set preview mode
+    if (courseData._isPreview) {
+      isPreviewMode = true;
+      if (authToken) {
+        // Authenticated but not enrolled — viewer will auto-enroll
+        loadCourse(courseData);
+      } else {
+        document.getElementById('crGateLogin').classList.add('visible');
+        loadCourse(courseData);
+      }
+      return;
+    }
+    // Step C: No auth — show login gate, allow preview
+    if (!authToken) {
+      document.getElementById('crGateLogin').classList.add('visible');
+      isPreviewMode = true;
+      loadCourse(courseData);
+      return;
+    }
+    // Step D: Check enrollment + restore progress
+    try {
+      const progress = await crApi('GET', '/api/interactive-courses/' + courseId + '/progress');
+      enrollmentData = progress;
+      if (progress.sectionsCompleted && progress.sectionsCompleted.length > 0) {
+        completedSections = new Set(progress.sectionsCompleted);
+      }
+      if (typeof progress.lastSectionViewed === 'number') {
+        currentSectionIndex = progress.lastSectionViewed;
+      }
+      if (progress.assessmentAttempts && progress.assessmentAttempts.length > 0) {
+        assessmentState.attempts = progress.assessmentAttempts.length;
+        const lastAttempt = progress.assessmentAttempts[progress.assessmentAttempts.length - 1];
+        if (lastAttempt.passed) {
+          assessmentState.submitted = true;
+          assessmentState.score = lastAttempt.score;
         }
-        return r.json();
-      })
-      .then(data => {
-        var courseData = data.data || data.course || data;
-        // If main API didn't return rawMarkdown, try fallback route
-        if (!courseData.rawMarkdown) {
-          fetch(`${base}/api/rawmd/${slug}`, { headers })
-            .then(r => r.ok ? r.json() : { rawMarkdown: null })
-            .then(md => {
-              if (md && md.rawMarkdown) courseData.rawMarkdown = md.rawMarkdown;
-              loadCourse(courseData);
-            })
-            .catch(() => loadCourse(courseData));
-        } else {
+      }
+      if (progress.visitedSections && progress.visitedSections.length > 0) {
+        visitedSections = new Set(progress.visitedSections);
+      }
+      loadCourse(courseData);
+      return;
+    } catch (e) {
+      if (e.status === 404 || e.status === 401) {
+        try {
+          const enrollRes = await crApi('POST', '/api/interactive-courses/' + courseId + '/enroll');
+          enrollmentData = enrollRes;
+          document.getElementById('crGateEnrolledMsg').textContent =
+            'You\'ve been enrolled in "' + (courseData.title || 'this course') + '". Your progress will be saved automatically.';
+          document.getElementById('crGateEnrolled').classList.add('visible');
           loadCourse(courseData);
+          return;
+        } catch (enrollErr) {
+          if (enrollErr.code === 'SUBSCRIPTION_REQUIRED' || enrollErr.status === 403) {
+            document.getElementById('crGateSubscription').classList.add('visible');
+            document.getElementById('crLoading').style.display = 'none';
+            return;
+          }
+          isPreviewMode = true;
+          loadCourse(courseData);
+          return;
         }
-      })
-      .catch(e => { if (e.message !== 'auth') showError('Course not found: ' + slug); });
-    return;
+      }
+      isPreviewMode = true;
+      loadCourse(courseData);
+      return;
+    }
   }
-  
-  // 3. postMessage (for iframe embedding)
+  // 3. postMessage (iframe embedding)
   window.addEventListener('message', (e) => {
     if (e.data && e.data.type === 'LOAD_COURSE') {
+      isPreviewMode = true;
       loadCourse(e.data.course);
     }
   });
-  
   // 4. No source — show parser
   document.getElementById('crLoading').style.display = 'none';
   showParser();
@@ -2611,13 +2859,14 @@ function detectModuleGroups() {
 }
 
 function goToSection(i) {
-  if (currentView === 'assessment') currentView = 'section';
+  if (currentView === 'assessment' || currentView === 'evaluation' || currentView === 'attestation' || currentView === 'certificate') currentView = 'section';
   completedSections.add(currentSectionIndex);
   visitedSections.add(i);
   currentSectionIndex = i;
   buildSectionNav();
   renderCurrentSection();
   updateProgress();
+  syncSectionComplete(currentSectionIndex);
   closeSidebar();
   window.scrollTo({ top: 0, behavior: 'smooth' });
   srAnnounce('Now viewing: ' + (course.sections[i]?.title || 'Section ' + (i + 1)));
@@ -2655,13 +2904,16 @@ function scrollToH2(sectionIdx, headingText) {
 }
 
 function prevSection() {
-  if (currentView === 'assessment') { currentView = 'section'; renderCurrentSection(); return; }
+  if (currentView === 'assessment' || currentView === 'evaluation' || currentView === 'attestation' || currentView === 'certificate') {
+    currentView = 'section'; renderCurrentSection(); return;
+  }
   if (currentSectionIndex > 0) goToSection(currentSectionIndex - 1);
 }
 
 function nextSection() {
   if (currentView === 'assessment') return;
   completedSections.add(currentSectionIndex);
+  syncSectionComplete(currentSectionIndex);
   if (currentSectionIndex < course.sections.length - 1) {
     goToSection(currentSectionIndex + 1);
   } else if (course.assessment?.questions?.length > 0) {
@@ -2670,30 +2922,22 @@ function nextSection() {
 }
 
 function showAssessment() {
-  // Assessment lock — if enabled, require all sections visited first
-  if (course.settings?.lockAssessment !== false) {
-    // Default: locked. Set course.settings.lockAssessment = false to unlock
-    const navSections = course.sections.filter(s => !s._isOverview);
-    const allVisited = navSections.every((s, i) => {
-      const realIdx = course.sections.indexOf(s);
-      return visitedSections.has(realIdx) || completedSections.has(realIdx);
-    });
-    if (!allVisited) {
-      const visited = navSections.filter((s, i) => {
-        const realIdx = course.sections.indexOf(s);
-        return visitedSections.has(realIdx) || completedSections.has(realIdx);
-      }).length;
-      alert('Please complete all course sections before taking the assessment.\n\n' +
-        visited + ' of ' + navSections.length + ' sections visited.');
-      return;
-    }
-  }
   currentView = 'assessment';
   completedSections.add(currentSectionIndex);
+  syncSectionComplete(currentSectionIndex);
   renderAssessment();
   updateProgress();
   buildSectionNav();
   window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+function syncSectionComplete(sectionIndex) {
+  if (!courseId) return;
+  queueProgressSync('PUT', '/api/interactive-courses/' + courseId + '/progress/section/' + sectionIndex, {
+    completed: true,
+    visitedSections: [...visitedSections],
+    completedSections: [...completedSections],
+    lastSectionViewed: currentSectionIndex
+  });
 }
 
 function updateProgress() {
@@ -3043,57 +3287,57 @@ function renderSectionDivider(wrap, block) {
 // ─── SECTION HERO IMAGE BANK (POC-centered) ───
 var _heroImageBank = {
   ethics: [
-    'https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=900&h=280&fit=crop',
-    'https://images.unsplash.com/photo-1551836022-d5d88e9218df?w=900&h=280&fit=crop',
-    'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=900&h=280&fit=crop'
+    'https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=900&h=280&fit=crop&crop=top',
+    'https://images.unsplash.com/photo-1551836022-d5d88e9218df?w=900&h=280&fit=crop&crop=top',
+    'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=900&h=280&fit=crop&crop=top'
   ],
   trauma: [
-    'https://images.unsplash.com/photo-1559234938-b60fff04894d?w=900&h=280&fit=crop',
-    'https://images.unsplash.com/photo-1604881991720-f91add269bed?w=900&h=280&fit=crop',
-    'https://images.unsplash.com/photo-1531384441138-2736e62e0919?w=900&h=280&fit=crop'
+    'https://images.unsplash.com/photo-1559234938-b60fff04894d?w=900&h=280&fit=crop&crop=top',
+    'https://images.unsplash.com/photo-1604881991720-f91add269bed?w=900&h=280&fit=crop&crop=top',
+    'https://images.unsplash.com/photo-1531384441138-2736e62e0919?w=900&h=280&fit=crop&crop=top'
   ],
   clinical: [
-    'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=900&h=280&fit=crop',
-    'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=900&h=280&fit=crop',
-    'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=900&h=280&fit=crop'
+    'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=900&h=280&fit=crop&crop=top',
+    'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=900&h=280&fit=crop&crop=top',
+    'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=900&h=280&fit=crop&crop=top'
   ],
   multicultural: [
-    'https://images.unsplash.com/photo-1531206715517-5c0ba140b2b8?w=900&h=280&fit=crop',
-    'https://images.unsplash.com/photo-1529333166437-7750a6dd5a70?w=900&h=280&fit=crop',
-    'https://images.unsplash.com/photo-1543269865-cbf427effbad?w=900&h=280&fit=crop',
-    'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=900&h=280&fit=crop'
+    'https://images.unsplash.com/photo-1531206715517-5c0ba140b2b8?w=900&h=280&fit=crop&crop=top',
+    'https://images.unsplash.com/photo-1529333166437-7750a6dd5a70?w=900&h=280&fit=crop&crop=top',
+    'https://images.unsplash.com/photo-1543269865-cbf427effbad?w=900&h=280&fit=crop&crop=top',
+    'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=900&h=280&fit=crop&crop=top'
   ],
   crisis: [
-    'https://images.unsplash.com/photo-1573497019236-17f8177b81e8?w=900&h=280&fit=crop',
-    'https://images.unsplash.com/photo-1609220136736-443140cffec6?w=900&h=280&fit=crop',
-    'https://images.unsplash.com/photo-1469571486292-0ba58a3f068b?w=900&h=280&fit=crop'
+    'https://images.unsplash.com/photo-1573497019236-17f8177b81e8?w=900&h=280&fit=crop&crop=top',
+    'https://images.unsplash.com/photo-1609220136736-443140cffec6?w=900&h=280&fit=crop&crop=top',
+    'https://images.unsplash.com/photo-1469571486292-0ba58a3f068b?w=900&h=280&fit=crop&crop=top'
   ],
   mindfulness: [
-    'https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=900&h=280&fit=crop',
-    'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=900&h=280&fit=crop',
-    'https://images.unsplash.com/photo-1602192509154-0b900ee1f851?w=900&h=280&fit=crop'
+    'https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=900&h=280&fit=crop&crop=top',
+    'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=900&h=280&fit=crop&crop=top',
+    'https://images.unsplash.com/photo-1602192509154-0b900ee1f851?w=900&h=280&fit=crop&crop=top'
   ],
   addiction: [
-    'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=900&h=280&fit=crop',
-    'https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=900&h=280&fit=crop',
-    'https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?w=900&h=280&fit=crop'
+    'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=900&h=280&fit=crop&crop=top',
+    'https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=900&h=280&fit=crop&crop=top',
+    'https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?w=900&h=280&fit=crop&crop=top'
   ],
   geriatric: [
-    'https://images.unsplash.com/photo-1581579438747-104c53d7fbc4?w=900&h=280&fit=crop',
-    'https://images.unsplash.com/photo-1516307365426-bea591f05011?w=900&h=280&fit=crop',
-    'https://images.unsplash.com/photo-1577896851231-70ef18881754?w=900&h=280&fit=crop'
+    'https://images.unsplash.com/photo-1581579438747-104c53d7fbc4?w=900&h=280&fit=crop&crop=top',
+    'https://images.unsplash.com/photo-1516307365426-bea591f05011?w=900&h=280&fit=crop&crop=top',
+    'https://images.unsplash.com/photo-1577896851231-70ef18881754?w=900&h=280&fit=crop&crop=top'
   ],
   telehealth: [
-    'https://images.unsplash.com/photo-1591085686350-798c0f9faa7f?w=900&h=280&fit=crop',
-    'https://images.unsplash.com/photo-1612349316228-5942a9b489c2?w=900&h=280&fit=crop',
-    'https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=900&h=280&fit=crop'
+    'https://images.unsplash.com/photo-1591085686350-798c0f9faa7f?w=900&h=280&fit=crop&crop=top',
+    'https://images.unsplash.com/photo-1612349316228-5942a9b489c2?w=900&h=280&fit=crop&crop=top',
+    'https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=900&h=280&fit=crop&crop=top'
   ],
   general: [
-    'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=900&h=280&fit=crop',
-    'https://images.unsplash.com/photo-1531206715517-5c0ba140b2b8?w=900&h=280&fit=crop',
-    'https://images.unsplash.com/photo-1573164713714-d95e436ab8d6?w=900&h=280&fit=crop',
-    'https://images.unsplash.com/photo-1551836022-d5d88e9218df?w=900&h=280&fit=crop',
-    'https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=900&h=280&fit=crop'
+    'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=900&h=280&fit=crop&crop=top',
+    'https://images.unsplash.com/photo-1531206715517-5c0ba140b2b8?w=900&h=280&fit=crop&crop=top',
+    'https://images.unsplash.com/photo-1573164713714-d95e436ab8d6?w=900&h=280&fit=crop&crop=top',
+    'https://images.unsplash.com/photo-1551836022-d5d88e9218df?w=900&h=280&fit=crop&crop=top',
+    'https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=900&h=280&fit=crop&crop=top'
   ]
 };
 
@@ -3245,6 +3489,12 @@ function submitMC(id, correctIdx) {
   if (submitBtn) submitBtn.style.display = 'none';
   srAnnounce(selected === correctIdx ? 'Correct!' : 'Incorrect. The correct answer is shown.');
   if (selected === correctIdx) updateObjectivesFromKC('mc-' + id);
+
+  // Track for section quiz API (knowledge check IDs: kc-{secIdx}-{blockIdx}-q{qIdx})
+  const kcMatch = id.match(/^kc-(\d+)-\d+-q(\d+)$/);
+  if (kcMatch) {
+    recordSectionQuizAnswer(parseInt(kcMatch[1]), parseInt(kcMatch[2]), selected, selected === correctIdx);
+  }
 }
 
 // ─── MULTI SELECT ───
@@ -3305,6 +3555,12 @@ function submitMS(id) {
   const selectedIdxs = [...el.querySelectorAll('.cr-kc-option.selected')].map((o, _, arr) => parseInt(o.dataset.idx));
   const allCorrect = correctIdxs.length === selectedIdxs.length && correctIdxs.every(ci => selectedIdxs.includes(ci));
   if (allCorrect) updateObjectivesFromKC('ms-' + id);
+
+  // Track for section quiz API (knowledge check IDs: kc-{secIdx}-{blockIdx}-q{qIdx})
+  const kcMatch = id.match(/^kc-(\d+)-\d+-q(\d+)$/);
+  if (kcMatch) {
+    recordSectionQuizAnswer(parseInt(kcMatch[1]), parseInt(kcMatch[2]), selectedIdxs, allCorrect);
+  }
 }
 
 // ─── MATCHING ───
@@ -3756,6 +4012,11 @@ function renderKnowledgeCheck(wrap, block, blockIndex) {
   const id = `kc-${currentSectionIndex}-${blockIndex}`;
   const questions = block.questions || [];
   const showExpl = block.showExplanations !== false;
+
+  // Initialize section quiz tracking for backend API submission
+  if (questions.length > 0) {
+    initSectionQuizTracking(currentSectionIndex, questions.length);
+  }
   
   let html = `<div class="cr-card" id="${id}" style="border-left:4px solid var(--cr-burgundy)">
     <div style="font-family:var(--cr-font-display);font-weight:700;font-size:1.15em;color:var(--cr-burgundy);margin-bottom:16px;display:flex;align-items:center;gap:8px">
@@ -3952,10 +4213,10 @@ function assessmentSelect(qIdx, optIdx) {
   renderAssessment();
 }
 
-function submitAssessment() {
+async function submitAssessment() {
   const qs = course.assessment.questions;
   let correct = 0;
-  
+  const answersForServer = [];
   qs.forEach((q, i) => {
     let correctIdx = 0;
     if (typeof q.correctAnswer === 'number') correctIdx = q.correctAnswer;
@@ -3964,21 +4225,34 @@ function submitAssessment() {
       if (idx >= 0) correctIdx = idx;
     }
     if (assessmentState.answers[i] === correctIdx) correct++;
+    answersForServer.push({
+      questionIndex: i,
+      selectedOption: assessmentState.answers[i],
+      correct: assessmentState.answers[i] === correctIdx
+    });
   });
-  
   const score = Math.round((correct / qs.length) * 100);
+  const passed = score >= (course.assessment.passingScore || 80);
   assessmentState.submitted = true;
   assessmentState.score = score;
   assessmentState.attempts++;
-  
+  if (courseId && authToken && !isPreviewMode) {
+    try {
+      const result = await crApi('POST', '/api/interactive-courses/' + courseId + '/assessment', {
+        answers: answersForServer, score, passed,
+        attempt: assessmentState.attempts, timeSpent: 0
+      });
+      if (result.attemptsRemaining !== undefined) {
+        assessmentState.serverAttemptsRemaining = result.attemptsRemaining;
+      }
+    } catch (e) {
+      console.warn('Failed to save assessment to server:', e.message);
+    }
+  }
   renderAssessmentResult();
-  
-  // Notify parent
   if (window.parent !== window) {
     window.parent.postMessage({
-      type: 'ASSESSMENT_COMPLETE',
-      score,
-      passed: score >= (course.assessment.passingScore || 80),
+      type: 'ASSESSMENT_COMPLETE', score, passed,
       attempts: assessmentState.attempts
     }, '*');
   }
@@ -3990,38 +4264,316 @@ function renderAssessmentResult() {
   const passing = course.assessment?.passingScore || 80;
   const passed = score >= passing;
   const maxAttempts = course.assessment?.maxAttempts || 3;
-  
-  let html = `<div class="cr-assessment-result ${passed ? 'passed' : 'failed'}">
-    <h3>${passed ? '🎉 Congratulations!' : '📝 Not Quite'}</h3>
-    <div class="score">${score}%</div>
-    <p style="color:var(--cr-text-secondary);margin-top:12px">
-      ${passed ? 'You have passed the assessment.' : `You needed ${passing}% to pass.`}
-    </p>
-    <p style="font-size:0.85em;color:var(--cr-text-muted);margin-top:8px">
-      Attempt ${assessmentState.attempts} of ${maxAttempts}
-    </p>`;
-  
+  let html = '<div class="cr-assessment-result ' + (passed ? 'passed' : 'failed') + '">';
+  html += '<h3>' + (passed ? '🎉 Congratulations!' : '📝 Not Quite') + '</h3>';
+  html += '<div class="score">' + score + '%</div>';
+  html += '<p style="color:var(--cr-text-secondary);margin-top:12px">' + (passed ? 'You have passed the assessment.' : 'You needed ' + passing + '% to pass.') + '</p>';
+  html += '<p style="font-size:0.85em;color:var(--cr-text-muted);margin-top:8px">Attempt ' + assessmentState.attempts + ' of ' + maxAttempts + '</p>';
   if (!passed && assessmentState.attempts < maxAttempts) {
-    html += `<button class="cr-btn cr-btn-primary" style="margin-top:20px" data-action="retryAssessment">Try Again</button>`;
+    html += '<button class="cr-btn cr-btn-primary" style="margin-top:20px" data-action="retryAssessment">Try Again</button>';
   }
-  
   if (passed) {
-    html += `<button class="cr-btn cr-btn-success" style="margin-top:20px" data-action="requestCertificate">
-      Get Certificate
-    </button>`;
+    if (isPreviewMode || !authToken) {
+      html += '<p style="margin-top:20px;color:var(--cr-text-muted);font-size:0.9em">Sign in to complete the evaluation and receive your certificate.</p>';
+      html += '<button class="cr-btn cr-btn-primary" style="margin-top:12px" onclick="crGateRedirectLogin()">Sign In</button>';
+    } else {
+      html += '<button class="cr-btn cr-btn-success" style="margin-top:20px" data-action="showEvaluation">Continue to Course Evaluation</button>';
+    }
   }
-  
   html += '<div style="margin-top:24px;font-size:10px;color:var(--cr-text-muted);text-align:center">Powered by CReady™ Viewer · © 2026 GAITP LLC · NBCC ACEP #7760</div>';
   html += '</div>';
   area.innerHTML = html;
   document.getElementById('crNavButtons').style.display = 'none';
 }
-
 function retryAssessment() {
   assessmentState.submitted = false;
   assessmentState.answers = {};
   assessmentState.score = null;
   renderAssessment();
+}
+// ═══════════════════════════════════════════════════════════════
+// NBCC ACEP COMPLETION FLOW: Evaluation → Attestation → Certificate
+// ═══════════════════════════════════════════════════════════════
+function showEvaluation() {
+  currentView = 'evaluation';
+  const area = document.getElementById('crContentArea');
+  document.getElementById('crNavButtons').style.display = 'none';
+  const evalQuestions = [
+    { id: 'relevance', text: 'The course content was relevant to my professional practice.', type: 'rating', required: true },
+    { id: 'objectives', text: 'The learning objectives were clearly stated and met.', type: 'rating', required: true },
+    { id: 'materials', text: 'The course materials were well-organized and easy to follow.', type: 'rating', required: true },
+    { id: 'assessment', text: 'The assessment accurately measured my learning.', type: 'rating', required: true },
+    { id: 'apply', text: 'I can apply the skills learned in this course to my practice.', type: 'rating', required: true },
+    { id: 'presenter', text: 'The presenter demonstrated expertise in the subject matter.', type: 'rating', required: true },
+    { id: 'valuable', text: 'What was the most valuable aspect of this course?', type: 'textarea', required: false },
+    { id: 'improve', text: 'What would you suggest to improve this course?', type: 'textarea', required: false }
+  ];
+  let html = '<div style="max-width:640px;margin:0 auto;padding:32px 0">';
+  html += '<h2 style="font-family:var(--cr-font-display);font-size:1.8em;font-weight:700;color:var(--cr-burgundy);text-align:center;margin-bottom:8px">Course Evaluation</h2>';
+  html += '<p style="text-align:center;color:var(--cr-text-secondary);margin-bottom:32px">This evaluation is required by NBCC for CE credit. Please rate your experience.</p>';
+  html += '<div class="cr-eval-form">';
+  evalQuestions.forEach(q => {
+    html += '<div class="cr-eval-question" data-eval-id="' + q.id + '" data-eval-required="' + q.required + '">';
+    html += '<label>' + q.text + (q.required ? '<span class="cr-eval-required">*</span>' : '') + '</label>';
+    if (q.type === 'rating') {
+      html += '<div class="cr-eval-stars">';
+      for (let s = 1; s <= 5; s++) {
+        html += '<input type="radio" name="eval-' + q.id + '" id="eval-' + q.id + '-' + s + '" value="' + s + '">';
+        html += '<label class="cr-eval-star" for="eval-' + q.id + '-' + s + '" onclick="crEvalStar(this, ' + s + ')">&#9733;</label>';
+      }
+      html += '</div>';
+    } else {
+      html += '<textarea id="eval-' + q.id + '" placeholder="Optional feedback..." rows="3"></textarea>';
+    }
+    html += '</div>';
+  });
+  html += '</div>';
+  html += '<button class="cr-btn cr-btn-primary" style="width:100%;margin-top:24px;padding:14px" data-action="submitEvaluation">Submit Evaluation</button>';
+  html += '<div style="margin-top:24px;font-size:10px;color:var(--cr-text-muted);text-align:center">NBCC ACEP Provider #7760 · Required for CE credit</div>';
+  html += '</div>';
+  area.innerHTML = html;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+function crEvalStar(el, rating) {
+  const container = el.parentElement;
+  container.querySelectorAll('.cr-eval-star').forEach((star, i) => {
+    star.classList.toggle('active', i < rating);
+  });
+}
+async function submitEvaluation() {
+  const responses = {};
+  let valid = true;
+  document.querySelectorAll('.cr-eval-question').forEach(q => {
+    const id = q.dataset.evalId;
+    const required = q.dataset.evalRequired === 'true';
+    const radio = q.querySelector('input[type="radio"]:checked');
+    const textarea = q.querySelector('textarea');
+    if (radio) responses[id] = parseInt(radio.value);
+    else if (textarea) responses[id] = textarea.value;
+    else responses[id] = null;
+    if (required && !responses[id]) valid = false;
+  });
+  if (!valid) {
+    alert('Please complete all required fields (marked with *).');
+    return;
+  }
+  if (courseId && authToken) {
+    try {
+      await crApi('POST', '/api/interactive-courses/' + courseId + '/evaluation', { responses });
+    } catch (e) {
+      console.warn('Failed to save evaluation:', e.message);
+      alert('Failed to submit evaluation. Please try again.');
+      return;
+    }
+  }
+  showAttestation();
+}
+function showAttestation() {
+  currentView = 'attestation';
+  const area = document.getElementById('crContentArea');
+  document.getElementById('crNavButtons').style.display = 'none';
+  const courseTitleSafe = (course.title || 'this course').replace(/</g, '&lt;');
+  const ceHours = course.ceHours || course.ceuHours || 1;
+  let html = '<div style="max-width:640px;margin:0 auto;padding:32px 0">';
+  html += '<h2 style="font-family:var(--cr-font-display);font-size:1.8em;font-weight:700;color:var(--cr-burgundy);text-align:center;margin-bottom:8px">Attestation</h2>';
+  html += '<p style="text-align:center;color:var(--cr-text-secondary);margin-bottom:24px">Please read and confirm the following statement to receive your certificate.</p>';
+  html += '<div class="cr-attestation-box">';
+  html += '<p><strong>Attestation of Completion</strong></p>';
+  html += '<p>I, <strong>' + (authUser?.firstName || '') + ' ' + (authUser?.lastName || '') + '</strong>, hereby attest that:</p>';
+  html += '<p>I have personally completed all components of <em>"' + courseTitleSafe + '"</em> (' + ceHours + ' CE hours), including reading all course materials, completing all interactive activities, and passing the final assessment.</p>';
+  html += '<p>I understand that this continuing education activity was provided by GAITP LLC (NBCC ACEP Provider #7760) and that ' + ceHours + ' continuing education hour(s) will be awarded upon completion.</p>';
+  html += '<p>I understand that falsifying this attestation may result in revocation of CE credits.</p>';
+  html += '</div>';
+  html += '<label class="cr-attestation-check">';
+  html += '<input type="checkbox" id="crAttestCheckbox" onchange="document.getElementById(\'crAttestBtn\').disabled = !this.checked">';
+  html += '<span>I have read, understand, and agree to the above attestation statement.</span>';
+  html += '</label>';
+  html += '<button id="crAttestBtn" class="cr-btn cr-btn-primary" style="width:100%;padding:14px" disabled data-action="submitAttestation">Confirm &amp; Get Certificate</button>';
+  html += '<div style="margin-top:24px;font-size:10px;color:var(--cr-text-muted);text-align:center">NBCC ACEP Provider #7760</div>';
+  html += '</div>';
+  area.innerHTML = html;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+async function submitAttestation() {
+  const checkbox = document.getElementById('crAttestCheckbox');
+  if (!checkbox || !checkbox.checked) {
+    alert('Please agree to the attestation statement.');
+    return;
+  }
+  if (courseId && authToken) {
+    try {
+      await crApi('POST', '/api/interactive-courses/' + courseId + '/attestation', { agreed: true });
+    } catch (e) {
+      console.warn('Failed to save attestation:', e.message);
+      alert('Failed to submit attestation. Please try again.');
+      return;
+    }
+  }
+  showCertificateView();
+}
+async function showCertificateView() {
+  currentView = 'certificate';
+  const area = document.getElementById('crContentArea');
+  document.getElementById('crNavButtons').style.display = 'none';
+  area.innerHTML = '<div style="text-align:center;padding:60px 0"><div class="cr-spinner" style="margin:0 auto 16px"></div><p style="color:var(--cr-text-muted)">Generating your certificate…</p></div>';
+  let certUrl = null;
+  let certNumber = null;
+  if (courseId && authToken) {
+    try {
+      const certRes = await crApi('POST', '/api/interactive-courses/' + courseId + '/certificate');
+      certUrl = certRes.pdfUrl || certRes.url || certRes.certificateUrl;
+      certNumber = certRes.certificateNumber || certRes.number;
+    } catch (e) {
+      console.warn('Certificate generation failed:', e.message);
+    }
+  }
+  const ceHours = course.ceHours || course.ceuHours || 1;
+  const courseTitleSafe = (course.title || 'Course').replace(/</g, '&lt;');
+  let html = '<div class="cr-cert-display" style="padding:40px 0;max-width:540px;margin:0 auto">';
+  html += '<div class="cr-cert-icon">&#127942;</div>';
+  html += '<h2 style="font-family:var(--cr-font-display);font-size:2em;font-weight:700;color:var(--cr-burgundy);margin-bottom:8px">Course Complete!</h2>';
+  html += '<p style="color:var(--cr-text-secondary);margin-bottom:4px">Congratulations on completing</p>';
+  html += '<p style="font-weight:700;color:var(--cr-text);font-size:1.1em;margin-bottom:16px">' + courseTitleSafe + '</p>';
+  html += '<p style="color:var(--cr-text-muted);font-size:0.9em">' + ceHours + ' CE Hour' + (ceHours !== 1 ? 's' : '') + ' earned · NBCC ACEP #7760</p>';
+  if (certNumber) {
+    html += '<p style="color:var(--cr-text-muted);font-size:0.85em;margin-top:8px">Certificate #' + certNumber + '</p>';
+  }
+  html += '<div class="cr-cert-actions">';
+  if (certUrl) {
+    html += '<a href="' + certUrl + '" target="_blank" class="cr-btn cr-btn-primary" style="padding:12px 24px">Download Certificate (PDF)</a>';
+  } else {
+    html += '<p style="color:var(--cr-text-muted);font-size:0.9em">Your certificate will be available in your <a href="/certificates.html" style="color:var(--cr-burgundy)">Certificates</a> dashboard.</p>';
+  }
+  html += '<a href="/courses.html" class="cr-btn" style="background:var(--cr-stone);color:var(--cr-text);border:1px solid var(--cr-border);padding:12px 24px">Browse More Courses</a>';
+  html += '</div>';
+  html += '<div style="margin-top:32px;font-size:10px;color:var(--cr-text-muted);text-align:center">Powered by CReady™ Viewer · © 2026 GAITP LLC · NBCC ACEP #7760</div></div>';
+  area.innerHTML = html;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  if (window.parent !== window) {
+    window.parent.postMessage({ type: 'CERTIFICATE_ISSUED', certUrl, certNumber }, '*');
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SECTION QUIZ API — server-side scoring + adaptive learning
+// ═══════════════════════════════════════════════════════════════
+
+// Track quiz answers per section for batched submission
+let sectionQuizState = {}; // { sectionIndex: { answers: {questionIndex: selectedOption}, total: N, answered: N } }
+
+function initSectionQuizTracking(sectionIndex, totalQuestions) {
+  if (!sectionQuizState[sectionIndex]) {
+    sectionQuizState[sectionIndex] = { answers: {}, total: totalQuestions, answered: 0 };
+  }
+}
+
+function recordSectionQuizAnswer(sectionIndex, questionIndex, selectedOption, isCorrect) {
+  const state = sectionQuizState[sectionIndex];
+  if (!state) return;
+  if (state.answers[questionIndex] !== undefined) return; // Already answered
+  state.answers[questionIndex] = selectedOption;
+  state.answered++;
+
+  // When all questions in this section's quiz are answered, submit to backend
+  if (state.answered >= state.total) {
+    submitSectionQuizToAPI(sectionIndex, state.answers);
+  }
+}
+
+function submitSectionQuizToAPI(sectionIndex, answers) {
+  if (!course.slug || !localStorage.getItem('token')) return;
+
+  crApiFetch(`/api/interactive-courses/${course.slug}/progress/section/${sectionIndex}/quiz`, {
+    answers,
+    timeSpent: 0
+  }).then(({ ok, data }) => {
+    if (!ok) {
+      // Show error (retake limit, cooldown, etc.)
+      if (data.error) showErrorModal(data.error);
+      return;
+    }
+
+    // Handle adaptive learning action
+    if (data.adaptiveAction) {
+      const aa = data.adaptiveAction;
+      adaptiveUnlockedSections.add(aa.targetSectionIndex);
+      const targetTitle = course.sections[aa.targetSectionIndex]?.title || `Section ${aa.targetSectionIndex + 1}`;
+      let msg = aa.message || '';
+      if (aa.action === 'redirect') {
+        msg = msg || `Based on your score (${data.percentage}%), we recommend reviewing "${targetTitle}".`;
+      } else if (aa.action === 'require_review') {
+        msg = msg || `Please review "${targetTitle}" before continuing.`;
+      } else if (aa.action === 'skip_ahead') {
+        msg = msg || `Great score (${data.percentage}%)! You can skip ahead to "${targetTitle}".`;
+      }
+      showAdaptiveModal(msg, aa.targetSectionIndex);
+    }
+
+    // Show retake info if relevant
+    if (data.attemptsRemaining !== undefined && data.attemptsRemaining <= 2 && !data.passed) {
+      const infoEl = document.createElement('div');
+      infoEl.className = 'cr-quiz-info';
+      infoEl.style.cssText = 'text-align:center;padding:12px;margin-top:12px;font-size:0.85em;color:var(--cr-text-muted);background:rgba(139,37,66,0.05);border-radius:8px';
+      infoEl.textContent = `Score: ${data.percentage}% · ${data.attemptsRemaining} attempt(s) remaining`;
+      const area = document.getElementById('crContentArea');
+      if (area) area.appendChild(infoEl);
+    }
+  }).catch(() => {
+    // Network error — quiz already scored client-side, so no action needed
+  });
+}
+
+// ─── ERROR MODAL (generic errors, not adaptive learning) ───
+function showErrorModal(message) {
+  const existing = document.getElementById('crAdaptiveModal');
+  if (existing) existing.remove();
+
+  const modal = document.createElement('div');
+  modal.id = 'crAdaptiveModal';
+  modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:10000';
+  modal.innerHTML = `<div style="background:var(--cr-bg,#fff);border-radius:16px;padding:32px;max-width:480px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.3);text-align:center">
+    <div style="font-size:1.5em;margin-bottom:12px">⚠️</div>
+    <h3 style="font-family:var(--cr-font-display,Georgia,serif);font-size:1.2em;color:var(--cr-navy,#1a1a2e);margin-bottom:16px">Notice</h3>
+    <p style="color:var(--cr-text-secondary,#555);line-height:1.6;margin-bottom:24px">${esc(message)}</p>
+    <button class="cr-btn" id="crAdaptiveDismiss" style="padding:10px 24px;background:var(--cr-bg-alt,#f5f5f5);color:var(--cr-text,#333)">OK</button>
+  </div>`;
+  document.body.appendChild(modal);
+  document.getElementById('crAdaptiveDismiss').addEventListener('click', () => modal.remove());
+  modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
+}
+
+// ─── ADAPTIVE LEARNING MODAL ───
+function showAdaptiveModal(message, targetSectionIndex) {
+  // Remove existing modal if any
+  const existing = document.getElementById('crAdaptiveModal');
+  if (existing) existing.remove();
+
+  const modal = document.createElement('div');
+  modal.id = 'crAdaptiveModal';
+  modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:10000';
+  modal.innerHTML = `<div style="background:var(--cr-bg,#fff);border-radius:16px;padding:32px;max-width:480px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.3);text-align:center">
+    <div style="font-size:1.5em;margin-bottom:12px">🔀</div>
+    <h3 style="font-family:var(--cr-font-display,Georgia,serif);font-size:1.2em;color:var(--cr-navy,#1a1a2e);margin-bottom:16px">Adaptive Learning</h3>
+    <p style="color:var(--cr-text-secondary,#555);line-height:1.6;margin-bottom:24px">${esc(message)}</p>
+    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+      ${targetSectionIndex !== null ? `<button class="cr-btn cr-btn-primary" id="crAdaptiveGo" style="padding:10px 24px">Go to Section</button>` : ''}
+      <button class="cr-btn" id="crAdaptiveDismiss" style="padding:10px 24px;background:var(--cr-bg-alt,#f5f5f5);color:var(--cr-text,#333)">
+        ${targetSectionIndex !== null ? 'Stay Here' : 'OK'}
+      </button>
+    </div>
+  </div>`;
+  document.body.appendChild(modal);
+
+  document.getElementById('crAdaptiveDismiss').addEventListener('click', () => modal.remove());
+  const goBtn = document.getElementById('crAdaptiveGo');
+  if (goBtn && targetSectionIndex !== null) {
+    goBtn.addEventListener('click', () => {
+      modal.remove();
+      goToSection(targetSectionIndex);
+    });
+  }
+  // Close on backdrop click
+  modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -5227,13 +5779,17 @@ function saveProgress() {
   saveState('visited', [...visitedSections]);
   saveState('view', currentView);
 }
-
 function restoreProgress() {
   if (!course) return;
+  // Server data already applied in init() — skip localStorage
+  if (enrollmentData && (enrollmentData.sectionsCompleted?.length > 0 || enrollmentData.lastSectionViewed !== undefined)) {
+    visitedSections.add(currentSectionIndex);
+    return;
+  }
+  // Fallback: localStorage (preview mode, offline)
   const section = loadState('section');
   const completed = loadState('completed');
   const visited = loadState('visited');
-  
   if (completed) completedSections = new Set(completed);
   if (visited) visitedSections = new Set(visited);
   if (section !== null && section < course.sections.length) {
@@ -5384,19 +5940,69 @@ function exportPDF() {
 // ═══════════════════════════════════════════════════════════════
 function initTranslation() {
   document.getElementById('crTranslateBar').style.display = 'flex';
-  
+
   const select = document.getElementById('crLangSelect');
   select.addEventListener('change', function() {
     const lang = this.value;
     if (!lang) {
-      // Reset to original
+      // Reset to original — remove Google Translate frame
+      const frame = document.querySelector('.goog-te-banner-frame');
+      if (frame) frame.style.display = 'none';
+      document.body.style.top = '';
+      // Restore by setting cookie to empty and reload
+      document.cookie = 'googtrans=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC';
+      document.cookie = 'googtrans=; path=/; domain=' + location.hostname + '; expires=Thu, 01 Jan 1970 00:00:00 UTC';
       location.reload();
       return;
     }
-    // Use Google Translate
+    // Set Google Translate cookie and trigger in-page translation
+    document.cookie = 'googtrans=/en/' + lang + '; path=/';
+    document.cookie = 'googtrans=/en/' + lang + '; path=/; domain=' + location.hostname;
+    if (window._crGtLoaded) {
+      // Already loaded — just reload to apply new language
+      location.reload();
+    } else {
+      _crLoadGoogleTranslate(lang);
+    }
+  });
+}
+
+function _crLoadGoogleTranslate(lang) {
+  // Hidden container for Google Translate Element
+  let container = document.getElementById('crGoogleTranslate');
+  if (!container) {
+    container = document.createElement('div');
+    container.id = 'crGoogleTranslate';
+    container.style.cssText = 'position:absolute;top:-9999px;left:-9999px;';
+    document.body.appendChild(container);
+  }
+  // Define the callback Google Translate expects
+  window.googleTranslateElementInit = function() {
+    new google.translate.TranslateElement({
+      pageLanguage: 'en',
+      includedLanguages: 'es,fr,zh-CN,ko,ar,pt,vi,ht,so',
+      layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+      autoDisplay: false
+    }, 'crGoogleTranslate');
+    window._crGtLoaded = true;
+
+    // Hide the Google Translate toolbar that appears at the top
+    const hideGtBar = setInterval(() => {
+      const frame = document.querySelector('.goog-te-banner-frame');
+      if (frame) { frame.style.display = 'none'; clearInterval(hideGtBar); }
+      document.body.style.top = '';
+    }, 200);
+    setTimeout(() => clearInterval(hideGtBar), 5000);
+  };
+  // Load the Google Translate script
+  const script = document.createElement('script');
+  script.src = 'https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit';
+  script.onerror = function() {
+    console.warn('Google Translate failed to load — falling back to new-tab mode');
     const gtUrl = `https://translate.google.com/translate?sl=en&tl=${lang}&u=${encodeURIComponent(location.href)}`;
     window.open(gtUrl, '_blank');
-  });
+  };
+  document.head.appendChild(script);
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -5497,13 +6103,12 @@ document.addEventListener('click', function(e) {
     case 'ttsStop': ttsStop(); break;
     case 'ttsRestart': ttsRestart(); break;
     
-    // ─── Certificate ───
+    // ─── Evaluation / Attestation / Certificate ───
+    case 'showEvaluation': showEvaluation(); break;
+    case 'submitEvaluation': submitEvaluation(); break;
+    case 'submitAttestation': submitAttestation(); break;
     case 'requestCertificate':
-      if (window.parent !== window) {
-        window.parent.postMessage({ type: 'REQUEST_CERTIFICATE' }, '*');
-      } else {
-        alert('Certificate generation available when embedded in CounselorReady');
-      }
+      showCertificateView();
       break;
   }
 });

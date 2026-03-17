@@ -7,8 +7,10 @@ import express from 'express';
 import Stripe from 'stripe';
 import User from '../models/User.js';
 import Course from '../models/Course.js';
+import Partner from '../models/Partner.js';
 import { protect } from '../middleware/auth.js';
 import { logActivity, ACTIVITY_TYPES } from '../services/activityTrackingService.js';
+import { sendPaymentFailedEmail, sendPaymentRecoveredEmail } from '../services/hardshipEmailService.js';
 
 const router = express.Router();
 
@@ -574,7 +576,20 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
         const userId = session.metadata?.userId;
         const plan = session.metadata?.plan;
         const purchaseType = session.metadata?.type;
-        
+        const partnerId = session.metadata?.partnerId;
+
+        // Handle partner subscription checkout
+        if (partnerId && plan) {
+          await Partner.findByIdAndUpdate(partnerId, {
+            'billing.stripeSubscriptionId': session.subscription,
+            'billing.plan': plan,
+            'billing.status': 'active',
+            'billing.currentPeriodEnd': new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+          });
+          console.log(`Partner subscription activated for ${partnerId}: ${plan}`);
+          break;
+        }
+
         // Handle individual course purchase
         if (purchaseType === 'course_purchase') {
           const courseId = session.metadata?.courseId;
@@ -624,28 +639,72 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
       case 'customer.subscription.updated': {
         const subscription = event.data.object;
         const userId = subscription.metadata?.userId;
-        
+        const partnerId = subscription.metadata?.partnerId;
+
+        // Partner subscription update
+        if (partnerId) {
+          await Partner.findByIdAndUpdate(partnerId, {
+            'billing.status': subscription.status === 'active' ? 'active' : subscription.status,
+            'billing.currentPeriodEnd': new Date(subscription.current_period_end * 1000)
+          });
+          console.log(`Partner subscription updated for ${partnerId}: ${subscription.status}`);
+        }
+
+        // User subscription update
         if (userId) {
           await User.findByIdAndUpdate(userId, {
             'subscription.status': subscription.status,
             'subscription.cancelAtPeriodEnd': subscription.cancel_at_period_end,
             'subscription.currentPeriodEnd': new Date(subscription.current_period_end * 1000)
           });
+          // Notify admin when a new subscription becomes active
+          if (subscription.status === 'active') {
+            const subUser = await User.findById(userId).select('email profile.firstName');
+            logActivity(ACTIVITY_TYPES.SUBSCRIPTION_STARTED, {
+              plan: subscription.metadata?.plan || 'unknown',
+              status: subscription.status
+            }, {
+              userId,
+              userName: subUser?.profile?.firstName || '',
+              userEmail: subUser?.email || ''
+            }).catch(() => {});
+          }
           console.log(`Subscription updated for user ${userId}: ${subscription.status}`);
         }
         break;
       }
-      
+
       case 'customer.subscription.deleted': {
         const subscription = event.data.object;
         const userId = subscription.metadata?.userId;
-        
+        const partnerId = subscription.metadata?.partnerId;
+
+        // Partner subscription canceled
+        if (partnerId) {
+          await Partner.findByIdAndUpdate(partnerId, {
+            'billing.plan': 'free',
+            'billing.status': 'canceled',
+            'billing.stripeSubscriptionId': null
+          });
+          console.log(`Partner subscription canceled for ${partnerId}`);
+        }
+
+        // User subscription canceled
         if (userId) {
+          const canceledUser = await User.findById(userId).select('email profile.firstName subscription.plan');
+          const canceledPlan = canceledUser?.subscription?.plan || 'unknown';
           await User.findByIdAndUpdate(userId, {
             'subscription.plan': 'free',
             'subscription.status': 'canceled',
             stripeSubscriptionId: null
           });
+          logActivity(ACTIVITY_TYPES.SUBSCRIPTION_CANCELED, {
+            plan: canceledPlan
+          }, {
+            userId,
+            userName: canceledUser?.profile?.firstName || '',
+            userEmail: canceledUser?.email || ''
+          }).catch(() => {});
           console.log(`Subscription canceled for user ${userId}`);
         }
         break;
@@ -658,10 +717,25 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
         const user = await User.findOne({ stripeCustomerId: customerId });
         if (user) {
           await User.findByIdAndUpdate(user._id, {
-            'subscription.status': 'past_due'
+            'subscription.status': 'past_due',
+            'subscription.paymentFailedAt': new Date(),
+            $inc: { 'subscription.paymentFailureCount': 1 }
           });
           console.log(`Payment failed for user ${user._id}`);
-          // TODO: Send email notification about failed payment
+          // Notify admin of payment failure
+          logActivity(ACTIVITY_TYPES.PAYMENT_FAILED, {
+            plan: user.subscription?.plan || 'unknown'
+          }, {
+            userId: user._id,
+            userName: user.profile?.firstName || '',
+            userEmail: user.email || ''
+          }).catch(() => {});
+          // Send email notification about failed payment to user
+          try {
+            await sendPaymentFailedEmail(user._id);
+          } catch (emailErr) {
+            console.error('Failed to send payment failure email:', emailErr.message);
+          }
         }
         break;
       }
@@ -669,14 +743,27 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
       case 'invoice.paid': {
         const invoice = event.data.object;
         const customerId = invoice.customer;
-        
+
         const user = await User.findOne({ stripeCustomerId: customerId });
         if (user) {
-          await User.findByIdAndUpdate(user._id, {
+          const wasRecovery = user.subscription?.status === 'past_due';
+          const updateFields = {
             'subscription.status': 'active',
             'subscription.currentPeriodEnd': new Date(invoice.lines.data[0]?.period?.end * 1000 || Date.now() + 30 * 24 * 60 * 60 * 1000)
-          });
-          console.log(`Invoice paid for user ${user._id}`);
+          };
+
+          if (wasRecovery) {
+            updateFields['subscription.paymentRecoveredAt'] = new Date();
+            updateFields['subscription.paymentFailedAt'] = null;
+            updateFields['subscription.paymentFailureCount'] = 0;
+          }
+
+          await User.findByIdAndUpdate(user._id, updateFields);
+          console.log(`Invoice paid for user ${user._id}${wasRecovery ? ' (recovered from past_due)' : ''}`);
+
+          if (wasRecovery) {
+            await sendPaymentRecoveredEmail(user._id);
+          }
         }
         break;
       }

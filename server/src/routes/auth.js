@@ -9,6 +9,7 @@ import { Resend } from 'resend';
 import User from '../models/User.js';
 import Partner from '../models/Partner.js';
 import { protect, generateToken } from '../middleware/auth.js';
+import { sendPartnerWelcomeEmail } from './partners.js';
 import { logActivity, ACTIVITY_TYPES } from '../services/activityTrackingService.js';
 
 const router = express.Router();
@@ -108,7 +109,17 @@ router.post('/register', async (req, res) => {
     } catch (emailErr) {
       console.error('Verification email failed (non-blocking):', emailErr.message);
     }
-    
+
+    // Send partner welcome email if user registered via partner
+    if (partnerId) {
+      try {
+        const partnerDoc = await Partner.findById(partnerId);
+        if (partnerDoc) {
+          sendPartnerWelcomeEmail(user, partnerDoc);
+        }
+      } catch (err) { console.error('Partner welcome email failed:', err.message); }
+    }
+
     const token = generateToken(user._id);
     
     res.status(201).json({

@@ -6,7 +6,8 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
-import { Users, TrendingUp, BookOpen, Award, ExternalLink, Copy, Check } from 'lucide-react';
+import { Users, TrendingUp, BookOpen, Award, ExternalLink, Copy, Check, UserPlus, Rocket, ArrowRight, Download, Mail } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const BURGUNDY = '#6B1D34';
 const BURGUNDY_LIGHT = '#fdf5f6';
@@ -16,7 +17,9 @@ export default function PartnerDashboard() {
   const { user } = useAuth();
   const [partner, setPartner] = useState(null);
   const [stats, setStats] = useState(null);
+  const [onboarding, setOnboarding] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
@@ -31,8 +34,8 @@ export default function PartnerDashboard() {
           partnerData = data.partner;
         }
 
-        // Fetch partner stats if admin
-        if (user?.role === 'admin' && user?.partnerId) {
+        // Fetch partner stats if admin or partner_admin
+        if ((user?.role === 'admin' || user?.role === 'partner_admin') && user?.partnerId) {
           const { data } = await api.get(`/partners/${user.partnerId}`);
           partnerData = data.partner;
         }
@@ -40,15 +43,24 @@ export default function PartnerDashboard() {
         if (partnerData) {
           setPartner(partnerData);
 
-          // Fetch analytics if we have an id and user is admin
-          if (partnerData._id && user?.role === 'admin') {
+          // Fetch analytics — use /my/stats for partner admins, /:id/stats for platform admins
+          if (partnerData._id && (user?.role === 'admin' || user?.role === 'partner_admin')) {
             try {
-              const { data: statsData } = await api.get(`/partners/${partnerData._id}/stats`);
-              setStats(statsData);
+              const endpoint = user?.role === 'admin'
+                ? `/partners/${partnerData._id}/stats`
+                : '/partners/my/stats';
+              const [statsRes, onboardingRes] = await Promise.all([
+                api.get(endpoint),
+                user?.role === 'partner_admin' ? api.get('/partners/my/onboarding').catch(() => null) : Promise.resolve(null)
+              ]);
+              setStats(statsRes.data);
+              if (onboardingRes?.data) setOnboarding(onboardingRes.data);
             } catch { /* stats fetch is non-critical */ }
           }
         }
-      } catch { /* silent */ }
+      } catch (err) {
+        setError(err.response?.data?.error || 'Failed to load partner data');
+      }
       setLoading(false);
     }
     load();
@@ -66,6 +78,18 @@ export default function PartnerDashboard() {
     return (
       <div className="flex items-center justify-center py-20">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2" style={{ borderColor: BURGUNDY }} />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-20">
+        <p className="text-lg font-medium text-red-700">Something went wrong</p>
+        <p className="text-sm text-stone-500 mt-1">{error}</p>
+        <button onClick={() => window.location.reload()} className="mt-4 px-4 py-2 text-sm rounded-lg border border-stone-300 text-stone-600 hover:bg-stone-50">
+          Try Again
+        </button>
       </div>
     );
   }
@@ -100,6 +124,26 @@ export default function PartnerDashboard() {
           </div>
         </div>
       </div>
+
+      {/* Onboarding Banner (only if setup is incomplete) */}
+      {onboarding && !onboarding.progress.allRequiredDone && (
+        <Link to="/partner/onboarding" className="card p-4 flex items-center gap-4 hover:shadow-md transition-shadow"
+          style={{ background: '#fffbeb', borderColor: '#fde68a' }}>
+          <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: '#fef3c7' }}>
+            <Rocket className="w-5 h-5" style={{ color: '#d97706' }} />
+          </div>
+          <div className="flex-1">
+            <p className="text-sm font-semibold text-stone-900">Finish setting up your account</p>
+            <p className="text-xs text-stone-500 mt-0.5">{onboarding.progress.requiredCompleted} of {onboarding.progress.requiredTotal} steps completed</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-16 bg-stone-200 rounded-full h-1.5">
+              <div className="h-1.5 rounded-full" style={{ width: `${onboarding.progress.percentage}%`, background: '#d97706' }} />
+            </div>
+            <ArrowRight className="w-4 h-4 text-stone-400" />
+          </div>
+        </Link>
+      )}
 
       {/* Quick Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
@@ -148,6 +192,46 @@ export default function PartnerDashboard() {
           </div>
         </div>
       </div>
+
+      {/* Quick Actions */}
+      {(user?.role === 'admin' || user?.role === 'partner_admin') && (
+        <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
+          <Link to="/partner/courses" className="card p-3 text-center hover:shadow-md transition-shadow">
+            <BookOpen className="w-5 h-5 mx-auto mb-1" style={{ color: BURGUNDY }} />
+            <p className="text-xs font-medium text-stone-700">Manage Courses</p>
+          </Link>
+          <Link to="/partner/users" className="card p-3 text-center hover:shadow-md transition-shadow">
+            <UserPlus className="w-5 h-5 mx-auto mb-1" style={{ color: HUNTER }} />
+            <p className="text-xs font-medium text-stone-700">Manage Users</p>
+          </Link>
+          <Link to="/partner/bulk-upload" className="card p-3 text-center hover:shadow-md transition-shadow">
+            <BookOpen className="w-5 h-5 mx-auto mb-1" style={{ color: '#2563eb' }} />
+            <p className="text-xs font-medium text-stone-700">Bulk Upload</p>
+          </Link>
+          <Link to="/partner/billing" className="card p-3 text-center hover:shadow-md transition-shadow">
+            <Award className="w-5 h-5 mx-auto mb-1" style={{ color: '#d97706' }} />
+            <p className="text-xs font-medium text-stone-700">Billing</p>
+          </Link>
+          <Link to="/partner/reports" className="card p-3 text-center hover:shadow-md transition-shadow">
+            <Download className="w-5 h-5 mx-auto mb-1" style={{ color: '#7c3aed' }} />
+            <p className="text-xs font-medium text-stone-700">Reports</p>
+          </Link>
+          <Link to="/partner/email-templates" className="card p-3 text-center hover:shadow-md transition-shadow">
+            <Mail className="w-5 h-5 mx-auto mb-1" style={{ color: '#dc2626' }} />
+            <p className="text-xs font-medium text-stone-700">Email Templates</p>
+          </Link>
+        </div>
+      )}
+
+      {/* Recent Activity */}
+      {stats?.recentEnrollments > 0 && (
+        <div className="card p-4 flex items-center gap-3" style={{ background: '#f0fdf4', borderColor: '#bbf7d0' }}>
+          <TrendingUp className="w-5 h-5" style={{ color: HUNTER }} />
+          <p className="text-sm text-stone-700">
+            <span className="font-bold" style={{ color: HUNTER }}>{stats.recentEnrollments}</span> new enrollment{stats.recentEnrollments !== 1 ? 's' : ''} in the last 7 days
+          </p>
+        </div>
+      )}
 
       {/* Distribution Link */}
       <div className="card p-5">

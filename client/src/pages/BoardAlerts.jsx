@@ -4,8 +4,9 @@
  * Unauthorized copying or distribution is strictly prohibited.
  */
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import api from '../services/api';
-import { Bell, AlertTriangle, Info, AlertCircle, Check, ExternalLink, Filter } from 'lucide-react';
+import { Bell, AlertTriangle, Info, AlertCircle, Check, ExternalLink, Filter, ArrowLeft } from 'lucide-react';
 
 const severityConfig = {
   urgent: { icon: AlertTriangle, color: 'text-red-600', bg: 'bg-red-50', border: 'border-red-200', badge: 'bg-red-100 text-red-800' },
@@ -67,6 +68,7 @@ export default function BoardAlerts() {
 
   return (
     <div>
+      <Link to="/credentials" className="inline-flex items-center gap-1.5 text-sm text-stone-500 hover:text-burgundy-700 mb-3 transition-colors"><ArrowLeft className="w-4 h-4" />Credentials</Link>
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Board Alerts</h1>

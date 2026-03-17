@@ -6,14 +6,17 @@
 import { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 
-export default function CourseViewer() {
+// The full CReady™ Viewer now lives at interactive-course.html.
+// This component redirects React Router requests to the standalone viewer page.
+export default function CourseViewer({ courseSlug }) {
   const { slug } = useParams();
+  const target = courseSlug || slug;
 
   useEffect(() => {
-    if (slug) {
-      window.location.href = '/interactive-course.html?slug=' + slug;
+    if (target) {
+      window.location.href = '/interactive-course.html?slug=' + target;
     }
-  }, [slug]);
+  }, [target]);
 
   return null;
 }

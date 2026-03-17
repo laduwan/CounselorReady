@@ -17,11 +17,37 @@ import CourseView from './pages/CourseView';
 import InteractiveCourseCatalog from './pages/InteractiveCourseCatalog';
 import CourseQuickEdit from './pages/CourseQuickEdit';
 import AdminPartners from './pages/AdminPartners';
+import AdminPartnerAnalytics from './pages/AdminPartnerAnalytics';
 import PartnerDashboard from './pages/PartnerDashboard';
 import PartnerBrandingSettings from './pages/PartnerBrandingSettings';
 import PartnerCourseAdmin from './pages/PartnerCourseAdmin';
+import PartnerCourseCatalog from './pages/PartnerCourseCatalog';
+import PartnerBulkUpload from './pages/PartnerBulkUpload';
+import PartnerBilling from './pages/PartnerBilling';
+import PartnerDomainSettings from './pages/PartnerDomainSettings';
+import PartnerUserManagement from './pages/PartnerUserManagement';
+import PartnerOnboarding from './pages/PartnerOnboarding';
+import PartnerEmailTemplates from './pages/PartnerEmailTemplates';
+import PartnerReports from './pages/PartnerReports';
+import PartnerUserManual from './pages/PartnerUserManual';
 import ThumbnailManager from './pages/ThumbnailManager';
 import AdminBulkUpload from './pages/AdminBulkUpload';
+import CEPlanner from './pages/CEPlanner';
+import AuditKit from './pages/AuditKit';
+import BoardAlerts from './pages/BoardAlerts';
+import SupervisionTracker from './pages/SupervisionTracker';
+import InsuranceTracker from './pages/InsuranceTracker';
+import Gamification from './pages/Gamification';
+import Referrals from './pages/Referrals';
+import Recommendations from './pages/Recommendations';
+import OrganizationDashboard from './pages/OrganizationDashboard';
+import GroupLicenseDashboard from './pages/GroupLicenseDashboard';
+import LegacyVault from './pages/LegacyVault';
+import Credentials from './pages/Credentials';
+import Settings from './pages/Settings';
+import ResearchReadyCE from './pages/ResearchReadyCE';
+import AdminResearchReady from './pages/AdminResearchReady';
+import ScholarlyArticles from './pages/ScholarlyArticles';
 
 // Components
 import Layout from './components/Layout';
@@ -151,7 +177,8 @@ function AppRoutes() {
       <Route path="/register" element={
         <PublicRoute><Register /></PublicRoute>
       } />
-      
+      <Route path="/dashboard" element={<Navigate to="/dashboard.html" replace />} />
+
       {/* ══════════════════════════════════════════════════════════════
           COURSES ONLY - React handles interactive course player
           Everything else is static HTML
@@ -180,6 +207,18 @@ function AppRoutes() {
           ADMIN ROUTES - React tools for course management
           ══════════════════════════════════════════════════════════════ */}
       
+      <Route path="/research-ready" element={
+        <ProtectedRoute>
+          <Layout><ResearchReadyCE /></Layout>
+        </ProtectedRoute>
+      } />
+
+      <Route path="/scholarly-articles" element={
+        <ProtectedRoute>
+          <Layout><ScholarlyArticles /></Layout>
+        </ProtectedRoute>
+      } />
+
       <Route path="/admin/course-builder" element={
         <AdminRoute>
           <CourseBuilder />
@@ -195,6 +234,11 @@ function AppRoutes() {
           <Layout><AdminPartners /></Layout>
         </AdminRoute>
       } />
+      <Route path="/admin/partner-analytics" element={
+        <AdminRoute>
+          <Layout><AdminPartnerAnalytics /></Layout>
+        </AdminRoute>
+      } />
       <Route path="/admin/thumbnails" element={
         <AdminRoute>
           <Layout><ThumbnailManager /></Layout>
@@ -203,6 +247,11 @@ function AppRoutes() {
       <Route path="/admin/bulk-upload" element={
         <AdminRoute>
           <Layout><AdminBulkUpload /></Layout>
+        </AdminRoute>
+      } />
+      <Route path="/admin/research-ready" element={
+        <AdminRoute>
+          <Layout><AdminResearchReady /></Layout>
         </AdminRoute>
       } />
       <Route path="/partner-dashboard" element={
@@ -219,6 +268,94 @@ function AppRoutes() {
         <PartnerAdminRoute>
           <Layout><PartnerCourseAdmin /></Layout>
         </PartnerAdminRoute>
+      } />
+      <Route path="/partner/courses/catalog" element={
+        <ProtectedRoute>
+          <Layout><PartnerCourseCatalog /></Layout>
+        </ProtectedRoute>
+      } />
+      <Route path="/partner/bulk-upload" element={
+        <PartnerAdminRoute>
+          <Layout><PartnerBulkUpload /></Layout>
+        </PartnerAdminRoute>
+      } />
+      <Route path="/partner/billing" element={
+        <PartnerAdminRoute>
+          <Layout><PartnerBilling /></Layout>
+        </PartnerAdminRoute>
+      } />
+      <Route path="/partner/domain" element={
+        <PartnerAdminRoute>
+          <Layout><PartnerDomainSettings /></Layout>
+        </PartnerAdminRoute>
+      } />
+      <Route path="/partner/users" element={
+        <PartnerAdminRoute>
+          <Layout><PartnerUserManagement /></Layout>
+        </PartnerAdminRoute>
+      } />
+      <Route path="/partner/onboarding" element={
+        <PartnerAdminRoute>
+          <Layout><PartnerOnboarding /></Layout>
+        </PartnerAdminRoute>
+      } />
+      <Route path="/partner/email-templates" element={
+        <PartnerAdminRoute>
+          <Layout><PartnerEmailTemplates /></Layout>
+        </PartnerAdminRoute>
+      } />
+      <Route path="/partner/reports" element={
+        <PartnerAdminRoute>
+          <Layout><PartnerReports /></Layout>
+        </PartnerAdminRoute>
+      } />
+      <Route path="/partner/manual" element={
+        <PartnerAdminRoute>
+          <Layout><PartnerUserManual /></Layout>
+        </PartnerAdminRoute>
+      } />
+
+      {/* ══════════════════════════════════════════════════════════════
+          USER FEATURE PAGES — wired from Layout.jsx navLinks/moreLinks
+          ══════════════════════════════════════════════════════════════ */}
+      <Route path="/credentials" element={
+        <ProtectedRoute><Layout><Credentials /></Layout></ProtectedRoute>
+      } />
+      <Route path="/settings" element={
+        <ProtectedRoute><Layout><Settings /></Layout></ProtectedRoute>
+      } />
+      <Route path="/ce-planner" element={
+        <ProtectedRoute><Layout><CEPlanner /></Layout></ProtectedRoute>
+      } />
+      <Route path="/audit-kit" element={
+        <ProtectedRoute><Layout><AuditKit /></Layout></ProtectedRoute>
+      } />
+      <Route path="/board-alerts" element={
+        <ProtectedRoute><Layout><BoardAlerts /></Layout></ProtectedRoute>
+      } />
+      <Route path="/supervision" element={
+        <ProtectedRoute><Layout><SupervisionTracker /></Layout></ProtectedRoute>
+      } />
+      <Route path="/insurance-tracker" element={
+        <ProtectedRoute><Layout><InsuranceTracker /></Layout></ProtectedRoute>
+      } />
+      <Route path="/achievements" element={
+        <ProtectedRoute><Layout><Gamification /></Layout></ProtectedRoute>
+      } />
+      <Route path="/referrals" element={
+        <ProtectedRoute><Layout><Referrals /></Layout></ProtectedRoute>
+      } />
+      <Route path="/recommendations" element={
+        <ProtectedRoute><Layout><Recommendations /></Layout></ProtectedRoute>
+      } />
+      <Route path="/organization" element={
+        <ProtectedRoute><Layout><OrganizationDashboard /></Layout></ProtectedRoute>
+      } />
+      <Route path="/group-licenses" element={
+        <ProtectedRoute><Layout><GroupLicenseDashboard /></Layout></ProtectedRoute>
+      } />
+      <Route path="/legacy-vault" element={
+        <ProtectedRoute><Layout><LegacyVault /></Layout></ProtectedRoute>
       } />
 
       {/* ══════════════════════════════════════════════════════════════

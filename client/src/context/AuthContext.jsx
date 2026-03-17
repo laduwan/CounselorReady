@@ -80,6 +80,7 @@ export function AuthProvider({ children }) {
 
   const logout = () => {
     localStorage.removeItem('token');
+    localStorage.removeItem('cr_partner_slug');
     delete api.defaults.headers.common['Authorization'];
     setUser(null);
   };

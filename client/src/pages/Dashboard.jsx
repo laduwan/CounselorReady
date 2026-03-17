@@ -13,7 +13,6 @@ import {
   FileText,
   ShieldCheck,
   Upload,
-  Sliders,
   BarChart3,
   Clock,
   ArrowRight,
@@ -24,11 +23,44 @@ import {
   Star,
   Sparkles,
   X,
+  Lock,
   Calendar,
   Bell,
   Users,
-  Lock
+  Pencil,
+  Check,
+  Search,
+  FlaskConical
 } from 'lucide-react';
+
+const ALL_QUICK_ACTIONS = [
+  { id: 'browse-courses',    label: 'Browse Courses',    href: '/courses',           icon: BookOpen,      bg: 'bg-burgundy-50 hover:bg-burgundy-100', iconBg: 'bg-burgundy-700',  text: 'text-burgundy-800' },
+  { id: 'upload-cert',       label: 'Upload Certificate',href: '/credentials',       icon: Upload,        bg: 'bg-forest-50 hover:bg-forest-100',     iconBg: '',                 text: 'text-forest-800',   iconStyle: { background: 'linear-gradient(135deg, #8b2542, #6b1d34)' } },
+  { id: 'generate-audit',    label: 'Generate Audit',    href: '/audit-kit',         icon: BarChart3,     bg: 'bg-honey-50 hover:bg-honey-100',       iconBg: 'bg-honey-500',     text: 'text-honey-800' },
+  { id: 'supervision',       label: 'Supervision',       href: '/supervision',       icon: ClipboardList, bg: 'bg-stone-100 hover:bg-stone-200',      iconBg: 'bg-stone-600',     text: 'text-stone-700' },
+  { id: 'insurance',         label: 'Insurance',         href: '/insurance-tracker',  icon: ShieldCheck,   bg: 'bg-burgundy-50 hover:bg-burgundy-100', iconBg: '',                 text: 'text-burgundy-800', iconStyle: { background: '#6B1D34' } },
+  { id: 'legacy-vault',      label: 'Legacy Vault',      href: '/legacy-vault',      icon: Lock,          bg: 'bg-forest-50 hover:bg-forest-100',     iconBg: 'bg-forest-600',    text: 'text-forest-800' },
+  { id: 'referrals',         label: 'Referrals',         href: '/referrals',         icon: Star,          bg: 'bg-honey-50 hover:bg-honey-100',       iconBg: 'bg-honey-500',     text: 'text-honey-800' },
+  { id: 'ce-planner',        label: 'CE Planner',        href: '/ce-planner',        icon: Calendar,      bg: 'bg-stone-100 hover:bg-stone-200',      iconBg: 'bg-stone-600',     text: 'text-stone-700' },
+  { id: 'board-alerts',      label: 'Board Alerts',      href: '/board-alerts',      icon: Bell,          bg: 'bg-forest-50 hover:bg-forest-100',     iconBg: 'bg-forest-600',    text: 'text-forest-800' },
+  { id: 'recommendations',   label: 'Recommendations',   href: '/recommendations',   icon: Sparkles,      bg: 'bg-burgundy-50 hover:bg-burgundy-100', iconBg: 'bg-burgundy-700',  text: 'text-burgundy-800' },
+  { id: 'achievements',      label: 'Achievements',      href: '/achievements',      icon: Trophy,        bg: 'bg-honey-50 hover:bg-honey-100',       iconBg: 'bg-honey-500',     text: 'text-honey-800' },
+  { id: 'organization',      label: 'Organization',      href: '/organization',      icon: Users,         bg: 'bg-stone-100 hover:bg-stone-200',      iconBg: 'bg-stone-600',     text: 'text-stone-700' },
+  { id: 'group-licenses',    label: 'Group Licenses',    href: '/group-licenses',    icon: Users,         bg: 'bg-forest-50 hover:bg-forest-100',     iconBg: 'bg-forest-600',    text: 'text-forest-800' },
+  { id: 'credentials',       label: 'Add Credential',    href: '/credentials',       icon: ShieldCheck,   bg: 'bg-burgundy-50 hover:bg-burgundy-100', iconBg: 'bg-burgundy-700',  text: 'text-burgundy-800' },
+];
+
+const DEFAULT_ACTIONS = ['browse-courses', 'upload-cert', 'generate-audit', 'supervision'];
+
+function loadSavedActions() {
+  try {
+    const saved = JSON.parse(localStorage.getItem('cr_quick_actions'));
+    if (Array.isArray(saved) && saved.length === 4 && saved.every(id => ALL_QUICK_ACTIONS.some(a => a.id === id))) {
+      return saved;
+    }
+  } catch {}
+  return DEFAULT_ACTIONS;
+}
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -38,6 +70,9 @@ export default function Dashboard() {
   const [activity, setActivity] = useState([]);
   const [loading, setLoading] = useState(true);
   const [whatsNewDismissed, setWhatsNewDismissed] = useState(() => localStorage.getItem('cr_whats_new_v1') === 'dismissed');
+  const [savedActionIds, setSavedActionIds] = useState(loadSavedActions);
+  const [editingActions, setEditingActions] = useState(false);
+  const [draftActionIds, setDraftActionIds] = useState([]);
 
   useEffect(() => {
     const fetchData = async (retries = 2) => {
@@ -153,7 +188,7 @@ export default function Dashboard() {
             </div>
           </div>
           <p className="font-display text-2xl font-semibold text-burgundy-900">{totalCEHours}</p>
-          <p className="text-forest-500 text-xs">This cycle</p>
+          <p className="text-forest-500 text-xs">Current renewal period</p>
         </div>
 
         {/* Courses Completed */}
@@ -165,7 +200,7 @@ export default function Dashboard() {
             </div>
           </div>
           <p className="font-display text-2xl font-semibold text-burgundy-900">{completedCourses}</p>
-          <p className="text-forest-500 text-xs">All time</p>
+          <p className="text-forest-500 text-xs">Across all credentials</p>
         </div>
 
         {/* Certificates Stored */}
@@ -177,7 +212,7 @@ export default function Dashboard() {
             </div>
           </div>
           <p className="font-display text-2xl font-semibold text-burgundy-900">{certCount}</p>
-          <p className="text-forest-500 text-xs">Uploaded</p>
+          <p className="text-forest-500 text-xs">From all CE providers</p>
         </div>
 
         {/* Active Credentials */}
@@ -189,9 +224,38 @@ export default function Dashboard() {
             </div>
           </div>
           <p className="font-display text-2xl font-semibold text-burgundy-900">{totalCredentials}</p>
-          <p className="text-forest-500 text-xs">Tracked</p>
+          <p className="text-forest-500 text-xs">Licenses &amp; certifications</p>
         </div>
       </div>
+
+      {/* Research-Ready CE Feature Card */}
+      <Link
+        to="/research-ready"
+        className="block mb-8 group"
+      >
+        <div className="relative overflow-hidden rounded-xl border border-burgundy-100 shadow-sm bg-white hover:shadow-md transition-all">
+          <div className="absolute top-0 right-0 w-64 h-64 opacity-[0.04] pointer-events-none">
+            <FlaskConical className="w-full h-full text-burgundy-900" />
+          </div>
+          <div className="flex items-center gap-5 p-6">
+            <div className="flex-shrink-0 w-14 h-14 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #8B2542, #6B1D34)' }}>
+              <Search className="w-7 h-7 text-white" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <h3 className="font-display text-lg font-semibold text-burgundy-900 mb-0.5">
+                Researched-N-Ready CE
+              </h3>
+              <p className="text-forest-600 text-sm">
+                Search peer-reviewed articles, verify currency, and build CE courses — all backed by scholarly research.
+              </p>
+            </div>
+            <div className="flex-shrink-0 flex items-center gap-2 bg-burgundy-700 hover:bg-burgundy-800 text-white text-sm font-medium px-5 py-2.5 rounded-lg transition-colors group-hover:bg-burgundy-800">
+              Get Started
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+            </div>
+          </div>
+        </div>
+      </Link>
 
       {/* Main Grid: 2/3 left + 1/3 right */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -201,106 +265,95 @@ export default function Dashboard() {
 
           {/* Quick Actions */}
           <div className="bg-white rounded-xl border border-burgundy-100 shadow-sm p-6">
-            <h2 className="font-display text-xl font-semibold text-burgundy-900 mb-4">Quick Actions</h2>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <Link to="/courses" className="flex flex-col items-center p-4 rounded-xl bg-burgundy-50 hover:bg-burgundy-100 transition-colors group">
-                <div className="w-12 h-12 bg-burgundy-700 rounded-xl flex items-center justify-center mb-3 group-hover:scale-105 transition-transform">
-                  <BookOpen className="w-6 h-6 text-white" />
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-display text-xl font-semibold text-burgundy-900">Quick Actions</h2>
+              {!editingActions ? (
+                <button
+                  onClick={() => { setDraftActionIds([...savedActionIds]); setEditingActions(true); }}
+                  className="flex items-center gap-1.5 text-xs font-medium text-stone-500 hover:text-burgundy-700 transition-colors px-2 py-1 rounded-lg hover:bg-stone-50"
+                >
+                  <Pencil className="w-3.5 h-3.5" /> Customize
+                </button>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-stone-400">{draftActionIds.length}/4 selected</span>
+                  <button
+                    onClick={() => setEditingActions(false)}
+                    className="text-xs font-medium text-stone-500 hover:text-stone-700 px-2 py-1 rounded-lg hover:bg-stone-50"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (draftActionIds.length === 4) {
+                        setSavedActionIds(draftActionIds);
+                        localStorage.setItem('cr_quick_actions', JSON.stringify(draftActionIds));
+                        setEditingActions(false);
+                      }
+                    }}
+                    disabled={draftActionIds.length !== 4}
+                    className="flex items-center gap-1 text-xs font-medium text-white bg-burgundy-700 hover:bg-burgundy-800 disabled:opacity-40 disabled:cursor-not-allowed px-3 py-1 rounded-lg transition-colors"
+                  >
+                    <Check className="w-3.5 h-3.5" /> Save
+                  </button>
                 </div>
-                <span className="text-burgundy-800 font-medium text-sm">Browse Courses</span>
-              </Link>
-
-              <Link to="/credentials" className="flex flex-col items-center p-4 rounded-xl bg-forest-50 hover:bg-forest-100 transition-colors group">
-                <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-3 group-hover:scale-105 transition-transform" style={{ background: 'linear-gradient(135deg, #8b2542, #6b1d34)' }}>
-                  <Upload className="w-6 h-6 text-white" />
-                </div>
-                <span className="text-forest-800 font-medium text-sm">Upload Certificate</span>
-              </Link>
-
-              <Link to="/credentials" className="flex flex-col items-center p-4 rounded-xl bg-honey-50 hover:bg-honey-100 transition-colors group">
-                <div className="w-12 h-12 bg-honey-500 rounded-xl flex items-center justify-center mb-3 group-hover:scale-105 transition-transform">
-                  <Sliders className="w-6 h-6 text-white" />
-                </div>
-                <span className="text-honey-800 font-medium text-sm">Add Credential</span>
-              </Link>
-
-              <Link to="/audit-kit" className="flex flex-col items-center p-4 rounded-xl bg-stone-100 hover:bg-stone-200 transition-colors group">
-                <div className="w-12 h-12 bg-stone-600 rounded-xl flex items-center justify-center mb-3 group-hover:scale-105 transition-transform">
-                  <BarChart3 className="w-6 h-6 text-white" />
-                </div>
-                <span className="text-stone-700 font-medium text-sm">Generate Audit</span>
-              </Link>
-
-              <Link to="/supervision" className="flex flex-col items-center p-4 rounded-xl bg-burgundy-50 hover:bg-burgundy-100 transition-colors group">
-                <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-3 group-hover:scale-105 transition-transform" style={{ background: '#6B1D34' }}>
-                  <ClipboardList className="w-6 h-6 text-white" />
-                </div>
-                <span className="text-burgundy-800 font-medium text-sm">Supervision</span>
-              </Link>
-
-              <Link to="/recommendations" className="flex flex-col items-center p-4 rounded-xl bg-forest-50 hover:bg-forest-100 transition-colors group">
-                <div className="w-12 h-12 bg-forest-600 rounded-xl flex items-center justify-center mb-3 group-hover:scale-105 transition-transform">
-                  <Sparkles className="w-6 h-6 text-white" />
-                </div>
-                <span className="text-forest-800 font-medium text-sm">Recommendations</span>
-              </Link>
-
-              <Link to="/achievements" className="flex flex-col items-center p-4 rounded-xl bg-honey-50 hover:bg-honey-100 transition-colors group">
-                <div className="w-12 h-12 bg-honey-500 rounded-xl flex items-center justify-center mb-3 group-hover:scale-105 transition-transform">
-                  <Trophy className="w-6 h-6 text-white" />
-                </div>
-                <span className="text-honey-800 font-medium text-sm">Achievements</span>
-              </Link>
-
-              <Link to="/ce-planner" className="flex flex-col items-center p-4 rounded-xl bg-stone-100 hover:bg-stone-200 transition-colors group">
-                <div className="w-12 h-12 bg-stone-600 rounded-xl flex items-center justify-center mb-3 group-hover:scale-105 transition-transform">
-                  <Calendar className="w-6 h-6 text-white" />
-                </div>
-                <span className="text-stone-700 font-medium text-sm">CE Planner</span>
-              </Link>
-
-              <Link to="/insurance-tracker" className="flex flex-col items-center p-4 rounded-xl bg-burgundy-50 hover:bg-burgundy-100 transition-colors group">
-                <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-3 group-hover:scale-105 transition-transform" style={{ background: '#6B1D34' }}>
-                  <ShieldCheck className="w-6 h-6 text-white" />
-                </div>
-                <span className="text-burgundy-800 font-medium text-sm">Insurance</span>
-              </Link>
-
-              <Link to="/board-alerts" className="flex flex-col items-center p-4 rounded-xl bg-forest-50 hover:bg-forest-100 transition-colors group">
-                <div className="w-12 h-12 bg-forest-600 rounded-xl flex items-center justify-center mb-3 group-hover:scale-105 transition-transform">
-                  <Bell className="w-6 h-6 text-white" />
-                </div>
-                <span className="text-forest-800 font-medium text-sm">Board Alerts</span>
-              </Link>
-
-              <Link to="/organization" className="flex flex-col items-center p-4 rounded-xl bg-honey-50 hover:bg-honey-100 transition-colors group">
-                <div className="w-12 h-12 bg-honey-500 rounded-xl flex items-center justify-center mb-3 group-hover:scale-105 transition-transform">
-                  <Users className="w-6 h-6 text-white" />
-                </div>
-                <span className="text-honey-800 font-medium text-sm">Organization</span>
-              </Link>
-
-              <Link to="/group-licenses" className="flex flex-col items-center p-4 rounded-xl bg-stone-100 hover:bg-stone-200 transition-colors group">
-                <div className="w-12 h-12 bg-stone-600 rounded-xl flex items-center justify-center mb-3 group-hover:scale-105 transition-transform">
-                  <Users className="w-6 h-6 text-white" />
-                </div>
-                <span className="text-stone-700 font-medium text-sm">Group Licenses</span>
-              </Link>
-
-              <Link to="/legacy-vault" className="flex flex-col items-center p-4 rounded-xl bg-burgundy-50 hover:bg-burgundy-100 transition-colors group">
-                <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-3 group-hover:scale-105 transition-transform" style={{ background: '#6B1D34' }}>
-                  <Lock className="w-6 h-6 text-white" />
-                </div>
-                <span className="text-burgundy-800 font-medium text-sm">Legacy Vault</span>
-              </Link>
-
-              <Link to="/referrals" className="flex flex-col items-center p-4 rounded-xl bg-forest-50 hover:bg-forest-100 transition-colors group">
-                <div className="w-12 h-12 bg-forest-600 rounded-xl flex items-center justify-center mb-3 group-hover:scale-105 transition-transform">
-                  <Star className="w-6 h-6 text-white" />
-                </div>
-                <span className="text-forest-800 font-medium text-sm">Referrals</span>
-              </Link>
+              )
             </div>
+
+            {!editingActions ? (
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                {savedActionIds.map(id => {
+                  const action = ALL_QUICK_ACTIONS.find(a => a.id === id);
+                  if (!action) return null;
+                  const Icon = action.icon;
+                  return (
+                    <Link key={action.id} to={action.href} className={`flex flex-col items-center p-4 rounded-xl ${action.bg} transition-colors group`}>
+                      <div className={`w-12 h-12 ${action.iconBg} rounded-xl flex items-center justify-center mb-3 group-hover:scale-105 transition-transform`} style={action.iconStyle || {}}>
+                        <Icon className="w-6 h-6 text-white" />
+                      </div>
+                      <span className={`${action.text} font-medium text-sm`}>{action.label}</span>
+                    </Link>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                {ALL_QUICK_ACTIONS.map(action => {
+                  const Icon = action.icon;
+                  const isSelected = draftActionIds.includes(action.id);
+                  const canSelect = draftActionIds.length < 4;
+                  return (
+                    <button
+                      key={action.id}
+                      onClick={() => {
+                        setDraftActionIds(prev =>
+                          isSelected
+                            ? prev.filter(id => id !== action.id)
+                            : canSelect ? [...prev, action.id] : prev
+                        );
+                      }}
+                      className={`relative flex flex-col items-center p-4 rounded-xl transition-all ${
+                        isSelected
+                          ? 'ring-2 ring-burgundy-600 bg-burgundy-50'
+                          : canSelect
+                            ? 'bg-stone-50 hover:bg-stone-100 cursor-pointer'
+                            : 'bg-stone-50 opacity-40 cursor-not-allowed'
+                      }`}
+                    >
+                      {isSelected && (
+                        <span className="absolute top-2 right-2 w-5 h-5 bg-burgundy-700 rounded-full flex items-center justify-center">
+                          <Check className="w-3 h-3 text-white" />
+                        </span>
+                      )}
+                      <div className={`w-10 h-10 ${action.iconBg} rounded-lg flex items-center justify-center mb-2`} style={action.iconStyle || {}}>
+                        <Icon className="w-5 h-5 text-white" />
+                      </div>
+                      <span className="text-stone-700 font-medium text-xs">{action.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
           </div>
 
           {/* Recent Activity */}
