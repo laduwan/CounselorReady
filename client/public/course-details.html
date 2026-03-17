@@ -1,12 +1,11 @@
 <!DOCTYPE html>
-<html lang="en"><!DOCTYPE html>
 <html lang="en">
 <head>
   <link rel="icon" type="image/svg+xml" href="./favicon.svg">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Course Details - CounselorReady</title>
-  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
       theme: {
@@ -19,7 +18,7 @@
             },
             forest: {
               50: '#f3f6f4', 100: '#e3ebe5', 200: '#c8d7cc', 300: '#a1bba8',
-              400: '#759a7f', 500: '#547c5f', 600: '#4A7C59', 700: '#34503d',
+              400: '#759a7f', 500: '#547c5f', 600: '#40634a', 700: '#34503d',
               800: '#2b4133', 900: '#1f3025', 950: '#121c16'
             },
             gold: { 50: '#fefce8', 100: '#fef9c3', 200: '#fef08a', 300: '#fde047', 400: '#facc15', 500: '#d4a012' }
@@ -41,7 +40,7 @@
   </style>
 </head>
 <body class="bg-stone-50 min-h-screen">
-  
+
   <!-- Header -->
   <header class="bg-white border-b border-hunter-100 sticky top-0 z-50">
     <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
@@ -50,17 +49,16 @@
           <span class="font-display font-bold text-lg" style="position: relative; display: inline-block; width: 22px; height: 22px;"><span style="color: #D4A855; position: absolute; top: -3px; left: 0;">C</span><span style="color: #4A7C59; position: absolute; top: 5px; left: 6px;">R</span></span>
         </div>
         <span class="font-display font-semibold text-xl">
-          <span class="text-burgundy-800">Counselor</span><span class="text-hunter-600">Ready</span>
+          <span class="text-burgundy-800">Counselor</span><span class="text-forest-600">Ready</span>
         </span>
       </a>
-      
+
       <nav class="hidden md:flex items-center gap-8">
         <a href="/dashboard.html" class="text-forest-600 hover:text-forest-700 transition-colors">Dashboard</a>
         <a href="/courses.html" class="text-burgundy-800 font-medium">Courses</a>
         <a href="/credentials.html" class="text-forest-600 hover:text-forest-700 transition-colors">Credentials</a>
         <a href="/certificates.html" class="text-forest-600 hover:text-forest-700 transition-colors">CE Certificates</a>
       </nav>
-
       <div class="flex items-center gap-4">
         <a href="/courses.html" class="text-forest-600 hover:text-forest-700 text-sm">
           ← Back to Courses
@@ -68,7 +66,6 @@
       </div>
     </div>
   </header>
-
   <!-- Loading State -->
   <div id="loadingState" class="max-w-7xl mx-auto px-6 py-12">
     <div class="flex items-center justify-center">
@@ -76,7 +73,6 @@
       <span class="ml-4 text-forest-600">Loading course details...</span>
     </div>
   </div>
-
   <!-- Error State -->
   <div id="errorState" class="hidden max-w-7xl mx-auto px-6 py-12">
     <div class="bg-red-50 border border-red-200 rounded-xl p-8 text-center">
@@ -88,10 +84,9 @@
       </a>
     </div>
   </div>
-
   <!-- Course Content -->
   <main id="courseContent" class="hidden max-w-7xl mx-auto px-6 py-8">
-    
+
     <!-- Breadcrumb -->
     <nav class="text-sm mb-6">
       <ol class="flex items-center gap-2 text-forest-500">
@@ -100,12 +95,11 @@
         <li id="breadcrumbCategory" class="text-forest-700">Category</li>
       </ol>
     </nav>
-
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-      
+
       <!-- Main Content Column -->
       <div class="lg:col-span-2 space-y-6">
-        
+
         <!-- Course Header -->
         <div class="bg-white rounded-xl border border-burgundy-100 shadow-sm overflow-hidden">
           <!-- Thumbnail -->
@@ -116,16 +110,16 @@
               <span class="text-burgundy-200 text-sm">Continuing Education</span>
             </div>
           </div>
-          
+
           <div class="p-6">
             <!-- Badges -->
             <div id="complianceBadges" class="flex flex-wrap gap-2 mb-4">
               <!-- Badges will be inserted here -->
             </div>
-            
+
             <h1 id="courseTitle" class="font-display text-3xl font-bold text-burgundy-900 mb-2">Course Title</h1>
             <p id="courseSubtitle" class="text-lg text-forest-600 mb-4"></p>
-            
+
             <!-- Quick Stats -->
             <div class="flex flex-wrap gap-4 text-sm text-forest-600 mb-4">
               <span class="flex items-center gap-1">
@@ -145,14 +139,14 @@
                 <span id="courseInstructor">Instructor</span>
               </span>
             </div>
-            
+
             <!-- Description -->
             <div class="prose max-w-none">
               <p id="courseDescription" class="text-forest-700 leading-relaxed"></p>
             </div>
           </div>
         </div>
-        
+
         <!-- Learning Objectives -->
         <div id="objectivesSection" class="hidden bg-white rounded-xl border border-burgundy-100 shadow-sm p-6">
           <h2 class="font-display text-xl font-semibold text-burgundy-900 mb-4 flex items-center gap-2">
@@ -163,7 +157,7 @@
             <!-- Objectives will be inserted here -->
           </ul>
         </div>
-        
+
         <!-- Presenter/Author Information (NBCC Section F) -->
         <div id="presenterSection" class="hidden bg-white rounded-xl border border-burgundy-100 shadow-sm p-6">
           <h2 class="font-display text-xl font-semibold text-burgundy-900 mb-4 flex items-center gap-2">
@@ -186,7 +180,7 @@
             </div>
           </div>
         </div>
-        
+
         <!-- Course Outline -->
         <div id="outlineSection" class="bg-white rounded-xl border border-burgundy-100 shadow-sm p-6">
           <h2 class="font-display text-xl font-semibold text-burgundy-900 mb-4 flex items-center gap-2">
@@ -197,7 +191,7 @@
             <!-- Modules will be inserted here -->
           </div>
         </div>
-        
+
         <!-- References Section (NBCC Section J.6.a.5) -->
         <div id="referencesSection" class="hidden bg-white rounded-xl border border-burgundy-100 shadow-sm p-6">
           <h2 class="font-display text-xl font-semibold text-burgundy-900 mb-4 flex items-center gap-2">
@@ -208,24 +202,24 @@
             <!-- References will be inserted here -->
           </ol>
         </div>
-        
+
         <!-- Dynamic Approval Statements Container -->
         <div id="approvalStatementsContainer">
           <!-- Approval statements will be dynamically inserted here based on course approvals -->
         </div>
-        
+
       </div>
-      
+
       <!-- Sidebar -->
       <div class="lg:col-span-1">
         <div class="sticky top-24 space-y-6">
-          
+
           <!-- Pricing Card -->
           <div class="bg-white rounded-xl border border-burgundy-100 shadow-lg overflow-hidden">
             <div id="pricingCardHeader" class="bg-gradient-to-r from-burgundy-700 to-burgundy-800 p-4 text-center">
               <span class="text-burgundy-100 text-sm" id="pricingApprovalBadge">NBCC Approved Provider #7760</span>
             </div>
-            
+
             <div class="p-6">
               <!-- Individual Price (if available) -->
               <div id="individualPriceSection" class="hidden mb-6">
@@ -239,7 +233,7 @@
                 </button>
                 <div class="text-center text-sm text-forest-500">or</div>
               </div>
-              
+
               <!-- Subscription Access -->
               <div id="subscriptionSection" class="text-center">
                 <div id="subscriptionPriceDisplay" class="mb-4">
@@ -247,21 +241,21 @@
                   <div class="text-2xl font-bold text-forest-700" id="subscriptionTierName">Professional Plan</div>
                   <span class="text-sm text-forest-500">$<span id="subscriptionPrice">19</span>/month</span>
                 </div>
-                
+
                 <button id="startCourseBtn" onclick="startCourse()" class="w-full bg-forest-700 hover:bg-forest-800 text-white font-semibold py-3 px-6 rounded-xl transition-colors mb-3">
                   Start Course
                 </button>
-                
+
                 <a href="/subscription.html" id="subscribeLink" class="hidden block w-full bg-gold-400 hover:bg-gold-500 text-burgundy-900 font-semibold py-3 px-6 rounded-xl transition-colors text-center">
                   Subscribe to Access
                 </a>
-                
+
                 <p class="text-xs text-forest-500 mt-4">
                   Get unlimited access to all courses with a subscription
                 </p>
               </div>
             </div>
-            
+
             <!-- Features -->
             <div class="border-t border-burgundy-100 p-4 bg-stone-50">
               <ul class="space-y-2 text-sm text-forest-600">
@@ -284,7 +278,7 @@
               </ul>
             </div>
           </div>
-          
+
           <!-- CE Category Card -->
           <div id="categoryCard" class="bg-white rounded-xl border border-burgundy-100 shadow-sm p-4">
             <h3 class="font-semibold text-forest-700 mb-2">CE Category</h3>
@@ -294,13 +288,12 @@
               <span id="categoryHours">0</span> Hours
             </div>
           </div>
-          
+
         </div>
       </div>
-      
+
     </div>
   </main>
-
   <!-- Footer -->
   <footer class="bg-burgundy-900 text-white mt-16">
     <div class="max-w-7xl mx-auto px-6 py-8">
@@ -322,36 +315,35 @@
       </div>
     </div>
   </footer>
-
   <script>
     const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://api.counselorready.com';
-    
+
     let currentCourse = null;
     let currentUser = null;
     let userProgress = null;
-    
+
     // Get course slug from URL
     function getCourseSlug() {
       const params = new URLSearchParams(window.location.search);
       return params.get('slug');
     }
-    
+
     // Load course details
     async function loadCourse() {
       const slug = getCourseSlug();
-      
+
       if (!slug) {
         showError('No course specified');
         return;
       }
-      
+
       const token = localStorage.getItem('token');
-      
+
       try {
         const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
-        
-        const response = await fetch(`${API_URL}/api/interactive-courses/slug/${slug}`, { headers });
-        
+
+        const response = await fetch(`${API_URL}/api/courses/${slug}`, { headers });
+
         if (!response.ok) {
           if (response.status === 404) {
             showError('Course not found');
@@ -360,11 +352,11 @@
           }
           return;
         }
-        
+
         const data = await response.json();
-        currentCourse = data.data || data.course || data;
+        currentCourse = data.course || data;
         userProgress = data.progress || null;
-        
+
         // Load user info if logged in
         if (token) {
           try {
@@ -377,15 +369,15 @@
             console.log('Could not load user info');
           }
         }
-        
+
         renderCourse();
-        
+
       } catch (error) {
         console.error('Load course error:', error);
         showError('Failed to load course');
       }
     }
-    
+
     // Show error state
     function showError(message) {
       document.getElementById('loadingState').classList.add('hidden');
@@ -393,110 +385,110 @@
       document.getElementById('errorState').classList.remove('hidden');
       document.getElementById('errorMessage').textContent = message;
     }
-    
+
     // Render course details
     function renderCourse() {
       document.getElementById('loadingState').classList.add('hidden');
       document.getElementById('errorState').classList.add('hidden');
       document.getElementById('courseContent').classList.remove('hidden');
-      
+
       // Set page title
       document.title = `${currentCourse.title} - CounselorReady`;
-      
+
       // Basic info
       document.getElementById('courseTitle').textContent = currentCourse.title;
       document.getElementById('courseSubtitle').textContent = currentCourse.subtitle || '';
       document.getElementById('courseDescription').textContent = currentCourse.description || '';
       document.getElementById('courseCEHours').textContent = currentCourse.ceuHours || 0;
       document.getElementById('courseInstructor').textContent = currentCourse.instructor || 'CounselorReady';
-      
+
       // Module and lesson counts
       const modules = currentCourse.modules || [];
       const lessonCount = modules.reduce((sum, m) => sum + (m.lessons?.length || 0), 0);
       document.getElementById('courseModuleCount').textContent = modules.length;
       document.getElementById('courseLessonCount').textContent = lessonCount;
-      
+
       // Thumbnail
       if (currentCourse.thumbnail) {
         document.getElementById('courseThumbnail').src = currentCourse.thumbnail;
         document.getElementById('courseThumbnail').classList.remove('hidden');
         document.getElementById('thumbnailPlaceholder').classList.add('hidden');
       }
-      
+
       // Category
       const category = currentCourse.ceuCategories?.[0]?.category || currentCourse.category || 'Core';
       const categoryHours = currentCourse.ceuCategories?.[0]?.hours || currentCourse.ceuHours || 0;
       document.getElementById('categoryName').textContent = capitalizeFirst(category);
       document.getElementById('categoryHours').textContent = categoryHours;
       document.getElementById('breadcrumbCategory').textContent = capitalizeFirst(category);
-      
+
       // Compliance badges
       renderBadges();
-      
+
       // Learning objectives
       renderObjectives();
-      
+
       // Presenter/Author information
       renderPresenter();
-      
+
       // Course outline (modules)
       renderModules();
-      
+
       // References
       renderReferences();
-      
+
       // Pricing
       renderPricing();
     }
-    
+
     // Render compliance badges
     function renderBadges() {
       const container = document.getElementById('complianceBadges');
       let badges = '';
-      
+
       // Approval body configuration for display
       const approvalBodyConfig = {
-        'NBCC': { 
-          name: 'NBCC Approved', 
+        'NBCC': {
+          name: 'NBCC Approved',
           color: 'bg-green-100 text-green-800',
           icon: '✓',
           logo: '/images/nbcc-acep-logo.jpg'
         },
-        'GCSCW': { 
-          name: 'GCSCW Approved', 
+        'GCSCW': {
+          name: 'GCSCW Approved',
           color: 'bg-blue-100 text-blue-800',
           icon: '✓',
           logo: '/images/gcscw-logo.png'
         },
-        'GA-LPC-Board': { 
-          name: 'GA LPC Board', 
+        'GA-LPC-Board': {
+          name: 'GA LPC Board',
           color: 'bg-indigo-100 text-indigo-800',
           icon: '✓',
           logo: null
         },
-        'GA-LCSW-Board': { 
-          name: 'GA LCSW Board', 
+        'GA-LCSW-Board': {
+          name: 'GA LCSW Board',
           color: 'bg-purple-100 text-purple-800',
           icon: '✓',
           logo: null
         },
-        'ACA': { 
-          name: 'ACA Approved', 
+        'ACA': {
+          name: 'ACA Approved',
           color: 'bg-teal-100 text-teal-800',
           icon: '✓',
           logo: null
         },
-        'NASW': { 
-          name: 'NASW Approved', 
+        'NASW': {
+          name: 'NASW Approved',
           color: 'bg-cyan-100 text-cyan-800',
           icon: '✓',
           logo: null
         }
       };
-      
+
       // Get active approvals (support both new array format and legacy single body)
       let activeApprovals = [];
-      
+
       if (currentCourse.approvals && currentCourse.approvals.length > 0) {
         // New format: array of approvals
         activeApprovals = currentCourse.approvals.filter(a => a.status === 'approved');
@@ -516,7 +508,7 @@
           status: 'approved'
         }];
       }
-      
+
       // Render approval body badges
       activeApprovals.forEach(approval => {
         const config = approvalBodyConfig[approval.body] || {
@@ -524,12 +516,12 @@
           color: 'bg-gray-100 text-gray-800',
           icon: '✓'
         };
-        
+
         badges += `<span class="inline-flex items-center gap-1 px-3 py-1 ${config.color} text-sm font-medium rounded-full">
           ${config.icon} ${config.name}
         </span>`;
       });
-      
+
       // NBCC Content Area badge (Section G compliance)
       const contentAreaMap = {
         'counseling-theory-practice': 'Counseling Theory/Practice',
@@ -542,7 +534,7 @@
         'professional-identity-practice': 'Professional Identity',
         'wellness-prevention': 'Wellness & Prevention'
       };
-      
+
       const contentArea = currentCourse.nbccContentArea || currentCourse.nbccContentAreaDisplay;
       if (contentArea) {
         const displayName = contentAreaMap[contentArea] || currentCourse.nbccContentAreaDisplay || contentArea;
@@ -550,7 +542,7 @@
           📚 ${displayName}
         </span>`;
       }
-      
+
       // State compliance badges
       const states = currentCourse.stateCompliance || currentCourse.applicableStates || [];
       states.forEach(state => {
@@ -558,7 +550,7 @@
           ✓ Meets ${state} Requirements
         </span>`;
       });
-      
+
       // CE Category badge
       const category = currentCourse.ceuCategories?.[0]?.category || currentCourse.category || 'Core';
       const isPremium = ['ethics', 'telehealth', 'supervision'].includes(category.toLowerCase());
@@ -567,17 +559,17 @@
           ⭐ ${capitalizeFirst(category)}
         </span>`;
       }
-      
+
       container.innerHTML = badges;
-      
+
       // Render approval statements
       renderApprovalStatements(activeApprovals);
     }
-    
+
     // Render approval statements based on course approvals
     function renderApprovalStatements(activeApprovals) {
       const container = document.getElementById('approvalStatementsContainer');
-      
+
       // Approval statement templates
       const approvalStatements = {
         'NBCC': {
@@ -629,20 +621,20 @@
           getStatement: (providerNumber) => `GA Integrated Therapeutic Perspectives LLC is approved by the National Association of Social Workers as a continuing education provider.${providerNumber ? ` Provider Number: ${providerNumber}` : ''}`
         }
       };
-      
+
       let statementsHTML = '';
-      
+
       activeApprovals.forEach(approval => {
         const config = approvalStatements[approval.body];
-        
+
         if (config) {
           const providerNumber = approval.providerNumber || '';
-          const logoImg = config.logo 
+          const logoImg = config.logo
             ? `<img src="${config.logo}" alt="${approval.body} Logo" class="w-16 h-16 object-contain" onerror="this.style.display='none'">`
             : `<div class="w-16 h-16 rounded-full bg-forest-100 flex items-center justify-center">
                 <span class="text-2xl text-forest-600">✓</span>
                </div>`;
-          
+
           statementsHTML += `
             <div class="bg-gradient-to-r ${config.gradient} rounded-xl border ${config.borderColor} p-6 mb-4">
               <div class="flex items-start gap-4">
@@ -675,21 +667,21 @@
           `;
         }
       });
-      
+
       container.innerHTML = statementsHTML;
     }
-    
+
     // Render learning objectives
     function renderObjectives() {
       const objectives = currentCourse.objectives || [];
       const section = document.getElementById('objectivesSection');
       const list = document.getElementById('objectivesList');
-      
+
       if (objectives.length === 0) {
         section.classList.add('hidden');
         return;
       }
-      
+
       section.classList.remove('hidden');
       list.innerHTML = objectives.map(obj => `
         <li class="flex items-start gap-3">
@@ -698,16 +690,16 @@
         </li>
       `).join('');
     }
-    
+
     // Render presenter/author information (NBCC Section F compliance)
     function renderPresenter() {
       const presenter = currentCourse.presenter;
       const section = document.getElementById('presenterSection');
-      
+
       // If no presenter object, use legacy instructor field
       if (!presenter || !presenter.name) {
         const instructorName = currentCourse.instructor || 'GA Integrated Therapeutic Perspectives LLC';
-        
+
         // Show section with default info
         section.classList.remove('hidden');
         document.getElementById('presenterAvatar').textContent = instructorName.split(' ').map(w => w[0]).join('').substring(0, 2);
@@ -718,30 +710,30 @@
         document.getElementById('presenterBio').textContent = 'This course is provided by an NBCC Approved Continuing Education Provider meeting all Category 1 presenter requirements for clinical content.';
         return;
       }
-      
+
       section.classList.remove('hidden');
-      
+
       // Avatar initials
       const initials = presenter.name.split(' ').map(w => w[0]).join('').substring(0, 2);
       document.getElementById('presenterAvatar').textContent = initials;
-      
+
       // Name and credentials
       document.getElementById('presenterName').textContent = presenter.name;
       document.getElementById('presenterCredentials').textContent = presenter.credentials || '';
-      
+
       // Degree and institution
       const degreeInfo = [presenter.degree, presenter.institution].filter(Boolean).join(' • ');
       document.getElementById('presenterDegree').textContent = degreeInfo;
-      
+
       // License info
-      const licenseInfo = presenter.licenseNumber && presenter.licenseState 
+      const licenseInfo = presenter.licenseNumber && presenter.licenseState
         ? `License: ${presenter.licenseNumber} (${presenter.licenseState})`
         : '';
       document.getElementById('presenterLicense').textContent = licenseInfo;
-      
+
       // Bio
       document.getElementById('presenterBio').textContent = presenter.bio || '';
-      
+
       // Qualification statement
       const qualStatement = document.getElementById('presenterQualification');
       if (presenter.qualificationStatement) {
@@ -751,18 +743,18 @@
         qualStatement.classList.add('hidden');
       }
     }
-    
+
     // Render references section (NBCC Section J.6.a.5 compliance)
     function renderReferences() {
       const references = currentCourse.references || [];
       const section = document.getElementById('referencesSection');
       const list = document.getElementById('referencesList');
-      
+
       if (references.length === 0) {
         section.classList.add('hidden');
         return;
       }
-      
+
       section.classList.remove('hidden');
       list.innerHTML = references.map(ref => {
         // Format reference in APA-ish style
@@ -773,21 +765,21 @@
         if (ref.source) refText += `. <em>${escapeHtml(ref.source)}</em>`;
         if (ref.doi) refText += `. DOI: ${ref.doi}`;
         if (ref.url) refText += `. <a href="${escapeHtml(ref.url)}" target="_blank" class="text-burgundy-700 underline">Link</a>`;
-        
+
         return `<li class="text-forest-700 leading-relaxed">${refText}</li>`;
       }).join('');
     }
-    
+
     // Render course modules
     function renderModules() {
       const modules = currentCourse.modules || [];
       const container = document.getElementById('modulesList');
-      
+
       if (modules.length === 0) {
         container.innerHTML = '<p class="text-forest-500">Course content is being prepared...</p>';
         return;
       }
-      
+
       container.innerHTML = modules.map((mod, mi) => `
         <div class="border border-forest-200 rounded-lg overflow-hidden">
           <div class="bg-forest-50 px-4 py-3 flex items-center justify-between">
@@ -811,15 +803,15 @@
         </div>
       `).join('');
     }
-    
+
     // Render pricing section
     function renderPricing() {
       const price = currentCourse.price;
       const accessTier = currentCourse.accessTier || 'professional';
-      
+
       // Update approval badge in pricing card header
       updatePricingApprovalBadge();
-      
+
       // Individual price section
       if (price && price > 0) {
         document.getElementById('individualPriceSection').classList.remove('hidden');
@@ -827,7 +819,7 @@
       } else {
         document.getElementById('individualPriceSection').classList.add('hidden');
       }
-      
+
       // Subscription tier
       const tierNames = {
         'free': 'Free',
@@ -839,17 +831,17 @@
         'professional': 19,
         'vip': 49
       };
-      
+
       document.getElementById('subscriptionTierName').textContent = tierNames[accessTier] || 'Professional Plan';
       document.getElementById('subscriptionPrice').textContent = tierPrices[accessTier] || 19;
-      
+
       // Check if user has access
       const hasAccess = checkUserAccess(accessTier);
-      
+
       if (hasAccess) {
         document.getElementById('startCourseBtn').classList.remove('hidden');
         document.getElementById('subscribeLink').classList.add('hidden');
-        
+
         // Update button text based on progress
         if (userProgress && userProgress.status === 'completed') {
           document.getElementById('startCourseBtn').textContent = 'Review Course';
@@ -866,83 +858,54 @@
         }
       }
     }
-    
+
     // Check if user has access to the course
     function checkUserAccess(requiredTier) {
       if (!currentUser) return false;
       if (requiredTier === 'free') return true;
-      
+
       const userTier = currentUser.subscription?.plan || 'free';
       const userStatus = currentUser.subscription?.status;
-      
+
       if (userStatus !== 'active') return false;
-      
+
       const tierLevels = { 'free': 0, 'professional': 1, 'vip': 2 };
       return tierLevels[userTier] >= tierLevels[requiredTier];
     }
-    
+
     // Start/continue course
     function startCourse() {
       if (!currentUser) {
         window.location.href = `/login.html?redirect=${encodeURIComponent(window.location.href)}`;
         return;
       }
-      
-      window.location.href = `/interactive-course.html?slug=${currentCourse.slug}`;
+
+      window.location.href = `/course-player.html?slug=${currentCourse.slug}`;
     }
-    
-    // Purchase course individually via Stripe
-    async function purchaseCourse() {
+
+    // Purchase course individually
+    function purchaseCourse() {
       if (!currentUser) {
         window.location.href = `/login.html?redirect=${encodeURIComponent(window.location.href)}`;
         return;
       }
 
-      if (!currentCourse?.price || currentCourse.price <= 0) {
-        alert('This course is not available for individual purchase. Subscribe for unlimited access.');
-        window.location.href = '/subscription.html';
-        return;
-      }
-
-      try {
-        const token = localStorage.getItem('token');
-        const res = await fetch(`${API_BASE}/payments/purchase-course`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify({ courseId: currentCourse._id })
-        });
-        const data = await res.json();
-        if (!res.ok) {
-          if (data.error === 'You have already purchased this course') {
-            window.location.href = `/interactive-course.html?slug=${currentCourse.slug}`;
-            return;
-          }
-          throw new Error(data.error || 'Purchase failed');
-        }
-        // Redirect to Stripe Checkout
-        if (data.url) {
-          window.location.href = data.url;
-        }
-      } catch (err) {
-        console.error('Purchase error:', err);
-        alert(err.message || 'Failed to start checkout. Please try again.');
-      }
+      // TODO: Implement individual course purchase with Stripe
+      alert('Individual course purchases coming soon! For now, subscribe for unlimited access.');
+      window.location.href = '/subscription.html';
     }
-    
+
     // Helper functions
     function capitalizeFirst(str) {
       return str.charAt(0).toUpperCase() + str.slice(1);
     }
-    
+
     // Update pricing card approval badge based on course approvals
     function updatePricingApprovalBadge() {
       const badgeEl = document.getElementById('pricingApprovalBadge');
-      
+
       let activeApprovals = [];
-      
+
       if (currentCourse.approvals && currentCourse.approvals.length > 0) {
         activeApprovals = currentCourse.approvals.filter(a => a.status === 'approved');
       } else if (currentCourse.approvingBody) {
@@ -954,7 +917,7 @@
       } else {
         activeApprovals = [{ body: 'NBCC', providerNumber: '#7760' }];
       }
-      
+
       if (activeApprovals.length === 1) {
         const approval = activeApprovals[0];
         const providerNum = approval.providerNumber || '';
@@ -966,13 +929,13 @@
         badgeEl.textContent = 'Continuing Education Course';
       }
     }
-    
+
     function escapeHtml(text) {
       const div = document.createElement('div');
       div.textContent = text;
       return div.innerHTML;
     }
-    
+
     function getLessonIcon(type) {
       switch(type) {
         case 'video': return 'bg-blue-100 text-blue-600';
@@ -981,7 +944,7 @@
         default: return 'bg-forest-100 text-forest-600';
       }
     }
-    
+
     function getLessonIconSymbol(type) {
       switch(type) {
         case 'video': return '▶';
@@ -990,9 +953,9 @@
         default: return '📄';
       }
     }
-    
+
     // Initialize
     document.addEventListener('DOMContentLoaded', loadCourse);
   </script>
-<script src="/js/footer.js"></script></body>
+</body>
 </html>
