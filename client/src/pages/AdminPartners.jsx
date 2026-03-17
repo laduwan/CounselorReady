@@ -4,11 +4,11 @@
  * Unauthorized copying or distribution is strictly prohibited.
  */
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useImpersonate } from '../context/ImpersonateContext';
 import api from '../services/api';
-import { Plus, Edit2, Trash2, Users, ExternalLink, Eye, EyeOff, Copy, Check, X, BookOpen, UserPlus, MonitorPlay } from 'lucide-react';
+import { Plus, Edit2, Trash2, Users, ExternalLink, Eye, EyeOff, Copy, Check, X, BookOpen, UserPlus, MonitorPlay, HeartPulse } from 'lucide-react';
 
 const BURGUNDY = '#6B1D34';
 const BURGUNDY_LIGHT = '#fdf5f6';
@@ -355,6 +355,11 @@ export default function AdminPartners() {
 
               {/* Actions */}
               <div className="flex items-center gap-1 flex-shrink-0">
+                <Link to={`/admin/partner-support/${p._id}`}
+                  title="Partner Support"
+                  className="p-2 rounded-lg hover:bg-rose-50 transition-colors text-rose-400">
+                  <HeartPulse className="w-4 h-4" />
+                </Link>
                 <button onClick={() => { startImpersonating(p._id, p.name); navigate('/partner/onboarding'); }}
                   title="View as Partner"
                   className="p-2 rounded-lg hover:bg-indigo-50 transition-colors text-indigo-500">
