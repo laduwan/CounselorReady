@@ -3146,10 +3146,15 @@ function renderCurrentSection() {
   const blocks = section.contentBlocks || [];
   const hasDivider = blocks.some(b => b.type === 'sectionDivider');
   if (!hasDivider && section.title) {
+    var heroImg = '';
+    if (course && (course.ceHours || course.ceuHours || 0) >= 3 && currentSectionIndex > 0) {
+      var hUrl = getSectionHeroImage(section.title || '', currentSectionIndex + 1);
+      if (hUrl) heroImg = '<img class="cr-section-hero" src="' + hUrl + '" alt="" loading="lazy" aria-hidden="true">';
+    }
     area.innerHTML += `<div class="cr-section-divider">
       <div class="cr-section-divider-number">${currentSectionIndex + 1}</div>
       <div><h2>${esc(section.title)}</h2></div>
-    </div>`;
+    </div>` + heroImg;
   }
   
   // Render each block
@@ -3269,7 +3274,7 @@ function renderSectionDivider(wrap, block) {
   var heroHtml = '';
   // Auto-inject hero image for courses 3+ CE hours
   if (course && (course.ceHours || course.ceuHours || 0) >= 3) {
-    var imgUrl = getSectionHeroImage(block.title || '', block.sectionNumber || 1);
+    var imgUrl = getSectionHeroImage(block.title || '', currentSectionIndex + 1);
     if (imgUrl) {
       heroHtml = '<img class="cr-section-hero" src="' + imgUrl + '" alt="" loading="lazy" aria-hidden="true">';
     }
