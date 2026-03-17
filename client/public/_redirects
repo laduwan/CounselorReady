@@ -6,8 +6,13 @@
 
 # Static HTML pages — served directly, bypass React
 /dashboard           /dashboard.html           200
+/courses             /courses.html             200
+/credentials         /credentials.html         200
+/settings            /settings.html            200
 /certificates        /certificates.html        200
 /messages            /messages.html            200
+/subscription        /subscription.html        200
+/help                /help.html                200
 /welcome             /welcome.html             200
 /audit               /audit.html               200
 /login               /login.html               200
