@@ -306,17 +306,9 @@ export default function CourseView() {
 
       {/* Course overview card */}
       <div className="card">
-        {/* Course hero image */}
-        <div className="h-48 bg-hunter-100 rounded-lg mb-6 flex items-center justify-center overflow-hidden">
-          {course.thumbnail ? (
-            <img
-              src={course.thumbnail}
-              alt={course.title}
-              className="w-full h-full object-cover object-top rounded-lg"
-            />
-          ) : (
-            <BookOpen className="w-16 h-16 text-hunter-500" />
-          )}
+        {/* Course icon area */}
+        <div className="h-48 bg-hunter-100 rounded-lg mb-6 flex items-center justify-center">
+          <BookOpen className="w-16 h-16 text-hunter-500" />
         </div>
 
         {/* Course title and meta */}
