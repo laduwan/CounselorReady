@@ -1033,13 +1033,13 @@ async function main() {
   }
 
   console.log("\n═══ BATCH 1 STATISTICS ═══");
-  console.log(\`Sections: \${COURSE_DATA.sections.length}\`);
-  console.log(\`Total content blocks: \${totalBlocks}\`);
-  console.log(\`Knowledge checks: \${kcs}\`);
-  console.log(\`References: \${COURSE_DATA.references.length}\`);
-  console.log(\`Text word count: ~\${totalWords}\`);
-  console.log(\`CE requirement: \${COURSE_DATA.ceHours * 6000} words\`);
-  console.log(\`Status: \${totalWords >= COURSE_DATA.ceHours * 6000 ? "PASS" : "BATCH 1 of 4 — remaining sections needed"}\`);
+  console.log(`Sections: ${COURSE_DATA.sections.length}`);
+  console.log(`Total content blocks: ${totalBlocks}`);
+  console.log(`Knowledge checks: ${kcs}`);
+  console.log(`References: ${COURSE_DATA.references.length}`);
+  console.log(`Text word count: ~${totalWords}`);
+  console.log(`CE requirement: ${COURSE_DATA.ceHours * 6000} words`);
+  console.log(`Status: ${totalWords >= COURSE_DATA.ceHours * 6000 ? "PASS" : "BATCH 1 of 4 — remaining sections needed"}`);
 
   await mongoose.disconnect();
   console.log("\nDone.");
