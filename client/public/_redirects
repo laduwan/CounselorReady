@@ -1,61 +1,36 @@
-# ─────────────────────────────────────────────
-# CounselorReady — Render Static Site Redirects
-# Rules are processed TOP-DOWN, first match wins.
-# ─────────────────────────────────────────────
+# ═══════════════════════════════════════════════════════════════
+# CounselorReady _redirects
+# Lines above the catch-all serve static HTML directly.
+# Everything else falls through to React SPA.
+# ═══════════════════════════════════════════════════════════════
 
-# Block sensitive paths
-/.env           /404.html    404
-/.env.*         /404.html    404
-/.git/*         /404.html    404
-/wp-admin       /404.html    404
-/wp-admin/*     /404.html    404
-/wp-login*      /404.html    404
-/api/debug      /404.html    404
-/api/debug/*    /404.html    404
+# Static HTML pages — served directly, bypass React
+/dashboard           /dashboard.html           200
+/certificates        /certificates.html        200
+/messages            /messages.html            200
+/welcome             /welcome.html             200
+/audit               /audit.html               200
+/login               /login.html               200
+/register            /register.html            200
 
-# ─── Static HTML pages (serve file directly, bypass SPA) ───
-# Tools directory
-/tools/*                 /tools/:splat            200
+# Admin static HTML pages
+/admin-courses       /admin-courses.html       200
+/admin-users         /admin-users.html         200
+/admin-analytics     /admin-analytics.html     200
+/admin-messages      /admin-messages.html      200
+/admin-credentials   /admin-credentials.html   200
+/admin-hardship      /admin-hardship.html      200
+/admin-integrations  /admin-integrations.html  200
+/admin-coupons       /admin-coupons.html       200
+/admin-help          /admin-help.html          200
+/admin-migration     /admin-migration.html     200
+/admin-course-preview /admin-course-preview.html 200
 
-# Admin pages
-/admin.html              /admin.html              200
-/admin-*.html            /admin-*.html            200
+# Course viewer
+/interactive-course  /interactive-course.html  200
 
-# Public pages
-/about.html              /about.html              200
-/help.html               /help.html               200
-/privacy.html            /privacy.html            200
-/terms.html              /terms.html              200
-/refund-policy.html      /refund-policy.html      200
-
-# Course player & related
-/interactive-course.html   /interactive-course.html   200
-/interactive-courses.html  /interactive-courses.html  200
-/course-player.html        /course-player.html        200
-/course-player-unified.html /course-player-unified.html 200
-/courses-unified.html      /courses-unified.html      200
-/course-details.html       /course-details.html       200
-
-# Auth & utility pages
-/welcome.html            /welcome.html            200
-/verify.html             /verify.html             200
-/verify-email.html       /verify-email.html       200
-/forgot-password.html    /forgot-password.html    200
-/reset-password.html     /reset-password.html     200
-
-# User pages (static HTML versions)
-/dashboard.html          /dashboard.html          200
-/settings.html           /settings.html           200
-/credentials.html        /credentials.html        200
-/certificates.html       /certificates.html       200
-/subscription.html       /subscription.html       200
-/messages.html           /messages.html           200
-/audit.html              /audit.html              200
-/landing.html            /landing.html            200
-/login.html              /login.html              200
-/register.html           /register.html           200
-/courses.html            /courses.html            200
-/update-content.html     /update-content.html     200
-
-# ─── SPA catch-all (MUST be LAST) ───
-/*    /index.html   200
+# React SPA catch-all — handles /courses, /credentials, /settings,
+# /ce-planner, /supervision, /achievements, /referrals, /recommendations,
+# /organization, /group-licenses, /insurance-tracker, /legacy-vault,
+# /board-alerts, /audit-kit, /partner-dashboard, /learn/*, /admin/*
+/*                   /index.html               200

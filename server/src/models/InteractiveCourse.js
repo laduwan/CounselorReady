@@ -160,12 +160,13 @@ const CourseSchema = new mongoose.Schema({
   author: String,
   publishedAt: Date,
   updatedAt: { type: Date, default: Date.now },
-  status: { 
-    type: String, 
-    enum: ['draft', 'published', 'archived'], 
-    default: 'draft' 
+  status: {
+    type: String,
+    enum: ['draft', 'published', 'archived'],
+    default: 'draft'
   },
-  
+  expiresAt: { type: Date, default: null, index: { expires: 0, sparse: true } },
+
   // Calculated fields
   totalEstimatedTime: Number, // in minutes
   totalContentBlocks: Number,
@@ -228,16 +229,20 @@ const SectionProgressSchema = new mongoose.Schema({
   timeSpent: { type: Number, default: 0 }, // seconds
   
   // Status
-  status: { 
-    type: String, 
-    enum: ['not_started', 'in_progress', 'completed'], 
-    default: 'not_started' 
-  }
+  status: {
+    type: String,
+    enum: ['not_started', 'in_progress', 'completed'],
+    default: 'not_started'
+  },
+
+  // Adaptive learning — set when an adaptive rule unlocks this section out of order
+  adaptivelyUnlocked: { type: Boolean, default: false }
 });
 
 const CourseProgressSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   courseId: { type: mongoose.Schema.Types.ObjectId, ref: 'InteractiveCourse', required: true },
+  partnerId: { type: mongoose.Schema.Types.ObjectId, ref: 'Partner' },
   
   // Section progress
   sectionProgress: [SectionProgressSchema],

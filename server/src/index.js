@@ -37,6 +37,7 @@ import cebrokerRoutes from './routes/cebroker.js';
 import helpRoutes from './routes/help.js';
 import bulkUploadRoutes from './routes/bulkUpload.js';
 import toolsRoutes from './routes/tools.js';
+import toolRoutes from './routes/toolRoutes.js';
 // ── Previously unregistered routes (wiring audit fix 2026-03-04) ──
 import aiRoutes from './routes/ai.js';
 import aiCourseGeneratorRoutes from './routes/aiCourseGenerator.js';
@@ -61,8 +62,13 @@ import legacyVaultRoutes from './routes/legacyVault.js';
 import adminStatsRoutes from './routes/adminStats.js';
 // ── Whitelabel partner routes ──
 import partnersRoutes from './routes/partners.js';
+import { detectPartner } from './middleware/partner.js';
 import rawMarkdownRoutes from './routes/rawMarkdownRoute.js';
 import dashboardRoutes from './routes/dashboard.js';
+// ── Research Ready CE ──
+import researchReadyRoutes from './routes/researchReady.js';
+// ── Scholarly articles integration ──
+import scholarlyArticlesRoutes from './routes/scholarlyArticles.js';
 // Import services
 import { initializeScheduler } from './services/notificationScheduler.js';
 
@@ -72,6 +78,9 @@ const __dirname = path.dirname(__filename);
 
 // Initialize Express app
 const app = express();
+
+// Trust first proxy (Render's load balancer) so rate limiters see real client IPs
+app.set('trust proxy', 1);
 
 // ===========================================
 // MIDDLEWARE
@@ -102,7 +111,7 @@ app.use(cors({
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'X-Partner-Slug']
 }));
 
 // Security headers
@@ -160,12 +169,16 @@ app.use('/api/ai-course-generator/', aiLimiter);
 app.use('/api/admin/quiz/generate', aiLimiter);
 app.use('/api/admin/course/generate', aiLimiter);
 app.use('/api/admin/module/generate', aiLimiter);
+app.use('/api/scholarly-articles/article/*/generate-quiz', aiLimiter);
 
 // Body parsing middleware
 // Stripe webhook needs raw body, so we handle it before json parsing
 app.use('/api/payments/webhook', express.raw({ type: 'application/json' }));
 app.use(express.json({ limit: '15mb' }));
 app.use(express.urlencoded({ extended: true, limit: '15mb' }));
+
+// Partner detection — attach req.partner context for all API requests
+app.use('/api/', detectPartner);
 
 // Request logging (development)
 if (process.env.NODE_ENV !== 'production') {
@@ -263,8 +276,16 @@ app.use('/api/legacy-vault', legacyVaultRoutes);
 app.use('/api/admin/stats', adminStatsRoutes);
 app.use('/api/partners', partnersRoutes);
 app.use('/api/tools', toolsRoutes);
+app.use('/api/tools', toolRoutes);
 app.use('/api/rawmd', rawMarkdownRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+// ── Research Ready CE ──
+app.use('/api/research-ready', researchReadyRoutes);
+
+// Serve syllabus DOCX files
+app.use('/uploads/syllabi', express.static(path.join(__dirname, '../uploads/syllabi')));
+// ── Scholarly articles ──
+app.use('/api/scholarly-articles', scholarlyArticlesRoutes);
 
 // Static templates directory intentionally NOT served publicly
 // Certificate assets (signature.png, certificate_template.pdf) are loaded

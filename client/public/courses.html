@@ -351,8 +351,13 @@
         });
         
         if (response.ok) {
-          alert('Enrolled successfully!');
-          await loadCourses(); // Reload to show updated enrollment
+          // Get the course slug for redirect
+          const enrolled = allCourses.find(c => c._id === courseId);
+          if (enrolled && enrolled.slug) {
+            window.location.href = '/interactive-course.html?slug=' + enrolled.slug;
+          } else {
+            await loadCourses();
+          }
         } else {
           const data = await response.json();
           if (data.code === 'SUBSCRIPTION_REQUIRED') {

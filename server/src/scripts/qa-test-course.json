@@ -1,0 +1,180 @@
+{
+  "_qa": true,
+  "title": "QA Smoke Test – Platform Verification",
+  "slug": "qa-smoke-test",
+  "description": "Automated QA smoke-test course used to verify that every interactive block type renders correctly.",
+  "ceHours": 0.5,
+  "ceProvider": "NBCC ACEP #7760",
+  "acepNumber": "7760",
+  "status": "published",
+  "isTestCourse": true,
+  "objectives": [
+    "Verify all block types render without errors"
+  ],
+  "sections": [
+    {
+      "title": "Section 1 – Content Blocks",
+      "order": 0,
+      "estimatedTime": 5,
+      "contentBlocks": [
+        {
+          "type": "sectionDivider",
+          "order": 0,
+          "sectionNumber": 1,
+          "title": "Content Blocks",
+          "subtitle": "Basic content rendering"
+        },
+        {
+          "type": "text",
+          "order": 1,
+          "textContent": "<p>This is a <strong>text block</strong> for QA verification.</p>"
+        },
+        {
+          "type": "imageText",
+          "order": 2,
+          "title": "Image-Text Block",
+          "content": "Verifies the image-text layout renders correctly.",
+          "image": "https://placehold.co/400x300",
+          "imageAlt": "Placeholder image for QA",
+          "imagePosition": "left"
+        },
+        {
+          "type": "accordion",
+          "order": 3,
+          "accordionItems": [
+            { "title": "Accordion Item A", "content": "Content for item A." },
+            { "title": "Accordion Item B", "content": "Content for item B." }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Section 2 – Interactive Blocks",
+      "order": 1,
+      "estimatedTime": 5,
+      "contentBlocks": [
+        {
+          "type": "matching",
+          "order": 0,
+          "matchingInstructions": "Match each term to its definition.",
+          "matchingPairs": [
+            { "term": "Term 1", "definition": "Definition 1" },
+            { "term": "Term 2", "definition": "Definition 2" }
+          ]
+        },
+        {
+          "type": "multipleChoice",
+          "order": 1,
+          "question": "Which option is correct?",
+          "options": [
+            { "text": "Wrong", "isCorrect": false },
+            { "text": "Correct", "isCorrect": true }
+          ],
+          "explanation": "The second option is correct."
+        },
+        {
+          "type": "multiSelect",
+          "order": 2,
+          "question": "Select all that apply.",
+          "options": [
+            { "text": "Applies", "isCorrect": true },
+            { "text": "Does not apply", "isCorrect": false },
+            { "text": "Also applies", "isCorrect": true }
+          ],
+          "explanation": "The first and third options apply."
+        }
+      ]
+    },
+    {
+      "title": "Section 3 – Reflection & Resources",
+      "order": 2,
+      "estimatedTime": 5,
+      "contentBlocks": [
+        {
+          "type": "reflection",
+          "order": 0,
+          "title": "Reflection Prompt",
+          "content": "Describe what you learned from this QA test.",
+          "minLength": 20
+        },
+        {
+          "type": "resources",
+          "order": 1,
+          "resources": [
+            "QA Resource Link – https://example.com"
+          ]
+        }
+      ]
+    }
+  ],
+  "references": [
+    "QA Reference Citation (2026). Smoke Test Verification Manual."
+  ],
+  "assessment": {
+    "title": "QA Final Assessment",
+    "passThreshold": 0.7,
+    "attemptsAllowed": 99,
+    "timeLimit": 15,
+    "shuffleQuestions": false,
+    "shuffleOptions": false,
+    "questions": [
+      {
+        "question": "What color is the sky on a clear day?",
+        "type": "multipleChoice",
+        "options": [
+          { "text": "Green", "isCorrect": false },
+          { "text": "Blue", "isCorrect": true },
+          { "text": "Red", "isCorrect": false }
+        ],
+        "explanation": "The sky appears blue due to Rayleigh scattering."
+      },
+      {
+        "question": "Water boils at 100°C at sea level.",
+        "type": "multipleChoice",
+        "options": [
+          { "text": "True", "isCorrect": true },
+          { "text": "False", "isCorrect": false }
+        ],
+        "explanation": "Water boils at 100°C (212°F) at standard atmospheric pressure."
+      },
+      {
+        "question": "Which planet is closest to the Sun?",
+        "type": "multipleChoice",
+        "options": [
+          { "text": "Venus", "isCorrect": false },
+          { "text": "Mercury", "isCorrect": true },
+          { "text": "Mars", "isCorrect": false }
+        ],
+        "explanation": "Mercury is the closest planet to the Sun."
+      },
+      {
+        "question": "Select all prime numbers.",
+        "type": "multiSelect",
+        "options": [
+          { "text": "2", "isCorrect": true },
+          { "text": "4", "isCorrect": false },
+          { "text": "5", "isCorrect": true },
+          { "text": "9", "isCorrect": false }
+        ],
+        "explanation": "2 and 5 are prime; 4 and 9 are not."
+      },
+      {
+        "question": "JavaScript is a statically typed language.",
+        "type": "trueFalse",
+        "options": [
+          { "text": "True", "isCorrect": false },
+          { "text": "False", "isCorrect": true }
+        ],
+        "explanation": "JavaScript is dynamically typed."
+      }
+    ]
+  },
+  "analytics": {
+    "trackEnrollment": true,
+    "trackSectionProgress": true,
+    "trackBlockInteractions": true,
+    "trackAssessmentAttempts": true,
+    "trackCertificateGeneration": true,
+    "trackTimerEvents": true
+  }
+}

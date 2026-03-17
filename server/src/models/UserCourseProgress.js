@@ -89,6 +89,9 @@ const userCourseProgressSchema = new mongoose.Schema({
   adminCompletedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   adminCompletedAt: { type: Date },
   
+  // Auto-delete (sparse TTL) — used for smoke-test progress records
+  autoDeleteAt: { type: Date, default: null },
+
   // Last activity
   lastAccessedAt: { type: Date, default: Date.now },
   currentModuleIndex: { type: Number, default: 0 },
@@ -100,6 +103,7 @@ const userCourseProgressSchema = new mongoose.Schema({
 // Compound index for unique enrollment
 userCourseProgressSchema.index({ userId: 1, courseId: 1 }, { unique: true });
 userCourseProgressSchema.index({ userId: 1, status: 1 });
+userCourseProgressSchema.index({ autoDeleteAt: 1 }, { expireAfterSeconds: 0, sparse: true });
 
 // Check if lesson is completed
 userCourseProgressSchema.methods.isLessonCompleted = function(lessonId) {

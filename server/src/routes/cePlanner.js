@@ -45,8 +45,15 @@ router.get('/plan', async (req, res) => {
           );
           const isPlatformCert = cert.source === 'platform';
 
-          // Apply explicitly linked certs and platform-generated certs
-          if (!isExplicitlyLinked && !isPlatformCert) continue;
+          // Match uploaded certs by category to credential requirements
+          const certCategory = (cert.category || 'General').toLowerCase().replace(/[-_]/g, ' ');
+          const hasRequirements = credential.requirements && credential.requirements.length > 0;
+          const matchesCategory = !hasRequirements || credential.requirements.some(req =>
+            req.category.toLowerCase().replace(/[-_]/g, ' ') === certCategory
+          ) || certCategory === 'general';
+
+          // Apply explicitly linked, platform-generated, or category-matched certs
+          if (!isExplicitlyLinked && !isPlatformCert && !matchesCategory) continue;
 
           // Skip if already logged (no duplicates)
           const alreadyLogged = credential.ceuLogs.some(log =>
@@ -79,7 +86,7 @@ router.get('/plan', async (req, res) => {
       .select('title slug ceHours category sections.title metadata');
 
     // Get user's completed courses
-    const completedProgress = await UserCourseProgress.find({ userId, completed: true });
+    const completedProgress = await UserCourseProgress.find({ userId, status: 'completed' });
     const completedCourseIds = new Set(completedProgress.map(p => p.courseId.toString()));
 
     // Build plan per credential
