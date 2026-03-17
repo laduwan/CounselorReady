@@ -10,7 +10,7 @@
 // Do NOT change classNames, color values, gradients, spacing, grid layout, or component hierarchy.
 
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import {
   BookOpen, Clock, ChevronRight, Search,
   Filter, Grid, List, Star, Users, CheckCircle
@@ -25,7 +25,6 @@ const InteractiveCourseCatalog = () => {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [viewMode, setViewMode] = useState('grid');
   const [userProgress, setUserProgress] = useState({});
-  const navigate = useNavigate();
 
   useEffect(() => {
     fetchCourses();
@@ -77,7 +76,7 @@ const InteractiveCourseCatalog = () => {
   };
 
   const handleCourseClick = (course) => {
-    navigate(`/learn/${course.slug}`);
+    window.location.href = `/course-details.html?slug=${course.slug}`;
   };
 
   if (loading) {
