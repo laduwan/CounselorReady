@@ -184,10 +184,10 @@ export default function Credentials() {
                         <span className="text-sm font-bold text-hunter-600">{cred.percentComplete}%</span>
                       </div>
                       <div>
-                        <h3 className="font-semibold text-stone-900">{cred.name}</h3>
-                        <p className="text-xs text-stone-500">{cred.issuingBody}</p>
+                        <h3 className="font-semibold text-burgundy-600">{cred.name}</h3>
+                        <p className="text-xs text-navy-600">{cred.issuingBody}</p>
                         {cred.licenseNumber && (
-                          <p className="text-xs text-stone-500">#{cred.licenseNumber}</p>
+                          <p className="text-xs text-navy-600">#{cred.licenseNumber}</p>
                         )}
                       </div>
                     </div>
@@ -204,7 +204,7 @@ export default function Credentials() {
                     </div>
                   </div>
 
-                  <div className="text-xs text-stone-500 mb-2">
+                  <div className="text-xs text-honey-600 font-medium mb-2">
                     Expires: {formatDate(cred.expirationDate)}
                     {cred.daysUntilExpiration > 0 && (
                       <span> ({cred.daysUntilExpiration} days)</span>
