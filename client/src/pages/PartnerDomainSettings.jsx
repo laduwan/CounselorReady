@@ -4,7 +4,6 @@
  * Unauthorized copying or distribution is strictly prohibited.
  */
 import { useState, useEffect } from 'react';
-import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 import { Globe, Check, X, RefreshCw, Copy, Shield } from 'lucide-react';
 
@@ -12,7 +11,6 @@ const BURGUNDY = '#6B1D34';
 const HUNTER = '#4A7C59';
 
 export default function PartnerDomainSettings() {
-  const { user } = useAuth();
   const [partner, setPartner] = useState(null);
   const [loading, setLoading] = useState(true);
   const [verifying, setVerifying] = useState(false);
@@ -30,11 +28,9 @@ export default function PartnerDomainSettings() {
 
   async function loadPartner() {
     try {
-      if (user?.partnerId) {
-        const { data } = await api.get(`/partners/${user.partnerId}`);
-        setPartner(data.partner);
-        setDomain(data.partner?.branding?.customDomain || '');
-      }
+      const { data } = await api.get('/partners/my');
+      setPartner(data.partner);
+      setDomain(data.partner?.branding?.customDomain || '');
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to load domain settings');
     }
