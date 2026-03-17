@@ -237,6 +237,26 @@ router.put('/my-branding', protect, requirePartnerAdmin, async (req, res) => {
   }
 });
 
+// ── Partner admin: get own partner record ──
+router.get('/my', protect, requirePartnerAdmin, async (req, res) => {
+  try {
+    const partnerId = req.partnerId || req.user.partnerId;
+    if (!partnerId) {
+      return res.status(400).json({ error: 'No partner association found' });
+    }
+
+    const partner = await Partner.findById(partnerId).select('-createdBy -__v');
+    if (!partner) {
+      return res.status(404).json({ error: 'Partner not found' });
+    }
+
+    const userCount = await User.countDocuments({ partnerId: partner._id });
+    res.json({ partner: { ...partner.toObject(), userCount } });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // ── Partner admin: list own courses ──
 router.get('/my/courses', protect, requirePartnerAdmin, async (req, res) => {
   try {
