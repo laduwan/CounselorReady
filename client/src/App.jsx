@@ -6,6 +6,7 @@
 import { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useParams, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { ImpersonateProvider } from './context/ImpersonateContext';
 import { CRFooter } from './utils/copyright.jsx';
 import ErrorBoundary from './components/ErrorBoundary';
 
@@ -18,6 +19,7 @@ import InteractiveCourseCatalog from './pages/InteractiveCourseCatalog';
 import CourseQuickEdit from './pages/CourseQuickEdit';
 import AdminPartners from './pages/AdminPartners';
 import AdminPartnerAnalytics from './pages/AdminPartnerAnalytics';
+import AdminPartnerSupport from './pages/AdminPartnerSupport';
 import PartnerDashboard from './pages/PartnerDashboard';
 import PartnerBrandingSettings from './pages/PartnerBrandingSettings';
 import PartnerCourseAdmin from './pages/PartnerCourseAdmin';
@@ -239,6 +241,11 @@ function AppRoutes() {
           <Layout><AdminPartnerAnalytics /></Layout>
         </AdminRoute>
       } />
+      <Route path="/admin/partner-support/:id" element={
+        <AdminRoute>
+          <Layout><AdminPartnerSupport /></Layout>
+        </AdminRoute>
+      } />
       <Route path="/admin/thumbnails" element={
         <AdminRoute>
           <Layout><ThumbnailManager /></Layout>
@@ -385,7 +392,9 @@ function App() {
         <BrowserRouter>
           <SkipToContent />
           <AuthProvider>
-            <AppRoutes />
+            <ImpersonateProvider>
+              <AppRoutes />
+            </ImpersonateProvider>
           </AuthProvider>
           <AccessibilityPanel />
           <CRFooter />

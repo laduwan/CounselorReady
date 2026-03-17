@@ -35,7 +35,10 @@ export default function PartnerDashboard() {
         }
 
         // Fetch partner stats if admin or partner_admin
-        if ((user?.role === 'admin' || user?.role === 'partner_admin') && user?.partnerId) {
+        if (user?.role === 'partner_admin') {
+          const { data } = await api.get('/partners/my');
+          partnerData = data.partner;
+        } else if (user?.role === 'admin' && user?.partnerId) {
           const { data } = await api.get(`/partners/${user.partnerId}`);
           partnerData = data.partner;
         }

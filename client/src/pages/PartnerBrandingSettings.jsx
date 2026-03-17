@@ -60,16 +60,18 @@ export default function PartnerBrandingSettings() {
   useEffect(() => {
     async function load() {
       try {
-        const slug = localStorage.getItem('cr_partner_slug');
         let partnerData = null;
 
-        if (slug) {
-          const { data } = await api.get(`/partners/slug/${slug}`);
+        try {
+          const { data } = await api.get('/partners/my');
           partnerData = data.partner;
-        }
-        if (user?.partnerId) {
-          const { data } = await api.get(`/partners/${user.partnerId}`);
-          partnerData = data.partner;
+        } catch {
+          // Fallback to slug-based lookup for non-admin contexts
+          const slug = localStorage.getItem('cr_partner_slug');
+          if (slug) {
+            const { data } = await api.get(`/partners/slug/${slug}`);
+            partnerData = data.partner;
+          }
         }
 
         if (partnerData) {
