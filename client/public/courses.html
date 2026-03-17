@@ -528,21 +528,24 @@
         secondaryCTA.classList.remove('hidden');
 
       } else {
-        const tierLabels = {
-          free: 'Free Access',
-          starter: 'Starter Plan · $19.99/mo',
-          professional: 'Professional Plan · $29.99/mo',
-          vip: 'VIP Plan · $49.99/mo',
+        const tierNames = {
+          free: 'Free',
+          starter: 'Starter Plan',
+          professional: 'Professional Plan',
+          vip: 'VIP Plan',
         };
-        const tierLabel = tierLabels[accessTier] || 'Subscription Required';
-        headerLabel.textContent = 'Subscription Access';
+        const tierPrices = { free: 0, starter: 19.99, professional: 29.99, vip: 49.99 };
+        const tierName  = tierNames[accessTier]  || 'Professional Plan';
+        const tierPrice = tierPrices[accessTier] || 29.99;
+        headerLabel.textContent = 'NBCC Approved Provider #7760';
         priceDisplay.innerHTML = `
-          <div class="text-center space-y-1">
-            <p class="text-navy-400 text-xs">Included with</p>
-            <span class="inline-block bg-honey-50 text-honey-700 border border-honey-200 px-4 py-1.5 rounded-full text-sm font-semibold">${escHtml(tierLabel)}</span>
+          <div class="text-center">
+            <p class="text-hunter-500 text-sm">Included with</p>
+            <p class="text-hunter-700 text-2xl font-bold font-display">${escHtml(tierName)}</p>
+            <p class="text-hunter-500 text-sm">$${tierPrice.toFixed(2)}/month</p>
           </div>`;
-        primaryCTA.textContent = 'Enroll & Start Course';
-        primaryCTA.className = 'w-full bg-burgundy-800 hover:bg-burgundy-900 text-white font-semibold py-3 px-6 rounded-xl transition-colors text-center';
+        primaryCTA.textContent = 'Start Course';
+        primaryCTA.className = 'w-full bg-hunter-700 hover:bg-hunter-800 text-white font-semibold py-3 px-6 rounded-xl transition-colors text-center';
         secondaryCTA.classList.remove('hidden');
       }
     }
