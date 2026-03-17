@@ -282,9 +282,14 @@
               <!-- Action Button -->
               <div class="flex items-center justify-between">
                 ${isEnrolled ? `
-            <a href="/interactive-course.html?slug=${course.slug}" class="flex-1 text-center bg-burgundy-800 hover:bg-burgundy-900 text-white font-semibold px-4 py-2 rounded-xl transition-colors">
-                    Continue Learning
-                  </a>
+                  <div class="flex gap-2 flex-1">
+                    <a href="/course-details.html?slug=${course.slug}" class="text-center border border-burgundy-300 text-burgundy-700 hover:bg-burgundy-50 font-semibold px-3 py-2 rounded-xl transition-colors text-sm">
+                      Details
+                    </a>
+                    <a href="/interactive-course.html?slug=${course.slug}" class="flex-1 text-center bg-burgundy-800 hover:bg-burgundy-900 text-white font-semibold px-4 py-2 rounded-xl transition-colors">
+                      Continue Learning
+                    </a>
+                  </div>
                 ` : isFree ? `
                   <button onclick="enrollCourse('${course._id}')" class="flex-1 bg-forest-700 hover:bg-forest-800 text-white font-semibold px-4 py-2 rounded-xl transition-colors">
                     Start Free Course
