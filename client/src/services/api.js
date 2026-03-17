@@ -13,11 +13,15 @@ const api = axios.create({
   }
 });
 
-// Add token to requests if available
+// Add token and impersonation header to requests
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
+  }
+  const impersonateId = sessionStorage.getItem('cr_impersonate_partner_id');
+  if (impersonateId) {
+    config.headers['X-Partner-Id'] = impersonateId;
   }
   return config;
 });

@@ -6,8 +6,9 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useImpersonate } from '../context/ImpersonateContext';
 import api from '../services/api';
-import { Menu, X, ChevronDown, LogOut, Settings, ShieldCheck, Trophy, Users, Star, ClipboardList, MoreHorizontal, Bell, Lock, Palette, BookOpen, Globe, CreditCard, Upload, Rocket, Mail, BarChart3, HelpCircle } from 'lucide-react';
+import { Menu, X, ChevronDown, LogOut, Settings, ShieldCheck, Trophy, Users, Star, ClipboardList, MoreHorizontal, Bell, Lock, Palette, BookOpen, Globe, CreditCard, Upload, Rocket, Mail, BarChart3, HelpCircle, MonitorPlay } from 'lucide-react';
 import PoweredByBadge from './PoweredByBadge';
 import CRPromoCard from './CRPromoCard';
 
@@ -53,10 +54,11 @@ export default function Layout({ children }) {
   const [unreadCount, setUnreadCount]   = useState(0);
   const [partner, setPartner]           = useState(null);
   const { user, logout } = useAuth();
+  const { impersonating, stopImpersonating } = useImpersonate();
   const location = useLocation();
   const navigate = useNavigate();
 
-  const handleLogout = () => { logout(); navigate('/'); };
+  const handleLogout = () => { logout(); stopImpersonating(); navigate('/'); };
 
   // Detect whitelabel partner from URL ?partner=slug
   useEffect(() => {
@@ -120,7 +122,7 @@ export default function Layout({ children }) {
   const lastName  = user?.profile?.lastName  || user?.lastName  || '';
   const initials  = `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase() || 'U';
   const isAdmin   = user?.role === 'admin' || user?.isAdmin;
-  const isPartnerAdmin = user?.role === 'partner_admin' || isAdmin;
+  const isPartnerAdmin = user?.role === 'partner_admin' || isAdmin || !!impersonating;
 
   return (
     <div className="min-h-screen bg-stone-50">
@@ -456,6 +458,20 @@ export default function Layout({ children }) {
           </div>
         )}
       </header>
+
+      {/* Impersonation Banner */}
+      {impersonating && (
+        <div style={{ background: '#4338ca', color: 'white', padding: '8px 24px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, fontSize: '0.875rem', fontWeight: 500 }}>
+          <MonitorPlay style={{ width: 16, height: 16 }} />
+          <span>Viewing as partner: <strong>{impersonating.name}</strong></span>
+          <button
+            onClick={() => { stopImpersonating(); navigate('/admin/partners'); }}
+            style={{ marginLeft: 8, background: 'rgba(255,255,255,0.2)', border: 'none', color: 'white', padding: '4px 12px', borderRadius: 6, cursor: 'pointer', fontSize: '0.8125rem', fontWeight: 600 }}
+          >
+            Exit
+          </button>
+        </div>
+      )}
 
       {/* Page content */}
       <main id="main-content" className="max-w-7xl mx-auto px-4 sm:px-6 py-8">

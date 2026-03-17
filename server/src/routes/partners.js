@@ -237,6 +237,26 @@ router.put('/my-branding', protect, requirePartnerAdmin, async (req, res) => {
   }
 });
 
+// ── Partner admin: get own partner record ──
+router.get('/my', protect, requirePartnerAdmin, async (req, res) => {
+  try {
+    const partnerId = req.partnerId || req.user.partnerId;
+    if (!partnerId) {
+      return res.status(400).json({ error: 'No partner association found' });
+    }
+
+    const partner = await Partner.findById(partnerId).select('-createdBy -__v');
+    if (!partner) {
+      return res.status(404).json({ error: 'Partner not found' });
+    }
+
+    const userCount = await User.countDocuments({ partnerId: partner._id });
+    res.json({ partner: { ...partner.toObject(), userCount } });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // ── Partner admin: list own courses ──
 router.get('/my/courses', protect, requirePartnerAdmin, async (req, res) => {
   try {
@@ -1648,7 +1668,275 @@ router.get('/my/reports/completions', protect, requirePartnerAdmin, async (req, 
   }
 });
 
+// ══════════════════════════════════════════════════════════════
+// ── Admin Support Endpoints (audit, health, notes, quick-fix)
+// ══════════════════════════════════════════════════════════════
+import PartnerAuditLog from '../models/PartnerAuditLog.js';
+import Notification from '../models/Notification.js';
+
+// Helper: log a partner action
+async function logPartnerAction(partnerId, action, performedBy, performedByRole, details, metadata) {
+  try {
+    await PartnerAuditLog.create({ partnerId, action, performedBy, performedByRole, details, metadata });
+  } catch (e) {
+    console.error('Audit log error:', e.message);
+  }
+}
+
+// ── Admin: get audit log for a partner ──
+router.get('/:id/audit-log', protect, requireAdmin, async (req, res) => {
+  try {
+    const logs = await PartnerAuditLog.find({ partnerId: req.params.id })
+      .sort({ createdAt: -1 })
+      .limit(100)
+      .populate('performedBy', 'email profile.firstName profile.lastName')
+      .lean();
+    res.json({ logs });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ── Admin: get partner health overview ──
+router.get('/:id/health', protect, requireAdmin, async (req, res) => {
+  try {
+    const partner = await Partner.findById(req.params.id).lean();
+    if (!partner) return res.status(404).json({ error: 'Partner not found' });
+
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    const [totalUsers, activeUsers, courses, publishedCourses] = await Promise.all([
+      User.countDocuments({ partnerId: partner._id }),
+      User.countDocuments({ partnerId: partner._id, lastLoginAt: { $gte: thirtyDaysAgo } }),
+      InteractiveCourse.countDocuments({ partnerId: partner._id }),
+      InteractiveCourse.countDocuments({ partnerId: partner._id, status: 'published' })
+    ]);
+
+    // Compute health signals
+    const signals = [];
+
+    // Billing health
+    const billingStatus = partner.billing?.status || 'trial';
+    if (['active', 'trial'].includes(billingStatus)) {
+      signals.push({ key: 'billing', label: 'Billing', status: 'green', detail: billingStatus });
+    } else if (billingStatus === 'past_due') {
+      signals.push({ key: 'billing', label: 'Billing', status: 'yellow', detail: 'Past due' });
+    } else {
+      signals.push({ key: 'billing', label: 'Billing', status: 'red', detail: billingStatus });
+    }
+
+    // Domain health
+    if (partner.branding?.customDomain) {
+      signals.push({
+        key: 'domain',
+        label: 'Custom Domain',
+        status: partner.domainVerification?.verified ? 'green' : 'yellow',
+        detail: partner.domainVerification?.verified
+          ? `Verified (${partner.branding.customDomain})`
+          : `Not verified (${partner.branding.customDomain})`
+      });
+    } else {
+      signals.push({ key: 'domain', label: 'Custom Domain', status: 'gray', detail: 'Not configured' });
+    }
+
+    // Course health
+    if (publishedCourses > 0) {
+      signals.push({ key: 'courses', label: 'Courses', status: 'green', detail: `${publishedCourses} published / ${courses} total` });
+    } else if (courses > 0) {
+      signals.push({ key: 'courses', label: 'Courses', status: 'yellow', detail: `${courses} created, none published` });
+    } else {
+      signals.push({ key: 'courses', label: 'Courses', status: 'red', detail: 'No courses' });
+    }
+
+    // User engagement
+    if (totalUsers === 0) {
+      signals.push({ key: 'users', label: 'User Activity', status: 'red', detail: 'No users' });
+    } else {
+      const activeRate = Math.round((activeUsers / totalUsers) * 100);
+      signals.push({
+        key: 'users',
+        label: 'User Activity',
+        status: activeRate >= 30 ? 'green' : activeRate >= 10 ? 'yellow' : 'red',
+        detail: `${activeUsers}/${totalUsers} active (${activeRate}% in 30d)`
+      });
+    }
+
+    // Partner active status
+    signals.push({
+      key: 'status',
+      label: 'Partner Status',
+      status: partner.active ? 'green' : 'red',
+      detail: partner.active ? 'Active' : 'Inactive'
+    });
+
+    res.json({
+      partner: { _id: partner._id, name: partner.name, slug: partner.slug, createdAt: partner.createdAt },
+      signals,
+      stats: { totalUsers, activeUsers, courses, publishedCourses }
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ── Admin: get partner notes ──
+router.get('/:id/notes', protect, requireAdmin, async (req, res) => {
+  try {
+    const partner = await Partner.findById(req.params.id)
+      .select('adminNotes')
+      .populate('adminNotes.createdBy', 'email profile.firstName profile.lastName')
+      .lean();
+    if (!partner) return res.status(404).json({ error: 'Partner not found' });
+    res.json({ notes: partner.adminNotes || [] });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ── Admin: add a note to a partner ──
+router.post('/:id/notes', protect, requireAdmin, async (req, res) => {
+  try {
+    const { text } = req.body;
+    if (!text?.trim()) return res.status(400).json({ error: 'Note text required' });
+
+    const partner = await Partner.findById(req.params.id);
+    if (!partner) return res.status(404).json({ error: 'Partner not found' });
+
+    partner.adminNotes.push({ text: text.trim(), createdBy: req.user._id });
+    await partner.save();
+
+    await logPartnerAction(partner._id, 'admin_note_added', req.user._id, 'admin', text.trim().substring(0, 100));
+
+    // Re-fetch with populated data
+    const updated = await Partner.findById(req.params.id)
+      .select('adminNotes')
+      .populate('adminNotes.createdBy', 'email profile.firstName profile.lastName')
+      .lean();
+
+    res.json({ notes: updated.adminNotes });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ── Admin: delete a note ──
+router.delete('/:id/notes/:noteId', protect, requireAdmin, async (req, res) => {
+  try {
+    const partner = await Partner.findById(req.params.id);
+    if (!partner) return res.status(404).json({ error: 'Partner not found' });
+
+    partner.adminNotes = partner.adminNotes.filter(n => n._id.toString() !== req.params.noteId);
+    await partner.save();
+
+    res.json({ message: 'Note deleted' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ── Admin: send notification to all partner users ──
+router.post('/:id/notify', protect, requireAdmin, async (req, res) => {
+  try {
+    const { title, message } = req.body;
+    if (!title || !message) return res.status(400).json({ error: 'Title and message required' });
+
+    const partner = await Partner.findById(req.params.id);
+    if (!partner) return res.status(404).json({ error: 'Partner not found' });
+
+    const partnerUsers = await User.find({ partnerId: partner._id }).select('_id');
+    if (partnerUsers.length === 0) return res.status(400).json({ error: 'No users to notify' });
+
+    const notifications = partnerUsers.map(u => ({
+      userId: u._id,
+      type: 'system',
+      title,
+      message,
+      urgency: 'info'
+    }));
+
+    await Notification.insertMany(notifications);
+
+    await logPartnerAction(partner._id, 'notification_sent', req.user._id, 'admin',
+      `Sent "${title}" to ${partnerUsers.length} users`);
+
+    res.json({ message: `Notification sent to ${partnerUsers.length} users` });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ── Admin: quick-fix — reset domain verification ──
+router.post('/:id/quick-fix/reset-domain', protect, requireAdmin, async (req, res) => {
+  try {
+    const partner = await Partner.findById(req.params.id);
+    if (!partner) return res.status(404).json({ error: 'Partner not found' });
+
+    partner.domainVerification = {
+      verificationToken: null,
+      verified: false,
+      verifiedAt: null,
+      lastCheckAt: null
+    };
+    await partner.save();
+
+    await logPartnerAction(partner._id, 'domain_reset', req.user._id, 'admin', 'Domain verification reset by admin');
+
+    res.json({ message: 'Domain verification has been reset' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ── Admin: quick-fix — resend welcome email to a partner user ──
+router.post('/:id/quick-fix/resend-welcome', protect, requireAdmin, async (req, res) => {
+  try {
+    const { userId } = req.body;
+    const partner = await Partner.findById(req.params.id);
+    if (!partner) return res.status(404).json({ error: 'Partner not found' });
+
+    const targetUser = userId
+      ? await User.findOne({ _id: userId, partnerId: partner._id })
+      : await User.findOne({ partnerId: partner._id, role: 'partner_admin' });
+
+    if (!targetUser) return res.status(404).json({ error: 'User not found' });
+
+    await sendPartnerWelcomeEmail(targetUser, partner);
+
+    await logPartnerAction(partner._id, 'welcome_email_resent', req.user._id, 'admin',
+      `Welcome email resent to ${targetUser.email}`);
+
+    res.json({ message: `Welcome email resent to ${targetUser.email}` });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ── Admin: quick-fix — update billing status ──
+router.post('/:id/quick-fix/billing-status', protect, requireAdmin, async (req, res) => {
+  try {
+    const { status } = req.body;
+    const valid = ['active', 'trial', 'past_due', 'canceled', 'inactive'];
+    if (!valid.includes(status)) return res.status(400).json({ error: `Status must be one of: ${valid.join(', ')}` });
+
+    const partner = await Partner.findById(req.params.id);
+    if (!partner) return res.status(404).json({ error: 'Partner not found' });
+
+    const oldStatus = partner.billing?.status || 'trial';
+    if (!partner.billing) partner.billing = {};
+    partner.billing.status = status;
+    await partner.save();
+
+    await logPartnerAction(partner._id, 'billing_status_changed', req.user._id, 'admin',
+      `Billing status changed from ${oldStatus} to ${status}`);
+
+    res.json({ message: `Billing status updated to ${status}` });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Export for use in auth.js
-export { sendPartnerWelcomeEmail };
+export { sendPartnerWelcomeEmail, logPartnerAction };
 
 export default router;
