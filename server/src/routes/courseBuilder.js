@@ -685,6 +685,8 @@ router.post('/save', protect, adminOnly, async (req, res) => {
     delete courseData._wordCount;
     delete courseData._requiredWords;
 
+    if (!courseData.description) courseData.description = courseData.title || 'No description';
+
     let existing = await Course.findOne({ slug: courseData.slug });
     
     if (existing) {
