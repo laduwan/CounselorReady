@@ -377,7 +377,7 @@
       document.getElementById('f-level').value = course.level || 'Intermediate';
       document.getElementById('f-status').value = st;
       document.getElementById('f-tier').value = course.accessTier || course.pricingTier || 'professional';
-      document.getElementById('f-price').value = course.price || '';
+      document.getElementById('f-price').value = course.price != null ? course.price : '';
       document.getElementById('f-slug').value = course.slug || '';
       document.getElementById('f-courseCode').value = course.courseCode || '';
       document.getElementById('f-instructor').value = course.instructor || 'GA Integrated Therapeutic Perspectives LLC';
