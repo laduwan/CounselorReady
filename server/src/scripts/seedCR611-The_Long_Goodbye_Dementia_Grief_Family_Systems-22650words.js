@@ -33,7 +33,7 @@ const COURSE = {
   level: "Intermediate",
   accessType: "paid",
   price: 54.99,
-  pricingTier: "standard",
+  // pricingTier, accessTier, accessType, price — auto-assigned from word count below
   status: "draft",
   isPublished: false,
   targetAudience: ["Licensed Professional Counselors (LPC/LPCC)", "Licensed Clinical Social Workers (LCSW)", "Licensed Marriage and Family Therapists (LMFT)", "Licensed Mental Health Counselors (LMHC)", "Psychologists", "Psychiatric Nurse Practitioners", "Clinicians in geriatric, hospital, memory care, and community mental health settings"],
@@ -371,6 +371,13 @@ async function seed() {
   console.log('\n' + '═'.repeat(60));
   console.log('  SEEDING CR-611: The Long Goodbye');
   console.log('═'.repeat(60));
+
+  // Auto-assign pricing fields from word count
+  const wordCount = countWordsFromCourse(COURSE);
+  const pricing = resolvePricingFromWordCount(wordCount);
+  Object.assign(COURSE, pricing);
+  console.log(`📊 Word count: ${wordCount} → ${pricing.pricingTier} ($${pricing.price})`);
+
   const existing = await Course.findOne({ slug: COURSE.slug });
   if (existing) { await Course.findOneAndReplace({ slug: COURSE.slug }, COURSE, { new: true }); console.log('✅ Updated'); }
   else { await Course.create(COURSE); console.log('✅ Created'); }

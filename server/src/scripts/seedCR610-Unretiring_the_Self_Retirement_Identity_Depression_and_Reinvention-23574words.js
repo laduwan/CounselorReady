@@ -37,7 +37,7 @@ const COURSE = {
   level: "Intermediate",
   accessType: "paid",
   price: 54.99,
-  pricingTier: "standard",
+  // pricingTier, accessTier, accessType, price — auto-assigned from word count below
   status: "draft",
   isPublished: false,
   targetAudience: [
@@ -638,6 +638,12 @@ async function seed() {
   console.log('\n' + '═'.repeat(60));
   console.log('  SEEDING CR-610: Unretiring the Self');
   console.log('═'.repeat(60));
+
+  // Auto-assign pricing fields from word count
+  const wordCount = countWordsFromCourse(COURSE);
+  const pricing = resolvePricingFromWordCount(wordCount);
+  Object.assign(COURSE, pricing);
+  console.log(`📊 Word count: ${wordCount} → ${pricing.pricingTier} ($${pricing.price})`);
 
   const existing = await Course.findOne({ slug: COURSE.slug });
   if (existing) {

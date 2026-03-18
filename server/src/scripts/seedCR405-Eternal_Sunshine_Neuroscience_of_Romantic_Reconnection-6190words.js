@@ -10,6 +10,7 @@
 
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
+import { resolvePricingFromWordCount, countWordsFromCourse } from '../utils/pricingRules.js';
 dotenv.config();
 
 const MONGO_URI = process.env.MONGO_URI || process.env.MONGODB_URI;
@@ -287,7 +288,7 @@ const courseData = {
 
   accessType: 'paid',
   price: 14.99,
-  pricingTier: 'standard',
+  // pricingTier, accessTier, accessType, price — auto-assigned from word count below
 
   status: 'draft',
   isPublished: false,
