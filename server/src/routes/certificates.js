@@ -201,9 +201,27 @@ function sendFile(res, fileBuffer, certificate, ext) {
 // GET /api/certificates - Get all certificates for authenticated user
 router.get('/', protect, async (req, res) => {
   try {
-    const certificates = await Certificate.find({ userId: req.user._id })
-      .sort({ createdAt: -1 });
-    
+    const { startDate, endDate } = req.query;
+    const query = { userId: req.user._id };
+
+    // Apply date filtering when both params are provided
+    if (startDate || endDate) {
+      const start = startDate ? new Date(startDate) : null;
+      const end = endDate ? new Date(endDate) : null;
+
+      if ((startDate && isNaN(start.getTime())) || (endDate && isNaN(end.getTime()))) {
+        return res.status(400).json({ error: 'Invalid date format for startDate or endDate' });
+      }
+
+      query.completionDate = {};
+      if (start) query.completionDate.$gte = start;
+      if (end) query.completionDate.$lte = end;
+    }
+
+    const certificates = await Certificate.find(query)
+      .populate('courseId', 'title description ceuHours ceuCategories')
+      .sort({ completionDate: -1 });
+
     console.log(`Retrieved ${certificates.length} certificates for user ${req.user._id}`);
     res.json({ certificates });
   } catch (error) {
