@@ -274,9 +274,9 @@ export default function Credentials() {
                         <FileText className="w-5 h-5 text-stone-600" />
                       </div>
                       <div className="min-w-0">
-                        <h3 className="font-medium text-stone-900 truncate">{cert.title}</h3>
-                        <p className="text-sm text-stone-500">{cert.provider}</p>
-                        <div className="flex flex-wrap items-center gap-3 mt-1 text-xs text-stone-500">
+                        <h3 className="font-medium text-burgundy-800 truncate">{cert.title}</h3>
+                        <p className="text-sm text-blue-700">{cert.provider}</p>
+                        <div className="flex flex-wrap items-center gap-3 mt-1 text-xs text-honey-800">
                           <span className="flex items-center gap-1">
                             <Calendar className="w-3 h-3" />
                             {formatDate(cert.completionDate)}
@@ -804,8 +804,8 @@ function CertificateViewerModal({ certificate, onClose }) {
         <div className="relative bg-white rounded-xl shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col">
           <div className="border-b border-gray-100 px-6 py-4 flex items-center justify-between flex-shrink-0">
             <div className="min-w-0 mr-4">
-              <h2 className="text-lg font-semibold text-gray-900 truncate">{certificate.title}</h2>
-              <p className="text-sm text-gray-500">{certificate.provider} &middot; {certificate.ceHours} CE hours</p>
+              <h2 className="text-lg font-semibold text-burgundy-800 truncate">{certificate.title}</h2>
+              <p className="text-sm"><span className="text-blue-700">{certificate.provider}</span> &middot; <span className="text-honey-800">{certificate.ceHours} CE hours</span></p>
             </div>
             <div className="flex items-center gap-2 flex-shrink-0">
               {pdfUrl && (
