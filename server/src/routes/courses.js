@@ -4,6 +4,7 @@
  * Unauthorized copying or distribution is strictly prohibited.
  */
 import express from 'express';
+import mongoose from 'mongoose';
 import Course from '../models/Course.js';
 import UserCourseProgress from '../models/UserCourseProgress.js';
 import User from '../models/User.js';
@@ -11,6 +12,9 @@ import { protect, optionalAuth, requireSubscription, admin } from '../middleware
 import { logActivity, ACTIVITY_TYPES } from '../services/activityTrackingService.js';
 
 const router = express.Router();
+
+// Helper: validate ObjectId params
+const isValidId = (id) => mongoose.Types.ObjectId.isValid(id);
 
 // ============================================
 // ADMIN COURSE MANAGEMENT ENDPOINTS
@@ -50,6 +54,9 @@ router.get('/admin/courses', protect, admin, async (req, res) => {
 // @access  Private/Admin
 router.get('/admin/courses/:courseId', protect, admin, async (req, res) => {
   try {
+    if (!isValidId(req.params.courseId)) {
+      return res.status(400).json({ error: 'Invalid ID' });
+    }
     const course = await Course.findById(req.params.courseId);
     
     if (!course) {
@@ -133,6 +140,9 @@ router.post('/admin/courses', protect, admin, async (req, res) => {
 // @access  Private/Admin
 router.put('/admin/courses/:courseId', protect, admin, async (req, res) => {
   try {
+    if (!isValidId(req.params.courseId)) {
+      return res.status(400).json({ error: 'Invalid ID' });
+    }
     const course = await Course.findById(req.params.courseId);
     
     if (!course) {
@@ -179,8 +189,11 @@ router.put('/admin/courses/:courseId', protect, admin, async (req, res) => {
 // @access  Private/Admin
 router.delete('/admin/courses/:courseId', protect, admin, async (req, res) => {
   try {
+    if (!isValidId(req.params.courseId)) {
+      return res.status(400).json({ error: 'Invalid ID' });
+    }
     const { deleteCertificates } = req.query;
-    
+
     const course = await Course.findById(req.params.courseId);
     
     if (!course) {
@@ -232,8 +245,11 @@ router.delete('/admin/courses/:courseId', protect, admin, async (req, res) => {
 // @access  Private/Admin
 router.patch('/admin/courses/:courseId/publish', protect, admin, async (req, res) => {
   try {
+    if (!isValidId(req.params.courseId)) {
+      return res.status(400).json({ error: 'Invalid ID' });
+    }
     const { publish } = req.body; // true or false
-    
+
     const course = await Course.findById(req.params.courseId);
     
     if (!course) {
@@ -373,6 +389,9 @@ router.get('/:slug', optionalAuth, async (req, res) => {
 // @access  Private
 router.post('/:id/enroll', protect, async (req, res) => {
   try {
+    if (!isValidId(req.params.id)) {
+      return res.status(400).json({ error: 'Invalid ID' });
+    }
     const course = await Course.findById(req.params.id);
     
     if (!course) {
@@ -451,6 +470,9 @@ router.post('/:id/enroll', protect, async (req, res) => {
 // @access  Private
 router.get('/:id/progress', protect, async (req, res) => {
   try {
+    if (!isValidId(req.params.id)) {
+      return res.status(400).json({ error: 'Invalid ID' });
+    }
     const progress = await UserCourseProgress.findOne({
       userId: req.user._id,
       courseId: req.params.id
@@ -472,6 +494,9 @@ router.get('/:id/progress', protect, async (req, res) => {
 // @access  Private
 router.post('/:id/retake', protect, async (req, res) => {
   try {
+    if (!isValidId(req.params.id)) {
+      return res.status(400).json({ error: 'Invalid ID' });
+    }
     const progress = await UserCourseProgress.findOne({
       userId: req.user._id,
       courseId: req.params.id
@@ -508,6 +533,9 @@ router.post('/:id/retake', protect, async (req, res) => {
 // @access  Private
 router.post('/:id/lessons/:lessonId/complete', protect, async (req, res) => {
   try {
+    if (!isValidId(req.params.id)) {
+      return res.status(400).json({ error: 'Invalid ID' });
+    }
     const course = await Course.findById(req.params.id);
     
     if (!course) {
@@ -560,8 +588,11 @@ router.post('/:id/lessons/:lessonId/complete', protect, async (req, res) => {
 // @access  Private
 router.post('/:id/lessons/:lessonId/quiz', protect, async (req, res) => {
   try {
+    if (!isValidId(req.params.id)) {
+      return res.status(400).json({ error: 'Invalid ID' });
+    }
     const { answers } = req.body; // Array of answers in order
-    
+
     const course = await Course.findById(req.params.id);
     if (!course) {
       return res.status(404).json({ error: 'Course not found' });
@@ -784,8 +815,11 @@ router.get('/user/enrolled', protect, async (req, res) => {
 // @access  Private
 router.post('/:id/lessons/:lessonId/track-time', protect, async (req, res) => {
   try {
+    if (!isValidId(req.params.id)) {
+      return res.status(400).json({ error: 'Invalid ID' });
+    }
     const { seconds } = req.body;
-    
+
     let progress = await UserCourseProgress.findOne({
       userId: req.user._id,
       courseId: req.params.id
@@ -833,6 +867,9 @@ router.post('/:id/lessons/:lessonId/track-time', protect, async (req, res) => {
 // @access  Private
 router.get('/:id/lessons/:lessonId/time-status', protect, async (req, res) => {
   try {
+    if (!isValidId(req.params.id)) {
+      return res.status(400).json({ error: 'Invalid ID' });
+    }
     const course = await Course.findById(req.params.id);
     if (!course) {
       return res.status(404).json({ error: 'Course not found' });
@@ -892,6 +929,9 @@ router.get('/:id/lessons/:lessonId/time-status', protect, async (req, res) => {
 // @access  Private
 router.get('/:id/evaluation', protect, async (req, res) => {
   try {
+    if (!isValidId(req.params.id)) {
+      return res.status(400).json({ error: 'Invalid ID' });
+    }
     const course = await Course.findById(req.params.id);
     if (!course) {
       return res.status(404).json({ error: 'Course not found' });
@@ -950,8 +990,11 @@ router.get('/:id/evaluation', protect, async (req, res) => {
 // @access  Private
 router.post('/:id/evaluation', protect, async (req, res) => {
   try {
+    if (!isValidId(req.params.id)) {
+      return res.status(400).json({ error: 'Invalid ID' });
+    }
     const { responses } = req.body; // Array of { questionIndex, response }
-    
+
     const course = await Course.findById(req.params.id);
     if (!course) {
       return res.status(404).json({ error: 'Course not found' });
@@ -1004,6 +1047,9 @@ router.post('/:id/evaluation', protect, async (req, res) => {
 // @access  Private
 router.get('/:id/attestation', protect, async (req, res) => {
   try {
+    if (!isValidId(req.params.id)) {
+      return res.status(400).json({ error: 'Invalid ID' });
+    }
     const course = await Course.findById(req.params.id);
     if (!course) {
       return res.status(404).json({ error: 'Course not found' });
@@ -1032,12 +1078,15 @@ router.get('/:id/attestation', protect, async (req, res) => {
 // @access  Private
 router.post('/:id/attestation', protect, async (req, res) => {
   try {
+    if (!isValidId(req.params.id)) {
+      return res.status(400).json({ error: 'Invalid ID' });
+    }
     const { agreed } = req.body;
-    
+
     if (!agreed) {
       return res.status(400).json({ error: 'You must agree to the attestation statement' });
     }
-    
+
     let progress = await UserCourseProgress.findOne({
       userId: req.user._id,
       courseId: req.params.id
@@ -1071,6 +1120,9 @@ router.post('/:id/attestation', protect, async (req, res) => {
 // @access  Private
 router.get('/:id/drip-status', protect, async (req, res) => {
   try {
+    if (!isValidId(req.params.id)) {
+      return res.status(400).json({ error: 'Invalid ID' });
+    }
     const course = await Course.findById(req.params.id);
     if (!course) {
       return res.status(404).json({ error: 'Course not found' });
