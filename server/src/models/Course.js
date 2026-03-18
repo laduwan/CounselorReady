@@ -175,7 +175,7 @@ const courseSchema = new mongoose.Schema({
   stripePriceId: { type: String },
   accessTier: {
     type: String,
-    enum: ['free', 'starter', 'professional', 'vip'],
+    enum: ['free', 'starter', 'professional', 'vip', 'premium'],
     default: 'free'
   },
   
