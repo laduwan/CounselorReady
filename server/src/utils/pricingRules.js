@@ -8,7 +8,7 @@
  *   ≤ 12,200 → starter    · $29   · starter, professional, vip
  *   ≤ 18,100 → professional· $39  · professional, vip
  *   ≤ 21,100 → vip        · $59   · vip only
- *   > 21,100 → premium    · custom· individual purchase only (no sub included)
+ *   > 21,100 → premium    · $98   · individual purchase only (no sub included)
  *
  * Plan hierarchy (lowest → highest access):
  *   free < starter < professional < vip
@@ -51,7 +51,7 @@ export const PRICING_TIERS = {
   },
   premium: {
     name: 'premium',
-    price: null,             // set per-course by admin
+    price: 98,               // one-time purchase price for courses > 4 CE hours
     accessType: 'paid',
     minPlan: null,           // no subscription includes premium
     maxWordCount: Infinity,
@@ -96,7 +96,7 @@ export function resolvePricingFromWordCount(wordCount, customPremiumPrice = null
     pricingTier:  tier.name,
     accessTier:   tier.name,
     accessType:   tier.accessType,
-    price:        tier.name === 'premium' ? (customPremiumPrice ?? 0) : tier.price,
+    price:        tier.name === 'premium' ? (customPremiumPrice ?? tier.price) : tier.price,
   };
 }
 
