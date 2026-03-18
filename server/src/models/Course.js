@@ -140,7 +140,7 @@ const courseSchema = new mongoose.Schema({
   title: { type: String, required: true },
   subtitle: { type: String },
   courseCode: { type: String, trim: true },
-  description: { type: String, required: true },
+  description: { type: String },
   thumbnail: { type: String },
   
   // External/Imported course fields
