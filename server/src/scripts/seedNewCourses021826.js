@@ -304,7 +304,7 @@ const cr203Course = {
   nbccProviderNumber: '7760',
   isPublished: true,
   isFree: false,
-  price: 59.99,
+  price: 98.00,
   learningObjectives: [
     'Explain the theoretical foundations and neurobiological basis of cognitive reframing for anxiety.',
     'Identify at least five common cognitive distortions in anxious client presentations.',
