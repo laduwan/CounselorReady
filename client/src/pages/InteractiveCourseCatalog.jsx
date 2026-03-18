@@ -13,7 +13,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import {
   BookOpen, Clock, ChevronRight, Search,
-  Filter, Grid, List, Star, Users, CheckCircle
+  Filter, Grid, List, Star, Users, CheckCircle, Award
 } from 'lucide-react';
 import api from '../services/api';
 
@@ -212,7 +212,7 @@ const CourseCard = ({ course, progress, onClick }) => {
       className="bg-white rounded-xl shadow-sm hover:shadow-lg transition-all cursor-pointer overflow-hidden border border-burgundy-100 group"
     >
       {/* Thumbnail — course image or gradient fallback */}
-      <div className="h-48 bg-gradient-to-br from-forest-50 to-burgundy-50 relative flex items-center justify-center overflow-hidden">
+      <div className="h-48 bg-gradient-to-br from-forest-100 to-burgundy-100 relative flex items-center justify-center overflow-hidden">
         {course.thumbnail ? (
           <img src={course.thumbnail} alt={course.title} className="w-full h-full object-cover" />
         ) : (
@@ -236,7 +236,7 @@ const CourseCard = ({ course, progress, onClick }) => {
 
       {/* Content */}
       <div className="p-5">
-        <h3 className="font-display text-xl font-semibold text-burgundy-900 group-hover:text-burgundy-700 transition-colors line-clamp-2 mb-2">
+        <h3 className="font-display text-xl font-semibold text-burgundy-800 group-hover:text-burgundy-700 transition-colors line-clamp-2 mb-2">
           {course.title}
         </h3>
 
@@ -247,8 +247,9 @@ const CourseCard = ({ course, progress, onClick }) => {
         {/* Info pills */}
         <div className="flex flex-wrap items-center gap-2 mb-4">
           {(course.ceHours || course.ceuHours) && (
-            <span className="bg-honey-100 text-honey-700 px-2 py-1 rounded-full text-xs font-medium">
-              {course.ceHours || course.ceuHours} CE Hours
+            <span className="bg-honey-100 text-honey-700 px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1">
+              <Award className="h-3 w-3" />
+              {course.ceHours || course.ceuHours} Hours
             </span>
           )}
           {primaryCategory && (
@@ -300,7 +301,7 @@ const CourseListItem = ({ course, progress, onClick }) => {
     >
       <div className="flex items-center gap-5">
         {/* Icon — course thumbnail or gradient fallback */}
-        <div className="h-16 w-16 bg-gradient-to-br from-hunter-50 to-burgundy-50 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden">
+        <div className="h-16 w-16 bg-gradient-to-br from-hunter-100 to-burgundy-100 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden">
           {course.thumbnail ? (
             <img src={course.thumbnail} alt={course.title} className="w-full h-full object-cover object-top rounded-lg" />
           ) : (
@@ -311,7 +312,7 @@ const CourseListItem = ({ course, progress, onClick }) => {
         {/* Content */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <h3 className="font-display font-semibold text-burgundy-900 group-hover:text-burgundy-700 transition-colors">
+            <h3 className="font-display font-semibold text-burgundy-800 group-hover:text-burgundy-700 transition-colors">
               {course.title}
             </h3>
             {isCompleted && (
@@ -326,8 +327,9 @@ const CourseListItem = ({ course, progress, onClick }) => {
           </p>
           <div className="flex items-center gap-3 mt-2 flex-wrap">
             {(course.ceHours || course.ceuHours) && (
-              <span className="bg-honey-100 text-honey-700 px-2 py-0.5 rounded-full text-xs font-medium">
-                {course.ceHours || course.ceuHours} CE Hours
+              <span className="bg-honey-100 text-honey-700 px-2 py-0.5 rounded-full text-xs font-medium flex items-center gap-1">
+                <Award className="h-3 w-3" />
+                {course.ceHours || course.ceuHours} Hours
               </span>
             )}
             {primaryCategory && (
