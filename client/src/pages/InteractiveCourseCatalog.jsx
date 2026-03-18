@@ -109,7 +109,7 @@ const InteractiveCourseCatalog = () => {
       {/* Page heading */}
       <div className="mb-6">
         <h1 className="font-display text-3xl font-semibold text-burgundy-900 mb-2">CE Course Library</h1>
-        <p className="text-forest-600">
+        <p className="text-forest-800">
           Earn continuing education credits with our professionally designed courses.
         </p>
       </div>
@@ -212,7 +212,7 @@ const CourseCard = ({ course, progress, onClick }) => {
       className="bg-white rounded-xl shadow-sm hover:shadow-lg transition-all cursor-pointer overflow-hidden border border-burgundy-100 group"
     >
       {/* Thumbnail — course image or gradient fallback */}
-      <div className="h-48 bg-gradient-to-br from-forest-100 to-burgundy-200 relative flex items-center justify-center overflow-hidden">
+      <div className="h-48 bg-gradient-to-br from-forest-50 to-burgundy-50 relative flex items-center justify-center overflow-hidden">
         {course.thumbnail ? (
           <img src={course.thumbnail} alt={course.title} className="w-full h-full object-cover" />
         ) : (
@@ -240,7 +240,7 @@ const CourseCard = ({ course, progress, onClick }) => {
           {course.title}
         </h3>
 
-        <p className="text-sm text-forest-500 line-clamp-2 mb-4">
+        <p className="text-sm text-forest-800 line-clamp-2 mb-4">
           {course.description}
         </p>
 
@@ -252,12 +252,12 @@ const CourseCard = ({ course, progress, onClick }) => {
             </span>
           )}
           {primaryCategory && (
-            <span className="bg-forest-100 text-forest-700 px-2 py-1 rounded-full text-xs font-medium">
+            <span className="bg-forest-100 text-forest-800 px-2 py-1 rounded-full text-xs font-medium">
               {primaryCategory.category}
             </span>
           )}
           {course.categories && course.categories.length > 0 && !primaryCategory && (
-            <span className="bg-forest-100 text-forest-700 px-2 py-1 rounded-full text-xs font-medium">
+            <span className="bg-forest-100 text-forest-800 px-2 py-1 rounded-full text-xs font-medium">
               {course.categories[0]}
             </span>
           )}
@@ -269,7 +269,7 @@ const CourseCard = ({ course, progress, onClick }) => {
         </div>
 
         {/* Duration with clock icon */}
-        <div className="flex items-center gap-1 text-sm text-forest-500 mb-4">
+        <div className="flex items-center gap-1 text-sm text-forest-800 mb-4">
           <Clock className="h-4 w-4 text-forest-400" />
           <span>{course.totalEstimatedTime || 60} min</span>
         </div>
@@ -300,7 +300,7 @@ const CourseListItem = ({ course, progress, onClick }) => {
     >
       <div className="flex items-center gap-5">
         {/* Icon — course thumbnail or gradient fallback */}
-        <div className="h-16 w-16 bg-gradient-to-br from-hunter-100 to-burgundy-200 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden">
+        <div className="h-16 w-16 bg-gradient-to-br from-hunter-50 to-burgundy-50 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden">
           {course.thumbnail ? (
             <img src={course.thumbnail} alt={course.title} className="w-full h-full object-cover object-top rounded-lg" />
           ) : (
@@ -321,7 +321,7 @@ const CourseListItem = ({ course, progress, onClick }) => {
               </span>
             )}
           </div>
-          <p className="text-sm text-forest-500 line-clamp-1 mt-1">
+          <p className="text-sm text-forest-800 line-clamp-1 mt-1">
             {course.description}
           </p>
           <div className="flex items-center gap-3 mt-2 flex-wrap">
@@ -331,7 +331,7 @@ const CourseListItem = ({ course, progress, onClick }) => {
               </span>
             )}
             {primaryCategory && (
-              <span className="bg-forest-100 text-forest-700 px-2 py-0.5 rounded-full text-xs font-medium">
+              <span className="bg-forest-100 text-forest-800 px-2 py-0.5 rounded-full text-xs font-medium">
                 {primaryCategory.category}
               </span>
             )}
@@ -340,7 +340,7 @@ const CourseListItem = ({ course, progress, onClick }) => {
                 CE #{course.ceuApprovalNumber || '7760'}
               </span>
             )}
-            <span className="flex items-center gap-1 text-xs text-forest-500">
+            <span className="flex items-center gap-1 text-xs text-forest-800">
               <Clock className="h-3.5 w-3.5 text-forest-400" />
               {course.totalEstimatedTime || 60} min
             </span>
