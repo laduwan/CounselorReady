@@ -509,7 +509,7 @@ router.post(['/:id/progress/assessment', '/:id/assessment'], ...protectAndScope,
     if (!course) {
       return res.status(404).json({ success: false, error: 'Course not found' });
     }
-    // Normalize: extract assessment from inline isExam quiz blocks if top-level is empty
+    // Normalize: extract assessment from inline isExam content blocks if top-level is empty
     if (!course.assessment || !course.assessment.questions || course.assessment.questions.length === 0) {
       const inlineQuestions = [];
       let inlineSettings = {};
@@ -517,7 +517,7 @@ router.post(['/:id/progress/assessment', '/:id/assessment'], ...protectAndScope,
       for (const section of sections) {
         const blocks = section.contentBlocks || section.blocks || section.lessons || [];
         for (const block of blocks) {
-          if ((block.type === 'quiz' || block.type === 'knowledgeCheck') && block.isExam) {
+          if (block.isExam === true) {
             if (block.questions) inlineQuestions.push(...block.questions);
             if (block.passingScore) inlineSettings.passingScore = block.passingScore;
             if (block.passThreshold) inlineSettings.passThreshold = block.passThreshold;
@@ -526,12 +526,14 @@ router.post(['/:id/progress/assessment', '/:id/assessment'], ...protectAndScope,
         }
       }
       if (inlineQuestions.length > 0) {
+        console.warn(`[Assessment Fallback] Course "${course.title || course._id}" has no top-level assessment. Extracted ${inlineQuestions.length} questions from inline isExam blocks.`);
         course.assessment = {
           questions: inlineQuestions,
           passingScore: inlineSettings.passingScore || course.assessment?.passingScore || 80,
           passThreshold: inlineSettings.passThreshold || course.assessment?.passThreshold || 0.8,
           maxAttempts: inlineSettings.maxAttempts || course.assessment?.maxAttempts || 3,
-          attemptsAllowed: inlineSettings.maxAttempts || course.assessment?.attemptsAllowed || 3
+          attemptsAllowed: inlineSettings.maxAttempts || course.assessment?.attemptsAllowed || 3,
+          isExam: true
         };
       }
     }
