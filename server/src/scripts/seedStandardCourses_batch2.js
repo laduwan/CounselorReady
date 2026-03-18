@@ -11,6 +11,7 @@
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import Course from '../models/Course.js';
+import { resolvePricingFromWordCount, countWordsFromCourse } from '../utils/pricingRules.js';
 
 dotenv.config();
 

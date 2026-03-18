@@ -10,6 +10,7 @@
 
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
+import { resolvePricingFromWordCount, countWordsFromCourse } from '../utils/pricingRules.js';
 // Bypassing Course model - writing directly to collection
 
 dotenv.config();
