@@ -680,31 +680,93 @@ function slugify(title) {
 router.post('/save', protect, adminOnly, async (req, res) => {
   try {
     const courseData = req.body;
-    const Course = (await import('../models/Course.js')).default;
-    
+    const InteractiveCourse = (await import('../models/InteractiveCourse.js')).default;
+
+    // Clean transient fields
     delete courseData._wordCount;
     delete courseData._requiredWords;
 
     if (!courseData.description) courseData.description = courseData.title || 'No description';
 
-    let existing = await Course.findOne({ slug: courseData.slug });
-    
-    if (existing) {
-      Object.assign(existing, courseData);
-      existing.updatedAt = new Date();
-      await existing.save();
-      res.json({ success: true, action: 'updated', course: existing });
-    } else {
-      courseData.createdAt = new Date();
-      courseData.updatedAt = new Date();
-      const course = new Course(courseData);
-      await course.save();
-      res.json({ success: true, action: 'created', course });
+    // Hardcoded presenter defaults (ACEP required)
+    courseData.presenter = {
+      name: 'Kejuiana Johnson',
+      credentials: 'MA, LPC, NCC, CPCS, BC-TMH',
+      licenseNumber: 'LPC009587',
+      licenseState: 'Georgia',
+      category: 'category1'
+    };
+
+    // Hardcoded provider defaults (ACEP required)
+    courseData.ceProvider = 'GA Integrated Therapeutic Perspectives LLC';
+    courseData.acepNumber = '7760';
+
+    // Map frontend acepProvider shape to schema fields
+    if (courseData.acepProvider) {
+      delete courseData.acepProvider;
     }
+
+    // Compute wordCount: strip HTML, sum chars ÷ 5
+    let totalChars = 0;
+    if (courseData.sections && Array.isArray(courseData.sections)) {
+      courseData.sections.forEach(section => {
+        (section.contentBlocks || []).forEach(block => {
+          const raw = block.textContent || block.content || block.text || block.html || block.body || '';
+          const plain = raw.replace(/<[^>]+>/g, ' ').replace(/&\w+;/g, ' ').trim();
+          totalChars += plain.length;
+        });
+      });
+    }
+    courseData.wordCount = Math.round(totalChars / 5);
+
+    // Extract _id for upsert logic
+    const courseId = courseData._id;
+    delete courseData._id;
+
+    let course;
+
+    if (courseId) {
+      // Case 1: Explicit _id → update existing document
+      course = await InteractiveCourse.findByIdAndUpdate(
+        courseId,
+        { $set: courseData },
+        { new: true, runValidators: false }
+      );
+      if (!course) {
+        return res.status(404).json({ success: false, error: 'Course not found' });
+      }
+    } else if (courseData.slug) {
+      // Case 2: No _id but slug matches existing → update to prevent duplicates
+      course = await InteractiveCourse.findOneAndUpdate(
+        { slug: courseData.slug },
+        { $set: courseData },
+        { new: true, runValidators: false }
+      );
+      if (!course) {
+        // Case 3: No match → create new document
+        course = new InteractiveCourse(courseData);
+        await course.save();
+      }
+    } else {
+      // No _id and no slug → create new
+      course = new InteractiveCourse(courseData);
+      await course.save();
+    }
+
+    res.json({
+      success: true,
+      course: {
+        _id: course._id,
+        slug: course.slug,
+        title: course.title,
+        status: course.status,
+        isPublished: course.isPublished
+      }
+    });
 
   } catch (error) {
     console.error('Save course error:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ success: false, error: error.message });
   }
 });
 
