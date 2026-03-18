@@ -18,6 +18,7 @@ import { protect, optionalAuth } from '../middleware/auth.js';
 import { attachTenantScope } from '../middleware/tenantScope.js';
 import { logActivity, ACTIVITY_TYPES } from '../services/activityTrackingService.js';
 import { generateCertificate, generateCertificateNumber } from '../utils/certificate.js';
+import checkFreeMonthlyLimit from '../middleware/checkFreeMonthlyLimit.js';
 
 const router = express.Router();
 
@@ -450,7 +451,7 @@ router.get('/:id/progress', ...protectAndScope, async (req, res) => {
  * POST /api/interactive-courses/:id/enroll
  * Enroll user in a course
  */
-router.post('/:id/enroll', ...protectAndScope, async (req, res) => {
+router.post('/:id/enroll', ...protectAndScope, checkFreeMonthlyLimit, async (req, res) => {
   try {
     const course = await Course.findOne({ _id: req.params.id, status: 'published' });
     if (!course) {
@@ -485,6 +486,13 @@ router.post('/:id/enroll', ...protectAndScope, async (req, res) => {
     });
 
     await progress.save();
+
+    // Consume a free monthly slot for free-plan users
+    if (req.freeUserDoc) {
+      req.freeUserDoc.useFreeMonthlySlot();
+      await req.freeUserDoc.save();
+    }
+
     res.status(201).json({ success: true, message: 'Enrolled successfully', data: progress });
   } catch (error) {
     console.error('Error enrolling in course:', error);
@@ -825,13 +833,22 @@ router.post('/:id/attestation', ...protectAndScope, async (req, res) => {
     progress.attestationAgreedAt = new Date();
     progress.status = 'completed';
     progress.completedAt = new Date();
-    
+
     await progress.save();
+
+    // Track lifetime CE hours for state board compliance
+    if (course.ceHours) {
+      const user = await User.findById(req.user._id);
+      if (user) {
+        user.recordCECompletion(course._id, course.title, course.ceHours);
+        await user.save();
+      }
+    }
 
     res.json({
       success: true,
       message: 'Attestation recorded successfully',
-      data: { 
+      data: {
         attestationAgreed: true,
         completedAt: progress.completedAt
       }
@@ -1302,6 +1319,54 @@ router.get('/user/my-courses', ...protectAndScope, async (req, res) => {
   } catch (error) {
     console.error('Error fetching user courses:', error);
     res.status(500).json({ success: false, error: 'Failed to fetch courses' });
+  }
+});
+
+// ============================================================================
+// FREE TIER USAGE & CE TRACKING
+// ============================================================================
+
+/**
+ * GET /api/interactive-courses/user/free-usage
+ * Returns free-tier monthly usage and lifetime CE hours
+ */
+router.get('/user/free-usage', ...protectAndScope, async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ success: false, error: 'User not found' });
+    }
+
+    const isFree = user.subscription.plan === 'free' || !user.hasActiveSubscription();
+    const remaining = user.getFreeCoursesRemaining();
+    const monthKey = User.currentMonthKey();
+
+    res.json({
+      success: true,
+      data: {
+        plan: user.subscription.plan,
+        isFreeUser: isFree,
+        monthly: isFree ? {
+          limit: 4,
+          used: 4 - remaining,
+          remaining,
+          currentMonth: monthKey,
+          resetsAt: new Date(
+            parseInt(monthKey.split('-')[0]),
+            parseInt(monthKey.split('-')[1]), // next month (0-indexed, so this is correct)
+            1
+          )
+        } : null,
+        ceTracking: {
+          totalHoursCompleted: user.ceTracking?.totalHoursCompleted || 0,
+          completionLog: user.ceTracking?.completionLog || [],
+          primaryState: user.primaryState || user.profile?.state || null
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching free usage:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch usage data' });
   }
 });
 

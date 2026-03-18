@@ -37,6 +37,25 @@ const userSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Course'
   }],
+
+  // Free tier monthly course limit (4 x 1-hr courses/month, no rollover)
+  freeMonthly: {
+    coursesUsedThisMonth: { type: Number, default: 0 },
+    // Calendar month key, e.g. "2026-03" — resets when month changes
+    currentMonth: { type: String }
+  },
+
+  // Lifetime CE hours tracking (for state board compliance)
+  ceTracking: {
+    totalHoursCompleted: { type: Number, default: 0 },
+    completionLog: [{
+      courseId: { type: mongoose.Schema.Types.ObjectId, ref: 'Course' },
+      courseTitle: { type: String },
+      ceHours: { type: Number },
+      completedAt: { type: Date, default: Date.now },
+      certificateId: { type: mongoose.Schema.Types.ObjectId, ref: 'Certificate' }
+    }]
+  },
   
   // Primary state for Free/Professional users (VIP can track any)
   primaryState: {
@@ -532,6 +551,74 @@ userSchema.methods.bookConsultation = function(topic) {
 userSchema.methods.isVip = function() {
   return ['vip', 'annual_vip', 'lifetime'].includes(this.subscription.plan);
 };
+
+// ============================================
+// FREE MONTHLY LIMIT METHODS
+// ============================================
+
+const FREE_MONTHLY_COURSE_LIMIT = 4;
+
+// Get current calendar month key (e.g. "2026-03")
+userSchema.statics.currentMonthKey = function() {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+};
+
+// Check how many free courses remain this month
+userSchema.methods.getFreeCoursesRemaining = function() {
+  const monthKey = User.currentMonthKey();
+  // Auto-reset if month has changed
+  if (this.freeMonthly.currentMonth !== monthKey) {
+    return FREE_MONTHLY_COURSE_LIMIT;
+  }
+  return Math.max(0, FREE_MONTHLY_COURSE_LIMIT - (this.freeMonthly.coursesUsedThisMonth || 0));
+};
+
+// Check if a free user can enroll in another course this month
+userSchema.methods.canEnrollFree = function() {
+  // Only applies to free-plan users
+  if (this.subscription.plan !== 'free' || this.hasActiveSubscription()) {
+    return { allowed: true, reason: 'has_subscription' };
+  }
+  const remaining = this.getFreeCoursesRemaining();
+  if (remaining <= 0) {
+    return {
+      allowed: false,
+      reason: 'free_monthly_limit_reached',
+      limit: FREE_MONTHLY_COURSE_LIMIT,
+      resetsAt: getNextMonthStart()
+    };
+  }
+  return { allowed: true, remaining };
+};
+
+// Consume one free monthly course slot
+userSchema.methods.useFreeMonthlySlot = function() {
+  const monthKey = User.currentMonthKey();
+  // Reset if new month
+  if (this.freeMonthly.currentMonth !== monthKey) {
+    this.freeMonthly.coursesUsedThisMonth = 0;
+    this.freeMonthly.currentMonth = monthKey;
+  }
+  this.freeMonthly.coursesUsedThisMonth += 1;
+};
+
+// Record a completed course for lifetime CE tracking
+userSchema.methods.recordCECompletion = function(courseId, courseTitle, ceHours, certificateId) {
+  this.ceTracking.totalHoursCompleted = (this.ceTracking.totalHoursCompleted || 0) + ceHours;
+  this.ceTracking.completionLog.push({
+    courseId,
+    courseTitle,
+    ceHours,
+    completedAt: new Date(),
+    ...(certificateId && { certificateId })
+  });
+};
+
+function getNextMonthStart() {
+  const now = new Date();
+  return new Date(now.getFullYear(), now.getMonth() + 1, 1);
+}
 
 // Check if trial expired
 userSchema.methods.isTrialExpired = function() {
