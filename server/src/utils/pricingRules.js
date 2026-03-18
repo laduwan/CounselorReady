@@ -111,6 +111,32 @@ export function resolvePricingFromCEHours(ceHours, customPremiumPrice = null) {
   return resolvePricingFromWordCount(ceHours * 6000, customPremiumPrice);
 }
 
+// ─── Word Counter (for seed scripts) ──────────────────────────────────────────
+
+/**
+ * Count words from a course data object's content blocks.
+ * Strips HTML tags before counting. Falls back to ceHours * 6000 if no content.
+ *
+ * @param {object} courseData - raw course object with sections[].contentBlocks[]
+ * @returns {number} total word count
+ */
+export function countWordsFromCourse(courseData) {
+  let words = 0;
+  for (const section of (courseData.sections ?? [])) {
+    for (const block of (section.contentBlocks ?? [])) {
+      const text = block.content || block.textContent || '';
+      if (text) {
+        words += text.replace(/<[^>]*>/g, ' ').split(/\s+/).filter(Boolean).length;
+      }
+    }
+  }
+  // Fall back to CE hours estimate if no text content found
+  if (words === 0 && courseData.ceHours) {
+    words = courseData.ceHours * 6000;
+  }
+  return words;
+}
+
 // ─── Access Check ─────────────────────────────────────────────────────────────
 
 /**

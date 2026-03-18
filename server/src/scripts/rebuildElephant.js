@@ -4,6 +4,7 @@
  * Unauthorized copying or distribution is strictly prohibited.
  */
 import mongoose from "mongoose";
+import { resolvePricingFromWordCount, countWordsFromCourse } from '../utils/pricingRules.js';
 
 // ── CONFIG ──────────────────────────────────────────────────────────
 const MONGODB_URI = process.env.MONGODB_URI;
@@ -396,10 +397,7 @@ async function main() {
     approvingBody: "NBCC",
     approvalNumber: "#7760",
     
-    // Access
-    accessType: "paid",
-    price: 39.99,
-    pricingTier: "standard",
+    // pricingTier, accessTier, accessType, price — auto-assigned from word count below
     
     // Status
     status: "draft",

@@ -5,6 +5,7 @@
  */
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
+import { resolvePricingFromWordCount, countWordsFromCourse } from '../utils/pricingRules.js';
 dotenv.config();
 
 const MONGODB_URI = process.env.MONGODB_URI;
@@ -25,7 +26,7 @@ const COURSE = {
   approvalNumber: "7760",
   accessType: "free",
   price: 0,
-  pricingTier: "standard",
+  // pricingTier, accessTier, accessType, price — auto-assigned from word count below
   status: "published",
   isPublished: true,
   level: "Introductory",
@@ -715,6 +716,11 @@ const COURSE = {
 async function seed() {
   try {
     await mongoose.connect(MONGODB_URI);
+    // Auto-assign pricing fields from word count
+    const wordCount = countWordsFromCourse(COURSE);
+    const pricing = resolvePricingFromWordCount(wordCount);
+    Object.assign(COURSE, pricing);
+    console.log(`📊 Word count: ${wordCount} → ${pricing.pricingTier} ($${pricing.price})`);
     const db = mongoose.connection.db;
     const result = await db.collection('interactivecourses').updateOne(
       { slug: SLUG },

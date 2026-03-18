@@ -16,6 +16,7 @@ import { canAccessCourse } from '../utils/pricingRules.js';
 const getModels = () => {
   const InteractiveCourse = mongoose.models.InteractiveCourse ||
     mongoose.model('InteractiveCourse', new mongoose.Schema({
+      slug: String,
       pricingTier: String,
       accessTier:  String,
     }, { strict: false }));
@@ -28,14 +29,25 @@ const getModels = () => {
 
 /**
  * checkCourseAccess
- * Expects: req.user (from protect middleware), req.params.id (course _id)
+ * Expects: req.user (from protect middleware)
+ *          req.params.id OR req.params.slug OR req.params.param (course identifier)
  * Attaches: req.course, req.userHasAccess
  */
 export default async function checkCourseAccess(req, res, next) {
   try {
     const { InteractiveCourse } = getModels();
 
-    const course = await InteractiveCourse.findById(req.params.id).lean();
+    // Support routes that use :id, :slug, or :param
+    const identifier = req.params.id || req.params.slug || req.params.param;
+    if (!identifier) {
+      return res.status(400).json({ error: 'Course identifier required' });
+    }
+
+    const isObjectId = mongoose.Types.ObjectId.isValid(identifier);
+    const course = isObjectId
+      ? await InteractiveCourse.findById(identifier).lean()
+      : await InteractiveCourse.findOne({ slug: identifier }).lean();
+
     if (!course) {
       return res.status(404).json({ error: 'Course not found' });
     }

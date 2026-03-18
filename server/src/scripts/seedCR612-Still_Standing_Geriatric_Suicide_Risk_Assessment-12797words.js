@@ -10,6 +10,7 @@
  */
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
+import { resolvePricingFromWordCount, countWordsFromCourse } from '../utils/pricingRules.js';
 dotenv.config();
 const MONGODB_URI = process.env.MONGODB_URI;
 if (!MONGODB_URI) { console.error('❌ MONGODB_URI not found'); process.exit(1); }
@@ -30,9 +31,7 @@ const COURSE = {
   ceCategory: "Clinical",
   contentArea: "Crisis Intervention",
   level: "Intermediate",
-  accessType: "paid",
-  price: 39.99,
-  pricingTier: "standard",
+  // pricingTier, accessTier, accessType, price — auto-assigned from word count below
   status: "draft",
   isPublished: false,
   targetAudience: ["Licensed Professional Counselors (LPC/LPCC)", "Licensed Clinical Social Workers (LCSW)", "Licensed Marriage and Family Therapists (LMFT)", "Licensed Mental Health Counselors (LMHC)", "Psychologists", "Psychiatric Nurse Practitioners", "Clinicians in any setting likely to encounter older adult clients"],
