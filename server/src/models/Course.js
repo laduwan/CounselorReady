@@ -173,10 +173,10 @@ const courseSchema = new mongoose.Schema({
     default: 'standard'
   },
   stripePriceId: { type: String },
-  accessTier: { 
-    type: String, 
-    enum: ['free', 'professional', 'vip'], 
-    default: 'free' 
+  accessTier: {
+    type: String,
+    enum: ['free', 'starter', 'professional', 'vip'],
+    default: 'free'
   },
   
   // CEU info
