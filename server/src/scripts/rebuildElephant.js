@@ -457,6 +457,11 @@ async function main() {
     createdAt: new Date()
   };
 
+  // ── AUTO-ASSIGN PRICING FROM WORD COUNT ─────────────────────────
+  const wordCountForPricing = countWordsFromCourse(courseDoc);
+  const pricing = resolvePricingFromWordCount(wordCountForPricing);
+  Object.assign(courseDoc, pricing);
+
   // ── SAVE TO DATABASE ──────────────────────────────────────────────
   console.log("Connecting to MongoDB...");
   await mongoose.connect(MONGODB_URI);

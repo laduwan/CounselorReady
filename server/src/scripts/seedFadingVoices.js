@@ -6,6 +6,7 @@
 import mongoose from 'mongoose';
 import Course from '../models/Course.js';
 import dotenv from 'dotenv';
+import { resolvePricingFromWordCount, countWordsFromCourse } from '../utils/pricingRules.js';
 dotenv.config();
 
 const FADING_VOICES_COURSE = {
@@ -23,7 +24,7 @@ const FADING_VOICES_COURSE = {
   approvingBody: 'NBCC',
   approvalNumber: '7760',
   status: 'published',
-  accessTier: 'professional',
+  // pricingTier, accessTier, accessType, price — auto-assigned from word count below
   isInteractive: true,
   wordCount: 15824,
   objectives: ["Differentiate among the major types of neurocognitive disorders, including Alzheimer\u2019s disease, vascular dementia, Lewy body dementia, and frontotemporal dementia, identifying their distinct clinical presentations, progression patterns, and implications for counseling treatment planning.", "Apply person-centered assessment approaches to evaluate cognitive, emotional, and functional status in older adults with neurocognitive disorders, incorporating standardized tools while maintaining cultural sensitivity and respect for client dignity.", "Implement evidence-based therapeutic interventions, including Cognitive Stimulation Therapy, reminiscence therapy, validation therapy, and music-based approaches, adapting techniques to match the client\u2019s cognitive stage and individual needs.", "Analyze the multidimensional impact of caregiving on family members, including ambiguous loss, compassion fatigue, and systemic family dynamics, and design appropriate caregiver support interventions grounded in current research.", "Evaluate ethical dilemmas commonly encountered in counseling older adults with neurocognitive disorders, including issues of capacity assessment, informed consent, advance care planning, autonomy versus beneficence, and mandatory reporting of elder abuse, applying relevant ethical codes and legal frameworks to guide clinical decision-making."],
@@ -451,6 +452,10 @@ async function seedFadingVoices() {
   try {
     await mongoose.connect(process.env.MONGODB_URI);
     console.log('✅ Connected to MongoDB');
+
+    const wordCount = countWordsFromCourse(FADING_VOICES_COURSE);
+    const pricing = resolvePricingFromWordCount(wordCount);
+    Object.assign(FADING_VOICES_COURSE, pricing);
 
     const existing = await Course.findOne({ slug: FADING_VOICES_COURSE.slug });
     if (existing) {

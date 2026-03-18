@@ -44,7 +44,7 @@ const CR610 = {
   level: "Intermediate",
   accessType: "paid",
   price: 54.99,
-  pricingTier: "standard",
+  // pricingTier, accessTier, accessType, price — auto-assigned from word count below
   status: "draft",
   isPublished: false,
   targetAudience: [
@@ -651,7 +651,7 @@ const CR611 = {
   level: "Intermediate",
   accessType: "paid",
   price: 54.99,
-  pricingTier: "standard",
+  // pricingTier, accessTier, accessType, price — auto-assigned from word count below
   status: "draft",
   isPublished: false,
   targetAudience: ["Licensed Professional Counselors (LPC/LPCC)", "Licensed Clinical Social Workers (LCSW)", "Licensed Marriage and Family Therapists (LMFT)", "Licensed Mental Health Counselors (LMHC)", "Psychologists", "Psychiatric Nurse Practitioners", "Clinicians in geriatric, hospital, memory care, and community mental health settings"],
@@ -1000,7 +1000,7 @@ const CR612 = {
   level: "Intermediate",
   accessType: "paid",
   price: 39.99,
-  pricingTier: "standard",
+  // pricingTier, accessTier, accessType, price — auto-assigned from word count below
   status: "draft",
   isPublished: false,
   targetAudience: ["Licensed Professional Counselors (LPC/LPCC)", "Licensed Clinical Social Workers (LCSW)", "Licensed Marriage and Family Therapists (LMFT)", "Licensed Mental Health Counselors (LMHC)", "Psychologists", "Psychiatric Nurse Practitioners", "Clinicians in any setting likely to encounter older adult clients"],
@@ -1255,7 +1255,7 @@ const CR613 = {
   level: "Intermediate",
   accessType: "paid",
   price: 39.99,
-  pricingTier: "standard",
+  // pricingTier, accessTier, accessType, price — auto-assigned from word count below
   status: "draft",
   isPublished: false,
   targetAudience: ["Licensed Professional Counselors (LPC/LPCC)", "Licensed Clinical Social Workers (LCSW)", "Licensed Marriage and Family Therapists (LMFT)", "Licensed Mental Health Counselors (LMHC)", "Psychologists", "Psychiatric Nurse Practitioners"],
@@ -1496,7 +1496,8 @@ const CR614 = {
   instructor: 'GA Integrated Therapeutic Perspectives LLC',
   acepProvider: { name: 'GA Integrated Therapeutic Perspectives LLC', number: '7760' },
   category: 'Clinical', ceCategory: 'Clinical', contentArea: 'Geriatric Mental Health', level: 'Advanced',
-  accessType: 'paid', price: 54.99, pricingTier: 'standard', status: 'draft', isPublished: false,
+  accessType: 'paid', price: 54.99, status: 'draft', isPublished: false,
+  // pricingTier, accessTier, accessType, price — auto-assigned from word count below
   targetAudience: ['Licensed Professional Counselors (LPC/LPCC)', 'Licensed Clinical Social Workers (LCSW)', 'Licensed Marriage and Family Therapists (LMFT)', 'Psychologists', 'Psychiatric Nurse Practitioners', 'Hospice and palliative care clinicians'],
   objectives: [
     'Assess and distinguish clinically significant death anxiety from normative existential mortality awareness in older adult clients using validated instruments and theoretically grounded frameworks',
@@ -1608,6 +1609,10 @@ async function seedAll() {
   let passed = 0;
 
   for (const course of courses) {
+    const wordCount = countWordsFromCourse(course);
+    const pricing = resolvePricingFromWordCount(wordCount);
+    Object.assign(course, pricing);
+
     try {
       const action = await upsert(course);
       console.log(`✅ ${course.courseCode}  ${action.toUpperCase()}  |  ${course.title}`);

@@ -4,6 +4,7 @@
 
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
+import { resolvePricingFromWordCount, countWordsFromCourse } from '../utils/pricingRules.js';
 dotenv.config();
 
 const MONGO_URI = process.env.MONGO_URI || process.env.MONGODB_URI;
@@ -606,7 +607,7 @@ const courseData = {
   approvalNumber: '#7760',
   accessType: 'paid',
   price: 24.99,
-  pricingTier: 'standard',
+  // pricingTier, accessTier, accessType, price — auto-assigned from word count below
   status: 'draft',
   isPublished: false,
   objectives: [
@@ -837,6 +838,10 @@ const courseData = {
 async function seed() {
   await mongoose.connect(MONGO_URI);
   console.log('Connected to MongoDB');
+  const wordCount = countWordsFromCourse(courseData);
+  const pricing = resolvePricingFromWordCount(wordCount);
+  Object.assign(courseData, pricing);
+
   const existing = await Course.findOne({ slug: courseData.slug });
   if (existing) { await Course.deleteOne({ slug: courseData.slug }); console.log('Removed existing CR-406'); }
   const course = new Course(courseData);

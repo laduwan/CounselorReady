@@ -5,6 +5,7 @@
  */
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
+import { resolvePricingFromWordCount, countWordsFromCourse } from '../utils/pricingRules.js';
 dotenv.config();
 
 const MONGODB_URI = process.env.MONGODB_URI;
@@ -34,7 +35,7 @@ const COURSE_DATA = {
   targetAudience: ["Licensed mental health professionals including LPCs, LCSWs, LMFTs, psychologists, and NCCs who wish to integrate sexual health assessment and evidence-based sex therapy foundations into their clinical practice."],
   accessType: "paid",
   price: 59.99,
-  pricingTier: "standard",
+  // pricingTier, accessTier, accessType, price — auto-assigned from word count below
   status: "draft",
   isPublished: false,
   isActive: true,
@@ -441,6 +442,10 @@ async function main() {
 
   const Course = mongoose.connection.models.InteractiveCourse ||
     mongoose.model('InteractiveCourse', new mongoose.Schema({}, { strict: false }, 'interactivecourses'));
+
+  const wordCount = countWordsFromCourse(COURSE_DATA);
+  const pricing = resolvePricingFromWordCount(wordCount);
+  Object.assign(COURSE_DATA, pricing);
 
   const existing = await Course.findOne({ slug: COURSE_DATA.slug });
   if (existing) {

@@ -10,6 +10,7 @@
 
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
+import { resolvePricingFromWordCount, countWordsFromCourse } from '../../utils/pricingRules.js';
 // Bypassing Course model - writing directly to collection
 
 dotenv.config();
@@ -26,7 +27,7 @@ const courses = [
     thumbnail: '/images/courses/cbt-toolbox.jpg',
     accessType: 'paid',
     price: 39.99,
-    pricingTier: 'standard',
+    // pricingTier, accessTier, accessType, price — auto-assigned from word count below
     ceuEligible: true,
     ceuHours: 3.0,
     ceuCategories: [{ category: 'Clinical', hours: 3.0 }],
@@ -420,7 +421,7 @@ const courses = [
     thumbnail: '/images/courses/dbt-skills.jpg',
     accessType: 'paid',
     price: 39.99,
-    pricingTier: 'standard',
+    // pricingTier, accessTier, accessType, price — auto-assigned from word count below
     ceuEligible: true,
     ceuHours: 3.0,
     ceuCategories: [{ category: 'Clinical', hours: 3.0 }],
@@ -836,7 +837,7 @@ const courses = [
     thumbnail: '/images/courses/motivational-interviewing.jpg',
     accessType: 'paid',
     price: 39.99,
-    pricingTier: 'standard',
+    // pricingTier, accessTier, accessType, price — auto-assigned from word count below
     ceuEligible: true,
     ceuHours: 3.0,
     ceuCategories: [{ category: 'Clinical', hours: 3.0 }],
@@ -1252,6 +1253,10 @@ const seedBatch1 = async () => {
     let created = 0, updated = 0;
     
     for (const course of courses) {
+      const wordCount = countWordsFromCourse(course);
+      const pricing = resolvePricingFromWordCount(wordCount);
+      Object.assign(course, pricing);
+
       const existing = await collection.findOne({ slug: course.slug });
       if (existing) {
         await collection.updateOne({ slug: course.slug }, { $set: { ...course, updatedAt: new Date() } });

@@ -27,7 +27,7 @@ const courses = [
     thumbnail: '/images/courses/trauma-foundations.jpg',
     accessType: 'paid',
     price: 39.99,
-    pricingTier: 'standard',
+    // pricingTier, accessTier, accessType, price — auto-assigned from word count below
     ceuEligible: true,
     ceuHours: 3.0,
     ceuCategories: [{ category: 'Clinical', hours: 3.0 }],
@@ -375,7 +375,7 @@ const courses = [
     thumbnail: '/images/courses/suicide-assessment.jpg',
     accessType: 'paid',
     price: 39.99,
-    pricingTier: 'standard',
+    // pricingTier, accessTier, accessType, price — auto-assigned from word count below
     ceuEligible: true,
     ceuHours: 3.0,
     ceuCategories: [{ category: 'Clinical', hours: 3.0 }],
@@ -719,7 +719,7 @@ const courses = [
     thumbnail: '/images/courses/psychopharmacology.jpg',
     accessType: 'paid',
     price: 39.99,
-    pricingTier: 'standard',
+    // pricingTier, accessTier, accessType, price — auto-assigned from word count below
     ceuEligible: true,
     ceuHours: 3.0,
     ceuCategories: [{ category: 'Clinical', hours: 3.0 }],
@@ -1130,6 +1130,10 @@ const seedBatch2 = async () => {
     let updated = 0;
 
     for (const courseData of courses) {
+      const wordCount = countWordsFromCourse(courseData);
+      const pricing = resolvePricingFromWordCount(wordCount);
+      Object.assign(courseData, pricing);
+
       const existing = await Course.findOne({ slug: courseData.slug });
       if (existing) {
         await Course.findOneAndUpdate({ slug: courseData.slug }, courseData, { new: true });
