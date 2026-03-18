@@ -395,9 +395,112 @@ CounselorReady - Learn. License. Lead.
   };
 }
 
+/**
+ * Incomplete course reminder email for users who enrolled/paid but haven't completed
+ */
+export function getIncompleteCourseReminderEmail({ firstName, courses, dashboardUrl }) {
+  const courseListHtml = courses.map(c => `
+    <tr>
+      <td style="padding: 12px; border-bottom: 1px solid #e2e8f0;">
+        <div style="font-weight: 600; color: #1e293b; font-size: 14px;">${c.title}</div>
+        <div style="margin-top: 4px;">
+          <div style="background: #e2e8f0; border-radius: 100px; height: 8px; width: 100%; margin-top: 6px;">
+            <div style="background: linear-gradient(90deg, #6b1d34, #8B2542); height: 100%; border-radius: 100px; width: ${c.percentComplete}%;"></div>
+          </div>
+          <div style="color: #64748b; font-size: 12px; margin-top: 4px;">${c.percentComplete}% complete · ${c.ceHours || 0} CE hours available</div>
+        </div>
+      </td>
+      <td style="padding: 12px; border-bottom: 1px solid #e2e8f0; text-align: center; vertical-align: middle;">
+        <a href="${c.resumeUrl}" style="display: inline-block; background: #6b1d34; color: white; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 13px; font-weight: 600;">Resume</a>
+      </td>
+    </tr>
+  `).join('');
+
+  const courseListText = courses.map(c =>
+    `- ${c.title} (${c.percentComplete}% complete, ${c.ceHours || 0} CE hours available)\n  Resume: ${c.resumeUrl}`
+  ).join('\n');
+
+  return {
+    subject: `You have ${courses.length} course${courses.length > 1 ? 's' : ''} waiting for you`,
+    html: `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+          body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #1e293b; margin: 0; padding: 0; background-color: #f8fafc; }
+          .wrapper { padding: 20px; }
+          .container { max-width: 600px; margin: 0 auto; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+          .header { background: linear-gradient(135deg, #6b1d34 0%, #8B2542 100%); padding: 36px 30px; text-align: center; }
+          .header h1 { color: white; margin: 0; font-size: 24px; font-weight: 700; }
+          .header p { color: rgba(255,255,255,0.85); margin: 8px 0 0; font-size: 15px; }
+          .content { padding: 36px 30px; }
+          .btn-primary { display: inline-block; background: #6b1d34; color: white !important; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 16px; }
+          .footer { text-align: center; padding: 24px; background: #f8fafc; color: #64748b; font-size: 13px; border-top: 1px solid #e2e8f0; }
+          .footer a { color: #6b1d34; }
+        </style>
+      </head>
+      <body>
+        <div class="wrapper">
+          <div class="container">
+            <div class="header">
+              <h1>Your CE credits are waiting!</h1>
+              <p>You're so close — don't let your progress slip away</p>
+            </div>
+            <div class="content">
+              <p>Hi ${firstName},</p>
+              <p>You've enrolled in ${courses.length === 1 ? 'a course that hasn\'t been completed yet' : `${courses.length} courses that haven't been completed yet`}. Your progress is saved and your CE credits are just a few steps away!</p>
+
+              <table width="100%" cellpadding="0" cellspacing="0" style="margin: 24px 0; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden;">
+                <tr style="background: #f8fafc;">
+                  <th style="padding: 10px 12px; text-align: left; font-size: 13px; color: #64748b; font-weight: 600;">Course</th>
+                  <th style="padding: 10px 12px; text-align: center; font-size: 13px; color: #64748b; font-weight: 600;">Action</th>
+                </tr>
+                ${courseListHtml}
+              </table>
+
+              <div style="background: #fef9c3; border: 1px solid #fde047; border-radius: 8px; padding: 16px; margin: 24px 0;">
+                <p style="margin: 0; color: #854d0e; font-size: 13px;">
+                  <strong>Remember:</strong> Completing your courses earns CE credits that count toward your license renewal. The sooner you finish, the sooner your credits are logged!
+                </p>
+              </div>
+
+              <div style="text-align: center; margin: 30px 0;">
+                <a href="${dashboardUrl}" class="btn-primary">Go to My Dashboard</a>
+              </div>
+            </div>
+            <div class="footer">
+              <p><strong>CounselorReady</strong> — Learn. License. Lead.</p>
+              <p>NBCC Approved Continuing Education Provider #7760</p>
+              <p><a href="${PLATFORM_URL}">counselorready.com</a></p>
+            </div>
+          </div>
+        </div>
+      </body>
+      </html>
+    `,
+    text: `
+Hi ${firstName},
+
+You have ${courses.length} course${courses.length > 1 ? 's' : ''} waiting to be completed:
+
+${courseListText}
+
+Complete your courses to earn your CE credits toward license renewal.
+
+Go to your dashboard: ${dashboardUrl}
+
+CounselorReady — Learn. License. Lead.
+NBCC Approved Provider #7760
+    `
+  };
+}
+
 export default {
   getCourseCompletionEmail,
   getCourseProgressReminderEmail,
   getAssessmentRetryEmail,
-  getCEMilestoneEmail
+  getCEMilestoneEmail,
+  getIncompleteCourseReminderEmail
 };

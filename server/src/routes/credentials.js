@@ -280,7 +280,7 @@ router.post('/sync', protect, async (req, res) => {
         const isExplicitlyLinked = cert.credentials && cert.credentials.some(credId =>
           credId.toString() === credential._id.toString()
         );
-        const isPlatformCert = cert.source === 'platform';
+        const isPlatformCert = cert.source === 'platform' || cert.source === 'import';
 
         // Match uploaded certs by category to credential requirements
         const certCategory = (cert.category || 'General').toLowerCase().replace(/[-_]/g, ' ');

@@ -17,20 +17,25 @@ const router = express.Router();
 router.get('/stats', protect, async (req, res) => {
   try {
     const userId = req.user._id;
-    
-    // Get certificates
-    const certificates = await Certificate.find({ userId });
+
+    // Get certificates (including migrated/imported ones)
+    const certificates = await Certificate.find({ userId, isRevoked: { $ne: true } });
     const certificatesCount = certificates.length;
-    const ceHours = certificates.reduce((sum, c) => sum + (c.ceHours || 0), 0);
-    
-    // Get credentials
+    const certCeHours = certificates.reduce((sum, c) => sum + (c.ceHours || 0), 0);
+
+    // Get credentials and their tracked CE hours
     const credentials = await UserCredential.find({ userId });
     const credentialsCount = credentials.length;
-    
+    const credentialCeHours = credentials.reduce((sum, c) => sum + (c.totalCEUsCompleted || 0), 0);
+
+    // Use the higher of certificate-based or credential-based CE hours
+    // This ensures migrated credits show even before credential sync
+    const ceHours = Math.max(certCeHours, credentialCeHours);
+
     // Get course progress
     const courseProgress = await UserCourseProgress.find({ userId });
     const coursesCompleted = courseProgress.filter(p => p.status === 'completed').length;
-    
+
     res.json({
       ceHours,
       certificates: certificatesCount,
