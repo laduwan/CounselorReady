@@ -11,6 +11,7 @@ import express from 'express';
 import mongoose from 'mongoose';
 import { Course, CourseProgress, ContentInteraction } from '../models/InteractiveCourse.js';
 import { protect } from '../middleware/auth.js';
+import checkCourseAccess from '../middleware/checkCourseAccess.js';
 
 const router = express.Router();
 
@@ -133,7 +134,7 @@ router.get('/:slug/outline', async (req, res) => {
  * GET /api/interactive-courses/:slug/progress
  * Get user's progress for a specific course
  */
-router.get('/:slug/progress', protect, async (req, res) => {
+router.get('/:slug/progress', protect, checkCourseAccess, async (req, res) => {
   try {
     const course = await Course.findOne({ slug: req.params.slug });
     if (!course) {
@@ -174,7 +175,7 @@ router.get('/:slug/progress', protect, async (req, res) => {
  * POST /api/interactive-courses/:slug/enroll
  * Enroll user in a course
  */
-router.post('/:slug/enroll', protect, async (req, res) => {
+router.post('/:slug/enroll', protect, checkCourseAccess, async (req, res) => {
   try {
     const course = await Course.findOne({ slug: req.params.slug, status: 'published' });
     if (!course) {
@@ -219,7 +220,7 @@ router.post('/:slug/enroll', protect, async (req, res) => {
  * PUT /api/interactive-courses/:slug/progress/section/:sectionIndex
  * Update section progress
  */
-router.put('/:slug/progress/section/:sectionIndex', protect, async (req, res) => {
+router.put('/:slug/progress/section/:sectionIndex', protect, checkCourseAccess, async (req, res) => {
   try {
     const { sectionIndex } = req.params;
     const { viewedBlocks, completedBlocks, timeSpent } = req.body;
@@ -304,7 +305,7 @@ router.put('/:slug/progress/section/:sectionIndex', protect, async (req, res) =>
  * POST /api/interactive-courses/:slug/progress/section/:sectionIndex/quiz
  * Submit section quiz attempt
  */
-router.post('/:slug/progress/section/:sectionIndex/quiz', protect, async (req, res) => {
+router.post('/:slug/progress/section/:sectionIndex/quiz', protect, checkCourseAccess, async (req, res) => {
   try {
     const { sectionIndex } = req.params;
     const { answers, timeSpent } = req.body;
@@ -487,7 +488,7 @@ router.post('/:slug/progress/section/:sectionIndex/quiz', protect, async (req, r
  * POST /api/interactive-courses/:slug/progress/assessment
  * Submit final assessment attempt
  */
-router.post('/:slug/progress/assessment', protect, async (req, res) => {
+router.post('/:slug/progress/assessment', protect, checkCourseAccess, async (req, res) => {
   try {
     const { answers, timeUsed, questionOrder } = req.body;
 
