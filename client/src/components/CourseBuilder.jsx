@@ -177,7 +177,7 @@ function CloudinaryUploader({ onUpload, context = "general", currentImage = null
       setPreview(result.thumbnailUrl || result.url);
       onUpload(result);
     } catch (err) {
-      setError(err.message || "Upload failed — check Cloudinary credentials");
+      setError(err.message || "Upload failed. Please try again.");
     } finally {
       setUploading(false);
     }

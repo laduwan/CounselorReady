@@ -32,16 +32,16 @@ const upload = multer({
   }
 });
 
-router.post('/upload', protect, requireAdmin, upload.single('image'), async (req, res) => {
+router.post('/upload', protect, upload.single('image'), async (req, res) => {
   try {
-    if (!req.file) return res.status(400).json({ success: false, error: { message: 'No image file provided' } });
-    const folder = req.body.folder || 'counselorready/course-content';
+    if (!req.file) return res.status(400).json({ success: false, error: 'No image file provided' });
+    const folder = req.body.folder || 'counselorready/course-images';
     const context = req.body.context || 'general';
 
     const result = await new Promise((resolve, reject) => {
       const stream = cloudinary.v2.uploader.upload_stream(
         { folder, resource_type: 'image', public_id: `${context}_${Date.now()}`,
-          transformation: [{ quality: 'auto:good', fetch_format: 'auto' }],
+          transformation: [{ quality: 'auto', fetch_format: 'auto' }],
           context: { alt: req.body.alt || '', uploadedBy: req.user.email, uploadContext: context }
         },
         (err, res) => err ? reject(err) : resolve(res)
@@ -56,13 +56,16 @@ router.post('/upload', protect, requireAdmin, upload.single('image'), async (req
       url: result.secure_url, publicId: result.public_id,
       width: result.width, height: result.height, format: result.format,
       bytes: result.bytes, alt: req.body.alt || '',
-      thumbnailUrl: cloudinary.v2.url(result.public_id, { width: 200, height: 200, crop: 'fill', quality: 'auto' }),
-      mediumUrl: cloudinary.v2.url(result.public_id, { width: 800, quality: 'auto', fetch_format: 'auto' }),
-      largeUrl: cloudinary.v2.url(result.public_id, { width: 1200, quality: 'auto', fetch_format: 'auto' }),
+      thumbnailUrl: cloudinary.v2.url(result.public_id, { width: 400, crop: 'fill', quality: 'auto' }),
+      mediumUrl: cloudinary.v2.url(result.public_id, { width: 800, crop: 'limit', quality: 'auto' }),
+      largeUrl: result.secure_url,
     }});
   } catch (error) {
     console.error('Image upload error:', error);
-    res.status(500).json({ success: false, error: { message: error.message } });
+    if (error instanceof multer.MulterError || error.message === 'Images only') {
+      return res.status(400).json({ success: false, error: 'Images only, max 10MB' });
+    }
+    res.status(500).json({ success: false, error: error.message });
   }
 });
 
