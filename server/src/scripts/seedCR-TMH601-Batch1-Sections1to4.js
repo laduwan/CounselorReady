@@ -73,7 +73,7 @@ const COURSE_DATA = {
   contentAreas: ["TeleMental Health", "Ethics", "Clinical Skills", "Technology"],
   categories: ["Telehealth", "Ethics", "Clinical Skills", "Technology"],
   tags: ["telehealth", "telemental health", "HIPAA", "Rule 135-11", "Georgia", "virtual therapy", "informed consent", "crisis intervention", "BC-TMH", "platform selection"],
-  price: 89,
+  price: 98,
   accessType: "paid",
   pricingTier: "premium",
   isActive: true,
