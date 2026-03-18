@@ -391,7 +391,7 @@ router.put('/:id', ...protectAndScope, async (req, res) => {
     const updated = await Course.findByIdAndUpdate(
       req.params.id,
       { $set: updates },
-      { new: true }
+      { new: true, runValidators: true }
     );
 
     res.json({ success: true, data: updated });

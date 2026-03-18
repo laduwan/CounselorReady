@@ -126,7 +126,7 @@
             </div>
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div><label class="block text-sm font-semibold text-forest-800 mb-1">Access Tier</label>
-                <select id="f-tier" class="w-full px-3 py-2.5 border border-forest-200 rounded-xl text-sm"><option value="free">Free</option><option value="starter">Starter</option><option value="professional">Professional</option><option value="vip">VIP</option></select></div>
+                <select id="f-tier" class="w-full px-3 py-2.5 border border-forest-200 rounded-xl text-sm" onchange="togglePriceField()"><option value="free">Free</option><option value="premium">Premium (Sold Separately)</option></select></div>
               <div><label class="block text-sm font-semibold text-forest-800 mb-1">Price ($)</label>
                 <input type="number" id="f-price" min="0" step="0.01" placeholder="0.00" class="w-full px-3 py-2.5 border border-forest-200 rounded-xl text-sm"></div>
               <div><label class="block text-sm font-semibold text-forest-800 mb-1">Slug</label>
@@ -376,8 +376,10 @@
       document.getElementById('f-ceHours').value = course.ceHours || course.ceuHours || 0;
       document.getElementById('f-level').value = course.level || 'Intermediate';
       document.getElementById('f-status').value = st;
-      document.getElementById('f-tier').value = course.accessTier || course.pricingTier || 'professional';
-      document.getElementById('f-price').value = course.price || '';
+      const rawTier = course.accessTier || course.pricingTier || 'free';
+      document.getElementById('f-tier').value = rawTier === 'free' ? 'free' : 'premium';
+      document.getElementById('f-price').value = course.price != null ? course.price : '';
+      togglePriceField();
       document.getElementById('f-slug').value = course.slug || '';
       document.getElementById('f-courseCode').value = course.courseCode || '';
       document.getElementById('f-instructor').value = course.instructor || 'GA Integrated Therapeutic Perspectives LLC';
@@ -630,6 +632,14 @@
     function rmRef(i) { course.references.splice(i,1); renderReferences(); }
     function uRef(el) { const i=+el.dataset.r,f=el.dataset.f; let v=el.value; if(f==='year')v=parseInt(v)||null; if(typeof course.references[i]==='string')course.references[i]={title:course.references[i]}; course.references[i][f]=v; }
 
+    // Toggle price field visibility based on tier
+    function togglePriceField() {
+      const tier = document.getElementById('f-tier').value;
+      const priceWrap = document.getElementById('f-price').closest('div');
+      if (tier === 'free') { priceWrap.style.display = 'none'; document.getElementById('f-price').value = '0'; }
+      else { priceWrap.style.display = ''; }
+    }
+
     // SAVE
     async function saveCourse() {
       const btn=document.getElementById('saveBtn');
@@ -647,7 +657,8 @@
         level:document.getElementById('f-level').value,
         status, isPublished:status==='published',
         accessTier:document.getElementById('f-tier').value,
-        price:parseFloat(document.getElementById('f-price').value)||0,
+        accessType:document.getElementById('f-tier').value==='free'?'free':'paid',
+        price:document.getElementById('f-tier').value==='free'?0:(parseFloat(document.getElementById('f-price').value)||0),
         courseCode:document.getElementById('f-courseCode').value.trim(),
         instructor:document.getElementById('f-instructor').value.trim(),
         deliveryMethod:document.getElementById('f-delivery').value,
