@@ -535,6 +535,12 @@ async function main() {
   await mongoose.connect(MONGODB_URI);
   console.log('\n✅ Connected to MongoDB');
 
+  // Auto-assign pricing fields from word count
+  const wordCount = countWordsFromCourse(COURSE_DATA);
+  const pricing = resolvePricingFromWordCount(wordCount);
+  Object.assign(COURSE_DATA, pricing);
+  console.log(`📊 Word count: ${wordCount} → ${pricing.pricingTier} ($${pricing.price})`);
+
   const Course = mongoose.connection.models.InteractiveCourse ||
     mongoose.model('InteractiveCourse', new mongoose.Schema({}, { strict: false }, 'interactivecourses'));
 

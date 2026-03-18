@@ -696,6 +696,12 @@ async function seed() {
   await mongoose.connect(MONGO_URI);
   console.log('Connected to MongoDB');
 
+  // Auto-assign pricing fields from word count
+  const wordCount = countWordsFromCourse(courseData);
+  const pricing = resolvePricingFromWordCount(wordCount);
+  Object.assign(courseData, pricing);
+  console.log(`📊 Word count: ${wordCount} → ${pricing.pricingTier} ($${pricing.price})`);
+
   const existing = await Course.findOne({ slug: courseData.slug });
   if (existing) {
     await Course.deleteOne({ slug: courseData.slug });
