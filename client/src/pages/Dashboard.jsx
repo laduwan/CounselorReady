@@ -30,7 +30,9 @@ import {
   Pencil,
   Check,
   Search,
-  FlaskConical
+  FlaskConical,
+  Download,
+  Award
 } from 'lucide-react';
 
 const ALL_QUICK_ACTIONS = [
@@ -100,7 +102,13 @@ export default function Dashboard() {
 
   const isVip = user?.subscription?.plan === 'vip' || user?.subscription?.plan === 'annual_vip';
   const completedCourses = courses.filter(c => c.percentComplete === 100).length;
-  const totalCEHours = credentials.summary?.overallProgress?.totalCompleted || 0;
+  // Use credential-tracked CE hours, but fall back to certificate-based total
+  // to ensure migrated/imported credits are visible even before credential sync
+  const credentialCEHours = credentials.summary?.overallProgress?.totalCompleted || 0;
+  const certificateCEHours = Array.isArray(certificates)
+    ? certificates.reduce((sum, c) => sum + (c.ceHours || 0), 0)
+    : 0;
+  const totalCEHours = Math.max(credentialCEHours, certificateCEHours);
   const totalCredentials = credentials.summary?.totalCredentials || 0;
   const certCount = Array.isArray(certificates) ? certificates.length : 0;
 
@@ -458,6 +466,73 @@ export default function Dashboard() {
             ) : (
               <div className="text-center py-4">
                 <p className="text-forest-500 text-sm">No upcoming renewals</p>
+              </div>
+            )}
+          </div>
+
+          {/* Recent Certificates */}
+          <div className="bg-white rounded-xl border border-burgundy-100 shadow-sm p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-display text-xl font-semibold text-burgundy-900">Certificates</h2>
+              {certCount > 0 && (
+                <Link to="/credentials" className="text-burgundy-700 text-xs font-medium hover:text-burgundy-800">
+                  View All <ArrowRight className="w-3 h-3 inline" />
+                </Link>
+              )}
+            </div>
+            {certCount > 0 ? (
+              <div className="space-y-3">
+                {certificates.slice(0, 5).map((cert) => (
+                  <div key={cert._id} className="flex items-center gap-3 p-3 rounded-lg bg-stone-50 hover:bg-forest-50 transition-colors">
+                    <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: 'linear-gradient(135deg, #8B2542, #6B1D34)' }}>
+                      <Award className="w-4.5 h-4.5 text-white" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-forest-700 font-medium text-sm truncate">{cert.title}</p>
+                      <div className="flex items-center gap-2 text-xs text-forest-500">
+                        <span>{cert.ceHours} CE hrs</span>
+                        {cert.completionDate && (
+                          <>
+                            <span className="text-stone-300">·</span>
+                            <span>{new Date(cert.completionDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                    {cert.fileUrl && (
+                      <button
+                        onClick={async (e) => {
+                          e.preventDefault();
+                          try {
+                            const res = await api.get(`/certificates/${cert._id}/serve`, { responseType: 'blob' });
+                            const url = window.URL.createObjectURL(new Blob([res.data]));
+                            const link = document.createElement('a');
+                            link.href = url;
+                            link.setAttribute('download', cert.fileName || `${cert.title}.pdf`);
+                            document.body.appendChild(link);
+                            link.click();
+                            link.remove();
+                            window.URL.revokeObjectURL(url);
+                          } catch (err) {
+                            console.error('Download failed:', err);
+                          }
+                        }}
+                        className="p-1.5 rounded-lg hover:bg-burgundy-50 text-burgundy-600 transition-colors flex-shrink-0"
+                        title="Download certificate"
+                      >
+                        <Download className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-6">
+                <div className="w-16 h-16 bg-burgundy-50 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <Award className="w-8 h-8 text-burgundy-400" />
+                </div>
+                <p className="text-forest-600 text-sm mb-1">No certificates yet</p>
+                <p className="text-forest-500 text-xs">Complete courses or upload external certificates</p>
               </div>
             )}
           </div>
