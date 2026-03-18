@@ -81,9 +81,21 @@ router.get('/plan', async (req, res) => {
       }
     }
 
+    // Ensure credentials with totalCEUsRequired but empty requirements
+    // get a synthetic "General" requirement so the planner can suggest courses
+    for (const cred of credentials) {
+      if (cred.totalCEUsRequired > 0 && (!cred.requirements || cred.requirements.length === 0)) {
+        cred.requirements = [{
+          category: 'General',
+          hoursRequired: cred.totalCEUsRequired,
+          hoursCompleted: cred.totalCEUsCompleted || 0
+        }];
+      }
+    }
+
     // Get available courses
     const courses = await InteractiveCourse.find({ status: 'published' })
-      .select('title slug ceHours category sections.title metadata');
+      .select('title slug ceHours categories tags sections.title metadata');
 
     // Get user's completed courses
     const completedProgress = await UserCourseProgress.find({ userId, status: 'completed' });
@@ -102,11 +114,21 @@ router.get('/plan', async (req, res) => {
 
         // Find courses matching this category
         const categoryLower = req.category.toLowerCase();
+        const reqCategoryNorm = categoryLower.replace(/[-_]/g, ' ');
         const matchingCourses = courses.filter(c => {
           if (completedCourseIds.has(c._id.toString())) return false;
-          const courseCategory = (c.category || '').toLowerCase().replace(/[-_]/g, ' ');
-          const reqCategory = categoryLower.replace(/[-_]/g, ' ');
-          return courseCategory.includes(reqCategory) || reqCategory.includes(courseCategory) || courseCategory === 'general';
+          // Match against the categories array (plural) and tags
+          const courseCategories = (c.categories || []).map(cat => (cat || '').toLowerCase().replace(/[-_]/g, ' '));
+          const courseTags = (c.tags || []).map(t => (t || '').toLowerCase().replace(/[-_]/g, ' '));
+          const allLabels = [...courseCategories, ...courseTags];
+
+          // If credential requirement is "General", match all courses
+          if (reqCategoryNorm === 'general') return true;
+
+          // Check if any course category/tag matches the requirement
+          return allLabels.some(label =>
+            label.includes(reqCategoryNorm) || reqCategoryNorm.includes(label)
+          );
         });
 
         if (matchingCourses.length > 0) {
@@ -118,7 +140,7 @@ router.get('/plan', async (req, res) => {
               title: c.title,
               slug: c.slug,
               ceHours: c.ceHours,
-              category: c.category
+              category: (c.categories && c.categories[0]) || 'General'
             }))
           });
         } else {
