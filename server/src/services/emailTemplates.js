@@ -396,7 +396,8 @@ CounselorReady - Learn. License. Lead.
 }
 
 /**
- * Incomplete course reminder email for users who enrolled/paid but haven't completed
+ * Incomplete course reminder email for users who enrolled/paid but haven't completed.
+ * Addresses migrated TalentLMS / GaITP Learning users with context about the platform move.
  */
 export function getIncompleteCourseReminderEmail({ firstName, courses, dashboardUrl }) {
   const courseListHtml = courses.map(c => `
@@ -421,7 +422,7 @@ export function getIncompleteCourseReminderEmail({ firstName, courses, dashboard
   ).join('\n');
 
   return {
-    subject: `You have ${courses.length} course${courses.length > 1 ? 's' : ''} waiting for you`,
+    subject: `We've moved! Your ${courses.length} course${courses.length > 1 ? 's are' : ' is'} waiting at CounselorReady`,
     html: `
       <!DOCTYPE html>
       <html>
@@ -436,6 +437,9 @@ export function getIncompleteCourseReminderEmail({ firstName, courses, dashboard
           .header h1 { color: white; margin: 0; font-size: 24px; font-weight: 700; }
           .header p { color: rgba(255,255,255,0.85); margin: 8px 0 0; font-size: 15px; }
           .content { padding: 36px 30px; }
+          .migration-banner { background: linear-gradient(135deg, #f0fdf4, #ecfdf5); border: 1px solid #86efac; border-radius: 10px; padding: 20px; margin-bottom: 24px; }
+          .migration-banner h3 { margin: 0 0 8px 0; color: #166534; font-size: 16px; }
+          .migration-banner p { margin: 0; color: #15803d; font-size: 14px; line-height: 1.5; }
           .btn-primary { display: inline-block; background: #6b1d34; color: white !important; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 16px; }
           .footer { text-align: center; padding: 24px; background: #f8fafc; color: #64748b; font-size: 13px; border-top: 1px solid #e2e8f0; }
           .footer a { color: #6b1d34; }
@@ -445,12 +449,20 @@ export function getIncompleteCourseReminderEmail({ firstName, courses, dashboard
         <div class="wrapper">
           <div class="container">
             <div class="header">
-              <h1>Your CE credits are waiting!</h1>
-              <p>You're so close — don't let your progress slip away</p>
+              <h1>We have a new home!</h1>
+              <p>GaITP Learning on TalentLMS is now <strong>CounselorReady</strong></p>
             </div>
             <div class="content">
               <p>Hi ${firstName},</p>
-              <p>You've enrolled in ${courses.length === 1 ? 'a course that hasn\'t been completed yet' : `${courses.length} courses that haven't been completed yet`}. Your progress is saved and your CE credits are just a few steps away!</p>
+
+              <div class="migration-banner">
+                <h3>GaITP Learning has become CounselorReady</h3>
+                <p>
+                  You originally registered with us as a learner on GaITP Learning through TalentLMS. We've upgraded to a brand-new platform — <strong>CounselorReady</strong> — with a better experience, the same NBCC-approved CE courses, and all of your previous credits and certificates already migrated to your account.
+                </p>
+              </div>
+
+              <p>You have ${courses.length === 1 ? 'a course that hasn\'t been completed yet' : `${courses.length} courses that haven't been completed yet`}. Your progress has been preserved and your CE credits are just a few steps away!</p>
 
               <table width="100%" cellpadding="0" cellspacing="0" style="margin: 24px 0; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden;">
                 <tr style="background: #f8fafc;">
@@ -459,6 +471,16 @@ export function getIncompleteCourseReminderEmail({ firstName, courses, dashboard
                 </tr>
                 ${courseListHtml}
               </table>
+
+              <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; margin: 24px 0;">
+                <p style="margin: 0 0 10px 0; color: #1e293b; font-size: 14px; font-weight: 600;">What's new on CounselorReady:</p>
+                <ul style="margin: 0; padding-left: 20px; color: #475569; font-size: 13px;">
+                  <li style="margin: 4px 0;">Your previously earned CE credits &amp; certificates have been migrated</li>
+                  <li style="margin: 4px 0;">Credential tracker to manage licenses and renewal deadlines</li>
+                  <li style="margin: 4px 0;">Automatic CE hour logging when you complete courses</li>
+                  <li style="margin: 4px 0;">Downloadable certificates and audit-ready transcripts</li>
+                </ul>
+              </div>
 
               <div style="background: #fef9c3; border: 1px solid #fde047; border-radius: 8px; padding: 16px; margin: 24px 0;">
                 <p style="margin: 0; color: #854d0e; font-size: 13px;">
@@ -469,10 +491,16 @@ export function getIncompleteCourseReminderEmail({ firstName, courses, dashboard
               <div style="text-align: center; margin: 30px 0;">
                 <a href="${dashboardUrl}" class="btn-primary">Go to My Dashboard</a>
               </div>
+
+              <p style="margin: 24px 0 0 0; color: #64748b; font-size: 13px; text-align: center;">
+                Log in with the same email you used on GaITP Learning / TalentLMS.<br>
+                If you need to reset your password, use the "Forgot Password" link on the login page.
+              </p>
             </div>
             <div class="footer">
               <p><strong>CounselorReady</strong> — Learn. License. Lead.</p>
               <p>NBCC Approved Continuing Education Provider #7760</p>
+              <p>Formerly GaITP Learning on TalentLMS</p>
               <p><a href="${PLATFORM_URL}">counselorready.com</a></p>
             </div>
           </div>
@@ -483,16 +511,30 @@ export function getIncompleteCourseReminderEmail({ firstName, courses, dashboard
     text: `
 Hi ${firstName},
 
+IMPORTANT: GaITP Learning on TalentLMS has moved to CounselorReady!
+
+You originally registered with us as a learner on GaITP Learning through TalentLMS. We've upgraded to a brand-new platform — CounselorReady — with a better experience, the same NBCC-approved CE courses, and all of your previous credits and certificates already migrated to your account.
+
 You have ${courses.length} course${courses.length > 1 ? 's' : ''} waiting to be completed:
 
 ${courseListText}
+
+What's new on CounselorReady:
+- Your previously earned CE credits & certificates have been migrated
+- Credential tracker to manage licenses and renewal deadlines
+- Automatic CE hour logging when you complete courses
+- Downloadable certificates and audit-ready transcripts
 
 Complete your courses to earn your CE credits toward license renewal.
 
 Go to your dashboard: ${dashboardUrl}
 
+Log in with the same email you used on GaITP Learning / TalentLMS.
+If you need to reset your password, use the "Forgot Password" link on the login page.
+
 CounselorReady — Learn. License. Lead.
 NBCC Approved Provider #7760
+Formerly GaITP Learning on TalentLMS
     `
   };
 }
