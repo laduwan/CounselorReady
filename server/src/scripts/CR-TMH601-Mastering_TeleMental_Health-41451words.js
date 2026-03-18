@@ -159,7 +159,7 @@ const COURSE_DATA = {
 
   // Access & Pricing
   accessType: "paid",
-  price: 89.99,
+  price: 98.00,
   pricingTier: "premium",
 
   // Status — save as draft for review

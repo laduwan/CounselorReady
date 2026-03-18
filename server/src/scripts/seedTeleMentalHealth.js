@@ -62,7 +62,7 @@ const TELEMENTAL_COURSE = {
   instructor: "GA Integrated Therapeutic Perspectives LLC",
 
   // Course Settings
-  price: 89,
+  price: 98,
   isActive: true,
   isFeatured: true,
   estimatedMinutes: 360,
