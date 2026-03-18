@@ -13,6 +13,7 @@
 
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
+import { resolvePricingFromWordCount, countWordsFromCourse } from '../utils/pricingRules.js';
 dotenv.config();
 
 const MONGODB_URI = process.env.MONGODB_URI;

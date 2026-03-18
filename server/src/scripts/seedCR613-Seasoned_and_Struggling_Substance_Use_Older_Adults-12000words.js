@@ -10,6 +10,7 @@
  */
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
+import { resolvePricingFromWordCount, countWordsFromCourse } from '../utils/pricingRules.js';
 dotenv.config();
 const MONGODB_URI = process.env.MONGODB_URI;
 if (!MONGODB_URI) { console.error('❌ MONGODB_URI not found'); process.exit(1); }
@@ -30,9 +31,7 @@ const COURSE = {
   ceCategory: "Clinical",
   contentArea: "Addiction Counseling",
   level: "Intermediate",
-  accessType: "paid",
-  price: 39.99,
-  pricingTier: "standard",
+  // pricingTier, accessTier, accessType, price — auto-assigned from word count below
   status: "draft",
   isPublished: false,
   targetAudience: ["Licensed Professional Counselors (LPC/LPCC)", "Licensed Clinical Social Workers (LCSW)", "Licensed Marriage and Family Therapists (LMFT)", "Licensed Mental Health Counselors (LMHC)", "Psychologists", "Psychiatric Nurse Practitioners"],
@@ -271,6 +270,11 @@ async function seed() {
   console.log('\n' + '═'.repeat(60));
   console.log('  SEEDING CR-613: Seasoned and Struggling');
   console.log('═'.repeat(60));
+  // Auto-assign pricing fields from word count
+  const wordCount = countWordsFromCourse(COURSE);
+  const pricing = resolvePricingFromWordCount(wordCount);
+  Object.assign(COURSE, pricing);
+  console.log(`📊 Word count: ${wordCount} → ${pricing.pricingTier} ($${pricing.price})`);
   const existing = await Course.findOne({ slug: COURSE.slug });
   if (existing) { await Course.findOneAndReplace({ slug: COURSE.slug }, COURSE, { new: true }); console.log('✅ Updated'); }
   else { await Course.create(COURSE); console.log('✅ Created'); }

@@ -275,6 +275,11 @@ async function seed() {
   console.log('\n' + '═'.repeat(60));
   console.log('  SEEDING CR-612: Still Standing');
   console.log('═'.repeat(60));
+  // Auto-assign pricing fields from word count
+  const wordCount = countWordsFromCourse(COURSE);
+  const pricing = resolvePricingFromWordCount(wordCount);
+  Object.assign(COURSE, pricing);
+  console.log(`📊 Word count: ${wordCount} → ${pricing.pricingTier} ($${pricing.price})`);
   const existing = await Course.findOne({ slug: COURSE.slug });
   if (existing) { await Course.findOneAndReplace({ slug: COURSE.slug }, COURSE, { new: true }); console.log('✅ Updated'); }
   else { await Course.create(COURSE); console.log('✅ Created'); }

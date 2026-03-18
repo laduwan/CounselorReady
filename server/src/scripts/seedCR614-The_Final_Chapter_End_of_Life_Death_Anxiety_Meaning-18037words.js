@@ -7,6 +7,7 @@
 // CR-614: The Final Chapter — End-of-Life Counseling | 3 CE | NBCC ACEP #7760
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
+import { resolvePricingFromWordCount, countWordsFromCourse } from '../utils/pricingRules.js';
 dotenv.config();
 const MONGODB_URI = process.env.MONGODB_URI;
 if (!MONGODB_URI) { console.error('ERROR: MONGODB_URI not found'); process.exit(1); }
@@ -20,7 +21,8 @@ const COURSE = {
   instructor: 'GA Integrated Therapeutic Perspectives LLC',
   acepProvider: { name: 'GA Integrated Therapeutic Perspectives LLC', number: '7760' },
   category: 'Clinical', ceCategory: 'Clinical', contentArea: 'Geriatric Mental Health', level: 'Advanced',
-  accessType: 'paid', price: 54.99, pricingTier: 'standard', status: 'draft', isPublished: false,
+  // pricingTier, accessTier, accessType, price — auto-assigned from word count below
+  status: 'draft', isPublished: false,
   targetAudience: ['Licensed Professional Counselors (LPC/LPCC)', 'Licensed Clinical Social Workers (LCSW)', 'Licensed Marriage and Family Therapists (LMFT)', 'Psychologists', 'Psychiatric Nurse Practitioners', 'Hospice and palliative care clinicians'],
   objectives: [
     'Assess and distinguish clinically significant death anxiety from normative existential mortality awareness in older adult clients using validated instruments and theoretically grounded frameworks',
@@ -111,6 +113,11 @@ async function seed() {
   console.log('\n' + '='.repeat(60));
   console.log('  SEEDING CR-614: The Final Chapter');
   console.log('='.repeat(60));
+  // Auto-assign pricing fields from word count
+  const wordCount = countWordsFromCourse(COURSE);
+  const pricing = resolvePricingFromWordCount(wordCount);
+  Object.assign(COURSE, pricing);
+  console.log(`📊 Word count: ${wordCount} → ${pricing.pricingTier} ($${pricing.price})`);
   const existing = await Course.findOne({ slug: COURSE.slug });
   if (existing) { await Course.findOneAndReplace({ slug: COURSE.slug }, COURSE, { new: true }); console.log('Updated'); }
   else { await Course.create(COURSE); console.log('Created'); }
