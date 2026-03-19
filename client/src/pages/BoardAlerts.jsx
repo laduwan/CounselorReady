@@ -6,7 +6,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../services/api';
-import { Bell, AlertTriangle, Info, AlertCircle, Check, ExternalLink, Filter, ArrowLeft } from 'lucide-react';
+import { Bell, AlertTriangle, Info, AlertCircle, Check, ExternalLink, Filter, ArrowLeft, History, ChevronDown, ChevronUp, ArrowRight } from 'lucide-react';
 
 const severityConfig = {
   urgent: { icon: AlertTriangle, color: 'text-red-600', bg: 'bg-red-50', border: 'border-red-200', badge: 'bg-red-100 text-red-800' },
@@ -30,6 +30,7 @@ export default function BoardAlerts() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all'); // all, unread, urgent
   const [stateFilter, setStateFilter] = useState('all');
+  const [expandedHistory, setExpandedHistory] = useState({}); // { alertId: true/false }
 
   useEffect(() => { loadAlerts(); }, []);
 
@@ -137,6 +138,75 @@ export default function BoardAlerts() {
                       {alert.details && (
                         <p className="text-sm text-gray-500 mb-2">{alert.details}</p>
                       )}
+
+                      {/* Change History */}
+                      {alert.changeHistory?.length > 0 && (
+                        <div className="mb-2">
+                          <button
+                            onClick={() => setExpandedHistory(prev => ({ ...prev, [alert._id]: !prev[alert._id] }))}
+                            className="inline-flex items-center gap-1.5 text-xs font-medium text-burgundy-700 hover:text-burgundy-800 transition-colors"
+                          >
+                            <History className="w-3.5 h-3.5" />
+                            Amended {alert.changeHistory.length} {alert.changeHistory.length === 1 ? 'time' : 'times'}
+                            {' — last amended '}
+                            {new Date(alert.changeHistory[alert.changeHistory.length - 1].amendedAt).toLocaleDateString()}
+                            {expandedHistory[alert._id] ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                          </button>
+
+                          {expandedHistory[alert._id] && (
+                            <div className="mt-2 space-y-2">
+                              {[...alert.changeHistory].reverse().map((change, idx) => (
+                                <div key={idx} className="border border-gray-200 rounded-lg bg-white overflow-hidden">
+                                  <div className="px-3 py-2 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
+                                    <span className="text-xs font-medium text-gray-700">
+                                      Amendment — {new Date(change.amendedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+                                    </span>
+                                    {change.changeNote && (
+                                      <span className="text-xs text-gray-500 italic">{change.changeNote}</span>
+                                    )}
+                                  </div>
+                                  <div className="p-3">
+                                    {Object.entries(change.previousValues || {}).filter(([, v]) => v !== undefined && v !== null).map(([field, oldValue]) => {
+                                      const fieldLabel = {
+                                        title: 'Title', summary: 'Summary', details: 'Details',
+                                        category: 'Category', severity: 'Severity',
+                                        effectiveDate: 'Effective Date', sourceUrl: 'Source URL',
+                                        credentialTypes: 'Credential Types'
+                                      }[field] || field;
+
+                                      const formatValue = (val, fieldName) => {
+                                        if (val === null || val === undefined || val === '') return '(empty)';
+                                        if (fieldName === 'effectiveDate') return new Date(val).toLocaleDateString();
+                                        if (fieldName === 'category') return categoryLabels[val] || val;
+                                        if (Array.isArray(val)) return val.join(', ') || '(none)';
+                                        return String(val);
+                                      };
+
+                                      return (
+                                        <div key={field} className="mb-2 last:mb-0">
+                                          <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">{fieldLabel}</span>
+                                          <div className="grid grid-cols-[1fr_auto_1fr] gap-2 items-start mt-1">
+                                            <div className="px-2.5 py-1.5 rounded bg-red-50 border border-red-100">
+                                              <span className="text-xs font-medium text-red-700 block mb-0.5">Was</span>
+                                              <span className="text-sm text-red-900">{formatValue(oldValue, field)}</span>
+                                            </div>
+                                            <ArrowRight className="w-4 h-4 text-gray-400 mt-2.5" />
+                                            <div className="px-2.5 py-1.5 rounded bg-green-50 border border-green-100">
+                                              <span className="text-xs font-medium text-green-700 block mb-0.5">Now</span>
+                                              <span className="text-sm text-green-900">{formatValue(alert[field], field)}</span>
+                                            </div>
+                                          </div>
+                                        </div>
+                                      );
+                                    })}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )}
+
                       <div className="flex items-center gap-4 text-xs text-gray-500">
                         <span>{categoryLabels[alert.category] || alert.category}</span>
                         {alert.effectiveDate && <span>Effective: {new Date(alert.effectiveDate).toLocaleDateString()}</span>}
