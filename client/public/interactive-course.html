@@ -696,257 +696,330 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
 .cr-kc-submit:disabled { opacity: 0.4; cursor: not-allowed; }
 
 /* ═══════════════════════════════════════════════════════════════
-   INLINE SUPPLEMENTAL PILLS (funFactStat, funFactFreeform, knowledgeCheckInline)
+   INLINE PILLS — funFactStat, funFactFreeform, knowledgeCheckInline
    ═══════════════════════════════════════════════════════════════ */
 
-/* Pill container — sits inline after preceding text block */
-.cr-pill-wrap {
-  margin-top: -8px;
-  margin-bottom: 24px;
-}
-
+/* ─── Shared pill base ─── */
 .cr-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 14px;
-  border-radius: 20px;
-  border: 1.5px solid;
-  font-family: var(--cr-font-body);
-  font-size: 0.85em;
-  font-weight: 600;
-  cursor: pointer;
-  transition: opacity var(--cr-transition), box-shadow var(--cr-transition);
-  line-height: 1.4;
+  margin: 1.25rem 0;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 2px solid transparent;
+  max-width: 680px;
 }
-.cr-pill:hover { opacity: 0.85; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-.cr-pill:focus-visible { outline: 2px solid var(--cr-focus); outline-offset: 2px; }
 
-/* Amber — funFactStat */
-.cr-pill--amber {
+.cr-pill__trigger {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 12px 16px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-family: var(--cr-font-body);
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-align: left;
+  transition: opacity 0.15s;
+}
+.cr-pill__trigger:hover { opacity: 0.85; }
+.cr-pill__trigger:focus-visible {
+  outline: 3px solid var(--cr-gold);
+  outline-offset: 2px;
+}
+
+.cr-pill__icon { font-size: 1.05em; }
+.cr-pill__label { flex: 1; }
+.cr-pill__chevron {
+  font-size: 0.75em;
+  transition: transform 0.2s;
+}
+.cr-pill--open .cr-pill__chevron { transform: rotate(180deg); }
+
+.cr-pill__body {
+  padding: 16px 20px 20px;
+  border-top: 1px solid rgba(0,0,0,0.08);
+  animation: pillSlideIn 0.18s ease-out;
+}
+@keyframes pillSlideIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ─── Stat pill (amber) ─── */
+.cr-pill--stat {
   background: #FFF8E7;
   border-color: #B8860B;
-  color: #412402;
+}
+.cr-pill--stat .cr-pill__trigger { color: #7A5800; }
+.cr-pill__stat-figure {
+  font-family: var(--cr-font-display);
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: #B8860B;
+  line-height: 1.1;
+  margin-bottom: 6px;
+}
+.cr-pill__stat-body {
+  font-size: 0.95rem;
+  color: #5a4000;
+  line-height: 1.55;
+  margin: 0 0 8px;
+}
+.cr-pill__source {
+  font-size: 0.78rem;
+  color: #9a7a30;
+  font-style: italic;
+  margin: 0;
 }
 
-/* Purple — funFactFreeform */
-.cr-pill--purple {
+/* ─── Freeform pill (purple) ─── */
+.cr-pill--freeform {
   background: #F5F0FA;
   border-color: #7B4EA0;
-  color: #3D1A6B;
 }
-
-/* Burgundy — knowledgeCheckInline */
-.cr-pill--burgundy {
-  background: #F5E8EC;
-  border-color: #6B1D34;
-  color: #3D0A1A;
+.cr-pill--freeform .cr-pill__trigger { color: #4B1F72; }
+.cr-pill__prompt {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #3a1560;
+  margin: 0 0 6px;
 }
-
-/* High contrast overrides */
-[data-high-contrast="true"] .cr-pill {
-  border-width: 2px;
-  color: #000;
-  background: #fff;
-}
-
-/* Dark mode overrides */
-[data-dark-mode="true"] .cr-pill--amber { background: #3D2E10; color: #FFD866; border-color: #B8860B; }
-[data-dark-mode="true"] .cr-pill--purple { background: #2A1840; color: #C9A8E8; border-color: #7B4EA0; }
-[data-dark-mode="true"] .cr-pill--burgundy { background: #3D1020; color: #E8A0B4; border-color: #8B3A54; }
-
-/* ─── Pill Modal Overlay ─── */
-.cr-pill-modal-backdrop {
-  position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0,0,0,0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 10000;
-  animation: crPillFadeIn 0.2s ease;
-}
-@keyframes crPillFadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .cr-pill-modal-backdrop { animation: none; }
-}
-
-.cr-pill-modal {
-  background: var(--cr-surface, #fff);
-  border-radius: 16px;
-  padding: 28px 32px;
-  max-width: 520px;
-  width: 92%;
-  max-height: 85vh;
-  overflow-y: auto;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.25);
-  position: relative;
-  animation: crPillSlideUp 0.25s ease;
-}
-@keyframes crPillSlideUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-@media (prefers-reduced-motion: reduce) {
-  .cr-pill-modal { animation: none; }
-}
-
-.cr-pill-modal-close {
-  position: absolute;
-  top: 12px; right: 14px;
-  background: none; border: none;
-  font-size: 1.4em; cursor: pointer;
-  color: var(--cr-text-muted);
-  width: 36px; height: 36px;
-  display: flex; align-items: center; justify-content: center;
-  border-radius: 50%;
-}
-.cr-pill-modal-close:hover { background: var(--cr-border); }
-.cr-pill-modal-close:focus-visible { outline: 2px solid var(--cr-focus); outline-offset: 2px; }
-
-/* ─── Fun Fact Stat Modal ─── */
-.cr-ffs-stat {
-  font-family: var(--cr-font-display);
-  font-size: 2.5em;
-  font-weight: 700;
-  color: #B8860B;
-  margin-bottom: 12px;
-  line-height: 1.2;
-}
-.cr-ffs-body {
-  font-size: 1em;
-  color: var(--cr-text);
-  line-height: 1.7;
-  margin-bottom: 14px;
-}
-.cr-ffs-source {
-  font-size: 0.82em;
-  color: var(--cr-text-muted);
+.cr-pill__hint {
+  font-size: 0.85rem;
+  color: #7B4EA0;
+  margin: 0 0 12px;
   font-style: italic;
 }
-
-/* ─── Fun Fact Freeform Modal ─── */
-.cr-fff-prompt {
-  font-family: var(--cr-font-display);
-  font-size: 1.15em;
-  font-weight: 600;
-  color: #3D1A6B;
-  margin-bottom: 8px;
-}
-.cr-fff-hint {
-  font-size: 0.82em;
-  color: var(--cr-text-muted);
-  margin-bottom: 14px;
-}
-.cr-fff-input-row {
+.cr-pill__input-row {
   display: flex;
   gap: 8px;
-  margin-bottom: 14px;
+  align-items: center;
+  margin-bottom: 10px;
 }
-.cr-fff-input {
+.cr-pill__text-input {
   flex: 1;
-  padding: 10px 14px;
-  border: 2px solid var(--cr-border);
-  border-radius: 8px;
-  font-size: 0.95em;
+  padding: 8px 12px;
+  border: 1.5px solid #C4A8D8;
+  border-radius: 6px;
   font-family: var(--cr-font-body);
-  background: var(--cr-surface);
+  font-size: 0.95rem;
+  background: #fff;
   color: var(--cr-text);
+  transition: border-color 0.15s;
 }
-.cr-fff-input:focus { border-color: #7B4EA0; outline: none; box-shadow: 0 0 0 3px rgba(123,78,160,0.15); }
-.cr-fff-submit {
-  padding: 10px 22px;
+.cr-pill__text-input:focus {
+  outline: none;
+  border-color: #7B4EA0;
+  box-shadow: 0 0 0 3px rgba(123,78,160,0.18);
+}
+.cr-pill__text-input:disabled { opacity: 0.6; background: #f0eaf7; }
+
+.cr-pill__submit-btn {
+  padding: 8px 14px;
+  border-radius: 6px;
+  border: none;
   background: #7B4EA0;
   color: #fff;
-  border: none;
-  border-radius: 8px;
+  font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
   white-space: nowrap;
+  transition: background 0.15s;
 }
-.cr-fff-submit:hover { background: #6A3F8C; }
-.cr-fff-submit:disabled { opacity: 0.4; cursor: not-allowed; }
-.cr-fff-bar-track {
-  height: 8px;
-  background: var(--cr-border);
-  border-radius: 4px;
-  overflow: hidden;
-  margin-bottom: 10px;
-}
-.cr-fff-bar-fill {
-  height: 100%;
-  border-radius: 4px;
-  transition: width 0.4s ease;
-}
-@media (prefers-reduced-motion: reduce) {
-  .cr-fff-bar-fill { transition: none; }
-}
-.cr-fff-feedback {
-  font-size: 0.95em;
-  line-height: 1.6;
-  padding: 12px 14px;
-  border-radius: 10px;
-  margin-bottom: 10px;
-}
-.cr-fff-feedback--hit { background: #F0FFF4; color: #2E7D4F; border: 1px solid #C6F6D5; }
-.cr-fff-feedback--close { background: #FFFBEB; color: #92400E; border: 1px solid #FDE68A; }
-.cr-fff-feedback--miss { background: #FFF5F5; color: #C0392B; border: 1px solid #FED7D7; }
-.cr-fff-reveal {
-  font-size: 0.9em;
-  color: var(--cr-text-secondary);
-  padding: 10px 14px;
-  background: var(--cr-bg, #F8F7F4);
-  border-radius: 8px;
-  border-left: 3px solid #7B4EA0;
+.cr-pill__submit-btn:hover:not(:disabled) { background: #5c3578; }
+.cr-pill__submit-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.cr-pill__submit-btn:focus-visible {
+  outline: 3px solid var(--cr-gold);
+  outline-offset: 2px;
 }
 
-/* ─── Knowledge Check Inline Modal ─── */
-.cr-kci-question {
-  font-family: var(--cr-font-display);
-  font-size: 1.15em;
-  font-weight: 600;
-  color: var(--cr-burgundy);
-  margin-bottom: 16px;
-}
-.cr-kci-options { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
-.cr-kci-option {
-  display: flex; align-items: flex-start; gap: 12px;
-  padding: 12px 14px;
-  border: 2px solid var(--cr-border);
-  border-radius: 10px;
+.cr-pill__reveal-btn {
+  margin-top: 6px;
+  background: none;
+  border: 1px solid #7B4EA0;
+  color: #7B4EA0;
+  padding: 5px 10px;
+  border-radius: 5px;
+  font-size: 0.85rem;
   cursor: pointer;
-  background: var(--cr-surface);
-  transition: all var(--cr-transition);
-  font-size: 0.95em;
-  min-height: 44px;
+  transition: background 0.15s;
 }
-.cr-kci-option:hover:not(.answered) { border-color: var(--cr-burgundy-light); background: var(--cr-burgundy-faded); }
-.cr-kci-option:focus-visible { outline: 2px solid var(--cr-focus); outline-offset: 2px; }
-.cr-kci-option .cr-kci-radio {
-  width: 20px; height: 20px; border-radius: 50%;
-  border: 2px solid var(--cr-border);
-  flex-shrink: 0; margin-top: 1px;
-  display: flex; align-items: center; justify-content: center;
-  transition: all var(--cr-transition);
+.cr-pill__reveal-btn:hover { background: #f0e8fa; }
+.cr-pill__reveal-text {
+  margin-top: 8px;
+  padding: 10px 14px;
+  background: #ede6f5;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  color: #3a1560;
 }
-.cr-kci-option.selected .cr-kci-radio { border-color: var(--cr-burgundy); background: var(--cr-burgundy); }
-.cr-kci-option.correct { border-color: var(--cr-success); background: #F0FFF4; }
-.cr-kci-option.correct .cr-kci-radio { border-color: var(--cr-success); background: var(--cr-success); }
-.cr-kci-option.incorrect { border-color: var(--cr-danger); background: #FFF5F5; }
-.cr-kci-option.incorrect .cr-kci-radio { border-color: var(--cr-danger); background: var(--cr-danger); }
-.cr-kci-feedback {
-  padding: 12px 14px;
+
+/* ─── KCI pill (burgundy) ─── */
+.cr-pill--kci {
+  background: #F5E8EC;
+  border-color: #6B1D34;
+}
+.cr-pill--kci .cr-pill__trigger { color: #4a0f20; }
+.cr-pill__question {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #3a0a18;
+  margin: 0 0 12px;
+}
+.cr-pill__kci-options { display: flex; flex-direction: column; gap: 8px; }
+.cr-pill__kci-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 7px;
+  border: 1.5px solid #d4a0b0;
+  background: #fff;
+  cursor: pointer;
+  font-size: 0.93rem;
+  color: var(--cr-text);
+  transition: border-color 0.15s, background 0.15s;
+}
+.cr-pill__kci-option:hover:not(.answered) {
+  border-color: #6B1D34;
+  background: #fdf2f5;
+}
+.cr-pill__kci-option.selected {
+  border-color: #6B1D34;
+  background: #fce8ee;
+}
+.cr-pill__kci-option.answered { cursor: default; }
+.cr-pill__kci-option.correct {
+  border-color: #2d6a4f !important;
+  background: #e8f5f0 !important;
+}
+.cr-pill__kci-option.incorrect {
+  border-color: #c62828 !important;
+  background: #fdecea !important;
+}
+.cr-pill__kci-radio {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid #c4849a;
+  flex-shrink: 0;
+  margin-top: 2px;
+  transition: border-color 0.15s, background 0.15s;
+}
+.cr-pill__kci-option.selected .cr-pill__kci-radio {
+  border-color: #6B1D34;
+  background: #6B1D34;
+}
+.cr-pill__kci-option.correct .cr-pill__kci-radio { border-color: #2d6a4f; background: #2d6a4f; }
+.cr-pill__kci-option.incorrect .cr-pill__kci-radio { border-color: #c62828; background: #c62828; }
+
+.cr-pill--kci .cr-pill__submit-btn { background: #6B1D34; margin-top: 14px; }
+.cr-pill--kci .cr-pill__submit-btn:hover:not(:disabled) { background: #4a0f20; }
+
+/* ─── Shared feedback states ─── */
+.cr-pill__feedback {
+  margin-top: 10px;
+  padding: 10px 14px;
+  border-radius: 6px;
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+.cr-pill__feedback--correct {
+  background: #e8f5f0;
+  color: #1b4d38;
+  border-left: 4px solid #2d6a4f;
+}
+.cr-pill__feedback--close {
+  background: #fff8e7;
+  color: #5a4000;
+  border-left: 4px solid #B8860B;
+}
+.cr-pill__feedback--miss {
+  background: #fdecea;
+  color: #7a1010;
+  border-left: 4px solid #c62828;
+}
+
+/* ─── Pill instructions (teal static banner) ─── */
+.cr-pill-instructions {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  background: #E8F5F0;
+  border: 2px solid #2D6A4F;
   border-radius: 10px;
-  font-size: 0.92em;
-  line-height: 1.6;
-  display: none;
+  padding: 16px 20px;
+  margin: 1.25rem 0;
+  max-width: 680px;
 }
-.cr-kci-feedback.show { display: block; }
-.cr-kci-feedback--correct { background: #F0FFF4; color: #2E7D4F; border: 1px solid #C6F6D5; }
-.cr-kci-feedback--incorrect { background: #FFF5F5; color: #C0392B; border: 1px solid #FED7D7; }
+.cr-pill-instructions__icon {
+  font-size: 1.3rem;
+  color: #2D6A4F;
+  flex-shrink: 0;
+  line-height: 1;
+  margin-top: 2px;
+}
+.cr-pill-instructions__body {
+  font-size: 0.93rem;
+  line-height: 1.6;
+  color: #1b4d38;
+}
+.cr-pill-instructions__body p { margin: 0 0 8px; }
+.cr-pill-instructions__body p:last-child { margin: 0; }
+.cr-pill-instructions__body ul { margin: 6px 0 8px 18px; padding: 0; }
+.cr-pill-instructions__body li { margin-bottom: 4px; }
+
+/* ─── Dark mode overrides ─── */
+[data-theme="dark"] .cr-pill--stat { background: #3a2e0a; border-color: #d4a835; }
+[data-theme="dark"] .cr-pill--stat .cr-pill__trigger { color: #ffd666; }
+[data-theme="dark"] .cr-pill__stat-figure { color: #ffd666; }
+[data-theme="dark"] .cr-pill__stat-body { color: #e8d08a; }
+
+[data-theme="dark"] .cr-pill--freeform { background: #2a1840; border-color: #a97fd4; }
+[data-theme="dark"] .cr-pill--freeform .cr-pill__trigger { color: #d4a8f5; }
+[data-theme="dark"] .cr-pill__text-input { background: #1e1030; color: #f0e4ff; border-color: #7B4EA0; }
+
+[data-theme="dark"] .cr-pill--kci { background: #2a0f18; border-color: #c4607a; }
+[data-theme="dark"] .cr-pill--kci .cr-pill__trigger { color: #f5a0b5; }
+[data-theme="dark"] .cr-pill__kci-option { background: #1e0810; border-color: #7a3050; color: #f0d0d8; }
+[data-theme="dark"] .cr-pill__kci-option.selected { background: #3a0f1e; }
+
+[data-theme="dark"] .cr-pill-instructions { background: #0f2a1f; border-color: #4A7C59; }
+[data-theme="dark"] .cr-pill-instructions__body { color: #a8dcc0; }
+
+/* Also support data-dark-mode attribute */
+[data-dark-mode="true"] .cr-pill--stat { background: #3a2e0a; border-color: #d4a835; }
+[data-dark-mode="true"] .cr-pill--stat .cr-pill__trigger { color: #ffd666; }
+[data-dark-mode="true"] .cr-pill__stat-figure { color: #ffd666; }
+[data-dark-mode="true"] .cr-pill__stat-body { color: #e8d08a; }
+
+[data-dark-mode="true"] .cr-pill--freeform { background: #2a1840; border-color: #a97fd4; }
+[data-dark-mode="true"] .cr-pill--freeform .cr-pill__trigger { color: #d4a8f5; }
+[data-dark-mode="true"] .cr-pill__text-input { background: #1e1030; color: #f0e4ff; border-color: #7B4EA0; }
+
+[data-dark-mode="true"] .cr-pill--kci { background: #2a0f18; border-color: #c4607a; }
+[data-dark-mode="true"] .cr-pill--kci .cr-pill__trigger { color: #f5a0b5; }
+[data-dark-mode="true"] .cr-pill__kci-option { background: #1e0810; border-color: #7a3050; color: #f0d0d8; }
+[data-dark-mode="true"] .cr-pill__kci-option.selected { background: #3a0f1e; }
+
+[data-dark-mode="true"] .cr-pill-instructions { background: #0f2a1f; border-color: #4A7C59; }
+[data-dark-mode="true"] .cr-pill-instructions__body { color: #a8dcc0; }
+
+/* ─── High contrast overrides ─── */
+[data-high-contrast] .cr-pill { border-width: 3px; }
+[data-high-contrast="true"] .cr-pill { border-width: 3px; }
+[data-high-contrast] .cr-pill__kci-option { border-width: 2px; }
+[data-high-contrast="true"] .cr-pill__kci-option { border-width: 2px; }
+[data-high-contrast] .cr-pill__feedback { border-left-width: 6px; }
+[data-high-contrast="true"] .cr-pill__feedback { border-left-width: 6px; }
+
+/* ─── Reduced motion ─── */
+@media (prefers-reduced-motion: reduce) {
+  .cr-pill__body { animation: none; }
+  .cr-pill__chevron { transition: none; }
+}
 
 /* ═══════════════════════════════════════════════════════════════
    MATCHING EXERCISE
@@ -3512,6 +3585,7 @@ function renderBlock(block, index) {
     case 'funFactStat': return renderFunFactStat(wrap, block, index);
     case 'funFactFreeform': return renderFunFactFreeform(wrap, block, index);
     case 'knowledgeCheckInline': return renderKnowledgeCheckInline(wrap, block, index);
+    case 'pillInstructions': return renderPillInstructions(wrap, block);
     default:
       wrap.innerHTML = `<div class="cr-card" style="border-left:4px solid var(--cr-gold)">
         <p style="font-size:0.9em;color:var(--cr-text-muted)">Unsupported block type: <code>${esc(block.type)}</code></p>
@@ -4319,274 +4393,297 @@ function renderQuizBlock(wrap, block, blockIndex) {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// INLINE SUPPLEMENTAL BLOCKS (funFactStat, funFactFreeform, knowledgeCheckInline)
+// INLINE SUPPLEMENTAL PILLS (funFactStat, funFactFreeform, knowledgeCheckInline, pillInstructions)
 // ═══════════════════════════════════════════════════════════════
 
-// ─── State maps ───
-const _kcInlineState = new Map(); // blockIndex → { selected, answered }
-const _fffState = new Map();      // blockIndex → { answered: bool, result, input }
-
-// ─── Fuzzy matching engine ───
-function normalizeAnswer(s) {
-  return s.toLowerCase()
-    .replace(/%/g, ' percent ')
-    .replace(/ninety[\s-]*five/g, '95')
-    .replace(/twenty[\s-]*four/g, '24')
-    .replace(/[^a-z0-9 ]/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
+// ─── FUN FACT STAT (amber pill) ───
+function renderFunFactStat(wrap, block, blockIndex) {
+  const id = `ffs-${currentSectionIndex}-${blockIndex}`;
+  wrap.innerHTML = `
+    <div class="cr-pill cr-pill--stat" id="${id}" aria-expanded="false">
+      <button class="cr-pill__trigger" aria-controls="${id}-body"
+              data-action="togglePill" data-target="${id}"
+              aria-expanded="false">
+        <span class="cr-pill__icon" aria-hidden="true">★</span>
+        <span class="cr-pill__label">Fun fact</span>
+        <span class="cr-pill__chevron" aria-hidden="true">▾</span>
+      </button>
+      <div class="cr-pill__body" id="${id}-body" role="region" hidden>
+        <div class="cr-pill__stat-figure" aria-label="Statistic: ${esc(block.stat || '')}">${esc(block.stat || '')}</div>
+        <p class="cr-pill__stat-body">${esc(block.body || '')}</p>
+        ${block.source ? `<p class="cr-pill__source">Source: ${esc(block.source)}</p>` : ''}
+      </div>
+    </div>`;
+  return wrap;
 }
 
-function levenshtein(a, b) {
+// ─── FUN FACT FREEFORM (purple pill) ───
+function renderFunFactFreeform(wrap, block, blockIndex) {
+  const id = `fff-${currentSectionIndex}-${blockIndex}`;
+  wrap.innerHTML = `
+    <div class="cr-pill cr-pill--freeform" id="${id}" aria-expanded="false">
+      <button class="cr-pill__trigger" aria-controls="${id}-body"
+              data-action="togglePill" data-target="${id}"
+              aria-expanded="false">
+        <span class="cr-pill__icon" aria-hidden="true">✦</span>
+        <span class="cr-pill__label">Quick recall</span>
+        <span class="cr-pill__chevron" aria-hidden="true">▾</span>
+      </button>
+      <div class="cr-pill__body" id="${id}-body" role="region" hidden>
+        <p class="cr-pill__prompt">${esc(block.prompt || '')}</p>
+        ${block.hint ? `<p class="cr-pill__hint">Hint: ${esc(block.hint)}</p>` : ''}
+        <div class="cr-pill__input-row">
+          <input type="text" class="cr-pill__text-input"
+                 id="${id}-input"
+                 placeholder="Type your answer…"
+                 aria-label="Answer input"
+                 data-action="fffKeydown" data-target="${id}"
+                 autocomplete="off" autocorrect="off" spellcheck="false">
+          <button class="cr-pill__submit-btn"
+                  data-action="submitFreeform" data-target="${id}"
+                  aria-label="Submit answer">Submit</button>
+        </div>
+        <div class="cr-pill__feedback" id="${id}-feedback" role="alert" aria-live="polite" hidden></div>
+        <button class="cr-pill__reveal-btn" id="${id}-reveal"
+                data-action="revealFreeform" data-target="${id}"
+                hidden>Show answer</button>
+        <div class="cr-pill__reveal-text" id="${id}-reveal-text" hidden>
+          <strong>Answer:</strong> ${esc(block.reveal || '')}
+        </div>
+      </div>
+    </div>`;
+  // Store block data on element for handlers
+  const el = wrap.querySelector('.cr-pill--freeform');
+  el._fffData = block;
+  return wrap;
+}
+
+// ─── KNOWLEDGE CHECK INLINE (burgundy pill) ───
+function renderKnowledgeCheckInline(wrap, block, blockIndex) {
+  const id = `kci-${currentSectionIndex}-${blockIndex}`;
+  const options = block.options || [];
+  const correctIdx = typeof block.correctAnswer === 'number' ? block.correctAnswer : 0;
+
+  let optHtml = options.map((opt, i) =>
+    `<div class="cr-pill__kci-option" data-idx="${i}"
+          data-action="selectKCI" data-target="${id}"
+          role="radio" aria-checked="false" tabindex="0">
+       <span class="cr-pill__kci-radio" aria-hidden="true"></span>
+       <span>${esc(typeof opt === 'string' ? opt : opt.text || '')}</span>
+     </div>`
+  ).join('');
+
+  wrap.innerHTML = `
+    <div class="cr-pill cr-pill--kci" id="${id}" aria-expanded="false"
+         data-correct="${correctIdx}">
+      <button class="cr-pill__trigger" aria-controls="${id}-body"
+              data-action="togglePill" data-target="${id}"
+              aria-expanded="false">
+        <span class="cr-pill__icon" aria-hidden="true">◆</span>
+        <span class="cr-pill__label">Check your understanding</span>
+        <span class="cr-pill__chevron" aria-hidden="true">▾</span>
+      </button>
+      <div class="cr-pill__body" id="${id}-body" role="region" hidden>
+        <p class="cr-pill__question">${esc(block.question || '')}</p>
+        <div class="cr-pill__kci-options" role="radiogroup"
+             aria-label="Answer options">
+          ${optHtml}
+        </div>
+        <button class="cr-pill__submit-btn" disabled
+                data-action="submitKCI" data-target="${id}"
+                aria-label="Check answer">Check answer</button>
+        <div class="cr-pill__feedback" id="${id}-feedback" role="alert"
+             aria-live="polite" hidden></div>
+      </div>
+    </div>`;
+  // Store feedback strings
+  const el = wrap.querySelector('.cr-pill--kci');
+  el._kciData = block;
+  return wrap;
+}
+
+// ─── PILL INSTRUCTIONS (static teal info banner) ───
+function renderPillInstructions(wrap, block) {
+  wrap.innerHTML = `
+    <div class="cr-pill-instructions" role="note" aria-label="Interactive element instructions">
+      <span class="cr-pill-instructions__icon" aria-hidden="true">ℹ</span>
+      <div class="cr-pill-instructions__body">${block.body || ''}</div>
+    </div>`;
+  return wrap;
+}
+
+// ─── PILL SHARED: TOGGLE OPEN/CLOSE ─────────────────────────────
+function togglePill(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const body = el.querySelector('.cr-pill__body');
+  const trigger = el.querySelector('.cr-pill__trigger');
+  const open = el.getAttribute('aria-expanded') === 'true';
+  el.setAttribute('aria-expanded', !open);
+  trigger.setAttribute('aria-expanded', !open);
+  if (open) {
+    body.hidden = true;
+    el.classList.remove('cr-pill--open');
+  } else {
+    body.hidden = false;
+    el.classList.add('cr-pill--open');
+    srAnnounce('Pill opened');
+  }
+}
+
+// ─── FREEFORM: FUZZY MATCH ENGINE ─────────────────────────────────
+function _fffNormalize(s) {
+  return s.toLowerCase()
+    .replace(/%/g, ' percent')
+    .replace(/\bone\b/g,'1').replace(/\btwo\b/g,'2').replace(/\bthree\b/g,'3')
+    .replace(/\bfour\b/g,'4').replace(/\bfive\b/g,'5').replace(/\bsix\b/g,'6')
+    .replace(/\bseven\b/g,'7').replace(/\beight\b/g,'8').replace(/\bnine\b/g,'9')
+    .replace(/\bten\b/g,'10').replace(/\bfifteen\b/g,'15').replace(/\btwenty\b/g,'20')
+    .replace(/\bsixty\b/g,'60').replace(/\bseventy[\s-]?five\b/g,'75')
+    .replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
+function _fffLevenshtein(a, b) {
   const m = a.length, n = b.length;
-  const dp = Array.from({length: m+1}, (_, i) => [i, ...Array(n).fill(0)]);
-  for (let j = 0; j <= n; j++) dp[0][j] = j;
+  const dp = Array.from({length: m+1}, (_, i) =>
+    Array.from({length: n+1}, (_, j) => i === 0 ? j : j === 0 ? i : 0));
   for (let i = 1; i <= m; i++)
     for (let j = 1; j <= n; j++)
-      dp[i][j] = a[i-1] === b[j-1] ? dp[i-1][j-1] : 1 + Math.min(dp[i-1][j], dp[i][j-1], dp[i-1][j-1]);
+      dp[i][j] = a[i-1] === b[j-1]
+        ? dp[i-1][j-1]
+        : 1 + Math.min(dp[i-1][j], dp[i][j-1], dp[i-1][j-1]);
   return dp[m][n];
 }
 
-function matchScore(input, targets) {
-  const n = normalizeAnswer(input);
-  let best = 0;
-  for (const t of targets) {
-    const nt = normalizeAnswer(t);
-    if (n === nt) return 1.0;
-    if (n.includes(nt) || nt.includes(n)) best = Math.max(best, 0.9);
-    const dist = levenshtein(n, nt);
-    const sim = 1 - (dist / Math.max(n.length, nt.length, 1));
-    best = Math.max(best, sim);
+function _fffSim(a, b) {
+  const maxLen = Math.max(a.length, b.length);
+  return maxLen === 0 ? 1 : 1 - _fffLevenshtein(a, b) / maxLen;
+}
+
+function _fffCheck(input, block) {
+  // Returns: 'hit' | 'close' | 'miss'
+  const norm = _fffNormalize(input);
+  const accepted = (block.accepted || []).map(_fffNormalize);
+  const close    = (block.close || []).map(_fffNormalize);
+
+  // Exact / contains match against accepted[]
+  for (const a of accepted) {
+    if (norm === a || norm.includes(a) || a.includes(norm)) return 'hit';
   }
-  return best;
+  // Levenshtein against accepted[] — hit threshold 0.78
+  for (const a of accepted) {
+    if (_fffSim(norm, a) >= 0.78) return 'hit';
+  }
+  // Exact / contains match against close[]
+  for (const c of close) {
+    if (norm === c || norm.includes(c) || c.includes(norm)) return 'close';
+  }
+  // Levenshtein against close[] — close threshold 0.80
+  for (const c of close) {
+    if (_fffSim(norm, c) >= 0.80) return 'close';
+  }
+  // Low-confidence hit against accepted — treat as close
+  for (const a of accepted) {
+    if (_fffSim(norm, a) >= 0.55) return 'close';
+  }
+  return 'miss';
 }
 
-// ─── Shared: open pill modal ───
-function openPillModal(contentHtml, onClose) {
-  const backdrop = document.createElement('div');
-  backdrop.className = 'cr-pill-modal-backdrop';
-  backdrop.setAttribute('role', 'dialog');
-  backdrop.setAttribute('aria-modal', 'true');
-  backdrop.innerHTML = `<div class="cr-pill-modal">
-    <button class="cr-pill-modal-close" aria-label="Close" title="Close">&times;</button>
-    <div class="cr-pill-modal-body">${contentHtml}</div>
-  </div>`;
-  document.body.appendChild(backdrop);
+function submitFreeform(id) {
+  const el = document.getElementById(id);
+  if (!el || !el._fffData) return;
+  const input = el.querySelector('.cr-pill__text-input');
+  const feedbackEl = el.querySelector('.cr-pill__feedback');
+  const revealBtn = el.querySelector('.cr-pill__reveal-btn');
+  const userInput = (input?.value || '').trim();
+  if (!userInput) return;
 
-  const closeModal = () => {
-    backdrop.remove();
-    if (onClose) onClose();
-  };
+  const block = el._fffData;
+  const result = _fffCheck(userInput, block);
+  const feedbacks = block.feedbacks || {};
 
-  backdrop.querySelector('.cr-pill-modal-close').addEventListener('click', closeModal);
-  backdrop.addEventListener('click', (e) => { if (e.target === backdrop) closeModal(); });
+  let msg = '';
+  if (result === 'hit') {
+    msg = feedbacks.hit || 'Correct!';
+    feedbackEl.className = 'cr-pill__feedback cr-pill__feedback--correct';
+  } else if (result === 'close') {
+    msg = (feedbacks.close || 'Close — {input}').replace('{input}', esc(userInput));
+    feedbackEl.className = 'cr-pill__feedback cr-pill__feedback--close';
+  } else {
+    msg = feedbacks.miss || 'Not quite.';
+    feedbackEl.className = 'cr-pill__feedback cr-pill__feedback--miss';
+  }
 
-  const escHandler = (e) => {
-    if (e.key === 'Escape') {
-      closeModal();
-      document.removeEventListener('keydown', escHandler);
-    }
-  };
-  document.addEventListener('keydown', escHandler);
+  feedbackEl.innerHTML = msg;
+  feedbackEl.hidden = false;
+  if (revealBtn) revealBtn.hidden = false;
+  if (input) input.disabled = true;
+  const submitBtn = el.querySelector('.cr-pill__submit-btn');
+  if (submitBtn) submitBtn.disabled = true;
 
-  // Focus the close button for keyboard users
-  setTimeout(() => backdrop.querySelector('.cr-pill-modal-close')?.focus(), 50);
-
-  return { backdrop, closeModal };
+  srAnnounce(result === 'hit' ? 'Correct!' : result === 'close' ? 'Close answer' : 'Incorrect. See feedback.');
 }
 
-// ─── 1. funFactStat ───
-function renderFunFactStat(wrap, block, blockIndex) {
-  wrap.className = 'cr-pill-wrap';
-  wrap.dataset.blockType = 'funFactStat';
-  wrap.innerHTML = `<button class="cr-pill cr-pill--amber" aria-label="Fun fact — click to expand" tabindex="0">★ Fun fact ▾</button>`;
+function revealFreeform(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const revealText = el.querySelector('.cr-pill__reveal-text');
+  const revealBtn = el.querySelector('.cr-pill__reveal-btn');
+  if (revealText) revealText.hidden = false;
+  if (revealBtn) revealBtn.hidden = true;
+}
 
-  wrap.querySelector('.cr-pill').addEventListener('click', () => {
-    openPillModal(`
-      <div class="cr-ffs-stat">${esc(block.stat || '')}</div>
-      <div class="cr-ffs-body">${esc(block.body || '')}</div>
-      ${block.source ? `<div class="cr-ffs-source">Source: ${esc(block.source)}</div>` : ''}
-    `);
+// ─── KCI: SELECT OPTION ─────────────────────────────────────────
+function selectKCI(id, idx) {
+  const el = document.getElementById(id);
+  if (!el || el.dataset.answered) return;
+  el.querySelectorAll('.cr-pill__kci-option').forEach(o => {
+    o.classList.remove('selected');
+    o.setAttribute('aria-checked', 'false');
+  });
+  const opt = el.querySelector(`.cr-pill__kci-option[data-idx="${idx}"]`);
+  if (opt) {
+    opt.classList.add('selected');
+    opt.setAttribute('aria-checked', 'true');
+  }
+  const btn = el.querySelector('.cr-pill__submit-btn');
+  if (btn) btn.disabled = false;
+}
+
+// ─── KCI: SUBMIT ANSWER ─────────────────────────────────────────
+function submitKCI(id) {
+  const el = document.getElementById(id);
+  if (!el || el.dataset.answered || !el._kciData) return;
+  el.dataset.answered = 'true';
+
+  const correctIdx = parseInt(el.dataset.correct, 10);
+  const selected = el.querySelector('.cr-pill__kci-option.selected');
+  const selectedIdx = selected ? parseInt(selected.dataset.idx, 10) : -1;
+  const isCorrect = selectedIdx === correctIdx;
+  const block = el._kciData;
+  const feedbacks = block.feedback || {};
+
+  // Mark options
+  el.querySelectorAll('.cr-pill__kci-option').forEach((o, i) => {
+    o.classList.add('answered');
+    if (i === correctIdx) o.classList.add('correct');
+    else if (i === selectedIdx && !isCorrect) o.classList.add('incorrect');
   });
 
-  return wrap;
-}
+  const feedbackEl = el.querySelector('.cr-pill__feedback');
+  if (feedbackEl) {
+    feedbackEl.innerHTML = isCorrect
+      ? (feedbacks.correct || 'Correct!')
+      : (feedbacks.incorrect || 'Not quite — see the correct answer highlighted above.');
+    feedbackEl.className = 'cr-pill__feedback ' +
+      (isCorrect ? 'cr-pill__feedback--correct' : 'cr-pill__feedback--miss');
+    feedbackEl.hidden = false;
+  }
 
-// ─── 2. funFactFreeform ───
-function renderFunFactFreeform(wrap, block, blockIndex) {
-  wrap.className = 'cr-pill-wrap';
-  wrap.dataset.blockType = 'funFactFreeform';
-  wrap.innerHTML = `<button class="cr-pill cr-pill--purple" aria-label="Quick recall — click to expand" tabindex="0">✦ Quick recall ▾</button>`;
+  const btn = el.querySelector('.cr-pill__submit-btn');
+  if (btn) btn.disabled = true;
 
-  wrap.querySelector('.cr-pill').addEventListener('click', () => {
-    const state = _fffState.get(blockIndex);
-    const answered = state && state.answered;
-
-    let bodyHtml = `<div class="cr-fff-prompt">${esc(block.prompt || '')}</div>`;
-    if (block.hint) bodyHtml += `<div class="cr-fff-hint">${esc(block.hint)}</div>`;
-
-    if (answered) {
-      // Re-show previous result
-      const barColor = state.result === 'hit' ? '#2E7D4F' : state.result === 'close' ? '#D4A855' : '#C0392B';
-      const barWidth = state.result === 'hit' ? '100' : state.result === 'close' ? '60' : '20';
-      bodyHtml += `<div class="cr-fff-bar-track"><div class="cr-fff-bar-fill" style="width:${barWidth}%;background:${barColor}"></div></div>`;
-      bodyHtml += `<div class="cr-fff-feedback cr-fff-feedback--${state.result}">${esc(state.feedbackText)}</div>`;
-      bodyHtml += `<div class="cr-fff-reveal">${esc(block.reveal || '')}</div>`;
-    } else {
-      bodyHtml += `<div class="cr-fff-input-row">
-        <input type="text" class="cr-fff-input" placeholder="Your answer…" aria-label="Your answer">
-        <button class="cr-fff-submit" data-role="fff-submit">Submit</button>
-      </div>
-      <div class="cr-fff-result-area"></div>`;
-    }
-
-    const { backdrop } = openPillModal(bodyHtml);
-
-    if (!answered) {
-      const input = backdrop.querySelector('.cr-fff-input');
-      const submitBtn = backdrop.querySelector('[data-role="fff-submit"]');
-      const resultArea = backdrop.querySelector('.cr-fff-result-area');
-
-      const doSubmit = () => {
-        const val = input.value.trim();
-        if (!val) return;
-
-        const hitScore = matchScore(val, block.accepted || []);
-        const closeScore = matchScore(val, block.close || []);
-
-        let result, feedbackText;
-        if (hitScore >= 0.78) {
-          result = 'hit';
-          feedbackText = (block.feedbacks && block.feedbacks.hit) || 'Correct!';
-        } else if (closeScore >= 0.80 || hitScore >= 0.55) {
-          result = 'close';
-          feedbackText = ((block.feedbacks && block.feedbacks.close) || 'Close!').replace('{input}', val);
-        } else {
-          result = 'miss';
-          feedbackText = (block.feedbacks && block.feedbacks.miss) || 'Not quite.';
-        }
-
-        const barColor = result === 'hit' ? '#2E7D4F' : result === 'close' ? '#D4A855' : '#C0392B';
-        const barWidth = result === 'hit' ? '100' : result === 'close' ? '60' : '20';
-
-        resultArea.innerHTML = `
-          <div class="cr-fff-bar-track"><div class="cr-fff-bar-fill" style="width:0%;background:${barColor}"></div></div>
-          <div class="cr-fff-feedback cr-fff-feedback--${result}">${esc(feedbackText)}</div>
-          <div class="cr-fff-reveal">${esc(block.reveal || '')}</div>
-        `;
-
-        // Animate bar
-        requestAnimationFrame(() => {
-          const fill = resultArea.querySelector('.cr-fff-bar-fill');
-          if (fill) fill.style.width = barWidth + '%';
-        });
-
-        // Disable input
-        input.disabled = true;
-        submitBtn.disabled = true;
-
-        // Save state
-        _fffState.set(blockIndex, { answered: true, result, feedbackText, input: val });
-      };
-
-      submitBtn.addEventListener('click', doSubmit);
-      input.addEventListener('keydown', (e) => { if (e.key === 'Enter') doSubmit(); });
-      setTimeout(() => input.focus(), 60);
-    }
-  });
-
-  return wrap;
-}
-
-// ─── 3. knowledgeCheckInline ───
-function renderKnowledgeCheckInline(wrap, block, blockIndex) {
-  wrap.className = 'cr-pill-wrap';
-  wrap.dataset.blockType = 'knowledgeCheckInline';
-  wrap.innerHTML = `<button class="cr-pill cr-pill--burgundy" aria-label="Check your understanding — click to expand" tabindex="0">◆ Check your understanding ▾</button>`;
-
-  wrap.querySelector('.cr-pill').addEventListener('click', () => {
-    const state = _kcInlineState.get(blockIndex);
-    const prevSelected = state ? state.selected : null;
-    const prevAnswered = state ? state.answered : false;
-    const correctIdx = typeof block.correctAnswer === 'number' ? block.correctAnswer : 0;
-    const options = block.options || [];
-
-    let optionsHtml = options.map((opt, oi) => {
-      let cls = 'cr-kci-option';
-      if (prevAnswered && oi === prevSelected && oi === correctIdx) cls += ' correct answered';
-      else if (prevAnswered && oi === prevSelected && oi !== correctIdx) cls += ' incorrect answered';
-      else if (prevAnswered && oi === correctIdx) cls += ' correct answered';
-      else if (!prevAnswered && oi === prevSelected) cls += ' selected';
-      return `<div class="${cls}" data-oi="${oi}" tabindex="0" role="radio" aria-checked="${oi === prevSelected ? 'true' : 'false'}">
-        <span class="cr-kci-radio">${prevAnswered && oi === correctIdx ? '✓' : prevAnswered && oi === prevSelected && oi !== correctIdx ? '✗' : ''}</span>
-        <span>${esc(opt)}</span>
-      </div>`;
-    }).join('');
-
-    let feedbackHtml = '';
-    if (prevAnswered) {
-      const isCorrect = prevSelected === correctIdx;
-      const fb = block.feedback || {};
-      const text = isCorrect ? (fb.correct || 'Correct!') : (fb.incorrect || 'Incorrect.');
-      feedbackHtml = `<div class="cr-kci-feedback show cr-kci-feedback--${isCorrect ? 'correct' : 'incorrect'}">${esc(text)}</div>`;
-    }
-
-    const bodyHtml = `
-      <div class="cr-kci-question">${esc(block.question || '')}</div>
-      <div class="cr-kci-options">${optionsHtml}</div>
-      ${!prevAnswered ? `<button class="cr-kci-submit" disabled data-role="kci-submit">Check Answer</button>` : ''}
-      <div class="cr-kci-feedback-area">${feedbackHtml}</div>
-    `;
-
-    const { backdrop } = openPillModal(bodyHtml);
-
-    if (!prevAnswered) {
-      const optionEls = backdrop.querySelectorAll('.cr-kci-option');
-      const submitBtn = backdrop.querySelector('[data-role="kci-submit"]');
-      let selected = prevSelected;
-
-      optionEls.forEach((el) => {
-        const handler = () => {
-          if (el.classList.contains('answered')) return;
-          selected = parseInt(el.dataset.oi);
-          optionEls.forEach(o => { o.classList.remove('selected'); o.setAttribute('aria-checked', 'false'); });
-          el.classList.add('selected');
-          el.setAttribute('aria-checked', 'true');
-          submitBtn.disabled = false;
-          _kcInlineState.set(blockIndex, { selected, answered: false });
-        };
-        el.addEventListener('click', handler);
-        el.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handler(); } });
-      });
-
-      submitBtn.addEventListener('click', () => {
-        if (selected === null) return;
-        const isCorrect = selected === correctIdx;
-        optionEls.forEach((el, oi) => {
-          el.classList.add('answered');
-          el.classList.remove('selected');
-          if (oi === correctIdx) {
-            el.classList.add('correct');
-            el.querySelector('.cr-kci-radio').textContent = '✓';
-          }
-          if (oi === selected && oi !== correctIdx) {
-            el.classList.add('incorrect');
-            el.querySelector('.cr-kci-radio').textContent = '✗';
-          }
-        });
-
-        const fb = block.feedback || {};
-        const text = isCorrect ? (fb.correct || 'Correct!') : (fb.incorrect || 'Incorrect.');
-        backdrop.querySelector('.cr-kci-feedback-area').innerHTML =
-          `<div class="cr-kci-feedback show cr-kci-feedback--${isCorrect ? 'correct' : 'incorrect'}">${esc(text)}</div>`;
-
-        submitBtn.remove();
-        _kcInlineState.set(blockIndex, { selected, answered: true });
-      });
-    }
-  });
-
-  return wrap;
+  srAnnounce(isCorrect ? 'Correct answer selected.' : 'Incorrect. Correct answer is highlighted.');
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -6643,6 +6740,22 @@ document.addEventListener('click', function(e) {
     case 'requestCertificate':
       showCertificateView();
       break;
+
+    // ─── Pills ───
+    case 'togglePill':      togglePill(el.dataset.target); break;
+    case 'submitFreeform':  submitFreeform(el.dataset.target); break;
+    case 'fffKeydown':      /* handled via keydown below */ break;
+    case 'revealFreeform':  revealFreeform(el.dataset.target); break;
+    case 'selectKCI':       selectKCI(el.dataset.target, parseInt(el.dataset.idx)); break;
+    case 'submitKCI':       submitKCI(el.dataset.target); break;
+  }
+});
+
+// Pill freeform: submit on Enter
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && e.target.classList.contains('cr-pill__text-input')) {
+    const id = e.target.closest('.cr-pill--freeform')?.id;
+    if (id) submitFreeform(id);
   }
 });
 
