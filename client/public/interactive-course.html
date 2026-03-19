@@ -3599,7 +3599,7 @@ function renderSectionDivider(wrap, block) {
   var heroHtml = '';
   // Auto-inject hero image for courses 3+ CE hours
   if (course && (course.ceHours || course.ceuHours || 0) >= 3) {
-    var imgUrl = getSectionHeroImage(block.title || '', block.sectionNumber || 1);
+    var imgUrl = getSectionHeroImage(block.title || '', currentSectionIndex + 1);
     if (imgUrl) {
       heroHtml = '<img class="cr-section-hero" src="' + imgUrl + '" alt="" loading="lazy" aria-hidden="true">';
     }
