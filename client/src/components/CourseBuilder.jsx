@@ -2916,7 +2916,34 @@ export default function CourseBuilderV2() {
           contentBlocks: (mod.blocks || []).map((b, j) => ({ ...b, order: j + 1 })),
         })),
         assessment: courseData.assessment || { questions: [], passThreshold: 0.80 },
-        references: courseData.references || [],
+        courseCode: courseData.courseCode || '',
+        shortDescription: courseData.shortDescription || courseData.description?.slice(0, 200) || '',
+        contentType: courseData.contentType || 'General',
+        ceCategory: courseData.ceCategory || courseData.contentType || 'General',
+        ceuHours: courseData.ceHours || 3,
+        ceuEligible: true,
+
+        presenter: courseData.presenter || {
+          name: 'Kejuiana Johnson',
+          credentials: 'MA, LPC, NCC, CPCS, BC-TMH',
+          license: 'LPC009587',
+          licenseState: 'Georgia',
+          licenseType: 'LPC',
+          category: 'category1'
+        },
+
+        provider: courseData.provider || {
+          name: 'GA Integrated Therapeutic Perspectives LLC',
+          shortName: 'GAITP LLC',
+          acepNumber: '7760',
+          approvalBody: 'NBCC'
+        },
+
+        references: (courseData.references || []).map(r =>
+          typeof r === 'string'
+            ? { citation: r, title: r.slice(0, 80) }
+            : { ...r, title: r.title || r.citation?.slice(0, 80) || '' }
+        ),
         thumbnail: courseData.thumbnail || "",
         thumbnailPublicId: courseData.thumbnailPublicId || "",
         deliverables: (courseData.deliverables || []).map(d => ({
@@ -2939,7 +2966,10 @@ export default function CourseBuilderV2() {
       const result = await res.json();
       if (result.course?._id) setCourseId(result.course._id);
       setSaveMsg(`✓ ${publish ? "Published" : "Saved"} — ${result.action || "success"}`);
-      setTimeout(() => setSaveMsg(null), 4000);
+      // Redirect after 1.5s
+      setTimeout(() => {
+        window.location.href = '/admin-courses.html';
+      }, 1500);
     } catch (err) {
       setSaveMsg(`✗ Error: ${err.message}`);
     } finally {
