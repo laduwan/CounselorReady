@@ -5,6 +5,7 @@
  */
 // /server/src/routes/certificates.js
 import { Router } from 'express';
+import mongoose from 'mongoose';
 import multer from 'multer';
 import { v2 as cloudinary } from 'cloudinary';
 import Certificate from '../models/Certificate.js';
@@ -48,6 +49,9 @@ cloudinary.config({
 router.get('/:id/serve', protect, async (req, res) => {
   try {
     const { id } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ error: 'Invalid ID' });
+    }
     const userId = req.user._id;
 
     console.log(`Certificate serve request: ${id} from user: ${userId}`);
@@ -313,6 +317,9 @@ router.post('/upload', protect, upload.single('certificate'), async (req, res) =
 router.post('/generate/:courseId', protect, async (req, res) => {
   try {
     const { courseId } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(courseId)) {
+      return res.status(400).json({ error: 'Invalid ID' });
+    }
     const userId = req.user._id;
 
     console.log(`Certificate generation request for course ${courseId} by user ${userId}`);
@@ -456,6 +463,9 @@ router.post('/generate/:courseId', protect, async (req, res) => {
 router.delete('/:id', protect, async (req, res) => {
   try {
     const { id } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ error: 'Invalid ID' });
+    }
     const userId = req.user._id;
 
     const certificate = await Certificate.findOneAndDelete({

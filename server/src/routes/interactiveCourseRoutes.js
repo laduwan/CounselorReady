@@ -369,6 +369,9 @@ router.get('/:id', optionalAuth, async (req, res) => {
  */
 router.put('/:id', ...protectAndScope, async (req, res) => {
   try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({ success: false, error: 'Invalid ID' });
+    }
     const course = await Course.findById(req.params.id);
     if (!course) {
       return res.status(404).json({ success: false, error: 'Course not found' });
@@ -452,6 +455,9 @@ router.get('/:id/progress', ...protectAndScope, async (req, res) => {
  */
 router.post('/:id/enroll', ...protectAndScope, async (req, res) => {
   try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({ success: false, error: 'Invalid ID' });
+    }
     const course = await Course.findOne({ _id: req.params.id, status: 'published' });
     if (!course) {
       return res.status(404).json({ success: false, error: 'Course not found' });
