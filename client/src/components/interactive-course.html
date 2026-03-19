@@ -149,6 +149,37 @@
     .high-contrast-mode h4 { color: #000 !important; }
     .high-contrast-mode .prose * { color: #000 !important; }
     .high-contrast-mode * { border-color: #333 !important; }
+
+    /* ─── Inline Supplemental Pills ─── */
+    .cr-pill-wrap { margin-top: -4px; margin-bottom: 16px; }
+    .cr-pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 6px 14px; border-radius: 20px; border: 1.5px solid;
+      font-size: 0.85em; font-weight: 600; cursor: pointer;
+      transition: opacity 0.2s, box-shadow 0.2s; line-height: 1.4;
+    }
+    .cr-pill:hover { opacity: 0.85; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .cr-pill--amber { background: #FFF8E7; border-color: #B8860B; color: #412402; }
+    .cr-pill--purple { background: #F5F0FA; border-color: #7B4EA0; color: #3D1A6B; }
+    .cr-pill--burgundy { background: #F5E8EC; border-color: #6B1D34; color: #3D0A1A; }
+
+    .cr-pill-modal-backdrop {
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.5); display: flex; align-items: center;
+      justify-content: center; z-index: 10000;
+    }
+    .cr-pill-modal {
+      background: #fff; border-radius: 16px; padding: 28px 32px;
+      max-width: 520px; width: 92%; max-height: 85vh; overflow-y: auto;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.25); position: relative;
+    }
+    .cr-pill-modal-close {
+      position: absolute; top: 12px; right: 14px; background: none;
+      border: none; font-size: 1.4em; cursor: pointer; color: #888;
+      width: 36px; height: 36px; display: flex; align-items: center;
+      justify-content: center; border-radius: 50%;
+    }
+    .cr-pill-modal-close:hover { background: #eee; }
   </style>
 </head>
 <body class="bg-slate-50 font-sans min-h-screen">
@@ -1199,6 +1230,34 @@
             refsHtml = block.content;
           }
           div.innerHTML = '<div class="bg-white rounded-xl border border-slate-200 p-6"><h3 class="font-semibold text-slate-800 mb-4">References</h3><div class="cr-references">' + refsHtml + '</div></div>';
+          break;
+
+        case 'funFactStat':
+          div.className = 'cr-pill-wrap';
+          div.innerHTML = `<button class="cr-pill cr-pill--amber" aria-label="Fun fact">★ Fun fact ▾</button>`;
+          div.querySelector('.cr-pill').addEventListener('click', () => {
+            _openPillModalLegacy(`
+              <div style="font-size:2.2em;font-weight:700;color:#B8860B;margin-bottom:12px">${escHtml(block.stat || '')}</div>
+              <div style="line-height:1.7;margin-bottom:14px">${escHtml(block.body || '')}</div>
+              ${block.source ? `<div style="font-size:0.82em;color:#888;font-style:italic">Source: ${escHtml(block.source)}</div>` : ''}
+            `);
+          });
+          break;
+
+        case 'funFactFreeform':
+          div.className = 'cr-pill-wrap';
+          div.innerHTML = `<button class="cr-pill cr-pill--purple" aria-label="Quick recall">✦ Quick recall ▾</button>`;
+          div.querySelector('.cr-pill').addEventListener('click', () => {
+            _openFreeformModalLegacy(block, blockIndex);
+          });
+          break;
+
+        case 'knowledgeCheckInline':
+          div.className = 'cr-pill-wrap';
+          div.innerHTML = `<button class="cr-pill cr-pill--burgundy" aria-label="Check your understanding">◆ Check your understanding ▾</button>`;
+          div.querySelector('.cr-pill').addEventListener('click', () => {
+            _openKCInlineModalLegacy(block, blockIndex);
+          });
           break;
 
         default:
@@ -2662,6 +2721,149 @@
 
     function printCertificate() {
       downloadCertificate();
+    }
+
+    // ============================================
+    // INLINE SUPPLEMENTAL PILLS — helpers
+    // ============================================
+    const _kcInlineStateLegacy = new Map();
+    const _fffStateLegacy = new Map();
+
+    function escHtml(s) {
+      const d = document.createElement('div');
+      d.textContent = s || '';
+      return d.innerHTML;
+    }
+
+    function _openPillModalLegacy(contentHtml, onClose) {
+      const backdrop = document.createElement('div');
+      backdrop.className = 'cr-pill-modal-backdrop';
+      backdrop.setAttribute('role', 'dialog');
+      backdrop.setAttribute('aria-modal', 'true');
+      backdrop.innerHTML = `<div class="cr-pill-modal">
+        <button class="cr-pill-modal-close" aria-label="Close">&times;</button>
+        <div>${contentHtml}</div>
+      </div>`;
+      document.body.appendChild(backdrop);
+      const close = () => { backdrop.remove(); if (onClose) onClose(); };
+      backdrop.querySelector('.cr-pill-modal-close').addEventListener('click', close);
+      backdrop.addEventListener('click', (e) => { if (e.target === backdrop) close(); });
+      const esc = (e) => { if (e.key === 'Escape') { close(); document.removeEventListener('keydown', esc); } };
+      document.addEventListener('keydown', esc);
+      return { backdrop, close };
+    }
+
+    function _normalizeAns(s) {
+      return s.toLowerCase().replace(/%/g, ' percent ').replace(/ninety[\s-]*five/g, '95')
+        .replace(/twenty[\s-]*four/g, '24').replace(/[^a-z0-9 ]/g, ' ').replace(/\s+/g, ' ').trim();
+    }
+    function _lev(a, b) {
+      const m = a.length, n = b.length;
+      const dp = Array.from({length: m+1}, (_, i) => [i, ...Array(n).fill(0)]);
+      for (let j = 0; j <= n; j++) dp[0][j] = j;
+      for (let i = 1; i <= m; i++)
+        for (let j = 1; j <= n; j++)
+          dp[i][j] = a[i-1] === b[j-1] ? dp[i-1][j-1] : 1 + Math.min(dp[i-1][j], dp[i][j-1], dp[i-1][j-1]);
+      return dp[m][n];
+    }
+    function _matchScoreLegacy(input, targets) {
+      const n = _normalizeAns(input); let best = 0;
+      for (const t of targets) {
+        const nt = _normalizeAns(t);
+        if (n === nt) return 1.0;
+        if (n.includes(nt) || nt.includes(n)) best = Math.max(best, 0.9);
+        const dist = _lev(n, nt); const sim = 1 - (dist / Math.max(n.length, nt.length, 1));
+        best = Math.max(best, sim);
+      }
+      return best;
+    }
+
+    function _openFreeformModalLegacy(block, blockIndex) {
+      const state = _fffStateLegacy.get(blockIndex);
+      let html = `<div style="font-weight:600;font-size:1.1em;color:#3D1A6B;margin-bottom:8px">${escHtml(block.prompt || '')}</div>`;
+      if (block.hint) html += `<div style="font-size:0.82em;color:#888;margin-bottom:14px">${escHtml(block.hint)}</div>`;
+      if (state && state.answered) {
+        const bc = state.result === 'hit' ? '#2E7D4F' : state.result === 'close' ? '#D4A855' : '#C0392B';
+        const bw = state.result === 'hit' ? '100' : state.result === 'close' ? '60' : '20';
+        html += `<div style="height:8px;background:#ddd;border-radius:4px;overflow:hidden;margin-bottom:10px"><div style="height:100%;width:${bw}%;background:${bc};border-radius:4px"></div></div>`;
+        html += `<div style="padding:12px;border-radius:10px;margin-bottom:10px;${state.result==='hit'?'background:#F0FFF4;color:#2E7D4F':'background:#FFF5F5;color:#C0392B'}">${escHtml(state.feedbackText)}</div>`;
+        html += `<div style="font-size:0.9em;color:#555;padding:10px 14px;background:#f8f7f4;border-radius:8px;border-left:3px solid #7B4EA0">${escHtml(block.reveal || '')}</div>`;
+        _openPillModalLegacy(html);
+      } else {
+        html += `<div style="display:flex;gap:8px;margin-bottom:14px"><input type="text" class="cr-fff-inp" placeholder="Your answer…" style="flex:1;padding:10px 14px;border:2px solid #ddd;border-radius:8px;font-size:0.95em"><button class="cr-fff-btn" style="padding:10px 22px;background:#7B4EA0;color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer">Submit</button></div><div class="cr-fff-res"></div>`;
+        const { backdrop } = _openPillModalLegacy(html);
+        const inp = backdrop.querySelector('.cr-fff-inp');
+        const btn = backdrop.querySelector('.cr-fff-btn');
+        const res = backdrop.querySelector('.cr-fff-res');
+        const doSubmit = () => {
+          const val = inp.value.trim(); if (!val) return;
+          const hs = _matchScoreLegacy(val, block.accepted || []);
+          const cs = _matchScoreLegacy(val, block.close || []);
+          let result, ft;
+          if (hs >= 0.78) { result = 'hit'; ft = (block.feedbacks && block.feedbacks.hit) || 'Correct!'; }
+          else if (cs >= 0.80 || hs >= 0.55) { result = 'close'; ft = ((block.feedbacks && block.feedbacks.close) || 'Close!').replace('{input}', val); }
+          else { result = 'miss'; ft = (block.feedbacks && block.feedbacks.miss) || 'Not quite.'; }
+          const bc = result === 'hit' ? '#2E7D4F' : result === 'close' ? '#D4A855' : '#C0392B';
+          const bw = result === 'hit' ? '100' : result === 'close' ? '60' : '20';
+          res.innerHTML = `<div style="height:8px;background:#ddd;border-radius:4px;overflow:hidden;margin-bottom:10px"><div style="height:100%;width:${bw}%;background:${bc};border-radius:4px"></div></div><div style="padding:12px;border-radius:10px;margin-bottom:10px">${escHtml(ft)}</div><div style="font-size:0.9em;color:#555;padding:10px 14px;background:#f8f7f4;border-radius:8px;border-left:3px solid #7B4EA0">${escHtml(block.reveal || '')}</div>`;
+          inp.disabled = true; btn.disabled = true;
+          _fffStateLegacy.set(blockIndex, { answered: true, result, feedbackText: ft });
+        };
+        btn.addEventListener('click', doSubmit);
+        inp.addEventListener('keydown', (e) => { if (e.key === 'Enter') doSubmit(); });
+      }
+    }
+
+    function _openKCInlineModalLegacy(block, blockIndex) {
+      const state = _kcInlineStateLegacy.get(blockIndex);
+      const prev = state ? state.selected : null;
+      const answered = state ? state.answered : false;
+      const ci = typeof block.correctAnswer === 'number' ? block.correctAnswer : 0;
+      const opts = block.options || [];
+      let html = `<div style="font-weight:600;font-size:1.1em;color:#6B1D34;margin-bottom:16px">${escHtml(block.question || '')}</div><div class="cr-kci-opts" style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px">`;
+      opts.forEach((o, i) => {
+        let style = 'display:flex;align-items:center;gap:12px;padding:12px 14px;border:2px solid #ddd;border-radius:10px;cursor:pointer;font-size:0.95em;min-height:44px;';
+        if (answered && i === ci) style += 'border-color:#2E7D4F;background:#F0FFF4;';
+        else if (answered && i === prev && i !== ci) style += 'border-color:#C0392B;background:#FFF5F5;';
+        else if (!answered && i === prev) style += 'border-color:#6B1D34;background:#F5E8EC;';
+        html += `<div class="cr-kci-opt" data-oi="${i}" tabindex="0" style="${style}"><span style="width:20px;height:20px;border-radius:50%;border:2px solid #ddd;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:0.7em;${answered && i === ci ? 'border-color:#2E7D4F;background:#2E7D4F;color:#fff' : answered && i === prev ? 'border-color:#C0392B;background:#C0392B;color:#fff' : ''}">${answered && i === ci ? '✓' : answered && i === prev && i !== ci ? '✗' : ''}</span><span>${escHtml(o)}</span></div>`;
+      });
+      html += '</div>';
+      if (!answered) html += `<button class="cr-kci-sub" style="padding:10px 28px;background:#6B1D34;color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer;opacity:0.4" disabled>Check Answer</button>`;
+      if (answered) {
+        const fb = block.feedback || {};
+        const txt = prev === ci ? (fb.correct || 'Correct!') : (fb.incorrect || 'Incorrect.');
+        html += `<div style="padding:12px 14px;border-radius:10px;font-size:0.92em;line-height:1.6;${prev === ci ? 'background:#F0FFF4;color:#2E7D4F' : 'background:#FFF5F5;color:#C0392B'}">${escHtml(txt)}</div>`;
+      }
+      html += '<div class="cr-kci-fb"></div>';
+      const { backdrop } = _openPillModalLegacy(html);
+      if (!answered) {
+        let sel = prev;
+        const optEls = backdrop.querySelectorAll('.cr-kci-opt');
+        const subBtn = backdrop.querySelector('.cr-kci-sub');
+        optEls.forEach(el => {
+          el.addEventListener('click', () => {
+            sel = parseInt(el.dataset.oi);
+            optEls.forEach(o => { o.style.borderColor = '#ddd'; o.style.background = ''; });
+            el.style.borderColor = '#6B1D34'; el.style.background = '#F5E8EC';
+            subBtn.disabled = false; subBtn.style.opacity = '1';
+            _kcInlineStateLegacy.set(blockIndex, { selected: sel, answered: false });
+          });
+        });
+        subBtn.addEventListener('click', () => {
+          if (sel === null) return;
+          optEls.forEach((el, i) => {
+            el.style.cursor = 'default';
+            if (i === ci) { el.style.borderColor = '#2E7D4F'; el.style.background = '#F0FFF4'; el.querySelector('span').textContent = '✓'; }
+            if (i === sel && i !== ci) { el.style.borderColor = '#C0392B'; el.style.background = '#FFF5F5'; el.querySelector('span').textContent = '✗'; }
+          });
+          const fb = block.feedback || {};
+          const txt = sel === ci ? (fb.correct || 'Correct!') : (fb.incorrect || 'Incorrect.');
+          backdrop.querySelector('.cr-kci-fb').innerHTML = `<div style="padding:12px 14px;border-radius:10px;font-size:0.92em;line-height:1.6;margin-top:14px;${sel === ci ? 'background:#F0FFF4;color:#2E7D4F' : 'background:#FFF5F5;color:#C0392B'}">${escHtml(txt)}</div>`;
+          subBtn.remove();
+          _kcInlineStateLegacy.set(blockIndex, { selected: sel, answered: true });
+        });
+      }
     }
 
     // ============================================
