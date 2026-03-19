@@ -14,11 +14,13 @@ import adminUsersRouter from './adminUsers.js';
 import adminCoursesRouter from './adminCourses.js';
 import adminAIRouter from './adminAI.js';
 import adminStatsRouter from './adminStats.js';
+import adminStripeRouter from './adminStripe.js';
 
 const router = express.Router();
 
 // Mount all admin sub-routers
 router.use('/stats', adminStatsRouter);
+router.use('/stripe', adminStripeRouter);
 router.use('/', adminUsersRouter);
 router.use('/', adminCoursesRouter);
 router.use('/', adminAIRouter);
