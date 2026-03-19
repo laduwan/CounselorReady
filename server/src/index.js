@@ -52,6 +52,7 @@ import cePlannerRoutes from './routes/cePlanner.js';
 import insuranceCredentialsRoutes from './routes/insuranceCredentials.js';
 import auditKitRoutes from './routes/auditKit.js';
 import boardAlertsRoutes from './routes/boardAlerts.js';
+import boardSourcesRoutes from './routes/boardSources.js';
 // ── New feature routes (2026-03-06 batch 2) ──
 import groupLicensesRoutes from './routes/groupLicenses.js';
 import recommendationsRoutes from './routes/recommendations.js';
@@ -72,6 +73,7 @@ import researchReadyRoutes from './routes/researchReady.js';
 import scholarlyArticlesRoutes from './routes/scholarlyArticles.js';
 // Import services
 import { initializeScheduler } from './services/notificationScheduler.js';
+import { initializeBoardMonitor } from './services/boardMonitorService.js';
 
 // ES Module fix for __dirname
 const __filename = fileURLToPath(import.meta.url);
@@ -267,6 +269,7 @@ app.use('/api/ce-planner', cePlannerRoutes);
 app.use('/api/insurance-credentials', insuranceCredentialsRoutes);
 app.use('/api/audit-kit', auditKitRoutes);
 app.use('/api/board-alerts', boardAlertsRoutes);
+app.use('/api/board-sources', boardSourcesRoutes);
 // ── New feature routes (2026-03-06 batch 2) ──
 app.use('/api/group-licenses', groupLicensesRoutes);
 app.use('/api/recommendations', recommendationsRoutes);
@@ -363,6 +366,9 @@ const startServer = async () => {
   
   // Initialize notification scheduler
   initializeScheduler();
+
+  // Initialize board rule monitor
+  initializeBoardMonitor();
   
   // Start listening
   const server = app.listen(PORT, () => {

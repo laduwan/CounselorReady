@@ -37,6 +37,23 @@ const boardAlertSchema = new mongoose.Schema({
   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   isPublished: { type: Boolean, default: true },
 
+  // Change tracking — stores previous versions when a rule is amended
+  changeHistory: [{
+    amendedAt: { type: Date, required: true },
+    amendedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    changeNote: String,
+    previousValues: {
+      title: String,
+      summary: String,
+      details: String,
+      category: String,
+      severity: String,
+      effectiveDate: Date,
+      sourceUrl: String,
+      credentialTypes: [String]
+    }
+  }],
+
   // User engagement
   acknowledgedBy: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }]
 }, {

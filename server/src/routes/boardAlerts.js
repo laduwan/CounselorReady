@@ -96,11 +96,51 @@ router.post('/', protect, requireAdmin, async (req, res) => {
   }
 });
 
-// ── Update alert (admin) ──
+// ── Update alert (admin) — tracks changes for side-by-side comparison ──
 router.put('/:id', protect, requireAdmin, async (req, res) => {
   try {
-    const alert = await BoardAlert.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const alert = await BoardAlert.findById(req.params.id);
     if (!alert) return res.status(404).json({ error: 'Alert not found' });
+
+    // Fields we track for change history
+    const trackedFields = ['title', 'summary', 'details', 'category', 'severity', 'effectiveDate', 'sourceUrl', 'credentialTypes'];
+    const changedFields = {};
+    let hasTrackedChange = false;
+
+    for (const field of trackedFields) {
+      if (req.body[field] !== undefined) {
+        const oldVal = field === 'credentialTypes'
+          ? JSON.stringify(alert[field])
+          : String(alert[field] ?? '');
+        const newVal = field === 'credentialTypes'
+          ? JSON.stringify(req.body[field])
+          : String(req.body[field] ?? '');
+        if (oldVal !== newVal) {
+          changedFields[field] = alert[field];
+          hasTrackedChange = true;
+        }
+      }
+    }
+
+    // If tracked content changed, snapshot the previous values
+    if (hasTrackedChange) {
+      alert.changeHistory = alert.changeHistory || [];
+      alert.changeHistory.push({
+        amendedAt: new Date(),
+        amendedBy: req.user._id,
+        changeNote: req.body.changeNote || undefined,
+        previousValues: changedFields
+      });
+
+      // Reset acknowledgements so users see the updated rule
+      alert.acknowledgedBy = [];
+    }
+
+    // Apply the updates
+    const { changeNote, ...updateFields } = req.body;
+    Object.assign(alert, updateFields);
+    await alert.save();
+
     res.json(alert);
   } catch (error) {
     res.status(500).json({ error: error.message });
