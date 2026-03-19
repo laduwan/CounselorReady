@@ -4,6 +4,7 @@
  * Unauthorized copying or distribution is strictly prohibited.
  */
 import express from 'express';
+import mongoose from 'mongoose';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
@@ -450,17 +451,20 @@ router.post('/recalculate', protect, async (req, res) => {
 // @access  Private
 router.get('/:id', protect, async (req, res) => {
   try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({ error: 'Invalid ID' });
+    }
     const credential = await UserCredential.findOne({
       _id: req.params.id,
       userId: req.user._id
     });
-    
+
     if (!credential) {
       return res.status(404).json({ error: 'Credential not found' });
     }
-    
+
     credential.updateStatus();
-    
+
     res.json({ credential });
   } catch (error) {
     console.error('Get credential error:', error);
@@ -473,15 +477,18 @@ router.get('/:id', protect, async (req, res) => {
 // @access  Private
 router.put('/:id', protect, async (req, res) => {
   try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({ error: 'Invalid ID' });
+    }
     const credential = await UserCredential.findOne({
       _id: req.params.id,
       userId: req.user._id
     });
-    
+
     if (!credential) {
       return res.status(404).json({ error: 'Credential not found' });
     }
-    
+
     const allowedUpdates = [
       'name', 'licenseNumber', 'issueDate', 'expirationDate',
       'remindersEnabled', 'customReminders'
@@ -511,6 +518,9 @@ router.put('/:id', protect, async (req, res) => {
 // @access  Private
 router.delete('/:id', protect, async (req, res) => {
   try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({ error: 'Invalid ID' });
+    }
     const credential = await UserCredential.findOneAndDelete({
       _id: req.params.id,
       userId: req.user._id
@@ -532,12 +542,15 @@ router.delete('/:id', protect, async (req, res) => {
 // @access  Private
 router.post('/:id/log-ceu', protect, async (req, res) => {
   try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({ error: 'Invalid ID' });
+    }
     const { hours, category, description, provider, date, certificateId, courseId } = req.body;
-    
+
     if (!hours || !category || !description) {
       return res.status(400).json({ error: 'Hours, category, and description are required' });
     }
-    
+
     const credential = await UserCredential.findOne({
       _id: req.params.id,
       userId: req.user._id
@@ -734,6 +747,9 @@ const upload = multer({
 // @access  Private
 router.post('/:id/upload', protect, upload.single('document'), async (req, res) => {
   try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({ error: 'Invalid ID' });
+    }
     const credential = await UserCredential.findOne({
       _id: req.params.id,
       userId: req.user._id
@@ -768,6 +784,9 @@ router.post('/:id/upload', protect, upload.single('document'), async (req, res) 
 // @access  Private
 router.delete('/:id/document', protect, async (req, res) => {
   try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({ error: 'Invalid ID' });
+    }
     const credential = await UserCredential.findOne({
       _id: req.params.id,
       userId: req.user._id
