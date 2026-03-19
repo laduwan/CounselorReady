@@ -696,6 +696,259 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
 .cr-kc-submit:disabled { opacity: 0.4; cursor: not-allowed; }
 
 /* ═══════════════════════════════════════════════════════════════
+   INLINE SUPPLEMENTAL PILLS (funFactStat, funFactFreeform, knowledgeCheckInline)
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Pill container — sits inline after preceding text block */
+.cr-pill-wrap {
+  margin-top: -8px;
+  margin-bottom: 24px;
+}
+
+.cr-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  border: 1.5px solid;
+  font-family: var(--cr-font-body);
+  font-size: 0.85em;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity var(--cr-transition), box-shadow var(--cr-transition);
+  line-height: 1.4;
+}
+.cr-pill:hover { opacity: 0.85; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+.cr-pill:focus-visible { outline: 2px solid var(--cr-focus); outline-offset: 2px; }
+
+/* Amber — funFactStat */
+.cr-pill--amber {
+  background: #FFF8E7;
+  border-color: #B8860B;
+  color: #412402;
+}
+
+/* Purple — funFactFreeform */
+.cr-pill--purple {
+  background: #F5F0FA;
+  border-color: #7B4EA0;
+  color: #3D1A6B;
+}
+
+/* Burgundy — knowledgeCheckInline */
+.cr-pill--burgundy {
+  background: #F5E8EC;
+  border-color: #6B1D34;
+  color: #3D0A1A;
+}
+
+/* High contrast overrides */
+[data-high-contrast="true"] .cr-pill {
+  border-width: 2px;
+  color: #000;
+  background: #fff;
+}
+
+/* Dark mode overrides */
+[data-dark-mode="true"] .cr-pill--amber { background: #3D2E10; color: #FFD866; border-color: #B8860B; }
+[data-dark-mode="true"] .cr-pill--purple { background: #2A1840; color: #C9A8E8; border-color: #7B4EA0; }
+[data-dark-mode="true"] .cr-pill--burgundy { background: #3D1020; color: #E8A0B4; border-color: #8B3A54; }
+
+/* ─── Pill Modal Overlay ─── */
+.cr-pill-modal-backdrop {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  animation: crPillFadeIn 0.2s ease;
+}
+@keyframes crPillFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cr-pill-modal-backdrop { animation: none; }
+}
+
+.cr-pill-modal {
+  background: var(--cr-surface, #fff);
+  border-radius: 16px;
+  padding: 28px 32px;
+  max-width: 520px;
+  width: 92%;
+  max-height: 85vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+  position: relative;
+  animation: crPillSlideUp 0.25s ease;
+}
+@keyframes crPillSlideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cr-pill-modal { animation: none; }
+}
+
+.cr-pill-modal-close {
+  position: absolute;
+  top: 12px; right: 14px;
+  background: none; border: none;
+  font-size: 1.4em; cursor: pointer;
+  color: var(--cr-text-muted);
+  width: 36px; height: 36px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 50%;
+}
+.cr-pill-modal-close:hover { background: var(--cr-border); }
+.cr-pill-modal-close:focus-visible { outline: 2px solid var(--cr-focus); outline-offset: 2px; }
+
+/* ─── Fun Fact Stat Modal ─── */
+.cr-ffs-stat {
+  font-family: var(--cr-font-display);
+  font-size: 2.5em;
+  font-weight: 700;
+  color: #B8860B;
+  margin-bottom: 12px;
+  line-height: 1.2;
+}
+.cr-ffs-body {
+  font-size: 1em;
+  color: var(--cr-text);
+  line-height: 1.7;
+  margin-bottom: 14px;
+}
+.cr-ffs-source {
+  font-size: 0.82em;
+  color: var(--cr-text-muted);
+  font-style: italic;
+}
+
+/* ─── Fun Fact Freeform Modal ─── */
+.cr-fff-prompt {
+  font-family: var(--cr-font-display);
+  font-size: 1.15em;
+  font-weight: 600;
+  color: #3D1A6B;
+  margin-bottom: 8px;
+}
+.cr-fff-hint {
+  font-size: 0.82em;
+  color: var(--cr-text-muted);
+  margin-bottom: 14px;
+}
+.cr-fff-input-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.cr-fff-input {
+  flex: 1;
+  padding: 10px 14px;
+  border: 2px solid var(--cr-border);
+  border-radius: 8px;
+  font-size: 0.95em;
+  font-family: var(--cr-font-body);
+  background: var(--cr-surface);
+  color: var(--cr-text);
+}
+.cr-fff-input:focus { border-color: #7B4EA0; outline: none; box-shadow: 0 0 0 3px rgba(123,78,160,0.15); }
+.cr-fff-submit {
+  padding: 10px 22px;
+  background: #7B4EA0;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.cr-fff-submit:hover { background: #6A3F8C; }
+.cr-fff-submit:disabled { opacity: 0.4; cursor: not-allowed; }
+.cr-fff-bar-track {
+  height: 8px;
+  background: var(--cr-border);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+.cr-fff-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.4s ease;
+}
+@media (prefers-reduced-motion: reduce) {
+  .cr-fff-bar-fill { transition: none; }
+}
+.cr-fff-feedback {
+  font-size: 0.95em;
+  line-height: 1.6;
+  padding: 12px 14px;
+  border-radius: 10px;
+  margin-bottom: 10px;
+}
+.cr-fff-feedback--hit { background: #F0FFF4; color: #2E7D4F; border: 1px solid #C6F6D5; }
+.cr-fff-feedback--close { background: #FFFBEB; color: #92400E; border: 1px solid #FDE68A; }
+.cr-fff-feedback--miss { background: #FFF5F5; color: #C0392B; border: 1px solid #FED7D7; }
+.cr-fff-reveal {
+  font-size: 0.9em;
+  color: var(--cr-text-secondary);
+  padding: 10px 14px;
+  background: var(--cr-bg, #F8F7F4);
+  border-radius: 8px;
+  border-left: 3px solid #7B4EA0;
+}
+
+/* ─── Knowledge Check Inline Modal ─── */
+.cr-kci-question {
+  font-family: var(--cr-font-display);
+  font-size: 1.15em;
+  font-weight: 600;
+  color: var(--cr-burgundy);
+  margin-bottom: 16px;
+}
+.cr-kci-options { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+.cr-kci-option {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 12px 14px;
+  border: 2px solid var(--cr-border);
+  border-radius: 10px;
+  cursor: pointer;
+  background: var(--cr-surface);
+  transition: all var(--cr-transition);
+  font-size: 0.95em;
+  min-height: 44px;
+}
+.cr-kci-option:hover:not(.answered) { border-color: var(--cr-burgundy-light); background: var(--cr-burgundy-faded); }
+.cr-kci-option:focus-visible { outline: 2px solid var(--cr-focus); outline-offset: 2px; }
+.cr-kci-option .cr-kci-radio {
+  width: 20px; height: 20px; border-radius: 50%;
+  border: 2px solid var(--cr-border);
+  flex-shrink: 0; margin-top: 1px;
+  display: flex; align-items: center; justify-content: center;
+  transition: all var(--cr-transition);
+}
+.cr-kci-option.selected .cr-kci-radio { border-color: var(--cr-burgundy); background: var(--cr-burgundy); }
+.cr-kci-option.correct { border-color: var(--cr-success); background: #F0FFF4; }
+.cr-kci-option.correct .cr-kci-radio { border-color: var(--cr-success); background: var(--cr-success); }
+.cr-kci-option.incorrect { border-color: var(--cr-danger); background: #FFF5F5; }
+.cr-kci-option.incorrect .cr-kci-radio { border-color: var(--cr-danger); background: var(--cr-danger); }
+.cr-kci-feedback {
+  padding: 12px 14px;
+  border-radius: 10px;
+  font-size: 0.92em;
+  line-height: 1.6;
+  display: none;
+}
+.cr-kci-feedback.show { display: block; }
+.cr-kci-feedback--correct { background: #F0FFF4; color: #2E7D4F; border: 1px solid #C6F6D5; }
+.cr-kci-feedback--incorrect { background: #FFF5F5; color: #C0392B; border: 1px solid #FED7D7; }
+
+/* ═══════════════════════════════════════════════════════════════
    MATCHING EXERCISE
    ═══════════════════════════════════════════════════════════════ */
 .cr-matching {
@@ -3256,6 +3509,9 @@ function renderBlock(block, index) {
     case 'video': return renderVideoEmbed(wrap, block);
     case 'knowledgeCheck': return renderKnowledgeCheck(wrap, block, index);
     case 'quiz': return renderQuizBlock(wrap, block, index);
+    case 'funFactStat': return renderFunFactStat(wrap, block, index);
+    case 'funFactFreeform': return renderFunFactFreeform(wrap, block, index);
+    case 'knowledgeCheckInline': return renderKnowledgeCheckInline(wrap, block, index);
     default:
       wrap.innerHTML = `<div class="cr-card" style="border-left:4px solid var(--cr-gold)">
         <p style="font-size:0.9em;color:var(--cr-text-muted)">Unsupported block type: <code>${esc(block.type)}</code></p>
@@ -4063,6 +4319,277 @@ function renderQuizBlock(wrap, block, blockIndex) {
 }
 
 // ═══════════════════════════════════════════════════════════════
+// INLINE SUPPLEMENTAL BLOCKS (funFactStat, funFactFreeform, knowledgeCheckInline)
+// ═══════════════════════════════════════════════════════════════
+
+// ─── State maps ───
+const _kcInlineState = new Map(); // blockIndex → { selected, answered }
+const _fffState = new Map();      // blockIndex → { answered: bool, result, input }
+
+// ─── Fuzzy matching engine ───
+function normalizeAnswer(s) {
+  return s.toLowerCase()
+    .replace(/%/g, ' percent ')
+    .replace(/ninety[\s-]*five/g, '95')
+    .replace(/twenty[\s-]*four/g, '24')
+    .replace(/[^a-z0-9 ]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function levenshtein(a, b) {
+  const m = a.length, n = b.length;
+  const dp = Array.from({length: m+1}, (_, i) => [i, ...Array(n).fill(0)]);
+  for (let j = 0; j <= n; j++) dp[0][j] = j;
+  for (let i = 1; i <= m; i++)
+    for (let j = 1; j <= n; j++)
+      dp[i][j] = a[i-1] === b[j-1] ? dp[i-1][j-1] : 1 + Math.min(dp[i-1][j], dp[i][j-1], dp[i-1][j-1]);
+  return dp[m][n];
+}
+
+function matchScore(input, targets) {
+  const n = normalizeAnswer(input);
+  let best = 0;
+  for (const t of targets) {
+    const nt = normalizeAnswer(t);
+    if (n === nt) return 1.0;
+    if (n.includes(nt) || nt.includes(n)) best = Math.max(best, 0.9);
+    const dist = levenshtein(n, nt);
+    const sim = 1 - (dist / Math.max(n.length, nt.length, 1));
+    best = Math.max(best, sim);
+  }
+  return best;
+}
+
+// ─── Shared: open pill modal ───
+function openPillModal(contentHtml, onClose) {
+  const backdrop = document.createElement('div');
+  backdrop.className = 'cr-pill-modal-backdrop';
+  backdrop.setAttribute('role', 'dialog');
+  backdrop.setAttribute('aria-modal', 'true');
+  backdrop.innerHTML = `<div class="cr-pill-modal">
+    <button class="cr-pill-modal-close" aria-label="Close" title="Close">&times;</button>
+    <div class="cr-pill-modal-body">${contentHtml}</div>
+  </div>`;
+  document.body.appendChild(backdrop);
+
+  const closeModal = () => {
+    backdrop.remove();
+    if (onClose) onClose();
+  };
+
+  backdrop.querySelector('.cr-pill-modal-close').addEventListener('click', closeModal);
+  backdrop.addEventListener('click', (e) => { if (e.target === backdrop) closeModal(); });
+
+  const escHandler = (e) => {
+    if (e.key === 'Escape') {
+      closeModal();
+      document.removeEventListener('keydown', escHandler);
+    }
+  };
+  document.addEventListener('keydown', escHandler);
+
+  // Focus the close button for keyboard users
+  setTimeout(() => backdrop.querySelector('.cr-pill-modal-close')?.focus(), 50);
+
+  return { backdrop, closeModal };
+}
+
+// ─── 1. funFactStat ───
+function renderFunFactStat(wrap, block, blockIndex) {
+  wrap.className = 'cr-pill-wrap';
+  wrap.dataset.blockType = 'funFactStat';
+  wrap.innerHTML = `<button class="cr-pill cr-pill--amber" aria-label="Fun fact — click to expand" tabindex="0">★ Fun fact ▾</button>`;
+
+  wrap.querySelector('.cr-pill').addEventListener('click', () => {
+    openPillModal(`
+      <div class="cr-ffs-stat">${esc(block.stat || '')}</div>
+      <div class="cr-ffs-body">${esc(block.body || '')}</div>
+      ${block.source ? `<div class="cr-ffs-source">Source: ${esc(block.source)}</div>` : ''}
+    `);
+  });
+
+  return wrap;
+}
+
+// ─── 2. funFactFreeform ───
+function renderFunFactFreeform(wrap, block, blockIndex) {
+  wrap.className = 'cr-pill-wrap';
+  wrap.dataset.blockType = 'funFactFreeform';
+  wrap.innerHTML = `<button class="cr-pill cr-pill--purple" aria-label="Quick recall — click to expand" tabindex="0">✦ Quick recall ▾</button>`;
+
+  wrap.querySelector('.cr-pill').addEventListener('click', () => {
+    const state = _fffState.get(blockIndex);
+    const answered = state && state.answered;
+
+    let bodyHtml = `<div class="cr-fff-prompt">${esc(block.prompt || '')}</div>`;
+    if (block.hint) bodyHtml += `<div class="cr-fff-hint">${esc(block.hint)}</div>`;
+
+    if (answered) {
+      // Re-show previous result
+      const barColor = state.result === 'hit' ? '#2E7D4F' : state.result === 'close' ? '#D4A855' : '#C0392B';
+      const barWidth = state.result === 'hit' ? '100' : state.result === 'close' ? '60' : '20';
+      bodyHtml += `<div class="cr-fff-bar-track"><div class="cr-fff-bar-fill" style="width:${barWidth}%;background:${barColor}"></div></div>`;
+      bodyHtml += `<div class="cr-fff-feedback cr-fff-feedback--${state.result}">${esc(state.feedbackText)}</div>`;
+      bodyHtml += `<div class="cr-fff-reveal">${esc(block.reveal || '')}</div>`;
+    } else {
+      bodyHtml += `<div class="cr-fff-input-row">
+        <input type="text" class="cr-fff-input" placeholder="Your answer…" aria-label="Your answer">
+        <button class="cr-fff-submit" data-role="fff-submit">Submit</button>
+      </div>
+      <div class="cr-fff-result-area"></div>`;
+    }
+
+    const { backdrop } = openPillModal(bodyHtml);
+
+    if (!answered) {
+      const input = backdrop.querySelector('.cr-fff-input');
+      const submitBtn = backdrop.querySelector('[data-role="fff-submit"]');
+      const resultArea = backdrop.querySelector('.cr-fff-result-area');
+
+      const doSubmit = () => {
+        const val = input.value.trim();
+        if (!val) return;
+
+        const hitScore = matchScore(val, block.accepted || []);
+        const closeScore = matchScore(val, block.close || []);
+
+        let result, feedbackText;
+        if (hitScore >= 0.78) {
+          result = 'hit';
+          feedbackText = (block.feedbacks && block.feedbacks.hit) || 'Correct!';
+        } else if (closeScore >= 0.80 || hitScore >= 0.55) {
+          result = 'close';
+          feedbackText = ((block.feedbacks && block.feedbacks.close) || 'Close!').replace('{input}', val);
+        } else {
+          result = 'miss';
+          feedbackText = (block.feedbacks && block.feedbacks.miss) || 'Not quite.';
+        }
+
+        const barColor = result === 'hit' ? '#2E7D4F' : result === 'close' ? '#D4A855' : '#C0392B';
+        const barWidth = result === 'hit' ? '100' : result === 'close' ? '60' : '20';
+
+        resultArea.innerHTML = `
+          <div class="cr-fff-bar-track"><div class="cr-fff-bar-fill" style="width:0%;background:${barColor}"></div></div>
+          <div class="cr-fff-feedback cr-fff-feedback--${result}">${esc(feedbackText)}</div>
+          <div class="cr-fff-reveal">${esc(block.reveal || '')}</div>
+        `;
+
+        // Animate bar
+        requestAnimationFrame(() => {
+          const fill = resultArea.querySelector('.cr-fff-bar-fill');
+          if (fill) fill.style.width = barWidth + '%';
+        });
+
+        // Disable input
+        input.disabled = true;
+        submitBtn.disabled = true;
+
+        // Save state
+        _fffState.set(blockIndex, { answered: true, result, feedbackText, input: val });
+      };
+
+      submitBtn.addEventListener('click', doSubmit);
+      input.addEventListener('keydown', (e) => { if (e.key === 'Enter') doSubmit(); });
+      setTimeout(() => input.focus(), 60);
+    }
+  });
+
+  return wrap;
+}
+
+// ─── 3. knowledgeCheckInline ───
+function renderKnowledgeCheckInline(wrap, block, blockIndex) {
+  wrap.className = 'cr-pill-wrap';
+  wrap.dataset.blockType = 'knowledgeCheckInline';
+  wrap.innerHTML = `<button class="cr-pill cr-pill--burgundy" aria-label="Check your understanding — click to expand" tabindex="0">◆ Check your understanding ▾</button>`;
+
+  wrap.querySelector('.cr-pill').addEventListener('click', () => {
+    const state = _kcInlineState.get(blockIndex);
+    const prevSelected = state ? state.selected : null;
+    const prevAnswered = state ? state.answered : false;
+    const correctIdx = typeof block.correctAnswer === 'number' ? block.correctAnswer : 0;
+    const options = block.options || [];
+
+    let optionsHtml = options.map((opt, oi) => {
+      let cls = 'cr-kci-option';
+      if (prevAnswered && oi === prevSelected && oi === correctIdx) cls += ' correct answered';
+      else if (prevAnswered && oi === prevSelected && oi !== correctIdx) cls += ' incorrect answered';
+      else if (prevAnswered && oi === correctIdx) cls += ' correct answered';
+      else if (!prevAnswered && oi === prevSelected) cls += ' selected';
+      return `<div class="${cls}" data-oi="${oi}" tabindex="0" role="radio" aria-checked="${oi === prevSelected ? 'true' : 'false'}">
+        <span class="cr-kci-radio">${prevAnswered && oi === correctIdx ? '✓' : prevAnswered && oi === prevSelected && oi !== correctIdx ? '✗' : ''}</span>
+        <span>${esc(opt)}</span>
+      </div>`;
+    }).join('');
+
+    let feedbackHtml = '';
+    if (prevAnswered) {
+      const isCorrect = prevSelected === correctIdx;
+      const fb = block.feedback || {};
+      const text = isCorrect ? (fb.correct || 'Correct!') : (fb.incorrect || 'Incorrect.');
+      feedbackHtml = `<div class="cr-kci-feedback show cr-kci-feedback--${isCorrect ? 'correct' : 'incorrect'}">${esc(text)}</div>`;
+    }
+
+    const bodyHtml = `
+      <div class="cr-kci-question">${esc(block.question || '')}</div>
+      <div class="cr-kci-options">${optionsHtml}</div>
+      ${!prevAnswered ? `<button class="cr-kci-submit" disabled data-role="kci-submit">Check Answer</button>` : ''}
+      <div class="cr-kci-feedback-area">${feedbackHtml}</div>
+    `;
+
+    const { backdrop } = openPillModal(bodyHtml);
+
+    if (!prevAnswered) {
+      const optionEls = backdrop.querySelectorAll('.cr-kci-option');
+      const submitBtn = backdrop.querySelector('[data-role="kci-submit"]');
+      let selected = prevSelected;
+
+      optionEls.forEach((el) => {
+        const handler = () => {
+          if (el.classList.contains('answered')) return;
+          selected = parseInt(el.dataset.oi);
+          optionEls.forEach(o => { o.classList.remove('selected'); o.setAttribute('aria-checked', 'false'); });
+          el.classList.add('selected');
+          el.setAttribute('aria-checked', 'true');
+          submitBtn.disabled = false;
+          _kcInlineState.set(blockIndex, { selected, answered: false });
+        };
+        el.addEventListener('click', handler);
+        el.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handler(); } });
+      });
+
+      submitBtn.addEventListener('click', () => {
+        if (selected === null) return;
+        const isCorrect = selected === correctIdx;
+        optionEls.forEach((el, oi) => {
+          el.classList.add('answered');
+          el.classList.remove('selected');
+          if (oi === correctIdx) {
+            el.classList.add('correct');
+            el.querySelector('.cr-kci-radio').textContent = '✓';
+          }
+          if (oi === selected && oi !== correctIdx) {
+            el.classList.add('incorrect');
+            el.querySelector('.cr-kci-radio').textContent = '✗';
+          }
+        });
+
+        const fb = block.feedback || {};
+        const text = isCorrect ? (fb.correct || 'Correct!') : (fb.incorrect || 'Incorrect.');
+        backdrop.querySelector('.cr-kci-feedback-area').innerHTML =
+          `<div class="cr-kci-feedback show cr-kci-feedback--${isCorrect ? 'correct' : 'incorrect'}">${esc(text)}</div>`;
+
+        submitBtn.remove();
+        _kcInlineState.set(blockIndex, { selected, answered: true });
+      });
+    }
+  });
+
+  return wrap;
+}
+
+// ═══════════════════════════════════════════════════════════════
 // DOWNLOAD DELIVERABLES
 // ═══════════════════════════════════════════════════════════════
 function downloadCourseText() {
@@ -4106,6 +4633,12 @@ function downloadCourseText() {
       } else if (block.type === 'imageText') {
         if (block.title) text += `${block.title}\n`;
         text += stripHtml(block.content || '') + '\n\n';
+      } else if (block.type === 'funFactStat') {
+        text += `★ Fun Fact: ${block.stat || ''} — ${block.body || ''}\n\n`;
+      } else if (block.type === 'funFactFreeform') {
+        text += `✦ Quick Recall: ${block.prompt || ''}\n\n`;
+      } else if (block.type === 'knowledgeCheckInline') {
+        text += `◆ Knowledge Check: ${block.question || ''}\n\n`;
       }
     });
   });
