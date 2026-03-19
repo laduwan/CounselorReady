@@ -10,12 +10,14 @@
 import cron from 'node-cron';
 import { Resend } from 'resend';
 import { CourseProgress } from '../models/InteractiveCourse.js';
+import UserCourseProgress from '../models/UserCourseProgress.js';
 import User from '../models/User.js';
 import Certificate from '../models/Certificate.js';
 import Course from '../models/Course.js';
-import { 
-  getCourseProgressReminderEmail, 
-  getCEMilestoneEmail 
+import {
+  getCourseProgressReminderEmail,
+  getCEMilestoneEmail,
+  getIncompleteCourseReminderEmail
 } from './emailTemplates.js';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -235,6 +237,101 @@ export async function generateDailyStats() {
 }
 
 /**
+ * Send reminders to users who enrolled/paid but haven't completed their courses.
+ * Targets users with active subscriptions who have in-progress or not-started courses
+ * that haven't been accessed in at least 7 days.
+ */
+export async function sendIncompleteCourseReminders() {
+  console.log('📧 Running incomplete course reminder job...');
+  let totalSent = 0;
+
+  try {
+    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+
+    // Find all incomplete course progress records (both legacy and interactive)
+    const [legacyProgress, interactiveProgress] = await Promise.all([
+      UserCourseProgress.find({
+        status: { $in: ['not_started', 'in_progress'] },
+        lastAccessedAt: { $lt: sevenDaysAgo }
+      }).populate('courseId', 'title slug ceHours ceuHours'),
+      CourseProgress.find({
+        status: { $in: ['not_started', 'in_progress'] },
+        lastAccessedAt: { $lt: sevenDaysAgo }
+      }).populate('courseId', 'title slug ceHours')
+    ]);
+
+    // Group by userId
+    const userCourses = {};
+
+    for (const p of legacyProgress) {
+      if (!p.courseId) continue;
+      const uid = p.userId.toString();
+      if (!userCourses[uid]) userCourses[uid] = [];
+      userCourses[uid].push({
+        title: p.courseId.title,
+        slug: p.courseId.slug,
+        percentComplete: p.percentComplete || 0,
+        ceHours: p.courseId.ceHours || p.courseId.ceuHours || 0,
+        resumeUrl: `${PLATFORM_URL}/learn/${p.courseId.slug}`
+      });
+    }
+
+    for (const p of interactiveProgress) {
+      if (!p.courseId) continue;
+      const uid = p.userId.toString();
+      if (!userCourses[uid]) userCourses[uid] = [];
+      // Avoid duplicate entries if the same course appears in both models
+      const alreadyListed = userCourses[uid].some(c => c.slug === p.courseId.slug);
+      if (alreadyListed) continue;
+      userCourses[uid].push({
+        title: p.courseId.title,
+        slug: p.courseId.slug,
+        percentComplete: p.overallProgress || p.percentComplete || 0,
+        ceHours: p.courseId.ceHours || 0,
+        resumeUrl: `${PLATFORM_URL}/learn/${p.courseId.slug}`
+      });
+    }
+
+    // Send one email per user with all their incomplete courses
+    for (const [userId, courses] of Object.entries(userCourses)) {
+      try {
+        const user = await User.findById(userId);
+        if (!user) continue;
+
+        // Only remind users with active subscriptions (they paid)
+        if (!user.hasActiveSubscription()) continue;
+
+        // Respect notification preferences
+        if (user.notificationPreferences?.progressReminders === false) continue;
+
+        const firstName = user.profile?.firstName || 'there';
+
+        const template = getIncompleteCourseReminderEmail({
+          firstName,
+          courses,
+          dashboardUrl: `${PLATFORM_URL}/dashboard`
+        });
+
+        const result = await sendEmail(user.email, template);
+        if (result.success) {
+          totalSent++;
+          console.log(`  Sent incomplete course reminder to ${user.email} (${courses.length} courses)`);
+        }
+
+        // Small delay to avoid rate limiting
+        await new Promise(r => setTimeout(r, 100));
+      } catch (userErr) {
+        console.error(`  Error sending reminder to user ${userId}:`, userErr.message);
+      }
+    }
+  } catch (error) {
+    console.error('  Error in incomplete course reminders:', error.message);
+  }
+
+  console.log(`📧 Incomplete course reminder job complete. Sent ${totalSent} emails.`);
+}
+
+/**
  * Initialize all scheduled jobs
  */
 export function initializeScheduler() {
@@ -255,6 +352,11 @@ export function initializeScheduler() {
     cleanupStaleProgress().catch(console.error);
   });
 
+  // Incomplete course reminders - run weekly on Wednesday at 11 AM
+  cron.schedule('0 11 * * 3', () => {
+    sendIncompleteCourseReminders().catch(console.error);
+  });
+
   // Daily stats - run at midnight
   cron.schedule('0 0 * * *', () => {
     generateDailyStats().catch(console.error);
@@ -263,6 +365,7 @@ export function initializeScheduler() {
   console.log('⏰ Scheduler initialized:');
   console.log('   • Progress reminders: Daily at 10 AM');
   console.log('   • CE milestone check: Every 6 hours');
+  console.log('   • Incomplete course reminders: Weekly on Wednesday at 11 AM');
   console.log('   • Stale cleanup: Weekly on Sunday at 2 AM');
   console.log('   • Daily stats: Midnight');
 }
@@ -271,6 +374,7 @@ export default {
   initializeScheduler,
   sendProgressReminders,
   checkCEMilestones,
+  sendIncompleteCourseReminders,
   cleanupStaleProgress,
   generateDailyStats
 };
