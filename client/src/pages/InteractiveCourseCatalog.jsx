@@ -76,15 +76,7 @@ const InteractiveCourseCatalog = () => {
   };
 
   const handleCourseClick = (course) => {
-    const progress = getProgressForCourse(course._id);
-    const isEnrolled = !!progress;
-    const isFree = !course.accessType || course.accessType === 'free';
-
-    if (isEnrolled || isFree) {
-      window.location.href = `/interactive-course.html?slug=${course.slug}`;
-    } else {
-      window.location.href = `/course-details.html?slug=${course.slug}`;
-    }
+    window.location.href = `/course-details.html?slug=${course.slug}`;
   };
 
   if (loading) {
