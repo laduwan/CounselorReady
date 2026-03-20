@@ -9,8 +9,16 @@ import UserActivity from '../models/UserActivity.js';
 
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
+if (!resend) {
+  console.warn('[ActivityTracking] RESEND_API_KEY not set — admin email notifications are disabled');
+}
+
 // Admin email(s) to receive notifications
-const ADMIN_EMAILS = process.env.ADMIN_NOTIFICATION_EMAILS?.split(',') || ['admin@counselorready.com'];
+const ADMIN_EMAILS = process.env.ADMIN_NOTIFICATION_EMAILS?.split(',').map(e => e.trim()).filter(Boolean) || ['admin@counselorready.com'];
+
+if (!process.env.ADMIN_NOTIFICATION_EMAILS) {
+  console.warn(`[ActivityTracking] ADMIN_NOTIFICATION_EMAILS not set — defaulting to ${ADMIN_EMAILS.join(', ')}`);
+}
 
 /**
  * Activity types for tracking
@@ -82,10 +90,14 @@ export async function logActivity(type, data, options = {}) {
   }
   
   // Send email notification if enabled
-  if (notifyAdmin && resend) {
-    await sendAdminNotification(type, data, { userName, userEmail });
+  if (notifyAdmin) {
+    if (resend) {
+      await sendAdminNotification(type, data, { userName, userEmail });
+    } else {
+      console.warn(`[ActivityTracking] Skipping admin notification for ${type} — Resend not configured`);
+    }
   }
-  
+
   return activity;
 }
 
@@ -163,7 +175,7 @@ async function sendAdminNotification(type, data, userInfo) {
   
   try {
     await resend.emails.send({
-      from: 'CounselorReady <notifications@counselorready.com>',
+      from: 'CounselorReady <noreply@counselorready.com>',
       to: ADMIN_EMAILS,
       subject: notification.subject,
       html: `
@@ -205,7 +217,10 @@ async function sendAdminNotification(type, data, userInfo) {
     
     console.log(`Admin notification sent: ${type}`);
   } catch (error) {
-    console.error('Failed to send admin notification:', error);
+    console.error(`[ActivityTracking] Failed to send admin notification for ${type}:`, error.message || error);
+    if (error.statusCode) {
+      console.error(`[ActivityTracking] Resend API status: ${error.statusCode}`, error.body || '');
+    }
   }
 }
 
