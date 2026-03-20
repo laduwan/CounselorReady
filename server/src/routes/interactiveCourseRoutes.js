@@ -238,7 +238,7 @@ router.get('/', optionalAuth, async (req, res) => {
 
       const [interactiveCourses, interactiveTotal] = await Promise.all([
         Course.find(query)
-          .select('title slug description thumbnail ceHours totalEstimatedTime categories tags wordCount sectionCount moduleCount assessmentQuestionCount ceuCategories accessType price pricingTier status ceuHours ceuApprovalNumber courseCode')
+          .select('title slug description thumbnail ceHours totalEstimatedTime categories tags wordCount totalContentBlocks totalQuizQuestions acepNumber accessType price pricingTier status courseCode')
           .sort({ publishedAt: -1 })
           .lean(),
         Course.countDocuments(query)
@@ -299,7 +299,7 @@ router.get('/', optionalAuth, async (req, res) => {
 
     const [interactiveCourses, interactiveTotal] = await Promise.all([
       Course.find(query)
-        .select('title slug description thumbnail ceHours totalEstimatedTime categories tags wordCount sectionCount moduleCount assessmentQuestionCount ceuCategories accessType price pricingTier status ceuHours ceuApprovalNumber courseCode')
+        .select('title slug description thumbnail ceHours totalEstimatedTime categories tags wordCount totalContentBlocks totalQuizQuestions acepNumber accessType price pricingTier status courseCode')
         .sort({ publishedAt: -1 })
         .lean(),
       Course.countDocuments(query)
@@ -380,6 +380,41 @@ router.get('/slug/:slug', optionalAuth, async (req, res) => {
   } catch (error) {
     console.error('Error fetching course:', error);
     res.status(500).json({ success: false, error: 'Failed to fetch course' });
+  }
+});
+
+/**
+ * GET /api/interactive-courses/user/my-courses
+ * Get all courses user is enrolled in with progress
+ * NOTE: Must be defined BEFORE /:id catch-all route
+ */
+router.get('/user/my-courses', ...protectAndScope, async (req, res) => {
+  try {
+    const { status } = req.query;
+
+    const query = { userId: req.user._id };
+    if (status) query.status = status;
+
+    const progressList = await CourseProgress.find(query)
+      .populate('courseId', 'title slug description thumbnail ceHours totalEstimatedTime')
+      .sort({ lastAccessedAt: -1 });
+
+    const courses = progressList.map(p => ({
+      course: p.courseId,
+      progress: p.overallProgress,
+      status: p.status,
+      currentSection: p.currentSectionIndex,
+      totalTimeSpent: p.totalTimeSpent,
+      enrolledAt: p.enrolledAt,
+      lastAccessedAt: p.lastAccessedAt,
+      completedAt: p.completedAt,
+      certificateId: p.certificateId
+    }));
+
+    res.json({ success: true, data: courses });
+  } catch (error) {
+    console.error('Error fetching user courses:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch courses' });
   }
 });
 
@@ -1319,40 +1354,6 @@ router.post('/:id/progress/interaction', ...protectAndScope, async (req, res) =>
   } catch (error) {
     console.error('Error logging interaction:', error);
     res.status(500).json({ success: false, error: 'Failed to log interaction' });
-  }
-});
-
-/**
- * GET /api/interactive-courses/user/my-courses
- * Get all courses user is enrolled in with progress
- */
-router.get('/user/my-courses', ...protectAndScope, async (req, res) => {
-  try {
-    const { status } = req.query;
-
-    const query = { userId: req.user._id };
-    if (status) query.status = status;
-
-    const progressList = await CourseProgress.find(query)
-      .populate('courseId', 'title slug description thumbnail ceHours totalEstimatedTime')
-      .sort({ lastAccessedAt: -1 });
-
-    const courses = progressList.map(p => ({
-      course: p.courseId,
-      progress: p.overallProgress,
-      status: p.status,
-      currentSection: p.currentSectionIndex,
-      totalTimeSpent: p.totalTimeSpent,
-      enrolledAt: p.enrolledAt,
-      lastAccessedAt: p.lastAccessedAt,
-      completedAt: p.completedAt,
-      certificateId: p.certificateId
-    }));
-
-    res.json({ success: true, data: courses });
-  } catch (error) {
-    console.error('Error fetching user courses:', error);
-    res.status(500).json({ success: false, error: 'Failed to fetch courses' });
   }
 });
 

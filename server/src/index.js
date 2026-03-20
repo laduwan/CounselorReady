@@ -7,6 +7,7 @@
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
+import cookieParser from 'cookie-parser';
 import rateLimit from 'express-rate-limit';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
@@ -179,6 +180,7 @@ app.use('/api/scholarly-articles/article/*/generate-quiz', aiLimiter);
 app.use('/api/payments/webhook', express.raw({ type: 'application/json' }));
 app.use(express.json({ limit: '15mb' }));
 app.use(express.urlencoded({ extended: true, limit: '15mb' }));
+app.use(cookieParser());
 
 // Partner detection — attach req.partner context for all API requests
 app.use('/api/', detectPartner);
