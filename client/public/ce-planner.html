@@ -57,10 +57,10 @@
       </a>
       <nav class="hidden lg:flex items-center gap-1">
         <a href="/dashboard.html" class="nav-link">Dashboard</a>
-        <a href="/courses" class="nav-link">Courses</a>
+        <a href="/courses.html" class="nav-link">Courses</a>
         <a href="/credentials.html" class="nav-link active">Credentials</a>
-        <a href="/supervision" class="nav-link">Practice</a>
-        <a href="/organization" class="nav-link">Team</a>
+        <a href="/supervision.html" class="nav-link">Practice</a>
+        <a href="/organization.html" class="nav-link">Team</a>
       </nav>
       <div class="flex items-center gap-2">
         <a href="/admin.html" id="adminBadge" class="hidden items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full" style="color:#6B1D34;background:#FDF5F7;border:1px solid #6B1D34;text-decoration:none">
@@ -90,15 +90,15 @@
     </div>
     <div id="mobileNav" class="hidden lg:hidden border-t border-stone-200 bg-white px-4 py-3 space-y-1">
       <a href="/dashboard.html" class="block px-4 py-2.5 rounded-lg text-sm" style="color:#57534e">Dashboard</a>
-      <a href="/courses" class="block px-4 py-2.5 rounded-lg text-sm" style="color:#57534e">Courses</a>
+      <a href="/courses.html" class="block px-4 py-2.5 rounded-lg text-sm" style="color:#57534e">Courses</a>
       <a href="/credentials.html" class="block px-4 py-2.5 rounded-lg text-sm font-semibold" style="color:#6B1D34;background:#FDF5F7">Credentials</a>
       <div style="padding-left:12px">
         <a href="/ce-planner.html" class="block px-4 py-2 rounded-lg text-sm font-semibold" style="color:#6B1D34">CE Planner</a>
         <a href="/audit.html" class="block px-4 py-2 rounded-lg text-sm" style="color:#78716c">Audit Kit</a>
         <a href="/board-alerts.html" class="block px-4 py-2 rounded-lg text-sm" style="color:#78716c">Board Alerts</a>
       </div>
-      <a href="/supervision" class="block px-4 py-2.5 rounded-lg text-sm" style="color:#57534e">Practice</a>
-      <a href="/organization" class="block px-4 py-2.5 rounded-lg text-sm" style="color:#57534e">Team</a>
+      <a href="/supervision.html" class="block px-4 py-2.5 rounded-lg text-sm" style="color:#57534e">Practice</a>
+      <a href="/organization.html" class="block px-4 py-2.5 rounded-lg text-sm" style="color:#57534e">Team</a>
       <a href="/admin.html" id="adminMob" class="hidden px-4 py-2.5 rounded-lg text-sm font-semibold" style="color:#6B1D34;background:#FDF5F7">Admin Panel</a>
     </div>
   </header>
@@ -273,7 +273,7 @@
         if(item.recommendations?.length){
           const recItems=item.recommendations.map(rec=>{
             if(rec.suggestedCourses?.length){
-              return rec.suggestedCourses.map(course=>`<a href="/learn/${esc(course.slug)}" class="rec-link bg-burgundy-100 hover:bg-burgundy-200 mb-2" style="text-decoration:none"><div class="flex items-center gap-3"><svg class="w-4 h-4 text-burgundy-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg><div><p class="text-sm font-medium text-gray-900">${esc(course.title)}</p><p class="text-xs text-gray-500">${course.ceHours} CE hours &bull; ${esc(rec.category)}</p></div></div><svg class="w-4 h-4 text-burgundy-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg></a>`).join('');
+              return rec.suggestedCourses.map(course=>`<a href="/interactive-course.html?slug=${esc(course.slug)}" class="rec-link bg-burgundy-100 hover:bg-burgundy-200 mb-2" style="text-decoration:none"><div class="flex items-center gap-3"><svg class="w-4 h-4 text-burgundy-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg><div><p class="text-sm font-medium text-gray-900">${esc(course.title)}</p><p class="text-xs text-gray-500">${course.ceHours} CE hours &bull; ${esc(rec.category)}</p></div></div><svg class="w-4 h-4 text-burgundy-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg></a>`).join('');
             }
             return rec.note?`<p class="text-sm text-gray-500 italic">${esc(rec.note)}</p>`:'';
           }).join('');

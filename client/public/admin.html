@@ -48,7 +48,7 @@
       </div>
       <div class="flex items-center gap-4">
         <span class="text-burgundy-200 text-sm" id="adminEmail">Admin</span>
-        <a href="/dashboard" class="text-burgundy-200 hover:text-white text-sm flex items-center gap-1">
+        <a href="/dashboard.html" class="text-burgundy-200 hover:text-white text-sm flex items-center gap-1">
           <i class="fas fa-arrow-left"></i> Exit Admin
         </a>
       </div>
@@ -430,7 +430,7 @@
         .then(data => {
           const user = data.user || data;
           if (user.role !== 'admin') {
-            window.location.href = '/dashboard';
+            window.location.href = '/dashboard.html';
             return;
           }
           document.getElementById('adminEmail').textContent = user.email || 'Admin';
