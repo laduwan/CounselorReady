@@ -292,7 +292,62 @@
       } else if (isFree) {
         ctaButton = `<button onclick="enrollAndStart('${esc(course._id)}', '${esc(course.slug)}')" class="block w-full bg-forest-700 hover:bg-forest-800 text-white font-semibold px-6 py-3 rounded-xl transition-colors">Enroll Free &amp; Start</button>`;
       } else {
-        ctaButton = `<a href="/subscription.html" class="block w-full text-center bg-burgundy-800 hover:bg-burgundy-900 text-white font-semibold px-6 py-3 rounded-xl transition-colors">Subscribe to Access</a>`;
+        // Subscription tier options based on course accessTier
+        const courseTier = course.accessTier || 'starter';
+        const isPremium = courseTier === 'premium';
+        const tierHierarchy = ['starter', 'professional', 'vip'];
+        const tierIndex = tierHierarchy.indexOf(courseTier);
+        const availableTiers = tierIndex >= 0 ? tierHierarchy.slice(tierIndex) : [];
+        const tierInfo = {
+          starter:      { label: 'Starter',       price: '19.99' },
+          professional: { label: 'Professional',  price: '29.99' },
+          vip:          { label: 'VIP',            price: '49.99' }
+        };
+
+        const tierCards = availableTiers.map(t => {
+          const info = tierInfo[t];
+          return `
+            <a href="/subscription.html?plan=${t}" class="block border border-burgundy-200 rounded-lg p-3 hover:border-burgundy-500 hover:bg-burgundy-50 transition-all text-center">
+              <span class="block text-sm font-semibold text-burgundy-800">${info.label}</span>
+              <span class="block text-xs text-forest-600 mt-0.5">$${info.price}/mo</span>
+            </a>
+          `;
+        }).join('');
+
+        const coursePrice = course.price || 0;
+        const buyButton = coursePrice > 0 ? `
+          <button onclick="purchaseCourse('${esc(course._id)}', '${esc(course.slug)}')" class="block w-full text-center border-2 border-forest-600 text-forest-700 hover:bg-forest-50 font-semibold px-6 py-3 rounded-xl transition-colors">
+            Buy This Course Only — $${coursePrice}
+          </button>
+        ` : '';
+
+        const divider = availableTiers.length > 0 && coursePrice > 0 ? `
+          <div class="relative my-4">
+            <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-burgundy-200"></div></div>
+            <div class="relative flex justify-center"><span class="bg-white px-3 text-xs text-forest-500">or</span></div>
+          </div>
+        ` : '';
+
+        if (isPremium) {
+          // Premium courses: purchase only, no subscription tier includes them
+          ctaButton = `
+            <div>
+              <p class="text-sm font-medium text-burgundy-800 mb-3">This premium course is available for individual purchase</p>
+              ${buyButton || `<a href="/subscription.html" class="block w-full text-center bg-burgundy-800 hover:bg-burgundy-900 text-white font-semibold px-6 py-3 rounded-xl transition-colors">Subscribe to Access</a>`}
+            </div>
+          `;
+        } else {
+          ctaButton = `
+            <div>
+              <p class="text-sm font-medium text-burgundy-800 mb-3">Subscribe to unlock this course</p>
+              <div class="grid ${availableTiers.length > 2 ? 'grid-cols-3' : availableTiers.length === 2 ? 'grid-cols-2' : 'grid-cols-1'} gap-2">
+                ${tierCards}
+              </div>
+              ${divider}
+              ${buyButton}
+            </div>
+          `;
+        }
       }
 
       // Progress bar for enrolled users
@@ -481,6 +536,38 @@
         }
       } catch (error) {
         console.error('Enroll error:', error);
+        alert('Network error. Please try again.');
+      }
+    }
+
+    async function purchaseCourse(courseId, slug) {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        alert('Please log in to purchase courses');
+        window.location.href = '/login.html';
+        return;
+      }
+
+      try {
+        const response = await fetch(`${API_URL}/api/payments/purchase-course`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ courseId })
+        });
+
+        const data = await response.json();
+        if (response.ok && data.url) {
+          window.location.href = data.url;
+        } else if (data.code === 'ALREADY_PURCHASED') {
+          window.location.href = `/interactive-course.html?slug=${encodeURIComponent(slug)}`;
+        } else {
+          alert(data.error || 'Failed to start purchase');
+        }
+      } catch (error) {
+        console.error('Purchase error:', error);
         alert('Network error. Please try again.');
       }
     }
