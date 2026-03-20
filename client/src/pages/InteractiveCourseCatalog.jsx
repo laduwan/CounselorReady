@@ -205,7 +205,7 @@ const InteractiveCourseCatalog = () => {
 const CourseCard = ({ course, progress, onClick }) => {
   const isEnrolled = !!progress;
   const isCompleted = progress?.status === 'completed' || progress?.status === 'certified';
-  const primaryCategory = course.ceuCategories?.[0] || (course.categories?.[0] ? { hours: course.ceHours, category: course.categories[0] } : null);
+  const primaryCategory = course.categories?.[0] ? { hours: course.ceHours, category: course.categories[0] } : null;
 
   return (
     <div
@@ -262,9 +262,9 @@ const CourseCard = ({ course, progress, onClick }) => {
               {course.categories[0]}
             </span>
           )}
-          {(course.ceuApprovalNumber || course.ceHours) && (
+          {(course.acepNumber || course.ceHours) && (
             <span className="bg-burgundy-100 text-burgundy-700 px-2 py-1 rounded-full text-xs font-medium">
-              CE #{course.ceuApprovalNumber || '7760'}
+              CE #{course.acepNumber || '7760'}
             </span>
           )}
         </div>
@@ -292,7 +292,7 @@ const CourseCard = ({ course, progress, onClick }) => {
 const CourseListItem = ({ course, progress, onClick }) => {
   const isEnrolled = !!progress;
   const isCompleted = progress?.status === 'completed' || progress?.status === 'certified';
-  const primaryCategory = course.ceuCategories?.[0] || (course.categories?.[0] ? { hours: course.ceHours, category: course.categories[0] } : null);
+  const primaryCategory = course.categories?.[0] ? { hours: course.ceHours, category: course.categories[0] } : null;
 
   return (
     <div
@@ -336,9 +336,9 @@ const CourseListItem = ({ course, progress, onClick }) => {
                 {primaryCategory.category}
               </span>
             )}
-            {(course.ceuApprovalNumber || course.ceHours) && (
+            {(course.acepNumber || course.ceHours) && (
               <span className="bg-burgundy-100 text-burgundy-700 px-2 py-0.5 rounded-full text-xs font-medium">
-                CE #{course.ceuApprovalNumber || '7760'}
+                CE #{course.acepNumber || '7760'}
               </span>
             )}
             <span className="flex items-center gap-1 text-xs text-forest-800">
