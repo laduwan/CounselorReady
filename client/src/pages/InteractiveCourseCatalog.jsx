@@ -10,7 +10,7 @@
 // Do NOT change classNames, color values, gradients, spacing, grid layout, or component hierarchy.
 
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+
 import {
   BookOpen, Clock, ChevronRight, Search,
   Filter, Grid, List, Star, Users, CheckCircle
@@ -76,7 +76,15 @@ const InteractiveCourseCatalog = () => {
   };
 
   const handleCourseClick = (course) => {
-    window.location.href = `/interactive-course.html?slug=${course.slug}`;
+    const progress = getProgressForCourse(course._id);
+    const isEnrolled = !!progress;
+    const isFree = !course.accessType || course.accessType === 'free';
+
+    if (isEnrolled || isFree) {
+      window.location.href = `/interactive-course.html?slug=${course.slug}`;
+    } else {
+      window.location.href = `/course-details.html?slug=${course.slug}`;
+    }
   };
 
   if (loading) {
