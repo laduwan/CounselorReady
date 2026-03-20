@@ -4,14 +4,13 @@
  * Unauthorized copying or distribution is strictly prohibited.
  */
 import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import api from '../services/api';
 
 export default function Recommendations() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
 
   useEffect(() => {
     async function fetch() {
@@ -78,7 +77,12 @@ export default function Recommendations() {
         <div className="space-y-4">
           {data.recommendations.map(course => (
             <div key={course._id} className="bg-white rounded-xl border p-5 hover:border-burgundy-400 transition cursor-pointer"
-              onClick={() => navigate(`/courses/${course.slug}`)} role="article">
+              onClick={() => {
+                const isFree = !course.accessType || course.accessType === 'free' || course.accessTier === 'free';
+                window.location.href = isFree
+                  ? `/interactive-course.html?slug=${course.slug}`
+                  : `/course-details.html?slug=${course.slug}`;
+              }} role="article">
               <div className="flex justify-between items-start">
                 <div className="flex-1">
                   <h3 className="font-semibold text-gray-900 mb-1">{course.title}</h3>
