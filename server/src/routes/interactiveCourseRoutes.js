@@ -182,7 +182,7 @@ function stripContent(courseObj) {
  * GET /api/interactive-courses
  * List all published courses with optional filtering
  */
-router.get('/', async (req, res) => {
+router.get('/', optionalAuth, async (req, res) => {
   try {
     const {
       category,
@@ -293,23 +293,66 @@ router.get('/', async (req, res) => {
       });
     }
 
-    // Non-admin: only published interactivecourses
-    const courses = await Course.find(query)
-      .select('title slug description thumbnail ceHours totalEstimatedTime categories tags wordCount sectionCount moduleCount assessmentQuestionCount ceuCategories accessType price pricingTier status ceuHours ceuApprovalNumber courseCode')
-      .sort({ publishedAt: -1 })
-      .skip((page - 1) * limit)
-      .limit(parseInt(limit));
+    // Non-admin: published interactivecourses + legacy courses merged
+    const pageNum = parseInt(page);
+    const limitNum = parseInt(limit);
 
-    const total = await Course.countDocuments(query);
+    const [interactiveCourses, interactiveTotal] = await Promise.all([
+      Course.find(query)
+        .select('title slug description thumbnail ceHours totalEstimatedTime categories tags wordCount sectionCount moduleCount assessmentQuestionCount ceuCategories accessType price pricingTier status ceuHours ceuApprovalNumber courseCode')
+        .sort({ publishedAt: -1 })
+        .lean(),
+      Course.countDocuments(query)
+    ]);
+
+    // Also query legacy courses collection for published courses
+    const legacyFilter = {};
+    if (status && status !== 'all') legacyFilter.status = status;
+    if (category) legacyFilter.categories = category;
+    if (tag) legacyFilter.tags = tag;
+    if (search) {
+      legacyFilter.$or = [
+        { title: { $regex: search, $options: 'i' } },
+        { description: { $regex: search, $options: 'i' } }
+      ];
+    }
+
+    const legacyCollection = mongoose.connection.db.collection('courses');
+    const [legacyCourses, legacyTotal] = await Promise.all([
+      legacyCollection
+        .find(legacyFilter)
+        .project({ title: 1, slug: 1, description: 1, thumbnail: 1, ceHours: 1, totalEstimatedTime: 1, categories: 1, tags: 1, status: 1, publishedAt: 1 })
+        .sort({ publishedAt: -1 })
+        .toArray(),
+      legacyCollection.countDocuments(legacyFilter)
+    ]);
+
+    // Deduplicate by slug (interactive takes priority over legacy)
+    const interactiveSlugs = new Set(interactiveCourses.map(c => c.slug));
+    const uniqueLegacy = legacyCourses.filter(c => !interactiveSlugs.has(c.slug));
+
+    const taggedInteractive = interactiveCourses.map(c => ({ ...c, source: 'interactive' }));
+    const taggedLegacy = uniqueLegacy.map(c => ({ ...c, source: 'legacy' }));
+    const merged = [...taggedInteractive, ...taggedLegacy];
+
+    // Sort combined by publishedAt descending
+    merged.sort((a, b) => {
+      const dateA = a.publishedAt ? new Date(a.publishedAt) : new Date(0);
+      const dateB = b.publishedAt ? new Date(b.publishedAt) : new Date(0);
+      return dateB - dateA;
+    });
+
+    const combinedTotal = interactiveTotal + uniqueLegacy.length;
+    const paginatedData = merged.slice((pageNum - 1) * limitNum, pageNum * limitNum);
 
     res.json({
       success: true,
-      data: courses,
+      data: paginatedData,
       pagination: {
-        page: parseInt(page),
-        limit: parseInt(limit),
-        total,
-        pages: Math.ceil(total / limit)
+        page: pageNum,
+        limit: limitNum,
+        total: combinedTotal,
+        pages: Math.ceil(combinedTotal / limitNum)
       }
     });
   } catch (error) {

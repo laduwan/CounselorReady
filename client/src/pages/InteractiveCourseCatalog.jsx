@@ -65,8 +65,8 @@ const InteractiveCourseCatalog = () => {
   const categories = ['all', ...new Set(courses.flatMap(c => c.categories || []))];
 
   const filteredCourses = courses.filter(course => {
-    const matchesSearch = course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         course.description.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = (course.title || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         (course.description || '').toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = selectedCategory === 'all' ||
                            (course.categories && course.categories.includes(selectedCategory));
     return matchesSearch && matchesCategory;
