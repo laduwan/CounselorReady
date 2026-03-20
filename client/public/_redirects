@@ -2,6 +2,9 @@
 # CounselorReady _redirects — fully static, no React SPA
 # ═══════════════════════════════════════════════════════════════
 
+# ── Root ──
+/                    /landing.html             200
+
 # ── User-facing pages ──
 /dashboard           /dashboard.html           200
 /courses             /courses.html             200
