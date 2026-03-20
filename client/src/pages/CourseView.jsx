@@ -39,7 +39,7 @@ export default function CourseView() {
 
   const fetchCourse = async () => {
     try {
-      const { data } = await api.get(`/courses/${slug}`);
+      const { data } = await api.get(`/interactive-courses/${slug}`);
       setCourse(data.course);
       setEnrollment(data.enrollment);
 
@@ -61,7 +61,7 @@ export default function CourseView() {
   const handleEnroll = async () => {
     setEnrolling(true);
     try {
-      await api.post(`/courses/${course._id}/enroll`);
+      await api.post(`/interactive-courses/${course._id}/enroll`);
       await fetchCourse();
     } catch (error) {
       console.error('Error enrolling:', error);
