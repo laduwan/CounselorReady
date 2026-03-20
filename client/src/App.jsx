@@ -55,11 +55,11 @@ import Layout from './components/Layout';
 import CourseBuilder from './components/CourseBuilder';
 import { AccessibilityProvider, SkipToContent, AccessibilityPanel } from './components/AccessibilityProvider';
 
-// Redirect /courses/:slug to CReady Viewer (static HTML player)
+// Redirect /courses/:slug to course detail page (static HTML)
 function CourseViewerRedirect() {
   const { slug } = useParams();
   useEffect(() => {
-    window.location.replace(`/interactive-course.html?slug=${slug}`);
+    window.location.replace(`/course-details.html?slug=${slug}`);
   }, [slug]);
   return (
     <div className="min-h-screen flex items-center justify-center bg-stone-50">
@@ -383,6 +383,7 @@ function AppRoutes() {
       <Route path="/settings.html" element={<StaticPageFallback />} />
       <Route path="/interactive-course.html" element={<StaticPageFallback />} />
       <Route path="/interactive-courses.html" element={<StaticPageFallback />} />
+      <Route path="/course-details.html" element={<StaticPageFallback />} />
 
       {/* Catch all — unknown routes go home */}
       <Route path="*" element={<Navigate to="/" replace />} />
