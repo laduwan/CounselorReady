@@ -911,14 +911,60 @@ router.post('/:id/certificate', ...protectAndScope, async (req, res) => {
       }).catch(() => {});
     }
 
-    // Send PDF
-    res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `attachment; filename="${course.slug || course._id}_certificate.pdf"`);
-    res.send(pdfBuffer);
+    // Return JSON with certificate info and download URL
+    res.json({
+      success: true,
+      certificateNumber: certificate.certificateNumber,
+      verificationCode: certificate.verificationCode,
+      certificateUrl: `/api/interactive-courses/${course._id}/certificate/download`,
+      pdfUrl: `/api/interactive-courses/${course._id}/certificate/download`,
+      ceHours: course.ceHours || 1,
+      completionDate: progress.completedAt || new Date()
+    });
 
   } catch (error) {
     console.error('Error generating certificate:', error);
     res.status(500).json({ success: false, error: 'Failed to generate certificate' });
+  }
+});
+
+/**
+ * GET /api/interactive-courses/:id/certificate/download
+ * Download the certificate PDF
+ */
+router.get('/:id/certificate/download', ...protectAndScope, async (req, res) => {
+  try {
+    const course = await findCourseByIdOrSlug(req.params.id, req.tenantFilter);
+    if (!course) return res.status(404).json({ error: 'Course not found' });
+
+    const progress = await CourseProgress.findOne({ userId: req.user._id, courseId: course._id });
+    if (!progress || !progress.attestationAgreed) {
+      return res.status(400).json({ error: 'Course completion required' });
+    }
+
+    const certificate = await Certificate.findOne({ userId: req.user._id, courseId: course._id, source: 'platform' });
+    if (!certificate) return res.status(404).json({ error: 'Certificate not found' });
+
+    const user = await User.findById(req.user._id);
+    const pdfBuffer = await generateCertificate({
+      studentName: `${user.firstName || user.profile?.firstName || ''} ${user.lastName || user.profile?.lastName || ''}`.trim() || user.email,
+      courseTitle: course.title,
+      ceHours: course.ceHours || 1,
+      ceCategory: course.categories?.[0] || 'Core',
+      completionDate: progress.completedAt || new Date(),
+      certificateNumber: certificate.certificateNumber,
+      objectives: course.objectives || [],
+      approvingBody: 'NBCC',
+      approvalNumber: course.acepNumber || '#7760',
+      verificationCode: certificate.verificationCode
+    });
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="${course.slug || course._id}_certificate.pdf"`);
+    res.send(pdfBuffer);
+  } catch (error) {
+    console.error('Error downloading certificate:', error);
+    res.status(500).json({ error: 'Failed to download certificate' });
   }
 });
 
