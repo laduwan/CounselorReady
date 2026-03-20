@@ -5076,7 +5076,7 @@ async function showCertificateView() {
   if (courseId && authToken) {
     try {
       const certRes = await crApi('POST', '/api/interactive-courses/' + courseId + '/certificate');
-      certUrl = certRes.pdfUrl || certRes.url || certRes.certificateUrl;
+      certUrl = certRes.pdfUrl ? (API_BASE + certRes.pdfUrl) : (certRes.url || certRes.certificateUrl);
       certNumber = certRes.certificateNumber || certRes.number;
     } catch (e) {
       console.warn('Certificate generation failed:', e.message);
