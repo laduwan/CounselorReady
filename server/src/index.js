@@ -19,7 +19,7 @@ dotenv.config();
 
 // Import routes
 import authRoutes from './routes/auth.js';
-import coursesRoutes from './routes/courses.js';
+// import coursesRoutes from './routes/courses.js'; // Legacy route unmounted — all courses via /api/interactive-courses
 import adminRoutes from './routes/admin.js';
 import usersRoutes from './routes/users.js';
 import certificatesRoutes from './routes/certificates.js';
@@ -240,7 +240,7 @@ app.get('/health', async (req, res) => {
 // API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/interactive-courses', interactiveCourseRoutes);
-app.use('/api/courses', coursesRoutes);
+// app.use('/api/courses', coursesRoutes); // Legacy route unmounted
 app.use('/api/admin', adminRoutes);
 app.use('/api/users', usersRoutes);
 app.use('/api/certificates', certificatesRoutes);
@@ -310,7 +310,6 @@ app.use((req, res, next) => {
     availableEndpoints: [
       '/health',
       '/api/auth/*',
-      '/api/courses/*',
       '/api/interactive-courses/*',
       '/api/admin/*',
       '/api/users/*',
@@ -400,6 +399,13 @@ const startServer = async () => {
 startServer().catch(err => {
   console.error('Failed to start server:', err);
   process.exit(1);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('⚠️ Unhandled Rejection at:', promise, 'reason:', reason);
+});
+process.on('uncaughtException', (err) => {
+  console.error('💥 Uncaught Exception:', err);
   process.exit(1);
 });
 
