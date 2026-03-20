@@ -17,6 +17,7 @@ import User from '../models/User.js';
 import { protect, optionalAuth } from '../middleware/auth.js';
 import { attachTenantScope } from '../middleware/tenantScope.js';
 import { logActivity, ACTIVITY_TYPES } from '../services/activityTrackingService.js';
+import { sendEnrollmentSMS, sendCompletionSMS } from '../services/smsService.js';
 import { generateCertificate, generateCertificateNumber } from '../utils/certificate.js';
 
 const router = express.Router();
@@ -569,6 +570,7 @@ router.post('/:id/enroll', ...protectAndScope, async (req, res) => {
     });
 
     await progress.save();
+    sendEnrollmentSMS(req.user, course).catch(e => console.error('[SMS]', e.message));
     res.status(201).json({ success: true, message: 'Enrolled successfully', data: progress });
   } catch (error) {
     console.error('Error enrolling in course:', error);
@@ -1043,6 +1045,9 @@ router.post('/:id/certificate', ...protectAndScope, async (req, res) => {
       progress.certificateIssuedAt = new Date();
       progress.status = 'certified';
       await progress.save();
+
+      // Send completion SMS
+      sendCompletionSMS(req.user, course, certificate).catch(e => console.error('[SMS]', e.message));
 
       // Notify admin of certificate generation
       const certUser = await User.findById(req.user._id).select('email profile.firstName profile.lastName');
