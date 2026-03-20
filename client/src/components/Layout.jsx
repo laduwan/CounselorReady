@@ -11,6 +11,7 @@ import api from '../services/api';
 import { Menu, X, ChevronDown, LogOut, Settings, ShieldCheck, Trophy, Users, Star, ClipboardList, MoreHorizontal, Bell, Lock, Palette, BookOpen, Globe, CreditCard, Upload, Rocket, Mail, BarChart3, HelpCircle, MonitorPlay } from 'lucide-react';
 import PoweredByBadge from './PoweredByBadge';
 import CRPromoCard from './CRPromoCard';
+import BroadcastPopup from './BroadcastPopup';
 
 // React routes use Link; external static HTML pages use <a>
 const navLinks = [
@@ -472,6 +473,9 @@ export default function Layout({ children }) {
           </button>
         </div>
       )}
+
+      {/* Broadcast announcements popup */}
+      <BroadcastPopup />
 
       {/* Page content */}
       <main id="main-content" className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
