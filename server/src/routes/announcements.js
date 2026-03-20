@@ -140,6 +140,23 @@ router.put('/:id/read', protect, async (req, res) => {
   }
 });
 
+// @route   PUT /api/announcements/:id/dismiss
+// @desc    Dismiss announcement for current user
+// @access  Private
+router.put('/:id/dismiss', protect, async (req, res) => {
+  try {
+    const announcement = await Announcement.findById(req.params.id);
+    if (!announcement) {
+      return res.status(404).json({ error: 'Announcement not found' });
+    }
+    await announcement.dismissForUser(req.user._id);
+    res.json({ message: 'Announcement dismissed' });
+  } catch (error) {
+    console.error('Dismiss announcement error:', error);
+    res.status(500).json({ error: 'Failed to dismiss announcement' });
+  }
+});
+
 // @route   DELETE /api/announcements/:id
 // @desc    Delete announcement (admin only)
 // @access  Private/Admin

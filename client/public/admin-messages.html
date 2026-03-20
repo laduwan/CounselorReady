@@ -141,6 +141,9 @@
         <button onclick="showTab('users')" id="tab-users" class="pb-3 px-1 text-forest-600 hover:text-forest-800">
           👥 User Progress
         </button>
+        <button onclick="showTab('broadcast')" id="tab-broadcast" class="pb-3 px-1 text-forest-600 hover:text-forest-800">
+          📢 Broadcast
+        </button>
       <a href="/admin-help.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
           <i class="fas fa-question-circle w-5"></i>
           Help Center
@@ -336,6 +339,76 @@
         </div>
       </div>
     </div>
+
+    <!-- Broadcast Tab -->
+    <div id="content-broadcast" class="hidden">
+      <div class="grid grid-cols-3 gap-6">
+        <!-- Compose Broadcast -->
+        <div class="col-span-1 bg-white rounded-2xl shadow-sm border border-stone-200 overflow-hidden">
+          <div class="p-4 border-b border-stone-200 bg-stone-50">
+            <h2 class="font-semibold text-forest-900">New Broadcast</h2>
+          </div>
+          <div class="p-4 space-y-3">
+            <div>
+              <label class="block text-sm font-medium text-stone-700 mb-1">Title</label>
+              <input id="msgBcTitle" type="text" placeholder="Broadcast title..." class="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-burgundy-500 focus:border-burgundy-500 outline-none">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-stone-700 mb-1">Message</label>
+              <textarea id="msgBcMessage" rows="5" placeholder="What do learners need to know?" class="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-burgundy-500 focus:border-burgundy-500 outline-none resize-none"></textarea>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-sm font-medium text-stone-700 mb-1">Type</label>
+                <select id="msgBcType" class="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-burgundy-500 outline-none">
+                  <option value="info">Info</option>
+                  <option value="maintenance">Maintenance</option>
+                  <option value="urgent">Urgent</option>
+                  <option value="update">Update</option>
+                  <option value="promotion">Promotion</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-stone-700 mb-1">Audience</label>
+                <select id="msgBcAudience" class="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-burgundy-500 outline-none">
+                  <option value="all">All Users</option>
+                  <option value="free">Free Plan</option>
+                  <option value="professional">Professional</option>
+                  <option value="vip">VIP</option>
+                </select>
+              </div>
+            </div>
+            <div class="flex items-center gap-4">
+              <label class="flex items-center gap-2 text-sm text-stone-600">
+                <input id="msgBcPinned" type="checkbox" class="rounded border-stone-300"> Pin
+              </label>
+              <label class="flex items-center gap-2 text-sm text-stone-600">
+                <input id="msgBcEmail" type="checkbox" class="rounded border-stone-300"> Email
+              </label>
+            </div>
+            <div id="msgBcError" class="text-sm text-red-600 hidden"></div>
+            <div id="msgBcSuccess" class="text-sm text-green-600 hidden"></div>
+            <button onclick="sendMsgBroadcast()" id="msgBcSendBtn" class="w-full py-2 text-sm font-semibold text-white rounded-lg" style="background:#6B1D34">
+              Send Broadcast
+            </button>
+          </div>
+        </div>
+
+        <!-- Active Broadcasts List -->
+        <div class="col-span-2 bg-white rounded-2xl shadow-sm border border-stone-200 overflow-hidden">
+          <div class="p-4 border-b border-stone-200 bg-stone-50 flex items-center justify-between">
+            <h2 class="font-semibold text-forest-900">Active Broadcasts</h2>
+            <button onclick="loadMsgBroadcasts()" class="text-sm text-burgundy-600 hover:text-burgundy-800">
+              <i class="fas fa-sync-alt mr-1"></i> Refresh
+            </button>
+          </div>
+          <div id="msgBcList" class="divide-y divide-stone-100">
+            <div class="p-8 text-center text-stone-400">Click "Refresh" or switch to this tab to load broadcasts.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
   </main>
 
   <!-- Compose Message Modal -->
@@ -479,14 +552,16 @@
 
     // Tab switching
     function showTab(tab) {
-      ['inbox', 'sent', 'users'].forEach(t => {
-        document.getElementById('content-' + t).classList.add('hidden');
-        document.getElementById('tab-' + t).classList.remove('tab-active');
-        document.getElementById('tab-' + t).classList.add('text-forest-600');
+      ['inbox', 'sent', 'users', 'broadcast'].forEach(t => {
+        const content = document.getElementById('content-' + t);
+        const tabBtn = document.getElementById('tab-' + t);
+        if (content) content.classList.add('hidden');
+        if (tabBtn) { tabBtn.classList.remove('tab-active'); tabBtn.classList.add('text-forest-600'); }
       });
       document.getElementById('content-' + tab).classList.remove('hidden');
       document.getElementById('tab-' + tab).classList.add('tab-active');
       document.getElementById('tab-' + tab).classList.remove('text-forest-600');
+      if (tab === 'broadcast') loadMsgBroadcasts();
     }
 
     // Load inbox
@@ -1227,6 +1302,123 @@
     const user = JSON.parse(localStorage.getItem('user') || '{}');
     if (user.email) {
       document.getElementById('adminEmail').textContent = user.email;
+    }
+
+    // ── Broadcast Tab Functions ──
+    async function sendMsgBroadcast() {
+      const title = document.getElementById('msgBcTitle').value.trim();
+      const message = document.getElementById('msgBcMessage').value.trim();
+      const type = document.getElementById('msgBcType').value;
+      const audience = document.getElementById('msgBcAudience').value;
+      const isPinned = document.getElementById('msgBcPinned').checked;
+      const sendEmail = document.getElementById('msgBcEmail').checked;
+      const errEl = document.getElementById('msgBcError');
+      const successEl = document.getElementById('msgBcSuccess');
+      errEl.classList.add('hidden');
+      successEl.classList.add('hidden');
+
+      if (!title || !message) {
+        errEl.textContent = 'Title and message are required.';
+        errEl.classList.remove('hidden');
+        return;
+      }
+
+      const btn = document.getElementById('msgBcSendBtn');
+      btn.disabled = true;
+      btn.textContent = 'Sending...';
+
+      try {
+        const res = await fetch(`${API_URL}/api/admin/broadcast`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({ title, message, type, audience, isPinned, sendEmail })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to send');
+        successEl.textContent = `Broadcast sent to ${data.affectedUsers || 'all'} users!`;
+        successEl.classList.remove('hidden');
+        document.getElementById('msgBcTitle').value = '';
+        document.getElementById('msgBcMessage').value = '';
+        loadMsgBroadcasts();
+      } catch (err) {
+        errEl.textContent = err.message;
+        errEl.classList.remove('hidden');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Send Broadcast';
+      }
+    }
+
+    async function loadMsgBroadcasts() {
+      const listEl = document.getElementById('msgBcList');
+      listEl.innerHTML = '<div class="p-6 text-center text-stone-400">Loading...</div>';
+      try {
+        const res = await fetch(`${API_URL}/api/admin/broadcasts`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        const broadcasts = data.broadcasts || [];
+        if (broadcasts.length === 0) {
+          listEl.innerHTML = '<div class="p-8 text-center text-stone-400">No broadcasts yet.</div>';
+          return;
+        }
+        listEl.innerHTML = broadcasts.map(b => {
+          const typeColors = { urgent: '#DC2626', maintenance: '#D97706', info: '#6B1D34', update: '#4A7C59', promotion: '#7C3AED' };
+          const color = typeColors[b.type] || '#6B7280';
+          const date = new Date(b.createdAt).toLocaleDateString();
+          const readCount = b.readBy?.length || 0;
+          const dismissCount = b.dismissedBy?.length || 0;
+          const active = b.isActive;
+          return `<div class="p-4 flex items-start gap-4 ${active ? '' : 'opacity-50'}">
+            <div class="w-2 h-2 rounded-full mt-2 flex-shrink-0" style="background:${color}"></div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-2 mb-1">
+                <span class="text-sm font-semibold text-stone-800">${b.title}</span>
+                <span class="text-xs px-2 py-0.5 rounded-full font-medium" style="background:${color}20;color:${color}">${b.type}</span>
+                ${!active ? '<span class="text-xs text-stone-400">(inactive)</span>' : ''}
+              </div>
+              <p class="text-sm text-stone-600 mb-1">${b.message.length > 120 ? b.message.substring(0, 120) + '...' : b.message}</p>
+              <div class="flex items-center gap-4 text-xs text-stone-400">
+                <span>${date}</span>
+                <span>${readCount} read</span>
+                <span>${dismissCount} dismissed</span>
+                <span>Audience: ${b.audience}</span>
+              </div>
+            </div>
+            <div class="flex items-center gap-2 flex-shrink-0">
+              ${active ? `<button onclick="deactivateMsgBroadcast('${b._id}')" class="text-xs text-amber-600 hover:text-amber-800 px-2 py-1 rounded border border-amber-200 hover:bg-amber-50">Deactivate</button>` : ''}
+              <button onclick="deleteMsgBroadcast('${b._id}')" class="text-xs text-red-500 hover:text-red-700 px-2 py-1 rounded border border-red-200 hover:bg-red-50">Delete</button>
+            </div>
+          </div>`;
+        }).join('');
+      } catch (err) {
+        listEl.innerHTML = `<div class="p-6 text-center text-red-500">${err.message}</div>`;
+      }
+    }
+
+    async function deactivateMsgBroadcast(id) {
+      try {
+        await fetch(`${API_URL}/api/admin/broadcasts/${id}/deactivate`, {
+          method: 'PUT',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        loadMsgBroadcasts();
+      } catch (err) {
+        alert('Failed to deactivate: ' + err.message);
+      }
+    }
+
+    async function deleteMsgBroadcast(id) {
+      if (!confirm('Delete this broadcast permanently?')) return;
+      try {
+        await fetch(`${API_URL}/api/admin/broadcasts/${id}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        loadMsgBroadcasts();
+      } catch (err) {
+        alert('Failed to delete: ' + err.message);
+      }
     }
   </script>
     </main>
