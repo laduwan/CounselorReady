@@ -11,6 +11,7 @@ import api from '../services/api';
 export default function Recommendations() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+
   useEffect(() => {
     async function fetch() {
       try {
@@ -76,7 +77,7 @@ export default function Recommendations() {
         <div className="space-y-4">
           {data.recommendations.map(course => (
             <div key={course._id} className="bg-white rounded-xl border p-5 hover:border-burgundy-400 transition cursor-pointer"
-              onClick={() => window.location.href = `/interactive-course.html?slug=${course.slug}`} role="article">
+              onClick={() => window.location.href = `/course-details.html?slug=${course.slug}`} role="article">
               <div className="flex justify-between items-start">
                 <div className="flex-1">
                   <h3 className="font-semibold text-gray-900 mb-1">{course.title}</h3>

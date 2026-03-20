@@ -176,11 +176,316 @@
       <h3 class="font-display text-xl font-semibold text-burgundy-900 mb-2">No courses found</h3>
       <p class="text-forest-600">Try adjusting your filters or check back soon for new courses.</p>
     </div>
+
+    <!-- Single Course Detail View (hidden by default) -->
+    <div id="courseDetail" class="hidden"></div>
   </main>
 
   <script>
     const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://api.counselorready.com';
     let allCourses = [];
+    const slugParam = new URLSearchParams(window.location.search).get('slug');
+
+    // HTML escape helper
+    function esc(str) {
+      if (!str) return '';
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    // ── Single Course Detail View ──────────────────────────────────
+
+    async function loadSingleCourse(slug) {
+      // Hide catalog elements
+      document.querySelector('.flex.items-center.justify-between.mb-8')?.classList.add('hidden');  // page header
+      document.querySelector('a[href="/research-ready"]')?.classList.add('hidden');                // research-ready banner
+      document.querySelector('.bg-white.rounded-xl.border.border-burgundy-100.shadow-sm.p-6.mb-6')?.classList.add('hidden'); // filters
+      document.getElementById('coursesList')?.classList.add('hidden');
+      document.getElementById('emptyState')?.classList.add('hidden');
+      document.getElementById('syncBtn')?.closest('.flex')?.classList.add('hidden');
+
+      // Show detail container with loading state
+      const detailEl = document.getElementById('courseDetail');
+      detailEl.classList.remove('hidden');
+      detailEl.innerHTML = `
+        <div class="text-center py-16">
+          <div class="inline-block w-8 h-8 border-4 border-burgundy-200 border-t-burgundy-700 rounded-full animate-spin"></div>
+          <p class="text-forest-500 mt-4">Loading course...</p>
+        </div>
+      `;
+
+      const token = localStorage.getItem('token');
+      const headers = {};
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+
+      try {
+        const courseRes = await fetch(`${API_URL}/api/interactive-courses/slug/${encodeURIComponent(slug)}`, { headers });
+        if (!courseRes.ok) {
+          detailEl.innerHTML = `
+            <div class="bg-white rounded-xl border border-burgundy-100 shadow-sm p-12 text-center">
+              <h3 class="font-display text-xl font-semibold text-burgundy-900 mb-2">Course not found</h3>
+              <p class="text-forest-600 mb-6">The course you're looking for doesn't exist or has been removed.</p>
+              <a href="/course-details.html" class="inline-flex items-center gap-2 bg-burgundy-800 hover:bg-burgundy-900 text-white font-semibold px-6 py-3 rounded-xl transition-colors">
+                ← Browse All Courses
+              </a>
+            </div>
+          `;
+          return;
+        }
+        const courseData = await courseRes.json();
+        const course = courseData.data || courseData.course || courseData;
+
+        // Check enrollment
+        let enrollment = null;
+        if (token && course._id) {
+          try {
+            const progressRes = await fetch(`${API_URL}/api/interactive-courses/${course._id}/progress`, { headers });
+            if (progressRes.ok) {
+              const progressData = await progressRes.json();
+              enrollment = progressData.data || progressData;
+            }
+          } catch (e) {
+            console.warn('Could not fetch enrollment:', e);
+          }
+        }
+
+        renderCourseDetail(course, enrollment);
+        document.title = `${course.title} - CounselorReady`;
+      } catch (error) {
+        console.error('Load single course error:', error);
+        detailEl.innerHTML = `
+          <div class="bg-white rounded-xl border border-burgundy-100 shadow-sm p-12 text-center">
+            <h3 class="font-display text-xl font-semibold text-burgundy-900 mb-2">Failed to load course</h3>
+            <p class="text-forest-600 mb-6">Please try again later.</p>
+            <a href="/course-details.html" class="inline-flex items-center gap-2 bg-burgundy-800 hover:bg-burgundy-900 text-white font-semibold px-6 py-3 rounded-xl transition-colors">
+              ← Browse All Courses
+            </a>
+          </div>
+        `;
+      }
+    }
+
+    function renderCourseDetail(course, enrollment) {
+      const detailEl = document.getElementById('courseDetail');
+      const isEnrolled = enrollment?.enrolled;
+      const isFree = course.accessType === 'free';
+      const progress = enrollment?.percentComplete || 0;
+      const ceHours = course.ceHours || course.ceuHours || 0;
+      const sections = course.sections || [];
+      const objectives = course.learningObjectives || course.objectives || [];
+      const presenter = course.presenter || course.author || null;
+      const presenterName = typeof presenter === 'string' ? presenter : (presenter?.name || '');
+      const presenterBio = typeof presenter === 'object' ? (presenter?.bio || '') : '';
+      const presenterCredentials = typeof presenter === 'object' ? (presenter?.credentials || '') : '';
+
+      // Build CEU badges
+      const ceuBadges = (course.ceuCategories || []).map(cat =>
+        `<span class="bg-honey-100 text-honey-700 px-3 py-1 rounded-full text-sm font-medium">${esc(cat.hours + ' hrs ' + cat.category)}</span>`
+      ).join('');
+      const ceBadge = ceHours ? `<span class="bg-honey-100 text-honey-700 px-3 py-1 rounded-full text-sm font-medium">${ceHours} CE Hours</span>` : '';
+
+      // CTA button
+      let ctaButton = '';
+      if (isEnrolled) {
+        ctaButton = `<a href="/interactive-course.html?slug=${esc(course.slug)}" class="block w-full text-center bg-burgundy-800 hover:bg-burgundy-900 text-white font-semibold px-6 py-3 rounded-xl transition-colors">Continue Learning</a>`;
+      } else if (isFree) {
+        ctaButton = `<button onclick="enrollAndStart('${esc(course._id)}', '${esc(course.slug)}')" class="block w-full bg-forest-700 hover:bg-forest-800 text-white font-semibold px-6 py-3 rounded-xl transition-colors">Enroll Free &amp; Start</button>`;
+      } else {
+        ctaButton = `<a href="/subscription.html" class="block w-full text-center bg-burgundy-800 hover:bg-burgundy-900 text-white font-semibold px-6 py-3 rounded-xl transition-colors">Subscribe to Access</a>`;
+      }
+
+      // Progress bar for enrolled users
+      const progressBar = isEnrolled ? `
+        <div class="mb-6">
+          <div class="flex items-center justify-between text-sm text-forest-600 mb-2">
+            <span>Your Progress</span>
+            <span class="font-semibold">${progress}%</span>
+          </div>
+          <div class="w-full bg-forest-100 rounded-full h-3">
+            <div class="bg-burgundy-600 h-3 rounded-full transition-all" style="width: ${progress}%"></div>
+          </div>
+        </div>
+      ` : '';
+
+      // Objectives list
+      const objectivesHtml = objectives.length > 0 ? `
+        <div class="bg-white rounded-xl border border-burgundy-100 shadow-sm p-6 mb-6">
+          <h2 class="font-display text-2xl font-semibold text-burgundy-900 mb-4">Learning Objectives</h2>
+          <ul class="space-y-3">
+            ${objectives.map(obj => `
+              <li class="flex items-start gap-3">
+                <svg class="w-5 h-5 text-forest-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                </svg>
+                <span class="text-forest-700">${esc(typeof obj === 'string' ? obj : obj.text || obj.objective || '')}</span>
+              </li>
+            `).join('')}
+          </ul>
+        </div>
+      ` : '';
+
+      // Course outline
+      const outlineHtml = sections.length > 0 ? `
+        <div class="bg-white rounded-xl border border-burgundy-100 shadow-sm p-6 mb-6">
+          <h2 class="font-display text-2xl font-semibold text-burgundy-900 mb-4">Course Outline</h2>
+          <div class="space-y-3">
+            ${sections.map((section, i) => `
+              <div class="flex items-center gap-3 p-3 rounded-lg bg-stone-50">
+                <span class="w-8 h-8 rounded-full bg-burgundy-100 text-burgundy-700 flex items-center justify-center text-sm font-semibold flex-shrink-0">${i + 1}</span>
+                <span class="text-forest-700 font-medium">${esc(section.title || section.name || 'Section ' + (i + 1))}</span>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      ` : '';
+
+      // Presenter section
+      const presenterHtml = presenterName ? `
+        <div class="bg-white rounded-xl border border-burgundy-100 shadow-sm p-6 mb-6">
+          <h2 class="font-display text-2xl font-semibold text-burgundy-900 mb-4">Presenter</h2>
+          <div class="flex items-start gap-4">
+            <div class="w-14 h-14 rounded-full bg-gradient-to-br from-burgundy-100 to-forest-100 flex items-center justify-center flex-shrink-0">
+              <span class="font-display text-xl font-semibold text-burgundy-700">${esc(presenterName.charAt(0))}</span>
+            </div>
+            <div>
+              <h3 class="font-semibold text-burgundy-900">${esc(presenterName)}${presenterCredentials ? ', ' + esc(presenterCredentials) : ''}</h3>
+              ${presenterBio ? `<p class="text-forest-600 text-sm mt-1">${esc(presenterBio)}</p>` : ''}
+            </div>
+          </div>
+        </div>
+      ` : '';
+
+      detailEl.innerHTML = `
+        <!-- Back link -->
+        <a href="/course-details.html" class="inline-flex items-center gap-2 text-forest-600 hover:text-forest-700 mb-6 transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+          Back to Course Library
+        </a>
+
+        <!-- Hero Section -->
+        <div class="bg-white rounded-xl border border-burgundy-100 shadow-sm overflow-hidden mb-6">
+          <div class="h-56 bg-gradient-to-br from-forest-100 to-burgundy-200 flex items-center justify-center relative">
+            ${course.thumbnail ?
+              `<img src="${esc(course.thumbnail)}" alt="${esc(course.title)}" class="w-full h-full object-cover">` :
+              `<svg class="w-20 h-20 text-burgundy-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+              </svg>`
+            }
+          </div>
+          <div class="p-6">
+            <h1 class="font-display text-3xl font-semibold text-burgundy-900 mb-2">${esc(course.title)}</h1>
+            ${course.subtitle ? `<p class="text-forest-600 text-lg mb-4">${esc(course.subtitle)}</p>` : ''}
+            <div class="flex flex-wrap items-center gap-2">
+              ${ceBadge}
+              ${ceuBadges}
+              ${isFree ? '<span class="bg-forest-100 text-forest-700 px-3 py-1 rounded-full text-sm font-medium">FREE</span>' : ''}
+              ${course.ceuApprovalNumber ? `<span class="bg-burgundy-100 text-burgundy-700 px-3 py-1 rounded-full text-sm font-medium">CE #${esc(course.ceuApprovalNumber)}</span>` : ''}
+            </div>
+          </div>
+        </div>
+
+        <!-- Content Grid: Main + Sidebar -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <!-- Main Content -->
+          <div class="lg:col-span-2">
+            <!-- Description -->
+            <div class="bg-white rounded-xl border border-burgundy-100 shadow-sm p-6 mb-6">
+              <h2 class="font-display text-2xl font-semibold text-burgundy-900 mb-4">About This Course</h2>
+              <p class="text-forest-700 leading-relaxed">${esc(course.description)}</p>
+            </div>
+
+            ${objectivesHtml}
+            ${outlineHtml}
+            ${presenterHtml}
+          </div>
+
+          <!-- Sidebar -->
+          <div class="lg:col-span-1">
+            <div class="bg-white rounded-xl border border-burgundy-100 shadow-sm p-6 sticky top-24">
+              ${progressBar}
+              ${ctaButton}
+
+              <!-- Course Metadata -->
+              <div class="mt-6 space-y-4 text-sm">
+                ${ceHours ? `
+                  <div class="flex items-center justify-between text-forest-600">
+                    <span class="flex items-center gap-2">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/></svg>
+                      CE Hours
+                    </span>
+                    <span class="font-semibold text-burgundy-800">${ceHours}</span>
+                  </div>
+                ` : ''}
+                ${course.totalEstimatedTime ? `
+                  <div class="flex items-center justify-between text-forest-600">
+                    <span class="flex items-center gap-2">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                      Duration
+                    </span>
+                    <span class="font-semibold text-burgundy-800">${course.totalEstimatedTime} min</span>
+                  </div>
+                ` : ''}
+                ${sections.length > 0 ? `
+                  <div class="flex items-center justify-between text-forest-600">
+                    <span class="flex items-center gap-2">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
+                      Sections
+                    </span>
+                    <span class="font-semibold text-burgundy-800">${sections.length}</span>
+                  </div>
+                ` : ''}
+                ${course.accessType ? `
+                  <div class="flex items-center justify-between text-forest-600">
+                    <span class="flex items-center gap-2">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                      Access
+                    </span>
+                    <span class="font-semibold text-burgundy-800">${isFree ? 'Free' : 'Subscription'}</span>
+                  </div>
+                ` : ''}
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    async function enrollAndStart(courseId, slug) {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        alert('Please log in to enroll in courses');
+        window.location.href = '/login.html';
+        return;
+      }
+
+      try {
+        const response = await fetch(`${API_URL}/api/interactive-courses/${courseId}/enroll`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (response.ok) {
+          window.location.href = `/interactive-course.html?slug=${encodeURIComponent(slug)}`;
+        } else {
+          const data = await response.json();
+          if (data.code === 'SUBSCRIPTION_REQUIRED') {
+            alert('This course requires an active subscription.');
+            window.location.href = '/subscription.html';
+          } else {
+            alert(data.error || 'Failed to enroll');
+          }
+        }
+      } catch (error) {
+        console.error('Enroll error:', error);
+        alert('Network error. Please try again.');
+      }
+    }
+
+    // ── Catalog View ───────────────────────────────────────────────
 
     async function loadCourses() {
       const token = localStorage.getItem('token');
@@ -386,8 +691,14 @@
       }
     }
 
-    // Load courses on page load
-    document.addEventListener('DOMContentLoaded', loadCourses);
+    // Route based on slug param
+    document.addEventListener('DOMContentLoaded', () => {
+      if (slugParam) {
+        loadSingleCourse(slugParam);
+      } else {
+        loadCourses();
+      }
+    });
 
     async function syncCourses() {
       const btn = document.getElementById('syncBtn');

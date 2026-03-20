@@ -10,7 +10,7 @@
 // Do NOT change classNames, color values, gradients, spacing, grid layout, or component hierarchy.
 
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+
 import {
   BookOpen, Clock, ChevronRight, Search,
   Filter, Grid, List, Star, Users, CheckCircle
@@ -76,7 +76,7 @@ const InteractiveCourseCatalog = () => {
   };
 
   const handleCourseClick = (course) => {
-    window.location.href = `/interactive-course.html?slug=${course.slug}`;
+    window.location.href = `/course-details.html?slug=${course.slug}`;
   };
 
   if (loading) {
