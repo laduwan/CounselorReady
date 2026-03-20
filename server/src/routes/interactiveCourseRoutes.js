@@ -17,6 +17,7 @@ import User from '../models/User.js';
 import { protect, optionalAuth } from '../middleware/auth.js';
 import { attachTenantScope } from '../middleware/tenantScope.js';
 import { logActivity, ACTIVITY_TYPES } from '../services/activityTrackingService.js';
+import { sendEnrollmentSMS, sendCompletionSMS } from '../services/smsService.js';
 import { generateCertificate, generateCertificateNumber } from '../utils/certificate.js';
 
 const router = express.Router();
@@ -53,59 +54,7 @@ async function findCourseByIdOrSlug(param, tenantFilter = {}) {
       : { $or: slugConditions };
   }
 
-  let course = await Course.findOne(query);
-
-  // Fallback: try legacy "courses" collection (same DB, different collection name)
-  if (!course) {
-    const legacyQuery = mongoose.Types.ObjectId.isValid(param)
-      ? { _id: new mongoose.Types.ObjectId(param) }
-      : { $or: [{ slug: param }, { courseCode: param }] };
-
-    const legacyDoc = await mongoose.connection.db
-      .collection('courses')
-      .findOne(legacyQuery);
-
-    if (legacyDoc) {
-      // Normalize legacy course into interactivecourses shape
-      const sections = (legacyDoc.modules || legacyDoc.sections || []).map((mod) => {
-        const contentBlocks = [
-          { type: 'sectionDivider', order: 0, title: mod.title },
-          ...(mod.lessons || mod.contentBlocks || []).map((item, i) => ({
-            type: item.type || 'text',
-            order: i + 1,
-            content: item.content,
-            textContent: item.textContent || item.content,
-            title: item.title,
-            ...item
-          }))
-        ];
-        return { ...mod, title: mod.title, contentBlocks, _id: mod._id };
-      });
-
-      course = {
-        _id: legacyDoc._id,
-        title: legacyDoc.title,
-        slug: legacyDoc.slug,
-        courseCode: legacyDoc.courseCode,
-        description: legacyDoc.description,
-        ceHours: legacyDoc.ceHours,
-        ceProvider: legacyDoc.ceProvider,
-        acepNumber: legacyDoc.acepNumber,
-        objectives: legacyDoc.objectives,
-        assessment: legacyDoc.assessment,
-        status: legacyDoc.status,
-        categories: legacyDoc.categories,
-        tags: legacyDoc.tags,
-        targetAudience: legacyDoc.targetAudience,
-        author: legacyDoc.author,
-        presenter: legacyDoc.presenter,
-        sections,
-        source: 'legacy'
-      };
-    }
-  }
-
-  return course;
+  return Course.findOne(query);
 }
 
 /**
@@ -182,7 +131,7 @@ function stripContent(courseObj) {
  * GET /api/interactive-courses
  * List all published courses with optional filtering
  */
-router.get('/', async (req, res) => {
+router.get('/', optionalAuth, async (req, res) => {
   try {
     const {
       category,
@@ -231,85 +180,29 @@ router.get('/', async (req, res) => {
 
     const isAdmin = req.user?.role === 'admin';
 
-    if (isAdmin) {
-      // Admin: merge results from both interactivecourses and legacy courses collections
-      const pageNum = parseInt(page);
-      const limitNum = parseInt(limit);
+    const pageNum = parseInt(page);
+    const limitNum = parseInt(limit);
 
-      const [interactiveCourses, interactiveTotal] = await Promise.all([
-        Course.find(query)
-          .select('title slug description thumbnail ceHours totalEstimatedTime categories tags wordCount sectionCount moduleCount assessmentQuestionCount ceuCategories accessType price pricingTier status ceuHours ceuApprovalNumber courseCode')
-          .sort({ publishedAt: -1 })
-          .lean(),
-        Course.countDocuments(query)
-      ]);
+    const selectFields = 'title slug description thumbnail ceHours totalEstimatedTime categories tags wordCount totalContentBlocks totalQuizQuestions acepNumber accessType price pricingTier status courseCode';
 
-      // Build a matching filter for the legacy courses collection
-      const legacyFilter = {};
-      if (status && status !== 'all') legacyFilter.status = status;
-      if (category) legacyFilter.categories = category;
-      if (tag) legacyFilter.tags = tag;
-      if (search) {
-        legacyFilter.$or = [
-          { title: { $regex: search, $options: 'i' } },
-          { description: { $regex: search, $options: 'i' } }
-        ];
-      }
-
-      const legacyCollection = mongoose.connection.db.collection('courses');
-      const [legacyCourses, legacyTotal] = await Promise.all([
-        legacyCollection
-          .find(legacyFilter)
-          .project({ title: 1, slug: 1, description: 1, thumbnail: 1, ceHours: 1, totalEstimatedTime: 1, categories: 1, tags: 1, status: 1, publishedAt: 1 })
-          .sort({ publishedAt: -1 })
-          .toArray(),
-        legacyCollection.countDocuments(legacyFilter)
-      ]);
-
-      // Tag each source and merge
-      const taggedInteractive = interactiveCourses.map(c => ({ ...c, source: 'interactive' }));
-      const taggedLegacy = legacyCourses.map(c => ({ ...c, source: 'legacy' }));
-      const merged = [...taggedInteractive, ...taggedLegacy];
-
-      // Sort combined by publishedAt descending
-      merged.sort((a, b) => {
-        const dateA = a.publishedAt ? new Date(a.publishedAt) : new Date(0);
-        const dateB = b.publishedAt ? new Date(b.publishedAt) : new Date(0);
-        return dateB - dateA;
-      });
-
-      const combinedTotal = interactiveTotal + legacyTotal;
-      const paginatedData = merged.slice((pageNum - 1) * limitNum, pageNum * limitNum);
-
-      return res.json({
-        success: true,
-        data: paginatedData,
-        pagination: {
-          page: pageNum,
-          limit: limitNum,
-          total: combinedTotal,
-          pages: Math.ceil(combinedTotal / limitNum)
-        }
-      });
-    }
-
-    // Non-admin: only published interactivecourses
-    const courses = await Course.find(query)
-      .select('title slug description thumbnail ceHours totalEstimatedTime categories tags wordCount sectionCount moduleCount assessmentQuestionCount ceuCategories accessType price pricingTier status ceuHours ceuApprovalNumber courseCode')
-      .sort({ publishedAt: -1 })
-      .skip((page - 1) * limit)
-      .limit(parseInt(limit));
-
-    const total = await Course.countDocuments(query);
+    const [courses, total] = await Promise.all([
+      Course.find(query)
+        .select(selectFields)
+        .sort({ publishedAt: -1 })
+        .skip((pageNum - 1) * limitNum)
+        .limit(limitNum)
+        .lean(),
+      Course.countDocuments(query)
+    ]);
 
     res.json({
       success: true,
       data: courses,
       pagination: {
-        page: parseInt(page),
-        limit: parseInt(limit),
+        page: pageNum,
+        limit: limitNum,
         total,
-        pages: Math.ceil(total / limit)
+        pages: Math.ceil(total / limitNum)
       }
     });
   } catch (error) {
@@ -337,6 +230,41 @@ router.get('/slug/:slug', optionalAuth, async (req, res) => {
   } catch (error) {
     console.error('Error fetching course:', error);
     res.status(500).json({ success: false, error: 'Failed to fetch course' });
+  }
+});
+
+/**
+ * GET /api/interactive-courses/user/my-courses
+ * Get all courses user is enrolled in with progress
+ * NOTE: Must be defined BEFORE /:id catch-all route
+ */
+router.get('/user/my-courses', ...protectAndScope, async (req, res) => {
+  try {
+    const { status } = req.query;
+
+    const query = { userId: req.user._id };
+    if (status) query.status = status;
+
+    const progressList = await CourseProgress.find(query)
+      .populate('courseId', 'title slug description thumbnail ceHours totalEstimatedTime')
+      .sort({ lastAccessedAt: -1 });
+
+    const courses = progressList.map(p => ({
+      course: p.courseId,
+      progress: p.overallProgress,
+      status: p.status,
+      currentSection: p.currentSectionIndex,
+      totalTimeSpent: p.totalTimeSpent,
+      enrolledAt: p.enrolledAt,
+      lastAccessedAt: p.lastAccessedAt,
+      completedAt: p.completedAt,
+      certificateId: p.certificateId
+    }));
+
+    res.json({ success: true, data: courses });
+  } catch (error) {
+    console.error('Error fetching user courses:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch courses' });
   }
 });
 
@@ -491,6 +419,7 @@ router.post('/:id/enroll', ...protectAndScope, async (req, res) => {
     });
 
     await progress.save();
+    sendEnrollmentSMS(req.user, course).catch(e => console.error('[SMS]', e.message));
     res.status(201).json({ success: true, message: 'Enrolled successfully', data: progress });
   } catch (error) {
     console.error('Error enrolling in course:', error);
@@ -966,6 +895,9 @@ router.post('/:id/certificate', ...protectAndScope, async (req, res) => {
       progress.status = 'certified';
       await progress.save();
 
+      // Send completion SMS
+      sendCompletionSMS(req.user, course, certificate).catch(e => console.error('[SMS]', e.message));
+
       // Notify admin of certificate generation
       const certUser = await User.findById(req.user._id).select('email profile.firstName profile.lastName');
       logActivity(ACTIVITY_TYPES.CERTIFICATE_GENERATED, {
@@ -1276,40 +1208,6 @@ router.post('/:id/progress/interaction', ...protectAndScope, async (req, res) =>
   } catch (error) {
     console.error('Error logging interaction:', error);
     res.status(500).json({ success: false, error: 'Failed to log interaction' });
-  }
-});
-
-/**
- * GET /api/interactive-courses/user/my-courses
- * Get all courses user is enrolled in with progress
- */
-router.get('/user/my-courses', ...protectAndScope, async (req, res) => {
-  try {
-    const { status } = req.query;
-
-    const query = { userId: req.user._id };
-    if (status) query.status = status;
-
-    const progressList = await CourseProgress.find(query)
-      .populate('courseId', 'title slug description thumbnail ceHours totalEstimatedTime')
-      .sort({ lastAccessedAt: -1 });
-
-    const courses = progressList.map(p => ({
-      course: p.courseId,
-      progress: p.overallProgress,
-      status: p.status,
-      currentSection: p.currentSectionIndex,
-      totalTimeSpent: p.totalTimeSpent,
-      enrolledAt: p.enrolledAt,
-      lastAccessedAt: p.lastAccessedAt,
-      completedAt: p.completedAt,
-      certificateId: p.certificateId
-    }));
-
-    res.json({ success: true, data: courses });
-  } catch (error) {
-    console.error('Error fetching user courses:', error);
-    res.status(500).json({ success: false, error: 'Failed to fetch courses' });
   }
 });
 

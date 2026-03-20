@@ -64,6 +64,7 @@ import rawMarkdownRoutes from './routes/rawMarkdownRoute.js';
 import dashboardRoutes from './routes/dashboard.js';
 // Import services
 import { initializeScheduler } from './services/notificationScheduler.js';
+import { startRenewalReminderJob } from './jobs/renewalReminderJob.js';
 
 // ES Module fix for __dirname
 const __filename = fileURLToPath(import.meta.url);
@@ -339,6 +340,7 @@ const startServer = async () => {
   
   // Initialize notification scheduler
   initializeScheduler();
+  startRenewalReminderJob();
   
   // Start listening
   const server = app.listen(PORT, () => {

@@ -4,6 +4,7 @@
  * Unauthorized copying or distribution is strictly prohibited.
  */
 import express from 'express';
+import mongoose from 'mongoose';
 import { protect } from '../middleware/auth.js';
 import Course from '../models/Course.js';
 import PlatformSurvey from '../models/PlatformSurvey.js';
@@ -30,14 +31,16 @@ router.post('/course/:id/view', async (req, res) => {
     // Increment view count
     course.analytics.views = (course.analytics.views || 0) + 1;
     
-    // Track unique views via session/cookie (simplified)
+    // Track unique views via cookie
     const viewKey = `viewed_${req.params.id}`;
     if (!req.cookies?.[viewKey]) {
       course.analytics.uniqueViews = (course.analytics.uniqueViews || 0) + 1;
     }
-    
+
     await course.save();
-    
+
+    // Set cookie so this user isn't counted as unique again (30-day expiry)
+    res.cookie(viewKey, '1', { maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: true, sameSite: 'lax' });
     res.json({ success: true, views: course.analytics.views });
   } catch (error) {
     console.error('Track view error:', error);
@@ -173,7 +176,7 @@ async function getEnrollmentTrend(courseId) {
   const enrollments = await UserCourseProgress.aggregate([
     {
       $match: {
-        courseId: courseId,
+        courseId: new mongoose.Types.ObjectId(courseId),
         enrolledAt: { $gte: thirtyDaysAgo }
       }
     },
@@ -884,6 +887,29 @@ router.get('/admin/funnel/trend', protect, async (req, res) => {
   } catch (error) {
     console.error('Funnel trend error:', error);
     res.status(500).json({ error: 'Failed to get funnel trend' });
+  }
+});
+
+// ============================================
+// CURRENT USER ACTIVITY
+// ============================================
+
+// @route   GET /api/analytics/my-activity
+// @desc    Get recent activity for the logged-in user
+// @access  Private
+router.get('/my-activity', protect, async (req, res) => {
+  try {
+    const limit = Math.min(parseInt(req.query.limit) || 20, 50);
+
+    const activities = await UserActivity.find({ userId: req.user._id })
+      .sort({ timestamp: -1 })
+      .limit(limit)
+      .populate('courseId', 'title slug');
+
+    res.json({ activities });
+  } catch (error) {
+    console.error('My activity error:', error);
+    res.status(500).json({ error: 'Failed to get activity' });
   }
 });
 
