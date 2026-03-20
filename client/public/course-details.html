@@ -105,7 +105,7 @@
     </div>
 
     <!-- Researched-N-Ready CE -->
-    <a href="/research-ready" class="block mb-6 group" style="text-decoration:none">
+    <a href="/research-ready.html" class="block mb-6 group" style="text-decoration:none">
       <div class="relative overflow-hidden rounded-xl border border-burgundy-100 shadow-sm bg-white hover:shadow-md transition-all">
         <div style="position:absolute;top:0;right:0;width:200px;height:200px;opacity:.04;pointer-events:none">
           <svg class="w-full h-full text-burgundy-800" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.75 3.104v5.714a2.25 2.25 0 01-.659 1.591L5 14.5M9.75 3.104c-.251.023-.501.05-.75.082m.75-.082a24.301 24.301 0 014.5 0m0 0v5.714c0 .597.237 1.17.659 1.591L19.8 15.3M14.25 3.104c.251.023.501.05.75.082M19.8 15.3l-1.57.393A9.065 9.065 0 0112 15a9.065 9.065 0 00-6.23.693L5 14.5m14.8.8l1.402 5.608c.168.673-.43 1.282-1.097 1.103l-3.2-.865a2.25 2.25 0 00-1.174.005l-3.096.88a2.25 2.25 0 01-1.174-.005l-3.2-.865c-.667-.179-1.265.43-1.097 1.103L5 14.5"/></svg>
@@ -199,7 +199,7 @@
     async function loadSingleCourse(slug) {
       // Hide catalog elements
       document.querySelector('.flex.items-center.justify-between.mb-8')?.classList.add('hidden');  // page header
-      document.querySelector('a[href="/research-ready"]')?.classList.add('hidden');                // research-ready banner
+      document.querySelector('a[href="/research-ready.html"]')?.classList.add('hidden');                // research-ready banner
       document.querySelector('.bg-white.rounded-xl.border.border-burgundy-100.shadow-sm.p-6.mb-6')?.classList.add('hidden'); // filters
       document.getElementById('coursesList')?.classList.add('hidden');
       document.getElementById('emptyState')?.classList.add('hidden');
