@@ -420,6 +420,18 @@ router.post('/:id/enroll', ...protectAndScope, async (req, res) => {
 
     await progress.save();
     sendEnrollmentSMS(req.user, course).catch(e => console.error('[SMS]', e.message));
+
+    logActivity(ACTIVITY_TYPES.USER_ENROLLED, {
+      courseName: course.title,
+      courseId: course._id,
+      ceHours: course.ceHours
+    }, {
+      userId: req.user._id,
+      userName: `${req.user.profile?.firstName || ''} ${req.user.profile?.lastName || ''}`.trim(),
+      userEmail: req.user.email,
+      notifyAdmin: true
+    }).catch(() => {});
+
     res.status(201).json({ success: true, message: 'Enrolled successfully', data: progress });
   } catch (error) {
     console.error('Error enrolling in course:', error);
@@ -563,6 +575,18 @@ router.post(['/:id/progress/assessment', '/:id/assessment'], ...protectAndScope,
     }
 
     await progress.save();
+
+    logActivity(passed ? ACTIVITY_TYPES.QUIZ_PASSED : ACTIVITY_TYPES.QUIZ_FAILED, {
+      courseName: course.title,
+      courseId: course._id,
+      score: Math.round(percentage * 100),
+      passingScore: Math.round((course.assessment.passThreshold || 0.8) * 100)
+    }, {
+      userId: req.user._id,
+      userName: `${req.user.profile?.firstName || ''} ${req.user.profile?.lastName || ''}`.trim(),
+      userEmail: req.user.email,
+      notifyAdmin: passed
+    }).catch(() => {});
 
     res.json({
       success: true,
@@ -897,6 +921,36 @@ router.post('/:id/certificate', ...protectAndScope, async (req, res) => {
 
       // Send completion SMS
       sendCompletionSMS(req.user, course, certificate).catch(e => console.error('[SMS]', e.message));
+
+      // ── AUTO-APPLY CE HOURS TO USER'S CREDENTIALS ──
+      try {
+        const UserCredential = (await import('../models/UserCredential.js')).default;
+        const userCredentials = await UserCredential.find({
+          userId: req.user._id,
+          status: { $in: ['active', 'expiring_soon'] }
+        });
+
+        for (const credential of userCredentials) {
+          try {
+            await credential.addCEU({
+              certificateId: certificate._id,
+              courseId: course._id,
+              hours: course.ceHours || 1,
+              category: course.categories?.[0] || 'General',
+              description: `${course.title} - CounselorReady Course`,
+              provider: 'CounselorReady',
+              date: progress.completedAt || new Date(),
+              source: 'internal'
+            });
+            console.log(`Applied ${course.ceHours || 1} CE hours to credential: ${credential.name || credential._id}`);
+          } catch (credError) {
+            console.error(`Error applying CEUs to credential ${credential._id}:`, credError.message);
+          }
+        }
+      } catch (credentialError) {
+        console.error('Error auto-applying CE hours:', credentialError.message);
+        // Non-fatal — certificate was already generated successfully
+      }
 
       // Notify admin of certificate generation
       const certUser = await User.findById(req.user._id).select('email profile.firstName profile.lastName');
