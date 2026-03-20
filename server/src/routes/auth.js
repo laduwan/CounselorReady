@@ -11,6 +11,8 @@ import Partner from '../models/Partner.js';
 import { protect, generateToken } from '../middleware/auth.js';
 import { sendPartnerWelcomeEmail } from './partners.js';
 import { logActivity, ACTIVITY_TYPES } from '../services/activityTrackingService.js';
+import Notification from '../models/Notification.js';
+import { sendRealtimeNotification } from './notifications.js';
 
 const router = express.Router();
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -77,6 +79,22 @@ router.post('/register', async (req, res) => {
       userName: `${firstName} ${lastName || ''}`.trim(),
       userEmail: email.toLowerCase()
     });
+
+    // Create welcome notification (non-blocking)
+    try {
+      const welcomeNotification = await Notification.create({
+        userId: user._id,
+        type: 'welcome',
+        title: 'Welcome to CounselorReady!',
+        message: `Hi ${firstName}, thanks for signing up! Your 7-day free trial is active. Explore our CE courses, track your credentials, and start earning continuing education hours today.`,
+        urgency: 'info',
+        link: '/courses',
+        metadata: { trialEndsAt }
+      });
+      sendRealtimeNotification(user._id, welcomeNotification);
+    } catch (notifErr) {
+      console.error('Welcome notification failed (non-blocking):', notifErr.message);
+    }
 
     // Send verification email (non-blocking — don't fail registration if email fails)
     const verifyUrl = `${process.env.CLIENT_URL || 'https://counselorready.com'}/verify-email.html?token=${verificationToken}`;
