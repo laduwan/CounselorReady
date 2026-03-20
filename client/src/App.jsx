@@ -193,7 +193,7 @@ function AppRoutes() {
       } />
       <Route path="/courses/:slug" element={
         <ProtectedRoute>
-          <Layout><CourseView /></Layout>
+          <CourseViewerWrapper />
         </ProtectedRoute>
       } />
       
