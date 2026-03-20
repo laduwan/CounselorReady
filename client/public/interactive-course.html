@@ -2676,25 +2676,15 @@ function applyChunkedMode() {
       return;
     }
     courseId = courseData._id;
-    // If server returned gated/stripped content, set preview mode
-    if (courseData._isPreview) {
-      isPreviewMode = true;
-      if (authToken) {
-        // Authenticated but not enrolled — viewer will auto-enroll
-        loadCourse(courseData);
-      } else {
-        document.getElementById('crGateLogin').classList.add('visible');
-        loadCourse(courseData);
-      }
-      return;
-    }
+
     // Step C: No auth — show login gate, allow preview
     if (!authToken) {
-      document.getElementById('crGateLogin').classList.add('visible');
       isPreviewMode = true;
+      document.getElementById('crGateLogin').classList.add('visible');
       loadCourse(courseData);
       return;
     }
+
     // Step D: Check enrollment + restore progress
     try {
       const progress = await crApi('GET', '/api/interactive-courses/' + courseId + '/progress');
@@ -2716,18 +2706,12 @@ function applyChunkedMode() {
       if (progress.visitedSections && progress.visitedSections.length > 0) {
         visitedSections = new Set(progress.visitedSections);
       }
-      loadCourse(courseData);
-      return;
     } catch (e) {
       if (e.status === 404 || e.status === 401) {
+        // Not enrolled — try auto-enroll
         try {
           const enrollRes = await crApi('POST', '/api/interactive-courses/' + courseId + '/enroll');
           enrollmentData = enrollRes;
-          document.getElementById('crGateEnrolledMsg').textContent =
-            'You\'ve been enrolled in "' + (courseData.title || 'this course') + '". Your progress will be saved automatically.';
-          document.getElementById('crGateEnrolled').classList.add('visible');
-          loadCourse(courseData);
-          return;
         } catch (enrollErr) {
           if (enrollErr.code === 'SUBSCRIPTION_REQUIRED' || enrollErr.status === 403) {
             document.getElementById('crGateSubscription').classList.add('visible');
@@ -2738,11 +2722,43 @@ function applyChunkedMode() {
           loadCourse(courseData);
           return;
         }
+      } else {
+        isPreviewMode = true;
+        loadCourse(courseData);
+        return;
       }
-      isPreviewMode = true;
-      loadCourse(courseData);
-      return;
     }
+
+    // Step E: Re-fetch course now that we're enrolled (server may ungated content)
+    if (courseData._isPreview) {
+      try {
+        const headers = { 'Authorization': 'Bearer ' + authToken };
+        const reRes = await fetch(crApiBase + '/api/interactive-courses/slug/' + slug, { headers });
+        const reJson = await reRes.json();
+        const freshData = reJson.data || reJson.course || reJson;
+        if (freshData && freshData._id && !freshData._isPreview) {
+          // Got full content — show enrolled toast and load
+          courseData = freshData;
+          if (enrollmentData && !enrollmentData.sectionsCompleted) {
+            document.getElementById('crGateEnrolledMsg').textContent =
+              'You\'ve been enrolled in "' + (courseData.title || 'this course') + '". Your progress will be saved automatically.';
+            document.getElementById('crGateEnrolled').classList.add('visible');
+          }
+        } else {
+          // Still gated after enrollment — subscription required
+          document.getElementById('crGateSubscription').classList.add('visible');
+          document.getElementById('crLoading').style.display = 'none';
+          return;
+        }
+      } catch (refetchErr) {
+        // Re-fetch failed — show what we have in preview
+        isPreviewMode = true;
+        loadCourse(courseData);
+        return;
+      }
+    }
+
+    loadCourse(courseData);
   }
   // 3. postMessage (iframe embedding)
   window.addEventListener('message', (e) => {
