@@ -10,7 +10,7 @@
 // Do NOT change classNames, color values, gradients, spacing, grid layout, or component hierarchy.
 
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import {
   BookOpen, Clock, ChevronRight, Search,
   Filter, Grid, List, Star, Users, CheckCircle
@@ -18,7 +18,6 @@ import {
 import api from '../services/api';
 
 const InteractiveCourseCatalog = () => {
-  const navigate = useNavigate();
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -77,7 +76,7 @@ const InteractiveCourseCatalog = () => {
   };
 
   const handleCourseClick = (course) => {
-    navigate(`/courses/${course.slug}`);
+    window.location.href = `/interactive-course.html?slug=${course.slug}`;
   };
 
   if (loading) {

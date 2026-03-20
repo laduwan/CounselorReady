@@ -54,59 +54,7 @@ async function findCourseByIdOrSlug(param, tenantFilter = {}) {
       : { $or: slugConditions };
   }
 
-  let course = await Course.findOne(query);
-
-  // Fallback: try legacy "courses" collection (same DB, different collection name)
-  if (!course) {
-    const legacyQuery = mongoose.Types.ObjectId.isValid(param)
-      ? { _id: new mongoose.Types.ObjectId(param) }
-      : { $or: [{ slug: param }, { courseCode: param }] };
-
-    const legacyDoc = await mongoose.connection.db
-      .collection('courses')
-      .findOne(legacyQuery);
-
-    if (legacyDoc) {
-      // Normalize legacy course into interactivecourses shape
-      const sections = (legacyDoc.modules || legacyDoc.sections || []).map((mod) => {
-        const contentBlocks = [
-          { type: 'sectionDivider', order: 0, title: mod.title },
-          ...(mod.lessons || mod.contentBlocks || []).map((item, i) => ({
-            type: item.type || 'text',
-            order: i + 1,
-            content: item.content,
-            textContent: item.textContent || item.content,
-            title: item.title,
-            ...item
-          }))
-        ];
-        return { ...mod, title: mod.title, contentBlocks, _id: mod._id };
-      });
-
-      course = {
-        _id: legacyDoc._id,
-        title: legacyDoc.title,
-        slug: legacyDoc.slug,
-        courseCode: legacyDoc.courseCode,
-        description: legacyDoc.description,
-        ceHours: legacyDoc.ceHours,
-        ceProvider: legacyDoc.ceProvider,
-        acepNumber: legacyDoc.acepNumber,
-        objectives: legacyDoc.objectives,
-        assessment: legacyDoc.assessment,
-        status: legacyDoc.status,
-        categories: legacyDoc.categories,
-        tags: legacyDoc.tags,
-        targetAudience: legacyDoc.targetAudience,
-        author: legacyDoc.author,
-        presenter: legacyDoc.presenter,
-        sections,
-        source: 'legacy'
-      };
-    }
-  }
-
-  return course;
+  return Course.findOne(query);
 }
 
 /**
@@ -232,128 +180,29 @@ router.get('/', optionalAuth, async (req, res) => {
 
     const isAdmin = req.user?.role === 'admin';
 
-    if (isAdmin) {
-      // Admin: merge results from both interactivecourses and legacy courses collections
-      const pageNum = parseInt(page);
-      const limitNum = parseInt(limit);
-
-      const [interactiveCourses, interactiveTotal] = await Promise.all([
-        Course.find(query)
-          .select('title slug description thumbnail ceHours totalEstimatedTime categories tags wordCount totalContentBlocks totalQuizQuestions acepNumber accessType price pricingTier status courseCode')
-          .sort({ publishedAt: -1 })
-          .lean(),
-        Course.countDocuments(query)
-      ]);
-
-      // Build a matching filter for the legacy courses collection
-      const legacyFilter = {};
-      if (status && status !== 'all') legacyFilter.status = status;
-      if (category) legacyFilter.categories = category;
-      if (tag) legacyFilter.tags = tag;
-      if (search) {
-        legacyFilter.$or = [
-          { title: { $regex: search, $options: 'i' } },
-          { description: { $regex: search, $options: 'i' } }
-        ];
-      }
-
-      const legacyCollection = mongoose.connection.db.collection('courses');
-      const [legacyCourses, legacyTotal] = await Promise.all([
-        legacyCollection
-          .find(legacyFilter)
-          .project({ title: 1, slug: 1, description: 1, thumbnail: 1, ceHours: 1, totalEstimatedTime: 1, categories: 1, tags: 1, status: 1, publishedAt: 1 })
-          .sort({ publishedAt: -1 })
-          .toArray(),
-        legacyCollection.countDocuments(legacyFilter)
-      ]);
-
-      // Tag each source and merge
-      const taggedInteractive = interactiveCourses.map(c => ({ ...c, source: 'interactive' }));
-      const taggedLegacy = legacyCourses.map(c => ({ ...c, source: 'legacy' }));
-      const merged = [...taggedInteractive, ...taggedLegacy];
-
-      // Sort combined by publishedAt descending
-      merged.sort((a, b) => {
-        const dateA = a.publishedAt ? new Date(a.publishedAt) : new Date(0);
-        const dateB = b.publishedAt ? new Date(b.publishedAt) : new Date(0);
-        return dateB - dateA;
-      });
-
-      const combinedTotal = interactiveTotal + legacyTotal;
-      const paginatedData = merged.slice((pageNum - 1) * limitNum, pageNum * limitNum);
-
-      return res.json({
-        success: true,
-        data: paginatedData,
-        pagination: {
-          page: pageNum,
-          limit: limitNum,
-          total: combinedTotal,
-          pages: Math.ceil(combinedTotal / limitNum)
-        }
-      });
-    }
-
-    // Non-admin: published interactivecourses + legacy courses merged
     const pageNum = parseInt(page);
     const limitNum = parseInt(limit);
 
-    const [interactiveCourses, interactiveTotal] = await Promise.all([
+    const selectFields = 'title slug description thumbnail ceHours totalEstimatedTime categories tags wordCount totalContentBlocks totalQuizQuestions acepNumber accessType price pricingTier status courseCode';
+
+    const [courses, total] = await Promise.all([
       Course.find(query)
-        .select('title slug description thumbnail ceHours totalEstimatedTime categories tags wordCount totalContentBlocks totalQuizQuestions acepNumber accessType price pricingTier status courseCode')
+        .select(selectFields)
         .sort({ publishedAt: -1 })
+        .skip((pageNum - 1) * limitNum)
+        .limit(limitNum)
         .lean(),
       Course.countDocuments(query)
     ]);
 
-    // Also query legacy courses collection for published courses
-    const legacyFilter = {};
-    if (status && status !== 'all') legacyFilter.status = status;
-    if (category) legacyFilter.categories = category;
-    if (tag) legacyFilter.tags = tag;
-    if (search) {
-      legacyFilter.$or = [
-        { title: { $regex: search, $options: 'i' } },
-        { description: { $regex: search, $options: 'i' } }
-      ];
-    }
-
-    const legacyCollection = mongoose.connection.db.collection('courses');
-    const [legacyCourses, legacyTotal] = await Promise.all([
-      legacyCollection
-        .find(legacyFilter)
-        .project({ title: 1, slug: 1, description: 1, thumbnail: 1, ceHours: 1, totalEstimatedTime: 1, categories: 1, tags: 1, status: 1, publishedAt: 1 })
-        .sort({ publishedAt: -1 })
-        .toArray(),
-      legacyCollection.countDocuments(legacyFilter)
-    ]);
-
-    // Deduplicate by slug (interactive takes priority over legacy)
-    const interactiveSlugs = new Set(interactiveCourses.map(c => c.slug));
-    const uniqueLegacy = legacyCourses.filter(c => !interactiveSlugs.has(c.slug));
-
-    const taggedInteractive = interactiveCourses.map(c => ({ ...c, source: 'interactive' }));
-    const taggedLegacy = uniqueLegacy.map(c => ({ ...c, source: 'legacy' }));
-    const merged = [...taggedInteractive, ...taggedLegacy];
-
-    // Sort combined by publishedAt descending
-    merged.sort((a, b) => {
-      const dateA = a.publishedAt ? new Date(a.publishedAt) : new Date(0);
-      const dateB = b.publishedAt ? new Date(b.publishedAt) : new Date(0);
-      return dateB - dateA;
-    });
-
-    const combinedTotal = interactiveTotal + uniqueLegacy.length;
-    const paginatedData = merged.slice((pageNum - 1) * limitNum, pageNum * limitNum);
-
     res.json({
       success: true,
-      data: paginatedData,
+      data: courses,
       pagination: {
         page: pageNum,
         limit: limitNum,
-        total: combinedTotal,
-        pages: Math.ceil(combinedTotal / limitNum)
+        total,
+        pages: Math.ceil(total / limitNum)
       }
     });
   } catch (error) {

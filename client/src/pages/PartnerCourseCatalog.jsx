@@ -5,7 +5,6 @@
  */
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Link } from 'react-router-dom';
 import api from '../services/api';
 import { BookOpen, Clock, Search, Award } from 'lucide-react';
 
@@ -173,21 +172,21 @@ export default function PartnerCourseCatalog() {
                   )}
 
                   {isCompleted ? (
-                    <Link
-                      to={`/courses/${course.slug}`}
+                    <a
+                      href={`/interactive-course.html?slug=${course.slug}`}
                       className="block text-center text-xs font-medium py-2 rounded-lg transition-colors"
                       style={{ background: HUNTER + '15', color: HUNTER }}
                     >
                       Completed — View Certificate
-                    </Link>
+                    </a>
                   ) : isEnrolled ? (
-                    <Link
-                      to={`/courses/${course.slug}`}
+                    <a
+                      href={`/interactive-course.html?slug=${course.slug}`}
                       className="block text-center text-xs font-medium py-2 rounded-lg text-white transition-colors"
                       style={{ background: primaryColor }}
                     >
                       Continue Learning
-                    </Link>
+                    </a>
                   ) : (
                     <button
                       onClick={() => handleEnroll(course._id)}
