@@ -2686,9 +2686,17 @@ function applyChunkedMode() {
     }
 
     // Step D: Check enrollment + restore progress
+    var isNewEnrollment = false;
     try {
-      const progress = await crApi('GET', '/api/interactive-courses/' + courseId + '/progress');
+      const progressRes = await crApi('GET', '/api/interactive-courses/' + courseId + '/progress');
+      const progress = progressRes.data || progressRes;
       enrollmentData = progress;
+      // Detect fresh enrollment: no completed sections, no visited sections, no progress
+      if ((!progress.sectionsCompleted || progress.sectionsCompleted.length === 0) &&
+          (!progress.visitedSections || progress.visitedSections.length === 0) &&
+          (!progress.overallProgress || progress.overallProgress === 0)) {
+        isNewEnrollment = true;
+      }
       if (progress.sectionsCompleted && progress.sectionsCompleted.length > 0) {
         completedSections = new Set(progress.sectionsCompleted);
       }
@@ -2737,13 +2745,8 @@ function applyChunkedMode() {
         const reJson = await reRes.json();
         const freshData = reJson.data || reJson.course || reJson;
         if (freshData && freshData._id && !freshData._isPreview) {
-          // Got full content — show enrolled toast and load
+          // Got full content — use it
           courseData = freshData;
-          if (enrollmentData && !enrollmentData.sectionsCompleted) {
-            document.getElementById('crGateEnrolledMsg').textContent =
-              'You\'ve been enrolled in "' + (courseData.title || 'this course') + '". Your progress will be saved automatically.';
-            document.getElementById('crGateEnrolled').classList.add('visible');
-          }
         } else {
           // Still gated after enrollment — subscription required
           document.getElementById('crGateSubscription').classList.add('visible');
@@ -2756,6 +2759,12 @@ function applyChunkedMode() {
         loadCourse(courseData);
         return;
       }
+    }
+
+    if (isNewEnrollment) {
+      document.getElementById('crGateEnrolledMsg').textContent =
+        'You\'ve been enrolled in "' + (courseData.title || 'this course') + '". Your progress will be saved automatically.';
+      document.getElementById('crGateEnrolled').classList.add('visible');
     }
 
     loadCourse(courseData);
