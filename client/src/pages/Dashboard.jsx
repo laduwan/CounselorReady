@@ -80,12 +80,12 @@ export default function Dashboard() {
     const fetchData = async (retries = 2) => {
       try {
         const [coursesRes, credentialsRes, certsRes, activityRes] = await Promise.all([
-          api.get('/courses/user/enrolled'),
+          api.get('/interactive-courses/user/my-courses'),
           api.get('/credentials/user/dashboard'),
           api.get('/certificates/my').catch(() => ({ data: { certificates: [] } })),
           api.get('/analytics/my-activity?limit=10').catch(() => ({ data: { activities: [] } }))
         ]);
-        setCourses(coursesRes.data.enrolledCourses || []);
+        setCourses(coursesRes.data.data || coursesRes.data.enrolledCourses || []);
         setCredentials(credentialsRes.data);
         setCertificates(certsRes.data.certificates || certsRes.data || []);
         setActivity(activityRes.data.activities || []);
