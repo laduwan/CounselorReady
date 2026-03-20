@@ -79,14 +79,16 @@ export default function Dashboard() {
   useEffect(() => {
     const fetchData = async (retries = 2) => {
       try {
-        const [coursesRes, credentialsRes, certsRes] = await Promise.all([
+        const [coursesRes, credentialsRes, certsRes, activityRes] = await Promise.all([
           api.get('/courses/user/enrolled'),
           api.get('/credentials/user/dashboard'),
-          api.get('/certificates/my').catch(() => ({ data: { certificates: [] } }))
+          api.get('/certificates/my').catch(() => ({ data: { certificates: [] } })),
+          api.get('/analytics/my-activity?limit=10').catch(() => ({ data: { activities: [] } }))
         ]);
         setCourses(coursesRes.data.enrolledCourses || []);
         setCredentials(credentialsRes.data);
         setCertificates(certsRes.data.certificates || certsRes.data || []);
+        setActivity(activityRes.data.activities || []);
       } catch (error) {
         if (retries > 0 && !error.response) {
           await new Promise(r => setTimeout(r, 3000));
@@ -368,7 +370,58 @@ export default function Dashboard() {
           <div className="bg-white rounded-xl border border-burgundy-100 shadow-sm p-6">
             <h2 className="font-display text-xl font-semibold text-burgundy-900 mb-4">Recent Activity</h2>
             <div className="space-y-3">
-              {courses.length > 0 ? (
+              {activity.length > 0 ? (
+                activity.slice(0, 5).map((item) => {
+                  const labels = {
+                    user_enrolled: 'Enrolled in',
+                    course_started: 'Started',
+                    lesson_completed: 'Completed a lesson in',
+                    course_completed: 'Completed',
+                    quiz_passed: 'Passed quiz in',
+                    quiz_failed: 'Attempted quiz in',
+                    certificate_generated: 'Earned certificate for',
+                    payment_succeeded: 'Payment processed',
+                    subscription_started: 'Subscription started',
+                    subscription_canceled: 'Subscription canceled',
+                    user_login: 'Logged in',
+                    user_registered: 'Account created'
+                  };
+                  const icons = {
+                    user_enrolled: BookOpen,
+                    course_started: BookOpen,
+                    lesson_completed: CheckCircle,
+                    course_completed: Trophy,
+                    quiz_passed: CheckCircle,
+                    quiz_failed: ClipboardList,
+                    certificate_generated: Award,
+                    payment_succeeded: Star,
+                    subscription_started: Star,
+                    user_login: Clock,
+                    user_registered: Star
+                  };
+                  const Icon = icons[item.type] || Clock;
+                  const label = labels[item.type] || item.type.replace(/_/g, ' ');
+                  const courseName = item.courseName || item.courseId?.title;
+                  return (
+                    <div
+                      key={item._id}
+                      className="flex items-center gap-4 p-3 rounded-lg bg-stone-50"
+                    >
+                      <div className="w-10 h-10 bg-forest-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <Icon className="w-5 h-5 text-forest-600" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-forest-700 font-medium truncate">
+                          {label}{courseName ? ` ${courseName}` : ''}
+                        </p>
+                        <p className="text-xs text-forest-500 mt-0.5">
+                          {new Date(item.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })
+              ) : courses.length > 0 ? (
                 courses.slice(0, 5).map((item) => (
                   <Link
                     key={item.course._id}
