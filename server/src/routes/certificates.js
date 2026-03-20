@@ -202,6 +202,18 @@ function sendFile(res, fileBuffer, certificate, ext) {
   return res.send(fileBuffer);
 }
 
+// GET /api/certificates/my - Get current user's certificates (used by dashboard)
+router.get('/my', protect, async (req, res) => {
+  try {
+    const certificates = await Certificate.find({ userId: req.user._id, isRevoked: { $ne: true } })
+      .sort({ completionDate: -1 });
+    res.json({ certificates });
+  } catch (error) {
+    console.error('Get my certificates error:', error);
+    res.status(500).json({ error: 'Failed to fetch certificates' });
+  }
+});
+
 // GET /api/certificates - Get all certificates for authenticated user
 router.get('/', protect, async (req, res) => {
   try {
