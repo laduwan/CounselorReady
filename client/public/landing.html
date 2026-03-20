@@ -267,6 +267,216 @@
     </div>
   </section>
 
+  <!-- ═══════════════════════════════════════════════════════════════
+       WHAT'S INCLUDED — drop between Stats and Pricing in landing.html
+       Pure HTML/CSS/vanilla JS — no React, no dependencies beyond
+       the Tailwind CDN + Google Fonts already loaded on the page.
+       ═══════════════════════════════════════════════════════════════ -->
+  <section id="whats-included" class="py-24 px-4" style="background:#F8F7F4">
+    <div class="max-w-3xl mx-auto">
+      <!-- Section heading -->
+      <div class="text-center" style="margin-bottom:40px">
+        <span style="display:inline-block;margin-bottom:10px;background:#F9F0DB;border:1px solid #D4A855;border-radius:20px;padding:4px 14px;font-size:11px;font-weight:700;color:#A67936;letter-spacing:0.06em;text-transform:uppercase;font-family:'Lato',sans-serif">
+          NBCC ACEP Provider #7760
+        </span>
+        <h2 class="font-display" style="font-size:clamp(24px,4vw,34px);font-weight:700;color:#1a1a1a;line-height:1.2;margin-bottom:8px">
+          What You Get with
+          <span style="color:#6B1D34">Counselor</span><span style="color:#4A7C59">Ready</span>
+        </h2>
+        <p style="font-size:15px;color:#6B7280;max-width:480px;margin:0 auto;line-height:1.6;font-family:'Lato',sans-serif">
+          CE that respects your time, your license, and your clinical standards. Tap any benefit to learn more.
+        </p>
+        <!-- Async callout -->
+        <div style="display:inline-flex;align-items:center;gap:8px;margin-top:16px;background:#F0F4F7;border:1px solid rgba(40,65,87,0.13);border-radius:10px;padding:10px 18px;max-width:560px;text-align:left">
+          <svg style="flex-shrink:0;color:#284157" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke-width="2.5"/><path stroke-linecap="round" stroke-width="2.5" d="M12 6v6l4 2"/></svg>
+          <p style="font-size:13px;color:#284157;line-height:1.5;margin:0;font-family:'Lato',sans-serif">
+            <strong>All courses are self-paced and asynchronous</strong> — complete them on your schedule, 24/7. Any synchronous or live requirements will be clearly marked.
+          </p>
+        </div>
+      </div>
+      <!-- Benefit cards -->
+      <div id="benefitList" style="display:flex;flex-direction:column;gap:10px;margin-bottom:56px">
+        <!-- 1 — NBCC-Approved CE Courses -->
+        <button class="cr-benefit" onclick="toggleBenefit(this)" data-color="#6B1D34">
+          <div class="cr-benefit-icon" style="background:#FDF5F7">
+            <svg width="22" height="22" fill="none" stroke="#6B1D34" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M22 10v6M2 10l10-5 10 5-10 5z"/><path stroke-linecap="round" stroke-linejoin="round" d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+          </div>
+          <div class="cr-benefit-body">
+            <div class="cr-benefit-header">
+              <span class="font-display cr-benefit-title">NBCC-Approved CE Courses</span>
+              <svg class="cr-benefit-chev" width="18" height="18" fill="none" stroke="#9CA3AF" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 9l6 6 6-6"/></svg>
+            </div>
+            <p class="cr-benefit-short">50+ interactive courses built to ACEP standards with real clinical depth.</p>
+            <div class="cr-benefit-detail">
+              <p>Every course is approved through NBCC ACEP Provider #7760 and meets rigorous standards: 6,000+ words of instructional content per CE hour, 2–3 knowledge checks per module, and comprehensive final exams requiring an 80% pass rate. Accepted by licensing boards nationwide for LPCs, LMHCs, LCSWs, LMFTs, NCCs, and more.</p>
+            </div>
+          </div>
+        </button>
+        <!-- 2 — Interactive Course Experience -->
+        <button class="cr-benefit" onclick="toggleBenefit(this)" data-color="#4A7C59">
+          <div class="cr-benefit-icon" style="background:#F2F7F4">
+            <svg width="22" height="22" fill="none" stroke="#4A7C59" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path stroke-linecap="round" stroke-linejoin="round" d="M8 21h8M12 17v4"/></svg>
+          </div>
+          <div class="cr-benefit-body">
+            <div class="cr-benefit-header">
+              <span class="font-display cr-benefit-title">Interactive Course Experience</span>
+              <svg class="cr-benefit-chev" width="18" height="18" fill="none" stroke="#9CA3AF" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 9l6 6 6-6"/></svg>
+            </div>
+            <p class="cr-benefit-short">Clinical vignettes, decision trees, scenario branching — not walls of text.</p>
+            <div class="cr-benefit-detail">
+              <p>Courses feature continuing clinical characters, branching scenarios that put you in the clinician's chair, accordion deep-dives, flashcard decks, card sorts, reflection exercises, and detailed feedback for every choice — including the consequences of less-optimal decisions.</p>
+            </div>
+          </div>
+        </button>
+        <!-- 3 — Instant Certificates -->
+        <button class="cr-benefit" onclick="toggleBenefit(this)" data-color="#D4A855">
+          <div class="cr-benefit-icon" style="background:#FDF9F0">
+            <svg width="22" height="22" fill="none" stroke="#D4A855" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          </div>
+          <div class="cr-benefit-body">
+            <div class="cr-benefit-header">
+              <span class="font-display cr-benefit-title">Instant Certificates</span>
+              <svg class="cr-benefit-chev" width="18" height="18" fill="none" stroke="#9CA3AF" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 9l6 6 6-6"/></svg>
+            </div>
+            <p class="cr-benefit-short">Pass your posttest — certificate generates immediately.</p>
+            <div class="cr-benefit-detail">
+              <p>Complete your final assessment and your certificate is generated on the spot with a unique Certificate ID, NBCC ACEP stamp, content area designation, and full compliance metadata. No waiting, no emailing, no manual requests. Hours auto-allocate to your linked credentials.</p>
+            </div>
+          </div>
+        </button>
+        <!-- 4 — AI Certificate Scanner -->
+        <button class="cr-benefit" onclick="toggleBenefit(this)" data-color="#284157">
+          <div class="cr-benefit-icon" style="background:#F0F4F7">
+            <svg width="22" height="22" fill="none" stroke="#284157" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+          </div>
+          <div class="cr-benefit-body">
+            <div class="cr-benefit-header">
+              <span class="font-display cr-benefit-title">AI Certificate Scanner</span>
+              <svg class="cr-benefit-chev" width="18" height="18" fill="none" stroke="#9CA3AF" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 9l6 6 6-6"/></svg>
+            </div>
+            <p class="cr-benefit-short">Upload certificates from any provider — AI extracts the details automatically.</p>
+            <div class="cr-benefit-detail">
+              <p>Earned CE hours somewhere else? Upload your certificate and our AI scanner extracts the course title, provider name, CE hours, content category, and approving body — then files it under the right credential automatically. Works with certificates from any CE provider.</p>
+            </div>
+          </div>
+        </button>
+        <!-- 5 — Multi-State Credential Tracking -->
+        <button class="cr-benefit" onclick="toggleBenefit(this)" data-color="#6B1D34">
+          <div class="cr-benefit-icon" style="background:#FDF5F7">
+            <svg width="22" height="22" fill="none" stroke="#6B1D34" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+          </div>
+          <div class="cr-benefit-body">
+            <div class="cr-benefit-header">
+              <span class="font-display cr-benefit-title">Multi-State Credential Tracking</span>
+              <svg class="cr-benefit-chev" width="18" height="18" fill="none" stroke="#9CA3AF" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 9l6 6 6-6"/></svg>
+            </div>
+            <p class="cr-benefit-short">Track every license, certification, and specialty in one dashboard.</p>
+            <div class="cr-benefit-detail">
+              <p>Licensed in multiple states? Hold an NCC and BC-TMH? CounselorReady tracks them all simultaneously — each with its own requirements, progress bars, and deadlines. The platform tracks state-specific distinctions like synchronous vs. asynchronous requirements automatically.</p>
+            </div>
+          </div>
+        </button>
+        <!-- 6 — Audit-Ready Reports -->
+        <button class="cr-benefit" onclick="toggleBenefit(this)" data-color="#4A7C59">
+          <div class="cr-benefit-icon" style="background:#F2F7F4">
+            <svg width="22" height="22" fill="none" stroke="#4A7C59" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          </div>
+          <div class="cr-benefit-body">
+            <div class="cr-benefit-header">
+              <span class="font-display cr-benefit-title">Audit-Ready Reports</span>
+              <svg class="cr-benefit-chev" width="18" height="18" fill="none" stroke="#9CA3AF" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 9l6 6 6-6"/></svg>
+            </div>
+            <p class="cr-benefit-short">One click generates a comprehensive compliance report.</p>
+            <div class="cr-benefit-detail">
+              <p>Generate a full audit report showing every completed CE hour, certificate, content area allocation, and compliance status — organized by credential and renewal period. No scrambling through email inboxes or file folders.</p>
+            </div>
+          </div>
+        </button>
+        <!-- 7 — Signature Course Series -->
+        <button class="cr-benefit" onclick="toggleBenefit(this)" data-color="#D4A855">
+          <div class="cr-benefit-icon" style="background:#FDF9F0">
+            <svg width="22" height="22" fill="none" stroke="#D4A855" stroke-width="2" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          </div>
+          <div class="cr-benefit-body">
+            <div class="cr-benefit-header">
+              <span class="font-display cr-benefit-title">Signature Course Series</span>
+              <svg class="cr-benefit-chev" width="18" height="18" fill="none" stroke="#9CA3AF" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 9l6 6 6-6"/></svg>
+            </div>
+            <p class="cr-benefit-short">Cinema CE and Sounds Like Therapy — clinical rigor meets culture.</p>
+            <div class="cr-benefit-detail">
+              <p>Our Cinema Series brings clinical concepts to life through movie-themed CE. Sounds Like Therapy explores therapeutic themes through the lens of music. These are clinically rigorous courses wrapped in engaging frameworks that make learning stick.</p>
+            </div>
+          </div>
+        </button>
+        <!-- 8 — NCMHCE Exam Prep -->
+        <button class="cr-benefit" onclick="toggleBenefit(this)" data-color="#284157">
+          <div class="cr-benefit-icon" style="background:#F0F4F7">
+            <svg width="22" height="22" fill="none" stroke="#284157" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+          </div>
+          <div class="cr-benefit-body">
+            <div class="cr-benefit-header">
+              <span class="font-display cr-benefit-title">NCMHCE Exam Prep</span>
+              <svg class="cr-benefit-chev" width="18" height="18" fill="none" stroke="#9CA3AF" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 9l6 6 6-6"/></svg>
+            </div>
+            <p class="cr-benefit-short">25 clinical simulations with timed mode and progress tracking.</p>
+            <div class="cr-benefit-detail">
+              <p>Built for aspiring LPCs, our NCMHCE prep features 25 clinical case simulations with timed mode, persistent scoring, and progress tracking. Walk into exam day confident and prepared.</p>
+            </div>
+          </div>
+        </button>
+      </div>
+    </div>
+    <style>
+      .cr-benefit{
+        width:100%;text-align:left;cursor:pointer;
+        background:#FFFFFF;border:1.5px solid #E2DED3;border-radius:12px;
+        padding:18px 22px;
+        transition:all .3s cubic-bezier(.4,0,.2,1);
+        box-shadow:0 1px 3px rgba(0,0,0,.04);
+        font-family:inherit;
+      }
+      .cr-benefit:hover{box-shadow:0 4px 12px rgba(107,29,52,.06);border-color:#C9D7CD}
+      .cr-benefit.open{background:#F2F7F4;border-color:#4A7C59;box-shadow:0 4px 16px rgba(74,124,89,.1)}
+      .cr-benefit .cr-benefit-icon{
+        flex-shrink:0;width:42px;height:42px;border-radius:10px;
+        display:flex;align-items:center;justify-content:center;
+        transition:background .3s;
+      }
+      .cr-benefit.open .cr-benefit-icon{background:#FFFFFF !important}
+      .cr-benefit .cr-benefit-body{flex:1;min-width:0}
+      .cr-benefit .cr-benefit-header{display:flex;justify-content:space-between;align-items:center}
+      .cr-benefit .cr-benefit-title{font-size:17px;font-weight:700;color:#284157}
+      .cr-benefit .cr-benefit-chev{
+        flex-shrink:0;transition:transform .3s,color .3s;
+      }
+      .cr-benefit.open .cr-benefit-chev{transform:rotate(180deg)}
+      .cr-benefit.open .cr-benefit-chev path{stroke:#4A7C59}
+      .cr-benefit .cr-benefit-short{
+        margin:3px 0 0;font-size:14px;color:#6B7280;line-height:1.5;
+        font-family:'Lato',sans-serif;
+      }
+      .cr-benefit .cr-benefit-detail{
+        max-height:0;opacity:0;overflow:hidden;
+        transition:max-height .4s cubic-bezier(.4,0,.2,1),opacity .3s ease;
+      }
+      .cr-benefit.open .cr-benefit-detail{max-height:240px;opacity:1}
+      .cr-benefit .cr-benefit-detail p{
+        margin:10px 0 0;font-size:14px;color:#2C2C2C;line-height:1.75;
+        font-family:'Lato',sans-serif;
+      }
+      /* Layout: icon + body side by side */
+      .cr-benefit>div:first-child,.cr-benefit{display:flex;align-items:flex-start;gap:14px}
+    </style>
+    <script>
+      function toggleBenefit(btn){
+        const wasOpen=btn.classList.contains('open');
+        // Optionally close others (accordion mode):
+        // document.querySelectorAll('.cr-benefit.open').forEach(b=>{if(b!==btn)b.classList.remove('open')});
+        btn.classList.toggle('open',!wasOpen);
+      }
+    </script>
+  </section>
+
   <!-- Pricing -->
   <section id="pricing" class="py-24 px-4 bg-stone-50">
     <div class="max-w-6xl mx-auto">
