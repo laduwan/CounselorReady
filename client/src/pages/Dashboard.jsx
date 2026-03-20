@@ -140,6 +140,14 @@ export default function Dashboard() {
         )}
       </div>
 
+      {/* Async Courses Notice */}
+      <div className="mb-6 flex items-center gap-3 bg-forest-50 border border-forest-200 rounded-xl px-5 py-3">
+        <Clock className="w-5 h-5 text-forest-600 flex-shrink-0" />
+        <p className="text-forest-700 text-sm">
+          All courses are <span className="font-semibold">asynchronous</span> and self-paced unless otherwise stated.
+        </p>
+      </div>
+
       {/* What's New Banner */}
       {!whatsNewDismissed && (
         <div className="mb-8 bg-gradient-to-r from-burgundy-50 to-honey-50 border border-burgundy-200 rounded-xl p-5 relative">
