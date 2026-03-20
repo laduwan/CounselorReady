@@ -7,6 +7,7 @@
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
+import cookieParser from 'cookie-parser';
 import rateLimit from 'express-rate-limit';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
@@ -18,7 +19,7 @@ dotenv.config();
 
 // Import routes
 import authRoutes from './routes/auth.js';
-import coursesRoutes from './routes/courses.js';
+// import coursesRoutes from './routes/courses.js'; // Legacy route unmounted — all courses via /api/interactive-courses
 import adminRoutes from './routes/admin.js';
 import usersRoutes from './routes/users.js';
 import certificatesRoutes from './routes/certificates.js';
@@ -179,6 +180,7 @@ app.use('/api/scholarly-articles/article/*/generate-quiz', aiLimiter);
 app.use('/api/payments/webhook', express.raw({ type: 'application/json' }));
 app.use(express.json({ limit: '15mb' }));
 app.use(express.urlencoded({ extended: true, limit: '15mb' }));
+app.use(cookieParser());
 
 // Partner detection — attach req.partner context for all API requests
 app.use('/api/', detectPartner);
@@ -238,7 +240,7 @@ app.get('/health', async (req, res) => {
 // API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/interactive-courses', interactiveCourseRoutes);
-app.use('/api/courses', coursesRoutes);
+// app.use('/api/courses', coursesRoutes); // Legacy route unmounted
 app.use('/api/admin', adminRoutes);
 app.use('/api/users', usersRoutes);
 app.use('/api/certificates', certificatesRoutes);
@@ -308,7 +310,6 @@ app.use((req, res, next) => {
     availableEndpoints: [
       '/health',
       '/api/auth/*',
-      '/api/courses/*',
       '/api/interactive-courses/*',
       '/api/admin/*',
       '/api/users/*',
@@ -398,6 +399,13 @@ const startServer = async () => {
 startServer().catch(err => {
   console.error('Failed to start server:', err);
   process.exit(1);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('⚠️ Unhandled Rejection at:', promise, 'reason:', reason);
+});
+process.on('uncaughtException', (err) => {
+  console.error('💥 Uncaught Exception:', err);
   process.exit(1);
 });
 

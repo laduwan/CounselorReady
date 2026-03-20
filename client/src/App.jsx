@@ -14,7 +14,6 @@ import ErrorBoundary from './components/ErrorBoundary';
 import Landing from './pages/Landing';
 import Login from './pages/Login';
 import Register from './pages/Register';
-import CourseView from './pages/CourseView';
 import InteractiveCourseCatalog from './pages/InteractiveCourseCatalog';
 import CourseQuickEdit from './pages/CourseQuickEdit';
 import AdminPartners from './pages/AdminPartners';
@@ -53,14 +52,20 @@ import ScholarlyArticles from './pages/ScholarlyArticles';
 
 // Components
 import Layout from './components/Layout';
-import CourseViewer from './components/CourseViewer';
 import CourseBuilder from './components/CourseBuilder';
 import { AccessibilityProvider, SkipToContent, AccessibilityPanel } from './components/AccessibilityProvider';
 
-// Wrapper to pass slug param to CourseViewer
-function CourseViewerWrapper() {
+// Redirect /courses/:slug to CReady Viewer (static HTML player)
+function CourseViewerRedirect() {
   const { slug } = useParams();
-  return <CourseViewer courseSlug={slug} />;
+  useEffect(() => {
+    window.location.replace(`/interactive-course.html?slug=${slug}`);
+  }, [slug]);
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-stone-50">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#6B1D34]"></div>
+    </div>
+  );
 }
 
 // Loading screen with server wake-up awareness
@@ -193,7 +198,7 @@ function AppRoutes() {
       } />
       <Route path="/courses/:slug" element={
         <ProtectedRoute>
-          <Layout><CourseView /></Layout>
+          <CourseViewerRedirect />
         </ProtectedRoute>
       } />
       
@@ -201,7 +206,7 @@ function AppRoutes() {
       <Route path="/learn" element={<Navigate to="/courses" replace />} />
       <Route path="/learn/:slug" element={
         <ProtectedRoute>
-          <CourseViewerWrapper />
+          <CourseViewerRedirect />
         </ProtectedRoute>
       } />
 
