@@ -182,6 +182,13 @@
           </div>
           <p class="text-sm text-stone-500">View and respond to user support messages and inquiries.</p>
         </a>
+        <div onclick="openBroadcastModal()" class="admin-card bg-white rounded-xl border border-stone-200 p-5 block cursor-pointer hover:shadow-md transition-shadow">
+          <div class="flex items-center gap-3 mb-2">
+            <i class="fas fa-bullhorn text-burgundy-600"></i>
+            <h3 class="font-semibold text-stone-800">Broadcast Messenger</h3>
+          </div>
+          <p class="text-sm text-stone-500">Send announcements and alerts to all learners. Notify about issues, updates, or maintenance.</p>
+        </div>
       </div>
     </div>
 
@@ -332,6 +339,78 @@
       </div>
     </div>
 
+    <!-- Broadcast Messenger Modal -->
+    <div id="broadcastModal" class="fixed inset-0 z-50 hidden items-center justify-center" style="background:rgba(0,0,0,0.5)">
+      <div class="bg-white rounded-xl shadow-2xl w-full max-w-xl mx-4 overflow-hidden">
+        <div class="px-6 py-4 flex items-center justify-between" style="background:#6B1D34">
+          <div class="flex items-center gap-3 text-white">
+            <i class="fas fa-bullhorn"></i>
+            <h2 class="text-lg font-bold" style="font-family:'Cormorant Garamond',serif">Broadcast Messenger</h2>
+          </div>
+          <button onclick="closeBroadcastModal()" class="text-white/80 hover:text-white"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="p-6 space-y-4">
+          <div>
+            <label class="block text-sm font-semibold text-stone-700 mb-1">Title</label>
+            <input id="bcTitle" type="text" placeholder="e.g. Scheduled Maintenance Tonight" class="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-burgundy-500 focus:border-burgundy-500 outline-none">
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-stone-700 mb-1">Message</label>
+            <textarea id="bcMessage" rows="4" placeholder="Describe what learners need to know..." class="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-burgundy-500 focus:border-burgundy-500 outline-none resize-none"></textarea>
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-semibold text-stone-700 mb-1">Type</label>
+              <select id="bcType" class="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-burgundy-500 focus:border-burgundy-500 outline-none">
+                <option value="info">Info</option>
+                <option value="maintenance">Maintenance</option>
+                <option value="urgent">Urgent</option>
+                <option value="update">Update</option>
+                <option value="promotion">Promotion</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-semibold text-stone-700 mb-1">Audience</label>
+              <select id="bcAudience" class="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-burgundy-500 focus:border-burgundy-500 outline-none">
+                <option value="all">All Users</option>
+                <option value="free">Free Plan</option>
+                <option value="professional">Professional</option>
+                <option value="vip">VIP</option>
+              </select>
+            </div>
+          </div>
+          <div class="flex items-center gap-4">
+            <label class="flex items-center gap-2 text-sm text-stone-600">
+              <input id="bcPinned" type="checkbox" class="rounded border-stone-300 text-burgundy-600 focus:ring-burgundy-500"> Pin to top
+            </label>
+            <label class="flex items-center gap-2 text-sm text-stone-600">
+              <input id="bcEmail" type="checkbox" class="rounded border-stone-300 text-burgundy-600 focus:ring-burgundy-500"> Send email
+            </label>
+          </div>
+          <div id="bcError" class="text-sm text-red-600 hidden"></div>
+          <div id="bcSuccess" class="text-sm text-green-600 hidden"></div>
+        </div>
+        <div class="px-6 py-3 border-t border-stone-100 flex items-center justify-between">
+          <button onclick="loadActiveBroadcasts()" class="text-sm text-burgundy-600 hover:text-burgundy-800 font-medium">
+            <i class="fas fa-list mr-1"></i> View Active
+          </button>
+          <div class="flex gap-2">
+            <button onclick="closeBroadcastModal()" class="px-4 py-2 text-sm text-stone-600 hover:text-stone-800 font-medium">Cancel</button>
+            <button id="bcSendBtn" onclick="sendBroadcast()" class="px-5 py-2 text-sm font-semibold text-white rounded-lg" style="background:#6B1D34">
+              Send Broadcast
+            </button>
+          </div>
+        </div>
+        <!-- Active broadcasts list -->
+        <div id="bcActiveList" class="hidden border-t border-stone-100">
+          <div class="px-6 py-3 bg-stone-50">
+            <h3 class="text-sm font-semibold text-stone-700 mb-2">Active Broadcasts</h3>
+            <div id="bcActiveItems" class="space-y-2 max-h-48 overflow-y-auto"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
   </main>
   </div>
 
@@ -390,6 +469,124 @@
         if (el) { el.textContent = '!'; el.title = err.message; }
       });
     });
+
+    // ── Broadcast Messenger ──
+    function openBroadcastModal() {
+      const modal = document.getElementById('broadcastModal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+      document.getElementById('bcTitle').value = '';
+      document.getElementById('bcMessage').value = '';
+      document.getElementById('bcType').value = 'info';
+      document.getElementById('bcAudience').value = 'all';
+      document.getElementById('bcPinned').checked = false;
+      document.getElementById('bcEmail').checked = false;
+      document.getElementById('bcError').classList.add('hidden');
+      document.getElementById('bcSuccess').classList.add('hidden');
+      document.getElementById('bcActiveList').classList.add('hidden');
+    }
+
+    function closeBroadcastModal() {
+      const modal = document.getElementById('broadcastModal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    async function sendBroadcast() {
+      const title = document.getElementById('bcTitle').value.trim();
+      const message = document.getElementById('bcMessage').value.trim();
+      const type = document.getElementById('bcType').value;
+      const audience = document.getElementById('bcAudience').value;
+      const isPinned = document.getElementById('bcPinned').checked;
+      const sendEmail = document.getElementById('bcEmail').checked;
+      const errEl = document.getElementById('bcError');
+      const successEl = document.getElementById('bcSuccess');
+      errEl.classList.add('hidden');
+      successEl.classList.add('hidden');
+
+      if (!title || !message) {
+        errEl.textContent = 'Title and message are required.';
+        errEl.classList.remove('hidden');
+        return;
+      }
+
+      const btn = document.getElementById('bcSendBtn');
+      btn.disabled = true;
+      btn.textContent = 'Sending...';
+
+      try {
+        const res = await fetch(`${API_URL}/api/admin/broadcast`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({ title, message, type, audience, isPinned, sendEmail })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to send');
+        successEl.textContent = `Broadcast sent to ${data.affectedUsers || 'all'} users!`;
+        successEl.classList.remove('hidden');
+        document.getElementById('bcTitle').value = '';
+        document.getElementById('bcMessage').value = '';
+      } catch (err) {
+        errEl.textContent = err.message;
+        errEl.classList.remove('hidden');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Send Broadcast';
+      }
+    }
+
+    async function loadActiveBroadcasts() {
+      const listEl = document.getElementById('bcActiveList');
+      const itemsEl = document.getElementById('bcActiveItems');
+      listEl.classList.toggle('hidden');
+      if (listEl.classList.contains('hidden')) return;
+
+      itemsEl.innerHTML = '<p class="text-sm text-stone-400">Loading...</p>';
+      try {
+        const res = await fetch(`${API_URL}/api/admin/broadcasts`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        const broadcasts = (data.broadcasts || []).filter(b => b.isActive);
+        if (broadcasts.length === 0) {
+          itemsEl.innerHTML = '<p class="text-sm text-stone-400">No active broadcasts.</p>';
+          return;
+        }
+        itemsEl.innerHTML = broadcasts.map(b => {
+          const typeColors = { urgent: 'red', maintenance: 'amber', info: 'blue', update: 'green', promotion: 'purple' };
+          const color = typeColors[b.type] || 'gray';
+          const date = new Date(b.createdAt).toLocaleDateString();
+          const readCount = b.readBy?.length || 0;
+          return `<div class="flex items-center justify-between bg-white rounded-lg border border-stone-200 px-3 py-2">
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-2">
+                <span class="inline-block px-1.5 py-0.5 rounded text-xs font-medium bg-${color}-100 text-${color}-700">${b.type}</span>
+                <span class="text-sm font-medium text-stone-800 truncate">${b.title}</span>
+              </div>
+              <p class="text-xs text-stone-400 mt-0.5">${date} · ${readCount} read</p>
+            </div>
+            <button onclick="deleteBroadcast('${b._id}')" class="ml-2 text-stone-400 hover:text-red-500 text-xs" title="Delete">
+              <i class="fas fa-trash"></i>
+            </button>
+          </div>`;
+        }).join('');
+      } catch (err) {
+        itemsEl.innerHTML = `<p class="text-sm text-red-500">${err.message}</p>`;
+      }
+    }
+
+    async function deleteBroadcast(id) {
+      if (!confirm('Delete this broadcast?')) return;
+      try {
+        await fetch(`${API_URL}/api/admin/broadcasts/${id}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        loadActiveBroadcasts();
+      } catch (err) {
+        alert('Failed to delete: ' + err.message);
+      }
+    }
   </script>
 </body>
 </html>
