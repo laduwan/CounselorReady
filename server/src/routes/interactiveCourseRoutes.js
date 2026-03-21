@@ -10,6 +10,7 @@ import Certificate from '../models/Certificate.js';
 import Evaluation from '../models/Evaluation.js';
 import User from '../models/User.js';
 import UserCredential from '../models/UserCredential.js';
+import Gamification from '../models/Gamification.js';
 import { protect } from '../middleware/auth.js';
 import { generateCertificate, generateCertificateNumber } from '../utils/certificate.js';
 
@@ -21,6 +22,54 @@ async function findCourseByIdOrSlug(param) {
     return Course.findById(param);
   }
   return Course.findOne({ slug: param });
+}
+
+// Helper: record gamification activity (non-blocking)
+async function recordGamification(userId, type, metadata = {}) {
+  try {
+    let profile = await Gamification.findOne({ userId });
+    if (!profile) profile = await Gamification.create({ userId });
+    
+    profile.recordActivity();
+    
+    const XP = { course_complete: 100, quiz_pass: 25, daily_login: 5, streak_milestone: 50, certificate_earned: 75 };
+    profile.xp += XP[type] || 5;
+    profile.level = profile.calculateLevel();
+    
+    if (type === 'course_complete') {
+      profile.totalCoursesCompleted += 1;
+      if (metadata.ceHours) {
+        profile.totalCEHoursEarned += metadata.ceHours;
+        profile.weeklyHoursCompleted += metadata.ceHours;
+      }
+    } else if (type === 'quiz_pass') {
+      profile.totalQuizzesPassed += 1;
+    }
+    
+    // Check badges
+    const BADGES = {
+      first_course: { check: () => profile.totalCoursesCompleted >= 1, name: 'First Steps', description: 'Completed your first course', icon: 'trophy' },
+      five_courses: { check: () => profile.totalCoursesCompleted >= 5, name: 'Dedicated Learner', description: 'Completed 5 courses', icon: 'star' },
+      ten_courses: { check: () => profile.totalCoursesCompleted >= 10, name: 'CE Champion', description: 'Completed 10 courses', icon: 'crown' },
+      twenty_five_courses: { check: () => profile.totalCoursesCompleted >= 25, name: 'Master Practitioner', description: 'Completed 25 courses', icon: 'gem' },
+      streak_7: { check: () => profile.currentStreak >= 7, name: 'Week Warrior', description: '7-day learning streak', icon: 'flame' },
+      streak_30: { check: () => profile.currentStreak >= 30, name: 'Monthly Maven', description: '30-day learning streak', icon: 'fire' },
+      ten_hours: { check: () => profile.totalCEHoursEarned >= 10, name: '10 Hour Club', description: 'Earned 10+ CE hours', icon: 'clock' },
+      fifty_hours: { check: () => profile.totalCEHoursEarned >= 50, name: 'Half Century', description: 'Earned 50+ CE hours', icon: 'zap' },
+      quiz_ace: { check: () => profile.totalQuizzesPassed >= 10, name: 'Quiz Ace', description: 'Passed 10 quizzes', icon: 'check-circle' },
+      first_cert: { check: () => type === 'certificate_earned', name: 'Certified', description: 'Earned your first certificate', icon: 'award' }
+    };
+    
+    for (const [key, def] of Object.entries(BADGES)) {
+      if (def.check() && !profile.badges.some(b => b.key === key)) {
+        profile.badges.push({ key, name: def.name, description: def.description, icon: def.icon });
+      }
+    }
+    
+    await profile.save();
+  } catch (err) {
+    console.error('Gamification error (non-fatal):', err.message);
+  }
 }
 
 // ============================================================================
@@ -299,6 +348,7 @@ router.post('/:id/assessment', protect, async (req, res) => {
     if (calculatedPassed) {
       progress.assessmentPassed = true;
       // Don't mark as fully completed yet - need evaluation + attestation
+      recordGamification(req.user._id, 'quiz_pass');
     }
 
     // Update best score
@@ -675,6 +725,10 @@ router.post('/:id/certificate', protect, async (req, res) => {
       } catch (syncErr) {
         console.error('CE auto-allocation error (non-fatal):', syncErr.message);
       }
+
+      // Record gamification: course complete + certificate earned
+      recordGamification(req.user._id, 'course_complete', { ceHours: course.ceHours || 1 });
+      recordGamification(req.user._id, 'certificate_earned');
     }
 
     // Send PDF
@@ -887,6 +941,7 @@ router.post('/:id/progress/section/:sectionIndex/quiz', protect, async (req, res
 
     if (passed) {
       sectionProgress.quizPassed = true;
+      recordGamification(req.user._id, 'quiz_pass');
     }
 
     // Update best score
