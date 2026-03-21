@@ -1,248 +1,172 @@
-/**
- * Copyright (c) 2026 CounselorReady, a subsidiary of Ga Integrated Therapeutic Perspectives, LLC.
- * All rights reserved. Proprietary and confidential.
- * Unauthorized copying or distribution is strictly prohibited.
- */
 import express from 'express';
+import mongoose from 'mongoose';
+import { protect } from '../middleware/auth.js';
 import UserCredential from '../models/UserCredential.js';
 import Certificate from '../models/Certificate.js';
-import CredentialTemplate from '../models/CredentialTemplate.js';
-import InteractiveCourse from '../models/InteractiveCourse.js';
-import UserCourseProgress from '../models/UserCourseProgress.js';
-import { protect } from '../middleware/auth.js';
+import { Course } from '../models/InteractiveCourse.js';
 
 const router = express.Router();
-router.use(protect);
 
-// ── Generate personalized CE plan ──
-router.get('/plan', async (req, res) => {
+// GET /api/ce-planner/plan
+// Returns personalized CE plan with gap analysis and course recommendations
+router.get('/plan', protect, async (req, res) => {
   try {
-    const userId = req.user._id;
+    // 1. Fetch user's credentials with requirements + ceuLogs
+    const credentials = await UserCredential.find({ userId: req.user._id })
+      .sort({ expirationDate: 1 });
 
-    // Get user's active credentials
-    const credentials = await UserCredential.find({ userId, status: { $ne: 'renewed' } });
-    if (credentials.length === 0) {
+    if (!credentials.length) {
       return res.json({
+        message: 'Add your credentials first to get a personalized CE plan.',
         plan: [],
-        message: 'Add your credentials first to get a personalized CE plan.'
+        summary: {
+          totalCredentials: 0,
+          totalCertificates: 0,
+          totalCertificateHours: 0,
+          totalHoursRemaining: 0,
+          credentialsByUrgency: { critical: 0, urgent: 0, onTrack: 0 }
+        }
       });
     }
 
-    // Auto-sync certificates into credentials before building the plan
-    // This pulls data from both credentials page AND certificates page
-    const certificates = await Certificate.find({
-      userId,
-      isRevoked: { $ne: true }
-    });
+    // 2. Fetch user's certificates (to count external CE logged)
+    const certificates = await Certificate.find({ userId: req.user._id });
+    const totalCertificateHours = certificates.reduce((sum, c) => sum + (c.ceHours || 0), 0);
 
-    if (certificates.length > 0) {
-      for (const credential of credentials) {
-        let credentialUpdated = false;
+    // 3. Fetch published catalog courses for recommendations
+    const catalogCourses = await Course.find(
+      { status: 'published' },
+      'title slug ceHours ceuCategories categories nbccContentAreas contentAreas description deliveryFormat'
+    ).lean();
 
-        for (const cert of certificates) {
-          const isExplicitlyLinked = cert.credentials && cert.credentials.some(credId =>
-            credId.toString() === credential._id.toString()
-          );
-          const isPlatformCert = cert.source === 'platform';
+    // 4. Build plan per credential
+    const now = new Date();
+    const urgencyCounts = { critical: 0, urgent: 0, onTrack: 0 };
+    let totalHoursRemaining = 0;
 
-          // Match uploaded certs by category to credential requirements
-          const certCategory = (cert.category || 'General').toLowerCase().replace(/[-_]/g, ' ');
-          const hasRequirements = credential.requirements && credential.requirements.length > 0;
-          const matchesCategory = !hasRequirements || credential.requirements.some(req =>
-            req.category.toLowerCase().replace(/[-_]/g, ' ') === certCategory
-          ) || certCategory === 'general';
-
-          // Apply explicitly linked, platform-generated, or category-matched certs
-          if (!isExplicitlyLinked && !isPlatformCert && !matchesCategory) continue;
-
-          // Skip if already logged (no duplicates)
-          const alreadyLogged = credential.ceuLogs.some(log =>
-            log.certificateId && log.certificateId.toString() === cert._id.toString()
-          );
-          if (alreadyLogged) continue;
-
-          credential.ceuLogs.push({
-            date: cert.completionDate,
-            hours: cert.ceHours || 0,
-            category: cert.category || 'General',
-            source: isPlatformCert ? 'internal' : 'external',
-            certificateId: cert._id,
-            courseId: cert.courseId || null,
-            description: cert.title,
-            provider: cert.provider || 'CounselorReady'
-          });
-          credentialUpdated = true;
-        }
-
-        if (credentialUpdated) {
-          credential.recalculateProgress();
-          await credential.save();
-        }
-      }
-    }
-
-    // Ensure credentials with totalCEUsRequired but empty requirements
-    // get a synthetic "General" requirement so the planner can suggest courses
-    for (const cred of credentials) {
-      if (cred.totalCEUsRequired > 0 && (!cred.requirements || cred.requirements.length === 0)) {
-        cred.requirements = [{
-          category: 'General',
-          hoursRequired: cred.totalCEUsRequired,
-          hoursCompleted: cred.totalCEUsCompleted || 0
-        }];
-      }
-    }
-
-    // Get available courses
-    const courses = await InteractiveCourse.find({ status: 'published' })
-      .select('title slug ceHours categories tags sections.title metadata');
-
-    // Get user's completed courses
-    const completedProgress = await UserCourseProgress.find({ userId, status: 'completed' });
-    const completedCourseIds = new Set(completedProgress.map(p => p.courseId.toString()));
-
-    // Build plan per credential
     const plan = credentials.map(cred => {
-      const remaining = cred.getRemainingHours();
-      const daysLeft = cred.daysUntilExpiration;
-      const totalRemaining = remaining.reduce((sum, r) => sum + r.remaining, 0);
+      // Update status calculations
+      if (cred.updateStatus) cred.updateStatus();
 
-      // Find recommended courses for each category gap
+      const daysUntilExpiration = cred.expirationDate
+        ? Math.ceil((new Date(cred.expirationDate) - now) / (1000 * 60 * 60 * 24))
+        : null;
+
+      const totalReq = cred.totalCEUsRequired || 0;
+      const totalDone = cred.totalCEUsCompleted || 0;
+      const remaining = Math.max(0, totalReq - totalDone);
+      totalHoursRemaining += remaining;
+
+      // Determine urgency
+      let urgency = 'on_track';
+      if (daysUntilExpiration !== null) {
+        if (daysUntilExpiration <= 0) urgency = 'critical';
+        else if (daysUntilExpiration <= 90 && remaining > 0) urgency = 'critical';
+        else if (daysUntilExpiration <= 180 && remaining > 0) urgency = 'urgent';
+      }
+      if (remaining <= 0) urgency = 'on_track';
+      urgencyCounts[urgency]++;
+
+      // Suggested pace
+      let suggestedHoursPerWeek = null;
+      if (remaining > 0 && daysUntilExpiration > 0) {
+        const weeksLeft = daysUntilExpiration / 7;
+        suggestedHoursPerWeek = weeksLeft > 0 ? Math.round(remaining / weeksLeft * 10) / 10 : null;
+      }
+
+      // Category breakdown
+      const categoryBreakdown = (cred.requirements || []).map(r => ({
+        category: r.category,
+        required: r.hoursRequired || 0,
+        completed: r.hoursCompleted || 0,
+        remaining: Math.max(0, (r.hoursRequired || 0) - (r.hoursCompleted || 0))
+      }));
+
+      // Build recommendations from gaps
       const recommendations = [];
-      for (const req of remaining) {
-        if (req.remaining <= 0) continue;
+      const gaps = categoryBreakdown.filter(c => c.remaining > 0);
 
-        // Find courses matching this category
-        const categoryLower = req.category.toLowerCase();
-        const reqCategoryNorm = categoryLower.replace(/[-_]/g, ' ');
-        const matchingCourses = courses.filter(c => {
-          if (completedCourseIds.has(c._id.toString())) return false;
-          // Match against the categories array (plural) and tags
-          const courseCategories = (c.categories || []).map(cat => (cat || '').toLowerCase().replace(/[-_]/g, ' '));
-          const courseTags = (c.tags || []).map(t => (t || '').toLowerCase().replace(/[-_]/g, ' '));
-          const allLabels = [...courseCategories, ...courseTags];
+      gaps.forEach(gap => {
+        const gapKey = gap.category.toLowerCase();
 
-          // If credential requirement is "General", match all courses
-          if (reqCategoryNorm === 'general') return true;
+        // Find matching catalog courses
+        const matches = catalogCourses.filter(course => {
+          const courseCats = (course.ceuCategories || [])
+            .map(c => (typeof c === 'object' ? c.category : c) || '')
+            .map(s => s.toLowerCase());
+          const courseAreas = (course.nbccContentAreas || course.contentAreas || [])
+            .map(a => (typeof a === 'string' ? a : a.name || '').toLowerCase());
+          const title = (course.title || '').toLowerCase();
+          const allCats = [...courseCats, ...courseAreas];
 
-          // Check if any course category/tag matches the requirement
-          return allLabels.some(label =>
-            label.includes(reqCategoryNorm) || reqCategoryNorm.includes(label)
-          );
+          return allCats.some(c => c.includes(gapKey) || gapKey.includes(c)) ||
+            (gapKey.includes('ethic') && title.includes('ethic')) ||
+            (gapKey.includes('supervision') && title.includes('supervis')) ||
+            (gapKey.includes('telehealth') && (title.includes('telemental') || title.includes('telehealth')));
         });
 
-        if (matchingCourses.length > 0) {
-          recommendations.push({
-            category: req.category,
-            hoursNeeded: req.remaining,
-            suggestedCourses: matchingCourses.slice(0, 3).map(c => ({
-              id: c._id,
-              title: c.title,
-              slug: c.slug,
-              ceHours: c.ceHours,
-              category: (c.categories && c.categories[0]) || 'General'
-            }))
-          });
-        } else {
-          recommendations.push({
-            category: req.category,
-            hoursNeeded: req.remaining,
-            suggestedCourses: [],
-            note: `No matching courses found for ${req.category}. Check back as new courses are added.`
-          });
-        }
-      }
+        const suggestedCourses = matches.slice(0, 3).map(c => ({
+          slug: c.slug,
+          title: c.title,
+          ceHours: c.ceHours || 1,
+          deliveryFormat: c.deliveryFormat || 'async'
+        }));
 
-      // Calculate urgency
-      let urgency = 'on_track';
-      if (daysLeft !== null) {
-        if (daysLeft <= 0) urgency = 'expired';
-        else if (daysLeft <= 30) urgency = 'critical';
-        else if (daysLeft <= 90) urgency = 'urgent';
-        else if (daysLeft <= 180) urgency = 'upcoming';
-      }
-
-      // Estimate weekly hours needed
-      const weeksLeft = daysLeft ? Math.max(1, Math.floor(daysLeft / 7)) : null;
-      const hoursPerWeek = weeksLeft && totalRemaining > 0 ? Math.ceil((totalRemaining / weeksLeft) * 10) / 10 : null;
+        recommendations.push({
+          category: gap.category,
+          hoursNeeded: gap.remaining,
+          suggestedCourses,
+          note: suggestedCourses.length === 0
+            ? `No matching courses found for "${gap.category}" — check external CE providers.`
+            : null
+        });
+      });
 
       return {
         credentialId: cred._id,
         credentialName: cred.name,
+        credentialType: cred.credentialType,
         state: cred.state,
+        issuingBody: cred.issuingBody,
+        licenseNumber: cred.licenseNumber,
         expirationDate: cred.expirationDate,
-        daysUntilExpiration: daysLeft,
+        daysUntilExpiration,
+        totalHoursRequired: totalReq,
+        totalHoursCompleted: totalDone,
+        hoursRemaining: remaining,
         urgency,
-        totalHoursRequired: cred.totalCEUsRequired,
-        totalHoursCompleted: cred.totalCEUsCompleted,
-        totalHoursRemaining: totalRemaining,
-        suggestedHoursPerWeek: hoursPerWeek,
-        categoryBreakdown: remaining,
-        recommendations
+        suggestedHoursPerWeek,
+        categoryBreakdown,
+        recommendations,
+        recentCEActivity: (cred.ceuLogs || []).slice(-5).reverse().map(log => ({
+          date: log.date,
+          description: log.description,
+          provider: log.provider,
+          hours: log.hours,
+          category: log.category,
+          source: log.source
+        }))
       };
     });
 
-    // Sort by urgency
-    const urgencyOrder = { expired: 0, critical: 1, urgent: 2, upcoming: 3, on_track: 4 };
-    plan.sort((a, b) => urgencyOrder[a.urgency] - urgencyOrder[b.urgency]);
+    // Sort: critical first, then urgent, then on_track
+    const urgencyOrder = { critical: 0, urgent: 1, on_track: 2 };
+    plan.sort((a, b) => (urgencyOrder[a.urgency] || 2) - (urgencyOrder[b.urgency] || 2));
 
-    // Overall summary
-    const totalCertificateHours = certificates.reduce((sum, c) => sum + (c.ceHours || 0), 0);
-    const summary = {
-      totalCredentials: credentials.length,
-      totalCertificates: certificates.length,
-      totalCertificateHours,
-      totalHoursRemaining: plan.reduce((sum, p) => sum + p.totalHoursRemaining, 0),
-      nearestDeadline: plan.length > 0 ? plan[0].expirationDate : null,
-      credentialsByUrgency: {
-        expired: plan.filter(p => p.urgency === 'expired').length,
-        critical: plan.filter(p => p.urgency === 'critical').length,
-        urgent: plan.filter(p => p.urgency === 'urgent').length,
-        upcoming: plan.filter(p => p.urgency === 'upcoming').length,
-        onTrack: plan.filter(p => p.urgency === 'on_track').length
-      }
-    };
+    res.json({
+      summary: {
+        totalCredentials: credentials.length,
+        totalCertificates: certificates.length,
+        totalCertificateHours,
+        totalHoursRemaining,
+        credentialsByUrgency: urgencyCounts
+      },
+      plan
+    });
 
-    res.json({ summary, plan });
   } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// ── Get quick stats for dashboard widget ──
-router.get('/stats', async (req, res) => {
-  try {
-    const userId = req.user._id;
-    const credentials = await UserCredential.find({ userId, status: { $ne: 'renewed' } });
-    const certificates = await Certificate.find({ userId, isRevoked: { $ne: true } });
-
-    const now = new Date();
-    const stats = {
-      totalCredentials: credentials.length,
-      totalCertificates: certificates.length,
-      totalHoursRemaining: 0,
-      nearestDeadline: null,
-      nearestCredentialName: null,
-      expiringSoon: 0
-    };
-
-    for (const cred of credentials) {
-      const remaining = Math.max(0, cred.totalCEUsRequired - cred.totalCEUsCompleted);
-      stats.totalHoursRemaining += remaining;
-
-      if (cred.expirationDate) {
-        const days = Math.ceil((cred.expirationDate - now) / (1000 * 60 * 60 * 24));
-        if (days > 0 && days <= 90) stats.expiringSoon++;
-        if (!stats.nearestDeadline || cred.expirationDate < stats.nearestDeadline) {
-          stats.nearestDeadline = cred.expirationDate;
-          stats.nearestCredentialName = cred.name;
-        }
-      }
-    }
-
-    res.json(stats);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error('CE Planner error:', error);
+    res.status(500).json({ error: 'Failed to generate CE plan' });
   }
 });
 
