@@ -91,7 +91,8 @@ router.put('/notifications', protect, async (req, res) => {
     if (fallingBehindAlert !== undefined) user.notifications.fallingBehindAlert = fallingBehindAlert;
     if (ceMilestones !== undefined) user.notifications.ceMilestones = ceMilestones;
     if (courseProgressReminders !== undefined) user.notifications.courseProgressReminders = courseProgressReminders;
-    
+
+    user.markModified('notifications');
     await user.save();
     
     res.json({

@@ -75,6 +75,8 @@ import scholarlyArticlesRoutes from './routes/scholarlyArticles.js';
 // Import services
 import { initializeScheduler } from './services/notificationScheduler.js';
 import { initializeBoardMonitor } from './services/boardMonitorService.js';
+import cron from 'node-cron';
+import { runDailyNotificationCheck } from './jobs/dailyNotificationCheck.js';
 
 // ES Module fix for __dirname
 const __filename = fileURLToPath(import.meta.url);
@@ -370,6 +372,12 @@ const startServer = async () => {
 
   // Initialize board rule monitor
   initializeBoardMonitor();
+
+  // Daily notification check cron job — 9 AM ET
+  cron.schedule('0 9 * * *', () => {
+    console.log('[Cron] Running daily notification check...');
+    runDailyNotificationCheck().catch(err => console.error('[Cron] Daily notification check failed:', err));
+  }, { timezone: 'America/New_York' });
   
   // Start listening
   const server = app.listen(PORT, () => {
