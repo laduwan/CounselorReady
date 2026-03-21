@@ -7,7 +7,7 @@ import express from 'express';
 import UserCredential from '../models/UserCredential.js';
 import Certificate from '../models/Certificate.js';
 import CredentialTemplate from '../models/CredentialTemplate.js';
-import InteractiveCourse from '../models/InteractiveCourse.js';
+import { Course as InteractiveCourse, CourseProgress } from '../models/InteractiveCourse.js';
 import UserCourseProgress from '../models/UserCourseProgress.js';
 import { protect } from '../middleware/auth.js';
 
@@ -97,9 +97,15 @@ router.get('/plan', async (req, res) => {
     const courses = await InteractiveCourse.find({ status: 'published' })
       .select('title slug ceHours categories tags ceuCategories nbccContentAreas contentAreas deliveryFormat description approvalBody');
 
-    // Get user's completed courses
-    const completedProgress = await UserCourseProgress.find({ userId, status: 'completed' });
-    const completedCourseIds = new Set(completedProgress.map(p => p.courseId.toString()));
+    // Get user's completed courses (check both legacy and interactive progress)
+    const [completedLegacy, completedInteractive] = await Promise.all([
+      UserCourseProgress.find({ userId, status: 'completed' }),
+      CourseProgress.find({ userId, status: { $in: ['completed', 'certified'] } })
+    ]);
+    const completedCourseIds = new Set([
+      ...completedLegacy.map(p => p.courseId.toString()),
+      ...completedInteractive.map(p => p.courseId.toString())
+    ]);
 
     // Build plan per credential
     const plan = credentials.map(cred => {
