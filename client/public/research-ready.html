@@ -276,27 +276,11 @@
   // ═══ BROWSE: Load live articles ═══
   async function loadBrowse(){
     try{
-      const r=await fetch(`${API}/api/research-ready/search?q=counseling&per_page=20`,{headers:{Authorization:`Bearer ${T}`}});
+      const r=await fetch(`${API}/api/research-ready/browse`,{headers:{Authorization:`Bearer ${T}`}});
       document.getElementById('browseLoading').classList.add('hidden');
-
-      // Also load from queue for live courses
-      let liveCourses=[];
-      if(isAdmin){
-        try{
-          const qr=await fetch(`${API}/api/research-ready/queue`,{headers:{Authorization:`Bearer ${T}`}});
-          if(qr.ok){const qd=await qr.json();liveCourses=(qd.courses||[]).filter(c=>c.status==='live')}
-        }catch(e){}
-      }else{
-        // Learners: try to get live courses via a different approach
-        // The queue endpoint is admin-only, so we need the search to find live ones
-        // For now, try fetching any live course IDs we might know
-      }
-
-      // Try loading live courses directly
-      try{
-        const qr=await fetch(`${API}/api/research-ready/queue`,{headers:{Authorization:`Bearer ${T}`}});
-        if(qr.ok){const qd=await qr.json();liveCourses=(qd.courses||[]).filter(c=>c.status==='live')}
-      }catch(e){}
+      if(!r.ok) throw new Error('Failed to load');
+      const d=await r.json();
+      const liveCourses=d.courses||[];
 
       const grid=document.getElementById('browseGrid');
       if(!liveCourses.length){
@@ -306,9 +290,10 @@
 
       grid.innerHTML=liveCourses.map(c=>{
         const areas=(c.contentAreas||[]).join(', ')||'General';
-        return`<div class="card">
+        const done=c.completed;
+        return`<div class="card${done?' opacity-75':''}">
           <div class="flex items-start gap-3 mb-3">
-            <div class="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0" style="background:#E4EBE6">
+            <div class="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0" style="background:${done?'#E4EBE6':'#E4EBE6'}">
               <svg class="w-5 h-5" style="color:#305538" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
             </div>
             <div class="flex-1 min-w-0">
@@ -319,12 +304,13 @@
           <div class="flex flex-wrap gap-1.5 mb-3">
             <span class="badge" style="background:#E4EBE6;color:#305538">${c.ceHours} CE Hours</span>
             <span class="badge" style="background:#F9F0DB;color:#865E2C">${esc(areas)}</span>
-            <span class="badge" style="background:#FDF5F7;color:#6B1D34">${c.questions?.length||0} Questions</span>
+            <span class="badge" style="background:#FDF5F7;color:#6B1D34">${c.questionCount||0} Questions</span>
+            ${done?'<span class="badge" style="background:#E4EBE6;color:#305538">Completed</span>':''}
           </div>
           ${c.abstract?'<p class="text-xs text-navy-300 mb-3 line-clamp-2" style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">'+esc(c.abstract)+'</p>':''}
           <div class="flex gap-2 mt-auto pt-3 border-t border-stone-100">
             ${c.oaUrl?'<a href="'+esc(c.oaUrl)+'" target="_blank" class="flex-1 text-center py-2 text-xs font-semibold rounded-lg" style="color:#4A7C59;border:1px solid #C9D7CD;background:#F2F7F4;text-decoration:none">Read Article</a>':''}
-            <button onclick="startPosttest('${c._id}')" class="flex-1 py-2 text-xs font-semibold rounded-lg" style="color:#fff;background:#6B1D34;border:none;cursor:pointer">Take Posttest</button>
+            <button onclick="startPosttest('${c._id}')" class="flex-1 py-2 text-xs font-semibold rounded-lg" style="color:#fff;background:${done?'#4A7C59':'#6B1D34'};border:none;cursor:pointer">${done?'Retake':'Take Posttest'}</button>
           </div>
         </div>`;
       }).join('');
