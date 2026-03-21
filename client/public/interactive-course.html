@@ -2164,9 +2164,24 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
         <option value="so">Soomaali</option>
       </select>
       <span style="flex:1"></span>
+      <button data-action="printSection" style="display:flex;align-items:center;gap:4px;padding:4px 10px;border:1px solid var(--cr-border);border-radius:6px;background:none;cursor:pointer;font-size:11px;color:var(--cr-text-secondary)" title="Print this section">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4H7v4a2 2 0 002 2zm0-12V3h6v6"/></svg>
+        Print
+      </button>
       <button data-action="exportPDF" style="display:flex;align-items:center;gap:4px;padding:4px 10px;border:1px solid var(--cr-border);border-radius:6px;background:none;cursor:pointer;font-size:11px;color:var(--cr-text-secondary)" title="Export as PDF">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="9 15 12 18 15 15"/></svg>
         PDF
+      </button>
+    </div>
+    <!-- Print / Download (always visible) -->
+    <div style="padding:8px 16px;border-top:1px solid var(--cr-border);display:flex;gap:6px">
+      <button onclick="printSection()" style="display:flex;align-items:center;justify-content:center;gap:5px;flex:1;padding:8px;border:1px solid var(--cr-border);border-radius:8px;background:none;cursor:pointer;font-size:12px;font-weight:600;color:var(--cr-text-secondary);font-family:inherit;transition:all .15s" onmouseover="this.style.borderColor='var(--cr-burgundy)';this.style.color='var(--cr-burgundy)'" onmouseout="this.style.borderColor='var(--cr-border)';this.style.color='var(--cr-text-secondary)'">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4H7v4a2 2 0 002 2zm0-12V3h6v6"/></svg>
+        Print
+      </button>
+      <button onclick="exportPDF()" style="display:flex;align-items:center;justify-content:center;gap:5px;flex:1;padding:8px;border:1px solid var(--cr-border);border-radius:8px;background:none;cursor:pointer;font-size:12px;font-weight:600;color:var(--cr-text-secondary);font-family:inherit;transition:all .15s" onmouseover="this.style.borderColor='var(--cr-green)';this.style.color='var(--cr-green)'" onmouseout="this.style.borderColor='var(--cr-border)';this.style.color='var(--cr-text-secondary)'">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+        Download
       </button>
     </div>
     <!-- Copyright only -->
@@ -2185,6 +2200,12 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
       <div style="font-weight:700;font-size:0.9em;color:var(--cr-text)" id="crTopbarTitle"></div>
       <div style="font-size:0.75em;color:var(--cr-text-muted)" id="crTopbarSection"></div>
     </div>
+    <button onclick="printSection()" style="background:none;border:1px solid var(--cr-border);border-radius:8px;padding:6px 8px;cursor:pointer;display:flex;align-items:center;gap:4px;font-size:11px;font-weight:600;color:var(--cr-text-muted);font-family:inherit;transition:all .15s" title="Print">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4H7v4a2 2 0 002 2zm0-12V3h6v6"/></svg>
+    </button>
+    <button onclick="exportPDF()" style="background:none;border:1px solid var(--cr-border);border-radius:8px;padding:6px 8px;cursor:pointer;display:flex;align-items:center;gap:4px;font-size:11px;font-weight:600;color:var(--cr-text-muted);font-family:inherit;transition:all .15s" title="Download PDF">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+    </button>
   </div>
 
   <!-- MAIN CONTENT -->
