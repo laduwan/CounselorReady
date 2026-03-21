@@ -42,6 +42,9 @@
     @keyframes spin{to{transform:rotate(360deg)}}
     .spinner{width:20px;height:20px;border:2px solid #e7e5e4;border-top-color:#6B1D34;border-radius:50%;animation:spin .6s linear infinite;display:inline-block}
     @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+    .hrs-pill{padding:6px 12px;border-radius:20px;font-size:12px;font-weight:600;border:1.5px solid #e7e5e4;background:#fff;color:#78716c;cursor:pointer;transition:all .15s;font-family:'Lato',sans-serif;display:inline-flex;align-items:center;gap:4px}
+    .hrs-pill:hover{border-color:#C9D7CD;color:#305538}
+    .hrs-pill.active{background:#6B1D34;color:#fff;border-color:#6B1D34}
     .anim{animation:fadeUp .3s ease forwards;opacity:0}
     .d1{animation-delay:.04s}.d2{animation-delay:.08s}.d3{animation-delay:.12s}.d4{animation-delay:.16s}
     .result-card{background:#fff;border:1px solid #e7e5e4;border-radius:12px;padding:16px;transition:all .15s}
@@ -129,6 +132,15 @@
 
     <!-- ═══ BROWSE TAB (Learner) ═══ -->
     <div id="content-browse">
+      <!-- Desired Hours Pill Selector -->
+      <div class="flex items-center gap-2 mb-5 flex-wrap" id="hoursPills">
+        <span class="text-xs font-semibold text-navy-400 mr-1">CE Hours:</span>
+        <button onclick="filterByHours('')" class="hrs-pill active" data-hrs="">Any</button>
+        <button onclick="filterByHours('0.5')" class="hrs-pill" data-hrs="0.5">0.5 hr <span class="text-navy-300" style="font-size:10px">~30 min read</span></button>
+        <button onclick="filterByHours('1.0')" class="hrs-pill" data-hrs="1.0">1.0 hr <span class="text-navy-300" style="font-size:10px">~60 min read</span></button>
+        <button onclick="filterByHours('1.5')" class="hrs-pill" data-hrs="1.5">1.5 hrs <span class="text-navy-300" style="font-size:10px">~90 min read</span></button>
+        <button onclick="filterByHours('2.0')" class="hrs-pill" data-hrs="2.0">2.0 hrs <span class="text-navy-300" style="font-size:10px">~2 hr read</span></button>
+      </div>
       <div id="browseLoading" class="text-center py-12"><div class="spinner mx-auto mb-3"></div><p class="text-navy-300 text-sm">Loading available articles...</p></div>
       <div id="browseEmpty" class="hidden text-center py-16">
         <div class="w-14 h-14 bg-hunter-50 rounded-full flex items-center justify-center mx-auto mb-3"><svg class="w-7 h-7 text-hunter-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg></div>
@@ -190,8 +202,26 @@
           <div><label class="text-xs font-semibold text-navy-400 block mb-1">Word Count</label><input type="number" id="buildWords" class="w-full px-3 py-2 text-sm border border-stone-200 rounded-lg" style="font-family:'Lato',sans-serif"></div>
           <div><label class="text-xs font-semibold text-navy-400 block mb-1">CE Hours</label><input type="text" id="buildCE" class="w-full px-3 py-2 text-sm border border-stone-200 rounded-lg bg-stone-50" readonly style="font-family:'Lato',sans-serif"></div>
           <div><label class="text-xs font-semibold text-navy-400 block mb-1">Research Hours</label><input type="text" id="buildResearch" class="w-full px-3 py-2 text-sm border border-stone-200 rounded-lg bg-stone-50" readonly style="font-family:'Lato',sans-serif"></div>
-          <div><label class="text-xs font-semibold text-navy-400 block mb-1">Format</label><select id="buildFormat" class="w-full px-3 py-2 text-sm border border-stone-200 rounded-lg" style="font-family:'Lato',sans-serif"><option value="standalone">Standalone</option><option value="comparative">Comparative</option><option value="integrative">Integrative</option></select></div>
+          <div><label class="text-xs font-semibold text-navy-400 block mb-1">Format</label><select id="buildFormat" onchange="togglePairing()" class="w-full px-3 py-2 text-sm border border-stone-200 rounded-lg" style="font-family:'Lato',sans-serif"><option value="standalone">Standalone</option><option value="comparative">Comparative (2 articles)</option><option value="integrative">Integrative (2 articles)</option></select></div>
         </div>
+
+        <!-- Article Pairing (visible when format=comparative or integrative) -->
+        <div id="pairingPanel" class="hidden mb-4 p-4 rounded-lg" style="background:#F9F0DB;border:1px solid #F3E0B5">
+          <div class="flex items-center justify-between mb-3">
+            <p class="text-sm font-semibold" style="color:#865E2C">Pair with a second article — combined CE = 3.0 hrs (1.5 Research)</p>
+            <button onclick="clearPairedArticle()" class="text-xs font-medium" style="color:#865E2C;border:none;background:none;cursor:pointer">Clear</button>
+          </div>
+          <div id="pairedArticleInfo" class="hidden mb-3 p-3 rounded-lg" style="background:#fff;border:1px solid #F3E0B5">
+            <p class="text-sm font-semibold" style="color:#284157" id="pairedTitle"></p>
+            <p class="text-xs text-navy-300 mt-1" id="pairedMeta"></p>
+          </div>
+          <div class="flex gap-2">
+            <input type="text" id="pairSearchQuery" placeholder="Search for second article..." class="flex-1 px-3 py-2 text-sm border border-stone-200 rounded-lg" style="font-family:'Lato',sans-serif;color:#284157">
+            <button onclick="searchPairArticle()" class="btn-primary" style="background:#865E2C;color:#fff;padding:8px 14px;font-size:12px" id="pairSearchBtn">Search</button>
+          </div>
+          <div id="pairResults" class="mt-3 space-y-2"></div>
+        </div>
+
         <div class="flex gap-3">
           <button onclick="runCurrencyCheck()" class="btn-primary" style="background:#D4A855;color:#fff" id="currencyBtn">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
@@ -274,9 +304,14 @@
   }
 
   // ═══ BROWSE: Load live articles ═══
-  async function loadBrowse(){
+  let selectedHours='';
+  let pairedArticleData=null;
+
+  async function loadBrowse(maxHours){
     try{
-      const r=await fetch(`${API}/api/research-ready/browse`,{headers:{Authorization:`Bearer ${T}`}});
+      let url=`${API}/api/research-ready/browse`;
+      if(maxHours) url+=`?maxHours=${maxHours}`;
+      const r=await fetch(url,{headers:{Authorization:`Bearer ${T}`}});
       document.getElementById('browseLoading').classList.add('hidden');
       if(!r.ok) throw new Error('Failed to load');
       const d=await r.json();
@@ -319,6 +354,81 @@
       document.getElementById('browseLoading').classList.add('hidden');
       document.getElementById('browseEmpty').classList.remove('hidden');
     }
+  }
+
+  // ═══ DESIRED HOURS PILLS ═══
+  function filterByHours(hrs){
+    selectedHours=hrs;
+    document.querySelectorAll('.hrs-pill').forEach(p=>{
+      p.classList.toggle('active',p.dataset.hrs===hrs);
+    });
+    document.getElementById('browseGrid').innerHTML='';
+    document.getElementById('browseEmpty').classList.add('hidden');
+    document.getElementById('browseLoading').classList.remove('hidden');
+    loadBrowse(hrs||undefined);
+  }
+
+  // ═══ ARTICLE PAIRING (Admin) ═══
+  function togglePairing(){
+    const fmt=document.getElementById('buildFormat').value;
+    const panel=document.getElementById('pairingPanel');
+    if(fmt==='comparative'||fmt==='integrative'){
+      panel.classList.remove('hidden');
+    }else{
+      panel.classList.add('hidden');
+      clearPairedArticle();
+    }
+    updateCECalc();
+  }
+
+  function clearPairedArticle(){
+    pairedArticleData=null;
+    document.getElementById('pairedArticleInfo').classList.add('hidden');
+    document.getElementById('pairResults').innerHTML='';
+    document.getElementById('pairSearchQuery').value='';
+    updateCECalc();
+  }
+
+  async function searchPairArticle(){
+    const q=document.getElementById('pairSearchQuery').value.trim();
+    if(!q){alert('Enter a search term');return}
+    document.getElementById('pairSearchBtn').disabled=true;
+    document.getElementById('pairSearchBtn').textContent='Searching...';
+    try{
+      const r=await fetch(`${API}/api/research-ready/search?q=${encodeURIComponent(q)}&per_page=5`,{headers:{Authorization:`Bearer ${T}`}});
+      const d=await r.json();
+      const results=d.results||d.articles||d||[];
+      document.getElementById('pairResults').innerHTML=results.map(a=>{
+        const title=a.title||'Untitled';
+        const authors=(a.authorships||[]).map(au=>au.author?.display_name).filter(Boolean).slice(0,2).join(', ')||(a.authors||'Unknown');
+        const journal=a.primary_location?.source?.display_name||(a.journal||'');
+        const year=a.publication_year||(a.year||'');
+        const words=a.word_count||a.wordCount||0;
+        const url=a.primary_location?.landing_page_url||a.oaUrl||'';
+        const doi=a.doi||'';
+        const abstract=a.abstract||'';
+        return`<div class="flex items-center justify-between gap-2 p-2 rounded-lg bg-white" style="border:1px solid #F3E0B5">
+          <div class="flex-1 min-w-0"><p class="text-xs font-semibold" style="color:#284157">${esc(title)}</p><p class="text-xs text-navy-300">${esc(authors)} (${year}) &middot; ${words.toLocaleString()} words</p></div>
+          <button onclick='selectPairArticle(${JSON.stringify({title,authors,journal,year,words,url,doi,abstract}).replace(/'/g,"&#39;")})' class="text-xs font-semibold px-3 py-1.5 rounded-lg flex-shrink-0" style="background:#865E2C;color:#fff;border:none;cursor:pointer">Pair</button>
+        </div>`;
+      }).join('')||'<p class="text-xs text-navy-300">No results found.</p>';
+    }catch(e){
+      document.getElementById('pairResults').innerHTML='<p class="text-xs" style="color:#DC2626">Search failed</p>';
+    }finally{
+      document.getElementById('pairSearchBtn').disabled=false;
+      document.getElementById('pairSearchBtn').textContent='Search';
+    }
+  }
+
+  function selectPairArticle(a){
+    pairedArticleData=a;
+    document.getElementById('pairedTitle').textContent=a.title;
+    document.getElementById('pairedMeta').textContent=`${a.authors} — ${a.journal} (${a.year}) — ${(a.words||0).toLocaleString()} words`;
+    document.getElementById('pairedArticleInfo').classList.remove('hidden');
+    document.getElementById('pairResults').innerHTML='';
+    // Paired = always 3.0 CE, 1.5 Research
+    document.getElementById('buildCE').value='3.0 hrs (paired)';
+    document.getElementById('buildResearch').value='1.5 hrs';
   }
 
   // ═══ POSTTEST ═══
@@ -527,20 +637,26 @@
     document.getElementById('buildBtn').disabled=true;
     document.getElementById('buildStatus').innerHTML='<div class="flex items-center gap-2"><span class="spinner"></span><span class="text-sm text-navy-400">Building CE content with AI... this may take 30-60 seconds.</span></div>';
 
-    const ceHrs=Math.floor((words/6000)*2)/2;
-    const researchHrs=Math.round(ceHrs*0.5*10)/10;
+    const fmt=document.getElementById('buildFormat').value;
+    const isPaired=(fmt==='comparative'||fmt==='integrative')&&pairedArticleData;
+    const ceHrs=isPaired?3.0:Math.floor((words/6000)*2)/2;
+    const researchHrs=isPaired?1.5:Math.round(ceHrs*0.5*10)/10;
 
     try{
-      const r=await fetch(`${API}/api/research-ready/build-ce`,{
-        method:'POST',
-        headers:{Authorization:`Bearer ${T}`,'Content-Type':'application/json'},
-        body:JSON.stringify({
+      const buildBody={
           title:selectedArticle.title,authors:selectedArticle.authors,journal:selectedArticle.journal,
           year:selectedArticle.year,abstract:selectedArticle.abstract,topic:document.getElementById('searchQuery').value,
           wordCount:words,ceHours:ceHrs,researchHours:researchHrs,
-          format:document.getElementById('buildFormat').value,
+          format:fmt,
           oaUrl:selectedArticle.url,doi:selectedArticle.doi
-        })
+      };
+      if(isPaired){
+        buildBody.pairedArticle={title:pairedArticleData.title,authors:pairedArticleData.authors,journal:pairedArticleData.journal,year:pairedArticleData.year,wordCount:pairedArticleData.words,doi:pairedArticleData.doi,oaUrl:pairedArticleData.url};
+      }
+      const r=await fetch(`${API}/api/research-ready/build-ce`,{
+        method:'POST',
+        headers:{Authorization:`Bearer ${T}`,'Content-Type':'application/json'},
+        body:JSON.stringify(buildBody)
       });
       const d=await r.json();
       if(d.error){throw new Error(d.error)}
