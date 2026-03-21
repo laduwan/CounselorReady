@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Researched-N-Ready CE - CounselorReady</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 36 36'><rect width='36' height='36' rx='8' fill='%236B1D34'/><text x='5' y='22' font-family='Georgia' font-weight='bold' font-size='17' fill='white'>C</text><text x='14' y='28' font-family='Georgia' font-weight='bold' font-size='14' fill='%234A7C59'>R</text></svg>">
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Lato:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config={theme:{extend:{
+      fontFamily:{display:['Cormorant Garamond','Georgia','serif'],body:['Lato','Calibri','sans-serif']},
+      colors:{
+        burgundy:{50:'#FDF5F7',100:'#FAE8EB',200:'#F5D0D6',300:'#E8A4B2',400:'#D4708A',500:'#C94D65',600:'#A83350',700:'#8B2542',800:'#6B1D34',900:'#4A1524'},
+        navy:{50:'#F0F4F7',100:'#D9E2EA',200:'#B3C5D4',300:'#7A98AE',400:'#4A6B82',500:'#284157',600:'#1F3345',700:'#172736',800:'#101C27'},
+        hunter:{50:'#F2F7F4',100:'#E4EBE6',200:'#C9D7CD',300:'#A3BDA9',400:'#7A9E84',500:'#4A7C59',600:'#3D6A4A',700:'#305538',800:'#234027'},
+        honey:{50:'#FDF9F0',100:'#F9F0DB',200:'#F3E0B5',300:'#EACD86',400:'#D4A855',500:'#C49545',600:'#A67936',700:'#865E2C',800:'#6B4A25'},
+        stone:{50:'#F8F7F4',100:'#F1EFE9',200:'#E2DED3'},
+      }
+    }}}
+  </script>
+  <style>
+    body{font-family:'Lato','Calibri',sans-serif;background:#F8F7F4;margin:0}
+    .font-display{font-family:'Cormorant Garamond',Georgia,serif}
+    .dd{display:none;position:absolute;top:100%;margin-top:6px;background:#fff;border-radius:10px;box-shadow:0 10px 40px rgba(107,29,52,.12);border:1px solid #FAE8EB;z-index:50;padding:6px 0;min-width:210px}
+    .dd.open{display:block}
+    .dd a{display:flex;align-items:center;gap:10px;padding:8px 16px;font-size:13px;color:#284157;text-decoration:none;transition:background .1s}
+    .dd a:hover{background:#F2F7F4}
+    .ov{display:none;position:fixed;inset:0;z-index:40}.ov.open{display:block}
+    .nav-link{padding:6px 12px;border-radius:6px;font-size:14px;font-weight:500;color:#57534e;text-decoration:none;display:flex;align-items:center;gap:4px;transition:all .15s}
+    .nav-link:hover{color:#6B1D34;background:#FDF5F7}
+    .nav-link.active{color:#6B1D34;background:#FDF5F7;font-weight:600;border-bottom:2px solid #6B1D34}
+    .tab-btn{padding:10px 18px;font-size:14px;font-weight:600;border:none;background:none;cursor:pointer;color:#78716c;border-bottom:2px solid transparent;transition:all .15s;font-family:'Lato',sans-serif}
+    .tab-btn.active{color:#6B1D34;border-bottom-color:#6B1D34;background:#FDF5F7}
+    .tab-btn:hover:not(.active){color:#6B1D34;background:#FDF5F7}
+    .card{background:#fff;border:1px solid #e7e5e4;border-radius:14px;padding:20px;transition:border-color .15s,box-shadow .15s}
+    .card:hover{border-color:#C9D7CD;box-shadow:0 4px 16px rgba(74,124,89,.1)}
+    .btn-primary{display:inline-flex;align-items:center;gap:6px;padding:10px 20px;border-radius:10px;font-size:14px;font-weight:600;border:none;cursor:pointer;transition:all .15s;font-family:'Lato',sans-serif}
+    .btn-primary:hover{opacity:.9}
+    .badge{font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;display:inline-block}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .spinner{width:20px;height:20px;border:2px solid #e7e5e4;border-top-color:#6B1D34;border-radius:50%;animation:spin .6s linear infinite;display:inline-block}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+    .anim{animation:fadeUp .3s ease forwards;opacity:0}
+    .d1{animation-delay:.04s}.d2{animation-delay:.08s}.d3{animation-delay:.12s}.d4{animation-delay:.16s}
+    .result-card{background:#fff;border:1px solid #e7e5e4;border-radius:12px;padding:16px;transition:all .15s}
+    .result-card:hover{border-color:#C9D7CD;box-shadow:0 4px 12px rgba(74,124,89,.08)}
+  </style>
+</head>
+<body class="min-h-screen">
+
+  <!-- ═══ HEADER ═══ -->
+  <header style="background:#fff;border-bottom:1px solid #e7e5e4;position:sticky;top:0;z-index:40;box-shadow:0 1px 3px rgba(107,29,52,.08)">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+      <a href="/dashboard.html" class="flex items-center gap-3 flex-shrink-0" style="text-decoration:none">
+        <div style="width:42px;height:42px;border-radius:.75rem;background:#6B1D34;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(107,29,52,.25)">
+          <span style="position:relative;display:inline-block;width:24px;height:24px">
+            <span class="font-display" style="color:#D4A855;position:absolute;top:-3px;left:0;font-weight:700;font-size:19px">C</span>
+            <span class="font-display" style="color:#7A9E84;position:absolute;top:4px;left:6px;font-weight:700;font-size:16px">R</span>
+          </span>
+        </div>
+        <span class="font-display hidden sm:inline" style="font-weight:700;font-size:1.5rem;letter-spacing:.015em">
+          <span style="color:#6B1D34">Counselor</span><span style="color:#3D6A4A">Ready</span>
+        </span>
+      </a>
+      <nav class="hidden lg:flex items-center gap-1">
+        <a href="/dashboard.html" class="nav-link">Dashboard</a>
+        <a href="/courses.html" class="nav-link">Courses</a>
+        <a href="/credentials.html" class="nav-link">Credentials</a>
+        <a href="/research-ready.html" class="nav-link active">Research CE</a>
+      </nav>
+      <div class="flex items-center gap-2">
+        <a href="/admin.html" id="adminBadge" class="hidden items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full" style="color:#6B1D34;background:#FDF5F7;border:1px solid #6B1D34;text-decoration:none">Admin</a>
+        <div class="relative">
+          <button onclick="toggle('user')" class="flex items-center gap-2 p-1 rounded-lg hover:bg-stone-100 transition-colors" style="border:none;background:none;cursor:pointer">
+            <div style="width:34px;height:34px;border-radius:50%;background:#6B1D34;display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:700" id="avatarInit">U</div>
+            <span class="hidden md:block text-sm font-medium" style="color:#57534e" id="avatarName"></span>
+          </button>
+          <div class="ov" id="userOv" onclick="close('user')"></div>
+          <div class="dd" id="userDd" style="width:210px;right:0">
+            <div style="padding:10px 16px;border-bottom:1px solid #F1EFE9">
+              <p style="font-size:13px;font-weight:600;color:#44403c;margin:0" id="menuName">User</p>
+              <p style="font-size:11px;color:#78716c;margin:2px 0 0" id="menuEmail"></p>
+            </div>
+            <a href="/admin.html" id="menuAdminLink" style="display:none;color:#6B1D34">Admin Panel</a>
+            <a href="/settings.html">Settings</a>
+            <div style="border-top:1px solid #F1EFE9;margin-top:4px;padding-top:4px">
+              <a href="#" onclick="logout();return false" style="color:#DC2626">Sign out</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ═══ MAIN ═══ -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+    <!-- Page Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+      <div>
+        <h1 class="font-display text-3xl font-bold" style="color:#6B1D34">Researched-N-Ready CE</h1>
+        <p class="text-navy-400 text-sm mt-1">Current research. Earned credit. Peer-reviewed articles with NBCC-approved CE hours.</p>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="badge" style="background:#E4EBE6;color:#305538">NBCC ACEP #7760</span>
+      </div>
+    </div>
+
+    <!-- How It Works -->
+    <div class="bg-white rounded-xl border border-hunter-100 p-5 mb-6">
+      <div class="grid grid-cols-1 sm:grid-cols-4 gap-4 text-center">
+        <div class="anim d1"><div class="w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-2" style="background:#E4EBE6"><span class="font-display font-bold" style="color:#305538">1</span></div><p class="text-sm font-semibold" style="color:#284157">Read the Article</p><p class="text-xs text-navy-300">Peer-reviewed scholarly research</p></div>
+        <div class="anim d2"><div class="w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-2" style="background:#F9F0DB"><span class="font-display font-bold" style="color:#865E2C">2</span></div><p class="text-sm font-semibold" style="color:#284157">Take the Posttest</p><p class="text-xs text-navy-300">75% passing score required</p></div>
+        <div class="anim d3"><div class="w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-2" style="background:#FDF5F7"><span class="font-display font-bold" style="color:#6B1D34">3</span></div><p class="text-sm font-semibold" style="color:#284157">Earn Your Certificate</p><p class="text-xs text-navy-300">CE hours auto-allocated</p></div>
+        <div class="anim d4"><div class="w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-2" style="background:#F0F4F7"><span class="font-display font-bold" style="color:#284157">4</span></div><p class="text-sm font-semibold" style="color:#284157">Download Syllabus</p><p class="text-xs text-navy-300">NBCC-compliant DOCX generated</p></div>
+      </div>
+    </div>
+
+    <!-- Tabs: Browse / Admin -->
+    <div class="border-b border-stone-200 mb-6">
+      <div class="flex">
+        <button class="tab-btn active" id="tab-browse" onclick="switchTab('browse')">Browse CE Articles</button>
+        <button class="tab-btn hidden" id="tab-admin" onclick="switchTab('admin')">Admin: Build CE</button>
+        <button class="tab-btn hidden" id="tab-queue" onclick="switchTab('queue')">Admin: Queue</button>
+      </div>
+    </div>
+
+    <!-- ═══ BROWSE TAB (Learner) ═══ -->
+    <div id="content-browse">
+      <div id="browseLoading" class="text-center py-12"><div class="spinner mx-auto mb-3"></div><p class="text-navy-300 text-sm">Loading available articles...</p></div>
+      <div id="browseEmpty" class="hidden text-center py-16">
+        <div class="w-14 h-14 bg-hunter-50 rounded-full flex items-center justify-center mx-auto mb-3"><svg class="w-7 h-7 text-hunter-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg></div>
+        <h3 class="font-display text-xl font-semibold mb-1" style="color:#6B1D34">No articles available yet</h3>
+        <p class="text-navy-300 text-sm">Check back soon — new research-based CE is being added regularly.</p>
+      </div>
+      <div id="browseGrid" class="grid grid-cols-1 md:grid-cols-2 gap-5"></div>
+    </div>
+
+    <!-- ═══ POSTTEST VIEW (hidden initially) ═══ -->
+    <div id="content-posttest" class="hidden">
+      <div class="mb-4"><button onclick="exitPosttest()" class="text-sm font-medium text-navy-400 hover:text-burgundy-700" style="border:none;background:none;cursor:pointer">&larr; Back to articles</button></div>
+      <div class="bg-white rounded-xl border border-burgundy-100 p-6">
+        <h2 class="font-display text-2xl font-bold mb-1" style="color:#6B1D34" id="posttestTitle"></h2>
+        <p class="text-navy-400 text-sm mb-1" id="posttestMeta"></p>
+        <div class="flex gap-2 mb-6">
+          <span class="badge" style="background:#E4EBE6;color:#305538" id="posttestHours"></span>
+          <span class="badge" style="background:#F9F0DB;color:#865E2C">75% to pass</span>
+        </div>
+        <div id="posttestQuestions" class="space-y-6"></div>
+        <div class="mt-6 flex items-center gap-4">
+          <button onclick="submitPosttest()" class="btn-primary" style="background:#6B1D34;color:#fff" id="submitBtn">Submit Answers</button>
+          <span id="posttestStatus" class="text-sm"></span>
+        </div>
+        <div id="posttestResult" class="hidden mt-6 p-5 rounded-xl"></div>
+      </div>
+    </div>
+
+    <!-- ═══ ADMIN TAB: Search & Build ═══ -->
+    <div id="content-admin" class="hidden">
+      <div class="bg-white rounded-xl border border-burgundy-100 p-6 mb-6">
+        <h2 class="font-display text-xl font-semibold mb-4" style="color:#6B1D34">Search Scholarly Articles</h2>
+        <div class="flex flex-col sm:flex-row gap-3 mb-4">
+          <input type="text" id="searchQuery" placeholder="e.g. trauma-informed care, EMDR, supervision models..." class="flex-1 px-4 py-2.5 text-sm border border-stone-200 rounded-lg" style="font-family:'Lato',sans-serif;color:#284157">
+          <select id="searchYear" class="px-4 py-2.5 text-sm border border-stone-200 rounded-lg" style="color:#284157;background:#fff;font-family:'Lato',sans-serif">
+            <option value="2020">2020+</option>
+            <option value="2021">2021+</option>
+            <option value="2022">2022+</option>
+            <option value="2023">2023+</option>
+            <option value="2024">2024+</option>
+          </select>
+          <button onclick="searchArticles()" class="btn-primary" style="background:#4A7C59;color:#fff" id="searchBtn">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            Search OpenAlex
+          </button>
+        </div>
+        <div id="searchResults" class="space-y-3"></div>
+        <div id="searchLoading" class="hidden text-center py-8"><div class="spinner mx-auto mb-2"></div><p class="text-navy-300 text-sm">Searching OpenAlex...</p></div>
+      </div>
+
+      <!-- Build CE Panel (appears after selecting article) -->
+      <div id="buildPanel" class="hidden bg-white rounded-xl border border-honey-200 p-6">
+        <h2 class="font-display text-xl font-semibold mb-4" style="color:#6B1D34">Build CE Content</h2>
+        <div class="bg-stone-50 rounded-lg p-4 mb-4">
+          <p class="text-sm font-semibold" style="color:#284157" id="buildTitle"></p>
+          <p class="text-xs text-navy-300 mt-1" id="buildMeta"></p>
+        </div>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+          <div><label class="text-xs font-semibold text-navy-400 block mb-1">Word Count</label><input type="number" id="buildWords" class="w-full px-3 py-2 text-sm border border-stone-200 rounded-lg" style="font-family:'Lato',sans-serif"></div>
+          <div><label class="text-xs font-semibold text-navy-400 block mb-1">CE Hours</label><input type="text" id="buildCE" class="w-full px-3 py-2 text-sm border border-stone-200 rounded-lg bg-stone-50" readonly style="font-family:'Lato',sans-serif"></div>
+          <div><label class="text-xs font-semibold text-navy-400 block mb-1">Research Hours</label><input type="text" id="buildResearch" class="w-full px-3 py-2 text-sm border border-stone-200 rounded-lg bg-stone-50" readonly style="font-family:'Lato',sans-serif"></div>
+          <div><label class="text-xs font-semibold text-navy-400 block mb-1">Format</label><select id="buildFormat" class="w-full px-3 py-2 text-sm border border-stone-200 rounded-lg" style="font-family:'Lato',sans-serif"><option value="standalone">Standalone</option><option value="comparative">Comparative</option><option value="integrative">Integrative</option></select></div>
+        </div>
+        <div class="flex gap-3">
+          <button onclick="runCurrencyCheck()" class="btn-primary" style="background:#D4A855;color:#fff" id="currencyBtn">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            Currency Check
+          </button>
+          <button onclick="buildCE()" class="btn-primary" style="background:#6B1D34;color:#fff" id="buildBtn">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/></svg>
+            Build CE (AI)
+          </button>
+        </div>
+        <div id="buildStatus" class="mt-4"></div>
+        <div id="currencyResult" class="hidden mt-4 p-4 rounded-lg"></div>
+      </div>
+    </div>
+
+    <!-- ═══ ADMIN TAB: Queue ═══ -->
+    <div id="content-queue" class="hidden">
+      <div id="queueLoading" class="text-center py-8"><div class="spinner mx-auto mb-2"></div><p class="text-navy-300 text-sm">Loading queue...</p></div>
+      <div id="queueList" class="space-y-4"></div>
+      <div id="queueEmpty" class="hidden text-center py-12"><p class="text-navy-300 text-sm">No courses in the review queue.</p></div>
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer style="background:linear-gradient(135deg,#6B1D34 0%,#43121E 100%);color:#fff;margin-top:48px;padding:28px 0;text-align:center">
+    <div class="max-w-7xl mx-auto px-4">
+      <p class="text-xs" style="color:#D0768A">NBCC ACEP Provider #7760 &middot; &copy; 2026 GAITP LLC. All rights reserved.</p>
+      <p class="text-xs mt-1" style="color:#D0768A">GA Integrated Therapeutic Perspectives LLC</p>
+    </div>
+  </footer>
+
+<script>
+  const API=location.hostname==='localhost'?'http://localhost:5000':'https://api.counselorready.com';
+  const T=localStorage.getItem('token');if(!T)location.href='/login.html';
+
+  let isAdmin=false;
+  let selectedArticle=null;
+  let posttestCourseId=null;
+  let posttestQuestions=[];
+
+  // ── Nav helpers ──
+  function toggle(id){document.getElementById(id+'Dd').classList.toggle('open');document.getElementById(id+'Ov').classList.toggle('open')}
+  function close(id){document.getElementById(id+'Dd')?.classList.remove('open');document.getElementById(id+'Ov')?.classList.remove('open')}
+  function logout(){localStorage.removeItem('token');localStorage.removeItem('user');location.href='/login.html'}
+
+  function switchTab(name){
+    ['browse','admin','queue','posttest'].forEach(t=>{
+      const el=document.getElementById('content-'+t);
+      if(el)el.classList.add('hidden');
+    });
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    document.getElementById('content-'+name)?.classList.remove('hidden');
+    document.getElementById('tab-'+name)?.classList.add('active');
+    if(name==='queue')loadQueue();
+  }
+
+  function esc(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML}
+
+  // ── Load user ──
+  async function loadUser(){
+    try{
+      const r=await fetch(`${API}/api/auth/me`,{headers:{Authorization:`Bearer ${T}`}});
+      if(!r.ok)return;
+      const d=await r.json(),u=d.user||d;
+      const f=u.profile?.firstName||u.firstName||'',l=u.profile?.lastName||u.lastName||'';
+      document.getElementById('avatarInit').textContent=`${f.charAt(0)}${l.charAt(0)}`.toUpperCase()||'U';
+      document.getElementById('avatarName').textContent=f||u.email?.split('@')[0]||'';
+      document.getElementById('menuName').textContent=`${f} ${l}`.trim()||'User';
+      document.getElementById('menuEmail').textContent=u.email||'';
+      if(u.role==='admin'||u.isAdmin){
+        isAdmin=true;
+        document.getElementById('adminBadge')?.classList.remove('hidden');
+        document.getElementById('adminBadge')?.classList.add('flex');
+        document.getElementById('menuAdminLink').style.display='flex';
+        document.getElementById('tab-admin').classList.remove('hidden');
+        document.getElementById('tab-queue').classList.remove('hidden');
+      }
+    }catch(e){console.error(e)}
+  }
+
+  // ═══ BROWSE: Load live articles ═══
+  async function loadBrowse(){
+    try{
+      const r=await fetch(`${API}/api/research-ready/search?q=counseling&per_page=20`,{headers:{Authorization:`Bearer ${T}`}});
+      document.getElementById('browseLoading').classList.add('hidden');
+
+      // Also load from queue for live courses
+      let liveCourses=[];
+      if(isAdmin){
+        try{
+          const qr=await fetch(`${API}/api/research-ready/queue`,{headers:{Authorization:`Bearer ${T}`}});
+          if(qr.ok){const qd=await qr.json();liveCourses=(qd.courses||[]).filter(c=>c.status==='live')}
+        }catch(e){}
+      }else{
+        // Learners: try to get live courses via a different approach
+        // The queue endpoint is admin-only, so we need the search to find live ones
+        // For now, try fetching any live course IDs we might know
+      }
+
+      // Try loading live courses directly
+      try{
+        const qr=await fetch(`${API}/api/research-ready/queue`,{headers:{Authorization:`Bearer ${T}`}});
+        if(qr.ok){const qd=await qr.json();liveCourses=(qd.courses||[]).filter(c=>c.status==='live')}
+      }catch(e){}
+
+      const grid=document.getElementById('browseGrid');
+      if(!liveCourses.length){
+        document.getElementById('browseEmpty').classList.remove('hidden');
+        return;
+      }
+
+      grid.innerHTML=liveCourses.map(c=>{
+        const areas=(c.contentAreas||[]).join(', ')||'General';
+        return`<div class="card">
+          <div class="flex items-start gap-3 mb-3">
+            <div class="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0" style="background:#E4EBE6">
+              <svg class="w-5 h-5" style="color:#305538" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+            </div>
+            <div class="flex-1 min-w-0">
+              <h3 class="font-display text-lg font-bold leading-tight mb-1" style="color:#6B1D34">${esc(c.title)}</h3>
+              <p class="text-xs text-navy-300">${esc(c.authors)} &middot; ${esc(c.journal)} (${c.year})</p>
+            </div>
+          </div>
+          <div class="flex flex-wrap gap-1.5 mb-3">
+            <span class="badge" style="background:#E4EBE6;color:#305538">${c.ceHours} CE Hours</span>
+            <span class="badge" style="background:#F9F0DB;color:#865E2C">${esc(areas)}</span>
+            <span class="badge" style="background:#FDF5F7;color:#6B1D34">${c.questions?.length||0} Questions</span>
+          </div>
+          ${c.abstract?'<p class="text-xs text-navy-300 mb-3 line-clamp-2" style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">'+esc(c.abstract)+'</p>':''}
+          <div class="flex gap-2 mt-auto pt-3 border-t border-stone-100">
+            ${c.oaUrl?'<a href="'+esc(c.oaUrl)+'" target="_blank" class="flex-1 text-center py-2 text-xs font-semibold rounded-lg" style="color:#4A7C59;border:1px solid #C9D7CD;background:#F2F7F4;text-decoration:none">Read Article</a>':''}
+            <button onclick="startPosttest('${c._id}')" class="flex-1 py-2 text-xs font-semibold rounded-lg" style="color:#fff;background:#6B1D34;border:none;cursor:pointer">Take Posttest</button>
+          </div>
+        </div>`;
+      }).join('');
+    }catch(e){
+      console.error('Browse load error:',e);
+      document.getElementById('browseLoading').classList.add('hidden');
+      document.getElementById('browseEmpty').classList.remove('hidden');
+    }
+  }
+
+  // ═══ POSTTEST ═══
+  async function startPosttest(courseId){
+    posttestCourseId=courseId;
+    try{
+      const r=await fetch(`${API}/api/research-ready/course/${courseId}`,{headers:{Authorization:`Bearer ${T}`}});
+      if(!r.ok){alert('Could not load course. It may not be available yet.');return}
+      const c=await r.json();
+      posttestQuestions=c.questions||[];
+      document.getElementById('posttestTitle').textContent=c.title;
+      document.getElementById('posttestMeta').textContent=`${c.authors} — ${c.journal} (${c.year})`;
+      document.getElementById('posttestHours').textContent=`${c.ceHours} CE Hours`;
+      document.getElementById('posttestResult').classList.add('hidden');
+      document.getElementById('posttestStatus').textContent='';
+      document.getElementById('submitBtn').disabled=false;
+
+      const container=document.getElementById('posttestQuestions');
+      container.innerHTML=posttestQuestions.map((q,i)=>{
+        const options=q.options.map((o,oi)=>`
+          <label class="flex items-start gap-3 p-3 rounded-lg hover:bg-stone-50 cursor-pointer transition-colors" style="display:flex">
+            <input type="radio" name="q${i}" value="${oi}" class="mt-0.5" style="accent-color:#6B1D34">
+            <span class="text-sm" style="color:#284157">${esc(o)}</span>
+          </label>
+        `).join('');
+        return`<div class="bg-stone-50 rounded-xl p-4">
+          <p class="text-sm font-semibold mb-3" style="color:#6B1D34">
+            <span class="text-xs text-navy-300 font-normal mr-2">${q.tag||'Q'+(i+1)}</span>
+            ${esc(q.question)}
+          </p>
+          <div class="space-y-1">${options}</div>
+        </div>`;
+      }).join('');
+
+      // Switch view
+      ['browse','admin','queue'].forEach(t=>document.getElementById('content-'+t)?.classList.add('hidden'));
+      document.getElementById('content-posttest').classList.remove('hidden');
+      document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+      window.scrollTo(0,0);
+    }catch(e){alert('Error loading posttest: '+e.message)}
+  }
+
+  function exitPosttest(){
+    document.getElementById('content-posttest').classList.add('hidden');
+    document.getElementById('content-browse').classList.remove('hidden');
+    document.getElementById('tab-browse').classList.add('active');
+  }
+
+  async function submitPosttest(){
+    const answers={};
+    let unanswered=false;
+    posttestQuestions.forEach((_,i)=>{
+      const sel=document.querySelector(`input[name="q${i}"]:checked`);
+      if(!sel){unanswered=true}else{answers[i]=parseInt(sel.value)}
+    });
+    if(unanswered){document.getElementById('posttestStatus').innerHTML='<span style="color:#DC2626">Please answer all questions.</span>';return}
+
+    document.getElementById('submitBtn').disabled=true;
+    document.getElementById('posttestStatus').innerHTML='<span class="spinner"></span> <span class="text-navy-400">Submitting...</span>';
+
+    try{
+      const r=await fetch(`${API}/api/research-ready/complete`,{
+        method:'POST',
+        headers:{Authorization:`Bearer ${T}`,'Content-Type':'application/json'},
+        body:JSON.stringify({courseId:posttestCourseId,answers})
+      });
+      const d=await r.json();
+      document.getElementById('posttestStatus').textContent='';
+      const result=document.getElementById('posttestResult');
+      result.classList.remove('hidden');
+
+      if(d.passed){
+        result.style.background='#F2F7F4';
+        result.style.border='1px solid #C9D7CD';
+        result.innerHTML=`
+          <div class="text-center">
+            <div class="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-3" style="background:#E4EBE6">
+              <svg class="w-7 h-7" style="color:#305538" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+            </div>
+            <h3 class="font-display text-xl font-bold mb-1" style="color:#305538">Passed! Score: ${d.score}%</h3>
+            <p class="text-sm text-navy-400 mb-3">You earned <strong>${d.ceHours} CE hours</strong>. Certificate ID: <code style="background:#E4EBE6;padding:2px 6px;border-radius:4px;font-size:12px">${d.certificateId}</code></p>
+            <div class="flex gap-3 justify-center">
+              <a href="/certificates.html" class="btn-primary" style="background:#4A7C59;color:#fff;text-decoration:none">View Certificate</a>
+              <a href="/credentials.html" class="btn-primary" style="background:#6B1D34;color:#fff;text-decoration:none">Check CE Planner</a>
+            </div>
+          </div>`;
+      }else{
+        result.style.background='#FDF5F7';
+        result.style.border='1px solid #FAE8EB';
+        result.innerHTML=`
+          <div class="text-center">
+            <h3 class="font-display text-xl font-bold mb-1" style="color:#6B1D34">Score: ${d.score}% — ${d.correctCount}/${d.totalQuestions} correct</h3>
+            <p class="text-sm text-navy-400 mb-3">75% required to pass. Review the article and try again.</p>
+            <button onclick="document.getElementById('posttestResult').classList.add('hidden');document.getElementById('submitBtn').disabled=false" class="btn-primary" style="background:#6B1D34;color:#fff">Try Again</button>
+          </div>`;
+      }
+    }catch(e){
+      document.getElementById('posttestStatus').innerHTML='<span style="color:#DC2626">Error: '+e.message+'</span>';
+      document.getElementById('submitBtn').disabled=false;
+    }
+  }
+
+  // ═══ ADMIN: Search ═══
+  async function searchArticles(){
+    const q=document.getElementById('searchQuery').value.trim();
+    if(!q){alert('Enter a search term');return}
+    const yr=document.getElementById('searchYear').value;
+    document.getElementById('searchLoading').classList.remove('hidden');
+    document.getElementById('searchResults').innerHTML='';
+    document.getElementById('searchBtn').disabled=true;
+
+    try{
+      const r=await fetch(`${API}/api/research-ready/search?q=${encodeURIComponent(q)}&year_from=${yr}&per_page=8`,{headers:{Authorization:`Bearer ${T}`}});
+      const d=await r.json();
+      document.getElementById('searchLoading').classList.add('hidden');
+      document.getElementById('searchBtn').disabled=false;
+
+      const results=d.results||d.articles||d||[];
+      if(!results.length){document.getElementById('searchResults').innerHTML='<p class="text-navy-300 text-sm text-center py-4">No results found. Try different search terms.</p>';return}
+
+      document.getElementById('searchResults').innerHTML=results.map(a=>{
+        const title=a.title||'Untitled';
+        const authors=(a.authorships||[]).map(au=>au.author?.display_name).filter(Boolean).slice(0,3).join(', ')||(a.authors||'Unknown');
+        const journal=a.primary_location?.source?.display_name||(a.journal||'');
+        const year=a.publication_year||(a.year||'');
+        const words=a.word_count||a.wordCount||0;
+        const url=a.primary_location?.landing_page_url||a.oaUrl||a.doi||'';
+        const doi=a.doi||'';
+        const abstract=a.abstract||'';
+        const ceHrs=words>0?Math.floor((words/6000)*2)/2:0;
+        return`<div class="result-card">
+          <div class="flex items-start justify-between gap-3">
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-semibold" style="color:#284157">${esc(title)}</p>
+              <p class="text-xs text-navy-300 mt-1">${esc(authors)} &middot; ${esc(journal)} (${year})</p>
+              ${abstract?'<p class="text-xs text-navy-300 mt-1" style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">'+esc(abstract)+'</p>':''}
+              <div class="flex gap-1.5 mt-2">
+                <span class="badge" style="background:#E4EBE6;color:#305538">${words.toLocaleString()} words</span>
+                ${ceHrs>0?'<span class="badge" style="background:#F9F0DB;color:#865E2C">~'+ceHrs+' CE hrs</span>':''}
+              </div>
+            </div>
+            <button onclick='selectArticle(${JSON.stringify({title,authors,journal,year,words,url,doi,abstract}).replace(/'/g,"&#39;")})' class="btn-primary flex-shrink-0" style="background:#4A7C59;color:#fff;padding:8px 14px;font-size:12px">Select</button>
+          </div>
+        </div>`;
+      }).join('');
+    }catch(e){
+      document.getElementById('searchLoading').classList.add('hidden');
+      document.getElementById('searchBtn').disabled=false;
+      document.getElementById('searchResults').innerHTML='<p class="text-sm" style="color:#DC2626">Search failed: '+e.message+'</p>';
+    }
+  }
+
+  function selectArticle(a){
+    selectedArticle=a;
+    document.getElementById('buildTitle').textContent=a.title;
+    document.getElementById('buildMeta').textContent=`${a.authors} — ${a.journal} (${a.year})`;
+    document.getElementById('buildWords').value=a.words||'';
+    updateCECalc();
+    document.getElementById('buildPanel').classList.remove('hidden');
+    document.getElementById('buildPanel').scrollIntoView({behavior:'smooth'});
+    document.getElementById('currencyResult').classList.add('hidden');
+    document.getElementById('buildStatus').innerHTML='';
+  }
+
+  document.getElementById('buildWords')?.addEventListener('input',updateCECalc);
+  function updateCECalc(){
+    const w=parseInt(document.getElementById('buildWords').value)||0;
+    const ce=Math.floor((w/6000)*2)/2;
+    const research=Math.round(ce*0.5*10)/10;
+    document.getElementById('buildCE').value=ce>0?ce+' hrs':'—';
+    document.getElementById('buildResearch').value=research>0?research+' hrs':'—';
+  }
+
+  // ═══ ADMIN: Currency Check ═══
+  async function runCurrencyCheck(){
+    if(!selectedArticle)return;
+    document.getElementById('currencyBtn').disabled=true;
+    document.getElementById('currencyBtn').textContent='Checking...';
+    try{
+      const r=await fetch(`${API}/api/research-ready/currency-check`,{
+        method:'POST',
+        headers:{Authorization:`Bearer ${T}`,'Content-Type':'application/json'},
+        body:JSON.stringify({title:selectedArticle.title,authors:selectedArticle.authors,journal:selectedArticle.journal,year:selectedArticle.year,abstract:selectedArticle.abstract,topic:document.getElementById('searchQuery').value})
+      });
+      const d=await r.json();
+      const result=document.getElementById('currencyResult');
+      result.classList.remove('hidden');
+      const ok=d.current||d.verdict==='current';
+      result.style.background=ok?'#F2F7F4':'#FDF9F0';
+      result.style.border=ok?'1px solid #C9D7CD':'1px solid #F3E0B5';
+      result.innerHTML=`<p class="text-sm font-semibold mb-1" style="color:${ok?'#305538':'#865E2C'}">${ok?'Current':'Needs Review'}</p><p class="text-xs text-navy-400">${esc(d.rationale||d.explanation||JSON.stringify(d))}</p>`;
+    }catch(e){
+      alert('Currency check failed: '+e.message);
+    }finally{
+      document.getElementById('currencyBtn').disabled=false;
+      document.getElementById('currencyBtn').innerHTML='<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> Currency Check';
+    }
+  }
+
+  // ═══ ADMIN: Build CE ═══
+  async function buildCE(){
+    if(!selectedArticle)return;
+    const words=parseInt(document.getElementById('buildWords').value);
+    if(!words||words<500){alert('Enter a valid word count (min 500)');return}
+
+    document.getElementById('buildBtn').disabled=true;
+    document.getElementById('buildStatus').innerHTML='<div class="flex items-center gap-2"><span class="spinner"></span><span class="text-sm text-navy-400">Building CE content with AI... this may take 30-60 seconds.</span></div>';
+
+    const ceHrs=Math.floor((words/6000)*2)/2;
+    const researchHrs=Math.round(ceHrs*0.5*10)/10;
+
+    try{
+      const r=await fetch(`${API}/api/research-ready/build-ce`,{
+        method:'POST',
+        headers:{Authorization:`Bearer ${T}`,'Content-Type':'application/json'},
+        body:JSON.stringify({
+          title:selectedArticle.title,authors:selectedArticle.authors,journal:selectedArticle.journal,
+          year:selectedArticle.year,abstract:selectedArticle.abstract,topic:document.getElementById('searchQuery').value,
+          wordCount:words,ceHours:ceHrs,researchHours:researchHrs,
+          format:document.getElementById('buildFormat').value,
+          oaUrl:selectedArticle.url,doi:selectedArticle.doi
+        })
+      });
+      const d=await r.json();
+      if(d.error){throw new Error(d.error)}
+      document.getElementById('buildStatus').innerHTML=`
+        <div class="bg-hunter-50 rounded-lg p-4 border border-hunter-100">
+          <p class="text-sm font-semibold" style="color:#305538">CE content built successfully!</p>
+          <p class="text-xs text-navy-400 mt-1">Course ID: ${d.courseId} &middot; ${d.questionCount} questions &middot; Status: ${d.status}</p>
+          <p class="text-xs text-navy-400 mt-1">Content areas: ${(d.contentAreas||[]).join(', ')}</p>
+          <p class="text-xs text-navy-300 mt-2">Go to the <button onclick="switchTab('queue')" style="color:#6B1D34;font-weight:600;border:none;background:none;cursor:pointer;text-decoration:underline">Queue tab</button> to review and approve.</p>
+        </div>`;
+    }catch(e){
+      document.getElementById('buildStatus').innerHTML=`<p class="text-sm" style="color:#DC2626">Build failed: ${e.message}</p>`;
+    }finally{
+      document.getElementById('buildBtn').disabled=false;
+    }
+  }
+
+  // ═══ ADMIN: Queue ═══
+  async function loadQueue(){
+    document.getElementById('queueLoading').classList.remove('hidden');
+    document.getElementById('queueEmpty').classList.add('hidden');
+    document.getElementById('queueList').innerHTML='';
+    try{
+      const r=await fetch(`${API}/api/research-ready/queue`,{headers:{Authorization:`Bearer ${T}`}});
+      if(!r.ok){throw new Error('Failed to load queue')}
+      const d=await r.json();
+      const courses=d.courses||[];
+      document.getElementById('queueLoading').classList.add('hidden');
+
+      if(!courses.length){document.getElementById('queueEmpty').classList.remove('hidden');return}
+
+      document.getElementById('queueList').innerHTML=courses.map(c=>{
+        const statusColors={pending_review:'background:#F9F0DB;color:#865E2C',approved:'background:#E4EBE6;color:#305538',live:'background:#E4EBE6;color:#305538',rejected:'background:#FDF5F7;color:#6B1D34'};
+        const areas=(c.contentAreas||[]).join(', ')||'General';
+        return`<div class="card">
+          <div class="flex items-start justify-between gap-3 mb-3">
+            <div class="flex-1 min-w-0">
+              <h3 class="font-display text-lg font-semibold" style="color:#6B1D34">${esc(c.title)}</h3>
+              <p class="text-xs text-navy-300 mt-1">${esc(c.authors)} &middot; ${esc(c.journal)} (${c.year}) &middot; ${c.wordCount?.toLocaleString()||0} words</p>
+            </div>
+            <span class="badge flex-shrink-0" style="${statusColors[c.status]||''}">${c.status?.replace('_',' ')}</span>
+          </div>
+          <div class="flex flex-wrap gap-1.5 mb-3">
+            <span class="badge" style="background:#E4EBE6;color:#305538">${c.ceHours} CE</span>
+            <span class="badge" style="background:#F9F0DB;color:#865E2C">${esc(areas)}</span>
+            <span class="badge" style="background:#F0F4F7;color:#284157">${c.questions?.length||0} Q's</span>
+            <span class="badge" style="background:#FDF5F7;color:#6B1D34">${c.format||'standalone'}</span>
+          </div>
+          ${c.objectives?'<div class="text-xs text-navy-300 mb-3"><strong>Objectives:</strong> '+c.objectives.slice(0,3).map(o=>esc(o)).join('; ')+'</div>':''}
+          ${c.status==='pending_review'||c.status==='approved'?`
+            <div class="flex gap-2 pt-3 border-t border-stone-100">
+              ${c.status==='pending_review'?`<button onclick="approveQueue('${c._id}')" class="btn-primary" style="background:#4A7C59;color:#fff;padding:8px 16px;font-size:12px">Approve & Go Live</button>
+              <button onclick="rejectQueue('${c._id}')" class="btn-primary" style="background:#fff;color:#DC2626;border:1px solid #fca5a5;padding:8px 16px;font-size:12px">Reject</button>`:''}
+              ${c.status==='approved'?`<button onclick="approveQueue('${c._id}')" class="btn-primary" style="background:#4A7C59;color:#fff;padding:8px 16px;font-size:12px">Push Live</button>`:''}
+            </div>`:''}
+          ${c.status==='live'?'<p class="text-xs text-hunter-500 pt-3 border-t border-stone-100 font-semibold">Live and available to learners</p>':''}
+        </div>`;
+      }).join('');
+    }catch(e){
+      document.getElementById('queueLoading').classList.add('hidden');
+      document.getElementById('queueList').innerHTML='<p class="text-sm" style="color:#DC2626">Error: '+e.message+'</p>';
+    }
+  }
+
+  async function approveQueue(id){
+    if(!confirm('Approve and make this course live?'))return;
+    try{
+      const r=await fetch(`${API}/api/research-ready/queue/${id}/approve`,{method:'PATCH',headers:{Authorization:`Bearer ${T}`}});
+      if(!r.ok){const d=await r.json();throw new Error(d.error||'Failed')}
+      loadQueue();
+    }catch(e){alert('Error: '+e.message)}
+  }
+
+  async function rejectQueue(id){
+    const note=prompt('Rejection reason (optional):');
+    try{
+      const r=await fetch(`${API}/api/research-ready/queue/${id}/reject`,{method:'PATCH',headers:{Authorization:`Bearer ${T}`,'Content-Type':'application/json'},body:JSON.stringify({rejectionNote:note||''})});
+      if(!r.ok){const d=await r.json();throw new Error(d.error||'Failed')}
+      loadQueue();
+    }catch(e){alert('Error: '+e.message)}
+  }
+
+  // ═══ Init ═══
+  loadUser().then(()=>loadBrowse());
+</script>
+</body>
+</html>
