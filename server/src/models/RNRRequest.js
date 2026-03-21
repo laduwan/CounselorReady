@@ -100,6 +100,7 @@ const rnrRequestSchema = new mongoose.Schema({
   },
 
   // ── AI-generated posttest ──
+  courseTitle: { type: String, default: '' },
   objectives: [{ type: String }],
   questions: [posttestQuestionSchema],
   format: {

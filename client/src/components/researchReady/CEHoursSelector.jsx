@@ -12,21 +12,21 @@ const options = [
 export default function CEHoursSelector({ selected, onSelect }) {
   return (
     <div className="flex flex-wrap gap-2 mb-4">
-      <span className="text-sm font-medium text-gray-600 self-center mr-2">CE Hours:</span>
+      <span className="font-[Georgia,serif] text-[10px] uppercase tracking-[0.12em] text-[#5C4D3A] italic self-center mr-2">CE Hours:</span>
       {options.map((opt) => {
         const isActive = selected === opt.value;
         return (
           <button
             key={opt.label}
             onClick={() => onSelect(opt.value)}
-            className={`flex flex-col items-center px-4 py-2 rounded-full text-sm font-medium transition-colors border ${
+            className={`flex flex-col items-center px-4 py-2 rounded-full text-sm font-[Georgia,serif] transition-colors border ${
               isActive
-                ? 'bg-burgundy-700 text-white border-burgundy-700'
-                : 'bg-white text-gray-700 border-gray-300 hover:border-burgundy-300 hover:bg-burgundy-50'
+                ? 'bg-[#FDF8EE] border-[1.5px] border-[#7B2D3E] text-[#7B2D3E]'
+                : 'bg-[#F5EEE0] text-[#5C4D3A] border-[#C8C3BC] hover:border-[#7B2D3E] hover:text-[#7B2D3E]'
             }`}
           >
             <span>{opt.label}</span>
-            <span className={`text-[10px] ${isActive ? 'text-burgundy-200' : 'text-gray-400'}`}>
+            <span className={`text-[10px] ${isActive ? 'text-[#7B2D3E]/70' : 'text-[#7A6A54]'}`}>
               {opt.subtext}
             </span>
           </button>

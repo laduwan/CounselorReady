@@ -48,6 +48,7 @@ Format: ${format}
 
 Respond ONLY in valid JSON — no markdown:
 {
+  "course_title": "Professional CE course title max 80 chars — rules below",
   "content_areas": ["array of NBCC content area strings"],
   "objectives": ["4 NBCC-compliant learning objectives using Bloom's taxonomy action verbs"],
   "questions": [
@@ -61,7 +62,13 @@ Respond ONLY in valid JSON — no markdown:
   ]
 }
 
-Generate exactly 10 questions. Map content areas to NBCC domains. Use action verbs (identify, describe, apply, evaluate, analyze, compare) in objectives.`;
+Generate exactly 10 questions. Map content areas to NBCC domains. Use action verbs (identify, describe, apply, evaluate, analyze, compare) in objectives.
+
+course_title rules:
+- Standalone article: trim and reformat the article title as a professional CE course name. Drop filler openings like "A study of...", "An analysis of...", etc. Example: "The supervisory working alliance and counselor development: A longitudinal study of LPC trainees" → "Supervisory Alliance and Counselor Development: A CE Review"
+- Comparative format: "Then and Now: Evolution of [Topic]" or "Comparative Analysis: [Topic]"
+- Integrative format: "Integrative Review: [Topic Area]"
+- Max 80 characters.`;
 
   const rawResponse = await callClaude(prompt);
 
@@ -79,6 +86,11 @@ Generate exactly 10 questions. Map content areas to NBCC domains. Use action ver
 
   if (ceContent.questions.length !== 10) {
     console.warn(`CE build returned ${ceContent.questions.length} questions instead of 10`);
+  }
+
+  // Ensure course_title exists — fall back to truncated article title
+  if (!ceContent.course_title) {
+    ceContent.course_title = title.substring(0, 80);
   }
 
   return ceContent;

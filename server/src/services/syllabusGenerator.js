@@ -120,7 +120,7 @@ export async function generateSyllabus({
                     new Paragraph({
                       alignment: AlignmentType.CENTER,
                       spacing: { after: 60 },
-                      children: [textRun(course.title, { bold: true, size: 22, color: WHITE })]
+                      children: [textRun(course.courseTitle || course.title, { bold: true, size: 22, color: WHITE })]
                     }),
                     new Paragraph({
                       alignment: AlignmentType.CENTER,
