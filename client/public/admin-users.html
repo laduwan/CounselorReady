@@ -363,7 +363,7 @@
                 <h3 class="font-semibold text-forest-900">Current Plan</h3>
                 <span id="subPlanBadge" class="px-3 py-1 rounded-full text-sm font-semibold">--</span>
               </div>
-              <div class="grid grid-cols-3 gap-4 text-sm">
+              <div class="grid grid-cols-4 gap-4 text-sm">
                 <div>
                   <p class="text-forest-500">Status</p>
                   <p id="subStatus" class="font-medium text-forest-800">--</p>
@@ -375,6 +375,10 @@
                 <div>
                   <p class="text-forest-500">Renews/Ends</p>
                   <p id="subEnds" class="font-medium text-forest-800">--</p>
+                </div>
+                <div>
+                  <p class="text-forest-500">Trial Ends</p>
+                  <p id="trialEndsAt" class="font-medium text-blue-700">--</p>
                 </div>
               </div>
             </div>
@@ -395,6 +399,25 @@
               <p class="text-xs text-forest-500 mt-2">⚠️ This bypasses Stripe billing. Use for comps/corrections only.</p>
             </div>
             
+            <div class="border-t pt-4">
+              <h3 class="font-semibold text-forest-900 mb-1">Trial Extension</h3>
+              <p class="text-xs text-forest-500 mb-3">Adds 3 days to the trial end date. If the trial has already expired, it reactivates from today.</p>
+              <div class="flex items-center gap-4">
+                <div class="flex-1">
+                  <p class="text-sm text-forest-700">Current trial end: <span id="trialEndsAtInline" class="font-medium text-blue-700">--</span></p>
+                </div>
+                <button
+                  onclick="extendUserTrial()"
+                  id="extendTrialBtn"
+                  class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors"
+                >
+                  <i class="fas fa-clock"></i>
+                  Extend Trial +3 Days
+                </button>
+              </div>
+              <p id="extendTrialMsg" class="text-xs mt-2 hidden"></p>
+            </div>
+
             <div class="border-t pt-4">
               <h3 class="font-semibold text-forest-900 mb-3">Billing Info</h3>
               <div class="grid grid-cols-2 gap-4 text-sm">
@@ -765,7 +788,12 @@
       document.getElementById('stripeCustomerId').textContent = user.subscription?.stripeCustomerId || 'Not set';
       document.getElementById('stripeSubId').textContent = user.subscription?.stripeSubscriptionId || 'Not set';
       document.getElementById('changePlanSelect').value = plan;
-      
+      const trialEnd = user.subscription?.trialEndsAt
+        ? new Date(user.subscription.trialEndsAt).toLocaleDateString()
+        : '--';
+      document.getElementById('trialEndsAt').textContent = trialEnd;
+      document.getElementById('trialEndsAtInline').textContent = trialEnd;
+
       // Courses tab
       renderUserCourses(data.courseProgress || []);
       
@@ -1024,6 +1052,44 @@
       }
     }
     
+    async function extendUserTrial() {
+      if (!currentUserId) return;
+      const btn = document.getElementById('extendTrialBtn');
+      const msg = document.getElementById('extendTrialMsg');
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Extending...';
+      msg.className = 'text-xs mt-2 hidden';
+      try {
+        const response = await fetch(`${API_URL}/api/admin/users/${currentUserId}/extend-trial`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
+        });
+        const data = await response.json();
+        if (response.ok) {
+          const newDate = new Date(data.newTrialEndsAt).toLocaleDateString();
+          document.getElementById('trialEndsAt').textContent = newDate;
+          document.getElementById('trialEndsAtInline').textContent = newDate;
+          document.getElementById('subStatus').textContent = 'trial';
+          msg.textContent = `✓ Trial extended. New end date: ${newDate}`;
+          msg.className = 'text-xs mt-2 text-green-600';
+        } else {
+          msg.textContent = `✗ ${data.error || 'Failed to extend trial'}`;
+          msg.className = 'text-xs mt-2 text-red-600';
+        }
+      } catch (err) {
+        console.error('Extend trial error:', err);
+        msg.textContent = '✗ Network error — could not extend trial';
+        msg.className = 'text-xs mt-2 text-red-600';
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-clock"></i> Extend Trial +3 Days';
+        msg.classList.remove('hidden');
+      }
+    }
+
     // Admin actions
     async function sendPasswordReset() {
       if (!confirm('Send password reset email to this user?')) return;
