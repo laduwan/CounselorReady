@@ -265,6 +265,7 @@ router.patch('/request/:id/approve', protect, requireAdmin, async (req, res) => 
         format: request.articles.length > 1 ? 'comparative' : 'standalone'
       });
 
+      request.courseTitle = ceContent.course_title || '';
       request.objectives = ceContent.objectives || [];
       request.questions = ceContent.questions || [];
       request.status = 'test_ready';
@@ -345,6 +346,7 @@ router.post('/request/:id/rebuild', protect, requireAdmin, async (req, res) => {
       format: request.articles.length > 1 ? 'comparative' : 'standalone'
     });
 
+    request.courseTitle = ceContent.course_title || '';
     request.objectives = ceContent.objectives || [];
     request.questions = ceContent.questions || [];
     request.status = 'test_ready';
@@ -423,6 +425,7 @@ router.post('/request/:id/complete', protect, async (req, res) => {
     try {
       syllabusUrl = await generateSyllabus({
         course: {
+          courseTitle: request.courseTitle || '',
           title: request.articles.map(a => a.title).join(' & '),
           authors: request.articles.map(a => a.authors).join('; '),
           journal: request.articles.map(a => a.journal).join('; '),
@@ -446,9 +449,11 @@ router.post('/request/:id/complete', protect, async (req, res) => {
     }
 
     // Create certificate
+    const courseTitle = request.courseTitle || request.articles.map(a => a.title).join(' & ');
+
     const certificate = new Certificate({
       userId,
-      title: `RNR CE: ${request.articles.map(a => a.title).join(' & ')}`,
+      title: `RNR CE: ${courseTitle}`,
       provider: 'CounselorReady',
       completionDate: request.completedAt,
       ceHours: request.ceHours,
@@ -463,6 +468,7 @@ router.post('/request/:id/complete', protect, async (req, res) => {
       fileUrl: syllabusUrl,
       notes: JSON.stringify({
         type: 'research_ready',
+        courseTitle,
         articleTitles: request.articles.map(a => a.title),
         authors: request.articles.map(a => a.authors).join('; '),
         journals: request.articles.map(a => `${a.journal} (${a.year})`).join('; '),
@@ -472,6 +478,8 @@ router.post('/request/:id/complete', protect, async (req, res) => {
         researchHours: request.researchHours,
         objectivesMet: request.objectives,
         assessmentScore: score,
+        correctCount,
+        totalQuestions: request.questions.length,
         nbccAcepStamp: 'NBCC ACEP #7760',
         passingScore: '75%',
         syllabusUrl

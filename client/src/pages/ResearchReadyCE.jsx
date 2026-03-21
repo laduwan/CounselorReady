@@ -199,9 +199,9 @@ export default function ResearchReadyCE() {
   }
 
   return (
-    <div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-1">Researched-N-Ready CE</h1>
-      <p className="text-sm text-gray-500 mb-6">
+    <div className="bg-[#FAF5EC] min-h-screen -m-6 p-6">
+      <h1 className="font-[Georgia,serif] text-2xl font-bold text-[#2A1F0E] mb-1">Researched-N-Ready CE</h1>
+      <p className="font-[Georgia,serif] text-[10px] uppercase tracking-[0.12em] text-[#5C4D3A] italic mb-6">
         Earn NBCC-approved CE credit by reading peer-reviewed scholarly articles. ACEP #7760
       </p>
 
@@ -211,23 +211,26 @@ export default function ResearchReadyCE() {
       {/* Search Bar */}
       <form onSubmit={handleSearch} className="flex gap-3 mb-4">
         <div className="flex-1 relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#7A6A54]" />
           <input
             type="text"
             value={query}
             onChange={e => setQuery(e.target.value)}
             placeholder="Search for scholarly articles (e.g., clinical supervision, trauma therapy)..."
-            className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-burgundy-300 focus:border-burgundy-500 outline-none"
+            className="w-full pl-10 pr-4 py-2.5 bg-[#F5EEE0] border border-[#C8C3BC] rounded-xl text-sm font-[Georgia,serif] focus:ring-2 focus:ring-[#7B2D3E]/30 focus:border-[#7B2D3E] outline-none"
           />
         </div>
         <button
           type="submit"
           disabled={loading}
-          className="px-6 py-2.5 bg-burgundy-700 text-white text-sm font-medium rounded-xl hover:bg-burgundy-800 transition-colors disabled:opacity-50"
+          className="px-6 py-2.5 bg-[#7B2D3E] text-[#FAF5EC] text-sm font-medium font-[Georgia,serif] rounded-xl hover:bg-[#9B3A4E] transition-colors disabled:opacity-50"
         >
           {loading ? 'Searching...' : 'Search'}
         </button>
       </form>
+
+      {/* Section label */}
+      <p className="font-[Georgia,serif] text-[10px] uppercase tracking-[0.12em] text-[#5C4D3A] italic mb-2">Browse by topic</p>
 
       {/* Topic Chips */}
       <div className="flex flex-wrap gap-2 mb-5">
@@ -235,10 +238,10 @@ export default function ResearchReadyCE() {
           <button
             key={topic}
             onClick={() => handleChipClick(topic)}
-            className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+            className={`px-3 py-1.5 rounded-full text-xs font-[Georgia,serif] uppercase transition-colors ${
               query === topic
-                ? 'bg-burgundy-700 text-white border-burgundy-700'
-                : 'bg-white text-gray-600 border-gray-300 hover:border-burgundy-300 hover:bg-burgundy-50'
+                ? 'bg-[#FDF8EE] border-[1.5px] border-[#7B2D3E] text-[#7B2D3E]'
+                : 'bg-[#F5EEE0] border border-[#C8C3BC] text-[#5C4D3A] hover:border-[#7B2D3E] hover:text-[#7B2D3E]'
             }`}
           >
             {topic}
@@ -249,11 +252,11 @@ export default function ResearchReadyCE() {
       {/* Filter Bar */}
       <div className="flex items-center gap-4 mb-6">
         <div className="flex items-center gap-2">
-          <Filter className="w-4 h-4 text-gray-400" />
+          <Filter className="w-4 h-4 text-[#7A6A54]" />
           <select
             value={yearFrom}
             onChange={e => setYearFrom(parseInt(e.target.value))}
-            className="text-sm border border-gray-300 rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-burgundy-300 outline-none"
+            className="text-sm font-[Georgia,serif] bg-[#F5EEE0] border border-[#C8C3BC] rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-[#7B2D3E]/30 outline-none"
           >
             {YEAR_OPTIONS.map(opt => (
               <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -263,7 +266,7 @@ export default function ResearchReadyCE() {
         <select
           value={sortBy}
           onChange={e => setSortBy(e.target.value)}
-          className="text-sm border border-gray-300 rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-burgundy-300 outline-none"
+          className="text-sm font-[Georgia,serif] bg-[#F5EEE0] border border-[#C8C3BC] rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-[#7B2D3E]/30 outline-none"
         >
           {SORT_OPTIONS.map(opt => (
             <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -273,7 +276,7 @@ export default function ResearchReadyCE() {
 
       {/* Desired Hours Match Notice */}
       {desiredHours && results.length > 0 && (
-        <div className="bg-burgundy-50 border border-burgundy-200 rounded-xl p-3 mb-4 text-sm text-burgundy-800">
+        <div className="bg-[#FDF8EE] border border-[#DDD9D3] rounded-xl p-3 mb-4 text-sm text-[#5C4D3A] font-[Georgia,serif]">
           Showing articles matching your <strong>{desiredHours} hr</strong> target
           {results.length < 3 && ' — Fewer articles at this length. Try "Any" or broaden your search.'}
         </div>
@@ -282,19 +285,26 @@ export default function ResearchReadyCE() {
       {/* Loading */}
       {loading && (
         <div className="flex justify-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-burgundy-700"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#7B2D3E]"></div>
         </div>
       )}
 
       {/* Building CE overlay */}
       {buildingCE && (
         <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-40">
-          <div className="bg-white rounded-2xl p-8 text-center shadow-xl">
-            <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-burgundy-700 mx-auto mb-4"></div>
-            <p className="text-gray-700 font-medium">Processing with AI...</p>
-            <p className="text-sm text-gray-500 mt-1">This may take 15-30 seconds</p>
+          <div className="bg-[#FAF5EC] rounded-2xl p-8 text-center shadow-xl">
+            <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-[#7B2D3E] mx-auto mb-4"></div>
+            <p className="text-[#2A1F0E] font-medium font-[Georgia,serif]">Processing with AI...</p>
+            <p className="text-sm text-[#7A6A54] mt-1 font-[Georgia,serif]">This may take 15-30 seconds</p>
           </div>
         </div>
+      )}
+
+      {/* Results count */}
+      {!loading && results.length > 0 && (
+        <p className="font-[Georgia,serif] text-[10px] italic text-[#5C4D3A] mb-3">
+          {meta.count} results found
+        </p>
       )}
 
       {/* Results */}
@@ -315,15 +325,15 @@ export default function ResearchReadyCE() {
       {/* Empty state */}
       {!loading && query && results.length === 0 && (
         <div className="text-center py-16">
-          <BookOpen className="w-12 h-12 mx-auto text-gray-300 mb-4" />
-          <h2 className="text-lg font-semibold text-gray-600 mb-2">No articles found</h2>
-          <p className="text-sm text-gray-400">Try a different search term or adjust your filters.</p>
+          <BookOpen className="w-12 h-12 mx-auto text-[#C8C3BC] mb-4" />
+          <h2 className="text-lg font-semibold text-[#5C4D3A] mb-2 font-[Georgia,serif]">No articles found</h2>
+          <p className="text-sm text-[#7A6A54] font-[Georgia,serif]">Try a different search term or adjust your filters.</p>
         </div>
       )}
 
       {/* Meta */}
       {!loading && results.length > 0 && (
-        <p className="text-xs text-gray-400 text-center mb-4">
+        <p className="font-[Georgia,serif] text-[10px] italic text-[#7A6A54] text-center mb-4">
           {meta.count} total results &middot; Page {meta.page} &middot; Powered by OpenAlex
         </p>
       )}
