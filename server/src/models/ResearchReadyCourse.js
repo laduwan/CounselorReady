@@ -15,6 +15,7 @@ const questionSchema = new mongoose.Schema({
 
 const researchReadyCourseSchema = new mongoose.Schema({
   title: { type: String, required: true, trim: true },
+  courseTitle: { type: String, default: '' },
   authors: { type: String, required: true },
   journal: { type: String, required: true },
   year: { type: Number, required: true },
