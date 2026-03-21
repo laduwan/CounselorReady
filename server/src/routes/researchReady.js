@@ -13,6 +13,10 @@ import { calculateCEHours, calculateResearchHours } from '../services/openAlex.j
 import ResearchReadyCourse from '../models/ResearchReadyCourse.js';
 import Certificate from '../models/Certificate.js';
 import UserCredential from '../models/UserCredential.js';
+import User from '../models/User.js';
+import { logActivity, ACTIVITY_TYPES } from '../services/activityTrackingService.js';
+import { sendCourseCompletionEmail } from '../services/courseEmailService.js';
+import { sendCompletionSMS } from '../services/smsService.js';
 
 const router = express.Router();
 
@@ -160,6 +164,129 @@ router.post('/build-ce', protect, requireAdmin, async (req, res) => {
       error: 'CE build failed: ' + error.message,
       retryable: true
     });
+  }
+});
+
+// ═══════════════════════════════════════════════════════════════
+// GET /api/research-ready/browse
+// Learner-facing: list all live RNR CE courses
+// ═══════════════════════════════════════════════════════════════
+router.get('/browse', protect, async (req, res) => {
+  try {
+    const { contentArea, maxHours } = req.query;
+    const query = { status: 'live' };
+
+    if (contentArea) {
+      query.contentAreas = { $regex: new RegExp(contentArea, 'i') };
+    }
+
+    let courses = await ResearchReadyCourse.find(query)
+      .select('title authors journal year abstract doi oaUrl wordCount ceHours researchHours contentAreas objectives questions format createdAt')
+      .sort({ createdAt: -1 })
+      .lean();
+
+    // Filter by max hours if CE Planner passes desired_hours
+    if (maxHours) {
+      const max = parseFloat(maxHours);
+      courses = courses.filter(c => c.ceHours <= max);
+    }
+
+    // Strip correct answers for learner view
+    courses = courses.map(c => ({
+      ...c,
+      questionCount: c.questions?.length || 0,
+      questions: undefined
+    }));
+
+    // Check which ones the user already completed
+    const completedCerts = await Certificate.find({
+      userId: req.user._id,
+      source: 'platform',
+      notes: { $regex: 'research_ready' }
+    }).select('courseId').lean();
+    const completedIds = new Set(completedCerts.map(c => c.courseId?.toString()).filter(Boolean));
+
+    courses = courses.map(c => ({
+      ...c,
+      completed: completedIds.has(c._id.toString())
+    }));
+
+    res.json({ courses });
+  } catch (error) {
+    console.error('Browse error:', error.message);
+    res.status(500).json({ error: 'Failed to load courses' });
+  }
+});
+
+// ═══════════════════════════════════════════════════════════════
+// GET /api/research-ready/recommendations
+// CE Planner integration: returns articles matching learner's gaps
+// ═══════════════════════════════════════════════════════════════
+router.get('/recommendations', protect, async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const { limit = 6 } = req.query;
+
+    // Get learner's credential gaps
+    const credentials = await UserCredential.find({ userId, status: { $ne: 'renewed' } });
+    if (!credentials.length) {
+      return res.json({ recommendations: [], message: 'Add credentials to get recommendations.' });
+    }
+
+    // Find categories with remaining hours
+    const gaps = [];
+    for (const cred of credentials) {
+      const remaining = cred.getRemainingHours ? cred.getRemainingHours() : [];
+      for (const r of remaining) {
+        if (r.remaining > 0) {
+          gaps.push({ category: r.category, hoursNeeded: r.remaining, credentialName: cred.name });
+        }
+      }
+    }
+
+    if (!gaps.length) {
+      return res.json({ recommendations: [], message: 'All CE requirements are met.' });
+    }
+
+    // Find live courses matching gap categories
+    const liveCourses = await ResearchReadyCourse.find({ status: 'live' })
+      .select('title authors journal year ceHours researchHours contentAreas oaUrl')
+      .lean();
+
+    // Already completed
+    const completedCerts = await Certificate.find({ userId, notes: { $regex: 'research_ready' } }).select('courseId').lean();
+    const completedIds = new Set(completedCerts.map(c => c.courseId?.toString()).filter(Boolean));
+
+    const recommendations = [];
+    for (const gap of gaps) {
+      const catLower = gap.category.toLowerCase();
+      const matching = liveCourses.filter(c => {
+        if (completedIds.has(c._id.toString())) return false;
+        const areas = (c.contentAreas || []).map(a => a.toLowerCase()).join(' ');
+        return areas.includes(catLower) || catLower === 'general' || catLower === 'research';
+      });
+
+      if (matching.length > 0) {
+        recommendations.push({
+          category: gap.category,
+          hoursNeeded: gap.hoursNeeded,
+          credentialName: gap.credentialName,
+          articles: matching.slice(0, 3).map(c => ({
+            id: c._id,
+            title: c.title,
+            authors: c.authors,
+            ceHours: c.ceHours,
+            contentAreas: c.contentAreas,
+            oaUrl: c.oaUrl
+          }))
+        });
+      }
+    }
+
+    res.json({ recommendations, totalGaps: gaps.length });
+  } catch (error) {
+    console.error('Recommendations error:', error.message);
+    res.status(500).json({ error: 'Failed to generate recommendations' });
   }
 });
 
@@ -368,6 +495,27 @@ router.post('/complete', protect, async (req, res) => {
     } catch (credErr) {
       console.error('CE Planner update error:', credErr.message);
       // Non-fatal — certificate is still valid
+    }
+
+    // ── Notifications ──
+    try {
+      const rnrUser = await User.findById(userId).select('email profile.firstName profile.lastName phone smsOptIn');
+      const uName = `${rnrUser?.profile?.firstName || ''} ${rnrUser?.profile?.lastName || ''}`.trim();
+      logActivity(ACTIVITY_TYPES.COURSE_COMPLETED, {
+        courseId: course._id, courseName: `RNR CE: ${course.title}`,
+        ceHours: course.ceHours, details: `Score: ${score}%, Certificate: ${certificateId}`
+      }, { userId, userName: uName, userEmail: rnrUser?.email }).catch(()=>{});
+      logActivity(ACTIVITY_TYPES.CERTIFICATE_GENERATED, {
+        courseId: course._id, courseName: `RNR CE: ${course.title}`
+      }, { userId, userName: uName, userEmail: rnrUser?.email }).catch(()=>{});
+      sendCourseCompletionEmail(userId, course._id, certificate._id).catch(()=>{});
+      sendCompletionSMS(
+        { phone: rnrUser?.phone, firstName: rnrUser?.profile?.firstName, smsOptIn: rnrUser?.smsOptIn },
+        { title: course.title, ceHours: course.ceHours },
+        certificate
+      ).catch(()=>{});
+    } catch (notifErr) {
+      console.error('RNR notification error (non-fatal):', notifErr.message);
     }
 
     res.json({
