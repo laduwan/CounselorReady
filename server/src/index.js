@@ -62,6 +62,7 @@ import referralsRoutes from './routes/referrals.js';
 import gamificationRoutes from './routes/gamification.js';
 import notificationsRoutes from './routes/notifications.js';
 import legacyVaultRoutes from './routes/legacyVault.js';
+import googleCalendarRoutes from './routes/googleCalendar.js';
 import adminStatsRoutes from './routes/adminStats.js';
 // ── Whitelabel partner routes ──
 import partnersRoutes from './routes/partners.js';
@@ -282,6 +283,7 @@ app.use('/api/referrals', referralsRoutes);
 app.use('/api/gamification', gamificationRoutes);
 app.use('/api/notifications', notificationsRoutes);
 app.use('/api/legacy-vault', legacyVaultRoutes);
+app.use('/api', googleCalendarRoutes);
 app.use('/api/admin/stats', adminStatsRoutes);
 app.use('/api/partners', partnersRoutes);
 app.use('/api/tools', toolsRoutes);

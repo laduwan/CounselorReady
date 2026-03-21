@@ -12,6 +12,8 @@ import UserCredential from '../models/UserCredential.js';
 import CredentialTemplate from '../models/CredentialTemplate.js';
 import Certificate from '../models/Certificate.js';
 import { protect, requireSubscription } from '../middleware/auth.js';
+import { syncCredentialToCalendar, removeEventFromCalendar } from '../services/googleCalendarService.js';
+import User from '../models/User.js';
 
 const router = express.Router();
 
@@ -195,7 +197,19 @@ router.post('/', protect, async (req, res) => {
     
     const credential = await UserCredential.create(credentialData);
     credential.updateStatus();
-    
+
+    // Auto-sync to Google Calendar if connected and enabled
+    if (credential.expirationDate) {
+      try {
+        const fullUser = await User.findById(req.user._id);
+        if (fullUser.googleCalendar?.connected && fullUser.googleCalendar?.syncEnabled) {
+          await syncCredentialToCalendar(fullUser, credential);
+        }
+      } catch (syncErr) {
+        console.error('Google Calendar auto-sync error (non-blocking):', syncErr.message);
+      }
+    }
+
     res.status(201).json({
       message: 'Credential added',
       credential
@@ -502,7 +516,19 @@ router.put('/:id', protect, async (req, res) => {
     
     credential.updateStatus();
     await credential.save();
-    
+
+    // Auto-sync to Google Calendar if connected and enabled
+    if (credential.expirationDate) {
+      try {
+        const fullUser = await User.findById(req.user._id);
+        if (fullUser.googleCalendar?.connected && fullUser.googleCalendar?.syncEnabled) {
+          await syncCredentialToCalendar(fullUser, credential);
+        }
+      } catch (syncErr) {
+        console.error('Google Calendar auto-sync error (non-blocking):', syncErr.message);
+      }
+    }
+
     res.json({
       message: 'Credential updated',
       credential
@@ -529,7 +555,17 @@ router.delete('/:id', protect, async (req, res) => {
     if (!credential) {
       return res.status(404).json({ error: 'Credential not found' });
     }
-    
+
+    // Remove from Google Calendar if connected
+    try {
+      const fullUser = await User.findById(req.user._id);
+      if (fullUser.googleCalendar?.connected) {
+        await removeEventFromCalendar(fullUser, req.params.id);
+      }
+    } catch (syncErr) {
+      console.error('Google Calendar event remove error (non-blocking):', syncErr.message);
+    }
+
     res.json({ message: 'Credential deleted' });
   } catch (error) {
     console.error('Delete credential error:', error);

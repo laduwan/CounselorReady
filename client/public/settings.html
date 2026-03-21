@@ -672,6 +672,82 @@
         </button>
       </div>
 
+      <!-- Calendar Sync Section -->
+      <div class="card" style="margin-top:1.5rem;">
+        <div class="card-header">
+          <div class="card-header-icon" style="background:#E0ECE3;">
+            <svg width="20" height="20" fill="none" stroke="#4A7C59" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+          </div>
+          <div>
+            <h2>Calendar Sync</h2>
+            <p>Add credential renewal dates and reminders to your calendar</p>
+          </div>
+        </div>
+        <div class="card-body">
+
+          <!-- Manual ICS Downloads -->
+          <div style="margin-bottom:1.25rem;">
+            <h3 style="font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--burgundy);margin-bottom:0.75rem;">Manual Download</h3>
+            <div style="display:flex;gap:0.75rem;flex-wrap:wrap;">
+              <button onclick="downloadAllICS()" style="font-size:0.84rem;background:#f5f5f4;border:1px solid #e7e5e4;color:#284157;padding:0.5rem 1rem;border-radius:0.5rem;cursor:pointer;display:flex;align-items:center;gap:0.4rem;font-family:'Lato',sans-serif;font-weight:600;transition:background .15s;" onmouseover="this.style.background='#e7e5e4'" onmouseout="this.style.background='#f5f5f4'">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                Download All Dates (.ics)
+              </button>
+              <button onclick="downloadInsuranceICS()" style="font-size:0.84rem;background:#f5f5f4;border:1px solid #e7e5e4;color:#284157;padding:0.5rem 1rem;border-radius:0.5rem;cursor:pointer;display:flex;align-items:center;gap:0.4rem;font-family:'Lato',sans-serif;font-weight:600;transition:background .15s;" onmouseover="this.style.background='#e7e5e4'" onmouseout="this.style.background='#f5f5f4'">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                Insurance Renewal (.ics)
+              </button>
+            </div>
+            <p style="font-size:0.75rem;color:#9CA3AF;margin-top:0.4rem;">Works with Apple Calendar, Outlook, and Google Calendar</p>
+          </div>
+
+          <!-- Google Calendar Connect -->
+          <div style="border-top:1px solid #e7e5e4;padding-top:1.25rem;">
+            <h3 style="font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--burgundy);margin-bottom:0.75rem;">Google Calendar</h3>
+
+            <!-- Not connected state -->
+            <div id="gcal-disconnected">
+              <p style="font-size:0.88rem;color:var(--text-secondary);margin-bottom:0.75rem;">
+                Connect your Google Calendar to automatically sync renewal dates and reminders.
+              </p>
+              <button onclick="connectGoogleCalendar()" style="background:var(--hunter);color:#fff;font-size:0.84rem;font-weight:700;padding:0.5rem 1.25rem;border-radius:0.5rem;border:none;cursor:pointer;font-family:'Lato',sans-serif;transition:background .15s;" onmouseover="this.style.background='var(--hunter-light)'" onmouseout="this.style.background='var(--hunter)'">
+                Connect Google Calendar
+              </button>
+            </div>
+
+            <!-- Connected state -->
+            <div id="gcal-connected" style="display:none;">
+              <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.75rem;">
+                <div>
+                  <p style="font-size:0.88rem;color:var(--text-primary);font-weight:600;">
+                    <span style="color:#4A7C59;">&#10003;</span> Google Calendar Connected
+                  </p>
+                  <p style="font-size:0.78rem;color:var(--text-secondary);" id="gcal-last-sync">Last synced: never</p>
+                </div>
+                <div style="display:flex;gap:0.5rem;">
+                  <button onclick="syncGoogleCalendar()" style="font-size:0.78rem;background:#E0ECE3;color:#3B6347;padding:0.35rem 0.75rem;border-radius:0.5rem;border:none;cursor:pointer;font-family:'Lato',sans-serif;font-weight:600;transition:background .15s;" onmouseover="this.style.background='#C2D9C8'" onmouseout="this.style.background='#E0ECE3'">
+                    Sync Now
+                  </button>
+                  <button onclick="disconnectGoogleCalendar()" style="font-size:0.78rem;background:none;border:none;color:var(--burgundy);cursor:pointer;text-decoration:underline;font-family:'Lato',sans-serif;">
+                    Disconnect
+                  </button>
+                </div>
+              </div>
+
+              <!-- Auto-sync toggle -->
+              <label style="display:flex;align-items:center;gap:0.75rem;margin-top:0.75rem;cursor:pointer;">
+                <input type="checkbox" id="gcal-auto-sync" onchange="toggleAutoSync()" style="width:1rem;height:1rem;accent-color:#4A7C59;">
+                <div>
+                  <span style="font-size:0.88rem;font-weight:600;color:var(--text-primary);">Auto-sync</span>
+                  <p style="font-size:0.75rem;color:var(--text-secondary);margin:0;">Automatically update Google Calendar when you add or edit credentials</p>
+                </div>
+              </label>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
     </div>
 
     <!-- -- -->
@@ -772,10 +848,16 @@
         if (input && input.checked) row.classList.add('active');
       });
       loadNotificationPreferences();
+      checkGoogleCalendarStatus();
 
       // Handle hash navigation
-      if (window.location.hash === '#notifications') {
+      const hash = window.location.hash;
+      if (hash === '#notifications' || hash.startsWith('#calendar')) {
         switchTab('notifications');
+      }
+      // Show success message if returning from Google OAuth
+      if (hash.includes('gcal=connected')) {
+        setTimeout(() => { showToast('Google Calendar connected successfully!'); }, 500);
       }
     });
 
@@ -978,10 +1060,97 @@
     }
 
     // -- Toast --
-    function showToast() {
+    function showToast(msg) {
       const toast = document.getElementById('toast');
+      if (msg) {
+        const p = toast.querySelector('p') || toast;
+        if (p.textContent !== undefined) p.textContent = msg;
+      }
       toast.classList.add('show');
       setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+
+    // ── Calendar Functions ──
+    function downloadAllICS() {
+      window.location.href = `${API_BASE}/reminders/calendar/all`;
+    }
+    function downloadInsuranceICS() {
+      window.location.href = `${API_BASE}/reminders/calendar/insurance`;
+    }
+
+    async function checkGoogleCalendarStatus() {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+      try {
+        const res = await fetch(`${API_BASE}/google-calendar/status`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.connected) {
+            document.getElementById('gcal-disconnected').style.display = 'none';
+            document.getElementById('gcal-connected').style.display = 'block';
+            document.getElementById('gcal-last-sync').textContent =
+              data.lastSyncAt ? 'Last synced: ' + new Date(data.lastSyncAt).toLocaleString() : 'Last synced: never';
+            document.getElementById('gcal-auto-sync').checked = data.syncEnabled;
+          }
+        }
+      } catch (err) {
+        console.error('Google Calendar status check error:', err);
+      }
+    }
+
+    function connectGoogleCalendar() {
+      window.location.href = `${API_BASE}/auth/google/calendar`;
+    }
+
+    async function syncGoogleCalendar() {
+      const token = localStorage.getItem('token');
+      try {
+        const res = await fetch(`${API_BASE}/google-calendar/sync`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+          showToast('Calendar synced successfully!');
+          checkGoogleCalendarStatus();
+        } else {
+          const data = await res.json();
+          alert(data.error || 'Sync failed');
+        }
+      } catch (err) {
+        alert('Sync failed: ' + err.message);
+      }
+    }
+
+    async function disconnectGoogleCalendar() {
+      if (!confirm('Disconnect Google Calendar? Calendar events will remain but won\'t auto-update.')) return;
+      const token = localStorage.getItem('token');
+      try {
+        await fetch(`${API_BASE}/google-calendar/disconnect`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        document.getElementById('gcal-disconnected').style.display = 'block';
+        document.getElementById('gcal-connected').style.display = 'none';
+        showToast('Google Calendar disconnected');
+      } catch (err) {
+        alert('Failed to disconnect: ' + err.message);
+      }
+    }
+
+    async function toggleAutoSync() {
+      const enabled = document.getElementById('gcal-auto-sync').checked;
+      const token = localStorage.getItem('token');
+      try {
+        await fetch(`${API_BASE}/auth/update-profile`, {
+          method: 'PUT',
+          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 'googleCalendar.syncEnabled': enabled })
+        });
+      } catch (err) {
+        console.error('Toggle auto-sync error:', err);
+      }
     }
   </script>
 <script src="/js/footer.js"></script></body>
