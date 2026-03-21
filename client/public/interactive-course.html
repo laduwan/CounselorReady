@@ -145,153 +145,6 @@
 }
 [data-reading-guide="true"] .cr-reading-guide { display: block; }
 
-/* Color Vision Filters */
-[data-color-vision="protanopia"] .cr-main { filter: url(#cr-protanopia-filter); }
-[data-color-vision="deuteranopia"] .cr-main { filter: url(#cr-deuteranopia-filter); }
-[data-color-vision="tritanopia"] .cr-main { filter: url(#cr-tritanopia-filter); }
-
-/* Chunked Reading */
-[data-chunked-reading="true"] #crContentArea .cr-block-wrap {
-  opacity: 0.2;
-  transition: opacity 0.3s ease;
-}
-[data-chunked-reading="true"] #crContentArea .cr-block-wrap.cr-chunk-active {
-  opacity: 1;
-  background: rgba(212, 168, 85, 0.06);
-  border-radius: 8px;
-  box-shadow: 0 0 0 4px rgba(212, 168, 85, 0.12);
-}
-.cr-chunk-nav {
-  display: none;
-  position: fixed; bottom: 88px; left: 50%; transform: translateX(-50%);
-  z-index: 50; background: var(--cr-surface);
-  border: 1px solid var(--cr-border); border-radius: 28px;
-  padding: 6px 10px; gap: 6px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-  align-items: center;
-}
-[data-chunked-reading="true"] .cr-chunk-nav { display: flex; }
-.cr-chunk-nav button {
-  width: 40px; height: 40px; border-radius: 50%;
-  border: 1px solid var(--cr-border); background: var(--cr-surface);
-  cursor: pointer; font-size: 16px; display: flex;
-  align-items: center; justify-content: center;
-}
-.cr-chunk-nav button:hover { background: var(--cr-green-faded); }
-.cr-chunk-nav span { font-size: 12px; color: var(--cr-text-muted); min-width: 40px; text-align: center; }
-
-/* Keyboard Shortcuts Modal */
-.cr-shortcuts-overlay {
-  display: none; position: fixed; inset: 0;
-  background: rgba(0,0,0,0.5); z-index: 9999;
-  align-items: center; justify-content: center;
-}
-.cr-shortcuts-overlay.open { display: flex; }
-.cr-shortcuts-modal {
-  background: var(--cr-surface); border-radius: var(--cr-radius);
-  padding: 28px 32px; max-width: 520px; width: 90%;
-  max-height: 80vh; overflow-y: auto;
-  box-shadow: 0 12px 48px rgba(0,0,0,0.25);
-}
-.cr-shortcuts-modal h3 {
-  font-family: var(--cr-font-display); font-size: 20px;
-  font-weight: 700; color: var(--cr-navy); margin-bottom: 16px;
-  display: flex; align-items: center; justify-content: space-between;
-}
-.cr-shortcuts-modal h3 button {
-  width: 36px; height: 36px; border: none; background: none;
-  cursor: pointer; font-size: 18px; min-height: 36px; min-width: 36px;
-}
-.cr-shortcut-group { margin-bottom: 16px; }
-.cr-shortcut-group h4 {
-  font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em;
-  color: var(--cr-text-muted); margin-bottom: 8px; font-weight: 700;
-}
-.cr-shortcut-row {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 6px 0; font-size: 14px;
-}
-.cr-shortcut-key {
-  display: inline-flex; align-items: center; gap: 4px;
-}
-.cr-shortcut-key kbd {
-  display: inline-block; padding: 3px 8px;
-  background: var(--cr-stone); border: 1px solid var(--cr-border);
-  border-radius: 5px; font-family: var(--cr-font-body);
-  font-size: 12px; font-weight: 700; color: var(--cr-text);
-  box-shadow: 0 1px 2px rgba(0,0,0,0.08);
-  min-width: 28px; text-align: center;
-}
-
-/* Search Panel */
-.cr-search-btn {
-  position: fixed; bottom: 24px; right: 88px;
-  width: 48px; height: 48px; border-radius: 50%;
-  background: var(--cr-green); color: #fff; border: none;
-  cursor: pointer; display: flex; align-items: center;
-  justify-content: center; box-shadow: 0 4px 16px rgba(74,124,89,0.35);
-  z-index: 50; font-size: 20px;
-  transition: transform var(--cr-transition);
-}
-.cr-search-btn:hover { transform: scale(1.1); }
-.cr-search-panel {
-  position: fixed; top: 0; right: 0; width: 380px; height: 100vh;
-  background: var(--cr-surface); border-left: 1px solid var(--cr-border);
-  box-shadow: -4px 0 24px rgba(0,0,0,0.12); z-index: 55;
-  display: flex; flex-direction: column;
-  transform: translateX(100%); transition: transform var(--cr-transition);
-}
-.cr-search-panel.open { transform: translateX(0); }
-@media (max-width: 480px) { .cr-search-panel { width: 100%; } }
-.cr-search-header {
-  display: flex; align-items: center; gap: 10px;
-  padding: 16px; border-bottom: 1px solid var(--cr-border);
-}
-.cr-search-header h3 {
-  font-family: var(--cr-font-display); font-size: 17px;
-  font-weight: 700; color: var(--cr-navy); flex: 1;
-}
-.cr-search-header button {
-  width: 36px; height: 36px; border: none; background: none;
-  cursor: pointer; font-size: 18px; min-height: 36px; min-width: 36px;
-}
-.cr-search-input-wrap {
-  padding: 12px 16px; border-bottom: 1px solid var(--cr-border);
-}
-.cr-search-input {
-  width: 100%; padding: 10px 14px; border: 1px solid var(--cr-border);
-  border-radius: 8px; font-size: 15px; background: var(--cr-stone);
-}
-.cr-search-input:focus { border-color: var(--cr-green); outline: none; }
-.cr-search-results {
-  flex: 1; overflow-y: auto; padding: 12px 16px;
-}
-.cr-search-result {
-  padding: 12px; margin-bottom: 8px; border-radius: 8px;
-  background: var(--cr-stone); cursor: pointer;
-  border: 1px solid transparent;
-  transition: border-color 0.15s;
-}
-.cr-search-result:hover { border-color: var(--cr-green); }
-.cr-search-result-section {
-  font-size: 11px; font-weight: 700; text-transform: uppercase;
-  letter-spacing: 0.06em; color: var(--cr-green); margin-bottom: 4px;
-}
-.cr-search-result-text {
-  font-size: 14px; color: var(--cr-text); line-height: 1.5;
-}
-.cr-search-result-text mark {
-  background: var(--cr-gold-faded); color: var(--cr-text);
-  padding: 1px 2px; border-radius: 2px; font-weight: 600;
-}
-.cr-search-empty {
-  text-align: center; padding: 40px 20px;
-  color: var(--cr-text-muted); font-size: 14px;
-}
-
-/* WCAG 2.2 — Focus Not Obscured (SC 2.4.11) */
-*:focus { scroll-margin-top: 100px; scroll-margin-bottom: 100px; }
-
 /* ═══════════════════════════════════════════════════════════════
    RESET & BASE
    ═══════════════════════════════════════════════════════════════ */
@@ -1545,8 +1398,7 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
   .cr-sidebar, .cr-topbar, .cr-a11y-toggle, .cr-a11y-panel,
   .cr-nav-buttons, .cr-reading-guide, .cr-glossary-btn,
   .cr-glossary-panel, .cr-highlight-toolbar, .cr-toolbar,
-  .cr-translate-bar, .cr-search-btn, .cr-search-panel,
-  .cr-shortcuts-overlay, .cr-chunk-nav { display: none !important; }
+  .cr-translate-bar { display: none !important; }
   .cr-layout { grid-template-columns: 1fr !important; }
   .cr-main { max-width: 100%; padding: 20px; }
   .cr-highlight { background: none !important; border-bottom: 1px solid #999; }
@@ -1785,28 +1637,6 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
     <label>Reading Guide</label>
     <div class="cr-toggle" id="toggle-reading-guide" data-action="toggleBool" data-setting="reading-guide" role="switch" aria-checked="false" tabindex="0"></div>
   </div>
-  
-  <div class="cr-a11y-option">
-    <label>Color Vision</label>
-    <div class="cr-segment" data-setting="color-vision">
-      <button data-action="setColorVision" data-value="none" data-val="none" class="active" title="Normal vision">None</button>
-      <button data-action="setColorVision" data-value="protanopia" data-val="protanopia" title="Red-Green (Protanopia)">R-G</button>
-      <button data-action="setColorVision" data-value="deuteranopia" data-val="deuteranopia" title="Red weakness (Deuteranopia)">Red</button>
-      <button data-action="setColorVision" data-value="tritanopia" data-val="tritanopia" title="Blue-Yellow (Tritanopia)">B-Y</button>
-    </div>
-  </div>
-  
-  <div class="cr-a11y-option">
-    <label>Chunked Reading</label>
-    <div class="cr-toggle" id="toggle-chunked-reading" data-action="toggleChunkedReading" role="switch" aria-checked="false" tabindex="0"></div>
-  </div>
-  
-  <div style="padding:10px 0 4px;border-top:1px solid var(--cr-border);margin-top:6px">
-    <div style="display:flex;gap:8px">
-      <button data-action="openSearch" style="flex:1;padding:8px 12px;border:1px solid var(--cr-border);border-radius:8px;background:var(--cr-stone);cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;gap:6px;min-height:40px" title="Search course content">🔍 Search Course</button>
-      <button data-action="openShortcuts" style="flex:1;padding:8px 12px;border:1px solid var(--cr-border);border-radius:8px;background:var(--cr-stone);cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;gap:6px;min-height:40px" title="Keyboard shortcuts">⌨️ Shortcuts</button>
-    </div>
-  </div>
 </div>
 
 <!-- GLOSSARY BUTTON -->
@@ -1820,82 +1650,6 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
   </div>
   <input class="cr-glossary-search" id="crGlossarySearch" placeholder="Search terms..." type="text">
   <div class="cr-glossary-list" id="crGlossaryList"></div>
-</div>
-
-<!-- SVG Color Vision Filters -->
-<svg style="position:absolute;width:0;height:0" aria-hidden="true">
-  <defs>
-    <filter id="cr-protanopia-filter">
-      <feColorMatrix type="matrix" values="0.567,0.433,0,0,0 0.558,0.442,0,0,0 0,0.242,0.758,0,0 0,0,0,1,0"/>
-    </filter>
-    <filter id="cr-deuteranopia-filter">
-      <feColorMatrix type="matrix" values="0.625,0.375,0,0,0 0.7,0.3,0,0,0 0,0.3,0.7,0,0 0,0,0,1,0"/>
-    </filter>
-    <filter id="cr-tritanopia-filter">
-      <feColorMatrix type="matrix" values="0.95,0.05,0,0,0 0,0.433,0.567,0,0 0,0.475,0.525,0,0 0,0,0,1,0"/>
-    </filter>
-  </defs>
-</svg>
-
-<!-- SEARCH BUTTON -->
-<button class="cr-search-btn" id="crSearchBtn" data-action="openSearch" aria-label="Search course" title="Search course content (Ctrl+/)">🔍</button>
-
-<!-- SEARCH PANEL -->
-<div class="cr-search-panel" id="crSearchPanel">
-  <div class="cr-search-header">
-    <h3>🔍 Search Course</h3>
-    <button data-action="closeSearch" title="Close search">✕</button>
-  </div>
-  <div class="cr-search-input-wrap">
-    <input class="cr-search-input" id="crSearchInput" placeholder="Search all sections..." type="text" autocomplete="off">
-  </div>
-  <div class="cr-search-results" id="crSearchResults">
-    <div class="cr-search-empty">Type to search across all course content</div>
-  </div>
-</div>
-
-<!-- KEYBOARD SHORTCUTS MODAL -->
-<div class="cr-shortcuts-overlay" id="crShortcutsOverlay">
-  <div class="cr-shortcuts-modal" role="dialog" aria-label="Keyboard Shortcuts">
-    <h3>
-      ⌨️ Keyboard Shortcuts
-      <button data-action="closeShortcuts" title="Close">✕</button>
-    </h3>
-    <div class="cr-shortcut-group">
-      <h4>Navigation</h4>
-      <div class="cr-shortcut-row"><span>Previous section</span><span class="cr-shortcut-key"><kbd>←</kbd> or <kbd>P</kbd></span></div>
-      <div class="cr-shortcut-row"><span>Next section</span><span class="cr-shortcut-key"><kbd>→</kbd> or <kbd>N</kbd></span></div>
-      <div class="cr-shortcut-row"><span>Go to section #</span><span class="cr-shortcut-key"><kbd>1</kbd>–<kbd>9</kbd></span></div>
-      <div class="cr-shortcut-row"><span>Scroll to top</span><span class="cr-shortcut-key"><kbd>Home</kbd></span></div>
-    </div>
-    <div class="cr-shortcut-group">
-      <h4>Accessibility</h4>
-      <div class="cr-shortcut-row"><span>Open/close a11y panel</span><span class="cr-shortcut-key"><kbd>A</kbd></span></div>
-      <div class="cr-shortcut-row"><span>Toggle dark mode</span><span class="cr-shortcut-key"><kbd>D</kbd></span></div>
-      <div class="cr-shortcut-row"><span>Toggle high contrast</span><span class="cr-shortcut-key"><kbd>H</kbd></span></div>
-      <div class="cr-shortcut-row"><span>Toggle read aloud</span><span class="cr-shortcut-key"><kbd>R</kbd></span></div>
-      <div class="cr-shortcut-row"><span>Toggle chunked reading</span><span class="cr-shortcut-key"><kbd>C</kbd></span></div>
-    </div>
-    <div class="cr-shortcut-group">
-      <h4>Tools</h4>
-      <div class="cr-shortcut-row"><span>Search course</span><span class="cr-shortcut-key"><kbd>Ctrl</kbd>+<kbd>/</kbd></span></div>
-      <div class="cr-shortcut-row"><span>Toggle glossary</span><span class="cr-shortcut-key"><kbd>G</kbd></span></div>
-      <div class="cr-shortcut-row"><span>Show shortcuts</span><span class="cr-shortcut-key"><kbd>?</kbd></span></div>
-      <div class="cr-shortcut-row"><span>Close any panel</span><span class="cr-shortcut-key"><kbd>Esc</kbd></span></div>
-    </div>
-    <div class="cr-shortcut-group">
-      <h4>Chunked Reading (when active)</h4>
-      <div class="cr-shortcut-row"><span>Next block</span><span class="cr-shortcut-key"><kbd>J</kbd> or <kbd>↓</kbd></span></div>
-      <div class="cr-shortcut-row"><span>Previous block</span><span class="cr-shortcut-key"><kbd>K</kbd> or <kbd>↑</kbd></span></div>
-    </div>
-  </div>
-</div>
-
-<!-- CHUNKED READING NAV BAR -->
-<div class="cr-chunk-nav" id="crChunkNav">
-  <button data-action="chunkPrev" title="Previous block (K)" aria-label="Previous block">▲</button>
-  <span id="crChunkCounter">1/1</span>
-  <button data-action="chunkNext" title="Next block (J)" aria-label="Next block">▼</button>
 </div>
 
 <!-- HIGHLIGHT TOOLBAR (appears on text selection) -->
@@ -2643,7 +2397,7 @@ function renderBlock(block, index) {
     case 'text': return renderText(wrap, block);
     case 'imageText': return renderImageText(wrap, block);
     case 'image': return renderImage(wrap, block);
-    case 'accordion': return renderAccordion(wrap, block);
+    case 'accordion': return renderAccordion(wrap, block, index);
     case 'multipleChoice': return renderMultipleChoice(wrap, block, index);
     case 'multiSelect': return renderMultiSelect(wrap, block, index);
     case 'matching': return renderMatching(wrap, block, index);
@@ -2711,11 +2465,11 @@ function renderImage(wrap, block) {
 }
 
 // ─── ACCORDION ───
-function renderAccordion(wrap, block) {
+function renderAccordion(wrap, block, blockIndex) {
   const items = block.accordionItems || [];
   let html = '<div class="cr-accordion">';
   items.forEach((item, i) => {
-    const id = `acc-${currentSectionIndex}-${index}-${i}`;
+    const id = `acc-${currentSectionIndex}-${blockIndex}-${i}`;
     html += `<div class="cr-accordion-item">
       <button class="cr-accordion-trigger" aria-expanded="false" aria-controls="${id}-body" data-action="toggleAccordion">
         <span>${esc(item.title || '')}</span>
@@ -2984,12 +2738,13 @@ function renderScenarioTree(wrap, block, blockIndex) {
   const el = wrap.querySelector(`#${id}`);
   el._stNodes = block.nodes || {};
   el._stStart = block.startNode || 'start';
-  renderScenarioNode(id, el._stStart);
+  renderScenarioNode(id, el._stStart, el);
   return wrap;
 }
 
-function renderScenarioNode(id, nodeKey) {
-  const el = document.getElementById(id);
+function renderScenarioNode(id, nodeKey, cachedEl) {
+  const el = cachedEl || document.getElementById(id);
+  if (!el) return;
   const nodes = el._stNodes;
   const node = nodes[nodeKey];
   if (!node) { document.getElementById(id + '-body').innerHTML = '<p>End of scenario.</p>'; return; }
@@ -4825,17 +4580,6 @@ document.addEventListener('click', function(e) {
     case 'ttsStop': ttsStop(); break;
     case 'ttsRestart': ttsRestart(); break;
     
-    // ─── New Accessibility Features ───
-    case 'setColorVision': setColorVision(el.dataset.value); break;
-    case 'toggleChunkedReading': toggleChunkedReading(); break;
-    case 'chunkNext': chunkNavigate(1); break;
-    case 'chunkPrev': chunkNavigate(-1); break;
-    case 'openSearch': openSearchPanel(); break;
-    case 'closeSearch': closeSearchPanel(); break;
-    case 'openShortcuts': openShortcuts(); break;
-    case 'closeShortcuts': closeShortcuts(); break;
-    case 'searchResultGo': searchResultGo(parseInt(el.dataset.section)); break;
-    
     // ─── Certificate ───
     case 'requestCertificate':
       if (window.parent !== window) {
@@ -4940,261 +4684,12 @@ document.addEventListener('input', function(e) {
   }
 });
 
-// Close glossary on escape — EXPANDED to full keyboard shortcuts
+// Close glossary on escape
 document.addEventListener('keydown', function(e) {
-  const tag = e.target.tagName;
-  const isInput = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || e.target.isContentEditable;
-  
-  // Escape — close any open panel
   if (e.key === 'Escape') {
     document.getElementById('crGlossaryPanel')?.classList.remove('open');
-    closeSearchPanel();
-    closeShortcuts();
-    document.getElementById('crA11yPanel')?.classList.remove('open');
-    return;
-  }
-  
-  // Ctrl+/ or Cmd+/ — open search
-  if ((e.ctrlKey || e.metaKey) && e.key === '/') {
-    e.preventDefault();
-    openSearchPanel();
-    return;
-  }
-  
-  // Skip letter shortcuts if user is typing in an input
-  if (isInput) return;
-  
-  // ? — show keyboard shortcuts
-  if (e.key === '?' || (e.shiftKey && e.key === '/')) {
-    e.preventDefault();
-    openShortcuts();
-    return;
-  }
-  
-  // Navigation
-  if (e.key === 'ArrowLeft' || e.key === 'p' || e.key === 'P') {
-    if (document.body.getAttribute('data-chunked-reading') !== 'true' || (e.key !== 'ArrowLeft')) {
-      if (e.key === 'ArrowLeft' || e.key === 'p' || e.key === 'P') { prevSection(); }
-    }
-  }
-  if (e.key === 'ArrowRight' || e.key === 'n' || e.key === 'N') {
-    if (document.body.getAttribute('data-chunked-reading') !== 'true' || (e.key !== 'ArrowRight')) {
-      nextSection();
-    }
-  }
-  
-  // Number keys 1-9 for section navigation
-  if (e.key >= '1' && e.key <= '9' && !e.ctrlKey && !e.metaKey && !e.altKey) {
-    const idx = parseInt(e.key) - 1;
-    if (course && course.sections && idx < course.sections.length) {
-      goToSection(idx);
-    }
-  }
-  
-  // A — toggle a11y panel
-  if (e.key === 'a') { toggleA11yPanel(); }
-  
-  // D — toggle dark mode
-  if (e.key === 'd') { toggleBool('dark-mode'); }
-  
-  // H — toggle high contrast
-  if (e.key === 'h') { toggleBool('high-contrast'); }
-  
-  // R — toggle read aloud
-  if (e.key === 'r') { toggleReadAloud(); }
-  
-  // G — toggle glossary
-  if (e.key === 'g') { toggleGlossary(); }
-  
-  // C — toggle chunked reading
-  if (e.key === 'c') { toggleChunkedReading(); }
-  
-  // Chunked reading navigation: J/K or Up/Down (when chunked reading is on)
-  if (document.body.getAttribute('data-chunked-reading') === 'true') {
-    if (e.key === 'j' || e.key === 'ArrowDown') { e.preventDefault(); chunkNavigate(1); }
-    if (e.key === 'k' || e.key === 'ArrowUp') { e.preventDefault(); chunkNavigate(-1); }
   }
 });
-
-// ═══════════════════════════════════════════════════════════════
-// COLOR VISION FILTERS
-// ═══════════════════════════════════════════════════════════════
-function setColorVision(value) {
-  if (value === 'none') {
-    document.body.removeAttribute('data-color-vision');
-  } else {
-    document.body.setAttribute('data-color-vision', value);
-  }
-  // Update segment buttons
-  const seg = document.querySelector('.cr-segment[data-setting="color-vision"]');
-  if (seg) {
-    seg.querySelectorAll('button').forEach(b => b.classList.toggle('active', b.dataset.val === value));
-  }
-}
-
-// ═══════════════════════════════════════════════════════════════
-// CHUNKED READING
-// ═══════════════════════════════════════════════════════════════
-let chunkIndex = 0;
-
-function toggleChunkedReading() {
-  const current = document.body.getAttribute('data-chunked-reading') === 'true';
-  const newVal = !current;
-  document.body.setAttribute('data-chunked-reading', newVal);
-  const toggle = document.getElementById('toggle-chunked-reading');
-  if (toggle) {
-    toggle.classList.toggle('on', newVal);
-    toggle.setAttribute('aria-checked', newVal);
-  }
-  if (newVal) {
-    chunkIndex = 0;
-    updateChunkHighlight();
-  } else {
-    // Remove all chunk-active classes
-    document.querySelectorAll('.cr-chunk-active').forEach(el => el.classList.remove('cr-chunk-active'));
-  }
-}
-
-function getChunkBlocks() {
-  const area = document.getElementById('crContentArea');
-  if (!area) return [];
-  return Array.from(area.querySelectorAll('.cr-block-wrap'));
-}
-
-function updateChunkHighlight() {
-  const blocks = getChunkBlocks();
-  if (!blocks.length) return;
-  chunkIndex = Math.max(0, Math.min(chunkIndex, blocks.length - 1));
-  blocks.forEach((b, i) => b.classList.toggle('cr-chunk-active', i === chunkIndex));
-  blocks[chunkIndex].scrollIntoView({ behavior: 'smooth', block: 'center' });
-  // Update counter
-  const counter = document.getElementById('crChunkCounter');
-  if (counter) counter.textContent = `${chunkIndex + 1}/${blocks.length}`;
-}
-
-function chunkNavigate(dir) {
-  if (document.body.getAttribute('data-chunked-reading') !== 'true') return;
-  const blocks = getChunkBlocks();
-  if (!blocks.length) return;
-  chunkIndex = Math.max(0, Math.min(chunkIndex + dir, blocks.length - 1));
-  updateChunkHighlight();
-}
-
-// ═══════════════════════════════════════════════════════════════
-// SEARCH WITHIN COURSE
-// ═══════════════════════════════════════════════════════════════
-function openSearchPanel() {
-  document.getElementById('crSearchPanel')?.classList.add('open');
-  setTimeout(() => document.getElementById('crSearchInput')?.focus(), 150);
-}
-
-function closeSearchPanel() {
-  document.getElementById('crSearchPanel')?.classList.remove('open');
-}
-
-function performCourseSearch(query) {
-  const results = [];
-  if (!course || !course.sections || !query || query.length < 2) return results;
-  const q = query.toLowerCase();
-  
-  course.sections.forEach((section, sIdx) => {
-    if (!section.contentBlocks) return;
-    section.contentBlocks.forEach(block => {
-      let text = '';
-      if (block.type === 'text' && block.content) text = block.content;
-      else if (block.type === 'accordion' && block.items) {
-        text = block.items.map(it => (it.title || '') + ' ' + (it.content || '')).join(' ');
-      } else if (block.type === 'clinicalVignette') {
-        text = (block.scenario || '') + ' ' + (block.discussion || '');
-      } else if (block.type === 'blockquote') {
-        text = (block.content || '') + ' ' + (block.attribution || '');
-      } else if (block.type === 'flashcardDeck' && block.cards) {
-        text = block.cards.map(c => (c.front || '') + ' ' + (c.back || '')).join(' ');
-      }
-      // Strip HTML tags for searching
-      const plainText = text.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ');
-      const lowerText = plainText.toLowerCase();
-      const idx = lowerText.indexOf(q);
-      if (idx !== -1) {
-        // Extract snippet around match
-        const start = Math.max(0, idx - 60);
-        const end = Math.min(plainText.length, idx + query.length + 60);
-        let snippet = (start > 0 ? '...' : '') + plainText.slice(start, end) + (end < plainText.length ? '...' : '');
-        // Highlight match in snippet
-        const re = new RegExp('(' + query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi');
-        snippet = snippet.replace(re, '<mark>$1</mark>');
-        results.push({
-          sectionIndex: sIdx,
-          sectionTitle: section.title || 'Section ' + (sIdx + 1),
-          snippet: snippet
-        });
-      }
-    });
-  });
-  return results;
-}
-
-function renderSearchResults(query) {
-  const container = document.getElementById('crSearchResults');
-  if (!container) return;
-  if (!query || query.length < 2) {
-    container.innerHTML = '<div class="cr-search-empty">Type at least 2 characters to search</div>';
-    return;
-  }
-  const results = performCourseSearch(query);
-  if (!results.length) {
-    container.innerHTML = '<div class="cr-search-empty">No results found for "' + query.replace(/</g, '&lt;') + '"</div>';
-    return;
-  }
-  container.innerHTML = results.slice(0, 30).map(r =>
-    `<div class="cr-search-result" data-action="searchResultGo" data-section="${r.sectionIndex}" role="button" tabindex="0">
-      <div class="cr-search-result-section">${r.sectionTitle}</div>
-      <div class="cr-search-result-text">${r.snippet}</div>
-    </div>`
-  ).join('') + (results.length > 30 ? '<div class="cr-search-empty">' + (results.length - 30) + ' more results...</div>' : '');
-}
-
-function searchResultGo(sectionIdx) {
-  closeSearchPanel();
-  goToSection(sectionIdx);
-}
-
-// Search input handler
-document.addEventListener('input', function(e) {
-  if (e.target.id === 'crSearchInput') {
-    const q = e.target.value.trim();
-    renderSearchResults(q);
-  }
-});
-
-// ═══════════════════════════════════════════════════════════════
-// KEYBOARD SHORTCUTS MODAL
-// ═══════════════════════════════════════════════════════════════
-function openShortcuts() {
-  document.getElementById('crShortcutsOverlay')?.classList.add('open');
-}
-
-function closeShortcuts() {
-  document.getElementById('crShortcutsOverlay')?.classList.remove('open');
-}
-
-// Close shortcuts overlay on background click
-document.getElementById('crShortcutsOverlay')?.addEventListener('click', function(e) {
-  if (e.target === this) closeShortcuts();
-});
-
-// ═══════════════════════════════════════════════════════════════
-// CHUNKED READING — Re-init when section changes
-// ═══════════════════════════════════════════════════════════════
-const origGoToSection = goToSection;
-goToSection = function(i) {
-  origGoToSection(i);
-  if (document.body.getAttribute('data-chunked-reading') === 'true') {
-    chunkIndex = 0;
-    // Delay to let content render
-    setTimeout(updateChunkHighlight, 200);
-  }
-};
 
 </script>
 </body>
