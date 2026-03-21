@@ -801,7 +801,7 @@
       
       if (userStatus !== 'active') return false;
       
-      const tierLevels = { 'free': 0, 'professional': 1, 'vip': 2 };
+      const tierLevels = { 'free': 0, 'starter': 1, 'professional': 2, 'premium': 3, 'vip': 4 };
       return tierLevels[userTier] >= tierLevels[requiredTier];
     }
     
