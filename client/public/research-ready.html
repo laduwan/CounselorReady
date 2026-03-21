@@ -45,6 +45,9 @@
     .hrs-pill{padding:6px 12px;border-radius:20px;font-size:12px;font-weight:600;border:1.5px solid #e7e5e4;background:#fff;color:#78716c;cursor:pointer;transition:all .15s;font-family:'Lato',sans-serif;display:inline-flex;align-items:center;gap:4px}
     .hrs-pill:hover{border-color:#C9D7CD;color:#305538}
     .hrs-pill.active{background:#6B1D34;color:#fff;border-color:#6B1D34}
+    .area-pill{padding:6px 12px;border-radius:20px;font-size:12px;font-weight:600;border:1.5px solid #e7e5e4;background:#fff;color:#78716c;cursor:pointer;transition:all .15s;font-family:'Lato',sans-serif}
+    .area-pill:hover{border-color:#C9D7CD;color:#305538}
+    .area-pill.active{background:#4A7C59;color:#fff;border-color:#4A7C59}
     .anim{animation:fadeUp .3s ease forwards;opacity:0}
     .d1{animation-delay:.04s}.d2{animation-delay:.08s}.d3{animation-delay:.12s}.d4{animation-delay:.16s}
     .result-card{background:#fff;border:1px solid #e7e5e4;border-radius:12px;padding:16px;transition:all .15s}
@@ -133,13 +136,25 @@
     <!-- ═══ BROWSE TAB (Learner) ═══ -->
     <div id="content-browse">
       <!-- Desired Hours Pill Selector -->
-      <div class="flex items-center gap-2 mb-5 flex-wrap" id="hoursPills">
+      <div class="flex items-center gap-2 mb-3 flex-wrap" id="hoursPills">
         <span class="text-xs font-semibold text-navy-400 mr-1">CE Hours:</span>
         <button onclick="filterByHours('')" class="hrs-pill active" data-hrs="">Any</button>
         <button onclick="filterByHours('0.5')" class="hrs-pill" data-hrs="0.5">0.5 hr <span class="text-navy-300" style="font-size:10px">~30 min read</span></button>
         <button onclick="filterByHours('1.0')" class="hrs-pill" data-hrs="1.0">1.0 hr <span class="text-navy-300" style="font-size:10px">~60 min read</span></button>
         <button onclick="filterByHours('1.5')" class="hrs-pill" data-hrs="1.5">1.5 hrs <span class="text-navy-300" style="font-size:10px">~90 min read</span></button>
         <button onclick="filterByHours('2.0')" class="hrs-pill" data-hrs="2.0">2.0 hrs <span class="text-navy-300" style="font-size:10px">~2 hr read</span></button>
+      </div>
+      <!-- Content Area Pill Selector -->
+      <div class="flex items-center gap-2 mb-5 flex-wrap" id="areaPills">
+        <span class="text-xs font-semibold text-navy-400 mr-1">Content Area:</span>
+        <button onclick="filterByArea('')" class="area-pill active" data-area="">All</button>
+        <button onclick="filterByArea('Ethics')" class="area-pill" data-area="Ethics">Ethics</button>
+        <button onclick="filterByArea('Clinical')" class="area-pill" data-area="Clinical">Clinical</button>
+        <button onclick="filterByArea('Supervision')" class="area-pill" data-area="Supervision">Supervision</button>
+        <button onclick="filterByArea('Trauma')" class="area-pill" data-area="Trauma">Trauma</button>
+        <button onclick="filterByArea('Cultural Diversity')" class="area-pill" data-area="Cultural Diversity">Cultural Diversity</button>
+        <button onclick="filterByArea('Research')" class="area-pill" data-area="Research">Research</button>
+        <button onclick="filterByArea('Telehealth')" class="area-pill" data-area="Telehealth">Telehealth</button>
       </div>
       <div id="browseLoading" class="text-center py-12"><div class="spinner mx-auto mb-3"></div><p class="text-navy-300 text-sm">Loading available articles...</p></div>
       <div id="browseEmpty" class="hidden text-center py-16">
@@ -305,12 +320,16 @@
 
   // ═══ BROWSE: Load live articles ═══
   let selectedHours='';
+  let selectedArea='';
   let pairedArticleData=null;
 
-  async function loadBrowse(maxHours){
+  async function loadBrowse(maxHours, contentArea){
     try{
       let url=`${API}/api/research-ready/browse`;
-      if(maxHours) url+=`?maxHours=${maxHours}`;
+      const params=[];
+      if(maxHours) params.push(`maxHours=${maxHours}`);
+      if(contentArea) params.push(`contentArea=${encodeURIComponent(contentArea)}`);
+      if(params.length) url+='?'+params.join('&');
       const r=await fetch(url,{headers:{Authorization:`Bearer ${T}`}});
       document.getElementById('browseLoading').classList.add('hidden');
       if(!r.ok) throw new Error('Failed to load');
@@ -362,10 +381,22 @@
     document.querySelectorAll('.hrs-pill').forEach(p=>{
       p.classList.toggle('active',p.dataset.hrs===hrs);
     });
+    reloadBrowse();
+  }
+
+  function filterByArea(area){
+    selectedArea=area;
+    document.querySelectorAll('.area-pill').forEach(p=>{
+      p.classList.toggle('active',p.dataset.area===area);
+    });
+    reloadBrowse();
+  }
+
+  function reloadBrowse(){
     document.getElementById('browseGrid').innerHTML='';
     document.getElementById('browseEmpty').classList.add('hidden');
     document.getElementById('browseLoading').classList.remove('hidden');
-    loadBrowse(hrs||undefined);
+    loadBrowse(selectedHours||undefined, selectedArea||undefined);
   }
 
   // ═══ ARTICLE PAIRING (Admin) ═══
