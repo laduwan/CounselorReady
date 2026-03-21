@@ -1,8 +1,3 @@
-/**
- * Copyright (c) 2026 CounselorReady, a subsidiary of Ga Integrated Therapeutic Perspectives, LLC.
- * All rights reserved. Proprietary and confidential.
- * Unauthorized copying or distribution is strictly prohibited.
- */
 import mongoose from 'mongoose';
 
 // ============================================================================
@@ -70,7 +65,6 @@ const ContentBlockSchema = new mongoose.Schema({
 const SectionSchema = new mongoose.Schema({
   title: { type: String, required: true },
   description: String,
-  module: String, // Group label for sidebar navigation (e.g. "Module 1: Foundations")
   order: { type: Number, required: true },
   contentBlocks: [ContentBlockSchema],
   
@@ -98,9 +92,6 @@ const CourseSchema = new mongoose.Schema({
   description: { type: String, required: true },
   thumbnail: String,
   
-  // Course code (admin-assigned identifier, e.g. CR-ETH301)
-  courseCode: { type: String, trim: true },
-
   // CE/Accreditation info
   ceHours: { type: Number, required: true },
   ceProvider: { type: String, default: 'NBCC ACEP #7760' },
@@ -150,30 +141,53 @@ const CourseSchema = new mongoose.Schema({
     category: { type: String, enum: ['category1', 'category2', 'category3'] } // ACEP categories
   },
   
-  // References (ACEP required) - supports both string citations and {title, author, year, source, citation} objects
-  references: [mongoose.Schema.Types.Mixed],
+  // References (ACEP required)
+  references: [String],
   
-  // Partner ownership (optional — set when partner creates course)
-  partnerId: { type: mongoose.Schema.Types.ObjectId, ref: 'Partner' },
-
   // Metadata
   author: String,
   publishedAt: Date,
   updatedAt: { type: Date, default: Date.now },
-  status: {
-    type: String,
-    enum: ['draft', 'published', 'archived'],
-    default: 'draft'
+  status: { 
+    type: String, 
+    enum: ['draft', 'published', 'archived'], 
+    default: 'draft' 
   },
-  expiresAt: { type: Date, default: null, index: { expires: 0, sparse: true } },
+  
+  // Delivery & compliance
+  deliveryFormat: { 
+    type: String, 
+    enum: ['async', 'live', 'hybrid'], 
+    default: 'async' 
+  },
+  nbccContentAreas: [{
+    type: String,
+    enum: [
+      'Counseling Theory/Practice',
+      'Human Growth and Development',
+      'Social and Cultural Foundations',
+      'Group Dynamics',
+      'Career Development',
+      'Assessment',
+      'Research/Program Evaluation',
+      'Professional Identity',
+      'Wellness and Prevention'
+    ]
+  }],
+  accessType: {
+    type: String,
+    enum: ['free', 'subscription', 'purchase'],
+    default: 'subscription'
+  },
+  approvalBody: { type: String, default: 'NBCC' },
+  price: Number,
 
   // Calculated fields
   totalEstimatedTime: Number, // in minutes
   totalContentBlocks: Number,
   totalQuizQuestions: Number,
-  wordCount: Number, // pre-computed for admin dashboard
-  rawMarkdown: { type: String }
-
+  wordCount: Number // pre-computed for admin dashboard
+  
 }, { timestamps: true });
 
 // Pre-save hook to calculate totals
@@ -229,20 +243,16 @@ const SectionProgressSchema = new mongoose.Schema({
   timeSpent: { type: Number, default: 0 }, // seconds
   
   // Status
-  status: {
-    type: String,
-    enum: ['not_started', 'in_progress', 'completed'],
-    default: 'not_started'
-  },
-
-  // Adaptive learning — set when an adaptive rule unlocks this section out of order
-  adaptivelyUnlocked: { type: Boolean, default: false }
+  status: { 
+    type: String, 
+    enum: ['not_started', 'in_progress', 'completed'], 
+    default: 'not_started' 
+  }
 });
 
 const CourseProgressSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   courseId: { type: mongoose.Schema.Types.ObjectId, ref: 'InteractiveCourse', required: true },
-  partnerId: { type: mongoose.Schema.Types.ObjectId, ref: 'Partner' },
   
   // Section progress
   sectionProgress: [SectionProgressSchema],
