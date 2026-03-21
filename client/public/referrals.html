@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Referrals | CounselorReady</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script>
+    tailwind.config={theme:{extend:{
+      colors:{
+        burgundy:{50:'#FDF2F5',100:'#fae8eb',200:'#f5d0d6',700:'#8b2542',800:'#6b1d34',900:'#4a1524'},
+        hunter:{50:'#F2F7F3',100:'#e4ebe6',500:'#4A7C59',600:'#3d6649'},
+        honey:{50:'#FDF9F0',100:'#F9F0DB',400:'#D4A855',700:'#865E2C'},
+        navy:{50:'#F0F4F7',500:'#284157'},
+        stone:{50:'#F8F7F4'}
+      },
+      fontFamily:{display:['Cormorant Garamond','Georgia','serif'],body:['Lato','system-ui','sans-serif']}
+    }}}
+  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Lato:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body{font-family:'Lato',system-ui,sans-serif;background:#F8F7F4}
+    .font-display{font-family:'Cormorant Garamond',Georgia,serif}
+    .copy-btn{transition:all .2s}
+    .copy-btn:active{transform:scale(.95)}
+    .stat-ring{transition:stroke-dashoffset .8s cubic-bezier(.4,0,.2,1)}
+  </style>
+</head>
+<body class="min-h-screen">
+
+<!-- Header -->
+<header style="background:#fff;border-bottom:1px solid #e7e5e4;position:sticky;top:0;z-index:40">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+    <a href="/dashboard.html" class="flex items-center gap-3" style="text-decoration:none">
+      <div style="width:42px;height:42px;border-radius:.75rem;background:#6B1D34;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(107,29,52,.25)">
+        <span style="position:relative;display:inline-block;width:24px;height:24px"><span class="font-display" style="color:#D0768A;position:absolute;top:-3px;left:0;font-weight:700;font-size:19px">C</span><span class="font-display" style="color:#4A7C59;position:absolute;top:4px;left:6px;font-weight:700;font-size:16px">R</span></span>
+      </div>
+      <span class="font-display hidden sm:inline" style="font-weight:700;font-size:1.5rem"><span style="color:#6B1D34">Counselor</span><span style="color:#4A7C59">Ready</span></span>
+    </a>
+    <a href="/dashboard.html" class="text-sm" style="color:#78716c;text-decoration:none">Back to Dashboard</a>
+  </div>
+</header>
+
+<main class="max-w-4xl mx-auto px-4 sm:px-6 py-8">
+
+  <!-- Loading -->
+  <div id="loading" class="text-center py-20">
+    <div style="width:36px;height:36px;border:3px solid #e7e5e4;border-top-color:#6B1D34;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 12px"></div>
+    <p class="text-stone-400 text-sm">Loading referral program...</p>
+  </div>
+
+  <div id="content" class="hidden">
+
+    <!-- Hero -->
+    <div class="bg-white rounded-2xl border border-stone-200 p-6 sm:p-8 mb-8" style="box-shadow:0 1px 3px rgba(107,29,52,.06)">
+      <div class="flex flex-col sm:flex-row sm:items-center gap-6">
+        <div style="width:64px;height:64px;border-radius:16px;background:linear-gradient(135deg,#6B1D34,#8b2542);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m9 5.197v-1"/></svg>
+        </div>
+        <div class="flex-1">
+          <h1 class="font-display text-2xl sm:text-3xl font-semibold" style="color:#6B1D34">Refer a colleague</h1>
+          <p class="text-stone-500 text-sm mt-1">Share CounselorReady and earn <strong style="color:#4A7C59">$10 credit</strong> for every colleague who subscribes.</p>
+        </div>
+      </div>
+
+      <!-- Referral link -->
+      <div class="mt-6 p-4 rounded-xl" style="background:#F8F7F4;border:1px solid #e7e5e4">
+        <label class="text-xs font-semibold uppercase tracking-wide" style="color:#284157">Your referral link</label>
+        <div class="flex items-center gap-2 mt-2">
+          <input type="text" id="refLink" readonly class="flex-1 text-sm px-4 py-2.5 rounded-lg" style="background:#fff;border:1px solid #E5E2DC;color:#284157;font-family:monospace">
+          <button onclick="copyLink()" class="copy-btn flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold" style="background:#6B1D34;color:#fff;border:none;cursor:pointer" id="copyBtn">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+            Copy
+          </button>
+        </div>
+        <div class="flex items-center gap-2 mt-3">
+          <span class="text-xs" style="color:#78716c">Code:</span>
+          <span class="text-sm font-bold" style="color:#6B1D34;letter-spacing:.05em" id="refCode">—</span>
+        </div>
+      </div>
+
+      <!-- Share buttons -->
+      <div class="flex gap-2 mt-4">
+        <button onclick="shareEmail()" class="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold" style="background:#F0F4F7;color:#284157;border:none;cursor:pointer">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+          Email
+        </button>
+        <button onclick="shareText()" class="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold" style="background:#F0F4F7;color:#284157;border:none;cursor:pointer">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+          Text
+        </button>
+        <button onclick="shareNative()" class="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold" style="background:#F0F4F7;color:#284157;border:none;cursor:pointer">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
+          Share
+        </button>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+      <div class="bg-white rounded-xl border border-stone-200 p-5 text-center">
+        <p class="text-2xl font-bold font-display" style="color:#6B1D34" id="statClicks">0</p>
+        <p class="text-xs mt-1" style="color:#78716c">Link clicks</p>
+      </div>
+      <div class="bg-white rounded-xl border border-stone-200 p-5 text-center">
+        <p class="text-2xl font-bold font-display" style="color:#284157" id="statSignups">0</p>
+        <p class="text-xs mt-1" style="color:#78716c">Signups</p>
+      </div>
+      <div class="bg-white rounded-xl border border-stone-200 p-5 text-center">
+        <p class="text-2xl font-bold font-display" style="color:#4A7C59" id="statConversions">0</p>
+        <p class="text-xs mt-1" style="color:#78716c">Subscribed</p>
+      </div>
+      <div class="bg-white rounded-xl border border-stone-200 p-5 text-center">
+        <p class="text-2xl font-bold font-display" style="color:#D4A855" id="statCredits">$0</p>
+        <p class="text-xs mt-1" style="color:#78716c">Credits earned</p>
+      </div>
+    </div>
+
+    <!-- How it works -->
+    <div class="bg-white rounded-xl border border-stone-200 p-6 mb-8">
+      <h2 class="font-display text-xl font-semibold mb-4" style="color:#6B1D34">How it works</h2>
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div class="flex items-start gap-3">
+          <div style="width:32px;height:32px;border-radius:50%;background:#FDF2F5;display:flex;align-items:center;justify-content:center;flex-shrink:0"><span style="color:#6B1D34;font-weight:700;font-size:14px">1</span></div>
+          <div><p class="text-sm font-semibold" style="color:#284157">Share your link</p><p class="text-xs mt-1" style="color:#78716c">Send your personal referral link to colleagues via email, text, or social.</p></div>
+        </div>
+        <div class="flex items-start gap-3">
+          <div style="width:32px;height:32px;border-radius:50%;background:#F2F7F3;display:flex;align-items:center;justify-content:center;flex-shrink:0"><span style="color:#4A7C59;font-weight:700;font-size:14px">2</span></div>
+          <div><p class="text-sm font-semibold" style="color:#284157">They sign up</p><p class="text-xs mt-1" style="color:#78716c">Your colleague creates an account and starts their free trial.</p></div>
+        </div>
+        <div class="flex items-start gap-3">
+          <div style="width:32px;height:32px;border-radius:50%;background:#FDF9F0;display:flex;align-items:center;justify-content:center;flex-shrink:0"><span style="color:#D4A855;font-weight:700;font-size:14px">3</span></div>
+          <div><p class="text-sm font-semibold" style="color:#284157">Earn $10 credit</p><p class="text-xs mt-1" style="color:#78716c">When they subscribe, you get $10 credit toward your next renewal.</p></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Referrals list -->
+    <div class="bg-white rounded-xl border border-stone-200 overflow-hidden">
+      <div class="p-5 border-b border-stone-100">
+        <h2 class="font-display text-lg font-semibold" style="color:#6B1D34">Your referrals</h2>
+      </div>
+      <div id="refList"></div>
+    </div>
+
+  </div>
+</main>
+
+<style>@keyframes spin{to{transform:rotate(360deg)}}</style>
+
+<script>
+  const API=location.hostname==='localhost'?'http://localhost:5000':'https://api.counselorready.com';
+  const T=localStorage.getItem('token');
+  if(!T)location.href='/login.html';
+  let refLink='';
+
+  async function init(){
+    try{
+      const r=await fetch(`${API}/api/referrals/my`,{headers:{Authorization:`Bearer ${T}`}});
+      if(!r.ok)throw new Error('Failed to load');
+      const d=await r.json();
+
+      document.getElementById('loading').style.display='none';
+      document.getElementById('content').classList.remove('hidden');
+
+      refLink=d.referralLink;
+      document.getElementById('refLink').value=refLink;
+      document.getElementById('refCode').textContent=d.referralCode;
+
+      document.getElementById('statClicks').textContent=d.stats.totalClicks;
+      document.getElementById('statSignups').textContent=d.stats.totalSignups;
+      document.getElementById('statConversions').textContent=d.stats.totalConversions;
+      document.getElementById('statCredits').textContent='$'+d.stats.creditsBalance;
+
+      const list=document.getElementById('refList');
+      if(!d.referrals||!d.referrals.length){
+        list.innerHTML='<div class="p-8 text-center"><p class="text-stone-400 text-sm">No referrals yet. Share your link to get started!</p></div>';
+      }else{
+        list.innerHTML=d.referrals.map(r=>{
+          const statusColors={pending:'background:#FDF9F0;color:#865E2C',registered:'background:#F0F4F7;color:#284157',subscribed:'background:#E0ECE3;color:#2D4C37',rewarded:'background:#E0ECE3;color:#2D4C37'};
+          const statusLabels={pending:'Pending',registered:'Signed up',subscribed:'Subscribed',rewarded:'Rewarded ($10)'};
+          const date=r.registeredAt?new Date(r.registeredAt).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):'';
+          return`<div class="flex items-center justify-between px-5 py-3 border-b border-stone-50 last:border-0">
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-medium truncate" style="color:#284157">${r.email}</p>
+              ${date?'<p class="text-xs" style="color:#78716c">'+date+'</p>':''}
+            </div>
+            <span class="text-xs font-semibold px-3 py-1 rounded-full" style="${statusColors[r.status]||''}">${statusLabels[r.status]||r.status}</span>
+          </div>`;
+        }).join('');
+      }
+    }catch(e){
+      document.getElementById('loading').innerHTML='<p style="color:#6B1D34;font-weight:600">'+e.message+'</p>';
+    }
+  }
+
+  function copyLink(){
+    navigator.clipboard.writeText(refLink).then(()=>{
+      const btn=document.getElementById('copyBtn');
+      btn.innerHTML='<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Copied!';
+      btn.style.background='#4A7C59';
+      setTimeout(()=>{btn.innerHTML='<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg> Copy';btn.style.background='#6B1D34'},2000);
+    });
+  }
+
+  function shareEmail(){
+    const subject=encodeURIComponent('Join me on CounselorReady - CE tracking made easy');
+    const body=encodeURIComponent('Hey! I\'ve been using CounselorReady to track my CE hours and manage my credentials. It\'s been a huge help.\n\nSign up with my referral link and we both benefit:\n'+refLink+'\n\nThey have NBCC-approved courses, AI credential scanning, and multi-state tracking.');
+    window.open('mailto:?subject='+subject+'&body='+body);
+  }
+
+  function shareText(){
+    const text=encodeURIComponent('Hey! Check out CounselorReady for CE tracking & courses. Sign up with my link: '+refLink);
+    window.open('sms:?body='+text);
+  }
+
+  function shareNative(){
+    if(navigator.share){
+      navigator.share({title:'CounselorReady Referral',text:'Join me on CounselorReady for CE tracking & NBCC-approved courses.',url:refLink});
+    }else{copyLink()}
+  }
+
+  document.addEventListener('DOMContentLoaded',init);
+</script>
+</body>
+</html>
