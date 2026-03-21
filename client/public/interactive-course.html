@@ -16,8 +16,6 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta http-equiv="X-Frame-Options" content="SAMEORIGIN">
-<meta http-equiv="Content-Security-Policy" content="frame-ancestors 'self' https://counselorready.com">
 <title>CReady™ Viewer | CounselorReady</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Lato:ital,wght@0,300;0,400;0,700;0,900;1,400&family=OpenDyslexic:wght@400;700&display=swap" rel="stylesheet">
@@ -45,7 +43,7 @@
   
   /* Semantic */
   --cr-bg: var(--cr-eggshell);
-  --cr-surface: var(--cr-stone);
+  --cr-surface: #FFFFFF;
   --cr-text: #2D2D2D;
   --cr-text-secondary: #5A5A5A;
   --cr-text-muted: #8A8A8A;
@@ -62,7 +60,7 @@
   
   /* Spacing */
   --cr-radius: 12px;
-  --cr-sidebar-width: 250px;
+  --cr-sidebar-width: 280px;
   
   /* Transitions */
   --cr-transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
@@ -126,11 +124,6 @@
   scroll-behavior: auto !important;
 }
 
-/* Color Vision Deficiency Modes */
-[data-color-vision="deuteranopia"] { filter: url('#cr-cvd-deuteranopia'); }
-[data-color-vision="protanopia"] { filter: url('#cr-cvd-protanopia'); }
-[data-color-vision="tritanopia"] { filter: url('#cr-cvd-tritanopia'); }
-
 /* Enhanced Focus */
 [data-enhanced-focus="true"] *:focus-visible {
   outline: 4px solid var(--cr-gold) !important;
@@ -151,6 +144,153 @@
   box-shadow: 0 0 20px rgba(212, 168, 85, 0.3);
 }
 [data-reading-guide="true"] .cr-reading-guide { display: block; }
+
+/* Color Vision Filters */
+[data-color-vision="protanopia"] .cr-main { filter: url(#cr-protanopia-filter); }
+[data-color-vision="deuteranopia"] .cr-main { filter: url(#cr-deuteranopia-filter); }
+[data-color-vision="tritanopia"] .cr-main { filter: url(#cr-tritanopia-filter); }
+
+/* Chunked Reading */
+[data-chunked-reading="true"] #crContentArea .cr-block-wrap {
+  opacity: 0.2;
+  transition: opacity 0.3s ease;
+}
+[data-chunked-reading="true"] #crContentArea .cr-block-wrap.cr-chunk-active {
+  opacity: 1;
+  background: rgba(212, 168, 85, 0.06);
+  border-radius: 8px;
+  box-shadow: 0 0 0 4px rgba(212, 168, 85, 0.12);
+}
+.cr-chunk-nav {
+  display: none;
+  position: fixed; bottom: 88px; left: 50%; transform: translateX(-50%);
+  z-index: 50; background: var(--cr-surface);
+  border: 1px solid var(--cr-border); border-radius: 28px;
+  padding: 6px 10px; gap: 6px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+  align-items: center;
+}
+[data-chunked-reading="true"] .cr-chunk-nav { display: flex; }
+.cr-chunk-nav button {
+  width: 40px; height: 40px; border-radius: 50%;
+  border: 1px solid var(--cr-border); background: var(--cr-surface);
+  cursor: pointer; font-size: 16px; display: flex;
+  align-items: center; justify-content: center;
+}
+.cr-chunk-nav button:hover { background: var(--cr-green-faded); }
+.cr-chunk-nav span { font-size: 12px; color: var(--cr-text-muted); min-width: 40px; text-align: center; }
+
+/* Keyboard Shortcuts Modal */
+.cr-shortcuts-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.5); z-index: 9999;
+  align-items: center; justify-content: center;
+}
+.cr-shortcuts-overlay.open { display: flex; }
+.cr-shortcuts-modal {
+  background: var(--cr-surface); border-radius: var(--cr-radius);
+  padding: 28px 32px; max-width: 520px; width: 90%;
+  max-height: 80vh; overflow-y: auto;
+  box-shadow: 0 12px 48px rgba(0,0,0,0.25);
+}
+.cr-shortcuts-modal h3 {
+  font-family: var(--cr-font-display); font-size: 20px;
+  font-weight: 700; color: var(--cr-navy); margin-bottom: 16px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.cr-shortcuts-modal h3 button {
+  width: 36px; height: 36px; border: none; background: none;
+  cursor: pointer; font-size: 18px; min-height: 36px; min-width: 36px;
+}
+.cr-shortcut-group { margin-bottom: 16px; }
+.cr-shortcut-group h4 {
+  font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em;
+  color: var(--cr-text-muted); margin-bottom: 8px; font-weight: 700;
+}
+.cr-shortcut-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 6px 0; font-size: 14px;
+}
+.cr-shortcut-key {
+  display: inline-flex; align-items: center; gap: 4px;
+}
+.cr-shortcut-key kbd {
+  display: inline-block; padding: 3px 8px;
+  background: var(--cr-stone); border: 1px solid var(--cr-border);
+  border-radius: 5px; font-family: var(--cr-font-body);
+  font-size: 12px; font-weight: 700; color: var(--cr-text);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+  min-width: 28px; text-align: center;
+}
+
+/* Search Panel */
+.cr-search-btn {
+  position: fixed; bottom: 24px; right: 88px;
+  width: 48px; height: 48px; border-radius: 50%;
+  background: var(--cr-green); color: #fff; border: none;
+  cursor: pointer; display: flex; align-items: center;
+  justify-content: center; box-shadow: 0 4px 16px rgba(74,124,89,0.35);
+  z-index: 50; font-size: 20px;
+  transition: transform var(--cr-transition);
+}
+.cr-search-btn:hover { transform: scale(1.1); }
+.cr-search-panel {
+  position: fixed; top: 0; right: 0; width: 380px; height: 100vh;
+  background: var(--cr-surface); border-left: 1px solid var(--cr-border);
+  box-shadow: -4px 0 24px rgba(0,0,0,0.12); z-index: 55;
+  display: flex; flex-direction: column;
+  transform: translateX(100%); transition: transform var(--cr-transition);
+}
+.cr-search-panel.open { transform: translateX(0); }
+@media (max-width: 480px) { .cr-search-panel { width: 100%; } }
+.cr-search-header {
+  display: flex; align-items: center; gap: 10px;
+  padding: 16px; border-bottom: 1px solid var(--cr-border);
+}
+.cr-search-header h3 {
+  font-family: var(--cr-font-display); font-size: 17px;
+  font-weight: 700; color: var(--cr-navy); flex: 1;
+}
+.cr-search-header button {
+  width: 36px; height: 36px; border: none; background: none;
+  cursor: pointer; font-size: 18px; min-height: 36px; min-width: 36px;
+}
+.cr-search-input-wrap {
+  padding: 12px 16px; border-bottom: 1px solid var(--cr-border);
+}
+.cr-search-input {
+  width: 100%; padding: 10px 14px; border: 1px solid var(--cr-border);
+  border-radius: 8px; font-size: 15px; background: var(--cr-stone);
+}
+.cr-search-input:focus { border-color: var(--cr-green); outline: none; }
+.cr-search-results {
+  flex: 1; overflow-y: auto; padding: 12px 16px;
+}
+.cr-search-result {
+  padding: 12px; margin-bottom: 8px; border-radius: 8px;
+  background: var(--cr-stone); cursor: pointer;
+  border: 1px solid transparent;
+  transition: border-color 0.15s;
+}
+.cr-search-result:hover { border-color: var(--cr-green); }
+.cr-search-result-section {
+  font-size: 11px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.06em; color: var(--cr-green); margin-bottom: 4px;
+}
+.cr-search-result-text {
+  font-size: 14px; color: var(--cr-text); line-height: 1.5;
+}
+.cr-search-result-text mark {
+  background: var(--cr-gold-faded); color: var(--cr-text);
+  padding: 1px 2px; border-radius: 2px; font-weight: 600;
+}
+.cr-search-empty {
+  text-align: center; padding: 40px 20px;
+  color: var(--cr-text-muted); font-size: 14px;
+}
+
+/* WCAG 2.2 — Focus Not Obscured (SC 2.4.11) */
+*:focus { scroll-margin-top: 100px; scroll-margin-bottom: 100px; }
 
 /* ═══════════════════════════════════════════════════════════════
    RESET & BASE
@@ -217,8 +357,6 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
   border-right: 1px solid var(--cr-border);
   display: flex; flex-direction: column;
   overflow: hidden; z-index: 40;
-  grid-column: 1;
-  grid-row: 1 / -1;
 }
 @media (max-width: 1024px) {
   .cr-sidebar {
@@ -233,16 +371,21 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
 /* Sidebar header — burgundy gradient */
 .cr-sidebar-header {
   background: linear-gradient(160deg, var(--cr-burgundy) 0%, #4A1224 100%);
-  padding: 16px; color: #fff;
+  padding: 18px; color: #fff;
+}
+.cr-sidebar-ce-badge {
+  display: inline-block; background: var(--cr-green);
+  color: #fff; font-size: 11px; font-weight: 700;
+  padding: 3px 10px; border-radius: 12px; margin-bottom: 10px;
 }
 .cr-sidebar-course-title {
   font-family: var(--cr-font-display);
-  font-size: 14px; font-weight: 700; color: #fff;
+  font-size: 15px; font-weight: 700; color: #fff;
   line-height: 1.3;
 }
 .cr-sidebar-viewer-label {
-  font-size: 9px; text-transform: uppercase; letter-spacing: 0.1em;
-  color: rgba(255,255,255,0.45); margin-top: 4px;
+  font-size: 9px; text-transform: uppercase; letter-spacing: 0.12em;
+  color: rgba(255,255,255,0.5); margin-top: 6px;
 }
 
 /* Progress ring + text row */
@@ -315,11 +458,10 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
 .cr-nav-item.completed { color: var(--cr-text-secondary); }
 
 .cr-nav-dot {
-  min-width: 28px; height: 24px; border-radius: 12px;
-  padding: 0 4px; box-sizing: border-box;
+  width: 24px; height: 24px; border-radius: 50%;
   border: 2px solid var(--cr-border);
   display: flex; align-items: center; justify-content: center;
-  font-size: 10px; font-weight: 700; flex-shrink: 0;
+  font-size: 11px; font-weight: 700; flex-shrink: 0;
   transition: all var(--cr-transition);
   background: var(--cr-surface); color: var(--cr-text-muted);
 }
@@ -332,24 +474,6 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
 .cr-nav-item.completed .cr-nav-dot {
   background: var(--cr-green); border-color: var(--cr-green); color: #fff;
 }
-
-/* Sub-heading nav items (H2s within a section) */
-.cr-nav-sub {
-  display: flex; align-items: center; gap: 8px;
-  padding: 5px 18px 5px 52px;
-  cursor: pointer;
-  border: none; background: none; width: 100%; text-align: left;
-  font-size: 12px; color: var(--cr-text-muted);
-  transition: color var(--cr-transition), background var(--cr-transition);
-  min-height: 28px;
-  border-left: 3px solid transparent;
-}
-.cr-nav-sub:hover { color: var(--cr-navy); background: rgba(40,65,87,0.04); }
-.cr-nav-sub::before {
-  content: '—'; font-size: 10px; color: var(--cr-border);
-}
-.cr-nav-subs { overflow: hidden; max-height: 0; transition: max-height 0.3s ease; }
-.cr-nav-subs.open { max-height: 800px; }
 
 
 /* Assessment nav item */
@@ -367,7 +491,6 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
   border-bottom: 1px solid var(--cr-border);
   padding: 12px 16px;
   align-items: center; gap: 12px;
-  grid-column: 2; grid-row: 1;
 }
 @media (max-width: 1024px) { .cr-topbar { display: flex; } }
 .cr-hamburger {
@@ -383,7 +506,6 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
 .cr-sidebar-overlay {
   display: none; position: fixed; inset: 0;
   background: rgba(0,0,0,0.4); z-index: 35;
-  grid-column: 1; grid-row: 1;
 }
 .cr-sidebar-overlay.visible { display: block; }
 
@@ -391,13 +513,10 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
 .cr-main {
   max-width: 860px;
   margin: 0 auto;
-  padding: 12px 32px 80px;
+  padding: 40px 32px 80px;
   width: 100%;
-  grid-column: 2;
-  grid-row: 1 / -1;
-  align-self: start;
 }
-@media (max-width: 640px) { .cr-main { padding: 10px 16px 60px; } }
+@media (max-width: 640px) { .cr-main { padding: 20px 16px 60px; } }
 
 /* — ACCESSIBILITY PANEL — */
 .cr-a11y-toggle {
@@ -571,19 +690,6 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
   margin-top: 4px;
 }
 
-/* Section Hero Image (auto-injected for 3+ CE courses) */
-.cr-section-hero {
-  width: 100%; height: 200px;
-  object-fit: cover; object-position: center 30%; border-radius: 12px;
-  margin: 0 0 24px 0;
-  opacity: 0.85;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-  transition: opacity 0.3s ease;
-}
-.cr-section-hero:hover { opacity: 1; }
-[data-reduced-motion="true"] .cr-section-hero { transition: none; }
-@media print { .cr-section-hero { display: none; } }
-
 /* ═══════════════════════════════════════════════════════════════
    ACCORDION
    ═══════════════════════════════════════════════════════════════ */
@@ -694,332 +800,6 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
 }
 .cr-kc-submit:hover { background: var(--cr-burgundy-light); }
 .cr-kc-submit:disabled { opacity: 0.4; cursor: not-allowed; }
-
-/* ═══════════════════════════════════════════════════════════════
-   INLINE PILLS — funFactStat, funFactFreeform, knowledgeCheckInline
-   ═══════════════════════════════════════════════════════════════ */
-
-/* ─── Shared pill base ─── */
-.cr-pill {
-  margin: 1.25rem 0;
-  border-radius: 10px;
-  overflow: hidden;
-  border: 2px solid transparent;
-  max-width: 680px;
-}
-
-.cr-pill__trigger {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  width: 100%;
-  padding: 12px 16px;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  font-family: var(--cr-font-body);
-  font-size: 0.95rem;
-  font-weight: 600;
-  text-align: left;
-  transition: opacity 0.15s;
-}
-.cr-pill__trigger:hover { opacity: 0.85; }
-.cr-pill__trigger:focus-visible {
-  outline: 3px solid var(--cr-gold);
-  outline-offset: 2px;
-}
-
-.cr-pill__icon { font-size: 1.05em; }
-.cr-pill__label { flex: 1; }
-.cr-pill__chevron {
-  font-size: 0.75em;
-  transition: transform 0.2s;
-}
-.cr-pill--open .cr-pill__chevron { transform: rotate(180deg); }
-
-.cr-pill__body {
-  padding: 16px 20px 20px;
-  border-top: 1px solid rgba(0,0,0,0.08);
-  animation: pillSlideIn 0.18s ease-out;
-}
-@keyframes pillSlideIn {
-  from { opacity: 0; transform: translateY(-6px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-/* ─── Stat pill (amber) ─── */
-.cr-pill--stat {
-  background: #FFF8E7;
-  border-color: #B8860B;
-}
-.cr-pill--stat .cr-pill__trigger { color: #7A5800; }
-.cr-pill__stat-figure {
-  font-family: var(--cr-font-display);
-  font-size: 2.2rem;
-  font-weight: 800;
-  color: #B8860B;
-  line-height: 1.1;
-  margin-bottom: 6px;
-}
-.cr-pill__stat-body {
-  font-size: 0.95rem;
-  color: #5a4000;
-  line-height: 1.55;
-  margin: 0 0 8px;
-}
-.cr-pill__source {
-  font-size: 0.78rem;
-  color: #9a7a30;
-  font-style: italic;
-  margin: 0;
-}
-
-/* ─── Freeform pill (purple) ─── */
-.cr-pill--freeform {
-  background: #F5F0FA;
-  border-color: #7B4EA0;
-}
-.cr-pill--freeform .cr-pill__trigger { color: #4B1F72; }
-.cr-pill__prompt {
-  font-size: 1rem;
-  font-weight: 600;
-  color: #3a1560;
-  margin: 0 0 6px;
-}
-.cr-pill__hint {
-  font-size: 0.85rem;
-  color: #7B4EA0;
-  margin: 0 0 12px;
-  font-style: italic;
-}
-.cr-pill__input-row {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  margin-bottom: 10px;
-}
-.cr-pill__text-input {
-  flex: 1;
-  padding: 8px 12px;
-  border: 1.5px solid #C4A8D8;
-  border-radius: 6px;
-  font-family: var(--cr-font-body);
-  font-size: 0.95rem;
-  background: #fff;
-  color: var(--cr-text);
-  transition: border-color 0.15s;
-}
-.cr-pill__text-input:focus {
-  outline: none;
-  border-color: #7B4EA0;
-  box-shadow: 0 0 0 3px rgba(123,78,160,0.18);
-}
-.cr-pill__text-input:disabled { opacity: 0.6; background: #f0eaf7; }
-
-.cr-pill__submit-btn {
-  padding: 8px 14px;
-  border-radius: 6px;
-  border: none;
-  background: #7B4EA0;
-  color: #fff;
-  font-size: 0.9rem;
-  font-weight: 600;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: background 0.15s;
-}
-.cr-pill__submit-btn:hover:not(:disabled) { background: #5c3578; }
-.cr-pill__submit-btn:disabled { opacity: 0.45; cursor: not-allowed; }
-.cr-pill__submit-btn:focus-visible {
-  outline: 3px solid var(--cr-gold);
-  outline-offset: 2px;
-}
-
-.cr-pill__reveal-btn {
-  margin-top: 6px;
-  background: none;
-  border: 1px solid #7B4EA0;
-  color: #7B4EA0;
-  padding: 5px 10px;
-  border-radius: 5px;
-  font-size: 0.85rem;
-  cursor: pointer;
-  transition: background 0.15s;
-}
-.cr-pill__reveal-btn:hover { background: #f0e8fa; }
-.cr-pill__reveal-text {
-  margin-top: 8px;
-  padding: 10px 14px;
-  background: #ede6f5;
-  border-radius: 6px;
-  font-size: 0.9rem;
-  color: #3a1560;
-}
-
-/* ─── KCI pill (burgundy) ─── */
-.cr-pill--kci {
-  background: #F5E8EC;
-  border-color: #6B1D34;
-}
-.cr-pill--kci .cr-pill__trigger { color: #4a0f20; }
-.cr-pill__question {
-  font-size: 1rem;
-  font-weight: 600;
-  color: #3a0a18;
-  margin: 0 0 12px;
-}
-.cr-pill__kci-options { display: flex; flex-direction: column; gap: 8px; }
-.cr-pill__kci-option {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  padding: 10px 14px;
-  border-radius: 7px;
-  border: 1.5px solid #d4a0b0;
-  background: #fff;
-  cursor: pointer;
-  font-size: 0.93rem;
-  color: var(--cr-text);
-  transition: border-color 0.15s, background 0.15s;
-}
-.cr-pill__kci-option:hover:not(.answered) {
-  border-color: #6B1D34;
-  background: #fdf2f5;
-}
-.cr-pill__kci-option.selected {
-  border-color: #6B1D34;
-  background: #fce8ee;
-}
-.cr-pill__kci-option.answered { cursor: default; }
-.cr-pill__kci-option.correct {
-  border-color: #2d6a4f !important;
-  background: #e8f5f0 !important;
-}
-.cr-pill__kci-option.incorrect {
-  border-color: #c62828 !important;
-  background: #fdecea !important;
-}
-.cr-pill__kci-radio {
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  border: 2px solid #c4849a;
-  flex-shrink: 0;
-  margin-top: 2px;
-  transition: border-color 0.15s, background 0.15s;
-}
-.cr-pill__kci-option.selected .cr-pill__kci-radio {
-  border-color: #6B1D34;
-  background: #6B1D34;
-}
-.cr-pill__kci-option.correct .cr-pill__kci-radio { border-color: #2d6a4f; background: #2d6a4f; }
-.cr-pill__kci-option.incorrect .cr-pill__kci-radio { border-color: #c62828; background: #c62828; }
-
-.cr-pill--kci .cr-pill__submit-btn { background: #6B1D34; margin-top: 14px; }
-.cr-pill--kci .cr-pill__submit-btn:hover:not(:disabled) { background: #4a0f20; }
-
-/* ─── Shared feedback states ─── */
-.cr-pill__feedback {
-  margin-top: 10px;
-  padding: 10px 14px;
-  border-radius: 6px;
-  font-size: 0.92rem;
-  line-height: 1.5;
-}
-.cr-pill__feedback--correct {
-  background: #e8f5f0;
-  color: #1b4d38;
-  border-left: 4px solid #2d6a4f;
-}
-.cr-pill__feedback--close {
-  background: #fff8e7;
-  color: #5a4000;
-  border-left: 4px solid #B8860B;
-}
-.cr-pill__feedback--miss {
-  background: #fdecea;
-  color: #7a1010;
-  border-left: 4px solid #c62828;
-}
-
-/* ─── Pill instructions (teal static banner) ─── */
-.cr-pill-instructions {
-  display: flex;
-  gap: 14px;
-  align-items: flex-start;
-  background: #E8F5F0;
-  border: 2px solid #2D6A4F;
-  border-radius: 10px;
-  padding: 16px 20px;
-  margin: 1.25rem 0;
-  max-width: 680px;
-}
-.cr-pill-instructions__icon {
-  font-size: 1.3rem;
-  color: #2D6A4F;
-  flex-shrink: 0;
-  line-height: 1;
-  margin-top: 2px;
-}
-.cr-pill-instructions__body {
-  font-size: 0.93rem;
-  line-height: 1.6;
-  color: #1b4d38;
-}
-.cr-pill-instructions__body p { margin: 0 0 8px; }
-.cr-pill-instructions__body p:last-child { margin: 0; }
-.cr-pill-instructions__body ul { margin: 6px 0 8px 18px; padding: 0; }
-.cr-pill-instructions__body li { margin-bottom: 4px; }
-
-/* ─── Dark mode overrides ─── */
-[data-theme="dark"] .cr-pill--stat { background: #3a2e0a; border-color: #d4a835; }
-[data-theme="dark"] .cr-pill--stat .cr-pill__trigger { color: #ffd666; }
-[data-theme="dark"] .cr-pill__stat-figure { color: #ffd666; }
-[data-theme="dark"] .cr-pill__stat-body { color: #e8d08a; }
-
-[data-theme="dark"] .cr-pill--freeform { background: #2a1840; border-color: #a97fd4; }
-[data-theme="dark"] .cr-pill--freeform .cr-pill__trigger { color: #d4a8f5; }
-[data-theme="dark"] .cr-pill__text-input { background: #1e1030; color: #f0e4ff; border-color: #7B4EA0; }
-
-[data-theme="dark"] .cr-pill--kci { background: #2a0f18; border-color: #c4607a; }
-[data-theme="dark"] .cr-pill--kci .cr-pill__trigger { color: #f5a0b5; }
-[data-theme="dark"] .cr-pill__kci-option { background: #1e0810; border-color: #7a3050; color: #f0d0d8; }
-[data-theme="dark"] .cr-pill__kci-option.selected { background: #3a0f1e; }
-
-[data-theme="dark"] .cr-pill-instructions { background: #0f2a1f; border-color: #4A7C59; }
-[data-theme="dark"] .cr-pill-instructions__body { color: #a8dcc0; }
-
-/* Also support data-dark-mode attribute */
-[data-dark-mode="true"] .cr-pill--stat { background: #3a2e0a; border-color: #d4a835; }
-[data-dark-mode="true"] .cr-pill--stat .cr-pill__trigger { color: #ffd666; }
-[data-dark-mode="true"] .cr-pill__stat-figure { color: #ffd666; }
-[data-dark-mode="true"] .cr-pill__stat-body { color: #e8d08a; }
-
-[data-dark-mode="true"] .cr-pill--freeform { background: #2a1840; border-color: #a97fd4; }
-[data-dark-mode="true"] .cr-pill--freeform .cr-pill__trigger { color: #d4a8f5; }
-[data-dark-mode="true"] .cr-pill__text-input { background: #1e1030; color: #f0e4ff; border-color: #7B4EA0; }
-
-[data-dark-mode="true"] .cr-pill--kci { background: #2a0f18; border-color: #c4607a; }
-[data-dark-mode="true"] .cr-pill--kci .cr-pill__trigger { color: #f5a0b5; }
-[data-dark-mode="true"] .cr-pill__kci-option { background: #1e0810; border-color: #7a3050; color: #f0d0d8; }
-[data-dark-mode="true"] .cr-pill__kci-option.selected { background: #3a0f1e; }
-
-[data-dark-mode="true"] .cr-pill-instructions { background: #0f2a1f; border-color: #4A7C59; }
-[data-dark-mode="true"] .cr-pill-instructions__body { color: #a8dcc0; }
-
-/* ─── High contrast overrides ─── */
-[data-high-contrast] .cr-pill { border-width: 3px; }
-[data-high-contrast="true"] .cr-pill { border-width: 3px; }
-[data-high-contrast] .cr-pill__kci-option { border-width: 2px; }
-[data-high-contrast="true"] .cr-pill__kci-option { border-width: 2px; }
-[data-high-contrast] .cr-pill__feedback { border-left-width: 6px; }
-[data-high-contrast="true"] .cr-pill__feedback { border-left-width: 6px; }
-
-/* ─── Reduced motion ─── */
-@media (prefers-reduced-motion: reduce) {
-  .cr-pill__body { animation: none; }
-  .cr-pill__chevron { transition: none; }
-}
 
 /* ═══════════════════════════════════════════════════════════════
    MATCHING EXERCISE
@@ -1662,168 +1442,37 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
 .cr-term-link:hover { background: var(--cr-green-faded); }
 
 /* ═══════════════════════════════════════════════════════════════
-   REFERENCES DRAWER (always-accessible side tab)
-   ═══════════════════════════════════════════════════════════════ */
-.cr-refs-tab {
-  position: fixed; right: 0; top: 40%;
-  transform: translateY(-50%) rotate(180deg);
-  writing-mode: vertical-rl;
-  background: #2B6CB0;
-  color: #fff;
-  padding: 14px 8px;
-  font-size: 12px; font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  border-radius: 0 0 8px 8px;
-  cursor: pointer;
-  z-index: 50;
-  box-shadow: -2px 0 8px rgba(43,108,176,0.25);
-  transition: background var(--cr-transition);
-  border: none;
-  display: none;
-  min-height: auto; min-width: auto;
-}
-.cr-refs-tab:hover { background: #2C5282; }
-.cr-refs-tab.visible { display: block; }
-
-.cr-refs-panel {
-  position: fixed; top: 0; right: 0; bottom: 0;
-  width: 400px; max-width: 90vw;
-  background: var(--cr-surface);
-  border-left: 1px solid var(--cr-border);
-  box-shadow: -4px 0 24px rgba(0,0,0,0.12);
-  z-index: 55;
-  transform: translateX(100%);
-  transition: transform var(--cr-transition);
-  display: flex; flex-direction: column;
-}
-.cr-refs-panel.open { transform: translateX(0); }
-.cr-refs-panel-header {
-  padding: 16px 20px;
-  border-bottom: 1px solid var(--cr-border);
-  display: flex; align-items: center; justify-content: space-between;
-  background: var(--cr-burgundy-faded);
-}
-.cr-refs-panel-header h3 {
-  font-family: var(--cr-font-display);
-  font-weight: 700; font-size: 1.2em;
-  color: var(--cr-burgundy); margin: 0;
-}
-.cr-refs-panel-count {
-  font-size: 11px; color: var(--cr-text-muted);
-  padding: 0 20px; margin-top: 8px;
-}
-.cr-refs-list {
-  flex: 1; overflow-y: auto;
-  padding: 16px 20px;
-}
-.cr-refs-list-item {
-  padding-left: 2em; text-indent: -2em;
-  margin-bottom: 12px;
-  font-size: 0.88em;
-  line-height: 1.6;
-  color: var(--cr-text-secondary);
-}
-.cr-refs-list-item em { color: var(--cr-text); }
-.cr-refs-panel-footer {
-  padding: 10px 20px;
-  border-top: 1px solid var(--cr-border);
-  font-size: 9px; color: var(--cr-text-muted);
-  text-align: center;
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   RESOURCES DRAWER (supplemental materials — handouts, articles, etc.)
-   ═══════════════════════════════════════════════════════════════ */
-.cr-resources-tab {
-  position: fixed; right: 0; top: 58%;
-  transform: translateY(-50%) rotate(180deg);
-  writing-mode: vertical-rl;
-  background: #3182CE;
-  color: #fff;
-  padding: 14px 8px;
-  font-size: 12px; font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  border-radius: 0 0 8px 8px;
-  cursor: pointer;
-  z-index: 50;
-  box-shadow: -2px 0 8px rgba(49,130,206,0.25);
-  transition: background var(--cr-transition);
-  border: none;
-  display: none;
-  min-height: auto; min-width: auto;
-}
-.cr-resources-tab:hover { background: #2B6CB0; }
-.cr-resources-tab.visible { display: block; }
-
-.cr-resources-panel {
-  position: fixed; top: 0; right: 0; bottom: 0;
-  width: 400px; max-width: 90vw;
-  background: var(--cr-surface);
-  border-left: 1px solid var(--cr-border);
-  box-shadow: -4px 0 24px rgba(0,0,0,0.12);
-  z-index: 55;
-  transform: translateX(100%);
-  transition: transform var(--cr-transition);
-  display: flex; flex-direction: column;
-}
-.cr-resources-panel.open { transform: translateX(0); }
-.cr-resources-panel-header {
-  padding: 16px 20px;
-  border-bottom: 1px solid var(--cr-border);
-  display: flex; align-items: center; justify-content: space-between;
-  background: var(--cr-navy-faded);
-}
-.cr-resources-panel-header h3 {
-  font-family: var(--cr-font-display);
-  font-weight: 700; font-size: 1.2em;
-  color: var(--cr-navy); margin: 0;
-}
-.cr-resources-panel-list {
-  flex: 1; overflow-y: auto; padding: 12px 20px;
-}
-.cr-resource-drawer-item {
-  display: flex; align-items: flex-start; gap: 12px;
-  padding: 14px 0;
-  border-bottom: 1px solid var(--cr-border);
-}
-.cr-resource-drawer-item:last-child { border-bottom: none; }
-.cr-resource-drawer-icon {
-  width: 40px; height: 40px; border-radius: 10px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 18px; flex-shrink: 0;
-}
-.cr-resource-drawer-icon.handout { background: var(--cr-green-faded); }
-.cr-resource-drawer-icon.article { background: var(--cr-burgundy-faded); }
-.cr-resource-drawer-icon.card { background: var(--cr-gold-faded); }
-.cr-resource-drawer-icon.video { background: var(--cr-navy-faded); }
-.cr-resource-drawer-icon.link { background: #EEE; }
-.cr-resource-drawer-info { flex: 1; }
-.cr-resource-drawer-title {
-  font-weight: 700; font-size: 0.9em; color: var(--cr-navy);
-  margin-bottom: 2px;
-}
-.cr-resource-drawer-title a { color: var(--cr-navy); text-decoration: none; }
-.cr-resource-drawer-title a:hover { text-decoration: underline; }
-.cr-resource-drawer-type {
-  font-size: 0.75em; text-transform: uppercase;
-  letter-spacing: 0.06em; color: var(--cr-text-muted);
-}
-.cr-resource-drawer-desc {
-  font-size: 0.83em; color: var(--cr-text-secondary);
-  margin-top: 4px; line-height: 1.4;
-}
-.cr-resources-panel-footer {
-  padding: 10px 20px;
-  border-top: 1px solid var(--cr-border);
-  font-size: 9px; color: var(--cr-text-muted);
-  text-align: center;
-}
-
-/* ═══════════════════════════════════════════════════════════════
    LEARNING OBJECTIVES TRACKER
    ═══════════════════════════════════════════════════════════════ */
+.cr-objectives-panel {
+  background: var(--cr-burgundy-faded);
+  border: 1px solid var(--cr-burgundy);
+  border-radius: var(--cr-radius);
+  padding: 20px; margin-bottom: 28px;
+}
+.cr-objectives-title {
+  font-family: var(--cr-font-display); font-weight: 700;
+  font-size: 1.1em; color: var(--cr-burgundy);
+  margin-bottom: 12px; display: flex; align-items: center; gap: 8px;
+}
+.cr-obj-item {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 8px 0; font-size: 0.9em; line-height: 1.4;
+  cursor: pointer; transition: opacity 0.2s;
+}
+.cr-obj-check {
+  width: 22px; height: 22px; min-width: 22px;
+  border: 2px solid var(--cr-burgundy);
+  border-radius: 6px; display: flex;
+  align-items: center; justify-content: center;
+  font-size: 14px; color: transparent;
+  transition: all 0.2s; margin-top: 1px;
+}
+.cr-obj-item.checked .cr-obj-check {
+  background: var(--cr-green); border-color: var(--cr-green); color: #fff;
+}
+.cr-obj-item.checked { opacity: 0.6; }
+
 /* ═══════════════════════════════════════════════════════════════
    TEXT HIGHLIGHTING & ANNOTATIONS
    ═══════════════════════════════════════════════════════════════ */
@@ -1833,47 +1482,6 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
   position: relative;
 }
 .cr-highlight:hover { background: rgba(212, 168, 85, 0.5); }
-
-/* TTS sentence highlighting */
-.cr-tts-active {
-  background: rgba(212, 168, 85, 0.15);
-  border-left: 3px solid var(--cr-gold);
-  padding-left: 8px;
-  border-radius: 4px;
-  transition: background 0.3s ease, border-left 0.3s ease;
-}
-
-/* Glossary hover tooltips */
-.cr-glossary-term {
-  color: var(--cr-burgundy);
-  cursor: help;
-  border-bottom: 1px dotted var(--cr-burgundy);
-}
-.cr-tooltip {
-  display: none;
-  position: absolute; bottom: calc(100% + 6px); left: 50%; transform: translateX(-50%);
-  background: var(--cr-navy); color: #fff;
-  padding: 8px 12px; border-radius: 8px;
-  font-size: 13px; font-weight: 400; line-height: 1.4;
-  max-width: 300px; width: max-content;
-  z-index: 100; pointer-events: none;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-}
-.cr-tooltip::after {
-  content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%);
-  border: 6px solid transparent; border-top-color: var(--cr-navy);
-}
-.cr-glossary-term:hover .cr-tooltip,
-.cr-glossary-term:focus .cr-tooltip { display: block; }
-
-/* Chunked content mode */
-.cr-chunk-nav {
-  display: flex; align-items: center; justify-content: center; gap: 16px;
-  padding: 20px 0; margin-top: 20px;
-  border-top: 1px solid var(--cr-border);
-}
-.cr-chunk-count { font-size: 13px; color: var(--cr-text-muted); min-width: 60px; text-align: center; }
-
 .cr-highlight-note {
   position: absolute; bottom: 100%; left: 0;
   background: var(--cr-navy); color: #fff;
@@ -1937,88 +1545,13 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
   .cr-sidebar, .cr-topbar, .cr-a11y-toggle, .cr-a11y-panel,
   .cr-nav-buttons, .cr-reading-guide, .cr-glossary-btn,
   .cr-glossary-panel, .cr-highlight-toolbar, .cr-toolbar,
-  .cr-translate-bar, .cr-refs-tab, .cr-refs-panel,
-  .cr-resources-tab, .cr-resources-panel { display: none !important; }
+  .cr-translate-bar, .cr-search-btn, .cr-search-panel,
+  .cr-shortcuts-overlay, .cr-chunk-nav { display: none !important; }
   .cr-layout { grid-template-columns: 1fr !important; }
   .cr-main { max-width: 100%; padding: 20px; }
   .cr-highlight { background: none !important; border-bottom: 1px solid #999; }
   .cr-accordion-body { max-height: none !important; padding: 12px 0 !important; }
 }
-
-/* ═══════════════════════════════════════════════════════════════
-   AUTH / ENROLLMENT GATE OVERLAYS
-   ═══════════════════════════════════════════════════════════════ */
-.cr-gate {
-  display: none;
-  position: fixed; inset: 0; z-index: 9999;
-  background: rgba(43, 43, 43, 0.85);
-  backdrop-filter: blur(6px);
-  align-items: center; justify-content: center;
-}
-.cr-gate.visible { display: flex; }
-.cr-gate-card {
-  background: var(--cr-surface);
-  border-radius: 16px;
-  padding: 40px;
-  max-width: 420px; width: 90%;
-  text-align: center;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-}
-.cr-gate-card h2 {
-  font-family: var(--cr-font-display);
-  font-size: 1.6em; font-weight: 700;
-  color: var(--cr-burgundy);
-  margin-bottom: 12px;
-}
-.cr-gate-card p {
-  color: var(--cr-text-secondary);
-  margin-bottom: 24px;
-  line-height: 1.5;
-}
-.cr-gate-card .cr-btn { width: 100%; margin-bottom: 10px; padding: 14px; font-size: 1em; }
-.cr-gate-card .cr-gate-secondary {
-  display: inline-block; margin-top: 8px;
-  color: var(--cr-text-muted); font-size: 0.85em;
-  text-decoration: underline; cursor: pointer;
-}
-.cr-gate-card .cr-gate-secondary:hover { color: var(--cr-burgundy); }
-.cr-eval-form { text-align: left; }
-.cr-eval-question { margin-bottom: 20px; }
-.cr-eval-question label { display: block; font-weight: 700; color: var(--cr-text); margin-bottom: 8px; font-size: 0.95em; }
-.cr-eval-question .cr-eval-required { color: var(--cr-burgundy); margin-left: 4px; }
-.cr-eval-stars { display: flex; gap: 6px; }
-.cr-eval-stars input[type="radio"] { display: none; }
-.cr-eval-stars label.cr-eval-star {
-  font-size: 1.6em; cursor: pointer; color: var(--cr-border);
-  transition: color 0.15s; font-weight: 400; margin: 0;
-}
-.cr-eval-stars label.cr-eval-star.active { color: var(--cr-gold); }
-.cr-eval-stars label.cr-eval-star:hover { color: var(--cr-gold-light); }
-.cr-eval-form textarea {
-  width: 100%; padding: 12px; border: 1px solid var(--cr-border);
-  border-radius: 8px; font-family: var(--cr-font-body);
-  font-size: 0.9em; resize: vertical; min-height: 80px;
-}
-.cr-attestation-box {
-  background: var(--cr-stone); border: 1px solid var(--cr-border);
-  border-radius: var(--cr-radius); padding: 20px;
-  text-align: left; margin-bottom: 20px;
-  font-size: 0.9em; line-height: 1.6;
-  color: var(--cr-text-secondary);
-}
-.cr-attestation-check {
-  display: flex; align-items: flex-start; gap: 12px;
-  margin: 20px 0; text-align: left; cursor: pointer;
-}
-.cr-attestation-check input { margin-top: 4px; width: 20px; height: 20px; accent-color: var(--cr-burgundy); }
-.cr-cert-display { text-align: center; }
-.cr-cert-display .cr-cert-icon {
-  width: 72px; height: 72px; margin: 0 auto 20px;
-  background: var(--cr-green-faded); border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 32px;
-}
-.cr-cert-actions { display: flex; gap: 12px; justify-content: center; margin-top: 24px; flex-wrap: wrap; }
 </style>
 <!-- .docx parsing -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
@@ -2026,22 +1559,7 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script>if(window.pdfjsLib)pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';</script>
 </head>
-<body data-text-size="medium" data-line-spacing="normal" data-dyslexia="false" data-high-contrast="false" data-dark-mode="false" data-reduced-motion="false" data-enhanced-focus="false" data-reading-guide="false" data-color-vision="none" data-chunked="false">
-
-<!-- SVG Color Vision Deficiency Filters -->
-<svg style="position:absolute;width:0;height:0" aria-hidden="true">
-  <defs>
-    <filter id="cr-cvd-deuteranopia">
-      <feColorMatrix type="matrix" values="0.625 0.375 0 0 0  0.7 0.3 0 0 0  0 0.3 0.7 0 0  0 0 0 1 0"/>
-    </filter>
-    <filter id="cr-cvd-protanopia">
-      <feColorMatrix type="matrix" values="0.567 0.433 0 0 0  0.558 0.442 0 0 0  0 0.242 0.758 0 0  0 0 0 1 0"/>
-    </filter>
-    <filter id="cr-cvd-tritanopia">
-      <feColorMatrix type="matrix" values="0.95 0.05 0 0 0  0 0.433 0.567 0 0  0 0.475 0.525 0 0  0 0 0 1 0"/>
-    </filter>
-  </defs>
-</svg>
+<body data-text-size="medium" data-line-spacing="normal" data-dyslexia="false" data-high-contrast="false" data-dark-mode="false" data-reduced-motion="false" data-enhanced-focus="false" data-reading-guide="false">
 
 <!-- Skip Link -->
 <a href="#cr-content" class="cr-skip-link">Skip to course content</a>
@@ -2051,34 +1569,6 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
 
 <!-- Reading Guide -->
 <div class="cr-reading-guide" id="crReadingGuide"></div>
-
-<!-- ═══════════════════════════════════════════════════════════════
-     AUTH / ENROLLMENT GATES
-     ═══════════════════════════════════════════════════════════════ -->
-<div id="crGateLogin" class="cr-gate" role="dialog" aria-modal="true" aria-label="Login required">
-  <div class="cr-gate-card">
-    <h2>Sign In to Continue</h2>
-    <p>You need a CounselorReady account to access this course and earn CE credits.</p>
-    <button class="cr-btn cr-btn-primary" onclick="crGateRedirectLogin()">Sign In</button>
-    <button class="cr-btn" style="background:var(--cr-green);color:#fff" onclick="crGateRedirectRegister()">Create Free Account</button>
-    <span class="cr-gate-secondary" onclick="crGateDismiss()">Browse course preview</span>
-  </div>
-</div>
-<div id="crGateSubscription" class="cr-gate" role="dialog" aria-modal="true" aria-label="Subscription required">
-  <div class="cr-gate-card">
-    <h2>Subscription Required</h2>
-    <p>This course requires an active subscription. Upgrade to access all courses and earn CE credits.</p>
-    <button class="cr-btn cr-btn-primary" onclick="window.location.href='/subscription.html'">View Plans</button>
-    <span class="cr-gate-secondary" onclick="window.location.href='/courses.html'">Back to Courses</span>
-  </div>
-</div>
-<div id="crGateEnrolled" class="cr-gate" role="dialog" aria-label="Enrolled">
-  <div class="cr-gate-card">
-    <h2>You're Enrolled!</h2>
-    <p id="crGateEnrolledMsg">You've been enrolled in this course. Your progress will be saved automatically.</p>
-    <button class="cr-btn cr-btn-primary" onclick="document.getElementById('crGateEnrolled').classList.remove('visible')">Start Learning</button>
-  </div>
-</div>
 
 <!-- ═══════════════════════════════════════════════════════════════
      LOADING STATE
@@ -2114,28 +1604,22 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
   <aside class="cr-sidebar" id="crSidebar" role="navigation" aria-label="Course sections">
     <!-- Burgundy header -->
     <div class="cr-sidebar-header">
+      <div class="cr-sidebar-ce-badge" id="crCeBadge"></div>
       <div class="cr-sidebar-course-title" id="crSidebarTitle"></div>
-      <div id="crContentAreaLabel" style="font-size:10px;color:rgba(255,255,255,0.55);text-transform:uppercase;letter-spacing:0.06em;margin-top:6px"></div>
-      <div style="display:flex;align-items:center;gap:12px;margin-top:8px;font-size:11px;color:rgba(255,255,255,0.7)">
-        <span id="crModuleCount"></span>
-        <span style="display:flex;align-items:center;gap:4px" id="crCeDisplay">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--cr-gold)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18"/><circle cx="12" cy="15" r="2"/></svg>
-          <span id="crCeBadge" style="color:var(--cr-gold);font-weight:700"></span>
-        </span>
+      <div class="cr-sidebar-viewer-label">CReady™ Viewer</div>
+    </div>
+    <!-- Progress ring + info -->
+    <div class="cr-sidebar-progress" id="crSidebarProgress">
+      <div class="cr-progress-ring">
+        <svg width="44" height="44" viewBox="0 0 44 44">
+          <circle class="cr-progress-ring-bg" cx="22" cy="22" r="18"/>
+          <circle class="cr-progress-ring-fill" id="crProgressRing" cx="22" cy="22" r="18" stroke-dasharray="113.1" stroke-dashoffset="113.1"/>
+        </svg>
+        <div class="cr-progress-ring-text" id="crProgressPct">0%</div>
       </div>
-      <!-- Progress inside header -->
-      <div style="display:flex;align-items:center;gap:10px;margin-top:10px">
-        <div class="cr-progress-ring" style="width:36px;height:36px;flex-shrink:0">
-          <svg width="36" height="36" viewBox="0 0 36 36">
-            <circle cx="18" cy="18" r="14" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="3"/>
-            <circle id="crProgressRing" cx="18" cy="18" r="14" fill="none" stroke="var(--cr-gold)" stroke-width="3" stroke-linecap="round" stroke-dasharray="88" stroke-dashoffset="88" style="transform:rotate(-90deg);transform-origin:center;transition:stroke-dashoffset 0.5s ease"/>
-          </svg>
-          <div class="cr-progress-ring-text" id="crProgressPct" style="color:#fff;font-size:9px">0%</div>
-        </div>
-        <div style="flex:1;min-width:0">
-          <div id="crProgressMain" style="font-size:12px;font-weight:600;color:#fff">0 of 0 complete</div>
-          <div id="crProgressSub" style="font-size:10px;color:rgba(255,255,255,0.55);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Section 1</div>
-        </div>
+      <div class="cr-progress-info">
+        <div class="cr-progress-info-main" id="crProgressMain">0 of 0 complete</div>
+        <div class="cr-progress-info-sub" id="crProgressSub">Section 1 in progress</div>
       </div>
     </div>
     <!-- Thin progress bar -->
@@ -2148,14 +1632,26 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
         <span>Final Assessment</span>
       </button>
     </div>
-    <!-- Translation + PDF -->
+    <!-- Download Deliverables -->
+    <div id="crDownloads" style="display:none;border-top:1px solid var(--cr-border);padding:12px 20px">
+      <p style="font-size:0.75em;text-transform:uppercase;letter-spacing:0.08em;color:var(--cr-text-muted);margin-bottom:8px;font-weight:700">Downloads</p>
+      <button class="cr-nav-item" data-action="downloadCourseText" style="font-size:12px;padding:8px 12px;min-height:36px">
+        <span style="font-size:16px">📄</span>
+        <span>Course Text (.txt)</span>
+      </button>
+      <button class="cr-nav-item" data-action="downloadCourseJSON" style="font-size:12px;padding:8px 12px;min-height:36px">
+        <span style="font-size:16px">💾</span>
+        <span>Course Data (.json)</span>
+      </button>
+    </div>
+    <!-- Translation -->
     <div class="cr-translate-bar" id="crTranslateBar" style="display:none">
       <span>🌐</span>
       <select id="crLangSelect" data-action="noop">
         <option value="">Original</option>
         <option value="es">Español</option>
         <option value="fr">Français</option>
-        <option value="zh-CN">中文</option>
+        <option value="zh">中文</option>
         <option value="ko">한국어</option>
         <option value="ar">العربية</option>
         <option value="pt">Português</option>
@@ -2163,30 +1659,11 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
         <option value="ht">Kreyòl Ayisyen</option>
         <option value="so">Soomaali</option>
       </select>
-      <span style="flex:1"></span>
-      <button data-action="printSection" style="display:flex;align-items:center;gap:4px;padding:4px 10px;border:1px solid var(--cr-border);border-radius:6px;background:none;cursor:pointer;font-size:11px;color:var(--cr-text-secondary)" title="Print this section">
-        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4H7v4a2 2 0 002 2zm0-12V3h6v6"/></svg>
-        Print
-      </button>
-      <button data-action="exportPDF" style="display:flex;align-items:center;gap:4px;padding:4px 10px;border:1px solid var(--cr-border);border-radius:6px;background:none;cursor:pointer;font-size:11px;color:var(--cr-text-secondary)" title="Export as PDF">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="9 15 12 18 15 15"/></svg>
-        PDF
-      </button>
     </div>
-    <!-- Print / Download (always visible) -->
-    <div style="padding:8px 16px;border-top:1px solid var(--cr-border);display:flex;gap:6px">
-      <button onclick="printSection()" style="display:flex;align-items:center;justify-content:center;gap:5px;flex:1;padding:8px;border:1px solid var(--cr-border);border-radius:8px;background:none;cursor:pointer;font-size:12px;font-weight:600;color:var(--cr-text-secondary);font-family:inherit;transition:all .15s" onmouseover="this.style.borderColor='var(--cr-burgundy)';this.style.color='var(--cr-burgundy)'" onmouseout="this.style.borderColor='var(--cr-border)';this.style.color='var(--cr-text-secondary)'">
-        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4H7v4a2 2 0 002 2zm0-12V3h6v6"/></svg>
-        Print
-      </button>
-      <button onclick="exportPDF()" style="display:flex;align-items:center;justify-content:center;gap:5px;flex:1;padding:8px;border:1px solid var(--cr-border);border-radius:8px;background:none;cursor:pointer;font-size:12px;font-weight:600;color:var(--cr-text-secondary);font-family:inherit;transition:all .15s" onmouseover="this.style.borderColor='var(--cr-green)';this.style.color='var(--cr-green)'" onmouseout="this.style.borderColor='var(--cr-border)';this.style.color='var(--cr-text-secondary)'">
-        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-        Download
-      </button>
-    </div>
-    <!-- Copyright only -->
-    <div style="padding:6px 16px 8px;font-size:8px;color:var(--cr-text-muted);text-align:center;line-height:1.4;border-top:1px solid var(--cr-border)">
-      <span style="font-weight:700">CReady™ Viewer</span> · © 2026 GAITP LLC · ACEP #7760<br>
+    <!-- Copyright -->
+    <div style="padding:10px 20px;font-size:9px;color:var(--cr-text-muted);text-align:center;border-top:1px solid var(--cr-border);line-height:1.4">
+      <span style="font-weight:700">CReady™ Viewer</span><br>
+      © 2026 GAITP LLC · NBCC ACEP #7760<br>
       <span style="font-family:var(--cr-font-display)"><span style="color:var(--cr-burgundy)">Counselor</span><span style="color:var(--cr-green)">Ready</span></span>™ Learn. License. Lead.®
     </div>
   </aside>
@@ -2200,17 +1677,21 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
       <div style="font-weight:700;font-size:0.9em;color:var(--cr-text)" id="crTopbarTitle"></div>
       <div style="font-size:0.75em;color:var(--cr-text-muted)" id="crTopbarSection"></div>
     </div>
-    <button onclick="printSection()" style="background:none;border:1px solid var(--cr-border);border-radius:8px;padding:6px 8px;cursor:pointer;display:flex;align-items:center;gap:4px;font-size:11px;font-weight:600;color:var(--cr-text-muted);font-family:inherit;transition:all .15s" title="Print">
-      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4H7v4a2 2 0 002 2zm0-12V3h6v6"/></svg>
-    </button>
-    <button onclick="exportPDF()" style="background:none;border:1px solid var(--cr-border);border-radius:8px;padding:6px 8px;cursor:pointer;display:flex;align-items:center;gap:4px;font-size:11px;font-weight:600;color:var(--cr-text-muted);font-family:inherit;transition:all .15s" title="Download PDF">
-      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+    <button class="cr-hamburger" data-action="toggleTTS" aria-label="Read aloud" id="crTTSBtn" style="display:none">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M19.07 4.93a10 10 0 010 14.14M15.54 8.46a5 5 0 010 7.07"/></svg>
     </button>
   </div>
 
   <!-- MAIN CONTENT -->
   <main class="cr-main" id="cr-content" role="main">
     <!-- Section toolbar -->
+    <div class="cr-toolbar" id="crToolbar" style="display:none">
+      <button class="cr-toolbar-btn" data-action="printSection">🖨️ Print Section</button>
+      <button class="cr-toolbar-btn" data-action="exportPDF">📄 Export as PDF</button>
+    </div>
+    
+    <!-- Learning objectives tracker (injected on first content section) -->
+    <div id="crObjectivesTracker"></div>
     
     <!-- Section content rendered here -->
     <div id="crContentArea"></div>
@@ -2308,16 +1789,23 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
   <div class="cr-a11y-option">
     <label>Color Vision</label>
     <div class="cr-segment" data-setting="color-vision">
-      <button data-action="setSetting" data-setting="color-vision" data-value="none" data-val="none" class="active" style="font-size:10px">None</button>
-      <button data-action="setSetting" data-setting="color-vision" data-value="deuteranopia" data-val="deuteranopia" style="font-size:10px" title="Red-green (most common)">R-G</button>
-      <button data-action="setSetting" data-setting="color-vision" data-value="protanopia" data-val="protanopia" style="font-size:10px" title="Red-blind">Red</button>
-      <button data-action="setSetting" data-setting="color-vision" data-value="tritanopia" data-val="tritanopia" style="font-size:10px" title="Blue-yellow">B-Y</button>
+      <button data-action="setColorVision" data-value="none" data-val="none" class="active" title="Normal vision">None</button>
+      <button data-action="setColorVision" data-value="protanopia" data-val="protanopia" title="Red-Green (Protanopia)">R-G</button>
+      <button data-action="setColorVision" data-value="deuteranopia" data-val="deuteranopia" title="Red weakness (Deuteranopia)">Red</button>
+      <button data-action="setColorVision" data-value="tritanopia" data-val="tritanopia" title="Blue-Yellow (Tritanopia)">B-Y</button>
     </div>
   </div>
   
   <div class="cr-a11y-option">
     <label>Chunked Reading</label>
-    <div class="cr-toggle" id="toggle-chunked" data-action="toggleBool" data-setting="chunked" role="switch" aria-checked="false" tabindex="0"></div>
+    <div class="cr-toggle" id="toggle-chunked-reading" data-action="toggleChunkedReading" role="switch" aria-checked="false" tabindex="0"></div>
+  </div>
+  
+  <div style="padding:10px 0 4px;border-top:1px solid var(--cr-border);margin-top:6px">
+    <div style="display:flex;gap:8px">
+      <button data-action="openSearch" style="flex:1;padding:8px 12px;border:1px solid var(--cr-border);border-radius:8px;background:var(--cr-stone);cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;gap:6px;min-height:40px" title="Search course content">🔍 Search Course</button>
+      <button data-action="openShortcuts" style="flex:1;padding:8px 12px;border:1px solid var(--cr-border);border-radius:8px;background:var(--cr-stone);cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;gap:6px;min-height:40px" title="Keyboard shortcuts">⌨️ Shortcuts</button>
+    </div>
   </div>
 </div>
 
@@ -2334,27 +1822,80 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
   <div class="cr-glossary-list" id="crGlossaryList"></div>
 </div>
 
-<!-- REFERENCES DRAWER (always-accessible side tab) -->
-<button class="cr-refs-tab" id="crRefsTab" data-action="toggleRefs" aria-label="Open references">References</button>
-<div class="cr-refs-panel" id="crRefsPanel">
-  <div class="cr-refs-panel-header">
-    <h3>📚 References</h3>
-    <button data-action="toggleRefs" style="width:36px;height:36px;border:none;background:none;cursor:pointer;font-size:18px;min-height:36px;min-width:36px">✕</button>
+<!-- SVG Color Vision Filters -->
+<svg style="position:absolute;width:0;height:0" aria-hidden="true">
+  <defs>
+    <filter id="cr-protanopia-filter">
+      <feColorMatrix type="matrix" values="0.567,0.433,0,0,0 0.558,0.442,0,0,0 0,0.242,0.758,0,0 0,0,0,1,0"/>
+    </filter>
+    <filter id="cr-deuteranopia-filter">
+      <feColorMatrix type="matrix" values="0.625,0.375,0,0,0 0.7,0.3,0,0,0 0,0.3,0.7,0,0 0,0,0,1,0"/>
+    </filter>
+    <filter id="cr-tritanopia-filter">
+      <feColorMatrix type="matrix" values="0.95,0.05,0,0,0 0,0.433,0.567,0,0 0,0.475,0.525,0,0 0,0,0,1,0"/>
+    </filter>
+  </defs>
+</svg>
+
+<!-- SEARCH BUTTON -->
+<button class="cr-search-btn" id="crSearchBtn" data-action="openSearch" aria-label="Search course" title="Search course content (Ctrl+/)">🔍</button>
+
+<!-- SEARCH PANEL -->
+<div class="cr-search-panel" id="crSearchPanel">
+  <div class="cr-search-header">
+    <h3>🔍 Search Course</h3>
+    <button data-action="closeSearch" title="Close search">✕</button>
   </div>
-  <div class="cr-refs-panel-count" id="crRefsCount"></div>
-  <div class="cr-refs-list" id="crRefsList"></div>
-  <div class="cr-refs-panel-footer">APA 7th Edition Format · CReady™ Viewer</div>
+  <div class="cr-search-input-wrap">
+    <input class="cr-search-input" id="crSearchInput" placeholder="Search all sections..." type="text" autocomplete="off">
+  </div>
+  <div class="cr-search-results" id="crSearchResults">
+    <div class="cr-search-empty">Type to search across all course content</div>
+  </div>
 </div>
 
-<!-- RESOURCES DRAWER (supplemental materials) -->
-<button class="cr-resources-tab" id="crResourcesTab" data-action="toggleResources" aria-label="Open resources">Resources</button>
-<div class="cr-resources-panel" id="crResourcesPanel">
-  <div class="cr-resources-panel-header">
-    <h3>📎 Resources</h3>
-    <button data-action="toggleResources" style="width:36px;height:36px;border:none;background:none;cursor:pointer;font-size:18px;min-height:36px;min-width:36px">✕</button>
+<!-- KEYBOARD SHORTCUTS MODAL -->
+<div class="cr-shortcuts-overlay" id="crShortcutsOverlay">
+  <div class="cr-shortcuts-modal" role="dialog" aria-label="Keyboard Shortcuts">
+    <h3>
+      ⌨️ Keyboard Shortcuts
+      <button data-action="closeShortcuts" title="Close">✕</button>
+    </h3>
+    <div class="cr-shortcut-group">
+      <h4>Navigation</h4>
+      <div class="cr-shortcut-row"><span>Previous section</span><span class="cr-shortcut-key"><kbd>←</kbd> or <kbd>P</kbd></span></div>
+      <div class="cr-shortcut-row"><span>Next section</span><span class="cr-shortcut-key"><kbd>→</kbd> or <kbd>N</kbd></span></div>
+      <div class="cr-shortcut-row"><span>Go to section #</span><span class="cr-shortcut-key"><kbd>1</kbd>–<kbd>9</kbd></span></div>
+      <div class="cr-shortcut-row"><span>Scroll to top</span><span class="cr-shortcut-key"><kbd>Home</kbd></span></div>
+    </div>
+    <div class="cr-shortcut-group">
+      <h4>Accessibility</h4>
+      <div class="cr-shortcut-row"><span>Open/close a11y panel</span><span class="cr-shortcut-key"><kbd>A</kbd></span></div>
+      <div class="cr-shortcut-row"><span>Toggle dark mode</span><span class="cr-shortcut-key"><kbd>D</kbd></span></div>
+      <div class="cr-shortcut-row"><span>Toggle high contrast</span><span class="cr-shortcut-key"><kbd>H</kbd></span></div>
+      <div class="cr-shortcut-row"><span>Toggle read aloud</span><span class="cr-shortcut-key"><kbd>R</kbd></span></div>
+      <div class="cr-shortcut-row"><span>Toggle chunked reading</span><span class="cr-shortcut-key"><kbd>C</kbd></span></div>
+    </div>
+    <div class="cr-shortcut-group">
+      <h4>Tools</h4>
+      <div class="cr-shortcut-row"><span>Search course</span><span class="cr-shortcut-key"><kbd>Ctrl</kbd>+<kbd>/</kbd></span></div>
+      <div class="cr-shortcut-row"><span>Toggle glossary</span><span class="cr-shortcut-key"><kbd>G</kbd></span></div>
+      <div class="cr-shortcut-row"><span>Show shortcuts</span><span class="cr-shortcut-key"><kbd>?</kbd></span></div>
+      <div class="cr-shortcut-row"><span>Close any panel</span><span class="cr-shortcut-key"><kbd>Esc</kbd></span></div>
+    </div>
+    <div class="cr-shortcut-group">
+      <h4>Chunked Reading (when active)</h4>
+      <div class="cr-shortcut-row"><span>Next block</span><span class="cr-shortcut-key"><kbd>J</kbd> or <kbd>↓</kbd></span></div>
+      <div class="cr-shortcut-row"><span>Previous block</span><span class="cr-shortcut-key"><kbd>K</kbd> or <kbd>↑</kbd></span></div>
+    </div>
   </div>
-  <div class="cr-resources-panel-list" id="crResourcesList"></div>
-  <div class="cr-resources-panel-footer">CReady™ Viewer · Supplemental Materials</div>
+</div>
+
+<!-- CHUNKED READING NAV BAR -->
+<div class="cr-chunk-nav" id="crChunkNav">
+  <button data-action="chunkPrev" title="Previous block (K)" aria-label="Previous block">▲</button>
+  <span id="crChunkCounter">1/1</span>
+  <button data-action="chunkNext" title="Next block (J)" aria-label="Next block">▼</button>
 </div>
 
 <!-- HIGHLIGHT TOOLBAR (appears on text selection) -->
@@ -2409,394 +1950,51 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
 let course = null;
 let currentSectionIndex = 0;
 let completedSections = new Set();
-let visitedSections = new Set([0]);
-let currentView = 'section';
+let visitedSections = new Set([0]); // First section always visited
+let currentView = 'section'; // 'section' | 'assessment'
 let assessmentState = { answers: {}, submitted: false, score: null, attempts: 0 };
 let ttsActive = false;
 let ttsUtterance = null;
-// Auth & enrollment state
-let authToken = null;
-let authUser = null;
-let enrollmentData = null;
-let courseId = null;
-let isPreviewMode = false;
-let progressSyncQueue = [];
-let isSyncing = false;
-const API_BASE = location.origin.includes('localhost') ? 'http://localhost:5000' : 'https://api.counselorready.com';
-let adaptiveUnlockedSections = new Set();
-let crApiBase = '';
-
-// ── API helper for quiz/assessment endpoints (legacy) ──
-function crApiFetch(path, body, method) {
-  const base = crApiBase || API_BASE;
-  const token = authToken || localStorage.getItem('token');
-  if (!token) return Promise.reject(new Error('Not authenticated'));
-  return fetch(`${base}${path}`, {
-    method: method || 'POST',
-    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-    body: JSON.stringify(body)
-  }).then(r => r.json().then(data => ({ ok: r.ok, status: r.status, data })));
-}
 
 // ═══════════════════════════════════════════════════════════════
-// API HELPERS
+// INITIALIZATION
 // ═══════════════════════════════════════════════════════════════
-async function crApi(method, path, body) {
-  const headers = { 'Content-Type': 'application/json' };
-  if (authToken) headers['Authorization'] = 'Bearer ' + authToken;
-  const opts = { method, headers };
-  if (body && method !== 'GET') opts.body = JSON.stringify(body);
-  let res;
-  try {
-    res = await fetch(API_BASE + path, opts);
-  } catch (networkErr) {
-    const err = new Error('Network error: ' + (networkErr.message || 'Unable to reach server'));
-    err.status = 0;
-    err.isNetwork = true;
-    throw err;
-  }
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) {
-    const err = new Error(data.error || data.message || 'API error');
-    err.status = res.status;
-    err.code = data.code;
-    throw err;
-  }
-  return data;
-}
-function queueProgressSync(method, path, body) {
-  if (isPreviewMode || !authToken || !courseId) return;
-  progressSyncQueue.push({ method, path, body });
-  drainSyncQueue();
-}
-async function drainSyncQueue() {
-  if (isSyncing || progressSyncQueue.length === 0) return;
-  isSyncing = true;
-  while (progressSyncQueue.length > 0) {
-    const { method, path, body } = progressSyncQueue.shift();
-    try { await crApi(method, path, body); }
-    catch (e) { console.warn('Progress sync failed:', e.message); }
-  }
-  isSyncing = false;
-}
-// ═══════════════════════════════════════════════════════════════
-// AUTH GATE HELPERS
-// ═══════════════════════════════════════════════════════════════
-function crGateRedirectLogin() {
-  const returnUrl = encodeURIComponent(window.location.href);
-  window.location.href = '/login.html?redirect=' + returnUrl;
-}
-function crGateRedirectRegister() {
-  const returnUrl = encodeURIComponent(window.location.href);
-  window.location.href = '/register.html?redirect=' + returnUrl;
-}
-function crGateDismiss() {
-  document.getElementById('crGateLogin').classList.remove('visible');
-  isPreviewMode = true;
-}
-
-// ═══════════════════════════════════════════════════════════════
-// CONTENT PROTECTION — © 2026 GAITP LLC
-// ═══════════════════════════════════════════════════════════════
-
-// 1. Right-click deterrent on course content
-document.addEventListener('contextmenu', function(e) {
-  if (e.target.closest('#crContentArea, .cr-main')) {
-    e.preventDefault();
-  }
-});
-// Block text selection copy on course content
-document.addEventListener('copy', function(e) {
-  if (document.activeElement?.closest('#crContentArea, .cr-main')) {
-    e.preventDefault();
-    e.clipboardData?.setData('text/plain', '© CounselorReady — Content copying is not permitted.');
-  }
-});
-// Block Ctrl+S, Ctrl+U (view source), Ctrl+Shift+I on content
-document.addEventListener('keydown', function(e) {
-  if ((e.ctrlKey || e.metaKey) && ['s','u'].includes(e.key.toLowerCase())) {
-    e.preventDefault();
-  }
-});
-
-// 2. iframe frame-busting (complements CSP header)
-if (window.self !== window.top) {
-  try {
-    if (!document.referrer.includes('counselorready.com')) {
-      window.top.location = window.self.location;
-    }
-  } catch(e) { document.body.innerHTML = '<h1 style="text-align:center;padding:40px;font-family:sans-serif">This content cannot be displayed in a frame.</h1>'; }
-}
-
-// 3. Console warning
-console.log('%c⚠️ STOP', 'color:#6B1D34;font-size:48px;font-weight:bold');
-console.log('%cThis is a protected CounselorReady™ learning environment.\nUnauthorized access, copying, or redistribution of course content is prohibited.\n© 2026 GAITP LLC — NBCC ACEP Provider #7760', 'color:#4A7C59;font-size:14px');
-
-// 4. Content watermarking — invisible user ID embedded in rendered content
-function watermarkContent() {
-  var area = document.getElementById('crContentArea');
-  if (!area || area.querySelector('.cr-wm')) return;
-  var token = localStorage.getItem('token');
-  var uid = 'anon';
-  if (token) {
-    try { uid = JSON.parse(atob(token.split('.')[1])).id || JSON.parse(atob(token.split('.')[1])).userId || 'u'; } catch(e) {}
-  }
-  var ts = Date.now().toString(36);
-  var wm = document.createElement('span');
-  wm.className = 'cr-wm';
-  wm.style.cssText = 'position:absolute;left:-9999px;font-size:1px;color:transparent;pointer-events:none;user-select:none;opacity:0;';
-  wm.textContent = 'cr-' + uid + '-' + ts;
-  wm.setAttribute('aria-hidden', 'true');
-  area.style.position = area.style.position || 'relative';
-  area.appendChild(wm);
-}
-
-// ═══════════════════════════════════════════════════════════════
-// FEATURE: GLOSSARY HOVER TOOLTIPS
-// ═══════════════════════════════════════════════════════════════
-function annotateGlossaryTerms() {
-  if (!glossaryTerms || glossaryTerms.length === 0) return;
-  var area = document.getElementById('crContentArea');
-  if (!area) return;
-  
-  // Build a lookup map
-  var termMap = {};
-  glossaryTerms.forEach(function(g) { termMap[g.term.toLowerCase()] = g.definition; });
-  
-  // Find <strong> and <b> elements in content
-  area.querySelectorAll('strong, b').forEach(function(el) {
-    if (el.closest('.cr-glossary-panel, .cr-tts-active, .cr-section-divider, .cr-nav-buttons')) return;
-    if (el.querySelector('.cr-tooltip')) return; // already annotated
-    var text = el.textContent.trim();
-    var def = termMap[text.toLowerCase()];
-    if (def && def.length > 10) {
-      el.classList.add('cr-glossary-term');
-      el.setAttribute('tabindex', '0');
-      el.setAttribute('aria-label', text + ': ' + def);
-      // Create tooltip
-      var tip = document.createElement('span');
-      tip.className = 'cr-tooltip';
-      tip.textContent = def;
-      tip.setAttribute('role', 'tooltip');
-      el.style.position = 'relative';
-      el.appendChild(tip);
-    }
-  });
-}
-
-// ═══════════════════════════════════════════════════════════════
-// FEATURE: CHUNKED CONTENT MODE
-// ═══════════════════════════════════════════════════════════════
-function applyChunkedMode() {
-  if (document.body.getAttribute('data-chunked') !== 'true') return;
-  var area = document.getElementById('crContentArea');
-  if (!area) return;
-  
-  // Collect all direct children blocks
-  var blocks = Array.from(area.children).filter(function(el) {
-    return !el.classList.contains('cr-wm') && !el.classList.contains('cr-chunk-nav') && el.offsetHeight > 0;
-  });
-  if (blocks.length <= 1) return;
-  
-  // Hide all except first
-  var currentChunk = 0;
-  blocks.forEach(function(b, i) {
-    b.setAttribute('data-chunk-idx', i);
-    b.style.display = i === 0 ? '' : 'none';
-  });
-  
-  // Add chunk navigation
-  var nav = document.createElement('div');
-  nav.className = 'cr-chunk-nav';
-  nav.innerHTML = '<button class="cr-btn cr-btn-secondary cr-chunk-prev" disabled>← Back</button>' +
-    '<span class="cr-chunk-count">1 / ' + blocks.length + '</span>' +
-    '<button class="cr-btn cr-btn-primary cr-chunk-next">Continue →</button>';
-  area.appendChild(nav);
-  
-  var prevBtn = nav.querySelector('.cr-chunk-prev');
-  var nextBtn = nav.querySelector('.cr-chunk-next');
-  var countEl = nav.querySelector('.cr-chunk-count');
-  
-  function showChunk(idx) {
-    blocks.forEach(function(b, i) { b.style.display = i === idx ? '' : 'none'; });
-    currentChunk = idx;
-    countEl.textContent = (idx + 1) + ' / ' + blocks.length;
-    prevBtn.disabled = idx === 0;
-    nextBtn.textContent = idx === blocks.length - 1 ? '✓ Done' : 'Continue →';
-    nextBtn.disabled = idx >= blocks.length;
-    blocks[idx].scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }
-  
-  prevBtn.addEventListener('click', function() { if (currentChunk > 0) showChunk(currentChunk - 1); });
-  nextBtn.addEventListener('click', function() {
-    if (currentChunk < blocks.length - 1) showChunk(currentChunk + 1);
-    else {
-      // Done — show all blocks and remove chunk nav
-      blocks.forEach(function(b) { b.style.display = ''; });
-      nav.remove();
-    }
-  });
-}
-
-// ═══════════════════════════════════════════════════════════════
-// INITIALIZATION (with auth + enrollment gate)
-// ═══════════════════════════════════════════════════════════════
-(async function init() {
-  // 1. window.COURSE_DATA (inline/embedded — skip auth)
+(function init() {
+  // Check for course data sources
+  // 1. window.COURSE_DATA (inline)
   if (window.COURSE_DATA) {
-    isPreviewMode = true;
     loadCourse(window.COURSE_DATA);
     return;
   }
+  
+  // 2. URL params: ?json=URL or ?slug=SLUG or ?api=BASE_URL&slug=SLUG
   const params = new URLSearchParams(location.search);
   const jsonUrl = params.get('json');
   const slug = params.get('slug');
   const apiBase = params.get('api') || '';
-  // JSON URL source — preview mode
+  
   if (jsonUrl) {
-    isPreviewMode = true;
-    try {
-      const r = await fetch(jsonUrl);
-      const data = await r.json();
-      loadCourse(data.data || data);
-    } catch (e) { showError('Failed to load course: ' + e.message); }
+    fetch(jsonUrl).then(r => r.json()).then(data => loadCourse(data.data || data))
+      .catch(e => showError('Failed to load course: ' + e.message));
     return;
   }
-  // Slug-based load — main user path
+  
   if (slug) {
-    const base = apiBase || API_BASE;
-    crApiBase = base;
-    // Step A: Check auth
-    authToken = localStorage.getItem('token');
-    if (authToken) {
-      try {
-        const meRes = await crApi('GET', '/api/auth/me');
-        authUser = meRes.user || meRes;
-      } catch (e) {
-        // Only clear token on auth errors (401/403), not network failures
-        if (!e.isNetwork) {
-          authToken = null;
-          localStorage.removeItem('token');
-        }
-      }
-    }
-    // Step B: Fetch course
-    let courseData;
-    try {
-      const headers = {};
-      if (authToken) headers['Authorization'] = 'Bearer ' + authToken;
-      const res = await fetch(base + '/api/interactive-courses/slug/' + slug, { headers });
-      const json = await res.json();
-      courseData = json.data || json.course || json;
-    } catch (e) {
-      showError('Course not found: ' + slug);
-      return;
-    }
-    if (!courseData || !courseData._id) {
-      showError('Course not found: ' + slug);
-      return;
-    }
-    courseId = courseData._id;
-
-    // Step C: No auth — show login gate, allow preview
-    if (!authToken) {
-      isPreviewMode = true;
-      document.getElementById('crGateLogin').classList.add('visible');
-      loadCourse(courseData);
-      return;
-    }
-
-    // Step D: Check enrollment + restore progress
-    var isNewEnrollment = false;
-    try {
-      const progressRes = await crApi('GET', '/api/interactive-courses/' + courseId + '/progress');
-      const progress = progressRes.data || progressRes;
-      enrollmentData = progress;
-      // Detect fresh enrollment: no completed sections, no visited sections, no progress
-      if ((!progress.sectionsCompleted || progress.sectionsCompleted.length === 0) &&
-          (!progress.visitedSections || progress.visitedSections.length === 0) &&
-          (!progress.overallProgress || progress.overallProgress === 0)) {
-        isNewEnrollment = true;
-      }
-      if (progress.sectionsCompleted && progress.sectionsCompleted.length > 0) {
-        completedSections = new Set(progress.sectionsCompleted);
-      }
-      if (typeof progress.lastSectionViewed === 'number') {
-        currentSectionIndex = progress.lastSectionViewed;
-      }
-      if (progress.assessmentAttempts && progress.assessmentAttempts.length > 0) {
-        assessmentState.attempts = progress.assessmentAttempts.length;
-        const lastAttempt = progress.assessmentAttempts[progress.assessmentAttempts.length - 1];
-        if (lastAttempt.passed) {
-          assessmentState.submitted = true;
-          assessmentState.score = lastAttempt.score;
-        }
-      }
-      if (progress.visitedSections && progress.visitedSections.length > 0) {
-        visitedSections = new Set(progress.visitedSections);
-      }
-    } catch (e) {
-      if (e.status === 404 || e.status === 401) {
-        // Not enrolled — try auto-enroll
-        try {
-          const enrollRes = await crApi('POST', '/api/interactive-courses/' + courseId + '/enroll');
-          enrollmentData = enrollRes;
-        } catch (enrollErr) {
-          if (enrollErr.code === 'SUBSCRIPTION_REQUIRED' || enrollErr.status === 403) {
-            document.getElementById('crGateSubscription').classList.add('visible');
-            document.getElementById('crLoading').style.display = 'none';
-            return;
-          }
-          isPreviewMode = true;
-          loadCourse(courseData);
-          return;
-        }
-      } else {
-        isPreviewMode = true;
-        loadCourse(courseData);
-        return;
-      }
-    }
-
-    // Step E: Re-fetch course now that we're enrolled (server may ungated content)
-    if (courseData._isPreview) {
-      try {
-        const headers = { 'Authorization': 'Bearer ' + authToken };
-        const reRes = await fetch(crApiBase + '/api/interactive-courses/slug/' + slug, { headers });
-        const reJson = await reRes.json();
-        const freshData = reJson.data || reJson.course || reJson;
-        if (freshData && freshData._id && !freshData._isPreview) {
-          // Got full content — use it
-          courseData = freshData;
-        } else {
-          // Still gated after enrollment — subscription required
-          document.getElementById('crGateSubscription').classList.add('visible');
-          document.getElementById('crLoading').style.display = 'none';
-          return;
-        }
-      } catch (refetchErr) {
-        // Re-fetch failed — show what we have in preview
-        isPreviewMode = true;
-        loadCourse(courseData);
-        return;
-      }
-    }
-
-    if (isNewEnrollment) {
-      document.getElementById('crGateEnrolledMsg').textContent =
-        'You\'ve been enrolled in "' + (courseData.title || 'this course') + '". Your progress will be saved automatically.';
-      document.getElementById('crGateEnrolled').classList.add('visible');
-    }
-
-    loadCourse(courseData);
+    const base = apiBase || (location.origin.includes('localhost') ? 'http://localhost:5000' : 'https://api.counselorready.com');
+    fetch(`${base}/api/interactive-courses/slug/${slug}`)
+      .then(r => r.json())
+      .then(data => loadCourse(data.data || data.course || data))
+      .catch(e => showError('Course not found: ' + slug));
+    return;
   }
-  // 3. postMessage (iframe embedding)
+  
+  // 3. postMessage (for iframe embedding)
   window.addEventListener('message', (e) => {
     if (e.data && e.data.type === 'LOAD_COURSE') {
-      isPreviewMode = true;
       loadCourse(e.data.course);
     }
   });
+  
   // 4. No source — show parser
   document.getElementById('crLoading').style.display = 'none';
   showParser();
@@ -2804,29 +2002,6 @@ function applyChunkedMode() {
 
 function loadCourse(data) {
   if (!data) { showError('No course data provided'); return; }
-  
-  // ── rawMarkdown: parse client-side, bypass pipeline entirely ──
-  if (data.rawMarkdown && data.rawMarkdown.length > 100) {
-    var parsed = parseMarkdownToCourse(data.rawMarkdown, (data.title || 'course') + '.md');
-    // Preserve API metadata that MD parser may not have
-    parsed.title = data.title || parsed.title;
-    parsed.slug = data.slug || parsed.slug;
-    parsed.ceHours = data.ceHours || data.ceuHours || parsed.ceHours;
-    parsed.contentArea = data.contentArea || data.category || parsed.contentArea;
-    parsed.objectives = data.objectives && data.objectives.length > 0 ? data.objectives : parsed.objectives;
-    parsed.description = data.description || parsed.description;
-    parsed.targetAudience = data.targetAudience || parsed.targetAudience;
-    parsed.thumbnail = data.thumbnail;
-    parsed.settings = data.settings;
-    if (data.assessment && data.assessment.questions && data.assessment.questions.length > 0) {
-      parsed.assessment = data.assessment;
-    }
-    if (data.references && data.references.length > 0) {
-      parsed.references = data.references;
-    }
-    data = parsed;
-    // Fall through to normal rendering below
-  }
   
   // ── Normalize: passThreshold → passingScore ──
   if (data.assessment) {
@@ -2928,14 +2103,11 @@ function loadCourse(data) {
       const blocks = section.contentBlocks || [];
       const dividerCount = blocks.filter(b => b.type === 'sectionDivider').length;
       
-      // Always tag with _moduleTitle for nav grouping
-      const moduleTitle = section.title || 'Section ' + (si + 1);
-      
       // If section has multiple sectionDividers, split it
       if (dividerCount > 1) {
         let currentBlocks = [];
         let currentTitle = section.title;
-        let subIdx = 0;
+        const moduleTitle = section.title;
         
         blocks.forEach(block => {
           if (block.type === 'sectionDivider') {
@@ -2944,8 +2116,7 @@ function loadCourse(data) {
                 title: currentTitle,
                 contentBlocks: currentBlocks,
                 _moduleTitle: moduleTitle,
-                _moduleIndex: si,
-                _subIndex: subIdx++
+                _moduleIndex: si
               });
             }
             currentTitle = block.title || moduleTitle;
@@ -2959,15 +2130,10 @@ function loadCourse(data) {
             title: currentTitle,
             contentBlocks: currentBlocks,
             _moduleTitle: moduleTitle,
-            _moduleIndex: si,
-            _subIndex: subIdx
+            _moduleIndex: si
           });
         }
       } else {
-        // Single section — tag it so nav can find it
-        section._moduleTitle = moduleTitle;
-        section._moduleIndex = si;
-        section._subIndex = 0;
         expanded.push(section);
       }
     });
@@ -3006,7 +2172,6 @@ function loadCourse(data) {
   
   // Build UI
   document.getElementById('crLoading').style.display = 'none';
-  document.getElementById('crError').style.display = 'none';
   document.getElementById('crApp').style.display = 'grid';
   closeParser();
   
@@ -3016,31 +2181,20 @@ function loadCourse(data) {
   
   const ceHrs = course.ceHours || course.ceuHours || '';
   const badge = document.getElementById('crCeBadge');
-  const ceDisplay = document.getElementById('crCeDisplay');
   if (badge && ceHrs) badge.textContent = ceHrs + ' CE Hours';
-  else if (ceDisplay) ceDisplay.style.display = 'none';
-  
-  // Module count
-  const modCountEl = document.getElementById('crModuleCount');
-  if (modCountEl) {
-    const navSecs = course.sections.filter(s => !s._isOverview);
-    const moduleTitles = new Set(navSecs.map(s => s._moduleTitle).filter(Boolean));
-    const count = moduleTitles.size > 1 ? moduleTitles.size : navSecs.length;
-    const label = moduleTitles.size > 1 ? 'Modules' : 'Sections';
-    modCountEl.textContent = count + ' ' + label;
-  }
-  
-  // Content area label
-  const areaEl = document.getElementById('crContentAreaLabel');
-  if (areaEl) {
-    const area = course.contentArea || course.category || course.ceCategory || '';
-    if (area) areaEl.textContent = area;
-    else areaEl.style.display = 'none';
-  }
+  else if (badge) badge.style.display = 'none';
   
   // Show assessment nav if assessment exists
   if (course.assessment?.questions?.length > 0) {
     document.getElementById('crNavAssessment').style.display = 'block';
+  }
+  
+  // Show downloads
+  document.getElementById('crDownloads').style.display = 'block';
+  
+  // TTS button
+  if ('speechSynthesis' in window) {
+    document.getElementById('crTTSBtn').style.display = '';
   }
   
   // Notify parent (if embedded)
@@ -3051,8 +2205,6 @@ function loadCourse(data) {
   // ── Feature hooks + initial render ──
   restoreProgress();
   buildGlossary();
-  buildReferencesDrawer();
-  buildResourcesDrawer();
   initTranslation();
   buildSectionNav();
   renderCurrentSection();
@@ -3068,7 +2220,6 @@ function showError(msg) {
 // SIDEBAR & NAVIGATION
 // ═══════════════════════════════════════════════════════════════
 function buildSectionNav() {
-  try {
   const nav = document.getElementById('crSectionNav');
   nav.innerHTML = '';
   
@@ -3103,7 +2254,6 @@ function buildSectionNav() {
       nav.appendChild(makeNavItem(index));
     });
   }
-  } catch(e) { console.error('buildSectionNav error:', e); }
 }
 
 function makeNavItem(i) {
@@ -3112,68 +2262,27 @@ function makeNavItem(i) {
   const isCompleted = completedSections.has(i);
   const isVisited = visitedSections.has(i);
   
-  const frag = document.createDocumentFragment();
-  
   const btn = document.createElement('button');
   btn.className = 'cr-nav-item' + (isActive ? ' active' : '') + (isCompleted ? ' completed' : '') + (isVisited && !isCompleted ? ' visited' : '');
-  btn.setAttribute('data-action', 'goToSection');
-  btn.setAttribute('data-idx', i);
+  btn.onclick = () => goToSection(i);
   
-  // Clean up title — strip module prefix
+  // Clean up title — strip module prefix, use sectionDivider title if different from module
   let title = section.title || 'Section ' + (i + 1);
+  // Remove "Module N: " prefix
   title = title.replace(/^Module\s+\d+\s*[:—–\-]\s*/i, '').trim();
+  // If title is empty after stripping, use a section number
   if (!title) title = 'Section ' + (i + 1);
   
-  // Module-relative numbering: 1.1, 1.2, 2.1, etc.
-  let displayNum;
-  if (section._moduleIndex != null && section._subIndex != null) {
-    displayNum = (section._moduleIndex + 1) + '.' + (section._subIndex + 1);
-  } else {
-    const overviewCount = course.sections.filter((s, idx) => idx < i && s._isOverview).length;
-    displayNum = i - overviewCount;
-  }
+  // Compute display number (excluding overview sections)
+  const overviewCount = course.sections.filter((s, idx) => idx < i && s._isOverview).length;
+  const displayNum = i - overviewCount;
   
   btn.innerHTML = `
     <span class="cr-nav-dot">${isCompleted ? '✓' : displayNum}</span>
     <span style="line-height:1.3">${esc(title)}</span>
   `;
   btn.setAttribute('aria-current', isActive ? 'step' : 'false');
-  frag.appendChild(btn);
-  
-  // Extract H2 sub-headings from this section's content blocks
-  const h2s = [];
-  (section.contentBlocks || []).forEach(block => {
-    if (block.type === 'text' && block.content) {
-      const matches = block.content.match(/<h2[^>]*>([^<]+)<\/h2>/gi);
-      if (matches) {
-        matches.forEach(m => {
-          const text = m.replace(/<[^>]+>/g, '').trim();
-          if (text && text.length < 80) h2s.push(text);
-        });
-      }
-    }
-  });
-  
-  // Add sub-heading nav items (collapsed unless active)
-  if (h2s.length > 0) {
-    const subsContainer = document.createElement('div');
-    subsContainer.className = 'cr-nav-subs' + (isActive ? ' open' : '');
-    subsContainer.dataset.sectionIdx = i;
-    
-    h2s.forEach(h2Text => {
-      const sub = document.createElement('button');
-      sub.className = 'cr-nav-sub';
-      sub.textContent = h2Text;
-      sub.setAttribute('data-action', 'scrollToH2');
-      sub.setAttribute('data-section', i);
-      sub.setAttribute('data-heading', h2Text);
-      subsContainer.appendChild(sub);
-    });
-    
-    frag.appendChild(subsContainer);
-  }
-  
-  return frag;
+  return btn;
 }
 
 function detectModuleGroups() {
@@ -3197,10 +2306,7 @@ function detectModuleGroups() {
       }
     });
     
-    // Only return groups if at least one group has multiple sub-sections
-    // (meaning real module→subsection structure, not just 1:1 section→module)
-    const hasMultiSectionGroup = groups.some(g => g.sections.length > 1);
-    if (hasMultiSectionGroup && groups.length > 1) return groups;
+    if (groups.length > 1) return groups;
     if (groups.length === 1 && groups[0].sections.length > 1) return groups;
     return [];
   }
@@ -3231,61 +2337,26 @@ function detectModuleGroups() {
 }
 
 function goToSection(i) {
-  if (currentView === 'assessment' || currentView === 'evaluation' || currentView === 'attestation' || currentView === 'certificate') currentView = 'section';
+  if (currentView === 'assessment') currentView = 'section';
   completedSections.add(currentSectionIndex);
   visitedSections.add(i);
   currentSectionIndex = i;
   buildSectionNav();
   renderCurrentSection();
   updateProgress();
-  syncSectionComplete(currentSectionIndex);
   closeSidebar();
   window.scrollTo({ top: 0, behavior: 'smooth' });
   srAnnounce('Now viewing: ' + (course.sections[i]?.title || 'Section ' + (i + 1)));
 }
 
-function scrollToH2(sectionIdx, headingText) {
-  // Navigate to the section first if not already there
-  if (currentSectionIndex !== sectionIdx) {
-    if (currentView === 'assessment') currentView = 'section';
-    completedSections.add(currentSectionIndex);
-    visitedSections.add(sectionIdx);
-    currentSectionIndex = sectionIdx;
-    buildSectionNav();
-    renderCurrentSection();
-    updateProgress();
-    closeSidebar();
-  }
-  // Find and scroll to the H2 with matching text
-  setTimeout(() => {
-    const area = document.getElementById('crContentArea');
-    const h2s = area.querySelectorAll('h2');
-    for (const h2 of h2s) {
-      if (h2.textContent.trim() === headingText) {
-        h2.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        // Flash highlight
-        h2.style.transition = 'background 0.3s';
-        h2.style.background = 'rgba(212,168,85,0.2)';
-        h2.style.borderRadius = '4px';
-        h2.style.padding = '4px 8px';
-        setTimeout(() => { h2.style.background = ''; h2.style.padding = ''; }, 1500);
-        return;
-      }
-    }
-  }, 100);
-}
-
 function prevSection() {
-  if (currentView === 'assessment' || currentView === 'evaluation' || currentView === 'attestation' || currentView === 'certificate') {
-    currentView = 'section'; renderCurrentSection(); return;
-  }
+  if (currentView === 'assessment') { currentView = 'section'; renderCurrentSection(); return; }
   if (currentSectionIndex > 0) goToSection(currentSectionIndex - 1);
 }
 
 function nextSection() {
   if (currentView === 'assessment') return;
   completedSections.add(currentSectionIndex);
-  syncSectionComplete(currentSectionIndex);
   if (currentSectionIndex < course.sections.length - 1) {
     goToSection(currentSectionIndex + 1);
   } else if (course.assessment?.questions?.length > 0) {
@@ -3296,20 +2367,10 @@ function nextSection() {
 function showAssessment() {
   currentView = 'assessment';
   completedSections.add(currentSectionIndex);
-  syncSectionComplete(currentSectionIndex);
   renderAssessment();
   updateProgress();
   buildSectionNav();
   window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-function syncSectionComplete(sectionIndex) {
-  if (!courseId) return;
-  queueProgressSync('PUT', '/api/interactive-courses/' + courseId + '/progress/section/' + sectionIndex, {
-    completed: true,
-    visitedSections: [...visitedSections],
-    completedSections: [...completedSections],
-    lastSectionViewed: currentSectionIndex
-  });
 }
 
 function updateProgress() {
@@ -3322,10 +2383,10 @@ function updateProgress() {
   const bar = document.getElementById('crProgressFill');
   if (bar) bar.style.width = pct + '%';
   
-  // Progress ring (circumference = 2πr = 2*π*14 ≈ 88)
+  // Progress ring (circumference = 2πr = 2*π*18 ≈ 113.1)
   const ring = document.getElementById('crProgressRing');
   if (ring) {
-    const circumference = 88;
+    const circumference = 113.1;
     ring.setAttribute('stroke-dashoffset', circumference - (circumference * pct / 100));
   }
   
@@ -3341,10 +2402,8 @@ function updateProgress() {
   if (subEl) {
     const currentSection = course.sections[currentSectionIndex];
     if (currentSection && !currentSection._isOverview) {
-      let secTitle = currentSection.title || '';
-      // Truncate if too long
-      if (secTitle.length > 40) secTitle = secTitle.substring(0, 38) + '…';
-      subEl.textContent = secTitle || 'Section ' + (currentSectionIndex + 1);
+      const navIdx = navSections.indexOf(currentSection) + 1;
+      subEl.textContent = `Section ${navIdx} in progress`;
     } else {
       subEl.textContent = 'Course overview';
     }
@@ -3387,8 +2446,6 @@ function toggleBool(setting) {
     toggle.classList.toggle('on', newVal);
     toggle.setAttribute('aria-checked', newVal);
   }
-  // Re-render if chunked mode changed
-  if (setting === 'chunked') renderCurrentSection();
 }
 
 function toggleReadAloud() {
@@ -3423,47 +2480,25 @@ function getTTSSpeed() {
 function readCurrentSection() {
   if (!ttsActive || !('speechSynthesis' in window)) return;
   speechSynthesis.cancel();
-  clearTTSHighlights();
   
   const area = document.getElementById('crContentArea');
-  // Collect all text nodes from paragraphs and headings
-  var textNodes = [];
-  area.querySelectorAll('p, h2, h3, li, .cr-prose p, .cr-prose li, .cr-kc-question').forEach(function(el) {
-    var text = el.innerText.replace(/[✓★⚙️♿🕐📖💭🎯📁⚠️🖍️📝📄💾🌐🖨️🔄⏸⏹]/g, '').trim();
-    if (text.length > 2) textNodes.push({ el: el, text: text });
-  });
-  if (textNodes.length === 0) return;
+  const text = area.innerText.replace(/[✓★⚙️♿🕐📖💭🎯📁⚠️🖍️📝📄💾🌐🖨️🔄⏸⏹]/g, '').trim();
+  if (!text) return;
   
-  var nodeIdx = 0;
-  function speakNext() {
-    if (nodeIdx >= textNodes.length) {
-      clearTTSHighlights();
-      var pauseBtn = document.querySelector('[data-action="ttsPause"]');
-      if (pauseBtn) pauseBtn.textContent = '▶';
-      return;
-    }
-    var node = textNodes[nodeIdx];
-    // Highlight current element
-    clearTTSHighlights();
-    node.el.classList.add('cr-tts-active');
-    node.el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    
-    ttsUtterance = new SpeechSynthesisUtterance(node.text);
-    ttsUtterance.volume = getTTSVolume();
-    ttsUtterance.rate = getTTSSpeed();
-    ttsUtterance.pitch = 1;
-    ttsUtterance.onend = function() { nodeIdx++; speakNext(); };
-    ttsUtterance.onerror = function() { nodeIdx++; speakNext(); };
-    speechSynthesis.speak(ttsUtterance);
-  }
+  ttsUtterance = new SpeechSynthesisUtterance(text);
+  ttsUtterance.volume = getTTSVolume();
+  ttsUtterance.rate = getTTSSpeed();
+  ttsUtterance.pitch = 1;
   
-  speakNext();
-  var pauseBtn = document.querySelector('[data-action="ttsPause"]');
+  ttsUtterance.onend = function() {
+    const pauseBtn = document.querySelector('[data-action="ttsPause"]');
+    if (pauseBtn) pauseBtn.textContent = '▶';
+  };
+  
+  speechSynthesis.speak(ttsUtterance);
+  
+  const pauseBtn = document.querySelector('[data-action="ttsPause"]');
   if (pauseBtn) pauseBtn.textContent = '⏸';
-}
-
-function clearTTSHighlights() {
-  document.querySelectorAll('.cr-tts-active').forEach(function(el) { el.classList.remove('cr-tts-active'); });
 }
 
 function ttsPause() {
@@ -3481,7 +2516,6 @@ function ttsPause() {
 function ttsStop() {
   if (!('speechSynthesis' in window)) return;
   speechSynthesis.cancel();
-  clearTTSHighlights();
   const pauseBtn = document.querySelector('[data-action="ttsPause"]');
   if (pauseBtn) pauseBtn.textContent = '▶';
 }
@@ -3585,9 +2619,6 @@ function renderCurrentSection() {
   saveProgress();
   renderObjectivesTracker();
   restoreHighlights();
-  watermarkContent();
-  annotateGlossaryTerms();
-  applyChunkedMode();
   const _toolbar = document.getElementById('crToolbar');
   if (_toolbar) _toolbar.style.display = (section && !section._isOverview && currentView === 'section') ? 'flex' : 'none';
 }
@@ -3612,7 +2643,7 @@ function renderBlock(block, index) {
     case 'text': return renderText(wrap, block);
     case 'imageText': return renderImageText(wrap, block);
     case 'image': return renderImage(wrap, block);
-    case 'accordion': return renderAccordion(wrap, block, index);
+    case 'accordion': return renderAccordion(wrap, block);
     case 'multipleChoice': return renderMultipleChoice(wrap, block, index);
     case 'multiSelect': return renderMultiSelect(wrap, block, index);
     case 'matching': return renderMatching(wrap, block, index);
@@ -3628,10 +2659,6 @@ function renderBlock(block, index) {
     case 'video': return renderVideoEmbed(wrap, block);
     case 'knowledgeCheck': return renderKnowledgeCheck(wrap, block, index);
     case 'quiz': return renderQuizBlock(wrap, block, index);
-    case 'funFactStat': return renderFunFactStat(wrap, block, index);
-    case 'funFactFreeform': return renderFunFactFreeform(wrap, block, index);
-    case 'knowledgeCheckInline': return renderKnowledgeCheckInline(wrap, block, index);
-    case 'pillInstructions': return renderPillInstructions(wrap, block);
     default:
       wrap.innerHTML = `<div class="cr-card" style="border-left:4px solid var(--cr-gold)">
         <p style="font-size:0.9em;color:var(--cr-text-muted)">Unsupported block type: <code>${esc(block.type)}</code></p>
@@ -3642,105 +2669,14 @@ function renderBlock(block, index) {
 
 // ─── SECTION DIVIDER ───
 function renderSectionDivider(wrap, block) {
-  var heroHtml = '';
-  // Auto-inject hero image for courses 3+ CE hours
-  if (course && (course.ceHours || course.ceuHours || 0) >= 3) {
-    var imgUrl = getSectionHeroImage(block.title || '', currentSectionIndex + 1);
-    if (imgUrl) {
-      heroHtml = '<img class="cr-section-hero" src="' + imgUrl + '" alt="" loading="lazy" aria-hidden="true">';
-    }
-  }
-  wrap.innerHTML = '<div class="cr-section-divider">' +
-    '<div class="cr-section-divider-number">' + (block.sectionNumber || '') + '</div>' +
-    '<div>' +
-      '<h2>' + esc(block.title || '') + '</h2>' +
-      (block.subtitle ? '<p>' + esc(block.subtitle) + '</p>' : '') +
-    '</div>' +
-  '</div>' + heroHtml;
+  wrap.innerHTML = `<div class="cr-section-divider">
+    <div class="cr-section-divider-number">${block.sectionNumber || ''}</div>
+    <div>
+      <h2>${esc(block.title || '')}</h2>
+      ${block.subtitle ? '<p>' + esc(block.subtitle) + '</p>' : ''}
+    </div>
+  </div>`;
   return wrap;
-}
-
-// ─── SECTION HERO IMAGE BANK (POC-centered) ───
-var _heroImageBank = {
-  ethics: [
-    'https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=900&h=280&fit=crop',
-    'https://images.unsplash.com/photo-1551836022-d5d88e9218df?w=900&h=280&fit=crop',
-    'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=900&h=280&fit=crop'
-  ],
-  trauma: [
-    'https://images.unsplash.com/photo-1559234938-b60fff04894d?w=900&h=280&fit=crop',
-    'https://images.unsplash.com/photo-1604881991720-f91add269bed?w=900&h=280&fit=crop',
-    'https://images.unsplash.com/photo-1531384441138-2736e62e0919?w=900&h=280&fit=crop'
-  ],
-  clinical: [
-    'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=900&h=280&fit=crop',
-    'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=900&h=280&fit=crop',
-    'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=900&h=280&fit=crop'
-  ],
-  multicultural: [
-    'https://images.unsplash.com/photo-1531206715517-5c0ba140b2b8?w=900&h=280&fit=crop',
-    'https://images.unsplash.com/photo-1529333166437-7750a6dd5a70?w=900&h=280&fit=crop',
-    'https://images.unsplash.com/photo-1543269865-cbf427effbad?w=900&h=280&fit=crop',
-    'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=900&h=280&fit=crop'
-  ],
-  crisis: [
-    'https://images.unsplash.com/photo-1573497019236-17f8177b81e8?w=900&h=280&fit=crop',
-    'https://images.unsplash.com/photo-1609220136736-443140cffec6?w=900&h=280&fit=crop',
-    'https://images.unsplash.com/photo-1469571486292-0ba58a3f068b?w=900&h=280&fit=crop'
-  ],
-  mindfulness: [
-    'https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=900&h=280&fit=crop',
-    'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=900&h=280&fit=crop',
-    'https://images.unsplash.com/photo-1602192509154-0b900ee1f851?w=900&h=280&fit=crop'
-  ],
-  addiction: [
-    'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=900&h=280&fit=crop',
-    'https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=900&h=280&fit=crop',
-    'https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?w=900&h=280&fit=crop'
-  ],
-  geriatric: [
-    'https://images.unsplash.com/photo-1581579438747-104c53d7fbc4?w=900&h=280&fit=crop',
-    'https://images.unsplash.com/photo-1516307365426-bea591f05011?w=900&h=280&fit=crop',
-    'https://images.unsplash.com/photo-1577896851231-70ef18881754?w=900&h=280&fit=crop'
-  ],
-  telehealth: [
-    'https://images.unsplash.com/photo-1591085686350-798c0f9faa7f?w=900&h=280&fit=crop',
-    'https://images.unsplash.com/photo-1612349316228-5942a9b489c2?w=900&h=280&fit=crop',
-    'https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=900&h=280&fit=crop'
-  ],
-  general: [
-    'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=900&h=280&fit=crop',
-    'https://images.unsplash.com/photo-1531206715517-5c0ba140b2b8?w=900&h=280&fit=crop',
-    'https://images.unsplash.com/photo-1573164713714-d95e436ab8d6?w=900&h=280&fit=crop',
-    'https://images.unsplash.com/photo-1551836022-d5d88e9218df?w=900&h=280&fit=crop',
-    'https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=900&h=280&fit=crop'
-  ]
-};
-
-function getSectionHeroImage(sectionTitle, sectionNum) {
-  // Skip overview/intro sections and conclusion
-  if (sectionNum <= 1) return null;
-  var title = (sectionTitle || '').toLowerCase();
-  var courseTitle = (course && course.title || '').toLowerCase();
-  var area = (course && (course.contentArea || course.category || course.ceCategory || '')).toLowerCase();
-  
-  // Detect category from course metadata + title keywords
-  var cat = 'general';
-  if (/ethic|boundar|dual.relat|consent|confidential/.test(courseTitle + ' ' + area)) cat = 'ethics';
-  else if (/trauma|ptsd|wound|neuro|inside.out|brain/.test(courseTitle + ' ' + area)) cat = 'trauma';
-  else if (/suicid|crisis|safety|risk.assess|1013|involuntary/.test(courseTitle + ' ' + area)) cat = 'crisis';
-  else if (/cultur|multicult|divers|immigr|refugee|competenc|translat/.test(courseTitle + ' ' + area)) cat = 'multicultural';
-  else if (/dbt|dialectic|mindful|meditat|accept/.test(courseTitle + ' ' + area)) cat = 'mindfulness';
-  else if (/addict|substance|recovery|28.days|sobriet/.test(courseTitle + ' ' + area)) cat = 'addiction';
-  else if (/geriatr|older.adult|aging|dementia|elder|retire/.test(courseTitle + ' ' + area)) cat = 'geriatric';
-  else if (/telehealth|telement|virtual|online.therap|remote/.test(courseTitle + ' ' + area)) cat = 'telehealth';
-  else if (/cbt|clin|therap|counsel|treat|interven|rapport/.test(courseTitle + ' ' + area)) cat = 'clinical';
-  
-  var bank = _heroImageBank[cat] || _heroImageBank.general;
-  // Use section number to rotate through bank (deterministic, no randomness)
-  var idx = ((sectionNum || 1) - 2) % bank.length;
-  if (idx < 0) idx = 0;
-  return bank[idx];
 }
 
 // ─── TEXT ───
@@ -3775,7 +2711,7 @@ function renderImage(wrap, block) {
 }
 
 // ─── ACCORDION ───
-function renderAccordion(wrap, block, index) {
+function renderAccordion(wrap, block) {
   const items = block.accordionItems || [];
   let html = '<div class="cr-accordion">';
   items.forEach((item, i) => {
@@ -3864,13 +2800,6 @@ function submitMC(id, correctIdx) {
   const submitBtn = el.querySelector('.cr-kc-submit');
   if (submitBtn) submitBtn.style.display = 'none';
   srAnnounce(selected === correctIdx ? 'Correct!' : 'Incorrect. The correct answer is shown.');
-  if (selected === correctIdx) updateObjectivesFromKC('mc-' + id);
-
-  // Track for section quiz API (knowledge check IDs: kc-{secIdx}-{blockIdx}-q{qIdx})
-  const kcMatch = id.match(/^kc-(\d+)-\d+-q(\d+)$/);
-  if (kcMatch) {
-    recordSectionQuizAnswer(parseInt(kcMatch[1]), parseInt(kcMatch[2]), selected, selected === correctIdx);
-  }
 }
 
 // ─── MULTI SELECT ───
@@ -3926,17 +2855,6 @@ function submitMS(id) {
   if (explEl) explEl.classList.add('show');
   const submitBtn = el.querySelector('.cr-kc-submit');
   if (submitBtn) submitBtn.style.display = 'none';
-  
-  // Check if all selections were correct
-  const selectedIdxs = [...el.querySelectorAll('.cr-kc-option.selected')].map((o, _, arr) => parseInt(o.dataset.idx));
-  const allCorrect = correctIdxs.length === selectedIdxs.length && correctIdxs.every(ci => selectedIdxs.includes(ci));
-  if (allCorrect) updateObjectivesFromKC('ms-' + id);
-
-  // Track for section quiz API (knowledge check IDs: kc-{secIdx}-{blockIdx}-q{qIdx})
-  const kcMatch = id.match(/^kc-(\d+)-\d+-q(\d+)$/);
-  if (kcMatch) {
-    recordSectionQuizAnswer(parseInt(kcMatch[1]), parseInt(kcMatch[2]), selectedIdxs, allCorrect);
-  }
 }
 
 // ─── MATCHING ───
@@ -3991,7 +2909,6 @@ function selectMatchDef(id, defIdx) {
     if (state.matched.size === state.total) {
       srAnnounce('All pairs matched correctly!');
       document.getElementById(id + '-status').innerHTML = '✓ All matched!';
-      updateObjectivesFromKC('match-' + id);
     }
   } else {
     // Wrong match — brief flash
@@ -4179,16 +3096,13 @@ function csTapCategory(e, id) {
 
 function csCheck(id) {
   const el = document.getElementById(id);
-  let allCorrect = true;
   el.querySelectorAll('.cr-cardsort-card').forEach(card => {
     const cat = card.closest('.cr-cardsort-category');
-    if (!cat) { allCorrect = false; return; }
+    if (!cat) return;
     const isCorrect = cat.dataset.category === card.dataset.correct;
     card.classList.add(isCorrect ? 'correct' : 'incorrect');
-    if (!isCorrect) allCorrect = false;
   });
   document.getElementById(id + '-explanation').classList.add('show');
-  if (allCorrect) updateObjectivesFromKC('cs-' + id);
 }
 
 // ─── SEQUENCING ───
@@ -4244,7 +3158,6 @@ function seqCheck(id) {
   
   document.getElementById(id + '-explanation').classList.add('show');
   srAnnounce(allCorrect ? 'All in correct order!' : 'Some items are out of order.');
-  if (allCorrect) updateObjectivesFromKC('seq-' + id);
 }
 
 // ─── TIMELINE ───
@@ -4388,11 +3301,6 @@ function renderKnowledgeCheck(wrap, block, blockIndex) {
   const id = `kc-${currentSectionIndex}-${blockIndex}`;
   const questions = block.questions || [];
   const showExpl = block.showExplanations !== false;
-
-  // Initialize section quiz tracking for backend API submission
-  if (questions.length > 0) {
-    initSectionQuizTracking(currentSectionIndex, questions.length);
-  }
   
   let html = `<div class="cr-card" id="${id}" style="border-left:4px solid var(--cr-burgundy)">
     <div style="font-family:var(--cr-font-display);font-weight:700;font-size:1.15em;color:var(--cr-burgundy);margin-bottom:16px;display:flex;align-items:center;gap:8px">
@@ -4439,300 +3347,6 @@ function renderQuizBlock(wrap, block, blockIndex) {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// INLINE SUPPLEMENTAL PILLS (funFactStat, funFactFreeform, knowledgeCheckInline, pillInstructions)
-// ═══════════════════════════════════════════════════════════════
-
-// ─── FUN FACT STAT (amber pill) ───
-function renderFunFactStat(wrap, block, blockIndex) {
-  const id = `ffs-${currentSectionIndex}-${blockIndex}`;
-  wrap.innerHTML = `
-    <div class="cr-pill cr-pill--stat" id="${id}" aria-expanded="false">
-      <button class="cr-pill__trigger" aria-controls="${id}-body"
-              data-action="togglePill" data-target="${id}"
-              aria-expanded="false">
-        <span class="cr-pill__icon" aria-hidden="true">★</span>
-        <span class="cr-pill__label">Fun fact</span>
-        <span class="cr-pill__chevron" aria-hidden="true">▾</span>
-      </button>
-      <div class="cr-pill__body" id="${id}-body" role="region" hidden>
-        <div class="cr-pill__stat-figure" aria-label="Statistic: ${esc(block.stat || '')}">${esc(block.stat || '')}</div>
-        <p class="cr-pill__stat-body">${esc(block.body || '')}</p>
-        ${block.source ? `<p class="cr-pill__source">Source: ${esc(block.source)}</p>` : ''}
-      </div>
-    </div>`;
-  return wrap;
-}
-
-// ─── FUN FACT FREEFORM (purple pill) ───
-function renderFunFactFreeform(wrap, block, blockIndex) {
-  const id = `fff-${currentSectionIndex}-${blockIndex}`;
-  wrap.innerHTML = `
-    <div class="cr-pill cr-pill--freeform" id="${id}" aria-expanded="false">
-      <button class="cr-pill__trigger" aria-controls="${id}-body"
-              data-action="togglePill" data-target="${id}"
-              aria-expanded="false">
-        <span class="cr-pill__icon" aria-hidden="true">✦</span>
-        <span class="cr-pill__label">Quick recall</span>
-        <span class="cr-pill__chevron" aria-hidden="true">▾</span>
-      </button>
-      <div class="cr-pill__body" id="${id}-body" role="region" hidden>
-        <p class="cr-pill__prompt">${esc(block.prompt || '')}</p>
-        ${block.hint ? `<p class="cr-pill__hint">Hint: ${esc(block.hint)}</p>` : ''}
-        <div class="cr-pill__input-row">
-          <input type="text" class="cr-pill__text-input"
-                 id="${id}-input"
-                 placeholder="Type your answer…"
-                 aria-label="Answer input"
-                 data-action="fffKeydown" data-target="${id}"
-                 autocomplete="off" autocorrect="off" spellcheck="false">
-          <button class="cr-pill__submit-btn"
-                  data-action="submitFreeform" data-target="${id}"
-                  aria-label="Submit answer">Submit</button>
-        </div>
-        <div class="cr-pill__feedback" id="${id}-feedback" role="alert" aria-live="polite" hidden></div>
-        <button class="cr-pill__reveal-btn" id="${id}-reveal"
-                data-action="revealFreeform" data-target="${id}"
-                hidden>Show answer</button>
-        <div class="cr-pill__reveal-text" id="${id}-reveal-text" hidden>
-          <strong>Answer:</strong> ${esc(block.reveal || '')}
-        </div>
-      </div>
-    </div>`;
-  // Store block data on element for handlers
-  const el = wrap.querySelector('.cr-pill--freeform');
-  el._fffData = block;
-  return wrap;
-}
-
-// ─── KNOWLEDGE CHECK INLINE (burgundy pill) ───
-function renderKnowledgeCheckInline(wrap, block, blockIndex) {
-  const id = `kci-${currentSectionIndex}-${blockIndex}`;
-  const options = block.options || [];
-  const correctIdx = typeof block.correctAnswer === 'number' ? block.correctAnswer : 0;
-
-  let optHtml = options.map((opt, i) =>
-    `<div class="cr-pill__kci-option" data-idx="${i}"
-          data-action="selectKCI" data-target="${id}"
-          role="radio" aria-checked="false" tabindex="0">
-       <span class="cr-pill__kci-radio" aria-hidden="true"></span>
-       <span>${esc(typeof opt === 'string' ? opt : opt.text || '')}</span>
-     </div>`
-  ).join('');
-
-  wrap.innerHTML = `
-    <div class="cr-pill cr-pill--kci" id="${id}" aria-expanded="false"
-         data-correct="${correctIdx}">
-      <button class="cr-pill__trigger" aria-controls="${id}-body"
-              data-action="togglePill" data-target="${id}"
-              aria-expanded="false">
-        <span class="cr-pill__icon" aria-hidden="true">◆</span>
-        <span class="cr-pill__label">Check your understanding</span>
-        <span class="cr-pill__chevron" aria-hidden="true">▾</span>
-      </button>
-      <div class="cr-pill__body" id="${id}-body" role="region" hidden>
-        <p class="cr-pill__question">${esc(block.question || '')}</p>
-        <div class="cr-pill__kci-options" role="radiogroup"
-             aria-label="Answer options">
-          ${optHtml}
-        </div>
-        <button class="cr-pill__submit-btn" disabled
-                data-action="submitKCI" data-target="${id}"
-                aria-label="Check answer">Check answer</button>
-        <div class="cr-pill__feedback" id="${id}-feedback" role="alert"
-             aria-live="polite" hidden></div>
-      </div>
-    </div>`;
-  // Store feedback strings
-  const el = wrap.querySelector('.cr-pill--kci');
-  el._kciData = block;
-  return wrap;
-}
-
-// ─── PILL INSTRUCTIONS (static teal info banner) ───
-function renderPillInstructions(wrap, block) {
-  wrap.innerHTML = `
-    <div class="cr-pill-instructions" role="note" aria-label="Interactive element instructions">
-      <span class="cr-pill-instructions__icon" aria-hidden="true">ℹ</span>
-      <div class="cr-pill-instructions__body">${block.body || ''}</div>
-    </div>`;
-  return wrap;
-}
-
-// ─── PILL SHARED: TOGGLE OPEN/CLOSE ─────────────────────────────
-function togglePill(id) {
-  const el = document.getElementById(id);
-  if (!el) return;
-  const body = el.querySelector('.cr-pill__body');
-  const trigger = el.querySelector('.cr-pill__trigger');
-  const open = el.getAttribute('aria-expanded') === 'true';
-  el.setAttribute('aria-expanded', !open);
-  trigger.setAttribute('aria-expanded', !open);
-  if (open) {
-    body.hidden = true;
-    el.classList.remove('cr-pill--open');
-  } else {
-    body.hidden = false;
-    el.classList.add('cr-pill--open');
-    srAnnounce('Pill opened');
-  }
-}
-
-// ─── FREEFORM: FUZZY MATCH ENGINE ─────────────────────────────────
-function _fffNormalize(s) {
-  return s.toLowerCase()
-    .replace(/%/g, ' percent')
-    .replace(/\bone\b/g,'1').replace(/\btwo\b/g,'2').replace(/\bthree\b/g,'3')
-    .replace(/\bfour\b/g,'4').replace(/\bfive\b/g,'5').replace(/\bsix\b/g,'6')
-    .replace(/\bseven\b/g,'7').replace(/\beight\b/g,'8').replace(/\bnine\b/g,'9')
-    .replace(/\bten\b/g,'10').replace(/\bfifteen\b/g,'15').replace(/\btwenty\b/g,'20')
-    .replace(/\bsixty\b/g,'60').replace(/\bseventy[\s-]?five\b/g,'75')
-    .replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
-}
-
-function _fffLevenshtein(a, b) {
-  const m = a.length, n = b.length;
-  const dp = Array.from({length: m+1}, (_, i) =>
-    Array.from({length: n+1}, (_, j) => i === 0 ? j : j === 0 ? i : 0));
-  for (let i = 1; i <= m; i++)
-    for (let j = 1; j <= n; j++)
-      dp[i][j] = a[i-1] === b[j-1]
-        ? dp[i-1][j-1]
-        : 1 + Math.min(dp[i-1][j], dp[i][j-1], dp[i-1][j-1]);
-  return dp[m][n];
-}
-
-function _fffSim(a, b) {
-  const maxLen = Math.max(a.length, b.length);
-  return maxLen === 0 ? 1 : 1 - _fffLevenshtein(a, b) / maxLen;
-}
-
-function _fffCheck(input, block) {
-  // Returns: 'hit' | 'close' | 'miss'
-  const norm = _fffNormalize(input);
-  const accepted = (block.accepted || []).map(_fffNormalize);
-  const close    = (block.close || []).map(_fffNormalize);
-
-  // Exact / contains match against accepted[]
-  for (const a of accepted) {
-    if (norm === a || norm.includes(a) || a.includes(norm)) return 'hit';
-  }
-  // Levenshtein against accepted[] — hit threshold 0.78
-  for (const a of accepted) {
-    if (_fffSim(norm, a) >= 0.78) return 'hit';
-  }
-  // Exact / contains match against close[]
-  for (const c of close) {
-    if (norm === c || norm.includes(c) || c.includes(norm)) return 'close';
-  }
-  // Levenshtein against close[] — close threshold 0.80
-  for (const c of close) {
-    if (_fffSim(norm, c) >= 0.80) return 'close';
-  }
-  // Low-confidence hit against accepted — treat as close
-  for (const a of accepted) {
-    if (_fffSim(norm, a) >= 0.55) return 'close';
-  }
-  return 'miss';
-}
-
-function submitFreeform(id) {
-  const el = document.getElementById(id);
-  if (!el || !el._fffData) return;
-  const input = el.querySelector('.cr-pill__text-input');
-  const feedbackEl = el.querySelector('.cr-pill__feedback');
-  const revealBtn = el.querySelector('.cr-pill__reveal-btn');
-  const userInput = (input?.value || '').trim();
-  if (!userInput) return;
-
-  const block = el._fffData;
-  const result = _fffCheck(userInput, block);
-  const feedbacks = block.feedbacks || {};
-
-  let msg = '';
-  if (result === 'hit') {
-    msg = feedbacks.hit || 'Correct!';
-    feedbackEl.className = 'cr-pill__feedback cr-pill__feedback--correct';
-  } else if (result === 'close') {
-    msg = (feedbacks.close || 'Close — {input}').replace('{input}', esc(userInput));
-    feedbackEl.className = 'cr-pill__feedback cr-pill__feedback--close';
-  } else {
-    msg = feedbacks.miss || 'Not quite.';
-    feedbackEl.className = 'cr-pill__feedback cr-pill__feedback--miss';
-  }
-
-  feedbackEl.innerHTML = msg;
-  feedbackEl.hidden = false;
-  if (revealBtn) revealBtn.hidden = false;
-  if (input) input.disabled = true;
-  const submitBtn = el.querySelector('.cr-pill__submit-btn');
-  if (submitBtn) submitBtn.disabled = true;
-
-  srAnnounce(result === 'hit' ? 'Correct!' : result === 'close' ? 'Close answer' : 'Incorrect. See feedback.');
-}
-
-function revealFreeform(id) {
-  const el = document.getElementById(id);
-  if (!el) return;
-  const revealText = el.querySelector('.cr-pill__reveal-text');
-  const revealBtn = el.querySelector('.cr-pill__reveal-btn');
-  if (revealText) revealText.hidden = false;
-  if (revealBtn) revealBtn.hidden = true;
-}
-
-// ─── KCI: SELECT OPTION ─────────────────────────────────────────
-function selectKCI(id, idx) {
-  const el = document.getElementById(id);
-  if (!el || el.dataset.answered) return;
-  el.querySelectorAll('.cr-pill__kci-option').forEach(o => {
-    o.classList.remove('selected');
-    o.setAttribute('aria-checked', 'false');
-  });
-  const opt = el.querySelector(`.cr-pill__kci-option[data-idx="${idx}"]`);
-  if (opt) {
-    opt.classList.add('selected');
-    opt.setAttribute('aria-checked', 'true');
-  }
-  const btn = el.querySelector('.cr-pill__submit-btn');
-  if (btn) btn.disabled = false;
-}
-
-// ─── KCI: SUBMIT ANSWER ─────────────────────────────────────────
-function submitKCI(id) {
-  const el = document.getElementById(id);
-  if (!el || el.dataset.answered || !el._kciData) return;
-  el.dataset.answered = 'true';
-
-  const correctIdx = parseInt(el.dataset.correct, 10);
-  const selected = el.querySelector('.cr-pill__kci-option.selected');
-  const selectedIdx = selected ? parseInt(selected.dataset.idx, 10) : -1;
-  const isCorrect = selectedIdx === correctIdx;
-  const block = el._kciData;
-  const feedbacks = block.feedback || {};
-
-  // Mark options
-  el.querySelectorAll('.cr-pill__kci-option').forEach((o, i) => {
-    o.classList.add('answered');
-    if (i === correctIdx) o.classList.add('correct');
-    else if (i === selectedIdx && !isCorrect) o.classList.add('incorrect');
-  });
-
-  const feedbackEl = el.querySelector('.cr-pill__feedback');
-  if (feedbackEl) {
-    feedbackEl.innerHTML = isCorrect
-      ? (feedbacks.correct || 'Correct!')
-      : (feedbacks.incorrect || 'Not quite — see the correct answer highlighted above.');
-    feedbackEl.className = 'cr-pill__feedback ' +
-      (isCorrect ? 'cr-pill__feedback--correct' : 'cr-pill__feedback--miss');
-    feedbackEl.hidden = false;
-  }
-
-  const btn = el.querySelector('.cr-pill__submit-btn');
-  if (btn) btn.disabled = true;
-
-  srAnnounce(isCorrect ? 'Correct answer selected.' : 'Incorrect. Correct answer is highlighted.');
-}
-
-// ═══════════════════════════════════════════════════════════════
 // DOWNLOAD DELIVERABLES
 // ═══════════════════════════════════════════════════════════════
 function downloadCourseText() {
@@ -4776,12 +3390,6 @@ function downloadCourseText() {
       } else if (block.type === 'imageText') {
         if (block.title) text += `${block.title}\n`;
         text += stripHtml(block.content || '') + '\n\n';
-      } else if (block.type === 'funFactStat') {
-        text += `★ Fun Fact: ${block.stat || ''} — ${block.body || ''}\n\n`;
-      } else if (block.type === 'funFactFreeform') {
-        text += `✦ Quick Recall: ${block.prompt || ''}\n\n`;
-      } else if (block.type === 'knowledgeCheckInline') {
-        text += `◆ Knowledge Check: ${block.question || ''}\n\n`;
       }
     });
   });
@@ -4889,10 +3497,10 @@ function assessmentSelect(qIdx, optIdx) {
   renderAssessment();
 }
 
-async function submitAssessment() {
+function submitAssessment() {
   const qs = course.assessment.questions;
   let correct = 0;
-  const answersForServer = [];
+  
   qs.forEach((q, i) => {
     let correctIdx = 0;
     if (typeof q.correctAnswer === 'number') correctIdx = q.correctAnswer;
@@ -4901,34 +3509,21 @@ async function submitAssessment() {
       if (idx >= 0) correctIdx = idx;
     }
     if (assessmentState.answers[i] === correctIdx) correct++;
-    answersForServer.push({
-      questionIndex: i,
-      selectedOption: assessmentState.answers[i],
-      correct: assessmentState.answers[i] === correctIdx
-    });
   });
+  
   const score = Math.round((correct / qs.length) * 100);
-  const passed = score >= (course.assessment.passingScore || 80);
   assessmentState.submitted = true;
   assessmentState.score = score;
   assessmentState.attempts++;
-  if (courseId && authToken && !isPreviewMode) {
-    try {
-      const result = await crApi('POST', '/api/interactive-courses/' + courseId + '/assessment', {
-        answers: answersForServer, score, passed,
-        attempt: assessmentState.attempts, timeSpent: 0
-      });
-      if (result.attemptsRemaining !== undefined) {
-        assessmentState.serverAttemptsRemaining = result.attemptsRemaining;
-      }
-    } catch (e) {
-      console.warn('Failed to save assessment to server:', e.message);
-    }
-  }
+  
   renderAssessmentResult();
+  
+  // Notify parent
   if (window.parent !== window) {
     window.parent.postMessage({
-      type: 'ASSESSMENT_COMPLETE', score, passed,
+      type: 'ASSESSMENT_COMPLETE',
+      score,
+      passed: score >= (course.assessment.passingScore || 80),
       attempts: assessmentState.attempts
     }, '*');
   }
@@ -4940,316 +3535,38 @@ function renderAssessmentResult() {
   const passing = course.assessment?.passingScore || 80;
   const passed = score >= passing;
   const maxAttempts = course.assessment?.maxAttempts || 3;
-  let html = '<div class="cr-assessment-result ' + (passed ? 'passed' : 'failed') + '">';
-  html += '<h3>' + (passed ? '🎉 Congratulations!' : '📝 Not Quite') + '</h3>';
-  html += '<div class="score">' + score + '%</div>';
-  html += '<p style="color:var(--cr-text-secondary);margin-top:12px">' + (passed ? 'You have passed the assessment.' : 'You needed ' + passing + '% to pass.') + '</p>';
-  html += '<p style="font-size:0.85em;color:var(--cr-text-muted);margin-top:8px">Attempt ' + assessmentState.attempts + ' of ' + maxAttempts + '</p>';
+  
+  let html = `<div class="cr-assessment-result ${passed ? 'passed' : 'failed'}">
+    <h3>${passed ? '🎉 Congratulations!' : '📝 Not Quite'}</h3>
+    <div class="score">${score}%</div>
+    <p style="color:var(--cr-text-secondary);margin-top:12px">
+      ${passed ? 'You have passed the assessment.' : `You needed ${passing}% to pass.`}
+    </p>
+    <p style="font-size:0.85em;color:var(--cr-text-muted);margin-top:8px">
+      Attempt ${assessmentState.attempts} of ${maxAttempts}
+    </p>`;
+  
   if (!passed && assessmentState.attempts < maxAttempts) {
-    html += '<button class="cr-btn cr-btn-primary" style="margin-top:20px" data-action="retryAssessment">Try Again</button>';
+    html += `<button class="cr-btn cr-btn-primary" style="margin-top:20px" data-action="retryAssessment">Try Again</button>`;
   }
+  
   if (passed) {
-    if (isPreviewMode || !authToken) {
-      html += '<p style="margin-top:20px;color:var(--cr-text-muted);font-size:0.9em">Sign in to complete the evaluation and receive your certificate.</p>';
-      html += '<button class="cr-btn cr-btn-primary" style="margin-top:12px" onclick="crGateRedirectLogin()">Sign In</button>';
-    } else {
-      html += '<button class="cr-btn cr-btn-success" style="margin-top:20px" data-action="showEvaluation">Continue to Course Evaluation</button>';
-    }
+    html += `<button class="cr-btn cr-btn-success" style="margin-top:20px" data-action="requestCertificate">
+      Get Certificate
+    </button>`;
   }
+  
   html += '<div style="margin-top:24px;font-size:10px;color:var(--cr-text-muted);text-align:center">Powered by CReady™ Viewer · © 2026 GAITP LLC · NBCC ACEP #7760</div>';
   html += '</div>';
   area.innerHTML = html;
   document.getElementById('crNavButtons').style.display = 'none';
 }
+
 function retryAssessment() {
   assessmentState.submitted = false;
   assessmentState.answers = {};
   assessmentState.score = null;
   renderAssessment();
-}
-// ═══════════════════════════════════════════════════════════════
-// NBCC ACEP COMPLETION FLOW: Evaluation → Attestation → Certificate
-// ═══════════════════════════════════════════════════════════════
-function showEvaluation() {
-  currentView = 'evaluation';
-  const area = document.getElementById('crContentArea');
-  document.getElementById('crNavButtons').style.display = 'none';
-  const evalQuestions = [
-    { id: 'relevance', text: 'The course content was relevant to my professional practice.', type: 'rating', required: true },
-    { id: 'objectives', text: 'The learning objectives were clearly stated and met.', type: 'rating', required: true },
-    { id: 'materials', text: 'The course materials were well-organized and easy to follow.', type: 'rating', required: true },
-    { id: 'assessment', text: 'The assessment accurately measured my learning.', type: 'rating', required: true },
-    { id: 'apply', text: 'I can apply the skills learned in this course to my practice.', type: 'rating', required: true },
-    { id: 'presenter', text: 'The presenter demonstrated expertise in the subject matter.', type: 'rating', required: true },
-    { id: 'valuable', text: 'What was the most valuable aspect of this course?', type: 'textarea', required: false },
-    { id: 'improve', text: 'What would you suggest to improve this course?', type: 'textarea', required: false }
-  ];
-  let html = '<div style="max-width:640px;margin:0 auto;padding:32px 0">';
-  html += '<h2 style="font-family:var(--cr-font-display);font-size:1.8em;font-weight:700;color:var(--cr-burgundy);text-align:center;margin-bottom:8px">Course Evaluation</h2>';
-  html += '<p style="text-align:center;color:var(--cr-text-secondary);margin-bottom:32px">This evaluation is required by NBCC for CE credit. Please rate your experience.</p>';
-  html += '<div class="cr-eval-form">';
-  evalQuestions.forEach(q => {
-    html += '<div class="cr-eval-question" data-eval-id="' + q.id + '" data-eval-required="' + q.required + '">';
-    html += '<label>' + q.text + (q.required ? '<span class="cr-eval-required">*</span>' : '') + '</label>';
-    if (q.type === 'rating') {
-      html += '<div class="cr-eval-stars">';
-      for (let s = 1; s <= 5; s++) {
-        html += '<input type="radio" name="eval-' + q.id + '" id="eval-' + q.id + '-' + s + '" value="' + s + '">';
-        html += '<label class="cr-eval-star" for="eval-' + q.id + '-' + s + '" onclick="crEvalStar(this, ' + s + ')">&#9733;</label>';
-      }
-      html += '</div>';
-    } else {
-      html += '<textarea id="eval-' + q.id + '" placeholder="Optional feedback..." rows="3"></textarea>';
-    }
-    html += '</div>';
-  });
-  html += '</div>';
-  html += '<button class="cr-btn cr-btn-primary" style="width:100%;margin-top:24px;padding:14px" data-action="submitEvaluation">Submit Evaluation</button>';
-  html += '<div style="margin-top:24px;font-size:10px;color:var(--cr-text-muted);text-align:center">NBCC ACEP Provider #7760 · Required for CE credit</div>';
-  html += '</div>';
-  area.innerHTML = html;
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-function crEvalStar(el, rating) {
-  const container = el.parentElement;
-  container.querySelectorAll('.cr-eval-star').forEach((star, i) => {
-    star.classList.toggle('active', i < rating);
-  });
-}
-async function submitEvaluation() {
-  const responses = {};
-  let valid = true;
-  document.querySelectorAll('.cr-eval-question').forEach(q => {
-    const id = q.dataset.evalId;
-    const required = q.dataset.evalRequired === 'true';
-    const radio = q.querySelector('input[type="radio"]:checked');
-    const textarea = q.querySelector('textarea');
-    if (radio) responses[id] = parseInt(radio.value);
-    else if (textarea) responses[id] = textarea.value;
-    else responses[id] = null;
-    if (required && !responses[id]) valid = false;
-  });
-  if (!valid) {
-    alert('Please complete all required fields (marked with *).');
-    return;
-  }
-  if (courseId && authToken) {
-    try {
-      await crApi('POST', '/api/interactive-courses/' + courseId + '/evaluation', { responses });
-    } catch (e) {
-      console.warn('Failed to save evaluation:', e.message);
-      alert('Failed to submit evaluation. Please try again.');
-      return;
-    }
-  }
-  showAttestation();
-}
-function showAttestation() {
-  currentView = 'attestation';
-  const area = document.getElementById('crContentArea');
-  document.getElementById('crNavButtons').style.display = 'none';
-  const courseTitleSafe = (course.title || 'this course').replace(/</g, '&lt;');
-  const ceHours = course.ceHours || course.ceuHours || 1;
-  let html = '<div style="max-width:640px;margin:0 auto;padding:32px 0">';
-  html += '<h2 style="font-family:var(--cr-font-display);font-size:1.8em;font-weight:700;color:var(--cr-burgundy);text-align:center;margin-bottom:8px">Attestation</h2>';
-  html += '<p style="text-align:center;color:var(--cr-text-secondary);margin-bottom:24px">Please read and confirm the following statement to receive your certificate.</p>';
-  html += '<div class="cr-attestation-box">';
-  html += '<p><strong>Attestation of Completion</strong></p>';
-  html += '<p>I, <strong>' + (authUser?.firstName || '') + ' ' + (authUser?.lastName || '') + '</strong>, hereby attest that:</p>';
-  html += '<p>I have personally completed all components of <em>"' + courseTitleSafe + '"</em> (' + ceHours + ' CE hours), including reading all course materials, completing all interactive activities, and passing the final assessment.</p>';
-  html += '<p>I understand that this continuing education activity was provided by GAITP LLC (NBCC ACEP Provider #7760) and that ' + ceHours + ' continuing education hour(s) will be awarded upon completion.</p>';
-  html += '<p>I understand that falsifying this attestation may result in revocation of CE credits.</p>';
-  html += '</div>';
-  html += '<label class="cr-attestation-check">';
-  html += '<input type="checkbox" id="crAttestCheckbox" onchange="document.getElementById(\'crAttestBtn\').disabled = !this.checked">';
-  html += '<span>I have read, understand, and agree to the above attestation statement.</span>';
-  html += '</label>';
-  html += '<button id="crAttestBtn" class="cr-btn cr-btn-primary" style="width:100%;padding:14px" disabled data-action="submitAttestation">Confirm &amp; Get Certificate</button>';
-  html += '<div style="margin-top:24px;font-size:10px;color:var(--cr-text-muted);text-align:center">NBCC ACEP Provider #7760</div>';
-  html += '</div>';
-  area.innerHTML = html;
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-async function submitAttestation() {
-  const checkbox = document.getElementById('crAttestCheckbox');
-  if (!checkbox || !checkbox.checked) {
-    alert('Please agree to the attestation statement.');
-    return;
-  }
-  if (courseId && authToken) {
-    try {
-      await crApi('POST', '/api/interactive-courses/' + courseId + '/attestation', { agreed: true });
-    } catch (e) {
-      console.warn('Failed to save attestation:', e.message);
-      alert('Failed to submit attestation. Please try again.');
-      return;
-    }
-  }
-  showCertificateView();
-}
-async function showCertificateView() {
-  currentView = 'certificate';
-  const area = document.getElementById('crContentArea');
-  document.getElementById('crNavButtons').style.display = 'none';
-  area.innerHTML = '<div style="text-align:center;padding:60px 0"><div class="cr-spinner" style="margin:0 auto 16px"></div><p style="color:var(--cr-text-muted)">Generating your certificate…</p></div>';
-  let certUrl = null;
-  let certNumber = null;
-  if (courseId && authToken) {
-    try {
-      const certRes = await crApi('POST', '/api/interactive-courses/' + courseId + '/certificate');
-      certUrl = certRes.pdfUrl ? (API_BASE + certRes.pdfUrl) : (certRes.url || certRes.certificateUrl);
-      certNumber = certRes.certificateNumber || certRes.number;
-    } catch (e) {
-      console.warn('Certificate generation failed:', e.message);
-    }
-  }
-  const ceHours = course.ceHours || course.ceuHours || 1;
-  const courseTitleSafe = (course.title || 'Course').replace(/</g, '&lt;');
-  let html = '<div class="cr-cert-display" style="padding:40px 0;max-width:540px;margin:0 auto">';
-  html += '<div class="cr-cert-icon">&#127942;</div>';
-  html += '<h2 style="font-family:var(--cr-font-display);font-size:2em;font-weight:700;color:var(--cr-burgundy);margin-bottom:8px">Course Complete!</h2>';
-  html += '<p style="color:var(--cr-text-secondary);margin-bottom:4px">Congratulations on completing</p>';
-  html += '<p style="font-weight:700;color:var(--cr-text);font-size:1.1em;margin-bottom:16px">' + courseTitleSafe + '</p>';
-  html += '<p style="color:var(--cr-text-muted);font-size:0.9em">' + ceHours + ' CE Hour' + (ceHours !== 1 ? 's' : '') + ' earned · NBCC ACEP #7760</p>';
-  if (certNumber) {
-    html += '<p style="color:var(--cr-text-muted);font-size:0.85em;margin-top:8px">Certificate #' + certNumber + '</p>';
-  }
-  html += '<div class="cr-cert-actions">';
-  if (certUrl) {
-    html += '<a href="' + certUrl + '" target="_blank" class="cr-btn cr-btn-primary" style="padding:12px 24px">Download Certificate (PDF)</a>';
-  } else {
-    html += '<p style="color:var(--cr-text-muted);font-size:0.9em">Your certificate will be available in your <a href="/certificates.html" style="color:var(--cr-burgundy)">Certificates</a> dashboard.</p>';
-  }
-  html += '<a href="/courses.html" class="cr-btn" style="background:var(--cr-stone);color:var(--cr-text);border:1px solid var(--cr-border);padding:12px 24px">Browse More Courses</a>';
-  html += '</div>';
-  html += '<div style="margin-top:32px;font-size:10px;color:var(--cr-text-muted);text-align:center">Powered by CReady™ Viewer · © 2026 GAITP LLC · NBCC ACEP #7760</div></div>';
-  area.innerHTML = html;
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-  if (window.parent !== window) {
-    window.parent.postMessage({ type: 'CERTIFICATE_ISSUED', certUrl, certNumber }, '*');
-  }
-}
-
-// ═══════════════════════════════════════════════════════════════
-// SECTION QUIZ API — server-side scoring + adaptive learning
-// ═══════════════════════════════════════════════════════════════
-
-// Track quiz answers per section for batched submission
-let sectionQuizState = {}; // { sectionIndex: { answers: {questionIndex: selectedOption}, total: N, answered: N } }
-
-function initSectionQuizTracking(sectionIndex, totalQuestions) {
-  if (!sectionQuizState[sectionIndex]) {
-    sectionQuizState[sectionIndex] = { answers: {}, total: totalQuestions, answered: 0 };
-  }
-}
-
-function recordSectionQuizAnswer(sectionIndex, questionIndex, selectedOption, isCorrect) {
-  const state = sectionQuizState[sectionIndex];
-  if (!state) return;
-  if (state.answers[questionIndex] !== undefined) return; // Already answered
-  state.answers[questionIndex] = selectedOption;
-  state.answered++;
-
-  // When all questions in this section's quiz are answered, submit to backend
-  if (state.answered >= state.total) {
-    submitSectionQuizToAPI(sectionIndex, state.answers);
-  }
-}
-
-function submitSectionQuizToAPI(sectionIndex, answers) {
-  if (!course.slug || !localStorage.getItem('token')) return;
-
-  crApiFetch(`/api/interactive-courses/${course.slug}/progress/section/${sectionIndex}/quiz`, {
-    answers,
-    timeSpent: 0
-  }).then(({ ok, data }) => {
-    if (!ok) {
-      // Show error (retake limit, cooldown, etc.)
-      if (data.error) showErrorModal(data.error);
-      return;
-    }
-
-    // Handle adaptive learning action
-    if (data.adaptiveAction) {
-      const aa = data.adaptiveAction;
-      adaptiveUnlockedSections.add(aa.targetSectionIndex);
-      const targetTitle = course.sections[aa.targetSectionIndex]?.title || `Section ${aa.targetSectionIndex + 1}`;
-      let msg = aa.message || '';
-      if (aa.action === 'redirect') {
-        msg = msg || `Based on your score (${data.percentage}%), we recommend reviewing "${targetTitle}".`;
-      } else if (aa.action === 'require_review') {
-        msg = msg || `Please review "${targetTitle}" before continuing.`;
-      } else if (aa.action === 'skip_ahead') {
-        msg = msg || `Great score (${data.percentage}%)! You can skip ahead to "${targetTitle}".`;
-      }
-      showAdaptiveModal(msg, aa.targetSectionIndex);
-    }
-
-    // Show retake info if relevant
-    if (data.attemptsRemaining !== undefined && data.attemptsRemaining <= 2 && !data.passed) {
-      const infoEl = document.createElement('div');
-      infoEl.className = 'cr-quiz-info';
-      infoEl.style.cssText = 'text-align:center;padding:12px;margin-top:12px;font-size:0.85em;color:var(--cr-text-muted);background:rgba(139,37,66,0.05);border-radius:8px';
-      infoEl.textContent = `Score: ${data.percentage}% · ${data.attemptsRemaining} attempt(s) remaining`;
-      const area = document.getElementById('crContentArea');
-      if (area) area.appendChild(infoEl);
-    }
-  }).catch(() => {
-    // Network error — quiz already scored client-side, so no action needed
-  });
-}
-
-// ─── ERROR MODAL (generic errors, not adaptive learning) ───
-function showErrorModal(message) {
-  const existing = document.getElementById('crAdaptiveModal');
-  if (existing) existing.remove();
-
-  const modal = document.createElement('div');
-  modal.id = 'crAdaptiveModal';
-  modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:10000';
-  modal.innerHTML = `<div style="background:var(--cr-bg,#fff);border-radius:16px;padding:32px;max-width:480px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.3);text-align:center">
-    <div style="font-size:1.5em;margin-bottom:12px">⚠️</div>
-    <h3 style="font-family:var(--cr-font-display,Georgia,serif);font-size:1.2em;color:var(--cr-navy,#1a1a2e);margin-bottom:16px">Notice</h3>
-    <p style="color:var(--cr-text-secondary,#555);line-height:1.6;margin-bottom:24px">${esc(message)}</p>
-    <button class="cr-btn" id="crAdaptiveDismiss" style="padding:10px 24px;background:var(--cr-bg-alt,#f5f5f5);color:var(--cr-text,#333)">OK</button>
-  </div>`;
-  document.body.appendChild(modal);
-  document.getElementById('crAdaptiveDismiss').addEventListener('click', () => modal.remove());
-  modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
-}
-
-// ─── ADAPTIVE LEARNING MODAL ───
-function showAdaptiveModal(message, targetSectionIndex) {
-  // Remove existing modal if any
-  const existing = document.getElementById('crAdaptiveModal');
-  if (existing) existing.remove();
-
-  const modal = document.createElement('div');
-  modal.id = 'crAdaptiveModal';
-  modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:10000';
-  modal.innerHTML = `<div style="background:var(--cr-bg,#fff);border-radius:16px;padding:32px;max-width:480px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.3);text-align:center">
-    <div style="font-size:1.5em;margin-bottom:12px">🔀</div>
-    <h3 style="font-family:var(--cr-font-display,Georgia,serif);font-size:1.2em;color:var(--cr-navy,#1a1a2e);margin-bottom:16px">Adaptive Learning</h3>
-    <p style="color:var(--cr-text-secondary,#555);line-height:1.6;margin-bottom:24px">${esc(message)}</p>
-    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
-      ${targetSectionIndex !== null ? `<button class="cr-btn cr-btn-primary" id="crAdaptiveGo" style="padding:10px 24px">Go to Section</button>` : ''}
-      <button class="cr-btn" id="crAdaptiveDismiss" style="padding:10px 24px;background:var(--cr-bg-alt,#f5f5f5);color:var(--cr-text,#333)">
-        ${targetSectionIndex !== null ? 'Stay Here' : 'OK'}
-      </button>
-    </div>
-  </div>`;
-  document.body.appendChild(modal);
-
-  document.getElementById('crAdaptiveDismiss').addEventListener('click', () => modal.remove());
-  const goBtn = document.getElementById('crAdaptiveGo');
-  if (goBtn && targetSectionIndex !== null) {
-    goBtn.addEventListener('click', () => {
-      modal.remove();
-      goToSection(targetSectionIndex);
-    });
-  }
-  // Close on backdrop click
-  modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -5796,94 +4113,12 @@ function parseMarkdownToCourse(text, filename) {
       }
     });
     
-    // ── DISTRIBUTE KCs: one per content section instead of all at end ──
-    var kcBlocks = blocks.filter(function(b) { return b.type === 'knowledgeCheck' && b.questions && b.questions.length > 0; });
-    if (kcBlocks.length > 0) {
-      // Collect all KC questions
-      var allKCQs = [];
-      kcBlocks.forEach(function(kb) { allKCQs = allKCQs.concat(kb.questions); });
-      
-      // Remove original KC blocks from the array
-      for (var ri = blocks.length - 1; ri >= 0; ri--) {
-        if (blocks[ri].type === 'knowledgeCheck') blocks.splice(ri, 1);
-      }
-      
-      // Find content text blocks (ones with H2 headings = real content sections)
-      var contentIndices = [];
-      blocks.forEach(function(b, bi) {
-        if (b.type === 'text' && b.content && /^<h2>/.test(b.content)) contentIndices.push(bi);
-        // Also count accordions that follow text blocks as part of that section
-      });
-      
-      if (contentIndices.length > 0 && allKCQs.length > 0) {
-        // Distribute: assign questions round-robin to content sections
-        var insertions = []; // {afterIndex, question}
-        allKCQs.forEach(function(q, qi) {
-          var targetSection = contentIndices[qi % contentIndices.length];
-          // Find the last block belonging to this section (before next H2 or end)
-          var nextH2 = contentIndices.find(function(ci) { return ci > targetSection; });
-          var insertAt = nextH2 ? nextH2 - 1 : blocks.length - 1;
-          insertions.push({ afterIndex: insertAt, question: q });
-        });
-        
-        // Sort insertions by index descending so splicing doesn't shift indices
-        insertions.sort(function(a, b) { return b.afterIndex - a.afterIndex; });
-        insertions.forEach(function(ins) {
-          blocks.splice(ins.afterIndex + 1, 0, {
-            type: 'knowledgeCheck',
-            title: 'Knowledge Check',
-            showExplanations: true,
-            questions: [ins.question]
-          });
-        });
-      }
-    }
-    
-    // Split blocks into navigable sections on H2 boundaries
-    // Module divider merges into first content section
-    var curBlocks = [];
-    var curTitle = moduleTitle.replace(/^MODULE\s+\d+\s*[:—–\-]\s*/i, '');
-    var subIdx = 0;
-    
-    function pushSec() {
-      if (curBlocks.length === 0) return;
-      // Skip sections that are only a sectionDivider with no content
-      if (curBlocks.length === 1 && curBlocks[0].type === 'sectionDivider') return;
-      course.sections.push({
-        title: curTitle,
-        _moduleTitle: moduleTitle,
-        _moduleIndex: mi,
-        _subIndex: subIdx,
-        contentBlocks: curBlocks
-      });
-      curBlocks = [];
-      subIdx++;
-    }
-    
-    blocks.forEach(function(block) {
-      // sectionDivider always starts the buffer (merges into first section)
-      if (block.type === 'sectionDivider') {
-        curBlocks.push(block);
-        return;
-      }
-      
-      // Text block starting with H2 = new navigable section boundary
-      if (block.type === 'text' && block.content) {
-        var h2m = block.content.match(/^<h2>([^<]+)<\/h2>/);
-        if (h2m && curBlocks.length > 0) {
-          // Only flush if we have real content (not just a divider waiting)
-          var hasContent = curBlocks.some(function(b) { return b.type !== 'sectionDivider'; });
-          if (hasContent) {
-            pushSec();
-          }
-          curTitle = h2m[1].replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>');
-        }
-      }
-      
-      curBlocks.push(block);
+    course.sections.push({
+      title: moduleTitle,
+      _moduleTitle: moduleTitle,
+      _moduleIndex: mi,
+      contentBlocks: blocks
     });
-    
-    pushSec(); // flush last section
   });
   
   // ── PHASE 4: Process FINAL ASSESSMENT zone ──
@@ -6194,132 +4429,6 @@ document.addEventListener('keydown', (e) => {
   }
 });
 // ═══════════════════════════════════════════════════════════════
-// FEATURE: REFERENCES DRAWER
-// ═══════════════════════════════════════════════════════════════
-function buildReferencesDrawer() {
-  if (!course?.references?.length) return;
-  
-  // Show the tab
-  document.getElementById('crRefsTab').classList.add('visible');
-  
-  // Build list
-  const list = document.getElementById('crRefsList');
-  const count = document.getElementById('crRefsCount');
-  
-  count.textContent = course.references.length + ' references';
-  
-  list.innerHTML = course.references.map(ref => {
-    if (ref.citation) {
-      return `<div class="cr-refs-list-item">${esc(ref.citation)}</div>`;
-    }
-    // Build APA 7th: Author (Year). *Title*. Source.
-    let apa = '';
-    if (ref.author) apa += esc(ref.author);
-    if (ref.year) apa += ` (${ref.year}).`;
-    else apa += '.';
-    if (ref.title) apa += ` <em>${esc(ref.title)}</em>.`;
-    if (ref.source) apa += ` ${esc(ref.source)}.`;
-    return `<div class="cr-refs-list-item">${apa.trim()}</div>`;
-  }).join('');
-}
-
-function toggleRefs() {
-  document.getElementById('crRefsPanel').classList.toggle('open');
-  // Close resources if open
-  document.getElementById('crResourcesPanel')?.classList.remove('open');
-}
-
-// ═══════════════════════════════════════════════════════════════
-// FEATURE: RESOURCES DRAWER
-// ═══════════════════════════════════════════════════════════════
-function buildResourcesDrawer() {
-  if (!course) return;
-  
-  // Collect resources from all sections' resource blocks + any course-level resources
-  const resources = [];
-  const icons = {
-    pdf: '📄', handout: '📋', article: '📰', video: '🎬', 
-    website: '🌐', book: '📚', link: '🔗', reference: '📖',
-    worksheet: '📝', document: '📃', chapter: '📑', journal: '🔬',
-    card: '🗂️', tool: '🔧', guide: '📘', template: '📐'
-  };
-  const iconClass = {
-    pdf: 'handout', handout: 'handout', worksheet: 'handout', template: 'handout', guide: 'handout',
-    article: 'article', journal: 'article', chapter: 'article', book: 'article',
-    card: 'card', tool: 'card',
-    video: 'video',
-  };
-  
-  // Walk all sections for resource blocks
-  (course.sections || []).forEach((section, si) => {
-    (section.contentBlocks || []).forEach(block => {
-      if (block.type === 'resources') {
-        (block.resources || []).forEach(r => {
-          resources.push({
-            title: r.title || 'Resource',
-            url: r.url || '#',
-            type: r.type || 'link',
-            description: r.description || '',
-            section: section.title
-          });
-        });
-      }
-    });
-  });
-  
-  // Also check course-level supplementalResources if present
-  if (course.supplementalResources) {
-    course.supplementalResources.forEach(r => {
-      resources.push({
-        title: r.title || 'Resource',
-        url: r.url || '#',
-        type: r.type || 'link',
-        description: r.description || '',
-        section: 'Course'
-      });
-    });
-  }
-  
-  if (resources.length === 0) {
-    // Show tab anyway with "no resources" message — course authors can add later
-    // Only show if course has resource blocks or supplemental field
-    return;
-  }
-  
-  // Show tab
-  document.getElementById('crResourcesTab').classList.add('visible');
-  
-  // Build list
-  const list = document.getElementById('crResourcesList');
-  list.innerHTML = resources.map(r => {
-    const type = (r.type || 'link').toLowerCase();
-    const icon = icons[type] || '📎';
-    const cls = iconClass[type] || 'link';
-    const isExternal = r.url && r.url.startsWith('http');
-    
-    return `<div class="cr-resource-drawer-item">
-      <div class="cr-resource-drawer-icon ${cls}">${icon}</div>
-      <div class="cr-resource-drawer-info">
-        <div class="cr-resource-drawer-title">
-          ${r.url && r.url !== '#' 
-            ? `<a href="${esc(r.url)}" target="_blank" rel="noopener">${esc(r.title)}${isExternal ? ' ↗' : ''}</a>`
-            : esc(r.title)}
-        </div>
-        <div class="cr-resource-drawer-type">${esc(type)}</div>
-        ${r.description ? `<div class="cr-resource-drawer-desc">${esc(r.description)}</div>` : ''}
-        ${r.section ? `<div style="font-size:0.75em;color:var(--cr-text-muted);margin-top:2px">From: ${esc(r.section)}</div>` : ''}
-      </div>
-    </div>`;
-  }).join('');
-}
-
-function toggleResources() {
-  document.getElementById('crResourcesPanel').classList.toggle('open');
-  // Close refs if open
-  document.getElementById('crRefsPanel')?.classList.remove('open');
-}
-
-// ═══════════════════════════════════════════════════════════════
 // FEATURE: GLOSSARY PANEL
 // ═══════════════════════════════════════════════════════════════
 let glossaryTerms = []; // {term, definition}
@@ -6388,42 +4497,36 @@ function toggleGlossary() {
 // FEATURE: LEARNING OBJECTIVES TRACKER
 // ═══════════════════════════════════════════════════════════════
 let checkedObjectives = new Set();
-let correctKCIds = new Set();
 
-function countTotalKCs() {
-  if (!course?.sections) return 0;
-  let count = 0;
-  course.sections.forEach(s => {
-    (s.contentBlocks || []).forEach(b => {
-      if (['multipleChoice','multiSelect','matching','cardSort','sequencing','knowledgeCheck'].includes(b.type)) {
-        count += b.type === 'knowledgeCheck' ? (b.questions?.length || 1) : 1;
-      }
-    });
-  });
-  return count;
+function renderObjectivesTracker() {
+  const tracker = document.getElementById('crObjectivesTracker');
+  if (!tracker || !course?.objectives?.length) { if (tracker) tracker.innerHTML = ''; return; }
+  
+  // Only show on content sections (not overview, not assessment)
+  const section = course.sections[currentSectionIndex];
+  if (section?._isOverview || currentView === 'assessment') { tracker.innerHTML = ''; return; }
+  
+  // Load from localStorage
+  const saved = loadState('objectives');
+  if (saved) checkedObjectives = new Set(saved);
+  
+  const pct = Math.round((checkedObjectives.size / course.objectives.length) * 100);
+  
+  tracker.innerHTML = `<div class="cr-objectives-panel">
+    <div class="cr-objectives-title">🎯 Learning Objectives <span style="font-weight:400;font-size:0.8em;color:var(--cr-text-muted);margin-left:auto">${checkedObjectives.size}/${course.objectives.length} (${pct}%)</span></div>
+    ${course.objectives.map((obj, i) => `<div class="cr-obj-item ${checkedObjectives.has(i) ? 'checked' : ''}" data-action="toggleObjective" data-idx="${i}">
+      <span class="cr-obj-check">${checkedObjectives.has(i) ? '✓' : ''}</span>
+      <span>${esc(obj)}</span>
+    </div>`).join('')}
+  </div>`;
 }
 
-function updateObjectivesFromKC(kcId) {
-  if (!course?.objectives?.length) return;
-  correctKCIds.add(kcId);
-  saveState('correctKCs', [...correctKCIds]);
-  
-  const totalKCs = countTotalKCs();
-  if (totalKCs === 0) return;
-  
-  const ratio = correctKCIds.size / totalKCs;
-  const objectivesToCheck = Math.min(course.objectives.length, Math.floor(ratio * course.objectives.length));
-  
-  // Check off objectives from the top proportionally
-  for (let i = 0; i < objectivesToCheck; i++) {
-    checkedObjectives.add(i);
-  }
+function toggleObjective(idx) {
+  if (checkedObjectives.has(idx)) checkedObjectives.delete(idx);
+  else checkedObjectives.add(idx);
   saveState('objectives', [...checkedObjectives]);
   renderObjectivesTracker();
 }
-
-function renderObjectivesTracker() { /* removed */ }
-function toggleObjective() { /* removed */ }
 
 // ═══════════════════════════════════════════════════════════════
 // FEATURE: PROGRESS BOOKMARKS (localStorage)
@@ -6455,17 +4558,13 @@ function saveProgress() {
   saveState('visited', [...visitedSections]);
   saveState('view', currentView);
 }
+
 function restoreProgress() {
   if (!course) return;
-  // Server data already applied in init() — skip localStorage
-  if (enrollmentData && (enrollmentData.sectionsCompleted?.length > 0 || enrollmentData.lastSectionViewed !== undefined)) {
-    visitedSections.add(currentSectionIndex);
-    return;
-  }
-  // Fallback: localStorage (preview mode, offline)
   const section = loadState('section');
   const completed = loadState('completed');
   const visited = loadState('visited');
+  
   if (completed) completedSections = new Set(completed);
   if (visited) visitedSections = new Set(visited);
   if (section !== null && section < course.sections.length) {
@@ -6616,69 +4715,19 @@ function exportPDF() {
 // ═══════════════════════════════════════════════════════════════
 function initTranslation() {
   document.getElementById('crTranslateBar').style.display = 'flex';
-
+  
   const select = document.getElementById('crLangSelect');
   select.addEventListener('change', function() {
     const lang = this.value;
     if (!lang) {
-      // Reset to original — remove Google Translate frame
-      const frame = document.querySelector('.goog-te-banner-frame');
-      if (frame) frame.style.display = 'none';
-      document.body.style.top = '';
-      // Restore by setting cookie to empty and reload
-      document.cookie = 'googtrans=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC';
-      document.cookie = 'googtrans=; path=/; domain=' + location.hostname + '; expires=Thu, 01 Jan 1970 00:00:00 UTC';
+      // Reset to original
       location.reload();
       return;
     }
-    // Set Google Translate cookie and trigger in-page translation
-    document.cookie = 'googtrans=/en/' + lang + '; path=/';
-    document.cookie = 'googtrans=/en/' + lang + '; path=/; domain=' + location.hostname;
-    if (window._crGtLoaded) {
-      // Already loaded — just reload to apply new language
-      location.reload();
-    } else {
-      _crLoadGoogleTranslate(lang);
-    }
-  });
-}
-
-function _crLoadGoogleTranslate(lang) {
-  // Hidden container for Google Translate Element
-  let container = document.getElementById('crGoogleTranslate');
-  if (!container) {
-    container = document.createElement('div');
-    container.id = 'crGoogleTranslate';
-    container.style.cssText = 'position:absolute;top:-9999px;left:-9999px;';
-    document.body.appendChild(container);
-  }
-  // Define the callback Google Translate expects
-  window.googleTranslateElementInit = function() {
-    new google.translate.TranslateElement({
-      pageLanguage: 'en',
-      includedLanguages: 'es,fr,zh-CN,ko,ar,pt,vi,ht,so',
-      layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
-      autoDisplay: false
-    }, 'crGoogleTranslate');
-    window._crGtLoaded = true;
-
-    // Hide the Google Translate toolbar that appears at the top
-    const hideGtBar = setInterval(() => {
-      const frame = document.querySelector('.goog-te-banner-frame');
-      if (frame) { frame.style.display = 'none'; clearInterval(hideGtBar); }
-      document.body.style.top = '';
-    }, 200);
-    setTimeout(() => clearInterval(hideGtBar), 5000);
-  };
-  // Load the Google Translate script
-  const script = document.createElement('script');
-  script.src = 'https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit';
-  script.onerror = function() {
-    console.warn('Google Translate failed to load — falling back to new-tab mode');
+    // Use Google Translate
     const gtUrl = `https://translate.google.com/translate?sl=en&tl=${lang}&u=${encodeURIComponent(location.href)}`;
     window.open(gtUrl, '_blank');
-  };
-  document.head.appendChild(script);
+  });
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -6736,7 +4785,6 @@ document.addEventListener('click', function(e) {
     case 'prevSection': prevSection(); break;
     case 'nextSection': nextSection(); break;
     case 'goToSection': goToSection(idx); break;
-    case 'scrollToH2': scrollToH2(parseInt(el.dataset.section), el.dataset.heading); break;
     case 'showAssessment': showAssessment(); break;
     
     // ─── Assessment ───
@@ -6767,8 +4815,6 @@ document.addEventListener('click', function(e) {
     
     // ─── New Features ───
     case 'toggleGlossary': toggleGlossary(); break;
-    case 'toggleRefs': toggleRefs(); break;
-    case 'toggleResources': toggleResources(); break;
     case 'toggleObjective': toggleObjective(idx); break;
     case 'highlightSelection': highlightSelection(); break;
     case 'annotateSelection': annotateSelection(); break;
@@ -6779,29 +4825,25 @@ document.addEventListener('click', function(e) {
     case 'ttsStop': ttsStop(); break;
     case 'ttsRestart': ttsRestart(); break;
     
-    // ─── Evaluation / Attestation / Certificate ───
-    case 'showEvaluation': showEvaluation(); break;
-    case 'submitEvaluation': submitEvaluation(); break;
-    case 'submitAttestation': submitAttestation(); break;
+    // ─── New Accessibility Features ───
+    case 'setColorVision': setColorVision(el.dataset.value); break;
+    case 'toggleChunkedReading': toggleChunkedReading(); break;
+    case 'chunkNext': chunkNavigate(1); break;
+    case 'chunkPrev': chunkNavigate(-1); break;
+    case 'openSearch': openSearchPanel(); break;
+    case 'closeSearch': closeSearchPanel(); break;
+    case 'openShortcuts': openShortcuts(); break;
+    case 'closeShortcuts': closeShortcuts(); break;
+    case 'searchResultGo': searchResultGo(parseInt(el.dataset.section)); break;
+    
+    // ─── Certificate ───
     case 'requestCertificate':
-      showCertificateView();
+      if (window.parent !== window) {
+        window.parent.postMessage({ type: 'REQUEST_CERTIFICATE' }, '*');
+      } else {
+        alert('Certificate generation available when embedded in CounselorReady');
+      }
       break;
-
-    // ─── Pills ───
-    case 'togglePill':      togglePill(el.dataset.target); break;
-    case 'submitFreeform':  submitFreeform(el.dataset.target); break;
-    case 'fffKeydown':      /* handled via keydown below */ break;
-    case 'revealFreeform':  revealFreeform(el.dataset.target); break;
-    case 'selectKCI':       selectKCI(el.dataset.target, parseInt(el.dataset.idx)); break;
-    case 'submitKCI':       submitKCI(el.dataset.target); break;
-  }
-});
-
-// Pill freeform: submit on Enter
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'Enter' && e.target.classList.contains('cr-pill__text-input')) {
-    const id = e.target.closest('.cr-pill--freeform')?.id;
-    if (id) submitFreeform(id);
   }
 });
 
@@ -6898,14 +4940,261 @@ document.addEventListener('input', function(e) {
   }
 });
 
-// Close glossary on escape
+// Close glossary on escape — EXPANDED to full keyboard shortcuts
 document.addEventListener('keydown', function(e) {
+  const tag = e.target.tagName;
+  const isInput = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || e.target.isContentEditable;
+  
+  // Escape — close any open panel
   if (e.key === 'Escape') {
     document.getElementById('crGlossaryPanel')?.classList.remove('open');
-    document.getElementById('crRefsPanel')?.classList.remove('open');
-    document.getElementById('crResourcesPanel')?.classList.remove('open');
+    closeSearchPanel();
+    closeShortcuts();
+    document.getElementById('crA11yPanel')?.classList.remove('open');
+    return;
+  }
+  
+  // Ctrl+/ or Cmd+/ — open search
+  if ((e.ctrlKey || e.metaKey) && e.key === '/') {
+    e.preventDefault();
+    openSearchPanel();
+    return;
+  }
+  
+  // Skip letter shortcuts if user is typing in an input
+  if (isInput) return;
+  
+  // ? — show keyboard shortcuts
+  if (e.key === '?' || (e.shiftKey && e.key === '/')) {
+    e.preventDefault();
+    openShortcuts();
+    return;
+  }
+  
+  // Navigation
+  if (e.key === 'ArrowLeft' || e.key === 'p' || e.key === 'P') {
+    if (document.body.getAttribute('data-chunked-reading') !== 'true' || (e.key !== 'ArrowLeft')) {
+      if (e.key === 'ArrowLeft' || e.key === 'p' || e.key === 'P') { prevSection(); }
+    }
+  }
+  if (e.key === 'ArrowRight' || e.key === 'n' || e.key === 'N') {
+    if (document.body.getAttribute('data-chunked-reading') !== 'true' || (e.key !== 'ArrowRight')) {
+      nextSection();
+    }
+  }
+  
+  // Number keys 1-9 for section navigation
+  if (e.key >= '1' && e.key <= '9' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+    const idx = parseInt(e.key) - 1;
+    if (course && course.sections && idx < course.sections.length) {
+      goToSection(idx);
+    }
+  }
+  
+  // A — toggle a11y panel
+  if (e.key === 'a') { toggleA11yPanel(); }
+  
+  // D — toggle dark mode
+  if (e.key === 'd') { toggleBool('dark-mode'); }
+  
+  // H — toggle high contrast
+  if (e.key === 'h') { toggleBool('high-contrast'); }
+  
+  // R — toggle read aloud
+  if (e.key === 'r') { toggleReadAloud(); }
+  
+  // G — toggle glossary
+  if (e.key === 'g') { toggleGlossary(); }
+  
+  // C — toggle chunked reading
+  if (e.key === 'c') { toggleChunkedReading(); }
+  
+  // Chunked reading navigation: J/K or Up/Down (when chunked reading is on)
+  if (document.body.getAttribute('data-chunked-reading') === 'true') {
+    if (e.key === 'j' || e.key === 'ArrowDown') { e.preventDefault(); chunkNavigate(1); }
+    if (e.key === 'k' || e.key === 'ArrowUp') { e.preventDefault(); chunkNavigate(-1); }
   }
 });
+
+// ═══════════════════════════════════════════════════════════════
+// COLOR VISION FILTERS
+// ═══════════════════════════════════════════════════════════════
+function setColorVision(value) {
+  if (value === 'none') {
+    document.body.removeAttribute('data-color-vision');
+  } else {
+    document.body.setAttribute('data-color-vision', value);
+  }
+  // Update segment buttons
+  const seg = document.querySelector('.cr-segment[data-setting="color-vision"]');
+  if (seg) {
+    seg.querySelectorAll('button').forEach(b => b.classList.toggle('active', b.dataset.val === value));
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// CHUNKED READING
+// ═══════════════════════════════════════════════════════════════
+let chunkIndex = 0;
+
+function toggleChunkedReading() {
+  const current = document.body.getAttribute('data-chunked-reading') === 'true';
+  const newVal = !current;
+  document.body.setAttribute('data-chunked-reading', newVal);
+  const toggle = document.getElementById('toggle-chunked-reading');
+  if (toggle) {
+    toggle.classList.toggle('on', newVal);
+    toggle.setAttribute('aria-checked', newVal);
+  }
+  if (newVal) {
+    chunkIndex = 0;
+    updateChunkHighlight();
+  } else {
+    // Remove all chunk-active classes
+    document.querySelectorAll('.cr-chunk-active').forEach(el => el.classList.remove('cr-chunk-active'));
+  }
+}
+
+function getChunkBlocks() {
+  const area = document.getElementById('crContentArea');
+  if (!area) return [];
+  return Array.from(area.querySelectorAll('.cr-block-wrap'));
+}
+
+function updateChunkHighlight() {
+  const blocks = getChunkBlocks();
+  if (!blocks.length) return;
+  chunkIndex = Math.max(0, Math.min(chunkIndex, blocks.length - 1));
+  blocks.forEach((b, i) => b.classList.toggle('cr-chunk-active', i === chunkIndex));
+  blocks[chunkIndex].scrollIntoView({ behavior: 'smooth', block: 'center' });
+  // Update counter
+  const counter = document.getElementById('crChunkCounter');
+  if (counter) counter.textContent = `${chunkIndex + 1}/${blocks.length}`;
+}
+
+function chunkNavigate(dir) {
+  if (document.body.getAttribute('data-chunked-reading') !== 'true') return;
+  const blocks = getChunkBlocks();
+  if (!blocks.length) return;
+  chunkIndex = Math.max(0, Math.min(chunkIndex + dir, blocks.length - 1));
+  updateChunkHighlight();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SEARCH WITHIN COURSE
+// ═══════════════════════════════════════════════════════════════
+function openSearchPanel() {
+  document.getElementById('crSearchPanel')?.classList.add('open');
+  setTimeout(() => document.getElementById('crSearchInput')?.focus(), 150);
+}
+
+function closeSearchPanel() {
+  document.getElementById('crSearchPanel')?.classList.remove('open');
+}
+
+function performCourseSearch(query) {
+  const results = [];
+  if (!course || !course.sections || !query || query.length < 2) return results;
+  const q = query.toLowerCase();
+  
+  course.sections.forEach((section, sIdx) => {
+    if (!section.contentBlocks) return;
+    section.contentBlocks.forEach(block => {
+      let text = '';
+      if (block.type === 'text' && block.content) text = block.content;
+      else if (block.type === 'accordion' && block.items) {
+        text = block.items.map(it => (it.title || '') + ' ' + (it.content || '')).join(' ');
+      } else if (block.type === 'clinicalVignette') {
+        text = (block.scenario || '') + ' ' + (block.discussion || '');
+      } else if (block.type === 'blockquote') {
+        text = (block.content || '') + ' ' + (block.attribution || '');
+      } else if (block.type === 'flashcardDeck' && block.cards) {
+        text = block.cards.map(c => (c.front || '') + ' ' + (c.back || '')).join(' ');
+      }
+      // Strip HTML tags for searching
+      const plainText = text.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ');
+      const lowerText = plainText.toLowerCase();
+      const idx = lowerText.indexOf(q);
+      if (idx !== -1) {
+        // Extract snippet around match
+        const start = Math.max(0, idx - 60);
+        const end = Math.min(plainText.length, idx + query.length + 60);
+        let snippet = (start > 0 ? '...' : '') + plainText.slice(start, end) + (end < plainText.length ? '...' : '');
+        // Highlight match in snippet
+        const re = new RegExp('(' + query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi');
+        snippet = snippet.replace(re, '<mark>$1</mark>');
+        results.push({
+          sectionIndex: sIdx,
+          sectionTitle: section.title || 'Section ' + (sIdx + 1),
+          snippet: snippet
+        });
+      }
+    });
+  });
+  return results;
+}
+
+function renderSearchResults(query) {
+  const container = document.getElementById('crSearchResults');
+  if (!container) return;
+  if (!query || query.length < 2) {
+    container.innerHTML = '<div class="cr-search-empty">Type at least 2 characters to search</div>';
+    return;
+  }
+  const results = performCourseSearch(query);
+  if (!results.length) {
+    container.innerHTML = '<div class="cr-search-empty">No results found for "' + query.replace(/</g, '&lt;') + '"</div>';
+    return;
+  }
+  container.innerHTML = results.slice(0, 30).map(r =>
+    `<div class="cr-search-result" data-action="searchResultGo" data-section="${r.sectionIndex}" role="button" tabindex="0">
+      <div class="cr-search-result-section">${r.sectionTitle}</div>
+      <div class="cr-search-result-text">${r.snippet}</div>
+    </div>`
+  ).join('') + (results.length > 30 ? '<div class="cr-search-empty">' + (results.length - 30) + ' more results...</div>' : '');
+}
+
+function searchResultGo(sectionIdx) {
+  closeSearchPanel();
+  goToSection(sectionIdx);
+}
+
+// Search input handler
+document.addEventListener('input', function(e) {
+  if (e.target.id === 'crSearchInput') {
+    const q = e.target.value.trim();
+    renderSearchResults(q);
+  }
+});
+
+// ═══════════════════════════════════════════════════════════════
+// KEYBOARD SHORTCUTS MODAL
+// ═══════════════════════════════════════════════════════════════
+function openShortcuts() {
+  document.getElementById('crShortcutsOverlay')?.classList.add('open');
+}
+
+function closeShortcuts() {
+  document.getElementById('crShortcutsOverlay')?.classList.remove('open');
+}
+
+// Close shortcuts overlay on background click
+document.getElementById('crShortcutsOverlay')?.addEventListener('click', function(e) {
+  if (e.target === this) closeShortcuts();
+});
+
+// ═══════════════════════════════════════════════════════════════
+// CHUNKED READING — Re-init when section changes
+// ═══════════════════════════════════════════════════════════════
+const origGoToSection = goToSection;
+goToSection = function(i) {
+  origGoToSection(i);
+  if (document.body.getAttribute('data-chunked-reading') === 'true') {
+    chunkIndex = 0;
+    // Delay to let content render
+    setTimeout(updateChunkHighlight, 200);
+  }
+};
 
 </script>
 </body>
