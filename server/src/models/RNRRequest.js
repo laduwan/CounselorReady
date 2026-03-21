@@ -1,83 +1,151 @@
 /**
- * RNR CE Request Model
- * Learner-driven: learner selects articles → admin approves → AI builds test → learner takes test
+ * RNRRequest.js — Research Ready CE Request Model
+ * CounselorReady · GAITP LLC · NBCC ACEP #7760
+ *
+ * Learner-driven flow:
+ *   1. Learner searches OpenAlex, selects 2–5 articles
+ *   2. Submits request → admin notified
+ *   3. Admin approves (quick verification, not content creation)
+ *   4. AI generates posttest from selected articles
+ *   5. Learner reads articles, takes posttest, passes at 75%
+ *   6. Certificate + NBCC syllabus DOCX auto-generated
  */
 
 import mongoose from 'mongoose';
 
 const articleSchema = new mongoose.Schema({
+  openAlexId: { type: String, required: true },
   title: { type: String, required: true },
-  authors: { type: String, default: '' },
-  journal: { type: String, default: '' },
-  year: { type: Number },
-  abstract: { type: String, default: '' },
-  doi: { type: String, default: '' },
-  oaUrl: { type: String, default: '' },
-  wordCount: { type: Number, default: 0 }
+  authors: { type: String, required: true },
+  journal: { type: String },
+  year: { type: Number, required: true },
+  abstract: { type: String },
+  doi: { type: String },
+  oaUrl: { type: String },
+  topic: { type: String },
+  wordCount: { type: Number, required: true },
+  ceHours: { type: Number, required: true },
+  researchHours: { type: Number, default: 0 },
+  citedByCount: { type: Number, default: 0 },
+  wcStatus: {
+    type: String,
+    enum: ['sufficient', 'borderline', 'thin'],
+    default: 'sufficient'
+  }
 }, { _id: false });
 
-const questionSchema = new mongoose.Schema({
-  tag: { type: String, required: true },
+const posttestQuestionSchema = new mongoose.Schema({
+  tag: { type: String },
   question: { type: String, required: true },
-  options: [{ type: String, required: true }],
+  options: [{ type: String }],
   correct: { type: Number, required: true },
-  rationale: { type: String, required: true }
+  rationale: { type: String }
+}, { _id: false });
+
+const posttestAttemptSchema = new mongoose.Schema({
+  attemptNumber: { type: Number, required: true },
+  answers: [{ type: Number }],
+  score: { type: Number, required: true },
+  passed: { type: Boolean, required: true },
+  timeSpent: { type: Number, default: 0 }, // seconds
+  attemptedAt: { type: Date, default: Date.now }
 }, { _id: false });
 
 const rnrRequestSchema = new mongoose.Schema({
-  // Who requested
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, index: true },
-  userName: { type: String },
-  userEmail: { type: String },
-
-  // What they chose
-  contentArea: { type: String, required: true },
-  desiredHours: { type: Number, required: true },
-  articles: [articleSchema],
-
-  // Calculated CE
-  totalWordCount: { type: Number, default: 0 },
-  ceHours: { type: Number, default: 0 },
-  researchHours: { type: Number, default: 0 },
-
-  // Status flow: pending → approved → test_ready → completed / expired
-  status: {
-    type: String,
-    enum: ['pending', 'approved', 'test_ready', 'in_progress', 'completed', 'rejected', 'expired'],
-    default: 'pending',
+  // ── Who ──
+  user: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true,
     index: true
   },
 
-  // Admin review
-  reviewedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-  reviewedAt: { type: Date },
-  rejectionNote: { type: String, default: '' },
+  // ── What ──
+  contentArea: { type: String, required: true },
+  desiredHours: { type: Number, required: true },
+  selectedArticles: {
+    type: [articleSchema],
+    validate: {
+      validator: v => v.length >= 1 && v.length <= 5,
+      message: 'Select between 1 and 5 articles'
+    }
+  },
 
-  // AI-generated test (populated after approval)
+  // ── Computed totals ──
+  totalWordCount: { type: Number, default: 0 },
+  totalCeHours: { type: Number, default: 0 },
+  totalResearchHours: { type: Number, default: 0 },
+  contentAreas: [{ type: String }],
+
+  // ── Approval ──
+  status: {
+    type: String,
+    enum: [
+      'pending',       // learner submitted, awaiting admin
+      'approved',      // admin approved, posttest ready
+      'posttest_ready',// AI generated questions
+      'completed',     // learner passed posttest
+      'failed',        // exhausted attempts
+      'rejected'       // admin rejected
+    ],
+    default: 'pending',
+    index: true
+  },
+  adminNote: { type: String },
+  rejectionNote: { type: String },
+  approvedAt: { type: Date },
+  approvedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  },
+
+  // ── AI-generated posttest ──
   objectives: [{ type: String }],
-  questions: [questionSchema],
-  testGeneratedAt: { type: Date },
+  questions: [posttestQuestionSchema],
+  format: {
+    type: String,
+    enum: ['standalone', 'comparative', 'integrative', 'then_and_now', 'bridging'],
+    default: 'standalone'
+  },
 
-  // Posttest results
-  attempts: [{
-    answers: { type: mongoose.Schema.Types.Mixed },
-    score: { type: Number },
-    passed: { type: Boolean },
-    attemptedAt: { type: Date, default: Date.now }
-  }],
-  bestScore: { type: Number, default: 0 },
-  passed: { type: Boolean, default: false },
+  // ── Learner attempts ──
+  posttestAttempts: [posttestAttemptSchema],
+  maxAttempts: { type: Number, default: 3 },
+  passingScore: { type: Number, default: 75 },
+
+  // ── Completion ──
   completedAt: { type: Date },
-
-  // Certificate
-  certificateId: { type: mongoose.Schema.Types.ObjectId, ref: 'Certificate' },
-  certificateNumber: { type: String },
-  syllabusUrl: { type: String, default: '' }
+  finalScore: { type: Number },
+  certificateId: { type: String },
+  syllabusUrl: { type: String },
+  certificate: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Certificate'
+  }
 }, {
   timestamps: true
 });
 
-rnrRequestSchema.index({ userId: 1, status: 1 });
+// ── Indexes ──
+rnrRequestSchema.index({ user: 1, status: 1 });
 rnrRequestSchema.index({ status: 1, createdAt: -1 });
+
+// ── Virtual: attempts remaining ──
+rnrRequestSchema.virtual('attemptsRemaining').get(function () {
+  return this.maxAttempts - (this.posttestAttempts?.length || 0);
+});
+
+// ── Pre-save: compute totals ──
+rnrRequestSchema.pre('save', function (next) {
+  if (this.selectedArticles?.length) {
+    this.totalWordCount = this.selectedArticles.reduce((s, a) => s + (a.wordCount || 0), 0);
+    this.totalCeHours = Math.floor((this.totalWordCount / 6000) * 2) / 2;
+    this.totalResearchHours = Math.max(0.5, Math.floor((this.totalCeHours * 0.5) * 2) / 2);
+  }
+  next();
+});
+
+rnrRequestSchema.set('toJSON', { virtuals: true });
+rnrRequestSchema.set('toObject', { virtuals: true });
 
 export default mongoose.model('RNRRequest', rnrRequestSchema);
