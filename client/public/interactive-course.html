@@ -2738,12 +2738,12 @@ function renderScenarioTree(wrap, block, blockIndex) {
   const el = wrap.querySelector(`#${id}`);
   el._stNodes = block.nodes || {};
   el._stStart = block.startNode || 'start';
-  renderScenarioNode(id, el._stStart, el);
+  setTimeout(() => renderScenarioNode(id, el._stStart), 0);
   return wrap;
 }
 
-function renderScenarioNode(id, nodeKey, cachedEl) {
-  const el = cachedEl || document.getElementById(id);
+function renderScenarioNode(id, nodeKey) {
+  const el = document.getElementById(id);
   if (!el) return;
   const nodes = el._stNodes;
   const node = nodes[nodeKey];
