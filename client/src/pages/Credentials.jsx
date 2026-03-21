@@ -266,7 +266,17 @@ export default function Credentials() {
         <>
           {certificates.length > 0 ? (
             <div className="grid grid-cols-3 gap-4">
-              {certificates.map((cert) => (
+              {certificates.map((cert) => {
+                // Parse RNR metadata from notes
+                let rnrMeta = null;
+                try { rnrMeta = cert.notes ? JSON.parse(cert.notes) : null; } catch { /* not JSON */ }
+                const isRnr = rnrMeta?.type === 'research_ready';
+
+                if (isRnr) {
+                  return <RnrCertTile key={cert._id} cert={cert} rnrMeta={rnrMeta} formatDate={formatDate} onDelete={handleDeleteCertificate} />;
+                }
+
+                return (
                 <div key={cert._id} className="border border-stone-200 rounded-xl p-5 hover:border-hunter-300 transition-colors">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div className="flex items-start gap-3 flex-1 min-w-0">
@@ -325,7 +335,8 @@ export default function Credentials() {
                     </div>
                   </div>
                 </div>
-              ))}
+                );
+              })}
             </div>
           ) : (
             <div className="border border-stone-200 rounded-xl text-center py-12 px-6">
@@ -387,6 +398,128 @@ export default function Credentials() {
   );
 }
 
+
+// ─────────────────────────────────────────────────────────────────────────────
+// RNR CE Certificate Tile — research_ready type
+// ─────────────────────────────────────────────────────────────────────────────
+function RnrCertTile({ cert, rnrMeta, formatDate, onDelete }) {
+  const [expanded, setExpanded] = useState(false);
+  const courseTitle = rnrMeta.courseTitle || cert.title;
+  const articleTitles = rnrMeta.articleTitles || [];
+
+  return (
+    <div
+      className="bg-[#F8EEDC] border-l-[3px] border-l-[#7B2D3E] rounded-r-xl p-5 hover:shadow-md transition-shadow cursor-pointer"
+      onClick={() => setExpanded(!expanded)}
+    >
+      {/* At-a-glance (collapsed) */}
+      <h3 className="font-[Georgia,serif] text-[13px] text-[#2A1F0E] font-semibold mb-2 line-clamp-2">
+        {courseTitle}
+      </h3>
+      <div className="flex flex-wrap items-center gap-2 mb-2">
+        <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-[#7B2D3E] text-[#FAF5EC]">
+          {cert.ceHours} CE hrs
+        </span>
+        {cert.category && (
+          <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-[#F4F1ED] text-[#5C4D3A]">
+            {cert.category}
+          </span>
+        )}
+        <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-green-100 text-green-700">
+          NBCC Approved
+        </span>
+      </div>
+      <p className="font-[Georgia,serif] text-[10px] text-[#7A6A54] mb-3">
+        Completed {formatDate(cert.completionDate)}
+      </p>
+
+      <div className="flex items-center gap-2">
+        {cert.fileUrl && (
+          <a
+            href={cert.fileUrl}
+            download
+            onClick={e => e.stopPropagation()}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#7B2D3E] text-[#FAF5EC] rounded text-[10px] font-[Georgia,serif] uppercase tracking-[0.05em] hover:bg-[#9B3A4E] transition-colors"
+          >
+            <Download className="w-3 h-3" /> Download Syllabus
+          </a>
+        )}
+        <button
+          onClick={e => { e.stopPropagation(); onDelete(cert._id); }}
+          className="p-1.5 text-[#7A6A54] hover:text-red-600 rounded-lg hover:bg-red-50 transition-colors"
+          title="Delete certificate"
+        >
+          <Trash2 className="w-3.5 h-3.5" />
+        </button>
+      </div>
+
+      {/* Expanded view */}
+      {expanded && (
+        <div className="mt-4 pt-4 border-t border-[#DDD9D3] space-y-3" onClick={e => e.stopPropagation()}>
+          {/* Authors, journal, year, DOI */}
+          {rnrMeta.authors && (
+            <p className="font-[Georgia,serif] text-[11px] italic text-[#5C4D3A]">
+              {rnrMeta.authors}
+            </p>
+          )}
+          {rnrMeta.journals && (
+            <p className="font-[Georgia,serif] text-[11px] italic text-[#7A6A54]">
+              {rnrMeta.journals}
+            </p>
+          )}
+          {rnrMeta.dois?.length > 0 && (
+            <p className="font-[Georgia,serif] text-[10px] text-[#7A6A54]">
+              DOI: {rnrMeta.dois.join('; ')}
+            </p>
+          )}
+
+          {/* Learning objectives */}
+          {rnrMeta.objectivesMet?.length > 0 && (
+            <div>
+              <p className="font-[Georgia,serif] text-[10px] uppercase tracking-[0.12em] text-[#5C4D3A] italic mb-1">
+                Learning Objectives Met
+              </p>
+              <ol className="list-decimal list-inside space-y-1">
+                {rnrMeta.objectivesMet.map((obj, i) => (
+                  <li key={i} className="font-[Georgia,serif] text-[11px] text-[#2A1F0E]">{obj}</li>
+                ))}
+              </ol>
+            </div>
+          )}
+
+          {/* Assessment score */}
+          {rnrMeta.assessmentScore != null && (
+            <p className="font-[Georgia,serif] text-[11px] text-[#2A1F0E]">
+              Assessment Score: <strong>{rnrMeta.assessmentScore}%</strong>
+              {rnrMeta.correctCount != null && rnrMeta.totalQuestions && (
+                <span className="text-[#7A6A54]"> — {rnrMeta.correctCount} of {rnrMeta.totalQuestions} correct</span>
+              )}
+            </p>
+          )}
+
+          {/* CE hour calculation */}
+          {rnrMeta.ceCalcFormula && (
+            <p className="font-[Georgia,serif] text-[10px] text-[#7A6A54]">
+              {rnrMeta.ceCalcFormula}
+            </p>
+          )}
+
+          {/* Certificate ID */}
+          {cert.certificateNumber && (
+            <p className="font-[Georgia,serif] text-[10px] text-[#7A6A54]">
+              Certificate ID: {cert.certificateNumber}
+            </p>
+          )}
+
+          {/* NBCC stamp */}
+          <p className="font-[Georgia,serif] text-[10px] font-semibold text-[#7B2D3E] uppercase tracking-[0.05em]">
+            {rnrMeta.nbccAcepStamp || 'NBCC ACEP #7760'}
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Scan Certificate Modal — supports both CE certificates and credential docs
