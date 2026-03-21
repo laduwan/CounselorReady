@@ -1,323 +1,295 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CE Planner - CounselorReady</title>
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 36 36'><rect width='36' height='36' rx='8' fill='%236B1D34'/><text x='5' y='22' font-family='Georgia' font-weight='bold' font-size='17' fill='white'>C</text><text x='14' y='28' font-family='Georgia' font-weight='bold' font-size='14' fill='%234A7C59'>R</text></svg>">
-  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Lato:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <script>
-    tailwind.config={theme:{extend:{
-      fontFamily:{display:['Cormorant Garamond','Georgia','serif'],body:['Lato','Calibri','sans-serif']},
-      colors:{
-        burgundy:{50:'#FDF5F7',100:'#FAE8EB',200:'#F5D0D6',300:'#E8A4B2',400:'#D4708A',500:'#C94D65',600:'#A83350',700:'#8B2542',800:'#6B1D34',900:'#4A1524'},
-        navy:{50:'#F0F4F7',100:'#D9E2EA',200:'#B3C5D4',300:'#7A98AE',400:'#4A6B82',500:'#284157',600:'#1F3345',700:'#172736',800:'#101C27'},
-        hunter:{50:'#F2F7F4',100:'#E4EBE6',200:'#C9D7CD',300:'#A3BDA9',400:'#7A9E84',500:'#4A7C59',600:'#3D6A4A',700:'#305538',800:'#234027'},
-        honey:{50:'#FDF9F0',100:'#F9F0DB',200:'#F3E0B5',300:'#EACD86',400:'#D4A855',500:'#C49545',600:'#A67936',700:'#865E2C',800:'#6B4A25'},
-        stone:{50:'#F8F7F4',100:'#F1EFE9',200:'#E2DED3'},
-      }
-    }}}
-  </script>
-  <style>
-    body{font-family:'Lato','Calibri',sans-serif;background:#F8F7F4;margin:0}
-    .font-display{font-family:'Cormorant Garamond',Georgia,serif}
-    @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-    .anim{animation:fadeUp .3s ease forwards;opacity:0}
-    .d1{animation-delay:.04s}.d2{animation-delay:.08s}.d3{animation-delay:.12s}.d4{animation-delay:.16s}
-    .dd{display:none;position:absolute;top:100%;margin-top:6px;background:#fff;border-radius:10px;box-shadow:0 10px 40px rgba(107,29,52,.12);border:1px solid #FAE8EB;z-index:50;padding:6px 0;min-width:210px}
-    .dd.open{display:block}
-    .dd a{display:flex;align-items:center;gap:10px;padding:8px 16px;font-size:13px;color:#284157;text-decoration:none;transition:background .1s}
-    .dd a:hover{background:#F2F7F4}
-    .ov{display:none;position:fixed;inset:0;z-index:40}.ov.open{display:block}
-    .nav-link{padding:6px 12px;border-radius:6px;font-size:13px;font-weight:500;color:#57534e;text-decoration:none;display:flex;align-items:center;gap:4px;transition:all .15s}
-    .nav-link:hover{color:#6B1D34;background:#FDF5F7}
-    .nav-link.active{color:#6B1D34;background:#FDF5F7;font-weight:600;border-bottom:2px solid #6B1D34}
-    .progress-fill{transition:width .8s cubic-bezier(.4,0,.2,1)}
-    .rec-link{display:flex;align-items:center;justify-content:space-between;padding:12px;border-radius:8px;text-decoration:none;transition:background .15s}
-    .rec-link:hover{opacity:.85}
-  </style>
-</head>
-<body class="min-h-screen">
+/**
+ * Copyright (c) 2026 CounselorReady, a subsidiary of Ga Integrated Therapeutic Perspectives, LLC.
+ * All rights reserved. Proprietary and confidential.
+ * Unauthorized copying or distribution is strictly prohibited.
+ */
+import express from 'express';
+import UserCredential from '../models/UserCredential.js';
+import Certificate from '../models/Certificate.js';
+import CredentialTemplate from '../models/CredentialTemplate.js';
+import InteractiveCourse from '../models/InteractiveCourse.js';
+import UserCourseProgress from '../models/UserCourseProgress.js';
+import { protect } from '../middleware/auth.js';
 
-  <!-- ═══ HEADER (identical to dashboard.html) ═══ -->
-  <header style="background:#fff;border-bottom:1px solid #e7e5e4;position:sticky;top:0;z-index:40;box-shadow:0 1px 3px rgba(107,29,52,.08)">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-      <a href="/dashboard.html" class="flex items-center gap-3 flex-shrink-0" style="text-decoration:none">
-        <div style="width:42px;height:42px;border-radius:.75rem;background:#6B1D34;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(107,29,52,.25)">
-          <span style="position:relative;display:inline-block;width:24px;height:24px">
-            <span class="font-display" style="color:#D4A855;position:absolute;top:-3px;left:0;font-weight:700;font-size:19px">C</span>
-            <span class="font-display" style="color:#7A9E84;position:absolute;top:4px;left:6px;font-weight:700;font-size:16px">R</span>
-          </span>
-        </div>
-        <span class="font-display hidden sm:inline" style="font-weight:700;font-size:1.5rem;letter-spacing:.015em">
-          <span style="color:#6B1D34">Counselor</span><span style="color:#3D6A4A">Ready</span>
-        </span>
-      </a>
-      <nav class="hidden lg:flex items-center gap-1">
-        <a href="/dashboard.html" class="nav-link">Dashboard</a>
-        <a href="/courses.html" class="nav-link">Courses</a>
-        <a href="/credentials.html" class="nav-link active">Credentials</a>
-        <a href="/supervision.html" class="nav-link">Practice</a>
-        <a href="/organization.html" class="nav-link">Team</a>
-      </nav>
-      <div class="flex items-center gap-2">
-        <a href="/admin.html" id="adminBadge" class="hidden items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full" style="color:#6B1D34;background:#FDF5F7;border:1px solid #6B1D34;text-decoration:none">
-          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
-          Admin
-        </a>
-        <div class="relative">
-          <button onclick="toggle('user')" class="flex items-center gap-2 p-1 rounded-lg hover:bg-stone-100 transition-colors">
-            <div style="width:32px;height:32px;border-radius:50%;background:#6B1D34;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:600" id="avatarInit">U</div>
-            <span class="hidden md:block text-sm font-medium truncate" style="color:#57534e;max-width:120px" id="avatarName"></span>
-            <svg class="w-3.5 h-3.5 hidden md:block" style="color:#a8a29e" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-          </button>
-          <div class="ov" id="userOv" onclick="close('user')"></div>
-          <div class="dd" id="userDd" style="width:210px;right:0">
-            <div style="padding:10px 16px;border-bottom:1px solid #F1EFE9"><p style="font-size:13px;font-weight:600;color:#44403c;margin:0" id="menuName">User</p><p style="font-size:11px;color:#78716c;margin:2px 0 0" id="menuEmail"></p><span id="menuPlan" style="display:inline-block;margin-top:4px;font-size:10px;padding:2px 8px;border-radius:10px;font-weight:600;background:#FDF5F7;color:#6B1D34"></span></div>
-            <a href="/admin.html" id="menuAdminLink" style="display:none;color:#6B1D34"><svg class="w-4 h-4" style="color:#6B1D34" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg> Admin Panel</a>
-            <a href="/settings.html"><svg class="w-4 h-4" style="color:#7A98AE" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><circle cx="12" cy="12" r="3"/></svg> Settings</a>
-            <a href="/messages.html"><svg class="w-4 h-4" style="color:#7A98AE" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg> Messages</a>
-            <div style="border-top:1px solid #F1EFE9;margin-top:4px;padding-top:4px"><a href="#" onclick="logout();return false" style="color:#DC2626"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg> Sign out</a></div>
-          </div>
-        </div>
-        <button onclick="toggleMobile()" class="lg:hidden p-2 rounded-lg hover:bg-stone-100" style="color:#78716c">
-          <svg id="hamOpen" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
-          <svg id="hamClose" class="w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-        </button>
-      </div>
-    </div>
-    <div id="mobileNav" class="hidden lg:hidden border-t border-stone-200 bg-white px-4 py-3 space-y-1">
-      <a href="/dashboard.html" class="block px-4 py-2.5 rounded-lg text-sm" style="color:#57534e">Dashboard</a>
-      <a href="/courses.html" class="block px-4 py-2.5 rounded-lg text-sm" style="color:#57534e">Courses</a>
-      <a href="/credentials.html" class="block px-4 py-2.5 rounded-lg text-sm font-semibold" style="color:#6B1D34;background:#FDF5F7">Credentials</a>
-      <div style="padding-left:12px">
-        <a href="/ce-planner.html" class="block px-4 py-2 rounded-lg text-sm font-semibold" style="color:#6B1D34">CE Planner</a>
-        <a href="/audit.html" class="block px-4 py-2 rounded-lg text-sm" style="color:#78716c">Audit Kit</a>
-        <a href="/board-alerts.html" class="block px-4 py-2 rounded-lg text-sm" style="color:#78716c">Board Alerts</a>
-      </div>
-      <a href="/supervision.html" class="block px-4 py-2.5 rounded-lg text-sm" style="color:#57534e">Practice</a>
-      <a href="/organization.html" class="block px-4 py-2.5 rounded-lg text-sm" style="color:#57534e">Team</a>
-      <a href="/admin.html" id="adminMob" class="hidden px-4 py-2.5 rounded-lg text-sm font-semibold" style="color:#6B1D34;background:#FDF5F7">Admin Panel</a>
-    </div>
-  </header>
+const router = express.Router();
+router.use(protect);
 
-  <!-- ═══ MAIN CONTENT ═══ -->
-  <main class="max-w-5xl mx-auto px-4 sm:px-6 py-6">
-    <h1 class="font-display text-2xl font-semibold text-burgundy-800 mb-6">CE Planner</h1>
+// ── Generate personalized CE plan ──
+router.get('/plan', async (req, res) => {
+  try {
+    const userId = req.user._id;
 
-    <!-- Loading -->
-    <div id="loading" class="flex justify-center py-12">
-      <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-burgundy-700"></div>
-    </div>
-
-    <!-- Error State -->
-    <div id="errorState" class="bg-white rounded-xl border border-red-200 p-12 text-center" style="display:none">
-      <svg class="w-12 h-12 mx-auto text-red-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4.5c-.77-.833-2.694-.833-3.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
-      <h2 class="text-lg font-semibold text-gray-700 mb-2">Unable to Load CE Plan</h2>
-      <p id="errorMsg" class="text-gray-500 mb-4"></p>
-      <button onclick="loadPlan()" class="inline-flex items-center gap-2 px-4 py-2 bg-burgundy-700 text-white rounded-lg hover:bg-burgundy-800 text-sm">Try Again</button>
-    </div>
-
-    <!-- Empty State (no credentials) -->
-    <div id="emptyState" class="bg-white rounded-xl border p-12 text-center" style="display:none">
-      <svg class="w-12 h-12 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
-      <h2 class="text-lg font-semibold text-gray-700 mb-2">No Credentials Found</h2>
-      <p id="emptyMsg" class="text-gray-500 mb-4">Add your credentials first to get a personalized CE plan.</p>
-      <p class="text-gray-400 text-sm mb-6">Your CE plan automatically pulls data from your credentials and certificates.</p>
-      <a href="/credentials.html" class="inline-flex items-center gap-2 px-4 py-2 bg-burgundy-700 text-white rounded-lg hover:bg-burgundy-800 text-sm" style="text-decoration:none">
-        Add Credentials <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
-      </a>
-    </div>
-
-    <!-- Plan Content -->
-    <div id="planContent" style="display:none">
-      <!-- Data Source Banner -->
-      <div id="dataBanner" class="bg-burgundy-50 border border-burgundy-200 rounded-xl p-3 mb-4 flex items-center gap-3" style="display:none">
-        <svg class="w-5 h-5 text-burgundy-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-        <p id="dataBannerText" class="text-sm text-burgundy-800"></p>
-      </div>
-
-      <!-- Summary Cards -->
-      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6" id="summaryCards"></div>
-
-      <!-- Per-Credential Plans -->
-      <div id="credentialPlans" class="space-y-6"></div>
-    </div>
-  </main>
-
-  <footer class="max-w-7xl mx-auto px-4 sm:px-6 py-6 mt-4"><div class="text-center text-xs text-navy-300">&copy; 2026 GAITP LLC. CounselorReady&trade; &mdash; Learn. License. Lead.&reg;</div></footer>
-
-  <script>
-    const API=location.hostname==='localhost'?'http://localhost:5000':'https://api.counselorready.com';
-    const T=localStorage.getItem('token');if(!T)location.href='/login.html';
-
-    // ── Shared utilities ──
-    function toggle(id){document.getElementById(id+'Dd').classList.toggle('open');document.getElementById(id+'Ov').classList.toggle('open');}
-    function close(id){document.getElementById(id+'Dd').classList.remove('open');document.getElementById(id+'Ov').classList.remove('open');}
-    function toggleMobile(){document.getElementById('mobileNav').classList.toggle('hidden');document.getElementById('hamOpen').classList.toggle('hidden');document.getElementById('hamClose').classList.toggle('hidden');}
-    function logout(){localStorage.removeItem('token');localStorage.removeItem('user');location.href='/login.html';}
-
-    async function loadUser(){
-      try{
-        const r=await fetch(`${API}/api/auth/me`,{headers:{Authorization:`Bearer ${T}`}});
-        if(!r.ok)throw 0;
-        const d=await r.json(),u=d.user||d;
-        const f=u.profile?.firstName||u.firstName||'',l=u.profile?.lastName||u.lastName||'';
-        document.getElementById('avatarInit').textContent=`${f.charAt(0)}${l.charAt(0)}`.toUpperCase()||'U';
-        document.getElementById('avatarName').textContent=f||u.email?.split('@')[0]||'';
-        document.getElementById('menuName').textContent=`${f} ${l}`.trim()||'User';
-        document.getElementById('menuEmail').textContent=u.email||'';
-        const p=u.subscription?.plan||'free';
-        document.getElementById('menuPlan').textContent=p.charAt(0).toUpperCase()+p.slice(1)+' plan';
-        if(u.role==='admin'||u.isAdmin){
-          document.getElementById('adminBadge')?.classList.remove('hidden');
-          document.getElementById('adminBadge')?.classList.add('flex');
-          document.getElementById('adminMob')?.classList.remove('hidden');
-          const ml=document.getElementById('menuAdminLink');if(ml)ml.style.display='flex';
-        }
-      }catch(e){console.error(e);}
+    // Get user's active credentials
+    const credentials = await UserCredential.find({ userId, status: { $ne: 'renewed' } });
+    if (credentials.length === 0) {
+      return res.json({
+        plan: [],
+        message: 'Add your credentials first to get a personalized CE plan.'
+      });
     }
 
-    // ── CE Planner Logic ──
-    const urgencyColors={
-      expired:{bg:'bg-red-50',border:'border-red-200',badge:'bg-red-100 text-red-800'},
-      critical:{bg:'bg-red-50',border:'border-red-200',badge:'bg-red-100 text-red-800'},
-      urgent:{bg:'bg-yellow-50',border:'border-yellow-200',badge:'bg-yellow-100 text-yellow-800'},
-      upcoming:{bg:'bg-blue-50',border:'border-blue-200',badge:'bg-blue-100 text-blue-800'},
-      on_track:{bg:'bg-green-50',border:'border-green-200',badge:'bg-green-100 text-green-800'}
+    // Auto-sync certificates into credentials before building the plan
+    // This pulls data from both credentials page AND certificates page
+    const certificates = await Certificate.find({
+      userId,
+      isRevoked: { $ne: true }
+    });
+
+    if (certificates.length > 0) {
+      for (const credential of credentials) {
+        let credentialUpdated = false;
+
+        for (const cert of certificates) {
+          const isExplicitlyLinked = cert.credentials && cert.credentials.some(credId =>
+            credId.toString() === credential._id.toString()
+          );
+          const isPlatformCert = cert.source === 'platform';
+
+          // Match uploaded certs by category to credential requirements
+          const certCategory = (cert.category || 'General').toLowerCase().replace(/[-_]/g, ' ');
+          const hasRequirements = credential.requirements && credential.requirements.length > 0;
+          const matchesCategory = !hasRequirements || credential.requirements.some(req =>
+            req.category.toLowerCase().replace(/[-_]/g, ' ') === certCategory
+          ) || certCategory === 'general';
+
+          // Apply explicitly linked, platform-generated, or category-matched certs
+          if (!isExplicitlyLinked && !isPlatformCert && !matchesCategory) continue;
+
+          // Skip if already logged (no duplicates)
+          const alreadyLogged = credential.ceuLogs.some(log =>
+            log.certificateId && log.certificateId.toString() === cert._id.toString()
+          );
+          if (alreadyLogged) continue;
+
+          credential.ceuLogs.push({
+            date: cert.completionDate,
+            hours: cert.ceHours || 0,
+            category: cert.category || 'General',
+            source: isPlatformCert ? 'internal' : 'external',
+            certificateId: cert._id,
+            courseId: cert.courseId || null,
+            description: cert.title,
+            provider: cert.provider || 'CounselorReady'
+          });
+          credentialUpdated = true;
+        }
+
+        if (credentialUpdated) {
+          credential.recalculateProgress();
+          await credential.save();
+        }
+      }
+    }
+
+    // Ensure credentials with totalCEUsRequired but empty requirements
+    // get a synthetic "General" requirement so the planner can suggest courses
+    for (const cred of credentials) {
+      if (cred.totalCEUsRequired > 0 && (!cred.requirements || cred.requirements.length === 0)) {
+        cred.requirements = [{
+          category: 'General',
+          hoursRequired: cred.totalCEUsRequired,
+          hoursCompleted: cred.totalCEUsCompleted || 0
+        }];
+      }
+    }
+
+    // Get available courses (include all matchable fields)
+    const courses = await InteractiveCourse.find({ status: 'published' })
+      .select('title slug ceHours categories tags ceuCategories nbccContentAreas contentAreas deliveryFormat description approvalBody');
+
+    // Get user's completed courses
+    const completedProgress = await UserCourseProgress.find({ userId, status: 'completed' });
+    const completedCourseIds = new Set(completedProgress.map(p => p.courseId.toString()));
+
+    // Build plan per credential
+    const plan = credentials.map(cred => {
+      const remaining = cred.getRemainingHours();
+      const daysLeft = cred.daysUntilExpiration;
+      const totalRemaining = remaining.reduce((sum, r) => sum + r.remaining, 0);
+
+      // Find recommended courses for each category gap
+      const recommendations = [];
+      for (const req of remaining) {
+        if (req.remaining <= 0) continue;
+
+        const categoryLower = req.category.toLowerCase().replace(/[-_]/g, ' ');
+
+        // Category alias map: credential requirement → course signals
+        const ALIASES = {
+          'ethics': ['ethics', 'ethical', 'boundaries', 'professional identity'],
+          'core': ['counseling theory', 'counseling practice', 'clinical', 'assessment', 'treatment'],
+          'general': [], // matches everything
+          'related': ['wellness', 'prevention', 'human development', 'social', 'cultural', 'career', 'group dynamics', 'research'],
+          'supervision': ['supervision', 'supervisory', 'cpcs', 'clinical supervisor'],
+          'telehealth': ['telehealth', 'telemental', 'telebehavioral', 'distance', 'technology'],
+          'cultural diversity': ['cultural', 'multicultural', 'diversity', 'social justice', 'equity'],
+          'substance abuse': ['addiction', 'substance', 'substance abuse', 'recovery'],
+          'trauma': ['trauma', 'ptsd', 'crisis', 'resilience']
+        };
+        const aliases = ALIASES[categoryLower] || [categoryLower];
+
+        const matchingCourses = courses.filter(c => {
+          if (completedCourseIds.has(c._id.toString())) return false;
+
+          // General matches everything
+          if (categoryLower === 'general') return true;
+
+          // Build all searchable text from course
+          const courseCats = (c.categories || []).map(x => (x || '').toLowerCase());
+          const courseTags = (c.tags || []).map(x => (x || '').toLowerCase());
+          const ceuCats = (c.ceuCategories || []).map(x => (typeof x === 'object' ? x.category : x) || '').map(x => x.toLowerCase());
+          const nbccAreas = (c.nbccContentAreas || c.contentAreas || []).map(x => (typeof x === 'string' ? x : x.name || '').toLowerCase());
+          const title = (c.title || '').toLowerCase();
+          const desc = (c.description || '').toLowerCase();
+
+          const allSignals = [...courseCats, ...courseTags, ...ceuCats, ...nbccAreas, title, desc];
+          const combined = allSignals.join(' ');
+
+          // Check if any alias keyword appears in any course signal
+          return aliases.some(alias => combined.includes(alias)) ||
+            allSignals.some(s => s.includes(categoryLower) || categoryLower.includes(s));
+        });
+
+        // Sort: prefer courses with matching deliveryFormat for synchronous requirements
+        const needsSynchronous = categoryLower.includes('ethics') && 
+          (cred.state === 'GA' || cred.name?.includes('GA'));
+        
+        matchingCourses.sort((a, b) => {
+          let scoreA = 0, scoreB = 0;
+          if (needsSynchronous) {
+            if ((a.deliveryFormat || 'async') === 'live') scoreA += 10;
+            if ((a.deliveryFormat || 'async') === 'hybrid') scoreA += 5;
+            if ((b.deliveryFormat || 'async') === 'live') scoreB += 10;
+            if ((b.deliveryFormat || 'async') === 'hybrid') scoreB += 5;
+          }
+          // Prefer courses with explicit nbccContentAreas set
+          if ((a.nbccContentAreas || []).length > 0) scoreA += 3;
+          if ((b.nbccContentAreas || []).length > 0) scoreB += 3;
+          // Prefer higher CE hour courses to fill gaps faster
+          scoreA += Math.min(5, a.ceHours || 0);
+          scoreB += Math.min(5, b.ceHours || 0);
+          return scoreB - scoreA;
+        });
+
+        if (matchingCourses.length > 0) {
+          recommendations.push({
+            category: req.category,
+            hoursNeeded: req.remaining,
+            needsSynchronous: needsSynchronous || false,
+            suggestedCourses: matchingCourses.slice(0, 3).map(c => ({
+              id: c._id,
+              title: c.title,
+              slug: c.slug,
+              ceHours: c.ceHours,
+              deliveryFormat: c.deliveryFormat || 'async',
+              category: (c.ceuCategories?.[0]?.category || c.categories?.[0]) || 'General'
+            }))
+          });
+        } else {
+          recommendations.push({
+            category: req.category,
+            hoursNeeded: req.remaining,
+            suggestedCourses: [],
+            note: `No matching courses found for ${req.category}. Check back as new courses are added.`
+          });
+        }
+      }
+
+      // Calculate urgency
+      let urgency = 'on_track';
+      if (daysLeft !== null) {
+        if (daysLeft <= 0) urgency = 'expired';
+        else if (daysLeft <= 30) urgency = 'critical';
+        else if (daysLeft <= 90) urgency = 'urgent';
+        else if (daysLeft <= 180) urgency = 'upcoming';
+      }
+
+      // Estimate weekly hours needed
+      const weeksLeft = daysLeft ? Math.max(1, Math.floor(daysLeft / 7)) : null;
+      const hoursPerWeek = weeksLeft && totalRemaining > 0 ? Math.ceil((totalRemaining / weeksLeft) * 10) / 10 : null;
+
+      return {
+        credentialId: cred._id,
+        credentialName: cred.name,
+        credentialType: cred.credentialType,
+        code: cred.code,
+        issuingBody: cred.issuingBody,
+        licenseNumber: cred.licenseNumber,
+        state: cred.state,
+        expirationDate: cred.expirationDate,
+        daysUntilExpiration: daysLeft,
+        urgency,
+        totalHoursRequired: cred.totalCEUsRequired,
+        totalHoursCompleted: cred.totalCEUsCompleted,
+        totalHoursRemaining: totalRemaining,
+        suggestedHoursPerWeek: hoursPerWeek,
+        categoryBreakdown: remaining,
+        recommendations
+      };
+    });
+
+    // Sort by urgency
+    const urgencyOrder = { expired: 0, critical: 1, urgent: 2, upcoming: 3, on_track: 4 };
+    plan.sort((a, b) => urgencyOrder[a.urgency] - urgencyOrder[b.urgency]);
+
+    // Overall summary
+    const totalCertificateHours = certificates.reduce((sum, c) => sum + (c.ceHours || 0), 0);
+    const summary = {
+      totalCredentials: credentials.length,
+      totalCertificates: certificates.length,
+      totalCertificateHours,
+      totalHoursRemaining: plan.reduce((sum, p) => sum + p.totalHoursRemaining, 0),
+      nearestDeadline: plan.length > 0 ? plan[0].expirationDate : null,
+      credentialsByUrgency: {
+        expired: plan.filter(p => p.urgency === 'expired').length,
+        critical: plan.filter(p => p.urgency === 'critical').length,
+        urgent: plan.filter(p => p.urgency === 'urgent').length,
+        upcoming: plan.filter(p => p.urgency === 'upcoming').length,
+        onTrack: plan.filter(p => p.urgency === 'on_track').length
+      }
     };
-    const urgencyLabels={
-      expired:'Expired',critical:'Critical — Under 30 days',urgent:'Urgent — Under 90 days',
-      upcoming:'Upcoming — Under 6 months',on_track:'On Track'
+
+    res.json({ summary, plan });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ── Get quick stats for dashboard widget ──
+router.get('/stats', async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const credentials = await UserCredential.find({ userId, status: { $ne: 'renewed' } });
+    const certificates = await Certificate.find({ userId, isRevoked: { $ne: true } });
+
+    const now = new Date();
+    const stats = {
+      totalCredentials: credentials.length,
+      totalCertificates: certificates.length,
+      totalHoursRemaining: 0,
+      nearestDeadline: null,
+      nearestCredentialName: null,
+      expiringSoon: 0
     };
 
-    async function loadPlan(){
-      document.getElementById('loading').style.display='';
-      document.getElementById('errorState').style.display='none';
-      document.getElementById('emptyState').style.display='none';
-      document.getElementById('planContent').style.display='none';
-      try{
-        const r=await fetch(`${API}/api/ce-planner/plan`,{headers:{Authorization:`Bearer ${T}`}});
-        if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e.error||'Failed to load plan');}
-        const data=await r.json();
-        if(!data||!data.plan?.length){
-          document.getElementById('emptyMsg').textContent=data?.message||'Add your credentials first to get a personalized CE plan.';
-          document.getElementById('emptyState').style.display='';
-        }else{
-          renderPlan(data);
+    for (const cred of credentials) {
+      const remaining = Math.max(0, cred.totalCEUsRequired - cred.totalCEUsCompleted);
+      stats.totalHoursRemaining += remaining;
+
+      if (cred.expirationDate) {
+        const days = Math.ceil((cred.expirationDate - now) / (1000 * 60 * 60 * 24));
+        if (days > 0 && days <= 90) stats.expiringSoon++;
+        if (!stats.nearestDeadline || cred.expirationDate < stats.nearestDeadline) {
+          stats.nearestDeadline = cred.expirationDate;
+          stats.nearestCredentialName = cred.name;
         }
-      }catch(e){
-        console.error(e);
-        document.getElementById('errorMsg').textContent=e.message;
-        document.getElementById('errorState').style.display='';
-      }finally{
-        document.getElementById('loading').style.display='none';
       }
     }
 
-    function renderPlan(data){
-      const{summary,plan}=data;
+    res.json(stats);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 
-      // Data banner
-      if(summary.totalCertificates>0){
-        const banner=document.getElementById('dataBanner');
-        banner.style.display='';
-        document.getElementById('dataBannerText').innerHTML=
-          `Your plan includes data from <strong>${summary.totalCredentials} credential${summary.totalCredentials!==1?'s':''}</strong> and <strong>${summary.totalCertificates} certificate${summary.totalCertificates!==1?'s':''}</strong> (${summary.totalCertificateHours} CE hours logged).`;
-      }
-
-      // Summary cards
-      const needAttention=(summary.credentialsByUrgency.critical||0)+(summary.credentialsByUrgency.urgent||0);
-      document.getElementById('summaryCards').innerHTML=`
-        <div class="bg-white rounded-xl border p-4 anim d1">
-          <div class="flex items-center gap-3">
-            <div class="p-2 bg-burgundy-100 rounded-lg"><svg class="w-5 h-5 text-burgundy-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg></div>
-            <div><p class="text-2xl font-bold">${summary.totalCredentials}</p><p class="text-xs text-gray-500">Active Credentials</p></div>
-          </div>
-        </div>
-        <div class="bg-white rounded-xl border p-4 anim d2">
-          <div class="flex items-center gap-3">
-            <div class="p-2 bg-blue-50 rounded-lg"><svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div>
-            <div><p class="text-2xl font-bold">${summary.totalHoursRemaining}</p><p class="text-xs text-gray-500">Hours Remaining</p></div>
-          </div>
-        </div>
-        <div class="bg-white rounded-xl border p-4 anim d3">
-          <div class="flex items-center gap-3">
-            <div class="p-2 bg-yellow-50 rounded-lg"><svg class="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4.5c-.77-.833-2.694-.833-3.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg></div>
-            <div><p class="text-2xl font-bold text-yellow-600">${needAttention}</p><p class="text-xs text-gray-500">Need Attention</p></div>
-          </div>
-        </div>
-        <div class="bg-white rounded-xl border p-4 anim d4">
-          <div class="flex items-center gap-3">
-            <div class="p-2 bg-green-50 rounded-lg"><svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div>
-            <div><p class="text-2xl font-bold text-green-600">${summary.credentialsByUrgency.onTrack||0}</p><p class="text-xs text-gray-500">On Track</p></div>
-          </div>
-        </div>`;
-
-      // Credential plan cards
-      document.getElementById('credentialPlans').innerHTML=plan.map(item=>{
-        const c=urgencyColors[item.urgency]||urgencyColors.on_track;
-        const pct=item.totalHoursRequired>0?Math.round((item.totalHoursCompleted/item.totalHoursRequired)*100):0;
-        const pace=item.suggestedHoursPerWeek?`<div class="text-right"><div class="flex items-center gap-1 text-sm font-medium text-burgundy-800"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg> ${item.suggestedHoursPerWeek} hrs/week</div><p class="text-xs text-gray-500">suggested pace</p></div>`:'';
-
-        // Category breakdown
-        let categories='';
-        if(item.categoryBreakdown?.length){
-          categories=`<div class="px-4 pt-4"><h3 class="text-sm font-medium text-gray-700 mb-2">Category Breakdown</h3><div class="grid grid-cols-2 md:grid-cols-3 gap-2">${item.categoryBreakdown.map(cat=>`<div class="rounded-lg p-2 text-sm ${cat.remaining===0?'bg-green-50':'bg-gray-50'}"><p class="text-xs text-gray-500">${esc(cat.category)}</p><p class="font-medium">${cat.completed}/${cat.required} hrs${cat.remaining>0?` <span class="text-red-600 ml-1">(${cat.remaining} left)</span>`:'<span class="text-green-600 ml-1">Done</span>'}</p></div>`).join('')}</div></div>`;
-        }
-
-        // Recommendations
-        let recs='';
-        if(item.recommendations?.length){
-          const recItems=item.recommendations.map(rec=>{
-            if(rec.suggestedCourses?.length){
-              const syncWarn=rec.needsSynchronous?'<p class="text-xs text-red-600 font-medium mb-2">* Your state requires synchronous (live) hours for this category</p>':'';
-              return syncWarn+rec.suggestedCourses.map(course=>{
-                const fmt=course.deliveryFormat||'async';
-                const fmtBadge=fmt==='live'?'<span style="background:#6B1D34;color:#fff;font-size:9px;font-weight:600;padding:2px 6px;border-radius:8px;margin-left:6px">LIVE</span>':fmt==='hybrid'?'<span style="background:#284157;color:#fff;font-size:9px;font-weight:600;padding:2px 6px;border-radius:8px;margin-left:6px">HYBRID</span>':'<span style="background:#4A7C59;color:#fff;font-size:9px;font-weight:600;padding:2px 6px;border-radius:8px;margin-left:6px">ASYNC</span>';
-                return`<a href="/interactive-course.html?slug=${esc(course.slug)}" class="rec-link bg-burgundy-100 hover:bg-burgundy-200 mb-2" style="text-decoration:none"><div class="flex items-center gap-3"><svg class="w-4 h-4 text-burgundy-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg><div><p class="text-sm font-medium text-gray-900">${esc(course.title)}${fmtBadge}</p><p class="text-xs text-gray-500">${course.ceHours} CE hours &bull; ${esc(rec.category)}</p></div></div><svg class="w-4 h-4 text-burgundy-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg></a>`}).join('');
-            }
-            return rec.note?`<p class="text-sm text-gray-500 italic">${esc(rec.note)}</p>`:'';
-          }).join('');
-          if(recItems.trim())recs=`<div class="p-4"><h3 class="text-sm font-medium text-gray-700 mb-2">Recommended Courses</h3><div class="space-y-2">${recItems}</div></div>`;
-        }
-
-        return`<div class="bg-white rounded-xl border ${c.border}">
-          <div class="p-4 border-b flex items-center justify-between">
-            <div>
-              <div class="flex items-center gap-2 mb-1">
-                <h2 class="text-lg font-semibold text-gray-900">${esc(item.credentialName)}</h2>
-                <span class="px-2 py-0.5 rounded-full text-xs font-medium ${c.badge}">${urgencyLabels[item.urgency]||item.urgency}</span>
-              </div>
-              <p class="text-sm text-gray-500">
-                ${item.state?esc(item.state)+' &bull; ':''}${item.issuingBody?esc(item.issuingBody)+' &bull; ':''}Expires: ${item.expirationDate?new Date(item.expirationDate).toLocaleDateString():'N/A'}${item.daysUntilExpiration!==null&&item.daysUntilExpiration!==undefined?' ('+item.daysUntilExpiration+' days)':''}
-                ${item.licenseNumber?'&bull; #'+esc(item.licenseNumber):''}
-              </p>
-            </div>
-            ${pace}
-          </div>
-          <div class="px-4 pt-4">
-            <div class="flex justify-between text-sm mb-1">
-              <span class="text-gray-600">${item.totalHoursCompleted} / ${item.totalHoursRequired} hours</span>
-              <span class="font-medium">${pct}%</span>
-            </div>
-            <div class="w-full bg-gray-200 rounded-full h-2.5">
-              <div class="progress-fill bg-burgundy-600 h-2.5 rounded-full" style="width:${Math.min(100,pct)}%"></div>
-            </div>
-          </div>
-          ${categories}
-          ${recs}
-        </div>`;
-      }).join('');
-
-      document.getElementById('planContent').style.display='';
-    }
-
-    function esc(s){if(!s)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
-
-    loadUser();loadPlan();
-  </script>
-</body>
-</html>
+export default router;
