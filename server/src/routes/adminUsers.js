@@ -284,6 +284,37 @@ router.put('/users/:userId/subscription', protect, adminOnly, async (req, res) =
   }
 });
 
+// @route   POST /api/admin/users/:userId/extend-trial
+// @desc    Extend free trial by 3 days. If expired, reactivates from today.
+// @access  Admin only
+router.post('/users/:userId/extend-trial', protect, adminOnly, async (req, res) => {
+  try {
+    const user = await User.findById(req.params.userId);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    const currentEnd = user.subscription?.trialEndsAt
+      ? new Date(user.subscription.trialEndsAt)
+      : new Date();
+    // If trial already expired, extend from today; otherwise extend from current end date
+    const base = currentEnd < new Date() ? new Date() : currentEnd;
+    const newEnd = new Date(base);
+    newEnd.setDate(newEnd.getDate() + 3);
+    await User.findByIdAndUpdate(req.params.userId, {
+      $set: {
+        'subscription.trialEndsAt': newEnd,
+        'subscription.status': 'trial'
+      }
+    });
+    console.log(`Trial extended for user ${req.params.userId} → new end: ${newEnd.toISOString()}`);
+    res.json({
+      message: 'Trial extended by 3 days',
+      newTrialEndsAt: newEnd
+    });
+  } catch (err) {
+    console.error('Extend trial error:', err);
+    res.status(500).json({ error: 'Failed to extend trial' });
+  }
+});
+
 // @route   POST /api/admin/users/:userId/reset-password
 // @desc    Send password reset email to user
 // @access  Admin only
