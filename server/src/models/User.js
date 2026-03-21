@@ -140,6 +140,22 @@ const userSchema = new mongoose.Schema({
   smsVerified: { type: Boolean, default: false },
   smsRemindersEnabled: { type: Boolean, default: false },
 
+  // Google Calendar Integration
+  googleCalendar: {
+    connected: { type: Boolean, default: false },
+    accessToken: { type: String, default: null },
+    refreshToken: { type: String, default: null },
+    tokenExpiry: { type: Date, default: null },
+    calendarId: { type: String, default: 'primary' },
+    syncEnabled: { type: Boolean, default: false },
+    lastSyncAt: { type: Date, default: null },
+    eventIds: [{
+      credentialId: { type: mongoose.Schema.Types.ObjectId },
+      googleEventId: { type: String },
+      type: { type: String, enum: ['credential', 'insurance'] }
+    }]
+  },
+
   // Notification preferences
   notifications: {
     email: {
@@ -581,6 +597,11 @@ userSchema.methods.toJSON = function() {
   delete user.passwordResetToken;
   delete user.passwordResetExpires;
   delete user.__v;
+  // Strip Google Calendar tokens from API responses
+  if (user.googleCalendar) {
+    delete user.googleCalendar.accessToken;
+    delete user.googleCalendar.refreshToken;
+  }
   return user;
 };
 
