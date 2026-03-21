@@ -14,7 +14,7 @@
                 extend: {
                     colors: {
                         burgundy: {
-                            50: '#FDF2F5', 100: '#FAE8EB', 200: '#F5B8C4',
+                            50: '#FFF5E8', 100: '#FAE8D0', 200: '#F0D5B0',
                             300: '#E88A9E', 400: '#D0607A', 500: '#A83350',
                             600: '#6B1D34', 700: '#571828', 800: '#43121E', 900: '#2F0C15',
                         },
@@ -42,21 +42,24 @@
         body { font-family: 'Lato', 'Helvetica Neue', Arial, sans-serif; background: #F8F7F4; margin: 0; }
         .font-display { font-family: 'Cormorant Garamond', Georgia, serif; }
         h1,h2,h3,h4 { font-family: 'Cormorant Garamond', Georgia, serif; }
-        .dd { display:none;position:absolute;top:100%;margin-top:6px;background:#fff;border-radius:10px;box-shadow:0 10px 40px rgba(107,29,52,.12);border:1px solid #FAE8EB;z-index:50;padding:6px 0;min-width:200px; }
+        .dd { display:none;position:absolute;top:100%;margin-top:6px;background:#fff;border-radius:10px;box-shadow:0 10px 40px rgba(107,29,52,.12);border:1px solid #FAE8D0;z-index:50;padding:6px 0;min-width:200px; }
         .dd.open { display:block; }
         .dd a { display:flex;align-items:center;gap:10px;padding:8px 16px;font-size:13px;color:#284157;text-decoration:none;transition:background .1s; }
-        .dd a:hover { background:#FDF5F7;color:#6B1D34; }
+        .dd a:hover { background:#FFF5E8;color:#6B1D34; }
         .ov { display:none;position:fixed;inset:0;z-index:40; }
         .ov.open { display:block; }
-        .nav-link { padding:6px 12px;border-radius:6px;font-size:13px;font-weight:500;color:#57534e;text-decoration:none;display:flex;align-items:center;gap:4px;transition:all .15s; }
-        .nav-link:hover { color:#6B1D34;background:#FDF5F7; }
-        .nav-link.active { color:#6B1D34;background:#FDF5F7;font-weight:600;border-bottom:2px solid #6B1D34; }
-        .cert-card { background:#fff;border:1px solid #e7e5e4;border-radius:14px;padding:20px;transition:border-color .15s,box-shadow .15s;display:flex;flex-direction:column; }
-        .cert-card:hover { border-color:#FAE8EB;box-shadow:0 4px 16px rgba(107,29,52,.08); }
-        .stat-card { background:#fff;border:1px solid #e7e5e4;border-radius:12px;padding:18px 20px; }
-        .hour-badge { background:#FFF8E1;color:#876520;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px; }
-        .nbcc-badge { background:#E0ECE3;color:#2D4C37;font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px; }
-        .cat-badge { background:#FAE8EB;color:#6B1D34;font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px; }
+        .nav-link { padding:6px 12px;border-radius:6px;font-size:14px;font-weight:500;color:#57534e;text-decoration:none;display:flex;align-items:center;gap:4px;transition:all .15s; }
+        .nav-link:hover { color:#6B1D34;background:#FFF5E8; }
+        .nav-link.active { color:#6B1D34;background:#FFF5E8;font-weight:600;border-bottom:2px solid #6B1D34; }
+        .cert-card { background:linear-gradient(180deg,#fff 0%,#FAFAF8 100%);border:1px solid #E0ECE3;border-radius:14px;padding:20px;transition:border-color .15s,box-shadow .15s;display:flex;flex-direction:column;position:relative;overflow:hidden; }
+        .cert-card:hover { border-color:#96BCA0;box-shadow:0 6px 20px rgba(74,124,89,.1); }
+        .stat-card { background:#fff;border:1px solid #e7e5e4;border-radius:12px;padding:18px 20px;border-left:4px solid transparent; }
+        .stat-card:nth-child(1) { border-left-color:#A83350; }
+        .stat-card:nth-child(2) { border-left-color:#4A7C59; }
+        .stat-card:nth-child(3) { border-left-color:#D4A855; }
+        .hour-badge { background:linear-gradient(135deg,#FFF8E1,#FFEDB3);color:#876520;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px; }
+        .nbcc-badge { background:linear-gradient(135deg,#E0ECE3,#C2D9C8);color:#1F3526;font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px; }
+        .cat-badge { background:linear-gradient(135deg,#FFF5E8,#FAE8D0);color:#6B1D34;font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px; }
         input[type="text"], select { font-family: 'Lato', sans-serif; }
         input:focus, select:focus { outline:none;ring:2px;border-color:#6B1D34; }
     </style>
@@ -120,7 +123,7 @@
         </nav>
 
         <div class="flex items-center gap-2">
-            <a href="/admin.html" id="adminBadge" class="hidden items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full" style="color:#6B1D34;background:#FDF5F7;border:1px solid #6B1D34;text-decoration:none">Admin</a>
+            <a href="/admin.html" id="adminBadge" class="hidden items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full" style="color:#6B1D34;background:#FFF5E8;border:1px solid #6B1D34;text-decoration:none">Admin</a>
             <div class="relative">
                 <button onclick="toggle('user')" class="flex items-center gap-2 p-1 rounded-lg hover:bg-stone-100 transition-colors" style="border:none;background:none;cursor:pointer">
                     <div style="width:34px;height:34px;border-radius:50%;background:#6B1D34;display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:700" id="avatarInit">K</div>
@@ -132,7 +135,7 @@
                     <div style="padding:10px 16px;border-bottom:1px solid #F1EFE9">
                         <p style="font-size:13px;font-weight:600;color:#44403c;margin:0" id="menuName">User</p>
                         <p style="font-size:11px;color:#78716c;margin:2px 0 0" id="menuEmail"></p>
-                        <span id="menuPlan" style="display:inline-block;margin-top:4px;font-size:10px;padding:2px 8px;border-radius:10px;font-weight:600;background:#FDF5F7;color:#6B1D34"></span>
+                        <span id="menuPlan" style="display:inline-block;margin-top:4px;font-size:10px;padding:2px 8px;border-radius:10px;font-weight:600;background:#FFF5E8;color:#6B1D34"></span>
                     </div>
                     <a href="/admin.html" id="menuAdminLink" style="display:none;color:#6B1D34">Admin Panel</a>
                     <a href="/settings.html">Settings</a>
@@ -151,7 +154,7 @@
         <a href="/dashboard.html" class="block px-4 py-2.5 rounded-lg text-sm" style="color:#57534e">Dashboard</a>
         <a href="/courses.html" class="block px-4 py-2.5 rounded-lg text-sm" style="color:#57534e">Courses</a>
         <a href="/credentials.html" class="block px-4 py-2.5 rounded-lg text-sm" style="color:#57534e">Credentials</a>
-        <a href="/certificates.html" class="block px-4 py-2.5 rounded-lg text-sm font-semibold" style="color:#6B1D34;background:#FDF5F7">CE Certificates</a>
+        <a href="/certificates.html" class="block px-4 py-2.5 rounded-lg text-sm font-semibold" style="color:#6B1D34;background:#FFF5E8">CE Certificates</a>
     </div>
 </header>
 
@@ -178,22 +181,19 @@
 
     <!-- Stats -->
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-        <div class="stat-card">
             <div class="text-xs font-semibold uppercase tracking-wide mb-1" style="color:#4A7C59">Certificates Stored</div>
-            <div class="text-3xl font-bold font-display" style="color:#6B1D34" id="certificatesStored">11</div>
+            <div class="text-4xl font-bold font-display" style="color:#6B1D34" id="certificatesStored">11</div>
         </div>
-        <div class="stat-card">
             <div class="text-xs font-semibold uppercase tracking-wide mb-1" style="color:#4A7C59">Total CE Hours</div>
-            <div class="text-3xl font-bold font-display" style="color:#6B1D34" id="totalCeHours">—</div>
+            <div class="text-4xl font-bold font-display" style="color:#6B1D34" id="totalCeHours">—</div>
         </div>
-        <div class="stat-card">
             <div class="text-xs font-semibold uppercase tracking-wide mb-1" style="color:#D4A855">From NBCC ACEPs</div>
-            <div class="text-3xl font-bold font-display" style="color:#6B1D34" id="fromNbccAceps">—</div>
+            <div class="text-4xl font-bold font-display" style="color:#6B1D34" id="fromNbccAceps">—</div>
         </div>
     </div>
 
     <!-- Filters -->
-    <div class="bg-white rounded-xl border border-stone-200 p-4 mb-6">
+    <div class="bg-white rounded-xl border p-4 mb-6" style="border-color:#E0ECE3">
         <div class="flex flex-col sm:flex-row gap-3">
             <div class="flex-1 relative">
                 <input type="text" id="searchInput" placeholder="Search certificates..." oninput="filterCerts()"
@@ -219,9 +219,10 @@
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5" id="certificatesGrid">
 
         <!-- Card 1 -->
-        <div class="cert-card" data-year="2025" data-hours="4.5" data-title="counselor self-awareness">
+        <div class="cert-card" style="position:relative;overflow:hidden" data-year="2025" data-hours="4.5" data-title="counselor self-awareness">
+            <span style="position:absolute;bottom:-8px;right:-4px;opacity:.04;font-family:Georgia,serif;font-weight:700;font-size:80px;color:#6B1D34;pointer-events:none;user-select:none;line-height:1">CR</span>
             <div class="flex items-start gap-3 mb-4">
-                <div style="width:44px;height:44px;border-radius:10px;background:#FAE8EB;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                <div style="width:44px;height:44px;border-radius:10px;background:#FAE8D0;display:flex;align-items:center;justify-content:center;flex-shrink:0">
                     <svg class="w-5 h-5" style="color:#6B1D34" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                 </div>
                 <div class="flex-1 min-w-0">
@@ -242,7 +243,7 @@
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
                     View
                 </button>
-                <button onclick="downloadCert(this)" class="flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-semibold rounded-lg transition-colors" style="color:#6B1D34;border:1px solid #FAE8EB;background:#FDF2F5;cursor:pointer">
+                <button onclick="downloadCert(this)" class="flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-semibold rounded-lg transition-colors" style="color:#6B1D34;border:1px solid #FAE8D0;background:#FFF5E8;cursor:pointer">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
                     Download
                 </button>
@@ -253,9 +254,10 @@
         </div>
 
         <!-- Card 2 -->
-        <div class="cert-card" data-year="2025" data-hours="6" data-title="clinical supervision">
+        <div class="cert-card" style="position:relative;overflow:hidden" data-year="2025" data-hours="6" data-title="clinical supervision">
+            <span style="position:absolute;bottom:-8px;right:-4px;opacity:.04;font-family:Georgia,serif;font-weight:700;font-size:80px;color:#4A7C59;pointer-events:none;user-select:none;line-height:1">CR</span>
             <div class="flex items-start gap-3 mb-4">
-                <div style="width:44px;height:44px;border-radius:10px;background:#FAE8EB;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                <div style="width:44px;height:44px;border-radius:10px;background:#FAE8D0;display:flex;align-items:center;justify-content:center;flex-shrink:0">
                     <svg class="w-5 h-5" style="color:#6B1D34" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                 </div>
                 <div class="flex-1 min-w-0">
@@ -277,7 +279,7 @@
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
                     View
                 </button>
-                <button onclick="downloadCert(this)" class="flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-semibold rounded-lg transition-colors" style="color:#6B1D34;border:1px solid #FAE8EB;background:#FDF2F5;cursor:pointer">
+                <button onclick="downloadCert(this)" class="flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-semibold rounded-lg transition-colors" style="color:#6B1D34;border:1px solid #FAE8D0;background:#FFF5E8;cursor:pointer">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
                     Download
                 </button>
@@ -300,7 +302,7 @@
 
     <!-- Empty state (hidden by default) -->
     <div id="emptyState" class="hidden text-center py-16">
-        <div style="width:56px;height:56px;border-radius:50%;background:#FAE8EB;display:flex;align-items:center;justify-content:center;margin:0 auto 14px">
+        <div style="width:56px;height:56px;border-radius:50%;background:#FAE8D0;display:flex;align-items:center;justify-content:center;margin:0 auto 14px">
             <svg class="w-6 h-6" style="color:#6B1D34" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
         </div>
         <h3 class="font-display text-xl font-bold mb-2" style="color:#6B1D34">No certificates found</h3>
@@ -310,7 +312,7 @@
 </main>
 
 <!-- Footer -->
-<footer style="background:#6B1D34;color:#fff;margin-top:48px;padding:24px 0;text-align:center">
+<footer style="background:linear-gradient(135deg,#6B1D34 0%,#43121E 100%);color:#fff;margin-top:48px;padding:28px 0;text-align:center">
     <div class="max-w-7xl mx-auto px-4">
         <p class="text-xs" style="color:#D0768A">NBCC ACEP Provider #7760 &nbsp;·&nbsp; © 2026 GAITP LLC. All rights reserved.</p>
         <p class="text-xs mt-1" style="color:#D0768A">GA Integrated Therapeutic Perspectives LLC</p>
