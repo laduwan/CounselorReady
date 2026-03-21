@@ -16,6 +16,7 @@ import Announcement from '../models/Announcement.js';
 import UserCourseProgress from '../models/UserCourseProgress.js';
 import UserCredential from '../models/UserCredential.js';
 import { protect } from '../middleware/auth.js';
+import { triggerNewCourseAnnouncement } from '../services/notificationTriggerService.js';
 
 const router = express.Router();
 
@@ -1242,8 +1243,19 @@ router.patch('/courses/:courseId/publish', protect, adminOnly, async (req, res) 
     course.status = publish ? 'published' : 'draft';
     course.publishedAt = publish ? new Date() : null;
     await course.save();
-    
-    res.json({ 
+
+    // Send new course announcement when publishing
+    if (publish) {
+      triggerNewCourseAnnouncement({
+        courseTitle: course.title,
+        courseSlug: course.slug,
+        ceHours: course.ceuHours || course.ceHours,
+        contentArea: course.category || course.contentArea,
+        description: course.description
+      }).catch(err => console.error('triggerNewCourseAnnouncement failed:', err));
+    }
+
+    res.json({
       success: true,
       course,
       message: publish ? 'Course published' : 'Course unpublished'
