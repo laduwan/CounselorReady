@@ -135,17 +135,50 @@ const userSchema = new mongoose.Schema({
     lastReminderSent: { type: Date }
   },
   
+  // Phone & SMS verification
+  phone: { type: String },
+  smsVerified: { type: Boolean, default: false },
+  smsRemindersEnabled: { type: Boolean, default: false },
+
   // Notification preferences
   notifications: {
-    emailReminders: { type: Boolean, default: true },
-    smsReminders: { type: Boolean, default: false }, // VIP perk
-    calendarSync: { type: Boolean, default: false }, // VIP perk
-    marketingEmails: { type: Boolean, default: true },
-    reminderFrequency: {
-      type: String,
-      enum: ['6months', '3months', '1month', '1week'],
-      default: '3months'
-    }
+    email: {
+      courseCompleted: { type: Boolean, default: true },
+      certificateReady: { type: Boolean, default: true },
+      courseReminder: { type: Boolean, default: true },
+      ceRenewalReminders: { type: Boolean, default: true },
+      ceMilestones: { type: Boolean, default: true },
+      lowHoursAlert: { type: Boolean, default: true },
+      credentialExpiring: { type: Boolean, default: true },
+      insuranceExpiring: { type: Boolean, default: true },
+      newCourseAnnouncements: { type: Boolean, default: true },
+      promotions: { type: Boolean, default: false },
+      platformUpdates: { type: Boolean, default: false },
+      weeklyDigest: { type: Boolean, default: false },
+    },
+    sms: {
+      enabled: { type: Boolean, default: false },
+      ceRenewalReminders: { type: Boolean, default: true },
+      lowHoursAlert: { type: Boolean, default: true },
+      credentialExpiring: { type: Boolean, default: true },
+      insuranceExpiring: { type: Boolean, default: true },
+      courseCompleted: { type: Boolean, default: false },
+      ceMilestones: { type: Boolean, default: false },
+    },
+    timing: {
+      reminderDays: { type: [Number], default: [90, 30, 7] },
+      lowHoursThreshold: { type: Number, default: 60 },
+      insuranceReminderDays: { type: [Number], default: [30, 14] },
+      quietHoursStart: { type: String, default: null },
+      quietHoursEnd: { type: String, default: null },
+    },
+    inApp: {
+      showBannerAnnouncements: { type: Boolean, default: true },
+      showCourseProgress: { type: Boolean, default: true },
+      showCeTracker: { type: Boolean, default: true },
+    },
+    unsubscribeAll: { type: Boolean, default: false },
+    lastUpdated: { type: Date, default: Date.now }
   },
   
   // Whitelabel partner association
