@@ -9,6 +9,7 @@ import { Course, CourseProgress, ContentInteraction } from '../models/Interactiv
 import Certificate from '../models/Certificate.js';
 import Evaluation from '../models/Evaluation.js';
 import User from '../models/User.js';
+import UserCredential from '../models/UserCredential.js';
 import { protect } from '../middleware/auth.js';
 import { generateCertificate, generateCertificateNumber } from '../utils/certificate.js';
 
@@ -637,6 +638,43 @@ router.post('/:id/certificate', protect, async (req, res) => {
       progress.certificateIssuedAt = new Date();
       progress.status = 'certified';
       await progress.save();
+
+      // Auto-allocate CE hours to user's credentials
+      try {
+        const userCredentials = await UserCredential.find({ userId: req.user._id });
+        for (const cred of userCredentials) {
+          const alreadyLogged = cred.ceuLogs.some(log =>
+            log.certificateId && log.certificateId.toString() === certificate._id.toString()
+          );
+          if (alreadyLogged) continue;
+
+          cred.ceuLogs.push({
+            date: certificate.completionDate || new Date(),
+            hours: certificate.ceHours || 0,
+            category: certificate.category || 'General',
+            source: 'internal',
+            certificateId: certificate._id,
+            courseId: course._id,
+            description: certificate.title,
+            provider: 'CounselorReady'
+          });
+
+          // Recalculate totals
+          cred.totalCEUsCompleted = cred.ceuLogs.reduce((sum, log) => sum + (log.hours || 0), 0);
+          for (const req of cred.requirements) {
+            const catLogs = cred.ceuLogs.filter(log =>
+              log.category?.toLowerCase() === req.category?.toLowerCase()
+            );
+            req.hoursCompleted = Math.min(
+              req.hoursRequired,
+              catLogs.reduce((sum, log) => sum + (log.hours || 0), 0)
+            );
+          }
+          await cred.save();
+        }
+      } catch (syncErr) {
+        console.error('CE auto-allocation error (non-fatal):', syncErr.message);
+      }
     }
 
     // Send PDF
