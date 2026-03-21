@@ -489,216 +489,186 @@
     <!-- -- -->
     <div class="tab-panel active" id="tab-notifications">
 
-      <!-- Contact Information -->
+      <!-- Unsubscribe All Banner -->
+      <div id="unsubscribe-banner" class="card" style="display:none;border:2px solid #dc3545;">
+        <div class="card-body" style="padding:1rem 1.5rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;">
+          <div>
+            <p style="margin:0;font-weight:600;color:#dc3545;">All notifications are paused</p>
+            <p style="margin:4px 0 0;font-size:0.84rem;color:#666;">You won't receive any email, SMS, or in-app notifications.</p>
+          </div>
+          <button onclick="toggleUnsubscribeAll(false)" class="btn-primary" style="white-space:nowrap;">Re-enable Notifications</button>
+        </div>
+      </div>
+
+      <!-- Course Activity -->
       <div class="card">
         <div class="card-header">
           <div class="card-header-icon green">
-            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
           </div>
           <div>
-            <h2>Contact Information</h2>
-            <p>Where should we send your reminders?</p>
+            <h2>Course Activity</h2>
+            <p>Notifications about your course progress and completions</p>
           </div>
         </div>
         <div class="card-body">
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem;">
-            <div class="form-group" style="margin-bottom:0">
-              <label class="form-label">Email Address</label>
-              <div class="input-wrapper">
-                <span class="input-icon">
-                  <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-                </span>
-                <input type="email" id="notif-email" class="form-input" placeholder="you@example.com" />
-              </div>
-            </div>
-            <div class="form-group" style="margin-bottom:0">
-              <label class="form-label">Phone Number</label>
-              <div class="input-wrapper">
-                <span class="input-icon">
-                  <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
-                </span>
-                <input type="tel" id="notif-phone" class="form-input" placeholder="(555) 555-5555" />
-              </div>
-            </div>
-          </div>
+          <label class="toggle-row" id="row-courseCompleted">
+            <div class="toggle-info"><div><div class="toggle-label">Course Completed</div><div class="toggle-desc">Confirmation when you finish a course and earn CE hours</div></div></div>
+            <div class="toggle-switch"><input type="checkbox" id="toggle-email-courseCompleted" checked /><span class="toggle-slider"></span></div>
+          </label>
+          <label class="toggle-row" id="row-certificateReady">
+            <div class="toggle-info"><div><div class="toggle-label">Certificate Ready</div><div class="toggle-desc">Alert when your certificate is generated and ready to download</div></div></div>
+            <div class="toggle-switch"><input type="checkbox" id="toggle-email-certificateReady" checked /><span class="toggle-slider"></span></div>
+          </label>
+          <label class="toggle-row" id="row-courseReminder">
+            <div class="toggle-info"><div><div class="toggle-label">Course Reminders</div><div class="toggle-desc">Nudges when you haven't accessed an in-progress course in a while</div></div></div>
+            <div class="toggle-switch"><input type="checkbox" id="toggle-email-courseReminder" checked /><span class="toggle-slider"></span></div>
+          </label>
         </div>
       </div>
 
-      <!-- Notification Channels -->
+      <!-- CE & Renewal Tracking -->
       <div class="card">
         <div class="card-header">
           <div class="card-header-icon burgundy">
-            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
-          </div>
-          <div>
-            <h2>How Should We Reach You?</h2>
-            <p>Choose your preferred notification channels</p>
-          </div>
-        </div>
-        <div class="card-body">
-          <!-- Email toggle -->
-          <label class="toggle-row" id="row-email">
-            <div class="toggle-info">
-              <div class="toggle-icon email">
-                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-              </div>
-              <div>
-                <div class="toggle-label">Email Reminders</div>
-                <div class="toggle-desc">Get detailed renewal reminders and CE milestone alerts in your inbox</div>
-              </div>
-            </div>
-            <div class="toggle-switch">
-              <input type="checkbox" id="toggle-email" checked onchange="updateToggleRow('row-email', this.checked)" />
-              <span class="toggle-slider"></span>
-            </div>
-          </label>
-
-          <!-- SMS toggle -->
-          <label class="toggle-row" id="row-sms">
-            <div class="toggle-info">
-              <div class="toggle-icon sms">
-                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
-              </div>
-              <div>
-                <div class="toggle-label">SMS Reminders <span class="vip-badge">... VIP</span></div>
-                <div class="toggle-desc">Text message alerts for upcoming credential deadlines</div>
-              </div>
-            </div>
-            <div class="toggle-switch">
-              <input type="checkbox" id="toggle-sms" onchange="updateToggleRow('row-sms', this.checked)" />
-              <span class="toggle-slider"></span>
-            </div>
-          </label>
-
-          <div class="section-divider">Reminder Types</div>
-
-          <!-- Weekly Summary -->
-          <label class="toggle-row" id="row-weekly">
-            <div class="toggle-info">
-              <div class="toggle-icon weekly">
-                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-              </div>
-              <div>
-                <div class="toggle-label">Weekly Progress Summary</div>
-                <div class="toggle-desc">Every Monday " see your CE progress across all credentials</div>
-              </div>
-            </div>
-            <div class="toggle-switch">
-              <input type="checkbox" id="toggle-weekly" checked onchange="updateToggleRow('row-weekly', this.checked)" />
-              <span class="toggle-slider"></span>
-            </div>
-          </label>
-
-          <!-- Falling Behind Alert -->
-          <label class="toggle-row" id="row-alert">
-            <div class="toggle-info">
-              <div class="toggle-icon alert">
-                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-              </div>
-              <div>
-                <div class="toggle-label">Falling Behind Alert</div>
-                <div class="toggle-desc">Notify me if I need more than 5 CE hours/week to stay on track</div>
-              </div>
-            </div>
-            <div class="toggle-switch">
-              <input type="checkbox" id="toggle-alert" checked onchange="updateToggleRow('row-alert', this.checked)" />
-              <span class="toggle-slider"></span>
-            </div>
-          </label>
-
-          <!-- CE Milestones -->
-          <label class="toggle-row" id="row-milestone">
-            <div class="toggle-info">
-              <div class="toggle-icon milestone">
-                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>
-              </div>
-              <div>
-                <div class="toggle-label">CE Milestone Celebrations</div>
-                <div class="toggle-desc">Get notified when you hit 10, 25, 50, or 100+ CE hours</div>
-              </div>
-            </div>
-            <div class="toggle-switch">
-              <input type="checkbox" id="toggle-milestone" checked onchange="updateToggleRow('row-milestone', this.checked)" />
-              <span class="toggle-slider"></span>
-            </div>
-          </label>
-
-          <!-- Course Progress -->
-          <label class="toggle-row" id="row-progress">
-            <div class="toggle-info">
-              <div class="toggle-icon progress">
-                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
-              </div>
-              <div>
-                <div class="toggle-label">Course Progress Reminders</div>
-                <div class="toggle-desc">Nudges at 3, 7, 14, and 30 days if a course is incomplete</div>
-              </div>
-            </div>
-            <div class="toggle-switch">
-              <input type="checkbox" id="toggle-progress" checked onchange="updateToggleRow('row-progress', this.checked)" />
-              <span class="toggle-slider"></span>
-            </div>
-          </label>
-        </div>
-      </div>
-
-      <!-- Credential Renewal Schedule -->
-      <div class="card">
-        <div class="card-header">
-          <div class="card-header-icon honey">
             <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
           </div>
           <div>
-            <h2>Renewal Reminder Schedule</h2>
-            <p>Automatic alerts before your credentials expire</p>
+            <h2>CE & Renewal Tracking</h2>
+            <p>Stay on top of your credential renewals and CE progress</p>
           </div>
         </div>
         <div class="card-body">
-          <div class="schedule-grid">
-            <div class="schedule-item">
-              <span class="schedule-dot green"></span>
-              <strong>6 months</strong>&nbsp;before expiration
-            </div>
-            <div class="schedule-item">
-              <span class="schedule-dot blue"></span>
-              <strong>3 months</strong>&nbsp;before expiration
-            </div>
-            <div class="schedule-item">
-              <span class="schedule-dot orange"></span>
-              <strong>1 month</strong>&nbsp;before expiration
-            </div>
-            <div class="schedule-item">
-              <span class="schedule-dot red"></span>
-              <strong>1 week</strong>&nbsp;before expiration
+          <label class="toggle-row" id="row-ceRenewalReminders">
+            <div class="toggle-info"><div><div class="toggle-label">CE Renewal Reminders</div><div class="toggle-desc">Alerts before your credentials are due for renewal</div></div></div>
+            <div class="toggle-switch"><input type="checkbox" id="toggle-email-ceRenewalReminders" checked onchange="toggleReminderSchedule(this.checked)" /><span class="toggle-slider"></span></div>
+          </label>
+          <!-- Expandable reminder day picker -->
+          <div id="reminder-day-picker" style="padding:0 1rem 1rem;display:none;">
+            <p style="font-size:0.84rem;color:#666;margin:0 0 8px;">Remind me this many days before renewal:</p>
+            <div style="display:flex;gap:0.75rem;flex-wrap:wrap;">
+              <label style="display:flex;align-items:center;gap:4px;font-size:0.88rem;cursor:pointer;"><input type="checkbox" class="reminder-day-cb" value="90" checked style="accent-color:#6b1d34;" /> 90 days</label>
+              <label style="display:flex;align-items:center;gap:4px;font-size:0.88rem;cursor:pointer;"><input type="checkbox" class="reminder-day-cb" value="60" style="accent-color:#6b1d34;" /> 60 days</label>
+              <label style="display:flex;align-items:center;gap:4px;font-size:0.88rem;cursor:pointer;"><input type="checkbox" class="reminder-day-cb" value="30" checked style="accent-color:#6b1d34;" /> 30 days</label>
+              <label style="display:flex;align-items:center;gap:4px;font-size:0.88rem;cursor:pointer;"><input type="checkbox" class="reminder-day-cb" value="14" style="accent-color:#6b1d34;" /> 14 days</label>
+              <label style="display:flex;align-items:center;gap:4px;font-size:0.88rem;cursor:pointer;"><input type="checkbox" class="reminder-day-cb" value="7" checked style="accent-color:#6b1d34;" /> 7 days</label>
             </div>
           </div>
-          <p style="margin-top: 1rem; font-size: 0.84rem; color: var(--text-secondary);">
-            These reminders are sent automatically based on the expiration dates in your 
-            <a href="/credentials.html" style="color: var(--hunter); font-weight: 600; text-decoration: none;">Credentials</a> page. 
-            Keep your license dates updated for accurate reminders.
-          </p>
+          <label class="toggle-row" id="row-ceMilestones">
+            <div class="toggle-info"><div><div class="toggle-label">CE Milestones</div><div class="toggle-desc">Celebrate when you hit 25%, 50%, 75%, and 100% of CE requirements</div></div></div>
+            <div class="toggle-switch"><input type="checkbox" id="toggle-email-ceMilestones" checked /><span class="toggle-slider"></span></div>
+          </label>
+          <label class="toggle-row" id="row-lowHoursAlert">
+            <div class="toggle-info"><div><div class="toggle-label">Low Hours Alert</div><div class="toggle-desc">Warning when you're behind on CE hours with renewal approaching</div></div></div>
+            <div class="toggle-switch"><input type="checkbox" id="toggle-email-lowHoursAlert" checked /><span class="toggle-slider"></span></div>
+          </label>
+          <label class="toggle-row" id="row-credentialExpiring">
+            <div class="toggle-info"><div><div class="toggle-label">Credential Expiring</div><div class="toggle-desc">Alerts when a credential is approaching its expiration date</div></div></div>
+            <div class="toggle-switch"><input type="checkbox" id="toggle-email-credentialExpiring" checked /><span class="toggle-slider"></span></div>
+          </label>
+          <label class="toggle-row" id="row-insuranceExpiring">
+            <div class="toggle-info"><div><div class="toggle-label">Insurance Expiring</div><div class="toggle-desc">Reminders before your liability insurance policy expires</div></div></div>
+            <div class="toggle-switch"><input type="checkbox" id="toggle-email-insuranceExpiring" checked /><span class="toggle-slider"></span></div>
+          </label>
         </div>
       </div>
 
-      <!-- CE Tracker Link -->
+      <!-- Platform & Announcements -->
       <div class="card">
-        <div class="card-body" style="padding: 1rem 1.5rem;">
-          <div class="tracker-banner">
-            <div class="tracker-banner-text">
-              <svg width="22" height="22" fill="none" stroke="#4A7C59" stroke-width="1.75" viewBox="0 0 24 24" style="flex-shrink:0;"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>
-              <p>Want to see a <strong>preview of your upcoming reminders</strong> and manage detailed CE tracking? Visit the CE Tracker on your dashboard.</p>
+        <div class="card-header">
+          <div class="card-header-icon honey">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+          </div>
+          <div>
+            <h2>Platform & Announcements</h2>
+            <p>Stay informed about new courses and platform news</p>
+          </div>
+        </div>
+        <div class="card-body">
+          <label class="toggle-row" id="row-newCourseAnnouncements">
+            <div class="toggle-info"><div><div class="toggle-label">New Course Announcements</div><div class="toggle-desc">Be the first to know when new CE courses are published</div></div></div>
+            <div class="toggle-switch"><input type="checkbox" id="toggle-email-newCourseAnnouncements" checked /><span class="toggle-slider"></span></div>
+          </label>
+          <label class="toggle-row" id="row-promotions">
+            <div class="toggle-info"><div><div class="toggle-label">Promotions & Offers</div><div class="toggle-desc">Special discounts and promotional offers</div></div></div>
+            <div class="toggle-switch"><input type="checkbox" id="toggle-email-promotions" /><span class="toggle-slider"></span></div>
+          </label>
+          <label class="toggle-row" id="row-platformUpdates">
+            <div class="toggle-info"><div><div class="toggle-label">Platform Updates</div><div class="toggle-desc">New features and improvements to CounselorReady</div></div></div>
+            <div class="toggle-switch"><input type="checkbox" id="toggle-email-platformUpdates" /><span class="toggle-slider"></span></div>
+          </label>
+          <label class="toggle-row" id="row-weeklyDigest">
+            <div class="toggle-info"><div><div class="toggle-label">Weekly Digest</div><div class="toggle-desc">Weekly summary of your CE progress, completions, and upcoming renewals</div></div></div>
+            <div class="toggle-switch"><input type="checkbox" id="toggle-email-weeklyDigest" /><span class="toggle-slider"></span></div>
+          </label>
+        </div>
+      </div>
+
+      <!-- SMS Notifications -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-header-icon green">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+          </div>
+          <div>
+            <h2>SMS Notifications</h2>
+            <p>Get text message alerts for important deadlines</p>
+          </div>
+        </div>
+        <div class="card-body">
+          <label class="toggle-row" id="row-sms-master" style="border-bottom:1px solid #e5e5e5;padding-bottom:1rem;margin-bottom:1rem;">
+            <div class="toggle-info"><div><div class="toggle-label">Enable SMS Notifications</div><div class="toggle-desc">Receive text message alerts on your phone</div></div></div>
+            <div class="toggle-switch"><input type="checkbox" id="toggle-sms-enabled" onchange="toggleSmsSection(this.checked)" /><span class="toggle-slider"></span></div>
+          </label>
+
+          <div id="sms-details" style="display:none;">
+            <!-- Phone input + verify -->
+            <div style="display:flex;gap:0.75rem;align-items:flex-end;margin-bottom:1rem;">
+              <div class="form-group" style="margin-bottom:0;flex:1;">
+                <label class="form-label">Phone Number</label>
+                <input type="tel" id="sms-phone" class="form-input" placeholder="(555) 555-5555" style="width:100%;" />
+              </div>
+              <button onclick="verifyPhone()" class="btn-primary" style="white-space:nowrap;height:42px;">Verify Phone</button>
             </div>
-            <a href="/dashboard#ce-tracker" class="btn-secondary" style="white-space: nowrap; text-decoration: none;">
-              Open CE Tracker &rarr;
-            </a>
+            <p id="sms-verified-msg" style="display:none;font-size:0.84rem;color:#4A7C59;margin:0 0 1rem;">Phone verified and ready for SMS.</p>
+
+            <div class="section-divider" style="margin:0.5rem 0 0.75rem;font-size:0.8rem;color:#888;">SMS Categories</div>
+
+            <label class="toggle-row" id="row-sms-ceRenewalReminders">
+              <div class="toggle-info"><div><div class="toggle-label">CE Renewal Reminders</div><div class="toggle-desc">Text alerts before credential renewal dates</div></div></div>
+              <div class="toggle-switch"><input type="checkbox" id="toggle-sms-ceRenewalReminders" checked /><span class="toggle-slider"></span></div>
+            </label>
+            <label class="toggle-row" id="row-sms-lowHoursAlert">
+              <div class="toggle-info"><div><div class="toggle-label">Low Hours Alert</div><div class="toggle-desc">Text when you're behind on CE hours</div></div></div>
+              <div class="toggle-switch"><input type="checkbox" id="toggle-sms-lowHoursAlert" checked /><span class="toggle-slider"></span></div>
+            </label>
+            <label class="toggle-row" id="row-sms-credentialExpiring">
+              <div class="toggle-info"><div><div class="toggle-label">Credential Expiring</div><div class="toggle-desc">Text when credentials are about to expire</div></div></div>
+              <div class="toggle-switch"><input type="checkbox" id="toggle-sms-credentialExpiring" checked /><span class="toggle-slider"></span></div>
+            </label>
+            <label class="toggle-row" id="row-sms-insuranceExpiring">
+              <div class="toggle-info"><div><div class="toggle-label">Insurance Expiring</div><div class="toggle-desc">Text before your insurance policy expires</div></div></div>
+              <div class="toggle-switch"><input type="checkbox" id="toggle-sms-insuranceExpiring" checked /><span class="toggle-slider"></span></div>
+            </label>
+            <label class="toggle-row" id="row-sms-courseCompleted">
+              <div class="toggle-info"><div><div class="toggle-label">Course Completed</div><div class="toggle-desc">Text confirmation when you finish a course</div></div></div>
+              <div class="toggle-switch"><input type="checkbox" id="toggle-sms-courseCompleted" /><span class="toggle-slider"></span></div>
+            </label>
+            <label class="toggle-row" id="row-sms-ceMilestones">
+              <div class="toggle-info"><div><div class="toggle-label">CE Milestones</div><div class="toggle-desc">Text when you hit CE progress milestones</div></div></div>
+              <div class="toggle-switch"><input type="checkbox" id="toggle-sms-ceMilestones" /><span class="toggle-slider"></span></div>
+            </label>
+
+            <p style="font-size:0.78rem;color:#888;margin:1rem 0 0;">Standard messaging rates apply. Reply STOP to opt out anytime.</p>
           </div>
         </div>
       </div>
 
-      <!-- Save Button -->
-      <div style="display: flex; justify-content: flex-end; gap: 1rem; margin-top: 0.5rem;">
-        <button class="btn-primary" onclick="saveNotificationSettings()">
-          Save Notification Preferences
+      <!-- Save Button + Unsubscribe link -->
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:0.5rem;">
+        <button onclick="toggleUnsubscribeAll(true)" style="background:none;border:none;color:#888;font-size:0.84rem;cursor:pointer;text-decoration:underline;">Unsubscribe from all notifications</button>
+        <button class="btn-primary" onclick="saveNotificationPreferences()">
+          Save Preferences
         </button>
       </div>
 
@@ -801,80 +771,123 @@
         const input = row.querySelector('input[type="checkbox"]');
         if (input && input.checked) row.classList.add('active');
       });
-      loadNotificationSettings();
+      loadNotificationPreferences();
+
+      // Handle hash navigation
+      if (window.location.hash === '#notifications') {
+        switchTab('notifications');
+      }
     });
 
-    // -- Load Settings from API --
-    async function loadNotificationSettings() {
+    // -- Load notification preferences from API --
+    async function loadNotificationPreferences() {
       try {
         const token = localStorage.getItem('token');
         if (!token) return;
 
-        const res = await fetch(`${API_BASE}/auth/me`, {
+        const res = await fetch(`${API_BASE}/auth/notification-preferences`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         if (!res.ok) return;
 
         const data = await res.json();
-        const user = data.user || data;
+        const n = data.notifications || {};
+        const phone = data.phone;
 
-        // Populate contact info
-        if (user.email) document.getElementById('notif-email').value = user.email;
-        if (user.phone) document.getElementById('notif-phone').value = user.phone;
+        // Email prefs
+        const emailKeys = ['courseCompleted', 'certificateReady', 'courseReminder', 'ceRenewalReminders', 'ceMilestones', 'lowHoursAlert', 'credentialExpiring', 'insuranceExpiring', 'newCourseAnnouncements', 'promotions', 'platformUpdates', 'weeklyDigest'];
+        emailKeys.forEach(key => {
+          const el = document.getElementById(`toggle-email-${key}`);
+          if (el && n.email && typeof n.email[key] === 'boolean') {
+            el.checked = n.email[key];
+          }
+        });
 
-        // Populate notification prefs if they exist
-        const prefs = user.notificationPreferences || user.notifications || {};
-        if (typeof prefs.emailReminders === 'boolean') {
-          document.getElementById('toggle-email').checked = prefs.emailReminders;
-          updateToggleRow('row-email', prefs.emailReminders);
+        // SMS prefs
+        if (n.sms) {
+          const smsEnabled = document.getElementById('toggle-sms-enabled');
+          if (smsEnabled && typeof n.sms.enabled === 'boolean') {
+            smsEnabled.checked = n.sms.enabled;
+            toggleSmsSection(n.sms.enabled);
+          }
+          const smsKeys = ['ceRenewalReminders', 'lowHoursAlert', 'credentialExpiring', 'insuranceExpiring', 'courseCompleted', 'ceMilestones'];
+          smsKeys.forEach(key => {
+            const el = document.getElementById(`toggle-sms-${key}`);
+            if (el && typeof n.sms[key] === 'boolean') el.checked = n.sms[key];
+          });
         }
-        if (typeof prefs.smsReminders === 'boolean') {
-          document.getElementById('toggle-sms').checked = prefs.smsReminders;
-          updateToggleRow('row-sms', prefs.smsReminders);
+
+        // Phone
+        if (phone) {
+          document.getElementById('sms-phone').value = phone;
+          document.getElementById('sms-verified-msg').style.display = 'block';
         }
-        if (typeof prefs.weeklyProgress === 'boolean') {
-          document.getElementById('toggle-weekly').checked = prefs.weeklyProgress;
-          updateToggleRow('row-weekly', prefs.weeklyProgress);
+
+        // Timing - reminder days
+        if (n.timing && Array.isArray(n.timing.reminderDays)) {
+          document.querySelectorAll('.reminder-day-cb').forEach(cb => {
+            cb.checked = n.timing.reminderDays.includes(Number(cb.value));
+          });
         }
-        if (typeof prefs.fallingBehindAlert === 'boolean') {
-          document.getElementById('toggle-alert').checked = prefs.fallingBehindAlert;
-          updateToggleRow('row-alert', prefs.fallingBehindAlert);
+
+        // CE renewal toggle -> show day picker
+        const ceToggle = document.getElementById('toggle-email-ceRenewalReminders');
+        if (ceToggle && ceToggle.checked) {
+          document.getElementById('reminder-day-picker').style.display = 'block';
         }
-        if (typeof prefs.ceMilestones === 'boolean') {
-          document.getElementById('toggle-milestone').checked = prefs.ceMilestones;
-          updateToggleRow('row-milestone', prefs.ceMilestones);
+
+        // Unsubscribe all
+        if (n.unsubscribeAll) {
+          document.getElementById('unsubscribe-banner').style.display = 'block';
+          disableAllToggles(true);
         }
-        if (typeof prefs.courseProgressReminders === 'boolean') {
-          document.getElementById('toggle-progress').checked = prefs.courseProgressReminders;
-          updateToggleRow('row-progress', prefs.courseProgressReminders);
-        }
+
+        // Update toggle row active states
+        document.querySelectorAll('.toggle-row').forEach(row => {
+          const input = row.querySelector('input[type="checkbox"]');
+          if (input) {
+            if (input.checked) row.classList.add('active');
+            else row.classList.remove('active');
+          }
+        });
       } catch (err) {
-        console.error('Failed to load notification settings:', err);
+        console.error('Failed to load notification preferences:', err);
       }
     }
 
-    // -- Save Settings to API --
-    async function saveNotificationSettings() {
+    // -- Save notification preferences to API --
+    async function saveNotificationPreferences() {
+      const emailKeys = ['courseCompleted', 'certificateReady', 'courseReminder', 'ceRenewalReminders', 'ceMilestones', 'lowHoursAlert', 'credentialExpiring', 'insuranceExpiring', 'newCourseAnnouncements', 'promotions', 'platformUpdates', 'weeklyDigest'];
+      const smsKeys = ['ceRenewalReminders', 'lowHoursAlert', 'credentialExpiring', 'insuranceExpiring', 'courseCompleted', 'ceMilestones'];
+
+      const email = {};
+      emailKeys.forEach(key => {
+        const el = document.getElementById(`toggle-email-${key}`);
+        if (el) email[key] = el.checked;
+      });
+
+      const sms = { enabled: document.getElementById('toggle-sms-enabled')?.checked || false };
+      smsKeys.forEach(key => {
+        const el = document.getElementById(`toggle-sms-${key}`);
+        if (el) sms[key] = el.checked;
+      });
+
+      const reminderDays = [];
+      document.querySelectorAll('.reminder-day-cb:checked').forEach(cb => {
+        reminderDays.push(Number(cb.value));
+      });
+
       const payload = {
-        phone: document.getElementById('notif-phone').value,
-        notificationPreferences: {
-          emailReminders: document.getElementById('toggle-email').checked,
-          smsReminders: document.getElementById('toggle-sms').checked,
-          weeklyProgress: document.getElementById('toggle-weekly').checked,
-          fallingBehindAlert: document.getElementById('toggle-alert').checked,
-          ceMilestones: document.getElementById('toggle-milestone').checked,
-          courseProgressReminders: document.getElementById('toggle-progress').checked,
-        }
+        email,
+        sms,
+        timing: { reminderDays }
       };
 
       try {
         const token = localStorage.getItem('token');
-        const res = await fetch(`${API_BASE}/users/profile`, {
+        const res = await fetch(`${API_BASE}/auth/update-notifications`, {
           method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
           body: JSON.stringify(payload)
         });
 
@@ -882,12 +895,86 @@
           showToast();
         } else {
           const err = await res.json();
-          alert('Failed to save: ' + (err.message || 'Unknown error'));
+          alert('Failed to save: ' + (err.error || 'Unknown error'));
         }
       } catch (err) {
         console.error('Save error:', err);
         alert('Network error -- please try again.');
       }
+    }
+
+    // -- Toggle SMS section visibility --
+    function toggleSmsSection(show) {
+      document.getElementById('sms-details').style.display = show ? 'block' : 'none';
+    }
+
+    // -- Toggle reminder day picker --
+    function toggleReminderSchedule(show) {
+      document.getElementById('reminder-day-picker').style.display = show ? 'block' : 'none';
+    }
+
+    // -- Verify phone --
+    async function verifyPhone() {
+      const phone = document.getElementById('sms-phone').value.trim();
+      if (!phone) { alert('Please enter a phone number.'); return; }
+
+      try {
+        const token = localStorage.getItem('token');
+        // Save phone to profile first
+        await fetch(`${API_BASE}/users/profile`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({ phone })
+        });
+
+        // Send test SMS
+        const res = await fetch(`${API_BASE}/notifications/test-sms`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({ phone })
+        });
+
+        if (res.ok) {
+          document.getElementById('sms-verified-msg').style.display = 'block';
+          showToast();
+        } else {
+          const err = await res.json();
+          alert('Verification failed: ' + (err.error || 'Unknown error'));
+        }
+      } catch (err) {
+        console.error('Verify phone error:', err);
+        alert('Network error -- please try again.');
+      }
+    }
+
+    // -- Unsubscribe all --
+    async function toggleUnsubscribeAll(value) {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`${API_BASE}/auth/update-notifications`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({ unsubscribeAll: value })
+        });
+
+        if (res.ok) {
+          document.getElementById('unsubscribe-banner').style.display = value ? 'block' : 'none';
+          disableAllToggles(value);
+          showToast();
+        }
+      } catch (err) {
+        console.error('Unsubscribe error:', err);
+      }
+    }
+
+    function disableAllToggles(disabled) {
+      document.querySelectorAll('#tab-notifications input[type="checkbox"]').forEach(cb => {
+        if (cb.id !== 'toggle-sms-enabled') {
+          cb.disabled = disabled;
+          if (disabled) cb.closest('.toggle-row')?.classList.add('opacity-50');
+          else cb.closest('.toggle-row')?.classList.remove('opacity-50');
+        }
+      });
     }
 
     // -- Toast --

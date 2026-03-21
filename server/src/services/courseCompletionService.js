@@ -13,6 +13,7 @@ import User from '../models/User.js';
 import UserCredential from '../models/UserCredential.js';
 import { generateCertificatePDF } from '../utils/certificate.js';
 import { sendCertificateEmail } from './courseEmailService.js';
+import { triggerCourseCompleted, triggerCertificateReady, triggerCeMilestone } from './notificationTriggerService.js';
 
 /**
  * Main function to process course completion
@@ -130,6 +131,37 @@ export async function processCourseCompletion({ userId, courseId, assessmentScor
     sendCompletionEmail(user, course, certificate, pdfResult.url).catch(err => {
       console.error('Failed to send certificate email:', err);
     });
+
+    // 8. Fire notification triggers (async - don't wait)
+    triggerCourseCompleted(userId, {
+      courseTitle: course.title,
+      ceHours: course.ceuHours || course.ceHours,
+      contentArea: course.category || course.contentArea
+    }).catch(err => console.error('triggerCourseCompleted failed:', err));
+
+    triggerCertificateReady(userId, {
+      courseTitle: course.title,
+      certificateId: certificate._id
+    }).catch(err => console.error('triggerCertificateReady failed:', err));
+
+    // Check CE milestones for each credential
+    try {
+      const updatedCredentials = await UserCredential.find({
+        userId,
+        status: { $in: ['active', 'expiring_soon'] }
+      });
+      for (const cred of updatedCredentials) {
+        if (cred.totalCEUsRequired > 0) {
+          triggerCeMilestone(userId, {
+            totalHours: cred.totalCEUsCompleted || 0,
+            requiredHours: cred.totalCEUsRequired,
+            credentialType: cred.name
+          }).catch(err => console.error('triggerCeMilestone failed:', err));
+        }
+      }
+    } catch (milestoneErr) {
+      console.error('CE milestone check failed:', milestoneErr);
+    }
 
     console.log(`✓ Course completion processed: ${certificateNumber} for ${user.email}`);
 
