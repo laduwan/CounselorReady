@@ -3,268 +3,812 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CE Course Library - CounselorReady</title>
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 36 36'><rect width='36' height='36' rx='8' fill='%236B1D34'/><text x='5' y='22' font-family='Georgia' font-weight='bold' font-size='17' fill='white'>C</text><text x='14' y='28' font-family='Georgia' font-weight='bold' font-size='14' fill='%234A7C59'>R</text></svg>">
-  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <title>Courses | CounselorReady</title>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Lato:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <script>
-    tailwind.config={theme:{extend:{
-      fontFamily:{display:['Cormorant Garamond','Georgia','serif'],body:['Lato','Calibri','sans-serif']},
-      colors:{
-        burgundy:{50:'#FDF5F7',100:'#FAE8EB',200:'#F5D0D6',300:'#E8A4B2',400:'#D4708A',500:'#C94D65',600:'#A83350',700:'#8B2542',800:'#6B1D34',900:'#4A1524'},
-        navy:{50:'#F0F4F7',100:'#D9E2EA',200:'#B3C5D4',300:'#7A98AE',400:'#4A6B82',500:'#284157',600:'#1F3345',700:'#172736',800:'#101C27'},
-        hunter:{50:'#F2F7F4',100:'#E4EBE6',200:'#C9D7CD',300:'#A3BDA9',400:'#7A9E84',500:'#4A7C59',600:'#3D6A4A',700:'#305538',800:'#234027'},
-        honey:{50:'#FDF9F0',100:'#F9F0DB',200:'#F3E0B5',300:'#EACD86',400:'#D4A855',500:'#C49545',600:'#A67936',700:'#865E2C',800:'#6B4A25'},
-        stone:{50:'#F8F7F4',100:'#F1EFE9',200:'#E2DED3'},
-      }
-    }}}
-  </script>
   <style>
-    body{font-family:'Lato','Calibri',sans-serif;background:#F8F7F4;margin:0}
-    .font-display{font-family:'Cormorant Garamond',Georgia,serif}
-    @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-    .anim{animation:fadeUp .3s ease forwards;opacity:0}
-    .dd{display:none;position:absolute;top:100%;margin-top:6px;background:#fff;border-radius:10px;box-shadow:0 10px 40px rgba(107,29,52,.12);border:1px solid #FAE8EB;z-index:50;padding:6px 0;min-width:210px}
-    .dd.open{display:block}
-    .dd a{display:flex;align-items:center;gap:10px;padding:8px 16px;font-size:13px;color:#284157;text-decoration:none;transition:background .1s}
-    .dd a:hover{background:#F2F7F4}
-    .ov{display:none;position:fixed;inset:0;z-index:40}.ov.open{display:block}
-    .nav-link{padding:6px 12px;border-radius:6px;font-size:13px;font-weight:500;color:#57534e;text-decoration:none;display:flex;align-items:center;gap:4px;transition:all .15s}
-    .nav-link:hover{color:#6B1D34;background:#FDF5F7}
-    .nav-link.active{color:#6B1D34;background:#FDF5F7;font-weight:600;border-bottom:2px solid #6B1D34}
-    .course-card{background:#fff;border:1px solid #FAE8EB;border-radius:14px;overflow:hidden;cursor:pointer;transition:all .2s ease;text-decoration:none;display:block;color:inherit}
-    .course-card:hover{box-shadow:0 8px 24px rgba(107,29,52,.1);border-color:#E8A4B2;transform:translateY(-2px)}
-    .course-thumb{width:100%;height:160px;object-fit:cover;background:#F2F7F4}
-    .cat-pill{display:inline-block;padding:2px 10px;border-radius:20px;font-size:11px;font-weight:600;letter-spacing:.03em}
+    :root {
+      --burgundy: #6B1D34;
+      --burgundy-light: #8B2542;
+      --burgundy-10: rgba(107,29,52,0.10);
+      --burgundy-85: rgba(107,29,52,0.85);
+      --hunter: #4A7C59;
+      --hunter-12: rgba(74,124,89,0.12);
+      --hunter-85: rgba(74,124,89,0.85);
+      --honey: #D4A855;
+      --honey-15: rgba(212,168,85,0.15);
+      --honey-text: #8B6914;
+      --navy: #284157;
+      --navy-10: rgba(40,65,87,0.10);
+      --navy-85: rgba(40,65,87,0.85);
+      --stone: #F8F7F4;
+      --card: #FFFFFF;
+      --border: #E5E2DC;
+      --border-light: #F0EDE8;
+      --text: #2C2C2C;
+      --text-secondary: #6B7280;
+      --text-muted: #9CA3AF;
+      --progress-track: #E8E4DF;
+      --desc-green: #40634A;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Lato', sans-serif;
+      background: var(--stone);
+      color: var(--text);
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+    }
+
+    /* ─── NAV ─── */
+    .nav {
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .nav-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+    .logo-mark {
+      width: 36px; height: 36px;
+      background: var(--burgundy);
+      border-radius: 10px;
+      position: relative;
+      flex-shrink: 0;
+    }
+    .logo-mark .lc {
+      font-family: 'Cormorant Garamond', serif;
+      font-weight: 700;
+      color: #e4b54e;
+      position: absolute;
+      font-size: 15px;
+      top: 2px; left: 5px;
+    }
+    .logo-mark .lr {
+      font-family: 'Cormorant Garamond', serif;
+      font-weight: 700;
+      color: #98c3a9;
+      position: absolute;
+      font-size: 15px;
+      bottom: 2px; left: 12px;
+    }
+    .logo-text {
+      font-size: 17px;
+      font-weight: 600;
+      color: var(--navy);
+    }
+    .logo-text b { color: var(--burgundy); }
+    .logo-text span { color: var(--hunter); }
+    .nav-links { display: flex; gap: 4px; }
+    .nav-links a {
+      color: var(--text-secondary);
+      text-decoration: none;
+      padding: 8px 14px;
+      font-size: 14px;
+      font-weight: 500;
+      border-radius: 8px;
+      transition: all 0.15s;
+    }
+    .nav-links a:hover { background: var(--stone); color: var(--text); }
+    .nav-links a.active { color: var(--burgundy); font-weight: 600; background: rgba(107,29,52,0.06); }
+    .nav-right { display: flex; align-items: center; gap: 12px; }
+    .nav-avatar {
+      width: 34px; height: 34px;
+      border-radius: 50%;
+      background: var(--burgundy-10);
+      color: var(--burgundy);
+      font-weight: 700;
+      font-size: 13px;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    /* ─── PAGE HEADER ─── */
+    .page-header {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 32px 24px 0;
+    }
+    .page-header h1 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--burgundy);
+      margin-bottom: 4px;
+    }
+    .page-header p {
+      font-size: 15px;
+      color: var(--text-secondary);
+    }
+
+    /* ─── FILTERS ─── */
+    .filters {
+      max-width: 1200px;
+      margin: 20px auto 0;
+      padding: 0 24px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+    }
+    .filter-search {
+      flex: 1;
+      min-width: 240px;
+      position: relative;
+    }
+    .filter-search svg {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 18px; height: 18px;
+      color: var(--text-muted);
+    }
+    .filter-search input {
+      width: 100%;
+      padding: 10px 14px 10px 40px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      font-family: inherit;
+      font-size: 14px;
+      background: var(--card);
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    .filter-search input:focus { border-color: var(--burgundy); }
+    .filter-select select {
+      padding: 10px 32px 10px 14px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      font-family: inherit;
+      font-size: 14px;
+      background: var(--card);
+      outline: none;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236B7280' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      cursor: pointer;
+      transition: border-color 0.15s;
+    }
+    .filter-select select:focus { border-color: var(--burgundy); }
+    .filter-tabs {
+      display: flex;
+      gap: 4px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 3px;
+    }
+    .filter-tabs button {
+      padding: 7px 16px;
+      border: none;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      background: transparent;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .filter-tabs button.active {
+      background: var(--burgundy);
+      color: white;
+    }
+    .course-count {
+      font-size: 13px;
+      color: var(--text-muted);
+      font-weight: 500;
+      margin-left: auto;
+    }
+
+    /* ─── GRID ─── */
+    .course-grid {
+      max-width: 1200px;
+      margin: 24px auto 48px;
+      padding: 0 24px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+
+    /* ─── CARD ─── */
+    .course-card {
+      background: var(--card);
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid var(--border-light);
+      display: flex;
+      flex-direction: column;
+      transition: box-shadow 0.2s, transform 0.2s;
+    }
+    .course-card:hover {
+      box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+      transform: translateY(-2px);
+    }
+
+    /* Thumbnail */
+    .card-thumb {
+      height: 140px;
+      background: linear-gradient(180deg, #DCC8CC 0%, #D8D2D0 60%, #D5DFD5 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+    .card-thumb .book-icon {
+      width: 52px; height: 52px;
+      color: var(--burgundy);
+      opacity: 0.35;
+    }
+    .pill-category {
+      position: absolute;
+      top: 10px; left: 10px;
+      padding: 3px 12px;
+      border-radius: 12px;
+      font-size: 10px;
+      font-weight: 600;
+      color: white;
+    }
+    .pill-format {
+      position: absolute;
+      top: 10px; right: 10px;
+      padding: 3px 12px;
+      border-radius: 12px;
+      font-size: 10px;
+      font-weight: 600;
+      color: white;
+    }
+    .cat-clinical, .cat-couples, .cat-addiction, .cat-default { background: var(--burgundy-85); }
+    .cat-ethics { background: var(--hunter-85); }
+    .cat-telehealth, .cat-cinema { background: var(--navy-85); }
+    .cat-geriatric, .cat-cultural { background: var(--hunter-85); }
+    .fmt-async { background: var(--hunter-85); }
+    .fmt-live { background: var(--burgundy-85); }
+    .fmt-hybrid { background: var(--navy-85); }
+
+    /* Card body */
+    .card-body {
+      padding: 16px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    .card-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--burgundy);
+      line-height: 1.4;
+      margin-bottom: 6px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .card-desc {
+      font-size: 13px;
+      color: var(--desc-green);
+      line-height: 1.5;
+      margin-bottom: 12px;
+      flex: 1;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    /* Badge row */
+    .badge-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-size: 10px;
+      font-weight: 600;
+    }
+    .badge svg { width: 14px; height: 14px; flex-shrink: 0; }
+    .badge-ce { background: var(--hunter-12); color: var(--hunter); }
+    .badge-time { background: var(--navy-10); color: var(--navy); }
+    .badge-body { background: var(--burgundy-10); color: var(--burgundy); }
+
+    /* Content area pills */
+    .content-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin-bottom: 12px;
+    }
+    .content-pill {
+      padding: 3px 10px;
+      border-radius: 11px;
+      font-size: 9px;
+      font-weight: 500;
+      background: var(--honey-15);
+      color: var(--honey-text);
+    }
+
+    /* Progress */
+    .progress-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-bottom: 6px;
+    }
+    .progress-row .pct { font-weight: 600; }
+    .progress-bar {
+      height: 6px;
+      border-radius: 3px;
+      background: var(--progress-track);
+      margin-bottom: 14px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      border-radius: 3px;
+      background: var(--hunter);
+      transition: width 0.3s;
+    }
+
+    /* Buttons */
+    .btn-continue {
+      display: block;
+      width: 100%;
+      padding: 10px;
+      border: none;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      text-align: center;
+      text-decoration: none;
+      cursor: pointer;
+      transition: opacity 0.15s;
+      background: var(--burgundy);
+      color: white;
+    }
+    .btn-enroll {
+      display: block;
+      width: 100%;
+      padding: 10px;
+      border: none;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      text-align: center;
+      text-decoration: none;
+      cursor: pointer;
+      transition: opacity 0.15s;
+      background: var(--hunter);
+      color: white;
+    }
+    .btn-details {
+      display: block;
+      width: 100%;
+      padding: 10px;
+      border: 1.5px solid var(--burgundy);
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      text-align: center;
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.15s;
+      background: transparent;
+      color: var(--burgundy);
+    }
+    .btn-continue:hover, .btn-enroll:hover { opacity: 0.9; }
+    .btn-details:hover { background: var(--burgundy); color: white; }
+
+    /* ─── STATES ─── */
+    .loading-state, .error-state, .empty-state {
+      max-width: 1200px;
+      margin: 80px auto;
+      text-align: center;
+      padding: 0 24px;
+    }
+    .loading-spinner {
+      width: 40px; height: 40px;
+      border: 3px solid var(--border);
+      border-top-color: var(--burgundy);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 16px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ─── RESPONSIVE ─── */
+    @media (max-width: 900px) {
+      .course-grid { grid-template-columns: repeat(2, 1fr); }
+      .nav-links { display: none; }
+    }
+    @media (max-width: 600px) {
+      .course-grid { grid-template-columns: 1fr; gap: 16px; }
+      .filters { flex-direction: column; }
+      .filter-search { min-width: 100%; }
+    }
   </style>
 </head>
-<body class="min-h-screen">
+<body>
 
-  <!-- ═══ HEADER ═══ -->
-  <header style="background:#fff;border-bottom:1px solid #e7e5e4;position:sticky;top:0;z-index:40;box-shadow:0 1px 3px rgba(107,29,52,.08)">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-      <a href="/dashboard.html" class="flex items-center gap-3 flex-shrink-0" style="text-decoration:none">
-        <div style="width:42px;height:42px;border-radius:.75rem;background:#6B1D34;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(107,29,52,.25)">
-          <span style="position:relative;display:inline-block;width:24px;height:24px">
-            <span class="font-display" style="color:#D4A855;position:absolute;top:-3px;left:0;font-weight:700;font-size:19px">C</span>
-            <span class="font-display" style="color:#7A9E84;position:absolute;top:4px;left:6px;font-weight:700;font-size:16px">R</span>
-          </span>
-        </div>
-        <span class="font-display hidden sm:inline" style="font-weight:700;font-size:1.5rem;letter-spacing:.015em">
-          <span style="color:#6B1D34">Counselor</span><span style="color:#3D6A4A">Ready</span>
-        </span>
-      </a>
-      <nav class="hidden lg:flex items-center gap-1">
-        <a href="/dashboard.html" class="nav-link">Dashboard</a>
-        <a href="/courses.html" class="nav-link active">Courses</a>
-        <a href="/credentials.html" class="nav-link">Credentials</a>
-        <a href="/supervision" class="nav-link">Practice</a>
-        <a href="/organization" class="nav-link">Team</a>
-      </nav>
-      <div class="flex items-center gap-2">
-        <a href="/admin.html" id="adminBadge" class="hidden items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full" style="color:#6B1D34;background:#FDF5F7;border:1px solid #6B1D34;text-decoration:none">
-          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
-          Admin
-        </a>
-        <div class="relative">
-          <button onclick="toggle('user')" class="flex items-center gap-2 p-1 rounded-lg hover:bg-stone-100 transition-colors">
-            <div style="width:32px;height:32px;border-radius:50%;background:#6B1D34;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:600" id="avatarInit">U</div>
-            <span class="hidden md:block text-sm font-medium truncate" style="color:#57534e;max-width:120px" id="avatarName"></span>
-          </button>
-          <div class="ov" id="userOv" onclick="close('user')"></div>
-          <div class="dd" id="userDd" style="width:210px;right:0">
-            <div style="padding:10px 16px;border-bottom:1px solid #F1EFE9"><p style="font-size:13px;font-weight:600;color:#44403c;margin:0" id="menuName">User</p><p style="font-size:11px;color:#78716c;margin:2px 0 0" id="menuEmail"></p></div>
-            <a href="/admin.html" id="menuAdminLink" style="display:none;color:#6B1D34"><svg class="w-4 h-4" style="color:#6B1D34" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg> Admin Panel</a>
-            <a href="/settings.html"><svg class="w-4 h-4" style="color:#7A98AE" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><circle cx="12" cy="12" r="3"/></svg> Settings</a>
-            <div style="border-top:1px solid #F1EFE9;margin-top:4px;padding-top:4px"><a href="#" onclick="logout();return false" style="color:#DC2626"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg> Sign out</a></div>
-          </div>
-        </div>
-        <a href="/login.html" id="loginLink" class="text-sm font-medium px-4 py-2 rounded-lg transition-colors" style="color:#6B1D34;background:#FDF5F7;text-decoration:none">Sign In</a>
-      </div>
+<!-- Nav -->
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="/dashboard.html" class="logo">
+      <div class="logo-mark"><span class="lc">C</span><span class="lr">R</span></div>
+      <div class="logo-text"><b>Counselor</b><span>Ready</span></div>
+    </a>
+    <div class="nav-links">
+      <a href="/dashboard.html">Dashboard</a>
+      <a href="/courses.html" class="active">Courses</a>
+      <a href="/credentials.html">Credentials</a>
+      <a href="/settings.html">Settings</a>
     </div>
-  </header>
-
-  <!-- ═══ MAIN ═══ -->
-  <main class="max-w-7xl mx-auto px-4 sm:px-6 py-6">
-    <!-- Heading -->
-    <div class="mb-6">
-      <h1 class="font-display text-3xl font-semibold text-burgundy-800 mb-2">CE Course Library</h1>
-      <p class="text-navy-400">Earn continuing education credits with our professionally designed courses.</p>
+    <div class="nav-right">
+      <div class="nav-avatar" id="userInitials">--</div>
     </div>
+  </div>
+</nav>
 
-    <!-- Filters -->
-    <div class="bg-white rounded-xl shadow-sm p-4 sm:p-6 flex flex-wrap gap-4 items-center border border-burgundy-100 mb-6">
-      <div class="relative flex-1 min-w-[200px]">
-        <svg class="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-navy-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-        <input type="text" id="searchInput" placeholder="Search courses..." oninput="applyFilters()" class="w-full pl-10 pr-4 py-2 border border-stone-200 rounded-lg focus:ring-2 focus:ring-burgundy-500 focus:border-transparent text-sm">
-      </div>
-      <div class="flex items-center gap-2">
-        <svg class="h-5 w-5 text-navy-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/></svg>
-        <select id="categoryFilter" onchange="applyFilters()" class="border border-stone-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-burgundy-500 text-sm bg-white">
-          <option value="all">All Categories</option>
-        </select>
-      </div>
-      <div class="text-sm text-navy-300" id="courseCount"></div>
-    </div>
+<!-- Page Header -->
+<div class="page-header">
+  <h1>Course Catalog</h1>
+  <p>NBCC-approved continuing education for mental health professionals</p>
+</div>
 
-    <!-- Loading -->
-    <div id="loading" class="flex justify-center py-12">
-      <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-burgundy-700"></div>
-    </div>
+<!-- Filters -->
+<div class="filters">
+  <div class="filter-search">
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+    <input type="text" id="search" placeholder="Search courses..." oninput="filterCourses()">
+  </div>
+  <div class="filter-select">
+    <select id="filterCategory" onchange="filterCourses()">
+      <option value="">All Categories</option>
+      <option value="ethics">Ethics</option>
+      <option value="core">Core</option>
+      <option value="telehealth">Telehealth</option>
+      <option value="clinical">Clinical</option>
+      <option value="supervision">Supervision</option>
+    </select>
+  </div>
+  <div class="filter-tabs">
+    <button class="active" onclick="setTab(this,'all')">All</button>
+    <button onclick="setTab(this,'enrolled')">My Courses</button>
+    <button onclick="setTab(this,'available')">Available</button>
+  </div>
+  <div class="course-count" id="courseCount"></div>
+</div>
 
-    <!-- Empty -->
-    <div id="emptyState" class="text-center py-12" style="display:none">
-      <svg class="h-12 w-12 text-navy-200 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
-      <p class="text-navy-400">No courses found matching your criteria</p>
-    </div>
+<!-- Loading -->
+<div class="loading-state" id="loadingState">
+  <div class="loading-spinner"></div>
+  <p style="color:var(--text-secondary)">Loading courses...</p>
+</div>
 
-    <!-- Course Grid -->
-    <div id="courseGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" style="display:none"></div>
-  </main>
+<!-- Error -->
+<div class="error-state" id="errorState" style="display:none">
+  <p style="color:var(--burgundy);font-weight:600" id="errorMsg">Failed to load courses</p>
+</div>
 
-  <footer class="max-w-7xl mx-auto px-4 sm:px-6 py-6 mt-4"><div class="text-center text-xs text-navy-300">&copy; 2026 GAITP LLC. CounselorReady&trade; &mdash; Learn. License. Lead.&reg;</div></footer>
+<!-- Course Grid -->
+<div class="course-grid" id="courseGrid" style="display:none"></div>
 
-  <script>
-    const API=location.hostname==='localhost'?'http://localhost:5000':'https://api.counselorready.com';
-    const T=localStorage.getItem('token');
+<!-- Empty -->
+<div class="empty-state" id="emptyState" style="display:none">
+  <svg width="48" height="48" fill="none" stroke="var(--text-muted)" viewBox="0 0 24 24" style="margin:0 auto 12px"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+  <p style="color:var(--text-secondary)">No courses found matching your criteria</p>
+</div>
 
-    function toggle(id){document.getElementById(id+'Dd').classList.toggle('open');document.getElementById(id+'Ov').classList.toggle('open');}
-    function close(id){document.getElementById(id+'Dd').classList.remove('open');document.getElementById(id+'Ov').classList.remove('open');}
-    function logout(){localStorage.removeItem('token');localStorage.removeItem('user');location.href='/login.html';}
-    function esc(s){if(!s)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+<script>
+  const API_URL = window.location.hostname === 'localhost'
+    ? 'http://localhost:5000'
+    : 'https://api.counselorready.com';
 
-    let allCourses=[];
-    let userProgress={};
+  let allCourses = [];
+  let activeTab = 'all';
 
-    async function loadUser(){
-      if(!T){document.getElementById('loginLink').style.display='';return;}
-      document.getElementById('loginLink').style.display='none';
-      try{
-        const r=await fetch(`${API}/api/auth/me`,{headers:{Authorization:`Bearer ${T}`}});
-        if(!r.ok)return;
-        const d=await r.json(),u=d.user||d;
-        const f=u.profile?.firstName||'',l=u.profile?.lastName||'';
-        document.getElementById('avatarInit').textContent=`${f.charAt(0)}${l.charAt(0)}`.toUpperCase()||'U';
-        document.getElementById('avatarName').textContent=f||u.email?.split('@')[0]||'';
-        document.getElementById('menuName').textContent=`${f} ${l}`.trim()||'User';
-        document.getElementById('menuEmail').textContent=u.email||'';
-        if(u.role==='admin'||u.isAdmin){
-          document.getElementById('adminBadge')?.classList.remove('hidden');
-          document.getElementById('adminBadge')?.classList.add('flex');
-          const ml=document.getElementById('menuAdminLink');if(ml)ml.style.display='flex';
-        }
-      }catch(e){console.error(e);}
-    }
+  // ─── SVG ICONS (inline, no emoji) ───
+  const ICON_BOOK = `<svg class="book-icon" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>`;
 
-    async function loadCourses(){
-      try{
-        const r=await fetch(`${API}/api/interactive-courses?limit=100`);
-        if(!r.ok)throw new Error('Failed');
-        const d=await r.json();
-        allCourses=(d.data||d.courses||[]).filter(c=>c.status==='published');
-        buildCategoryFilter();
-        applyFilters();
-      }catch(e){
-        console.error(e);
-        document.getElementById('emptyState').style.display='';
-      }finally{
-        document.getElementById('loading').style.display='none';
-      }
-    }
+  const ICON_MEDAL = `<svg fill="none" stroke="currentColor" stroke-width="1.3" viewBox="0 0 16 18" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="6.5" r="5"/><path d="M5 11l-1 6 4-2 4 2-1-6"/></svg>`;
 
-    async function loadProgress(){
-      if(!T)return;
-      try{
-        const r=await fetch(`${API}/api/interactive-courses/user/my-courses`,{headers:{Authorization:`Bearer ${T}`}});
-        if(!r.ok)return;
-        const d=await r.json();
-        (d.data||d||[]).forEach(item=>{
-          if(item.course)userProgress[item.course._id]=item;
-          else if(item.courseId)userProgress[item.courseId]=item;
-        });
-        applyFilters();
-      }catch(e){}
-    }
+  const ICON_CLOCK = `<svg fill="none" stroke="currentColor" stroke-width="1.3" viewBox="0 0 14 14" stroke-linecap="round" stroke-linejoin="round"><circle cx="7" cy="7" r="6"/><path d="M7 3.5v4l2.8 1.7"/></svg>`;
 
-    function buildCategoryFilter(){
-      const cats=new Set();
-      allCourses.forEach(c=>(c.categories||[]).forEach(cat=>cats.add(cat)));
-      const sel=document.getElementById('categoryFilter');
-      [...cats].sort().forEach(cat=>{
-        const o=document.createElement('option');o.value=cat;o.textContent=cat;sel.appendChild(o);
-      });
-    }
+  const ICON_SEAL = `<svg fill="none" stroke="currentColor" stroke-width="1.2" viewBox="0 0 16 16" stroke-linecap="round" stroke-linejoin="round"><path d="M8 1.5l1.4 2h2.4l-.1 2.4 2.1 1.1-1.4 2 1.5 1.8-2.1 1.2.2 2.4-2.4-.1L8 16l-1.6-2.3-2.4.1.2-2.4-2.1-1.2 1.5-1.8-1.4-2L4.3 5.9 4.2 3.5h2.4z"/><path d="M6 8.2l1.3 1.3 2.7-2.7"/></svg>`;
 
-    function applyFilters(){
-      const search=(document.getElementById('searchInput').value||'').toLowerCase();
-      const cat=document.getElementById('categoryFilter').value;
-      const filtered=allCourses.filter(c=>{
-        const matchSearch=!search||(c.title||'').toLowerCase().includes(search)||(c.description||'').toLowerCase().includes(search);
-        const matchCat=cat==='all'||!cat||(c.categories||[]).includes(cat);
-        return matchSearch&&matchCat;
-      });
-      renderCourses(filtered);
-    }
+  // ─── HELPERS ───
+  function getCategoryClass(course) {
+    const cats = (course.ceuCategories || course.categories || []);
+    const catStr = (typeof cats[0] === 'object' ? cats[0]?.category : cats[0] || '').toLowerCase();
+    const title = (course.title || '').toLowerCase();
+    if (catStr.includes('ethics') || title.includes('ethic')) return 'cat-ethics';
+    if (catStr.includes('telehealth') || title.includes('telemental') || title.includes('telehealth')) return 'cat-telehealth';
+    if (title.includes('cinema') || title.includes('movie') || title.includes('film')) return 'cat-cinema';
+    if (title.includes('geriatric') || title.includes('aging') || title.includes('elder')) return 'cat-geriatric';
+    if (title.includes('cultural') || title.includes('multicultural') || title.includes('diversity')) return 'cat-cultural';
+    if (title.includes('couple') || title.includes('marriage') || title.includes('relationship')) return 'cat-couples';
+    if (title.includes('addiction') || title.includes('substance')) return 'cat-addiction';
+    return 'cat-default';
+  }
 
-    const catColors={
-      'ethics':'background:#FDF5F7;color:#6B1D34',
-      'clinical':'background:#F2F7F4;color:#305538',
-      'trauma':'background:#FDF9F0;color:#865E2C',
-      'telehealth':'background:#F0F4F7;color:#284157',
-      'cultural-diversity':'background:#FDF5F7;color:#8B2542',
-      'substance-abuse':'background:#F9F0DB;color:#A67936',
-      'assessment':'background:#F2F7F4;color:#4A7C59',
-      'supervision':'background:#F0F4F7;color:#1F3345',
-      'professional-development':'background:#FAE8EB;color:#6B1D34',
-      'core':'background:#E4EBE6;color:#305538',
+  function getCategoryLabel(course) {
+    const cats = (course.ceuCategories || course.categories || []);
+    const catStr = (typeof cats[0] === 'object' ? cats[0]?.category : cats[0] || '');
+    if (catStr) return catStr.charAt(0).toUpperCase() + catStr.slice(1);
+    const title = (course.title || '').toLowerCase();
+    if (title.includes('ethic')) return 'Ethics';
+    if (title.includes('telemental') || title.includes('telehealth')) return 'Telehealth';
+    if (title.includes('geriatric') || title.includes('aging')) return 'Geriatric';
+    if (title.includes('cultural') || title.includes('multicultural')) return 'Cultural';
+    if (title.includes('couple') || title.includes('relationship')) return 'Couples';
+    if (title.includes('cinema') || title.includes('movie')) return 'Cinema CE';
+    if (title.includes('addiction') || title.includes('substance')) return 'Addiction';
+    if (title.includes('trauma')) return 'Trauma';
+    if (title.includes('crisis') || title.includes('suicide')) return 'Crisis';
+    return 'Clinical';
+  }
+
+  function getFormatClass(course) {
+    const fmt = (course.deliveryFormat || course.format || 'async').toLowerCase();
+    if (fmt.includes('live')) return 'fmt-live';
+    if (fmt.includes('hybrid')) return 'fmt-hybrid';
+    return 'fmt-async';
+  }
+
+  function getFormatLabel(course) {
+    const fmt = (course.deliveryFormat || course.format || 'async').toLowerCase();
+    if (fmt.includes('live')) return 'Live';
+    if (fmt.includes('hybrid')) return 'Hybrid';
+    return 'Async';
+  }
+
+  function getContentAreas(course) {
+    const areas = course.nbccContentAreas || course.contentAreas || [];
+    if (areas.length) return areas.slice(0, 3);
+    // Fallback: derive from category
+    const cat = getCategoryLabel(course);
+    const defaults = {
+      'Ethics': ['Ethics', 'Prof. Identity', 'Counseling Theory'],
+      'Telehealth': ['Technology', 'Ethics', 'Prof. Identity'],
+      'Clinical': ['Counseling Theory', 'Wellness', 'Assessment'],
+      'Trauma': ['Counseling Theory', 'Wellness', 'Assessment'],
+      'Crisis': ['Counseling Theory', 'Wellness', 'Ethics'],
+      'Couples': ['Counseling Theory', 'Human Development', 'Wellness'],
+      'Geriatric': ['Human Development', 'Wellness', 'Counseling Theory'],
+      'Cultural': ['Social/Cultural', 'Counseling Theory', 'Ethics'],
+      'Addiction': ['Counseling Theory', 'Wellness', 'Assessment'],
+      'Cinema CE': ['Counseling Theory', 'Wellness', 'Social/Cultural'],
     };
+    return defaults[cat] || ['Counseling Theory', 'Wellness', 'Ethics'];
+  }
 
-    function renderCourses(list){
-      const grid=document.getElementById('courseGrid');
-      const empty=document.getElementById('emptyState');
-      const count=document.getElementById('courseCount');
-      count.textContent=list.length+' course'+(list.length!==1?'s':'');
+  function getApprovalBody(course) {
+    return course.approvalBody || 'NBCC';
+  }
 
-      if(!list.length){grid.style.display='none';empty.style.display='';return;}
-      empty.style.display='none';grid.style.display='';
-
-      grid.innerHTML=list.map((c,i)=>{
-        const ce=c.ceHours||c.ceuHours||'';
-        const cat=(c.categories||[])[0]||'';
-        const catStyle=catColors[cat]||'background:#F1EFE9;color:#57534e';
-        const thumb=c.thumbnail?`<img class="course-thumb" src="${esc(c.thumbnail)}" alt="${esc(c.title)}" loading="lazy">`
-          :`<div class="course-thumb flex items-center justify-center"><svg class="w-12 h-12 text-hunter-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg></div>`;
-
-        const prog=userProgress[c._id];
-        let badge='';
-        if(prog){
-          if(prog.status==='completed'||prog.progress>=100)badge='<span style="position:absolute;top:10px;right:10px;background:#4A7C59;color:#fff;font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px">Completed</span>';
-          else if(prog.progress>0)badge=`<span style="position:absolute;top:10px;right:10px;background:#284157;color:#fff;font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px">${Math.round(prog.progress)}%</span>`;
-          else badge='<span style="position:absolute;top:10px;right:10px;background:#D4A855;color:#fff;font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px">Enrolled</span>';
-        }
-        const isFree=c.isFree||c.pricing==='free'||(c.price||0)===0;
-
-        return`<a href="/course-details.html?slug=${esc(c.slug)}" class="course-card anim" style="animation-delay:${Math.min(i*0.04,0.4)}s">
-          <div style="position:relative">
-            ${thumb}
-            ${badge}
-            ${isFree?'<span style="position:absolute;top:10px;left:10px;background:#4A7C59;color:#fff;font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px">FREE</span>':''}
-          </div>
-          <div style="padding:16px">
-            <h3 style="font-family:'Cormorant Garamond',Georgia,serif;font-size:17px;font-weight:700;color:#284157;line-height:1.3;margin:0 0 8px">${esc(c.title)}</h3>
-            <p style="font-size:13px;color:#6B7280;line-height:1.5;margin:0 0 12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${esc(c.description||'')}</p>
-            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-              ${ce?`<span style="display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:600;color:#284157"><svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>${ce} CE</span>`:''}
-              ${cat?`<span class="cat-pill" style="${catStyle}">${esc(cat)}</span>`:''}
-              ${c.acepNumber||c.ceHours?'<span style="font-size:10px;color:#A3BDA9;font-weight:600">NBCC</span>':''}
-            </div>
-          </div>
-        </a>`;
-      }).join('');
+  // ─── LOAD ───
+  async function loadCourses() {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      window.location.href = '/login.html';
+      return;
     }
 
-    loadUser();loadCourses();loadProgress();
-  </script>
+    // Set user initials
+    try {
+      const me = await fetch(`${API_URL}/api/auth/me`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (me.ok) {
+        const u = await me.json();
+        const name = u.name || u.email || '';
+        document.getElementById('userInitials').textContent =
+          name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+      }
+    } catch(e) {}
+
+    try {
+      let courses = [];
+
+      // Fetch interactive courses (primary collection)
+      let page = 1;
+      while (true) {
+        const r = await fetch(`${API_URL}/api/interactive-courses?page=${page}&limit=50`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!r.ok) break;
+        const d = await r.json();
+        const batch = d.data || d.courses || [];
+        courses.push(...batch);
+        if (page >= (d.pagination?.pages || 1) || batch.length === 0) break;
+        page++;
+      }
+
+      // Only show published
+      allCourses = courses.filter(c => c.status === 'published' || c.isPublished);
+
+      document.getElementById('loadingState').style.display = 'none';
+
+      if (allCourses.length === 0) {
+        document.getElementById('emptyState').style.display = 'block';
+      } else {
+        document.getElementById('courseGrid').style.display = 'grid';
+        renderCourses();
+      }
+
+    } catch(e) {
+      document.getElementById('loadingState').style.display = 'none';
+      document.getElementById('errorState').style.display = 'block';
+      document.getElementById('errorMsg').textContent = 'Failed to load courses: ' + e.message;
+    }
+  }
+
+  // ─── RENDER ───
+  function renderCourses(list) {
+    const courses = list || getFilteredCourses();
+    const grid = document.getElementById('courseGrid');
+    const empty = document.getElementById('emptyState');
+
+    document.getElementById('courseCount').textContent = `${courses.length} course${courses.length !== 1 ? 's' : ''}`;
+
+    if (courses.length === 0) {
+      grid.style.display = 'none';
+      empty.style.display = 'block';
+      return;
+    }
+
+    grid.style.display = 'grid';
+    empty.style.display = 'none';
+
+    grid.innerHTML = courses.map(course => {
+      const ceHours = course.ceHours || course.ceuHours || 1;
+      const minutes = ceHours * 60;
+      const isEnrolled = course.enrollment?.enrolled;
+      const progress = course.enrollment?.percentComplete || 0;
+      const isFree = course.accessType === 'free';
+      const catClass = getCategoryClass(course);
+      const catLabel = getCategoryLabel(course);
+      const fmtClass = getFormatClass(course);
+      const fmtLabel = getFormatLabel(course);
+      const areas = getContentAreas(course);
+      const body = getApprovalBody(course);
+
+      let actionBtn;
+      if (isEnrolled) {
+        actionBtn = `<a href="/interactive-course.html?slug=${course.slug}" class="btn-continue">Continue Learning</a>`;
+      } else if (isFree) {
+        actionBtn = `<button onclick="enrollCourse('${course._id}')" class="btn-enroll">Start Free Course</button>`;
+      } else {
+        actionBtn = `<a href="/course-details.html?slug=${course.slug}" class="btn-details">View Details</a>`;
+      }
+
+      return `
+        <div class="course-card">
+          <div class="card-thumb">
+            ${ICON_BOOK}
+            <span class="pill-category ${catClass}">${catLabel}</span>
+            <span class="pill-format ${fmtClass}">${fmtLabel}</span>
+          </div>
+          <div class="card-body">
+            <div class="card-title">${course.title || 'Untitled'}</div>
+            <div class="card-desc">${course.description || course.subtitle || ''}</div>
+
+            <div class="badge-row">
+              <span class="badge badge-ce">${ICON_MEDAL} ${ceHours} CE Hr${ceHours !== 1 ? 's' : ''}</span>
+              <span class="badge badge-time">${ICON_CLOCK} ${minutes} min</span>
+              <span class="badge badge-body">${ICON_SEAL} ${body}</span>
+            </div>
+
+            <div class="content-pills">
+              ${areas.map(a => `<span class="content-pill">${a}</span>`).join('')}
+            </div>
+
+            ${isEnrolled ? `
+              <div class="progress-row">
+                <span>Progress</span>
+                <span class="pct">${progress}%</span>
+              </div>
+              <div class="progress-bar">
+                <div class="progress-fill" style="width:${progress}%"></div>
+              </div>
+            ` : `<div style="margin-bottom:14px"></div>`}
+
+            ${actionBtn}
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  // ─── FILTER ───
+  function getFilteredCourses() {
+    const search = (document.getElementById('search').value || '').toLowerCase();
+    const category = document.getElementById('filterCategory').value.toLowerCase();
+
+    return allCourses.filter(course => {
+      const matchSearch = !search ||
+        (course.title || '').toLowerCase().includes(search) ||
+        (course.description || '').toLowerCase().includes(search);
+
+      const cats = (course.ceuCategories || course.categories || []);
+      const catStr = (typeof cats[0] === 'object' ? cats[0]?.category : cats[0] || '').toLowerCase();
+      const matchCategory = !category || catStr.includes(category) ||
+        getCategoryLabel(course).toLowerCase().includes(category);
+
+      let matchTab = true;
+      if (activeTab === 'enrolled') matchTab = course.enrollment?.enrolled;
+      if (activeTab === 'available') matchTab = !course.enrollment?.enrolled;
+
+      return matchSearch && matchCategory && matchTab;
+    });
+  }
+
+  function filterCourses() { renderCourses(); }
+
+  function setTab(btn, tab) {
+    activeTab = tab;
+    document.querySelectorAll('.filter-tabs button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    renderCourses();
+  }
+
+  // ─── ENROLL ───
+  async function enrollCourse(courseId) {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      window.location.href = '/login.html';
+      return;
+    }
+
+    try {
+      const r = await fetch(`${API_URL}/api/interactive-courses/${courseId}/enroll`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (r.ok) {
+        await loadCourses();
+      } else {
+        const d = await r.json();
+        if (d.code === 'SUBSCRIPTION_REQUIRED') {
+          alert('This course requires an active subscription.');
+        } else {
+          alert(d.message || 'Enrollment failed');
+        }
+      }
+    } catch(e) {
+      alert('Error enrolling: ' + e.message);
+    }
+  }
+
+  // ─── INIT ───
+  document.addEventListener('DOMContentLoaded', loadCourses);
+</script>
+
 </body>
 </html>
