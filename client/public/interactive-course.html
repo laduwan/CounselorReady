@@ -1721,15 +1721,43 @@ let ttsUtterance = null;
     return;
   }
   
-  // 2. URL params: ?json=URL or ?slug=SLUG or ?api=BASE_URL&slug=SLUG
+  // 2. URL params: ?json=URL or ?slug=SLUG or ?id=ID or ?api=BASE_URL&slug=SLUG
   const params = new URLSearchParams(location.search);
   const jsonUrl = params.get('json');
   const slug = params.get('slug');
+  const courseId = params.get('id');
   const apiBase = params.get('api') || '';
+  const isPreview = params.get('preview') === 'true';
+  
+  // Store preview flag globally
+  window.__CR_PREVIEW = isPreview;
+  
+  // Show admin preview banner if in preview mode
+  if (isPreview) {
+    const banner = document.createElement('div');
+    banner.id = 'crAdminPreviewBanner';
+    banner.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:99999;background:linear-gradient(90deg,#6B1D34,#4A7C59);color:#fff;text-align:center;padding:8px 16px;font-family:Lato,system-ui,sans-serif;font-size:13px;font-weight:700;letter-spacing:0.5px;display:flex;align-items:center;justify-content:center;gap:12px;box-shadow:0 2px 8px rgba(0,0,0,0.2)';
+    banner.innerHTML = '<span style="background:rgba(255,255,255,0.2);padding:2px 8px;border-radius:4px;font-size:11px">ADMIN</span> Preview Mode — No enrollment or progress tracking <a href="/admin-courses.html" style="color:#D4A855;text-decoration:underline;margin-left:12px;font-weight:600">← Back to Courses</a>';
+    document.body.prepend(banner);
+    // Offset the body so content isn't hidden behind banner
+    document.body.style.paddingTop = '40px';
+  }
   
   if (jsonUrl) {
     fetch(jsonUrl).then(r => r.json()).then(data => loadCourse(data.data || data))
       .catch(e => showError('Failed to load course: ' + e.message));
+    return;
+  }
+  
+  // ID-based fetch (admin preview) — requires auth token
+  if (courseId) {
+    const base = apiBase || (location.origin.includes('localhost') ? 'http://localhost:5000' : 'https://api.counselorready.com');
+    const token = localStorage.getItem('token');
+    const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+    fetch(`${base}/api/interactive-courses/${courseId}`, { headers })
+      .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
+      .then(data => loadCourse(data.data || data.course || data))
+      .catch(e => showError('Failed to load course by ID: ' + e.message));
     return;
   }
   
