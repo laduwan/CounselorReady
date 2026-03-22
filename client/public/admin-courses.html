@@ -1117,7 +1117,6 @@
       return;
     }
 
-    // Build slug from title if empty
     let slug = document.getElementById('editSlug').value.trim();
     if (!slug) {
       slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
@@ -1128,6 +1127,7 @@
     const ceVal = parseFloat(document.getElementById('editCEHours').value) || 0;
     const priceVal = parseFloat(document.getElementById('editPrice').value) || 0;
     const isPremium = document.getElementById('editPremium').checked;
+    const tierVal = isPremium ? 'premium' : document.getElementById('editAccessTier').value;
 
     const payload = {
       title,
@@ -1140,20 +1140,20 @@
       category: document.getElementById('editCategory').value,
       price: priceVal,
       isPremium,
-      accessTier: isPremium ? 'premium' : document.getElementById('editAccessTier').value,
-      pricingTier: isPremium ? 'premium' : document.getElementById('editAccessTier').value,
+      accessTier: tierVal,
+      pricingTier: tierVal,
       status: document.getElementById('editStatus').value,
       learningObjectives,
       objectives: learningObjectives
     };
 
+    const hdrs = { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' };
+
     try {
-      let r, url, method;
+      let r, lastErr;
 
       if (isNew) {
-        // Create via admin endpoint
-        url = `${API_URL}/api/admin/courses`;
-        method = 'POST';
+        // ── CREATE: try multiple endpoints ──
         payload.sections = [];
         payload.presenter = {
           name: document.getElementById('editPresenter').value.trim(),
@@ -1165,49 +1165,51 @@
           acepNumber: '7760',
           approvalBody: 'NBCC'
         };
-        r = await fetch(url, {
-          method,
-          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
+
+        const createEndpoints = [
+          `${API_URL}/api/admin/courses`,
+          `${API_URL}/api/interactive-courses`
+        ];
+
+        for (const url of createEndpoints) {
+          console.log('[EditModal] Trying POST', url);
+          try {
+            r = await fetch(url, { method: 'POST', headers: hdrs, body: JSON.stringify(payload) });
+            const body = await r.clone().json().catch(() => ({}));
+            console.log('[EditModal] Response', r.status, body);
+            if (r.ok) break;
+            lastErr = body.error || body.message || `${r.status}`;
+          } catch(e) { console.warn('[EditModal]', url, e); lastErr = e.message; }
+        }
       } else {
-        // Update: try interactive-courses first, then admin fallback
-        if (source === 'interactivecourses') {
-          r = await fetch(`${API_URL}/api/interactive-courses/${courseId}`, {
-            method: 'PUT',
-            headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-          });
-          // If interactive endpoint fails, try admin endpoint
-          if (!r.ok) {
-            console.warn('Interactive PUT failed, trying admin endpoint...', r.status);
-            r = await fetch(`${API_URL}/api/admin/courses/${courseId}`, {
-              method: 'PUT',
-              headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-              body: JSON.stringify(payload)
-            });
-          }
-        } else {
-          // Legacy collection — use admin endpoint
-          r = await fetch(`${API_URL}/api/admin/courses/${courseId}`, {
-            method: 'PUT',
-            headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-          });
+        // ── UPDATE: try multiple endpoints ──
+        const updateEndpoints = [
+          { url: `${API_URL}/api/admin/courses/${courseId}`, method: 'PUT' },
+          { url: `${API_URL}/api/interactive-courses/${courseId}`, method: 'PUT' },
+          { url: `${API_URL}/api/interactive-courses/${courseId}/metadata`, method: 'PATCH' }
+        ];
+
+        for (const ep of updateEndpoints) {
+          console.log('[EditModal] Trying', ep.method, ep.url);
+          try {
+            r = await fetch(ep.url, { method: ep.method, headers: hdrs, body: JSON.stringify(payload) });
+            const body = await r.clone().json().catch(() => ({}));
+            console.log('[EditModal] Response', r.status, body);
+            if (r.ok) break;
+            lastErr = body.error || body.message || `${r.status}`;
+          } catch(e) { console.warn('[EditModal]', ep.url, e); lastErr = e.message; }
         }
       }
 
-      if (!r.ok) {
-        const d = await r.json().catch(() => ({}));
-        console.error('Save failed:', r.status, d);
-        throw new Error(d.error || d.message || `Save failed (${r.status})`);
+      if (!r || !r.ok) {
+        throw new Error(lastErr || 'All save attempts failed — check console for details');
       }
 
       showToast(isNew ? '✓ Course created' : '✓ Course updated', '#4A7C59');
       closeEditModal();
       loadCourses();
     } catch(e) {
-      console.error('Edit save error:', e);
+      console.error('[EditModal] Final error:', e);
       showToast('Error: ' + e.message, '#dc2626');
     } finally {
       btn.textContent = isNew ? 'Create Course' : 'Save Changes';
