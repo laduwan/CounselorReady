@@ -1182,11 +1182,11 @@
           } catch(e) { console.warn('[EditModal]', url, e); lastErr = e.message; }
         }
       } else {
-        // ── UPDATE: try multiple endpoints ──
+        // ── UPDATE: try metadata PATCH first (proven working from Meta modal) ──
         const updateEndpoints = [
-          { url: `${API_URL}/api/admin/courses/${courseId}`, method: 'PUT' },
+          { url: `${API_URL}/api/interactive-courses/${courseId}/metadata`, method: 'PATCH' },
           { url: `${API_URL}/api/interactive-courses/${courseId}`, method: 'PUT' },
-          { url: `${API_URL}/api/interactive-courses/${courseId}/metadata`, method: 'PATCH' }
+          { url: `${API_URL}/api/admin/courses/${courseId}`, method: 'PUT' }
         ];
 
         for (const ep of updateEndpoints) {
