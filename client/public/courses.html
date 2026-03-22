@@ -158,6 +158,12 @@
         const data = await response.json();
         
         allCourses = data.data || data.courses || [];
+
+        // If logged in, fetch enrollment data and merge it
+        if (token) {
+          await loadEnrollments(token);
+        }
+
         renderCourses(allCourses);
       } catch (error) {
         console.error('Load courses error:', error);
@@ -166,6 +172,33 @@
             <p class="text-burgundy-600">Failed to load courses. Please try again.</p>
           </div>
         `;
+      }
+    }
+
+    async function loadEnrollments(token) {
+      try {
+        const response = await fetch(`${API_URL}/api/interactive-courses/user/my-courses`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!response.ok) return;
+        const enrollments = await response.json();
+        const enrollmentMap = {};
+        (Array.isArray(enrollments) ? enrollments : enrollments.data || []).forEach(item => {
+          const courseId = item.course?._id || item.courseId || item.course;
+          if (courseId) {
+            enrollmentMap[courseId] = {
+              enrolled: true,
+              percentComplete: item.overallProgress || item.percentComplete || 0,
+              status: item.status || 'in_progress'
+            };
+          }
+        });
+        allCourses = allCourses.map(course => {
+          const enrollment = enrollmentMap[course._id];
+          return enrollment ? { ...course, enrollment } : course;
+        });
+      } catch (e) {
+        console.log('Could not fetch enrollments:', e.message);
       }
     }
 
@@ -337,8 +370,12 @@
         });
         
         if (response.ok) {
-          alert('Enrolled successfully!');
-          await loadCourses(); // Reload to show updated enrollment
+          const enrolledCourse = allCourses.find(c => c._id === courseId);
+          if (enrolledCourse?.slug) {
+            window.location.href = `/interactive-course.html?slug=${enrolledCourse.slug}`;
+          } else {
+            await loadCourses();
+          }
         } else {
           const data = await response.json();
           if (data.code === 'SUBSCRIPTION_REQUIRED') {
