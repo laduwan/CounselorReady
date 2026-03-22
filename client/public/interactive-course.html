@@ -4721,63 +4721,124 @@ document.addEventListener('keydown', function(e) {
 
 </script>
 <!-- ═══════════════════════════════════════════════════════════════
-     REFERENCES & RESOURCES DRAWERS (self-contained add-on)
-     Remove this entire block to disable drawers. Zero edits above.
+     REFERENCES & RESOURCES DRAWERS — Floating edge tabs + slide-out
+     Self-contained. Zero edits above this line.
+     Delete this entire block to remove.
      ═══════════════════════════════════════════════════════════════ -->
 <script>
 (function() {
   'use strict';
 
-  // ── CSS ──
-  var s = document.createElement('style');
-  s.textContent = [
-    '.crd-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:90}',
-    '.crd-overlay.open{display:block}',
-    '.crd-panel{position:fixed;top:0;right:-420px;width:400px;max-width:90vw;height:100vh;background:var(--cr-surface,#fff);box-shadow:-4px 0 24px rgba(0,0,0,.15);z-index:91;transition:right .3s ease;display:flex;flex-direction:column;overflow:hidden}',
-    '.crd-panel.open{right:0}',
-    '.crd-hdr{display:flex;align-items:center;justify-content:space-between;padding:20px 24px;border-bottom:1px solid var(--cr-border,#E2DFD8);flex-shrink:0}',
-    '.crd-hdr h3{font-family:var(--cr-font-display,Georgia,serif);font-size:1.2em;font-weight:700;margin:0}',
-    '.crd-x{background:none;border:none;cursor:pointer;font-size:1.5em;color:var(--cr-text-muted,#8A8A8A);padding:4px 8px;border-radius:6px;line-height:1}',
-    '.crd-x:hover{background:var(--cr-border,#E2DFD8)}',
-    '.crd-body{flex:1;overflow-y:auto;padding:24px}',
-    '.crd-ref{padding-left:2em;text-indent:-2em;margin-bottom:.8em;font-size:.9em;line-height:1.6;color:var(--cr-text-secondary,#5A5A5A)}',
-    '.crd-ref em{font-style:italic}',
-    '.crd-ri{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--cr-border,#E2DFD8)}',
-    '.crd-ri:last-child{border-bottom:none}',
-    '.crd-ri-icon{width:36px;height:36px;border-radius:8px;background:var(--cr-navy,#284157);color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}',
-    '.crd-ri-info{flex:1}',
-    '.crd-ri-info a{font-weight:600;color:var(--cr-navy,#284157);display:block}',
-    '.crd-ri-info .crd-ft{font-size:.8em;color:var(--cr-text-muted,#8A8A8A);text-transform:uppercase;letter-spacing:.05em}',
-    '.crd-btn{display:flex;align-items:center;gap:10px;width:100%;padding:10px 20px;border:none;background:none;cursor:pointer;font-size:.85em;color:var(--cr-text-secondary,#5A5A5A);text-align:left;transition:background .15s}',
-    '.crd-btn:hover{background:var(--cr-border,#E2DFD8)}',
-    '.crd-dot{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0}',
-    '@media(max-width:640px){.crd-panel{width:100vw;max-width:100vw;right:-100vw}}'
-  ].join('\n');
-  document.head.appendChild(s);
+  // ── Inject all CSS ──
+  var css = document.createElement('style');
+  css.textContent = `
+    .crd-tab {
+      position: fixed; right: 0; z-index: 80;
+      writing-mode: vertical-rl; text-orientation: mixed;
+      padding: 14px 8px; font-size: 12px; font-weight: 700;
+      letter-spacing: 0.06em; cursor: pointer;
+      border: none; border-radius: 8px 0 0 8px;
+      box-shadow: -2px 2px 8px rgba(0,0,0,0.12);
+      transition: right 0.3s ease, opacity 0.3s ease;
+      display: none;
+    }
+    .crd-tab-refs {
+      top: 50%; transform: translateY(-100%);
+      background: var(--cr-burgundy,#6B1D34); color: #fff;
+    }
+    .crd-tab-res {
+      top: 50%; transform: translateY(8px);
+      background: var(--cr-navy,#284157); color: #fff;
+    }
+    .crd-tab:hover { filter: brightness(1.15); }
+    .crd-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.3); z-index: 89;
+    }
+    .crd-overlay.open { display: block; }
+    .crd-panel {
+      position: fixed; top: 0; right: -420px;
+      width: 400px; max-width: 90vw; height: 100vh;
+      background: var(--cr-surface,#fff);
+      box-shadow: -4px 0 24px rgba(0,0,0,0.15);
+      z-index: 91; transition: right 0.3s ease;
+      display: flex; flex-direction: column; overflow: hidden;
+    }
+    .crd-panel.open { right: 0; }
+    .crd-hdr {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 20px 24px; border-bottom: 1px solid var(--cr-border,#E2DFD8); flex-shrink: 0;
+    }
+    .crd-hdr h3 {
+      font-family: var(--cr-font-display,Georgia,serif);
+      font-size: 1.2em; font-weight: 700; margin: 0;
+    }
+    .crd-x {
+      background: none; border: none; cursor: pointer;
+      font-size: 1.5em; color: var(--cr-text-muted,#8A8A8A);
+      padding: 4px 8px; border-radius: 6px; line-height: 1;
+    }
+    .crd-x:hover { background: var(--cr-border,#E2DFD8); }
+    .crd-body { flex: 1; overflow-y: auto; padding: 24px; }
+    .crd-ref {
+      padding-left: 2em; text-indent: -2em;
+      margin-bottom: 0.8em; font-size: 0.9em;
+      line-height: 1.6; color: var(--cr-text-secondary,#5A5A5A);
+    }
+    .crd-ref em { font-style: italic; }
+    .crd-ri {
+      display: flex; align-items: center; gap: 12px;
+      padding: 10px 0; border-bottom: 1px solid var(--cr-border,#E2DFD8);
+    }
+    .crd-ri:last-child { border-bottom: none; }
+    .crd-ri-icon {
+      width: 36px; height: 36px; border-radius: 8px;
+      background: var(--cr-navy,#284157); color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; flex-shrink: 0;
+    }
+    .crd-ri-info { flex: 1; }
+    .crd-ri-info a { font-weight: 600; color: var(--cr-navy,#284157); display: block; }
+    .crd-ri-info .crd-ft {
+      font-size: 0.8em; color: var(--cr-text-muted,#8A8A8A);
+      text-transform: uppercase; letter-spacing: 0.05em;
+    }
+    @media(max-width:640px) {
+      .crd-panel { width: 100vw; max-width: 100vw; right: -100vw; }
+      .crd-tab { padding: 10px 6px; font-size: 11px; }
+    }
+  `;
+  document.head.appendChild(css);
 
   // ── Escape helper ──
   function esc(t) { var d = document.createElement('div'); d.textContent = t || ''; return d.innerHTML; }
 
-  // ── Drawer HTML ──
-  var wrap = document.createElement('div');
-  wrap.innerHTML =
+  // ── Create floating edge tabs ──
+  var tabR = document.createElement('button');
+  tabR.className = 'crd-tab crd-tab-refs';
+  tabR.id = 'crdTabR';
+  tabR.textContent = 'References';
+  tabR.setAttribute('aria-label', 'Open references');
+  document.body.appendChild(tabR);
+
+  var tabS = document.createElement('button');
+  tabS.className = 'crd-tab crd-tab-res';
+  tabS.id = 'crdTabS';
+  tabS.textContent = 'Resources';
+  tabS.setAttribute('aria-label', 'Open resources');
+  document.body.appendChild(tabS);
+
+  // ── Create drawer panels ──
+  var html =
     '<div class="crd-overlay" id="crdRO"></div>' +
     '<div class="crd-panel" id="crdRP"><div class="crd-hdr"><h3 style="color:var(--cr-burgundy,#6B1D34)">References</h3><button class="crd-x" id="crdRX">&times;</button></div><div class="crd-body" id="crdRB"></div></div>' +
     '<div class="crd-overlay" id="crdSO"></div>' +
     '<div class="crd-panel" id="crdSP"><div class="crd-hdr"><h3 style="color:var(--cr-navy,#284157)">Resources</h3><button class="crd-x" id="crdSX">&times;</button></div><div class="crd-body" id="crdSB"></div></div>';
-  while (wrap.firstChild) document.body.appendChild(wrap.firstChild);
+  var w = document.createElement('div');
+  w.innerHTML = html;
+  while (w.firstChild) document.body.appendChild(w.firstChild);
 
-  // ── Sidebar buttons ──
-  var bw = document.createElement('div');
-  bw.id = 'crdBW';
-  bw.style.cssText = 'display:none;border-top:1px solid var(--cr-border,#E2DFD8);padding:8px 0';
-  bw.innerHTML =
-    '<button class="crd-btn" id="crdRefB" style="display:none"><span class="crd-dot" style="background:var(--cr-burgundy,#6B1D34)">R</span><span>References</span></button>' +
-    '<button class="crd-btn" id="crdResB" style="display:none"><span class="crd-dot" style="background:var(--cr-navy,#284157)">\uD83D\uDCCE</span><span>Resources</span></button>';
-  var dl = document.getElementById('crDownloads');
-  if (dl && dl.parentNode) dl.parentNode.insertBefore(bw, dl);
-
-  // ── State ──
+  // ── Data ──
   var refsData = null, resData = null;
 
   // ── Renderers ──
@@ -4820,15 +4881,15 @@ document.addEventListener('keydown', function(e) {
   function closeS() { document.getElementById('crdSO').classList.remove('open'); document.getElementById('crdSP').classList.remove('open'); }
 
   // ── Events ──
-  document.getElementById('crdRefB').addEventListener('click', openR);
-  document.getElementById('crdResB').addEventListener('click', openS);
+  tabR.addEventListener('click', openR);
+  tabS.addEventListener('click', openS);
   document.getElementById('crdRX').addEventListener('click', closeR);
   document.getElementById('crdSX').addEventListener('click', closeS);
   document.getElementById('crdRO').addEventListener('click', closeR);
   document.getElementById('crdSO').addEventListener('click', closeS);
   document.addEventListener('keydown', function(e) { if (e.key === 'Escape') { closeR(); closeS(); } });
 
-  // ── Fetch data independently from API using slug in URL ──
+  // ── Fetch data from API using slug in URL ──
   function init() {
     var params = new URLSearchParams(location.search);
     var slug = params.get('slug');
@@ -4840,27 +4901,18 @@ document.addEventListener('keydown', function(e) {
         var c = d.data || d.course || d;
         refsData = c.references || [];
         resData = c.resources || [];
-        var hasR = refsData.length > 0;
-        var hasS = resData.length > 0;
-        if (hasR || hasS) {
-          document.getElementById('crdBW').style.display = 'block';
-          if (hasR) document.getElementById('crdRefB').style.display = '';
-          if (hasS) document.getElementById('crdResB').style.display = '';
-        }
+        if (refsData.length > 0) tabR.style.display = '';
+        if (resData.length > 0) tabS.style.display = '';
       })
       .catch(function() {});
   }
 
-  // Wait for app to be visible (course loaded), then fetch refs/res
+  // Wait for course to load, then fetch
   var poll = setInterval(function() {
     var app = document.getElementById('crApp');
-    if (app && app.style.display === 'grid') {
-      clearInterval(poll);
-      init();
-    }
+    if (app && app.style.display === 'grid') { clearInterval(poll); init(); }
   }, 300);
   setTimeout(function() { clearInterval(poll); }, 30000);
-
 })();
 </script>
 </body>
