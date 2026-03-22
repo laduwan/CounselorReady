@@ -507,8 +507,9 @@
       const price = c.price ? `$${c.price}` : null;
       const tier = c.accessTier || c.pricingTier || null;
       const isPrem = c.isPremium || tier === 'premium';
-      const tierLabel = isPrem ? 'Premium' : ({ free: 'Free', basic: 'Basic', professional: 'Professional', vip: 'VIP' }[tier] || tier);
-      const tierStyle = isPrem ? 'bg-gold-50 text-gold-700 border border-gold-400 font-semibold' : 'bg-purple-50 text-purple-600 border border-purple-200';
+      const displayTier = isPrem ? null : tier;
+      const tierLabel = ({ free: 'Free', basic: 'Basic', professional: 'Professional', vip: 'VIP' }[displayTier] || displayTier);
+      const courseCode = c.courseCode || '';
 
       const barColor = { complete: 'bg-green-500', nearly: 'bg-yellow-400', progress: 'bg-blue-400', needs: 'bg-gray-300' }[c._health];
       const barTextColor = { complete: 'text-green-600', nearly: 'text-yellow-600', progress: 'text-blue-500', needs: 'text-gray-400' }[c._health];
@@ -519,6 +520,7 @@
           <div class="flex items-start justify-between gap-3 mb-3">
             <div class="flex-1 min-w-0">
               <div class="flex items-center gap-2 flex-wrap">
+                ${courseCode ? `<span class="px-2 py-0.5 rounded text-xs font-mono font-semibold bg-navy-800 text-white whitespace-nowrap">${esc(courseCode)}</span>` : ''}
                 <h3 class="font-display text-lg font-semibold text-burgundy-900">${esc(c.title || 'Untitled')}</h3>
                 <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium border ${h.bg} ${h.text} ${h.border} whitespace-nowrap">
                   ${h.label}
@@ -526,7 +528,8 @@
                 <span class="px-2 py-0.5 rounded-full text-xs font-medium border whitespace-nowrap ${pub ? 'bg-green-50 text-green-700 border-green-200' : 'bg-yellow-50 text-yellow-700 border-yellow-200'}">
                   ${pub ? 'published' : 'draft'}
                 </span>
-                ${(tier || isPrem) ? `<span class="px-2 py-0.5 rounded-full text-xs font-medium ${tierStyle}">${tierLabel}</span>` : ''}
+                ${isPrem ? `<span class="px-2 py-0.5 rounded-full text-xs font-bold border border-gold-400 bg-gold-50 text-gold-700 whitespace-nowrap">PREMIUM</span>` : ''}
+                ${(displayTier && tierLabel) ? `<span class="px-2 py-0.5 rounded-full text-xs font-medium bg-purple-50 text-purple-600 border border-purple-200 whitespace-nowrap">${tierLabel}</span>` : ''}
               </div>
             </div>
             <div class="flex gap-1.5 shrink-0">
@@ -548,9 +551,9 @@
             </div>
           </div>
           <div class="flex items-center gap-4 text-sm flex-wrap">
-            <span class="text-forest-600"><strong class="text-forest-800">${sections}</strong> modules</span>
-            <span class="text-forest-300">·</span>
             <span class="text-forest-600"><strong class="text-forest-800">${ceHours}</strong> CE hrs</span>
+            <span class="text-forest-300">·</span>
+            <span class="text-forest-600"><strong class="text-forest-800">${sections}</strong> modules</span>
             <span class="text-forest-300">·</span>
             <span class="text-forest-600"><strong class="text-forest-800">${c._words.toLocaleString()}</strong> words</span>
             ${target > 0 ? `
