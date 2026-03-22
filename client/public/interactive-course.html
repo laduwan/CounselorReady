@@ -4735,7 +4735,7 @@ document.addEventListener('keydown', function(e) {
     .crd-tab {
       position: fixed; right: 0; z-index: 80;
       writing-mode: vertical-rl; text-orientation: mixed;
-      padding: 14px 8px; font-size: 12px; font-weight: 700;
+      padding: 16px 10px; font-size: 13px; font-weight: 700;
       letter-spacing: 0.06em; cursor: pointer;
       border: none; border-radius: 8px 0 0 8px;
       box-shadow: -2px 2px 8px rgba(0,0,0,0.12);
@@ -4901,8 +4901,20 @@ document.addEventListener('keydown', function(e) {
         var c = d.data || d.course || d;
         refsData = c.references || [];
         resData = c.resources || [];
-        if (refsData.length > 0) tabR.style.display = '';
-        if (resData.length > 0) tabS.style.display = '';
+        // Also scan contentBlocks for inline resource blocks
+        if (resData.length === 0 && c.sections) {
+          c.sections.forEach(function(sec) {
+            (sec.contentBlocks || []).forEach(function(b) {
+              if (b.type === 'resources' && b.resources) {
+                b.resources.forEach(function(r) {
+                  if (r.title || r.url) resData.push(r);
+                });
+              }
+            });
+          });
+        }
+        if (refsData.length > 0) tabR.style.display = 'block';
+        if (resData.length > 0) tabS.style.display = 'block';
       })
       .catch(function() {});
   }
