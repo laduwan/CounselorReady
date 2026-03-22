@@ -336,6 +336,17 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
   padding: 12px 20px;
 }
 
+/* References nav item */
+.cr-nav-references {
+  border-top: 1px solid var(--cr-border);
+  padding: 8px 20px;
+}
+.cr-nav-references .cr-nav-item.active {
+  background: var(--cr-burgundy-faded);
+  color: var(--cr-burgundy);
+  font-weight: 700;
+}
+
 /* — TOPBAR (mobile) — */
 .cr-topbar {
   display: none;
@@ -1484,6 +1495,13 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
         <span>Final Assessment</span>
       </button>
     </div>
+    <!-- References Nav -->
+    <div class="cr-nav-references" id="crNavReferences" style="display:none">
+      <button class="cr-nav-item" id="crNavRefsBtn" data-action="showReferences">
+        <span class="cr-nav-dot" style="background:var(--cr-burgundy);border-color:var(--cr-burgundy);color:#fff">R</span>
+        <span>References</span>
+      </button>
+    </div>
     <!-- Download Deliverables -->
     <div id="crDownloads" style="display:none;border-top:1px solid var(--cr-border);padding:12px 20px">
       <p style="font-size:0.75em;text-transform:uppercase;letter-spacing:0.08em;color:var(--cr-text-muted);margin-bottom:8px;font-weight:700">Downloads</p>
@@ -1721,43 +1739,15 @@ let ttsUtterance = null;
     return;
   }
   
-  // 2. URL params: ?json=URL or ?slug=SLUG or ?id=ID or ?api=BASE_URL&slug=SLUG
+  // 2. URL params: ?json=URL or ?slug=SLUG or ?api=BASE_URL&slug=SLUG
   const params = new URLSearchParams(location.search);
   const jsonUrl = params.get('json');
   const slug = params.get('slug');
-  const courseId = params.get('id');
   const apiBase = params.get('api') || '';
-  const isPreview = params.get('preview') === 'true';
-  
-  // Store preview flag globally
-  window.__CR_PREVIEW = isPreview;
-  
-  // Show admin preview banner if in preview mode
-  if (isPreview) {
-    const banner = document.createElement('div');
-    banner.id = 'crAdminPreviewBanner';
-    banner.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:99999;background:linear-gradient(90deg,#6B1D34,#4A7C59);color:#fff;text-align:center;padding:8px 16px;font-family:Lato,system-ui,sans-serif;font-size:13px;font-weight:700;letter-spacing:0.5px;display:flex;align-items:center;justify-content:center;gap:12px;box-shadow:0 2px 8px rgba(0,0,0,0.2)';
-    banner.innerHTML = '<span style="background:rgba(255,255,255,0.2);padding:2px 8px;border-radius:4px;font-size:11px">ADMIN</span> Preview Mode — No enrollment or progress tracking <a href="/admin-courses.html" style="color:#D4A855;text-decoration:underline;margin-left:12px;font-weight:600">← Back to Courses</a>';
-    document.body.prepend(banner);
-    // Offset the body so content isn't hidden behind banner
-    document.body.style.paddingTop = '40px';
-  }
   
   if (jsonUrl) {
     fetch(jsonUrl).then(r => r.json()).then(data => loadCourse(data.data || data))
       .catch(e => showError('Failed to load course: ' + e.message));
-    return;
-  }
-  
-  // ID-based fetch (admin preview) — requires auth token
-  if (courseId) {
-    const base = apiBase || (location.origin.includes('localhost') ? 'http://localhost:5000' : 'https://api.counselorready.com');
-    const token = localStorage.getItem('token');
-    const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
-    fetch(`${base}/api/interactive-courses/${courseId}`, { headers })
-      .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
-      .then(data => loadCourse(data.data || data.course || data))
-      .catch(e => showError('Failed to load course by ID: ' + e.message));
     return;
   }
   
@@ -1971,6 +1961,11 @@ function loadCourse(data) {
     document.getElementById('crNavAssessment').style.display = 'block';
   }
   
+  // Show references nav if references exist
+  if (course.references?.length > 0) {
+    document.getElementById('crNavReferences').style.display = 'block';
+  }
+  
   // Show downloads
   document.getElementById('crDownloads').style.display = 'block';
   
@@ -2035,6 +2030,13 @@ function buildSectionNav() {
     navSections.forEach(({ index }) => {
       nav.appendChild(makeNavItem(index));
     });
+  }
+  
+  // Toggle references button active state
+  const refsBtn = document.getElementById('crNavRefsBtn');
+  if (refsBtn) {
+    if (currentView === 'references') refsBtn.classList.add('active');
+    else refsBtn.classList.remove('active');
   }
 }
 
@@ -2132,7 +2134,7 @@ function goToSection(i) {
 }
 
 function prevSection() {
-  if (currentView === 'assessment') { currentView = 'section'; renderCurrentSection(); return; }
+  if (currentView === 'assessment' || currentView === 'references') { currentView = 'section'; renderCurrentSection(); buildSectionNav(); return; }
   if (currentSectionIndex > 0) goToSection(currentSectionIndex - 1);
 }
 
@@ -2152,6 +2154,66 @@ function showAssessment() {
   renderAssessment();
   updateProgress();
   buildSectionNav();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function showReferences() {
+  currentView = 'references';
+  buildSectionNav();
+  const area = document.getElementById('crContentArea');
+  area.innerHTML = '';
+  
+  // Back button
+  const backBtn = document.createElement('button');
+  backBtn.className = 'cr-btn cr-btn-secondary';
+  backBtn.setAttribute('data-action', 'backToCourse');
+  backBtn.textContent = '\u2190 Back to Course';
+  backBtn.style.marginBottom = '24px';
+  area.appendChild(backBtn);
+  
+  // References heading + APA content
+  const refsDiv = document.createElement('div');
+  refsDiv.className = 'cr-references';
+  let refsHtml = '<h3 style="text-align:center;font-family:var(--cr-font-display);font-size:1.3em;font-weight:700;color:var(--cr-burgundy);margin-bottom:1em">References</h3>';
+  
+  if (course.references?.length > 0) {
+    course.references.forEach(ref => {
+      if (ref.citation) {
+        refsHtml += `<p class="cr-reference">${esc(ref.citation)}</p>`;
+      } else {
+        let apa = '';
+        if (ref.author) apa += esc(ref.author);
+        if (ref.year) apa += ` (${ref.year}).`;
+        else apa += '.';
+        if (ref.title) apa += ` <em>${esc(ref.title)}</em>.`;
+        if (ref.source) apa += ` ${esc(ref.source)}.`;
+        refsHtml += `<p class="cr-reference">${apa.trim()}</p>`;
+      }
+    });
+  } else {
+    refsHtml += '<p style="color:var(--cr-text-muted);text-align:center;margin-top:2em">No references available for this course.</p>';
+  }
+  
+  refsDiv.innerHTML = refsHtml;
+  area.appendChild(refsDiv);
+  
+  // Hide nav buttons
+  document.getElementById('crNavButtons').style.display = 'none';
+  document.getElementById('crTopbarSection').textContent = 'References';
+  
+  // Update references sidebar button active state
+  const refsBtn = document.getElementById('crNavRefsBtn');
+  if (refsBtn) refsBtn.classList.add('active');
+  
+  closeSidebar();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  srAnnounce('Now viewing references');
+}
+
+function backToCourse() {
+  currentView = 'section';
+  buildSectionNav();
+  renderCurrentSection();
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
@@ -2425,7 +2487,7 @@ function renderBlock(block, index) {
     case 'text': return renderText(wrap, block);
     case 'imageText': return renderImageText(wrap, block);
     case 'image': return renderImage(wrap, block);
-    case 'accordion': return renderAccordion(wrap, block, index);
+    case 'accordion': return renderAccordion(wrap, block);
     case 'multipleChoice': return renderMultipleChoice(wrap, block, index);
     case 'multiSelect': return renderMultiSelect(wrap, block, index);
     case 'matching': return renderMatching(wrap, block, index);
@@ -2493,11 +2555,11 @@ function renderImage(wrap, block) {
 }
 
 // ─── ACCORDION ───
-function renderAccordion(wrap, block, blockIndex) {
+function renderAccordion(wrap, block) {
   const items = block.accordionItems || [];
   let html = '<div class="cr-accordion">';
   items.forEach((item, i) => {
-    const id = `acc-${currentSectionIndex}-${blockIndex}-${i}`;
+    const id = `acc-${currentSectionIndex}-${index}-${i}`;
     html += `<div class="cr-accordion-item">
       <button class="cr-accordion-trigger" aria-expanded="false" aria-controls="${id}-body" data-action="toggleAccordion">
         <span>${esc(item.title || '')}</span>
@@ -2766,13 +2828,12 @@ function renderScenarioTree(wrap, block, blockIndex) {
   const el = wrap.querySelector(`#${id}`);
   el._stNodes = block.nodes || {};
   el._stStart = block.startNode || 'start';
-  setTimeout(() => renderScenarioNode(id, el._stStart), 0);
+  renderScenarioNode(id, el._stStart);
   return wrap;
 }
 
 function renderScenarioNode(id, nodeKey) {
   const el = document.getElementById(id);
-  if (!el) return;
   const nodes = el._stNodes;
   const node = nodes[nodeKey];
   if (!node) { document.getElementById(id + '-body').innerHTML = '<p>End of scenario.</p>'; return; }
@@ -4569,6 +4630,8 @@ document.addEventListener('click', function(e) {
     case 'nextSection': nextSection(); break;
     case 'goToSection': goToSection(idx); break;
     case 'showAssessment': showAssessment(); break;
+    case 'showReferences': showReferences(); break;
+    case 'backToCourse': backToCourse(); break;
     
     // ─── Assessment ───
     case 'assessmentSelect': assessmentSelect(parseInt(el.dataset.q), parseInt(el.dataset.opt)); break;
