@@ -1968,6 +1968,41 @@ function loadCourse(data) {
     }
   }
   
+  // ── Normalize references: handle strings, objects, and inline blocks ──
+  if (!data.references) data.references = [];
+  // Convert plain string array to {citation} objects
+  if (data.references.length > 0 && typeof data.references[0] === 'string') {
+    data.references = data.references.map(r => ({ citation: r }));
+  }
+  // If still empty, scan contentBlocks for type "references" blocks
+  if (data.references.length === 0) {
+    data.sections.forEach(section => {
+      (section.contentBlocks || []).forEach(block => {
+        if (block.type === 'references' && Array.isArray(block.references)) {
+          block.references.forEach(r => {
+            if (typeof r === 'string') data.references.push({ citation: r });
+            else if (r.citation || r.title) data.references.push(r);
+          });
+        }
+      });
+    });
+  }
+  // Also scan last section text blocks for APA-style references
+  if (data.references.length === 0 && data.sections.length > 0) {
+    const lastSection = data.sections[data.sections.length - 1];
+    (lastSection.contentBlocks || []).forEach(block => {
+      if (block.type === 'text' && block.content) {
+        // Look for references heading followed by APA entries
+        const refsMatch = block.content.match(/(?:References|REFERENCES)\s*(?:<\/h[23]>)?\s*([\s\S]*)/i);
+        if (refsMatch) {
+          const refText = refsMatch[1].replace(/<[^>]+>/g, '').trim();
+          const entries = refText.split(/\n\n|\n(?=[A-Z])/).filter(e => e.trim().length > 20);
+          entries.forEach(e => data.references.push({ citation: e.trim() }));
+        }
+      }
+    });
+  }
+  
   course = data;
   
   // Build UI
