@@ -347,6 +347,16 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
   font-weight: 700;
 }
 
+/* Resources nav item */
+.cr-nav-resources {
+  padding: 8px 20px;
+}
+.cr-nav-resources .cr-nav-item.active {
+  background: var(--cr-navy-faded);
+  color: var(--cr-navy);
+  font-weight: 700;
+}
+
 /* — TOPBAR (mobile) — */
 .cr-topbar {
   display: none;
@@ -1502,6 +1512,13 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
         <span>References</span>
       </button>
     </div>
+    <!-- Resources Nav -->
+    <div class="cr-nav-resources" id="crNavResources" style="display:none">
+      <button class="cr-nav-item" id="crNavResBtn" data-action="showResources">
+        <span class="cr-nav-dot" style="background:var(--cr-navy);border-color:var(--cr-navy);color:#fff">&#128206;</span>
+        <span>Resources</span>
+      </button>
+    </div>
     <!-- Download Deliverables -->
     <div id="crDownloads" style="display:none;border-top:1px solid var(--cr-border);padding:12px 20px">
       <p style="font-size:0.75em;text-transform:uppercase;letter-spacing:0.08em;color:var(--cr-text-muted);margin-bottom:8px;font-weight:700">Downloads</p>
@@ -2003,6 +2020,33 @@ function loadCourse(data) {
     });
   }
   
+  // ── Normalize resources: aggregate from top-level + inline blocks ──
+  if (!data._allResources) {
+    const allRes = [];
+    // Top-level course.resources[]
+    if (Array.isArray(data.resources)) {
+      data.resources.forEach(r => {
+        if (r.title || r.url) allRes.push(r);
+      });
+    }
+    // Scan all contentBlocks for type "resources"
+    (data.sections || []).forEach(section => {
+      (section.contentBlocks || []).forEach(block => {
+        if (block.type === 'resources' && Array.isArray(block.resources)) {
+          block.resources.forEach(r => {
+            if (r.title || r.url) {
+              // Dedupe by URL
+              if (!allRes.some(existing => existing.url && existing.url === r.url)) {
+                allRes.push(r);
+              }
+            }
+          });
+        }
+      });
+    });
+    data._allResources = allRes;
+  }
+  
   course = data;
   
   // Build UI
@@ -2027,6 +2071,11 @@ function loadCourse(data) {
   // Show references nav if references exist
   if (course.references?.length > 0) {
     document.getElementById('crNavReferences').style.display = 'block';
+  }
+  
+  // Show resources nav if resources exist
+  if (course._allResources?.length > 0) {
+    document.getElementById('crNavResources').style.display = 'block';
   }
   
   // Show downloads
@@ -2100,6 +2149,13 @@ function buildSectionNav() {
   if (refsBtn) {
     if (currentView === 'references') refsBtn.classList.add('active');
     else refsBtn.classList.remove('active');
+  }
+  
+  // Toggle resources button active state
+  const resBtn = document.getElementById('crNavResBtn');
+  if (resBtn) {
+    if (currentView === 'resources') resBtn.classList.add('active');
+    else resBtn.classList.remove('active');
   }
 }
 
@@ -2197,7 +2253,7 @@ function goToSection(i) {
 }
 
 function prevSection() {
-  if (currentView === 'assessment' || currentView === 'references') { currentView = 'section'; renderCurrentSection(); buildSectionNav(); return; }
+  if (currentView === 'assessment' || currentView === 'references' || currentView === 'resources') { currentView = 'section'; renderCurrentSection(); buildSectionNav(); return; }
   if (currentSectionIndex > 0) goToSection(currentSectionIndex - 1);
 }
 
@@ -2278,6 +2334,62 @@ function backToCourse() {
   buildSectionNav();
   renderCurrentSection();
   window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function showResources() {
+  currentView = 'resources';
+  buildSectionNav();
+  const area = document.getElementById('crContentArea');
+  area.innerHTML = '';
+  
+  // Back button
+  const backBtn = document.createElement('button');
+  backBtn.className = 'cr-btn cr-btn-secondary';
+  backBtn.setAttribute('data-action', 'backToCourse');
+  backBtn.textContent = '\u2190 Back to Course';
+  backBtn.style.marginBottom = '24px';
+  area.appendChild(backBtn);
+  
+  const resources = course._allResources || [];
+  const icons = { pdf: '\uD83D\uDCC4', png: '\uD83D\uDDBC\uFE0F', image: '\uD83D\uDDBC\uFE0F', video: '\uD83C\uDFAC', link: '\uD83D\uDD17', article: '\uD83D\uDCF0', website: '\uD83C\uDF10', book: '\uD83D\uDCDA', reference: '\uD83D\uDCD6', worksheet: '\uD83D\uDCDD', document: '\uD83D\uDCC3', chapter: '\uD83D\uDCD1', journal: '\uD83D\uDD2C', doc: '\uD83D\uDCC3', docx: '\uD83D\uDCC3' };
+  
+  const resDiv = document.createElement('div');
+  resDiv.className = 'cr-resources';
+  resDiv.style.background = 'var(--cr-navy-faded)';
+  resDiv.style.borderRadius = 'var(--cr-radius)';
+  resDiv.style.padding = '24px';
+  
+  let html = '<h3 style="text-align:center;font-family:var(--cr-font-display);font-size:1.3em;font-weight:700;color:var(--cr-navy);margin-bottom:1.2em">\uD83D\uDCCE Course Resources</h3>';
+  
+  if (resources.length > 0) {
+    html += '<p style="color:var(--cr-text-secondary);margin-bottom:16px;font-size:0.9em;text-align:center">Supplementary materials and downloadable resources for this course.</p>';
+    resources.forEach(r => {
+      const fileType = (r.type || r.url?.split('.').pop() || 'link').toLowerCase();
+      const icon = icons[fileType] || '\uD83D\uDCCE';
+      const desc = r.description ? `<span style="display:block;font-size:0.8em;color:var(--cr-text-muted);margin-top:2px">${esc(r.description)}</span>` : '';
+      html += `<div class="cr-resource-item">
+        <div class="cr-resource-icon">${icon}</div>
+        <div class="cr-resource-info">
+          <a href="${esc(r.url || '#')}" target="_blank" rel="noopener">${esc(r.title || 'Resource')}</a>
+          <span>${esc(fileType.toUpperCase())}</span>
+          ${desc}
+        </div>
+      </div>`;
+    });
+  } else {
+    html += '<p style="color:var(--cr-text-muted);text-align:center;margin-top:2em">No downloadable resources available for this course.</p>';
+  }
+  
+  resDiv.innerHTML = html;
+  area.appendChild(resDiv);
+  
+  // Hide nav buttons
+  document.getElementById('crNavButtons').style.display = 'none';
+  document.getElementById('crTopbarSection').textContent = 'Resources';
+  
+  closeSidebar();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  srAnnounce('Now viewing course resources');
 }
 
 function updateProgress() {
@@ -4695,6 +4807,7 @@ document.addEventListener('click', function(e) {
     case 'goToSection': goToSection(idx); break;
     case 'showAssessment': showAssessment(); break;
     case 'showReferences': showReferences(); break;
+    case 'showResources': showResources(); break;
     case 'backToCourse': backToCourse(); break;
     
     // ─── Assessment ───
