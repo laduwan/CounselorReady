@@ -336,27 +336,6 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
   padding: 12px 20px;
 }
 
-/* References nav item */
-.cr-nav-references {
-  border-top: 1px solid var(--cr-border);
-  padding: 8px 20px;
-}
-.cr-nav-references .cr-nav-item.active {
-  background: var(--cr-burgundy-faded);
-  color: var(--cr-burgundy);
-  font-weight: 700;
-}
-
-/* Resources nav item */
-.cr-nav-resources {
-  padding: 8px 20px;
-}
-.cr-nav-resources .cr-nav-item.active {
-  background: var(--cr-navy-faded);
-  color: var(--cr-navy);
-  font-weight: 700;
-}
-
 /* — TOPBAR (mobile) — */
 .cr-topbar {
   display: none;
@@ -1031,53 +1010,6 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   REFERENCES / RESOURCES SLIDE-OUT DRAWER
-   ═══════════════════════════════════════════════════════════════ */
-.cr-drawer-overlay {
-  display: none;
-  position: fixed; inset: 0;
-  background: rgba(0,0,0,0.3);
-  z-index: 90;
-}
-.cr-drawer-overlay.open { display: block; }
-.cr-drawer {
-  position: fixed; top: 0; right: -420px;
-  width: 400px; max-width: 90vw; height: 100vh;
-  background: var(--cr-surface);
-  box-shadow: -4px 0 24px rgba(0,0,0,0.15);
-  z-index: 91;
-  transition: right 0.3s ease;
-  display: flex; flex-direction: column;
-  overflow: hidden;
-}
-.cr-drawer.open { right: 0; }
-.cr-drawer-header {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 20px 24px;
-  border-bottom: 1px solid var(--cr-border);
-  flex-shrink: 0;
-}
-.cr-drawer-header h3 {
-  font-family: var(--cr-font-display);
-  font-size: 1.2em; font-weight: 700;
-  color: var(--cr-burgundy); margin: 0;
-}
-.cr-drawer-close {
-  background: none; border: none; cursor: pointer;
-  font-size: 1.4em; color: var(--cr-text-muted);
-  padding: 4px 8px; border-radius: 6px;
-  transition: background 0.15s;
-}
-.cr-drawer-close:hover { background: var(--cr-border); }
-.cr-drawer-body {
-  flex: 1; overflow-y: auto;
-  padding: 24px;
-}
-@media (max-width: 640px) {
-  .cr-drawer { width: 100vw; max-width: 100vw; right: -100vw; }
-}
-
-/* ═══════════════════════════════════════════════════════════════
    IMAGE / IMAGE-TEXT
    ═══════════════════════════════════════════════════════════════ */
 .cr-image-block {
@@ -1552,20 +1484,6 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
         <span>Final Assessment</span>
       </button>
     </div>
-    <!-- References Nav -->
-    <div class="cr-nav-references" id="crNavReferences" style="display:none">
-      <button class="cr-nav-item" id="crNavRefsBtn" data-action="showReferences">
-        <span class="cr-nav-dot" style="background:var(--cr-burgundy);border-color:var(--cr-burgundy);color:#fff">R</span>
-        <span>References</span>
-      </button>
-    </div>
-    <!-- Resources Nav -->
-    <div class="cr-nav-resources" id="crNavResources" style="display:none">
-      <button class="cr-nav-item" id="crNavResBtn" data-action="showResources">
-        <span class="cr-nav-dot" style="background:var(--cr-navy);border-color:var(--cr-navy);color:#fff">&#128206;</span>
-        <span>Resources</span>
-      </button>
-    </div>
     <!-- Download Deliverables -->
     <div id="crDownloads" style="display:none;border-top:1px solid var(--cr-border);padding:12px 20px">
       <p style="font-size:0.75em;text-transform:uppercase;letter-spacing:0.08em;color:var(--cr-text-muted);margin-bottom:8px;font-weight:700">Downloads</p>
@@ -1637,30 +1555,6 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
       <button class="cr-btn cr-btn-primary" id="crNextBtn" data-action="nextSection">Next →</button>
     </div>
   </main>
-</div>
-
-<!-- ═══════════════════════════════════════════════════════════════
-     REFERENCES DRAWER
-     ═══════════════════════════════════════════════════════════════ -->
-<div class="cr-drawer-overlay" id="crRefsOverlay" data-action="closeRefsDrawer"></div>
-<div class="cr-drawer" id="crRefsDrawer" role="dialog" aria-label="Course references">
-  <div class="cr-drawer-header">
-    <h3>References</h3>
-    <button class="cr-drawer-close" data-action="closeRefsDrawer" aria-label="Close references">&times;</button>
-  </div>
-  <div class="cr-drawer-body" id="crRefsDrawerBody"></div>
-</div>
-
-<!-- ═══════════════════════════════════════════════════════════════
-     RESOURCES DRAWER
-     ═══════════════════════════════════════════════════════════════ -->
-<div class="cr-drawer-overlay" id="crResOverlay" data-action="closeResDrawer"></div>
-<div class="cr-drawer" id="crResDrawer" role="dialog" aria-label="Course resources">
-  <div class="cr-drawer-header">
-    <h3 style="color:var(--cr-navy)">Resources</h3>
-    <button class="cr-drawer-close" data-action="closeResDrawer" aria-label="Close resources">&times;</button>
-  </div>
-  <div class="cr-drawer-body" id="crResDrawerBody"></div>
 </div>
 
 <!-- ═══════════════════════════════════════════════════════════════
@@ -2056,53 +1950,6 @@ function loadCourse(data) {
     }
   }
   
-  // ── Normalize references: handle strings, objects, and inline blocks ──
-  if (!data.references) data.references = [];
-  // Convert plain string array to {citation} objects
-  if (data.references.length > 0 && typeof data.references[0] === 'string') {
-    data.references = data.references.map(r => ({ citation: r }));
-  }
-  // If still empty, scan contentBlocks for type "references" blocks
-  if (data.references.length === 0) {
-    data.sections.forEach(section => {
-      (section.contentBlocks || []).forEach(block => {
-        if (block.type === 'references' && Array.isArray(block.references)) {
-          block.references.forEach(r => {
-            if (typeof r === 'string') data.references.push({ citation: r });
-            else if (r.citation || r.title) data.references.push(r);
-          });
-        }
-      });
-    });
-  }
-  
-  // ── Normalize resources: aggregate from top-level + inline blocks ──
-  if (!data._allResources) {
-    const allRes = [];
-    // Top-level course.resources[]
-    if (Array.isArray(data.resources)) {
-      data.resources.forEach(r => {
-        if (r.title || r.url) allRes.push(r);
-      });
-    }
-    // Scan all contentBlocks for type "resources"
-    (data.sections || []).forEach(section => {
-      (section.contentBlocks || []).forEach(block => {
-        if (block.type === 'resources' && Array.isArray(block.resources)) {
-          block.resources.forEach(r => {
-            if (r.title || r.url) {
-              // Dedupe by URL
-              if (!allRes.some(existing => existing.url && existing.url === r.url)) {
-                allRes.push(r);
-              }
-            }
-          });
-        }
-      });
-    });
-    data._allResources = allRes;
-  }
-  
   course = data;
   
   // Build UI
@@ -2122,16 +1969,6 @@ function loadCourse(data) {
   // Show assessment nav if assessment exists
   if (course.assessment?.questions?.length > 0) {
     document.getElementById('crNavAssessment').style.display = 'block';
-  }
-  
-  // Show references nav if references exist
-  if (course.references?.length > 0) {
-    document.getElementById('crNavReferences').style.display = 'block';
-  }
-  
-  // Show resources nav if resources exist
-  if (course._allResources?.length > 0) {
-    document.getElementById('crNavResources').style.display = 'block';
   }
   
   // Show downloads
@@ -2198,20 +2035,6 @@ function buildSectionNav() {
     navSections.forEach(({ index }) => {
       nav.appendChild(makeNavItem(index));
     });
-  }
-  
-  // Toggle references button active state
-  const refsBtn = document.getElementById('crNavRefsBtn');
-  if (refsBtn) {
-    if (currentView === 'references') refsBtn.classList.add('active');
-    else refsBtn.classList.remove('active');
-  }
-  
-  // Toggle resources button active state
-  const resBtn = document.getElementById('crNavResBtn');
-  if (resBtn) {
-    if (currentView === 'resources') resBtn.classList.add('active');
-    else resBtn.classList.remove('active');
   }
 }
 
@@ -2309,7 +2132,7 @@ function goToSection(i) {
 }
 
 function prevSection() {
-  if (currentView === 'assessment' || currentView === 'references' || currentView === 'resources') { currentView = 'section'; renderCurrentSection(); buildSectionNav(); return; }
+  if (currentView === 'assessment') { currentView = 'section'; renderCurrentSection(); return; }
   if (currentSectionIndex > 0) goToSection(currentSectionIndex - 1);
 }
 
@@ -2329,86 +2152,6 @@ function showAssessment() {
   renderAssessment();
   updateProgress();
   buildSectionNav();
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-function showReferences() {
-  const body = document.getElementById('crRefsDrawerBody');
-  let html = '';
-  
-  if (course.references?.length > 0) {
-    course.references.forEach(ref => {
-      if (ref.citation) {
-        html += `<p class="cr-reference">${esc(ref.citation)}</p>`;
-      } else {
-        let apa = '';
-        if (ref.author) apa += esc(ref.author);
-        if (ref.year) apa += ` (${ref.year}).`;
-        else apa += '.';
-        if (ref.title) apa += ` <em>${esc(ref.title)}</em>.`;
-        if (ref.source) apa += ` ${esc(ref.source)}.`;
-        html += `<p class="cr-reference">${apa.trim()}</p>`;
-      }
-    });
-  } else {
-    html = '<p style="color:var(--cr-text-muted);text-align:center;margin-top:2em">No references available for this course.</p>';
-  }
-  
-  body.innerHTML = html;
-  document.getElementById('crRefsOverlay').classList.add('open');
-  document.getElementById('crRefsDrawer').classList.add('open');
-  closeSidebar();
-  srAnnounce('References drawer opened');
-}
-
-function closeRefsDrawer() {
-  document.getElementById('crRefsOverlay').classList.remove('open');
-  document.getElementById('crRefsDrawer').classList.remove('open');
-}
-
-function showResources() {
-  const body = document.getElementById('crResDrawerBody');
-  const resources = course._allResources || [];
-  const icons = { pdf: '\uD83D\uDCC4', png: '\uD83D\uDDBC\uFE0F', image: '\uD83D\uDDBC\uFE0F', video: '\uD83C\uDFAC', link: '\uD83D\uDD17', article: '\uD83D\uDCF0', website: '\uD83C\uDF10', book: '\uD83D\uDCDA', reference: '\uD83D\uDCD6', worksheet: '\uD83D\uDCDD', document: '\uD83D\uDCC3', chapter: '\uD83D\uDCD1', journal: '\uD83D\uDD2C', doc: '\uD83D\uDCC3', docx: '\uD83D\uDCC3' };
-  
-  let html = '';
-  if (resources.length > 0) {
-    html += '<p style="color:var(--cr-text-secondary);margin-bottom:16px;font-size:0.9em">Supplementary materials and downloadable resources for this course.</p>';
-    resources.forEach(r => {
-      const fileType = (r.type || r.url?.split('.').pop() || 'link').toLowerCase();
-      const icon = icons[fileType] || '\uD83D\uDCCE';
-      const desc = r.description ? `<span style="display:block;font-size:0.8em;color:var(--cr-text-muted);margin-top:2px">${esc(r.description)}</span>` : '';
-      html += `<div class="cr-resource-item">
-        <div class="cr-resource-icon">${icon}</div>
-        <div class="cr-resource-info">
-          <a href="${esc(r.url || '#')}" target="_blank" rel="noopener">${esc(r.title || 'Resource')}</a>
-          <span>${esc(fileType.toUpperCase())}</span>
-          ${desc}
-        </div>
-      </div>`;
-    });
-  } else {
-    html = '<p style="color:var(--cr-text-muted);text-align:center;margin-top:2em">No downloadable resources available for this course.</p>';
-  }
-  
-  body.innerHTML = html;
-  document.getElementById('crResOverlay').classList.add('open');
-  document.getElementById('crResDrawer').classList.add('open');
-  closeSidebar();
-  srAnnounce('Resources drawer opened');
-}
-
-function closeResDrawer() {
-  document.getElementById('crResOverlay').classList.remove('open');
-  document.getElementById('crResDrawer').classList.remove('open');
-}
-
-function backToCourse() {
-  closeRefsDrawer();
-  closeResDrawer();
-  currentView = 'section';
-  buildSectionNav();
-  renderCurrentSection();
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
@@ -4826,11 +4569,6 @@ document.addEventListener('click', function(e) {
     case 'nextSection': nextSection(); break;
     case 'goToSection': goToSection(idx); break;
     case 'showAssessment': showAssessment(); break;
-    case 'showReferences': showReferences(); break;
-    case 'showResources': showResources(); break;
-    case 'closeRefsDrawer': closeRefsDrawer(); break;
-    case 'closeResDrawer': closeResDrawer(); break;
-    case 'backToCourse': backToCourse(); break;
     
     // ─── Assessment ───
     case 'assessmentSelect': assessmentSelect(parseInt(el.dataset.q), parseInt(el.dataset.opt)); break;
@@ -4981,6 +4719,237 @@ document.addEventListener('keydown', function(e) {
   }
 });
 
+</script>
+<!-- ═══════════════════════════════════════════════════════════════
+     REFERENCES & RESOURCES DRAWERS (self-contained add-on)
+     ═══════════════════════════════════════════════════════════════ -->
+<script>
+(function() {
+  'use strict';
+
+  // ── 1. Inject CSS ──
+  const style = document.createElement('style');
+  style.textContent = `
+    .crd-overlay {
+      display:none; position:fixed; inset:0;
+      background:rgba(0,0,0,0.3); z-index:90;
+    }
+    .crd-overlay.open { display:block; }
+    .crd-panel {
+      position:fixed; top:0; right:-420px;
+      width:400px; max-width:90vw; height:100vh;
+      background:var(--cr-surface,#fff);
+      box-shadow:-4px 0 24px rgba(0,0,0,0.15);
+      z-index:91; transition:right 0.3s ease;
+      display:flex; flex-direction:column; overflow:hidden;
+    }
+    .crd-panel.open { right:0; }
+    .crd-header {
+      display:flex; align-items:center; justify-content:space-between;
+      padding:20px 24px; border-bottom:1px solid var(--cr-border,#E2DFD8); flex-shrink:0;
+    }
+    .crd-header h3 {
+      font-family:var(--cr-font-display,'Georgia',serif);
+      font-size:1.2em; font-weight:700; margin:0;
+    }
+    .crd-close {
+      background:none; border:none; cursor:pointer;
+      font-size:1.5em; color:var(--cr-text-muted,#8A8A8A);
+      padding:4px 8px; border-radius:6px; line-height:1;
+    }
+    .crd-close:hover { background:var(--cr-border,#E2DFD8); }
+    .crd-body { flex:1; overflow-y:auto; padding:24px; }
+    .crd-ref {
+      padding-left:2em; text-indent:-2em;
+      margin-bottom:0.8em; font-size:0.9em;
+      line-height:1.6; color:var(--cr-text-secondary,#5A5A5A);
+    }
+    .crd-ref em { font-style:italic; }
+    .crd-res-item {
+      display:flex; align-items:center; gap:12px;
+      padding:10px 0; border-bottom:1px solid var(--cr-border,#E2DFD8);
+    }
+    .crd-res-item:last-child { border-bottom:none; }
+    .crd-res-icon {
+      width:36px; height:36px; border-radius:8px;
+      background:var(--cr-navy,#284157); color:#fff;
+      display:flex; align-items:center; justify-content:center;
+      font-size:14px; flex-shrink:0;
+    }
+    .crd-res-info { flex:1; }
+    .crd-res-info a { font-weight:600; color:var(--cr-navy,#284157); display:block; }
+    .crd-res-info .crd-type {
+      font-size:0.8em; color:var(--cr-text-muted,#8A8A8A);
+      text-transform:uppercase; letter-spacing:0.05em;
+    }
+    .crd-sidebar-btn {
+      display:flex; align-items:center; gap:10px;
+      width:100%; padding:10px 20px; border:none; background:none;
+      cursor:pointer; font-size:0.85em; color:var(--cr-text-secondary,#5A5A5A);
+      text-align:left; transition:background 0.15s;
+    }
+    .crd-sidebar-btn:hover { background:var(--cr-border,#E2DFD8); }
+    .crd-dot {
+      width:28px; height:28px; border-radius:6px;
+      display:flex; align-items:center; justify-content:center;
+      font-size:12px; font-weight:700; color:#fff; flex-shrink:0;
+    }
+    @media(max-width:640px) {
+      .crd-panel { width:100vw; max-width:100vw; right:-100vw; }
+    }
+  `;
+  document.head.appendChild(style);
+
+  // ── 2. Inject drawer HTML ──
+  const drawersHtml = `
+    <div class="crd-overlay" id="crdRefsOverlay"></div>
+    <div class="crd-panel" id="crdRefsPanel" role="dialog" aria-label="Course references">
+      <div class="crd-header">
+        <h3 style="color:var(--cr-burgundy,#6B1D34)">References</h3>
+        <button class="crd-close" id="crdRefsClose" aria-label="Close">&times;</button>
+      </div>
+      <div class="crd-body" id="crdRefsBody"></div>
+    </div>
+    <div class="crd-overlay" id="crdResOverlay"></div>
+    <div class="crd-panel" id="crdResPanel" role="dialog" aria-label="Course resources">
+      <div class="crd-header">
+        <h3 style="color:var(--cr-navy,#284157)">Resources</h3>
+        <button class="crd-close" id="crdResClose" aria-label="Close">&times;</button>
+      </div>
+      <div class="crd-body" id="crdResBody"></div>
+    </div>
+  `;
+  const container = document.createElement('div');
+  container.innerHTML = drawersHtml;
+  while (container.firstChild) document.body.appendChild(container.firstChild);
+
+  // ── 3. Inject sidebar buttons ──
+  const btnWrap = document.createElement('div');
+  btnWrap.id = 'crdBtnWrap';
+  btnWrap.style.cssText = 'display:none;border-top:1px solid var(--cr-border,#E2DFD8);padding:8px 0';
+  btnWrap.innerHTML = `
+    <button class="crd-sidebar-btn" id="crdRefsBtn" style="display:none">
+      <span class="crd-dot" style="background:var(--cr-burgundy,#6B1D34)">R</span>
+      <span>References</span>
+    </button>
+    <button class="crd-sidebar-btn" id="crdResBtn" style="display:none">
+      <span class="crd-dot" style="background:var(--cr-navy,#284157)">&#128206;</span>
+      <span>Resources</span>
+    </button>
+  `;
+  // Insert before Downloads section
+  const downloads = document.getElementById('crDownloads');
+  if (downloads && downloads.parentNode) {
+    downloads.parentNode.insertBefore(btnWrap, downloads);
+  }
+
+  // ── 4. Escape helper ──
+  function esc(s) {
+    const d = document.createElement('div');
+    d.textContent = s || '';
+    return d.innerHTML;
+  }
+
+  // ── 5. Render references ──
+  function renderRefs(refs) {
+    const body = document.getElementById('crdRefsBody');
+    if (!refs || refs.length === 0) {
+      body.innerHTML = '<p style="color:var(--cr-text-muted);text-align:center;margin-top:2em">No references available.</p>';
+      return;
+    }
+    let html = '';
+    refs.forEach(function(ref) {
+      if (typeof ref === 'string') {
+        html += '<p class="crd-ref">' + esc(ref) + '</p>';
+      } else if (ref.formatted) {
+        html += '<p class="crd-ref">' + esc(ref.formatted) + '</p>';
+      } else if (ref.citation) {
+        html += '<p class="crd-ref">' + esc(ref.citation) + '</p>';
+      } else {
+        var apa = '';
+        if (ref.author) apa += esc(ref.author);
+        if (ref.year) apa += ' (' + ref.year + ').';
+        else apa += '.';
+        if (ref.title) apa += ' <em>' + esc(ref.title) + '</em>.';
+        if (ref.source) apa += ' ' + esc(ref.source) + '.';
+        html += '<p class="crd-ref">' + apa.trim() + '</p>';
+      }
+    });
+    body.innerHTML = html;
+  }
+
+  // ── 6. Render resources ──
+  function renderRes(resources) {
+    const body = document.getElementById('crdResBody');
+    if (!resources || resources.length === 0) {
+      body.innerHTML = '<p style="color:var(--cr-text-muted);text-align:center;margin-top:2em">No resources available.</p>';
+      return;
+    }
+    var icons = { pdf:'📄', png:'🖼️', image:'🖼️', video:'🎬', link:'🔗', website:'🌐', book:'📚', worksheet:'📝', document:'📃', doc:'📃', docx:'📃' };
+    var html = '';
+    resources.forEach(function(r) {
+      var ft = (r.type || (r.url ? r.url.split('.').pop() : 'link')).toLowerCase();
+      var icon = icons[ft] || '📎';
+      var desc = r.description ? '<span style="display:block;font-size:0.8em;color:var(--cr-text-muted);margin-top:2px">' + esc(r.description) + '</span>' : '';
+      html += '<div class="crd-res-item">' +
+        '<div class="crd-res-icon">' + icon + '</div>' +
+        '<div class="crd-res-info">' +
+          '<a href="' + esc(r.url || '#') + '" target="_blank" rel="noopener">' + esc(r.title || 'Resource') + '</a>' +
+          '<span class="crd-type">' + esc(ft.toUpperCase()) + '</span>' + desc +
+        '</div></div>';
+    });
+    body.innerHTML = html;
+  }
+
+  // ── 7. Open/close drawers ──
+  function openRefs() {
+    if (typeof course !== 'undefined' && course) renderRefs(course.references);
+    document.getElementById('crdRefsOverlay').classList.add('open');
+    document.getElementById('crdRefsPanel').classList.add('open');
+  }
+  function closeRefs() {
+    document.getElementById('crdRefsOverlay').classList.remove('open');
+    document.getElementById('crdRefsPanel').classList.remove('open');
+  }
+  function openRes() {
+    if (typeof course !== 'undefined' && course) renderRes(course.resources);
+    document.getElementById('crdResOverlay').classList.add('open');
+    document.getElementById('crdResPanel').classList.add('open');
+  }
+  function closeRes() {
+    document.getElementById('crdResOverlay').classList.remove('open');
+    document.getElementById('crdResPanel').classList.remove('open');
+  }
+
+  // ── 8. Event listeners ──
+  document.getElementById('crdRefsBtn').addEventListener('click', openRefs);
+  document.getElementById('crdResBtn').addEventListener('click', openRes);
+  document.getElementById('crdRefsClose').addEventListener('click', closeRefs);
+  document.getElementById('crdResClose').addEventListener('click', closeRes);
+  document.getElementById('crdRefsOverlay').addEventListener('click', closeRefs);
+  document.getElementById('crdResOverlay').addEventListener('click', closeRes);
+  // Escape key closes
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') { closeRefs(); closeRes(); }
+  });
+
+  // ── 9. Watch for course load, then show buttons ──
+  var checkInterval = setInterval(function() {
+    if (typeof course !== 'undefined' && course && course.sections) {
+      clearInterval(checkInterval);
+      var hasRefs = course.references && course.references.length > 0;
+      var hasRes = course.resources && course.resources.length > 0;
+      if (hasRefs || hasRes) {
+        document.getElementById('crdBtnWrap').style.display = 'block';
+        if (hasRefs) document.getElementById('crdRefsBtn').style.display = '';
+        if (hasRes) document.getElementById('crdResBtn').style.display = '';
+      }
+    }
+  }, 500);
+  // Stop checking after 30s
+  setTimeout(function() { clearInterval(checkInterval); }, 30000);
+
+})();
 </script>
 </body>
 </html>
