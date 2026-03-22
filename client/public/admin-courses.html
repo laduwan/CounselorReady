@@ -506,6 +506,9 @@
       const sections = c.sectionCount || c.moduleCount || (c.sections || c.modules || []).length;
       const price = c.price ? `$${c.price}` : null;
       const tier = c.accessTier || c.pricingTier || null;
+      const isPrem = c.isPremium || tier === 'premium';
+      const tierLabel = isPrem ? 'Premium' : ({ free: 'Free', basic: 'Basic', professional: 'Professional', vip: 'VIP' }[tier] || tier);
+      const tierStyle = isPrem ? 'bg-gold-50 text-gold-700 border border-gold-400 font-semibold' : 'bg-purple-50 text-purple-600 border border-purple-200';
 
       const barColor = { complete: 'bg-green-500', nearly: 'bg-yellow-400', progress: 'bg-blue-400', needs: 'bg-gray-300' }[c._health];
       const barTextColor = { complete: 'text-green-600', nearly: 'text-yellow-600', progress: 'text-blue-500', needs: 'text-gray-400' }[c._health];
@@ -523,7 +526,7 @@
                 <span class="px-2 py-0.5 rounded-full text-xs font-medium border whitespace-nowrap ${pub ? 'bg-green-50 text-green-700 border-green-200' : 'bg-yellow-50 text-yellow-700 border-yellow-200'}">
                   ${pub ? 'published' : 'draft'}
                 </span>
-                ${tier ? `<span class="px-2 py-0.5 rounded-full text-xs font-medium bg-purple-50 text-purple-600 border border-purple-200">${tier}</span>` : ''}
+                ${(tier || isPrem) ? `<span class="px-2 py-0.5 rounded-full text-xs font-medium ${tierStyle}">${tierLabel}</span>` : ''}
               </div>
             </div>
             <div class="flex gap-1.5 shrink-0">
@@ -939,7 +942,7 @@
     </div>
 
     <!-- Row: Price + Access Tier -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:10px">
       <div>
         <label style="display:block;font-size:13px;font-weight:600;color:#284157;margin-bottom:4px">Price ($)</label>
         <input type="number" id="editPrice" min="0" step="0.01" style="width:100%;padding:10px 14px;border:1px solid #E5E2DC;border-radius:10px;font-family:inherit;font-size:14px;outline:none;box-sizing:border-box" placeholder="0.00">
@@ -954,6 +957,16 @@
         </select>
       </div>
     </div>
+
+    <!-- Premium Toggle -->
+    <label id="premiumToggle" style="display:flex;align-items:center;gap:10px;padding:10px 14px;margin-bottom:14px;border:2px solid #E5E2DC;border-radius:10px;cursor:pointer;transition:all 0.2s" onclick="togglePremiumStyle()">
+      <input type="checkbox" id="editPremium" style="width:18px;height:18px;accent-color:#D4A855;cursor:pointer" onchange="togglePremiumStyle()">
+      <div style="flex:1">
+        <span style="font-size:14px;font-weight:700;color:#284157">Premium Course</span>
+        <span style="font-size:12px;color:#6B7280;display:block;margin-top:1px">Requires individual purchase — not included in subscription plans</span>
+      </div>
+      <span id="premiumBadge" style="display:none;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;background:#FDF9EF;color:#996b2e;border:1px solid #D4A855">PREMIUM</span>
+    </label>
 
     <!-- Row: Status + Presenter -->
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
@@ -996,6 +1009,21 @@
 
 <script>
   // ── Edit Course Modal Logic ──
+  function togglePremiumStyle() {
+    const cb = document.getElementById('editPremium');
+    const wrap = document.getElementById('premiumToggle');
+    const badge = document.getElementById('premiumBadge');
+    if (cb.checked) {
+      wrap.style.borderColor = '#D4A855';
+      wrap.style.background = '#FFFDF5';
+      badge.style.display = 'inline-block';
+    } else {
+      wrap.style.borderColor = '#E5E2DC';
+      wrap.style.background = 'transparent';
+      badge.style.display = 'none';
+    }
+  }
+
   function openEditModal(courseId, source) {
     const modal = document.getElementById('editModal');
     const isNew = !courseId;
@@ -1016,6 +1044,8 @@
       document.getElementById('editCategory').value = 'core';
       document.getElementById('editPrice').value = '';
       document.getElementById('editAccessTier').value = 'professional';
+      document.getElementById('editPremium').checked = false;
+      togglePremiumStyle();
       document.getElementById('editStatus').value = 'draft';
       document.getElementById('editPresenter').value = 'Kejuiana Johnson, MA, LPC, NCC, CPCS, BC-TMH';
       document.getElementById('editObjectives').value = '';
@@ -1038,7 +1068,11 @@
     document.getElementById('editCourseCode').value = c.courseCode || '';
     document.getElementById('editCEHours').value = c.ceHours || c.ceuHours || 0;
     document.getElementById('editPrice').value = c.price || '';
-    document.getElementById('editAccessTier').value = c.accessTier || c.pricingTier || 'professional';
+    const tierVal = c.accessTier || c.pricingTier || 'professional';
+    const isPrem = c.isPremium || tierVal === 'premium';
+    document.getElementById('editAccessTier').value = isPrem ? 'professional' : tierVal;
+    document.getElementById('editPremium').checked = isPrem;
+    togglePremiumStyle();
     document.getElementById('editStatus').value = c.status || 'draft';
     document.getElementById('editPresenter').value = c.presenter?.name || 'Kejuiana Johnson, MA, LPC, NCC, CPCS, BC-TMH';
 
@@ -1091,6 +1125,9 @@
 
     const objectivesRaw = document.getElementById('editObjectives').value.trim();
     const learningObjectives = objectivesRaw ? objectivesRaw.split('\n').map(s => s.trim()).filter(Boolean) : [];
+    const ceVal = parseFloat(document.getElementById('editCEHours').value) || 0;
+    const priceVal = parseFloat(document.getElementById('editPrice').value) || 0;
+    const isPremium = document.getElementById('editPremium').checked;
 
     const payload = {
       title,
@@ -1098,22 +1135,25 @@
       description: document.getElementById('editDescription').value.trim(),
       slug,
       courseCode: document.getElementById('editCourseCode').value.trim(),
-      ceHours: parseFloat(document.getElementById('editCEHours').value) || 0,
+      ceHours: ceVal,
+      ceuHours: ceVal,
       category: document.getElementById('editCategory').value,
-      price: parseFloat(document.getElementById('editPrice').value) || 0,
-      accessTier: document.getElementById('editAccessTier').value,
+      price: priceVal,
+      isPremium,
+      accessTier: isPremium ? 'premium' : document.getElementById('editAccessTier').value,
+      pricingTier: isPremium ? 'premium' : document.getElementById('editAccessTier').value,
       status: document.getElementById('editStatus').value,
-      learningObjectives
+      learningObjectives,
+      objectives: learningObjectives
     };
 
     try {
-      let url, method;
+      let r, url, method;
 
       if (isNew) {
-        // Create new interactive course
-        url = `${API_URL}/api/interactive-courses`;
+        // Create via admin endpoint
+        url = `${API_URL}/api/admin/courses`;
         method = 'POST';
-        // Add defaults for new course
         payload.sections = [];
         payload.presenter = {
           name: document.getElementById('editPresenter').value.trim(),
@@ -1125,24 +1165,41 @@
           acepNumber: '7760',
           approvalBody: 'NBCC'
         };
-      } else if (source === 'courses') {
-        // Legacy collection
-        url = `${API_URL}/api/admin/courses/${courseId}`;
-        method = 'PUT';
+        r = await fetch(url, {
+          method,
+          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
       } else {
-        // Interactive courses collection
-        url = `${API_URL}/api/interactive-courses/${courseId}`;
-        method = 'PUT';
+        // Update: try interactive-courses first, then admin fallback
+        if (source === 'interactivecourses') {
+          r = await fetch(`${API_URL}/api/interactive-courses/${courseId}`, {
+            method: 'PUT',
+            headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          // If interactive endpoint fails, try admin endpoint
+          if (!r.ok) {
+            console.warn('Interactive PUT failed, trying admin endpoint...', r.status);
+            r = await fetch(`${API_URL}/api/admin/courses/${courseId}`, {
+              method: 'PUT',
+              headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+              body: JSON.stringify(payload)
+            });
+          }
+        } else {
+          // Legacy collection — use admin endpoint
+          r = await fetch(`${API_URL}/api/admin/courses/${courseId}`, {
+            method: 'PUT',
+            headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+        }
       }
-
-      const r = await fetch(url, {
-        method,
-        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
 
       if (!r.ok) {
         const d = await r.json().catch(() => ({}));
+        console.error('Save failed:', r.status, d);
         throw new Error(d.error || d.message || `Save failed (${r.status})`);
       }
 
@@ -1150,6 +1207,7 @@
       closeEditModal();
       loadCourses();
     } catch(e) {
+      console.error('Edit save error:', e);
       showToast('Error: ' + e.message, '#dc2626');
     } finally {
       btn.textContent = isNew ? 'Create Course' : 'Save Changes';
