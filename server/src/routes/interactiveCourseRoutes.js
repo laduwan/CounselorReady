@@ -1098,7 +1098,7 @@ router.get('/user/my-courses', protect, async (req, res) => {
 });
 
 // ============================================================================
-// ADMIN: Update course metadata (delivery format, content areas, access type)
+// ADMIN: Update course metadata (all editable fields via admin modal)
 // ============================================================================
 router.patch('/:id/metadata', protect, async (req, res) => {
   try {
@@ -1107,8 +1107,23 @@ router.patch('/:id/metadata', protect, async (req, res) => {
     }
 
     const allowedFields = [
-      'deliveryFormat', 'nbccContentAreas', 'accessType', 
-      'approvalBody', 'price', 'level', 'targetAudience'
+      // Basic info
+      'title', 'subtitle', 'description', 'slug', 'thumbnail',
+      'courseCode', 'status', 'isPublished',
+      // CE / Accreditation
+      'ceHours', 'ceProvider', 'acepNumber',
+      'deliveryFormat', 'nbccContentAreas', 'approvalBody',
+      // Categorization & access
+      'accessType', 'price', 'pricingTier', 'level',
+      'categories', 'tags', 'targetAudience',
+      // Presenter
+      'presenter',
+      // Learning objectives
+      'objectives',
+      // Premium flag
+      'isPremium',
+      // References & resources
+      'references', 'resources'
     ];
     const updates = {};
     allowedFields.forEach(field => {
