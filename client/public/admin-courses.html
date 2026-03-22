@@ -538,8 +538,8 @@
                 title="${pub ? 'Unpublish' : 'Publish'}">
                 ${pub ? '📤' : '📥'}
               </button>
-              <a href="/admin-course-preview.html?id=${c._id}"
-                class="w-8 h-8 rounded-lg flex items-center justify-center text-sm bg-purple-50 hover:bg-purple-100 text-purple-700 transition-colors" title="Preview">👁️</a>
+              <a href="/interactive-course.html?id=${c._id}&preview=true"
+                class="w-8 h-8 rounded-lg flex items-center justify-center text-sm bg-purple-50 hover:bg-purple-100 text-purple-700 transition-colors" title="Preview in Viewer">👁️</a>
               <button onclick="duplicateCourse('${c._id}','${esc(c.title)}')"
                 class="w-8 h-8 rounded-lg flex items-center justify-center text-sm bg-gold-50 hover:bg-gold-100 text-gold-700 transition-colors" title="Duplicate">📋</button>
               <button onclick="openMetaModal('${c._id}','${esc(c.title)}','${src}',this)"
@@ -1091,8 +1091,8 @@
     const previewDiv = document.getElementById('editPreviewLink');
     if (c.slug) {
       previewDiv.style.display = 'block';
-      document.getElementById('editPreviewAnchor').href = `/interactive-course.html?slug=${c.slug}`;
-      document.getElementById('editPreviewAdmin').href = `/admin-course-preview.html?id=${c._id}`;
+      document.getElementById('editPreviewAnchor').href = `/interactive-course.html?slug=${c.slug}&preview=true`;
+      document.getElementById('editPreviewAdmin').href = `/interactive-course.html?id=${c._id}&preview=true`;
     } else {
       previewDiv.style.display = 'none';
     }
