@@ -44,6 +44,33 @@ router.post('/', protect, validate({
   }
 });
 
+// ── Admin: list all group licenses (with pagination) ──
+router.get('/admin/all', protect, requireAdmin, async (req, res) => {
+  try {
+    const { page = 1, limit = 25, search } = req.query;
+    const pageNum = Math.max(1, Number(page));
+    const limitNum = Math.min(100, Math.max(1, Number(limit)));
+
+    const query = {};
+    if (search) {
+      query.organizationName = { $regex: search, $options: 'i' };
+    }
+
+    const [licenses, total] = await Promise.all([
+      GroupLicense.find(query)
+        .populate('adminUserId', 'email profile.firstName profile.lastName')
+        .sort({ createdAt: -1 })
+        .skip((pageNum - 1) * limitNum)
+        .limit(limitNum),
+      GroupLicense.countDocuments(query)
+    ]);
+
+    res.json({ licenses, total, page: pageNum, totalPages: Math.ceil(total / limitNum) });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // ── Get my group license(s) ──
 router.get('/my', protect, async (req, res) => {
   try {
@@ -221,33 +248,6 @@ router.get('/:id/compliance', protect, async (req, res) => {
       assignedCourses: license.assignedCourses,
       memberProgress: report
     });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// ── Admin: list all group licenses (with pagination) ──
-router.get('/admin/all', protect, requireAdmin, async (req, res) => {
-  try {
-    const { page = 1, limit = 25, search } = req.query;
-    const pageNum = Math.max(1, Number(page));
-    const limitNum = Math.min(100, Math.max(1, Number(limit)));
-
-    const query = {};
-    if (search) {
-      query.organizationName = { $regex: search, $options: 'i' };
-    }
-
-    const [licenses, total] = await Promise.all([
-      GroupLicense.find(query)
-        .populate('adminUserId', 'email profile.firstName profile.lastName')
-        .sort({ createdAt: -1 })
-        .skip((pageNum - 1) * limitNum)
-        .limit(limitNum),
-      GroupLicense.countDocuments(query)
-    ]);
-
-    res.json({ licenses, total, page: pageNum, totalPages: Math.ceil(total / limitNum) });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
