@@ -1,6 +1,7 @@
 // DROP INTO: /client/src/components/CourseBuilder.jsx
 
 import { useState, useCallback, useRef, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import jsPDF from "jspdf";
 import NarrationPanel from "./NarrationPanel.jsx";
 import {
@@ -2798,11 +2799,16 @@ function ImportTab({ onImported }) {
 // MAIN APP
 // ═══════════════════════════════════════════════════════════
 export default function CourseBuilderV2() {
+  const [searchParams] = useSearchParams();
+  const courseId = searchParams.get("id");
+
+  const API_BASE = import.meta.env.VITE_API_URL || "https://api.counselorready.com/api";
+
   const [activeTab, setActiveTab] = useState(0);
+  const [loadingCourse, setLoadingCourse] = useState(!!courseId);
   const [saving, setSaving] = useState(false);
-  const [saveMsg, setSaveMsg] = useState(null);
-  const [courseId, setCourseId] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [saveStatus, setSaveStatus] = useState(null); // "saved" | "error"
+
   const [courseData, setCourseData] = useState({
     title: "New Course",
     ceHours: 3,
@@ -2817,310 +2823,124 @@ export default function CourseBuilderV2() {
     acepProvider: { name: "GA Integrated Therapeutic Perspectives LLC", number: "7760" },
   });
 
-  const API_BASE = import.meta.env.VITE_API_URL || "https://api.counselorready.com/api";
-  const getToken = () => localStorage.getItem("token");
-
-  // ── Load existing course when ?id= is in URL ──
+  // Load existing course for editing
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const id = params.get("id");
-    if (!id) return;
-    setCourseId(id);
-    setLoading(true);
-
-    (async () => {
-      try {
-        // Try interactive courses first (returns { success, data: course })
-        let res = await fetch(`${API_BASE}/interactive-courses/${id}`, {
-          headers: { Authorization: `Bearer ${getToken()}` }
+    if (!courseId) return;
+    const token = localStorage.getItem("token");
+    fetch(`${API_BASE}/interactive-courses/${courseId}`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    })
+      .then(r => r.json())
+      .then(data => {
+        const course = data.course || data;
+        // Map sections[].contentBlocks[] → modules[].blocks[]
+        const modules = (course.sections || []).map((sec, i) => ({
+          id: sec._id || uid(),
+          number: i + 1,
+          title: sec.title || `Module ${i + 1}`,
+          blocks: (sec.contentBlocks || []).map(b => ({ ...b, id: b._id || b.id || uid() })),
+          knowledgeChecks: 3,
+        }));
+        setCourseData({
+          title: course.title || "Untitled",
+          ceHours: course.ceHours || course.ceuHours || 3,
+          level: course.level || "Intermediate",
+          category: course.category || "Clinical Practice",
+          objectives: course.objectives || [],
+          targetAudience: course.targetAudience || ["LPCs", "LMHCs", "LCSWs", "LMFTs"],
+          modules: modules.length ? modules : courseData.modules,
+          assessment: course.assessment || { questions: [], passThreshold: 0.80 },
+          acepProvider: course.acepProvider || { name: "GA Integrated Therapeutic Perspectives LLC", number: "7760" },
         });
-        let course = null;
+        setActiveTab(1); // jump straight to Content Editor
+      })
+      .catch(err => console.error("Failed to load course:", err))
+      .finally(() => setLoadingCourse(false));
+  }, [courseId]);
 
-        if (res.ok) {
-          const json = await res.json();
-          course = json.data || json.course || json;
-        } else {
-          // Fallback to admin courses endpoint (returns { ...course, stats })
-          res = await fetch(`${API_BASE}/admin/courses/${id}`, {
-            headers: { Authorization: `Bearer ${getToken()}` }
-          });
-          if (res.ok) {
-            course = await res.json();
-          }
-        }
-
-        if (course) {
-          // Convert sections → modules (interactive courses use sections/contentBlocks)
-          if (course.sections && !course.modules) {
-            course.modules = course.sections.map((s, i) => ({
-              id: s._id || uid(),
-              number: i + 1,
-              title: s.title || `Module ${i + 1}`,
-              blocks: (s.contentBlocks || []).map(b => ({ ...b, id: b.id || b._id || uid() })),
-              knowledgeChecks: 3,
-            }));
-          }
-          // Handle modules that have contentBlocks instead of blocks
-          if (course.modules) {
-            course.modules = course.modules.map((m, i) => ({
-              ...m,
-              id: m.id || m._id || uid(),
-              number: m.number || i + 1,
-              blocks: m.blocks || (m.contentBlocks || []).map(b => ({ ...b, id: b.id || b._id || uid() })),
-            }));
-          }
-          // Ensure modules array exists
-          if (!course.modules || course.modules.length === 0) {
-            course.modules = [{ id: uid(), number: 1, title: "Module 1", blocks: [], knowledgeChecks: 3 }];
-          }
-          console.log("CourseBuilder: loaded", course.title, "—", course.modules.length, "modules,", course.modules.reduce((s, m) => s + (m.blocks?.length || 0), 0), "blocks");
-          setCourseData(prev => ({ ...prev, ...course }));
-          setActiveTab(2); // Jump to Content Editor
-        } else {
-          console.error("CourseBuilder: course not found for id", id);
-        }
-      } catch (err) {
-        console.error("Failed to load course:", err);
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, []);
-
-  // ── Save / Publish to Database ──
-  const saveCourse = async (publish = false) => {
+  const handleSave = async () => {
+    if (!courseId) return;
     setSaving(true);
-    setSaveMsg(null);
+    setSaveStatus(null);
+    const token = localStorage.getItem("token");
+    // Map modules[].blocks[] → sections[].contentBlocks[]
+    const sections = courseData.modules.map(mod => ({
+      title: mod.title,
+      contentBlocks: mod.blocks,
+    }));
     try {
-      const slug = courseData.title?.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "untitled-course";
-
-      // Build the interactivecourse-format payload
-      const payload = {
-        title: courseData.title,
-        slug,
-        description: courseData.description || "",
-        ceHours: courseData.ceHours || 3,
-        credits: courseData.ceHours || 3,
-        category: courseData.category || "Clinical Practice",
-        level: courseData.level || "Intermediate",
-        contentArea: courseData.category || "Clinical Practice",
-        targetAudience: courseData.targetAudience || [],
-        objectives: courseData.objectives || [],
-        deliveryMethod: "online",
-        isPublished: publish,
-        status: publish ? "published" : "draft",
-        acepProvider: courseData.acepProvider || { name: "GA Integrated Therapeutic Perspectives LLC", number: "7760" },
-        sections: (courseData.modules || []).map((mod, i) => ({
-          title: mod.title || `Module ${i + 1}`,
-          order: i + 1,
-          contentBlocks: (mod.blocks || []).map((b, j) => ({ ...b, order: j + 1 })),
-        })),
-        assessment: courseData.assessment || { questions: [], passThreshold: 0.80 },
-        courseCode: courseData.courseCode || '',
-        shortDescription: courseData.shortDescription || courseData.description?.slice(0, 200) || '',
-        contentType: courseData.contentType || 'General',
-        ceCategory: courseData.ceCategory || courseData.contentType || 'General',
-        ceuHours: courseData.ceHours || 3,
-        ceuEligible: true,
-
-        presenter: courseData.presenter || {
-          name: 'Kejuiana Johnson',
-          credentials: 'MA, LPC, NCC, CPCS, BC-TMH',
-          license: 'LPC009587',
-          licenseState: 'Georgia',
-          licenseType: 'LPC',
-          category: 'category1'
+      const res = await fetch(`${API_BASE}/interactive-courses/${courseId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
-
-        provider: courseData.provider || {
-          name: 'GA Integrated Therapeutic Perspectives LLC',
-          shortName: 'GAITP LLC',
-          acepNumber: '7760',
-          approvalBody: 'NBCC'
-        },
-
-        references: (courseData.references || []).map(r =>
-          typeof r === 'string'
-            ? { citation: r, title: r.slice(0, 80) }
-            : { ...r, title: r.title || r.citation?.slice(0, 80) || '' }
-        ),
-        thumbnail: courseData.thumbnail || "",
-        thumbnailPublicId: courseData.thumbnailPublicId || "",
-        deliverables: (courseData.deliverables || []).map(d => ({
-          title: d.title,
-          url: d.url,
-          publicId: d.publicId,
-          fileType: d.fileType,
-          bytes: d.bytes,
-        })),
-      };
-
-      // Save via course-builder backend
-      const res = await fetch(`${API_BASE}/course-builder/save`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${getToken()}` },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({
+          title: courseData.title,
+          ceHours: courseData.ceHours,
+          level: courseData.level,
+          category: courseData.category,
+          objectives: courseData.objectives,
+          targetAudience: courseData.targetAudience,
+          sections,
+          assessment: courseData.assessment,
+        }),
       });
-
-      if (!res.ok) throw new Error(`Save failed: ${res.status}`);
-      const result = await res.json();
-      if (result.course?._id) setCourseId(result.course._id);
-      setSaveMsg(`✓ ${publish ? "Published" : "Saved"} — ${result.action || "success"}`);
-      // Redirect after 1.5s
-      setTimeout(() => {
-        window.location.href = '/admin-courses.html';
-      }, 1500);
-    } catch (err) {
-      setSaveMsg(`✗ Error: ${err.message}`);
+      if (!res.ok) throw new Error("Save failed");
+      setSaveStatus("saved");
+      setTimeout(() => setSaveStatus(null), 3000);
+    } catch {
+      setSaveStatus("error");
     } finally {
       setSaving(false);
     }
   };
 
-  // ── PDF Export ──
-  const exportPDF = () => {
-    const doc = new jsPDF({ unit: "mm", format: "a4" });
-    const W = 170, LM = 20;
-    let y = 20;
-
-    const addPage = () => { doc.addPage(); y = 20; };
-    const checkSpace = (need) => { if (y + need > 275) addPage(); };
-    const wrapText = (text, maxW) => doc.splitTextToSize(text || "", maxW || W);
-
-    // Title page
-    doc.setFontSize(24); doc.setFont("helvetica", "bold"); doc.setTextColor(107, 29, 52);
-    doc.text(courseData.title || "Untitled Course", LM, 50);
-    doc.setFontSize(12); doc.setFont("helvetica", "normal"); doc.setTextColor(52, 73, 94);
-    doc.text(`${courseData.ceHours || 3} CE Hours · ${courseData.category || ""} · ${courseData.level || ""}`, LM, 62);
-    doc.text("NBCC ACEP Provider #7760", LM, 70);
-    doc.text("GA Integrated Therapeutic Perspectives LLC", LM, 78);
-    if (courseData.description) {
-      y = 95;
-      doc.setFontSize(10);
-      const desc = wrapText(courseData.description.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim());
-      desc.forEach(line => { checkSpace(5); doc.text(line, LM, y); y += 5; });
-    }
-    if (courseData.objectives?.length) {
-      y += 10; checkSpace(15);
-      doc.setFontSize(14); doc.setFont("helvetica", "bold"); doc.setTextColor(74, 124, 89);
-      doc.text("Learning Objectives", LM, y); y += 8;
-      doc.setFontSize(10); doc.setFont("helvetica", "normal"); doc.setTextColor(44, 44, 44);
-      courseData.objectives.forEach((obj, i) => {
-        const lines = wrapText(`${i + 1}. ${obj}`);
-        lines.forEach(line => { checkSpace(5); doc.text(line, LM, y); y += 5; });
-        y += 2;
-      });
-    }
-
-    // Modules
-    (courseData.modules || []).forEach((mod, mi) => {
-      addPage();
-      doc.setFontSize(16); doc.setFont("helvetica", "bold"); doc.setTextColor(107, 29, 52);
-      doc.text(mod.title || `Module ${mi + 1}`, LM, y); y += 10;
-
-      (mod.blocks || []).forEach(block => {
-        const text = (block.content || block.question || block.instructions || "").replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
-        if (!text) return;
-        const label = BLOCK_TYPES.find(b => b.type === block.type)?.label || block.type;
-        checkSpace(12);
-        doc.setFontSize(9); doc.setFont("helvetica", "bold"); doc.setTextColor(74, 124, 89);
-        doc.text(`[${label}]`, LM, y); y += 5;
-        doc.setFontSize(10); doc.setFont("helvetica", "normal"); doc.setTextColor(44, 44, 44);
-        const lines = wrapText(text);
-        lines.forEach(line => { checkSpace(5); doc.text(line, LM, y); y += 5; });
-        y += 4;
-      });
-    });
-
-    // References
-    if (courseData.references?.length) {
-      addPage();
-      doc.setFontSize(16); doc.setFont("helvetica", "bold"); doc.setTextColor(107, 29, 52);
-      doc.text("References", LM, y); y += 10;
-      doc.setFontSize(9); doc.setFont("helvetica", "normal"); doc.setTextColor(44, 44, 44);
-      courseData.references.forEach(ref => {
-        const lines = wrapText(ref);
-        lines.forEach(line => { checkSpace(4.5); doc.text(line, LM, y); y += 4.5; });
-        y += 3;
-      });
-    }
-
-    doc.save(`${courseData.title?.replace(/[^a-z0-9]/gi, "_") || "course"}.pdf`);
-  };
-
   const tabs = [
     { label: "AI Generator", icon: "✨" },
-    { label: "Import", icon: "📥" },
     { label: "Content Editor", icon: "📝" },
-    { label: "Exam Generator", icon: "🎯" },
-    { label: "References", icon: "📚" },
     { label: "ACEP Checker", icon: "📋" },
-    { label: "Narration", icon: "🎙️" },
+    { label: "Import", icon: "📥" },
+    { label: "Block Types", icon: "🧩" },
   ];
+
+  if (loadingCourse) {
+    return (
+      <div style={{ ...S.container, display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100vh" }}>
+        <div style={{ textAlign: "center" }}>
+          <div style={{ fontSize: 32, marginBottom: 12 }}>⏳</div>
+          <div style={{ color: C.textMuted }}>Loading course…</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={S.container}>
       <link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600;6..72,700;6..72,800&display=swap" rel="stylesheet" />
-      <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Lato:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
-      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-
-      {/* Admin Header — matches platform */}
-      <div style={{ background: "#4a1524", color: "#fff", position: "sticky", top: 0, zIndex: 50 }}>
-        <div style={{ maxWidth: "100%", padding: "12px 24px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-            <div style={{ width: 36, height: 36, background: "#6b1d34", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden" }}>
-              <span style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontWeight: 700, color: "#e4b54e", position: "absolute", fontSize: 16, top: 2, left: 5 }}>C</span>
-              <span style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontWeight: 700, color: "#98c3a9", position: "absolute", fontSize: 16, bottom: 2, left: 13 }}>R</span>
-            </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <span style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontWeight: 600, fontSize: 18 }}>
-                <span style={{ color: "#f2a8be" }}>Counselor</span><span style={{ color: "#98c3a9" }}>Ready</span>
-              </span>
-              <span style={{ fontSize: 11, background: "#d4a855", color: "#fff", padding: "2px 8px", borderRadius: 10, fontWeight: 600, fontFamily: "'Lato', sans-serif" }}>ADMIN</span>
-            </div>
-            <span style={{ color: "rgba(255,255,255,0.15)", fontSize: 20, margin: "0 4px" }}>|</span>
-            <nav style={{ display: "flex", gap: 2, fontSize: 13, fontFamily: "'Lato', sans-serif" }}>
-              <a href="/admin-courses.html" style={{ color: "rgba(255,255,255,0.7)", textDecoration: "none", padding: "6px 10px", borderRadius: 6, display: "flex", alignItems: "center", gap: 6 }}><i className="fas fa-book" style={{ fontSize: 11 }}></i> Courses</a>
-              <a href="/admin-users.html" style={{ color: "rgba(255,255,255,0.7)", textDecoration: "none", padding: "6px 10px", borderRadius: 6, display: "flex", alignItems: "center", gap: 6 }}><i className="fas fa-users" style={{ fontSize: 11 }}></i> Users</a>
-              <a href="/admin-analytics.html" style={{ color: "rgba(255,255,255,0.7)", textDecoration: "none", padding: "6px 10px", borderRadius: 6, display: "flex", alignItems: "center", gap: 6 }}><i className="fas fa-chart-line" style={{ fontSize: 11 }}></i> Analytics</a>
-              <a href="/admin-messages.html" style={{ color: "rgba(255,255,255,0.7)", textDecoration: "none", padding: "6px 10px", borderRadius: 6, display: "flex", alignItems: "center", gap: 6 }}><i className="fas fa-envelope" style={{ fontSize: 11 }}></i> Messages</a>
-              <a href="/admin-credentials.html" style={{ color: "rgba(255,255,255,0.7)", textDecoration: "none", padding: "6px 10px", borderRadius: 6, display: "flex", alignItems: "center", gap: 6 }}><i className="fas fa-id-card" style={{ fontSize: 11 }}></i> Credentials</a>
-            </nav>
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 16, fontSize: 14, fontFamily: "'Lato', sans-serif" }}>
-            <span style={{ color: "rgba(255,255,255,0.4)" }}>Admin</span>
-            <a href="/dashboard.html" style={{ color: "rgba(255,255,255,0.5)", textDecoration: "none", display: "flex", alignItems: "center", gap: 5 }}><i className="fas fa-home" style={{ fontSize: 11 }}></i> Exit to Dashboard</a>
-          </div>
-        </div>
-      </div>
 
       {/* Header */}
       <div style={S.header}>
         <div>
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <a href="/admin-courses.html" style={{ color: "rgba(255,255,255,0.5)", fontSize: 13, textDecoration: "none", display: "flex", alignItems: "center", gap: 4 }}>← Back to Courses</a>
-            <span style={{ color: "rgba(255,255,255,0.2)" }}>|</span>
-            <div style={{ color: "#fff", fontSize: 20, fontWeight: 700, letterSpacing: "-0.02em" }}>Course Builder</div>
+          <div style={{ color: "#fff", fontSize: 20, fontWeight: 700, letterSpacing: "-0.02em" }}>CounselorReady Course Builder</div>
+          <div style={{ color: "rgba(255,255,255,0.55)", fontSize: 13, marginTop: 2 }}>
+            {courseId ? `Editing: ${courseData.title}` : "NBCC ACEP #7760 · 17 Block Types · Cloudinary Images"}
           </div>
-          <div style={{ color: "rgba(255,255,255,0.55)", fontSize: 13, marginTop: 2 }}>NBCC ACEP #7760 · AI-Powered · Cloudinary Images</div>
         </div>
         <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-          {saveMsg && <span style={{ fontSize: 12, color: saveMsg.startsWith("✓") ? "#98c3a9" : "#ff8888", fontWeight: 600 }}>{saveMsg}</span>}
-          <button style={{ ...S.btnSecondary, borderColor: "rgba(255,255,255,0.2)", color: "#fff", fontSize: 12 }} onClick={exportPDF} title="Export PDF">
-            <Download size={13} /> PDF
-          </button>
+          {saveStatus === "saved" && <span style={{ color: "#86efac", fontSize: 13 }}>✓ Saved</span>}
+          {saveStatus === "error" && <span style={{ color: "#fca5a5", fontSize: 13 }}>⚠ Save failed</span>}
+          {courseId && (
+            <button style={{ ...S.btnGold, fontSize: 13 }} onClick={handleSave} disabled={saving}>
+              {saving ? "Saving…" : "💾 Save Changes"}
+            </button>
+          )}
           <button style={{ ...S.btnSecondary, borderColor: "rgba(255,255,255,0.2)", color: "#fff", fontSize: 12 }} onClick={() => {
             const json = JSON.stringify(courseData, null, 2);
             const blob = new Blob([json], { type: "application/json" });
             const a = document.createElement("a"); a.href = URL.createObjectURL(blob);
             a.download = `${courseData.title?.replace(/[^a-z0-9]/gi, "_") || "course"}.json`; a.click();
-          }}>💾 JSON</button>
-          <button style={{ ...S.btnSecondary, borderColor: "rgba(255,255,255,0.25)", color: "#fff", fontSize: 12 }} onClick={() => saveCourse(false)} disabled={saving}>
-            <Save size={13} /> {saving ? "Saving..." : "Save Draft"}
-          </button>
-          <button style={{ background: "#4A7C59", color: "#fff", border: "none", borderRadius: 8, padding: "8px 16px", fontSize: 12, fontWeight: 600, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 6, opacity: saving ? 0.6 : 1 }} onClick={() => saveCourse(true)} disabled={saving}>
-            <Check size={13} /> Publish
-          </button>
+          }}>💾 Export JSON</button>
         </div>
       </div>
 
@@ -3133,24 +2953,13 @@ export default function CourseBuilderV2() {
         ))}
       </div>
 
-      {loading ? (
-        <div style={{ ...S.main, textAlign: "center", padding: 80 }}>
-          <Loader2 size={32} style={{ animation: "spin 1s linear infinite", color: C.burgundy }} />
-          <p style={{ color: C.textMuted, marginTop: 12 }}>Loading course...</p>
-          <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-        </div>
-      ) : (
       <div style={S.main}>
-        {activeTab === 0 && <AIGenerator onGenerated={(data) => { setCourseData(data); setActiveTab(2); }} />}
-        {activeTab === 1 && <ImportTab onImported={(data) => { setCourseData(data); setActiveTab(2); }} />}
-        {activeTab === 2 && <ContentEditor courseData={courseData} setCourseData={setCourseData} />}
-        {activeTab === 3 && <ExamGenerator courseData={courseData} setCourseData={setCourseData} />}
-        {activeTab === 4 && <ReferencesManager courseData={courseData} setCourseData={setCourseData} />}
-        {activeTab === 5 && <ACEPChecker courseData={courseData} />}
-        {activeTab === 6 && <NarrationTab courseData={courseData} setCourseData={setCourseData} />}
-
+        {activeTab === 0 && <AIGenerator onGenerated={(data) => { setCourseData(data); setActiveTab(1); }} />}
+        {activeTab === 1 && <ContentEditor courseData={courseData} setCourseData={setCourseData} />}
+        {activeTab === 2 && <ACEPChecker courseData={courseData} />}
+        {activeTab === 3 && <ImportTab onImported={(data) => { setCourseData(data); setActiveTab(1); }} />}
+        {activeTab === 4 && <BlockTypeCatalog />}
       </div>
-      )}
     </div>
   );
 }
