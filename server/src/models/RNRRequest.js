@@ -59,6 +59,8 @@ const rnrRequestSchema = new mongoose.Schema({
     required: true,
     index: true
   },
+  userName: { type: String, default: '' },
+  userEmail: { type: String, default: '' },
 
   // ── What ──
   contentArea: { type: String, required: true },
@@ -84,6 +86,8 @@ const rnrRequestSchema = new mongoose.Schema({
       'pending',       // learner submitted, awaiting admin
       'approved',      // admin approved, posttest ready
       'posttest_ready',// AI generated questions
+      'test_ready',    // alias — route uses this after AI build
+      'in_progress',   // learner started but hasn't passed yet
       'completed',     // learner passed posttest
       'failed',        // exhausted attempts
       'rejected'       // admin rejected
@@ -109,15 +113,21 @@ const rnrRequestSchema = new mongoose.Schema({
     default: 'standalone'
   },
 
+  // ── AI build timestamp ──
+  testGeneratedAt: { type: Date },
+
   // ── Learner attempts ──
   posttestAttempts: [posttestAttemptSchema],
   maxAttempts: { type: Number, default: 3 },
   passingScore: { type: Number, default: 75 },
+  bestScore: { type: Number, default: 0 },
+  passed: { type: Boolean, default: false },
 
   // ── Completion ──
   completedAt: { type: Date },
   finalScore: { type: Number },
   certificateId: { type: String },
+  certificateNumber: { type: String },
   syllabusUrl: { type: String },
   certificate: {
     type: mongoose.Schema.Types.ObjectId,
