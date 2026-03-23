@@ -293,26 +293,31 @@ router.post('/reset-password', async (req, res) => {
     user.passwordResetToken = undefined;
     user.passwordResetExpires = undefined;
     await user.save();
-    
-    await resend.emails.send({
-      from: 'CounselorReady <noreply@counselorready.com>',
-      to: user.email,
-      subject: 'Password Changed - CounselorReady',
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <div style="background: linear-gradient(135deg, #34503d, #6b1d34); padding: 30px; text-align: center;">
-            <h1 style="color: #facc15; margin: 0;">CounselorReady</h1>
+
+    // Send confirmation email (non-blocking — don't fail the reset if email fails)
+    try {
+      await resend.emails.send({
+        from: 'CounselorReady <noreply@counselorready.com>',
+        to: user.email,
+        subject: 'Password Changed - CounselorReady',
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <div style="background: linear-gradient(135deg, #34503d, #6b1d34); padding: 30px; text-align: center;">
+              <h1 style="color: #facc15; margin: 0;">CounselorReady</h1>
+            </div>
+            <div style="padding: 30px; background: #fff;">
+              <h2 style="color: #34503d;">Password Changed Successfully</h2>
+              <p>Hi ${user.profile?.firstName || 'there'},</p>
+              <p>Your password has been successfully changed.</p>
+              <p>If you did not make this change, contact us immediately at support@counselorready.com.</p>
+            </div>
           </div>
-          <div style="padding: 30px; background: #fff;">
-            <h2 style="color: #34503d;">Password Changed Successfully</h2>
-            <p>Hi ${user.profile?.firstName || 'there'},</p>
-            <p>Your password has been successfully changed.</p>
-            <p>If you did not make this change, contact us immediately at support@counselorready.com.</p>
-          </div>
-        </div>
-      `
-    });
-    
+        `
+      });
+    } catch (emailErr) {
+      console.error('Password reset confirmation email failed (non-blocking):', emailErr.message);
+    }
+
     res.json({ message: 'Password reset successful' });
   } catch (error) {
     console.error('Reset password error:', error);
