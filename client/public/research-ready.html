@@ -590,7 +590,7 @@
       if (idx >= 0) {
         selectedArticles.splice(idx, 1);
       } else {
-        if (selectedArticles.length >= 5) { showToast('Maximum 5 articles per request'); return; }
+        if (selectedArticles.length >= 4) { showToast('Maximum 4 articles per request'); return; }
         selectedArticles.push(art);
       }
       updateTray();
@@ -623,8 +623,7 @@
       btn.disabled = true; btn.textContent = 'Submitting...';
 
       const contentArea = activeChip?.textContent || document.getElementById('searchInput').value || 'General';
-      const tw = selectedArticles.reduce((s, a) => s + a.wordCount, 0);
-      const desiredHours = Math.floor((tw / 6000) * 2) / 2;
+      const desiredHours = parseFloat(activeHours) || Math.floor((selectedArticles.reduce((s, a) => s + (a.wordCount || 0), 0) / 6000) * 2) / 2 || 0.5;
 
       try {
         const res = await fetch(`${API_BASE}/research-ready/request`, {
