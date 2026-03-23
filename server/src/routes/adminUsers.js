@@ -838,4 +838,48 @@ router.get('/hardship-export', protect, adminOnly, async (req, res) => {
 });
 
 
+// @route   POST /api/admin/users/:userId/temp-password
+// @desc    Set a temporary password for a user (forgotten password scenario)
+// @access  Admin only
+router.post('/users/:userId/temp-password', protect, adminOnly, async (req, res) => {
+  try {
+    const user = await User.findById(req.params.userId);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Generate a random 12-character temporary password
+    const crypto = (await import('crypto')).default;
+    const tempPassword = crypto.randomBytes(9).toString('base64url').slice(0, 12);
+
+    // Hash and save
+    const bcrypt = (await import('bcryptjs')).default;
+    const passwordHash = await bcrypt.hash(tempPassword, 10);
+
+    await User.findByIdAndUpdate(req.params.userId, {
+      $set: {
+        passwordHash,
+        mustChangePassword: true
+      },
+      $unset: {
+        resetPasswordToken: 1,
+        resetPasswordExpires: 1
+      }
+    });
+
+    console.log(`Admin set temp password for user ${user.email} (${req.params.userId})`);
+
+    res.json({
+      success: true,
+      message: 'Temporary password set',
+      tempPassword,
+      email: user.email,
+      note: 'User will be required to change this password on next login'
+    });
+  } catch (error) {
+    console.error('Set temp password error:', error);
+    res.status(500).json({ error: 'Failed to set temporary password' });
+  }
+});
+
 export default router;
