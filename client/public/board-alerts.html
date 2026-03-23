@@ -202,7 +202,9 @@
         const data = await res.json();
         const creds = data.data || data.credentials || data || [];
 
-        allAlerts = (Array.isArray(creds) ? creds : []).map(cred => ({
+        allAlerts = (Array.isArray(creds) ? creds : [])
+          .filter(c => c.credentialType === 'state_license')
+          .map(cred => ({
           credentialId: cred._id,
           code: cred.credentialCode || cred.name?.split(' ')[0] || '??',
           state: cred.state || '',
@@ -212,6 +214,7 @@
           totalCEUsRequired: cred.totalCEUsRequired || 0,
           notes: cred.notes || '',
           renewalUrl: null,
+          boardUrl: null,
           currentRules: (cred.requirements || []).map(r => ({ category: r.category, hoursRequired: r.hoursRequired })),
           savedRules: (cred.requirements || []).map(r => ({ category: r.category, hoursRequired: r.hoursRequired })),
           changes: [],
@@ -334,8 +337,8 @@
         ).join('');
 
         // Board URL
-        const boardUrl = alert.renewalUrl
-          || `https://www.google.com/search?q=${encodeURIComponent((alert.state || '') + ' ' + (alert.code || '') + ' CE requirements ' + new Date().getFullYear())}`;
+        // Board URL from backend (real state board link)
+        const boardUrl = alert.boardUrl || alert.renewalUrl || null;
 
         return `
         <div class="rounded-xl border border-gray-200 overflow-hidden shadow-sm ${severityStyles[alert.severity] || severityStyles.info}">
@@ -421,10 +424,10 @@
 
               <!-- Board Website Link -->
               <div class="flex items-center justify-between pt-2">
-                <a href="${boardUrl}" target="_blank" rel="noopener" class="inline-flex items-center gap-2 text-sm font-medium text-burgundy-700 hover:text-burgundy-900 hover:underline">
+                ${boardUrl ? `<a href="${boardUrl}" target="_blank" rel="noopener" class="inline-flex items-center gap-2 text-sm font-medium text-burgundy-700 hover:text-burgundy-900 hover:underline">
                   <i class="fas fa-external-link-alt text-xs"></i>
-                  Visit State Board Website
-                </a>
+                  Visit ${esc(alert.state || '')} State Board Website
+                </a>` : `<span class="text-xs text-gray-400">Board website not available</span>`}
                 <a href="/credentials.html" class="text-xs text-gray-400 hover:text-gray-600">View My Credential &rarr;</a>
               </div>
 
