@@ -42,6 +42,49 @@ router.get('/my', protect, async (req, res) => {
       profile = await Gamification.create({ userId: req.user._id });
     }
 
+    // ── Backfill from real data if profile looks empty ──
+    if (profile.xp === 0 || profile.totalCoursesCompleted === 0) {
+      const [certs, creds] = await Promise.all([
+        (await import('../models/Certificate.js')).default.find({ userId: req.user._id, isRevoked: { $ne: true } }),
+        (await import('../models/UserCredential.js')).default.find({ userId: req.user._id })
+      ]);
+
+      const ceHours = certs.reduce((s, c) => s + (c.ceHours || c.ceuHours || 0), 0);
+      const courseIds = new Set(certs.filter(c => c.courseId).map(c => c.courseId.toString()));
+      const courses = courseIds.size;
+      const quizzes = certs.filter(c => c.courseId).length;
+
+      profile.totalCEHoursEarned = Math.max(profile.totalCEHoursEarned, ceHours);
+      profile.totalCoursesCompleted = Math.max(profile.totalCoursesCompleted, courses);
+      profile.totalQuizzesPassed = Math.max(profile.totalQuizzesPassed, quizzes);
+
+      // Recalc XP
+      profile.xp = Math.round(profile.totalCEHoursEarned * 50)
+        + (profile.totalCoursesCompleted * 100)
+        + (certs.length * 25);
+      profile.level = profile.calculateLevel();
+
+      // Auto-award badges
+      const hasBadge = (k) => profile.badges.some(b => b.key === k);
+      const checks = [
+        ['first_course', profile.totalCoursesCompleted >= 1],
+        ['five_courses', profile.totalCoursesCompleted >= 5],
+        ['ten_courses', profile.totalCoursesCompleted >= 10],
+        ['twenty_five_courses', profile.totalCoursesCompleted >= 25],
+        ['ten_hours', profile.totalCEHoursEarned >= 10],
+        ['fifty_hours', profile.totalCEHoursEarned >= 50],
+        ['first_cert', certs.length >= 1],
+        ['quiz_ace', profile.totalQuizzesPassed >= 10],
+      ];
+      for (const [key, earned] of checks) {
+        if (earned && !hasBadge(key) && BADGE_DEFS[key]) {
+          profile.badges.push({ key, ...BADGE_DEFS[key], earnedAt: new Date() });
+        }
+      }
+
+      await profile.save();
+    }
+
     // Reset weekly hours if week has passed
     if (profile.weekResetDate && new Date() > profile.weekResetDate) {
       profile.weeklyHoursCompleted = 0;
