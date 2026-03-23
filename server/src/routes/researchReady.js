@@ -128,12 +128,13 @@ router.post('/request', protect, async (req, res) => {
     const userName = `${user?.profile?.firstName || ''} ${user?.profile?.lastName || ''}`.trim();
 
     const request = new RNRRequest({
-      userId,
+      user: userId,
       userName,
       userEmail: user?.email,
       contentArea,
       desiredHours: parseFloat(desiredHours),
-      articles: articles.map(a => ({
+      selectedArticles: articles.map(a => ({
+        openAlexId: a.openAlexId || a.id || '',
         title: a.title,
         authors: a.authors || '',
         journal: a.journal || '',
@@ -141,11 +142,16 @@ router.post('/request', protect, async (req, res) => {
         abstract: a.abstract || '',
         doi: a.doi || '',
         oaUrl: a.oaUrl || '',
-        wordCount: a.wordCount || 0
+        topic: a.topic || '',
+        wordCount: a.wordCount || 0,
+        ceHours: a.ceHours || 0,
+        researchHours: a.researchHours || 0,
+        citedByCount: a.citedByCount || 0,
+        wcStatus: a.wcStatus || 'sufficient'
       })),
       totalWordCount: totalWords,
-      ceHours,
-      researchHours,
+      totalCeHours: ceHours,
+      totalResearchHours: researchHours,
       status: 'pending'
     });
 
@@ -180,7 +186,7 @@ router.post('/request', protect, async (req, res) => {
 // ═══════════════════════════════════════════════════════════════
 router.get('/my-requests', protect, async (req, res) => {
   try {
-    const requests = await RNRRequest.find({ userId: req.user._id })
+    const requests = await RNRRequest.find({ user: req.user._id })
       .select('-questions.correct -questions.rationale')
       .sort({ createdAt: -1 })
       .lean();
@@ -239,8 +245,8 @@ router.patch('/request/:id/approve', protect, requireAdmin, async (req, res) => 
     }
 
     request.status = 'approved';
-    request.reviewedBy = req.user._id;
-    request.reviewedAt = new Date();
+    request.approvedBy = req.user._id;
+    request.approvedAt = new Date();
     await request.save();
 
     // Build the test in background
@@ -248,21 +254,21 @@ router.patch('/request/:id/approve', protect, requireAdmin, async (req, res) => 
 
     // AI generates test (async — don't block response)
     try {
-      const combinedTitle = request.articles.map(a => a.title).join(' | ');
-      const combinedAbstract = request.articles.map(a => a.abstract || '').filter(Boolean).join('\n\n');
-      const combinedAuthors = request.articles.map(a => a.authors).filter(Boolean).join('; ');
+      const combinedTitle = request.selectedArticles.map(a => a.title).join(' | ');
+      const combinedAbstract = request.selectedArticles.map(a => a.abstract || '').filter(Boolean).join('\n\n');
+      const combinedAuthors = request.selectedArticles.map(a => a.authors).filter(Boolean).join('; ');
 
       const ceContent = await buildCE({
         title: combinedTitle,
         authors: combinedAuthors,
-        journal: request.articles[0]?.journal || '',
-        year: request.articles[0]?.year || new Date().getFullYear(),
+        journal: request.selectedArticles[0]?.journal || '',
+        year: request.selectedArticles[0]?.year || new Date().getFullYear(),
         abstract: combinedAbstract,
         topic: request.contentArea,
         wordCount: request.totalWordCount,
-        ceHours: request.ceHours,
-        researchHours: request.researchHours,
-        format: request.articles.length > 1 ? 'comparative' : 'standalone'
+        ceHours: request.totalCeHours,
+        researchHours: request.totalResearchHours,
+        format: request.selectedArticles.length > 1 ? 'comparative' : 'standalone'
       });
 
       request.courseTitle = ceContent.course_title || '';
@@ -277,7 +283,7 @@ router.patch('/request/:id/approve', protect, requireAdmin, async (req, res) => 
         courseName: `RNR CE: ${request.contentArea} — test ready`,
         details: `${request.questions.length} questions generated for ${request.userName}`
       }, {
-        userId: request.userId,
+        userId: request.user,
         userName: request.userName,
         userEmail: request.userEmail
       }).catch(() => {});
@@ -305,8 +311,8 @@ router.patch('/request/:id/reject', protect, requireAdmin, async (req, res) => {
 
     request.status = 'rejected';
     request.rejectionNote = req.body.rejectionNote || '';
-    request.reviewedBy = req.user._id;
-    request.reviewedAt = new Date();
+    request.approvedBy = req.user._id;
+    request.approvedAt = new Date();
     await request.save();
 
     res.json({ success: true, message: 'Request rejected' });
@@ -330,20 +336,20 @@ router.post('/request/:id/rebuild', protect, requireAdmin, async (req, res) => {
       return res.status(400).json({ error: 'Can only rebuild for approved requests without a test' });
     }
 
-    const combinedTitle = request.articles.map(a => a.title).join(' | ');
-    const combinedAbstract = request.articles.map(a => a.abstract || '').filter(Boolean).join('\n\n');
+    const combinedTitle = request.selectedArticles.map(a => a.title).join(' | ');
+    const combinedAbstract = request.selectedArticles.map(a => a.abstract || '').filter(Boolean).join('\n\n');
 
     const ceContent = await buildCE({
       title: combinedTitle,
-      authors: request.articles.map(a => a.authors).filter(Boolean).join('; '),
-      journal: request.articles[0]?.journal || '',
-      year: request.articles[0]?.year || new Date().getFullYear(),
+      authors: request.selectedArticles.map(a => a.authors).filter(Boolean).join('; '),
+      journal: request.selectedArticles[0]?.journal || '',
+      year: request.selectedArticles[0]?.year || new Date().getFullYear(),
       abstract: combinedAbstract,
       topic: request.contentArea,
       wordCount: request.totalWordCount,
-      ceHours: request.ceHours,
-      researchHours: request.researchHours,
-      format: request.articles.length > 1 ? 'comparative' : 'standalone'
+      ceHours: request.totalCeHours,
+      researchHours: request.totalResearchHours,
+      format: request.selectedArticles.length > 1 ? 'comparative' : 'standalone'
     });
 
     request.courseTitle = ceContent.course_title || '';
@@ -372,7 +378,7 @@ router.post('/request/:id/complete', protect, async (req, res) => {
 
     const request = await RNRRequest.findOne({
       _id: req.params.id,
-      userId,
+      user: userId,
       status: { $in: ['test_ready', 'in_progress'] }
     });
 
@@ -395,7 +401,8 @@ router.post('/request/:id/complete', protect, async (req, res) => {
     const passed = score >= 75;
 
     // Record attempt
-    request.attempts.push({ answers, score, passed, attemptedAt: new Date() });
+    const attemptNumber = (request.posttestAttempts?.length || 0) + 1;
+    request.posttestAttempts.push({ attemptNumber, answers, score, passed, attemptedAt: new Date() });
     if (score > request.bestScore) request.bestScore = score;
 
     if (!passed) {
@@ -406,7 +413,7 @@ router.post('/request/:id/complete', protect, async (req, res) => {
         score,
         correctCount,
         totalQuestions: request.questions.length,
-        attemptsUsed: request.attempts.length,
+        attemptsUsed: request.posttestAttempts.length,
         message: '75% required. Review the articles and try again.'
       });
     }
@@ -426,14 +433,14 @@ router.post('/request/:id/complete', protect, async (req, res) => {
       syllabusUrl = await generateSyllabus({
         course: {
           courseTitle: request.courseTitle || '',
-          title: request.articles.map(a => a.title).join(' & '),
-          authors: request.articles.map(a => a.authors).join('; '),
-          journal: request.articles.map(a => a.journal).join('; '),
-          year: request.articles[0]?.year,
-          doi: request.articles.map(a => a.doi).filter(Boolean).join('; '),
+          title: request.selectedArticles.map(a => a.title).join(' & '),
+          authors: request.selectedArticles.map(a => a.authors).join('; '),
+          journal: request.selectedArticles.map(a => a.journal).join('; '),
+          year: request.selectedArticles[0]?.year,
+          doi: request.selectedArticles.map(a => a.doi).filter(Boolean).join('; '),
           wordCount: request.totalWordCount,
-          ceHours: request.ceHours,
-          researchHours: request.researchHours,
+          ceHours: request.totalCeHours,
+          researchHours: request.totalResearchHours,
           contentAreas: [request.contentArea],
           objectives: request.objectives,
           questions: request.questions
@@ -449,14 +456,14 @@ router.post('/request/:id/complete', protect, async (req, res) => {
     }
 
     // Create certificate
-    const courseTitle = request.courseTitle || request.articles.map(a => a.title).join(' & ');
+    const courseTitle = request.courseTitle || request.selectedArticles.map(a => a.title).join(' & ');
 
     const certificate = new Certificate({
       userId,
       title: `RNR CE: ${courseTitle}`,
       provider: 'CounselorReady',
       completionDate: request.completedAt,
-      ceHours: request.ceHours,
+      ceHours: request.totalCeHours,
       category: request.contentArea,
       nbccApproved: true,
       acepNumber: '7760',
@@ -469,13 +476,13 @@ router.post('/request/:id/complete', protect, async (req, res) => {
       notes: JSON.stringify({
         type: 'research_ready',
         courseTitle,
-        articleTitles: request.articles.map(a => a.title),
-        authors: request.articles.map(a => a.authors).join('; '),
-        journals: request.articles.map(a => `${a.journal} (${a.year})`).join('; '),
-        dois: request.articles.map(a => a.doi).filter(Boolean),
+        articleTitles: request.selectedArticles.map(a => a.title),
+        authors: request.selectedArticles.map(a => a.authors).join('; '),
+        journals: request.selectedArticles.map(a => `${a.journal} (${a.year})`).join('; '),
+        dois: request.selectedArticles.map(a => a.doi).filter(Boolean),
         wordCount: request.totalWordCount,
-        ceCalcFormula: `${request.totalWordCount} words / 6,000 words/hr = ${(request.totalWordCount / 6000).toFixed(2)} → ${request.ceHours} CE hr(s)`,
-        researchHours: request.researchHours,
+        ceCalcFormula: `${request.totalWordCount} words / 6,000 words/hr = ${(request.totalWordCount / 6000).toFixed(2)} → ${request.totalCeHours} CE hr(s)`,
+        researchHours: request.totalResearchHours,
         objectivesMet: request.objectives,
         assessmentScore: score,
         correctCount,
@@ -487,7 +494,7 @@ router.post('/request/:id/complete', protect, async (req, res) => {
     });
     await certificate.save();
 
-    request.certificateId = certificate._id;
+    request.certificate = certificate._id;
     await request.save();
 
     // Allocate CE to credentials
@@ -504,14 +511,14 @@ router.post('/request/:id/complete', protect, async (req, res) => {
 
         cred.ceuLogs.push({
           date: request.completedAt,
-          hours: request.ceHours,
+          hours: request.totalCeHours,
           category: request.contentArea,
           source: 'internal',
           certificateId: certificate._id,
-          description: `RNR CE: ${request.articles.map(a => a.title).join(' & ')}`,
+          description: `RNR CE: ${request.selectedArticles.map(a => a.title).join(' & ')}`,
           provider: 'CounselorReady'
         });
-        cred.totalCEUsCompleted = (cred.totalCEUsCompleted || 0) + request.ceHours;
+        cred.totalCEUsCompleted = (cred.totalCEUsCompleted || 0) + request.totalCeHours;
         await cred.save();
       }
     } catch (credErr) {
@@ -524,7 +531,7 @@ router.post('/request/:id/complete', protect, async (req, res) => {
       const uName = `${rnrUser?.profile?.firstName || ''} ${rnrUser?.profile?.lastName || ''}`.trim();
       logActivity(ACTIVITY_TYPES.COURSE_COMPLETED, {
         courseName: `RNR CE: ${request.contentArea}`,
-        ceHours: request.ceHours,
+        ceHours: request.totalCeHours,
         details: `Score: ${score}%, Certificate: ${certificateNumber}`
       }, { userId, userName: uName, userEmail: rnrUser?.email }).catch(() => {});
       logActivity(ACTIVITY_TYPES.CERTIFICATE_GENERATED, {
@@ -533,7 +540,7 @@ router.post('/request/:id/complete', protect, async (req, res) => {
       sendCourseCompletionEmail(userId, null, certificate._id).catch(() => {});
       sendCompletionSMS(
         { phone: rnrUser?.phone, firstName: rnrUser?.profile?.firstName, smsOptIn: rnrUser?.smsOptIn },
-        { title: `RNR CE: ${request.contentArea}`, ceHours: request.ceHours },
+        { title: `RNR CE: ${request.contentArea}`, ceHours: request.totalCeHours },
         certificate
       ).catch(() => {});
     } catch (notifErr) {
@@ -544,8 +551,8 @@ router.post('/request/:id/complete', protect, async (req, res) => {
       passed: true,
       score,
       certificateNumber,
-      ceHours: request.ceHours,
-      researchHours: request.researchHours,
+      ceHours: request.totalCeHours,
+      researchHours: request.totalResearchHours,
       syllabusUrl,
       completionDate: request.completedAt,
       message: 'Congratulations! Your CE certificate has been generated.'
@@ -565,7 +572,7 @@ router.get('/request/:id', protect, async (req, res) => {
   try {
     const request = await RNRRequest.findOne({
       _id: req.params.id,
-      userId: req.user._id
+      user: req.user._id
     }).lean();
 
     if (!request) {
