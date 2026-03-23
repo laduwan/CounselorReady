@@ -2348,11 +2348,15 @@ function renderCurrentSection() {
   
   // Render APA 7th references on last section
   const isLast = currentSectionIndex === course.sections.length - 1;
-  if (isLast && course.references?.length > 0) {
+  const validRefs = (course.references || []).filter(ref => {
+    const text = ref.formatted || ref.citation || ref.title || '';
+    return text && !text.includes('undefined');
+  });
+  if (isLast && validRefs.length > 0) {
     const refsDiv = document.createElement('div');
     refsDiv.className = 'cr-references';
     let refsHtml = '<h3 style="text-align:center;font-family:var(--cr-font-display);font-size:1.3em;font-weight:700;color:var(--cr-burgundy);margin-bottom:1em">References</h3>';
-    course.references.forEach(ref => {
+    validRefs.forEach(ref => {
       if (ref.citation) {
         // Pre-formatted citation string
         refsHtml += `<p class="cr-reference">${esc(ref.citation)}</p>`;
@@ -3176,9 +3180,13 @@ function downloadCourseText() {
       }
     });
   });
-  if (course.references?.length) {
+  const validExportRefs = (course.references || []).filter(ref => {
+    const text = ref.formatted || ref.citation || ref.title || '';
+    return text && !text.includes('undefined');
+  });
+  if (validExportRefs.length) {
     text += '\nReferences\n----------\n';
-    course.references.forEach(r => {
+    validExportRefs.forEach(r => {
       if (r.citation) { text += r.citation + '\n'; }
       else { text += `${r.author || ''} (${r.year || ''}). ${r.title || ''}. ${r.source || ''}\n`; }
     });
@@ -4843,7 +4851,11 @@ document.addEventListener('keydown', function(e) {
 
   // ── Renderers ──
   function renderRefs() {
-    var b = document.getElementById('crdRB'), refs = refsData || [], h = '';
+    var b = document.getElementById('crdRB'), h = '';
+    var refs = (refsData || []).filter(function(r) {
+      var text = r.formatted || r.citation || r.title || '';
+      return text && text.indexOf('undefined') === -1;
+    });
     if (!refs.length) { b.innerHTML = '<p style="color:var(--cr-text-muted);text-align:center;margin-top:2em">No references available.</p>'; return; }
     refs.forEach(function(r) {
       if (typeof r === 'string') h += '<p class="crd-ref">' + esc(r) + '</p>';
