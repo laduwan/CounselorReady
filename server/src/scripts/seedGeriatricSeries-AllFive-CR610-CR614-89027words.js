@@ -144,6 +144,66 @@ const CR610 = {
 <p>Beyond formal screening tools, a thorough clinical interview should explore: current functioning across social, occupational, and self-care domains; recent and cumulative losses; sleep patterns and appetite changes; cognitive status; history of depression and treatment response; current medications (many commonly prescribed medications have depressive side effects); substance use; and spiritual or existential concerns. The question "What do you live for?" — asked gently and with genuine interest — can open entire dimensions of clinical conversation that structured assessments miss entirely.</p>`
         },
         {
+          type: "scenarioTree",
+          title: "The Retired Architect",
+          description: "A 71-year-old retired architect presents with fatigue, weight loss, and 'no interest in anything anymore.' His wife says he barely leaves his recliner. He insists he is not depressed — 'I'm just old.'",
+          nodes: [
+            {
+              id: "start",
+              text: "Your client denies sadness and attributes all symptoms to aging. What is your best first step?",
+              choices: [
+                { text: "Accept his self-assessment — he knows himself best", nextId: "wrong_accept" },
+                { text: "Administer the GDS-15 and explore somatic symptoms as possible depressive equivalents", nextId: "correct_screen" },
+                { text: "Refer to his PCP for a full medical workup before doing anything else", nextId: "partial_refer" }
+              ]
+            },
+            {
+              id: "wrong_accept",
+              text: "Incorrect. Older adults — especially men socialized toward stoicism — frequently deny emotional distress while presenting with somatic depressive equivalents. Accepting the self-report at face value leaves the most common presentation of geriatric depression unassessed.",
+              choices: [
+                { text: "What should I do instead?", nextId: "correct_screen" }
+              ]
+            },
+            {
+              id: "partial_refer",
+              text: "A medical workup is important, but deferring entirely to the PCP misses the opportunity for concurrent mental health assessment. Medical and psychological evaluation should proceed in parallel, not sequentially.",
+              choices: [
+                { text: "How should I proceed?", nextId: "correct_screen" }
+              ]
+            },
+            {
+              id: "correct_screen",
+              text: "Good. The GDS-15 scores 11 out of 15. He also reveals he stopped attending his weekly woodworking group three months ago. What framework best explains his withdrawal?",
+              choices: [
+                { text: "Behavioral avoidance maintaining the depressive cycle — a Behavioral Activation framework", nextId: "correct_ba" },
+                { text: "Normal aging and decreased energy — no framework needed", nextId: "wrong_normal" }
+              ]
+            },
+            {
+              id: "wrong_normal",
+              text: "Incorrect. Social withdrawal in the context of a GDS score of 11 is clinically significant, not normative aging. The BA model explains how disengagement from valued activities maintains and deepens the depressive cycle.",
+              choices: [
+                { text: "Tell me about the BA approach", nextId: "correct_ba" }
+              ]
+            },
+            {
+              id: "correct_ba",
+              text: "Correct. Using Behavioral Activation, you explore what he valued about woodworking — mastery, creativity, social connection. Together you identify a smaller project he can do at home as a first step, rebuilding engagement gradually within his current functional capacity.",
+              isEnd: true
+            }
+          ],
+          accessibility: { ariaLabel: "Scenario: The Retired Architect — Assessing Late-Life Depression", role: "application" }
+        },
+        {
+          type: "trueFalse",
+          question: "Depression is a normal and expected part of aging that does not require clinical intervention in older adults.",
+          options: [
+            { text: "True", isCorrect: false },
+            { text: "False", isCorrect: true }
+          ],
+          explanation: "Depression is NOT a normal part of aging. While prevalence increases due to accumulated losses and health changes, late-life depression is a treatable clinical condition. The misconception that depression is 'just part of getting old' is one of the primary reasons geriatric depression is chronically underdiagnosed and undertreated."
+        },
+        {
           type: "knowledgeCheck",
           title: "Knowledge Check — Module 1",
           showExplanations: true,
@@ -276,6 +336,66 @@ const CR610 = {
 <p>Groups specifically designed for older adults — grief groups, caregiver support groups, retirement transition groups — provide both structure and community that many older adults find more natural and less threatening than the dyadic intensity of individual therapy. For clinicians working in senior centers, assisted living facilities, or community mental health organizations, group-based approaches offer the additional advantage of reaching more clients with fewer resources — a practical consideration given the scale of unmet need in geriatric mental health.</p>`
         },
         {
+          type: "scenarioTree",
+          title: "Mrs. Delgado's Empty Calendar",
+          description: "A 78-year-old Latina widow tells you she has 'nothing to do and nobody to do it with.' She used to cook elaborate meals for her family, but now lives alone. She has stopped attending church.",
+          nodes: [
+            {
+              id: "start",
+              text: "Mrs. Delgado's activity level has dropped to near zero. Using Behavioral Activation, what is your first therapeutic step?",
+              choices: [
+                { text: "Assign her to resume attending church this week", nextId: "wrong_assign" },
+                { text: "Conduct an activity assessment — what did she find meaningful before depression, and what is she doing now?", nextId: "correct_assess" },
+                { text: "Focus on cognitive restructuring of her belief that she has 'nothing to do'", nextId: "wrong_cbt" }
+              ]
+            },
+            {
+              id: "wrong_assign",
+              text: "Too much, too fast. Assigning a high-demand activity to a severely withdrawn client risks failure and reinforces hopelessness. BA starts with assessment and collaboratively identified small steps.",
+              choices: [
+                { text: "What's the right starting point?", nextId: "correct_assess" }
+              ]
+            },
+            {
+              id: "wrong_cbt",
+              text: "Cognitive work can come later, but BA's core insight is that behavioral change can precede and drive cognitive change. Start with activity assessment, not thought challenging.",
+              choices: [
+                { text: "Show me the BA approach", nextId: "correct_assess" }
+              ]
+            },
+            {
+              id: "correct_assess",
+              text: "Good. You learn she valued cooking because it meant nurturing others and being needed. Church provided community and spiritual meaning. What BA-aligned goal would you set first?",
+              choices: [
+                { text: "Cook one simple dish and bring it to a neighbor this week", nextId: "correct_goal" },
+                { text: "Sign up for a cooking class at the senior center", nextId: "partial_class" }
+              ]
+            },
+            {
+              id: "partial_class",
+              text: "This could work eventually, but it's a large step involving unfamiliar people and environment. A smaller, value-aligned step — cooking something familiar for someone she already knows — provides the nurturing reward she most values with less barrier to engagement.",
+              choices: [
+                { text: "What's a better starting goal?", nextId: "correct_goal" }
+              ]
+            },
+            {
+              id: "correct_goal",
+              text: "Excellent. This goal is small, specific, and directly connected to the value she expressed — nurturing others through food. It rebuilds both activity and social connection simultaneously. You schedule a follow-up to review how it went and plan the next step.",
+              isEnd: true
+            }
+          ],
+          accessibility: { ariaLabel: "Scenario: Mrs. Delgado — Behavioral Activation Planning", role: "application" }
+        },
+        {
+          type: "trueFalse",
+          question: "Life Review Therapy is simply reminiscing about the past and has no structured therapeutic framework or evidence base.",
+          options: [
+            { text: "True", isCorrect: false },
+            { text: "False", isCorrect: true }
+          ],
+          explanation: "False. Life Review Therapy is a manualized, evidence-based intervention grounded in Erikson's integrity vs. despair framework and Robert Butler's therapeutic reminiscence model. It has strong empirical support for treating late-life depression — it is structured, goal-directed, and clinically distinct from casual reminiscence."
+        },
+        {
           type: "knowledgeCheck",
           title: "Knowledge Check — Module 2",
           showExplanations: true,
@@ -391,6 +511,66 @@ const CR610 = {
 <p>We began with the image of a library whose doors had closed — the books unchanged, the knowledge intact, but the connection between inner richness and outer world severed by the accumulating losses of late life. We end with a simpler image: a key in the door. Late-life depression is treatable. Older adults are capable of profound change, growth, and meaning-making. The therapeutic relationship — attentive, warm, genuine, and clinically skilled — is itself a key that can reopen the doors of engagement, connection, and purpose.</p>
 
 <p>The clinician who brings both evidence-based tools and genuine human curiosity to this work will encounter, repeatedly, the transformative potential of late life. Clients who find new purpose through volunteer work or creative expression. Clients who achieve peace with losses they had carried for decades. Clients who, confronting their own mortality with honesty and support, discover an authentic depth of aliveness they had not previously known. The library, it turns out, has always been open — it was waiting for someone to turn the lights back on.</p>`
+        },
+        {
+          type: "scenarioTree",
+          title: "Mr. Okafor's Medication List",
+          description: "A 76-year-old Nigerian-American man was referred by his PCP for 'adjustment to retirement.' His affect is flat and he reports poor sleep and no appetite. He takes 8 medications daily.",
+          nodes: [
+            {
+              id: "start",
+              text: "You suspect depression, but the client attributes everything to his heart condition. Before proceeding with psychotherapy, what clinical step is most important?",
+              choices: [
+                { text: "Begin CBT for depression immediately — the referral is clear", nextId: "wrong_cbt" },
+                { text: "Conduct a medication review to identify potentially depressogenic medications and coordinate with his prescriber", nextId: "correct_med" },
+                { text: "Administer the PHQ-9 and proceed based on the score alone", nextId: "partial_phq" }
+              ]
+            },
+            {
+              id: "wrong_cbt",
+              text: "Premature. Several common cardiac medications (beta-blockers, certain antihypertensives) have depressive side effects. Beginning psychotherapy without addressing potential pharmacological contributors provides incomplete care.",
+              choices: [
+                { text: "What should I prioritize?", nextId: "correct_med" }
+              ]
+            },
+            {
+              id: "partial_phq",
+              text: "Screening is important, but the PHQ-9 score alone cannot distinguish medication-induced depression from primary mood disorder. A medication review is essential context for interpreting the results.",
+              choices: [
+                { text: "What's the complete approach?", nextId: "correct_med" }
+              ]
+            },
+            {
+              id: "correct_med",
+              text: "Good. The review reveals he takes metoprolol (a beta-blocker) and prednisone — both with known depressive side effects. You contact his cardiologist to discuss alternatives. Meanwhile, you also want to explore cultural factors. What do you ask?",
+              choices: [
+                { text: "In your culture, how is emotional distress typically understood and expressed?", nextId: "correct_culture" },
+                { text: "Do you believe in therapy, or is this something your culture doesn't support?", nextId: "wrong_culture" }
+              ]
+            },
+            {
+              id: "wrong_culture",
+              text: "This framing positions therapy as culturally foreign and puts the client on the defensive. A more open, curious question invites the client to share their framework without implying cultural deficit.",
+              choices: [
+                { text: "How should I ask instead?", nextId: "correct_culture" }
+              ]
+            },
+            {
+              id: "correct_culture",
+              text: "He shares that in his Igbo community, emotional struggles are discussed with elders, not strangers. You integrate this by exploring whether a trusted elder or pastor could serve as a support alongside therapy — building a culturally congruent treatment plan.",
+              isEnd: true
+            }
+          ],
+          accessibility: { ariaLabel: "Scenario: Mr. Okafor — Cultural Assessment and Medication Review", role: "application" }
+        },
+        {
+          type: "trueFalse",
+          question: "The IMPACT collaborative care model is only effective for mild depression in older adults and shows no benefit for moderate to severe presentations.",
+          options: [
+            { text: "True", isCorrect: false },
+            { text: "False", isCorrect: true }
+          ],
+          explanation: "False. The IMPACT model demonstrated significantly superior outcomes across the severity spectrum — including higher treatment rates, more complete symptom response, and sustained improvement at two-year follow-up — compared to usual primary care for geriatric depression."
         },
         {
           type: "knowledgeCheck",
@@ -714,6 +894,66 @@ const CR611 = {
 <p>Collateral information from family members and close contacts is essential in dementia assessment. Functional changes — difficulty managing finances, getting lost in familiar environments, repeating the same questions or stories within a single conversation, mishandling medications — often emerge in collateral history before the person with cognitive decline has insight into their own changes. The Informant Questionnaire on Cognitive Decline in the Elderly (IQCODE) provides a structured format for gathering this information systematically.</p>`,
         },
         {
+          type: "scenarioTree",
+          title: "The Music That Remains",
+          description: "You are working with the family of an 82-year-old woman with moderate Alzheimer's disease. Her daughter says, 'There's no point in therapy — Mom doesn't even know who I am half the time.'",
+          nodes: [
+            {
+              id: "start",
+              text: "The daughter believes therapy is pointless because her mother has significant memory loss. How do you respond?",
+              choices: [
+                { text: "Agree that individual therapy isn't appropriate at this stage", nextId: "wrong_agree" },
+                { text: "Explain that preserved emotional memory and long-term autobiographical recall mean therapeutic connection is still possible", nextId: "correct_explain" },
+                { text: "Redirect focus entirely to the daughter's own needs as caregiver", nextId: "partial_caregiver" }
+              ]
+            },
+            {
+              id: "wrong_agree",
+              text: "Incorrect. While conventional talk therapy must be adapted, therapeutic work with moderate-stage dementia is both possible and valuable. Reminiscence, music, validation therapy, and sensory approaches can facilitate meaningful connection even when recent memory is severely impaired.",
+              choices: [
+                { text: "What can we actually do?", nextId: "correct_explain" }
+              ]
+            },
+            {
+              id: "partial_caregiver",
+              text: "Caregiver support is essential, but dismissing the possibility of connecting with the mother validates the daughter's hopelessness. Both can be addressed — in fact, helping the daughter see that connection is still possible can be profoundly healing for her grief.",
+              choices: [
+                { text: "How do I show connection is possible?", nextId: "correct_explain" }
+              ]
+            },
+            {
+              id: "correct_explain",
+              text: "You share that emotionally encoded memories — music, familiar hymns, wedding songs — are often preserved deep into Alzheimer's. You suggest a joint session using her mother's favorite music. During the session, the mother begins humming and reaches for her daughter's hand. What does this demonstrate?",
+              choices: [
+                { text: "The lights in some rooms are still on — emotional and procedural memory can sustain connection", nextId: "correct_end" },
+                { text: "This is just a reflex, not meaningful engagement", nextId: "wrong_reflex" }
+              ]
+            },
+            {
+              id: "wrong_reflex",
+              text: "Incorrect. Emotional responsiveness to familiar stimuli — reaching for a loved one, responding to music — represents genuine preserved neural pathways, not reflexes. These responses are clinically and relationally meaningful.",
+              choices: [
+                { text: "I understand now", nextId: "correct_end" }
+              ]
+            },
+            {
+              id: "correct_end",
+              text: "Exactly. The therapeutic task is to help families find the rooms where the lights are still on. Music, familiar touch, photographs, and emotional presence can sustain meaningful connection through the middle stages of dementia — transforming the caregiving experience from pure loss into moments of genuine connection.",
+              isEnd: true
+            }
+          ],
+          accessibility: { ariaLabel: "Scenario: The Music That Remains — Connecting Through Dementia", role: "application" }
+        },
+        {
+          type: "trueFalse",
+          question: "Lewy Body Dementia can be safely treated with standard antipsychotic medications just like other forms of dementia with behavioral symptoms.",
+          options: [
+            { text: "True", isCorrect: false },
+            { text: "False", isCorrect: true }
+          ],
+          explanation: "False. Lewy Body Dementia is particularly sensitive to antipsychotic medications — some can produce life-threatening neuroleptic malignant syndrome. Careful coordination with prescribers is essential, and antipsychotic use in LBD requires extreme caution."
+        },
+        {
           type: "knowledgeCheck",
           title: "Knowledge Check — Module 1",
           showExplanations: true,
@@ -819,6 +1059,67 @@ const CR611 = {
         },
         {
           type: "knowledgeCheck",
+          type: "scenarioTree",
+          title: "The Daughter Who Lost Her Mother Twice",
+          description: "A 52-year-old woman caring for her mother with moderate Alzheimer's breaks down in session: 'I've already lost her — she doesn't know me. But I can't grieve because she's still alive.'",
+          nodes: [
+            {
+              id: "start",
+              text: "The caregiver is experiencing intense grief while her mother is still living. How do you conceptualize her experience?",
+              choices: [
+                { text: "She is catastrophizing — her mother is still alive and they can still connect", nextId: "wrong_minimize" },
+                { text: "This is ambiguous loss — the person she knew is psychologically absent while physically present", nextId: "correct_ambiguous" },
+                { text: "She is experiencing anticipatory grief and needs to prepare for her mother's eventual death", nextId: "partial_anticipatory" }
+              ]
+            },
+            {
+              id: "wrong_minimize",
+              text: "Incorrect. Telling a dementia caregiver that they are catastrophizing invalidates a grief experience that is clinically well-documented. The relational loss is real even when the person is physically present.",
+              choices: [
+                { text: "What framework fits better?", nextId: "correct_ambiguous" }
+              ]
+            },
+            {
+              id: "partial_anticipatory",
+              text: "Anticipatory grief is part of it, but the defining feature here is ambiguity — the mother is simultaneously present and absent. This creates a unique grief that defies conventional mourning because there is no clear loss event to process.",
+              choices: [
+                { text: "Tell me about ambiguous loss", nextId: "correct_ambiguous" }
+              ]
+            },
+            {
+              id: "correct_ambiguous",
+              text: "Correct. Using Pauline Boss's framework, you validate that her grief is real and legitimate — she has lost the relationship as it was. What is the next therapeutic priority?",
+              choices: [
+                { text: "Help her find meaning in what remains — the moments of connection that are still possible", nextId: "correct_meaning" },
+                { text: "Help her begin emotionally detaching to protect herself", nextId: "wrong_detach" }
+              ]
+            },
+            {
+              id: "wrong_detach",
+              text: "Emotional detachment can increase caregiver guilt and depression. The therapeutic task is to help caregivers hold both truths simultaneously — the loss of who the person was AND the value of who they still are.",
+              choices: [
+                { text: "How do I help her hold both truths?", nextId: "correct_meaning" }
+              ]
+            },
+            {
+              id: "correct_meaning",
+              text: "You help her identify moments where connection still exists — a squeeze of the hand, a smile at a photograph, humming a familiar song together. These moments don't erase the loss but they transform it from pure absence into something more bearable.",
+              isEnd: true
+            }
+          ],
+          accessibility: { ariaLabel: "Scenario: Ambiguous Loss in Dementia Caregiving", role: "application" }
+        },
+        {
+          type: "trueFalse",
+          question: "Family caregivers of people with dementia should be encouraged to fully grieve and achieve closure before the person with dementia dies.",
+          options: [
+            { text: "True", isCorrect: false },
+            { text: "False", isCorrect: true }
+          ],
+          explanation: "False. Ambiguous loss in dementia caregiving defies closure because the loss is ongoing and without clear boundaries. Pushing caregivers toward closure is clinically inappropriate — the therapeutic task is to help them tolerate ambiguity and find meaning within it."
+        },
+        {
+          type: "knowledgeCheck",
           title: "Knowledge Check — Module 2",
           showExplanations: true,
           questions: [
@@ -902,6 +1203,67 @@ const CR611 = {
 <p>We return, at the end, to the dimming house. By late-stage dementia, many of the rooms are dark. The person who once filled the house with complex presence — conversation, opinion, plans, laughter, conflict, love — now inhabits a smaller space. But in that smaller space, something remains: the response to a warm touch, the brightening at a familiar voice, the expression on the face when a beloved piece of music plays. The light in those rooms is not gone. It is concentrated.</p>
 
 <p>The clinician's role in this work is not to restore the lights that have gone out — that is beyond the reach of any intervention. It is to help both the person with dementia and the people who love them inhabit, with as much dignity and connection as possible, the rooms that are still lit. It is to name what is being lost with honesty and compassion. It is to support the caregiver whose grief is real, whose burden is enormous, and whose love is expressed in ways that the care recipient may no longer be able to recognize or return in kind. It is to sit with the long goodbye — not to rush it, not to avert one's eyes, but to be genuinely, skillfully present for the fullness of what it contains.</p>`,
+        },
+        {
+          type: "knowledgeCheck",
+          type: "scenarioTree",
+          title: "Mr. and Mrs. Washington's Decision",
+          description: "An 80-year-old man with early-stage Alzheimer's wants to remain at home. His adult children insist he needs a memory care facility immediately. His wife is caught in the middle.",
+          nodes: [
+            {
+              id: "start",
+              text: "The family is in conflict. Mr. Washington has early-stage dementia but retains decision-making capacity for many areas of his life. How do you approach this?",
+              choices: [
+                { text: "Side with the children — safety is the priority", nextId: "wrong_children" },
+                { text: "Assess Mr. Washington's current capacity and support his autonomous decision-making to the greatest extent possible", nextId: "correct_capacity" },
+                { text: "Recommend a family vote to decide", nextId: "wrong_vote" }
+              ]
+            },
+            {
+              id: "wrong_children",
+              text: "Incorrect. Early-stage dementia does not eliminate decision-making capacity. Capacity is situation-specific — a person may lack capacity for complex financial decisions while retaining capacity for residential preferences. Supporting autonomy is the ethical default.",
+              choices: [
+                { text: "What's the right approach?", nextId: "correct_capacity" }
+              ]
+            },
+            {
+              id: "wrong_vote",
+              text: "A family vote overrides the autonomy of the person with the diagnosis. The ethical starting point is always the client's own expressed preferences, supported to the greatest extent possible.",
+              choices: [
+                { text: "How do I honor his autonomy?", nextId: "correct_capacity" }
+              ]
+            },
+            {
+              id: "correct_capacity",
+              text: "You assess that Mr. Washington understands the risks and benefits of staying home. He articulates specific safety concerns and reasonable accommodations. Now the family needs education. What do you facilitate?",
+              choices: [
+                { text: "A family meeting to discuss supported decision-making — in-home help, safety modifications, and advance care planning while capacity is intact", nextId: "correct_meeting" },
+                { text: "Individual sessions with the children to convince them their father is right", nextId: "wrong_convince" }
+              ]
+            },
+            {
+              id: "wrong_convince",
+              text: "The goal isn't to 'convince' anyone but to facilitate a collaborative family process that respects Mr. Washington's autonomy while addressing legitimate safety concerns. A facilitated family meeting is more effective.",
+              choices: [
+                { text: "How should the meeting work?", nextId: "correct_meeting" }
+              ]
+            },
+            {
+              id: "correct_meeting",
+              text: "The family meeting results in a graduated plan: in-home aide 4 hours daily, stove safety modifications, Mr. Washington designates his wife as healthcare proxy, and the family agrees to revisit as the disease progresses. Autonomy and safety are balanced.",
+              isEnd: true
+            }
+          ],
+          accessibility: { ariaLabel: "Scenario: Capacity and Autonomy in Early Dementia", role: "application" }
+        },
+        {
+          type: "trueFalse",
+          question: "A diagnosis of dementia automatically means the person lacks the capacity to make decisions about their own living arrangements and medical care.",
+          options: [
+            { text: "True", isCorrect: false },
+            { text: "False", isCorrect: true }
+          ],
+          explanation: "False. Decision-making capacity is situation-specific, not global. A person with early-stage dementia may retain capacity for many decisions including residential preferences and healthcare choices. The ethical default is always to support autonomous decision-making using the least restrictive means."
         },
         {
           type: "knowledgeCheck",
@@ -1057,6 +1419,66 @@ const CR612 = {
 <p>The "burden" theme deserves particular clinical attention. Research consistently finds that the belief that one is a burden to family members — "perceived burdensomeness" in Joiner's framework — is a specific and powerful contributor to suicidal desire in older adults. This belief often coexists with genuine dependence and genuine concern about the costs one is imposing on family — which makes it difficult to challenge as a cognitive distortion without first engaging the reality it partially reflects. The clinical response to "I'm just a burden and everyone would be better off without me" must simultaneously validate the real experience of dependence and loss while challenging the conclusion that death is the appropriate solution.</p>`,
         },
         {
+          type: "scenarioTree",
+          title: "The Widower's Calm",
+          description: "A 79-year-old retired Marine lost his wife of 54 years six months ago. He has been visibly distressed in therapy for weeks. Today he arrives calm, well-groomed, and says he 'has everything figured out.' He mentions he cleaned out his garage yesterday.",
+          nodes: [
+            {
+              id: "start",
+              text: "Your client's sudden calm after weeks of distress is notable. How do you respond?",
+              choices: [
+                { text: "Express relief that he seems to be coping better", nextId: "wrong_relief" },
+                { text: "Directly assess for suicidal ideation — sudden calm after distress can signal a decision to act", nextId: "correct_assess" },
+                { text: "Ask about the garage cleaning to validate his productivity", nextId: "wrong_validate" }
+              ]
+            },
+            {
+              id: "wrong_relief",
+              text: "Dangerous assumption. Sudden calm in a previously distressed client is a recognized suicide warning sign — the calm may reflect resolution of ambivalence through a decision to die. This is especially concerning in an older man with recent spousal bereavement and military background (high-lethality method access).",
+              choices: [
+                { text: "What should I do?", nextId: "correct_assess" }
+              ]
+            },
+            {
+              id: "wrong_validate",
+              text: "Cleaning out the garage in this context may represent putting affairs in order — a known warning sign. Praising it without assessment could reinforce his plan and communicate that you don't see what's happening.",
+              choices: [
+                { text: "How do I assess properly?", nextId: "correct_assess" }
+              ]
+            },
+            {
+              id: "correct_assess",
+              text: "You ask directly: 'I notice you seem much more at peace today. Have you had thoughts about ending your life?' He pauses, then admits he has. He owns firearms. What is your most critical next step?",
+              choices: [
+                { text: "Means restriction counseling — facilitate reducing access to firearms immediately", nextId: "correct_means" },
+                { text: "Schedule a follow-up appointment for next week", nextId: "wrong_followup" }
+              ]
+            },
+            {
+              id: "wrong_followup",
+              text: "A next-week follow-up is inadequate when a client has active suicidal ideation with access to firearms. Older adult men have the highest suicide completion rate of any demographic. This requires same-session intervention.",
+              choices: [
+                { text: "What intervention is needed now?", nextId: "correct_means" }
+              ]
+            },
+            {
+              id: "correct_means",
+              text: "You facilitate a means restriction plan: he agrees to have his son temporarily store his firearms. You complete a collaborative safety plan, assess whether he needs a higher level of care, and schedule next-session within 48 hours. Means restriction is the most evidence-based suicide prevention intervention available.",
+              isEnd: true
+            }
+          ],
+          accessibility: { ariaLabel: "Scenario: The Widower's Calm — Geriatric Suicide Risk Assessment", role: "application" }
+        },
+        {
+          type: "trueFalse",
+          question: "Asking an older adult directly about suicidal thoughts can 'plant the idea' and increase their risk of suicide.",
+          options: [
+            { text: "True", isCorrect: false },
+            { text: "False", isCorrect: true }
+          ],
+          explanation: "False. Research consistently demonstrates that asking directly about suicidal ideation does NOT plant the idea or increase risk. Clinicians who avoid direct questioning out of this fear are providing inadequate care. Direct assessment is essential, especially with older adults who are less likely to spontaneously disclose suicidal thinking."
+        },
+        {
           type: "knowledgeCheck",
           title: "Knowledge Check — Module 1",
           showExplanations: true,
@@ -1156,6 +1578,67 @@ const CR612 = {
 <p>Duty-to-warn and duty-to-protect obligations vary by state but generally require clinicians to take reasonable steps to protect identifiable third parties from serious, imminent harm. In the context of geriatric suicide, these obligations are most commonly relevant when a client's suicidal ideation involves specific intent to harm a spouse, caregiver, or other identified individual as part of a "dyadic" suicide plan — a pattern that is more common in older adults than in younger populations and that requires immediate clinical action.</p>
 
 <p>Hospitalization, when clinically indicated, should be considered carefully and as part of a collaborative clinical plan rather than as a punitive or reflexive response to suicidal ideation. For older adults, hospitalization carries specific risks — including delirium, functional decline, iatrogenic harm, and the disruption of established care relationships — that must be weighed against the protective benefits. The least restrictive clinically appropriate level of care is the ethical standard, and intensive outpatient options should be exhausted before inpatient placement when the clinical picture permits.</p>`,
+        },
+        {
+          type: "knowledgeCheck",
+          type: "scenarioTree",
+          title: "Mrs. Chen's Quiet Request",
+          description: "A 73-year-old Chinese-American woman with chronic pain says softly near the end of session: 'I don't want to be a burden to my daughter anymore. She would be better off without me.'",
+          nodes: [
+            {
+              id: "start",
+              text: "Mrs. Chen has expressed a 'burden' theme — a specific and powerful predictor of suicidal desire in older adults. What is your response?",
+              choices: [
+                { text: "Reassure her that she is not a burden and move to the next topic", nextId: "wrong_reassure" },
+                { text: "Explore the statement further and directly assess for suicidal ideation", nextId: "correct_explore" },
+                { text: "Note it in the chart and plan to address it next session", nextId: "wrong_defer" }
+              ]
+            },
+            {
+              id: "wrong_reassure",
+              text: "Quick reassurance dismisses her subjective experience without assessing the clinical risk it signals. Perceived burdensomeness is a core component of Joiner's interpersonal theory of suicide. This statement requires immediate exploration, not platitudes.",
+              choices: [
+                { text: "How should I respond?", nextId: "correct_explore" }
+              ]
+            },
+            {
+              id: "wrong_defer",
+              text: "Deferring assessment of a potential suicidal statement is clinically dangerous. With older adults, the window between ideation and attempt is dramatically compressed. Assess now.",
+              choices: [
+                { text: "What do I ask?", nextId: "correct_explore" }
+              ]
+            },
+            {
+              id: "correct_explore",
+              text: "You ask: 'When you say your daughter would be better off without you, are you having thoughts about ending your life?' She pauses, then says yes — she has been thinking about taking all her pain medications at once. What is the immediate clinical priority?",
+              choices: [
+                { text: "Assess medication access and facilitate means restriction — remove or secure the hoarded medications", nextId: "correct_means" },
+                { text: "Begin cognitive restructuring of the perceived burdensomeness belief", nextId: "wrong_cbt" }
+              ]
+            },
+            {
+              id: "wrong_cbt",
+              text: "Cognitive work on burdensomeness is important but not the immediate priority when a client has a specific plan and access to means. Safety first — restrict access to lethal means, then address the underlying cognitions.",
+              choices: [
+                { text: "What comes first?", nextId: "correct_means" }
+              ]
+            },
+            {
+              id: "correct_means",
+              text: "You facilitate a safety plan: her daughter will secure the medications today, dispensing only daily amounts. You collaboratively develop coping strategies, identify her daughter and her church friend as crisis contacts, and schedule follow-up within 24 hours. You also validate the real pain of dependence while challenging the conclusion that death is the solution.",
+              isEnd: true
+            }
+          ],
+          accessibility: { ariaLabel: "Scenario: Mrs. Chen — Perceived Burdensomeness and Safety Planning", role: "application" }
+        },
+        {
+          type: "trueFalse",
+          question: "Means restriction counseling (removing access to lethal means) is only effective for younger populations and does not reduce suicide risk in older adults.",
+          options: [
+            { text: "True", isCorrect: false },
+            { text: "False", isCorrect: true }
+          ],
+          explanation: "False. Means restriction is among the MOST evidence-based suicide prevention interventions for older adults specifically. Because older adults use more lethal methods (particularly firearms) and have a much lower ratio of attempts to completions, restricting access to lethal means is critically important and effective."
         },
         {
           type: "knowledgeCheck",
@@ -1320,6 +1803,66 @@ const CR613 = {
 <p>For prescription medication misuse, clinicians should assess: the medications prescribed and by whom; the pattern of use relative to prescription instructions; whether the older adult is obtaining medications from multiple providers; whether they have attempted to obtain medications outside the prescription system; and whether they experience distress when a medication is not available. The Prescription Drug Use Questionnaire (PDUQ) and the Drug Abuse Screening Test (DAST-10) provide structured formats for assessing prescription medication misuse.</p>`,
         },
         {
+          type: "scenarioTree",
+          title: "The Colonel's Nightcap",
+          description: "A 77-year-old retired colonel is referred after a fall. He reports drinking 'two bourbons with dinner, same as always.' His daughter says he seems confused in the evenings and fell twice last month.",
+          nodes: [
+            {
+              id: "start",
+              text: "The client reports stable, unchanged drinking habits. His daughter reports concerning functional changes. How do you reconcile these?",
+              choices: [
+                { text: "His drinking hasn't changed so it's probably not the issue — focus on the falls", nextId: "wrong_dismiss" },
+                { text: "Recognize that unchanged alcohol intake produces greater effects in aging bodies due to pharmacological aging", nextId: "correct_pharm" },
+                { text: "Confront him about minimizing his drinking", nextId: "wrong_confront" }
+              ]
+            },
+            {
+              id: "wrong_dismiss",
+              text: "Incorrect. The core principle of geriatric substance use is that equal amounts produce greater effects with aging. Reduced body water, slower liver metabolism, and increased CNS sensitivity mean his 'same as always' two bourbons may now produce significant intoxication.",
+              choices: [
+                { text: "How do I address this?", nextId: "correct_pharm" }
+              ]
+            },
+            {
+              id: "wrong_confront",
+              text: "Confrontation is counterproductive, especially with an older adult socialized in a cohort that values self-reliance. He may genuinely believe his drinking is moderate because it hasn't changed. A non-judgmental, educational approach is more effective.",
+              choices: [
+                { text: "What approach works better?", nextId: "correct_pharm" }
+              ]
+            },
+            {
+              id: "correct_pharm",
+              text: "You explain pharmacological aging without blame. His two bourbons (4 standard drinks) now exceeds NIAAA limits for adults over 65 (max 3 per occasion). How do you frame the clinical recommendation?",
+              choices: [
+                { text: "Tell him he's an alcoholic and must stop immediately", nextId: "wrong_label" },
+                { text: "Use motivational interviewing — connect reduction to his stated goals of independence and avoiding a care facility", nextId: "correct_mi" }
+              ]
+            },
+            {
+              id: "wrong_label",
+              text: "The label 'alcoholic' carries enormous stigma for his generation and is clinically inaccurate for a late-onset pattern. Labeling will trigger defensiveness and disengagement from treatment.",
+              choices: [
+                { text: "What's the MI approach?", nextId: "correct_mi" }
+              ]
+            },
+            {
+              id: "correct_mi",
+              text: "Using MI, you explore: 'What matters most to you about staying in your own home?' He values independence above all. You reflect: 'So reducing the falls is really about protecting the independence you've built your whole life.' He agrees to try one bourbon instead of two for a month. Brief intervention with late-onset patterns has strong evidence for success.",
+              isEnd: true
+            }
+          ],
+          accessibility: { ariaLabel: "Scenario: The Colonel's Nightcap — Geriatric Substance Use Assessment", role: "application" }
+        },
+        {
+          type: "trueFalse",
+          question: "If an older adult has been drinking the same amount of alcohol for 30 years without problems, their current drinking level is medically safe.",
+          options: [
+            { text: "True", isCorrect: false },
+            { text: "False", isCorrect: true }
+          ],
+          explanation: "False. Pharmacological aging means the same amount of alcohol produces greater and longer-lasting effects as the body ages — due to reduced body water, decreased liver enzyme activity, and increased CNS sensitivity. An unchanged drinking pattern can become clinically hazardous as the body changes."
+        },
+        {
           type: "knowledgeCheck",
           title: "Knowledge Check — Module 1",
           showExplanations: true,
@@ -1407,6 +1950,67 @@ const CR613 = {
 <p>Family members play a critical role in both the identification and the treatment of geriatric substance use disorders. Adult children who have observed a parent's drinking pattern for years may be simultaneously aware of the problem, emotionally conflicted about addressing it, practically uncertain about how to help, and burdened by their own responses to the parent's behavior. Family psychoeducation — explaining the physiological realities of age-related sensitivity to alcohol, the medical consequences of continued use, and the availability of effective treatment — can shift family members from helpless observers to active participants in the treatment process.</p>
 
 <p>Family members' own codependent patterns — enabling behaviors including purchasing alcohol for the older adult, excusing consequences, or protecting the older adult from the natural outcomes of their use — require direct clinical attention. Al-Anon and similar family support resources offer peer-based support for family members that complements professional clinical intervention and provides sustained community that extends beyond the treatment episode.</p>`,
+        },
+        {
+          type: "knowledgeCheck",
+          type: "scenarioTree",
+          title: "Mrs. Patterson's Prescriptions",
+          description: "A 72-year-old retired teacher has been taking lorazepam (a benzodiazepine) prescribed for anxiety since age 50. She now reports memory problems, daytime drowsiness, and a fall last week. She insists 'my doctor prescribed it, so it must be fine.'",
+          nodes: [
+            {
+              id: "start",
+              text: "Mrs. Patterson has been on a benzodiazepine for 22 years with worsening side effects. How do you approach this?",
+              choices: [
+                { text: "It's prescribed medication — defer entirely to her physician", nextId: "wrong_defer" },
+                { text: "Recognize this as prescription medication misuse requiring collaborative intervention with her prescriber", nextId: "correct_collab" },
+                { text: "Tell her to stop taking the lorazepam", nextId: "wrong_stop" }
+              ]
+            },
+            {
+              id: "wrong_defer",
+              text: "While the prescription may have been appropriate at 50, the physiological changes of aging have dramatically increased her sensitivity. Mental health professionals have a clinical responsibility to identify medication-related cognitive and functional impairment and coordinate with prescribers.",
+              choices: [
+                { text: "What role do I play?", nextId: "correct_collab" }
+              ]
+            },
+            {
+              id: "wrong_stop",
+              text: "Abruptly discontinuing benzodiazepines after decades of use can cause life-threatening withdrawal seizures. Tapering must be medically supervised. Never advise a client to stop a benzodiazepine without prescriber involvement.",
+              choices: [
+                { text: "What's the safe approach?", nextId: "correct_collab" }
+              ]
+            },
+            {
+              id: "correct_collab",
+              text: "You contact her prescriber (with consent) to discuss a gradual taper and alternative anxiety management. Meanwhile, what therapeutic approach do you offer for her anxiety as the medication is reduced?",
+              choices: [
+                { text: "CBT for anxiety and relaxation training — evidence-based non-pharmacological alternatives", nextId: "correct_cbt" },
+                { text: "Suggest she switch to alcohol for anxiety management since it's more natural", nextId: "wrong_alcohol" }
+              ]
+            },
+            {
+              id: "wrong_alcohol",
+              text: "Recommending alcohol as an anxiety management strategy is clinically inappropriate and dangerous, especially for an older adult already at risk from CNS depression. This would create a new substance problem.",
+              choices: [
+                { text: "What are the real alternatives?", nextId: "correct_cbt" }
+              ]
+            },
+            {
+              id: "correct_cbt",
+              text: "You implement CBT for anxiety alongside the supervised taper, teach progressive muscle relaxation and sleep hygiene, and provide psychoeducation about how the benzodiazepine was actually worsening her cognition and fall risk. After 6 months of gradual taper, her memory improves and falls stop.",
+              isEnd: true
+            }
+          ],
+          accessibility: { ariaLabel: "Scenario: Mrs. Patterson — Benzodiazepine Misuse in Older Adults", role: "application" }
+        },
+        {
+          type: "trueFalse",
+          question: "Older adults with substance use disorders generally have poorer treatment outcomes than younger adults because their patterns are too entrenched to change.",
+          options: [
+            { text: "True", isCorrect: false },
+            { text: "False", isCorrect: true }
+          ],
+          explanation: "False. Research shows that older adults — particularly those with late-onset substance use — often have BETTER treatment outcomes than younger adults. They tend to have stronger motivation, better social support, and greater treatment adherence. Brief interventions are especially effective with late-onset presentations."
         },
         {
           type: "knowledgeCheck",
@@ -1523,6 +2127,66 @@ const CR614 = {
       contentBlocks: [
         { type: 'sectionDivider', sectionNumber: 1, title: 'Confronting the Last Page', subtitle: 'Death Anxiety Theory and Assessment' },
         { type: 'text', content: "<h2>The Author Faces the Final Chapter</h2><p>Every author who has written a book knows the peculiar weight of the final chapter. The preceding chapters can be revised, rearranged, reimagined -- but the final chapter is where the whole enterprise coheres or falls apart, where the themes resolve or remain tangled, where the reader understands finally what the book was about. For older adults facing the end of life, this metaphor captures something essential: this is the chapter where everything they have lived, chosen, and valued either comes together into a coherent narrative or remains an unfinished collection of disconnected events.</p><p>The clinician who accompanies older adults through this final chapter performs a profoundly important service. This is accompaniment work: being genuinely present with another human being as they encounter the most universal and intimate of human experiences, supporting them in living as fully as possible in the time that remains, and helping them and those who love them face what must be faced with dignity, honesty, and care.</p><h2>The Landscape of Death Anxiety</h2><p>Terror Management Theory (TMT), developed by Greenberg, Pyszczynski, and Solomon drawing from Ernest Becker's foundational work The Denial of Death, proposes that awareness of mortality is a fundamental motivating force in human psychology. The recognition that one will die generates a baseline existential anxiety that, if unmanaged, would be psychologically overwhelming. Cultural worldviews, self-esteem, and close relationships function as anxiety buffers -- providing the sense that one's existence matters, that one is part of something larger and more enduring, and that death is survivable within a framework of meaning.</p><p>For older adults confronting the end of life, these anxiety-buffering mechanisms face extraordinary pressure. The cultural worldview may feel inadequate to the immediate confrontation with mortality. Self-esteem based on roles that illness and aging have eroded provides less buffering. And relationships that sustained belonging may themselves be dissolving through bereavement. The result is a more naked encounter with mortality anxiety than most have previously faced -- one that requires new resources, including therapeutic support, to navigate.</p><p>Irvin Yalom identifies death anxiety as one of four ultimate concerns -- along with freedom, isolation, and meaninglessness -- that represent inescapable aspects of human existence. Yalom's clinical insight is that death anxiety exists on a spectrum from background mortality awareness that motivates human striving to foreground terror that can paralyze and overwhelm. The therapeutic task is not to eliminate death anxiety but to help clients transform terror into awareness, denial into acceptance, and avoidance into the authentic, mortality-infused engagement with living that Yalom calls awakening.</p><h2>Clinical Presentations of Death Anxiety in Older Adults</h2><p>Death anxiety presents across a wide clinical spectrum requiring careful assessment. At the non-clinical end, existential awareness of one's mortality -- with its attendant thoughts, feelings, and spiritual concerns -- is a normal developmental feature of late life that does not require clinical intervention. Clinically significant death anxiety is characterized by the degree to which death-related fears are impairing: producing pervasive avoidance, sleep disturbance, intrusive thoughts, panic attacks, depressive withdrawal, or inability to engage with advance care planning despite clinical appropriateness. This level of death anxiety warrants specific clinical intervention and may co-occur with depression, anxiety disorders, and existential distress.</p><p>Some clients present fear of the dying process -- fear of pain, suffocation, loss of control, or dignity violations -- often amenable to factual education about palliative symptom management and hospice care. Others present fear of death itself -- the annihilation of self, the unknowing, the nothingness -- requiring existential therapeutic work. Still others present anticipatory grief about separation from loved ones or spiritual distress about moral accountability and afterlife beliefs. Effective clinical intervention requires careful assessment of which fears are most prominent, because approaches addressing fear of the dying process differ substantially from those addressing fear of non-being or spiritual distress.</p><h2>Assessment Tools for Death Anxiety</h2><p>The Death Attitude Profile-Revised (DAP-R), developed by Wong, Reker, and Gesser, provides a multidimensional assessment of death attitudes including fear of death, death avoidance, neutral acceptance, approach acceptance (belief in an afterlife), and escape acceptance (viewing death as escape from suffering). This multidimensional profile is more clinically useful than single-dimension measures because it reveals the specific pattern of death attitudes most prominent for a particular client -- information that directly informs intervention planning.</p><p>The Demoralization Scale assesses existential distress -- hopelessness, helplessness, meaning loss -- that frequently accompanies serious illness and is distinct from depression. The Patient Dignity Inventory (PDI), developed by Chochinov, assesses dignity-related distress across multiple domains including symptom distress, existential distress, dependency, peace of mind, and social support -- providing a comprehensive clinical picture for dignity-oriented end-of-life interventions.</p><p>Beyond formal instruments, the clinical interview must engage directly with existential content. Questions such as What do you think about when you think about dying? What does it mean to you to die well? What are you most afraid of? and What gives you hope or comfort? open clinical conversation to depths that structured instruments cannot fully capture.</p><h2>Cultural and Spiritual Dimensions of Death and Dying</h2><p>The meaning of death, the appropriate way to approach it, and beliefs about what happens after death are profoundly culturally variable. Western biomedical culture emphasizes individual autonomy in end-of-life decision-making, direct disclosure of terminal prognosis, and explicit conversation about death. However, many cultural traditions operate from very different assumptions. In some East Asian, Latino, and Middle Eastern traditions, disclosure of terminal prognosis to the dying person is considered harmful and managed collectively by family. In some Indigenous traditions, direct conversation about death is culturally prohibited or shaped through community ritual that clinicians may not recognize. The clinician's task is to understand -- through genuinely curious, humble inquiry -- the specific cultural and spiritual framework that gives this client's dying meaning, and to provide care that honors it rather than inadvertently overriding it with the clinician's own cultural assumptions.</p>" },
+        {
+          type: "scenarioTree",
+          title: "Mr. Rivera's Panic",
+          description: "A 78-year-old man with stage IV lung cancer presents with panic attacks, insomnia, and repeated statements of 'I can't stop thinking about dying.' His oncologist referred him for anxiety management.",
+          nodes: [
+            {
+              id: "start",
+              text: "Mr. Rivera's 'anxiety' is occurring in the context of terminal illness. How do you conceptualize his presentation?",
+              choices: [
+                { text: "Standard generalized anxiety — treat with CBT relaxation techniques", nextId: "wrong_standard" },
+                { text: "Clinically significant death anxiety — assess which specific fears are most prominent to guide intervention", nextId: "correct_assess" },
+                { text: "Normal response to a terminal diagnosis — no intervention needed", nextId: "wrong_normal" }
+              ]
+            },
+            {
+              id: "wrong_standard",
+              text: "While relaxation can help, framing terminal-illness death anxiety as standard GAD misses the existential core. The content of the anxiety matters: is he afraid of pain, annihilation, separation from loved ones, or spiritual judgment? Each requires different intervention.",
+              choices: [
+                { text: "How do I assess this?", nextId: "correct_assess" }
+              ]
+            },
+            {
+              id: "wrong_normal",
+              text: "While some mortality awareness is developmentally normal, panic attacks and insomnia are clinically significant. Death anxiety that produces this level of functional impairment warrants intervention — it is not 'just normal' in terminal illness.",
+              choices: [
+                { text: "What should I assess?", nextId: "correct_assess" }
+              ]
+            },
+            {
+              id: "correct_assess",
+              text: "Using the DAP-R and clinical interview, you discover his primary fear is not pain or the afterlife — it's 'being forgotten. Like I was never here.' Which therapeutic approach best targets this specific fear?",
+              choices: [
+                { text: "Dignity Therapy — create a legacy document that preserves his story for his grandchildren", nextId: "correct_dignity" },
+                { text: "Exposure therapy — gradually expose him to death-related stimuli", nextId: "wrong_exposure" }
+              ]
+            },
+            {
+              id: "wrong_exposure",
+              text: "Exposure therapy for specific phobias is inappropriate for existential death anxiety in terminal illness. The fear of annihilation is not irrational — it is a response to a real and imminent reality. Meaning-making approaches are more clinically appropriate.",
+              choices: [
+                { text: "What works for this fear?", nextId: "correct_dignity" }
+              ]
+            },
+            {
+              id: "correct_dignity",
+              text: "Through Dignity Therapy, Mr. Rivera dictates his life story, values, and messages to his grandchildren. The completed document — his legacy — directly addresses the fear of being forgotten by creating something that outlasts him. His panic attacks decrease significantly.",
+              isEnd: true
+            }
+          ],
+          accessibility: { ariaLabel: "Scenario: Mr. Rivera — Death Anxiety Assessment and Dignity Therapy", role: "application" }
+        },
+        {
+          type: "trueFalse",
+          question: "The therapeutic goal of end-of-life counseling is to eliminate the client's fear of death entirely.",
+          options: [
+            { text: "True", isCorrect: false },
+            { text: "False", isCorrect: true }
+          ],
+          explanation: "False. The goal is not to eliminate death anxiety but to transform it — from terror into awareness, denial into acceptance, and avoidance into authentic, mortality-infused engagement with living. Complete elimination of death anxiety is neither realistic nor therapeutically necessary."
+        },
         { type: 'knowledgeCheck', title: 'Knowledge Check -- Module 1', showExplanations: true, questions: [
           { question: 'According to Terror Management Theory (TMT), cultural worldviews, self-esteem, and close relationships function primarily as:', type: 'multiple_choice', options: ['Sources of guilt and shame about mortality', 'Anxiety buffers that provide the sense that one exists in meaningful continuity with something enduring', 'Mechanisms of pathological denial of the reality of death', 'Neurological processes that regulate the autonomic fear response'], correctAnswer: 1, explanation: 'TMT identifies cultural worldviews, self-esteem, and close relationships as the primary psychological buffers against mortality anxiety -- providing the scaffold within which humans can function without being overwhelmed.' },
           { question: 'The Death Attitude Profile-Revised (DAP-R) is clinically superior to single-dimension death anxiety measures because it:', type: 'multiple_choice', options: ['Can be administered by nonprofessional caregivers', 'Provides a multidimensional profile including fear of death, death avoidance, neutral acceptance, approach acceptance, and escape acceptance', 'Has been validated specifically for minority older adult populations', 'Requires only two items for brief primary care screenings'], correctAnswer: 1, explanation: 'The DAP-R reveals the specific constellation of death attitudes -- which fears predominate, what acceptance frameworks are present -- that directly informs intervention planning. Different patterns require substantially different therapeutic approaches.' },
@@ -1536,6 +2200,66 @@ const CR614 = {
       contentBlocks: [
         { type: 'sectionDivider', sectionNumber: 2, title: 'Writing with Intention', subtitle: 'Meaning-Centered and Dignity-Based Approaches' },
         { type: 'text', content: "<h2>Meaning-Centered Psychotherapy at End of Life</h2><p>Victor Frankl's foundational insight -- that human beings can endure almost any suffering when that suffering is meaningful -- animates the Meaning-Centered Psychotherapy (MCP) approach developed by William Breitbart and colleagues at Memorial Sloan Kettering Cancer Center. Originally developed for cancer patients facing end of life, MCP has been adapted for older adults in serious illness contexts and demonstrates efficacy for reducing existential distress, improving spiritual wellbeing, and enhancing sense of meaning even in the face of terminal illness.</p><p>MCP proceeds through exploration of four sources of meaning: historical sources (the meaning embedded in one's life story and legacy), attitudinal sources (the freedom to choose one's attitude toward unavoidable suffering), creative sources (what one creates, contributes, and leaves behind), and experiential sources (meaning available through love, beauty, and connection in the present). For a client confronting end of life, the historical source connects them to a lifetime of achievement, relationship, and contribution that death cannot retroactively erase. The attitudinal source -- even in terminal illness, the freedom to choose how one faces what cannot be changed -- restores a dimension of agency that illness otherwise threatens to entirely remove.</p><p>The goal of meaning-centered work is not to eliminate suffering or achieve contentment about dying, but to enable the client to experience their remaining time as fully human -- complex, sorrowful, and meaningful in equal measure. The dying client who achieves what Frankl called tragic optimism -- the capacity to affirm life's value despite its unavoidable suffering -- is not deceiving themselves but accessing the deepest form of human resilience.</p><h2>Dignity Therapy: Writing What Matters</h2><p>Dignity Therapy, developed by psychiatrist Harvey Max Chochinov, is a structured, brief narrative intervention for individuals with terminal illness that generates a permanent generativity document containing the dying person's reflections on their life, values, lessons learned, and messages to loved ones. The therapeutic process involves a semi-structured interview exploring what the client most wants remembered, their proudest accomplishments, advice they would like to offer, and their hopes for loved ones -- followed by creation of a professional transcript that the client reviews, edits, and bequeaths to family members.</p><p>The clinical power of Dignity Therapy lies in several interlocking mechanisms. First, the permanent document addresses the existential fear of non-being by creating a form of legacy that outlasts the physical person. Second, the interview process itself is therapeutic -- the attentive, curious, valuing presence of the clinician who treats the client's story as worth preserving restores dignity and personhood that illness often erodes. Third, the generativity document provides tangible meaning for the family -- something to be read at a funeral, shared with grandchildren, kept in a family archive -- transforming the dying experience from pure loss into contribution. Research demonstrates significant benefits for sense of dignity, spiritual wellbeing, and self-reported helpfulness to family.</p><h2>Life Review at End of Life</h2><p>Life review takes on distinctive character and purpose when conducted with individuals approaching end of life. The integrative task -- looking back across one's life and constructing a coherent narrative that can be accepted, even embraced -- is not merely a treatment for depression but a fundamental existential task of dying. The dying person who can say with genuine conviction that they lived a life worth living has accomplished what Erikson called integrity, and the clinical support that facilitates this accomplishment is among the most significant contributions a mental health professional can make.</p><h2>Anticipatory Grief and Preparatory Mourning</h2><p>The dying person grieves. The dying person loses -- progressively -- their physical capacities, their roles, their relationships as they have been, and ultimately their life itself. They grieve futures they will not live, events they will not witness, the gradual narrowing of possibility that terminal illness imposes. This anticipatory grief is a legitimate, healthy, and important component of the dying process that clinical support can facilitate rather than suppress.</p><p>Kuebler-Ross's classic stages of dying -- denial, anger, bargaining, depression, acceptance -- are better understood as a description of experiences commonly reported by terminally ill patients than as a prescriptive sequence through which dying persons must progress. Contemporary understanding recognizes greater fluidity and individual variation. The clinical response to anticipatory grief in the dying person is not primarily cognitive but relational and witnessing. The clinician who can be genuinely present with a dying client's grief, who does not rush toward silver linings or spiritual consolation prematurely, who can tolerate the full weight of what is being lost without becoming overwhelmed, is providing the most therapeutically essential element of end-of-life care: the experience of not being alone in the face of death.</p>" },
+        {
+          type: "scenarioTree",
+          title: "The Professor's Unfinished Book",
+          description: "A 81-year-old retired literature professor with terminal pancreatic cancer tells you: 'I spent my life teaching people that stories matter. Now my own story feels meaningless. I never wrote the book I was supposed to write.'",
+          nodes: [
+            {
+              id: "start",
+              text: "The professor is experiencing profound meaning loss in the face of terminal illness. Which meaning-centered framework do you apply?",
+              choices: [
+                { text: "Cognitive restructuring — challenge the irrational belief that her life was meaningless", nextId: "wrong_cbt" },
+                { text: "Frankl's Meaning-Centered approach — explore historical, attitudinal, creative, and experiential sources of meaning", nextId: "correct_mcp" },
+                { text: "Focus on acceptance — help her let go of unfulfilled goals", nextId: "partial_accept" }
+              ]
+            },
+            {
+              id: "wrong_cbt",
+              text: "Her feeling is not irrational — it is an existential confrontation with unfinished business. Challenging it as a 'cognitive distortion' dismisses the legitimate grief of unrealized potential. Meaning-centered work explores what meaning IS present, not what thinking is wrong.",
+              choices: [
+                { text: "How does MCP work here?", nextId: "correct_mcp" }
+              ]
+            },
+            {
+              id: "partial_accept",
+              text: "Acceptance is part of the picture, but premature acceptance bypasses the meaning-making work that can transform this experience. MCP explores what meaning already exists — she may not have written the book, but she shaped thousands of students' relationship with stories.",
+              choices: [
+                { text: "Show me the MCP approach", nextId: "correct_mcp" }
+              ]
+            },
+            {
+              id: "correct_mcp",
+              text: "You explore the four sources of meaning. Historical: 'Tell me about the students whose lives you shaped.' She lights up describing a former student who became a novelist. What source of meaning does this represent?",
+              choices: [
+                { text: "Creative source — what she contributed to the world through teaching IS her book, written in living people", nextId: "correct_creative" },
+                { text: "Experiential source — the pleasure she felt while teaching", nextId: "partial_exp" }
+              ]
+            },
+            {
+              id: "partial_exp",
+              text: "Experiential meaning is present too, but the creative source is most directly relevant — her legacy lives in the people she shaped. This reframes 'I never wrote the book' into 'I wrote the book in living people.'",
+              choices: [
+                { text: "How does this help?", nextId: "correct_creative" }
+              ]
+            },
+            {
+              id: "correct_creative",
+              text: "The realization shifts her entire framework. You collaborate on a Dignity Therapy document: her teaching philosophy, letters to former students, the novel recommendation list she always gave. She achieves what Frankl called tragic optimism — affirming life's value despite its suffering and finitude.",
+              isEnd: true
+            }
+          ],
+          accessibility: { ariaLabel: "Scenario: The Professor — Meaning-Centered Psychotherapy at End of Life", role: "application" }
+        },
+        {
+          type: "trueFalse",
+          question: "Anticipatory grief in dying clients should be suppressed because it interferes with the therapeutic process and reduces quality of remaining life.",
+          options: [
+            { text: "True", isCorrect: false },
+            { text: "False", isCorrect: true }
+          ],
+          explanation: "False. Anticipatory grief is a legitimate, healthy, and important component of the dying process. Clinical support should facilitate rather than suppress it. The clinician who can be genuinely present with a dying client's grief — without rushing toward silver linings — is providing the most essential element of end-of-life care."
+        },
         { type: 'knowledgeCheck', title: 'Knowledge Check -- Module 2', showExplanations: true, questions: [
           { question: 'Dignity Therapy generates therapeutic benefit primarily through:', type: 'multiple_choice', options: ['Providing a legal record of the client wishes', 'Creating a permanent legacy document that outlasts the physical person, restoring dignity through attentive witnessing, and providing tangible meaning for the family', 'Functioning as a behavioral contract between client and family', 'Providing structured reality testing for distorted beliefs about life value'], correctAnswer: 1, explanation: 'Dignity Therapy efficacy operates through multiple mechanisms: the permanent document addresses fear of annihilation by creating enduring legacy; the interview restores dignity through attentive clinical presence; and the generativity document transforms dying into contribution for the family.' },
           { question: 'Viktor Frankl concept of tragic optimism in end-of-life care refers to:', type: 'multiple_choice', options: ['The goal of achieving positive affect about death through cognitive restructuring', 'The capacity to affirm life value and meaning while acknowledging its unavoidable suffering, loss, and finitude', 'The use of humor as a coping mechanism for terminal illness', 'The belief that suffering will eventually resolve if approached with optimism'], correctAnswer: 1, explanation: 'Tragic optimism is the profound human capacity to affirm that life has been worth living -- in full awareness of its suffering and impermanence. It represents the therapeutic goal of meaning-centered end-of-life work.' },
@@ -1549,6 +2273,66 @@ const CR614 = {
       contentBlocks: [
         { type: 'sectionDivider', sectionNumber: 3, title: 'The People Who Will Carry the Story', subtitle: 'Family Grief, Advance Care Planning, and Clinician Sustainability' },
         { type: 'text', content: "<h2>Advance Care Planning: When the Author Still Holds the Pen</h2><p>Advance care planning (ACP) -- the process through which individuals document their values, goals, and preferences for end-of-life medical care while retaining decision-making capacity -- is among the most important and underutilized clinical tools in geriatric practice. Research consistently demonstrates that older adults who have completed ACP receive care more concordant with their wishes, experience less aggressive end-of-life treatment, are more likely to die in their preferred setting, and have family members who report higher satisfaction with the dying experience.</p><p>Mental health professionals are uniquely positioned to facilitate ACP conversations -- not to provide medical or legal advice outside our scope of practice, but to create the relational and reflective space within which clients can explore and articulate their values and preferences. Questions that open ACP-relevant reflection include: If your health were to become much worse, what would matter most to you? What does dying well mean to you? Who do you most trust to speak for you if you cannot speak for yourself? These are fundamentally values-clarification conversations -- squarely within the clinical domain of mental health practice.</p><p>Many older adults avoid ACP because they fear giving up or believe that documenting preferences accelerates death. Psychoeducation addressing these misperceptions is clinically important. Normalizing ACP as a gift to loved ones -- rather than a morbid preoccupation -- reduces avoidance and supports meaningful engagement with this crucial planning process.</p><h2>Hospice: The Philosophy of Comfort at the End</h2><p>Hospice care -- medical care oriented toward comfort rather than cure, typically provided in the final six months of life -- remains dramatically underutilized, with many patients spending only days or weeks in hospice despite months of eligibility. Mental health professionals play a crucial role in hospice education and referral facilitation. Key psychoeducational points: hospice does not hasten death -- research finds hospice patients may live longer than comparable patients receiving aggressive treatment; hospice addresses pain and symptom management comprehensively including psychological and spiritual dimensions; hospice provides support to the family including bereavement support that continues after the death; and the hospice interdisciplinary team provides comprehensive wraparound support far exceeding what a single provider can offer.</p><p>The hospice referral conversation -- helping a family move from a curative to a comfort-oriented frame -- is one of the most clinically sensitive interventions in end-of-life practice. It requires genuine understanding of the family's emotional and cultural context, acknowledgment of the grief that accepting a palliative orientation represents, and patience with the adjustment process the shift from fighting to acceptance demands.</p><h2>Supporting Bereaved Family Members: Before, During, and After</h2><p>Grief support for family members encompasses three distinct phases: anticipatory grief before the death, the death vigil itself, and post-death bereavement. Anticipatory grief involves mourning for what is currently being lost alongside grief for the impending death. Family members in this phase need space to express grief without pressure to stay strong; psychoeducation about the dying process; and support in maintaining meaningful connection with the dying person.</p><p>The death vigil -- the period immediately before death when the dying person is unconscious or minimally responsive -- is a profoundly important and often underserved clinical moment. Family members need guidance about what to expect physiologically, reassurance that the dying person is not in pain, and permission to speak to and touch the dying person -- hearing is believed to persist even when other senses have diminished.</p><p>Post-death bereavement after the loss of an older adult is shaped by the length of the caregiving period, the quality of the relationship, the degree to which the death was anticipated, and available social support. The continuing bonds framework in contemporary grief theory -- the recognition that bereaved individuals do not simply let go of deceased loved ones but transform the relationship from a living to an internalized one -- provides a more clinically accurate and compassionate framework than older models emphasizing moving on.</p><h2>The Clinician's Own Encounter with Mortality: Countertransference and Sustainability</h2><p>Sustained work with dying older adults inevitably confronts the clinician with their own mortality awareness, losses, unresolved grief, and anxieties about aging and death. This is not a clinical complication to be minimized -- it is the existential reality of this work, requiring honest, ongoing attention. Yalom argues that the clinician's honest engagement with their own mortality awareness can deepen their capacity for authentic therapeutic presence with dying clients. But mortality salience that is unprocessed -- generating countertransference avoidance or inappropriate cheerfulness in the face of genuine death and dying -- compromises both clinician wellbeing and quality of care.</p><p>Professional sustainability in end-of-life work requires intentional practices: regular supervision with palliative care knowledge; peer consultation and community with colleagues; deliberate attention to one's own grief after client deaths; and the ongoing cultivation of the clinician's own relationship with mortality. The clinician who has genuinely wrestled with their own mortality brings a qualitatively different presence to end-of-life work than the clinician who has carefully avoided these questions.</p>" },
+        {
+          type: "scenarioTree",
+          title: "The Family at the Bedside",
+          description: "You are providing hospice support to a family. The 84-year-old patriarch is actively dying. His son insists on continuing to talk to him; his daughter says 'He can't hear us anymore — let him go in peace.'",
+          nodes: [
+            {
+              id: "start",
+              text: "The siblings disagree about whether their dying father can hear them. What is the evidence-based clinical guidance?",
+              choices: [
+                { text: "The daughter is right — unconscious patients cannot hear", nextId: "wrong_daughter" },
+                { text: "Hearing is believed to persist even when other senses have diminished — the son's instinct is supported by evidence", nextId: "correct_hearing" },
+                { text: "It doesn't matter either way — focus on the siblings' conflict", nextId: "partial_conflict" }
+              ]
+            },
+            {
+              id: "wrong_daughter",
+              text: "Incorrect. Clinical evidence suggests hearing persists longer than other senses in the dying process. Encouraging family to continue speaking and maintaining physical contact is both evidence-informed and profoundly meaningful for the family's bereavement process.",
+              choices: [
+                { text: "What should I tell them?", nextId: "correct_hearing" }
+              ]
+            },
+            {
+              id: "partial_conflict",
+              text: "The sibling conflict matters, but it stems from a factual question you can help answer. Providing accurate clinical guidance about the dying process is one of the most valuable things you can offer at this moment.",
+              choices: [
+                { text: "What does the evidence say?", nextId: "correct_hearing" }
+              ]
+            },
+            {
+              id: "correct_hearing",
+              text: "You share that hearing is believed to persist and encourage both to speak to their father. The son says what he needs to say. Now the daughter asks: 'Is he in pain?' The father's breathing is irregular with pauses. What do you explain?",
+              choices: [
+                { text: "This is Cheyne-Stokes breathing — a normal part of the dying process, not a sign of suffering", nextId: "correct_explain" },
+                { text: "He might be in pain — suggest they call the nurse for more medication", nextId: "wrong_pain" }
+              ]
+            },
+            {
+              id: "wrong_pain",
+              text: "While pain management is essential, irregular breathing patterns near death are typically Cheyne-Stokes respiration — a normal physiological process. Accurate psychoeducation prevents unnecessary distress and medical intervention.",
+              choices: [
+                { text: "How do I explain this?", nextId: "correct_explain" }
+              ]
+            },
+            {
+              id: "correct_explain",
+              text: "You gently explain the normal physiology of the dying process, reassure them about comfort, and give them permission to simply be present. After their father passes, both siblings express gratitude that they stayed, spoke to him, and held his hands. Your clinical presence during the vigil becomes a foundation for their healthy bereavement.",
+              isEnd: true
+            }
+          ],
+          accessibility: { ariaLabel: "Scenario: The Family at the Bedside — Death Vigil Support", role: "application" }
+        },
+        {
+          type: "trueFalse",
+          question: "The continuing bonds framework holds that bereaved individuals must completely let go of emotional connections to the deceased in order to achieve healthy grief resolution.",
+          options: [
+            { text: "True", isCorrect: false },
+            { text: "False", isCorrect: true }
+          ],
+          explanation: "False. The continuing bonds framework directly challenges the 'letting go' model. Bereaved individuals transform their relationship with deceased loved ones from a living to an internalized one — maintaining meaningful connection without requiring physical presence. This is healthy adaptation, not pathological attachment."
+        },
         { type: 'knowledgeCheck', title: 'Knowledge Check -- Module 3', showExplanations: true, questions: [
           { question: 'Advance care planning conversations are within the scope of mental health practice PRIMARILY because:', type: 'multiple_choice', options: ['Mental health professionals are authorized to make medical treatment decisions', 'ACP conversations are fundamentally values-clarification conversations -- helping clients explore and articulate what matters most -- squarely within clinical mental health practice', 'Mental health professionals have legal authority to complete advance directives on behalf of clients', 'ACP is medically required before mental health services can be provided to dying clients'], correctAnswer: 1, explanation: 'Mental health professionals facilitate ACP through values clarification -- creating space for meaningful reflection that informs medical decision-making. Medical or legal advice is outside our scope of practice.' },
           { question: 'The continuing bonds framework in contemporary grief theory holds that:', type: 'multiple_choice', options: ['Bereaved individuals must sever emotional bonds with deceased loved ones to achieve healthy grief resolution', 'The goal of grief therapy is to help bereaved individuals move on to new relationships as quickly as possible', 'Bereaved individuals transform their relationship with deceased loved ones from a living to an internalized one -- maintaining meaningful connection without requiring physical presence', 'Continuing emotional bonds with deceased loved ones indicates complicated grief requiring intensive treatment'], correctAnswer: 2, explanation: 'The continuing bonds framework challenges the letting go model. Maintaining the deceased as an internalized presence is healthy adaptation, not pathological attachment.' },
