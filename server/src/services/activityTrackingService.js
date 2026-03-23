@@ -6,6 +6,7 @@
 import { Resend } from 'resend';
 import User from '../models/User.js';
 import UserActivity from '../models/UserActivity.js';
+import { sendAdminAlert } from './adminNotificationService.js';
 
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
@@ -96,6 +97,9 @@ export async function logActivity(type, data, options = {}) {
     } else {
       console.warn(`[ActivityTracking] Skipping admin notification for ${type} — Resend not configured`);
     }
+
+    // Fire branded admin alert (non-blocking, never throws)
+    sendAdminAlert(type, { userName, userEmail, ...data });
   }
 
   return activity;
