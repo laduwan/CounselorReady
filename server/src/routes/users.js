@@ -727,4 +727,60 @@ router.get('/insurance/compare', protect, async (req, res) => {
   }
 });
 
+// @route   POST /api/users/promo
+// @desc    Apply a promo/discount code to user's active subscription
+// @access  Private
+router.post('/promo', protect, async (req, res) => {
+  if (!stripe) {
+    return res.status(503).json({ error: 'Payment system not configured' });
+  }
+
+  try {
+    const { code } = req.body;
+
+    if (!code) {
+      return res.status(400).json({ error: 'Promo code is required' });
+    }
+
+    // Look up promotion code in Stripe
+    const promoCodes = await stripe.promotionCodes.list({
+      code: code.toUpperCase(),
+      active: true,
+      limit: 1
+    });
+
+    if (promoCodes.data.length === 0) {
+      return res.status(404).json({ error: 'Promo code not found or expired' });
+    }
+
+    const promoCode = promoCodes.data[0];
+    const coupon = promoCode.coupon;
+
+    // Check if user has an active Stripe subscription
+    const user = await User.findById(req.user._id);
+    if (!user || !user.stripeSubscriptionId) {
+      return res.status(400).json({ error: 'No active subscription found. Use this code when subscribing.' });
+    }
+
+    // Apply the coupon to the existing subscription
+    await stripe.subscriptions.update(user.stripeSubscriptionId, {
+      coupon: coupon.id
+    });
+
+    const discountDesc = coupon.percent_off
+      ? `${coupon.percent_off}% off`
+      : `$${(coupon.amount_off / 100).toFixed(2)} off`;
+
+    res.json({
+      message: `Promo code applied! You now get ${discountDesc} your subscription.`
+    });
+  } catch (error) {
+    console.error('Apply promo code error:', error);
+    if (error.type === 'StripeInvalidRequestError') {
+      return res.status(400).json({ error: error.message });
+    }
+    res.status(500).json({ error: 'Failed to apply promo code' });
+  }
+});
+
 export default router;
