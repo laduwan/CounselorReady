@@ -465,25 +465,63 @@ router.post('/recalculate', protect, async (req, res) => {
 // @access  Private
 router.get('/board-alerts', protect, async (req, res) => {
   try {
-    const userCredentials = await UserCredential.find({ userId: req.user._id })
-      .populate('templateId');
+    // Real state licensing board URLs for counseling professions
+    const boardUrls = {
+      AL: 'https://abec.alabama.gov/', AK: 'https://www.commerce.alaska.gov/web/cbpl/ProfessionalLicensing/BoardofProfessionalCounselors.aspx',
+      AZ: 'https://www.azbbhe.us/', AR: 'https://www.arbcec.arkansas.gov/',
+      CA: 'https://www.bbs.ca.gov/', CO: 'https://dpo.colorado.gov/MentalHealth',
+      CT: 'https://portal.ct.gov/DPH/Practitioner-Licensing--Investigations/Professional-Counselor/Professional-Counselor',
+      DE: 'https://dpr.delaware.gov/boards/profcounselors/', DC: 'https://dchealth.dc.gov/service/professional-counseling-licensing',
+      FL: 'https://floridasmentalhealthprofessions.gov/', GA: 'https://sos.ga.gov/georgia-board-professional-counselors-social-workers-and-marriage-and-family-therapists',
+      HI: 'https://cca.hawaii.gov/pvl/boards/mental_health/', ID: 'https://ibol.idaho.gov/IBOL/BoardPage.aspx?Bureau=COU',
+      IL: 'https://idfpr.illinois.gov/profs/profcoun.asp', IN: 'https://www.in.gov/pla/professions/behavioral-health-and-human-services-licensing-board/',
+      IA: 'https://idph.iowa.gov/Licensure/Iowa-Board-of-Behavioral-Science', KS: 'https://ksbsrb.ks.gov/',
+      KY: 'https://lpc.ky.gov/', LA: 'https://www.lpcboard.org/',
+      ME: 'https://www.maine.gov/pfr/professionallicensing/professions/counseling/', MD: 'https://health.maryland.gov/bopc/',
+      MA: 'https://www.mass.gov/orgs/board-of-registration-of-allied-mental-health-and-human-services-professions',
+      MI: 'https://www.michigan.gov/lara/bureau-list/bpl/occ/prof/counseling', MN: 'https://mn.gov/boards/behavioral-health-therapy/',
+      MS: 'https://www.lpc.ms.gov/', MO: 'https://pr.mo.gov/counselors.asp',
+      MT: 'https://boards.bsd.dli.mt.gov/license-education/behavioral-health', NE: 'https://dhhs.ne.gov/licensure/Pages/Mental-Health-Practice.aspx',
+      NV: 'https://marriage.nv.gov/', NH: 'https://www.oplc.nh.gov/mental-health-practice',
+      NJ: 'https://www.njconsumeraffairs.gov/pc/', NM: 'https://www.rld.nm.gov/boards-and-commissions/counseling-and-therapy-practice-board/',
+      NY: 'http://www.op.nysed.gov/prof/mhp/', NC: 'https://www.ncblpc.org/',
+      ND: 'https://www.ndblpc.org/', OH: 'https://cswmft.ohio.gov/',
+      OK: 'https://www.ok.gov/behavioralhealth/', OR: 'https://www.oregon.gov/oblpct/',
+      PA: 'https://www.dos.pa.gov/ProfessionalLicensing/BoardsCommissions/SocialWorkersMarriageanFamilyTherapistsandProfessionalCounselors/',
+      RI: 'https://health.ri.gov/licenses/detail.php?id=234', SC: 'https://llr.sc.gov/cou/',
+      SD: 'https://dss.sd.gov/licensingboards/counselor/', TN: 'https://www.tn.gov/health/health-program-areas/health-professional-boards/pc-board.html',
+      TX: 'https://www.bhec.texas.gov/', UT: 'https://dopl.utah.gov/mental-health/',
+      VT: 'https://sos.vermont.gov/allied-mental-health/', VA: 'https://www.dhp.virginia.gov/counseling/',
+      WA: 'https://doh.wa.gov/licenses-permits-and-certificates/professions-new-renew-702/counselor-credential-702',
+      WV: 'https://wvbec.org/', WI: 'https://dsps.wi.gov/pages/Professions/LPC/',
+      WY: 'https://mentalhealth.wyo.gov/'
+    };
+
+    // Only state licenses — not national certs or specialty certs
+    const userCredentials = await UserCredential.find({
+      userId: req.user._id,
+      credentialType: 'state_license'
+    }).populate('templateId');
 
     const alerts = [];
 
     for (const cred of userCredentials) {
       let template = cred.templateId;
       if (!template && cred.code && cred.state) {
-        template = await CredentialTemplate.findOne({ code: cred.code, state: cred.state });
+        template = await CredentialTemplate.findOne({ code: cred.code, state: cred.state, type: 'state_license' });
       }
-      if (!template && cred.name) {
+      if (!template && cred.name && cred.state) {
         template = await CredentialTemplate.findOne({
+          type: 'state_license', state: cred.state,
           $or: [
-            { code: (cred.code || cred.name.split(' ')[0]).toUpperCase(), state: cred.state },
-            { name: { $regex: cred.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), $options: 'i' }, state: cred.state }
+            { code: (cred.code || cred.name.split(' ')[0]).toUpperCase() },
+            { name: { $regex: cred.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), $options: 'i' } }
           ]
         });
       }
       if (!template) continue;
+
+      const state = (template.state || cred.state || '').toUpperCase();
 
       const savedRules = (cred.requirements || []).map(r => ({ category: r.category, hoursRequired: r.hoursRequired }));
       const savedTotal = cred.totalCEUsRequired || savedRules.reduce((s, r) => s + r.hoursRequired, 0);
@@ -525,12 +563,15 @@ router.get('/board-alerts', protect, async (req, res) => {
       if (changes.some(c => c.severity === 'urgent')) severity = 'urgent';
       else if (changes.some(c => c.severity === 'important')) severity = 'important';
 
+      // Resolve board URL: template.renewalUrl > hardcoded lookup > null
+      const boardUrl = template.renewalUrl || boardUrls[state] || null;
+
       alerts.push({
         credentialId: cred._id, templateId: template._id,
-        code: template.code || cred.code, state: template.state || cred.state,
+        code: template.code || cred.code, state,
         name: template.name || cred.name, issuingBody: template.issuingBody || cred.issuingBody,
         renewalCycle: currentCycle, totalCEUsRequired: currentTotal,
-        notes: currentNotes, renewalUrl: template.renewalUrl || null,
+        notes: currentNotes, boardUrl,
         currentRules, savedRules, changes,
         severity: changes.length > 0 ? severity : 'info',
         hasChanges: changes.length > 0,
