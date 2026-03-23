@@ -6,7 +6,27 @@ import mongoose from 'mongoose';
 const ContentBlockSchema = new mongoose.Schema({
   type: {
     type: String,
-    enum: ['accordion', 'matching', 'multipleChoice', 'multiSelect', 'imageText', 'sectionDivider', 'text', 'video', 'reflection', 'resources'],
+    enum: [
+      'accordion',
+      'cardSort',
+      'flashcardDeck',
+      'hotspot',
+      'image',
+      'imageText',
+      'matching',
+      'multiSelect',
+      'multipleChoice',
+      'references',
+      'reflection',
+      'resources',
+      'scenarioTree',
+      'sectionDivider',
+      'sequencing',
+      'text',
+      'timeline',
+      'video',
+      'videoEmbed',
+    ],
     required: true
   },
   order: { type: Number, required: true },
@@ -52,15 +72,84 @@ const ContentBlockSchema = new mongoose.Schema({
   videoDuration: Number, // in seconds
   
   // Reflection
-  minLength: Number,
+  minLength: { type: Number, default: 50 },
   
   // Resources
   resources: [{
     title: String,
     url: String,
-    type: String
+    type: { type: String, enum: ['pdf', 'video', 'link', 'article', 'website', 'book'], default: 'link' }
+  }],
+
+  // ── video / videoEmbed ──
+  videoTitle: String,
+  markers: [{
+    time: String,
+    label: String,
+    prompt: String
+  }],
+
+  // ── flashcardDeck ──
+  flashcards: [{
+    id: String,
+    front: String,
+    back: String
+  }],
+
+  // ── scenarioTree ──
+  scenarioTitle: String,
+  startNode: { type: String, default: 'start' },
+  nodes: { type: mongoose.Schema.Types.Mixed },
+
+  // ── cardSort ──
+  categories: [String],
+  cards: [{
+    id: String,
+    text: String,
+    correctCategory: String
+  }],
+
+  // ── sequencing ──
+  steps: [{
+    id: String,
+    text: String,
+    order: Number
+  }],
+
+  // ── timeline ──
+  events: [{
+    year: String,
+    text: String
+  }],
+
+  // ── hotspot ──
+  hotspotImage: String,
+  imageDescription: String,
+  hotspots: [{
+    x: Number,
+    y: Number,
+    label: String,
+    info: String,
+    description: String
+  }],
+
+  // ── image (standalone) ──
+  imageUrl: String,
+  imageAltText: String,
+  imageCaption: String,
+  imageSize: { type: String, enum: ['small', 'medium', 'full'], default: 'full' },
+  imageAlignment: { type: String, enum: ['left', 'center', 'right'], default: 'center' },
+
+  // ── references ──
+  references: [{
+    formatted: String,
+    title: String,
+    author: String,
+    year: Number,
+    source: String,
+    url: String
   }]
-});
+}, { _id: false, strict: false });
 
 const SectionSchema = new mongoose.Schema({
   title: { type: String, required: true },
