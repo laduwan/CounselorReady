@@ -13,8 +13,8 @@ export default function ArticleCard({ article, onCreateCE, onSelectForPairing, i
   const isThin = article.wcStatus === 'thin';
 
   const cardClass = isSufficient
-    ? 'bg-[#F8EEDC] border-l-[3px] border-l-[#7B2D3E] border-t-0 border-r-0 border-b-0 rounded-r-[6px]'
-    : 'bg-[#F5EEE0] border border-[#DDD9D3]';
+    ? 'bg-[#F8EEDC] border-l-[3px] border-l-[#7B2D3E] border-t-0 border-r-0 border-b-0 rounded-r-xl'
+    : 'bg-[#F5EEE0] border border-[#DDD9D3] rounded-xl';
 
   function handlePrint() {
     if (article.oaUrl) {
@@ -74,7 +74,7 @@ export default function ArticleCard({ article, onCreateCE, onSelectForPairing, i
         {article.journal}
       </p>
       {/* Authors */}
-      <p className="text-[10px] text-[#7A6A54] mb-3 line-clamp-1">
+      <p className="font-[Georgia,serif] text-[10px] text-[#7A6A54] mb-3 line-clamp-1">
         {article.authors}
       </p>
 

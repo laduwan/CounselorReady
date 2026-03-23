@@ -217,7 +217,7 @@ export default function ResearchReadyCE() {
             value={query}
             onChange={e => setQuery(e.target.value)}
             placeholder="Search for scholarly articles (e.g., clinical supervision, trauma therapy)..."
-            className="w-full pl-10 pr-4 py-2.5 bg-[#F5EEE0] border border-[#C8C3BC] rounded-xl text-sm font-[Georgia,serif] focus:ring-2 focus:ring-[#7B2D3E]/30 focus:border-[#7B2D3E] outline-none"
+            className="w-full pl-10 pr-4 py-2.5 bg-[#F5EEE0] border border-[#C8C3BC] rounded-xl text-sm text-[#2A1F0E] font-[Georgia,serif] placeholder:text-[#A89880] focus:ring-2 focus:ring-[#7B2D3E]/30 focus:border-[#7B2D3E] outline-none"
           />
         </div>
         <button
@@ -302,7 +302,7 @@ export default function ResearchReadyCE() {
 
       {/* Results count */}
       {!loading && results.length > 0 && (
-        <p className="font-[Georgia,serif] text-[10px] italic text-[#5C4D3A] mb-3">
+        <p className="font-[Georgia,serif] text-[10px] uppercase tracking-[0.12em] text-[#5C4D3A] italic mb-3">
           {meta.count} results found
         </p>
       )}
