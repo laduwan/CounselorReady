@@ -460,6 +460,100 @@ router.post('/recalculate', protect, async (req, res) => {
   }
 });
 
+// @route   GET /api/credentials/board-alerts
+// @desc    Board rules for user's credentials with change highlighting
+// @access  Private
+router.get('/board-alerts', protect, async (req, res) => {
+  try {
+    const userCredentials = await UserCredential.find({ userId: req.user._id })
+      .populate('templateId');
+
+    const alerts = [];
+
+    for (const cred of userCredentials) {
+      let template = cred.templateId;
+      if (!template && cred.code && cred.state) {
+        template = await CredentialTemplate.findOne({ code: cred.code, state: cred.state });
+      }
+      if (!template && cred.name) {
+        template = await CredentialTemplate.findOne({
+          $or: [
+            { code: (cred.code || cred.name.split(' ')[0]).toUpperCase(), state: cred.state },
+            { name: { $regex: cred.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), $options: 'i' }, state: cred.state }
+          ]
+        });
+      }
+      if (!template) continue;
+
+      const savedRules = (cred.requirements || []).map(r => ({ category: r.category, hoursRequired: r.hoursRequired }));
+      const savedTotal = cred.totalCEUsRequired || savedRules.reduce((s, r) => s + r.hoursRequired, 0);
+      const savedNotes = cred.notes || '';
+      const savedCycle = cred.renewalCycle;
+
+      const currentRules = (template.requirements || []).map(r => ({ category: r.category, hoursRequired: r.hoursRequired }));
+      const currentTotal = template.totalCEUsRequired || currentRules.reduce((s, r) => s + r.hoursRequired, 0);
+      const currentNotes = template.notes || '';
+      const currentCycle = template.renewalCycle;
+
+      const changes = [];
+
+      if (savedTotal && currentTotal !== savedTotal) {
+        changes.push({ field: 'totalCEUsRequired', label: 'Total CE Hours', oldValue: savedTotal + ' hours', newValue: currentTotal + ' hours', severity: Math.abs(currentTotal - savedTotal) >= 5 ? 'important' : 'info' });
+      }
+      if (savedCycle && currentCycle && currentCycle !== savedCycle) {
+        changes.push({ field: 'renewalCycle', label: 'Renewal Cycle', oldValue: savedCycle + ' months', newValue: currentCycle + ' months', severity: 'important' });
+      }
+
+      const allCats = new Set([...savedRules.map(r => r.category), ...currentRules.map(r => r.category)]);
+      for (const cat of allCats) {
+        const saved = savedRules.find(r => r.category === cat);
+        const current = currentRules.find(r => r.category === cat);
+        if (!saved && current) {
+          changes.push({ field: `category:${cat}`, label: `${cat} (NEW)`, oldValue: 'Not required', newValue: current.hoursRequired + ' hours', severity: 'important' });
+        } else if (saved && !current) {
+          changes.push({ field: `category:${cat}`, label: `${cat} (REMOVED)`, oldValue: saved.hoursRequired + ' hours', newValue: 'No longer required', severity: 'info' });
+        } else if (saved && current && saved.hoursRequired !== current.hoursRequired) {
+          changes.push({ field: `category:${cat}`, label: cat, oldValue: saved.hoursRequired + ' hours', newValue: current.hoursRequired + ' hours', severity: current.hoursRequired > saved.hoursRequired ? 'important' : 'info' });
+        }
+      }
+
+      if (savedNotes && currentNotes && currentNotes !== savedNotes) {
+        changes.push({ field: 'notes', label: 'Board Notes', oldValue: (savedNotes || '(none)').substring(0, 80), newValue: (currentNotes || '(none)').substring(0, 80), severity: 'info' });
+      }
+
+      let severity = 'info';
+      if (changes.some(c => c.severity === 'urgent')) severity = 'urgent';
+      else if (changes.some(c => c.severity === 'important')) severity = 'important';
+
+      alerts.push({
+        credentialId: cred._id, templateId: template._id,
+        code: template.code || cred.code, state: template.state || cred.state,
+        name: template.name || cred.name, issuingBody: template.issuingBody || cred.issuingBody,
+        renewalCycle: currentCycle, totalCEUsRequired: currentTotal,
+        notes: currentNotes, renewalUrl: template.renewalUrl || null,
+        currentRules, savedRules, changes,
+        severity: changes.length > 0 ? severity : 'info',
+        hasChanges: changes.length > 0,
+        postedAt: template.lastVerifiedAt || template.updatedAt || template.createdAt
+      });
+    }
+
+    const sevOrder = { urgent: 0, important: 1, info: 2 };
+    alerts.sort((a, b) => {
+      if (a.hasChanges !== b.hasChanges) return a.hasChanges ? -1 : 1;
+      return (sevOrder[a.severity] || 2) - (sevOrder[b.severity] || 2);
+    });
+
+    res.json({
+      success: true, alerts,
+      summary: { total: alerts.length, withChanges: alerts.filter(a => a.hasChanges).length, urgent: alerts.filter(a => a.severity === 'urgent').length }
+    });
+  } catch (err) {
+    console.error('Board alerts error:', err);
+    res.status(500).json({ success: false, error: 'Failed to load board alerts' });
+  }
+});
+
 // @route   GET /api/credentials/:id
 // @desc    Get single credential
 // @access  Private
