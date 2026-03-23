@@ -22,6 +22,68 @@ const adminOnly = async (req, res, next) => {
   next();
 };
 
+// @route   GET /api/admin/notification-prefs
+// @desc    Get admin notification preferences
+// @access  Admin only
+router.get('/notification-prefs', protect, adminOnly, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select('email adminNotifPrefs');
+    if (!user) return res.status(404).json({ error: 'Admin user not found' });
+
+    const defaults = {
+      notifyRegistration:       true,
+      notifyEnrollment:         true,
+      notifyCompletion:         true,
+      notifyQuizPass:           false,
+      notifyQuizFail:           true,
+      notifySubscriptionStart:  true,
+      notifySubscriptionCancel: true,
+      notifyPayment:            true,
+      notifyPaymentFail:        true,
+      notifyCertificate:        false,
+    };
+
+    const prefs = { ...defaults, ...(user.adminNotifPrefs?.toObject?.() || user.adminNotifPrefs || {}) };
+
+    res.json({ prefs, adminEmail: user.email });
+  } catch (err) {
+    console.error('GET /admin/notification-prefs error:', err);
+    res.status(500).json({ error: 'Failed to load notification preferences' });
+  }
+});
+
+// @route   PUT /api/admin/notification-prefs
+// @desc    Save admin notification preferences
+// @access  Admin only
+router.put('/notification-prefs', protect, adminOnly, async (req, res) => {
+  try {
+    const { prefs } = req.body;
+    if (!prefs || typeof prefs !== 'object') {
+      return res.status(400).json({ error: 'Invalid prefs payload' });
+    }
+
+    // Allowlist keys — never let the client write arbitrary fields
+    const allowed = [
+      'notifyRegistration', 'notifyEnrollment', 'notifyCompletion',
+      'notifyQuizPass', 'notifyQuizFail', 'notifySubscriptionStart',
+      'notifySubscriptionCancel', 'notifyPayment', 'notifyPaymentFail',
+      'notifyCertificate',
+    ];
+
+    const sanitized = {};
+    allowed.forEach(k => {
+      if (typeof prefs[k] === 'boolean') sanitized[k] = prefs[k];
+    });
+
+    await User.findByIdAndUpdate(req.user.id, { $set: { adminNotifPrefs: sanitized } });
+
+    res.json({ success: true, prefs: sanitized });
+  } catch (err) {
+    console.error('PUT /admin/notification-prefs error:', err);
+    res.status(500).json({ error: 'Failed to save notification preferences' });
+  }
+});
+
 // @route   GET /api/admin/stats
 // @desc    Get admin dashboard stats
 // @access  Admin only
