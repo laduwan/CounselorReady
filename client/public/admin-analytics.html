@@ -277,7 +277,203 @@
           <p class="text-center text-forest-500 py-4">Loading activity...</p>
         </div>
       </div>
-      
+
+      <!-- Admin Alert Preferences -->
+      <div class="bg-white rounded-xl border border-burgundy-100 p-6 mt-6">
+        <div class="flex items-center justify-between mb-6">
+          <div class="flex items-center gap-3">
+            <h3 class="text-lg font-semibold text-burgundy-900">Admin Alert Preferences</h3>
+            <span class="text-xs text-forest-600 bg-forest-50 px-2 py-1 rounded-full">Emails you directly</span>
+          </div>
+          <button onclick="saveAdminNotifPrefs()"
+            class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white rounded-lg transition-colors"
+            style="background:#6B1D34;" onmouseover="this.style.background='#5a1829'" onmouseout="this.style.background='#6B1D34'">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+            Save Preferences
+          </button>
+        </div>
+
+        <p class="text-sm text-forest-600 mb-5">
+          Choose which platform events send an email alert to
+          <strong id="adminAlertEmail" class="text-burgundy-800">your admin email</strong>.
+        </p>
+
+        <!-- Toggles grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" id="adminNotifToggles">
+
+          <!-- New Registration -->
+          <label class="flex items-center justify-between p-4 rounded-xl border border-stone-200 hover:border-burgundy-200 hover:bg-stone-50 cursor-pointer transition-all">
+            <div class="flex items-center gap-3">
+              <span class="text-xl">🎉</span>
+              <div>
+                <p class="text-sm font-semibold text-forest-900">New Registration</p>
+                <p class="text-xs text-forest-500">User creates an account</p>
+              </div>
+            </div>
+            <div class="relative">
+              <input type="checkbox" id="pref-notifyRegistration" class="sr-only peer" checked>
+              <div class="w-11 h-6 rounded-full transition-colors" id="track-notifyRegistration" style="background-color:#d1d5db;"></div>
+              <div class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform pointer-events-none" id="thumb-notifyRegistration"></div>
+            </div>
+          </label>
+
+          <!-- New Enrollment -->
+          <label class="flex items-center justify-between p-4 rounded-xl border border-stone-200 hover:border-burgundy-200 hover:bg-stone-50 cursor-pointer transition-all">
+            <div class="flex items-center gap-3">
+              <span class="text-xl">📚</span>
+              <div>
+                <p class="text-sm font-semibold text-forest-900">New Enrollment</p>
+                <p class="text-xs text-forest-500">User starts a course</p>
+              </div>
+            </div>
+            <div class="relative">
+              <input type="checkbox" id="pref-notifyEnrollment" class="sr-only peer" checked>
+              <div class="w-11 h-6 rounded-full transition-colors" id="track-notifyEnrollment" style="background-color:#d1d5db;"></div>
+              <div class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform pointer-events-none" id="thumb-notifyEnrollment"></div>
+            </div>
+          </label>
+
+          <!-- Course Completion -->
+          <label class="flex items-center justify-between p-4 rounded-xl border border-stone-200 hover:border-burgundy-200 hover:bg-stone-50 cursor-pointer transition-all">
+            <div class="flex items-center gap-3">
+              <span class="text-xl">✅</span>
+              <div>
+                <p class="text-sm font-semibold text-forest-900">Course Completion</p>
+                <p class="text-xs text-forest-500">User finishes a course</p>
+              </div>
+            </div>
+            <div class="relative">
+              <input type="checkbox" id="pref-notifyCompletion" class="sr-only peer" checked>
+              <div class="w-11 h-6 rounded-full transition-colors" id="track-notifyCompletion" style="background-color:#d1d5db;"></div>
+              <div class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform pointer-events-none" id="thumb-notifyCompletion"></div>
+            </div>
+          </label>
+
+          <!-- Quiz Fail -->
+          <label class="flex items-center justify-between p-4 rounded-xl border border-stone-200 hover:border-burgundy-200 hover:bg-stone-50 cursor-pointer transition-all">
+            <div class="flex items-center gap-3">
+              <span class="text-xl">❌</span>
+              <div>
+                <p class="text-sm font-semibold text-forest-900">Quiz Failed</p>
+                <p class="text-xs text-forest-500">User fails an assessment</p>
+              </div>
+            </div>
+            <div class="relative">
+              <input type="checkbox" id="pref-notifyQuizFail" class="sr-only peer" checked>
+              <div class="w-11 h-6 rounded-full transition-colors" id="track-notifyQuizFail" style="background-color:#d1d5db;"></div>
+              <div class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform pointer-events-none" id="thumb-notifyQuizFail"></div>
+            </div>
+          </label>
+
+          <!-- Quiz Pass (off by default) -->
+          <label class="flex items-center justify-between p-4 rounded-xl border border-stone-200 hover:border-burgundy-200 hover:bg-stone-50 cursor-pointer transition-all">
+            <div class="flex items-center gap-3">
+              <span class="text-xl">🎯</span>
+              <div>
+                <p class="text-sm font-semibold text-forest-900">Quiz Passed</p>
+                <p class="text-xs text-forest-500">High volume — off by default</p>
+              </div>
+            </div>
+            <div class="relative">
+              <input type="checkbox" id="pref-notifyQuizPass" class="sr-only peer">
+              <div class="w-11 h-6 rounded-full transition-colors" id="track-notifyQuizPass" style="background-color:#d1d5db;"></div>
+              <div class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform pointer-events-none" id="thumb-notifyQuizPass"></div>
+            </div>
+          </label>
+
+          <!-- New Subscription -->
+          <label class="flex items-center justify-between p-4 rounded-xl border border-stone-200 hover:border-burgundy-200 hover:bg-stone-50 cursor-pointer transition-all">
+            <div class="flex items-center gap-3">
+              <span class="text-xl">💳</span>
+              <div>
+                <p class="text-sm font-semibold text-forest-900">New Subscription</p>
+                <p class="text-xs text-forest-500">User subscribes to a plan</p>
+              </div>
+            </div>
+            <div class="relative">
+              <input type="checkbox" id="pref-notifySubscriptionStart" class="sr-only peer" checked>
+              <div class="w-11 h-6 rounded-full transition-colors" id="track-notifySubscriptionStart" style="background-color:#d1d5db;"></div>
+              <div class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform pointer-events-none" id="thumb-notifySubscriptionStart"></div>
+            </div>
+          </label>
+
+          <!-- Subscription Canceled -->
+          <label class="flex items-center justify-between p-4 rounded-xl border border-stone-200 hover:border-burgundy-200 hover:bg-stone-50 cursor-pointer transition-all">
+            <div class="flex items-center gap-3">
+              <span class="text-xl">⚠️</span>
+              <div>
+                <p class="text-sm font-semibold text-forest-900">Subscription Canceled</p>
+                <p class="text-xs text-forest-500">User cancels their plan</p>
+              </div>
+            </div>
+            <div class="relative">
+              <input type="checkbox" id="pref-notifySubscriptionCancel" class="sr-only peer" checked>
+              <div class="w-11 h-6 rounded-full transition-colors" id="track-notifySubscriptionCancel" style="background-color:#d1d5db;"></div>
+              <div class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform pointer-events-none" id="thumb-notifySubscriptionCancel"></div>
+            </div>
+          </label>
+
+          <!-- Payment Received -->
+          <label class="flex items-center justify-between p-4 rounded-xl border border-stone-200 hover:border-burgundy-200 hover:bg-stone-50 cursor-pointer transition-all">
+            <div class="flex items-center gap-3">
+              <span class="text-xl">💰</span>
+              <div>
+                <p class="text-sm font-semibold text-forest-900">Payment Received</p>
+                <p class="text-xs text-forest-500">Successful Stripe charge</p>
+              </div>
+            </div>
+            <div class="relative">
+              <input type="checkbox" id="pref-notifyPayment" class="sr-only peer" checked>
+              <div class="w-11 h-6 rounded-full transition-colors" id="track-notifyPayment" style="background-color:#d1d5db;"></div>
+              <div class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform pointer-events-none" id="thumb-notifyPayment"></div>
+            </div>
+          </label>
+
+          <!-- Payment Failed -->
+          <label class="flex items-center justify-between p-4 rounded-xl border border-stone-200 hover:border-burgundy-200 hover:bg-stone-50 cursor-pointer transition-all">
+            <div class="flex items-center gap-3">
+              <span class="text-xl">🚨</span>
+              <div>
+                <p class="text-sm font-semibold text-forest-900">Payment Failed</p>
+                <p class="text-xs text-forest-500">Stripe charge declined</p>
+              </div>
+            </div>
+            <div class="relative">
+              <input type="checkbox" id="pref-notifyPaymentFail" class="sr-only peer" checked>
+              <div class="w-11 h-6 rounded-full transition-colors" id="track-notifyPaymentFail" style="background-color:#d1d5db;"></div>
+              <div class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform pointer-events-none" id="thumb-notifyPaymentFail"></div>
+            </div>
+          </label>
+
+          <!-- Certificate Generated (off by default) -->
+          <label class="flex items-center justify-between p-4 rounded-xl border border-stone-200 hover:border-burgundy-200 hover:bg-stone-50 cursor-pointer transition-all">
+            <div class="flex items-center gap-3">
+              <span class="text-xl">📜</span>
+              <div>
+                <p class="text-sm font-semibold text-forest-900">Certificate Generated</p>
+                <p class="text-xs text-forest-500">High volume — off by default</p>
+              </div>
+            </div>
+            <div class="relative">
+              <input type="checkbox" id="pref-notifyCertificate" class="sr-only peer">
+              <div class="w-11 h-6 rounded-full transition-colors" id="track-notifyCertificate" style="background-color:#d1d5db;"></div>
+              <div class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform pointer-events-none" id="thumb-notifyCertificate"></div>
+            </div>
+          </label>
+
+        </div><!-- /grid -->
+
+        <!-- Save confirmation toast -->
+        <div id="adminNotifToast" class="hidden mt-4 flex items-center gap-2 text-sm text-white px-4 py-3 rounded-lg" style="background:#4A7C59;">
+          <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+          </svg>
+          Alert preferences saved.
+        </div>
+      </div>
+
     </div>
   </main>
 
@@ -592,12 +788,104 @@
     
     // Auto-refresh activity every 30 seconds
     setInterval(loadActivity, 30000);
-    
+
     // Load admin email
     const user = JSON.parse(localStorage.getItem('user') || '{}');
     if (user.email) {
       document.getElementById('adminEmail').textContent = user.email;
     }
+
+    // ============================================
+    // ADMIN NOTIFICATION PREFERENCES
+    // ============================================
+
+    const ADMIN_PREF_KEYS = [
+      'notifyRegistration',
+      'notifyEnrollment',
+      'notifyCompletion',
+      'notifyQuizPass',
+      'notifyQuizFail',
+      'notifySubscriptionStart',
+      'notifySubscriptionCancel',
+      'notifyPayment',
+      'notifyPaymentFail',
+      'notifyCertificate',
+    ];
+
+    function syncToggleUI(key, checked) {
+      const track = document.getElementById('track-' + key);
+      const thumb = document.getElementById('thumb-' + key);
+      if (!track || !thumb) return;
+      track.style.backgroundColor = checked ? '#4A7C59' : '#d1d5db';
+      thumb.style.transform       = checked ? 'translateX(20px)' : 'translateX(0)';
+    }
+
+    // Wire up each checkbox so the track color syncs live
+    ADMIN_PREF_KEYS.forEach(key => {
+      const cb = document.getElementById('pref-' + key);
+      if (!cb) return;
+      cb.addEventListener('change', () => syncToggleUI(key, cb.checked));
+    });
+
+    async function loadAdminNotifPrefs() {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`${API_URL}/api/admin/notification-prefs`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!res.ok) return;
+        const { prefs, adminEmail } = await res.json();
+
+        if (adminEmail) {
+          const el = document.getElementById('adminAlertEmail');
+          if (el) el.textContent = adminEmail;
+        }
+
+        ADMIN_PREF_KEYS.forEach(key => {
+          const cb = document.getElementById('pref-' + key);
+          if (!cb || prefs[key] === undefined) return;
+          cb.checked = prefs[key];
+          syncToggleUI(key, prefs[key]);
+        });
+      } catch (err) {
+        console.error('Failed to load admin notification prefs:', err);
+      }
+    }
+
+    async function saveAdminNotifPrefs() {
+      const token = localStorage.getItem('token');
+      const prefs = {};
+      ADMIN_PREF_KEYS.forEach(key => {
+        const cb = document.getElementById('pref-' + key);
+        if (cb) prefs[key] = cb.checked;
+      });
+
+      try {
+        const res = await fetch(`${API_URL}/api/admin/notification-prefs`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+          body: JSON.stringify({ prefs }),
+        });
+        if (!res.ok) throw new Error('Save failed');
+        showAdminNotifToast();
+      } catch (err) {
+        console.error('Failed to save admin notification prefs:', err);
+        alert('Failed to save preferences. Please try again.');
+      }
+    }
+
+    function showAdminNotifToast() {
+      const toast = document.getElementById('adminNotifToast');
+      if (!toast) return;
+      toast.classList.remove('hidden');
+      setTimeout(() => toast.classList.add('hidden'), 3000);
+    }
+
+    // Load notification prefs on page init
+    loadAdminNotifPrefs();
   </script>
 
     </main>

@@ -228,6 +228,20 @@ const userSchema = new mongoose.Schema({
   memberSince: { type: Date },
   voluntaryCancelDate: { type: Date }, // Track if they voluntarily canceled
   
+  // Admin notification preferences (only used for admin users)
+  adminNotifPrefs: {
+    notifyRegistration:       { type: Boolean, default: true },
+    notifyEnrollment:         { type: Boolean, default: true },
+    notifyCompletion:         { type: Boolean, default: true },
+    notifyQuizPass:           { type: Boolean, default: false },
+    notifyQuizFail:           { type: Boolean, default: true },
+    notifySubscriptionStart:  { type: Boolean, default: true },
+    notifySubscriptionCancel: { type: Boolean, default: true },
+    notifyPayment:            { type: Boolean, default: true },
+    notifyPaymentFail:        { type: Boolean, default: true },
+    notifyCertificate:        { type: Boolean, default: false },
+  },
+
   // Admin activity feed (only used for admin users)
   adminActivityFeed: [{
     type: { type: String },
