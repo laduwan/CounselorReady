@@ -11,7 +11,7 @@ import Evaluation from '../models/Evaluation.js';
 import User from '../models/User.js';
 import UserCredential from '../models/UserCredential.js';
 import Gamification from '../models/Gamification.js';
-import { protect } from '../middleware/auth.js';
+import { protect, adminOnly } from '../middleware/auth.js';
 import { generateCertificate, generateCertificateNumber } from '../utils/certificate.js';
 import { logActivity, ACTIVITY_TYPES } from '../services/activityTrackingService.js';
 import { sendCourseCompletionEmail, sendCertificateReadyEmail } from '../services/courseEmailService.js';
@@ -1231,6 +1231,44 @@ router.patch('/:id/metadata', protect, async (req, res) => {
   } catch (error) {
     console.error('Error updating course metadata:', error);
     res.status(500).json({ success: false, error: 'Failed to update course metadata' });
+  }
+});
+
+// Duplicate a course (admin only)
+router.post('/:id/duplicate', protect, adminOnly, async (req, res) => {
+  try {
+    const original = await Course.findById(req.params.id).lean();
+    if (!original) {
+      return res.status(404).json({ error: 'Course not found' });
+    }
+
+    const { _id, __v, createdAt, updatedAt, slug, enrollmentCount, ...courseData } = original;
+
+    let baseSlug = (original.slug || original.title.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')) + '-copy';
+    let newSlug = baseSlug;
+    let counter = 1;
+    while (await Course.exists({ slug: newSlug })) {
+      counter++;
+      newSlug = `${baseSlug}-${counter}`;
+    }
+
+    const duplicate = await Course.create({
+      ...courseData,
+      title: `${original.title} (Copy)`,
+      slug: newSlug,
+      status: 'draft',
+      isPublished: false,
+      enrollmentCount: 0,
+    });
+
+    res.status(201).json({
+      success: true,
+      data: duplicate,
+      message: `Duplicated as "${duplicate.title}"`
+    });
+  } catch (error) {
+    console.error('Duplicate course error:', error);
+    res.status(500).json({ error: 'Failed to duplicate course', details: error.message });
   }
 });
 

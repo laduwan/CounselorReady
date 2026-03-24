@@ -30,6 +30,9 @@ import helpRoutes from './routes/help.js';
 import bulkUploadRoutes from './routes/bulkUpload.js';
 // FIX: courseBuilder routes were never registered — caused all CourseBuilder save/generate/publish calls to 404
 import courseBuilderRoutes from './routes/courseBuilder.js';
+import narrationRoutes from './routes/narration.js';
+import aiRoutes from './routes/ai.js';
+import aiCourseGeneratorRoutes from './routes/aiCourseGenerator.js';
 
 // Import services
 import { initializeScheduler } from './services/notificationScheduler.js';
@@ -140,6 +143,9 @@ app.use('/api/help', helpRoutes);
 app.use('/api/admin/courses', bulkUploadRoutes);
 // FIX: registered courseBuilder routes so CourseBuilder UI can save/generate/publish
 app.use('/api/course-builder', courseBuilderRoutes);
+app.use('/api/narration', narrationRoutes);
+app.use('/api/ai', aiRoutes);
+app.use('/api/ai-course-generator', aiCourseGeneratorRoutes);
 
 // Serve static files from templates directory (for certificates)
 app.use('/templates', express.static(path.join(__dirname, 'templates')));
