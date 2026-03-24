@@ -6,8 +6,8 @@
  *   1. Learner searches OpenAlex, selects 2–5 articles
  *   2. Submits request → admin notified
  *   3. Admin approves (quick verification, not content creation)
- *   4. AI generates posttest from selected articles
- *   5. Learner reads articles, takes posttest, passes at 75%
+ *   4. AI generates 6,200+ word article + posttest from selected articles
+ *   5. Learner reads generated content, takes posttest, passes at 75%
  *   6. Certificate + NBCC syllabus DOCX auto-generated
  */
 
@@ -79,12 +79,19 @@ const rnrRequestSchema = new mongoose.Schema({
   totalResearchHours: { type: Number, default: 0 },
   contentAreas: [{ type: String }],
 
+  // ── AI-generated article content (6,200+ words) ──
+  generatedContent: { type: String, default: '' },
+  generatedWordCount: { type: Number, default: 0 },
+  contentSections: { type: Number, default: 0 },
+  contentGeneratedAt: { type: Date },
+
   // ── Approval ──
   status: {
     type: String,
     enum: [
       'pending',       // learner submitted, awaiting admin
-      'approved',      // admin approved, posttest ready
+      'approved',      // admin approved, content + posttest generating
+      'generating',    // AI content generation in progress
       'posttest_ready',// AI generated questions
       'test_ready',    // alias — route uses this after AI build
       'in_progress',   // learner started but hasn't passed yet
@@ -147,8 +154,16 @@ rnrRequestSchema.virtual('attemptsRemaining').get(function () {
 });
 
 // ── Pre-save: compute totals ──
+// If generatedWordCount exists, use that for CE calculation (post-approval).
+// Otherwise fall back to article abstract word counts (pre-approval estimate).
 rnrRequestSchema.pre('save', function (next) {
-  if (this.selectedArticles?.length) {
+  if (this.generatedWordCount > 0) {
+    // Use generated content word count for CE calculations
+    this.totalWordCount = this.generatedWordCount;
+    this.totalCeHours = Math.floor((this.generatedWordCount / 6000) * 2) / 2;
+    this.totalResearchHours = Math.max(0.5, Math.floor((this.totalCeHours * 0.5) * 2) / 2);
+  } else if (this.selectedArticles?.length) {
+    // Pre-approval: estimate from abstract word counts
     this.totalWordCount = this.selectedArticles.reduce((s, a) => s + (a.wordCount || 0), 0);
     this.totalCeHours = Math.floor((this.totalWordCount / 6000) * 2) / 2;
     this.totalResearchHours = Math.max(0.5, Math.floor((this.totalCeHours * 0.5) * 2) / 2);
