@@ -725,7 +725,7 @@
       }
       
       try {
-        const response = await fetch(`${API_URL}/api/users/promo`, {
+        const response = await fetch(`${API_URL}/api/payments/apply-promo`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`,
