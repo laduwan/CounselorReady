@@ -53,6 +53,9 @@ const userSchema = new mongoose.Schema({
     quarter: { type: String } // e.g., "2026-Q1"
   }],
   
+  // Free tier CE hour tracking
+  freeHoursUsed: { type: Number, default: 0, min: 0 },
+
   // Subscription
   subscription: {
     status: {

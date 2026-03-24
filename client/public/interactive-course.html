@@ -1404,6 +1404,49 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
   .cr-highlight { background: none !important; border-bottom: 1px solid #999; }
   .cr-accordion-body { max-height: none !important; padding: 12px 0 !important; }
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   FREE-TIER GATE & BANNER
+   ═══════════════════════════════════════════════════════════════ */
+.cr-gate-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.6);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 99990;
+}
+.cr-gate-card {
+  background: var(--cr-surface);
+  border-radius: var(--cr-radius);
+  padding: 40px 36px;
+  max-width: 440px; width: 90%;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+}
+.cr-gate-card h2 {
+  font-family: var(--cr-font-display);
+  font-size: 1.5em; font-weight: 700;
+  color: var(--cr-burgundy);
+  margin-bottom: 12px;
+}
+.cr-gate-card p {
+  color: var(--cr-text-secondary);
+  margin-bottom: 20px; line-height: 1.6;
+}
+.cr-gate-card .cr-btn { margin: 6px; }
+.cr-free-hours-banner {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  background: linear-gradient(90deg, var(--cr-burgundy), #4A1224);
+  color: #fff; text-align: center;
+  padding: 10px 20px;
+  font-size: 13px; font-weight: 600;
+  z-index: 9990;
+  display: none;
+}
+.cr-free-hours-banner a {
+  color: var(--cr-gold-light);
+  text-decoration: underline;
+  margin-left: 10px;
+}
 </style>
 <!-- .docx parsing -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
@@ -1442,6 +1485,25 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
     <p id="crErrorMsg" style="color:var(--cr-text-muted)"></p>
     <button class="cr-btn cr-btn-primary" style="margin:20px auto 0" data-action="showParser">Load a Course File</button>
   </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     FREE HOURS EXHAUSTED GATE
+     ═══════════════════════════════════════════════════════════════ -->
+<div id="crGateFreeHours" class="cr-gate-overlay" style="display:none">
+  <div class="cr-gate-card">
+    <div style="font-size:48px;margin-bottom:16px">&#128218;</div>
+    <h2>Free CE Hours Used</h2>
+    <p>You've used all <strong>4 free CE hours</strong>. Subscribe to unlock unlimited courses and continue earning CE credit.</p>
+    <a href="/pricing" class="cr-btn cr-btn-primary">View Plans</a>
+    <a href="/catalog" class="cr-btn cr-btn-outline" style="margin-top:8px">Browse Free Courses</a>
+  </div>
+</div>
+
+<!-- FREE HOURS REMAINING BANNER -->
+<div id="crFreeHoursBanner" class="cr-free-hours-banner">
+  <span id="crFreeHoursBannerText">You have free CE hours remaining.</span>
+  <a href="/pricing">Upgrade for unlimited access</a>
 </div>
 
 <!-- ═══════════════════════════════════════════════════════════════
@@ -1990,12 +2052,67 @@ function loadCourse(data) {
   initTranslation();
   buildSectionNav();
   renderCurrentSection();
+
+  // ── Free-tier hours check ──
+  checkFreeHoursStatus();
 }
 
 function showError(msg) {
   document.getElementById('crLoading').style.display = 'none';
   document.getElementById('crError').style.display = 'flex';
   document.getElementById('crErrorMsg').textContent = msg;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// FREE-TIER GATE HANDLING
+// ═══════════════════════════════════════════════════════════════
+
+function showFreeHoursBanner(remaining) {
+  var banner = document.getElementById('crFreeHoursBanner');
+  var text = document.getElementById('crFreeHoursBannerText');
+  if (banner && text) {
+    text.textContent = 'You have ' + remaining + ' free CE hour' + (remaining !== 1 ? 's' : '') + ' remaining.';
+    banner.style.display = 'block';
+  }
+}
+
+function showFreeHoursGate() {
+  var gate = document.getElementById('crGateFreeHours');
+  if (gate) gate.style.display = 'flex';
+}
+
+function checkFreeHoursStatus() {
+  if (window.__CR_PREVIEW) return; // Skip in admin preview
+  if (!course || !course._id) return;
+
+  var token = localStorage.getItem('token');
+  if (!token) return; // Not logged in — no gate check needed
+
+  var base = location.origin.includes('localhost') ? 'http://localhost:5000' : 'https://api.counselorready.com';
+  fetch(base + '/api/interactive-courses/' + course._id + '/progress', {
+    headers: { 'Authorization': 'Bearer ' + token }
+  })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data._freeHoursRemaining !== undefined && data._freeHoursRemaining > 0) {
+        showFreeHoursBanner(data._freeHoursRemaining);
+      }
+      if (data.error === 'FREE_HOURS_EXHAUSTED') {
+        showFreeHoursGate();
+      }
+    })
+    .catch(function() {}); // Fail silently
+}
+
+function handleEnrollResponse(response) {
+  if (response.error === 'FREE_HOURS_EXHAUSTED') {
+    showFreeHoursGate();
+    return false;
+  }
+  if (response._freeHoursRemaining !== undefined && response._freeHoursRemaining > 0) {
+    showFreeHoursBanner(response._freeHoursRemaining);
+  }
+  return true;
 }
 
 // ═══════════════════════════════════════════════════════════════
