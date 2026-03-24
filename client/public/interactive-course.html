@@ -1825,9 +1825,30 @@ let ttsUtterance = null;
   
   if (slug) {
     const base = apiBase || (location.origin.includes('localhost') ? 'http://localhost:5000' : 'https://api.counselorready.com');
-    fetch(`${base}/api/interactive-courses/slug/${slug}`)
+    const token = localStorage.getItem('token');
+    if (!token) {
+      window.location.href = `/login.html?redirect=${encodeURIComponent(location.href)}`;
+      return;
+    }
+    const headers = { 'Authorization': `Bearer ${token}` };
+    fetch(`${base}/api/interactive-courses/slug/${slug}`, { headers })
       .then(r => r.json())
-      .then(data => loadCourse(data.data || data.course || data))
+      .then(async data => {
+        const course = data.data || data.course || data;
+        if (!course._id) { showError('Course not found: ' + slug); return; }
+        // Check enrollment
+        const progRes = await fetch(`${base}/api/interactive-courses/${course._id}/progress`, { headers });
+        if (progRes.status === 404) {
+          // Not enrolled — send back to course details
+          window.location.href = `/course-details.html?slug=${slug}`;
+          return;
+        }
+        if (progRes.status === 403) {
+          window.location.href = `/subscription.html`;
+          return;
+        }
+        loadCourse(course);
+      })
       .catch(e => showError('Course not found: ' + slug));
     return;
   }
