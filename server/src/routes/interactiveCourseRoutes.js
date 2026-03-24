@@ -1234,4 +1234,50 @@ router.patch('/:id/metadata', protect, async (req, res) => {
   }
 });
 
+// Admin-only middleware
+const adminOnly = async (req, res, next) => {
+  if (req.user?.role !== 'admin') {
+    return res.status(403).json({ error: 'Admin access required' });
+  }
+  next();
+};
+
+// Duplicate a course (admin only)
+router.post('/:id/duplicate', protect, adminOnly, async (req, res) => {
+  try {
+    const original = await Course.findById(req.params.id).lean();
+    if (!original) {
+      return res.status(404).json({ error: 'Course not found' });
+    }
+
+    const { _id, __v, createdAt, updatedAt, slug, enrollmentCount, ...courseData } = original;
+
+    let baseSlug = (original.slug || original.title.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')) + '-copy';
+    let newSlug = baseSlug;
+    let counter = 1;
+    while (await Course.exists({ slug: newSlug })) {
+      counter++;
+      newSlug = `${baseSlug}-${counter}`;
+    }
+
+    const duplicate = await Course.create({
+      ...courseData,
+      title: `${original.title} (Copy)`,
+      slug: newSlug,
+      status: 'draft',
+      isPublished: false,
+      enrollmentCount: 0,
+    });
+
+    res.status(201).json({
+      success: true,
+      data: duplicate,
+      message: `Duplicated as "${duplicate.title}"`
+    });
+  } catch (error) {
+    console.error('Duplicate course error:', error);
+    res.status(500).json({ error: 'Failed to duplicate course', details: error.message });
+  }
+});
+
 export default router;
