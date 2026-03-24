@@ -1,11 +1,13 @@
 /**
  * Researched-N-Ready CE Routes
+ * CounselorReady · GAITP LLC · NBCC ACEP #7760
+ *
  * Learner-driven flow:
  *   1. Learner picks content area + hours → AI searches OpenAlex
  *   2. Learner selects 2-3 articles → submits request
  *   3. Admin gets notified → approves
- *   4. AI generates posttest from those articles
- *   5. Learner reads articles, takes test → certificate + syllabus
+ *   4. AI generates 6,200+ word clinical article + posttest
+ *   5. Learner reads generated content, takes test → certificate + syllabus
  */
 
 import express from 'express';
@@ -13,6 +15,7 @@ import { protect, requireAdmin } from '../middleware/auth.js';
 import { searchArticles } from '../services/openAlex.js';
 import { checkCurrency } from '../services/currencyCheck.js';
 import { buildCE } from '../services/ceBuild.js';
+import { generateArticleContent } from '../services/articleContentGenerator.js';
 import { generateSyllabus } from '../services/syllabusGenerator.js';
 import RNRRequest from '../models/RNRRequest.js';
 import Certificate from '../models/Certificate.js';
@@ -25,8 +28,8 @@ import { sendCompletionSMS } from '../services/smsService.js';
 const router = express.Router();
 
 router.use((req, res, next) => {
-  req.setTimeout(120000);
-  res.setTimeout(120000);
+  req.setTimeout(180000); // 3 min for content generation
+  res.setTimeout(180000);
   next();
 });
 
@@ -113,16 +116,9 @@ router.post('/request', protect, async (req, res) => {
       return res.status(400).json({ error: 'Select 1-4 articles' });
     }
 
-    // Calculate totals
+    // NOTE: Pre-approval word counts are abstract-only estimates.
+    // Real CE hours are calculated after AI generates the full article content.
     const totalWords = articles.reduce((sum, a) => sum + (a.wordCount || 0), 0);
-    const ceHours = calculateCE(totalWords);
-    const researchHours = Math.round(ceHours * 0.5 * 10) / 10;
-
-    if (ceHours < 0.5) {
-      return res.status(400).json({
-        error: `Combined word count (${totalWords.toLocaleString()}) yields less than 0.5 CE hours. Select longer articles or add more.`
-      });
-    }
 
     const user = await User.findById(userId).select('email profile.firstName profile.lastName');
     const userName = `${user?.profile?.firstName || ''} ${user?.profile?.lastName || ''}`.trim();
@@ -150,8 +146,8 @@ router.post('/request', protect, async (req, res) => {
         wcStatus: a.wcStatus || 'sufficient'
       })),
       totalWordCount: totalWords,
-      totalCeHours: ceHours,
-      totalResearchHours: researchHours,
+      totalCeHours: 1, // Will be recalculated after content generation
+      totalResearchHours: 0.5,
       status: 'pending'
     });
 
@@ -159,19 +155,17 @@ router.post('/request', protect, async (req, res) => {
 
     // Notify admin
     logActivity(ACTIVITY_TYPES.USER_ENROLLED, {
-      courseName: `RNR CE Request: ${contentArea} (${ceHours} hrs)`,
+      courseName: `RNR CE Request: ${contentArea} (${desiredHours} hrs requested)`,
       details: `${userName} selected ${articles.length} articles: ${articles.map(a => a.title).join('; ')}`
     }, { userId, userName, userEmail: user?.email }).catch(() => {});
 
     res.status(201).json({
       success: true,
       requestId: request._id,
-      ceHours,
-      researchHours,
-      totalWordCount: totalWords,
+      desiredHours: parseFloat(desiredHours),
       articleCount: articles.length,
       status: 'pending',
-      message: 'Your RNR CE request has been submitted for review. You\'ll be notified when your posttest is ready.'
+      message: 'Your RNR CE request has been submitted for review. Once approved, a clinical practice article and posttest will be generated for you.'
     });
   } catch (error) {
     console.error('RNR request error:', error.message);
@@ -212,13 +206,57 @@ router.get('/my-requests', protect, async (req, res) => {
 
 
 // ═══════════════════════════════════════════════════════════════
+// LEARNER: GET GENERATED ARTICLE CONTENT
+// GET /api/research-ready/request/:id/content
+// ═══════════════════════════════════════════════════════════════
+router.get('/request/:id/content', protect, async (req, res) => {
+  try {
+    const request = await RNRRequest.findOne({
+      _id: req.params.id,
+      user: req.user._id,
+      status: { $in: ['test_ready', 'in_progress', 'completed'] }
+    }).lean();
+
+    if (!request) {
+      return res.status(404).json({ error: 'Request not found or content not yet available' });
+    }
+
+    if (!request.generatedContent) {
+      return res.status(404).json({ error: 'Article content has not been generated yet' });
+    }
+
+    res.json({
+      courseTitle: request.courseTitle,
+      content: request.generatedContent,
+      wordCount: request.generatedWordCount,
+      ceHours: request.totalCeHours,
+      researchHours: request.totalResearchHours,
+      contentArea: request.contentArea,
+      objectives: request.objectives,
+      articles: request.selectedArticles.map(a => ({
+        title: a.title,
+        authors: a.authors,
+        journal: a.journal,
+        year: a.year,
+        doi: a.doi,
+        oaUrl: a.oaUrl
+      }))
+    });
+  } catch (error) {
+    console.error('Content fetch error:', error.message);
+    res.status(500).json({ error: 'Failed to load article content' });
+  }
+});
+
+
+// ═══════════════════════════════════════════════════════════════
 // STEP 3: ADMIN VIEWS QUEUE
 // GET /api/research-ready/queue
 // ═══════════════════════════════════════════════════════════════
 router.get('/queue', protect, requireAdmin, async (req, res) => {
   try {
     const requests = await RNRRequest.find({
-      status: { $in: ['pending', 'approved', 'test_ready', 'in_progress'] }
+      status: { $in: ['pending', 'approved', 'generating', 'test_ready', 'in_progress'] }
     })
       .sort({ createdAt: -1 })
       .lean();
@@ -232,7 +270,7 @@ router.get('/queue', protect, requireAdmin, async (req, res) => {
 
 
 // ═══════════════════════════════════════════════════════════════
-// STEP 4: ADMIN APPROVES → triggers AI test generation
+// STEP 4: ADMIN APPROVES → triggers AI article + test generation
 // PATCH /api/research-ready/request/:id/approve
 // ═══════════════════════════════════════════════════════════════
 router.patch('/request/:id/approve', protect, requireAdmin, async (req, res) => {
@@ -244,18 +282,54 @@ router.patch('/request/:id/approve', protect, requireAdmin, async (req, res) => 
       return res.status(400).json({ error: `Cannot approve — status is ${request.status}` });
     }
 
-    request.status = 'approved';
+    request.status = 'generating';
     request.approvedBy = req.user._id;
     request.approvedAt = new Date();
     await request.save();
 
-    // Build the test in background
-    res.json({ success: true, message: 'Approved. Generating posttest...', requestId: request._id });
+    // Respond immediately — generation happens async
+    res.json({
+      success: true,
+      message: 'Approved. Generating 6,200+ word article and posttest (may take 60-90 seconds)...',
+      requestId: request._id
+    });
 
-    // AI generates test (async — don't block response)
+    // ── ASYNC: Generate article content + posttest ──
     try {
+      const format = request.selectedArticles.length > 1 ? 'comparative' : 'standalone';
+
+      // STEP A: Generate 6,200+ word clinical practice article
+      console.log(`[RNR] Starting content generation for request ${request._id}`);
+      const articleResult = await generateArticleContent({
+        articles: request.selectedArticles.map(a => ({
+          title: a.title,
+          authors: a.authors,
+          journal: a.journal,
+          year: a.year,
+          abstract: a.abstract,
+          topic: a.topic
+        })),
+        contentArea: request.contentArea,
+        format,
+        courseTitle: request.courseTitle || ''
+      });
+
+      request.generatedContent = articleResult.content;
+      request.generatedWordCount = articleResult.wordCount;
+      request.contentSections = articleResult.sections;
+      request.contentGeneratedAt = new Date();
+
+      // CE hours now based on generated content (pre-save hook handles recalc)
+      console.log(`[RNR] Content generated: ${articleResult.wordCount} words → ${calculateCE(articleResult.wordCount)} CE hrs`);
+
+      // STEP B: Generate posttest from the GENERATED content (not just the abstract)
+      const contentSummary = articleResult.content
+        .replace(/<[^>]*>/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim()
+        .substring(0, 6000); // Feed first ~6000 chars of generated content to posttest builder
+
       const combinedTitle = request.selectedArticles.map(a => a.title).join(' | ');
-      const combinedAbstract = request.selectedArticles.map(a => a.abstract || '').filter(Boolean).join('\n\n');
       const combinedAuthors = request.selectedArticles.map(a => a.authors).filter(Boolean).join('; ');
 
       const ceContent = await buildCE({
@@ -263,12 +337,12 @@ router.patch('/request/:id/approve', protect, requireAdmin, async (req, res) => 
         authors: combinedAuthors,
         journal: request.selectedArticles[0]?.journal || '',
         year: request.selectedArticles[0]?.year || new Date().getFullYear(),
-        abstract: combinedAbstract,
+        abstract: contentSummary, // Use generated content instead of abstract
         topic: request.contentArea,
-        wordCount: request.totalWordCount,
-        ceHours: request.totalCeHours,
-        researchHours: request.totalResearchHours,
-        format: request.selectedArticles.length > 1 ? 'comparative' : 'standalone'
+        wordCount: articleResult.wordCount,
+        ceHours: calculateCE(articleResult.wordCount),
+        researchHours: Math.max(0.5, Math.floor((calculateCE(articleResult.wordCount) * 0.5) * 2) / 2),
+        format
       });
 
       request.courseTitle = ceContent.course_title || '';
@@ -278,20 +352,23 @@ router.patch('/request/:id/approve', protect, requireAdmin, async (req, res) => 
       request.testGeneratedAt = new Date();
       await request.save();
 
-      // Notify learner that test is ready
+      // Notify learner that content + test is ready
       logActivity(ACTIVITY_TYPES.COURSE_STARTED, {
-        courseName: `RNR CE: ${request.contentArea} — test ready`,
-        details: `${request.questions.length} questions generated for ${request.userName}`
+        courseName: `RNR CE: ${request.contentArea} — content & test ready`,
+        details: `${articleResult.wordCount} words, ${request.questions.length} questions generated for ${request.userName}`
       }, {
         userId: request.user,
         userName: request.userName,
         userEmail: request.userEmail
       }).catch(() => {});
 
-      console.log(`[RNR] Test generated for request ${request._id} — ${request.questions.length} questions`);
+      console.log(`[RNR] Build complete for request ${request._id} — ${articleResult.wordCount} words, ${request.questions.length} questions, ${calculateCE(articleResult.wordCount)} CE hrs`);
     } catch (buildErr) {
-      console.error(`[RNR] Test build failed for ${request._id}:`, buildErr.message);
-      // Don't revert approval — admin can retry
+      console.error(`[RNR] Build failed for ${request._id}:`, buildErr.message);
+      // Revert to approved so admin can retry
+      request.status = 'approved';
+      request.adminNote = `Build failed: ${buildErr.message}`;
+      await request.save();
     }
   } catch (error) {
     console.error('Approve error:', error.message);
@@ -324,7 +401,7 @@ router.patch('/request/:id/reject', protect, requireAdmin, async (req, res) => {
 
 
 // ═══════════════════════════════════════════════════════════════
-// ADMIN: RETRY TEST GENERATION (if AI build failed)
+// ADMIN: RETRY BUILD (if AI generation failed)
 // POST /api/research-ready/request/:id/rebuild
 // ═══════════════════════════════════════════════════════════════
 router.post('/request/:id/rebuild', protect, requireAdmin, async (req, res) => {
@@ -332,34 +409,74 @@ router.post('/request/:id/rebuild', protect, requireAdmin, async (req, res) => {
     const request = await RNRRequest.findById(req.params.id);
     if (!request) return res.status(404).json({ error: 'Request not found' });
 
-    if (request.status !== 'approved') {
-      return res.status(400).json({ error: 'Can only rebuild for approved requests without a test' });
+    if (!['approved', 'generating'].includes(request.status)) {
+      return res.status(400).json({ error: `Can only rebuild for approved/generating requests — current: ${request.status}` });
     }
 
-    const combinedTitle = request.selectedArticles.map(a => a.title).join(' | ');
-    const combinedAbstract = request.selectedArticles.map(a => a.abstract || '').filter(Boolean).join('\n\n');
-
-    const ceContent = await buildCE({
-      title: combinedTitle,
-      authors: request.selectedArticles.map(a => a.authors).filter(Boolean).join('; '),
-      journal: request.selectedArticles[0]?.journal || '',
-      year: request.selectedArticles[0]?.year || new Date().getFullYear(),
-      abstract: combinedAbstract,
-      topic: request.contentArea,
-      wordCount: request.totalWordCount,
-      ceHours: request.totalCeHours,
-      researchHours: request.totalResearchHours,
-      format: request.selectedArticles.length > 1 ? 'comparative' : 'standalone'
-    });
-
-    request.courseTitle = ceContent.course_title || '';
-    request.objectives = ceContent.objectives || [];
-    request.questions = ceContent.questions || [];
-    request.status = 'test_ready';
-    request.testGeneratedAt = new Date();
+    request.status = 'generating';
     await request.save();
 
-    res.json({ success: true, message: 'Test regenerated', questionCount: request.questions.length });
+    res.json({ success: true, message: 'Regenerating content + test...' });
+
+    // Async rebuild
+    try {
+      const format = request.selectedArticles.length > 1 ? 'comparative' : 'standalone';
+
+      // Regenerate article content
+      const articleResult = await generateArticleContent({
+        articles: request.selectedArticles.map(a => ({
+          title: a.title,
+          authors: a.authors,
+          journal: a.journal,
+          year: a.year,
+          abstract: a.abstract,
+          topic: a.topic
+        })),
+        contentArea: request.contentArea,
+        format,
+        courseTitle: request.courseTitle || ''
+      });
+
+      request.generatedContent = articleResult.content;
+      request.generatedWordCount = articleResult.wordCount;
+      request.contentSections = articleResult.sections;
+      request.contentGeneratedAt = new Date();
+
+      // Regenerate posttest from generated content
+      const contentSummary = articleResult.content
+        .replace(/<[^>]*>/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim()
+        .substring(0, 6000);
+
+      const ceContent = await buildCE({
+        title: request.selectedArticles.map(a => a.title).join(' | '),
+        authors: request.selectedArticles.map(a => a.authors).filter(Boolean).join('; '),
+        journal: request.selectedArticles[0]?.journal || '',
+        year: request.selectedArticles[0]?.year || new Date().getFullYear(),
+        abstract: contentSummary,
+        topic: request.contentArea,
+        wordCount: articleResult.wordCount,
+        ceHours: calculateCE(articleResult.wordCount),
+        researchHours: Math.max(0.5, Math.floor((calculateCE(articleResult.wordCount) * 0.5) * 2) / 2),
+        format
+      });
+
+      request.courseTitle = ceContent.course_title || '';
+      request.objectives = ceContent.objectives || [];
+      request.questions = ceContent.questions || [];
+      request.status = 'test_ready';
+      request.testGeneratedAt = new Date();
+      request.adminNote = '';
+      await request.save();
+
+      console.log(`[RNR] Rebuild complete for ${request._id} — ${articleResult.wordCount} words, ${request.questions.length} questions`);
+    } catch (buildErr) {
+      console.error(`[RNR] Rebuild failed for ${request._id}:`, buildErr.message);
+      request.status = 'approved';
+      request.adminNote = `Rebuild failed: ${buildErr.message}`;
+      await request.save();
+    }
   } catch (error) {
     console.error('Rebuild error:', error.message);
     res.status(500).json({ error: 'Rebuild failed: ' + error.message });
@@ -414,7 +531,7 @@ router.post('/request/:id/complete', protect, async (req, res) => {
         correctCount,
         totalQuestions: request.questions.length,
         attemptsUsed: request.posttestAttempts.length,
-        message: '75% required. Review the articles and try again.'
+        message: '75% required. Review the article and try again.'
       });
     }
 
@@ -438,7 +555,7 @@ router.post('/request/:id/complete', protect, async (req, res) => {
           journal: request.selectedArticles.map(a => a.journal).join('; '),
           year: request.selectedArticles[0]?.year,
           doi: request.selectedArticles.map(a => a.doi).filter(Boolean).join('; '),
-          wordCount: request.totalWordCount,
+          wordCount: request.generatedWordCount || request.totalWordCount,
           ceHours: request.totalCeHours,
           researchHours: request.totalResearchHours,
           contentAreas: [request.contentArea],
@@ -480,8 +597,8 @@ router.post('/request/:id/complete', protect, async (req, res) => {
         authors: request.selectedArticles.map(a => a.authors).join('; '),
         journals: request.selectedArticles.map(a => `${a.journal} (${a.year})`).join('; '),
         dois: request.selectedArticles.map(a => a.doi).filter(Boolean),
-        wordCount: request.totalWordCount,
-        ceCalcFormula: `${request.totalWordCount} words / 6,000 words/hr = ${(request.totalWordCount / 6000).toFixed(2)} → ${request.totalCeHours} CE hr(s)`,
+        wordCount: request.generatedWordCount || request.totalWordCount,
+        ceCalcFormula: `${request.generatedWordCount || request.totalWordCount} words / 6,000 words/hr = ${((request.generatedWordCount || request.totalWordCount) / 6000).toFixed(2)} → ${request.totalCeHours} CE hr(s)`,
         researchHours: request.totalResearchHours,
         objectivesMet: request.objectives,
         assessmentScore: score,
@@ -591,6 +708,32 @@ router.get('/request/:id', protect, async (req, res) => {
     res.json(request);
   } catch (error) {
     res.status(500).json({ error: 'Failed to load request' });
+  }
+});
+
+
+// ═══════════════════════════════════════════════════════════════
+// ADMIN: GET BUILD STATUS (poll during generation)
+// GET /api/research-ready/request/:id/status
+// ═══════════════════════════════════════════════════════════════
+router.get('/request/:id/status', protect, requireAdmin, async (req, res) => {
+  try {
+    const request = await RNRRequest.findById(req.params.id)
+      .select('status generatedWordCount contentSections testGeneratedAt adminNote questions')
+      .lean();
+
+    if (!request) return res.status(404).json({ error: 'Request not found' });
+
+    res.json({
+      status: request.status,
+      generatedWordCount: request.generatedWordCount || 0,
+      contentSections: request.contentSections || 0,
+      testGenerated: !!request.testGeneratedAt,
+      questionCount: request.questions?.length || 0,
+      error: request.adminNote || null
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to get status' });
   }
 });
 
