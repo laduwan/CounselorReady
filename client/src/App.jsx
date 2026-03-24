@@ -49,6 +49,7 @@ import Settings from './pages/Settings';
 import ResearchReadyCE from './pages/ResearchReadyCE';
 import AdminResearchReady from './pages/AdminResearchReady';
 import ScholarlyArticles from './pages/ScholarlyArticles';
+import QuickEnroll from './pages/QuickEnroll';
 
 // Components
 import Layout from './components/Layout';
@@ -185,6 +186,7 @@ function AppRoutes() {
         <PublicRoute><Register /></PublicRoute>
       } />
       <Route path="/dashboard" element={<Navigate to="/dashboard.html" replace />} />
+      <Route path="/enroll/:slug" element={<QuickEnroll />} />
 
       {/* ══════════════════════════════════════════════════════════════
           COURSES ONLY - React handles interactive course player

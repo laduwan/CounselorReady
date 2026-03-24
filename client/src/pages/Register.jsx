@@ -70,7 +70,8 @@ export default function Register() {
       const slug = new URLSearchParams(location.search).get('partner') || localStorage.getItem('cr_partner_slug');
       if (slug) payload.partnerSlug = slug;
       await register(payload);
-      navigate('/dashboard');
+      const redirect = new URLSearchParams(location.search).get('redirect');
+      navigate(redirect || '/dashboard');
     } catch (err) {
       setError(err.response?.data?.error || 'Registration failed. Please try again.');
     } finally {

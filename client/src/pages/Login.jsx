@@ -41,7 +41,8 @@ export default function Login() {
     
     try {
       await login(email, password);
-      navigate('/dashboard');
+      const redirect = new URLSearchParams(location.search).get('redirect');
+      navigate(redirect || '/dashboard');
     } catch (err) {
       setError(err.response?.data?.error || 'Login failed. Please try again.');
     } finally {
