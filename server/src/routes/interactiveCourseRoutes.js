@@ -76,6 +76,57 @@ async function recordGamification(userId, type, metadata = {}) {
 }
 
 // ============================================================================
+// FREE-TIER GATE HELPER
+// ============================================================================
+
+const FREE_TIER_CE_CAP = 4; // Max free CE hours before subscription required
+
+/**
+ * gateContent — decides whether a user can access a course.
+ * Returns { allowed: true, freeHoursRemaining } or { allowed: false, reason }.
+ *
+ * Logic:
+ *  1. Free / open-access courses → always allowed.
+ *  2. Users with an active subscription → always allowed.
+ *  3. Users who purchased this specific course → allowed.
+ *  4. Free-tier path: enrolled users whose freeHoursUsed < FREE_TIER_CE_CAP → allowed.
+ *  5. Otherwise → blocked.
+ */
+async function gateContent(user, course) {
+  // 1. Open-access courses pass through
+  if (!course.accessType || course.accessType === 'free') {
+    return { allowed: true };
+  }
+
+  // 2. Active subscribers always pass
+  if (user.hasActiveSubscription()) {
+    return { allowed: true };
+  }
+
+  // 3. Course was individually purchased
+  if (user.purchasedCourses?.some(id => id.toString() === course._id.toString())) {
+    return { allowed: true };
+  }
+
+  // 4. Free-tier path — up to FREE_TIER_CE_CAP CE hours
+  const used = user.freeHoursUsed || 0;
+  if (used < FREE_TIER_CE_CAP) {
+    return {
+      allowed: true,
+      freeHoursRemaining: FREE_TIER_CE_CAP - used
+    };
+  }
+
+  // 5. Exhausted free tier
+  return {
+    allowed: false,
+    reason: 'FREE_HOURS_EXHAUSTED',
+    freeHoursUsed: used,
+    freeHoursCap: FREE_TIER_CE_CAP
+  };
+}
+
+// ============================================================================
 // COURSE ROUTES
 // ============================================================================
 
@@ -208,7 +259,16 @@ router.get('/:id/progress', protect, async (req, res) => {
       await progress.save();
     }
 
-    res.json({ success: true, data: progress });
+    // Include free-tier hours remaining for non-subscribed users
+    const progressUser = await User.findById(req.user._id);
+    const response = { success: true, data: progress };
+    if (progressUser && !progressUser.hasActiveSubscription()) {
+      const remaining = FREE_TIER_CE_CAP - (progressUser.freeHoursUsed || 0);
+      if (remaining > 0) {
+        response._freeHoursRemaining = remaining;
+      }
+    }
+    res.json(response);
   } catch (error) {
     console.error('Error fetching progress:', error);
     res.status(500).json({ success: false, error: 'Failed to fetch progress' });
@@ -236,6 +296,18 @@ router.post('/:id/enroll', protect, async (req, res) => {
       return res.json({ success: true, message: 'Already enrolled', data: progress });
     }
 
+    // ── Free-tier gate check ──
+    const user = await User.findById(req.user._id);
+    const gate = await gateContent(user, course);
+    if (!gate.allowed) {
+      return res.status(403).json({
+        success: false,
+        error: gate.reason || 'SUBSCRIPTION_REQUIRED',
+        freeHoursUsed: gate.freeHoursUsed,
+        freeHoursCap: gate.freeHoursCap
+      });
+    }
+
     // Create new enrollment
     progress = new CourseProgress({
       userId: req.user._id,
@@ -260,7 +332,11 @@ router.post('/:id/enroll', protect, async (req, res) => {
     logActivity(ACTIVITY_TYPES.USER_ENROLLED, { courseId: course._id, courseName: course.title }, { userId: req.user._id, userName: uName, userEmail: enrollUser?.email }).catch(()=>{});
     sendEnrollmentSMS({ phone: enrollUser?.phone, firstName: enrollUser?.profile?.firstName, smsOptIn: enrollUser?.smsOptIn }, { title: course.title, slug: course.slug }).catch(()=>{});
 
-    res.status(201).json({ success: true, message: 'Enrolled successfully', data: progress });
+    const enrollResponse = { success: true, message: 'Enrolled successfully', data: progress };
+    if (gate.freeHoursRemaining !== undefined) {
+      enrollResponse._freeHoursRemaining = gate.freeHoursRemaining;
+    }
+    res.status(201).json(enrollResponse);
   } catch (error) {
     console.error('Error enrolling in course:', error);
     res.status(500).json({ success: false, error: 'Failed to enroll in course' });
@@ -746,6 +822,13 @@ router.post('/:id/certificate', protect, async (req, res) => {
         }
       } catch (syncErr) {
         console.error('CE auto-allocation error (non-fatal):', syncErr.message);
+      }
+
+      // ── Free-tier CE hour tracking ──
+      // Increment freeHoursUsed for non-subscribed users
+      if (!user.hasActiveSubscription()) {
+        user.freeHoursUsed = (user.freeHoursUsed || 0) + (course.ceHours || 1);
+        await user.save();
       }
 
       // Record gamification: course complete + certificate earned
