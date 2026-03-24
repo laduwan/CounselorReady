@@ -1,17 +1,22 @@
 /**
  * OpenAlex API Service for Research Ready CE
+ * CounselorReady · GAITP LLC · NBCC ACEP #7760
+ *
  * Searches open-access scholarly articles and decodes abstracts.
+ *
+ * NOTE: OpenAlex only provides article abstracts (~150-300 words).
+ * Full clinical practice content (6,200+ words / 1 CE) is generated
+ * by articleContentGenerator.js after admin approval. Word counts
+ * shown in search results reflect the generated content, not the abstract.
  */
 
 const OPENALEX_BASE = 'https://api.openalex.org/works';
-const MAILTO = 'contact@gaintegrated.com';
+const MAILTO = process.env.CROSSREF_MAILTO || 'contact@gaintegrated.com';
 
-const wordCountRanges = {
-  0.5: { min: 250, max: 5999 },
-  1.0: { min: 6000, max: 8999 },
-  1.5: { min: 9000, max: 11999 },
-  2.0: { min: 12000, max: Infinity }
-};
+// Every approved RNR request generates 6,200+ words (1 CE hour)
+const GENERATED_WORD_COUNT = 6200;
+const GENERATED_CE_HOURS = 1.0;
+const GENERATED_RESEARCH_HOURS = 0.5;
 
 /**
  * Decode OpenAlex abstract_inverted_index into plain text.
@@ -49,12 +54,14 @@ export function calculateResearchHours(ceHours) {
 }
 
 /**
- * Determine word count status.
+ * Determine word count status based on abstract availability.
+ * Since full content is AI-generated, this now reflects abstract quality
+ * (better abstracts → better generated content).
  */
-export function getWordCountStatus(wordCount) {
-  if (wordCount >= 250) return 'sufficient';
-  if (wordCount >= 100) return 'borderline';
-  return 'thin';
+export function getAbstractStatus(abstractWordCount) {
+  if (abstractWordCount >= 150) return 'strong';    // Rich abstract → best generation
+  if (abstractWordCount >= 50) return 'adequate';    // Usable abstract
+  return 'thin';                                      // May produce lower-quality generation
 }
 
 /**
@@ -62,9 +69,7 @@ export function getWordCountStatus(wordCount) {
  */
 function mapWork(work) {
   const abstract = decodeAbstractInvertedIndex(work.abstract_inverted_index);
-  const wordCount = abstract ? abstract.split(/\s+/).filter(w => w.length > 0).length : 0;
-  const ceHours = calculateCEHours(wordCount);
-  const researchHours = calculateResearchHours(ceHours);
+  const abstractWordCount = abstract ? abstract.split(/\s+/).filter(w => w.length > 0).length : 0;
 
   const journal = work.primary_location?.source?.display_name || 'Unknown Journal';
   const authors = (work.authorships || [])
@@ -83,12 +88,16 @@ function mapWork(work) {
     journal,
     authors,
     abstract,
-    wordCount,
-    ceHours,
-    researchHours,
+    // Generated content stats (what the learner will actually read)
+    wordCount: GENERATED_WORD_COUNT,
+    ceHours: GENERATED_CE_HOURS,
+    researchHours: GENERATED_RESEARCH_HOURS,
+    // Abstract quality indicator
+    abstractWordCount,
+    abstractStatus: getAbstractStatus(abstractWordCount),
     oaUrl,
     topic,
-    wcStatus: getWordCountStatus(wordCount),
+    wcStatus: 'sufficient', // Always sufficient — content is AI-generated
     citedByCount: work.cited_by_count || 0,
     doi: work.primary_location?.source?.id || ''
   };
@@ -109,14 +118,11 @@ export async function searchArticles({
     return { results: [], meta: { count: 0, page: 1 } };
   }
 
-  // When filtering by desired_hours, fetch more to compensate for filtering
-  const fetchCount = desired_hours ? 25 : per_page;
-
   const params = new URLSearchParams({
     search: q,
     filter: `is_oa:true,publication_year:${year_from}-2025,type:article`,
-    'per-page': String(fetchCount),
-    page: String(desired_hours ? 1 : page),
+    'per-page': String(per_page),
+    page: String(page),
     sort,
     select: 'id,title,publication_year,primary_location,authorships,abstract_inverted_index,primary_topic,cited_by_count,open_access',
     mailto: MAILTO
@@ -133,23 +139,14 @@ export async function searchArticles({
   const data = await response.json();
   let results = (data.results || []).map(mapWork);
 
-  // Filter by desired hours if specified
-  if (desired_hours) {
-    const hours = parseFloat(desired_hours);
-    const range = wordCountRanges[hours];
-    if (range) {
-      results = results
-        .filter(r => r.wordCount >= range.min && r.wordCount <= range.max)
-        .map(r => ({ ...r, desiredHoursMatch: true }));
-    }
-    results = results.slice(0, 8);
-  }
+  // Filter out articles with no abstract (thin abstracts produce poor content)
+  results = results.filter(r => r.abstractWordCount >= 50);
 
   return {
     results,
     meta: {
-      count: desired_hours ? results.length : (data.meta?.count || 0),
-      page: desired_hours ? 1 : page
+      count: data.meta?.count || 0,
+      page
     }
   };
 }
