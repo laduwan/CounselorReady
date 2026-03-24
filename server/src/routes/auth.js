@@ -204,6 +204,7 @@ router.post('/login', async (req, res) => {
 // Get current user
 router.get('/me', protect, async (req, res) => {
   try {
+    res.set('Cache-Control', 'no-store');
     res.json({ user: req.user.toJSON() });
   } catch (error) {
     console.error('Get user error:', error);
