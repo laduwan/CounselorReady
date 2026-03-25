@@ -5,7 +5,7 @@
  * Generates 6,200+ word clinical practice articles from scholarly
  * article metadata (title, abstract, journal, etc.) using Claude API.
  *
- * Chunked generation: 3 sections × ~2,100 words = 6,300+ words.
+ * Chunked generation: scales section count to match requested CE hours.
  * Each chunk gets its own API call to maintain quality.
  *
  * FILE: server/src/services/articleContentGenerator.js
@@ -16,7 +16,6 @@ const ANTHROPIC_API_URL = 'https://api.anthropic.com/v1/messages';
 const MODEL = process.env.ANTHROPIC_MODEL || 'claude-sonnet-4-20250514';
 
 const TARGET_WORDS_PER_SECTION = 2100;
-const MIN_TOTAL_WORDS = 6000;
 
 // ── Claude helper ──
 async function callClaude(systemPrompt, userPrompt, maxTokens = 5000) {
@@ -250,76 +249,129 @@ function summarizeSection(html) {
 }
 
 
+// ── Additional section prompt (for sections beyond the core 3) ──
+function getAdditionalSectionPrompt(articleContext, contentArea, sectionNumber, sectionsNeeded, previousSummaries) {
+  return `SECTION ${sectionNumber} OF ${sectionsNeeded}: ADDITIONAL CLINICAL TOPIC AREA
+Target: ${TARGET_WORDS_PER_SECTION} words minimum. Write ONLY this section.
+
+CONTEXT: Previous sections have been written. Summaries of what was already covered:
+${previousSummaries}
+
+SCHOLARLY SOURCE(S):
+${articleContext}
+
+Write an additional section exploring a NEW clinical topic area related to the research that has NOT been covered in previous sections. Choose from:
+- Advanced intervention techniques or emerging therapeutic modalities
+- Specialized population considerations (children/adolescents, older adults, LGBTQ+, veterans, etc.)
+- Group therapy or family systems applications
+- Crisis intervention and safety planning
+- Trauma-informed care integration
+- Telehealth and technology-assisted interventions
+- Community-based and preventive approaches
+- Neurobiological underpinnings and psychopharmacological considerations
+
+Structure with <h2> and <h3> subheadings. Include at least 2 clinical vignettes.
+Write clean HTML. No markdown. No code fences. Target: ${TARGET_WORDS_PER_SECTION} words minimum.`;
+}
+
 // ═══════════════════════════════════════════════════════════════
 // MAIN EXPORT: Generate full article content
 // ═══════════════════════════════════════════════════════════════
 
 /**
- * Generate a 6,200+ word clinical practice article from article metadata.
+ * Generate a clinical practice article scaled to the requested CE hours.
  *
  * @param {Object} opts
  * @param {Array} opts.articles - Array of { title, authors, journal, year, abstract, topic }
  * @param {String} opts.contentArea - NBCC content area
  * @param {String} opts.format - 'standalone' | 'comparative' | 'integrative'
  * @param {String} [opts.courseTitle] - Optional course title
+ * @param {Number} [opts.targetCeHours] - CE hours to generate for (default 1)
  * @returns {Promise<{ content: String, wordCount: Number, sections: Number }>}
  */
-export async function generateArticleContent({ articles, contentArea, format = 'standalone', courseTitle = '' }) {
+export async function generateArticleContent({ articles, contentArea, format = 'standalone', courseTitle = '', targetCeHours = 1 }) {
   if (!articles || articles.length === 0) {
     throw new Error('At least one article is required');
   }
 
+  // 6,000 words per CE hour, +200 word buffer
+  const targetWords = (targetCeHours * 6000) + 200;
+  const sectionsNeeded = Math.max(3, Math.ceil(targetCeHours * 3));
+
   const systemPrompt = getSystemPrompt(contentArea);
   const articleContext = buildArticleContext(articles);
 
-  console.log(`[RNR Content] Generating 3-section article for: ${courseTitle || articles[0].title}`);
-  console.log(`[RNR Content] Format: ${format}, Content area: ${contentArea}`);
+  console.log(`[RNR Content] Generating ${sectionsNeeded}-section article for: ${courseTitle || articles[0].title}`);
+  console.log(`[RNR Content] Format: ${format}, Content area: ${contentArea}, Target CE: ${targetCeHours}h (${targetWords} words)`);
+
+  const sections = [];
+  const sectionWords = [];
+  const summaries = [];
 
   // ── Section 1 ──
-  console.log('[RNR Content] Generating Section 1/3: Foundations & Literature...');
+  console.log(`[RNR Content] Generating Section 1/${sectionsNeeded}: Foundations & Literature...`);
   const section1 = await callClaude(
     systemPrompt,
     getSection1Prompt(articleContext, contentArea, format),
     5000
   );
-  const s1Words = countWords(section1);
-  console.log(`[RNR Content] Section 1 complete: ${s1Words} words`);
-
-  const s1Summary = summarizeSection(section1);
+  sections.push(section1);
+  sectionWords.push(countWords(section1));
+  summaries.push(summarizeSection(section1));
+  console.log(`[RNR Content] Section 1 complete: ${sectionWords[0]} words`);
 
   // ── Section 2 ──
-  console.log('[RNR Content] Generating Section 2/3: Clinical Applications...');
+  console.log(`[RNR Content] Generating Section 2/${sectionsNeeded}: Clinical Applications...`);
   const section2 = await callClaude(
     systemPrompt,
-    getSection2Prompt(articleContext, contentArea, s1Summary),
+    getSection2Prompt(articleContext, contentArea, summaries[0]),
     5000
   );
-  const s2Words = countWords(section2);
-  console.log(`[RNR Content] Section 2 complete: ${s2Words} words`);
-
-  const s2Summary = summarizeSection(section2);
+  sections.push(section2);
+  sectionWords.push(countWords(section2));
+  summaries.push(summarizeSection(section2));
+  console.log(`[RNR Content] Section 2 complete: ${sectionWords[1]} words`);
 
   // ── Section 3 ──
-  console.log('[RNR Content] Generating Section 3/3: Ethics & Integration...');
+  console.log(`[RNR Content] Generating Section 3/${sectionsNeeded}: Ethics & Integration...`);
   const section3 = await callClaude(
     systemPrompt,
-    getSection3Prompt(articleContext, contentArea, s1Summary, s2Summary),
+    getSection3Prompt(articleContext, contentArea, summaries[0], summaries[1]),
     5000
   );
-  const s3Words = countWords(section3);
-  console.log(`[RNR Content] Section 3 complete: ${s3Words} words`);
+  sections.push(section3);
+  sectionWords.push(countWords(section3));
+  summaries.push(summarizeSection(section3));
+  console.log(`[RNR Content] Section 3 complete: ${sectionWords[2]} words`);
+
+  // ── Additional sections (beyond the core 3) ──
+  for (let i = 4; i <= sectionsNeeded; i++) {
+    const previousSummaries = summaries.map((s, idx) => `Section ${idx + 1}: ${s}`).join('\n');
+    console.log(`[RNR Content] Generating Section ${i}/${sectionsNeeded}: Additional clinical topic...`);
+    const additional = await callClaude(
+      systemPrompt,
+      getAdditionalSectionPrompt(articleContext, contentArea, i, sectionsNeeded, previousSummaries),
+      5000
+    );
+    sections.push(additional);
+    sectionWords.push(countWords(additional));
+    summaries.push(summarizeSection(additional));
+    console.log(`[RNR Content] Section ${i} complete: ${sectionWords[i - 1]} words`);
+  }
 
   // ── Combine ──
   const divider = '<hr style="margin:2em 0;border:none;border-top:2px solid #4A7C59;">';
-  const fullContent = [section1, divider, section2, divider, section3].join('\n');
+  const fullContent = sections.join(`\n${divider}\n`);
   const totalWords = countWords(fullContent);
 
-  console.log(`[RNR Content] Total: ${totalWords} words (S1: ${s1Words}, S2: ${s2Words}, S3: ${s3Words})`);
+  const wordBreakdown = sectionWords.map((w, i) => `S${i + 1}: ${w}`).join(', ');
+  console.log(`[RNR Content] Total: ${totalWords} words (${wordBreakdown})`);
 
-  // ── Safety check: if under 6000, generate a supplemental section ──
-  if (totalWords < MIN_TOTAL_WORDS) {
-    console.log(`[RNR Content] Under ${MIN_TOTAL_WORDS} words — generating supplemental section...`);
-    const deficit = MIN_TOTAL_WORDS - totalWords + 200; // 200 word buffer
+  // ── Safety check: if under target, generate a supplemental section ──
+  if (totalWords < targetWords) {
+    console.log(`[RNR Content] Under ${targetWords} words — generating supplemental section...`);
+    const deficit = targetWords - totalWords + 200;
+    const previousSummaries = summaries.slice(0, 2).join(' ... ');
     const supplemental = await callClaude(
       systemPrompt,
       `SUPPLEMENTAL SECTION: Write an additional ${deficit}+ words expanding on clinical application of the research below. Include another detailed case vignette and specific intervention techniques. Do NOT repeat content from previous sections.
@@ -327,7 +379,7 @@ export async function generateArticleContent({ articles, contentArea, format = '
 SCHOLARLY SOURCE(S):
 ${articleContext}
 
-Previously covered (do not repeat): ${s1Summary} ... ${s2Summary}
+Previously covered (do not repeat): ${previousSummaries}
 
 Write clean HTML with <h3> subheadings and <p> paragraphs. Target: ${deficit} words minimum.`,
       3000
@@ -342,14 +394,14 @@ Write clean HTML with <h3> subheadings and <p> paragraphs. Target: ${deficit} wo
     return {
       content: finalContent,
       wordCount: finalWords,
-      sections: 4
+      sections: sectionsNeeded + 1
     };
   }
 
   return {
     content: fullContent,
     wordCount: totalWords,
-    sections: 3
+    sections: sectionsNeeded
   };
 }
 

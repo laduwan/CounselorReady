@@ -311,7 +311,8 @@ router.patch('/request/:id/approve', protect, requireAdmin, async (req, res) => 
         })),
         contentArea: request.contentArea,
         format,
-        courseTitle: request.courseTitle || ''
+        courseTitle: request.courseTitle || '',
+        targetCeHours: request.totalCeHours || 1
       });
 
       request.generatedContent = articleResult.content;
@@ -434,7 +435,8 @@ router.post('/request/:id/rebuild', protect, requireAdmin, async (req, res) => {
         })),
         contentArea: request.contentArea,
         format,
-        courseTitle: request.courseTitle || ''
+        courseTitle: request.courseTitle || '',
+        targetCeHours: request.totalCeHours || 1
       });
 
       request.generatedContent = articleResult.content;
