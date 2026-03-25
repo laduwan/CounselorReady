@@ -799,10 +799,12 @@
       const userTier = currentUser.subscription?.plan || 'free';
       const userStatus = currentUser.subscription?.status;
       
-      if (userStatus !== 'active') return false;
+      // Allow active, trial, and lifetime subscriptions
+      const validStatuses = ['active', 'trial', 'lifetime'];
+      if (!validStatuses.includes(userStatus)) return false;
       
-      const tierLevels = { 'free': 0, 'starter': 1, 'professional': 2, 'premium': 3, 'vip': 4 };
-      return tierLevels[userTier] >= tierLevels[requiredTier];
+      const tierLevels = { 'free': 0, 'starter': 1, 'professional': 2, 'premium': 3, 'vip': 4, 'annual_vip': 4, 'lifetime': 4 };
+      return (tierLevels[userTier] || 0) >= (tierLevels[requiredTier] || 0);
     }
     
     // Start/continue course
