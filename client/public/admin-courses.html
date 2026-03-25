@@ -403,7 +403,7 @@
           while (true) {
             const ctrl2 = new AbortController();
             setTimeout(() => ctrl2.abort(), 10000);
-            const r = await fetch(`${API_URL}/api/interactive-courses?page=${p}&limit=50&status=all`, {
+            const r = await fetch(`${API_URL}/api/interactive-courses?page=${p}&limit=200&status=all`, {
               headers: { Authorization: `Bearer ${token}` },
               signal: ctrl2.signal
             });
