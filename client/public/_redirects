@@ -80,5 +80,8 @@
 /admin/help           /admin-help.html           200
 /admin/health         /admin-health.html         200
 
+# ── Static tools (must precede catch-all) ──
+/tools/*             /tools/:splat             200
+
 # ── Catch-all: 404 (NOT SPA rewrite) ──
 /*                   /404.html                 404
