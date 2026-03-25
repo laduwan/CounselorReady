@@ -1734,7 +1734,7 @@ let ttsUtterance = null;
   }
   
   if (slug) {
-    const base = apiBase || (location.origin.includes('localhost') ? 'http://localhost:5000' : 'https://counselorready-2.onrender.com');
+    const base = apiBase || (location.origin.includes('localhost') ? 'http://localhost:5000' : 'https://api.counselorready.com');
     fetch(`${base}/api/interactive-courses/slug/${slug}`)
       .then(r => r.json())
       .then(data => loadCourse(data.data || data.course || data))
