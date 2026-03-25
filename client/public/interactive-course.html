@@ -1738,11 +1738,8 @@ let ttsUtterance = null;
     fetch(`${base}/api/interactive-courses/slug/${slug}`)
       .then(r => { if (!r.ok) throw new Error('API ' + r.status); return r.json(); })
       .then(data => {
-        const courseData = data.data || data.course || data;
-        if (!courseData || typeof courseData !== 'object' || Array.isArray(courseData)) {
-          throw new Error('Invalid data from API');
-        }
-        try { loadCourse(courseData); }
+        const cd = data.data || data.course || data;
+        try { loadCourse(cd); }
         catch(e) { showError('Render error: ' + e.message); console.error('loadCourse crash:', e); }
       })
       .catch(e => showError('Could not load course: ' + e.message));
@@ -3013,53 +3010,32 @@ function refCount(id, minLen) {
 }
 
 // ─── RESOURCES ───
-// Injects fl_attachment into Cloudinary URLs so files download instead of opening inline
 function cloudinaryDownloadUrl(url) {
   if (!url) return '#';
-  const match = url.match(/^(https:\/\/res\.cloudinary\.com\/[^/]+\/(raw|image|video)\/upload\/)(fl_attachment\/)?(.+)$/);
-  if (match) return `${match[1]}fl_attachment/${match[4]}`;
+  const m = url.match(/^(https:\/\/res\.cloudinary\.com\/[^/]+\/(raw|image|video)\/upload\/)(fl_attachment\/)?(.+)$/);
+  if (m) return m[1] + 'fl_attachment/' + m[4];
   return url;
 }
 function isDownloadable(r) {
-  const dlTypes = ['pdf','docx','doc','xlsx','xls','csv','pptx','ppt','zip','rar','worksheet','template','toolkit','document'];
-  if (r.type && dlTypes.includes(r.type)) return true;
+  const t = ['pdf','docx','doc','xlsx','xls','csv','pptx','ppt','zip','rar','worksheet','template','toolkit','document'];
+  if (r.type && t.includes(r.type)) return true;
   const ext = (r.url || r.filename || '').split('.').pop()?.toLowerCase();
-  return dlTypes.includes(ext);
+  return t.includes(ext);
 }
-
 function renderResources(wrap, block) {
   const resources = block.resources || block.deliverables || block.files || [];
-  const isDeliverables = block.type === 'deliverables';
-  const icons = {
-    pdf:'📄', docx:'📝', doc:'📝', xlsx:'📊', xls:'📊', csv:'📊',
-    pptx:'📽️', ppt:'📽️', zip:'📦', rar:'📦', video:'🎬', mp4:'🎬',
-    link:'🔗', article:'📰', website:'🌐', book:'📚', reference:'📖',
-    worksheet:'📋', document:'📃', chapter:'📑', journal:'🔬',
-    toolkit:'🧰', template:'📐', guide:'📖'
-  };
-  function getIcon(r) {
-    if (r.type && icons[r.type]) return icons[r.type];
-    const ext = (r.url || r.filename || '').split('.').pop()?.toLowerCase();
-    return icons[ext] || '📎';
-  }
-  const heading = isDeliverables ? '📥 Downloadable Materials' : (block.title ? `📎 ${block.title}` : '📎 Resources');
-  let html = `<div class="cr-resources" style="${isDeliverables ? 'border:2px solid var(--cr-gold);background:var(--cr-gold-faded)' : ''}">
-    <h4 style="font-family:var(--cr-font-display);font-weight:700;color:var(--cr-navy);margin-bottom:${block.description ? '4px' : '12px'}">${heading}</h4>
-    ${block.description ? `<p style="font-size:0.85em;color:var(--cr-text-muted);margin-bottom:12px">${esc(block.description)}</p>` : ''}
-    ${resources.map(r => {
-      const dl = isDownloadable(r);
-      const href = dl ? cloudinaryDownloadUrl(r.url) : (r.url || '#');
-      const label = r.fileSize ? `${(r.type||'FILE').toUpperCase()} · ${r.fileSize}` : (r.type||'link').toUpperCase();
-      return `<div class="cr-resource-item">
-        <div class="cr-resource-icon">${getIcon(r)}</div>
-        <div class="cr-resource-info">
-          <a href="${esc(href)}" ${dl ? 'download' : 'target="_blank" rel="noopener"'}>${esc(r.title || 'Resource')}</a>
-          ${r.description ? `<span style="font-size:0.8em;color:var(--cr-text-muted);display:block;margin-top:2px">${esc(r.description)}</span>` : ''}
-          <span>${esc(label)}</span>
-        </div>
-        ${dl ? `<a href="${esc(href)}" download title="Download" style="margin-left:auto;color:var(--cr-navy);text-decoration:none">⬇️</a>` : ''}
-      </div>`;
-    }).join('')}
+  const icons = { pdf: '📄', video: '🎬', link: '🔗', article: '📰', website: '🌐', book: '📚',
+    reference: '📖', worksheet: '📝', document: '📃', chapter: '📑', journal: '🔬' };
+  
+  let html = `<div class="cr-resources">
+    <h4 style="font-family:var(--cr-font-display);font-weight:700;color:var(--cr-navy);margin-bottom:12px">📎 Resources</h4>
+    ${resources.map(r => `<div class="cr-resource-item">
+      <div class="cr-resource-icon">${icons[r.type] || '📎'}</div>
+      <div class="cr-resource-info">
+        ${(()=>{ const dl=isDownloadable(r); const href=dl?cloudinaryDownloadUrl(r.url):(r.url||'#'); return `<a href="${esc(href)}" ${dl?'download':'target="_blank" rel="noopener"'}>${esc(r.title||'Resource')}</a>`; })()}
+        <span>${esc((r.type || 'link').toUpperCase())}</span>
+      </div>
+    </div>`).join('')}
   </div>`;
   wrap.innerHTML = html;
   return wrap;
