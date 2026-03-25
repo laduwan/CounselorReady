@@ -528,12 +528,12 @@
               <button onclick="togglePublish('${c._id}','${c.status}','${esc(c.title)}','${src}')"
                 class="w-8 h-8 rounded-lg flex items-center justify-center text-sm transition-colors ${pub ? 'bg-yellow-50 hover:bg-yellow-100 text-yellow-700' : 'bg-green-50 hover:bg-green-100 text-green-700'}"
                 title="${pub ? 'Unpublish' : 'Publish'}">
-                ${pub ? '📤' : '📥'}
+                ${pub ? '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>' : '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>'}
               </button>
               <a href="/interactive-course.html?id=${c._id}&preview=true"
-                class="w-8 h-8 rounded-lg flex items-center justify-center text-sm bg-purple-50 hover:bg-purple-100 text-purple-700 transition-colors" title="Preview in Viewer">👁️</a>
+                class="w-8 h-8 rounded-lg flex items-center justify-center text-sm bg-purple-50 hover:bg-purple-100 text-purple-700 transition-colors" title="Preview in Viewer"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg></a>
               <button onclick="duplicateCourse('${c._id}','${esc(c.title)}')"
-                class="w-8 h-8 rounded-lg flex items-center justify-center text-sm bg-gold-50 hover:bg-gold-100 text-gold-700 transition-colors" title="Duplicate">📋</button>
+                class="w-8 h-8 rounded-lg flex items-center justify-center text-sm bg-gold-50 hover:bg-gold-100 text-gold-700 transition-colors" title="Duplicate"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg></button>
               <button onclick="openMetaModal('${c._id}','${esc(c.title)}','${src}',this)"
                 class="h-8 px-3 rounded-lg text-xs font-medium bg-gold-50 hover:bg-gold-100 text-gold-700 transition-colors flex items-center" title="Delivery Format & Content Areas">Meta</button>
               <button onclick="openEditModal('${c._id}','${src}')"
