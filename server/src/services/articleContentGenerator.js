@@ -15,8 +15,8 @@ const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
 const ANTHROPIC_API_URL = 'https://api.anthropic.com/v1/messages';
 const MODEL = process.env.ANTHROPIC_MODEL || 'claude-sonnet-4-20250514';
 
-const TARGET_WORDS_PER_SECTION = 2100;
-const MIN_TOTAL_WORDS = 6000;
+const WORDS_PER_CE_HOUR = 6000;
+const WORDS_BUFFER = 200;
 
 // ── Claude helper ──
 async function callClaude(systemPrompt, userPrompt, maxTokens = 5000) {
@@ -264,15 +264,23 @@ function summarizeSection(html) {
  * @param {String} [opts.courseTitle] - Optional course title
  * @returns {Promise<{ content: String, wordCount: Number, sections: Number }>}
  */
-export async function generateArticleContent({ articles, contentArea, format = 'standalone', courseTitle = '' }) {
+export async function generateArticleContent({ articles, contentArea, format = 'standalone', courseTitle = '', targetCeHours = 1.0 }) {
   if (!articles || articles.length === 0) {
     throw new Error('At least one article is required');
   }
 
+  // Target: 6,000 words per CE hour + 200 word buffer
+  const targetWords = Math.round(targetCeHours * WORDS_PER_CE_HOUR) + WORDS_BUFFER;
+  // One section per CE hour, minimum 3
+  const sectionsNeeded = Math.max(3, Math.ceil(targetCeHours * 3));
+  const wordsPerSection = Math.ceil(targetWords / sectionsNeeded);
+
   const systemPrompt = getSystemPrompt(contentArea);
   const articleContext = buildArticleContext(articles);
 
-  console.log(`[RNR Content] Generating 3-section article for: ${courseTitle || articles[0].title}`);
+  console.log(`[RNR Content] Generating ${sectionsNeeded}-section article ` +
+    `(${targetCeHours} CE hrs = ${targetWords} words target) ` +
+    `for: ${courseTitle || articles[0].title}`);
   console.log(`[RNR Content] Format: ${format}, Content area: ${contentArea}`);
 
   // ── Section 1 ──
@@ -311,15 +319,43 @@ export async function generateArticleContent({ articles, contentArea, format = '
 
   // ── Combine ──
   const divider = '<hr style="margin:2em 0;border:none;border-top:2px solid #4A7C59;">';
-  const fullContent = [section1, divider, section2, divider, section3].join('\n');
+  const contentParts = [section1, divider, section2, divider, section3];
+  let currentSectionCount = 3;
+  let prevSummaries = `${s1Summary} ... ${s2Summary}`;
+
+  // ── Additional sections if sectionsNeeded > 3 ──
+  if (sectionsNeeded > 3) {
+    for (let i = 4; i <= sectionsNeeded; i++) {
+      console.log(`[RNR Content] Generating Section ${i}/${sectionsNeeded}: Supplemental...`);
+      const additional = await callClaude(
+        systemPrompt,
+        `SUPPLEMENTAL SECTION ${i} OF ${sectionsNeeded}: Write an additional ${wordsPerSection}+ words expanding on clinical application of the research below. Include another detailed case vignette and specific intervention techniques. Do NOT repeat content from previous sections.
+
+SCHOLARLY SOURCE(S):
+${articleContext}
+
+Previously covered (do not repeat): ${prevSummaries}
+
+Write clean HTML with <h3> subheadings and <p> paragraphs. Target: ${wordsPerSection} words minimum.`,
+        5000
+      );
+      const addWords = countWords(additional);
+      console.log(`[RNR Content] Section ${i} complete: ${addWords} words`);
+      contentParts.push(divider, additional);
+      prevSummaries += ' ... ' + summarizeSection(additional);
+      currentSectionCount++;
+    }
+  }
+
+  const fullContent = contentParts.join('\n');
   const totalWords = countWords(fullContent);
 
-  console.log(`[RNR Content] Total: ${totalWords} words (S1: ${s1Words}, S2: ${s2Words}, S3: ${s3Words})`);
+  console.log(`[RNR Content] Total: ${totalWords} words across ${currentSectionCount} sections`);
 
-  // ── Safety check: if under 6000, generate a supplemental section ──
-  if (totalWords < MIN_TOTAL_WORDS) {
-    console.log(`[RNR Content] Under ${MIN_TOTAL_WORDS} words — generating supplemental section...`);
-    const deficit = MIN_TOTAL_WORDS - totalWords + 200; // 200 word buffer
+  // ── Safety check: if under target, generate a supplemental section ──
+  if (totalWords < targetWords) {
+    console.log(`[RNR Content] Under ${targetWords} words — generating supplemental section...`);
+    const deficit = targetWords - totalWords + WORDS_BUFFER;
     const supplemental = await callClaude(
       systemPrompt,
       `SUPPLEMENTAL SECTION: Write an additional ${deficit}+ words expanding on clinical application of the research below. Include another detailed case vignette and specific intervention techniques. Do NOT repeat content from previous sections.
@@ -327,7 +363,7 @@ export async function generateArticleContent({ articles, contentArea, format = '
 SCHOLARLY SOURCE(S):
 ${articleContext}
 
-Previously covered (do not repeat): ${s1Summary} ... ${s2Summary}
+Previously covered (do not repeat): ${prevSummaries}
 
 Write clean HTML with <h3> subheadings and <p> paragraphs. Target: ${deficit} words minimum.`,
       3000
@@ -342,14 +378,14 @@ Write clean HTML with <h3> subheadings and <p> paragraphs. Target: ${deficit} wo
     return {
       content: finalContent,
       wordCount: finalWords,
-      sections: 4
+      sections: sectionsNeeded
     };
   }
 
   return {
     content: fullContent,
     wordCount: totalWords,
-    sections: 3
+    sections: sectionsNeeded
   };
 }
 
