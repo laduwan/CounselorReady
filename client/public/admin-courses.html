@@ -358,46 +358,24 @@
     }
 
     async function init() {
-      document.title = 'INIT START';
       try {
         const r = await fetch(`${API_URL}/api/auth/me`, { headers: { Authorization: `Bearer ${token}` } });
         if (r.ok) {
           const d = await r.json();
           const u = d.user || d;
           document.getElementById('adminEmail').textContent = u.email || 'Admin';
-          document.title = 'AUTH OK: ' + u.email;
-          if (!u.isAdmin && u.role !== 'admin') { document.title = 'NOT ADMIN - redirecting'; window.location.href = '/dashboard.html'; return; }
-        } else {
-          document.title = 'AUTH FAILED: ' + r.status;
+          if (!u.isAdmin && u.role !== 'admin') window.location.href = '/dashboard.html';
         }
-      } catch(e) { document.title = 'AUTH ERROR: ' + e.message; }
-      document.title = 'CALLING loadCourses';
+      } catch(e) {}
       loadCourses();
     }
 
     async function loadCourses() {
-      document.title = 'LOAD START';
       show('loadingState'); hide('mainContent'); hide('errorState');
       try {
         let courses = [];
 
-        // 1. Admin endpoint (old courses collection - has drafts + enrollment counts)
-        try {
-          const ctrl1 = new AbortController();
-          setTimeout(() => ctrl1.abort(), 10000);
-          const r = await fetch(`${API_URL}/api/admin/courses`, {
-            headers: { Authorization: `Bearer ${token}` },
-            signal: ctrl1.signal
-          });
-          document.title = 'ADMIN COURSES: ' + r.status;
-          if (r.ok) {
-            const d = await r.json();
-            courses = (d.courses || []).map(c => ({ ...c, _source: 'courses' }));
-            document.title = 'ADMIN: ' + courses.length + ' courses';
-          }
-        } catch(e) { document.title = 'ADMIN FAIL: ' + e.message; }
-
-        // 2. Interactive courses (Architecture A - interactivecourses collection)
+        // Interactive courses (all courses live here now)
         try {
           let p = 1;
           while (true) {
@@ -407,10 +385,9 @@
               headers: { Authorization: `Bearer ${token}` },
               signal: ctrl2.signal
             });
-            if (!r.ok) { document.title = 'IC FAIL p' + p + ': ' + r.status; break; }
+            if (!r.ok) break;
             const d = await r.json();
             const batch = (d.data || []).map(c => ({ ...c, _source: 'interactivecourses' }));
-            document.title = 'IC p' + p + ': +' + batch.length;
             // Prefer interactivecourses version (deduplicate by slug)
             batch.forEach(ic => {
               const idx = courses.findIndex(c => c.slug === ic.slug);
@@ -420,22 +397,16 @@
             if (p >= (d.pagination?.pages || 1) || batch.length === 0) break;
             p++;
           }
-        } catch(e) { document.title = 'IC FAIL: ' + e.message; }
+        } catch(e) { console.warn('Fetch failed:', e.message); }
 
-        document.title = 'TOTAL: ' + courses.length + ' - annotating';
         // Annotate with health
         allCourses = courses.map(c => ({ ...c, _health: healthStatus(c), _words: wordCount(c) }));
 
-        document.title = 'ANNOTATED: ' + allCourses.length + ' - rendering';
         updateHealthDashboard();
-        document.title = 'HEALTH DONE - renderCourses';
         renderCourses();
-        document.title = 'RENDER DONE - showing';
         hide('loadingState');
         show('mainContent');
-        document.title = 'COMPLETE: ' + allCourses.length + ' courses';
       } catch(e) {
-        document.title = 'CRASH: ' + e.message;
         hide('loadingState');
         show('errorState');
         document.getElementById('errorMsg').textContent = 'Failed to load: ' + e.message;
@@ -1392,14 +1363,10 @@
     document.querySelectorAll('[data-slug]').forEach(injectIntoRow);
   }
   /* ── Watch for dynamically added rows (async API render) ─────── */
-  var observer = new MutationObserver(function(mutations) {
-    for (var i = 0; i < mutations.length; i++) {
-      mutations[i].addedNodes.forEach(function(node) {
-        if (node.nodeType !== 1) return;
-        if (node.dataset && node.dataset.slug) injectIntoRow(node);
-        if (node.querySelectorAll) node.querySelectorAll('[data-slug]').forEach(injectIntoRow);
-      });
-    }
+  var _scanTimer = null;
+  var observer = new MutationObserver(function() {
+    clearTimeout(_scanTimer);
+    _scanTimer = setTimeout(scanRows, 200);
   });
   observer.observe(document.body, { childList: true, subtree: true });
   if (document.readyState === 'loading') {
