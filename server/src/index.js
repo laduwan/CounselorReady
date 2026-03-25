@@ -24,18 +24,27 @@ import scanRoutes from './routes/scan.js';
 import scormRoutes from './routes/scorm.js';
 import ltiRoutes from './routes/lti.js';
 import xapiRoutes from './routes/xapi.js';
-import interactiveCourseRoutes from './routes/courseRoutes.js';
+// FIX: was importing courseRoutes.js (665L stripped version missing certificate/eval/attestation/gamification)
+// Must be interactiveCourseRoutes.js (1109L full pipeline)
+import interactiveCourseRoutes from './routes/interactiveCourseRoutes.js';
 import cebrokerRoutes from './routes/cebroker.js';
 import helpRoutes from './routes/help.js';
 import bulkUploadRoutes from './routes/bulkUpload.js';
-// FIX: courseBuilder routes were never registered — caused all CourseBuilder save/generate/publish calls to 404
 import courseBuilderRoutes from './routes/courseBuilder.js';
 import narrationRoutes from './routes/narration.js';
 import aiRoutes from './routes/ai.js';
 import aiCourseGeneratorRoutes from './routes/aiCourseGenerator.js';
+// FIX: 6 route files existed but were never imported/registered
+import gamificationRoutes from './routes/gamification.js';
+import referralsRoutes from './routes/referrals.js';
+import boardAlertsRoutes from './routes/boardAlerts.js';
+import cePlannerRoutes from './routes/cePlanner.js';
+import imageUploadRoutes from './routes/imageUpload.js';
+import adminStatsRoutes from './routes/adminStats.js';
 
 // Import services
 import { initializeScheduler } from './services/notificationScheduler.js';
+import { initializeBoardMonitor } from './services/boardMonitorService.js';
 
 // ES Module fix for __dirname
 const __filename = fileURLToPath(import.meta.url);
@@ -141,11 +150,17 @@ app.use('/api/xapi', xapiRoutes);
 app.use('/api/cebroker', cebrokerRoutes);
 app.use('/api/help', helpRoutes);
 app.use('/api/admin/courses', bulkUploadRoutes);
-// FIX: registered courseBuilder routes so CourseBuilder UI can save/generate/publish
 app.use('/api/course-builder', courseBuilderRoutes);
 app.use('/api/narration', narrationRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/ai-course-generator', aiCourseGeneratorRoutes);
+// FIX: 6 previously unregistered routes — these files existed but were never mounted
+app.use('/api/gamification', gamificationRoutes);
+app.use('/api/referrals', referralsRoutes);
+app.use('/api/board-alerts', boardAlertsRoutes);
+app.use('/api/ce-planner', cePlannerRoutes);
+app.use('/api/images', imageUploadRoutes);
+app.use('/api/admin/stats', adminStatsRoutes);
 
 // Serve static files from templates directory (for certificates)
 app.use('/templates', express.static(path.join(__dirname, 'templates')));
@@ -170,7 +185,12 @@ app.use((req, res, next) => {
       '/api/credentials/*',
       '/api/payments/*',
       '/api/analytics/*',
-      '/api/course-builder/*'
+      '/api/course-builder/*',
+      '/api/gamification/*',
+      '/api/referrals/*',
+      '/api/board-alerts/*',
+      '/api/ce-planner/*',
+      '/api/scan/*'
     ]
   });
 });
@@ -209,6 +229,7 @@ const PORT = process.env.PORT || 5000;
 const startServer = async () => {
   await connectDB();
   initializeScheduler();
+  initializeBoardMonitor();
   app.listen(PORT, () => {
     console.log(`
 ╔════════════════════════════════════════════════════╗
@@ -219,6 +240,7 @@ const startServer = async () => {
 ║   Environment: ${(process.env.NODE_ENV || 'development').padEnd(26)}║
 ║   MongoDB: Connected                               ║
 ║   Scheduler: Active                                ║
+║   Board Monitor: Active                            ║
 ║                                                    ║
 ║   Health: http://localhost:${PORT}/health              ║
 ║                                                    ║
