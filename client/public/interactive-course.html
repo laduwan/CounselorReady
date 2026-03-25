@@ -1721,15 +1721,43 @@ let ttsUtterance = null;
     return;
   }
   
-  // 2. URL params: ?json=URL or ?slug=SLUG or ?api=BASE_URL&slug=SLUG
+  // 2. URL params: ?json=URL or ?slug=SLUG or ?id=ID or ?api=BASE_URL&slug=SLUG
   const params = new URLSearchParams(location.search);
   const jsonUrl = params.get('json');
   const slug = params.get('slug');
+  const courseId = params.get('id');
   const apiBase = params.get('api') || '';
+  const isPreview = params.get('preview') === 'true';
+  
+  // Store preview flag globally
+  window.__CR_PREVIEW = isPreview;
+  
+  // Show admin preview banner if in preview mode
+  if (isPreview) {
+    const banner = document.createElement('div');
+    banner.id = 'crAdminPreviewBanner';
+    banner.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:99999;background:linear-gradient(90deg,#6B1D34,#4A7C59);color:#fff;text-align:center;padding:8px 16px;font-family:Lato,system-ui,sans-serif;font-size:13px;font-weight:700;letter-spacing:0.5px;display:flex;align-items:center;justify-content:center;gap:12px;box-shadow:0 2px 8px rgba(0,0,0,0.2)';
+    banner.innerHTML = '<span style="background:rgba(255,255,255,0.2);padding:2px 8px;border-radius:4px;font-size:11px">ADMIN</span> Preview Mode — No enrollment or progress tracking <a href="/admin-courses.html" style="color:#D4A855;text-decoration:underline;margin-left:12px;font-weight:600">← Back to Courses</a>';
+    document.body.prepend(banner);
+    // Offset the body so content isn't hidden behind banner
+    document.body.style.paddingTop = '40px';
+  }
   
   if (jsonUrl) {
     fetch(jsonUrl).then(r => r.json()).then(data => loadCourse(data.data || data))
       .catch(e => showError('Failed to load course: ' + e.message));
+    return;
+  }
+  
+  // ID-based fetch (admin preview) — requires auth token
+  if (courseId) {
+    const base = apiBase || (location.origin.includes('localhost') ? 'http://localhost:5000' : 'https://api.counselorready.com');
+    const token = localStorage.getItem('token');
+    const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+    fetch(`${base}/api/interactive-courses/${courseId}`, { headers })
+      .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
+      .then(data => loadCourse(data.data || data.course || data))
+      .catch(e => showError('Failed to load course by ID: ' + e.message));
     return;
   }
   
@@ -2470,11 +2498,11 @@ function renderImage(wrap, block) {
 }
 
 // ─── ACCORDION ───
-function renderAccordion(wrap, block, index) {
+function renderAccordion(wrap, block, blockIndex) {
   const items = block.accordionItems || [];
   let html = '<div class="cr-accordion">';
   items.forEach((item, i) => {
-    const id = `acc-${currentSectionIndex}-${index}-${i}`;
+    const id = `acc-${currentSectionIndex}-${blockIndex}-${i}`;
     html += `<div class="cr-accordion-item">
       <button class="cr-accordion-trigger" aria-expanded="false" aria-controls="${id}-body" data-action="toggleAccordion">
         <span>${esc(item.title || '')}</span>
@@ -2743,12 +2771,13 @@ function renderScenarioTree(wrap, block, blockIndex) {
   const el = wrap.querySelector(`#${id}`);
   el._stNodes = block.nodes || {};
   el._stStart = block.startNode || 'start';
-  renderScenarioNode(id, el._stStart);
+  setTimeout(() => renderScenarioNode(id, el._stStart), 0);
   return wrap;
 }
 
 function renderScenarioNode(id, nodeKey) {
   const el = document.getElementById(id);
+  if (!el) return;
   const nodes = el._stNodes;
   const node = nodes[nodeKey];
   if (!node) { document.getElementById(id + '-body').innerHTML = '<p>End of scenario.</p>'; return; }
@@ -4707,6 +4736,213 @@ document.addEventListener('keydown', function(e) {
   }
 });
 
+</script>
+<!-- ═══════════════════════════════════════════════════════════════
+     REFERENCES & RESOURCES DRAWERS — Floating edge tabs + slide-out
+     Self-contained. Zero edits above this line.
+     Delete this entire block to remove.
+     ═══════════════════════════════════════════════════════════════ -->
+<script>
+(function() {
+  'use strict';
+
+  // ── Inject all CSS ──
+  var css = document.createElement('style');
+  css.textContent = `
+    .crd-tab {
+      position: fixed; right: 0; z-index: 80;
+      writing-mode: vertical-rl; text-orientation: mixed;
+      padding: 16px 10px; font-size: 13px; font-weight: 700;
+      letter-spacing: 0.06em; cursor: pointer;
+      border: none; border-radius: 8px 0 0 8px;
+      box-shadow: -2px 2px 8px rgba(0,0,0,0.12);
+      transition: right 0.3s ease, opacity 0.3s ease;
+      display: none;
+    }
+    .crd-tab-refs {
+      top: 50%; transform: translateY(-100%);
+      background: var(--cr-burgundy,#6B1D34); color: #fff;
+    }
+    .crd-tab-res {
+      top: 50%; transform: translateY(8px);
+      background: var(--cr-navy,#284157); color: #fff;
+    }
+    .crd-tab:hover { filter: brightness(1.15); }
+    .crd-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.3); z-index: 89;
+    }
+    .crd-overlay.open { display: block; }
+    .crd-panel {
+      position: fixed; top: 0; right: -420px;
+      width: 400px; max-width: 90vw; height: 100vh;
+      background: var(--cr-surface,#fff);
+      box-shadow: -4px 0 24px rgba(0,0,0,0.15);
+      z-index: 91; transition: right 0.3s ease;
+      display: flex; flex-direction: column; overflow: hidden;
+    }
+    .crd-panel.open { right: 0; }
+    .crd-hdr {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 20px 24px; border-bottom: 1px solid var(--cr-border,#E2DFD8); flex-shrink: 0;
+    }
+    .crd-hdr h3 {
+      font-family: var(--cr-font-display,Georgia,serif);
+      font-size: 1.2em; font-weight: 700; margin: 0;
+    }
+    .crd-x {
+      background: none; border: none; cursor: pointer;
+      font-size: 1.5em; color: var(--cr-text-muted,#8A8A8A);
+      padding: 4px 8px; border-radius: 6px; line-height: 1;
+    }
+    .crd-x:hover { background: var(--cr-border,#E2DFD8); }
+    .crd-body { flex: 1; overflow-y: auto; padding: 24px; }
+    .crd-ref {
+      padding-left: 2em; text-indent: -2em;
+      margin-bottom: 0.8em; font-size: 0.9em;
+      line-height: 1.6; color: var(--cr-text-secondary,#5A5A5A);
+    }
+    .crd-ref em { font-style: italic; }
+    .crd-ri {
+      display: flex; align-items: center; gap: 12px;
+      padding: 10px 0; border-bottom: 1px solid var(--cr-border,#E2DFD8);
+    }
+    .crd-ri:last-child { border-bottom: none; }
+    .crd-ri-icon {
+      width: 36px; height: 36px; border-radius: 8px;
+      background: var(--cr-navy,#284157); color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; flex-shrink: 0;
+    }
+    .crd-ri-info { flex: 1; }
+    .crd-ri-info a { font-weight: 600; color: var(--cr-navy,#284157); display: block; }
+    .crd-ri-info .crd-ft {
+      font-size: 0.8em; color: var(--cr-text-muted,#8A8A8A);
+      text-transform: uppercase; letter-spacing: 0.05em;
+    }
+    @media(max-width:640px) {
+      .crd-panel { width: 100vw; max-width: 100vw; right: -100vw; }
+      .crd-tab { padding: 10px 6px; font-size: 11px; }
+    }
+  `;
+  document.head.appendChild(css);
+
+  // ── Escape helper ──
+  function esc(t) { var d = document.createElement('div'); d.textContent = t || ''; return d.innerHTML; }
+
+  // ── Create floating edge tabs ──
+  var tabR = document.createElement('button');
+  tabR.className = 'crd-tab crd-tab-refs';
+  tabR.id = 'crdTabR';
+  tabR.textContent = 'References';
+  tabR.setAttribute('aria-label', 'Open references');
+  document.body.appendChild(tabR);
+
+  var tabS = document.createElement('button');
+  tabS.className = 'crd-tab crd-tab-res';
+  tabS.id = 'crdTabS';
+  tabS.textContent = 'Resources';
+  tabS.setAttribute('aria-label', 'Open resources');
+  document.body.appendChild(tabS);
+
+  // ── Create drawer panels ──
+  var html =
+    '<div class="crd-overlay" id="crdRO"></div>' +
+    '<div class="crd-panel" id="crdRP"><div class="crd-hdr"><h3 style="color:var(--cr-burgundy,#6B1D34)">References</h3><button class="crd-x" id="crdRX">&times;</button></div><div class="crd-body" id="crdRB"></div></div>' +
+    '<div class="crd-overlay" id="crdSO"></div>' +
+    '<div class="crd-panel" id="crdSP"><div class="crd-hdr"><h3 style="color:var(--cr-navy,#284157)">Resources</h3><button class="crd-x" id="crdSX">&times;</button></div><div class="crd-body" id="crdSB"></div></div>';
+  var w = document.createElement('div');
+  w.innerHTML = html;
+  while (w.firstChild) document.body.appendChild(w.firstChild);
+
+  // ── Data ──
+  var refsData = null, resData = null;
+
+  // ── Renderers ──
+  function renderRefs() {
+    var b = document.getElementById('crdRB'), refs = refsData || [], h = '';
+    if (!refs.length) { b.innerHTML = '<p style="color:var(--cr-text-muted);text-align:center;margin-top:2em">No references available.</p>'; return; }
+    refs.forEach(function(r) {
+      if (typeof r === 'string') h += '<p class="crd-ref">' + esc(r) + '</p>';
+      else if (r.formatted) h += '<p class="crd-ref">' + esc(r.formatted) + '</p>';
+      else if (r.citation) h += '<p class="crd-ref">' + esc(r.citation) + '</p>';
+      else {
+        var a = '';
+        if (r.author) a += esc(r.author);
+        a += r.year ? ' (' + r.year + ').' : '.';
+        if (r.title) a += ' <em>' + esc(r.title) + '</em>.';
+        if (r.source) a += ' ' + esc(r.source) + '.';
+        h += '<p class="crd-ref">' + a.trim() + '</p>';
+      }
+    });
+    b.innerHTML = h;
+  }
+
+  function renderRes() {
+    var b = document.getElementById('crdSB'), res = resData || [], h = '';
+    var ic = {pdf:'\uD83D\uDCC4',png:'\uD83D\uDDBC\uFE0F',image:'\uD83D\uDDBC\uFE0F',video:'\uD83C\uDFAC',link:'\uD83D\uDD17',website:'\uD83C\uDF10',book:'\uD83D\uDCDA',worksheet:'\uD83D\uDCDD',document:'\uD83D\uDCC3',doc:'\uD83D\uDCC3',docx:'\uD83D\uDCC3'};
+    if (!res.length) { b.innerHTML = '<p style="color:var(--cr-text-muted);text-align:center;margin-top:2em">No resources available.</p>'; return; }
+    res.forEach(function(r) {
+      var ft = (r.type || (r.url ? r.url.split('.').pop() : 'link')).toLowerCase();
+      var icon = ic[ft] || '\uD83D\uDCCE';
+      var desc = r.description ? '<span style="display:block;font-size:.8em;color:var(--cr-text-muted);margin-top:2px">' + esc(r.description) + '</span>' : '';
+      h += '<div class="crd-ri"><div class="crd-ri-icon">' + icon + '</div><div class="crd-ri-info"><a href="' + esc(r.url||'#') + '" target="_blank" rel="noopener">' + esc(r.title||'Resource') + '</a><span class="crd-ft">' + esc(ft.toUpperCase()) + '</span>' + desc + '</div></div>';
+    });
+    b.innerHTML = h;
+  }
+
+  // ── Open/close ──
+  function openR() { renderRefs(); document.getElementById('crdRO').classList.add('open'); document.getElementById('crdRP').classList.add('open'); }
+  function closeR() { document.getElementById('crdRO').classList.remove('open'); document.getElementById('crdRP').classList.remove('open'); }
+  function openS() { renderRes(); document.getElementById('crdSO').classList.add('open'); document.getElementById('crdSP').classList.add('open'); }
+  function closeS() { document.getElementById('crdSO').classList.remove('open'); document.getElementById('crdSP').classList.remove('open'); }
+
+  // ── Events ──
+  tabR.addEventListener('click', openR);
+  tabS.addEventListener('click', openS);
+  document.getElementById('crdRX').addEventListener('click', closeR);
+  document.getElementById('crdSX').addEventListener('click', closeS);
+  document.getElementById('crdRO').addEventListener('click', closeR);
+  document.getElementById('crdSO').addEventListener('click', closeS);
+  document.addEventListener('keydown', function(e) { if (e.key === 'Escape') { closeR(); closeS(); } });
+
+  // ── Fetch data from API using slug in URL ──
+  function init() {
+    var params = new URLSearchParams(location.search);
+    var slug = params.get('slug');
+    if (!slug) return;
+    var base = location.origin.includes('localhost') ? 'http://localhost:5000' : 'https://api.counselorready.com';
+    fetch(base + '/api/interactive-courses/slug/' + slug)
+      .then(function(r) { return r.json(); })
+      .then(function(d) {
+        var c = d.data || d.course || d;
+        refsData = c.references || [];
+        resData = c.resources || [];
+        // Also scan contentBlocks for inline resource blocks
+        if (resData.length === 0 && c.sections) {
+          c.sections.forEach(function(sec) {
+            (sec.contentBlocks || []).forEach(function(b) {
+              if (b.type === 'resources' && b.resources) {
+                b.resources.forEach(function(r) {
+                  if (r.title || r.url) resData.push(r);
+                });
+              }
+            });
+          });
+        }
+        if (refsData.length > 0) tabR.style.display = 'block';
+        if (resData.length > 0) tabS.style.display = 'block';
+      })
+      .catch(function() {});
+  }
+
+  // Wait for course to load, then fetch
+  var poll = setInterval(function() {
+    var app = document.getElementById('crApp');
+    if (app && app.style.display === 'grid') { clearInterval(poll); init(); }
+  }, 300);
+  setTimeout(function() { clearInterval(poll); }, 30000);
+})();
 </script>
 </body>
 </html>
