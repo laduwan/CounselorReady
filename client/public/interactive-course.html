@@ -2404,7 +2404,7 @@ function renderBlock(block, index) {
     case 'text': return renderText(wrap, block);
     case 'imageText': return renderImageText(wrap, block);
     case 'image': return renderImage(wrap, block);
-    case 'accordion': return renderAccordion(wrap, block);
+    case 'accordion': return renderAccordion(wrap, block, index);
     case 'multipleChoice': return renderMultipleChoice(wrap, block, index);
     case 'multiSelect': return renderMultiSelect(wrap, block, index);
     case 'matching': return renderMatching(wrap, block, index);
@@ -2473,7 +2473,7 @@ function renderImage(wrap, block) {
 }
 
 // ─── ACCORDION ───
-function renderAccordion(wrap, block) {
+function renderAccordion(wrap, block, index) {
   const items = block.accordionItems || [];
   let html = '<div class="cr-accordion">';
   items.forEach((item, i) => {
