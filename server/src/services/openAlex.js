@@ -13,10 +13,6 @@
 const OPENALEX_BASE = 'https://api.openalex.org/works';
 const MAILTO = process.env.CROSSREF_MAILTO || 'contact@gaintegrated.com';
 
-// Every approved RNR request generates 6,200+ words (1 CE hour)
-const GENERATED_WORD_COUNT = 6200;
-const GENERATED_CE_HOURS = 1.0;
-const GENERATED_RESEARCH_HOURS = 0.5;
 
 /**
  * Decode OpenAlex abstract_inverted_index into plain text.
@@ -67,7 +63,7 @@ export function getAbstractStatus(abstractWordCount) {
 /**
  * Map a single OpenAlex work object to our result format.
  */
-function mapWork(work) {
+function mapWork(work, desiredHours = 1.0) {
   const abstract = decodeAbstractInvertedIndex(work.abstract_inverted_index);
   const abstractWordCount = abstract ? abstract.split(/\s+/).filter(w => w.length > 0).length : 0;
 
@@ -81,6 +77,10 @@ function mapWork(work) {
     || '';
   const topic = work.primary_topic?.display_name || '';
 
+  const ceHours = desiredHours;
+  const wordCount = ceHours * 6000; // target, not actual
+  const researchHours = calculateResearchHours(ceHours);
+
   return {
     openAlexId: work.id,
     title: work.title || 'Untitled',
@@ -88,16 +88,15 @@ function mapWork(work) {
     journal,
     authors,
     abstract,
-    // Generated content stats (what the learner will actually read)
-    wordCount: GENERATED_WORD_COUNT,
-    ceHours: GENERATED_CE_HOURS,
-    researchHours: GENERATED_RESEARCH_HOURS,
+    wordCount,
+    ceHours,
+    researchHours,
     // Abstract quality indicator
     abstractWordCount,
     abstractStatus: getAbstractStatus(abstractWordCount),
     oaUrl,
     topic,
-    wcStatus: 'sufficient', // Always sufficient — content is AI-generated
+    wcStatus: ceHours <= 3 ? 'sufficient' : 'extended',
     citedByCount: work.cited_by_count || 0,
     doi: work.primary_location?.source?.id || ''
   };
@@ -137,7 +136,7 @@ export async function searchArticles({
   }
 
   const data = await response.json();
-  let results = (data.results || []).map(mapWork);
+  let results = (data.results || []).map(w => mapWork(w, desired_hours || 1.0));
 
   // Filter out articles with no abstract (thin abstracts produce poor content)
   results = results.filter(r => r.abstractWordCount >= 50);
@@ -172,5 +171,5 @@ export async function fetchNewerArticles({ topic, title, yearAfter }) {
   }
 
   const data = await response.json();
-  return (data.results || []).map(mapWork);
+  return (data.results || []).map(w => mapWork(w, 1.0));
 }
