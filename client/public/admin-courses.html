@@ -358,19 +358,25 @@
     }
 
     async function init() {
+      document.title = 'INIT START';
       try {
         const r = await fetch(`${API_URL}/api/auth/me`, { headers: { Authorization: `Bearer ${token}` } });
         if (r.ok) {
           const d = await r.json();
           const u = d.user || d;
           document.getElementById('adminEmail').textContent = u.email || 'Admin';
-          if (!u.isAdmin && u.role !== 'admin') window.location.href = '/dashboard.html';
+          document.title = 'AUTH OK: ' + u.email;
+          if (!u.isAdmin && u.role !== 'admin') { document.title = 'NOT ADMIN - redirecting'; window.location.href = '/dashboard.html'; return; }
+        } else {
+          document.title = 'AUTH FAILED: ' + r.status;
         }
-      } catch(e) {}
+      } catch(e) { document.title = 'AUTH ERROR: ' + e.message; }
+      document.title = 'CALLING loadCourses';
       loadCourses();
     }
 
     async function loadCourses() {
+      document.title = 'LOAD START';
       show('loadingState'); hide('mainContent'); hide('errorState');
       try {
         let courses = [];
@@ -383,11 +389,13 @@
             headers: { Authorization: `Bearer ${token}` },
             signal: ctrl1.signal
           });
+          document.title = 'ADMIN COURSES: ' + r.status;
           if (r.ok) {
             const d = await r.json();
             courses = (d.courses || []).map(c => ({ ...c, _source: 'courses' }));
+            document.title = 'ADMIN: ' + courses.length + ' courses';
           }
-        } catch(e) { console.warn('Fetch failed:', e.message); }
+        } catch(e) { document.title = 'ADMIN FAIL: ' + e.message; }
 
         // 2. Interactive courses (Architecture A - interactivecourses collection)
         try {
@@ -399,9 +407,10 @@
               headers: { Authorization: `Bearer ${token}` },
               signal: ctrl2.signal
             });
-            if (!r.ok) break;
+            if (!r.ok) { document.title = 'IC FAIL p' + p + ': ' + r.status; break; }
             const d = await r.json();
             const batch = (d.data || []).map(c => ({ ...c, _source: 'interactivecourses' }));
+            document.title = 'IC p' + p + ': +' + batch.length;
             // Prefer interactivecourses version (deduplicate by slug)
             batch.forEach(ic => {
               const idx = courses.findIndex(c => c.slug === ic.slug);
@@ -411,16 +420,22 @@
             if (p >= (d.pagination?.pages || 1) || batch.length === 0) break;
             p++;
           }
-        } catch(e) { console.warn('Fetch failed:', e.message); }
+        } catch(e) { document.title = 'IC FAIL: ' + e.message; }
 
+        document.title = 'TOTAL: ' + courses.length + ' - annotating';
         // Annotate with health
         allCourses = courses.map(c => ({ ...c, _health: healthStatus(c), _words: wordCount(c) }));
 
+        document.title = 'ANNOTATED: ' + allCourses.length + ' - rendering';
         updateHealthDashboard();
+        document.title = 'HEALTH DONE - renderCourses';
         renderCourses();
+        document.title = 'RENDER DONE - showing';
         hide('loadingState');
         show('mainContent');
+        document.title = 'COMPLETE: ' + allCourses.length + ' courses';
       } catch(e) {
+        document.title = 'CRASH: ' + e.message;
         hide('loadingState');
         show('errorState');
         document.getElementById('errorMsg').textContent = 'Failed to load: ' + e.message;
