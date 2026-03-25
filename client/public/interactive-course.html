@@ -1,9 +1,22 @@
 <!DOCTYPE html>
+<!--
+  ╔══════════════════════════════════════════════════════════════╗
+  ║  CReady™ Viewer                                            ║
+  ║  © 2026 GAITP LLC (GA Integrated Therapeutic Perspectives) ║
+  ║  All rights reserved.                                      ║
+  ║                                                            ║
+  ║  CounselorReady™ — Learn. License. Lead.®                  ║
+  ║  NBCC ACEP Provider #7760                                  ║
+  ║                                                            ║
+  ║  Unauthorized reproduction, distribution, or modification  ║
+  ║  of this software is strictly prohibited.                  ║
+  ╚══════════════════════════════════════════════════════════════╝
+-->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CounselorReady™ Course Viewer</title>
+<title>CReady™ Viewer | CounselorReady</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Lato:ital,wght@0,300;0,400;0,700;0,900;1,400&family=OpenDyslexic:wght@400;700&display=swap" rel="stylesheet">
 <style>
@@ -196,8 +209,7 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
   background: var(--cr-surface);
   border-right: 1px solid var(--cr-border);
   display: flex; flex-direction: column;
-  overflow: hidden;
-  z-index: 40;
+  overflow: hidden; z-index: 40;
 }
 @media (max-width: 1024px) {
   .cr-sidebar {
@@ -208,117 +220,114 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
   }
   .cr-sidebar.open { transform: translateX(0); }
 }
+
+/* Sidebar header — burgundy gradient */
 .cr-sidebar-header {
-  padding: 20px; border-bottom: 1px solid var(--cr-border);
+  background: linear-gradient(160deg, var(--cr-burgundy) 0%, #4A1224 100%);
+  padding: 18px; color: #fff;
 }
-.cr-sidebar-brand {
-  font-family: var(--cr-font-display);
-  font-size: 20px; font-weight: 700;
-  display: flex; align-items: baseline; gap: 0;
+.cr-sidebar-ce-badge {
+  display: inline-block; background: var(--cr-green);
+  color: #fff; font-size: 11px; font-weight: 700;
+  padding: 3px 10px; border-radius: 12px; margin-bottom: 10px;
 }
-.cr-sidebar-brand .cr-c { color: var(--cr-burgundy); }
-.cr-sidebar-brand .cr-r { color: var(--cr-green); }
 .cr-sidebar-course-title {
   font-family: var(--cr-font-display);
-  font-size: 15px; font-weight: 600;
-  color: var(--cr-text-secondary);
-  margin-top: 6px;
+  font-size: 15px; font-weight: 700; color: #fff;
   line-height: 1.3;
 }
-.cr-sidebar-meta {
-  display: flex; gap: 12px; margin-top: 8px;
-  font-size: 12px; color: var(--cr-text-muted);
+.cr-sidebar-viewer-label {
+  font-size: 9px; text-transform: uppercase; letter-spacing: 0.12em;
+  color: rgba(255,255,255,0.5); margin-top: 6px;
 }
-.cr-sidebar-meta span { display: flex; align-items: center; gap: 4px; }
 
-/* Progress bar */
+/* Progress ring + text row */
+.cr-sidebar-progress {
+  display: flex; align-items: center; gap: 12px;
+  padding: 14px 18px; border-bottom: 1px solid var(--cr-border);
+}
+.cr-progress-ring { position: relative; width: 44px; height: 44px; flex-shrink: 0; }
+.cr-progress-ring svg { transform: rotate(-90deg); }
+.cr-progress-ring-bg { fill: none; stroke: var(--cr-border); stroke-width: 4; }
+.cr-progress-ring-fill { fill: none; stroke: var(--cr-green); stroke-width: 4; stroke-linecap: round; transition: stroke-dashoffset 0.5s ease; }
+.cr-progress-ring-text {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; color: var(--cr-green);
+}
+.cr-progress-info { flex: 1; }
+.cr-progress-info-main { font-size: 13px; font-weight: 700; color: var(--cr-text); }
+.cr-progress-info-sub { font-size: 11px; color: var(--cr-text-muted); margin-top: 2px; }
+
+/* Thin progress bar under progress row */
 .cr-progress-bar {
-  margin: 12px 20px 0;
-  height: 6px; border-radius: 3px;
-  background: var(--cr-border);
-  overflow: hidden;
+  margin: 0 18px; height: 4px; border-radius: 2px;
+  background: var(--cr-border); overflow: hidden;
 }
 .cr-progress-fill {
-  height: 100%; border-radius: 3px;
-  background: linear-gradient(90deg, var(--cr-green), var(--cr-green-light));
-  transition: width 0.5s ease;
-  width: 0%;
+  height: 100%; border-radius: 2px; background: var(--cr-green);
+  transition: width 0.5s ease; width: 0%;
 }
 
-/* Section nav */
-.cr-section-nav {
-  flex: 1; overflow-y: auto;
-  padding: 8px 0;
+/* "COURSE SECTIONS X/Y" label */
+.cr-nav-label {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 14px 18px 8px;
+  font-size: 11px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.1em; color: var(--cr-burgundy);
 }
+.cr-nav-label-count { color: var(--cr-text-muted); font-weight: 600; }
+
+/* Section nav scroll area */
+.cr-section-nav { flex: 1; overflow-y: auto; padding: 0 0 8px; }
 .cr-section-nav::-webkit-scrollbar { width: 4px; }
 .cr-section-nav::-webkit-scrollbar-thumb { background: var(--cr-border); border-radius: 2px; }
 
-/* Module group header (static, not clickable) */
+/* Module group headers */
 .cr-nav-module {
-  padding: 12px 20px 4px;
-  font-family: var(--cr-font-display);
-  font-size: 11px; font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--cr-burgundy);
-  border: none; background: none; width: 100%; text-align: left;
+  padding: 10px 18px 4px; font-size: 10px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.1em;
+  color: var(--cr-text-muted); border: none; background: none;
+  width: 100%; text-align: left;
 }
 .cr-nav-module:not(:first-child) {
-  margin-top: 8px;
-  border-top: 1px solid var(--cr-border);
-  padding-top: 14px;
+  margin-top: 4px; border-top: 1px solid var(--cr-border); padding-top: 12px;
 }
 
-/* Section nav item (clickable, shows progression) */
+/* Section nav items */
 .cr-nav-item {
   display: flex; align-items: center; gap: 10px;
-  padding: 8px 20px 8px 28px;
-  cursor: pointer;
+  padding: 9px 18px; cursor: pointer;
   border: none; background: none; width: 100%; text-align: left;
   font-size: 13px; color: var(--cr-text-secondary);
   transition: background var(--cr-transition), color var(--cr-transition);
-  min-height: 40px;
+  min-height: 40px; border-left: 3px solid transparent;
 }
-.cr-nav-item:hover { background: var(--cr-burgundy-faded); }
+.cr-nav-item:hover { background: rgba(74,124,89,0.04); }
 .cr-nav-item.active {
-  background: var(--cr-burgundy-faded);
-  color: var(--cr-burgundy);
-  font-weight: 600;
-  border-right: 3px solid var(--cr-burgundy);
+  color: var(--cr-green); font-weight: 600;
+  border-left-color: var(--cr-green);
+  background: rgba(74,124,89,0.06);
 }
-.cr-nav-item.completed .cr-nav-dot {
-  background: var(--cr-green);
-  border-color: var(--cr-green);
-  color: #fff;
-}
-.cr-nav-item.visited .cr-nav-dot {
-  border-color: var(--cr-green-light);
-}
+.cr-nav-item.completed { color: var(--cr-text-secondary); }
+
 .cr-nav-dot {
-  width: 20px; height: 20px;
-  border-radius: 50%;
+  width: 24px; height: 24px; border-radius: 50%;
   border: 2px solid var(--cr-border);
   display: flex; align-items: center; justify-content: center;
-  font-size: 10px; font-weight: 700;
-  flex-shrink: 0;
+  font-size: 11px; font-weight: 700; flex-shrink: 0;
   transition: all var(--cr-transition);
-  background: var(--cr-surface);
+  background: var(--cr-surface); color: var(--cr-text-muted);
 }
 .cr-nav-item.active .cr-nav-dot {
-  border-color: var(--cr-burgundy);
-  background: var(--cr-burgundy);
-  color: #fff;
-  box-shadow: 0 0 0 3px var(--cr-burgundy-faded);
+  border-color: var(--cr-green); background: var(--cr-green); color: #fff;
 }
 .cr-nav-item.visited .cr-nav-dot {
-  border-color: var(--cr-green-light);
-  background: var(--cr-green-faded);
+  border-color: var(--cr-green-light); background: var(--cr-green-faded); color: var(--cr-green);
 }
 .cr-nav-item.completed .cr-nav-dot {
-  background: var(--cr-green);
-  border-color: var(--cr-green);
-  color: #fff;
+  background: var(--cr-green); border-color: var(--cr-green); color: #fff;
 }
+
 
 /* Assessment nav item */
 .cr-nav-assessment {
@@ -1217,12 +1226,183 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
   background: var(--cr-gold-faded);
 }
 
+/* ═══════════════════════════════════════════════════════════════
+   GLOSSARY PANEL
+   ═══════════════════════════════════════════════════════════════ */
+.cr-glossary-btn {
+  position: fixed; bottom: 24px; right: 88px;
+  width: 52px; height: 52px;
+  border-radius: 50%;
+  background: var(--cr-green);
+  color: #fff; border: none; cursor: pointer;
+  display: none; align-items: center; justify-content: center;
+  box-shadow: 0 4px 16px rgba(74,124,89,0.35);
+  z-index: 50; font-size: 20px;
+  transition: transform var(--cr-transition);
+}
+.cr-glossary-btn:hover { transform: scale(1.1); }
+.cr-glossary-btn.visible { display: flex; }
+
+.cr-glossary-panel {
+  position: fixed; top: 0; right: 0; bottom: 0;
+  width: 360px; max-width: 90vw;
+  background: var(--cr-surface);
+  border-left: 1px solid var(--cr-border);
+  box-shadow: -4px 0 24px rgba(0,0,0,0.12);
+  z-index: 55; transform: translateX(100%);
+  transition: transform var(--cr-transition);
+  display: flex; flex-direction: column;
+}
+.cr-glossary-panel.open { transform: translateX(0); }
+.cr-glossary-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--cr-border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.cr-glossary-header h3 {
+  font-family: var(--cr-font-display); font-weight: 700; font-size: 1.2em; color: var(--cr-green);
+  margin: 0; display: flex; align-items: center; gap: 8px;
+}
+.cr-glossary-search {
+  margin: 12px 20px 0;
+  padding: 10px 14px;
+  border: 2px solid var(--cr-border);
+  border-radius: 8px; width: calc(100% - 40px);
+  font-size: 0.9em;
+}
+.cr-glossary-search:focus { border-color: var(--cr-green); outline: none; }
+.cr-glossary-list {
+  flex: 1; overflow-y: auto; padding: 12px 20px;
+}
+.cr-glossary-item {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--cr-border);
+}
+.cr-glossary-term {
+  font-weight: 700; color: var(--cr-green);
+  font-size: 0.95em; margin-bottom: 4px;
+}
+.cr-glossary-def {
+  font-size: 0.88em; color: var(--cr-text-secondary);
+  line-height: 1.5;
+}
+/* Inline glossary links */
+.cr-term-link {
+  border-bottom: 2px dotted var(--cr-green);
+  cursor: help; color: inherit;
+  transition: background 0.2s;
+}
+.cr-term-link:hover { background: var(--cr-green-faded); }
+
+/* ═══════════════════════════════════════════════════════════════
+   LEARNING OBJECTIVES TRACKER
+   ═══════════════════════════════════════════════════════════════ */
+.cr-objectives-panel {
+  background: var(--cr-burgundy-faded);
+  border: 1px solid var(--cr-burgundy);
+  border-radius: var(--cr-radius);
+  padding: 20px; margin-bottom: 28px;
+}
+.cr-objectives-title {
+  font-family: var(--cr-font-display); font-weight: 700;
+  font-size: 1.1em; color: var(--cr-burgundy);
+  margin-bottom: 12px; display: flex; align-items: center; gap: 8px;
+}
+.cr-obj-item {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 8px 0; font-size: 0.9em; line-height: 1.4;
+  cursor: pointer; transition: opacity 0.2s;
+}
+.cr-obj-check {
+  width: 22px; height: 22px; min-width: 22px;
+  border: 2px solid var(--cr-burgundy);
+  border-radius: 6px; display: flex;
+  align-items: center; justify-content: center;
+  font-size: 14px; color: transparent;
+  transition: all 0.2s; margin-top: 1px;
+}
+.cr-obj-item.checked .cr-obj-check {
+  background: var(--cr-green); border-color: var(--cr-green); color: #fff;
+}
+.cr-obj-item.checked { opacity: 0.6; }
+
+/* ═══════════════════════════════════════════════════════════════
+   TEXT HIGHLIGHTING & ANNOTATIONS
+   ═══════════════════════════════════════════════════════════════ */
+.cr-highlight {
+  background: rgba(212, 168, 85, 0.3);
+  border-radius: 2px; cursor: pointer;
+  position: relative;
+}
+.cr-highlight:hover { background: rgba(212, 168, 85, 0.5); }
+.cr-highlight-note {
+  position: absolute; bottom: 100%; left: 0;
+  background: var(--cr-navy); color: #fff;
+  padding: 8px 12px; border-radius: 8px;
+  font-size: 12px; max-width: 280px;
+  white-space: normal; display: none;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  z-index: 10;
+}
+.cr-highlight:hover .cr-highlight-note { display: block; }
+
+.cr-highlight-toolbar {
+  position: fixed; display: none;
+  background: var(--cr-navy); color: #fff;
+  border-radius: 8px; padding: 6px 10px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+  z-index: 60; gap: 6px; align-items: center;
+  font-size: 13px;
+}
+.cr-highlight-toolbar.visible { display: flex; }
+.cr-highlight-toolbar button {
+  background: none; border: none; color: #fff;
+  cursor: pointer; padding: 4px 8px; border-radius: 4px;
+  min-height: 32px; min-width: 32px; font-size: 14px;
+}
+.cr-highlight-toolbar button:hover { background: rgba(255,255,255,0.15); }
+
+/* ═══════════════════════════════════════════════════════════════
+   TRANSLATION BAR
+   ═══════════════════════════════════════════════════════════════ */
+.cr-translate-bar {
+  padding: 8px 20px;
+  border-top: 1px solid var(--cr-border);
+  display: flex; align-items: center; gap: 8px;
+  font-size: 12px; color: var(--cr-text-muted);
+}
+.cr-translate-bar select {
+  padding: 4px 8px; border: 1px solid var(--cr-border);
+  border-radius: 6px; font-size: 12px;
+  min-height: 32px;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   PRINT / PDF TOOLBAR
+   ═══════════════════════════════════════════════════════════════ */
+.cr-toolbar {
+  display: flex; gap: 8px; margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+.cr-toolbar-btn {
+  display: flex; align-items: center; gap: 6px;
+  padding: 6px 14px; border: 1px solid var(--cr-border);
+  border-radius: 8px; background: var(--cr-surface);
+  cursor: pointer; font-size: 12px; color: var(--cr-text-secondary);
+  min-height: 36px; transition: all 0.2s;
+}
+.cr-toolbar-btn:hover { border-color: var(--cr-burgundy); color: var(--cr-burgundy); }
+
 /* Print styles */
 @media print {
   .cr-sidebar, .cr-topbar, .cr-a11y-toggle, .cr-a11y-panel,
-  .cr-nav-buttons, .cr-reading-guide { display: none !important; }
+  .cr-nav-buttons, .cr-reading-guide, .cr-glossary-btn,
+  .cr-glossary-panel, .cr-highlight-toolbar, .cr-toolbar,
+  .cr-translate-bar { display: none !important; }
   .cr-layout { grid-template-columns: 1fr !important; }
   .cr-main { max-width: 100%; padding: 20px; }
+  .cr-highlight { background: none !important; border-bottom: 1px solid #999; }
+  .cr-accordion-body { max-height: none !important; padding: 12px 0 !important; }
 }
 </style>
 <!-- .docx parsing -->
@@ -1274,12 +1454,29 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
 
   <!-- SIDEBAR -->
   <aside class="cr-sidebar" id="crSidebar" role="navigation" aria-label="Course sections">
+    <!-- Burgundy header -->
     <div class="cr-sidebar-header">
-      <div class="cr-sidebar-brand"><span class="cr-c">Counselor</span><span class="cr-r">Ready</span></div>
+      <div class="cr-sidebar-ce-badge" id="crCeBadge"></div>
       <div class="cr-sidebar-course-title" id="crSidebarTitle"></div>
-      <div class="cr-sidebar-meta" id="crSidebarMeta"></div>
+      <div class="cr-sidebar-viewer-label">CReady™ Viewer</div>
     </div>
+    <!-- Progress ring + info -->
+    <div class="cr-sidebar-progress" id="crSidebarProgress">
+      <div class="cr-progress-ring">
+        <svg width="44" height="44" viewBox="0 0 44 44">
+          <circle class="cr-progress-ring-bg" cx="22" cy="22" r="18"/>
+          <circle class="cr-progress-ring-fill" id="crProgressRing" cx="22" cy="22" r="18" stroke-dasharray="113.1" stroke-dashoffset="113.1"/>
+        </svg>
+        <div class="cr-progress-ring-text" id="crProgressPct">0%</div>
+      </div>
+      <div class="cr-progress-info">
+        <div class="cr-progress-info-main" id="crProgressMain">0 of 0 complete</div>
+        <div class="cr-progress-info-sub" id="crProgressSub">Section 1 in progress</div>
+      </div>
+    </div>
+    <!-- Thin progress bar -->
     <div class="cr-progress-bar"><div class="cr-progress-fill" id="crProgressFill"></div></div>
+    <!-- Section nav -->
     <nav class="cr-section-nav" id="crSectionNav"></nav>
     <div class="cr-nav-assessment" id="crNavAssessment" style="display:none">
       <button class="cr-nav-item" id="crNavAssessBtn" data-action="showAssessment">
@@ -1299,6 +1496,28 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
         <span>Course Data (.json)</span>
       </button>
     </div>
+    <!-- Translation -->
+    <div class="cr-translate-bar" id="crTranslateBar" style="display:none">
+      <span>🌐</span>
+      <select id="crLangSelect" data-action="noop">
+        <option value="">Original</option>
+        <option value="es">Español</option>
+        <option value="fr">Français</option>
+        <option value="zh">中文</option>
+        <option value="ko">한국어</option>
+        <option value="ar">العربية</option>
+        <option value="pt">Português</option>
+        <option value="vi">Tiếng Việt</option>
+        <option value="ht">Kreyòl Ayisyen</option>
+        <option value="so">Soomaali</option>
+      </select>
+    </div>
+    <!-- Copyright -->
+    <div style="padding:10px 20px;font-size:9px;color:var(--cr-text-muted);text-align:center;border-top:1px solid var(--cr-border);line-height:1.4">
+      <span style="font-weight:700">CReady™ Viewer</span><br>
+      © 2026 GAITP LLC · NBCC ACEP #7760<br>
+      <span style="font-family:var(--cr-font-display)"><span style="color:var(--cr-burgundy)">Counselor</span><span style="color:var(--cr-green)">Ready</span></span>™ Learn. License. Lead.®
+    </div>
   </aside>
 
   <!-- MOBILE TOPBAR -->
@@ -1317,6 +1536,15 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
 
   <!-- MAIN CONTENT -->
   <main class="cr-main" id="cr-content" role="main">
+    <!-- Section toolbar -->
+    <div class="cr-toolbar" id="crToolbar" style="display:none">
+      <button class="cr-toolbar-btn" data-action="printSection">🖨️ Print Section</button>
+      <button class="cr-toolbar-btn" data-action="exportPDF">📄 Export as PDF</button>
+    </div>
+    
+    <!-- Learning objectives tracker (injected on first content section) -->
+    <div id="crObjectivesTracker"></div>
+    
     <!-- Section content rendered here -->
     <div id="crContentArea"></div>
     
@@ -1374,6 +1602,27 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
     <div class="cr-toggle" id="toggle-read-aloud" data-action="toggleReadAloud" role="switch" aria-checked="false" tabindex="0"></div>
   </div>
   
+  <!-- TTS Controls (shown when Read Aloud is on) -->
+  <div id="crTTSControls" style="display:none;padding:8px 0 12px;border-bottom:1px solid var(--cr-border)">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+      <label style="font-size:13px;min-width:55px">Volume</label>
+      <input type="range" id="crTTSVolume" min="0" max="1" step="0.1" value="0.8" 
+        style="flex:1;accent-color:var(--cr-burgundy);height:6px;min-height:20px;min-width:0">
+      <span id="crTTSVolumeLabel" style="font-size:11px;color:var(--cr-text-muted);min-width:28px;text-align:right">80%</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+      <label style="font-size:13px;min-width:55px">Speed</label>
+      <input type="range" id="crTTSSpeed" min="0.5" max="2" step="0.1" value="0.9" 
+        style="flex:1;accent-color:var(--cr-green);height:6px;min-height:20px;min-width:0">
+      <span id="crTTSSpeedLabel" style="font-size:11px;color:var(--cr-text-muted);min-width:28px;text-align:right">0.9×</span>
+    </div>
+    <div style="display:flex;gap:6px;justify-content:center">
+      <button data-action="ttsPause" style="padding:6px 14px;border:1px solid var(--cr-border);border-radius:6px;background:var(--cr-surface);cursor:pointer;font-size:14px;min-height:36px;min-width:44px" title="Pause/Resume">⏸</button>
+      <button data-action="ttsStop" style="padding:6px 14px;border:1px solid var(--cr-border);border-radius:6px;background:var(--cr-surface);cursor:pointer;font-size:14px;min-height:36px;min-width:44px" title="Stop">⏹</button>
+      <button data-action="ttsRestart" style="padding:6px 14px;border:1px solid var(--cr-border);border-radius:6px;background:var(--cr-surface);cursor:pointer;font-size:14px;min-height:36px;min-width:44px" title="Restart section">🔄</button>
+    </div>
+  </div>
+  
   <div class="cr-a11y-option">
     <label>Reduced Motion</label>
     <div class="cr-toggle" id="toggle-reduced-motion" data-action="toggleBool" data-setting="reduced-motion" role="switch" aria-checked="false" tabindex="0"></div>
@@ -1390,13 +1639,33 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
   </div>
 </div>
 
+<!-- GLOSSARY BUTTON -->
+<button class="cr-glossary-btn" id="crGlossaryBtn" data-action="toggleGlossary" aria-label="Key Terms" title="Key Terms Glossary">📖</button>
+
+<!-- GLOSSARY PANEL -->
+<div class="cr-glossary-panel" id="crGlossaryPanel">
+  <div class="cr-glossary-header">
+    <h3>📖 Key Terms</h3>
+    <button data-action="toggleGlossary" style="width:36px;height:36px;border:none;background:none;cursor:pointer;font-size:18px;min-height:36px;min-width:36px">✕</button>
+  </div>
+  <input class="cr-glossary-search" id="crGlossarySearch" placeholder="Search terms..." type="text">
+  <div class="cr-glossary-list" id="crGlossaryList"></div>
+</div>
+
+<!-- HIGHLIGHT TOOLBAR (appears on text selection) -->
+<div class="cr-highlight-toolbar" id="crHighlightToolbar">
+  <button data-action="highlightSelection" title="Highlight">🖍️</button>
+  <button data-action="annotateSelection" title="Add note">📝</button>
+  <button data-action="removeHighlight" title="Remove">✕</button>
+</div>
+
 <!-- ═══════════════════════════════════════════════════════════════
      PARSER MODAL
      ═══════════════════════════════════════════════════════════════ -->
 <div class="cr-parser-modal" id="crParserModal">
   <div class="cr-parser-content">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
-      <h3 style="font-family:var(--cr-font-display);font-size:1.4em;font-weight:700;color:var(--cr-burgundy)">Load Course</h3>
+      <h3 style="font-family:var(--cr-font-display);font-size:1.4em;font-weight:700;color:var(--cr-burgundy)">CReady™ Viewer — Load Course</h3>
       <button data-action="closeParser" style="width:36px;height:36px;border:none;background:none;cursor:pointer;font-size:20px;min-height:36px;min-width:36px">✕</button>
     </div>
     <div class="cr-parser-dropzone" id="crDropzone"
@@ -1422,6 +1691,13 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
      JAVASCRIPT
      ═══════════════════════════════════════════════════════════════ -->
 <script>
+// ══════════════════════════════════════════════════════════════
+// CReady™ Viewer — © 2026 GAITP LLC. All rights reserved.
+// CounselorReady™ — Learn. License. Lead.®
+// NBCC ACEP Provider #7760
+// Unauthorized reproduction or distribution is prohibited.
+// ══════════════════════════════════════════════════════════════
+
 // ═══════════════════════════════════════════════════════════════
 // STATE
 // ═══════════════════════════════════════════════════════════════
@@ -1458,7 +1734,7 @@ let ttsUtterance = null;
   }
   
   if (slug) {
-    const base = apiBase || (location.origin.includes('localhost') ? 'http://localhost:5000' : 'https://api.counselorready.com');
+    const base = apiBase || (location.origin.includes('localhost') ? 'http://localhost:5000' : 'https://counselorready-2.onrender.com');
     fetch(`${base}/api/interactive-courses/slug/${slug}`)
       .then(r => r.json())
       .then(data => loadCourse(data.data || data.course || data))
@@ -1653,14 +1929,14 @@ function loadCourse(data) {
   document.getElementById('crApp').style.display = 'grid';
   closeParser();
   
-  // Sidebar
+  // Sidebar header
   document.getElementById('crSidebarTitle').textContent = course.title || 'Untitled Course';
   document.getElementById('crTopbarTitle').textContent = course.title || 'Untitled Course';
   
-  const meta = [];
-  if (course.ceHours || course.ceuHours) meta.push(`<span>🕐 ${course.ceHours || course.ceuHours} CE</span>`);
-  if (course.sections) meta.push(`<span>📖 ${course.sections.length} Sections</span>`);
-  document.getElementById('crSidebarMeta').innerHTML = meta.join('');
+  const ceHrs = course.ceHours || course.ceuHours || '';
+  const badge = document.getElementById('crCeBadge');
+  if (badge && ceHrs) badge.textContent = ceHrs + ' CE Hours';
+  else if (badge) badge.style.display = 'none';
   
   // Show assessment nav if assessment exists
   if (course.assessment?.questions?.length > 0) {
@@ -1675,13 +1951,17 @@ function loadCourse(data) {
     document.getElementById('crTTSBtn').style.display = '';
   }
   
-  buildSectionNav();
-  renderCurrentSection();
-  
   // Notify parent (if embedded)
   if (window.parent !== window) {
     window.parent.postMessage({ type: 'COURSE_LOADED', title: course.title, sections: course.sections.length }, '*');
   }
+  
+  // ── Feature hooks + initial render ──
+  restoreProgress();
+  buildGlossary();
+  initTranslation();
+  buildSectionNav();
+  renderCurrentSection();
 }
 
 function showError(msg) {
@@ -1701,11 +1981,11 @@ function buildSectionNav() {
   const navSections = course.sections.map((s, i) => ({ section: s, index: i })).filter(s => !s.section._isOverview);
   const completedCount = navSections.filter(s => completedSections.has(s.index)).length;
   
-  // Progress counter
-  const counter = document.createElement('div');
-  counter.style.cssText = 'padding:8px 20px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--cr-text-muted);display:flex;justify-content:space-between';
-  counter.innerHTML = `<span>COURSE SECTIONS</span><span>${completedCount}/${navSections.length}</span>`;
-  nav.appendChild(counter);
+  // "COURSE SECTIONS X/Y" label
+  const label = document.createElement('div');
+  label.className = 'cr-nav-label';
+  label.innerHTML = `<span>COURSE SECTIONS</span><span class="cr-nav-label-count">${completedCount}/${navSections.length}</span>`;
+  nav.appendChild(label);
   
   // Detect module groupings
   const moduleGroups = detectModuleGroups();
@@ -1852,7 +2132,36 @@ function updateProgress() {
   const total = navSections.length;
   const completedNav = course.sections.filter((s, i) => !s._isOverview && completedSections.has(i)).length;
   const pct = total > 0 ? Math.round((completedNav / total) * 100) : 0;
-  document.getElementById('crProgressFill').style.width = pct + '%';
+  
+  // Progress bar
+  const bar = document.getElementById('crProgressFill');
+  if (bar) bar.style.width = pct + '%';
+  
+  // Progress ring (circumference = 2πr = 2*π*18 ≈ 113.1)
+  const ring = document.getElementById('crProgressRing');
+  if (ring) {
+    const circumference = 113.1;
+    ring.setAttribute('stroke-dashoffset', circumference - (circumference * pct / 100));
+  }
+  
+  // Percentage text
+  const pctEl = document.getElementById('crProgressPct');
+  if (pctEl) pctEl.textContent = pct + '%';
+  
+  // Progress info
+  const mainEl = document.getElementById('crProgressMain');
+  if (mainEl) mainEl.textContent = `${completedNav} of ${total} complete`;
+  
+  const subEl = document.getElementById('crProgressSub');
+  if (subEl) {
+    const currentSection = course.sections[currentSectionIndex];
+    if (currentSection && !currentSection._isOverview) {
+      const navIdx = navSections.indexOf(currentSection) + 1;
+      subEl.textContent = `Section ${navIdx} in progress`;
+    } else {
+      subEl.textContent = 'Course overview';
+    }
+  }
 }
 
 function toggleSidebar() {
@@ -1899,6 +2208,10 @@ function toggleReadAloud() {
   toggle.classList.toggle('on', ttsActive);
   toggle.setAttribute('aria-checked', ttsActive);
   
+  // Show/hide TTS controls
+  const controls = document.getElementById('crTTSControls');
+  if (controls) controls.style.display = ttsActive ? 'block' : 'none';
+  
   if (ttsActive) {
     readCurrentSection();
   } else {
@@ -1908,18 +2221,61 @@ function toggleReadAloud() {
 
 function toggleTTS() { toggleReadAloud(); }
 
+function getTTSVolume() {
+  const el = document.getElementById('crTTSVolume');
+  return el ? parseFloat(el.value) : 0.8;
+}
+
+function getTTSSpeed() {
+  const el = document.getElementById('crTTSSpeed');
+  return el ? parseFloat(el.value) : 0.9;
+}
+
 function readCurrentSection() {
   if (!ttsActive || !('speechSynthesis' in window)) return;
   speechSynthesis.cancel();
   
   const area = document.getElementById('crContentArea');
-  const text = area.innerText.replace(/[✓★⚙️♿🕐📖💭🎯📁⚠️]/g, '').trim();
+  const text = area.innerText.replace(/[✓★⚙️♿🕐📖💭🎯📁⚠️🖍️📝📄💾🌐🖨️🔄⏸⏹]/g, '').trim();
   if (!text) return;
   
   ttsUtterance = new SpeechSynthesisUtterance(text);
-  ttsUtterance.rate = 0.9;
+  ttsUtterance.volume = getTTSVolume();
+  ttsUtterance.rate = getTTSSpeed();
   ttsUtterance.pitch = 1;
+  
+  ttsUtterance.onend = function() {
+    const pauseBtn = document.querySelector('[data-action="ttsPause"]');
+    if (pauseBtn) pauseBtn.textContent = '▶';
+  };
+  
   speechSynthesis.speak(ttsUtterance);
+  
+  const pauseBtn = document.querySelector('[data-action="ttsPause"]');
+  if (pauseBtn) pauseBtn.textContent = '⏸';
+}
+
+function ttsPause() {
+  if (!('speechSynthesis' in window)) return;
+  const pauseBtn = document.querySelector('[data-action="ttsPause"]');
+  if (speechSynthesis.paused) {
+    speechSynthesis.resume();
+    if (pauseBtn) pauseBtn.textContent = '⏸';
+  } else if (speechSynthesis.speaking) {
+    speechSynthesis.pause();
+    if (pauseBtn) pauseBtn.textContent = '▶';
+  }
+}
+
+function ttsStop() {
+  if (!('speechSynthesis' in window)) return;
+  speechSynthesis.cancel();
+  const pauseBtn = document.querySelector('[data-action="ttsPause"]');
+  if (pauseBtn) pauseBtn.textContent = '▶';
+}
+
+function ttsRestart() {
+  readCurrentSection();
 }
 
 // Reading guide (follows mouse)
@@ -2012,6 +2368,13 @@ function renderCurrentSection() {
   
   // Auto-read if TTS active
   if (ttsActive) readCurrentSection();
+  
+  // ── Feature hooks ──
+  saveProgress();
+  renderObjectivesTracker();
+  restoreHighlights();
+  const _toolbar = document.getElementById('crToolbar');
+  if (_toolbar) _toolbar.style.display = (section && !section._isOverview && currentView === 'section') ? 'flex' : 'none';
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -2643,54 +3006,43 @@ function refCount(id, minLen) {
 }
 
 // ─── RESOURCES ───
-// ─── CLOUDINARY URL NORMALIZER ───
-// Adds fl_attachment to Cloudinary raw/image URLs so files download
-// instead of opening inline (or throwing CORS errors).
+// Injects fl_attachment into Cloudinary URLs so files download instead of opening inline
 function cloudinaryDownloadUrl(url) {
   if (!url) return '#';
-  // Match: https://res.cloudinary.com/<cloud>/raw/upload/... or .../image/upload/...
   const match = url.match(/^(https:\/\/res\.cloudinary\.com\/[^/]+\/(raw|image|video)\/upload\/)(fl_attachment\/)?(.+)$/);
-  if (match) {
-    // Inject fl_attachment if not already present
-    return `${match[1]}fl_attachment/${match[4]}`;
-  }
+  if (match) return `${match[1]}fl_attachment/${match[4]}`;
   return url;
 }
-
-// Detect whether a resource is a downloadable file vs an external link
 function isDownloadable(r) {
-  const downloadTypes = ['pdf', 'docx', 'doc', 'xlsx', 'xls', 'csv', 'pptx', 'ppt',
-    'zip', 'rar', 'worksheet', 'template', 'toolkit', 'document'];
-  if (r.type && downloadTypes.includes(r.type)) return true;
+  const dlTypes = ['pdf','docx','doc','xlsx','xls','csv','pptx','ppt','zip','rar','worksheet','template','toolkit','document'];
+  if (r.type && dlTypes.includes(r.type)) return true;
   const ext = (r.url || r.filename || '').split('.').pop()?.toLowerCase();
-  return downloadTypes.includes(ext);
+  return dlTypes.includes(ext);
 }
 
 function renderResources(wrap, block) {
   const resources = block.resources || block.deliverables || block.files || [];
   const isDeliverables = block.type === 'deliverables';
   const icons = {
-    pdf: '📄', docx: '📝', doc: '📝', xlsx: '📊', xls: '📊', csv: '📊',
-    pptx: '📽️', ppt: '📽️', zip: '📦', rar: '📦',
-    video: '🎬', mp4: '🎬', link: '🔗', article: '📰', website: '🌐',
-    book: '📚', reference: '📖', worksheet: '📋', document: '📃',
-    chapter: '📑', journal: '🔬', toolkit: '🧰', template: '📐', guide: '📖'
+    pdf:'📄', docx:'📝', doc:'📝', xlsx:'📊', xls:'📊', csv:'📊',
+    pptx:'📽️', ppt:'📽️', zip:'📦', rar:'📦', video:'🎬', mp4:'🎬',
+    link:'🔗', article:'📰', website:'🌐', book:'📚', reference:'📖',
+    worksheet:'📋', document:'📃', chapter:'📑', journal:'🔬',
+    toolkit:'🧰', template:'📐', guide:'📖'
   };
   function getIcon(r) {
     if (r.type && icons[r.type]) return icons[r.type];
     const ext = (r.url || r.filename || '').split('.').pop()?.toLowerCase();
     return icons[ext] || '📎';
   }
-
   const heading = isDeliverables ? '📥 Downloadable Materials' : (block.title ? `📎 ${block.title}` : '📎 Resources');
-
   let html = `<div class="cr-resources" style="${isDeliverables ? 'border:2px solid var(--cr-gold);background:var(--cr-gold-faded)' : ''}">
     <h4 style="font-family:var(--cr-font-display);font-weight:700;color:var(--cr-navy);margin-bottom:${block.description ? '4px' : '12px'}">${heading}</h4>
     ${block.description ? `<p style="font-size:0.85em;color:var(--cr-text-muted);margin-bottom:12px">${esc(block.description)}</p>` : ''}
     ${resources.map(r => {
       const dl = isDownloadable(r);
       const href = dl ? cloudinaryDownloadUrl(r.url) : (r.url || '#');
-      const label = r.fileSize ? `${(r.type || 'FILE').toUpperCase()} · ${r.fileSize}` : (r.type || 'link').toUpperCase();
+      const label = r.fileSize ? `${(r.type||'FILE').toUpperCase()} · ${r.fileSize}` : (r.type||'link').toUpperCase();
       return `<div class="cr-resource-item">
         <div class="cr-resource-icon">${getIcon(r)}</div>
         <div class="cr-resource-info">
@@ -2698,7 +3050,7 @@ function renderResources(wrap, block) {
           ${r.description ? `<span style="font-size:0.8em;color:var(--cr-text-muted);display:block;margin-top:2px">${esc(r.description)}</span>` : ''}
           <span>${esc(label)}</span>
         </div>
-        ${dl ? `<a href="${esc(href)}" download title="Download" style="margin-left:auto;color:var(--cr-navy);text-decoration:none;font-size:1.1em">⬇️</a>` : ''}
+        ${dl ? `<a href="${esc(href)}" download title="Download" style="margin-left:auto;color:var(--cr-navy);text-decoration:none">⬇️</a>` : ''}
       </div>`;
     }).join('')}
   </div>`;
@@ -2992,6 +3344,7 @@ function renderAssessmentResult() {
     </button>`;
   }
   
+  html += '<div style="margin-top:24px;font-size:10px;color:var(--cr-text-muted);text-align:center">Powered by CReady™ Viewer · © 2026 GAITP LLC · NBCC ACEP #7760</div>';
   html += '</div>';
   area.innerHTML = html;
   document.getElementById('crNavButtons').style.display = 'none';
@@ -3336,25 +3689,90 @@ function parseMarkdownToCourse(text, filename) {
       
       // ── CLINICAL VIGNETTE → styled card ──
       if (/Clinical Vignette|📋/i.test(heading)) {
-        blocks.push({
-          type: 'text',
-          content: `<div class="cr-info-card cr-info-vignette">
-            <div class="cr-info-card-header"><span>📋</span> ${mdInlineParse(heading.replace(/📋\s*/, ''))}</div>
-            <div class="cr-info-card-body">${mdBlockParse(content)}</div>
-          </div>`
-        });
+        // Check if content has a Decision Point → scenarioTree
+        const dpMatch = content.match(/\*\*🔀 Decision Point:\*\*\s*(.*?)(?=\n\s*[a-d]\))/is);
+        
+        if (dpMatch) {
+          // Extract vignette text (everything before the decision point)
+          const vignetteText = content.substring(0, content.indexOf('**🔀')).trim();
+          
+          // Extract choices
+          const choiceMatches = [...content.matchAll(/^\s*([a-d])\)\s*(.+)/gim)].filter(m => !m[0].includes('Best Answer') && !m[0].includes('Correct Answer'));
+          
+          // Extract feedback
+          const feedbackMatch = content.match(/Decision Point Feedback[\s\S]*?\*\*Best Answer:\s*([a-d])\)\*\*\s*([\s\S]*?)(?=\n---|\n##|\*We'll follow|$)/i);
+          const correctLetter = feedbackMatch ? feedbackMatch[1].toLowerCase() : 'b';
+          const feedbackText = feedbackMatch ? feedbackMatch[2].trim() : '';
+          
+          // Build scenario tree nodes
+          const nodes = {
+            start: {
+              text: mdBlockParse(vignetteText) + '<p style="font-weight:700;color:var(--cr-gold);margin-top:16px">🔀 ' + mdInlineParse(dpMatch[1].trim()) + '</p>',
+              choices: choiceMatches.map((m, i) => ({
+                text: m[2].trim(),
+                next: 'choice_' + m[1].toLowerCase()
+              }))
+            }
+          };
+          
+          // Create result nodes for each choice
+          choiceMatches.forEach((m, i) => {
+            const letter = m[1].toLowerCase();
+            const isCorrect = letter === correctLetter;
+            nodes['choice_' + letter] = {
+              text: isCorrect ? 
+                '<p style="color:var(--cr-green);font-weight:700">✓ Correct Choice</p>' + mdBlockParse(feedbackText) :
+                '<p style="color:var(--cr-danger);font-weight:700">✗ Not the best choice.</p><p>The recommended approach is <strong>Option ' + correctLetter.toUpperCase() + '</strong>.</p>' + (feedbackText ? mdBlockParse(feedbackText) : ''),
+              feedback: null,
+              choices: []
+            };
+          });
+          
+          blocks.push({
+            type: 'scenarioTree',
+            scenarioTitle: heading.replace(/📋\s*/, '').replace(/Clinical Vignette:\s*/i, ''),
+            instructions: 'Read the clinical scenario and choose the most appropriate response.',
+            startNode: 'start',
+            nodes: nodes
+          });
+        } else {
+          // No decision point — render as styled vignette card
+          blocks.push({
+            type: 'text',
+            content: `<div class="cr-info-card cr-info-vignette">
+              <div class="cr-info-card-header"><span>📋</span> ${mdInlineParse(heading.replace(/📋\s*/, ''))}</div>
+              <div class="cr-info-card-body">${mdBlockParse(content)}</div>
+            </div>`
+          });
+        }
         return;
       }
       
-      // ── MYTH vs FACT → styled card ──
+      // ── MYTH vs FACT → flashcardDeck ──
       if (/Myth\s*vs\.?\s*Fact|⚡/i.test(heading)) {
-        blocks.push({
-          type: 'text',
-          content: `<div class="cr-info-card cr-info-mythfact">
-            <div class="cr-info-card-header"><span>⚡</span> ${mdInlineParse(heading.replace(/⚡\s*/, ''))}</div>
-            <div class="cr-info-card-body">${mdBlockParse(content)}</div>
-          </div>`
-        });
+        // Parse MYTH/FACT pairs
+        const pairs = [...content.matchAll(/\*\*MYTH:\*\*\s*([\s\S]*?)\*\*FACT:\*\*\s*([\s\S]*?)(?=\*\*MYTH:\*\*|$)/gi)];
+        
+        if (pairs.length > 0) {
+          blocks.push({
+            type: 'flashcardDeck',
+            instructions: 'Flip each card to reveal the fact behind common multicultural counseling myths.',
+            flashcards: pairs.map((p, i) => ({
+              id: 'mf-' + i,
+              front: '❌ MYTH: ' + p[1].trim().replace(/\n/g, ' '),
+              back: '✓ FACT: ' + p[2].trim().replace(/\n/g, ' ')
+            }))
+          });
+        } else {
+          // Fallback to info card
+          blocks.push({
+            type: 'text',
+            content: `<div class="cr-info-card cr-info-mythfact">
+              <div class="cr-info-card-header"><span>⚡</span> ${mdInlineParse(heading.replace(/⚡\s*/, ''))}</div>
+              <div class="cr-info-card-body">${mdBlockParse(content)}</div>
+            </div>`
+          });
+        }
         return;
       }
       
@@ -3378,24 +3796,106 @@ function parseMarkdownToCourse(text, filename) {
         return;
       }
       
-      // ── SELF-ASSESSMENT / SKILL BUILDER → styled card ──
-      if (/Self-Assessment|Skill Builder|📊|🛠️/i.test(heading)) {
+      // ── SELF-ASSESSMENT → interactive checklist card ──
+      if (/Self-Assessment|📊/i.test(heading) && !(/Skill Builder|🛠️/i.test(heading))) {
+        // Keep as styled card but add interactive checkboxes via JS
         blocks.push({
           type: 'text',
           content: `<div class="cr-info-card cr-info-activity">
-            <div class="cr-info-card-header"><span>${heading.match(/📊|🛠️/) ? heading.match(/📊|🛠️/)[0] : '🔧'}</span> ${mdInlineParse(heading.replace(/📊|🛠️\s*/g, ''))}</div>
-            <div class="cr-info-card-body">${mdBlockParse(content)}</div>
+            <div class="cr-info-card-header"><span>📊</span> ${mdInlineParse(heading.replace(/📊\s*/, ''))}</div>
+            <div class="cr-info-card-body cr-prose">${mdBlockParse(content)}</div>
           </div>`
         });
         return;
       }
       
+      // ── SKILL BUILDER → multiple reflection prompts ──
+      if (/Skill Builder|🛠️/i.test(heading)) {
+        // Extract numbered prompts
+        const promptMatches = [...content.matchAll(/\*\*(\d+)\.\s*([^:*]+)(?::\*\*|\*\*:)\s*/g)];
+        
+        if (promptMatches.length > 0) {
+          // Add intro text
+          const introEnd = content.indexOf('**1.');
+          if (introEnd > 0) {
+            blocks.push({
+              type: 'text',
+              content: `<div class="cr-info-card cr-info-activity">
+                <div class="cr-info-card-header"><span>🛠️</span> ${mdInlineParse(heading.replace(/🛠️\s*/, ''))}</div>
+                <div class="cr-info-card-body">${mdBlockParse(content.substring(0, introEnd).trim())}</div>
+              </div>`
+            });
+          }
+          
+          // Generate a reflection for each prompt
+          promptMatches.forEach((pm, pi) => {
+            blocks.push({
+              type: 'reflection',
+              question: pm[2].trim(),
+              minLength: 20
+            });
+          });
+          
+          // Check for sample answers
+          const sampleMatch = content.match(/###\s*Sample\s*(Questions|Answers)([\s\S]*?)$/i);
+          if (sampleMatch) {
+            blocks.push({
+              type: 'text',
+              content: `<div class="cr-info-card cr-info-activity" style="border-left-color:var(--cr-green)">
+                <div class="cr-info-card-header" style="background:var(--cr-green-faded);color:var(--cr-green)"><span>💡</span> Sample ${sampleMatch[1]}</div>
+                <div class="cr-info-card-body">${mdBlockParse(sampleMatch[2].trim())}</div>
+              </div>`
+            });
+          }
+        } else {
+          // Fallback
+          blocks.push({
+            type: 'text',
+            content: `<div class="cr-info-card cr-info-activity">
+              <div class="cr-info-card-header"><span>🛠️</span> ${mdInlineParse(heading.replace(/🛠️\s*/, ''))}</div>
+              <div class="cr-info-card-body">${mdBlockParse(content)}</div>
+            </div>`
+          });
+        }
+        return;
+      }
+      
       // ── REGULAR CONTENT ──
       if (heading && content) {
-        blocks.push({
-          type: 'text',
-          content: `<h2>${mdInlineParse(heading)}</h2>${mdBlockParse(content)}`
-        });
+        const wordCount = content.replace(/<[^>]*>/g, ' ').trim().split(/\s+/).length;
+        const hasH3s = /^###\s+/m.test(content);
+        
+        // ACCORDION DEEP-DIVE: If section is long (>600 words) and has H3 subheadings, make accordion
+        if (wordCount > 600 && hasH3s) {
+          // Split on H3s
+          const h3Parts = content.split(/(?=^###\s+)/m);
+          const introText = h3Parts[0].trim();
+          const accordionItems = h3Parts.slice(1).map(part => {
+            const titleMatch = part.match(/^###\s+(.+)/);
+            const title = titleMatch ? titleMatch[1].trim() : 'Details';
+            const body = part.replace(/^###\s+.+\n?/, '').trim();
+            return { title: mdInlineParse(title), content: mdBlockParse(body) };
+          }).filter(item => item.content.length > 0);
+          
+          // Add heading + intro as text
+          blocks.push({
+            type: 'text',
+            content: `<h2>${mdInlineParse(heading)}</h2>${mdBlockParse(introText)}`
+          });
+          
+          // Add accordion for H3 sub-sections
+          if (accordionItems.length > 0) {
+            blocks.push({
+              type: 'accordion',
+              accordionItems: accordionItems
+            });
+          }
+        } else {
+          blocks.push({
+            type: 'text',
+            content: `<h2>${mdInlineParse(heading)}</h2>${mdBlockParse(content)}`
+          });
+        }
       } else if (content) {
         blocks.push({ type: 'text', content: mdBlockParse(content) });
       }
@@ -3717,6 +4217,313 @@ document.addEventListener('keydown', (e) => {
   }
 });
 // ═══════════════════════════════════════════════════════════════
+// FEATURE: GLOSSARY PANEL
+// ═══════════════════════════════════════════════════════════════
+let glossaryTerms = []; // {term, definition}
+
+function buildGlossary() {
+  if (!course) return;
+  const terms = new Map();
+  
+  // Extract bold terms from content that look like definitions
+  // Pattern: **Term** — definition or **Term**: definition or **Term** is/refers to/means
+  const allContent = course.sections.flatMap(s => (s.contentBlocks || []).filter(b => b.type === 'text').map(b => b.content || '')).join('\n');
+  
+  // Pattern 1: **Bold term** followed by definition text
+  const defPatterns = [
+    /\*\*([A-Z][^*]{2,40})\*\*\s*(?:—|–|-|:)\s*([^.]+\.)/gi,
+    /\*\*([A-Z][^*]{2,40})\*\*\s+(?:is|are|refers? to|means?|describes?|involves?)\s+([^.]+\.)/gi,
+  ];
+  
+  defPatterns.forEach(pat => {
+    let m;
+    while ((m = pat.exec(allContent)) !== null) {
+      const term = m[1].trim();
+      const def = m[2].trim();
+      if (term.length > 2 && term.length < 50 && def.length > 15 && !terms.has(term.toLowerCase())) {
+        terms.set(term.toLowerCase(), { term, definition: def });
+      }
+    }
+  });
+  
+  // Pattern 2: Flashcard fronts/backs
+  course.sections.forEach(s => (s.contentBlocks || []).forEach(b => {
+    if (b.type === 'flashcardDeck') {
+      (b.flashcards || []).forEach(f => {
+        const t = f.front.replace(/^❌ MYTH:\s*/i, '').trim();
+        const d = f.back.replace(/^✓ FACT:\s*/i, '').trim();
+        if (t && d && !terms.has(t.toLowerCase())) {
+          terms.set(t.toLowerCase(), { term: t, definition: d });
+        }
+      });
+    }
+  }));
+  
+  glossaryTerms = [...terms.values()].sort((a, b) => a.term.localeCompare(b.term));
+  
+  if (glossaryTerms.length > 0) {
+    document.getElementById('crGlossaryBtn').classList.add('visible');
+    renderGlossaryList();
+  }
+}
+
+function renderGlossaryList(filter) {
+  const list = document.getElementById('crGlossaryList');
+  if (!list) return;
+  const filtered = filter ? glossaryTerms.filter(t => t.term.toLowerCase().includes(filter) || t.definition.toLowerCase().includes(filter)) : glossaryTerms;
+  list.innerHTML = filtered.map(t => `<div class="cr-glossary-item">
+    <div class="cr-glossary-term">${esc(t.term)}</div>
+    <div class="cr-glossary-def">${esc(t.definition)}</div>
+  </div>`).join('') || '<p style="color:var(--cr-text-muted);padding:20px;text-align:center">No terms found</p>';
+}
+
+function toggleGlossary() {
+  document.getElementById('crGlossaryPanel').classList.toggle('open');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// FEATURE: LEARNING OBJECTIVES TRACKER
+// ═══════════════════════════════════════════════════════════════
+let checkedObjectives = new Set();
+
+function renderObjectivesTracker() {
+  const tracker = document.getElementById('crObjectivesTracker');
+  if (!tracker || !course?.objectives?.length) { if (tracker) tracker.innerHTML = ''; return; }
+  
+  // Only show on content sections (not overview, not assessment)
+  const section = course.sections[currentSectionIndex];
+  if (section?._isOverview || currentView === 'assessment') { tracker.innerHTML = ''; return; }
+  
+  // Load from localStorage
+  const saved = loadState('objectives');
+  if (saved) checkedObjectives = new Set(saved);
+  
+  const pct = Math.round((checkedObjectives.size / course.objectives.length) * 100);
+  
+  tracker.innerHTML = `<div class="cr-objectives-panel">
+    <div class="cr-objectives-title">🎯 Learning Objectives <span style="font-weight:400;font-size:0.8em;color:var(--cr-text-muted);margin-left:auto">${checkedObjectives.size}/${course.objectives.length} (${pct}%)</span></div>
+    ${course.objectives.map((obj, i) => `<div class="cr-obj-item ${checkedObjectives.has(i) ? 'checked' : ''}" data-action="toggleObjective" data-idx="${i}">
+      <span class="cr-obj-check">${checkedObjectives.has(i) ? '✓' : ''}</span>
+      <span>${esc(obj)}</span>
+    </div>`).join('')}
+  </div>`;
+}
+
+function toggleObjective(idx) {
+  if (checkedObjectives.has(idx)) checkedObjectives.delete(idx);
+  else checkedObjectives.add(idx);
+  saveState('objectives', [...checkedObjectives]);
+  renderObjectivesTracker();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// FEATURE: PROGRESS BOOKMARKS (localStorage)
+// ═══════════════════════════════════════════════════════════════
+function getStorageKey() {
+  const slug = course?.slug || course?.courseCode || course?.title?.replace(/\s+/g, '-').toLowerCase().substring(0, 40) || 'unknown';
+  return 'cr-viewer-' + slug;
+}
+
+function saveState(key, value) {
+  try {
+    const base = getStorageKey();
+    localStorage.setItem(base + '-' + key, JSON.stringify(value));
+  } catch(e) { /* storage full or unavailable */ }
+}
+
+function loadState(key) {
+  try {
+    const base = getStorageKey();
+    const val = localStorage.getItem(base + '-' + key);
+    return val ? JSON.parse(val) : null;
+  } catch(e) { return null; }
+}
+
+function saveProgress() {
+  if (!course) return;
+  saveState('section', currentSectionIndex);
+  saveState('completed', [...completedSections]);
+  saveState('visited', [...visitedSections]);
+  saveState('view', currentView);
+}
+
+function restoreProgress() {
+  if (!course) return;
+  const section = loadState('section');
+  const completed = loadState('completed');
+  const visited = loadState('visited');
+  
+  if (completed) completedSections = new Set(completed);
+  if (visited) visitedSections = new Set(visited);
+  if (section !== null && section < course.sections.length) {
+    currentSectionIndex = section;
+    visitedSections.add(section);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// FEATURE: TEXT HIGHLIGHTING & ANNOTATIONS
+// ═══════════════════════════════════════════════════════════════
+let highlights = []; // {id, sectionIndex, text, startText, note, color}
+
+function showHighlightToolbar(x, y) {
+  const tb = document.getElementById('crHighlightToolbar');
+  tb.style.left = x + 'px';
+  tb.style.top = (y - 50) + 'px';
+  tb.classList.add('visible');
+}
+
+function hideHighlightToolbar() {
+  document.getElementById('crHighlightToolbar').classList.remove('visible');
+}
+
+function highlightSelection() {
+  const sel = window.getSelection();
+  if (!sel.rangeCount || sel.isCollapsed) return;
+  
+  const range = sel.getRangeAt(0);
+  const text = sel.toString().trim();
+  if (text.length < 3) return;
+  
+  // Check selection is within content area
+  const contentArea = document.getElementById('crContentArea');
+  if (!contentArea.contains(range.commonAncestorContainer)) return;
+  
+  const span = document.createElement('span');
+  span.className = 'cr-highlight';
+  span.dataset.hlId = 'hl-' + Date.now();
+  
+  try {
+    range.surroundContents(span);
+  } catch(e) {
+    // Can't surround if selection crosses element boundaries
+    return;
+  }
+  
+  highlights.push({
+    id: span.dataset.hlId,
+    sectionIndex: currentSectionIndex,
+    text: text,
+    note: '',
+    color: 'gold'
+  });
+  
+  saveState('highlights', highlights);
+  sel.removeAllRanges();
+  hideHighlightToolbar();
+}
+
+function annotateSelection() {
+  const note = prompt('Add a note to this highlight:');
+  if (note === null) return;
+  highlightSelection();
+  if (highlights.length > 0) {
+    highlights[highlights.length - 1].note = note;
+    saveState('highlights', highlights);
+    // Add note tooltip
+    const lastHl = document.querySelector(`[data-hl-id="${highlights[highlights.length - 1].id}"]`);
+    if (lastHl && note) {
+      const noteEl = document.createElement('span');
+      noteEl.className = 'cr-highlight-note';
+      noteEl.textContent = note;
+      lastHl.appendChild(noteEl);
+    }
+  }
+}
+
+function removeHighlight() {
+  // Remove the most recent highlight
+  const sel = window.getSelection();
+  if (!sel.rangeCount) return;
+  
+  const hlEl = sel.anchorNode?.parentElement?.closest('.cr-highlight');
+  if (hlEl) {
+    const id = hlEl.dataset.hlId;
+    highlights = highlights.filter(h => h.id !== id);
+    // Unwrap the span
+    const parent = hlEl.parentNode;
+    while (hlEl.firstChild) parent.insertBefore(hlEl.firstChild, hlEl);
+    parent.removeChild(hlEl);
+    saveState('highlights', highlights);
+  }
+  hideHighlightToolbar();
+  sel.removeAllRanges();
+}
+
+function restoreHighlights() {
+  const saved = loadState('highlights');
+  if (!saved) return;
+  highlights = saved;
+  // Restore highlights for current section
+  const sectionHighlights = highlights.filter(h => h.sectionIndex === currentSectionIndex);
+  if (sectionHighlights.length === 0) return;
+  
+  const contentArea = document.getElementById('crContentArea');
+  const walker = document.createTreeWalker(contentArea, NodeFilter.SHOW_TEXT);
+  
+  sectionHighlights.forEach(hl => {
+    walker.currentNode = contentArea;
+    let node;
+    while (node = walker.nextNode()) {
+      const idx = node.textContent.indexOf(hl.text);
+      if (idx >= 0) {
+        const range = document.createRange();
+        range.setStart(node, idx);
+        range.setEnd(node, idx + hl.text.length);
+        const span = document.createElement('span');
+        span.className = 'cr-highlight';
+        span.dataset.hlId = hl.id;
+        if (hl.note) {
+          const noteEl = document.createElement('span');
+          noteEl.className = 'cr-highlight-note';
+          noteEl.textContent = hl.note;
+          span.appendChild(noteEl);
+        }
+        try { range.surroundContents(span); } catch(e) {}
+        break;
+      }
+    }
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// FEATURE: PRINT / PDF EXPORT
+// ═══════════════════════════════════════════════════════════════
+function printSection() {
+  window.print();
+}
+
+function exportPDF() {
+  // Use print dialog as PDF export (most browsers support "Save as PDF")
+  window.print();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// FEATURE: TRANSLATION (Google Translate Widget)
+// ═══════════════════════════════════════════════════════════════
+function initTranslation() {
+  document.getElementById('crTranslateBar').style.display = 'flex';
+  
+  const select = document.getElementById('crLangSelect');
+  select.addEventListener('change', function() {
+    const lang = this.value;
+    if (!lang) {
+      // Reset to original
+      location.reload();
+      return;
+    }
+    // Use Google Translate
+    const gtUrl = `https://translate.google.com/translate?sl=en&tl=${lang}&u=${encodeURIComponent(location.href)}`;
+    window.open(gtUrl, '_blank');
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// FEATURE: ACCORDION DEEP-DIVES (parser integration)
+// Already handled in renderCurrentSection — see below
+// ═══════════════════════════════════════════════════════════════
+
+// ═══════════════════════════════════════════════════════════════
 // EVENT DELEGATION — replaces all onclick handlers for
 // compatibility with sanitized HTML renderers (claude.ai, iframes)
 // ═══════════════════════════════════════════════════════════════
@@ -3794,6 +4601,18 @@ document.addEventListener('click', function(e) {
     case 'downloadCourseText': downloadCourseText(); break;
     case 'downloadCourseJSON': downloadCourseJSON(); break;
     
+    // ─── New Features ───
+    case 'toggleGlossary': toggleGlossary(); break;
+    case 'toggleObjective': toggleObjective(idx); break;
+    case 'highlightSelection': highlightSelection(); break;
+    case 'annotateSelection': annotateSelection(); break;
+    case 'removeHighlight': removeHighlight(); break;
+    case 'printSection': printSection(); break;
+    case 'exportPDF': exportPDF(); break;
+    case 'ttsPause': ttsPause(); break;
+    case 'ttsStop': ttsStop(); break;
+    case 'ttsRestart': ttsRestart(); break;
+    
     // ─── Certificate ───
     case 'requestCertificate':
       if (window.parent !== window) {
@@ -3812,8 +4631,22 @@ document.addEventListener('change', function(e) {
   }
 });
 
-// Handle textarea input for reflection word count
+// Handle TTS volume/speed sliders
 document.addEventListener('input', function(e) {
+  if (e.target.id === 'crTTSVolume') {
+    const val = parseFloat(e.target.value);
+    document.getElementById('crTTSVolumeLabel').textContent = Math.round(val * 100) + '%';
+    // Apply to current utterance if playing
+    if (ttsUtterance && speechSynthesis.speaking) {
+      // Web Speech API doesn't support live volume change — need to restart
+      // Just update label; next utterance will use new volume
+    }
+  }
+  if (e.target.id === 'crTTSSpeed') {
+    const val = parseFloat(e.target.value);
+    document.getElementById('crTTSSpeedLabel').textContent = val.toFixed(1) + '×';
+  }
+  // Reflection textarea word count
   if (e.target.closest('.cr-reflection')) {
     const refBlock = e.target.closest('.cr-reflection');
     const id = e.target.id;
@@ -3859,6 +4692,35 @@ document.addEventListener('drop', function(e) {
     cat.classList.remove('dragover');
     cat.querySelector('.cr-cardsort-category-cards').appendChild(csDragData);
     csDragData = null;
+  }
+});
+
+// Text selection → show highlight toolbar
+document.addEventListener('mouseup', function(e) {
+  const sel = window.getSelection();
+  if (!sel.isCollapsed && sel.toString().trim().length > 2) {
+    const contentArea = document.getElementById('crContentArea');
+    if (contentArea && contentArea.contains(sel.anchorNode)) {
+      const rect = sel.getRangeAt(0).getBoundingClientRect();
+      showHighlightToolbar(rect.left + rect.width / 2 - 60, rect.top + window.scrollY);
+      return;
+    }
+  }
+  // Delay hide to allow clicking toolbar buttons
+  setTimeout(hideHighlightToolbar, 200);
+});
+
+// Glossary search
+document.addEventListener('input', function(e) {
+  if (e.target.id === 'crGlossarySearch') {
+    renderGlossaryList(e.target.value.toLowerCase().trim());
+  }
+});
+
+// Close glossary on escape
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    document.getElementById('crGlossaryPanel')?.classList.remove('open');
   }
 });
 
