@@ -1736,9 +1736,16 @@ let ttsUtterance = null;
   if (slug) {
     const base = apiBase || (location.origin.includes('localhost') ? 'http://localhost:5000' : 'https://api.counselorready.com');
     fetch(`${base}/api/interactive-courses/slug/${slug}`)
-      .then(r => r.json())
-      .then(data => loadCourse(data.data || data.course || data))
-      .catch(e => showError('Course not found: ' + slug));
+      .then(r => { if (!r.ok) throw new Error('API ' + r.status); return r.json(); })
+      .then(data => {
+        const courseData = data.data || data.course || data;
+        if (!courseData || typeof courseData !== 'object' || Array.isArray(courseData)) {
+          throw new Error('Invalid data from API');
+        }
+        try { loadCourse(courseData); }
+        catch(e) { showError('Render error: ' + e.message); console.error('loadCourse crash:', e); }
+      })
+      .catch(e => showError('Could not load course: ' + e.message));
     return;
   }
   
