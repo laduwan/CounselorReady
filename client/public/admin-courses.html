@@ -375,6 +375,20 @@
       try {
         let courses = [];
 
+        // Admin courses
+        try {
+          const ctrl1 = new AbortController();
+          setTimeout(() => ctrl1.abort(), 10000);
+          const r = await fetch(`${API_URL}/api/admin/courses`, {
+            headers: { Authorization: `Bearer ${token}` },
+            signal: ctrl1.signal
+          });
+          if (r.ok) {
+            const d = await r.json();
+            courses = (d.data || d || []).map(c => ({ ...c, _source: 'admincourses' }));
+          }
+        } catch(e) { console.warn('Fetch failed:', e.message); }
+
         // Interactive courses (all courses live here now)
         try {
           let p = 1;
