@@ -683,6 +683,9 @@
       </div>
 
       <!-- Save Button -->
+      <div id="save-status" style="display:none;padding:0.75rem 1rem;margin-bottom:1rem;
+        background:#FEF2F2;border:1px solid #FECACA;border-radius:8px;
+        color:#991B1B;font-size:0.9rem;"></div>
       <div style="display: flex; justify-content: flex-end; gap: 1rem; margin-top: 0.5rem;">
         <button class="btn-primary" onclick="saveNotificationSettings()">
           Save Notification Preferences
@@ -963,32 +966,44 @@
 
     // ── Save Settings to API ──
     async function saveNotificationSettings() {
-      const token = localStorage.getItem('token');
-      const hdrs = {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
+      const payload = {
+        phone: document.getElementById('notif-phone').value,
+        notifications: {
+          emailReminders: document.getElementById('toggle-email').checked,
+          smsReminders: document.getElementById('toggle-sms').checked,
+          weeklyProgress: document.getElementById('toggle-weekly').checked,
+          fallingBehindAlert: document.getElementById('toggle-alert').checked,
+          ceMilestones: document.getElementById('toggle-milestone').checked,
+          courseProgressReminders: document.getElementById('toggle-progress').checked
+        }
       };
-
-      const res = await fetch(API_BASE + '/users/profile', {
-        method: 'PUT',
-        headers: hdrs,
-        body: JSON.stringify({
-          phone: document.getElementById('notif-phone').value,
-          notifications: {
-            emailReminders: document.getElementById('toggle-email').checked,
-            smsReminders: document.getElementById('toggle-sms').checked,
-            weeklyProgress: document.getElementById('toggle-weekly').checked,
-            fallingBehindAlert: document.getElementById('toggle-alert').checked,
-            ceMilestones: document.getElementById('toggle-milestone').checked,
-            courseProgressReminders: document.getElementById('toggle-progress').checked
-          }
-        })
-      });
-      if (res.ok) {
-        showToast();
-      } else {
-        const err = await res.json();
-        alert('Failed to save: ' + (err.message || err.error || 'Unknown error'));
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          document.getElementById('save-status').textContent = 'Error: Not logged in.';
+          document.getElementById('save-status').style.display = 'block';
+          return;
+        }
+        const res = await fetch(`${API_BASE}/users/profile`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(payload)
+        });
+        const body = await res.json();
+        if (res.ok) {
+          document.getElementById('save-status').style.display = 'none';
+          showToast();
+        } else {
+          document.getElementById('save-status').textContent =
+            'Save failed (' + res.status + '): ' + (body.error || body.message || JSON.stringify(body));
+          document.getElementById('save-status').style.display = 'block';
+        }
+      } catch (err) {
+        document.getElementById('save-status').textContent = 'Network error: ' + err.message;
+        document.getElementById('save-status').style.display = 'block';
       }
     }
 
