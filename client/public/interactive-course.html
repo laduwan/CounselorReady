@@ -3336,13 +3336,26 @@ function submitAssessment() {
   assessmentState.attempts++;
   
   renderAssessmentResult();
-  
+
+  // PostHog: course completion tracking
+  const passed = score >= (course.assessment.passingScore || 80);
+  if (passed && window.posthog) {
+    posthog.capture('course_completed', {
+      courseId: course._id,
+      courseTitle: course.title,
+      courseCode: course.courseCode || '',
+      ceHours: course.ceHours || 0,
+      assessmentScore: score,
+      attempts: assessmentState.attempts
+    });
+  }
+
   // Notify parent
   if (window.parent !== window) {
     window.parent.postMessage({
       type: 'ASSESSMENT_COMPLETE',
       score,
-      passed: score >= (course.assessment.passingScore || 80),
+      passed,
       attempts: assessmentState.attempts
     }, '*');
   }
