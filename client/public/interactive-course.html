@@ -1528,6 +1528,7 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
     <div style="flex:1">
       <div style="font-weight:700;font-size:0.9em;color:var(--cr-text)" id="crTopbarTitle"></div>
       <div style="font-size:0.75em;color:var(--cr-text-muted)" id="crTopbarSection"></div>
+      <div id="cr-share-widget"></div>
     </div>
     <button class="cr-hamburger" data-action="toggleTTS" aria-label="Read aloud" id="crTTSBtn" style="display:none">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M19.07 4.93a10 10 0 010 14.14M15.54 8.46a5 5 0 010 7.07"/></svg>
@@ -1988,6 +1989,24 @@ function loadCourse(data) {
     window.parent.postMessage({ type: 'COURSE_LOADED', title: course.title, sections: course.sections.length }, '*');
   }
   
+  // Share widget
+  initShareWidget({
+    title: course.title,
+    slug: course.slug,
+    ceHours: course.ceHours || 0,
+    courseCode: course.courseCode || ''
+  });
+
+  // PostHog enrollment tracking
+  if (window.posthog) {
+    posthog.capture('course_enrolled', {
+      courseId: course._id,
+      courseTitle: course.title,
+      courseCode: course.courseCode || '',
+      ceHours: course.ceHours || 0
+    });
+  }
+
   // ── Feature hooks + initial render ──
   restoreProgress();
   buildGlossary();
@@ -4944,5 +4963,6 @@ document.addEventListener('keydown', function(e) {
   setTimeout(function() { clearInterval(poll); }, 30000);
 })();
 </script>
+<script src="shareWidget.js"></script>
 </body>
 </html>
