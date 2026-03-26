@@ -1,10 +1,7 @@
 {
-  "cleanUrls": true,
-  "trailingSlash": false,
+  "cleanUrls": false,
   "rewrites": [
-    { "source": "/tools", "destination": "/tools/index.html" },
     { "source": "/tools/:path*", "destination": "/tools/:path*" },
-    { "source": "/learn/:slug", "destination": "/interactive-course.html" },
-    { "source": "/courses/:slug", "destination": "/course-details.html" }
+    { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
