@@ -4,6 +4,7 @@
  * Unauthorized copying or distribution is strictly prohibited.
  */
 import { Link } from 'react-router-dom';
+import FreeToolsSection from '../components/FreeToolsSection';
 
 export default function Landing() {
   return (
@@ -141,6 +142,9 @@ export default function Landing() {
           ))}
         </div>
       </section>
+
+      {/* ── FREE TOOLS ── */}
+      <FreeToolsSection />
 
       {/* ── PRICING ── */}
       <section id="pricing" className="py-24 px-4 bg-stone-50">
