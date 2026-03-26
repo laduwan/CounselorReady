@@ -89,18 +89,22 @@ router.put('/notification-prefs', protect, adminOnly, async (req, res) => {
 // @access  Admin only
 router.get('/stats', protect, adminOnly, async (req, res) => {
   try {
-    const totalUsers = await User.countDocuments();
-    const activeSubscribers = await User.countDocuments({ 
-      'subscription.status': 'active' 
-    });
-    const totalCourses = await Course.countDocuments({ status: 'published' });
-    const totalCertificates = await Certificate.countDocuments();
-    
+    const [totalUsers, activeSubscribers, totalCourses, totalCertificates, totalEnrollments, totalCompletions] = await Promise.all([
+      User.countDocuments(),
+      User.countDocuments({ 'subscription.status': 'active' }),
+      Course.countDocuments({ status: 'published' }),
+      Certificate.countDocuments(),
+      UserCourseProgress.countDocuments(),
+      UserCourseProgress.countDocuments({ status: 'completed' })
+    ]);
+
     res.json({
       totalUsers,
       activeSubscribers,
       totalCourses,
-      totalCertificates
+      totalCertificates,
+      totalEnrollments,
+      totalCompletions
     });
   } catch (error) {
     console.error('Admin stats error:', error);

@@ -15,6 +15,7 @@ import CredentialTemplate from '../models/CredentialTemplate.js';
 import Announcement from '../models/Announcement.js';
 import UserCourseProgress from '../models/UserCourseProgress.js';
 import UserCredential from '../models/UserCredential.js';
+import { Course as InteractiveCourse, CourseProgress as InteractiveCourseProgress } from '../models/InteractiveCourse.js';
 import { protect } from '../middleware/auth.js';
 import { triggerNewCourseAnnouncement } from '../services/notificationTriggerService.js';
 
@@ -707,20 +708,46 @@ router.put('/broadcasts/:id/deactivate', protect, adminOnly, async (req, res) =>
 // @access  Admin only
 router.get('/users/:userId/enrollments', protect, adminOnly, async (req, res) => {
   try {
-    const enrollments = await UserCourseProgress.find({ userId: req.params.userId })
-      .populate('courseId', 'title slug ceuHours ceuEligible thumbnail')
-      .sort({ enrolledAt: -1 });
-    
-    // Get all courses for the "enroll in" dropdown
-    const allCourses = await Course.find({ status: 'published' })
-      .select('title slug ceuHours category')
-      .sort({ title: 1 });
-    
+    // Query both legacy and interactive course progress
+    const [legacyEnrollments, interactiveEnrollments] = await Promise.all([
+      UserCourseProgress.find({ userId: req.params.userId })
+        .populate('courseId', 'title slug ceuHours ceuEligible thumbnail')
+        .sort({ enrolledAt: -1 }),
+      InteractiveCourseProgress.find({ userId: req.params.userId })
+        .populate('courseId', 'title slug ceHours ceuHours thumbnail')
+        .sort({ enrolledAt: -1 })
+    ]);
+
+    // Normalize interactive enrollments to match legacy shape
+    const normalizedInteractive = interactiveEnrollments.map(e => {
+      const obj = e.toObject();
+      obj._source = 'interactive';
+      return obj;
+    });
+
+    const enrollments = [
+      ...legacyEnrollments.map(e => { const obj = e.toObject(); obj._source = 'legacy'; return obj; }),
+      ...normalizedInteractive
+    ].sort((a, b) => new Date(b.enrolledAt || b.createdAt || 0) - new Date(a.enrolledAt || a.createdAt || 0));
+
+    // Get all courses for the "enroll in" dropdown (both legacy + interactive)
+    const [allLegacyCourses, allInteractiveCourses] = await Promise.all([
+      Course.find({ status: 'published' })
+        .select('title slug ceuHours category')
+        .sort({ title: 1 }),
+      InteractiveCourse.find({ status: 'published' })
+        .select('title slug ceHours categories')
+        .sort({ title: 1 })
+    ]);
+
     // Filter out already enrolled courses
-    const enrolledCourseIds = enrollments.map(e => e.courseId?._id?.toString());
-    const availableCourses = allCourses.filter(c => !enrolledCourseIds.includes(c._id.toString()));
-    
-    res.json({ 
+    const enrolledCourseIds = enrollments.map(e => e.courseId?._id?.toString()).filter(Boolean);
+    const availableCourses = [
+      ...allLegacyCourses.filter(c => !enrolledCourseIds.includes(c._id.toString())),
+      ...allInteractiveCourses.filter(c => !enrolledCourseIds.includes(c._id.toString()))
+    ];
+
+    res.json({
       enrollments,
       availableCourses
     });
