@@ -4,6 +4,7 @@
  * Unauthorized copying or distribution is strictly prohibited.
  */
 import { Link } from 'react-router-dom';
+import FreeToolsSection from '../components/FreeToolsSection';
 
 export default function Landing() {
   return (
@@ -87,10 +88,6 @@ export default function Landing() {
             </a>
           </div>
           <div className="mt-6 flex flex-col items-center gap-2">
-            <a href="/tools/index.html" className="inline-flex items-center gap-2 text-sm font-semibold px-5 py-2.5 rounded-full border-2 transition-all hover:opacity-80" style={{ borderColor: '#4A7C59', color: '#355E3B', background: 'rgba(74,124,89,0.07)' }}>
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
-              Free Clinical Tools — No account needed
-            </a>
             <p className="text-sm" style={{ color: 'rgba(53,94,59,0.6)' }}>No credit card required · Cancel anytime</p>
           </div>
         </div>
@@ -141,6 +138,8 @@ export default function Landing() {
           ))}
         </div>
       </section>
+
+      <FreeToolsSection />
 
       {/* ── PRICING ── */}
       <section id="pricing" className="py-24 px-4 bg-stone-50">
