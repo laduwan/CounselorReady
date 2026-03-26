@@ -42,6 +42,8 @@ import cePlannerRoutes from './routes/cePlanner.js';
 import imageUploadRoutes from './routes/imageUpload.js';
 import adminStatsRoutes from './routes/adminStats.js';
 import researchReadyRoutes from './routes/researchReady.js';
+import toolsRoutes from './routes/tools.js';
+import toolRoutes from './routes/toolRoutes.js';
 
 // Import services
 import { initializeScheduler } from './services/notificationScheduler.js';
@@ -163,6 +165,8 @@ app.use('/api/ce-planner', cePlannerRoutes);
 app.use('/api/images', imageUploadRoutes);
 app.use('/api/admin/stats', adminStatsRoutes);
 app.use('/api/research-ready', researchReadyRoutes);
+app.use('/api/tools', toolsRoutes);
+app.use('/api/tools', toolRoutes);
 
 // Serve static files from templates directory (for certificates)
 app.use('/templates', express.static(path.join(__dirname, 'templates')));
@@ -192,7 +196,8 @@ app.use((req, res, next) => {
       '/api/referrals/*',
       '/api/board-alerts/*',
       '/api/ce-planner/*',
-      '/api/scan/*'
+      '/api/scan/*',
+      '/api/tools/*'
     ]
   });
 });
