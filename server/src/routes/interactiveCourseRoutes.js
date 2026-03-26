@@ -13,9 +13,6 @@ import UserCredential from '../models/UserCredential.js';
 import Gamification from '../models/Gamification.js';
 import { protect } from '../middleware/auth.js';
 import { generateCertificate, generateCertificateNumber } from '../utils/certificate.js';
-import { logActivity, ACTIVITY_TYPES } from '../services/activityTrackingService.js';
-import { sendCourseCompletionEmail, sendCertificateReadyEmail } from '../services/courseEmailService.js';
-import { sendEnrollmentSMS, sendCompletionSMS } from '../services/smsService.js';
 
 const router = express.Router();
 
@@ -76,57 +73,6 @@ async function recordGamification(userId, type, metadata = {}) {
 }
 
 // ============================================================================
-// FREE-TIER GATE HELPER
-// ============================================================================
-
-const FREE_TIER_CE_CAP = 4; // Max free CE hours before subscription required
-
-/**
- * gateContent — decides whether a user can access a course.
- * Returns { allowed: true, freeHoursRemaining } or { allowed: false, reason }.
- *
- * Logic:
- *  1. Free / open-access courses → always allowed.
- *  2. Users with an active subscription → always allowed.
- *  3. Users who purchased this specific course → allowed.
- *  4. Free-tier path: enrolled users whose freeHoursUsed < FREE_TIER_CE_CAP → allowed.
- *  5. Otherwise → blocked.
- */
-async function gateContent(user, course) {
-  // 1. Open-access courses pass through
-  if (!course.accessType || course.accessType === 'free') {
-    return { allowed: true };
-  }
-
-  // 2. Active subscribers always pass
-  if (user.hasActiveSubscription()) {
-    return { allowed: true };
-  }
-
-  // 3. Course was individually purchased
-  if (user.purchasedCourses?.some(id => id.toString() === course._id.toString())) {
-    return { allowed: true };
-  }
-
-  // 4. Free-tier path — up to FREE_TIER_CE_CAP CE hours
-  const used = user.freeHoursUsed || 0;
-  if (used < FREE_TIER_CE_CAP) {
-    return {
-      allowed: true,
-      freeHoursRemaining: FREE_TIER_CE_CAP - used
-    };
-  }
-
-  // 5. Exhausted free tier
-  return {
-    allowed: false,
-    reason: 'FREE_HOURS_EXHAUSTED',
-    freeHoursUsed: used,
-    freeHoursCap: FREE_TIER_CE_CAP
-  };
-}
-
-// ============================================================================
 // COURSE ROUTES
 // ============================================================================
 
@@ -145,7 +91,8 @@ router.get('/', async (req, res) => {
       limit = 10 
     } = req.query;
 
-    const query = { status };
+    const query = {};
+    if (status && status !== 'all') query.status = status;
     
     if (category) query.categories = category;
     if (tag) query.tags = tag;
@@ -259,16 +206,7 @@ router.get('/:id/progress', protect, async (req, res) => {
       await progress.save();
     }
 
-    // Include free-tier hours remaining for non-subscribed users
-    const progressUser = await User.findById(req.user._id);
-    const response = { success: true, data: progress };
-    if (progressUser && !progressUser.hasActiveSubscription()) {
-      const remaining = FREE_TIER_CE_CAP - (progressUser.freeHoursUsed || 0);
-      if (remaining > 0) {
-        response._freeHoursRemaining = remaining;
-      }
-    }
-    res.json(response);
+    res.json({ success: true, data: progress });
   } catch (error) {
     console.error('Error fetching progress:', error);
     res.status(500).json({ success: false, error: 'Failed to fetch progress' });
@@ -296,18 +234,6 @@ router.post('/:id/enroll', protect, async (req, res) => {
       return res.json({ success: true, message: 'Already enrolled', data: progress });
     }
 
-    // ── Free-tier gate check ──
-    const user = await User.findById(req.user._id);
-    const gate = await gateContent(user, course);
-    if (!gate.allowed) {
-      return res.status(403).json({
-        success: false,
-        error: gate.reason || 'SUBSCRIPTION_REQUIRED',
-        freeHoursUsed: gate.freeHoursUsed,
-        freeHoursCap: gate.freeHoursCap
-      });
-    }
-
     // Create new enrollment
     progress = new CourseProgress({
       userId: req.user._id,
@@ -325,18 +251,7 @@ router.post('/:id/enroll', protect, async (req, res) => {
     });
 
     await progress.save();
-
-    // ── Notifications ──
-    const enrollUser = await User.findById(req.user._id).select('email profile.firstName profile.lastName phone smsOptIn');
-    const uName = `${enrollUser?.profile?.firstName || ''} ${enrollUser?.profile?.lastName || ''}`.trim();
-    logActivity(ACTIVITY_TYPES.USER_ENROLLED, { courseId: course._id, courseName: course.title }, { userId: req.user._id, userName: uName, userEmail: enrollUser?.email }).catch(()=>{});
-    sendEnrollmentSMS({ phone: enrollUser?.phone, firstName: enrollUser?.profile?.firstName, smsOptIn: enrollUser?.smsOptIn }, { title: course.title, slug: course.slug }).catch(()=>{});
-
-    const enrollResponse = { success: true, message: 'Enrolled successfully', data: progress };
-    if (gate.freeHoursRemaining !== undefined) {
-      enrollResponse._freeHoursRemaining = gate.freeHoursRemaining;
-    }
-    res.status(201).json(enrollResponse);
+    res.status(201).json({ success: true, message: 'Enrolled successfully', data: progress });
   } catch (error) {
     console.error('Error enrolling in course:', error);
     res.status(500).json({ success: false, error: 'Failed to enroll in course' });
@@ -445,17 +360,15 @@ router.post('/:id/assessment', protect, async (req, res) => {
 
     await progress.save();
 
-    // ── Notifications ──
-    const assessUser = await User.findById(req.user._id).select('email profile.firstName profile.lastName');
-    const aName = `${assessUser?.profile?.firstName || ''} ${assessUser?.profile?.lastName || ''}`.trim();
-    const scorePercent = Math.round(calculatedScore * 100);
-    if (calculatedPassed) {
-      logActivity(ACTIVITY_TYPES.QUIZ_PASSED, { courseId: course._id, courseName: course.title, score: scorePercent }, { userId: req.user._id, userName: aName, userEmail: assessUser?.email }).catch(()=>{});
-    } else {
-      logActivity(ACTIVITY_TYPES.QUIZ_FAILED, { courseId: course._id, courseName: course.title, score: scorePercent, passingScore: Math.round((course.assessment.passThreshold || 0.8) * 100) }, { userId: req.user._id, userName: aName, userEmail: assessUser?.email }).catch(()=>{});
-    }
-
     res.json({
+      success: true,
+      data: {
+        score: Math.round(calculatedScore * 100),
+        totalQuestions: course.assessment.questions.length,
+        passed: calculatedPassed,
+        attemptsRemaining: progress.assessmentAttemptsRemaining,
+        bestScore: progress.bestAssessmentScore
+      }
     });
   } catch (error) {
     console.error('Error submitting assessment:', error);
@@ -570,11 +483,6 @@ router.post('/:id/evaluation', protect, async (req, res) => {
     progress.evaluationSubmittedAt = new Date();
     await progress.save();
 
-    // ── Notifications ──
-    const evalUser = await User.findById(req.user._id).select('email profile.firstName profile.lastName');
-    const eName = `${evalUser?.profile?.firstName || ''} ${evalUser?.profile?.lastName || ''}`.trim();
-    logActivity('lesson_completed', { courseId: course._id, courseName: course.title, details: 'Evaluation submitted' }, { userId: req.user._id, userName: eName, userEmail: evalUser?.email }).catch(()=>{});
-
     res.json({
       success: true,
       message: 'Evaluation submitted successfully',
@@ -651,11 +559,6 @@ router.post('/:id/attestation', protect, async (req, res) => {
     progress.completedAt = new Date();
     
     await progress.save();
-
-    // ── Notification ──
-    const attUser = await User.findById(req.user._id).select('email profile.firstName profile.lastName');
-    const attName = `${attUser?.profile?.firstName || ''} ${attUser?.profile?.lastName || ''}`.trim();
-    logActivity(ACTIVITY_TYPES.COURSE_COMPLETED, { courseId: course._id, courseName: course.title, details: 'Attestation completed — ready for certificate' }, { userId: req.user._id, userName: attName, userEmail: attUser?.email }).catch(()=>{});
 
     res.json({
       success: true,
@@ -824,25 +727,9 @@ router.post('/:id/certificate', protect, async (req, res) => {
         console.error('CE auto-allocation error (non-fatal):', syncErr.message);
       }
 
-      // ── Free-tier CE hour tracking ──
-      // Increment freeHoursUsed for non-subscribed users
-      if (!user.hasActiveSubscription()) {
-        user.freeHoursUsed = (user.freeHoursUsed || 0) + (course.ceHours || 1);
-        await user.save();
-      }
-
       // Record gamification: course complete + certificate earned
       recordGamification(req.user._id, 'course_complete', { ceHours: course.ceHours || 1 });
       recordGamification(req.user._id, 'certificate_earned');
-
-      // ── Notifications: course completion + certificate ──
-      const certUser = await User.findById(req.user._id).select('email profile.firstName profile.lastName phone smsOptIn');
-      const cName = `${certUser?.profile?.firstName || ''} ${certUser?.profile?.lastName || ''}`.trim();
-      logActivity(ACTIVITY_TYPES.COURSE_COMPLETED, { courseId: course._id, courseName: course.title, ceHours: course.ceHours }, { userId: req.user._id, userName: cName, userEmail: certUser?.email }).catch(()=>{});
-      logActivity(ACTIVITY_TYPES.CERTIFICATE_GENERATED, { courseId: course._id, courseName: course.title }, { userId: req.user._id, userName: cName, userEmail: certUser?.email }).catch(()=>{});
-      sendCourseCompletionEmail(req.user._id, course._id, certificate._id).catch(()=>{});
-      sendCertificateReadyEmail(req.user._id, certificate._id).catch(()=>{});
-      sendCompletionSMS({ phone: certUser?.phone, firstName: certUser?.profile?.firstName, smsOptIn: certUser?.smsOptIn }, { title: course.title, ceHours: course.ceHours }, certificate).catch(()=>{});
     }
 
     // Send PDF
@@ -1181,7 +1068,7 @@ router.get('/user/my-courses', protect, async (req, res) => {
 });
 
 // ============================================================================
-// ADMIN: Update course metadata (all editable fields via admin modal)
+// ADMIN: Update course metadata (delivery format, content areas, access type)
 // ============================================================================
 router.patch('/:id/metadata', protect, async (req, res) => {
   try {
@@ -1190,23 +1077,8 @@ router.patch('/:id/metadata', protect, async (req, res) => {
     }
 
     const allowedFields = [
-      // Basic info
-      'title', 'subtitle', 'description', 'slug', 'thumbnail',
-      'courseCode', 'status', 'isPublished',
-      // CE / Accreditation
-      'ceHours', 'ceProvider', 'acepNumber',
-      'deliveryFormat', 'nbccContentAreas', 'approvalBody',
-      // Categorization & access
-      'accessType', 'price', 'pricingTier', 'level',
-      'categories', 'tags', 'targetAudience',
-      // Presenter
-      'presenter',
-      // Learning objectives
-      'objectives',
-      // Premium flag
-      'isPremium',
-      // References & resources
-      'references', 'resources'
+      'deliveryFormat', 'nbccContentAreas', 'accessType', 
+      'approvalBody', 'price', 'level', 'targetAudience'
     ];
     const updates = {};
     allowedFields.forEach(field => {

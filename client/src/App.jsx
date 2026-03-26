@@ -14,6 +14,8 @@ import InteractiveCourseCatalog from './pages/InteractiveCourseCatalog';
 import Layout from './components/Layout';
 import CourseViewer from './components/CourseViewer';
 import CourseBuilder from './components/CourseBuilder';
+import ResearchReadyCE from './pages/ResearchReadyCE';
+import AdminResearchReady from './pages/AdminResearchReady';
 
 // FIX: Courses and CourseView pages did not exist — caused broken import/build.
 // /courses and /courses/:slug now redirect to the real catalog at /learn and /learn/:slug.
@@ -87,9 +89,17 @@ function AppRoutes() {
         <ProtectedRoute><Layout><Settings /></Layout></ProtectedRoute>
       } />
 
+      {/* RNR CE — learner page */}
+      <Route path="/research-ready" element={
+        <ProtectedRoute><Layout><ResearchReadyCE /></Layout></ProtectedRoute>
+      } />
+
       {/* Admin */}
       <Route path="/admin/course-builder" element={
         <AdminRoute><CourseBuilder /></AdminRoute>
+      } />
+      <Route path="/admin/research-ready" element={
+        <AdminRoute><Layout><AdminResearchReady /></Layout></AdminRoute>
       } />
 
       {/* Catch-all */}

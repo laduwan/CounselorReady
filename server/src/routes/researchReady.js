@@ -64,6 +64,96 @@ function calculateCE(totalWords) {
 
 
 // ═══════════════════════════════════════════════════════════════
+// ADMIN: CURRENCY CHECK — verify article is still current
+// POST /api/research-ready/currency-check
+// ═══════════════════════════════════════════════════════════════
+router.post('/currency-check', protect, requireAdmin, async (req, res) => {
+  try {
+    const { title, authors, journal, year, abstract, topic } = req.body;
+    if (!title) return res.status(400).json({ error: 'Title is required' });
+
+    const result = await checkCurrency({ title, authors, journal, year, abstract, topic });
+    res.json(result);
+  } catch (error) {
+    console.error('Currency check error:', error.message);
+    res.status(500).json({ error: 'Currency check failed: ' + error.message });
+  }
+});
+
+
+// ═══════════════════════════════════════════════════════════════
+// ADMIN: BUILD CE — create RNR request + trigger AI generation
+// POST /api/research-ready/build-ce
+// ═══════════════════════════════════════════════════════════════
+router.post('/build-ce', protect, requireAdmin, async (req, res) => {
+  try {
+    const {
+      title, authors, journal, year, abstract, topic,
+      wordCount, ceHours, researchHours, oaUrl,
+      format = 'standalone', currencyVerdict, pairedArticle
+    } = req.body;
+
+    if (!title) return res.status(400).json({ error: 'Title is required' });
+
+    // Build articles array (single or paired)
+    const articles = [{
+      openAlexId: req.body.openAlexId || '',
+      title, authors: authors || '', journal: journal || '',
+      year: year || new Date().getFullYear(),
+      abstract: abstract || '', doi: req.body.doi || '',
+      oaUrl: oaUrl || '', topic: topic || '',
+      wordCount: wordCount || 6200, ceHours: ceHours || 1.0,
+      researchHours: researchHours || 0.5,
+      citedByCount: req.body.citedByCount || 0,
+      wcStatus: 'sufficient'
+    }];
+
+    if (pairedArticle) {
+      articles.push({
+        openAlexId: pairedArticle.openAlexId || '',
+        title: pairedArticle.title,
+        authors: pairedArticle.authors || '',
+        journal: pairedArticle.journal || '',
+        year: pairedArticle.year || new Date().getFullYear(),
+        abstract: pairedArticle.abstract || '',
+        doi: pairedArticle.doi || '',
+        oaUrl: pairedArticle.oaUrl || '',
+        topic: pairedArticle.topic || '',
+        wordCount: pairedArticle.wordCount || 6200,
+        ceHours: pairedArticle.ceHours || 1.0,
+        researchHours: pairedArticle.researchHours || 0.5,
+        citedByCount: pairedArticle.citedByCount || 0,
+        wcStatus: 'sufficient'
+      });
+    }
+
+    const contentArea = topic || 'General';
+    const user = await User.findById(req.user._id).select('email profile.firstName profile.lastName');
+    const userName = `${user?.profile?.firstName || ''} ${user?.profile?.lastName || ''}`.trim();
+
+    const request = new RNRRequest({
+      user: req.user._id,
+      userName,
+      userEmail: user?.email,
+      contentArea,
+      desiredHours: ceHours || 1.0,
+      selectedArticles: articles,
+      totalWordCount: wordCount || 6200,
+      totalCeHours: 1,
+      totalResearchHours: 0.5,
+      status: 'pending'
+    });
+
+    await request.save();
+    res.status(201).json({ courseId: request._id });
+  } catch (error) {
+    console.error('Build CE error:', error.message);
+    res.status(500).json({ error: 'CE build failed: ' + error.message });
+  }
+});
+
+
+// ═══════════════════════════════════════════════════════════════
 // STEP 1: LEARNER SEARCHES — AI finds articles from OpenAlex
 // GET /api/research-ready/search
 // ═══════════════════════════════════════════════════════════════

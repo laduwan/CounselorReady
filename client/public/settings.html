@@ -42,7 +42,7 @@
       line-height: 1.6;
     }
 
-    /* â”€â”€ Navigation Bar â”€â”€ */
+    /* ── Navigation Bar ── */
     .navbar {
       background: linear-gradient(135deg, var(--burgundy) 0%, var(--burgundy-light) 100%);
       padding: 0 2rem;
@@ -84,7 +84,7 @@
     }
     .navbar-links a:hover, .navbar-links a.active { color: #fff; }
 
-    /* â”€â”€ Page Layout â”€â”€ */
+    /* ── Page Layout ── */
     .page-container {
       max-width: 900px;
       margin: 0 auto;
@@ -104,7 +104,7 @@
       font-size: 0.95rem;
     }
 
-    /* â”€â”€ Settings Tabs â”€â”€ */
+    /* ── Settings Tabs ── */
     .settings-tabs {
       display: flex;
       gap: 0;
@@ -129,7 +129,7 @@
       border-bottom-color: var(--burgundy);
     }
 
-    /* â”€â”€ Cards â”€â”€ */
+    /* ── Cards ── */
     .card {
       background: var(--card-bg);
       border-radius: 12px;
@@ -167,7 +167,7 @@
     }
     .card-body { padding: 1.5rem; }
 
-    /* â”€â”€ Toggle Switch â”€â”€ */
+    /* ── Toggle Switch ── */
     .toggle-row {
       display: flex;
       align-items: center;
@@ -253,7 +253,7 @@
       margin-left: 6px;
     }
 
-    /* â”€â”€ Form Fields â”€â”€ */
+    /* ── Form Fields ── */
     .form-group { margin-bottom: 1.25rem; }
     .form-label {
       display: block;
@@ -290,7 +290,7 @@
       pointer-events: none;
     }
 
-    /* â”€â”€ Buttons â”€â”€ */
+    /* ── Buttons ── */
     .btn-primary {
       background: var(--hunter);
       color: white;
@@ -321,7 +321,7 @@
       background: #F0FAF3;
     }
 
-    /* â”€â”€ Reminder Schedule â”€â”€ */
+    /* ── Reminder Schedule ── */
     .schedule-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -347,7 +347,7 @@
     .schedule-dot.blue { background: #3B82F6; }
     .schedule-dot.green { background: var(--hunter); }
 
-    /* â”€â”€ CE Tracker Banner â”€â”€ */
+    /* ── CE Tracker Banner ── */
     .tracker-banner {
       display: flex;
       align-items: center;
@@ -374,7 +374,7 @@
       color: var(--hunter);
     }
 
-    /* â”€â”€ Toast â”€â”€ */
+    /* ── Toast ── */
     .toast {
       position: fixed;
       bottom: 2rem;
@@ -399,7 +399,7 @@
       opacity: 1;
     }
 
-    /* â”€â”€ Section Divider â”€â”€ */
+    /* ── Section Divider ── */
     .section-divider {
       display: flex;
       align-items: center;
@@ -418,11 +418,11 @@
       background: var(--border);
     }
 
-    /* â”€â”€ Tab Panels â”€â”€ */
+    /* ── Tab Panels ── */
     .tab-panel { display: none; }
     .tab-panel.active { display: block; }
 
-    /* â”€â”€ Responsive â”€â”€ */
+    /* ── Responsive ── */
     @media (max-width: 640px) {
       .page-container { padding: 1.25rem 1rem 3rem; }
       .schedule-grid { grid-template-columns: 1fr; }
@@ -461,19 +461,19 @@
     <!-- Settings Tabs -->
     <div class="settings-tabs">
       <button class="settings-tab active" data-tab="notifications" onclick="switchTab('notifications')">
-        ðŸ”” Notifications
+        🔔 Notifications
       </button>
       <button class="settings-tab" data-tab="profile" onclick="switchTab('profile')">
-        ðŸ‘¤ Profile
+        👤 Profile
       </button>
       <button class="settings-tab" data-tab="account" onclick="switchTab('account')">
-        ðŸ”’ Account
+        🔒 Account
       </button>
     </div>
 
-    <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+    <!-- ══════════════════════════════════════ -->
     <!-- NOTIFICATIONS TAB                      -->
-    <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+    <!-- ══════════════════════════════════════ -->
     <div class="tab-panel active" id="tab-notifications">
 
       <!-- Contact Information -->
@@ -547,7 +547,7 @@
                 <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
               </div>
               <div>
-                <div class="toggle-label">SMS Reminders <span class="vip-badge">â˜… VIP</span></div>
+                <div class="toggle-label">SMS Reminders <span class="vip-badge">★ VIP</span></div>
                 <div class="toggle-desc">Text message alerts for upcoming credential deadlines</div>
               </div>
             </div>
@@ -567,7 +567,7 @@
               </div>
               <div>
                 <div class="toggle-label">Weekly Progress Summary</div>
-                <div class="toggle-desc">Every Monday â€” see your CE progress across all credentials</div>
+                <div class="toggle-desc">Every Monday — see your CE progress across all credentials</div>
               </div>
             </div>
             <div class="toggle-switch">
@@ -672,17 +672,20 @@
         <div class="card-body" style="padding: 1rem 1.5rem;">
           <div class="tracker-banner">
             <div class="tracker-banner-text">
-              <span>ðŸ“Š</span>
+              <span>📊</span>
               <p>Want to see a <strong>preview of your upcoming reminders</strong> and manage detailed CE tracking? Visit the CE Tracker on your dashboard.</p>
             </div>
             <a href="/dashboard#ce-tracker" class="btn-secondary" style="white-space: nowrap; text-decoration: none;">
-              Open CE Tracker â†’
+              Open CE Tracker →
             </a>
           </div>
         </div>
       </div>
 
       <!-- Save Button -->
+      <div id="save-status" style="display:none;padding:0.75rem 1rem;margin-bottom:1rem;
+        background:#FEF2F2;border:1px solid #FECACA;border-radius:8px;
+        color:#991B1B;font-size:0.9rem;"></div>
       <div style="display: flex; justify-content: flex-end; gap: 1rem; margin-top: 0.5rem;">
         <button class="btn-primary" onclick="saveNotificationSettings()">
           Save Notification Preferences
@@ -691,14 +694,18 @@
 
     </div>
 
-    <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+    <!-- ══════════════════════════════════════ -->
     <!-- PROFILE TAB (placeholder)              -->
-    <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+    <!-- ══════════════════════════════════════ -->
     <div class="tab-panel" id="tab-profile">
       <div class="card">
         <div class="card-header">
           <div class="card-header-icon navy">
-            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <svg width="20" height="20" fill="none" stroke="currentColor"
+               stroke-width="2" viewBox="0 0 24 24">
+              <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
+              <circle cx="12" cy="7" r="4"/>
+            </svg>
           </div>
           <div>
             <h2>Personal Information</h2>
@@ -706,82 +713,72 @@
           </div>
         </div>
         <div class="card-body">
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-            <div class="form-group">
-              <label class="form-label">First Name</label>
-              <div class="input-wrapper">
-                <svg class="input-icon" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                <input type="text" id="profile-firstName" class="form-input" placeholder="First name" />
-              </div>
+          <div id="profile-status" style="display:none; padding:0.75rem 1rem;
+             margin-bottom:1rem; border-radius:8px; font-size:0.9rem;"></div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;
+             margin-bottom:1rem;">
+            <div>
+              <label style="display:block; font-size:0.875rem; font-weight:600;
+                 margin-bottom:0.25rem;">First Name</label>
+              <input id="profile-firstName" type="text" class="form-input"
+                 style="width:100%; padding:0.625rem 0.875rem; border:1px solid
+                 var(--border); border-radius:8px; font-size:0.95rem;" />
             </div>
-            <div class="form-group">
-              <label class="form-label">Last Name</label>
-              <div class="input-wrapper">
-                <svg class="input-icon" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                <input type="text" id="profile-lastName" class="form-input" placeholder="Last name" />
-              </div>
-            </div>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Email Address</label>
-            <div class="input-wrapper">
-              <svg class="input-icon" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-              <input type="email" id="profile-email" class="form-input" placeholder="you@example.com" />
+            <div>
+              <label style="display:block; font-size:0.875rem; font-weight:600;
+                 margin-bottom:0.25rem;">Last Name</label>
+              <input id="profile-lastName" type="text" class="form-input"
+                style="width:100%; padding:0.625rem 0.875rem; border:1px solid
+                 var(--border); border-radius:8px; font-size:0.95rem;" />
             </div>
           </div>
-          <div class="form-group">
-            <label class="form-label">Phone Number</label>
-            <div class="input-wrapper">
-              <svg class="input-icon" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 8.81 19.79 19.79 0 012 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92z"/></svg>
-              <input type="tel" id="profile-phone" class="form-input" placeholder="(555) 000-0000" />
+          <div style="margin-bottom:1rem;">
+            <label style="display:block; font-size:0.875rem; font-weight:600;
+               margin-bottom:0.25rem;">Email Address</label>
+            <input id="profile-email" type="email" disabled
+              style="width:100%; padding:0.625rem 0.875rem; border:1px solid
+               var(--border); border-radius:8px; font-size:0.95rem;
+               background:#F3F4F6; color:#6B7280;" />
+            <p style="font-size:0.8rem; color:var(--text-secondary);
+               margin-top:0.25rem;">Contact support to change your email</p>
+          </div>
+          <div style="margin-bottom:1rem;">
+            <label style="display:block; font-size:0.875rem; font-weight:600;
+               margin-bottom:0.25rem;">Phone Number</label>
+            <input id="profile-phone" type="tel"
+              style="width:100%; padding:0.625rem 0.875rem; border:1px solid
+               var(--border); border-radius:8px; font-size:0.95rem;" />
+          </div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;
+             margin-bottom:1rem;">
+            <div>
+              <label style="display:block; font-size:0.875rem; font-weight:600;
+                 margin-bottom:0.25rem;">State</label>
+              <input id="profile-state" type="text"
+                style="width:100%; padding:0.625rem 0.875rem; border:1px solid
+                 var(--border); border-radius:8px; font-size:0.95rem;" />
+            </div>
+            <div>
+              <label style="display:block; font-size:0.875rem; font-weight:600;
+                 margin-bottom:0.25rem;">License Type</label>
+              <input id="profile-licenseType" type="text"
+                style="width:100%; padding:0.625rem 0.875rem; border:1px solid
+                 var(--border); border-radius:8px; font-size:0.95rem;" />
             </div>
           </div>
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-            <div class="form-group">
-              <label class="form-label">State</label>
-              <div class="input-wrapper">
-                <svg class="input-icon" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                <select id="profile-state" class="form-input" style="appearance: none; cursor: pointer;">
-                  <option value="">Select state</option>
-                  <option>Alabama</option><option>Alaska</option><option>Arizona</option><option>Arkansas</option>
-                  <option>California</option><option>Colorado</option><option>Connecticut</option><option>Delaware</option>
-                  <option>Florida</option><option>Georgia</option><option>Hawaii</option><option>Idaho</option>
-                  <option>Illinois</option><option>Indiana</option><option>Iowa</option><option>Kansas</option>
-                  <option>Kentucky</option><option>Louisiana</option><option>Maine</option><option>Maryland</option>
-                  <option>Massachusetts</option><option>Michigan</option><option>Minnesota</option><option>Mississippi</option>
-                  <option>Missouri</option><option>Montana</option><option>Nebraska</option><option>Nevada</option>
-                  <option>New Hampshire</option><option>New Jersey</option><option>New Mexico</option><option>New York</option>
-                  <option>North Carolina</option><option>North Dakota</option><option>Ohio</option><option>Oklahoma</option>
-                  <option>Oregon</option><option>Pennsylvania</option><option>Rhode Island</option><option>South Carolina</option>
-                  <option>South Dakota</option><option>Tennessee</option><option>Texas</option><option>Utah</option>
-                  <option>Vermont</option><option>Virginia</option><option>Washington</option><option>West Virginia</option>
-                  <option>Wisconsin</option><option>Wyoming</option>
-                </select>
-              </div>
-            </div>
-            <div class="form-group">
-              <label class="form-label">License Type</label>
-              <div class="input-wrapper">
-                <svg class="input-icon" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg>
-                <select id="profile-licenseType" class="form-input" style="appearance: none; cursor: pointer;">
-                  <option value="">Select license</option>
-                  <option>LPC</option><option>LMHC</option><option>LCSW</option><option>LMFT</option>
-                  <option>Psychologist</option><option>NCC</option><option>Psychiatric NP</option><option>Other</option>
-                </select>
-              </div>
-            </div>
+          <div style="margin-bottom:1.5rem;">
+            <label style="display:block; font-size:0.875rem; font-weight:600;
+               margin-bottom:0.25rem;">License Number</label>
+            <input id="profile-licenseNumber" type="text"
+              style="width:100%; padding:0.625rem 0.875rem; border:1px solid
+               var(--border); border-radius:8px; font-size:0.95rem;" />
           </div>
-          <div class="form-group" style="margin-bottom: 0;">
-            <label class="form-label">License Number</label>
-            <div class="input-wrapper">
-              <svg class="input-icon" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-              <input type="text" id="profile-licenseNumber" class="form-input" placeholder="e.g. LPC009587" />
-            </div>
+          <div style="display:flex; justify-content:flex-end;">
+            <button class="btn-primary" onclick="saveProfile()">
+              Save Profile
+            </button>
           </div>
         </div>
-      </div>
-      <div style="display: flex; justify-content: flex-end; margin-bottom: 2rem;">
-        <button class="btn-primary" onclick="saveProfile()">Save Profile</button>
       </div>
     </div>
 
@@ -884,7 +881,7 @@
       ? 'http://localhost:5000/api' 
       : 'https://api.counselorready.com/api';
 
-    // â”€â”€ Tab Switching â”€â”€
+    // ── Tab Switching ──
     function switchTab(tabName) {
       document.querySelectorAll('.settings-tab').forEach(t => t.classList.remove('active'));
       document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
@@ -892,7 +889,7 @@
       document.getElementById(`tab-${tabName}`).classList.add('active');
     }
 
-    // â”€â”€ Toggle Row Active State â”€â”€
+    // ── Toggle Row Active State ──
     function updateToggleRow(rowId, isChecked) {
       const row = document.getElementById(rowId);
       if (isChecked) {
@@ -912,7 +909,7 @@
       loadProfile();
     });
 
-    // â”€â”€ Load Settings from API â”€â”€
+    // ── Load Settings from API ──
     async function loadNotificationSettings() {
       try {
         const token = localStorage.getItem('token');
@@ -961,22 +958,26 @@
       }
     }
 
-    // â”€â”€ Save Settings to API â”€â”€
+    // ── Save Settings to API ──
     async function saveNotificationSettings() {
       const payload = {
         phone: document.getElementById('notif-phone').value,
-        notificationPreferences: {
+        notifications: {
           emailReminders: document.getElementById('toggle-email').checked,
           smsReminders: document.getElementById('toggle-sms').checked,
           weeklyProgress: document.getElementById('toggle-weekly').checked,
           fallingBehindAlert: document.getElementById('toggle-alert').checked,
           ceMilestones: document.getElementById('toggle-milestone').checked,
-          courseProgressReminders: document.getElementById('toggle-progress').checked,
+          courseProgressReminders: document.getElementById('toggle-progress').checked
         }
       };
-
       try {
         const token = localStorage.getItem('token');
+        if (!token) {
+          document.getElementById('save-status').textContent = 'Error: Not logged in.';
+          document.getElementById('save-status').style.display = 'block';
+          return;
+        }
         const res = await fetch(`${API_BASE}/users/profile`, {
           method: 'PUT',
           headers: {
@@ -985,20 +986,97 @@
           },
           body: JSON.stringify(payload)
         });
-
+        const body = await res.json();
         if (res.ok) {
+          document.getElementById('save-status').style.display = 'none';
           showToast();
         } else {
-          const err = await res.json();
-          alert('Failed to save: ' + (err.message || 'Unknown error'));
+          document.getElementById('save-status').textContent =
+            'Save failed (' + res.status + '): ' + (body.error || body.message || JSON.stringify(body));
+          document.getElementById('save-status').style.display = 'block';
         }
       } catch (err) {
-        console.error('Save error:', err);
-        alert('Network error â€” please try again.');
+        document.getElementById('save-status').textContent = 'Network error: ' + err.message;
+        document.getElementById('save-status').style.display = 'block';
       }
     }
 
-    // â”€â”€ Toast â”€â”€
+    // ── Load Profile ──
+    async function loadProfile() {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) return;
+        const res = await fetch(`${API_BASE}/auth/me`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+        const user = data.user || data;
+        const p = user.profile || {};
+        document.getElementById('profile-firstName').value = p.firstName || '';
+        document.getElementById('profile-lastName').value = p.lastName || '';
+        document.getElementById('profile-email').value = user.email || '';
+        document.getElementById('profile-phone').value = p.phone || user.phone || '';
+        document.getElementById('profile-state').value = p.state || '';
+        document.getElementById('profile-licenseType').value = p.licenseType || '';
+        document.getElementById('profile-licenseNumber').value = p.licenseNumber || '';
+      } catch (err) {
+        console.error('Failed to load profile:', err);
+      }
+    }
+
+    // ── Save Profile ──
+    async function saveProfile() {
+      const token = localStorage.getItem('token');
+      const status = document.getElementById('profile-status');
+      if (!token) {
+        status.textContent = 'Error: Not logged in.';
+        status.style.background = '#FEF2F2';
+        status.style.color = '#991B1B';
+        status.style.display = 'block';
+        return;
+      }
+      try {
+        const res = await fetch(`${API_BASE}/users/profile`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            firstName: document.getElementById('profile-firstName').value,
+            lastName: document.getElementById('profile-lastName').value,
+            phone: document.getElementById('profile-phone').value,
+            state: document.getElementById('profile-state').value,
+            licenseType: document.getElementById('profile-licenseType').value,
+            licenseNumber: document.getElementById('profile-licenseNumber').value,
+          })
+        });
+        const body = await res.json();
+        if (res.ok) {
+          status.textContent = 'Profile saved successfully.';
+          status.style.background = '#ECFDF5';
+          status.style.color = '#065F46';
+          status.style.border = '1px solid #A7F3D0';
+          status.style.display = 'block';
+          setTimeout(() => { status.style.display = 'none'; }, 3000);
+        } else {
+          status.textContent = 'Save failed (' + res.status + '): ' +
+            (body.error || body.message || JSON.stringify(body));
+          status.style.background = '#FEF2F2';
+          status.style.color = '#991B1B';
+          status.style.border = '1px solid #FECACA';
+          status.style.display = 'block';
+        }
+      } catch (err) {
+        status.textContent = 'Network error: ' + err.message;
+        status.style.background = '#FEF2F2';
+        status.style.color = '#991B1B';
+        status.style.display = 'block';
+      }
+    }
+
+    // ── Toast ──
     function showToast() {
       const toast = document.getElementById('toast');
       toast.classList.add('show');

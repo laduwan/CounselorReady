@@ -375,23 +375,29 @@
       try {
         let courses = [];
 
-        // 1. Admin endpoint (old courses collection - has drafts + enrollment counts)
+        // Admin courses
         try {
+          const ctrl1 = new AbortController();
+          setTimeout(() => ctrl1.abort(), 10000);
           const r = await fetch(`${API_URL}/api/admin/courses`, {
-            headers: { Authorization: `Bearer ${token}` }
+            headers: { Authorization: `Bearer ${token}` },
+            signal: ctrl1.signal
           });
           if (r.ok) {
             const d = await r.json();
-            courses = (d.courses || []).map(c => ({ ...c, _source: 'courses' }));
+            courses = (d.data || d || []).map(c => ({ ...c, _source: 'admincourses' }));
           }
-        } catch(e) {}
+        } catch(e) { console.warn('Fetch failed:', e.message); }
 
-        // 2. Interactive courses (Architecture A - interactivecourses collection)
+        // Interactive courses (all courses live here now)
         try {
           let p = 1;
           while (true) {
-            const r = await fetch(`${API_URL}/api/interactive-courses?page=${p}&limit=50`, {
-              headers: { Authorization: `Bearer ${token}` }
+            const ctrl2 = new AbortController();
+            setTimeout(() => ctrl2.abort(), 10000);
+            const r = await fetch(`${API_URL}/api/interactive-courses?page=${p}&limit=200&status=all`, {
+              headers: { Authorization: `Bearer ${token}` },
+              signal: ctrl2.signal
             });
             if (!r.ok) break;
             const d = await r.json();
@@ -405,7 +411,7 @@
             if (p >= (d.pagination?.pages || 1) || batch.length === 0) break;
             p++;
           }
-        } catch(e) {}
+        } catch(e) { console.warn('Fetch failed:', e.message); }
 
         // Annotate with health
         allCourses = courses.map(c => ({ ...c, _health: healthStatus(c), _words: wordCount(c) }));
@@ -536,12 +542,12 @@
               <button onclick="togglePublish('${c._id}','${c.status}','${esc(c.title)}','${src}')"
                 class="w-8 h-8 rounded-lg flex items-center justify-center text-sm transition-colors ${pub ? 'bg-yellow-50 hover:bg-yellow-100 text-yellow-700' : 'bg-green-50 hover:bg-green-100 text-green-700'}"
                 title="${pub ? 'Unpublish' : 'Publish'}">
-                ${pub ? '📤' : '📥'}
+                ${pub ? '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>' : '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>'}
               </button>
               <a href="/interactive-course.html?id=${c._id}&preview=true"
-                class="w-8 h-8 rounded-lg flex items-center justify-center text-sm bg-purple-50 hover:bg-purple-100 text-purple-700 transition-colors" title="Preview in Viewer">👁️</a>
+                class="w-8 h-8 rounded-lg flex items-center justify-center text-sm bg-purple-50 hover:bg-purple-100 text-purple-700 transition-colors" title="Preview in Viewer"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg></a>
               <button onclick="duplicateCourse('${c._id}','${esc(c.title)}')"
-                class="w-8 h-8 rounded-lg flex items-center justify-center text-sm bg-gold-50 hover:bg-gold-100 text-gold-700 transition-colors" title="Duplicate">📋</button>
+                class="w-8 h-8 rounded-lg flex items-center justify-center text-sm bg-gold-50 hover:bg-gold-100 text-gold-700 transition-colors" title="Duplicate"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg></button>
               <button onclick="openMetaModal('${c._id}','${esc(c.title)}','${src}',this)"
                 class="h-8 px-3 rounded-lg text-xs font-medium bg-gold-50 hover:bg-gold-100 text-gold-700 transition-colors flex items-center" title="Delivery Format & Content Areas">Meta</button>
               <button onclick="openEditModal('${c._id}','${src}')"
@@ -1231,163 +1237,7 @@
   QUICK-ENROLL COPY-LINK PATCH
   ═══════════════════════════════════════════════════════════════════
 -->
-<style id="cr-quickenroll-styles">
-  /* Copy-Link button */
-  .cr-copy-link-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    padding: 5px 12px;
-    font-size: 12px;
-    font-weight: 600;
-    border-radius: 6px;
-    border: 1.5px solid #4A7C59;
-    color: #4A7C59;
-    background: transparent;
-    cursor: pointer;
-    transition: background 0.15s, color 0.15s;
-    white-space: nowrap;
-  }
-  .cr-copy-link-btn:hover {
-    background: #4A7C59;
-    color: #fff;
-  }
-  .cr-copy-link-btn.copied {
-    border-color: #D4A855;
-    color: #D4A855;
-  }
-  .cr-copy-link-btn svg {
-    flex-shrink: 0;
-  }
-  /* Toast */
-  #cr-enroll-toast {
-    position: fixed;
-    bottom: 28px;
-    left: 50%;
-    transform: translateX(-50%) translateY(20px);
-    background: #284157;
-    color: #fff;
-    padding: 10px 20px;
-    border-radius: 8px;
-    font-size: 13px;
-    font-weight: 600;
-    opacity: 0;
-    transition: opacity 0.2s, transform 0.2s;
-    pointer-events: none;
-    z-index: 9999;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.18);
-  }
-  #cr-enroll-toast.show {
-    opacity: 1;
-    transform: translateX(-50%) translateY(0);
-  }
-  #cr-enroll-toast .toast-check {
-    color: #4A7C59;
-    font-size: 15px;
-  }
-</style>
 <!-- Toast container (injected once) -->
-<div id="cr-enroll-toast" aria-live="polite">
-  <span class="toast-check">✓</span>
-  <span id="cr-enroll-toast-text">Enrollment link copied!</span>
-</div>
-<script id="cr-quickenroll-script">
-(function () {
-  'use strict';
-  const ORIGIN = window.location.origin;
-  /* ── Helpers ─────────────────────────────────────────────────── */
-  function copyToClipboard(text) {
-    if (navigator.clipboard?.writeText) {
-      return navigator.clipboard.writeText(text);
-    }
-    const ta = document.createElement('textarea');
-    ta.value = text;
-    ta.style.cssText = 'position:fixed;top:-999px;left:-999px';
-    document.body.appendChild(ta);
-    ta.select();
-    document.execCommand('copy');
-    document.body.removeChild(ta);
-    return Promise.resolve();
-  }
-  function showToast(msg) {
-    const toast    = document.getElementById('cr-enroll-toast');
-    const textNode = document.getElementById('cr-enroll-toast-text');
-    if (!toast) return;
-    textNode.textContent = msg || 'Enrollment link copied!';
-    toast.classList.add('show');
-    clearTimeout(toast._timer);
-    toast._timer = setTimeout(() => toast.classList.remove('show'), 2800);
-  }
-  /* ── Build & inject a Copy-Link button ───────────────────────── */
-  function buildBtn(slug) {
-    const btn = document.createElement('button');
-    btn.className   = 'cr-copy-link-btn';
-    btn.title       = 'Copy enrollment link for ' + slug;
-    btn.dataset.slug = slug;
-    btn.innerHTML   = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg> Copy Link';
-    btn.addEventListener('click', async function(e) {
-      e.stopPropagation();
-      var url = ORIGIN + '/enroll/' + slug;
-      try {
-        await copyToClipboard(url);
-        btn.classList.add('copied');
-        btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Copied!';
-        showToast('Link copied: /enroll/' + slug);
-        setTimeout(function() {
-          btn.classList.remove('copied');
-          btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg> Copy Link';
-        }, 2500);
-      } catch(err) {
-        showToast('Could not copy — check clipboard permissions');
-      }
-    });
-    return btn;
-  }
-  /* ── Find the best action-button container in a row ─────────── */
-  function findActionContainer(row) {
-    var byClass = row.querySelector('[class*="action"], [class*="btn-group"], [class*="controls"]');
-    if (byClass) return byClass;
-    if (row.tagName === 'TR') {
-      var cells = row.querySelectorAll('td');
-      if (cells.length) return cells[cells.length - 1];
-    }
-    var withBtn = row.querySelector('a[href], button');
-    if (withBtn) return withBtn.parentElement;
-    return row;
-  }
-  /* ── Inject button into a row that has data-slug ─────────────── */
-  function injectIntoRow(row) {
-    var slug = row.dataset.slug;
-    if (!slug) return;
-    if (row.querySelector('.cr-copy-link-btn')) return;
-    var container = findActionContainer(row);
-    container.appendChild(buildBtn(slug));
-  }
-  /* ── Scan all current rows ────────────────────────────────────── */
-  function scanRows() {
-    document.querySelectorAll('[data-slug]').forEach(injectIntoRow);
-  }
-  /* ── Watch for dynamically added rows (async API render) ─────── */
-  var observer = new MutationObserver(function(mutations) {
-    for (var i = 0; i < mutations.length; i++) {
-      mutations[i].addedNodes.forEach(function(node) {
-        if (node.nodeType !== 1) return;
-        if (node.dataset && node.dataset.slug) injectIntoRow(node);
-        if (node.querySelectorAll) node.querySelectorAll('[data-slug]').forEach(injectIntoRow);
-      });
-    }
-  });
-  observer.observe(document.body, { childList: true, subtree: true });
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', scanRows);
-  } else {
-    scanRows();
-  }
-})();
-</script>
 
 </body>
 </html>
