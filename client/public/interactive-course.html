@@ -1404,49 +1404,6 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
   .cr-highlight { background: none !important; border-bottom: 1px solid #999; }
   .cr-accordion-body { max-height: none !important; padding: 12px 0 !important; }
 }
-
-/* ═══════════════════════════════════════════════════════════════
-   FREE-TIER GATE & BANNER
-   ═══════════════════════════════════════════════════════════════ */
-.cr-gate-overlay {
-  position: fixed; inset: 0;
-  background: rgba(0,0,0,0.6);
-  display: flex; align-items: center; justify-content: center;
-  z-index: 99990;
-}
-.cr-gate-card {
-  background: var(--cr-surface);
-  border-radius: var(--cr-radius);
-  padding: 40px 36px;
-  max-width: 440px; width: 90%;
-  text-align: center;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-}
-.cr-gate-card h2 {
-  font-family: var(--cr-font-display);
-  font-size: 1.5em; font-weight: 700;
-  color: var(--cr-burgundy);
-  margin-bottom: 12px;
-}
-.cr-gate-card p {
-  color: var(--cr-text-secondary);
-  margin-bottom: 20px; line-height: 1.6;
-}
-.cr-gate-card .cr-btn { margin: 6px; }
-.cr-free-hours-banner {
-  position: fixed; bottom: 0; left: 0; right: 0;
-  background: linear-gradient(90deg, var(--cr-burgundy), #4A1224);
-  color: #fff; text-align: center;
-  padding: 10px 20px;
-  font-size: 13px; font-weight: 600;
-  z-index: 9990;
-  display: none;
-}
-.cr-free-hours-banner a {
-  color: var(--cr-gold-light);
-  text-decoration: underline;
-  margin-left: 10px;
-}
 </style>
 <!-- .docx parsing -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
@@ -1485,25 +1442,6 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
     <p id="crErrorMsg" style="color:var(--cr-text-muted)"></p>
     <button class="cr-btn cr-btn-primary" style="margin:20px auto 0" data-action="showParser">Load a Course File</button>
   </div>
-</div>
-
-<!-- ═══════════════════════════════════════════════════════════════
-     FREE HOURS EXHAUSTED GATE
-     ═══════════════════════════════════════════════════════════════ -->
-<div id="crGateFreeHours" class="cr-gate-overlay" style="display:none">
-  <div class="cr-gate-card">
-    <div style="font-size:48px;margin-bottom:16px">&#128218;</div>
-    <h2>Free CE Hours Used</h2>
-    <p>You've used all <strong>4 free CE hours</strong>. Subscribe to unlock unlimited courses and continue earning CE credit.</p>
-    <a href="/pricing" class="cr-btn cr-btn-primary">View Plans</a>
-    <a href="/catalog" class="cr-btn cr-btn-outline" style="margin-top:8px">Browse Free Courses</a>
-  </div>
-</div>
-
-<!-- FREE HOURS REMAINING BANNER -->
-<div id="crFreeHoursBanner" class="cr-free-hours-banner">
-  <span id="crFreeHoursBannerText">You have free CE hours remaining.</span>
-  <a href="/pricing">Upgrade for unlimited access</a>
 </div>
 
 <!-- ═══════════════════════════════════════════════════════════════
@@ -1825,20 +1763,14 @@ let ttsUtterance = null;
   
   if (slug) {
     const base = apiBase || (location.origin.includes('localhost') ? 'http://localhost:5000' : 'https://api.counselorready.com');
-    const token = localStorage.getItem('token');
-    if (!token) {
-      window.location.href = `/login.html?redirect=${encodeURIComponent(location.href)}`;
-      return;
-    }
-    const headers = { 'Authorization': `Bearer ${token}` };
-    fetch(`${base}/api/interactive-courses/slug/${slug}`, { headers })
-      .then(r => r.json())
+    fetch(`${base}/api/interactive-courses/slug/${slug}`)
+      .then(r => { if (!r.ok) throw new Error('API ' + r.status); return r.json(); })
       .then(data => {
-        const course = data.data || data.course || data;
-        if (!course._id) { showError('Course not found: ' + slug); return; }
-        loadCourse(course);
+        const cd = data.data || data.course || data;
+        try { loadCourse(cd); }
+        catch(e) { showError('Render error: ' + e.message); console.error('loadCourse crash:', e); }
       })
-      .catch(e => showError('Course not found: ' + slug));
+      .catch(e => showError('Could not load course: ' + e.message));
     return;
   }
   
@@ -2062,67 +1994,12 @@ function loadCourse(data) {
   initTranslation();
   buildSectionNav();
   renderCurrentSection();
-
-  // ── Free-tier hours check ──
-  checkFreeHoursStatus();
 }
 
 function showError(msg) {
   document.getElementById('crLoading').style.display = 'none';
   document.getElementById('crError').style.display = 'flex';
   document.getElementById('crErrorMsg').textContent = msg;
-}
-
-// ═══════════════════════════════════════════════════════════════
-// FREE-TIER GATE HANDLING
-// ═══════════════════════════════════════════════════════════════
-
-function showFreeHoursBanner(remaining) {
-  var banner = document.getElementById('crFreeHoursBanner');
-  var text = document.getElementById('crFreeHoursBannerText');
-  if (banner && text) {
-    text.textContent = 'You have ' + remaining + ' free CE hour' + (remaining !== 1 ? 's' : '') + ' remaining.';
-    banner.style.display = 'block';
-  }
-}
-
-function showFreeHoursGate() {
-  var gate = document.getElementById('crGateFreeHours');
-  if (gate) gate.style.display = 'flex';
-}
-
-function checkFreeHoursStatus() {
-  if (window.__CR_PREVIEW) return; // Skip in admin preview
-  if (!course || !course._id) return;
-
-  var token = localStorage.getItem('token');
-  if (!token) return; // Not logged in — no gate check needed
-
-  var base = location.origin.includes('localhost') ? 'http://localhost:5000' : 'https://api.counselorready.com';
-  fetch(base + '/api/interactive-courses/' + course._id + '/progress', {
-    headers: { 'Authorization': 'Bearer ' + token }
-  })
-    .then(function(r) { return r.json(); })
-    .then(function(data) {
-      if (data._freeHoursRemaining !== undefined && data._freeHoursRemaining > 0) {
-        showFreeHoursBanner(data._freeHoursRemaining);
-      }
-      if (data.error === 'FREE_HOURS_EXHAUSTED') {
-        showFreeHoursGate();
-      }
-    })
-    .catch(function() {}); // Fail silently
-}
-
-function handleEnrollResponse(response) {
-  if (response.error === 'FREE_HOURS_EXHAUSTED') {
-    showFreeHoursGate();
-    return false;
-  }
-  if (response._freeHoursRemaining !== undefined && response._freeHoursRemaining > 0) {
-    showFreeHoursBanner(response._freeHoursRemaining);
-  }
-  return true;
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -2475,15 +2352,11 @@ function renderCurrentSection() {
   
   // Render APA 7th references on last section
   const isLast = currentSectionIndex === course.sections.length - 1;
-  const validRefs = (course.references || []).filter(ref => {
-    const text = ref.formatted || ref.citation || ref.title || '';
-    return text && !text.includes('undefined');
-  });
-  if (isLast && validRefs.length > 0) {
+  if (isLast && course.references?.length > 0) {
     const refsDiv = document.createElement('div');
     refsDiv.className = 'cr-references';
     let refsHtml = '<h3 style="text-align:center;font-family:var(--cr-font-display);font-size:1.3em;font-weight:700;color:var(--cr-burgundy);margin-bottom:1em">References</h3>';
-    validRefs.forEach(ref => {
+    course.references.forEach(ref => {
       if (ref.citation) {
         // Pre-formatted citation string
         refsHtml += `<p class="cr-reference">${esc(ref.citation)}</p>`;
@@ -2567,7 +2440,8 @@ function renderBlock(block, index) {
     case 'timeline': return renderTimeline(wrap, block, index);
     case 'hotspot': return renderHotspot(wrap, block, index);
     case 'reflection': return renderReflection(wrap, block, index);
-    case 'resources': return renderResources(wrap, block);
+    case 'resources':
+    case 'deliverables': return renderResources(wrap, block);
     case 'videoEmbed': return renderVideoEmbed(wrap, block);
     case 'video': return renderVideoEmbed(wrap, block);
     case 'knowledgeCheck': return renderKnowledgeCheck(wrap, block, index);
@@ -3165,8 +3039,20 @@ function refCount(id, minLen) {
 }
 
 // ─── RESOURCES ───
+function cloudinaryDownloadUrl(url) {
+  if (!url) return '#';
+  const m = url.match(/^(https:\/\/res\.cloudinary\.com\/[^/]+\/(raw|image|video)\/upload\/)(fl_attachment\/)?(.+)$/);
+  if (m) return m[1] + 'fl_attachment/' + m[4];
+  return url;
+}
+function isDownloadable(r) {
+  const t = ['pdf','docx','doc','xlsx','xls','csv','pptx','ppt','zip','rar','worksheet','template','toolkit','document'];
+  if (r.type && t.includes(r.type)) return true;
+  const ext = (r.url || r.filename || '').split('.').pop()?.toLowerCase();
+  return t.includes(ext);
+}
 function renderResources(wrap, block) {
-  const resources = block.resources || [];
+  const resources = block.resources || block.deliverables || block.files || [];
   const icons = { pdf: '📄', video: '🎬', link: '🔗', article: '📰', website: '🌐', book: '📚',
     reference: '📖', worksheet: '📝', document: '📃', chapter: '📑', journal: '🔬' };
   
@@ -3175,7 +3061,7 @@ function renderResources(wrap, block) {
     ${resources.map(r => `<div class="cr-resource-item">
       <div class="cr-resource-icon">${icons[r.type] || '📎'}</div>
       <div class="cr-resource-info">
-        <a href="${esc(r.url || '#')}" target="_blank" rel="noopener">${esc(r.title || 'Resource')}</a>
+        ${(()=>{ const dl=isDownloadable(r); const href=dl?cloudinaryDownloadUrl(r.url):(r.url||'#'); return `<a href="${esc(href)}" ${dl?'download':'target="_blank" rel="noopener"'}>${esc(r.title||'Resource')}</a>`; })()}
         <span>${esc((r.type || 'link').toUpperCase())}</span>
       </div>
     </div>`).join('')}
@@ -3307,13 +3193,9 @@ function downloadCourseText() {
       }
     });
   });
-  const validExportRefs = (course.references || []).filter(ref => {
-    const text = ref.formatted || ref.citation || ref.title || '';
-    return text && !text.includes('undefined');
-  });
-  if (validExportRefs.length) {
+  if (course.references?.length) {
     text += '\nReferences\n----------\n';
-    validExportRefs.forEach(r => {
+    course.references.forEach(r => {
       if (r.citation) { text += r.citation + '\n'; }
       else { text += `${r.author || ''} (${r.year || ''}). ${r.title || ''}. ${r.source || ''}\n`; }
     });
@@ -4978,11 +4860,7 @@ document.addEventListener('keydown', function(e) {
 
   // ── Renderers ──
   function renderRefs() {
-    var b = document.getElementById('crdRB'), h = '';
-    var refs = (refsData || []).filter(function(r) {
-      var text = r.formatted || r.citation || r.title || '';
-      return text && text.indexOf('undefined') === -1;
-    });
+    var b = document.getElementById('crdRB'), refs = refsData || [], h = '';
     if (!refs.length) { b.innerHTML = '<p style="color:var(--cr-text-muted);text-align:center;margin-top:2em">No references available.</p>'; return; }
     refs.forEach(function(r) {
       if (typeof r === 'string') h += '<p class="crd-ref">' + esc(r) + '</p>';

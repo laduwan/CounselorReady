@@ -8,9 +8,12 @@ import { CheckCircle, XCircle, Eye, Clock, AlertTriangle, BookOpen } from 'lucid
 import CEBuildPreview from '../components/researchReady/CEBuildPreview';
 
 const statusStyles = {
-  pending_review: { bg: 'bg-yellow-100', text: 'text-yellow-800', label: 'Pending' },
+  pending: { bg: 'bg-yellow-100', text: 'text-yellow-800', label: 'Pending' },
   approved: { bg: 'bg-blue-100', text: 'text-blue-800', label: 'Approved' },
-  live: { bg: 'bg-green-100', text: 'text-green-800', label: 'Live' },
+  generating: { bg: 'bg-purple-100', text: 'text-purple-800', label: 'Generating' },
+  test_ready: { bg: 'bg-green-100', text: 'text-green-800', label: 'Test Ready' },
+  in_progress: { bg: 'bg-teal-100', text: 'text-teal-800', label: 'In Progress' },
+  completed: { bg: 'bg-green-100', text: 'text-green-800', label: 'Completed' },
   rejected: { bg: 'bg-red-100', text: 'text-red-800', label: 'Rejected' }
 };
 
@@ -35,7 +38,7 @@ export default function AdminResearchReady() {
   async function loadQueue() {
     try {
       const { data } = await api.get('/research-ready/queue');
-      setCourses(data.courses || []);
+      setCourses(data.requests || []);
     } catch (err) {
       console.error('Failed to load queue:', err);
     } finally {
@@ -45,7 +48,7 @@ export default function AdminResearchReady() {
 
   async function handleApprove(id) {
     try {
-      await api.patch(`/research-ready/queue/${id}/approve`);
+      await api.patch(`/research-ready/request/${id}/approve`);
       loadQueue();
     } catch (err) {
       alert('Approve failed: ' + (err.response?.data?.error || err.message));
@@ -54,7 +57,7 @@ export default function AdminResearchReady() {
 
   async function handleReject(id) {
     try {
-      await api.patch(`/research-ready/queue/${id}/reject`, { rejectionNote: rejectNote });
+      await api.patch(`/research-ready/request/${id}/reject`, { rejectionNote: rejectNote });
       setRejectingId(null);
       setRejectNote('');
       loadQueue();
@@ -77,7 +80,7 @@ export default function AdminResearchReady() {
         <BookOpen className="w-6 h-6 text-[#7B2D3E]" />
         <h1 className="text-2xl font-bold font-[Georgia,serif] text-[#2A1F0E]">Researched-N-Ready CE Queue</h1>
         <span className="px-2.5 py-1 rounded-full text-xs font-medium font-[Georgia,serif] bg-[#F8EEDC] text-[#8B5E2E]">
-          {courses.filter(c => c.status === 'pending_review').length} pending
+          {courses.filter(c => c.status === 'pending').length} pending
         </span>
       </div>
 
@@ -105,35 +108,31 @@ export default function AdminResearchReady() {
               </thead>
               <tbody>
                 {courses.map(course => {
-                  const ss = statusStyles[course.status] || statusStyles.pending_review;
+                  const ss = statusStyles[course.status] || statusStyles.pending;
                   const cv = course.currencyVerdict?.verdict;
                   const vs = cv ? (verdictStyles[cv] || verdictStyles.hold_for_review) : null;
 
                   return (
                     <tr key={course._id} className="border-b border-[#EAE7E2] last:border-b-0 hover:bg-[#FDF8EE]">
                       <td className="px-4 py-3">
-                        <p className="font-medium font-[Georgia,serif] text-[#2A1F0E] max-w-xs truncate" title={course.title}>
-                          {course.title.length > 60 ? course.title.substring(0, 60) + '...' : course.title}
-                        </p>
+                        {(course.selectedArticles || []).map((a, i) => (
+                          <p key={i} className="font-medium font-[Georgia,serif] text-[#2A1F0E] max-w-xs truncate" title={a.title}>
+                            {a.title.length > 60 ? a.title.substring(0, 60) + '...' : a.title}
+                          </p>
+                        ))}
                       </td>
                       <td className="px-4 py-3 font-[Georgia,serif] text-[#7A6A54]">
-                        <p className="max-w-[150px] truncate">{course.authors}</p>
-                        <p className="text-xs text-[#7A6A54]">{course.year}</p>
+                        {(course.selectedArticles || []).map((a, i) => (
+                          <p key={i} className="max-w-[150px] truncate">{a.authors} ({a.year})</p>
+                        ))}
                       </td>
                       <td className="px-4 py-3 text-center">
-                        <span className="font-semibold font-[Georgia,serif] text-[#7B2D3E]">{course.ceHours}</span>
+                        <span className="font-semibold font-[Georgia,serif] text-[#7B2D3E]">{course.totalCeHours}</span>
                       </td>
                       <td className="px-4 py-3">
-                        <div className="flex flex-wrap gap-1 max-w-[180px]">
-                          {(course.contentAreas || []).slice(0, 2).map((area, i) => (
-                            <span key={i} className="px-1.5 py-0.5 rounded text-[10px] font-medium font-[Georgia,serif] bg-[#F8EEDC] text-[#8B5E2E]">
-                              {area}
-                            </span>
-                          ))}
-                          {course.contentAreas?.length > 2 && (
-                            <span className="text-[10px] text-[#7A6A54]">+{course.contentAreas.length - 2}</span>
-                          )}
-                        </div>
+                        <span className="px-1.5 py-0.5 rounded text-[10px] font-medium font-[Georgia,serif] bg-[#F8EEDC] text-[#8B5E2E]">
+                          {course.contentArea}
+                        </span>
                       </td>
                       <td className="px-4 py-3 text-center">
                         {vs ? (
@@ -145,7 +144,7 @@ export default function AdminResearchReady() {
                         )}
                       </td>
                       <td className="px-4 py-3 text-center font-[Georgia,serif] text-[#7A6A54]">
-                        {course.wordCount?.toLocaleString()}
+                        {(course.generatedWordCount || course.totalWordCount)?.toLocaleString()}
                       </td>
                       <td className="px-4 py-3 text-center">
                         <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${ss.bg} ${ss.text}`}>
@@ -161,7 +160,7 @@ export default function AdminResearchReady() {
                           >
                             <Eye className="w-4 h-4" />
                           </button>
-                          {(course.status === 'pending_review' || course.status === 'approved') && (
+                          {(course.status === 'pending' || course.status === 'approved') && (
                             <>
                               <button
                                 onClick={() => handleApprove(course._id)}
