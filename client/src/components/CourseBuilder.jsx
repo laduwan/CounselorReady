@@ -1,9 +1,6 @@
 // DROP INTO: /client/src/components/CourseBuilder.jsx
 
 import { useState, useCallback, useRef, useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
-import jsPDF from "jspdf";
-import NarrationPanel from "./NarrationPanel.jsx";
 import {
   Sparkles, FileText, CheckCircle, Upload, Plus, Trash2, GripVertical,
   ChevronDown, ChevronRight, AlertTriangle, Check, X, Loader2,
@@ -11,12 +8,12 @@ import {
   Settings, Eye, Wand2, FileUp, BarChart3, Zap, Save, Download
 } from "lucide-react";
 
-// ─── Brand Colors ───
+// â”€â”€â”€ Brand Colors â”€â”€â”€
 const C = {
   burgundy: "#6B1D34", burgundyLight: "#8B2D4A", burgundyFaded: "rgba(107,29,52,0.08)",
   green: "#4A7C59", greenLight: "#5A9469", greenFaded: "rgba(74,124,89,0.08)",
   gold: "#D4A855", goldLight: "#E0BC72", goldFaded: "rgba(212,168,85,0.12)",
-  navy: "#34495E", navyLight: "#4A6278",
+  navy: "#284157", navyLight: "#4A6278",
   bg: "#FAFAF8", card: "#FFFFFF",
   border: "#E8E4DF", borderLight: "#F0EDE8",
   text: "#2C2C2C", textMuted: "#6B7280", textLight: "#9CA3AF",
@@ -24,30 +21,30 @@ const C = {
   purple: "#7C3AED", teal: "#0F766E", amber: "#B45309", slate: "#1E293B",
 };
 
-// ═══════════════════════════════════════════════════════════
-// BLOCK TYPE REGISTRY — 17 Total
-// ═══════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// BLOCK TYPE REGISTRY â€” 17 Total
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 const BLOCK_TYPES = [
-  // ── Content (auto-complete on render) ──
-  { type: "sectionDivider", label: "Section Divider", icon: "§", color: C.navy, category: "content" },
-  { type: "text", label: "Text Content", icon: "¶", color: C.green, category: "content" },
-  { type: "imageText", label: "Image + Text", icon: "🖼", color: C.greenLight, category: "content" },
-  { type: "image", label: "Standalone Image", icon: "📷", color: C.teal, category: "content" },
-  { type: "accordion", label: "Accordion", icon: "≡", color: C.gold, category: "content" },
-  { type: "resources", label: "Resources", icon: "📎", color: C.navy, category: "content" },
-  { type: "videoEmbed", label: "Video + Markers", icon: "🎬", color: C.slate, category: "content" },
-  // ── Knowledge Checks (graded, count for ACEP) ──
-  { type: "multipleChoice", label: "Multiple Choice", icon: "◉", color: C.burgundy, category: "assessment" },
-  { type: "multiSelect", label: "Multi-Select", icon: "☑", color: C.burgundyLight, category: "assessment" },
-  { type: "matching", label: "Matching", icon: "↔", color: C.navyLight, category: "assessment" },
-  { type: "cardSort", label: "Card Sort", icon: "🗂", color: "#0284C7", category: "assessment" },
-  { type: "sequencing", label: "Sequencing", icon: "📋", color: C.navy, category: "assessment" },
-  { type: "timeline", label: "Timeline", icon: "📅", color: C.teal, category: "assessment" },
-  // ── Interactive Engagement ──
-  { type: "reflection", label: "Reflection", icon: "💭", color: C.green, category: "interactive" },
-  { type: "hotspot", label: "Hotspot / Diagram", icon: "🎯", color: C.purple, category: "interactive" },
-  { type: "scenarioTree", label: "Scenario Tree", icon: "🔀", color: C.burgundy, category: "interactive" },
-  { type: "flashcardDeck", label: "Flashcard Deck", icon: "🃏", color: C.amber, category: "interactive" },
+  // â”€â”€ Content (auto-complete on render) â”€â”€
+  { type: "sectionDivider", label: "Section Divider", icon: "Â§", color: C.navy, category: "content" },
+  { type: "text", label: "Text Content", icon: "Â¶", color: C.green, category: "content" },
+  { type: "imageText", label: "Image + Text", icon: "ðŸ–¼", color: C.greenLight, category: "content" },
+  { type: "image", label: "Standalone Image", icon: "ðŸ“·", color: C.teal, category: "content" },
+  { type: "accordion", label: "Accordion", icon: "â‰¡", color: C.gold, category: "content" },
+  { type: "resources", label: "Resources", icon: "ðŸ“Ž", color: C.navy, category: "content" },
+  { type: "videoEmbed", label: "Video + Markers", icon: "ðŸŽ¬", color: C.slate, category: "content" },
+  // â”€â”€ Knowledge Checks (graded, count for ACEP) â”€â”€
+  { type: "multipleChoice", label: "Multiple Choice", icon: "â—‰", color: C.burgundy, category: "assessment" },
+  { type: "multiSelect", label: "Multi-Select", icon: "â˜‘", color: C.burgundyLight, category: "assessment" },
+  { type: "matching", label: "Matching", icon: "â†”", color: C.navyLight, category: "assessment" },
+  { type: "cardSort", label: "Card Sort", icon: "ðŸ—‚", color: "#0284C7", category: "assessment" },
+  { type: "sequencing", label: "Sequencing", icon: "ðŸ“‹", color: C.navy, category: "assessment" },
+  { type: "timeline", label: "Timeline", icon: "ðŸ“…", color: C.teal, category: "assessment" },
+  // â”€â”€ Interactive Engagement â”€â”€
+  { type: "reflection", label: "Reflection", icon: "ðŸ’­", color: C.green, category: "interactive" },
+  { type: "hotspot", label: "Hotspot / Diagram", icon: "ðŸŽ¯", color: C.purple, category: "interactive" },
+  { type: "scenarioTree", label: "Scenario Tree", icon: "ðŸ”€", color: C.burgundy, category: "interactive" },
+  { type: "flashcardDeck", label: "Flashcard Deck", icon: "ðŸƒ", color: C.amber, category: "interactive" },
 ];
 
 const BLOCK_DEFAULTS = {
@@ -81,7 +78,7 @@ const KNOWLEDGE_CHECK_TYPES = ["multipleChoice", "multiSelect", "matching", "car
 const ENGAGEMENT_TYPES = ["accordion", "hotspot", "scenarioTree", "flashcardDeck", "reflection"];
 const CONTENT_TYPES = ["sectionDivider", "text", "imageText", "image", "resources", "videoEmbed"];
 
-// ─── Utilities ───
+// â”€â”€â”€ Utilities â”€â”€â”€
 function countWords(text) {
   if (!text) return 0;
   return text.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim().split(" ").filter(Boolean).length;
@@ -112,7 +109,7 @@ function countBlockWords(block) {
   return w;
 }
 
-// ─── Styles ───
+// â”€â”€â”€ Styles â”€â”€â”€
 const S = {
   container: { fontFamily: "'Newsreader', Georgia, serif", background: C.bg, minHeight: "100vh", color: C.text },
   header: { background: `linear-gradient(135deg, ${C.burgundy} 0%, #4A1224 100%)`, padding: "18px 28px", display: "flex", alignItems: "center", justifyContent: "space-between" },
@@ -140,9 +137,9 @@ const S = {
 };
 
 
-// ═══════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // CLOUDINARY UPLOADER (inline component)
-// ═══════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 function CloudinaryUploader({ onUpload, context = "general", currentImage = null, label = "Upload Image", compact = false }) {
   const [uploading, setUploading] = useState(false);
   const [preview, setPreview] = useState(currentImage);
@@ -178,7 +175,20 @@ function CloudinaryUploader({ onUpload, context = "general", currentImage = null
       setPreview(result.thumbnailUrl || result.url);
       onUpload(result);
     } catch (err) {
-      setError(err.message || "Upload failed. Please try again.");
+      // Fallback to local preview if API unavailable
+      try {
+        const url = URL.createObjectURL(file);
+        const img = new Image();
+        img.onload = () => {
+          const fallback = { url, publicId: `${context}_${Date.now()}`, width: img.width, height: img.height, alt, thumbnailUrl: url, mediumUrl: url, largeUrl: url };
+          setPreview(url);
+          onUpload(fallback);
+        };
+        img.onerror = () => setError("Failed to load image");
+        img.src = url;
+      } catch (e2) {
+        setError(err.message || "Upload failed");
+      }
     } finally {
       setUploading(false);
     }
@@ -193,7 +203,7 @@ function CloudinaryUploader({ onUpload, context = "general", currentImage = null
         <input type="file" ref={fileRef} accept="image/*" onChange={handleFileInput} style={{ display: "none" }} />
         <button onClick={() => fileRef.current?.click()} disabled={uploading}
           style={{ background: C.green, color: "#fff", border: "none", borderRadius: 6, padding: "6px 12px", fontSize: 12, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 4, opacity: uploading ? 0.6 : 1 }}>
-          {uploading ? "⏳" : "📷"} {label}
+          {uploading ? "â³" : "ðŸ“·"} {label}
         </button>
         {preview && <img src={preview} alt="" style={{ width: 28, height: 28, borderRadius: 4, objectFit: "cover" }} />}
         {error && <span style={{ color: C.danger, fontSize: 11 }}>{error}</span>}
@@ -216,9 +226,9 @@ function CloudinaryUploader({ onUpload, context = "general", currentImage = null
           </div>
         ) : (
           <div>
-            <div style={{ fontSize: 28, marginBottom: 6 }}>📷</div>
+            <div style={{ fontSize: 28, marginBottom: 6 }}>ðŸ“·</div>
             <div style={{ fontWeight: 600, color: C.navy, fontSize: 14 }}>{label}</div>
-            <div style={{ color: C.textLight, fontSize: 12, marginTop: 4 }}>Drag & drop or click · Max 10MB</div>
+            <div style={{ color: C.textLight, fontSize: 12, marginTop: 4 }}>Drag & drop or click Â· Max 10MB</div>
             {uploading && <div style={{ marginTop: 10, background: C.green, borderRadius: 4, height: 4, width: "60%", margin: "10px auto 0" }} />}
           </div>
         )}
@@ -226,81 +236,19 @@ function CloudinaryUploader({ onUpload, context = "general", currentImage = null
       <input type="text" value={alt} onChange={(e) => setAlt(e.target.value)}
         placeholder="Alt text for accessibility"
         style={{ ...S.input, marginTop: 8, fontSize: 12 }} />
-      {error && <p style={{ color: C.danger, fontSize: 12, marginTop: 4 }}>⚠ {error}</p>}
+      {error && <p style={{ color: C.danger, fontSize: 12, marginTop: 4 }}>âš  {error}</p>}
     </div>
   );
 }
 
 
-// ═══════════════════════════════════════════════════════════
-// FILE UPLOADER — for PDFs, DOCX, worksheets (raw Cloudinary)
-// ═══════════════════════════════════════════════════════════
-function FileUploader({ onUpload, courseCode = "general", label = "Upload File", compact = false }) {
-  const fileRef = useRef(null);
-  const [uploading, setUploading] = useState(false);
-  const [error, setError] = useState(null);
-  const API_BASE = import.meta.env.VITE_API_URL || "https://api.counselorready.com/api";
-
-  const ACCEPTED = ".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt,.csv";
-  const TYPE_ICONS = { PDF: "📄", DOC: "📝", DOCX: "📝", PPT: "📊", PPTX: "📊", XLS: "📋", XLSX: "📋", TXT: "📃", CSV: "📋", FILE: "📎" };
-
-  const handleFile = async (file) => {
-    if (!file) return;
-    setError(null);
-    setUploading(true);
-    try {
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("courseCode", courseCode);
-      formData.append("title", file.name.replace(/\.[^.]+$/, ""));
-      formData.append("context", "deliverable");
-      const res = await fetch(`${API_BASE}/files/upload`, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-        body: formData,
-      });
-      const json = await res.json();
-      if (!res.ok || !json.success) throw new Error(json.error || "Upload failed");
-      onUpload(json.data);
-    } catch (err) {
-      setError(err.message || "Upload failed");
-    } finally {
-      setUploading(false);
-    }
-  };
-
-  if (compact) return (
-    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-      <input type="file" ref={fileRef} accept={ACCEPTED} onChange={e => handleFile(e.target.files[0])} style={{ display: "none" }} />
-      <button onClick={() => fileRef.current?.click()} disabled={uploading}
-        style={{ background: C.navy, color: "#fff", border: "none", borderRadius: 6, padding: "6px 12px", fontSize: 12, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 4, opacity: uploading ? 0.6 : 1 }}>
-        {uploading ? "⏳" : "📎"} {label}
-      </button>
-      {error && <span style={{ fontSize: 11, color: C.danger }}>⚠ {error}</span>}
-    </div>
-  );
-
-  return (
-    <div style={{ border: `2px dashed ${C.border}`, borderRadius: 10, padding: 16, textAlign: "center" }}>
-      <input type="file" ref={fileRef} accept={ACCEPTED} onChange={e => handleFile(e.target.files[0])} style={{ display: "none" }} />
-      <div style={{ fontSize: 28, marginBottom: 6 }}>📎</div>
-      <p style={{ fontSize: 13, color: C.textMuted, margin: "0 0 10px" }}>PDF, DOCX, PPTX, XLSX, TXT, CSV</p>
-      <button onClick={() => fileRef.current?.click()} disabled={uploading}
-        style={{ background: C.navy, color: "#fff", border: "none", borderRadius: 8, padding: "8px 18px", fontSize: 13, fontWeight: 600, cursor: "pointer", opacity: uploading ? 0.6 : 1 }}>
-        {uploading ? "Uploading…" : label}
-      </button>
-      {error && <p style={{ color: C.danger, fontSize: 12, marginTop: 8 }}>⚠ {error}</p>}
-    </div>
-  );
-}
-
-// ═══════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // CATEGORIZED BLOCK PICKER
-// ═══════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 function BlockPicker({ onPick, onClose }) {
   const categories = [
     { key: "content", label: "Content", desc: "Text, images, media", color: C.green },
-    { key: "assessment", label: "Knowledge Checks", desc: "Graded · ACEP compliant", color: C.burgundy },
+    { key: "assessment", label: "Knowledge Checks", desc: "Graded Â· ACEP compliant", color: C.burgundy },
     { key: "interactive", label: "Engagement", desc: "Interactive activities", color: C.purple },
   ];
 
@@ -308,7 +256,7 @@ function BlockPicker({ onPick, onClose }) {
     <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 12, padding: 16, marginBottom: 8, boxShadow: "0 8px 32px rgba(0,0,0,0.1)" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
         <span style={{ fontWeight: 700, fontSize: 14, color: C.navy }}>Add Content Block</span>
-        <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 18, color: C.textMuted, lineHeight: 1 }}>✕</button>
+        <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 18, color: C.textMuted, lineHeight: 1 }}>âœ•</button>
       </div>
       {categories.map(cat => {
         const blocks = BLOCK_TYPES.filter(b => b.category === cat.key);
@@ -338,13 +286,13 @@ function BlockPicker({ onPick, onClose }) {
 }
 
 
-// ═══════════════════════════════════════════════════════════
-// BLOCK EDITOR — All 17 types
-// ═══════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// BLOCK EDITOR â€” All 17 types
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 function BlockEditor({ block, onChange }) {
   switch (block.type) {
 
-    // ── Original 9 ──
+    // â”€â”€ Original 9 â”€â”€
     case "sectionDivider":
       return (
         <div style={S.grid2}>
@@ -363,17 +311,7 @@ function BlockEditor({ block, onChange }) {
             <label style={{ ...S.label, marginBottom: 0 }}>Content (HTML)</label>
             <InlineImageButton onInsert={(html) => onChange({ content: (block.content || "") + html })} />
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-            <div>
-              <div style={{ fontSize: 10, fontWeight: 700, color: C.textMuted, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 4 }}>Source</div>
-              <textarea style={{ ...S.textarea, minHeight: 220 }} value={block.content} onChange={e => onChange({ content: e.target.value })} />
-            </div>
-            <div>
-              <div style={{ fontSize: 10, fontWeight: 700, color: C.green, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 4 }}>Student Preview</div>
-              <div style={{ background: "#FDFCFA", border: `1px solid ${C.borderLight}`, borderRadius: 8, padding: 16, minHeight: 220, maxHeight: 400, overflow: "auto", fontSize: 15, lineHeight: 1.75, fontFamily: "'Newsreader', Georgia, serif", color: C.text }}
-                dangerouslySetInnerHTML={{ __html: block.content || "<em style='color:#9CA3AF'>Start typing to see preview...</em>" }} />
-            </div>
-          </div>
+          <textarea style={{ ...S.textarea, minHeight: 200 }} value={block.content} onChange={e => onChange({ content: e.target.value })} />
           <div style={{ fontSize: 11, color: C.textLight, marginTop: 4 }}>{countWords(block.content)} words</div>
         </div>
       );
@@ -414,7 +352,7 @@ function BlockEditor({ block, onChange }) {
                   const items = [...block.accordionItems]; items[i] = { ...items[i], content: e.target.value }; onChange({ accordionItems: items });
                 }} />
               </div>
-              <button style={S.btnDanger} onClick={() => onChange({ accordionItems: block.accordionItems.filter((_, j) => j !== i) })}>✕</button>
+              <button style={S.btnDanger} onClick={() => onChange({ accordionItems: block.accordionItems.filter((_, j) => j !== i) })}>âœ•</button>
             </div>
           ))}
           <button style={{ ...S.btnSecondary, fontSize: 12, padding: "6px 12px" }} onClick={() => onChange({ accordionItems: [...(block.accordionItems || []), { title: "", content: "" }] })}>+ Add Item</button>
@@ -437,7 +375,7 @@ function BlockEditor({ block, onChange }) {
               <input style={{ ...S.input, flex: 1 }} value={opt.text} onChange={e => {
                 const opts = [...block.options]; opts[i] = { ...opts[i], text: e.target.value }; onChange({ options: opts });
               }} />
-              <button style={S.btnDanger} onClick={() => onChange({ options: block.options.filter((_, j) => j !== i) })}>✕</button>
+              <button style={S.btnDanger} onClick={() => onChange({ options: block.options.filter((_, j) => j !== i) })}>âœ•</button>
             </div>
           ))}
           <button style={{ ...S.btnSecondary, fontSize: 12, padding: "6px 12px" }} onClick={() => onChange({ options: [...(block.options || []), { text: "", isCorrect: false }] })}>+ Add Option</button>
@@ -454,9 +392,9 @@ function BlockEditor({ block, onChange }) {
           {(block.matchingPairs || []).map((pair, i) => (
             <div key={i} style={{ display: "flex", gap: 8, marginBottom: 6, alignItems: "center" }}>
               <input style={{ ...S.input, flex: 1 }} placeholder="Term" value={pair.term} onChange={e => { const p = [...block.matchingPairs]; p[i] = { ...p[i], term: e.target.value }; onChange({ matchingPairs: p }); }} />
-              <span style={{ color: C.textLight }}>↔</span>
+              <span style={{ color: C.textLight }}>â†”</span>
               <input style={{ ...S.input, flex: 1 }} placeholder="Definition" value={pair.definition} onChange={e => { const p = [...block.matchingPairs]; p[i] = { ...p[i], definition: e.target.value }; onChange({ matchingPairs: p }); }} />
-              <button style={S.btnDanger} onClick={() => onChange({ matchingPairs: block.matchingPairs.filter((_, j) => j !== i) })}>✕</button>
+              <button style={S.btnDanger} onClick={() => onChange({ matchingPairs: block.matchingPairs.filter((_, j) => j !== i) })}>âœ•</button>
             </div>
           ))}
           <button style={{ ...S.btnSecondary, fontSize: 12, padding: "6px 12px" }} onClick={() => onChange({ matchingPairs: [...(block.matchingPairs || []), { term: "", definition: "" }] })}>+ Add Pair</button>
@@ -476,53 +414,22 @@ function BlockEditor({ block, onChange }) {
     case "resources":
       return (
         <div>
-          <label style={S.label}>Resources / Handouts</label>
+          <label style={S.label}>Resources</label>
           {(block.resources || []).map((res, i) => (
-            <div key={i} style={{ background: C.bg, border: `1px solid ${C.borderLight}`, borderRadius: 8, padding: "10px 12px", marginBottom: 8 }}>
-              <div style={{ display: "flex", gap: 8, marginBottom: 6, alignItems: "center" }}>
-                <span style={{ fontSize: 16, flexShrink: 0 }}>
-                  {{ pdf: "📄", worksheet: "📝", video: "🎬", link: "🔗", docx: "📝", pptx: "📊", xlsx: "📋" }[res.type] || "📎"}
-                </span>
-                <input style={{ ...S.input, flex: 2 }} placeholder="Display Title" value={res.title}
-                  onChange={e => { const r = [...block.resources]; r[i] = { ...r[i], title: e.target.value }; onChange({ resources: r }); }} />
-                <select style={{ ...S.input, flex: 1, width: "auto" }} value={res.type}
-                  onChange={e => { const r = [...block.resources]; r[i] = { ...r[i], type: e.target.value }; onChange({ resources: r }); }}>
-                  <option value="pdf">PDF</option>
-                  <option value="worksheet">Worksheet</option>
-                  <option value="docx">DOCX</option>
-                  <option value="pptx">PPTX</option>
-                  <option value="xlsx">XLSX</option>
-                  <option value="video">Video</option>
-                  <option value="link">Link</option>
-                </select>
-                <button style={S.btnDanger} onClick={() => onChange({ resources: block.resources.filter((_, j) => j !== i) })}>✕</button>
-              </div>
-              <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-                <input style={{ ...S.input, flex: 1, fontSize: 11 }} placeholder="URL (paste or upload →)" value={res.url}
-                  onChange={e => { const r = [...block.resources]; r[i] = { ...r[i], url: e.target.value }; onChange({ resources: r }); }} />
-                <FileUploader compact label="Upload" courseCode="general"
-                  onUpload={(d) => {
-                    const r = [...block.resources];
-                    r[i] = { ...r[i], url: d.url, title: r[i].title || d.title, type: d.fileType?.toLowerCase() || r[i].type, publicId: d.publicId, bytes: d.bytes };
-                    onChange({ resources: r });
-                  }} />
-              </div>
-              {res.url && (
-                <a href={res.url} target="_blank" rel="noreferrer"
-                  style={{ fontSize: 10, color: C.green, display: "block", marginTop: 4, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                  ↗ {res.url}
-                </a>
-              )}
+            <div key={i} style={{ display: "flex", gap: 8, marginBottom: 6, alignItems: "center" }}>
+              <input style={{ ...S.input, flex: 2 }} placeholder="Title" value={res.title} onChange={e => { const r = [...block.resources]; r[i] = { ...r[i], title: e.target.value }; onChange({ resources: r }); }} />
+              <input style={{ ...S.input, flex: 3 }} placeholder="URL" value={res.url} onChange={e => { const r = [...block.resources]; r[i] = { ...r[i], url: e.target.value }; onChange({ resources: r }); }} />
+              <select style={{ ...S.input, flex: 1 }} value={res.type} onChange={e => { const r = [...block.resources]; r[i] = { ...r[i], type: e.target.value }; onChange({ resources: r }); }}>
+                <option value="pdf">PDF</option><option value="worksheet">Worksheet</option><option value="video">Video</option><option value="link">Link</option>
+              </select>
+              <button style={S.btnDanger} onClick={() => onChange({ resources: block.resources.filter((_, j) => j !== i) })}>âœ•</button>
             </div>
           ))}
-          <button style={{ ...S.btnSecondary, fontSize: 12, padding: "6px 12px" }}
-            onClick={() => onChange({ resources: [...(block.resources || []), { title: "", url: "", type: "pdf" }] })}>
-            + Add Resource
-          </button>
+          <button style={{ ...S.btnSecondary, fontSize: 12, padding: "6px 12px" }} onClick={() => onChange({ resources: [...(block.resources || []), { title: "", url: "", type: "pdf" }] })}>+ Add Resource</button>
         </div>
       );
 
-    // ═══ NEW BLOCK TYPE #10: IMAGE ═══
+    // â•â•â• NEW BLOCK TYPE #10: IMAGE â•â•â•
     case "image":
       return (
         <div>
@@ -549,31 +456,31 @@ function BlockEditor({ block, onChange }) {
         </div>
       );
 
-    // ═══ NEW BLOCK TYPE #11: CARD SORT ═══
+    // â•â•â• NEW BLOCK TYPE #11: CARD SORT â•â•â•
     case "cardSort":
       return <CardSortEditor block={block} onChange={onChange} />;
 
-    // ═══ NEW BLOCK TYPE #12: SEQUENCING ═══
+    // â•â•â• NEW BLOCK TYPE #12: SEQUENCING â•â•â•
     case "sequencing":
       return <SequencingEditor block={block} onChange={onChange} />;
 
-    // ═══ NEW BLOCK TYPE #13: HOTSPOT ═══
+    // â•â•â• NEW BLOCK TYPE #13: HOTSPOT â•â•â•
     case "hotspot":
       return <HotspotEditor block={block} onChange={onChange} />;
 
-    // ═══ NEW BLOCK TYPE #14: TIMELINE ═══
+    // â•â•â• NEW BLOCK TYPE #14: TIMELINE â•â•â•
     case "timeline":
       return <TimelineEditor block={block} onChange={onChange} />;
 
-    // ═══ NEW BLOCK TYPE #15: SCENARIO TREE ═══
+    // â•â•â• NEW BLOCK TYPE #15: SCENARIO TREE â•â•â•
     case "scenarioTree":
       return <ScenarioTreeEditor block={block} onChange={onChange} />;
 
-    // ═══ NEW BLOCK TYPE #16: FLASHCARD DECK ═══
+    // â•â•â• NEW BLOCK TYPE #16: FLASHCARD DECK â•â•â•
     case "flashcardDeck":
       return <FlashcardDeckEditor block={block} onChange={onChange} />;
 
-    // ═══ NEW BLOCK TYPE #17: VIDEO EMBED ═══
+    // â•â•â• NEW BLOCK TYPE #17: VIDEO EMBED â•â•â•
     case "videoEmbed":
       return <VideoEmbedEditor block={block} onChange={onChange} />;
 
@@ -583,9 +490,9 @@ function BlockEditor({ block, onChange }) {
 }
 
 
-// ═══════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // NEW BLOCK EDITORS
-// ═══════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
 const CATEGORY_COLORS = ["#E11D48", "#6366F1", "#059669", "#D97706", "#0284C7", "#9333EA", "#DC2626", "#0891B2"];
 
@@ -613,7 +520,7 @@ function CardSortEditor({ block, onChange }) {
                 onChange({ categories: newCats, cards: newCards });
               }} />
             <button style={{ background: "none", border: "none", cursor: "pointer", color: C.danger, fontSize: 12, padding: 2 }}
-              onClick={() => onChange({ categories: cats.filter((_, j) => j !== i) })}>✕</button>
+              onClick={() => onChange({ categories: cats.filter((_, j) => j !== i) })}>âœ•</button>
           </div>
         ))}
         <button style={{ ...S.btnSecondary, fontSize: 11, padding: "4px 10px" }} onClick={addCategory}>+ Category</button>
@@ -630,14 +537,14 @@ function CardSortEditor({ block, onChange }) {
           }}>
             {cats.map(c => <option key={c} value={c}>{c}</option>)}
           </select>
-          <button style={S.btnDanger} onClick={() => onChange({ cards: (block.cards || []).filter((_, j) => j !== i) })}>✕</button>
+          <button style={S.btnDanger} onClick={() => onChange({ cards: (block.cards || []).filter((_, j) => j !== i) })}>âœ•</button>
         </div>
       ))}
       <button style={{ ...S.btnSecondary, fontSize: 12, padding: "6px 12px" }} onClick={addCard}>+ Add Card</button>
 
       <div style={{ marginTop: 12 }}><label style={S.label}>Explanation</label><textarea style={{ ...S.textarea, minHeight: 50 }} value={block.explanation || ""} onChange={e => onChange({ explanation: e.target.value })} /></div>
       <div style={{ marginTop: 10, fontSize: 11, color: C.textMuted, background: C.goldFaded, borderRadius: 6, padding: 8 }}>
-        Distribution: {cats.map(c => `${c}: ${(block.cards || []).filter(cd => cd.correctCategory === c).length}`).join(" · ")}
+        Distribution: {cats.map(c => `${c}: ${(block.cards || []).filter(cd => cd.correctCategory === c).length}`).join(" Â· ")}
       </div>
     </div>
   );
@@ -653,7 +560,7 @@ function SequencingEditor({ block, onChange }) {
     <div>
       <label style={S.label}>Instructions</label>
       <textarea style={{ ...S.textarea, minHeight: 50 }} value={block.instructions || ""} onChange={e => onChange({ instructions: e.target.value })} />
-      <label style={{ ...S.label, marginTop: 12 }}>Steps — in CORRECT order ({(block.steps || []).length})</label>
+      <label style={{ ...S.label, marginTop: 12 }}>Steps â€” in CORRECT order ({(block.steps || []).length})</label>
       <p style={{ fontSize: 11, color: C.textLight, margin: "0 0 8px" }}>Enter steps in correct sequence. They'll be shuffled for the learner.</p>
       {(block.steps || []).map((step, i) => (
         <div key={step.id || i} style={{ display: "flex", gap: 8, marginBottom: 4, alignItems: "center" }}>
@@ -663,7 +570,7 @@ function SequencingEditor({ block, onChange }) {
           }} placeholder="Step description..." />
           <button style={S.btnDanger} onClick={() => {
             onChange({ steps: (block.steps || []).filter((_, j) => j !== i).map((s, idx) => ({ ...s, order: idx + 1 })) });
-          }}>✕</button>
+          }}>âœ•</button>
         </div>
       ))}
       <button style={{ ...S.btnSecondary, fontSize: 12, padding: "6px 12px" }} onClick={addStep}>+ Add Step</button>
@@ -711,7 +618,7 @@ function HotspotEditor({ block, onChange }) {
             <label style={{ fontSize: 10, color: C.textLight }}>Y%</label>
             <input type="number" min="0" max="100" style={{ ...S.input, width: 52, textAlign: "center", padding: "6px 4px" }} value={spot.y}
               onChange={e => { const spots = [...(block.hotspots || [])]; spots[i] = { ...spots[i], y: Number(e.target.value) }; onChange({ hotspots: spots }); }} />
-            <button style={S.btnDanger} onClick={() => onChange({ hotspots: (block.hotspots || []).filter((_, j) => j !== i) })}>✕</button>
+            <button style={S.btnDanger} onClick={() => onChange({ hotspots: (block.hotspots || []).filter((_, j) => j !== i) })}>âœ•</button>
           </div>
           <textarea style={{ ...S.textarea, minHeight: 40, fontSize: 12 }} value={spot.info} onChange={e => {
             const spots = [...(block.hotspots || [])]; spots[i] = { ...spots[i], info: e.target.value }; onChange({ hotspots: spots });
@@ -735,7 +642,7 @@ function TimelineEditor({ block, onChange }) {
     <div>
       <label style={S.label}>Instructions</label>
       <textarea style={{ ...S.textarea, minHeight: 50 }} value={block.instructions || ""} onChange={e => onChange({ instructions: e.target.value })} />
-      <label style={{ ...S.label, marginTop: 12 }}>Events — in CORRECT chronological order ({(block.events || []).length})</label>
+      <label style={{ ...S.label, marginTop: 12 }}>Events â€” in CORRECT chronological order ({(block.events || []).length})</label>
       {(block.events || []).map((evt, i) => (
         <div key={evt.id || i} style={{ display: "flex", gap: 6, marginBottom: 4, alignItems: "center" }}>
           <input style={{ ...S.input, width: 70, textAlign: "center", fontWeight: 700 }} value={evt.year} onChange={e => {
@@ -746,7 +653,7 @@ function TimelineEditor({ block, onChange }) {
           }} placeholder="Event description..." />
           <button style={S.btnDanger} onClick={() => {
             onChange({ events: (block.events || []).filter((_, j) => j !== i).map((e, idx) => ({ ...e, order: idx + 1 })) });
-          }}>✕</button>
+          }}>âœ•</button>
         </div>
       ))}
       <button style={{ ...S.btnSecondary, fontSize: 12, padding: "6px 12px" }} onClick={addEvent}>+ Add Event</button>
@@ -798,7 +705,7 @@ function ScenarioTreeEditor({ block, onChange }) {
             <div style={{ display: "flex", gap: 6, marginTop: 6 }}>
               <select style={{ ...S.input, width: "auto", fontSize: 11 }} value={node.feedback?.type || ""}
                 onChange={e => { const n = { ...nodes }; n[nodeId] = { ...n[nodeId], feedback: { ...n[nodeId].feedback, type: e.target.value } }; onChange({ nodes: n }); }}>
-                <option value="">No feedback</option><option value="excellent">✓ Excellent</option><option value="good">✓ Good</option><option value="partial">⚠ Partial</option><option value="bad">✕ Error</option>
+                <option value="">No feedback</option><option value="excellent">âœ“ Excellent</option><option value="good">âœ“ Good</option><option value="partial">âš  Partial</option><option value="bad">âœ• Error</option>
               </select>
               {node.feedback?.type && (
                 <input style={{ ...S.input, flex: 1, fontSize: 11 }} value={node.feedback?.message || ""} placeholder="Feedback message..."
@@ -814,12 +721,12 @@ function ScenarioTreeEditor({ block, onChange }) {
                       onChange={e => { const n = { ...nodes }; const c = [...(n[nodeId].choices || [])]; c[ci] = { ...c[ci], text: e.target.value }; n[nodeId] = { ...n[nodeId], choices: c }; onChange({ nodes: n }); }} />
                     <select style={{ ...S.input, width: "auto", fontSize: 11, minWidth: 100 }} value={choice.next || ""}
                       onChange={e => { const n = { ...nodes }; const c = [...(n[nodeId].choices || [])]; c[ci] = { ...c[ci], next: e.target.value }; n[nodeId] = { ...n[nodeId], choices: c }; onChange({ nodes: n }); }}>
-                      <option value="">→ target</option>
+                      <option value="">â†’ target</option>
                       {nodeIds.filter(id => id !== nodeId).map(id => <option key={id} value={id}>{id}</option>)}
                     </select>
                     <button style={{ ...S.btnDanger, fontSize: 10 }} onClick={() => {
                       const n = { ...nodes }; n[nodeId] = { ...n[nodeId], choices: (n[nodeId].choices || []).filter((_, j) => j !== ci) }; onChange({ nodes: n });
-                    }}>✕</button>
+                    }}>âœ•</button>
                   </div>
                 ))}
                 <button style={{ fontSize: 11, color: "#6366F1", background: "none", border: "none", cursor: "pointer", marginTop: 4 }}
@@ -847,7 +754,7 @@ function FlashcardDeckEditor({ block, onChange }) {
         <div key={card.id || i} style={{ background: "#f8f8f6", borderRadius: 8, padding: 10, marginBottom: 6, border: `1px solid ${C.borderLight}` }}>
           <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
             <span style={{ fontSize: 11, fontWeight: 700, color: C.textLight }}>Card {i + 1}</span>
-            <button style={{ ...S.btnDanger, fontSize: 10 }} onClick={() => onChange({ flashcards: (block.flashcards || []).filter((_, j) => j !== i) })}>✕</button>
+            <button style={{ ...S.btnDanger, fontSize: 10 }} onClick={() => onChange({ flashcards: (block.flashcards || []).filter((_, j) => j !== i) })}>âœ•</button>
           </div>
           <input style={{ ...S.input, marginBottom: 4, fontWeight: 600 }} value={card.front} onChange={e => {
             const cards = [...(block.flashcards || [])]; cards[i] = { ...cards[i], front: e.target.value }; onChange({ flashcards: cards });
@@ -891,9 +798,9 @@ function VideoEmbedEditor({ block, onChange }) {
             }} placeholder="Marker label" />
             <input style={{ ...S.input, fontSize: 11, color: C.textMuted }} value={marker.prompt || ""} onChange={e => {
               const m = [...(block.markers || [])]; m[i] = { ...m[i], prompt: e.target.value }; onChange({ markers: m });
-            }} placeholder="💬 Discussion prompt (optional)" />
+            }} placeholder="ðŸ’¬ Discussion prompt (optional)" />
           </div>
-          <button style={{ ...S.btnDanger, marginTop: 4 }} onClick={() => onChange({ markers: (block.markers || []).filter((_, j) => j !== i) })}>✕</button>
+          <button style={{ ...S.btnDanger, marginTop: 4 }} onClick={() => onChange({ markers: (block.markers || []).filter((_, j) => j !== i) })}>âœ•</button>
         </div>
       ))}
       <button style={{ ...S.btnSecondary, fontSize: 12, padding: "6px 12px" }} onClick={addMarker}>+ Add Marker</button>
@@ -908,13 +815,13 @@ function InlineImageButton({ onInsert }) {
     <div style={{ position: "relative", display: "inline-block" }}>
       <button onClick={() => setShow(!show)} title="Insert Image"
         style={{ background: show ? C.green : "none", color: show ? "#fff" : C.navy, border: `1px solid ${C.border}`, borderRadius: 6, padding: "4px 10px", cursor: "pointer", fontSize: 12, fontWeight: 600, display: "flex", alignItems: "center", gap: 4 }}>
-        📷 Insert Image
+        ðŸ“· Insert Image
       </button>
       {show && (
         <div style={{ position: "absolute", top: "100%", right: 0, zIndex: 100, background: "#fff", border: `1px solid ${C.border}`, borderRadius: 10, padding: 14, width: 320, boxShadow: "0 8px 24px rgba(0,0,0,0.12)", marginTop: 4 }}>
           <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
             <span style={{ fontWeight: 700, fontSize: 13 }}>Insert Inline Image</span>
-            <button onClick={() => setShow(false)} style={{ background: "none", border: "none", cursor: "pointer", color: C.textMuted }}>✕</button>
+            <button onClick={() => setShow(false)} style={{ background: "none", border: "none", cursor: "pointer", color: C.textMuted }}>âœ•</button>
           </div>
           <CloudinaryUploader context="inline" label="Upload Inline Image"
             onUpload={(d) => {
@@ -930,9 +837,9 @@ function InlineImageButton({ onInsert }) {
 }
 
 
-// ═══════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // INSERT BAR
-// ═══════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 function InsertBar({ onInsert, active }) {
   return (
     <div style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: "4px 0", opacity: active ? 1 : 0.3, transition: "opacity 0.2s" }}
@@ -946,59 +853,13 @@ function InsertBar({ onInsert, active }) {
 }
 
 
-// ═══════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // CONTENT EDITOR (Tab 2)
-// ═══════════════════════════════════════════════════════════
-// ═══════════════════════════════════════════════════════════
-// BLOCK AI BUTTON — per-block AI actions
-// ═══════════════════════════════════════════════════════════
-function BlockAIButton({ label, action, block, context, isJson, onResult, apiBase, getToken }) {
-  const [loading, setLoading] = useState(false);
-
-  const run = async (e) => {
-    e.stopPropagation();
-    setLoading(true);
-    try {
-      const res = await fetch(`${apiBase}/ai/block-action`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${getToken()}` },
-        body: JSON.stringify({ action, block, context }),
-      });
-      if (!res.ok) throw new Error(`AI action failed: ${res.status}`);
-      const data = await res.json();
-      if (data.result !== undefined) {
-        if (isJson && typeof data.result === "string") {
-          try { onResult(JSON.parse(data.result)); } catch { onResult(data.result); }
-        } else {
-          onResult(data.result);
-        }
-      }
-    } catch (err) {
-      console.error(`Block AI action "${action}" failed:`, err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <button onClick={run} disabled={loading}
-      style={{ background: C.burgundyFaded, color: C.burgundy, border: "none", borderRadius: 5, padding: "3px 8px", fontSize: 11, fontWeight: 600, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 4, opacity: loading ? 0.6 : 1 }}>
-      {loading ? <Loader2 size={10} style={{ animation: "spin 1s linear infinite" }} /> : <Sparkles size={10} />} {label}
-    </button>
-  );
-}
-
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 function ContentEditor({ courseData, setCourseData }) {
   const [activeModule, setActiveModule] = useState(0);
   const [showBlockMenu, setShowBlockMenu] = useState(null);
   const [editingBlock, setEditingBlock] = useState(null);
-  const [previewMode, setPreviewMode] = useState(true);
-  const [regenerating, setRegenerating] = useState(false);
-  const [enriching, setEnriching] = useState(false);
-  const [enrichProgress, setEnrichProgress] = useState("");
-
-  const API_BASE = import.meta.env.VITE_API_URL || "https://api.counselorready.com/api";
-  const getToken = () => localStorage.getItem("token");
 
   const modules = courseData?.modules || [];
   const currentModule = modules[activeModule] || { blocks: [], title: "No modules" };
@@ -1045,227 +906,6 @@ function ContentEditor({ courseData, setCourseData }) {
 
   const blockConfig = (type) => BLOCK_TYPES.find(b => b.type === type) || { label: type, icon: "?", color: C.textMuted, category: "content" };
 
-  // Regenerate single module via AI
-  const regenerateModule = async (moduleIndex) => {
-    const mod = modules[moduleIndex];
-    if (!mod) return;
-    if (!confirm(`Regenerate "${mod.title}"? This will replace all blocks in this module. This may take 30-90 seconds.`)) return;
-    setRegenerating(true);
-    try {
-      // Step 1: Start the async job
-      const startRes = await fetch(`${API_BASE}/admin/module/generate`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${getToken()}` },
-        body: JSON.stringify({
-          courseTitle: courseData.title,
-          moduleTitle: mod.title,
-          moduleNumber: moduleIndex + 1,
-          totalModules: modules.length,
-          ceHours: courseData.ceHours,
-          category: courseData.category === "Ethics" ? "ethics" : "core",
-          additionalNotes: "",
-          generateQuiz: true,
-        }),
-      });
-      if (!startRes.ok) {
-        const errData = await startRes.json().catch(() => ({}));
-        throw new Error(errData.error || `Failed to start generation: ${startRes.status}`);
-      }
-      const startData = await startRes.json();
-      const jobId = startData.jobId;
-      if (!jobId) throw new Error("No jobId returned — server may need updating");
-
-      // Step 2: Poll for results every 3 seconds (up to 2 minutes)
-      let attempts = 0;
-      const maxAttempts = 40; // 40 x 3s = 2 minutes
-      let result = null;
-
-      while (attempts < maxAttempts) {
-        await new Promise(r => setTimeout(r, 3000));
-        attempts++;
-        try {
-          const pollRes = await fetch(`${API_BASE}/admin/module/generate/status/${jobId}`, {
-            headers: { Authorization: `Bearer ${getToken()}` },
-          });
-          if (!pollRes.ok) continue;
-          const pollData = await pollRes.json();
-
-          if (pollData.status === "complete") {
-            result = pollData;
-            break;
-          } else if (pollData.status === "error") {
-            throw new Error(pollData.error || "Generation failed on server");
-          }
-          // else "processing" — keep polling
-        } catch (pollErr) {
-          if (pollErr.message.includes("Generation failed")) throw pollErr;
-          // Network blip — keep trying
-        }
-      }
-
-      if (!result) throw new Error("Generation timed out after 2 minutes. Check server logs.");
-
-      // Step 3: Process result
-      const generated = result.module || result;
-      const newModules = [...modules];
-      if (generated.blocks) {
-        newModules[moduleIndex] = { ...newModules[moduleIndex], blocks: generated.blocks };
-      } else if (generated.content) {
-        // Convert single content string + questions to blocks
-        const blocks = [
-          { id: uid(), type: "sectionDivider", title: mod.title, sectionNumber: moduleIndex + 1, subtitle: generated.description || "" },
-        ];
-        if (generated.content.length > 15000) {
-          const mid = Math.floor(generated.content.length / 2);
-          const sp = generated.content.indexOf("<h3>", mid);
-          if (sp > 0) {
-            blocks.push({ id: uid(), type: "text", content: generated.content.substring(0, sp) });
-            blocks.push({ id: uid(), type: "text", content: generated.content.substring(sp) });
-          } else {
-            blocks.push({ id: uid(), type: "text", content: generated.content });
-          }
-        } else {
-          blocks.push({ id: uid(), type: "text", content: generated.content });
-        }
-        if (generated.questions?.length > 0) {
-          generated.questions.forEach(q => {
-            blocks.push({
-              id: uid(),
-              type: q.type === "multiple_select" ? "multiSelect" : "multipleChoice",
-              question: q.question,
-              options: (q.options || []).map((opt, oi) => ({
-                text: opt, isCorrect: Array.isArray(q.correctAnswer) ? q.correctAnswer.includes(oi) : oi === q.correctAnswer
-              })),
-              explanation: q.explanation || "",
-            });
-          });
-        }
-        blocks.push({ id: uid(), type: "reflection", question: `Reflect on what you learned about ${mod.title.split(":").pop().trim()}. How will you apply these concepts in your clinical practice?`, minLength: 100 });
-        newModules[moduleIndex] = { ...newModules[moduleIndex], blocks };
-      } else if (generated.lessons) {
-        const blocks = generated.lessons.map((l, i) => ({
-          id: uid(), type: "text", content: l.content || l.textContent || "", order: i + 1,
-        }));
-        if (generated.quiz?.questions) {
-          generated.quiz.questions.forEach(q => {
-            blocks.push({ id: uid(), type: "multipleChoice", question: q.question, options: q.options, explanation: q.explanation || "" });
-          });
-        }
-        newModules[moduleIndex] = { ...newModules[moduleIndex], blocks };
-      }
-      setCourseData({ ...courseData, modules: newModules });
-    } catch (err) {
-      alert(`Regenerate failed: ${err.message}`);
-    } finally {
-      setRegenerating(false);
-    }
-  };
-
-  // ── Auto-Enrich: AI inserts interactive elements into text-heavy modules ──
-  const autoEnrichModule = async (moduleIndex) => {
-    const mod = modules[moduleIndex];
-    if (!mod) return;
-    const blocks = mod.blocks || [];
-    const textBlocks = blocks.filter(b => b.type === "text" || b.type === "imageText");
-    if (textBlocks.length === 0) { alert("No text content to enrich. Add or generate content first."); return; }
-
-    setEnriching(true);
-    setEnrichProgress("Analyzing module content...");
-
-    try {
-      const token = getToken();
-      // Find gaps: text blocks not followed by an interactive element
-      const interactiveTypes = [...KNOWLEDGE_CHECK_TYPES, ...ENGAGEMENT_TYPES];
-      const gaps = [];
-      for (let i = 0; i < blocks.length; i++) {
-        if (blocks[i].type !== "text" && blocks[i].type !== "imageText") continue;
-        const next = blocks[i + 1];
-        if (!next || !interactiveTypes.includes(next.type)) {
-          // This text block has no interactive element after it
-          const textContent = (blocks[i].content || "").replace(/<[^>]*>/g, " ").trim();
-          if (countWords(textContent) >= 80) { // Only enrich substantial text blocks
-            gaps.push({ afterIndex: i, textBefore: textContent });
-          }
-        }
-      }
-
-      if (gaps.length === 0) { alert("Module already has interactive elements after each text section!"); setEnriching(false); setEnrichProgress(""); return; }
-
-      // Plan which block types to insert — rotate through variety
-      const interactiveRotation = [
-        "multipleChoice", "reflection", "multiSelect", "matching",
-        "accordion", "scenarioTree", "flashcardDeck", "cardSort", "sequencing",
-      ];
-      // Ensure at least 2-3 knowledge checks for ACEP compliance
-      const existingKC = blocks.filter(b => KNOWLEDGE_CHECK_TYPES.includes(b.type)).length;
-      const neededKC = Math.max(0, 3 - existingKC);
-
-      const plan = gaps.map((gap, i) => {
-        let blockType;
-        if (i < neededKC) {
-          // Prioritize knowledge checks first
-          blockType = i === 0 ? "multipleChoice" : i === 1 ? "multiSelect" : "matching";
-        } else {
-          // Then cycle through engagement types
-          const engagementTypes = ["reflection", "accordion", "scenarioTree", "flashcardDeck", "cardSort"];
-          blockType = engagementTypes[(i - neededKC) % engagementTypes.length];
-        }
-        return { ...gap, blockType };
-      });
-
-      // Generate each block via AI
-      const newBlocks = [...blocks];
-      let inserted = 0;
-
-      for (let p = 0; p < plan.length; p++) {
-        const { afterIndex, textBefore, blockType } = plan[p];
-        const insertAt = afterIndex + 1 + inserted; // Adjust for previous insertions
-        const textAfter = (newBlocks[insertAt]?.content || newBlocks[insertAt]?.question || "").replace(/<[^>]*>/g, " ").substring(0, 500);
-
-        const label = BLOCK_TYPES.find(b => b.type === blockType)?.label || blockType;
-        setEnrichProgress(`Creating ${label} (${p + 1}/${plan.length})...`);
-
-        try {
-          const res = await fetch(`${API_BASE}/ai/suggest-block`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-            body: JSON.stringify({
-              blockType,
-              textBefore: textBefore.substring(0, 2000),
-              textAfter: textAfter.substring(0, 500),
-              courseTitle: courseData.title,
-              moduleTitle: mod.title,
-            }),
-          });
-
-          if (res.ok) {
-            const data = await res.json();
-            if (data.block) {
-              const newBlock = { id: uid(), type: blockType, ...BLOCK_DEFAULTS[blockType], ...data.block };
-              newBlocks.splice(insertAt, 0, newBlock);
-              inserted++;
-            }
-          }
-        } catch (err) {
-          console.error(`Failed to generate ${blockType}:`, err);
-          // Skip failures, continue with next
-        }
-      }
-
-      // Update the module
-      const newModules = [...modules];
-      newModules[moduleIndex] = { ...newModules[moduleIndex], blocks: newBlocks };
-      setCourseData({ ...courseData, modules: newModules });
-      setEnrichProgress(`✓ Added ${inserted} interactive elements`);
-      setTimeout(() => setEnrichProgress(""), 3000);
-    } catch (err) {
-      alert(`Enrich failed: ${err.message}`);
-      setEnrichProgress("");
-    } finally {
-      setEnriching(false);
-    }
-  };
-
   // Module stats for sidebar
   const getModuleStats = (mod) => {
     const blocks = mod.blocks || [];
@@ -1276,189 +916,7 @@ function ContentEditor({ courseData, setCourseData }) {
     };
   };
 
-  const [showDetails, setShowDetails] = useState(false);
-
   return (
-    <div>
-      {/* Fix 4: Collapsible Course Details */}
-      <div style={{ ...S.card, marginBottom: 16 }}>
-        <div style={{ padding: "10px 16px", display: "flex", alignItems: "center", justifyContent: "space-between", cursor: "pointer", background: showDetails ? C.burgundyFaded : "transparent", borderRadius: showDetails ? "12px 12px 0 0" : 12 }}
-          onClick={() => setShowDetails(!showDetails)}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            {showDetails ? <ChevronDown size={16} color={C.burgundy} /> : <ChevronRight size={16} color={C.textMuted} />}
-            <span style={{ fontWeight: 700, fontSize: 13, color: showDetails ? C.burgundy : C.navy }}>Course Details</span>
-            <span style={{ fontSize: 12, color: C.textMuted }}>— {courseData.title} · {courseData.ceHours || 3} CE · {courseData.category || "Clinical Practice"}</span>
-          </div>
-          <span style={{ fontSize: 11, color: C.textLight }}>{showDetails ? "collapse" : "edit title, objectives, audience..."}</span>
-        </div>
-        {showDetails && (
-          <div style={{ padding: 16, borderTop: `1px solid ${C.borderLight}` }}>
-            <div style={{ marginBottom: 12 }}>
-              <label style={S.label}>Course Title</label>
-              <input style={{ ...S.input, fontSize: 16, fontWeight: 600 }} value={courseData.title || ""} onChange={e => setCourseData({ ...courseData, title: e.target.value })} />
-            </div>
-            <div style={{ marginBottom: 12 }}>
-              <label style={S.label}>Description</label>
-              <textarea style={{ ...S.textarea, minHeight: 60 }} value={courseData.description || ""} onChange={e => setCourseData({ ...courseData, description: e.target.value })} />
-            </div>
-            <div style={S.grid3}>
-              <div>
-                <label style={S.label}>CE Hours</label>
-                <select style={S.input} value={courseData.ceHours || 3} onChange={e => setCourseData({ ...courseData, ceHours: Number(e.target.value) })}>
-                  {[1, 2, 3, 4, 5, 6].map(h => <option key={h} value={h}>{h} CE Hour{h > 1 ? "s" : ""}</option>)}
-                </select>
-              </div>
-              <div>
-                <label style={S.label}>Level</label>
-                <select style={S.input} value={courseData.level || "Intermediate"} onChange={e => setCourseData({ ...courseData, level: e.target.value })}>
-                  {["Introductory", "Intermediate", "Advanced"].map(l => <option key={l}>{l}</option>)}
-                </select>
-              </div>
-              <div>
-                <label style={S.label}>Category</label>
-                <select style={S.input} value={courseData.category || "Clinical Practice"} onChange={e => setCourseData({ ...courseData, category: e.target.value })}>
-                  {["Clinical Practice", "Ethics", "Crisis", "Assessment", "Supervision", "Diversity", "Addiction", "Group Counseling"].map(c => <option key={c}>{c}</option>)}
-                </select>
-              </div>
-            </div>
-            <div style={{ marginTop: 12 }}>
-              <label style={S.label}>Learning Objectives</label>
-              {(courseData.objectives || []).map((obj, i) => (
-                <div key={i} style={{ display: "flex", gap: 8, marginBottom: 4, alignItems: "center" }}>
-                  <span style={{ fontSize: 11, color: C.textLight, minWidth: 18 }}>{i + 1}.</span>
-                  <input style={{ ...S.input, flex: 1 }} value={obj} onChange={e => {
-                    const objs = [...(courseData.objectives || [])]; objs[i] = e.target.value;
-                    setCourseData({ ...courseData, objectives: objs });
-                  }} />
-                  <button style={S.btnDanger} onClick={() => setCourseData({ ...courseData, objectives: (courseData.objectives || []).filter((_, j) => j !== i) })}>✕</button>
-                </div>
-              ))}
-              <button style={{ ...S.btnSecondary, fontSize: 11, padding: "4px 10px", marginTop: 4 }}
-                onClick={() => setCourseData({ ...courseData, objectives: [...(courseData.objectives || []), ""] })}>+ Add Objective</button>
-            </div>
-            <div style={{ marginTop: 12 }}>
-              <label style={S.label}>Target Audience</label>
-              <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-                {["LPCs", "LMHCs", "LCSWs", "LMFTs", "NCCs", "Psychologists", "Psychiatric NPs"].map(aud => (
-                  <label key={aud} style={{ fontSize: 12, display: "flex", alignItems: "center", gap: 4, cursor: "pointer", padding: "3px 8px", borderRadius: 6, background: (courseData.targetAudience || []).includes(aud) ? C.greenFaded : C.bg, border: `1px solid ${(courseData.targetAudience || []).includes(aud) ? C.green + "44" : C.border}` }}>
-                    <input type="checkbox" checked={(courseData.targetAudience || []).includes(aud)} onChange={e => {
-                      const ta = [...(courseData.targetAudience || [])];
-                      if (e.target.checked) ta.push(aud); else ta.splice(ta.indexOf(aud), 1);
-                      setCourseData({ ...courseData, targetAudience: ta });
-                    }} style={{ width: 14, height: 14 }} /> {aud}
-                  </label>
-                ))}
-              </div>
-            </div>
-
-            {/* ── Course Thumbnail ── */}
-            <div style={{ marginTop: 16, paddingTop: 16, borderTop: `1px solid ${C.borderLight}` }}>
-              <label style={S.label}>Course Thumbnail</label>
-              <div style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
-                <div style={{ flex: 1 }}>
-                  <input
-                    style={S.input}
-                    placeholder="Paste image URL or upload via Cloudinary →"
-                    value={courseData.thumbnail || ""}
-                    onChange={e => setCourseData({ ...courseData, thumbnail: e.target.value })}
-                  />
-                  {courseData.thumbnail && (
-                    <div style={{ marginTop: 8, position: "relative", display: "inline-block" }}>
-                      <img
-                        src={courseData.thumbnail}
-                        alt="Course thumbnail preview"
-                        style={{ height: 80, width: 140, objectFit: "cover", borderRadius: 8, border: `1px solid ${C.border}`, display: "block" }}
-                        onError={e => { e.target.style.display = "none"; }}
-                      />
-                      <button
-                        onClick={() => setCourseData({ ...courseData, thumbnail: "" })}
-                        style={{ position: "absolute", top: -6, right: -6, background: "#ef4444", border: "none", borderRadius: "50%", width: 18, height: 18, color: "#fff", fontSize: 11, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", lineHeight: 1 }}>
-                        ✕
-                      </button>
-                    </div>
-                  )}
-                </div>
-                <CloudinaryUploader
-                  compact
-                  context="course-thumbnail"
-                  label="Upload"
-                  currentImage={courseData.thumbnail}
-                  onUpload={(d) => setCourseData({ ...courseData, thumbnail: d.url, thumbnailPublicId: d.publicId })}
-                />
-              </div>
-              <p style={{ fontSize: 11, color: C.textLight, marginTop: 6 }}>
-                Recommended: 1280×720px (16:9). Used on course cards, detail page, and certificates.
-              </p>
-            </div>
-
-            {/* ── Course Deliverables ── */}
-            <div style={{ marginTop: 16, paddingTop: 16, borderTop: `1px solid ${C.borderLight}` }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-                <div>
-                  <label style={S.label}>Course Deliverables</label>
-                  <p style={{ fontSize: 11, color: C.textLight, margin: "2px 0 0" }}>
-                    Handouts, worksheets, and reference PDFs available to learners in the course player.
-                  </p>
-                </div>
-                <FileUploader
-                  compact
-                  label="Upload File"
-                  courseCode={courseData.slug || courseData.title?.toLowerCase().replace(/[^a-z0-9]+/g, "-") || "general"}
-                  onUpload={(d) => setCourseData({
-                    ...courseData,
-                    deliverables: [...(courseData.deliverables || []), {
-                      id: `dlv_${Date.now()}`,
-                      title: d.title || d.fileName,
-                      url: d.url,
-                      publicId: d.publicId,
-                      fileType: d.fileType || "FILE",
-                      bytes: d.bytes,
-                    }]
-                  })}
-                />
-              </div>
-
-              {(courseData.deliverables || []).length === 0 && (
-                <div style={{ background: C.bg, border: `1px dashed ${C.border}`, borderRadius: 8, padding: "14px 16px", textAlign: "center" }}>
-                  <p style={{ fontSize: 12, color: C.textLight, margin: 0 }}>No deliverables yet. Upload a PDF, worksheet, or reference guide.</p>
-                </div>
-              )}
-
-              {(courseData.deliverables || []).map((dlv, i) => (
-                <div key={dlv.id || i} style={{ display: "flex", alignItems: "center", gap: 10, background: C.bg, border: `1px solid ${C.borderLight}`, borderRadius: 8, padding: "8px 12px", marginBottom: 6 }}>
-                  <span style={{ fontSize: 18, flexShrink: 0 }}>
-                    {{ PDF: "📄", DOCX: "📝", DOC: "📝", PPTX: "📊", PPT: "📊", XLSX: "📋", XLS: "📋", TXT: "📃", CSV: "📋" }[dlv.fileType] || "📎"}
-                  </span>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <input
-                      style={{ ...S.input, marginBottom: 0, fontSize: 12 }}
-                      value={dlv.title}
-                      onChange={e => {
-                        const deliverables = [...(courseData.deliverables || [])];
-                        deliverables[i] = { ...deliverables[i], title: e.target.value };
-                        setCourseData({ ...courseData, deliverables });
-                      }}
-                    />
-                    <a href={dlv.url} target="_blank" rel="noreferrer"
-                      style={{ fontSize: 10, color: C.green, display: "block", marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                      ↗ {dlv.url}
-                    </a>
-                  </div>
-                  <span style={{ fontSize: 10, color: C.textLight, flexShrink: 0 }}>
-                    {dlv.fileType}{dlv.bytes ? ` · ${(dlv.bytes / 1024).toFixed(0)}KB` : ""}
-                  </span>
-                  <button
-                    onClick={() => setCourseData({ ...courseData, deliverables: (courseData.deliverables || []).filter((_, j) => j !== i) })}
-                    style={{ background: "none", border: "none", color: C.danger, cursor: "pointer", fontSize: 14, flexShrink: 0, padding: "0 4px" }}>
-                    ✕
-                  </button>
-                </div>
-              ))}
-            </div>
-
-          </div>
-        )}
-      </div>
     <div style={{ display: "grid", gridTemplateColumns: "240px 1fr", gap: 20 }}>
       {/* Module Sidebar */}
       <div>
@@ -1483,20 +941,12 @@ function ContentEditor({ courseData, setCourseData }) {
               </div>
             );
           })}
-          <div style={{ padding: 10, display: "flex", flexDirection: "column", gap: 6 }}>
+          <div style={{ padding: 10 }}>
             <button style={{ ...S.btnSecondary, width: "100%", justifyContent: "center", fontSize: 12, padding: "8px 12px" }} onClick={() => {
               const n = modules.length + 1;
               setCourseData({ ...courseData, modules: [...modules, { id: uid(), number: n, title: `Module ${n}: New Module`, blocks: [], knowledgeChecks: 3 }] });
               setActiveModule(modules.length);
             }}>+ Add Module</button>
-            {modules.length > 1 && (
-              <button style={{ ...S.btnDanger, width: "100%", justifyContent: "center", fontSize: 11, padding: "6px 10px" }} onClick={() => {
-                if (!confirm(`Delete "${currentModule.title}"?`)) return;
-                const newMods = modules.filter((_, i) => i !== activeModule);
-                setCourseData({ ...courseData, modules: newMods });
-                setActiveModule(Math.max(0, activeModule - 1));
-              }}>🗑 Delete Module</button>
-            )}
           </div>
         </div>
       </div>
@@ -1504,138 +954,16 @@ function ContentEditor({ courseData, setCourseData }) {
       {/* Block Canvas */}
       <div>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
-          {/* Fix 5: Editable module title */}
-          <input
-            style={{ fontSize: 18, fontWeight: 700, color: C.navy, margin: 0, border: "none", background: "transparent", outline: "none", fontFamily: "inherit", padding: "4px 0", borderBottom: "2px solid transparent", cursor: "text", flex: 1, maxWidth: 500 }}
-            value={currentModule.title || ""}
-            onFocus={e => e.target.style.borderBottomColor = C.burgundy}
-            onBlur={e => e.target.style.borderBottomColor = "transparent"}
-            onChange={e => {
-              const newModules = [...modules];
-              newModules[activeModule] = { ...newModules[activeModule], title: e.target.value };
-              setCourseData({ ...courseData, modules: newModules });
-            }}
-          />
+          <h3 style={{ fontSize: 18, fontWeight: 700, color: C.navy, margin: 0 }}>{currentModule.title}</h3>
           <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-            {!previewMode && <>
-            <button style={{ ...S.btnSecondary, fontSize: 11, padding: "5px 10px", background: regenerating ? C.burgundyFaded : "transparent" }}
-              onClick={() => regenerateModule(activeModule)} disabled={regenerating || enriching}>
-              {regenerating ? <><Loader2 size={12} style={{ animation: "spin 1s linear infinite" }} /> Regenerating...</> : <><Wand2 size={12} /> Regenerate</>}
-            </button>
-            <button style={{ ...S.btnSecondary, fontSize: 11, padding: "5px 10px", background: enriching ? C.goldFaded || "rgba(212,168,85,0.12)" : "transparent", borderColor: enriching ? C.gold : C.border, color: enriching ? C.gold : C.navy }}
-              onClick={() => autoEnrichModule(activeModule)} disabled={enriching || regenerating}>
-              {enriching ? <><Loader2 size={12} style={{ animation: "spin 1s linear infinite" }} /> {enrichProgress || "Enriching..."}</> : <><Sparkles size={12} /> Auto-Enrich</>}
-            </button>
-            </>}
-            {/* Fix 2: Prominent segmented Read / Edit toggle */}
-            <div style={{ display: "inline-flex", border: `2px solid ${C.burgundy}22`, borderRadius: 10, overflow: "hidden" }}>
-              <button onClick={() => setPreviewMode(true)}
-                style={{ padding: "6px 16px", fontSize: 12, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 5, border: "none", fontFamily: "inherit", background: previewMode ? C.green : "transparent", color: previewMode ? "#fff" : C.textMuted, transition: "all 0.15s" }}>
-                <Eye size={13} /> Read
-              </button>
-              <button onClick={() => setPreviewMode(false)}
-                style={{ padding: "6px 16px", fontSize: 12, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 5, border: "none", borderLeft: `1px solid ${C.border}`, fontFamily: "inherit", background: !previewMode ? C.burgundy : "transparent", color: !previewMode ? "#fff" : C.textMuted, transition: "all 0.15s" }}>
-                ✏️ Edit
-              </button>
-            </div>
-            <span style={S.badge(C.green)}>{(currentModule.blocks || []).filter(b => KNOWLEDGE_CHECK_TYPES.includes(b.type)).length} KC</span>
-            <span style={{ fontSize: 12, color: C.textMuted }}>{(currentModule.blocks || []).reduce((s, b) => s + countBlockWords(b), 0).toLocaleString()}w</span>
+            <span style={S.badge(C.green)}>{(currentModule.blocks || []).filter(b => KNOWLEDGE_CHECK_TYPES.includes(b.type)).length} knowledge checks</span>
+            <span style={{ fontSize: 13, color: C.textMuted }}>{(currentModule.blocks || []).length} blocks</span>
           </div>
         </div>
 
-        {!previewMode && <InsertBar onInsert={() => setShowBlockMenu(-1)} active={showBlockMenu === -1} />}
+        <InsertBar onInsert={() => setShowBlockMenu(-1)} active={showBlockMenu === -1} />
         {showBlockMenu === -1 && <BlockPicker onPick={(type) => addBlock(type, -1)} onClose={() => setShowBlockMenu(null)} />}
 
-        {previewMode ? (
-          /* ── PREVIEW MODE ── */
-          <div style={{ background: C.card, borderRadius: 12, border: `1px solid ${C.border}`, padding: 28 }}>
-            {(currentModule.blocks || []).map((block, i) => {
-              const cfg = blockConfig(block.type);
-              return (
-                <div key={block.id} style={{ marginBottom: 20 }}>
-                  {block.type === "sectionDivider" && (
-                    <div style={{ borderBottom: `2px solid ${C.burgundy}`, paddingBottom: 8, marginTop: 24 }}>
-                      <h2 style={{ color: C.burgundy, fontSize: 22, fontWeight: 700, margin: 0 }}>{block.title || "Section"}</h2>
-                      {block.subtitle && <p style={{ color: C.textMuted, fontSize: 14, margin: "4px 0 0" }}>{block.subtitle}</p>}
-                    </div>
-                  )}
-                  {block.type === "text" && (
-                    <div style={{ fontSize: 15, lineHeight: 1.7, color: C.text }} dangerouslySetInnerHTML={{ __html: block.content || "<em>Empty text block</em>" }} />
-                  )}
-                  {block.type === "imageText" && (
-                    <div style={{ display: "flex", gap: 20, flexDirection: block.imagePosition === "right" ? "row-reverse" : "row", alignItems: "flex-start" }}>
-                      {block.image && <img src={block.image} alt={block.imageAlt || ""} style={{ width: "40%", borderRadius: 8 }} />}
-                      <div style={{ flex: 1, fontSize: 15, lineHeight: 1.7 }} dangerouslySetInnerHTML={{ __html: block.content || "" }} />
-                    </div>
-                  )}
-                  {block.type === "image" && block.imageUrl && (
-                    <figure style={{ textAlign: "center", margin: "16px 0" }}>
-                      <img src={block.imageUrl} alt={block.imageAltText || ""} style={{ maxWidth: "80%", borderRadius: 8 }} />
-                      {block.imageCaption && <figcaption style={{ fontSize: 12, color: C.textMuted, marginTop: 6 }}>{block.imageCaption}</figcaption>}
-                    </figure>
-                  )}
-                  {block.type === "accordion" && (
-                    <div style={{ border: `1px solid ${C.border}`, borderRadius: 8, overflow: "hidden" }}>
-                      {(block.accordionItems || []).map((item, j) => (
-                        <div key={j} style={{ borderBottom: `1px solid ${C.borderLight}`, padding: "10px 14px" }}>
-                          <div style={{ fontWeight: 600, fontSize: 14, color: C.navy }}>{item.title || "Untitled"}</div>
-                          <div style={{ fontSize: 13, color: C.textMuted, marginTop: 4 }} dangerouslySetInnerHTML={{ __html: item.content || "" }} />
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                  {(block.type === "multipleChoice" || block.type === "multiSelect") && (
-                    <div style={{ background: C.burgundyFaded, borderRadius: 10, padding: 16, borderLeft: `4px solid ${C.burgundy}` }}>
-                      <div style={{ fontSize: 10, fontWeight: 700, color: C.burgundy, marginBottom: 6 }}>KNOWLEDGE CHECK</div>
-                      <div style={{ fontWeight: 600, fontSize: 14, color: C.navy, marginBottom: 10 }}>{block.question || "Question?"}</div>
-                      {(block.options || []).map((opt, j) => (
-                        <div key={j} style={{ padding: "6px 10px", marginBottom: 4, borderRadius: 6, border: `1px solid ${opt.isCorrect ? C.green : C.border}`, background: opt.isCorrect ? C.greenFaded : "#fff", fontSize: 13 }}>
-                          {opt.isCorrect && <span style={{ color: C.green, fontWeight: 700, marginRight: 6 }}>✓</span>}
-                          {opt.text}
-                        </div>
-                      ))}
-                      {block.explanation && <div style={{ fontSize: 12, color: C.textMuted, marginTop: 8, fontStyle: "italic" }}>💡 {block.explanation}</div>}
-                    </div>
-                  )}
-                  {block.type === "reflection" && (
-                    <div style={{ background: C.greenFaded, borderRadius: 10, padding: 16, borderLeft: `4px solid ${C.green}` }}>
-                      <div style={{ fontSize: 10, fontWeight: 700, color: C.green, marginBottom: 6 }}>REFLECTION</div>
-                      <div style={{ fontWeight: 500, fontSize: 14, color: C.navy }}>{block.question || "Reflect on..."}</div>
-                    </div>
-                  )}
-                  {block.type === "matching" && (
-                    <div style={{ background: C.burgundyFaded, borderRadius: 10, padding: 16, borderLeft: `4px solid ${C.navy}` }}>
-                      <div style={{ fontSize: 10, fontWeight: 700, color: C.navy, marginBottom: 6 }}>MATCHING</div>
-                      {block.matchingInstructions && <div style={{ fontSize: 13, marginBottom: 8 }}>{block.matchingInstructions}</div>}
-                      {(block.matchingPairs || []).map((p, j) => (
-                        <div key={j} style={{ display: "flex", gap: 12, marginBottom: 4, fontSize: 13 }}>
-                          <span style={{ fontWeight: 600, color: C.navy }}>{p.term}</span>
-                          <span style={{ color: C.textMuted }}>→</span>
-                          <span>{p.definition}</span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                  {block.type === "resources" && (
-                    <div style={{ background: C.goldFaded || "rgba(212,168,85,0.08)", borderRadius: 10, padding: 16, borderLeft: `4px solid ${C.gold}` }}>
-                      <div style={{ fontSize: 10, fontWeight: 700, color: C.gold, marginBottom: 6 }}>RESOURCES</div>
-                      {(block.resources || []).map((r, j) => (
-                        <div key={j} style={{ fontSize: 13, marginBottom: 4 }}>📎 <a href={r.url} style={{ color: C.navy }}>{r.title || r.url}</a> <span style={{ color: C.textLight, fontSize: 11 }}>({r.type})</span></div>
-                      ))}
-                    </div>
-                  )}
-                  {!["sectionDivider","text","imageText","image","accordion","multipleChoice","multiSelect","reflection","matching","resources"].includes(block.type) && (
-                    <div style={{ background: C.greenFaded, borderRadius: 10, padding: 16, borderLeft: `4px solid ${cfg.color}` }}>
-                      <div style={{ fontSize: 10, fontWeight: 700, color: cfg.color, marginBottom: 4 }}>{cfg.label.toUpperCase()}</div>
-                      <div style={{ fontSize: 13, color: C.textMuted }}>{block.instructions || block.question || block.scenarioTitle || JSON.stringify(block).substring(0, 200) + "..."}</div>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        ) : (
-        <>
         {(currentModule.blocks || []).map((block, i) => {
           const cfg = blockConfig(block.type);
           const isEditing = editingBlock === i;
@@ -1650,45 +978,20 @@ function ContentEditor({ courseData, setCourseData }) {
               }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 14px", borderBottom: isEditing ? `1px solid ${C.borderLight}` : "none", cursor: "pointer" }}
                   onClick={() => setEditingBlock(isEditing ? null : i)}>
-                  <span style={{ cursor: "grab", color: C.textLight, fontSize: 12 }}>⠿</span>
+                  <span style={{ cursor: "grab", color: C.textLight, fontSize: 12 }}>â ¿</span>
                   <span style={{ width: 26, height: 26, borderRadius: 6, background: cfg.color + "14", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13 }}>{cfg.icon}</span>
                   <span style={{ fontWeight: 600, fontSize: 13, flex: 1, color: C.navy }}>{cfg.label}</span>
                   {isKC && <span style={{ fontSize: 9, fontWeight: 700, color: C.burgundy, background: C.burgundyFaded, padding: "2px 6px", borderRadius: 4 }}>KC</span>}
                   <span style={{ fontSize: 11, color: C.textLight }}>{countBlockWords(block)}w</span>
                   <div style={{ display: "flex", gap: 2 }}>
-                    <button onClick={(e) => { e.stopPropagation(); moveBlock(i, i - 1); }} style={{ background: "none", border: "none", cursor: "pointer", padding: 3, opacity: i === 0 ? 0.3 : 1, fontSize: 12 }}>▲</button>
-                    <button onClick={(e) => { e.stopPropagation(); moveBlock(i, i + 1); }} style={{ background: "none", border: "none", cursor: "pointer", padding: 3, opacity: i === currentModule.blocks.length - 1 ? 0.3 : 1, fontSize: 12 }}>▼</button>
-                    <button onClick={(e) => { e.stopPropagation(); removeBlock(i); }} style={{ background: "none", border: "none", cursor: "pointer", padding: 3, color: C.danger, fontSize: 12 }}>✕</button>
+                    <button onClick={(e) => { e.stopPropagation(); moveBlock(i, i - 1); }} style={{ background: "none", border: "none", cursor: "pointer", padding: 3, opacity: i === 0 ? 0.3 : 1, fontSize: 12 }}>â–²</button>
+                    <button onClick={(e) => { e.stopPropagation(); moveBlock(i, i + 1); }} style={{ background: "none", border: "none", cursor: "pointer", padding: 3, opacity: i === currentModule.blocks.length - 1 ? 0.3 : 1, fontSize: 12 }}>â–¼</button>
+                    <button onClick={(e) => { e.stopPropagation(); removeBlock(i); }} style={{ background: "none", border: "none", cursor: "pointer", padding: 3, color: C.danger, fontSize: 12 }}>âœ•</button>
                   </div>
                 </div>
                 {isEditing && (
                   <div style={{ padding: 14 }}>
                     <BlockEditor block={block} onChange={(updates) => updateBlock(i, updates)} />
-                    {/* AI Actions Bar */}
-                    <div style={{ borderTop: `1px solid ${C.borderLight}`, marginTop: 12, paddingTop: 10, display: "flex", flexWrap: "wrap", gap: 6, alignItems: "center" }}>
-                      <span style={{ fontSize: 11, color: C.textLight, fontWeight: 600, marginRight: 4 }}>AI:</span>
-                      {(block.type === "text" || block.type === "imageText") && <>
-                        <BlockAIButton label="Expand" action="expand" block={block} onResult={(result) => updateBlock(i, { content: result })} apiBase={API_BASE} getToken={getToken} />
-                        <BlockAIButton label="Simplify" action="simplify" block={block} onResult={(result) => updateBlock(i, { content: result })} apiBase={API_BASE} getToken={getToken} />
-                        <BlockAIButton label="Add Citations" action="add-citations" block={block} onResult={(result) => updateBlock(i, { content: result })} apiBase={API_BASE} getToken={getToken} />
-                        <BlockAIButton label="✨ Write Content" action="ai-write" block={block} context={block.title || currentModule.title} onResult={(result) => updateBlock(i, { content: result })} apiBase={API_BASE} getToken={getToken} />
-                      </>}
-                      {(block.type === "multipleChoice" || block.type === "multiSelect") && <>
-                        <BlockAIButton label="Better Options" action="improve-options" block={block} isJson onResult={(result) => updateBlock(i, result)} apiBase={API_BASE} getToken={getToken} />
-                      </>}
-                      {block.type === "matching" && <>
-                        <BlockAIButton label="Generate Pairs" action="generate-pairs" block={block} context={currentModule.title} isJson onResult={(result) => updateBlock(i, { matchingPairs: result })} apiBase={API_BASE} getToken={getToken} />
-                      </>}
-                      {block.type === "reflection" && <>
-                        <BlockAIButton label="New Prompt" action="generate-prompt" block={block} context={currentModule.title} onResult={(result) => updateBlock(i, { question: result })} apiBase={API_BASE} getToken={getToken} />
-                      </>}
-                      {block.type === "flashcardDeck" && <>
-                        <BlockAIButton label="Generate Cards" action="generate-cards" block={block} context={currentModule.title} isJson onResult={(result) => updateBlock(i, { flashcards: result })} apiBase={API_BASE} getToken={getToken} />
-                      </>}
-                      {block.type === "scenarioTree" && <>
-                        <BlockAIButton label="Generate Scenario" action="generate-scenario" block={block} context={currentModule.title} isJson onResult={(result) => updateBlock(i, result)} apiBase={API_BASE} getToken={getToken} />
-                      </>}
-                    </div>
                   </div>
                 )}
               </div>
@@ -1700,30 +1003,27 @@ function ContentEditor({ courseData, setCourseData }) {
 
         {(currentModule.blocks || []).length === 0 && (
           <div style={{ textAlign: "center", padding: 60, color: C.textMuted, border: `2px dashed ${C.border}`, borderRadius: 12 }}>
-            <div style={{ fontSize: 32, marginBottom: 8 }}>📝</div>
+            <div style={{ fontSize: 32, marginBottom: 8 }}>ðŸ“</div>
             <p style={{ fontSize: 15, fontWeight: 600 }}>No content blocks yet</p>
             <p style={{ fontSize: 13, marginBottom: 16 }}>Choose from 17 block types organized by Content, Knowledge Checks, and Engagement</p>
             <button style={S.btnPrimary} onClick={() => setShowBlockMenu(-1)}>+ Add First Block</button>
           </div>
         )}
-        </>
-        )}
       </div>
-    </div>
     </div>
   );
 }
 
 
-// ═══════════════════════════════════════════════════════════
-// ACEP CHECKER (Tab 3) — Updated for 17 block types
-// ═══════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ACEP CHECKER (Tab 3) â€” Updated for 17 block types
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 function ACEPChecker({ courseData }) {
   if (!courseData?.modules?.length) {
     return (
       <div style={S.card}>
         <div style={{ ...S.cardBody, textAlign: "center", padding: 60 }}>
-          <div style={{ fontSize: 40 }}>📋</div>
+          <div style={{ fontSize: 40 }}>ðŸ“‹</div>
           <h3 style={{ color: C.navy, marginTop: 16 }}>No Course Data to Check</h3>
           <p style={{ color: C.textMuted, fontSize: 14 }}>Generate or import a course first.</p>
         </div>
@@ -1758,7 +1058,7 @@ function ACEPChecker({ courseData }) {
     { label: "Knowledge Checks per Module (2-5)", value: `${totalKC} total`, pass: moduleStats.every(m => m.knowledgeChecks >= 2), detail: moduleStats.map(m => `${m.title?.split(":")[0]}: ${m.knowledgeChecks}`).join(", ") },
     { label: "Learning Objectives", value: hasObjectives ? `${courseData.objectives.length}` : "Missing", pass: hasObjectives },
     { label: "Target Audience", value: hasTargetAudience ? "Yes" : "Missing", pass: hasTargetAudience },
-    { label: "Pass Threshold ≥ 80%", value: `${((courseData.assessment?.passThreshold || 0.8) * 100).toFixed(0)}%`, pass: (courseData.assessment?.passThreshold || 0.8) >= 0.8 },
+    { label: "Pass Threshold â‰¥ 80%", value: `${((courseData.assessment?.passThreshold || 0.8) * 100).toFixed(0)}%`, pass: (courseData.assessment?.passThreshold || 0.8) >= 0.8 },
     { label: "Final Exam (15+ questions)", value: `${(courseData.assessment?.questions || []).length}`, pass: (courseData.assessment?.questions || []).length >= 15 },
   ];
 
@@ -1778,9 +1078,9 @@ function ACEPChecker({ courseData }) {
           </div>
           <div>
             <h3 style={{ fontSize: 20, fontWeight: 700, color: C.navy, margin: "0 0 4px" }}>
-              {score === 100 ? "ACEP Compliant ✓" : score >= 60 ? "Needs Attention" : "Not Compliant"}
+              {score === 100 ? "ACEP Compliant âœ“" : score >= 60 ? "Needs Attention" : "Not Compliant"}
             </h3>
-            <p style={{ color: C.textMuted, fontSize: 14, margin: 0 }}>{passCount}/{checks.length} requirements · {ceHours} CE · {courseData.modules.length} modules · 17 block types available</p>
+            <p style={{ color: C.textMuted, fontSize: 14, margin: 0 }}>{passCount}/{checks.length} requirements Â· {ceHours} CE Â· {courseData.modules.length} modules Â· 17 block types available</p>
           </div>
         </div>
       </div>
@@ -1792,7 +1092,7 @@ function ACEPChecker({ courseData }) {
         </div>
         {checks.map((c, i) => (
           <div key={i} style={{ display: "flex", alignItems: "center", gap: 12, padding: "14px 20px", borderBottom: i < checks.length - 1 ? `1px solid ${C.borderLight}` : "none", background: c.pass ? C.greenFaded : C.dangerFaded }}>
-            <span style={{ fontSize: 16 }}>{c.pass ? "✓" : "⚠"}</span>
+            <span style={{ fontSize: 16 }}>{c.pass ? "âœ“" : "âš "}</span>
             <div style={{ flex: 1 }}>
               <div style={{ fontWeight: 600, fontSize: 14, color: C.navy }}>{c.label}</div>
               {c.detail && <div style={{ fontSize: 12, color: C.textMuted, marginTop: 2 }}>{c.detail}</div>}
@@ -1835,9 +1135,9 @@ function ACEPChecker({ courseData }) {
 }
 
 
-// ═══════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // AI COURSE GENERATOR
-// ═══════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 function getModuleTitle(topic, index) {
   const templates = [
     "Foundations, Definitions, and Theoretical Frameworks",
@@ -1937,7 +1237,6 @@ function AIGenerator({ onGenerated }) {
   const [additionalNotes, setAdditionalNotes] = useState("");
   const [outline, setOutline] = useState(null);
   const [progress, setProgress] = useState(0);
-  const [progressMsg, setProgressMsg] = useState("");
   const [generatingContent, setGeneratingContent] = useState(false);
   const [uploadingOutline, setUploadingOutline] = useState(false);
   const [uploadedFileName, setUploadedFileName] = useState(null);
@@ -2026,8 +1325,8 @@ function AIGenerator({ onGenerated }) {
       const objectives = [];
       const objMatch = content.match(/(?:learning objectives|course objectives|objectives)[\s\S]*?(?=\n#{1,2}|\n---|\n\n\n)/i);
       if (objMatch) {
-        const lines = objMatch[0].match(/^\s*(?:\d+[\.\)]\s+|[-•]\s+).+$/gm) || [];
-        lines.slice(0, 6).forEach(l => objectives.push(l.replace(/^\s*(?:\d+[\.\)]\s+|[-•]\s+)/, "").replace(/\*\*/g, "").trim()));
+        const lines = objMatch[0].match(/^\s*(?:\d+[\.\)]\s+|[-â€¢]\s+).+$/gm) || [];
+        lines.slice(0, 6).forEach(l => objectives.push(l.replace(/^\s*(?:\d+[\.\)]\s+|[-â€¢]\s+)/, "").replace(/\*\*/g, "").trim()));
       }
 
       setOutline({
@@ -2107,201 +1406,32 @@ function AIGenerator({ onGenerated }) {
     }, 2500);
   };
 
-  const generateContent = async () => {
+  const generateContent = () => {
     setGeneratingContent(true);
     setProgress(0);
-    setProgressMsg("Preparing generation...");
+    const timer = setInterval(() => setProgress(p => {
+      if (p >= 95) { clearInterval(timer); return p; }
+      return p + Math.random() * 8;
+    }), 400);
 
-    const API_BASE = import.meta.env.VITE_API_URL || "https://api.counselorready.com/api";
-    const token = localStorage.getItem("token");
-    const moduleCount = outline.modules.length;
-
-    // Generate MODULE BY MODULE — each call ~30-60 sec, not 7+ min
-    const generatedModules = [];
-    let allQuestions = [];
-    let totalWordsGenerated = 0;
-
-    for (let mi = 0; mi < moduleCount; mi++) {
-      const mod = outline.modules[mi];
-      const pct = Math.round((mi / moduleCount) * 95);
-      setProgress(pct);
-      setProgressMsg(`Module ${mi + 1} of ${moduleCount}: ${mod.title.split(":").pop().trim()}...`);
-
-      // Get source content for this module if uploaded
-      const sourceContent = mod.sourceContent ||
-        (outline._uploadedContent
-          ? outline._uploadedContent.substring(
-              mi * Math.floor(outline._uploadedContent.length / moduleCount),
-              (mi + 1) * Math.floor(outline._uploadedContent.length / moduleCount)
-            )
-          : "");
-
-      const body = {
-        courseTitle: outline.title,
-        moduleTitle: mod.title,
-        moduleNumber: mi + 1,
-        totalModules: moduleCount,
-        ceHours: outline.ceHours,
-        category: outline.category === "Ethics" ? "ethics" : outline.category === "Crisis" ? "crisis" : "core",
-        sourceContent: sourceContent.substring(0, 3000),
-        additionalNotes: additionalNotes || "",
-        generateQuiz: true,
+    setTimeout(() => {
+      clearInterval(timer);
+      setProgress(100);
+      const courseData = {
+        ...outline,
+        _uploadedContent: undefined,
+        modules: outline.modules.map((mod, mi) => ({
+          ...mod,
+          sourceContent: undefined,
+          blocks: mod.sourceContent
+            ? generateBlocksFromSource(mod, mi, outline)
+            : generateModuleBlocks(mod, mi, outline),
+        })),
       };
-
-      try {
-        // Start async job (returns immediately with jobId)
-        const startRes = await fetch(`${API_BASE}/admin/module/generate`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
-          body: JSON.stringify(body),
-        });
-
-        if (!startRes.ok) {
-          const errData = await startRes.json().catch(() => ({}));
-          console.error(`Module ${mi + 1} failed to start:`, errData.error);
-          generatedModules.push({
-            id: uid(), number: mi + 1, title: mod.title,
-            blocks: [
-              { id: uid(), type: "sectionDivider", title: mod.title, sectionNumber: mi + 1, subtitle: "" },
-              { id: uid(), type: "text", content: `<p><strong>⚠ Generation failed:</strong> ${errData.error || "API error"}</p><p>Add content manually or retry this module.</p>` },
-            ],
-            knowledgeChecks: 0, estimatedWords: 0,
-          });
-          continue;
-        }
-
-        const startData = await startRes.json();
-        const jobId = startData.jobId;
-
-        // Poll for results (async generation avoids Render proxy timeout)
-        let data = null;
-        if (jobId) {
-          for (let attempt = 0; attempt < 40; attempt++) {
-            await new Promise(r => setTimeout(r, 3000));
-            setProgressMsg(`Module ${mi + 1} of ${moduleCount}: generating... (${attempt * 3}s)`);
-            try {
-              const pollRes = await fetch(`${API_BASE}/admin/module/generate/status/${jobId}`, {
-                headers: { "Authorization": `Bearer ${token}` },
-              });
-              if (pollRes.ok) {
-                const pollData = await pollRes.json();
-                if (pollData.status === "complete") { data = pollData; break; }
-                if (pollData.status === "error") throw new Error(pollData.error || "Generation failed");
-              }
-            } catch (pollErr) {
-              if (pollErr.message.includes("Generation failed")) throw pollErr;
-            }
-          }
-          if (!data) throw new Error("Generation timed out");
-        } else {
-          // Fallback: server returned result directly (old format)
-          data = startData;
-        }
-
-        if (data.success !== false && (data.module || data.content)) {
-          const mod_data = data.module || data;
-          const blocks = [];
-          blocks.push({ id: uid(), type: "sectionDivider", title: mod.title, sectionNumber: mi + 1, subtitle: mod_data.description || "" });
-
-          // Add content as text block(s) — split if very long
-          if (mod_data.content) {
-            const content = mod_data.content;
-            if (content.length > 15000) {
-              // Split at a heading boundary near the middle
-              const mid = Math.floor(content.length / 2);
-              const splitPoint = content.indexOf("<h3>", mid);
-              if (splitPoint > 0) {
-                blocks.push({ id: uid(), type: "text", content: content.substring(0, splitPoint) });
-                blocks.push({ id: uid(), type: "text", content: content.substring(splitPoint) });
-              } else {
-                blocks.push({ id: uid(), type: "text", content });
-              }
-            } else {
-              blocks.push({ id: uid(), type: "text", content });
-            }
-          }
-
-          // Add quiz questions as interactive blocks
-          if (mod_data.questions && mod_data.questions.length > 0) {
-            mod_data.questions.forEach(q => {
-              if (q.type === "multiple_select") {
-                blocks.push({ id: uid(), type: "multiSelect", question: q.question, options: (q.options || []).map((opt, oi) => ({
-                  text: opt, isCorrect: Array.isArray(q.correctAnswer) ? q.correctAnswer.includes(oi) : oi === q.correctAnswer
-                })), explanation: q.explanation || "" });
-              } else if (q.type === "true_false") {
-                blocks.push({ id: uid(), type: "multipleChoice", question: q.question, options: [
-                  { text: "True", isCorrect: q.correctAnswer === true },
-                  { text: "False", isCorrect: q.correctAnswer === false },
-                ], explanation: q.explanation || "" });
-              } else {
-                blocks.push({ id: uid(), type: "multipleChoice", question: q.question, options: (q.options || []).map((opt, oi) => ({
-                  text: opt, isCorrect: oi === q.correctAnswer
-                })), explanation: q.explanation || "" });
-              }
-              allQuestions.push(q);
-            });
-          }
-
-          // Add a reflection prompt
-          blocks.push({ id: uid(), type: "reflection", question: `Reflect on what you learned about ${mod.title.split(":").pop().trim()}. How will you apply these concepts in your clinical practice? Describe a specific situation.`, minLength: 100 });
-
-          const wordCount = mod_data.wordCount || blocks.reduce((s, b) => s + countBlockWords(b), 0);
-          totalWordsGenerated += wordCount;
-
-          generatedModules.push({
-            id: uid(), number: mi + 1, title: mod.title,
-            blocks,
-            knowledgeChecks: blocks.filter(b => ["multipleChoice", "multiSelect", "matching"].includes(b.type)).length,
-            estimatedWords: wordCount,
-          });
-
-          setProgressMsg(`Module ${mi + 1} done — ${wordCount.toLocaleString()} words ✓`);
-        } else {
-          throw new Error(data.error || "Unexpected response format");
-        }
-      } catch (err) {
-        console.error(`Module ${mi + 1} error:`, err);
-        generatedModules.push({
-          id: uid(), number: mi + 1, title: mod.title,
-          blocks: [
-            { id: uid(), type: "sectionDivider", title: mod.title, sectionNumber: mi + 1, subtitle: "" },
-            { id: uid(), type: "text", content: `<p><strong>⚠ Error:</strong> ${err.message}</p><p>Add content manually or retry.</p>` },
-          ],
-          knowledgeChecks: 0, estimatedWords: 0,
-        });
-      }
-    }
-
-    // Assemble final course
-    setProgress(98);
-    setProgressMsg("Assembling course...");
-
-    const finalCourse = {
-      title: outline.title,
-      description: outline.description,
-      ceHours: outline.ceHours,
-      level: outline.level,
-      category: outline.category,
-      targetAudience: outline.targetAudience,
-      objectives: outline.objectives,
-      assessment: { questions: allQuestions, passThreshold: 0.80 },
-      acepProvider: { name: "GA Integrated Therapeutic Perspectives LLC", number: "7760" },
-      modules: generatedModules,
-    };
-
-    const successCount = generatedModules.filter(m => (m.estimatedWords || 0) > 100).length;
-
-    setGeneratingContent(false);
-    setProgress(100);
-
-    if (successCount === 0) {
-      alert("⚠ All modules failed to generate. Check that ANTHROPIC_API_KEY is set in Render environment variables and try again.");
-    } else {
-      const target = outline.ceHours * 6000;
-      setProgressMsg(`Generated ${totalWordsGenerated.toLocaleString()} / ${target.toLocaleString()} target words across ${successCount}/${moduleCount} modules`);
+      setGeneratingContent(false);
       setStep("content");
-      if (onGenerated) onGenerated(finalCourse);
-    }
+      if (onGenerated) onGenerated(courseData);
+    }, 4000);
   };
 
   return (
@@ -2343,7 +1473,7 @@ function AIGenerator({ onGenerated }) {
                       <FileUp size={22} color={C.textLight} />
                       <div style={{ textAlign: "left" }}>
                         <div style={{ fontWeight: 600, fontSize: 13, color: C.navy }}>Drop your outline here or click to browse</div>
-                        <div style={{ fontSize: 11, color: C.textMuted }}>.docx, .pdf, .md, .txt — We'll detect modules and build the course structure</div>
+                        <div style={{ fontSize: 11, color: C.textMuted }}>.docx, .pdf, .md, .txt â€” We'll detect modules and build the course structure</div>
                       </div>
                     </div>
                   )}
@@ -2439,7 +1569,7 @@ function AIGenerator({ onGenerated }) {
               <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                 <BookOpen size={20} color={C.green} />
                 <span style={{ fontWeight: 700, fontSize: 16 }}>Course Outline</span>
-                {uploadedFileName && <span style={S.badge(C.burgundy)}>📄 From: {uploadedFileName}</span>}
+                {uploadedFileName && <span style={S.badge(C.burgundy)}>ðŸ“„ From: {uploadedFileName}</span>}
               </div>
               <div style={{ display: "flex", gap: 8 }}>
                 <button style={S.btnSecondary} onClick={() => setStep("input")}>
@@ -2468,7 +1598,7 @@ function AIGenerator({ onGenerated }) {
                     onClick={() => setOutline({ ...outline, modules: outline.modules.map((m, j) => j === i ? { ...m, expanded: !m.expanded } : m) })}>
                     {mod.expanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
                     <span style={{ fontWeight: 600, flex: 1, fontSize: 14 }}>{mod.title}</span>
-                    <span style={{ fontSize: 12, color: C.textMuted }}>~{mod.estimatedWords.toLocaleString()} words · {mod.knowledgeChecks} checks</span>
+                    <span style={{ fontSize: 12, color: C.textMuted }}>~{mod.estimatedWords.toLocaleString()} words Â· {mod.knowledgeChecks} checks</span>
                   </div>
                   {mod.expanded && (
                     <div style={{ padding: 14, borderTop: `1px solid ${C.borderLight}` }}>
@@ -2513,12 +1643,11 @@ function AIGenerator({ onGenerated }) {
             <div style={S.card}>
               <div style={{ ...S.cardBody, textAlign: "center", padding: 40 }}>
                 <Loader2 size={32} color={C.green} style={{ animation: "spin 1s linear infinite" }} />
-                <h3 style={{ marginTop: 12, color: C.navy, fontSize: 16 }}>Generating Course Content via AI...</h3>
-                <p style={{ color: C.textMuted, fontSize: 13 }}>{progressMsg || "Connecting to AI service..."}</p>
+                <h3 style={{ marginTop: 12, color: C.navy, fontSize: 16 }}>Generating Course Content...</h3>
+                <p style={{ color: C.textMuted, fontSize: 13 }}>Writing content blocks, knowledge checks, and assessment items</p>
                 <div style={{ maxWidth: 400, margin: "16px auto", background: C.borderLight, borderRadius: 20, height: 6, overflow: "hidden" }}>
                   <div style={{ background: `linear-gradient(90deg, ${C.green}, ${C.gold})`, height: "100%", width: `${progress}%`, transition: "width 0.3s", borderRadius: 20 }} />
                 </div>
-                <p style={{ fontSize: 11, color: C.textLight, marginTop: 8 }}>This may take 30-90 seconds for a {outline?.ceHours || 3}CE course ({((outline?.ceHours || 3) * 6000).toLocaleString()}+ words)</p>
               </div>
             </div>
           )}
@@ -2546,9 +1675,9 @@ function AIGenerator({ onGenerated }) {
 }
 
 
-// ═══════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // IMPORT TAB
-// ═══════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 function parseMarkdownToCourse(content, filename) {
   const title = filename.replace(/\.(md|txt|markdown|docx|pdf)$/i, "").replace(/[_-]/g, " ").replace(/\b\w/g, c => c.toUpperCase());
   const objectives = [];
@@ -2725,16 +1854,16 @@ function ImportTab({ onImported }) {
 
           {error && (
             <div style={{ marginTop: 12, padding: "10px 14px", background: C.dangerFaded, borderRadius: 8, color: C.danger, fontSize: 13 }}>
-              ⚠ {error}
+              âš  {error}
             </div>
           )}
 
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 12, marginTop: 20 }}>
             {[
-              { icon: "📄", title: "Word (.docx)", desc: "Full document parsing with headers and sections" },
-              { icon: "📕", title: "PDF (.pdf)", desc: "Text extraction from PDF documents" },
-              { icon: "📝", title: "Markdown (.md)", desc: "Module headers, objectives, assessments" },
-              { icon: "📃", title: "Plain Text (.txt)", desc: "Structured text with section headings" },
+              { icon: "ðŸ“„", title: "Word (.docx)", desc: "Full document parsing with headers and sections" },
+              { icon: "ðŸ“•", title: "PDF (.pdf)", desc: "Text extraction from PDF documents" },
+              { icon: "ðŸ“", title: "Markdown (.md)", desc: "Module headers, objectives, assessments" },
+              { icon: "ðŸ“ƒ", title: "Plain Text (.txt)", desc: "Structured text with section headings" },
             ].map(f => (
               <div key={f.title} style={{ background: C.greenFaded, borderRadius: 10, padding: 14, border: `1px solid ${C.green}22` }}>
                 <span style={{ fontSize: 22 }}>{f.icon}</span>
@@ -2758,7 +1887,7 @@ function ImportTab({ onImported }) {
           <div style={S.cardBody}>
             <div style={{ marginBottom: 16 }}>
               <div style={{ fontSize: 18, fontWeight: 700, color: C.navy }}>{preview.title}</div>
-              <div style={{ fontSize: 13, color: C.textMuted, marginTop: 4 }}>{preview.ceHours} CE Hours · {preview.modules.length} modules · {preview.modules.reduce((s, m) => s + (m.blocks || []).length, 0)} blocks</div>
+              <div style={{ fontSize: 13, color: C.textMuted, marginTop: 4 }}>{preview.ceHours} CE Hours Â· {preview.modules.length} modules Â· {preview.modules.reduce((s, m) => s + (m.blocks || []).length, 0)} blocks</div>
             </div>
             <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 16 }}>
               {[
@@ -2795,20 +1924,11 @@ function ImportTab({ onImported }) {
 }
 
 
-// ═══════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // MAIN APP
-// ═══════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 export default function CourseBuilderV2() {
-  const [searchParams] = useSearchParams();
-  const courseId = searchParams.get("id");
-
-  const API_BASE = import.meta.env.VITE_API_URL || "https://api.counselorready.com/api";
-
   const [activeTab, setActiveTab] = useState(0);
-  const [loadingCourse, setLoadingCourse] = useState(!!courseId);
-  const [saving, setSaving] = useState(false);
-  const [saveStatus, setSaveStatus] = useState(null); // "saved" | "error"
-
   const [courseData, setCourseData] = useState({
     title: "New Course",
     ceHours: 3,
@@ -2823,97 +1943,13 @@ export default function CourseBuilderV2() {
     acepProvider: { name: "GA Integrated Therapeutic Perspectives LLC", number: "7760" },
   });
 
-  // Load existing course for editing
-  useEffect(() => {
-    if (!courseId) return;
-    const token = localStorage.getItem("token");
-    fetch(`${API_BASE}/interactive-courses/${courseId}`, {
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
-    })
-      .then(r => r.json())
-      .then(data => {
-        const course = data.course || data;
-        // Map sections[].contentBlocks[] → modules[].blocks[]
-        const modules = (course.sections || []).map((sec, i) => ({
-          id: sec._id || uid(),
-          number: i + 1,
-          title: sec.title || `Module ${i + 1}`,
-          blocks: (sec.contentBlocks || []).map(b => ({ ...b, id: b._id || b.id || uid() })),
-          knowledgeChecks: 3,
-        }));
-        setCourseData({
-          title: course.title || "Untitled",
-          ceHours: course.ceHours || course.ceuHours || 3,
-          level: course.level || "Intermediate",
-          category: course.category || "Clinical Practice",
-          objectives: course.objectives || [],
-          targetAudience: course.targetAudience || ["LPCs", "LMHCs", "LCSWs", "LMFTs"],
-          modules: modules.length ? modules : courseData.modules,
-          assessment: course.assessment || { questions: [], passThreshold: 0.80 },
-          acepProvider: course.acepProvider || { name: "GA Integrated Therapeutic Perspectives LLC", number: "7760" },
-        });
-        setActiveTab(1); // jump straight to Content Editor
-      })
-      .catch(err => console.error("Failed to load course:", err))
-      .finally(() => setLoadingCourse(false));
-  }, [courseId]);
-
-  const handleSave = async () => {
-    if (!courseId) return;
-    setSaving(true);
-    setSaveStatus(null);
-    const token = localStorage.getItem("token");
-    // Map modules[].blocks[] → sections[].contentBlocks[]
-    const sections = courseData.modules.map(mod => ({
-      title: mod.title,
-      contentBlocks: mod.blocks,
-    }));
-    try {
-      const res = await fetch(`${API_BASE}/interactive-courses/${courseId}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify({
-          title: courseData.title,
-          ceHours: courseData.ceHours,
-          level: courseData.level,
-          category: courseData.category,
-          objectives: courseData.objectives,
-          targetAudience: courseData.targetAudience,
-          sections,
-          assessment: courseData.assessment,
-        }),
-      });
-      if (!res.ok) throw new Error("Save failed");
-      setSaveStatus("saved");
-      setTimeout(() => setSaveStatus(null), 3000);
-    } catch {
-      setSaveStatus("error");
-    } finally {
-      setSaving(false);
-    }
-  };
-
   const tabs = [
-    { label: "AI Generator", icon: "✨" },
-    { label: "Content Editor", icon: "📝" },
-    { label: "ACEP Checker", icon: "📋" },
-    { label: "Import", icon: "📥" },
-    { label: "Block Types", icon: "🧩" },
+    { label: "AI Generator", icon: "âœ¨" },
+    { label: "Content Editor", icon: "ðŸ“" },
+    { label: "ACEP Checker", icon: "ðŸ“‹" },
+    { label: "Import", icon: "ðŸ“¥" },
+    { label: "Block Types", icon: "ðŸ§©" },
   ];
-
-  if (loadingCourse) {
-    return (
-      <div style={{ ...S.container, display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100vh" }}>
-        <div style={{ textAlign: "center" }}>
-          <div style={{ fontSize: 32, marginBottom: 12 }}>⏳</div>
-          <div style={{ color: C.textMuted }}>Loading course…</div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div style={S.container}>
@@ -2923,24 +1959,15 @@ export default function CourseBuilderV2() {
       <div style={S.header}>
         <div>
           <div style={{ color: "#fff", fontSize: 20, fontWeight: 700, letterSpacing: "-0.02em" }}>CounselorReady Course Builder</div>
-          <div style={{ color: "rgba(255,255,255,0.55)", fontSize: 13, marginTop: 2 }}>
-            {courseId ? `Editing: ${courseData.title}` : "NBCC ACEP #7760 · 17 Block Types · Cloudinary Images"}
-          </div>
+          <div style={{ color: "rgba(255,255,255,0.55)", fontSize: 13, marginTop: 2 }}>NBCC ACEP #7760 Â· 17 Block Types Â· Cloudinary Images</div>
         </div>
-        <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-          {saveStatus === "saved" && <span style={{ color: "#86efac", fontSize: 13 }}>✓ Saved</span>}
-          {saveStatus === "error" && <span style={{ color: "#fca5a5", fontSize: 13 }}>⚠ Save failed</span>}
-          {courseId && (
-            <button style={{ ...S.btnGold, fontSize: 13 }} onClick={handleSave} disabled={saving}>
-              {saving ? "Saving…" : "💾 Save Changes"}
-            </button>
-          )}
+        <div style={{ display: "flex", gap: 10 }}>
           <button style={{ ...S.btnSecondary, borderColor: "rgba(255,255,255,0.2)", color: "#fff", fontSize: 12 }} onClick={() => {
             const json = JSON.stringify(courseData, null, 2);
             const blob = new Blob([json], { type: "application/json" });
             const a = document.createElement("a"); a.href = URL.createObjectURL(blob);
             a.download = `${courseData.title?.replace(/[^a-z0-9]/gi, "_") || "course"}.json`; a.click();
-          }}>💾 Export JSON</button>
+          }}>ðŸ’¾ Export JSON</button>
         </div>
       </div>
 
@@ -2965,559 +1992,52 @@ export default function CourseBuilderV2() {
 }
 
 
-// ═══════════════════════════════════════════════════════════
-// EXAM GENERATOR
-// ═══════════════════════════════════════════════════════════
-function ExamGenerator({ courseData, setCourseData }) {
-  const [mode, setMode] = useState("content"); // content | outline | pdf
-  const [questionCount, setQuestionCount] = useState(15);
-  const [customOutline, setCustomOutline] = useState("");
-  const [generating, setGenerating] = useState(false);
-  const [generated, setGenerated] = useState(null);
-  const [error, setError] = useState(null);
-  const pdfFileRef = useRef();
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// BLOCK TYPE CATALOG (Tab 3)
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+function BlockTypeCatalog() {
+  const categories = [
+    { key: "content", label: "Content Blocks", desc: "Auto-complete on render. Text, images, media delivery.", color: C.green, count: BLOCK_TYPES.filter(b => b.category === "content").length },
+    { key: "assessment", label: "Knowledge Checks", desc: "Graded activities. Count toward ACEP module requirements (2-5 per module).", color: C.burgundy, count: BLOCK_TYPES.filter(b => b.category === "assessment").length },
+    { key: "interactive", label: "Engagement Activities", desc: "Interactive but not graded. Enrich learning experience.", color: C.purple, count: BLOCK_TYPES.filter(b => b.category === "interactive").length },
+  ];
 
-  const API_BASE = import.meta.env.VITE_API_URL || "https://api.counselorready.com/api";
-
-  const generateExam = async (pdfData = null) => {
-    setGenerating(true);
-    setError(null);
-    setGenerated(null);
-
-    const token = localStorage.getItem("token");
-    let body = {};
-
-    if (mode === "pdf" && pdfData) {
-      body = { mode: "pdf", pdfData, questionCount };
-    } else if (mode === "outline") {
-      if (!customOutline.trim()) { setError("Enter outline text"); setGenerating(false); return; }
-      body = { mode: "outline", outline: customOutline, questionCount };
-    } else {
-      // Use current course content
-      if (!courseData?.modules?.length) { setError("No course content loaded. Use AI Generator or Import first."); setGenerating(false); return; }
-      const content = courseData.modules.map(m =>
-        `## ${m.title}\n` + (m.blocks || []).map(b => b.content || b.question || "").join("\n")
-      ).join("\n\n");
-      body = { mode: "content", content, moduleTitle: courseData.title, questionCount };
-    }
-
-    try {
-      const res = await fetch(`${API_BASE}/admin/quiz/generate`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
-        body: JSON.stringify(body),
-      });
-      const data = await res.json();
-      if (!res.ok || !data.success) throw new Error(data.error || "Quiz generation failed");
-      setGenerated(data.questions);
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setGenerating(false);
-    }
-  };
-
-  const handlePdfUpload = async (file) => {
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      const base64 = reader.result.split(",")[1];
-      generateExam(base64);
-    };
-    reader.readAsDataURL(file);
-  };
-
-  const addToAssessment = () => {
-    if (!generated || !courseData) return;
-    setCourseData({
-      ...courseData,
-      assessment: {
-        ...courseData.assessment,
-        questions: [...(courseData.assessment?.questions || []), ...generated],
-        passThreshold: 0.80,
-      },
-    });
-    alert(`Added ${generated.length} questions to course assessment!`);
-  };
-
-  const addAsBlocks = () => {
-    if (!generated || !courseData) return;
-    // Add questions as blocks to the last module
-    const modules = [...(courseData.modules || [])];
-    const lastMod = modules.length - 1;
-    if (lastMod < 0) {
-      modules.push({ id: uid(), number: 1, title: "Final Exam", blocks: [], knowledgeChecks: 0 });
-    }
-
-    // Add an exam module
-    const examBlocks = [
-      { id: uid(), type: "sectionDivider", title: "Final Examination", sectionNumber: modules.length + 1, subtitle: `${generated.length} Questions · 80% Passing Score` },
-    ];
-
-    generated.forEach(q => {
-      if (q.type === "multiple_select") {
-        examBlocks.push({ id: uid(), type: "multiSelect", question: q.question, options: (q.options || []).map((opt, oi) => ({
-          text: opt, isCorrect: Array.isArray(q.correctAnswer) ? q.correctAnswer.includes(oi) : oi === q.correctAnswer
-        })), explanation: q.explanation || "" });
-      } else {
-        examBlocks.push({ id: uid(), type: "multipleChoice", question: q.question, options: (q.options || []).map((opt, oi) => ({
-          text: opt, isCorrect: oi === q.correctAnswer
-        })), explanation: q.explanation || "" });
-      }
-    });
-
-    modules.push({ id: uid(), number: modules.length + 1, title: "Final Examination", blocks: examBlocks, knowledgeChecks: generated.length });
-    setCourseData({ ...courseData, modules });
-    alert(`Added Final Examination module with ${generated.length} questions!`);
+  const completionMap = {
+    sectionDivider: "Auto-complete on render", text: "Auto-complete on render", imageText: "Auto-complete on render",
+    image: "Auto-complete on render", accordion: "Must expand ALL items", resources: "Auto-complete on render",
+    videoEmbed: "Must view ALL timestamp markers",
+    multipleChoice: "Must submit (correct not required)", multiSelect: "Must submit (correct not required)",
+    matching: "Must complete all matches + submit", cardSort: "Must sort ALL cards + submit",
+    sequencing: "Must order ALL steps + submit", timeline: "Must order ALL events + submit",
+    reflection: "Must enter text", hotspot: "Must click ALL hotspots",
+    scenarioTree: "Must reach an end node", flashcardDeck: "Must flip ALL cards",
   };
 
   return (
     <div>
-      <div style={S.card}>
-        <div style={S.cardHeader}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <ClipboardCheck size={20} color={C.burgundy} />
-            <span style={{ fontWeight: 700, fontSize: 16 }}>AI Exam Generator</span>
+      {categories.map(cat => (
+        <div key={cat.key} style={S.card}>
+          <div style={{ ...S.cardHeader, background: cat.color + "08" }}>
+            <div>
+              <span style={{ fontWeight: 700, fontSize: 15, color: cat.color }}>{cat.label}</span>
+              <span style={{ fontSize: 12, color: C.textMuted, marginLeft: 8 }}>{cat.desc}</span>
+            </div>
+            <span style={S.badge(cat.color)}>{cat.count} types</span>
           </div>
-          <span style={S.badge(C.burgundy)}>ACEP Compliant · 80% Pass</span>
-        </div>
-        <div style={S.cardBody}>
-          <p style={{ color: C.textMuted, fontSize: 14, marginBottom: 20, lineHeight: 1.6 }}>
-            Generate a comprehensive final exam from your course content, an outline, or a PDF document. Questions are AI-generated with explanations and aligned to ACEP standards (15+ questions, 80% pass threshold).
-          </p>
-
-          {/* Mode Selector */}
-          <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
-            {[
-              { key: "content", label: "From Course Content", icon: "📝", desc: "Uses loaded course" },
-              { key: "outline", label: "From Outline", icon: "📋", desc: "Paste text" },
-              { key: "pdf", label: "From PDF", icon: "📕", desc: "Upload document" },
-            ].map(m => (
-              <div key={m.key} onClick={() => setMode(m.key)}
-                style={{ flex: 1, padding: 14, borderRadius: 10, border: `2px solid ${mode === m.key ? C.burgundy : C.border}`, cursor: "pointer", background: mode === m.key ? C.burgundyFaded : "transparent", transition: "all 0.2s", textAlign: "center" }}>
-                <div style={{ fontSize: 20 }}>{m.icon}</div>
-                <div style={{ fontWeight: 600, fontSize: 13, color: mode === m.key ? C.burgundy : C.navy, marginTop: 4 }}>{m.label}</div>
-                <div style={{ fontSize: 11, color: C.textMuted }}>{m.desc}</div>
-              </div>
-            ))}
-          </div>
-
-          {/* Question Count */}
-          <div style={{ marginBottom: 16 }}>
-            <label style={S.label}>Number of Questions</label>
-            <div style={{ display: "flex", gap: 8 }}>
-              {[10, 15, 20, 25, 30].map(n => (
-                <button key={n} onClick={() => setQuestionCount(n)}
-                  style={{ padding: "8px 16px", borderRadius: 8, border: `1px solid ${questionCount === n ? C.burgundy : C.border}`, background: questionCount === n ? C.burgundy : "transparent", color: questionCount === n ? "#fff" : C.navy, fontWeight: 600, fontSize: 13, cursor: "pointer" }}>
-                  {n}
-                </button>
-              ))}
-            </div>
-            <div style={{ fontSize: 11, color: C.textMuted, marginTop: 4 }}>ACEP minimum: 15 questions for final exam</div>
-          </div>
-
-          {/* Mode-specific input */}
-          {mode === "outline" && (
-            <div style={{ marginBottom: 16 }}>
-              <label style={S.label}>Paste Your Outline or Content</label>
-              <textarea style={{ ...S.textarea, minHeight: 150 }} value={customOutline} onChange={e => setCustomOutline(e.target.value)}
-                placeholder="Paste course outline, module descriptions, key topics, or any content to base the exam on..." />
-            </div>
-          )}
-
-          {mode === "pdf" && (
-            <div style={{ marginBottom: 16 }}>
-              <input ref={pdfFileRef} type="file" accept=".pdf" style={{ display: "none" }}
-                onChange={e => e.target.files?.[0] && handlePdfUpload(e.target.files[0])} />
-              <div onClick={() => pdfFileRef.current?.click()}
-                style={{ border: `2px dashed ${C.border}`, borderRadius: 10, padding: 28, textAlign: "center", cursor: "pointer", background: C.bg }}>
-                <FileUp size={28} color={C.textLight} style={{ margin: "0 auto 8px", display: "block" }} />
-                <div style={{ fontWeight: 600, fontSize: 14, color: C.navy }}>Upload PDF Document</div>
-                <div style={{ fontSize: 12, color: C.textMuted }}>Click to browse · The AI will extract content and generate questions</div>
-              </div>
-            </div>
-          )}
-
-          {mode === "content" && courseData?.modules?.length > 0 && (
-            <div style={{ background: C.greenFaded, borderRadius: 10, padding: 14, marginBottom: 16, border: `1px solid ${C.green}22` }}>
-              <div style={{ fontWeight: 700, fontSize: 13, color: C.green }}>Course Loaded: {courseData.title}</div>
-              <div style={{ fontSize: 12, color: C.textMuted, marginTop: 2 }}>{courseData.modules.length} modules · {courseData.modules.reduce((s, m) => s + (m.blocks || []).length, 0)} blocks</div>
-            </div>
-          )}
-
-          {mode !== "pdf" && (
-            <button style={{ ...S.btnPrimary, background: C.burgundy, opacity: generating ? 0.6 : 1 }}
-              onClick={() => generateExam()} disabled={generating}>
-              {generating ? <><Loader2 size={16} style={{ animation: "spin 1s linear infinite" }} /> Generating...</> : <><Wand2 size={16} /> Generate {questionCount} Exam Questions</>}
-            </button>
-          )}
-
-          {error && (
-            <div style={{ marginTop: 12, padding: "10px 14px", background: C.dangerFaded, borderRadius: 8, color: C.danger, fontSize: 13 }}>
-              ⚠ {error}
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Generated Questions Preview */}
-      {generated && generated.length > 0 && (
-        <div style={S.card}>
-          <div style={S.cardHeader}>
-            <span style={{ fontWeight: 700, fontSize: 15, color: C.navy }}>Generated Exam — {generated.length} Questions</span>
-            <div style={{ display: "flex", gap: 8 }}>
-              <button style={S.btnSecondary} onClick={addToAssessment}>
-                <Save size={14} /> Save to Assessment
-              </button>
-              <button style={S.btnPrimary} onClick={addAsBlocks}>
-                <Plus size={14} /> Add as Exam Module
-              </button>
-            </div>
-          </div>
-          <div style={S.cardBody}>
-            {generated.map((q, i) => (
-              <div key={i} style={{ padding: "14px 0", borderBottom: i < generated.length - 1 ? `1px solid ${C.borderLight}` : "none" }}>
-                <div style={{ display: "flex", gap: 10, marginBottom: 8 }}>
-                  <span style={{ width: 28, height: 28, borderRadius: "50%", background: C.burgundyFaded, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, color: C.burgundy, flexShrink: 0 }}>{i + 1}</span>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontWeight: 600, fontSize: 14, color: C.navy, marginBottom: 6 }}>{q.question}</div>
-                    {q.options && q.options.map((opt, oi) => {
-                      const isCorrect = Array.isArray(q.correctAnswer) ? q.correctAnswer.includes(oi) : oi === q.correctAnswer;
-                      return (
-                        <div key={oi} style={{ display: "flex", alignItems: "center", gap: 8, padding: "4px 8px", marginBottom: 2, borderRadius: 6, background: isCorrect ? C.greenFaded : "transparent" }}>
-                          <span style={{ fontSize: 12, color: isCorrect ? C.green : C.textMuted }}>{isCorrect ? "✓" : "○"}</span>
-                          <span style={{ fontSize: 13, color: isCorrect ? C.green : C.text, fontWeight: isCorrect ? 600 : 400 }}>{opt}</span>
-                        </div>
-                      );
-                    })}
-                    {q.explanation && (
-                      <div style={{ marginTop: 6, fontSize: 12, color: C.textMuted, background: C.goldFaded, padding: "6px 10px", borderRadius: 6 }}>
-                        💡 {q.explanation}
-                      </div>
-                    )}
-                  </div>
-                  <span style={S.badge(q.type === "multiple_select" ? C.burgundyLight : q.type === "true_false" ? C.navy : C.green)}>{q.type?.replace("_", " ")}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-
-// ═══════════════════════════════════════════════════════════
-// REFERENCES MANAGER
-// ═══════════════════════════════════════════════════════════
-function ReferencesManager({ courseData, setCourseData }) {
-  const [generating, setGenerating] = useState(false);
-  const [error, setError] = useState(null);
-  const [refs, setRefs] = useState(courseData?.references || []);
-  const [newRef, setNewRef] = useState("");
-  const [refCount, setRefCount] = useState(15);
-
-  const API_BASE = import.meta.env.VITE_API_URL || "https://api.counselorready.com/api";
-
-  useEffect(() => {
-    if (courseData?.references && Array.isArray(courseData.references)) {
-      setRefs(courseData.references);
-    }
-  }, [courseData?.references]);
-
-  const saveRefs = (updated) => {
-    setRefs(updated);
-    if (courseData) {
-      setCourseData({ ...courseData, references: updated });
-    }
-  };
-
-  const generateReferences = async () => {
-    setGenerating(true);
-    setError(null);
-
-    const token = localStorage.getItem("token");
-
-    // Build content summary from course
-    let contentSummary = courseData?.title || "Mental health counseling course";
-    if (courseData?.modules?.length) {
-      contentSummary += "\n\nModules:\n" + courseData.modules.map(m =>
-        `- ${m.title}\n` + (m.blocks || []).filter(b => b.type === "text").map(b => (b.content || "").replace(/<[^>]*>/g, " ").substring(0, 500)).join("\n")
-      ).join("\n");
-    }
-    if (courseData?.objectives?.length) {
-      contentSummary += "\n\nObjectives:\n" + courseData.objectives.map(o => `- ${o}`).join("\n");
-    }
-
-    const prompt = `You are an expert academic reference generator for continuing education courses for mental health professionals.
-
-Based on the following course content, generate exactly ${refCount} realistic, properly formatted APA 7th Edition references that would be appropriate citations for this course material.
-
-Course Content:
-${contentSummary.substring(0, 4000)}
-
-Requirements:
-- ALL references must be in proper APA 7th Edition format
-- Include a mix of: peer-reviewed journal articles, books, book chapters, and official guidelines
-- References should span recent years (2018-2025)
-- Include DOIs where applicable (format: https://doi.org/10.xxxx/xxxxx)
-- Include references to ACA Code of Ethics, DSM-5-TR, and other standard clinical references where relevant
-- References should be directly relevant to the course content
-- Authors should be realistic (use well-known researchers in the field where appropriate)
-
-Return ONLY a JSON array of strings, each string being one complete APA reference. No other text.
-Example: ["Smith, J. A., & Jones, B. C. (2022). Title of article. Journal Name, 45(2), 123-145. https://doi.org/10.1234/example"]`;
-
-    try {
-      const res = await fetch(`${API_BASE}/admin/quiz/generate`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
-        body: JSON.stringify({ mode: "outline", outline: prompt, questionCount: refCount }),
-      });
-
-      // The quiz endpoint won't return refs in the right format, so let's try course/generate with a custom approach
-      // Actually, let's call the anthropic API directly through a simpler endpoint
-      // For now, use the outline mode of quiz/generate but parse differently
-
-      // Better approach: use fetch to call a simple completion
-      const res2 = await fetch(`${API_BASE}/admin/quiz/generate`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
-        body: JSON.stringify({
-          mode: "content",
-          content: prompt,
-          questionCount: 1,
-        }),
-      });
-
-      // Since quiz endpoint returns questions format, let's just generate via a different approach
-      // We'll make the references inline by generating them client-side via the course content
-    } catch (e) {
-      // fallback
-    }
-
-    // Use a direct approach - call the course generate endpoint with a reference-specific prompt
-    try {
-      const refRes = await fetch(`${API_BASE}/admin/quiz/generate`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
-        body: JSON.stringify({
-          mode: "outline",
-          outline: `Generate ${refCount} APA 7th Edition references for a continuing education course titled "${courseData?.title || 'Mental Health Counseling'}".
-
-Course topics include: ${(courseData?.modules || []).map(m => m.title).join(", ")}
-
-Category: ${courseData?.category || "Clinical Practice"}
-
-Return as quiz questions where each "question" field contains one complete APA reference. Use "multiple_choice" type with the reference as the question and ["Keep", "Remove", "Edit", "Move"] as options with correctAnswer 0.`,
-          questionCount: refCount,
-        }),
-      });
-
-      const refData = await refRes.json();
-      if (refData.success && refData.questions) {
-        const generated = refData.questions.map(q => q.question);
-        saveRefs([...refs, ...generated]);
-      } else {
-        throw new Error(refData.error || "Failed to generate");
-      }
-    } catch (err) {
-      // Fallback: generate template references based on course topic
-      const topic = (courseData?.title || "Mental Health Counseling").toLowerCase();
-      const fallbackRefs = [
-        `American Counseling Association. (2014). ACA code of ethics. https://www.counseling.org/resources/aca-code-of-ethics.pdf`,
-        `American Psychiatric Association. (2022). Diagnostic and statistical manual of mental disorders (5th ed., text rev.). American Psychiatric Association Publishing. https://doi.org/10.1176/appi.books.9780890425787`,
-        `Sue, D. W., Sue, D., Neville, H. A., & Smith, L. (2022). Counseling the culturally diverse: Theory and practice (9th ed.). Wiley.`,
-        `Corey, G. (2023). Theory and practice of counseling and psychotherapy (11th ed.). Cengage Learning.`,
-        `Neukrug, E. S. (2024). The world of the counselor: An introduction to the counseling profession (6th ed.). Cengage Learning.`,
-        `Gladding, S. T. (2023). Counseling: A comprehensive profession (9th ed.). Pearson.`,
-        `National Board for Certified Counselors. (2023). NBCC code of ethics. https://www.nbcc.org/ethics`,
-        `Hays, P. A. (2022). Addressing cultural complexities in counseling and clinical practice (4th ed.). American Psychological Association. https://doi.org/10.1037/0000266-000`,
-        `Ratts, M. J., Singh, A. A., Nassar-McMillan, S., Butler, S. K., & McCullough, J. R. (2016). Multicultural and social justice counseling competencies: Guidelines for the counseling profession. Journal of Multicultural Counseling and Development, 44(1), 28-48. https://doi.org/10.1002/jmcd.12035`,
-        `Substance Abuse and Mental Health Services Administration. (2023). Key substance use and mental health indicators in the United States. SAMHSA.`,
-        `World Health Organization. (2022). ICD-11: International classification of diseases (11th revision). WHO.`,
-        `Beck, J. S. (2021). Cognitive behavior therapy: Basics and beyond (3rd ed.). Guilford Press.`,
-        `Linehan, M. M. (2015). DBT skills training manual (2nd ed.). Guilford Press.`,
-        `van der Kolk, B. A. (2014). The body keeps the score: Brain, mind, and body in the healing of trauma. Viking.`,
-        `Norcross, J. C., & Lambert, M. J. (2018). Psychotherapy relationships that work III. Psychotherapy, 55(4), 303-315. https://doi.org/10.1037/pst0000193`,
-      ];
-      saveRefs([...refs, ...fallbackRefs.slice(0, refCount)]);
-      setError("AI generation unavailable — loaded standard clinical references. Edit as needed.");
-    } finally {
-      setGenerating(false);
-    }
-  };
-
-  const addManualRef = () => {
-    if (!newRef.trim()) return;
-    saveRefs([...refs, newRef.trim()]);
-    setNewRef("");
-  };
-
-  const removeRef = (i) => {
-    const updated = [...refs];
-    updated.splice(i, 1);
-    saveRefs(updated);
-  };
-
-  const editRef = (i, val) => {
-    const updated = [...refs];
-    updated[i] = val;
-    saveRefs(updated);
-  };
-
-  const addAsModule = () => {
-    if (!refs.length || !courseData) return;
-    const modules = [...(courseData.modules || [])];
-    const refHtml = `<h2>References</h2>\n` + refs.map(r => `<p style="padding-left:36px;text-indent:-36px;">${r}</p>`).join("\n");
-
-    // Check if a references module already exists
-    const existingIdx = modules.findIndex(m => m.title?.toLowerCase().includes("reference"));
-    if (existingIdx >= 0) {
-      modules[existingIdx] = {
-        ...modules[existingIdx],
-        blocks: [
-          { id: uid(), type: "sectionDivider", title: "References", sectionNumber: modules[existingIdx].number, subtitle: `${refs.length} APA 7th Edition Citations` },
-          { id: uid(), type: "text", content: refHtml },
-        ],
-      };
-    } else {
-      modules.push({
-        id: uid(), number: modules.length + 1, title: "References",
-        blocks: [
-          { id: uid(), type: "sectionDivider", title: "References", sectionNumber: modules.length + 1, subtitle: `${refs.length} APA 7th Edition Citations` },
-          { id: uid(), type: "text", content: refHtml },
-        ],
-        knowledgeChecks: 0,
-      });
-    }
-    setCourseData({ ...courseData, modules, references: refs });
-    alert(`References module ${existingIdx >= 0 ? "updated" : "added"} with ${refs.length} citations!`);
-  };
-
-  const sortRefs = () => {
-    const sorted = [...refs].sort((a, b) => {
-      const authorA = a.replace(/^[^A-Za-z]*/, "").toLowerCase();
-      const authorB = b.replace(/^[^A-Za-z]*/, "").toLowerCase();
-      return authorA.localeCompare(authorB);
-    });
-    saveRefs(sorted);
-  };
-
-  return (
-    <div>
-      <div style={S.card}>
-        <div style={S.cardHeader}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <BookOpen size={20} color={C.navy} />
-            <span style={{ fontWeight: 700, fontSize: 16 }}>References Manager</span>
-          </div>
-          <span style={S.badge(C.navy)}>APA 7th Edition</span>
-        </div>
-        <div style={S.cardBody}>
-          <p style={{ color: C.textMuted, fontSize: 14, marginBottom: 20, lineHeight: 1.6 }}>
-            Generate APA 7th Edition references based on your course content, or add them manually. ACEP courses require a comprehensive reference list supporting all cited research and clinical frameworks.
-          </p>
-
-          {/* AI Generate */}
-          <div style={{ display: "flex", gap: 12, alignItems: "end", marginBottom: 20 }}>
-            <div style={{ flex: 1 }}>
-              <label style={S.label}>Number of References</label>
-              <select style={S.input} value={refCount} onChange={e => setRefCount(Number(e.target.value))}>
-                {[10, 15, 20, 25, 30].map(n => <option key={n} value={n}>{n} references</option>)}
-              </select>
-            </div>
-            <button style={{ ...S.btnPrimary, background: C.navy, opacity: generating ? 0.6 : 1, whiteSpace: "nowrap" }}
-              onClick={generateReferences} disabled={generating}>
-              {generating ? <><Loader2 size={16} style={{ animation: "spin 1s linear infinite" }} /> Generating...</> : <><Wand2 size={16} /> AI Generate References</>}
-            </button>
-          </div>
-
-          {error && (
-            <div style={{ marginBottom: 16, padding: "10px 14px", background: C.goldFaded, borderRadius: 8, color: C.navy, fontSize: 13 }}>
-              ℹ {error}
-            </div>
-          )}
-
-          {/* Manual Add */}
-          <div style={{ marginBottom: 20 }}>
-            <label style={S.label}>Add Reference Manually</label>
-            <div style={{ display: "flex", gap: 8 }}>
-              <textarea style={{ ...S.textarea, minHeight: 60, flex: 1 }} value={newRef} onChange={e => setNewRef(e.target.value)}
-                placeholder="Paste an APA 7th Edition reference here..." />
-              <button style={{ ...S.btnSecondary, alignSelf: "end" }} onClick={addManualRef}>
-                <Plus size={14} /> Add
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* References List */}
-      {refs.length > 0 && (
-        <div style={S.card}>
-          <div style={S.cardHeader}>
-            <span style={{ fontWeight: 700, fontSize: 15, color: C.navy }}>References ({refs.length})</span>
-            <div style={{ display: "flex", gap: 8 }}>
-              <button style={S.btnSecondary} onClick={sortRefs}>
-                A→Z Sort
-              </button>
-              <button style={S.btnPrimary} onClick={addAsModule}>
-                <Plus size={14} /> Add as Course Module
-              </button>
-            </div>
-          </div>
-          <div style={{ padding: "0 20px" }}>
-            {refs.map((ref, i) => (
-              <div key={i} style={{ display: "flex", gap: 10, alignItems: "start", padding: "12px 0", borderBottom: i < refs.length - 1 ? `1px solid ${C.borderLight}` : "none" }}>
-                <span style={{ fontSize: 11, color: C.textLight, fontWeight: 600, minWidth: 24, paddingTop: 2 }}>{i + 1}.</span>
+          <div style={{ padding: "12px 20px" }}>
+            {BLOCK_TYPES.filter(b => b.category === cat.key).map(bt => (
+              <div key={bt.type} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 0", borderBottom: `1px solid ${C.borderLight}` }}>
+                <span style={{ width: 32, height: 32, borderRadius: 8, background: bt.color + "14", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16 }}>{bt.icon}</span>
                 <div style={{ flex: 1 }}>
-                  <div contentEditable suppressContentEditableWarning
-                    onBlur={e => editRef(i, e.currentTarget.textContent)}
-                    style={{ fontSize: 13, lineHeight: 1.6, color: C.text, paddingLeft: 36, textIndent: -36, outline: "none", cursor: "text", borderRadius: 4, padding: "4px 4px 4px 36px" }}>
-                    {ref}
-                  </div>
+                  <div style={{ fontWeight: 600, fontSize: 14, color: C.navy }}>{bt.label}</div>
+                  <div style={{ fontSize: 11, color: C.textMuted }}>{completionMap[bt.type]}</div>
                 </div>
-                <button onClick={() => removeRef(i)}
-                  style={{ background: "none", border: "none", cursor: "pointer", padding: 4, opacity: 0.5, flexShrink: 0 }}
-                  onMouseEnter={e => e.target.style.opacity = 1}
-                  onMouseLeave={e => e.target.style.opacity = 0.5}>
-                  <Trash2 size={14} color={C.danger} />
-                </button>
+                <span style={{ fontFamily: "monospace", fontSize: 11, color: bt.color, background: bt.color + "0A", padding: "2px 8px", borderRadius: 4 }}>{bt.type}</span>
               </div>
             ))}
           </div>
         </div>
-      )}
+      ))}
     </div>
-  );
-}
-
-
-
-
-// ═══════════════════════════════════════════════════════════
-// NARRATION TAB — TTS audio generation for course content
-// ═══════════════════════════════════════════════════════════
-function NarrationTab({ courseData, setCourseData }) {
-  if (!courseData?.modules?.length) {
-    return (
-      <div style={{ ...S.card, textAlign: "center", padding: 40 }}>
-        <p style={{ color: C.textMuted, fontSize: 14 }}>
-          No course content yet. Generate or import course content first, then come back to add narration.
-        </p>
-      </div>
-    );
-  }
-
-  return (
-    <NarrationPanel
-      courseId={courseData._id || courseData.id || null}
-      modules={courseData.modules}
-      onNarrationComplete={({ modules }) => {
-        setCourseData(prev => ({ ...prev, modules }));
-      }}
-    />
   );
 }
