@@ -41,6 +41,7 @@ import boardAlertsRoutes from './routes/boardAlerts.js';
 import cePlannerRoutes from './routes/cePlanner.js';
 import imageUploadRoutes from './routes/imageUpload.js';
 import adminStatsRoutes from './routes/adminStats.js';
+import toolsRoutes from './routes/tools.js';
 
 // Import services
 import { initializeScheduler } from './services/notificationScheduler.js';
@@ -161,6 +162,7 @@ app.use('/api/board-alerts', boardAlertsRoutes);
 app.use('/api/ce-planner', cePlannerRoutes);
 app.use('/api/images', imageUploadRoutes);
 app.use('/api/admin/stats', adminStatsRoutes);
+app.use('/api/tools', toolsRoutes);
 
 // Serve static files from templates directory (for certificates)
 app.use('/templates', express.static(path.join(__dirname, 'templates')));
@@ -190,7 +192,8 @@ app.use((req, res, next) => {
       '/api/referrals/*',
       '/api/board-alerts/*',
       '/api/ce-planner/*',
-      '/api/scan/*'
+      '/api/scan/*',
+      '/api/tools/*'
     ]
   });
 });
