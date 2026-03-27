@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+  <title>Free CE Tools for Counselors â€” CounselorReady</title>
+  <meta name="description" content="Free continuing education tools for licensed counselors: CE requirements by state, renewal calculator, CE hours tracker, and more.">
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            burgundy: { 50:'#fdf5f7', 100:'#fae8ec', 200:'#f3ccd5', 700:'#8b2542', 800:'#6b1d34', 900:'#4a1524' },
+            hunter:   { 50:'#f2f7f4', 100:'#e3efe8', 400:'#6a9a78', 500:'#4a7c59', 600:'#3d6849', 700:'#34503d' },
+            gold:     { 300:'#e8c97d', 400:'#d4a855', 500:'#b8922e' },
+            navy:     { 600:'#2f5272', 700:'#284157', 800:'#1b3a5c' },
+          }
+        }
+      }
+    }
+  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Lato:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: 'Lato', system-ui, sans-serif; background: #F8F7F4; }
+    .font-display { font-family: 'Cormorant Garamond', Georgia, serif; }
+
+    /* Navbar */
+    .navbar { background: #fff; border-bottom: 1px solid #eae8e3; position: sticky; top: 0; z-index: 50; }
+
+    /* Tool cards */
+    .tool-card { background: #fff; border: 1px solid #eae8e3; border-radius: 16px; overflow: hidden; transition: box-shadow .2s, transform .2s; }
+    .tool-card:hover { box-shadow: 0 8px 32px rgba(107,29,52,.10); transform: translateY(-2px); }
+    .tool-card-header { padding: 20px 24px 16px; border-bottom: 1px solid #f0ede8; }
+    .tool-card-body { padding: 24px; }
+
+    /* Tabs */
+    .tab-nav { display: flex; gap: 4px; background: #f2f7f4; padding: 4px; border-radius: 10px; }
+    .tab-btn { flex: 1; padding: 8px 12px; border-radius: 7px; font-size: 13px; font-weight: 500; color: #5a6b5f; border: none; background: transparent; cursor: pointer; transition: all .15s; }
+    .tab-btn.active { background: #fff; color: #6b1d34; font-weight: 600; box-shadow: 0 1px 4px rgba(0,0,0,.08); }
+
+    /* Progress bars */
+    .prog-track { background: #eae8e3; border-radius: 99px; overflow: hidden; height: 8px; }
+    .prog-fill { height: 100%; border-radius: 99px; transition: width .6s cubic-bezier(.4,0,.2,1); }
+
+    /* Select & input */
+    select, input[type="number"], input[type="date"], input[type="text"] {
+      border: 1px solid #ddd9d2; border-radius: 8px; padding: 9px 12px; font-size: 14px;
+      font-family: inherit; color: #2d2d2d; background: #fff; width: 100%;
+    }
+    select:focus, input:focus { outline: 2px solid #6b1d34; outline-offset: 1px; border-color: #6b1d34; }
+
+    /* Badge */
+    .badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 99px; font-size: 11px; font-weight: 700; letter-spacing: .03em; }
+
+    /* CTA banner */
+    .cta-banner { background: linear-gradient(135deg, #4a1524 0%, #6b1d34 50%, #4a7c59 100%); }
+
+    /* Tooltip */
+    [data-tip] { position: relative; cursor: help; }
+    [data-tip]:hover::after { content: attr(data-tip); position: absolute; bottom: calc(100% + 6px); left: 50%; transform: translateX(-50%); background: #1a1a1a; color: #fff; font-size: 11px; padding: 5px 9px; border-radius: 6px; white-space: nowrap; z-index: 99; pointer-events: none; }
+
+    /* Checklist */
+    .check-item { display: flex; align-items: flex-start; gap: 10px; padding: 10px 0; border-bottom: 1px solid #f0ede8; }
+    .check-item:last-child { border-bottom: none; }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-track { background: #f0ede8; } ::-webkit-scrollbar-thumb { background: #c8c0b8; border-radius: 3px; }
+
+    @keyframes fadeUp { from { opacity:0; transform: translateY(16px); } to { opacity:1; transform:none; } }
+    .fade-up { animation: fadeUp .4s ease both; }
+
+    /* Result card */
+    .result-card { background: #fdf5f7; border: 1px solid #f3ccd5; border-radius: 12px; padding: 16px; }
+    .result-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid #f3ccd5; font-size: 13px; }
+    .result-row:last-child { border-bottom: none; }
+
+    /* Share button */
+    .share-btn { transition: all .15s; }
+    .share-btn.copied { background: #4a7c59 !important; color: #fff !important; }
+  </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar px-6 py-3">
+  <div class="max-w-6xl mx-auto flex items-center justify-between">
+    <a href="/index.html" class="flex items-center gap-2.5 no-underline">
+      <div class="w-9 h-9 rounded-xl flex items-center justify-center shadow-sm" style="background: linear-gradient(135deg,#8b2542,#6b1d34)">
+        <span class="font-display font-bold" style="position:relative;display:inline-block;width:20px;height:20px">
+          <span style="color:#D4A855;position:absolute;top:-2px;left:0;font-size:15px">C</span>
+          <span style="color:#4A7C59;position:absolute;top:4px;left:5px;font-size:13px">R</span>
+        </span>
+      </div>
+      <span class="font-display font-semibold text-lg"><span class="text-burgundy-800">Counselor</span><span class="text-hunter-500">Ready</span></span>
+    </a>
+    <div class="hidden md:flex items-center gap-6 text-sm">
+      <a href="/courses.html" class="text-gray-600 hover:text-burgundy-800 transition-colors">CE Courses</a>
+      <a href="/free-tools.html" class="text-burgundy-800 font-semibold border-b-2 border-burgundy-700 pb-0.5">Free Tools</a>
+      <a href="/landing.html#features" class="text-gray-600 hover:text-burgundy-800 transition-colors">About</a>
+    </div>
+    <div class="flex items-center gap-3">
+      <a href="/login.html" class="text-sm text-gray-600 hover:text-burgundy-800 transition-colors">Sign In</a>
+      <a href="/register.html" class="px-4 py-2 bg-burgundy-800 text-white text-sm font-medium rounded-lg hover:bg-burgundy-900 transition-colors">Free Trial</a>
+    </div>
+  </div>
+</nav>
+
+<!-- Hero -->
+<section class="max-w-6xl mx-auto px-6 py-12 text-center">
+  <span class="badge" style="background:#fae8ec;color:#6b1d34;">Free â€” No Account Required</span>
+  <h1 class="font-display text-4xl md:text-5xl font-bold text-burgundy-800 mt-4 mb-3 leading-tight">
+    CE Tools for<br>
+    <span class="text-hunter-500">Licensed Counselors</span>
+  </h1>
+  <p class="text-gray-500 text-lg max-w-xl mx-auto">Look up your state's CE requirements, calculate renewal deadlines, and plan your hours â€” free, no login needed.</p>
+</section>
+
+<!-- Tool Grid -->
+<main class="max-w-6xl mx-auto px-6 pb-16 space-y-8">
+
+  <!-- â”€â”€ TOOL 1: CE Requirements Lookup â”€â”€ -->
+  <div class="tool-card fade-up" style="animation-delay:.05s">
+    <div class="tool-card-header flex items-start justify-between gap-4">
+      <div>
+        <div class="flex items-center gap-2 mb-1">
+          <span class="text-xl">ðŸ”</span>
+          <h2 class="font-display text-xl font-bold text-burgundy-800">CE Requirements Lookup</h2>
+        </div>
+        <p class="text-sm text-gray-500">Select your state and credential type to see exactly what's required for renewal.</p>
+      </div>
+      <span class="badge flex-shrink-0" style="background:#e3efe8;color:#34503d;">Most Popular</span>
+    </div>
+    <div class="tool-card-body">
+      <div class="grid md:grid-cols-3 gap-4 mb-6">
+        <div>
+          <label class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">State</label>
+          <select id="req-state" onchange="lookupRequirements()">
+            <option value="">Select stateâ€¦</option>
+            <option value="GA">Georgia</option>
+            <option value="TX">Texas</option>
+            <option value="FL">Florida</option>
+            <option value="CA">California</option>
+            <option value="NY">New York</option>
+            <option value="IL">Illinois</option>
+            <option value="NC">North Carolina</option>
+            <option value="VA">Virginia</option>
+            <option value="OH">Ohio</option>
+            <option value="PA">Pennsylvania</option>
+            <option value="ID">Idaho</option>
+            <option value="CO">Colorado</option>
+            <option value="WA">Washington</option>
+            <option value="AZ">Arizona</option>
+            <option value="TN">Tennessee</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Credential</label>
+          <select id="req-cred" onchange="lookupRequirements()">
+            <option value="">Select credentialâ€¦</option>
+            <option value="LPC">LPC / LPCC</option>
+            <option value="LCSW">LCSW</option>
+            <option value="LMFT">LMFT</option>
+            <option value="NCC">NCC (National)</option>
+            <option value="BCTMH">BC-TMH</option>
+            <option value="CPCS">CPCS</option>
+          </select>
+        </div>
+        <div class="flex items-end">
+          <button onclick="lookupRequirements()" class="w-full py-2.5 bg-burgundy-800 text-white rounded-lg font-semibold text-sm hover:bg-burgundy-900 transition-colors">
+            Look Up Requirements
+          </button>
+        </div>
+      </div>
+      <div id="req-result" class="hidden fade-up"></div>
+    </div>
+  </div>
+
+  <!-- â”€â”€ TOOL 2: Renewal Deadline Calculator â”€â”€ -->
+  <div class="tool-card fade-up" style="animation-delay:.10s">
+    <div class="tool-card-header">
+      <div class="flex items-center gap-2 mb-1">
+        <span class="text-xl">ðŸ“…</span>
+        <h2 class="font-display text-xl font-bold text-burgundy-800">Renewal Deadline Calculator</h2>
+      </div>
+      <p class="text-sm text-gray-500">Enter your license expiration date to get a personalized countdown and CE planning timeline.</p>
+    </div>
+    <div class="tool-card-body">
+      <div class="grid md:grid-cols-2 gap-6">
+        <div class="space-y-4">
+          <div>
+            <label class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">License Expiration Date</label>
+            <input type="date" id="exp-date" onchange="calcDeadline()">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Total CE Hours Required</label>
+            <input type="number" id="ce-total" placeholder="e.g. 35" min="1" max="200" onchange="calcDeadline()">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">CE Hours Completed So Far</label>
+            <input type="number" id="ce-done" placeholder="e.g. 12" min="0" onchange="calcDeadline()">
+          </div>
+        </div>
+        <div id="deadline-result" class="flex items-center justify-center">
+          <div class="text-center text-gray-400 text-sm">
+            <div class="text-4xl mb-2">â³</div>
+            Fill in your dates to see your timeline
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- â”€â”€ TOOL 3: CE Hours Planner â”€â”€ -->
+  <div class="tool-card fade-up" style="animation-delay:.15s">
+    <div class="tool-card-header flex items-start justify-between gap-4">
+      <div>
+        <div class="flex items-center gap-2 mb-1">
+          <span class="text-xl">ðŸ“Š</span>
+          <h2 class="font-display text-xl font-bold text-burgundy-800">CE Hours Planner</h2>
+        </div>
+        <p class="text-sm text-gray-500">Track hours across categories and see exactly what's still needed.</p>
+      </div>
+    </div>
+    <div class="tool-card-body">
+      <!-- Category tabs -->
+      <div id="planner-cred-tabs" class="tab-nav mb-6 max-w-lg">
+        <button class="tab-btn active" onclick="setPlannerCred('LPC',this)">LPC</button>
+        <button class="tab-btn" onclick="setPlannerCred('NCC',this)">NCC</button>
+        <button class="tab-btn" onclick="setPlannerCred('BCTMH',this)">BC-TMH</button>
+        <button class="tab-btn" onclick="setPlannerCred('CPCS',this)">CPCS</button>
+      </div>
+
+      <div id="planner-body"></div>
+
+      <div class="mt-6 pt-5 border-t border-gray-100">
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="font-semibold text-gray-700 text-sm">Log a CE Course</h3>
+          <button onclick="resetPlanner()" class="text-xs text-gray-400 hover:text-gray-600">Reset all</button>
+        </div>
+        <div class="grid md:grid-cols-4 gap-3">
+          <input type="text" id="p-title" placeholder="Course title" class="md:col-span-2">
+          <input type="number" id="p-hours" placeholder="Hours" min=".5" step=".5">
+          <select id="p-cat">
+            <option value="ethics">Ethics</option>
+            <option value="core" selected>Core / General</option>
+            <option value="supervision">Supervision</option>
+            <option value="telehealth">Telehealth</option>
+            <option value="cultural">Cultural Competence</option>
+            <option value="crisis">Crisis / Suicide</option>
+          </select>
+        </div>
+        <button onclick="logCourse()" class="mt-3 px-5 py-2.5 bg-hunter-500 text-white rounded-lg text-sm font-semibold hover:bg-hunter-600 transition-colors">
+          + Add Course
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- â”€â”€ TOOL 4: Ethics CE Requirement Checker â”€â”€ -->
+  <div class="tool-card fade-up" style="animation-delay:.20s">
+    <div class="tool-card-header">
+      <div class="flex items-center gap-2 mb-1">
+        <span class="text-xl">âš–ï¸</span>
+        <h2 class="font-display text-xl font-bold text-burgundy-800">Ethics CE Requirement Checker</h2>
+      </div>
+      <p class="text-sm text-gray-500">Many states have specific ethics CE mandates. Check yours here.</p>
+    </div>
+    <div class="tool-card-body">
+      <div class="grid md:grid-cols-2 gap-4 mb-6">
+        <div>
+          <label class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Your State</label>
+          <select id="eth-state" onchange="checkEthics()">
+            <option value="">Select stateâ€¦</option>
+            <option value="GA">Georgia</option>
+            <option value="TX">Texas</option>
+            <option value="FL">Florida</option>
+            <option value="CA">California</option>
+            <option value="NY">New York</option>
+            <option value="NC">North Carolina</option>
+            <option value="VA">Virginia</option>
+            <option value="ID">Idaho</option>
+            <option value="CO">Colorado</option>
+            <option value="TN">Tennessee</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Credential</label>
+          <select id="eth-cred" onchange="checkEthics()">
+            <option value="">Select credentialâ€¦</option>
+            <option value="LPC">LPC / LPCC</option>
+            <option value="LCSW">LCSW</option>
+            <option value="LMFT">LMFT</option>
+          </select>
+        </div>
+      </div>
+      <div id="eth-result" class="hidden fade-up"></div>
+    </div>
+  </div>
+
+  <!-- â”€â”€ TOOL 5: CE Compliance Checklist â”€â”€ -->
+  <div class="tool-card fade-up" style="animation-delay:.25s">
+    <div class="tool-card-header">
+      <div class="flex items-center gap-2 mb-1">
+        <span class="text-xl">âœ…</span>
+        <h2 class="font-display text-xl font-bold text-burgundy-800">Renewal Readiness Checklist</h2>
+      </div>
+      <p class="text-sm text-gray-500">A quick audit checklist before you submit your renewal application.</p>
+    </div>
+    <div class="tool-card-body">
+      <div id="checklist-body" class="space-y-0 mb-4"></div>
+      <div class="flex items-center justify-between">
+        <div id="checklist-score" class="text-sm text-gray-600"></div>
+        <button onclick="shareChecklist()" class="share-btn flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-600 rounded-lg text-sm hover:bg-gray-50">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
+          Share Checklist
+        </button>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- CTA Banner -->
+<section class="cta-banner py-16 px-6 text-center">
+  <div class="max-w-2xl mx-auto">
+    <div class="font-display text-3xl md:text-4xl font-bold text-white mb-3">
+      Want these tools to remember your data?
+    </div>
+    <p class="text-white/75 text-lg mb-8">Create a free account to track CE hours across all credentials, get renewal reminders, and store certificates.</p>
+    <div class="flex flex-col sm:flex-row gap-4 justify-center">
+      <a href="/register.html" class="px-8 py-3.5 bg-white text-burgundy-800 font-bold rounded-xl hover:bg-gray-50 transition-colors shadow-lg text-sm">
+        Start 7-Day Free Trial â†’
+      </a>
+      <a href="/courses.html" class="px-8 py-3.5 border border-white/40 text-white font-semibold rounded-xl hover:bg-white/10 transition-colors text-sm">
+        Browse CE Courses
+      </a>
+    </div>
+    <p class="text-white/50 text-xs mt-4">No credit card required Â· NBCC ACEP Provider #7760</p>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer class="bg-gray-900 text-gray-400 py-8 px-6 text-center text-sm">
+  <p>Â© 2026 GAITP LLC Â· <span class="text-burgundy-400">Counselor</span><span class="text-hunter-400">Ready</span>â„¢ Â· NBCC ACEP #7760</p>
+  <div class="flex justify-center gap-6 mt-3 text-xs">
+    <a href="/privacy.html" class="hover:text-white transition-colors">Privacy</a>
+    <a href="/terms.html" class="hover:text-white transition-colors">Terms</a>
+    <a href="/courses.html" class="hover:text-white transition-colors">CE Courses</a>
+    <a href="/login.html" class="hover:text-white transition-colors">Sign In</a>
+  </div>
+</footer>
+
+<script>
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// DATA
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+const CE_DATA = {
+  GA: {
+    LPC:  { total:35, cycle:24, ethics:3, ethicsSync:true,  ethicsNote:'3 hrs ethics required; must be synchronous', core:15, related:15, telehealth:0, supervision:0, board:'Georgia Composite Board of PC, SW & MFT', renewalMonth:'September', notes:'Must include 1 hr suicide prevention training' },
+    LCSW: { total:35, cycle:24, ethics:3, ethicsSync:true,  core:15, related:15, board:'Georgia Composite Board', notes:'' },
+    LMFT: { total:35, cycle:24, ethics:3, ethicsSync:true,  core:15, related:15, board:'Georgia Composite Board', notes:'' },
+  },
+  TX: {
+    LPC:  { total:24, cycle:24, ethics:3, ethicsSync:false, core:21, related:0, board:'Texas State Board of Examiners of PC', renewalMonth:'October', notes:'LPC-Associates: 24 hrs with supervisor approval' },
+    LCSW: { total:30, cycle:24, ethics:3, ethicsSync:false, core:27, related:0, board:'Texas BHEC', notes:'' },
+    LMFT: { total:30, cycle:24, ethics:3, ethicsSync:false, core:27, related:0, board:'Texas BHEC', notes:'' },
+  },
+  FL: {
+    LPC:  { total:30, cycle:24, ethics:3, ethicsSync:false, core:27, related:0, board:'Florida Board of CSWE', renewalMonth:'March', notes:'2 hrs domestic violence required' },
+    LCSW: { total:30, cycle:24, ethics:3, ethicsSync:false, core:27, related:0, board:'Florida Board', notes:'' },
+    LMFT: { total:30, cycle:24, ethics:3, ethicsSync:false, core:27, related:0, board:'Florida Board', notes:'' },
+  },
+  CA: {
+    LPC:  { total:36, cycle:24, ethics:6, ethicsSync:false, core:30, related:0, board:'California Board of Behavioral Sciences', renewalMonth:'Birthday month', notes:'Must include aging/long-term care AND child abuse prevention' },
+    LCSW: { total:36, cycle:24, ethics:6, ethicsSync:false, core:30, related:0, board:'California BBS', notes:'' },
+    LMFT: { total:36, cycle:24, ethics:6, ethicsSync:false, core:30, related:0, board:'California BBS', notes:'' },
+  },
+  NY: {
+    LPC:  { total:36, cycle:36, ethics:3, ethicsSync:false, core:33, related:0, board:'New York State Education Department', renewalMonth:'Birthday month', notes:'3 yrs cycle; 3 hrs coursework in child abuse' },
+    LCSW: { total:36, cycle:36, ethics:3, ethicsSync:false, core:33, related:0, board:'NY SED', notes:'' },
+    LMFT: { total:36, cycle:36, ethics:3, ethicsSync:false, core:33, related:0, board:'NY SED', notes:'' },
+  },
+  NC: {
+    LPC:  { total:40, cycle:24, ethics:5, ethicsSync:false, core:35, related:0, board:'North Carolina Board of LPCS', renewalMonth:'June', notes:'' },
+    LCSW: { total:40, cycle:24, ethics:5, ethicsSync:false, core:35, related:0, board:'NCSWB', notes:'' },
+    LMFT: { total:40, cycle:24, ethics:5, ethicsSync:false, core:35, related:0, board:'NC Marriage & Family Therapy Board', notes:'' },
+  },
+  VA: {
+    LPC:  { total:40, cycle:24, ethics:3, ethicsSync:false, core:37, related:0, board:'Virginia Board of Counseling', renewalMonth:'June (odd years)', notes:'Licensed residents: 40 hrs; includes substance abuse awareness' },
+    LCSW: { total:30, cycle:24, ethics:3, ethicsSync:false, core:27, related:0, board:'Virginia Board of Social Work', notes:'' },
+  },
+  ID: {
+    LPC:  { total:40, cycle:24, ethics:2, ethicsSync:false, core:38, related:0, board:'Idaho Bureau of Occupational Licenses', renewalMonth:'August', notes:'' },
+  },
+  CO: {
+    LPC:  { total:40, cycle:24, ethics:3, ethicsSync:false, core:37, related:0, board:'Colorado DORA', renewalMonth:'Birthday month', notes:'' },
+  },
+  TN: {
+    LPC:  { total:40, cycle:24, ethics:5, ethicsSync:false, core:35, related:0, board:'Tennessee State Board of PC, MFT & Groups', renewalMonth:'December (odd years)', notes:'' },
+  },
+  IL: {
+    LPC:  { total:30, cycle:24, ethics:6, ethicsSync:false, core:24, related:0, board:'Illinois Department of Financial and Professional Regulation', renewalMonth:'September', notes:'6 hrs must be in sexual violence topics' },
+  },
+  OH: {
+    LPC:  { total:30, cycle:24, ethics:3, ethicsSync:false, core:27, related:0, board:'Ohio Counselor, Social Worker, and Marriage & Family Therapist Board', renewalMonth:'Birthday month', notes:'' },
+  },
+  PA: {
+    LPC:  { total:30, cycle:24, ethics:3, ethicsSync:false, core:27, related:0, board:'Pennsylvania State Board of Social Workers, Marriage & Family Therapists, and PC', renewalMonth:'November', notes:'' },
+  },
+  WA: {
+    LPC:  { total:36, cycle:24, ethics:6, ethicsSync:false, core:30, related:0, board:'Washington State Department of Health', renewalMonth:'Birthday month', notes:'6 hrs suicide assessment training every 6 years' },
+  },
+  AZ: {
+    LPC:  { total:24, cycle:24, ethics:3, ethicsSync:false, core:21, related:0, board:'Arizona Board of Behavioral Health Examiners', renewalMonth:'Birthday month', notes:'' },
+  },
+};
+
+const NCC_DATA = { total:100, cycle:60, ethics:6, core:94, board:'NBCC', notes:'100 hrs per 5-year cycle; includes 6 hrs ethics' };
+const BCTMH_DATA = { total:20, cycle:36, ethics:0, core:20, board:'NBCC', notes:'20 hrs telehealth-specific CE per 3-year cycle' };
+const CPCS_DATA  = { total:12, cycle:36, ethics:0, core:12, board:'NBCC (GA)', notes:'12 hrs supervision-focused CE per 3-year cycle' };
+
+const stateNames = { GA:'Georgia',TX:'Texas',FL:'Florida',CA:'California',NY:'New York',NC:'North Carolina',VA:'Virginia',ID:'Idaho',CO:'Colorado',TN:'Tennessee',IL:'Illinois',OH:'Ohio',PA:'Pennsylvania',WA:'Washington',AZ:'Arizona' };
+
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// TOOL 1: CE Requirements Lookup
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+function lookupRequirements() {
+  const state = document.getElementById('req-state').value;
+  const cred  = document.getElementById('req-cred').value;
+  const el    = document.getElementById('req-result');
+
+  let d = null;
+  if (cred === 'NCC')   d = NCC_DATA;
+  else if (cred === 'BCTMH') d = BCTMH_DATA;
+  else if (cred === 'CPCS')  d = CPCS_DATA;
+  else if (state && cred && CE_DATA[state]?.[cred]) d = CE_DATA[state][cred];
+
+  if (!d) { el.classList.add('hidden'); return; }
+
+  const stateName = cred === 'NCC' || cred === 'BCTMH' || cred === 'CPCS' ? 'National' : (stateNames[state] || state);
+  el.classList.remove('hidden');
+  el.innerHTML = `
+    <div class="result-card">
+      <div class="flex items-center justify-between mb-3">
+        <div>
+          <p class="font-bold text-burgundy-800 text-base">${stateName} ${cred}</p>
+          <p class="text-xs text-gray-500">${d.board || ''}</p>
+        </div>
+        <span class="badge" style="background:#fae8ec;color:#6b1d34;font-size:13px">${d.total} CE hrs / ${d.cycle} mos</span>
+      </div>
+      <div class="result-row"><span class="text-gray-600">Total CE Hours</span><span class="font-bold text-gray-800">${d.total} hrs</span></div>
+      <div class="result-row"><span class="text-gray-600">Renewal Cycle</span><span class="font-bold text-gray-800">${d.cycle} months</span></div>
+      ${d.ethics ? `<div class="result-row"><span class="text-gray-600">Ethics Requirement</span><span class="font-bold text-burgundy-700">${d.ethics} hrs${d.ethicsSync ? ' <span class="badge ml-1" style="background:#fae8ec;color:#8b2542">Synchronous Required</span>' : ''}</span></div>` : ''}
+      ${d.core ? `<div class="result-row"><span class="text-gray-600">Core / General CE</span><span class="font-bold text-gray-800">${d.core} hrs</span></div>` : ''}
+      ${d.related ? `<div class="result-row"><span class="text-gray-600">Related CE</span><span class="font-bold text-gray-800">${d.related} hrs</span></div>` : ''}
+      ${d.renewalMonth ? `<div class="result-row"><span class="text-gray-600">Renewal Month</span><span class="font-bold text-gray-800">${d.renewalMonth}</span></div>` : ''}
+      ${d.notes ? `<div class="mt-3 p-3 bg-gold-50 border border-gold-200 rounded-lg text-xs text-gray-700"><span class="font-semibold">âš  Note:</span> ${d.notes}</div>` : ''}
+      <div class="mt-4 flex gap-2">
+        <a href="/courses.html" class="flex-1 py-2 text-center text-sm font-semibold bg-burgundy-800 text-white rounded-lg hover:bg-burgundy-900 transition-colors">Browse ${cred} Courses â†’</a>
+      </div>
+    </div>`;
+}
+
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// TOOL 2: Deadline Calculator
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+function calcDeadline() {
+  const expRaw = document.getElementById('exp-date').value;
+  const total  = parseFloat(document.getElementById('ce-total').value) || 0;
+  const done   = parseFloat(document.getElementById('ce-done').value) || 0;
+  const el     = document.getElementById('deadline-result');
+
+  if (!expRaw) return;
+
+  const exp     = new Date(expRaw + 'T00:00:00');
+  const today   = new Date();
+  const msLeft  = exp - today;
+  const daysLeft = Math.ceil(msLeft / 86400000);
+  const monthsLeft = Math.ceil(daysLeft / 30.44);
+  const remaining  = Math.max(0, total - done);
+  const pct = total > 0 ? Math.min(100, Math.round((done / total) * 100)) : 0;
+
+  const urgency = daysLeft < 30 ? 'text-red-600' : daysLeft < 90 ? 'text-gold-500' : 'text-hunter-500';
+  const urgencyBg = daysLeft < 30 ? 'bg-red-50 border-red-200' : daysLeft < 90 ? 'bg-yellow-50 border-yellow-200' : 'bg-hunter-50 border-hunter-100';
+  const urgencyMsg = daysLeft < 0 ? 'ðŸ”´ License expired' : daysLeft < 30 ? 'ðŸ”´ Renew immediately' : daysLeft < 90 ? 'ðŸŸ¡ Renewal soon' : 'ðŸŸ¢ On track';
+
+  // Suggested pace
+  let paceMsg = '';
+  if (remaining > 0 && daysLeft > 0) {
+    const hrPerWeek = (remaining / (daysLeft / 7)).toFixed(1);
+    const hrPerMonth = (remaining / (daysLeft / 30.44)).toFixed(1);
+    paceMsg = `<p class="text-xs text-gray-500 mt-2">To finish on time: <strong>${hrPerMonth} hrs/month</strong> or <strong>${hrPerWeek} hrs/week</strong></p>`;
+  }
+
+  el.innerHTML = `
+    <div class="w-full space-y-4">
+      <div class="border ${urgencyBg} rounded-xl p-4 text-center">
+        <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Time Until Renewal</p>
+        <p class="font-display text-4xl font-bold ${urgency}">${daysLeft < 0 ? 'Expired' : daysLeft}</p>
+        ${daysLeft >= 0 ? `<p class="text-sm text-gray-500">days (â‰ˆ ${monthsLeft} months)</p>` : ''}
+        <p class="mt-2 text-sm font-semibold">${urgencyMsg}</p>
+      </div>
+      ${total > 0 ? `
+      <div>
+        <div class="flex justify-between text-sm mb-1.5">
+          <span class="font-medium text-gray-700">CE Progress</span>
+          <span class="font-bold text-burgundy-800">${done} / ${total} hrs (${pct}%)</span>
+        </div>
+        <div class="prog-track"><div class="prog-fill" style="width:${pct}%;background:${pct>=80?'#4a7c59':pct>=50?'#d4a855':'#8b2542'}"></div></div>
+        <p class="text-xs text-gray-500 mt-1.5"><strong>${remaining} hrs</strong> still needed</p>
+        ${paceMsg}
+      </div>` : ''}
+      <a href="/register.html" class="block w-full py-2.5 text-center text-sm font-bold bg-burgundy-800 text-white rounded-lg hover:bg-burgundy-900 transition-colors">
+        Save This â€” Create Free Account
+      </a>
+    </div>`;
+}
+
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// TOOL 3: CE Planner
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+const PLANNER_CONFIG = {
+  LPC:   { total:35, cats:{ ethics:{label:'Ethics',req:3,sync:true}, core:{label:'Core',req:15}, related:{label:'Related',req:15}, telehealth:{label:'Telehealth',req:0}, cultural:{label:'Cultural Competence',req:0}, crisis:{label:'Crisis/Suicide',req:0} } },
+  NCC:   { total:100,cats:{ ethics:{label:'Ethics',req:6}, core:{label:'General CE',req:94} } },
+  BCTMH: { total:20, cats:{ telehealth:{label:'Telehealth CE',req:20} } },
+  CPCS:  { total:12, cats:{ supervision:{label:'Supervision CE',req:12} } },
+};
+let plannerCred = 'LPC';
+let plannerLog = JSON.parse(sessionStorage.getItem('cr_planner') || '[]');
+
+function setPlannerCred(cred, btn) {
+  plannerCred = cred;
+  document.querySelectorAll('#planner-cred-tabs .tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderPlanner();
+}
+
+function renderPlanner() {
+  const cfg = PLANNER_CONFIG[plannerCred];
+  const totals = {};
+  plannerLog.forEach(e => { totals[e.cat] = (totals[e.cat] || 0) + e.hours; });
+  const grandTotal = Object.values(totals).reduce((a,b) => a+b, 0);
+  const pct = Math.min(100, Math.round((grandTotal / cfg.total) * 100));
+
+  let catsHtml = Object.entries(cfg.cats).map(([k, cat]) => {
+    const earned = totals[k] || 0;
+    const req = cat.req || 0;
+    const catPct = req > 0 ? Math.min(100, Math.round((earned / req) * 100)) : (earned > 0 ? 100 : 0);
+    return `
+      <div class="mb-3">
+        <div class="flex justify-between text-sm mb-1">
+          <span class="font-medium text-gray-700">${cat.label}${cat.sync ? ' <span class="badge ml-1" style="background:#fae8ec;color:#8b2542;font-size:10px">Sync req.</span>' : ''}</span>
+          <span class="text-xs text-gray-500">${earned.toFixed(1)} ${req > 0 ? '/ '+req : ''} hrs</span>
+        </div>
+        <div class="prog-track"><div class="prog-fill" style="width:${catPct}%;background:${catPct>=100?'#4a7c59':catPct>=60?'#d4a855':'#8b2542'}"></div></div>
+      </div>`;
+  }).join('');
+
+  let logHtml = '';
+  if (plannerLog.length) {
+    logHtml = `<div class="mt-4 border-t border-gray-100 pt-4">
+      <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Logged Courses (${plannerLog.length})</p>
+      <div class="space-y-1.5 max-h-40 overflow-y-auto">
+        ${plannerLog.map((e,i) => `
+          <div class="flex items-center justify-between text-sm bg-gray-50 rounded-lg px-3 py-2">
+            <span class="truncate mr-2 text-gray-700">${e.title}</span>
+            <div class="flex items-center gap-2 flex-shrink-0">
+              <span class="text-xs font-semibold text-hunter-600">${e.hours} hrs</span>
+              <button onclick="removeEntry(${i})" class="text-gray-300 hover:text-red-500 text-xs">âœ•</button>
+            </div>
+          </div>`).join('')}
+      </div>
+    </div>`;
+  }
+
+  document.getElementById('planner-body').innerHTML = `
+    <div class="mb-4">
+      <div class="flex justify-between items-end mb-2">
+        <span class="font-semibold text-gray-800 text-sm">Overall Progress â€” ${plannerCred}</span>
+        <span class="font-display text-2xl font-bold text-burgundy-800">${grandTotal.toFixed(1)} <span class="text-sm font-sans text-gray-500">/ ${cfg.total} hrs</span></span>
+      </div>
+      <div class="prog-track h-3"><div class="prog-fill" style="width:${pct}%;background:#6b1d34"></div></div>
+      <p class="text-xs text-gray-400 mt-1">${pct}% complete Â· ${Math.max(0, cfg.total - grandTotal).toFixed(1)} hrs remaining</p>
+    </div>
+    ${catsHtml}
+    ${logHtml}`;
+}
+
+function logCourse() {
+  const title  = document.getElementById('p-title').value.trim() || 'Untitled Course';
+  const hours  = parseFloat(document.getElementById('p-hours').value);
+  const cat    = document.getElementById('p-cat').value;
+  if (!hours || hours <= 0) return;
+  plannerLog.push({ title, hours, cat, cred: plannerCred, date: new Date().toISOString().split('T')[0] });
+  sessionStorage.setItem('cr_planner', JSON.stringify(plannerLog));
+  document.getElementById('p-title').value = '';
+  document.getElementById('p-hours').value = '';
+  renderPlanner();
+}
+
+function removeEntry(i) {
+  plannerLog.splice(i, 1);
+  sessionStorage.setItem('cr_planner', JSON.stringify(plannerLog));
+  renderPlanner();
+}
+
+function resetPlanner() {
+  plannerLog = [];
+  sessionStorage.removeItem('cr_planner');
+  renderPlanner();
+}
+
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// TOOL 4: Ethics Checker
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+const ETHICS_EXTRA = {
+  GA: { LPC: 'Georgia requires 3 ethics hours and they MUST be synchronous (live webinar or in-person). Asynchronous ethics do NOT count toward this requirement.', LCSW:'Same as LPC â€” 3 synchronous ethics hours required.', LMFT:'Same as LPC â€” 3 synchronous ethics hours required.' },
+  TX: { LPC:'Texas requires 3 ethics hours per cycle. Asynchronous delivery is accepted.', LCSW:'3 ethics hours required. Asynchronous accepted.', LMFT:'3 ethics hours required. Asynchronous accepted.' },
+  CA: { LPC:'California requires 6 hours of ethics per 2-year cycle.', LCSW:'6 hours required.', LMFT:'6 hours required.' },
+  NC: { LPC:'5 hours of ethics per 2-year cycle. No synchronous requirement.', LCSW:'5 hours required.', LMFT:'5 hours required.' },
+  IL: { LPC:'6 hours of ethics required, which must include content on sexual violence.' },
+  TN: { LPC:'5 hours of ethics per cycle. Asynchronous accepted.' },
+};
+
+function checkEthics() {
+  const state = document.getElementById('eth-state').value;
+  const cred  = document.getElementById('eth-cred').value;
+  const el    = document.getElementById('eth-result');
+  if (!state || !cred) { el.classList.add('hidden'); return; }
+
+  const d = CE_DATA[state]?.[cred];
+  const extra = ETHICS_EXTRA[state]?.[cred] || '';
+  if (!d) { el.classList.add('hidden'); return; }
+
+  el.classList.remove('hidden');
+  el.innerHTML = `
+    <div class="result-card">
+      <div class="flex items-start gap-4">
+        <div class="text-3xl">âš–ï¸</div>
+        <div class="flex-1">
+          <p class="font-bold text-burgundy-800">${stateNames[state] || state} ${cred} â€” Ethics CE</p>
+          <div class="result-row mt-2"><span>Ethics Hours Required</span><span class="font-bold text-burgundy-700">${d.ethics} hrs</span></div>
+          <div class="result-row"><span>Synchronous Required?</span><span class="font-bold ${d.ethicsSync?'text-red-600':'text-hunter-600'}">${d.ethicsSync ? 'âš  YES â€” must be live/sync' : 'No â€” asynchronous OK'}</span></div>
+          ${extra ? `<div class="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg text-xs text-gray-700">${extra}</div>` : ''}
+          <a href="/courses.html?category=ethics" class="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-burgundy-700 hover:text-burgundy-900">Browse Ethics Courses on CounselorReady â†’</a>
+        </div>
+      </div>
+    </div>`;
+}
+
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// TOOL 5: Renewal Readiness Checklist
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+const CHECKLIST = [
+  { id:'c1', text:'I know my exact renewal deadline date', detail:'Check your wallet card or state board website.' },
+  { id:'c2', text:'I have verified the total CE hours required', detail:'State boards change requirements â€” confirm the current cycle.' },
+  { id:'c3', text:'I have met the ethics CE requirement', detail:'Many states require specific ethics hours, often synchronous.' },
+  { id:'c4', text:'I have certificates of completion for all CE courses', detail:'Keep originals for 3â€“5 years in case of audit.' },
+  { id:'c5', text:'I have met any mandatory topic requirements (suicide, domestic violence, etc.)', detail:'Some states require specific topic training.' },
+  { id:'c6', text:'I have confirmed my payment method is current with the board', detail:'Renewal fees vary by state and credential.' },
+  { id:'c7', text:'My mailing address and contact info are up to date with the board', detail:'License renewal notices go to the address on file.' },
+  { id:'c8', text:'I have CE documentation uploaded/organized for audit', detail:'Audits are random and usually require submission within 30 days.' },
+];
+
+let checkStates = {};
+function buildChecklist() {
+  document.getElementById('checklist-body').innerHTML = CHECKLIST.map(item => `
+    <div class="check-item">
+      <button onclick="toggleCheck('${item.id}', this)" id="btn-${item.id}"
+        class="flex-shrink-0 w-6 h-6 rounded-full border-2 border-gray-300 flex items-center justify-center transition-all hover:border-hunter-500 mt-0.5">
+        <svg class="w-3.5 h-3.5 text-white hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" id="chk-${item.id}"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+      </button>
+      <div>
+        <p class="text-sm font-medium text-gray-800" id="txt-${item.id}">${item.text}</p>
+        <p class="text-xs text-gray-400 mt-0.5">${item.detail}</p>
+      </div>
+    </div>`).join('');
+  updateCheckScore();
+}
+
+function toggleCheck(id, btn) {
+  checkStates[id] = !checkStates[id];
+  const checked = checkStates[id];
+  btn.style.background = checked ? '#4a7c59' : '';
+  btn.style.borderColor = checked ? '#4a7c59' : '';
+  const icon = document.getElementById(`chk-${id}`);
+  if (icon) icon.classList.toggle('hidden', !checked);
+  const txt = document.getElementById(`txt-${id}`);
+  if (txt) { txt.style.textDecoration = checked ? 'line-through' : ''; txt.style.color = checked ? '#aaa' : ''; }
+  updateCheckScore();
+}
+
+function updateCheckScore() {
+  const done = Object.values(checkStates).filter(Boolean).length;
+  const total = CHECKLIST.length;
+  const pct = Math.round((done / total) * 100);
+  document.getElementById('checklist-score').innerHTML = done === total
+    ? `<span class="text-hunter-600 font-bold">âœ“ Renewal ready! (${done}/${total})</span>`
+    : `${done} of ${total} complete (${pct}%)`;
+}
+
+function shareChecklist() {
+  const url = window.location.href;
+  navigator.clipboard.writeText(`CounselorReady Renewal Checklist: ${url}`);
+  const btn = document.querySelector('.share-btn');
+  btn.textContent = 'âœ“ Copied!';
+  btn.classList.add('copied');
+  setTimeout(() => { btn.textContent = ''; btn.innerHTML = '<svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>Share Checklist'; btn.classList.remove('copied'); }, 2200);
+}
+
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// INIT
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+buildChecklist();
+renderPlanner();
+</script>
+</body>
+</html>
