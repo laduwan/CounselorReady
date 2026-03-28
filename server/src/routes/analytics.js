@@ -466,7 +466,21 @@ router.get('/admin/overview', protect, async (req, res) => {
         }
       }
     ]);
-    
+
+    const interactiveProgressStats = await mongoose.connection.db
+      .collection('interactivecourseprogresses')
+      .aggregate([
+        { $match: progressFilter },
+        {
+          $group: {
+            _id: null,
+            totalEnrollments: { $sum: 1 },
+            totalCompletions: { $sum: { $cond: [{ $eq: ['$status', 'completed'] }, 1, 0] } },
+            totalEvaluations: { $sum: { $cond: [{ $eq: ['$evaluationCompleted', true] }, 1, 0] } }
+          }
+        }
+      ]).toArray();
+
     // Get total courses count
     const totalCourses = await Course.countDocuments({ status: 'published' });
     
@@ -483,16 +497,20 @@ router.get('/admin/overview', protect, async (req, res) => {
       }
     ]);
     
-    // Combine course stats
+    // Combine course stats (legacy + interactive)
+    const combinedEnrollments = (progressStats[0]?.totalEnrollments || 0) + (interactiveProgressStats[0]?.totalEnrollments || 0);
+    const combinedCompletions = (progressStats[0]?.totalCompletions || 0) + (interactiveProgressStats[0]?.totalCompletions || 0);
+    const combinedEvaluations = (progressStats[0]?.totalEvaluations || 0) + (interactiveProgressStats[0]?.totalEvaluations || 0);
+
     const courseStats = {
       totalCourses,
-      totalEnrollments: progressStats[0]?.totalEnrollments || 0,
-      totalCompletions: progressStats[0]?.totalCompletions || 0,
-      totalEvaluations: progressStats[0]?.totalEvaluations || 0,
+      totalEnrollments: combinedEnrollments,
+      totalCompletions: combinedCompletions,
+      totalEvaluations: combinedEvaluations,
       avgRating: ratingStats[0]?.avgRating ? Math.round(ratingStats[0].avgRating * 10) / 10 : 0,
       totalRatings: ratingStats[0]?.totalRatings || 0,
-      avgCompletionRate: progressStats[0]?.totalEnrollments > 0 
-        ? Math.round((progressStats[0].totalCompletions / progressStats[0].totalEnrollments) * 100) 
+      avgCompletionRate: combinedEnrollments > 0
+        ? Math.round((combinedCompletions / combinedEnrollments) * 100)
         : 0
     };
     
@@ -526,7 +544,35 @@ router.get('/admin/overview', protect, async (req, res) => {
         }
       }
     ]);
-    
+
+    const topByEnrollmentInteractive = await mongoose.connection.db
+      .collection('interactivecourseprogresses')
+      .aggregate([
+        { $group: { _id: '$courseId', enrollments: { $sum: 1 } } },
+        { $sort: { enrollments: -1 } },
+        { $limit: 5 },
+        {
+          $lookup: {
+            from: 'interactivecourses',
+            localField: '_id',
+            foreignField: '_id',
+            as: 'course'
+          }
+        },
+        { $unwind: '$course' },
+        {
+          $project: {
+            _id: '$course._id',
+            title: '$course.title',
+            analytics: { enrollments: '$enrollments' }
+          }
+        }
+      ]).toArray();
+
+    const allTopByEnrollment = [...topByEnrollment, ...topByEnrollmentInteractive]
+      .sort((a, b) => b.analytics.enrollments - a.analytics.enrollments)
+      .slice(0, 5);
+
     // Top courses by rating
     const topByRating = await Course.find({ 
       status: 'published',
@@ -563,7 +609,7 @@ router.get('/admin/overview', protect, async (req, res) => {
       satisfaction: satisfactionData,
       courses: courseStats,
       topCourses: {
-        byEnrollment: topByEnrollment,
+        byEnrollment: allTopByEnrollment,
         byRating: topByRating
       },
       recentFeedback,
