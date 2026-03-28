@@ -44,6 +44,7 @@ import adminStatsRoutes from './routes/adminStats.js';
 import researchReadyRoutes from './routes/researchReady.js';
 import toolsRoutes from './routes/tools.js';
 import toolRoutes from './routes/toolRoutes.js';
+import partnersRoutes from './routes/partners.js';
 
 // Import services
 import { initializeScheduler } from './services/notificationScheduler.js';
@@ -167,6 +168,7 @@ app.use('/api/admin/stats', adminStatsRoutes);
 app.use('/api/research-ready', researchReadyRoutes);
 app.use('/api/tools', toolsRoutes);
 app.use('/api/tools', toolRoutes);
+app.use('/api/partners', partnersRoutes);
 
 // Serve static files from templates directory (for certificates)
 app.use('/templates', express.static(path.join(__dirname, 'templates')));
