@@ -2333,6 +2333,21 @@ function ttsStop() {
   if (pauseBtn) pauseBtn.textContent = '▶';
 }
 
+function checkFIB(targetId, count) {
+  for (let i = 0; i < count; i++) {
+    const input = document.getElementById(targetId + '-' + i);
+    const fb = document.getElementById(targetId + '-' + i + '-fb');
+    if (!input || !fb) continue;
+    const answer = input.dataset.answer.trim().toLowerCase();
+    const alts = input.dataset.alts ? input.dataset.alts.split('|').map(a => a.trim().toLowerCase()) : [];
+    const userVal = input.value.trim().toLowerCase();
+    const correct = userVal === answer || alts.includes(userVal);
+    input.style.borderColor = correct ? 'var(--cr-green)' : '#DC2626';
+    fb.textContent = correct ? '✓ Correct' : '✗ Expected: ' + input.dataset.answer;
+    fb.style.color = correct ? 'var(--cr-green)' : '#DC2626';
+  }
+}
+
 function ttsRestart() {
   readCurrentSection();
 }
@@ -2473,6 +2488,9 @@ function renderBlock(block, index) {
     case 'video': return renderVideoEmbed(wrap, block);
     case 'knowledgeCheck': return renderKnowledgeCheck(wrap, block, index);
     case 'quiz': return renderQuizBlock(wrap, block, index);
+    case 'callout': return renderCallout(wrap, block);
+    case 'fillInBlank': return renderFillInBlank(wrap, block, index);
+    case 'keyTakeaway': return renderKeyTakeaway(wrap, block);
     default:
       wrap.innerHTML = `<div class="cr-card" style="border-left:4px solid var(--cr-gold)">
         <p style="font-size:0.9em;color:var(--cr-text-muted)">Unsupported block type: <code>${esc(block.type)}</code></p>
@@ -2493,9 +2511,67 @@ function renderSectionDivider(wrap, block) {
   return wrap;
 }
 
+// ─── INLINE CALLOUT + ALERT SYNTAX ───
+const CALLOUT_LIBRARY = {
+  'hipaa':            { label: 'HIPAA',              type: 'definition', body: 'Health Insurance Portability and Accountability Act (1996). Protects patient health information from disclosure without consent.' },
+  'aca-code':         { label: 'ACA Code of Ethics', type: 'reference',  body: 'American Counseling Association Code of Ethics. Primary ethical framework for licensed counselors.' },
+  'duty-to-warn':     { label: 'Duty to Warn',       type: 'ethics',     body: 'Tarasoff obligation — clinicians must protect identifiable third parties from credible, serious client threats.' },
+  'informed-consent': { label: 'Informed Consent',    type: 'definition', body: 'Client must understand treatment, fees, limits of confidentiality, and risks before services begin.' },
+  'telehealth-rule':  { label: 'GA Rule 135',         type: 'reference',  body: 'Georgia Composite Board Rule 135-11-.01. Governs telemental health delivery and disclosures.' },
+  'mandatory-report': { label: 'Mandatory Reporting', type: 'warning',    body: 'Georgia law requires reporting known/suspected abuse of a child, elder, or person with a disability.' },
+  'lpc-a-note':       { label: 'LPC-A Note',          type: 'clinical',   body: 'Pre-licensed associates must obtain supervisor approval before this intervention.' },
+  'nbcc-standard':    { label: 'NBCC Standard',       type: 'reference',  body: 'National Board for Certified Counselors standard. Applies to NCC credential holders and NBCC-approved CE providers.' },
+  'phi':              { label: 'PHI',                  type: 'definition', body: 'Protected Health Information — any health data that can identify a patient.' },
+  'gcscw':            { label: 'GCSCW',                type: 'reference',  body: 'Georgia Composite Board of Social Work — licensing authority for social workers in Georgia.' },
+};
+
+const PILL_COLORS = {
+  definition: { bg: 'var(--cr-green-faded)',  border: 'var(--cr-green)',  text: 'var(--cr-green)',  icon: '📖' },
+  clinical:   { bg: 'var(--cr-navy-faded)',   border: 'var(--cr-navy)',   text: 'var(--cr-navy)',   icon: '🩺' },
+  ethics:     { bg: 'var(--cr-gold-faded)',   border: 'var(--cr-gold)',   text: '#92600A',          icon: '⚖️' },
+  example:    { bg: 'var(--cr-gold-faded)',   border: 'var(--cr-gold)',   text: '#8B5E2E',          icon: '💬' },
+  reference:  { bg: '#F0EAE0',               border: 'var(--cr-border)', text: 'var(--cr-navy)',   icon: '📎' },
+  warning:    { bg: '#FEF2F2',               border: '#DC2626',          text: '#991B1B',          icon: '⚠️' },
+};
+
+const ALERT_STYLES = {
+  ethics:     { icon: '⚖️',  label: 'Ethics Alert',       bg: 'var(--cr-gold-faded)', border: 'var(--cr-gold)',  text: '#92600A'  },
+  mandatory:  { icon: '🚨',  label: 'Mandatory Report',    bg: '#FEF2F2',              border: '#DC2626',         text: '#991B1B'  },
+  donot:      { icon: '⛔',  label: 'Do Not',              bg: '#FEF2F2',              border: '#DC2626',         text: '#991B1B'  },
+  document:   { icon: '📋',  label: 'Must Document',       bg: 'var(--cr-navy-faded)', border: 'var(--cr-navy)',  text: 'var(--cr-navy)' },
+  supervisor: { icon: '👁️',  label: 'Supervisor Required', bg: '#F5F3FF',              border: '#7C3AED',         text: '#4C1D95'  },
+  legal:      { icon: '⚖️',  label: 'Legal Exposure',      bg: '#FEF2F2',              border: '#7F1D1D',         text: '#7F1D1D'  },
+  protocol:   { icon: '🔴',  label: 'Protocol Required',   bg: '#FFF7ED',              border: '#EA580C',         text: '#C2410C'  },
+};
+
+function parseCalloutSyntax(html, blockCallouts) {
+  if (!html || typeof html !== 'string') return html;
+  const lib = Object.assign({}, CALLOUT_LIBRARY, blockCallouts || {});
+
+  // {{callout:id}} → inline pill with tooltip
+  let out = html.replace(/\{\{callout:([^}]+)\}\}/g, function(_, id) {
+    const key = id.trim();
+    const def = lib[key];
+    if (!def) return '<span style="display:inline-flex;align-items:center;gap:2px;padding:1px 6px;border-radius:20px;background:#f0f0f0;border:1px solid #ccc;color:#666;font-size:0.78rem;font-weight:600;cursor:help;vertical-align:middle" title="Unknown: ' + esc(key) + '">⬡ ' + esc(key) + '</span>';
+    const ps = PILL_COLORS[def.type] || PILL_COLORS.definition;
+    return '<span title="' + esc(def.body) + '" role="button" tabindex="0" style="display:inline-flex;align-items:center;gap:3px;padding:1px 7px;border-radius:20px;background:' + ps.bg + ';border:1px solid ' + ps.border + ';color:' + ps.text + ';font-size:0.78rem;font-weight:600;cursor:help;vertical-align:middle;line-height:1.6">' + ps.icon + ' ' + esc(def.label) + '</span>';
+  });
+
+  // {{alert:type}} → inline alert badge
+  out = out.replace(/\{\{alert:([^}]+)\}\}/g, function(_, type) {
+    const key = type.trim();
+    const cfg = ALERT_STYLES[key] || ALERT_STYLES.ethics;
+    return '<span title="Click for details" role="button" tabindex="0" style="display:inline-flex;align-items:center;gap:4px;padding:2px 9px;border-radius:20px;background:' + cfg.bg + ';border:1.5px solid ' + cfg.border + ';color:' + cfg.text + ';font-size:0.78rem;font-weight:700;cursor:help;vertical-align:middle;line-height:1.7">' + cfg.icon + ' ' + cfg.label + '</span>';
+  });
+
+  return out;
+}
+
 // ─── TEXT ───
 function renderText(wrap, block) {
-  wrap.innerHTML = `<div class="cr-prose">${block.content || block.textContent || ''}</div>`;
+  const raw = block.content || block.textContent || '';
+  const parsed = parseCalloutSyntax(raw, block.callouts);
+  wrap.innerHTML = `<div class="cr-prose">${parsed}</div>`;
   return wrap;
 }
 
@@ -2507,7 +2583,7 @@ function renderImageText(wrap, block) {
     ${block.image ? `<img src="${esc(block.image)}" alt="${esc(block.imageAlt || '')}">` : ''}
     <div class="cr-image-text-content">
       ${block.title ? '<h3 style="font-family:var(--cr-font-display);font-weight:700;color:var(--cr-navy);margin-bottom:8px">' + esc(block.title) + '</h3>' : ''}
-      <div class="cr-prose">${block.content || ''}</div>
+      <div class="cr-prose">${parseCalloutSyntax(block.content || '', block.callouts)}</div>
     </div>
   </div>`;
   return wrap;
@@ -3078,6 +3154,84 @@ function isDownloadable(r) {
   const ext = (r.url || r.filename || '').split('.').pop()?.toLowerCase();
   return t.includes(ext);
 }
+// ─── CALLOUT BLOCK ───
+function renderCallout(wrap, block) {
+  const cfgMap = {
+    info:     { icon: 'ℹ️',  border: 'var(--cr-navy)',    bg: 'var(--cr-navy-faded)'    },
+    warning:  { icon: '⚠️',  border: 'var(--cr-gold)',    bg: 'var(--cr-gold-faded)'    },
+    ethics:   { icon: '⚖️',  border: 'var(--cr-gold)',    bg: 'var(--cr-gold-faded)'    },
+    clinical: { icon: '🩺',  border: 'var(--cr-navy)',    bg: 'var(--cr-navy-faded)'    },
+    tip:      { icon: '💡',  border: 'var(--cr-green)',   bg: 'var(--cr-green-faded)'   },
+    key:      { icon: '🔑',  border: 'var(--cr-gold)',    bg: 'var(--cr-gold-faded)'    },
+    donot:    { icon: '⛔',  border: '#DC2626',           bg: '#FEF2F2'                 },
+    protocol: { icon: '📋',  border: '#EA580C',           bg: '#FFF7ED'                 },
+  };
+  const t = block.calloutType || block.variant || 'info';
+  const cfg = cfgMap[t] || cfgMap.info;
+  const items = block.calloutItems || block.items || [];
+
+  let html = `<div style="border-left:3px solid ${cfg.border};background:${cfg.bg};border-radius:0 8px 8px 0;padding:10px 14px;margin:12px 0">`;
+  if (block.title) {
+    html += `<div style="display:flex;align-items:center;gap:6px;margin-bottom:${(items.length || block.content) ? '6px' : '0'}">
+      <span style="font-size:0.85rem">${cfg.icon}</span>
+      <span style="font-size:0.82rem;font-weight:700;color:${cfg.border}">${esc(block.title)}</span>
+    </div>`;
+  }
+  if (block.content) {
+    html += `<div class="cr-prose" style="font-size:0.82rem;line-height:1.6">${block.content}</div>`;
+  }
+  if (items.length) {
+    html += '<ul style="margin:4px 0 0;padding-left:16px">';
+    items.forEach(item => { html += `<li style="font-size:0.82rem;line-height:1.6;margin-bottom:2px">${esc(item)}</li>`; });
+    html += '</ul>';
+  }
+  html += '</div>';
+  wrap.innerHTML = html;
+  return wrap;
+}
+
+// ─── FILL-IN-BLANK ───
+function renderFillInBlank(wrap, block, blockIndex) {
+  const blanks = block.blanks || [];
+  if (!blanks.length) { wrap.innerHTML = '<p style="color:var(--cr-text-muted)">No blanks configured.</p>'; return wrap; }
+  const id = 'fib-' + currentSectionIndex + '-' + blockIndex;
+  let html = `<div class="cr-card" style="padding:20px">`;
+  if (block.title) html += `<h3 style="font-family:var(--cr-font-display);font-weight:700;color:var(--cr-navy);margin-bottom:12px">${esc(block.title)}</h3>`;
+  blanks.forEach((b, i) => {
+    html += `<div style="margin-bottom:12px">
+      <label style="font-size:0.85rem;font-weight:600;color:var(--cr-text);display:block;margin-bottom:4px">${esc(b.prompt || 'Fill in:')}</label>
+      <input type="text" data-answer="${esc(b.answer || '')}" data-alts="${esc((b.acceptAlternates||[]).join('|'))}" class="fib-input" id="${id}-${i}"
+        style="width:100%;padding:8px 12px;border:1.5px solid var(--cr-border);border-radius:8px;font-size:0.85rem;outline:none;transition:border-color 0.15s"
+        onfocus="this.style.borderColor='var(--cr-burgundy)'" onblur="this.style.borderColor='var(--cr-border)'" />
+      <div class="fib-feedback" id="${id}-${i}-fb" style="font-size:0.78rem;margin-top:4px;min-height:1.2em"></div>
+    </div>`;
+  });
+  html += `<button data-action="checkFIB" data-target="${id}" data-count="${blanks.length}"
+    style="padding:8px 20px;border:none;border-radius:8px;background:var(--cr-burgundy);color:#fff;font-size:0.83rem;font-weight:700;cursor:pointer">
+    Check Answers</button></div>`;
+  wrap.innerHTML = html;
+  return wrap;
+}
+
+// ─── KEY TAKEAWAY ───
+function renderKeyTakeaway(wrap, block) {
+  const items = block.takeaways || block.items || [];
+  let html = `<div style="background:var(--cr-gold-faded);border:1.5px solid var(--cr-gold);border-radius:12px;padding:16px 20px">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:${items.length ? '10px' : '0'}">
+      <span style="font-size:1.1rem">🔑</span>
+      <span style="font-weight:700;font-size:0.9rem;color:var(--cr-navy)">${esc(block.title || 'Key Takeaways')}</span>
+    </div>`;
+  if (block.content) html += `<div class="cr-prose" style="font-size:0.85rem;margin-bottom:8px">${block.content}</div>`;
+  if (items.length) {
+    html += '<ul style="margin:0;padding-left:18px">';
+    items.forEach(t => { html += `<li style="font-size:0.85rem;line-height:1.65;margin-bottom:3px;color:var(--cr-text)">${esc(t)}</li>`; });
+    html += '</ul>';
+  }
+  html += '</div>';
+  wrap.innerHTML = html;
+  return wrap;
+}
+
 function renderResources(wrap, block) {
   const resources = block.resources || block.deliverables || block.files || [];
   const icons = { pdf: '📄', video: '🎬', link: '🔗', article: '📰', website: '🌐', book: '📚',
@@ -4589,6 +4743,7 @@ document.addEventListener('click', function(e) {
   
   switch (action) {
     // ─── Knowledge Checks ───
+    case 'checkFIB': checkFIB(el.dataset.target, parseInt(el.dataset.count)); break;
     case 'selectMC': selectMC(target, idx); break;
     case 'submitMC': submitMC(target, parseInt(el.dataset.correct)); break;
     case 'toggleMS': toggleMS(target, idx); break;
