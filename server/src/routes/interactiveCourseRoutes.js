@@ -13,6 +13,7 @@ import UserCredential from '../models/UserCredential.js';
 import Gamification from '../models/Gamification.js';
 import { protect } from '../middleware/auth.js';
 import { generateCertificate, generateCertificateNumber } from '../utils/certificate.js';
+import { logActivity, ACTIVITY_TYPES } from '../services/activityTrackingService.js';
 
 const router = express.Router();
 
@@ -251,6 +252,19 @@ router.post('/:id/enroll', protect, async (req, res) => {
     });
 
     await progress.save();
+
+    // Log enrollment to admin activity feed (fire-and-forget)
+    logActivity(ACTIVITY_TYPES.USER_ENROLLED, {
+      userId: req.user._id,
+      userName: req.user.profile?.firstName
+        ? `${req.user.profile.firstName} ${req.user.profile.lastName || ''}`.trim()
+        : req.user.email,
+      userEmail: req.user.email,
+      courseId: course._id,
+      courseName: course.title,
+      ceHours: course.ceHours
+    }).catch(err => console.error('Activity log error:', err));
+
     res.status(201).json({ success: true, message: 'Enrolled successfully', data: progress });
   } catch (error) {
     console.error('Error enrolling in course:', error);
