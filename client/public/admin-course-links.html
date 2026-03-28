@@ -625,16 +625,17 @@ if (window.posthog) posthog.capture('course_completed', {
   }
 
   // ── Auth guard ────────────────────────────────────────────────
-  (function() {
+  (async function() {
     const token = localStorage.getItem('token') || localStorage.getItem('authToken');
     if (!token) { window.location.href = '/login.html'; return; }
     try {
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      if (payload.role !== 'admin') { window.location.href = '/dashboard.html'; return; }
-      if (payload.exp && payload.exp * 1000 < Date.now()) {
-        localStorage.removeItem('token'); localStorage.removeItem('authToken');
-        window.location.href = '/login.html'; return;
-      }
+      const res = await fetch('https://api.counselorready.com/api/auth/me', {
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
+      if (!res.ok) { window.location.href = '/login.html'; return; }
+      const data = await res.json();
+      const user = data.user || data;
+      if (user.role !== 'admin') { window.location.href = '/dashboard.html'; return; }
     } catch (e) {
       window.location.href = '/login.html'; return;
     }
