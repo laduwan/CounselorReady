@@ -462,7 +462,7 @@ if (window.posthog) posthog.capture('course_completed', {
     const ce = document.getElementById('ce-filter').value;
     return allCourses.filter(c => {
       const matchQ = !q || c.title.toLowerCase().includes(q) || (c.courseCode||'').toLowerCase().includes(q);
-      const matchSt = !st || (st === 'published' ? c.isPublished : !c.isPublished);
+      const matchSt = !st || (st === 'published' ? (c.isPublished || c.status === 'published') : (!c.isPublished && c.status !== 'published'));
       const matchCe = !ce || String(c.ceHours) === ce;
       return matchQ && matchSt && matchCe;
     });
@@ -487,7 +487,7 @@ if (window.posthog) posthog.capture('course_completed', {
     list.innerHTML = courses.map(c => {
       const id = c._id || c.id;
       const slug = c.slug || '';
-      const published = c.isPublished;
+      const published = c.isPublished || c.status === 'published';
       const code = c.courseCode || c.code || '—';
       const ce = c.ceHours || '—';
       const activeUrl = getActiveUrl(c);
@@ -551,7 +551,7 @@ if (window.posthog) posthog.capture('course_completed', {
 
       // Stats
       document.getElementById('stat-total').textContent = allCourses.length;
-      document.getElementById('stat-published').textContent = allCourses.filter(c => c.isPublished).length;
+      document.getElementById('stat-published').textContent = allCourses.filter(c => c.isPublished || c.status === 'published').length;
 
       // Load enrollment counts
       loadEnrollmentStats(headers);
