@@ -23,7 +23,7 @@ const navLinks = [
     { name: 'Recommendations',   href: '/recommendations' },
     { name: 'Achievements',      href: '/achievements' },
   ]},
-  { name: 'Free Tools', href: '/tools/index.html', external: true },
+  { name: 'Free Tools', href: '/tools/index.html', static: true },
   { name: 'Credentials', href: '/credentials', children: [
     { name: 'My Credentials',    href: '/credentials' },
     { name: 'CE Planner',        href: '/ce-planner' },
@@ -177,7 +177,7 @@ export default function Layout({ children }) {
               };
 
               if (!hasChildren) {
-                if (link.external) {
+                if (link.static) {
                   return (
                     <a key={link.href} href={link.href} style={style}
                       onMouseEnter={e => { if (!active) e.currentTarget.style.background = '#f5f5f4'; }}
@@ -407,7 +407,7 @@ export default function Layout({ children }) {
               const linkStyle = { display: 'block', padding: '0.625rem 1rem', borderRadius: '0.5rem', fontSize: '0.875rem', fontWeight: 500, textDecoration: 'none', color: active ? BURGUNDY : '#57534e', background: active ? BURGUNDY_LIGHT : 'transparent' };
 
               if (!link.children) {
-                if (link.external) {
+                if (link.static) {
                   return <a key={link.href} href={link.href} onClick={() => setMobileOpen(false)} style={linkStyle}>{link.name}</a>;
                 }
                 return <Link key={link.href} to={link.href} onClick={() => setMobileOpen(false)} style={linkStyle}>{link.name}</Link>;
