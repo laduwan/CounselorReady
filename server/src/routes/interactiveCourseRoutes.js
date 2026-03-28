@@ -271,8 +271,20 @@ router.post('/:id/assessment', protect, async (req, res) => {
     const { answers, score, passed, attempt, timeSpent } = req.body;
 
     const course = await findCourseByIdOrSlug(req.params.id);
-    if (!course || !course.assessment) {
-      return res.status(404).json({ success: false, error: 'Assessment not found' });
+    if (!course) {
+      return res.status(404).json({ success: false, error: 'Course not found' });
+    }
+
+    // Normalize assessment — prefer top-level, fall back to inline isExam block
+    if (!course.assessment || !course.assessment.questions?.length) {
+      const inlineExam = course.sections
+        ?.flatMap(s => s.contentBlocks || [])
+        .find(b => b.type === 'quiz' && b.isExam === true);
+      if (inlineExam) {
+        course.assessment = inlineExam;
+      } else {
+        return res.status(404).json({ success: false, error: 'Assessment not found' });
+      }
     }
 
     let progress = await CourseProgress.findOne({
