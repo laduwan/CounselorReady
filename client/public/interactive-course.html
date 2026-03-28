@@ -1716,8 +1716,39 @@ let completedSections = new Set();
 let visitedSections = new Set([0]); // First section always visited
 let currentView = 'section'; // 'section' | 'assessment'
 let assessmentState = { answers: {}, submitted: false, score: null, attempts: 0 };
+let certPipelineState = { assessmentSaved: false, evaluationDone: false, attestationDone: false };
 let ttsActive = false;
 let ttsUtterance = null;
+
+// ═══════════════════════════════════════════════════════════════
+// API HELPERS
+// ═══════════════════════════════════════════════════════════════
+function crApiBase() {
+  return location.origin.includes('localhost') ? 'http://localhost:5000' : 'https://api.counselorready.com';
+}
+
+function crAuthHeaders() {
+  const token = localStorage.getItem('token');
+  if (!token) return null;
+  return { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' };
+}
+
+function crSlugOrId() {
+  return course?.slug || course?._id || '';
+}
+
+async function crPost(path, body) {
+  const headers = crAuthHeaders();
+  if (!headers) throw new Error('NOT_AUTHENTICATED');
+  const res = await fetch(crApiBase() + '/api/interactive-courses/' + crSlugOrId() + path, {
+    method: 'POST', headers, body: JSON.stringify(body)
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: 'Request failed' }));
+    throw new Error(err.error || err.message || 'Request failed');
+  }
+  return res;
+}
 
 // ═══════════════════════════════════════════════════════════════
 // INITIALIZATION
@@ -3521,6 +3552,25 @@ function submitAssessment() {
       attempts: assessmentState.attempts
     }, '*');
   }
+
+  // POST assessment to backend (async, non-blocking)
+  if (passed) {
+    const answersPayload = Object.entries(assessmentState.answers).map(([qi, oi]) => ({
+      questionIndex: parseInt(qi), selectedOption: oi
+    }));
+    crPost('/assessment', {
+      answers: answersPayload,
+      score: score / 100,
+      passed: true,
+      attempt: assessmentState.attempts
+    }).then(() => {
+      certPipelineState.assessmentSaved = true;
+      console.log('[CR] Assessment saved to backend');
+    }).catch(err => {
+      console.warn('[CR] Assessment save failed:', err.message);
+      // Still allow local flow — cert generation will fail if not auth'd
+    });
+  }
 }
 
 function renderAssessmentResult() {
@@ -3545,11 +3595,22 @@ function renderAssessmentResult() {
   }
   
   if (passed) {
-    html += `<button class="cr-btn cr-btn-success" style="margin-top:20px" data-action="requestCertificate">
-      Get Certificate
-    </button>`;
+    // Check if user is authenticated
+    const token = localStorage.getItem('token');
+    if (token) {
+      html += `<button class="cr-btn cr-btn-success" style="margin-top:20px" data-action="startCertPipeline">
+        Continue to Certificate →
+      </button>`;
+      html += `<p style="font-size:0.78em;color:var(--cr-text-muted);margin-top:8px">You'll complete a brief evaluation and attestation before downloading your certificate.</p>`;
+    } else {
+      html += `<div style="margin-top:20px;padding:16px;background:var(--cr-gold-faded);border:1.5px solid var(--cr-gold);border-radius:10px">
+        <p style="font-weight:700;color:var(--cr-navy);margin:0 0 8px">Sign in to get your certificate</p>
+        <p style="font-size:0.83em;color:var(--cr-text-secondary);margin:0 0 12px">You need to be logged in so we can verify your identity and issue your NBCC-approved CE certificate.</p>
+        <a href="/login.html?redirect=${encodeURIComponent(location.pathname + location.search)}" class="cr-btn cr-btn-primary" style="display:inline-block;text-decoration:none">Sign In</a>
+      </div>`;
+    }
   }
-  
+
   html += '<div style="margin-top:24px;font-size:10px;color:var(--cr-text-muted);text-align:center">Powered by CReady™ Viewer · © 2026 GAITP LLC · NBCC ACEP #7760</div>';
   html += '</div>';
   area.innerHTML = html;
@@ -3561,6 +3622,347 @@ function retryAssessment() {
   assessmentState.answers = {};
   assessmentState.score = null;
   renderAssessment();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// CERTIFICATE PIPELINE: Evaluation → Attestation → Download
+// ═══════════════════════════════════════════════════════════════
+
+function renderEvaluation() {
+  const area = document.getElementById('crContentArea');
+  const ceHours = course.ceHours || 1;
+
+  let html = `<div style="max-width:600px;margin:0 auto;padding:20px">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;padding-bottom:16px;border-bottom:2px solid var(--cr-burgundy)">
+      <span style="font-size:1.3rem">📋</span>
+      <div>
+        <h3 style="margin:0;font-family:var(--cr-font-display);font-weight:700;color:var(--cr-navy)">Course Evaluation</h3>
+        <p style="margin:2px 0 0;font-size:0.78rem;color:var(--cr-text-muted)">Required for NBCC-approved CE credit · ${ceHours} CE Hour${ceHours !== 1 ? 's' : ''}</p>
+      </div>
+    </div>
+
+    <p style="font-size:0.85rem;color:var(--cr-text-secondary);margin-bottom:20px">
+      Please rate the following aspects of this continuing education activity.
+    </p>`;
+
+  const questions = [
+    { key: 'contentQuality', label: 'Quality of content and materials' },
+    { key: 'relevance', label: 'Relevance to your clinical practice' },
+    { key: 'presentation', label: 'Clarity of presentation and instruction' },
+    { key: 'engagement', label: 'Level of learner engagement' },
+    { key: 'learningObjectives', label: 'Achievement of stated learning objectives' }
+  ];
+
+  questions.forEach(q => {
+    html += `<div style="margin-bottom:16px">
+      <label style="font-size:0.85rem;font-weight:600;color:var(--cr-text);display:block;margin-bottom:6px">${q.label}</label>
+      <div style="display:flex;gap:6px" id="eval-${q.key}">`;
+    for (let i = 1; i <= 5; i++) {
+      html += `<button data-action="rateEval" data-key="${q.key}" data-value="${i}"
+        style="width:40px;height:40px;border-radius:8px;border:1.5px solid var(--cr-border);background:#fff;
+        font-size:0.85rem;font-weight:700;color:var(--cr-navy);cursor:pointer;transition:all 0.15s"
+        onmouseover="this.style.borderColor='var(--cr-burgundy)'"
+        onmouseout="if(!this.classList.contains('selected'))this.style.borderColor='var(--cr-border)'">${i}</button>`;
+    }
+    html += `</div></div>`;
+  });
+
+  html += `<div style="margin-bottom:16px">
+      <label style="font-size:0.85rem;font-weight:600;color:var(--cr-text);display:block;margin-bottom:6px">Would you recommend this course?</label>
+      <div style="display:flex;gap:8px" id="eval-wouldRecommend">
+        <button data-action="rateEval" data-key="wouldRecommend" data-value="yes"
+          style="padding:8px 20px;border-radius:8px;border:1.5px solid var(--cr-border);background:#fff;
+          font-size:0.85rem;font-weight:600;color:var(--cr-green);cursor:pointer">Yes</button>
+        <button data-action="rateEval" data-key="wouldRecommend" data-value="no"
+          style="padding:8px 20px;border-radius:8px;border:1.5px solid var(--cr-border);background:#fff;
+          font-size:0.85rem;font-weight:600;color:var(--cr-text-muted);cursor:pointer">No</button>
+      </div>
+    </div>
+
+    <div style="margin-bottom:16px">
+      <label style="font-size:0.85rem;font-weight:600;color:var(--cr-text);display:block;margin-bottom:6px">What worked well? <span style="font-weight:400;color:var(--cr-text-muted)">(optional)</span></label>
+      <textarea id="eval-whatWorkedWell" rows="2" style="width:100%;padding:10px 12px;border:1.5px solid var(--cr-border);border-radius:8px;font-size:0.85rem;font-family:inherit;resize:vertical;outline:none" placeholder="Share what you found most valuable..."></textarea>
+    </div>
+
+    <div style="margin-bottom:20px">
+      <label style="font-size:0.85rem;font-weight:600;color:var(--cr-text);display:block;margin-bottom:6px">Suggestions for improvement? <span style="font-weight:400;color:var(--cr-text-muted)">(optional)</span></label>
+      <textarea id="eval-suggestions" rows="2" style="width:100%;padding:10px 12px;border:1.5px solid var(--cr-border);border-radius:8px;font-size:0.85rem;font-family:inherit;resize:vertical;outline:none" placeholder="How could we make this course better?"></textarea>
+    </div>
+
+    <div id="eval-error" style="display:none;padding:10px 14px;background:#FEF2F2;border:1px solid #DC2626;border-radius:8px;color:#991B1B;font-size:0.83rem;margin-bottom:12px"></div>
+
+    <button class="cr-btn cr-btn-success" data-action="submitEvaluation" style="width:100%">
+      Submit Evaluation →
+    </button>
+  </div>`;
+
+  area.innerHTML = html;
+
+  // Wire up rating button clicks via delegation
+  area.addEventListener('click', function evalClick(e) {
+    const btn = e.target.closest('[data-action="rateEval"]');
+    if (!btn) return;
+    const key = btn.dataset.key;
+    const value = btn.dataset.value;
+    // Deselect siblings
+    const container = document.getElementById('eval-' + key);
+    if (container) {
+      container.querySelectorAll('button').forEach(b => {
+        b.classList.remove('selected');
+        b.style.background = '#fff';
+        b.style.borderColor = 'var(--cr-border)';
+        b.style.color = key === 'wouldRecommend' ? (b.dataset.value === 'yes' ? 'var(--cr-green)' : 'var(--cr-text-muted)') : 'var(--cr-navy)';
+      });
+    }
+    // Select this one
+    btn.classList.add('selected');
+    btn.style.background = 'var(--cr-burgundy)';
+    btn.style.borderColor = 'var(--cr-burgundy)';
+    btn.style.color = '#fff';
+    btn.dataset.selected = 'true';
+  });
+}
+
+function submitEvaluation() {
+  const errBox = document.getElementById('eval-error');
+
+  // Collect ratings
+  const responses = {};
+  const ratingKeys = ['contentQuality', 'relevance', 'presentation', 'engagement', 'learningObjectives'];
+  let missing = [];
+
+  ratingKeys.forEach(key => {
+    const container = document.getElementById('eval-' + key);
+    const selected = container?.querySelector('.selected');
+    if (selected) {
+      responses[key] = selected.dataset.value;
+    } else {
+      missing.push(key);
+    }
+  });
+
+  // Recommend
+  const recContainer = document.getElementById('eval-wouldRecommend');
+  const recSelected = recContainer?.querySelector('.selected');
+  if (recSelected) {
+    responses.wouldRecommend = recSelected.dataset.value;
+  } else {
+    missing.push('recommendation');
+  }
+
+  if (missing.length > 0) {
+    if (errBox) {
+      errBox.style.display = 'block';
+      errBox.textContent = 'Please complete all ratings before submitting.';
+    }
+    return;
+  }
+
+  // Optional text
+  const ww = document.getElementById('eval-whatWorkedWell');
+  const sg = document.getElementById('eval-suggestions');
+  if (ww && ww.value.trim()) responses.whatWorkedWell = ww.value.trim();
+  if (sg && sg.value.trim()) responses.suggestions = sg.value.trim();
+
+  // Disable button
+  const btn = document.querySelector('[data-action="submitEvaluation"]');
+  if (btn) { btn.disabled = true; btn.textContent = 'Submitting...'; }
+
+  crPost('/evaluation', { responses })
+    .then(() => {
+      certPipelineState.evaluationDone = true;
+      renderAttestation();
+    })
+    .catch(err => {
+      if (btn) { btn.disabled = false; btn.textContent = 'Submit Evaluation →'; }
+      if (errBox) {
+        errBox.style.display = 'block';
+        if (err.message === 'NOT_AUTHENTICATED') {
+          errBox.innerHTML = 'You must be signed in. <a href="/login.html" style="color:var(--cr-burgundy);font-weight:700">Sign in</a>';
+        } else if (err.message.includes('already submitted')) {
+          certPipelineState.evaluationDone = true;
+          renderAttestation();
+        } else {
+          errBox.textContent = err.message || 'Failed to submit evaluation. Please try again.';
+        }
+      }
+    });
+}
+
+function renderAttestation() {
+  const area = document.getElementById('crContentArea');
+  const ceHours = course.ceHours || 1;
+  const presenter = 'Kejuiana Johnson, MA, LPC, NCC, CPCS, BC-TMH';
+
+  let html = `<div style="max-width:600px;margin:0 auto;padding:20px">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;padding-bottom:16px;border-bottom:2px solid var(--cr-burgundy)">
+      <span style="font-size:1.3rem">✍️</span>
+      <div>
+        <h3 style="margin:0;font-family:var(--cr-font-display);font-weight:700;color:var(--cr-navy)">Attestation Statement</h3>
+        <p style="margin:2px 0 0;font-size:0.78rem;color:var(--cr-text-muted)">Required for NBCC-approved CE certificates</p>
+      </div>
+    </div>
+
+    <div style="background:var(--cr-navy-faded);border:1.5px solid var(--cr-navy);border-radius:10px;padding:20px;margin-bottom:20px">
+      <p style="font-size:0.85rem;color:var(--cr-text);line-height:1.7;margin:0">
+        I, the undersigned, attest that I have completed the continuing education activity titled
+        <strong>"${esc(course.title || '')}"</strong> (${ceHours} contact hour${ceHours !== 1 ? 's' : ''})
+        offered by GA Integrated Therapeutic Perspectives, LLC (NBCC ACEP Provider #7760),
+        presented by ${presenter}.
+      </p>
+      <p style="font-size:0.85rem;color:var(--cr-text);line-height:1.7;margin:16px 0 0">
+        I affirm that I personally completed all course requirements, including reading the instructional content,
+        completing all interactive activities, and passing the final assessment. I understand that falsifying
+        CE documentation may result in disciplinary action by my licensing board.
+      </p>
+    </div>
+
+    <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;padding:12px;border-radius:8px;border:1.5px solid var(--cr-border);background:#fff;margin-bottom:16px" id="attestCheckLabel">
+      <input type="checkbox" id="attestCheckbox" style="margin-top:3px;width:18px;height:18px;accent-color:var(--cr-burgundy);cursor:pointer">
+      <span style="font-size:0.85rem;font-weight:600;color:var(--cr-navy);line-height:1.5">
+        I agree to the above attestation statement and certify that the information is true and accurate.
+      </span>
+    </label>
+
+    <div id="attest-error" style="display:none;padding:10px 14px;background:#FEF2F2;border:1px solid #DC2626;border-radius:8px;color:#991B1B;font-size:0.83rem;margin-bottom:12px"></div>
+
+    <button class="cr-btn cr-btn-success" data-action="submitAttestation" style="width:100%">
+      Submit Attestation & Get Certificate →
+    </button>
+
+    <p style="font-size:0.72rem;color:var(--cr-text-muted);text-align:center;margin-top:12px">
+      GAITP LLC · NBCC ACEP Provider #7760 · GA License #LPC009587
+    </p>
+  </div>`;
+
+  area.innerHTML = html;
+}
+
+function submitAttestation() {
+  const checkbox = document.getElementById('attestCheckbox');
+  const errBox = document.getElementById('attest-error');
+
+  if (!checkbox || !checkbox.checked) {
+    if (errBox) {
+      errBox.style.display = 'block';
+      errBox.textContent = 'You must agree to the attestation statement to continue.';
+    }
+    return;
+  }
+
+  const btn = document.querySelector('[data-action="submitAttestation"]');
+  if (btn) { btn.disabled = true; btn.textContent = 'Submitting...'; }
+
+  crPost('/attestation', { agreed: true })
+    .then(() => {
+      certPipelineState.attestationDone = true;
+      downloadCertificate();
+    })
+    .catch(err => {
+      if (btn) { btn.disabled = false; btn.textContent = 'Submit Attestation & Get Certificate →'; }
+      if (errBox) {
+        errBox.style.display = 'block';
+        if (err.message === 'NOT_AUTHENTICATED') {
+          errBox.innerHTML = 'Session expired. <a href="/login.html" style="color:var(--cr-burgundy);font-weight:700">Sign in again</a>';
+        } else {
+          errBox.textContent = err.message || 'Failed to submit attestation. Please try again.';
+        }
+      }
+    });
+}
+
+function downloadCertificate() {
+  const area = document.getElementById('crContentArea');
+
+  // Show loading state
+  area.innerHTML = `<div style="max-width:500px;margin:0 auto;padding:40px;text-align:center">
+    <div style="font-size:2.5rem;margin-bottom:16px">⏳</div>
+    <h3 style="font-family:var(--cr-font-display);font-weight:700;color:var(--cr-navy);margin-bottom:8px">Generating Your Certificate</h3>
+    <p style="font-size:0.85rem;color:var(--cr-text-muted)">Please wait while we prepare your NBCC-approved CE certificate...</p>
+  </div>`;
+
+  const headers = crAuthHeaders();
+  if (!headers) {
+    area.innerHTML = `<div style="max-width:500px;margin:0 auto;padding:40px;text-align:center">
+      <div style="font-size:2rem;margin-bottom:12px">🔒</div>
+      <h3 style="color:var(--cr-navy)">Session Expired</h3>
+      <p style="font-size:0.85rem;color:var(--cr-text-muted);margin-bottom:16px">Please sign in again to download your certificate.</p>
+      <a href="/login.html?redirect=${encodeURIComponent(location.pathname + location.search)}" class="cr-btn cr-btn-primary" style="display:inline-block;text-decoration:none">Sign In</a>
+    </div>`;
+    return;
+  }
+
+  fetch(crApiBase() + '/api/interactive-courses/' + crSlugOrId() + '/certificate', {
+    method: 'POST', headers
+  })
+    .then(res => {
+      if (!res.ok) return res.json().then(err => { throw new Error(err.error || err.message || 'Certificate generation failed'); });
+      return res.blob();
+    })
+    .then(blob => {
+      const url = URL.createObjectURL(blob);
+      const filename = (course.slug || 'certificate') + '_certificate.pdf';
+
+      area.innerHTML = `<div style="max-width:500px;margin:0 auto;padding:40px;text-align:center">
+        <div style="font-size:3rem;margin-bottom:16px">🎓</div>
+        <h3 style="font-family:var(--cr-font-display);font-weight:700;color:var(--cr-navy);margin-bottom:4px">Certificate Ready!</h3>
+        <p style="font-size:0.85rem;color:var(--cr-text-secondary);margin-bottom:20px">
+          ${esc(course.title || '')} · ${course.ceHours || 1} CE Hour${(course.ceHours || 1) !== 1 ? 's' : ''}
+        </p>
+
+        <a href="${url}" download="${esc(filename)}"
+          style="display:inline-flex;align-items:center;gap:8px;padding:14px 28px;background:var(--cr-burgundy);color:#fff;
+          font-weight:700;font-size:0.95rem;border-radius:10px;text-decoration:none;transition:background 0.15s"
+          onmouseover="this.style.background='var(--cr-burgundy-light)'"
+          onmouseout="this.style.background='var(--cr-burgundy)'">
+          📥 Download Certificate (PDF)
+        </a>
+
+        <div style="margin-top:24px;padding:16px;background:var(--cr-green-faded);border:1px solid var(--cr-green);border-radius:10px;text-align:left">
+          <p style="font-size:0.83rem;color:var(--cr-green);font-weight:700;margin:0 0 6px">✅ What happens next:</p>
+          <ul style="margin:0;padding-left:18px;font-size:0.82rem;color:var(--cr-text-secondary);line-height:1.6">
+            <li>Your CE hours have been recorded in your account</li>
+            <li>The certificate has been saved to your Credentials dashboard</li>
+            <li>You can re-download it anytime from your account</li>
+          </ul>
+        </div>
+
+        <div style="margin-top:16px">
+          <a href="/dashboard.html" style="font-size:0.83rem;color:var(--cr-burgundy);font-weight:600;text-decoration:none">← Back to Dashboard</a>
+        </div>
+
+        <div style="margin-top:20px;font-size:10px;color:var(--cr-text-muted)">
+          Powered by CReady™ Viewer · © 2026 GAITP LLC · NBCC ACEP #7760
+        </div>
+      </div>`;
+
+      // PostHog: certificate generated
+      if (window.posthog) {
+        posthog.capture('certificate_generated', {
+          courseId: course._id,
+          courseTitle: course.title,
+          ceHours: course.ceHours || 0
+        });
+      }
+    })
+    .catch(err => {
+      console.error('[CR] Certificate generation failed:', err);
+      let msg = err.message || 'Certificate generation failed.';
+      // Handle specific backend errors with user-friendly messages
+      let hint = '';
+      if (msg.includes('Assessment required')) hint = 'Your assessment results may not have been saved. Try refreshing and retaking the assessment.';
+      else if (msg.includes('Evaluation required')) hint = 'The course evaluation was not recorded. Please go back and try again.';
+      else if (msg.includes('Attestation required')) hint = 'The attestation was not recorded. Please go back and try again.';
+
+      area.innerHTML = `<div style="max-width:500px;margin:0 auto;padding:40px;text-align:center">
+        <div style="font-size:2rem;margin-bottom:12px">⚠️</div>
+        <h3 style="color:var(--cr-navy)">Certificate Generation Failed</h3>
+        <p style="font-size:0.85rem;color:var(--cr-text-secondary);margin-bottom:8px">${esc(msg)}</p>
+        ${hint ? `<p style="font-size:0.82rem;color:var(--cr-text-muted);margin-bottom:16px">${esc(hint)}</p>` : ''}
+        <button class="cr-btn cr-btn-primary" onclick="downloadCertificate()" style="margin-right:8px">Try Again</button>
+        <a href="/dashboard.html" style="font-size:0.83rem;color:var(--cr-burgundy);font-weight:600;text-decoration:none">Go to Dashboard</a>
+      </div>`;
+    });
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -4820,12 +5222,18 @@ document.addEventListener('click', function(e) {
     case 'ttsStop': ttsStop(); break;
     case 'ttsRestart': ttsRestart(); break;
     
-    // ─── Certificate ───
+    // ─── Certificate Pipeline ───
+    case 'startCertPipeline': renderEvaluation(); break;
+    case 'submitEvaluation': submitEvaluation(); break;
+    case 'submitAttestation': submitAttestation(); break;
+    case 'downloadCertificate': downloadCertificate(); break;
     case 'requestCertificate':
+      // Legacy: if embedded, notify parent; otherwise start pipeline
       if (window.parent !== window) {
         window.parent.postMessage({ type: 'REQUEST_CERTIFICATE' }, '*');
       } else {
-        alert('Certificate generation available when embedded in CounselorReady');
+        const token = localStorage.getItem('token');
+        if (token) { renderEvaluation(); } else { alert('Please sign in to receive your certificate.'); }
       }
       break;
   }
