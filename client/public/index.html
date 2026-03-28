@@ -117,6 +117,10 @@
       transform: translateY(-4px);
     }
   </style>
+  <script>
+    !function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.async=!0,p.src=s.api_host+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+".people (stub)"},o="capture identify alias people.set people.set_once set_config register register_once unregister opt_out_capturing has_opted_out_capturing opt_in_capturing reset isFeatureEnabled onFeatureFlags getFeatureFlag getFeatureFlagPayload reloadFeatureFlags group updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures getActiveMatchingSurveys getSurveys onSessionId".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
+    posthog.init('Phx_rDRXmxgT8fDYO1uqisPDyOrcEm5kvD319ebxWUNlLUC8ZIC', { api_host: 'https://us.i.posthog.com' });
+  </script>
 </head>
 <body class="bg-stone-50 text-gray-900 antialiased">
   
@@ -183,7 +187,7 @@
         </a>
       </div>
       <div class="mt-6 flex justify-center">
-        <a href="/tools/index.html" class="inline-flex items-center gap-2 text-sm font-semibold px-5 py-2.5 rounded-full border-2 border-hunter-600 text-hunter-700 hover:bg-hunter-50 transition-all" style="background: rgba(74,124,89,0.07);">
+        <a href="/tools/index.html" onclick="window.posthog && posthog.capture('free_tools_clicked', { source: 'landing_hero' })" class="inline-flex items-center gap-2 text-sm font-semibold px-5 py-2.5 rounded-full border-2 border-hunter-600 text-hunter-700 hover:bg-hunter-50 transition-all" style="background: rgba(74,124,89,0.07);">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
           Free Clinical Tools — No account needed
         </a>
