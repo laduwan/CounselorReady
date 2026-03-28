@@ -1578,19 +1578,91 @@ const CR614 = {
   ]
 };
 // ============================================================
+// TRANSFORM: convert legacy format → valid CourseViewer format
+// ============================================================
+
+function convertOptions(options, correctAnswer) {
+  return (options || []).map((opt, i) => ({
+    text: typeof opt === 'string' ? opt : (opt.text || ''),
+    isCorrect: i === correctAnswer,
+  }));
+}
+
+function transformCourse(course) {
+  let examBlock = null;
+  const sections = [];
+
+  for (const mod of (course.modules || [])) {
+    const contentBlocks = [];
+    let order = 0;
+
+    for (const block of (mod.contentBlocks || [])) {
+      // Final exam block → goes to assessment field, not contentBlocks
+      if (block.type === 'quiz' && block.isExam) {
+        examBlock = block;
+        continue;
+      }
+      // knowledgeCheck → expand each question into a separate multipleChoice block
+      if (block.type === 'knowledgeCheck') {
+        for (const q of (block.questions || [])) {
+          contentBlocks.push({
+            type: 'multipleChoice',
+            order: order++,
+            question: q.question,
+            options: convertOptions(q.options, q.correctAnswer),
+            explanation: q.explanation || '',
+          });
+        }
+        continue;
+      }
+      contentBlocks.push({ ...block, order: order++ });
+    }
+
+    sections.push({
+      title: mod.title,
+      description: mod.description || '',
+      order: mod.order,
+      estimatedTime: mod.estimatedTime || 20,
+      contentBlocks,
+    });
+  }
+
+  // Build assessment from the exam block's questions
+  const baseAssessment = course.assessment || {};
+  const assessment = examBlock ? {
+    title: examBlock.title || `Final Assessment — ${course.courseCode}: ${course.title}`,
+    timeLimit: examBlock.timeLimit || 30,
+    passThreshold: (examBlock.passingScore || baseAssessment.passingScore || 80) / 100,
+    attemptsAllowed: examBlock.maxAttempts || baseAssessment.maxAttempts || 3,
+    shuffleQuestions: examBlock.shuffleQuestions !== false,
+    shuffleOptions: true,
+    questions: (examBlock.questions || []).map(q => ({
+      question: q.question,
+      type: 'multipleChoice',
+      options: convertOptions(q.options, q.correctAnswer),
+      explanation: q.explanation || '',
+    })),
+  } : baseAssessment;
+
+  const { modules, ...rest } = course;
+  return { ...rest, sections, assessment };
+}
+
+// ============================================================
 // DATABASE OPERATIONS
 // ============================================================
 
-const courseSchema = new mongoose.Schema({}, { strict: false, collection: 'courses' });
-const Course = mongoose.models.Course || mongoose.model('Course', courseSchema);
+const icSchema = new mongoose.Schema({}, { strict: false, collection: 'interactivecourses' });
+const ICourse = mongoose.models.InteractiveCourse || mongoose.model('InteractiveCourse', icSchema);
 
 async function upsert(course) {
-  const existing = await Course.findOne({ slug: course.slug });
+  const transformed = transformCourse(course);
+  const existing = await ICourse.findOne({ slug: transformed.slug });
   if (existing) {
-    await Course.findOneAndReplace({ slug: course.slug }, course, { new: true });
+    await ICourse.findOneAndReplace({ slug: transformed.slug }, transformed, { new: true });
     return 'updated';
   } else {
-    await Course.create(course);
+    await ICourse.create(transformed);
     return 'created';
   }
 }
@@ -1609,7 +1681,7 @@ async function seedAll() {
     try {
       const action = await upsert(course);
       console.log(`✅ ${course.courseCode}  ${action.toUpperCase()}  |  ${course.title}`);
-      console.log(`   ${course.ceHours} CE hrs  |  ${course.modules.length} modules  |  status: ${course.status}`);
+      console.log(`   ${course.ceHours} CE hrs  |  ${course.modules?.length || 0} sections  |  status: ${course.status}`);
       passed++;
     } catch (err) {
       console.error(`❌ ${course.courseCode} FAILED:`, err.message);
