@@ -3,7 +3,6 @@
  * All rights reserved. Proprietary and confidential.
  * Unauthorized copying or distribution is strictly prohibited.
  */
-#!/usr/bin/env node
 /**
  * seedGeriatricSeries-AllFive-CR610-CR614-89027words.js
  * Bulk seed: 5 geriatric mental health CE courses (CR-610 through CR-614)
