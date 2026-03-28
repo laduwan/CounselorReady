@@ -41,6 +41,7 @@ export default function Landing() {
           <nav className="hidden md:flex items-center gap-8">
             <a href="#features" style={{ color: '#355E3B' }} className="text-sm font-medium tracking-wide hover:opacity-70 transition-opacity">Features</a>
             <a href="#pricing" style={{ color: '#355E3B' }} className="text-sm font-medium tracking-wide hover:opacity-70 transition-opacity">Pricing</a>
+            <a href="/tools/index.html" style={{ color: '#355E3B' }} className="text-sm font-medium tracking-wide hover:opacity-70 transition-opacity">Free Tools</a>
             <a href="/about.html" style={{ color: '#355E3B' }} className="text-sm font-medium tracking-wide hover:opacity-70 transition-opacity">About</a>
           </nav>
           <div className="flex items-center gap-4">
