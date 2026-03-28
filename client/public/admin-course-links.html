@@ -13,6 +13,7 @@
           colors: {
             burgundy: { 50:'#fdf5f7', 100:'#fae8ec', 200:'#f3ccd5', 700:'#8b2542', 800:'#6b1d34', 900:'#4a1524' },
             hunter:   { 50:'#f2f7f4', 100:'#e3efe8', 500:'#4a7c59', 600:'#3d6849', 700:'#34503d' },
+            forest:   { 50:'#f2f7f4', 100:'#e0ede5', 400:'#6ba881', 500:'#4a7c59', 600:'#3d6549', 700:'#33523d' },
             gold:     { 400:'#d4a855', 500:'#b8922e' },
             navy:     { 700:'#284157', 800:'#1b3a5c' },
           }
@@ -21,17 +22,12 @@
     }
   </script>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Lato:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <!-- QR Code library -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <style>
     body { font-family: 'Lato', system-ui, sans-serif; background: #F8F7F4; }
     .font-display { font-family: 'Cormorant Garamond', Georgia, serif; }
-    .sidebar { width: 240px; flex-shrink: 0; }
-    .main-content { margin-left: 240px; }
-    @media (max-width: 768px) {
-      .sidebar { display: none; }
-      .main-content { margin-left: 0; }
-    }
     .course-row:hover { background: #fdf5f7; }
     .copy-btn { transition: all .15s; }
     .copy-btn.copied { background: #4a7c59 !important; color: #fff !important; border-color: #4a7c59 !important; }
@@ -77,54 +73,70 @@
   </div>
 </div>
 
-<!-- Sidebar -->
-<aside class="sidebar fixed top-0 left-0 h-full bg-burgundy-900 flex flex-col z-40">
-  <div class="px-5 py-4 border-b border-burgundy-700">
-    <div class="flex items-center gap-3">
-      <div class="w-9 h-9 bg-hunter-700 rounded-lg flex items-center justify-center">
-        <span class="font-display font-bold text-gold-400 text-sm">CR</span>
-      </div>
-      <div>
-        <div class="font-display text-base font-semibold leading-tight">
-          <span class="text-burgundy-200">Counselor</span><span class="text-hunter-500">Ready</span>
+  <!-- Admin Header -->
+  <header class="bg-burgundy-900 text-white sticky top-0 z-50">
+    <div class="max-w-full px-6 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <div class="w-9 h-9 bg-burgundy-800 rounded-lg flex items-center justify-center relative overflow-hidden">
+          <span class="font-display font-bold text-gold-400 absolute" style="font-size:16px;top:2px;left:5px;">C</span>
+          <span class="font-display font-bold text-forest-400 absolute" style="font-size:16px;bottom:2px;left:13px;">R</span>
         </div>
-        <div class="text-[10px] text-gold-400 font-medium tracking-wide">ADMIN</div>
+        <div>
+          <span class="font-display font-semibold text-lg">
+            <span style="color:#f2a8be">Counselor</span><span style="color:#98c3a9">Ready</span>
+          </span>
+          <span class="ml-2 text-xs bg-gold-500 text-white px-2 py-0.5 rounded-full font-semibold">ADMIN</span>
+        </div>
+      </div>
+      <div class="flex items-center gap-4 text-sm">
+        <span class="text-burgundy-200" id="adminEmail">Admin</span>
+        <a href="/dashboard.html" class="text-burgundy-300 hover:text-white flex items-center gap-1">
+          <i class="fas fa-home text-xs"></i> Exit to Dashboard
+        </a>
       </div>
     </div>
-  </div>
-  <nav class="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
-    <a href="admin-dashboard.html" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-800 text-sm">
-      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
-      Dashboard
-    </a>
-    <a href="admin-courses.html" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-800 text-sm">
-      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
-      Courses
-    </a>
-    <a href="admin-course-links.html" class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-burgundy-700 text-white text-sm">
-      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
-      Share Links
-    </a>
-    <a href="admin-users.html" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-800 text-sm">
-      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
-      Users
-    </a>
-    <a href="admin-analytics.html" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-800 text-sm">
-      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
-      Analytics
-    </a>
-    <a href="admin-credentials.html" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-800 text-sm">
-      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
-      Credentials
-    </a>
-  </nav>
-  <div class="px-4 py-3 border-t border-burgundy-700">
-    <p class="text-[10px] text-burgundy-400">NBCC ACEP #7760</p>
-  </div>
-</aside>
+  </header>
+
+  <div class="flex">
+    <!-- Sidebar -->
+    <aside class="w-52 bg-white border-r border-burgundy-100 min-h-[calc(100vh-52px)] sticky top-[52px] p-4">
+      <nav class="space-y-1 text-sm">
+        <a href="/admin-courses.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
+          <i class="fas fa-book w-4 text-burgundy-600"></i> Courses
+        </a>
+        <a href="/admin-course-links.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-burgundy-50 text-burgundy-800 font-medium">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+          Share Links
+        </a>
+        <a href="/admin-users.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
+          <i class="fas fa-users w-4"></i> Users
+        </a>
+        <a href="/admin-analytics.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
+          <i class="fas fa-chart-line w-4"></i> Analytics
+        </a>
+        <a href="/admin-messages.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
+          <i class="fas fa-envelope w-4"></i> Messages
+        </a>
+        <a href="/admin-credentials.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
+          <i class="fas fa-id-card w-4"></i> Credentials
+        </a>
+        <a href="/admin-hardship.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
+          <i class="fas fa-hand-holding-heart w-4"></i> Hardship
+        </a>
+        <a href="/admin-integrations.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
+          <i class="fas fa-plug w-4"></i> Integrations
+        </a>
+        <a href="/admin-migration.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
+          <i class="fas fa-database w-4"></i> Migration
+        </a>
+        <a href="/admin-help.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
+          <i class="fas fa-question-circle w-4"></i> Help Center
+        </a>
+      </nav>
+    </aside>
 
 <!-- Main -->
-<main class="main-content min-h-screen">
+<main class="flex-1 min-h-screen">
 
   <!-- Header -->
   <header class="bg-white border-b border-gray-200 sticky top-0 z-30 px-6 py-4">
@@ -336,6 +348,7 @@ if (window.posthog) posthog.capture('course_completed', {
 
   </div>
 </main>
+  </div><!-- close flex wrapper -->
 
 <script>
   const API_BASE = window.location.hostname === 'localhost'
