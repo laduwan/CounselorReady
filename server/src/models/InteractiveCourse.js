@@ -8,14 +8,20 @@ const ContentBlockSchema = new mongoose.Schema({
     type: String,
     enum: [
       'accordion',
+      'callout',
       'cardSort',
+      'deliverables',
+      'fillInBlank',
       'flashcardDeck',
       'hotspot',
       'image',
       'imageText',
+      'keyTakeaway',
+      'knowledgeCheck',
       'matching',
       'multiSelect',
       'multipleChoice',
+      'quiz',
       'references',
       'reflection',
       'resources',
@@ -78,8 +84,22 @@ const ContentBlockSchema = new mongoose.Schema({
   resources: [{
     title: String,
     url: String,
-    type: { type: String, enum: ['pdf', 'video', 'link', 'article', 'website', 'book'], default: 'link' }
+    type: { type: String, enum: ['pdf', 'video', 'link', 'article', 'website', 'book', 'xlsx', 'xls', 'csv', 'docx', 'doc', 'pptx', 'ppt', 'zip', 'worksheet', 'toolkit', 'template', 'guide'], default: 'link' }
   }],
+
+  // ── callout ──
+  calloutType: { type: String, enum: ['info', 'warning', 'ethics', 'clinical', 'tip', 'key', 'donot', 'protocol'], default: 'info' },
+  calloutItems: [String],
+
+  // ── fillInBlank ──
+  blanks: [{
+    prompt: String,
+    answer: String,
+    acceptAlternates: [String],
+  }],
+
+  // ── keyTakeaway ──
+  takeaways: [String],
 
   // ── video / videoEmbed ──
   videoTitle: String,
