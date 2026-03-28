@@ -629,7 +629,7 @@ if (window.posthog) posthog.capture('course_completed', {
     const token = localStorage.getItem('token') || localStorage.getItem('authToken');
     if (!token) { window.location.href = '/login.html'; return; }
     try {
-      const res = await fetch('https://api.counselorready.com/api/auth/me', {
+      const res = await fetch(`${API_BASE}/auth/me`, {
         headers: { 'Authorization': 'Bearer ' + token }
       });
       if (!res.ok) { window.location.href = '/login.html'; return; }
