@@ -962,18 +962,23 @@ router.get('/enrollments/search', protect, adminOnly, async (req, res) => {
 // @access  Admin only
 router.get('/courses', protect, adminOnly, async (req, res) => {
   try {
-    const courses = await Course.find()
-      .select('title slug category ceuHours ceHours status enrollmentCount createdAt isExternal externalUrl importType source wordCount moduleCount price ceuCategories courseCode')
-      .sort({ createdAt: -1 })
-      .lean();
+    const [legacyCourses, interactiveCourses] = await Promise.all([
+      Course.find()
+        .select('title slug category ceuHours ceHours status enrollmentCount createdAt isExternal externalUrl importType source wordCount moduleCount price ceuCategories courseCode')
+        .sort({ createdAt: -1 })
+        .lean(),
+      InteractiveCourse.find()
+        .select('title slug ceHours status enrollmentCount createdAt wordCount courseCode isPublished')
+        .sort({ createdAt: -1 })
+        .lean()
+    ]);
 
-    // Use cached wordCount from DB — no need to fetch full modules for the listing
-    const result = courses.map(course => ({
-      ...course,
-      wordCount: course.wordCount || 0
-    }));
+    const legacy = legacyCourses.map(c => ({ ...c, _collection: 'courses', wordCount: c.wordCount || 0 }));
+    const interactive = interactiveCourses.map(c => ({ ...c, _collection: 'interactivecourses', wordCount: c.wordCount || 0 }));
 
-    res.json({ courses: result });
+    const all = [...interactive, ...legacy];
+
+    res.json({ courses: all });
   } catch (error) {
     console.error('Get admin courses error:', error);
     res.status(500).json({ error: 'Failed to get courses' });
