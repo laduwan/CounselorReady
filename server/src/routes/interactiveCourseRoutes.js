@@ -220,7 +220,7 @@ router.get('/:id/progress', protect, async (req, res) => {
  */
 router.post('/:id/enroll', protect, async (req, res) => {
   try {
-    const course = await Course.findOne({ _id: req.params.id, status: 'published' });
+    const course = await findCourseByIdOrSlug(req.params.id);
     if (!course) {
       return res.status(404).json({ success: false, error: 'Course not found' });
     }
