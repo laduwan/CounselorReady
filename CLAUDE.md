@@ -1,3 +1,4 @@
+[CLAUDE(4).md](https://github.com/user-attachments/files/26329659/CLAUDE.4.md)
 # CounselorReady — Claude Code Instructions
 ## GA Integrated Therapeutic Perspectives LLC · NBCC ACEP #7760
 ---
@@ -118,3 +119,14 @@ Stop. Ask. Do not guess, do not approximate, do not "make it work" by changing s
 | CE Planner RNR block | ✅ Route exists | 🔧 Needs UI block | In RNR v2 |
 | CourseViewer | ✅ Locked | ✅ Locked | Do not touch |
 | Auth / Payments / Courses | ✅ Locked | ✅ Locked | Do not touch |
+
+---
+## ⚠️ PROTECTED FILE: server/src/index.js
+This file has a history of being overwritten with incomplete versions, breaking all routes that get dropped.
+### Rules for index.js
+1. **NEVER rewrite this file from scratch.** Always read the current version first, then make targeted additions.
+2. **NEVER remove any `import` or `app.use()` line.** If a route seems unused, leave it — removing it breaks the frontend page that depends on it.
+3. **NEVER change the interactiveCourseRoutes import.** It MUST point to `./routes/interactiveCourseRoutes.js` (NOT `courseRoutes.js`). The stripped `courseRoutes.js` is missing certificate generation, evaluation, attestation, gamification, and CE auto-allocation.
+4. **The REQUIRED_ROUTES object at the bottom is a startup integrity check.** If you add a new route, add it there too. The server will log which routes are broken on every boot.
+5. **If the task requires adding a new route:** add the import AND the `app.use()` mount AND an entry in REQUIRED_ROUTES. All three or nothing.
+6. **Current route count: 37 mounts.** If your version has fewer, you dropped something.
