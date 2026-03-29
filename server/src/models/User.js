@@ -206,6 +206,9 @@ const userSchema = new mongoose.Schema({
     ref: 'Partner'
   },
 
+  // Onboarding
+  onboardingComplete: { type: Boolean, default: false },
+
   // Metadata
   emailVerified: { type: Boolean, default: false },
   emailVerificationToken: { type: String },

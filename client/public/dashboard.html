@@ -327,5 +327,175 @@
 
     loadUser();loadStats();loadNotifs();
   </script>
+
+<!-- Onboarding Modal -->
+<div id="ob-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center;padding:20px;">
+
+  <div style="background:#fff;border-radius:16px;width:100%;max-width:480px;overflow:hidden;font-family:inherit;">
+
+    <!-- STEP 1: Set up profile -->
+    <div id="ob-step1" class="ob-step">
+      <div style="background:#6B1D34;padding:28px 28px 20px;">
+        <div style="width:52px;height:52px;border-radius:50%;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;margin-bottom:12px;">
+          <svg width="24" height="24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        </div>
+        <span style="display:inline-block;font-size:11px;font-weight:500;padding:3px 10px;border-radius:20px;background:#D4A855;color:#5a3800;margin-bottom:8px;letter-spacing:0.04em;">Step 1 of 3</span>
+        <p style="font-size:20px;font-weight:500;color:#fff;margin:0 0 4px;">Welcome — let's set up your profile</p>
+        <p style="font-size:13px;color:rgba(255,255,255,0.7);margin:0;">Takes about 2 minutes to complete</p>
+      </div>
+      <div style="padding:24px 28px 20px;">
+        <p style="font-size:14px;color:#1a1a1a;line-height:1.65;margin:0 0 16px;">Your profile is the foundation of your CounselorReady experience. Make sure these are filled in before you do anything else:</p>
+        <ul style="list-style:none;padding:0;margin:0 0 16px;">
+          <li style="display:flex;align-items:flex-start;gap:10px;font-size:14px;color:#1a1a1a;padding:7px 0;border-bottom:1px solid #f0ebe9;">
+            <span style="width:18px;height:18px;border-radius:50%;background:#4A7C59;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;"><svg width="10" height="10" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span>
+            Full legal name (appears on your CE certificates)
+          </li>
+          <li style="display:flex;align-items:flex-start;gap:10px;font-size:14px;color:#1a1a1a;padding:7px 0;border-bottom:1px solid #f0ebe9;">
+            <span style="width:18px;height:18px;border-radius:50%;background:#4A7C59;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;"><svg width="10" height="10" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span>
+            License type (LPC, LCSW, LMFT, NCC, etc.)
+          </li>
+          <li style="display:flex;align-items:flex-start;gap:10px;font-size:14px;color:#1a1a1a;padding:7px 0;">
+            <span style="width:18px;height:18px;border-radius:50%;background:#4A7C59;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;"><svg width="10" height="10" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span>
+            Licensed state — required to generate your certificate
+          </li>
+        </ul>
+        <div style="background:#f8f4f5;border-left:3px solid #6B1D34;border-radius:0 6px 6px 0;padding:10px 14px;font-size:13px;color:#3a1020;line-height:1.5;">
+          Your name and credentials will print exactly as entered on every certificate you earn.
+        </div>
+      </div>
+      <div style="padding:16px 28px 20px;border-top:1px solid #f0ebe9;display:flex;align-items:center;justify-content:space-between;">
+        <div style="display:flex;gap:6px;"><span class="ob-dot" style="width:8px;height:8px;border-radius:50%;background:#6B1D34;"></span><span class="ob-dot" style="width:8px;height:8px;border-radius:50%;background:#e0d8d8;"></span><span class="ob-dot" style="width:8px;height:8px;border-radius:50%;background:#e0d8d8;"></span></div>
+        <div style="display:flex;gap:12px;align-items:center;">
+          <button onclick="obSkip()" style="font-size:13px;color:#999;background:none;border:none;cursor:pointer;padding:0;">Skip tour</button>
+          <button onclick="obGoTo(2)" style="font-size:13px;font-weight:500;color:#fff;background:#6B1D34;border:none;border-radius:8px;padding:9px 22px;cursor:pointer;">Next →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 2: Upload license -->
+    <div id="ob-step2" class="ob-step" style="display:none;">
+      <div style="background:#6B1D34;padding:28px 28px 20px;">
+        <div style="width:52px;height:52px;border-radius:50%;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;margin-bottom:12px;">
+          <svg width="24" height="24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        </div>
+        <span style="display:inline-block;font-size:11px;font-weight:500;padding:3px 10px;border-radius:20px;background:#D4A855;color:#5a3800;margin-bottom:8px;letter-spacing:0.04em;">Step 2 of 3</span>
+        <p style="font-size:20px;font-weight:500;color:#fff;margin:0 0 4px;">Upload your license</p>
+        <p style="font-size:13px;color:rgba(255,255,255,0.7);margin:0;">Unlock automatic CE tracking</p>
+      </div>
+      <div style="padding:24px 28px 20px;">
+        <p style="font-size:14px;color:#1a1a1a;line-height:1.65;margin:0 0 16px;">Upload a copy of your license and CounselorReady will automatically track your renewal date and calculate exactly how many CE hours you still need.</p>
+        <ul style="list-style:none;padding:0;margin:0 0 16px;">
+          <li style="display:flex;align-items:flex-start;gap:10px;font-size:14px;color:#1a1a1a;padding:7px 0;border-bottom:1px solid #f0ebe9;">
+            <span style="width:18px;height:18px;border-radius:50%;background:#4A7C59;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;"><svg width="10" height="10" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span>
+            Accepted formats: JPG, PNG, or PDF
+          </li>
+          <li style="display:flex;align-items:flex-start;gap:10px;font-size:14px;color:#1a1a1a;padding:7px 0;border-bottom:1px solid #f0ebe9;">
+            <span style="width:18px;height:18px;border-radius:50%;background:#4A7C59;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;"><svg width="10" height="10" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span>
+            Your renewal deadline is tracked automatically
+          </li>
+          <li style="display:flex;align-items:flex-start;gap:10px;font-size:14px;color:#1a1a1a;padding:7px 0;">
+            <span style="width:18px;height:18px;border-radius:50%;background:#4A7C59;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;"><svg width="10" height="10" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span>
+            CE requirements pulled from your state board
+          </li>
+        </ul>
+        <div style="background:#f8f4f5;border-left:3px solid #6B1D34;border-radius:0 6px 6px 0;padding:10px 14px;font-size:13px;color:#3a1020;line-height:1.5;">
+          You can still take courses without uploading — but your dashboard progress bar won't activate until your license is on file.
+        </div>
+      </div>
+      <div style="padding:16px 28px 20px;border-top:1px solid #f0ebe9;display:flex;align-items:center;justify-content:space-between;">
+        <div style="display:flex;gap:6px;"><span style="width:8px;height:8px;border-radius:50%;background:#e0d8d8;display:inline-block;"></span><span style="width:8px;height:8px;border-radius:50%;background:#6B1D34;display:inline-block;"></span><span style="width:8px;height:8px;border-radius:50%;background:#e0d8d8;display:inline-block;"></span></div>
+        <div style="display:flex;gap:12px;align-items:center;">
+          <button onclick="obGoTo(1)" style="font-size:13px;color:#999;background:none;border:none;cursor:pointer;padding:0;">← Back</button>
+          <button onclick="obGoTo(3)" style="font-size:13px;font-weight:500;color:#fff;background:#6B1D34;border:none;border-radius:8px;padding:9px 22px;cursor:pointer;">Next →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 3: Certificates -->
+    <div id="ob-step3" class="ob-step" style="display:none;">
+      <div style="background:#6B1D34;padding:28px 28px 20px;">
+        <div style="width:52px;height:52px;border-radius:50%;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;margin-bottom:12px;">
+          <svg width="24" height="24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        </div>
+        <span style="display:inline-block;font-size:11px;font-weight:500;padding:3px 10px;border-radius:20px;background:#D4A855;color:#5a3800;margin-bottom:8px;letter-spacing:0.04em;">Step 3 of 3</span>
+        <p style="font-size:20px;font-weight:500;color:#fff;margin:0 0 4px;">How your certificates work</p>
+        <p style="font-size:13px;color:rgba(255,255,255,0.7);margin:0;">NBCC ACEP Provider #7760</p>
+      </div>
+      <div style="padding:24px 28px 20px;">
+        <p style="font-size:14px;color:#1a1a1a;line-height:1.65;margin:0 0 16px;">Every course you complete generates an official CE certificate — automatically, the moment you pass the final exam.</p>
+        <ul style="list-style:none;padding:0;margin:0 0 16px;">
+          <li style="display:flex;align-items:flex-start;gap:10px;font-size:14px;color:#1a1a1a;padding:7px 0;border-bottom:1px solid #f0ebe9;">
+            <span style="width:18px;height:18px;border-radius:50%;background:#4A7C59;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;"><svg width="10" height="10" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span>
+            Certificates are NBCC-approved and state-compliant
+          </li>
+          <li style="display:flex;align-items:flex-start;gap:10px;font-size:14px;color:#1a1a1a;padding:7px 0;border-bottom:1px solid #f0ebe9;">
+            <span style="width:18px;height:18px;border-radius:50%;background:#4A7C59;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;"><svg width="10" height="10" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span>
+            Downloadable PDF — yours to keep forever
+          </li>
+          <li style="display:flex;align-items:flex-start;gap:10px;font-size:14px;color:#1a1a1a;padding:7px 0;">
+            <span style="width:18px;height:18px;border-radius:50%;background:#4A7C59;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;"><svg width="10" height="10" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span>
+            All hours logged to your CE tracker automatically
+          </li>
+        </ul>
+        <div style="background:#f8f4f5;border-left:3px solid #6B1D34;border-radius:0 6px 6px 0;padding:10px 14px;font-size:13px;color:#3a1020;line-height:1.5;">
+          A licensed state must be saved in your profile before a certificate can be generated — that's why Step 1 matters.
+        </div>
+      </div>
+      <div style="padding:16px 28px 20px;border-top:1px solid #f0ebe9;display:flex;align-items:center;justify-content:space-between;">
+        <div style="display:flex;gap:6px;"><span style="width:8px;height:8px;border-radius:50%;background:#e0d8d8;display:inline-block;"></span><span style="width:8px;height:8px;border-radius:50%;background:#e0d8d8;display:inline-block;"></span><span style="width:8px;height:8px;border-radius:50%;background:#6B1D34;display:inline-block;"></span></div>
+        <div style="display:flex;gap:12px;align-items:center;">
+          <button onclick="obGoTo(2)" style="font-size:13px;color:#999;background:none;border:none;cursor:pointer;padding:0;">← Back</button>
+          <button onclick="obFinish()" style="font-size:13px;font-weight:500;color:#fff;background:#4A7C59;border:none;border-radius:8px;padding:9px 22px;cursor:pointer;">Go to my profile →</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+function showOnboarding() {
+  document.getElementById('ob-overlay').style.display = 'flex';
+}
+
+function obGoTo(n) {
+  document.querySelectorAll('.ob-step').forEach(s => s.style.display = 'none');
+  document.getElementById('ob-step' + n).style.display = 'block';
+}
+
+function obFinish() {
+  _obComplete();
+  window.location.href = '/settings.html';
+}
+
+function obSkip() {
+  _obComplete();
+  document.getElementById('ob-overlay').style.display = 'none';
+}
+
+function _obComplete() {
+  try {
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    user.onboardingComplete = true;
+    localStorage.setItem('user', JSON.stringify(user));
+  } catch(e) {}
+
+  const token = localStorage.getItem('token');
+  if (token) {
+    fetch('/api/users/me', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify({ onboardingComplete: true })
+    }).catch(() => {});
+  }
+}
+
+(function() {
+  try {
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    if (!user.onboardingComplete) showOnboarding();
+  } catch(e) {}
+})();
+</script>
 </body>
 </html>

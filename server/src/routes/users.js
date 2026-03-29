@@ -60,6 +60,26 @@ router.put('/profile', protect, async (req, res) => {
   }
 });
 
+// @route   PUT /api/users/me
+// @desc    Update user flags (onboardingComplete, etc.)
+// @access  Private
+router.put('/me', protect, async (req, res) => {
+  try {
+    const { onboardingComplete } = req.body;
+    const user = await User.findById(req.user._id);
+
+    if (onboardingComplete !== undefined) {
+      user.onboardingComplete = Boolean(onboardingComplete);
+    }
+
+    await user.save();
+    res.json({ message: 'Updated', user: user.toJSON() });
+  } catch (error) {
+    console.error('Update user error:', error);
+    res.status(500).json({ error: 'Failed to update user' });
+  }
+});
+
 // @route   PUT /api/users/notifications
 // @desc    Update notification preferences
 // @access  Private
