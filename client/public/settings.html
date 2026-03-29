@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Settings | CounselorReady</title>
-  <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Lato:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   <style>
     :root {
       --burgundy: #6B1D34;
@@ -36,13 +37,13 @@
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
     body {
-      font-family: 'Source Sans 3', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-family: 'Lato', -apple-system, BlinkMacSystemFont, sans-serif;
       background: var(--bg);
       color: var(--text-primary);
       line-height: 1.6;
     }
 
-    /* â”€â”€ Navigation Bar â”€â”€ */
+    /* -- Navigation Bar -- */
     .navbar {
       background: linear-gradient(135deg, var(--burgundy) 0%, var(--burgundy-light) 100%);
       padding: 0 2rem;
@@ -59,21 +60,23 @@
       text-decoration: none;
     }
     .logo-mark {
-      width: 38px; height: 38px;
-      background: linear-gradient(135deg, var(--burgundy-light), var(--burgundy));
-      border-radius: 10px;
+      width: 42px; height: 42px;
+      background: linear-gradient(145deg, #7d2340, #5a1829);
+      border: 1.5px solid rgba(255,255,255,0.15);
+      border-radius: 12px;
       display: flex; align-items: center; justify-content: center;
-      font-weight: 700; font-size: 14px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      position: relative;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
     }
-    .logo-mark .c { color: var(--honey); }
-    .logo-mark .r { color: var(--hunter-light); }
+    .logo-mark .c { color: #D0768A; font-family: 'Cormorant Garamond', Georgia, serif; font-weight: 700; font-size: 19px; position: absolute; top: 6px; left: 9px; }
+    .logo-mark .r { color: #4A7C59; font-family: 'Cormorant Garamond', Georgia, serif; font-weight: 700; font-size: 16px; position: absolute; top: 13px; left: 15px; }
     .navbar-title {
-      font-family: 'Merriweather', serif;
-      font-size: 1.15rem;
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 1.4rem;
+      letter-spacing: 0.01em;
     }
-    .navbar-title .counselor { color: #F5D0D8; font-weight: 700; }
-    .navbar-title .ready { color: #A8D5BA; font-weight: 700; }
+    .navbar-title .counselor { color: #D0768A; font-weight: 700; }
+    .navbar-title .ready { color: #7EB88E; font-weight: 700; }
     .navbar-links {
       display: flex; align-items: center; gap: 1.25rem;
     }
@@ -84,7 +87,7 @@
     }
     .navbar-links a:hover, .navbar-links a.active { color: #fff; }
 
-    /* â”€â”€ Page Layout â”€â”€ */
+    /* -- Page Layout -- */
     .page-container {
       max-width: 900px;
       margin: 0 auto;
@@ -94,7 +97,7 @@
       margin-bottom: 2rem;
     }
     .page-header h1 {
-      font-family: 'Merriweather', serif;
+      font-family: 'Cormorant Garamond', Georgia, serif;
       font-size: 1.75rem;
       color: var(--burgundy);
       margin-bottom: 0.25rem;
@@ -104,32 +107,37 @@
       font-size: 0.95rem;
     }
 
-    /* â”€â”€ Settings Tabs â”€â”€ */
+    /* -- Settings Tabs -- */
     .settings-tabs {
       display: flex;
-      gap: 0;
-      border-bottom: 2px solid var(--border);
+      gap: 6px;
       margin-bottom: 2rem;
+      background: #F0EDEA;
+      border-radius: 12px;
+      padding: 4px;
+      width: fit-content;
     }
     .settings-tab {
-      padding: 0.75rem 1.5rem;
-      font-size: 0.95rem;
+      padding: 10px 24px;
+      font-size: 0.9rem;
       font-weight: 600;
+      font-family: 'Lato', sans-serif;
       color: var(--text-secondary);
       background: none;
       border: none;
       cursor: pointer;
-      border-bottom: 3px solid transparent;
-      margin-bottom: -2px;
+      border-radius: 10px;
       transition: all 0.2s;
+      letter-spacing: 0.01em;
     }
-    .settings-tab:hover { color: var(--navy); }
+    .settings-tab:hover { color: var(--burgundy); background: rgba(255,255,255,0.6); }
     .settings-tab.active {
       color: var(--burgundy);
-      border-bottom-color: var(--burgundy);
+      background: #fff;
+      box-shadow: 0 1px 4px rgba(107,29,52,0.1);
     }
 
-    /* â”€â”€ Cards â”€â”€ */
+    /* -- Cards -- */
     .card {
       background: var(--card-bg);
       border-radius: 12px;
@@ -156,7 +164,7 @@
     .card-header-icon.honey { background: #FFFBEB; color: #B8860B; }
     .card-header-icon.navy { background: #EFF6FF; color: var(--navy); }
     .card-header h2 {
-      font-family: 'Merriweather', serif;
+      font-family: 'Cormorant Garamond', Georgia, serif;
       font-size: 1.1rem;
       color: var(--text-primary);
     }
@@ -167,7 +175,7 @@
     }
     .card-body { padding: 1.5rem; }
 
-    /* â”€â”€ Toggle Switch â”€â”€ */
+    /* -- Toggle Switch -- */
     .toggle-row {
       display: flex;
       align-items: center;
@@ -253,7 +261,7 @@
       margin-left: 6px;
     }
 
-    /* â”€â”€ Form Fields â”€â”€ */
+    /* -- Form Fields -- */
     .form-group { margin-bottom: 1.25rem; }
     .form-label {
       display: block;
@@ -290,7 +298,7 @@
       pointer-events: none;
     }
 
-    /* â”€â”€ Buttons â”€â”€ */
+    /* -- Buttons -- */
     .btn-primary {
       background: var(--hunter);
       color: white;
@@ -321,7 +329,7 @@
       background: #F0FAF3;
     }
 
-    /* â”€â”€ Reminder Schedule â”€â”€ */
+    /* -- Reminder Schedule -- */
     .schedule-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -347,7 +355,7 @@
     .schedule-dot.blue { background: #3B82F6; }
     .schedule-dot.green { background: var(--hunter); }
 
-    /* â”€â”€ CE Tracker Banner â”€â”€ */
+    /* -- CE Tracker Banner -- */
     .tracker-banner {
       display: flex;
       align-items: center;
@@ -374,7 +382,7 @@
       color: var(--hunter);
     }
 
-    /* â”€â”€ Toast â”€â”€ */
+    /* -- Toast -- */
     .toast {
       position: fixed;
       bottom: 2rem;
@@ -399,7 +407,7 @@
       opacity: 1;
     }
 
-    /* â”€â”€ Section Divider â”€â”€ */
+    /* -- Section Divider -- */
     .section-divider {
       display: flex;
       align-items: center;
@@ -418,11 +426,11 @@
       background: var(--border);
     }
 
-    /* â”€â”€ Tab Panels â”€â”€ */
+    /* -- Tab Panels -- */
     .tab-panel { display: none; }
     .tab-panel.active { display: block; }
 
-    /* â”€â”€ Responsive â”€â”€ */
+    /* -- Responsive -- */
     @media (max-width: 640px) {
       .page-container { padding: 1.25rem 1rem 3rem; }
       .schedule-grid { grid-template-columns: 1fr; }
@@ -435,45 +443,48 @@
 <body>
 
   <!-- Navigation -->
-  <nav class="navbar">
-    <a href="/dashboard" class="navbar-brand">
-      <div class="logo-mark"><span class="c">C</span><span class="r">R</span></div>
-      <div class="navbar-title">
-        <span class="counselor">COUNSELOR</span><span class="ready">READY</span>
+  <header style="background:#6B1D34;color:#fff;position:sticky;top:0;z-index:50;padding:0 1.5rem;height:56px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 8px rgba(107,29,52,0.25)">
+    <a href="/dashboard.html" style="display:flex;align-items:center;gap:12px;text-decoration:none">
+      <div style="width:36px;height:36px;background:rgba(0,0,0,0.15);border-radius:10px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden">
+        <span style="font-family:'Cormorant Garamond',Georgia,serif;font-weight:700;font-size:17px;color:#D0768A;position:absolute;top:3px;left:6px">C</span>
+        <span style="font-family:'Cormorant Garamond',Georgia,serif;font-weight:700;font-size:14px;color:#7EB88E;position:absolute;bottom:3px;left:13px">R</span>
       </div>
+      <span style="font-family:'Cormorant Garamond',Georgia,serif;font-size:1.35rem">
+        <span style="color:#f2a8be;font-weight:700">Counselor</span><span style="color:#98c3a9;font-weight:700">Ready</span>
+      </span>
     </a>
-    <div class="navbar-links">
-      <a href="/dashboard">Dashboard</a>
-      <a href="/courses">Courses</a>
-      <a href="/credentials">Credentials</a>
-      <a href="/certificates">Certificates</a>
-      <a href="/settings" class="active">Settings</a>
+    <div style="display:flex;align-items:center;gap:1.25rem;font-size:14px">
+      <a href="/dashboard.html" style="color:rgba(255,255,255,0.7);text-decoration:none">Dashboard</a>
+      <a href="/courses.html" style="color:rgba(255,255,255,0.7);text-decoration:none">Courses</a>
+      <a href="/credentials.html" style="color:rgba(255,255,255,0.7);text-decoration:none">Credentials</a>
+      <a href="/certificates.html" style="color:rgba(255,255,255,0.7);text-decoration:none">Certificates</a>
+      <a href="/settings.html" style="color:#fff;text-decoration:none;font-weight:600;border-bottom:2px solid #D4A855;padding-bottom:2px">Settings</a>
     </div>
-  </nav>
+  </header>
 
   <div class="page-container">
     <!-- Page Header -->
-    <div class="page-header">
+    <div class="page-header" style="display:flex;align-items:baseline;gap:12px;margin-bottom:2rem">
       <h1>Settings</h1>
-      <p>Manage your account, notification preferences, and subscription</p>
+      <span style="color:#D4A855;font-size:13px;letter-spacing:0.03em">Account &middot; Notifications &middot; Billing</span>
     </div>
 
     <!-- Settings Tabs -->
     <div class="settings-tabs">
       <button class="settings-tab active" data-tab="notifications" onclick="switchTab('notifications')">
-        ðŸ”” Notifications
+        Notifications
       </button>
       <button class="settings-tab" data-tab="profile" onclick="switchTab('profile')">
-        ðŸ‘¤ Profile
+        Profile
       </button>
       <button class="settings-tab" data-tab="account" onclick="switchTab('account')">
-        ðŸ”’ Account
+         Account
       </button>
     </div>
 
-    <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+    <!-- -- -->
     <!-- NOTIFICATIONS TAB                      -->
-    <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+    <!-- -- -->
     <div class="tab-panel active" id="tab-notifications">
 
       <!-- Contact Information -->
@@ -547,7 +558,7 @@
                 <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
               </div>
               <div>
-                <div class="toggle-label">SMS Reminders <span class="vip-badge">â˜… VIP</span></div>
+                <div class="toggle-label">SMS Reminders <span class="vip-badge">2605 VIP</span></div>
                 <div class="toggle-desc">Text message alerts for upcoming credential deadlines</div>
               </div>
             </div>
@@ -567,7 +578,7 @@
               </div>
               <div>
                 <div class="toggle-label">Weekly Progress Summary</div>
-                <div class="toggle-desc">Every Monday â€” see your CE progress across all credentials</div>
+                <div class="toggle-desc">Every Monday — see your CE progress across all credentials</div>
               </div>
             </div>
             <div class="toggle-switch">
@@ -672,11 +683,11 @@
         <div class="card-body" style="padding: 1rem 1.5rem;">
           <div class="tracker-banner">
             <div class="tracker-banner-text">
-              <span>ðŸ“Š</span>
+              <span></span>
               <p>Want to see a <strong>preview of your upcoming reminders</strong> and manage detailed CE tracking? Visit the CE Tracker on your dashboard.</p>
             </div>
             <a href="/dashboard#ce-tracker" class="btn-secondary" style="white-space: nowrap; text-decoration: none;">
-              Open CE Tracker â†’
+              Open CE Tracker →
             </a>
           </div>
         </div>
@@ -691,9 +702,9 @@
 
     </div>
 
-    <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+    <!-- -- -->
     <!-- PROFILE TAB (placeholder)              -->
-    <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+    <!-- -- -->
     <div class="tab-panel" id="tab-profile">
       <div class="card">
         <div class="card-header">
@@ -702,37 +713,129 @@
           </div>
           <div>
             <h2>Profile Information</h2>
-            <p>Manage your personal details and professional info</p>
+            <p>Your name, location, and contact details</p>
           </div>
         </div>
         <div class="card-body">
-          <p style="color: var(--text-secondary); font-size: 0.92rem;">
-            Profile settings are managed on your existing profile page. 
-            <a href="/profile" style="color: var(--hunter); font-weight: 600;">Go to Profile â†’</a>
-          </p>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
+            <div class="form-group">
+              <label class="form-label">First Name</label>
+              <input type="text" class="form-input" id="prof-firstName" placeholder="First name">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Last Name</label>
+              <input type="text" class="form-input" id="prof-lastName" placeholder="Last name">
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
+            <div class="form-group">
+              <label class="form-label">Email</label>
+              <input type="email" class="form-input" id="prof-email" disabled style="background:#f3f3f0;cursor:not-allowed">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Phone</label>
+              <input type="tel" class="form-input" id="prof-phone" placeholder="(555) 555-5555">
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
+            <div class="form-group">
+              <label class="form-label">Primary State (for CE requirements)</label>
+              <select class="form-input" id="prof-state">
+                <option value="">Select state...</option>
+                <option>AL</option><option>AK</option><option>AZ</option><option>AR</option><option>CA</option><option>CO</option><option>CT</option><option>DE</option><option>FL</option><option>GA</option><option>HI</option><option>ID</option><option>IL</option><option>IN</option><option>IA</option><option>KS</option><option>KY</option><option>LA</option><option>ME</option><option>MD</option><option>MA</option><option>MI</option><option>MN</option><option>MS</option><option>MO</option><option>MT</option><option>NE</option><option>NV</option><option>NH</option><option>NJ</option><option>NM</option><option>NY</option><option>NC</option><option>ND</option><option>OH</option><option>OK</option><option>OR</option><option>PA</option><option>RI</option><option>SC</option><option>SD</option><option>TN</option><option>TX</option><option>UT</option><option>VT</option><option>VA</option><option>WA</option><option>WV</option><option>WI</option><option>WY</option><option>DC</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Timezone</label>
+              <select class="form-input" id="prof-timezone">
+                <option value="America/New_York">Eastern (ET)</option>
+                <option value="America/Chicago">Central (CT)</option>
+                <option value="America/Denver">Mountain (MT)</option>
+                <option value="America/Los_Angeles">Pacific (PT)</option>
+                <option value="America/Anchorage">Alaska (AKT)</option>
+                <option value="Pacific/Honolulu">Hawaii (HT)</option>
+              </select>
+            </div>
+          </div>
+          <button class="btn-primary" onclick="saveProfile()" id="profileSaveBtn">Save Profile</button>
         </div>
       </div>
     </div>
 
-    <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
-    <!-- ACCOUNT TAB (placeholder)              -->
-    <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+    <!-- ACCOUNT TAB -->
     <div class="tab-panel" id="tab-account">
-      <div class="card">
+      <!-- Change Password -->
+      <div class="card" style="margin-bottom:20px">
         <div class="card-header">
           <div class="card-header-icon burgundy">
             <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
           </div>
           <div>
-            <h2>Account & Security</h2>
-            <p>Password, subscription, and account management</p>
+            <h2>Change Password</h2>
+            <p>Update your account password</p>
           </div>
         </div>
         <div class="card-body">
-          <p style="color: var(--text-secondary); font-size: 0.92rem;">
-            Manage your password and subscription on the 
-            <a href="/subscription" style="color: var(--hunter); font-weight: 600;">Subscription page â†’</a>
-          </p>
+          <div class="form-group" style="margin-bottom:16px">
+            <label class="form-label">Current Password</label>
+            <input type="password" class="form-input" id="pw-current" placeholder="Enter current password">
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
+            <div class="form-group">
+              <label class="form-label">New Password</label>
+              <input type="password" class="form-input" id="pw-new" placeholder="At least 8 characters">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Confirm New Password</label>
+              <input type="password" class="form-input" id="pw-confirm" placeholder="Repeat new password">
+            </div>
+          </div>
+          <p id="pw-error" style="color:#dc2626;font-size:13px;margin-bottom:12px;display:none"></p>
+          <button class="btn-primary" onclick="changePassword()" id="pwSaveBtn">Update Password</button>
+        </div>
+      </div>
+
+      <!-- Subscription -->
+      <div class="card" style="margin-bottom:20px">
+        <div class="card-header">
+          <div class="card-header-icon" style="background:var(--success-bg);color:var(--success-text)">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          </div>
+          <div>
+            <h2>Subscription</h2>
+            <p id="acct-plan-desc">Manage your plan and billing</p>
+          </div>
+        </div>
+        <div class="card-body">
+          <div style="display:flex;align-items:center;gap:16px;margin-bottom:16px">
+            <div>
+              <span style="font-weight:700;color:var(--burgundy);font-size:1.1rem" id="acct-plan-name">Loading...</span>
+              <span id="acct-plan-badge" style="display:inline-block;margin-left:8px;padding:2px 10px;border-radius:20px;font-size:11px;font-weight:600;background:var(--success-bg);color:var(--success-text)"></span>
+            </div>
+          </div>
+          <a href="/subscription.html" style="color:var(--hunter);font-weight:600;font-size:14px;text-decoration:none">Manage Subscription →</a>
+        </div>
+      </div>
+
+      <!-- Delete Account -->
+      <div class="card" style="border-color:#fca5a5">
+        <div class="card-header">
+          <div class="card-header-icon" style="background:#FEF2F2;color:#991B1B">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+          </div>
+          <div>
+            <h2 style="color:#991B1B">Delete Account</h2>
+            <p>Permanently delete your account and all data</p>
+          </div>
+        </div>
+        <div class="card-body">
+          <p style="color:var(--text-secondary);font-size:13px;margin-bottom:16px">This action cannot be undone. All your courses, certificates, credentials, and CE records will be permanently removed.</p>
+          <div id="delete-confirm-section" style="display:none;margin-bottom:16px">
+            <label class="form-label" style="color:#991B1B">Type your email to confirm</label>
+            <input type="email" class="form-input" id="delete-email" placeholder="your@email.com" style="border-color:#fca5a5;margin-bottom:12px">
+            <button onclick="deleteAccount()" style="background:#991B1B;color:#fff;border:none;padding:10px 20px;border-radius:10px;font-weight:600;font-size:14px;cursor:pointer">Permanently Delete My Account</button>
+          </div>
+          <button onclick="document.getElementById('delete-confirm-section').style.display='block';this.style.display='none'" style="background:none;border:1px solid #fca5a5;color:#991B1B;padding:8px 16px;border-radius:10px;font-weight:600;font-size:13px;cursor:pointer" id="delete-show-btn">Delete Account...</button>
         </div>
       </div>
     </div>
@@ -750,7 +853,7 @@
       ? 'http://localhost:5000/api' 
       : 'https://api.counselorready.com/api';
 
-    // â”€â”€ Tab Switching â”€â”€
+    // -- Tab Switching --
     function switchTab(tabName) {
       document.querySelectorAll('.settings-tab').forEach(t => t.classList.remove('active'));
       document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
@@ -758,7 +861,7 @@
       document.getElementById(`tab-${tabName}`).classList.add('active');
     }
 
-    // â”€â”€ Toggle Row Active State â”€â”€
+    // -- Toggle Row Active State --
     function updateToggleRow(rowId, isChecked) {
       const row = document.getElementById(rowId);
       if (isChecked) {
@@ -774,98 +877,213 @@
         const input = row.querySelector('input[type="checkbox"]');
         if (input && input.checked) row.classList.add('active');
       });
-      loadNotificationSettings();
+      loadAllSettings();
     });
 
-    // â”€â”€ Load Settings from API â”€â”€
-    async function loadNotificationSettings() {
-      try {
-        const token = localStorage.getItem('token');
-        if (!token) return;
-
-        const res = await fetch(`${API_BASE}/auth/me`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        if (!res.ok) return;
-
-        const data = await res.json();
-        const user = data.user || data;
-
-        // Populate contact info
-        if (user.email) document.getElementById('notif-email').value = user.email;
-        if (user.phone) document.getElementById('notif-phone').value = user.phone;
-
-        // Populate notification prefs if they exist
-        const prefs = user.notificationPreferences || user.notifications || {};
-        if (typeof prefs.emailReminders === 'boolean') {
-          document.getElementById('toggle-email').checked = prefs.emailReminders;
-          updateToggleRow('row-email', prefs.emailReminders);
-        }
-        if (typeof prefs.smsReminders === 'boolean') {
-          document.getElementById('toggle-sms').checked = prefs.smsReminders;
-          updateToggleRow('row-sms', prefs.smsReminders);
-        }
-        if (typeof prefs.weeklyProgress === 'boolean') {
-          document.getElementById('toggle-weekly').checked = prefs.weeklyProgress;
-          updateToggleRow('row-weekly', prefs.weeklyProgress);
-        }
-        if (typeof prefs.fallingBehindAlert === 'boolean') {
-          document.getElementById('toggle-alert').checked = prefs.fallingBehindAlert;
-          updateToggleRow('row-alert', prefs.fallingBehindAlert);
-        }
-        if (typeof prefs.ceMilestones === 'boolean') {
-          document.getElementById('toggle-milestone').checked = prefs.ceMilestones;
-          updateToggleRow('row-milestone', prefs.ceMilestones);
-        }
-        if (typeof prefs.courseProgressReminders === 'boolean') {
-          document.getElementById('toggle-progress').checked = prefs.courseProgressReminders;
-          updateToggleRow('row-progress', prefs.courseProgressReminders);
-        }
-      } catch (err) {
-        console.error('Failed to load notification settings:', err);
-      }
-    }
-
-    // â”€â”€ Save Settings to API â”€â”€
+    // -- Save Notification Settings --
     async function saveNotificationSettings() {
       const payload = {
-        phone: document.getElementById('notif-phone').value,
-        notificationPreferences: {
-          emailReminders: document.getElementById('toggle-email').checked,
-          smsReminders: document.getElementById('toggle-sms').checked,
-          weeklyProgress: document.getElementById('toggle-weekly').checked,
-          fallingBehindAlert: document.getElementById('toggle-alert').checked,
-          ceMilestones: document.getElementById('toggle-milestone').checked,
-          courseProgressReminders: document.getElementById('toggle-progress').checked,
-        }
+        emailReminders: document.getElementById('toggle-email').checked,
+        smsReminders: document.getElementById('toggle-sms').checked,
+        weeklyProgress: document.getElementById('toggle-weekly').checked,
+        fallingBehindAlert: document.getElementById('toggle-alert').checked,
+        ceMilestones: document.getElementById('toggle-milestone').checked,
+        courseProgressReminders: document.getElementById('toggle-progress').checked,
       };
 
       try {
         const token = localStorage.getItem('token');
-        const res = await fetch(`${API_BASE}/users/profile`, {
+        // Save phone to profile
+        const phone = document.getElementById('notif-phone').value;
+        if (phone) {
+          await fetch(`${API_BASE}/users/profile`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify({ phone })
+          });
+        }
+        // Save notification prefs to correct endpoint
+        const res = await fetch(`${API_BASE}/users/notifications`, {
           method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
           body: JSON.stringify(payload)
         });
 
         if (res.ok) {
-          showToast();
+          showToast('Notification preferences saved!');
         } else {
           const err = await res.json();
-          alert('Failed to save: ' + (err.message || 'Unknown error'));
+          alert('Failed to save: ' + (err.error || 'Unknown error'));
         }
       } catch (err) {
         console.error('Save error:', err);
-        alert('Network error â€” please try again.');
+        alert('Network error \u2014 please try again.');
       }
     }
 
-    // â”€â”€ Toast â”€â”€
-    function showToast() {
+    // -- Load all settings on page load --
+    async function loadAllSettings() {
+      const token = localStorage.getItem('token');
+      if (!token) { window.location.href = '/login.html'; return; }
+
+      try {
+        const res = await fetch(`${API_BASE}/auth/me`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!res.ok) { window.location.href = '/login.html'; return; }
+
+        const data = await res.json();
+        const user = data.user || data;
+
+        // -- Notifications tab --
+        if (user.email) document.getElementById('notif-email').value = user.email;
+        if (user.profile?.phone) document.getElementById('notif-phone').value = user.profile.phone;
+        const prefs = user.notifications || {};
+        const toggles = { email: 'toggle-email', sms: 'toggle-sms', weekly: 'toggle-weekly', alert: 'toggle-alert', milestone: 'toggle-milestone', progress: 'toggle-progress' };
+        const prefKeys = { email: 'emailReminders', sms: 'smsReminders', weekly: 'weeklyProgress', alert: 'fallingBehindAlert', milestone: 'ceMilestones', progress: 'courseProgressReminders' };
+        Object.keys(toggles).forEach(k => {
+          const val = prefs[prefKeys[k]];
+          if (typeof val === 'boolean') {
+            document.getElementById(toggles[k]).checked = val;
+            updateToggleRow('row-' + k, val);
+          }
+        });
+
+        // -- Profile tab --
+        document.getElementById('prof-firstName').value = user.profile?.firstName || '';
+        document.getElementById('prof-lastName').value = user.profile?.lastName || '';
+        document.getElementById('prof-email').value = user.email || '';
+        document.getElementById('prof-phone').value = user.profile?.phone || '';
+        if (user.profile?.state) {
+          const sel = document.getElementById('prof-state');
+          for (let i = 0; i < sel.options.length; i++) {
+            if (sel.options[i].value === user.profile.state || sel.options[i].text === user.profile.state) {
+              sel.selectedIndex = i; break;
+            }
+          }
+        }
+        if (user.profile?.timezone) {
+          document.getElementById('prof-timezone').value = user.profile.timezone;
+        }
+
+        // -- Account tab --
+        const plan = user.subscription?.plan || 'free';
+        const status = user.subscription?.status || 'free';
+        const planNames = { free: 'Free', starter: 'Starter', professional: 'Professional', vip: 'VIP', annual_vip: 'Annual VIP', lifetime: 'Lifetime' };
+        document.getElementById('acct-plan-name').textContent = planNames[plan] || plan;
+        const badge = document.getElementById('acct-plan-badge');
+        badge.textContent = status.charAt(0).toUpperCase() + status.slice(1);
+        if (status === 'active' || status === 'lifetime') {
+          badge.style.background = 'var(--success-bg)'; badge.style.color = 'var(--success-text)';
+        } else if (status === 'trial') {
+          badge.style.background = 'var(--warning-bg)'; badge.style.color = 'var(--warning-text)';
+        } else {
+          badge.style.background = '#FEF2F2'; badge.style.color = '#991B1B';
+        }
+      } catch (err) {
+        console.error('Failed to load settings:', err);
+      }
+    }
+
+    // -- Save Profile --
+    async function saveProfile() {
+      const btn = document.getElementById('profileSaveBtn');
+      btn.textContent = 'Saving...'; btn.disabled = true;
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`${API_BASE}/users/profile`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({
+            firstName: document.getElementById('prof-firstName').value,
+            lastName: document.getElementById('prof-lastName').value,
+            phone: document.getElementById('prof-phone').value,
+            state: document.getElementById('prof-state').value,
+            timezone: document.getElementById('prof-timezone').value,
+          })
+        });
+        if (res.ok) {
+          showToast('Profile saved!');
+        } else {
+          const err = await res.json();
+          alert('Failed to save: ' + (err.error || 'Unknown error'));
+        }
+      } catch (err) {
+        alert('Network error \u2014 please try again.');
+      } finally {
+        btn.textContent = 'Save Profile'; btn.disabled = false;
+      }
+    }
+
+    // -- Change Password --
+    async function changePassword() {
+      const current = document.getElementById('pw-current').value;
+      const newPw = document.getElementById('pw-new').value;
+      const confirm = document.getElementById('pw-confirm').value;
+      const errEl = document.getElementById('pw-error');
+      errEl.style.display = 'none';
+
+      if (!current || !newPw) { errEl.textContent = 'All fields are required'; errEl.style.display = 'block'; return; }
+      if (newPw.length < 8) { errEl.textContent = 'New password must be at least 8 characters'; errEl.style.display = 'block'; return; }
+      if (newPw !== confirm) { errEl.textContent = 'Passwords do not match'; errEl.style.display = 'block'; return; }
+
+      const btn = document.getElementById('pwSaveBtn');
+      btn.textContent = 'Updating...'; btn.disabled = true;
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`${API_BASE}/auth/change-password`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({ currentPassword: current, newPassword: newPw })
+        });
+        if (res.ok) {
+          showToast('Password updated!');
+          document.getElementById('pw-current').value = '';
+          document.getElementById('pw-new').value = '';
+          document.getElementById('pw-confirm').value = '';
+        } else {
+          const err = await res.json();
+          errEl.textContent = err.error || 'Failed to update password';
+          errEl.style.display = 'block';
+        }
+      } catch (err) {
+        errEl.textContent = 'Network error \u2014 please try again.';
+        errEl.style.display = 'block';
+      } finally {
+        btn.textContent = 'Update Password'; btn.disabled = false;
+      }
+    }
+
+    // -- Delete Account --
+    async function deleteAccount() {
+      const email = document.getElementById('delete-email').value;
+      if (!email) { alert('Please enter your email to confirm.'); return; }
+      if (!window.confirm('This will permanently delete your account, all courses, certificates, and CE records. This cannot be undone. Are you sure?')) return;
+
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`${API_BASE}/users/account`, {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({ confirmEmail: email })
+        });
+        if (res.ok) {
+          localStorage.removeItem('token');
+          alert('Your account has been deleted.');
+          window.location.href = '/';
+        } else {
+          const err = await res.json();
+          alert(err.error || 'Failed to delete account.');
+        }
+      } catch (err) {
+        alert('Network error \u2014 please try again.');
+      }
+    }
+
+    // -- Toast --
+    function showToast(msg) {
       const toast = document.getElementById('toast');
+      if (msg) toast.querySelector('span').textContent = msg;
       toast.classList.add('show');
       setTimeout(() => toast.classList.remove('show'), 3000);
     }
