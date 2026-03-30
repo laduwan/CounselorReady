@@ -7,7 +7,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
-import { Search, BookOpen, Filter, Bookmark, CheckCircle, XCircle } from 'lucide-react';
+import { Search, BookOpen, Filter, Bookmark, Award, X, CheckCircle, XCircle } from 'lucide-react';
 import ArticleCard from '../components/researchReady/ArticleCard';
 import CEHoursSelector from '../components/researchReady/CEHoursSelector';
 import PairingTray from '../components/researchReady/PairingTray';
@@ -72,7 +72,7 @@ export default function ResearchReadyCE() {
   // Screen reader announcements
   const [searchAnnouncement, setSearchAnnouncement] = useState('');
 
-  // Prefill from URL params
+  // Prefill from URL params + load data
   useEffect(() => {
     const q = searchParams.get('q');
     if (q) {
@@ -141,7 +141,6 @@ export default function ResearchReadyCE() {
     }
   }
 
-  // Re-search when filters change
   useEffect(() => {
     if (query.trim()) doSearch();
   }, [yearFrom, sortBy]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -238,23 +237,19 @@ export default function ResearchReadyCE() {
     }
   }
 
-  // ── Posttest flow ──
-
+  // ── Posttest ──
   async function openPosttest(request) {
-    // Check engagement
     if (!request.adminNote?.includes('engagement_confirmed')) {
       const proceed = window.confirm(
         'Please read the article before taking the assessment. Have you read the full article?'
       );
       if (proceed) {
-        try {
-          await api.post(`/research-ready/engagement/${request._id}`);
-        } catch { /* non-fatal */ }
+        try { await api.post(`/research-ready/engagement/${request._id}`); } catch { /* non-fatal */ }
       }
     }
-    setPosttestRequest(request);
     setPosttestAnswers({});
     setPosttestResult(null);
+    setPosttestRequest(request);
   }
 
   async function submitPosttest() {
@@ -265,7 +260,7 @@ export default function ResearchReadyCE() {
         answers: posttestAnswers
       });
       setPosttestResult(data);
-      loadMyRequests();
+      if (data.passed) loadMyRequests();
     } catch (err) {
       alert('Submission failed: ' + (err.response?.data?.error || err.message));
     } finally {
@@ -276,12 +271,13 @@ export default function ResearchReadyCE() {
   return (
     <div className="bg-[#FAF5EC] min-h-screen -m-6 p-6">
       {/* Woodgrain Hero */}
-      <div className="bg-gradient-to-br from-[#3D2E18] to-[#2A2520] rounded-xl p-8 mb-6">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[11px] font-semibold tracking-[0.05em] uppercase bg-[rgba(196,144,64,0.2)] border border-[rgba(196,144,64,0.3)] text-[#C49040] mb-3">
+      <div className="rounded-xl p-8 mb-6" style={{ background: 'linear-gradient(135deg, #3D2E18 0%, #2A2520 100%)' }}>
+        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold tracking-wide uppercase mb-3"
+          style={{ background: 'rgba(196,144,64,0.2)', border: '1px solid rgba(196,144,64,0.3)', color: '#C49040' }}>
           NBCC ACEP #7760
-        </div>
+        </span>
         <h1 className="font-[Georgia,serif] text-[1.75rem] font-bold text-[#FDF8EE] mb-2">Researched-N-Ready CE</h1>
-        <p className="font-[Georgia,serif] text-[0.95rem] text-[rgba(221,217,211,0.85)] max-w-xl">
+        <p className="font-[Georgia,serif] text-[0.95rem] text-[rgba(221,217,211,0.85)] max-w-xl italic">
           Current research. Earned credit. Search open-access articles, verify currency, and build CE courses backed by peer-reviewed scholarship.
         </p>
       </div>
@@ -311,7 +307,6 @@ export default function ResearchReadyCE() {
 
       {activeTab === 'search' && (
         <>
-          {/* CE Hours Selector */}
           <CEHoursSelector selected={desiredHours} onSelect={handleHoursChange} />
 
           {/* Search Bar */}
@@ -358,40 +353,28 @@ export default function ResearchReadyCE() {
           <div className="flex items-center gap-4 mb-6">
             <div className="flex items-center gap-2">
               <Filter className="w-4 h-4 text-[#7A6A54]" />
-              <select
-                value={yearFrom}
-                onChange={e => setYearFrom(parseInt(e.target.value))}
+              <select value={yearFrom} onChange={e => setYearFrom(parseInt(e.target.value))}
                 className="text-sm font-[Georgia,serif] bg-[#F5EEE0] border border-[#C8C3BC] rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-[#7B2D3E]/30 outline-none"
-                aria-label="Filter by year"
-              >
-                {YEAR_OPTIONS.map(opt => (
-                  <option key={opt.value} value={opt.value}>{opt.label}</option>
-                ))}
+                aria-label="Filter by year">
+                {YEAR_OPTIONS.map(opt => (<option key={opt.value} value={opt.value}>{opt.label}</option>))}
               </select>
             </div>
-            <select
-              value={sortBy}
-              onChange={e => setSortBy(e.target.value)}
+            <select value={sortBy} onChange={e => setSortBy(e.target.value)}
               className="text-sm font-[Georgia,serif] bg-[#F5EEE0] border border-[#C8C3BC] rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-[#7B2D3E]/30 outline-none"
-              aria-label="Sort results"
-            >
-              {SORT_OPTIONS.map(opt => (
-                <option key={opt.value} value={opt.value}>{opt.label}</option>
-              ))}
+              aria-label="Sort results">
+              {SORT_OPTIONS.map(opt => (<option key={opt.value} value={opt.value}>{opt.label}</option>))}
             </select>
           </div>
 
           {/* Screen reader announcements */}
           <div aria-live="polite" className="sr-only">{searchAnnouncement}</div>
 
-          {/* Loading */}
           {loading && (
             <div className="flex justify-center py-12">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#7B2D3E]"></div>
             </div>
           )}
 
-          {/* Building CE overlay */}
           {buildingCE && (
             <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-40">
               <div className="bg-[#FAF5EC] rounded-2xl p-8 text-center shadow-xl">
@@ -402,7 +385,6 @@ export default function ResearchReadyCE() {
             </div>
           )}
 
-          {/* Results */}
           {!loading && results.length > 0 && (
             <>
               <p className="font-[Georgia,serif] text-[10px] uppercase tracking-[0.12em] text-[#5C4D3A] italic mb-3">
@@ -426,7 +408,6 @@ export default function ResearchReadyCE() {
             </>
           )}
 
-          {/* Empty state */}
           {!loading && query && results.length === 0 && (
             <div className="text-center py-16">
               <BookOpen className="w-12 h-12 mx-auto text-[#C8C3BC] mb-4" />
@@ -437,38 +418,38 @@ export default function ResearchReadyCE() {
 
           {/* My Requests */}
           {myRequests.length > 0 && (
-            <div className="mt-8">
-              <h2 className="font-[Georgia,serif] text-[14px] font-semibold text-[#2A1F0E] mb-3">My Requests</h2>
-              <div className="space-y-2">
+            <div className="mt-8 border-t border-[#DDD9D3] pt-6">
+              <h2 className="font-[Georgia,serif] text-lg font-bold text-[#2A1F0E] mb-4">My Requests</h2>
+              <div className="space-y-3">
                 {myRequests.map(req => {
-                  const statusColors = {
-                    pending: 'bg-[#F8EEDC] text-[#C49040]',
-                    approved: 'bg-green-100 text-green-700',
-                    generating: 'bg-purple-100 text-purple-700',
-                    test_ready: 'bg-[#FAF5EC] text-[#7B2D3E] border border-[#7B2D3E]',
-                    in_progress: 'bg-[#FAF5EC] text-[#7B2D3E] border border-[#7B2D3E]',
-                    completed: 'bg-green-100 text-green-700',
-                    rejected: 'bg-red-100 text-red-700',
-                    error: 'bg-red-100 text-red-700'
+                  const statusMap = {
+                    pending: { bg: '#F8EEDC', color: '#8B5E2E' },
+                    approved: { bg: '#EEF5EA', color: '#2A4A18' },
+                    test_ready: { bg: '#FDF8EE', color: '#7B2D3E' },
+                    in_progress: { bg: '#FDF8EE', color: '#7B2D3E' },
+                    completed: { bg: '#EEF5EA', color: '#2A4A18' },
+                    rejected: { bg: '#FAF0ED', color: '#7B2D3E' },
+                    error: { bg: '#FAF0ED', color: '#8A3020' },
+                    failed: { bg: '#FAF0ED', color: '#8A3020' }
                   };
+                  const s = statusMap[req.status] || statusMap.pending;
                   return (
-                    <div key={req._id} className="flex items-center justify-between p-3 bg-[#FAF5EC] border border-[#DDD9D3] rounded-lg">
-                      <div>
-                        <p className="font-[Georgia,serif] text-[13px] font-semibold text-[#2A1F0E]">
-                          {req.contentArea} · {req.totalCeHours} CE hrs
-                        </p>
-                        <p className="font-[Georgia,serif] text-[11px] text-[#5C4D3A]">
-                          {req.selectedArticles?.length} article(s) · {new Date(req.createdAt).toLocaleDateString()}
+                    <div key={req._id} className="flex items-center justify-between bg-[#F5EEE0] border border-[#DDD9D3] rounded-lg p-4">
+                      <div className="min-w-0 flex-1">
+                        <p className="font-[Georgia,serif] text-sm font-semibold text-[#2A1F0E] truncate">{req.contentArea} &middot; {req.totalCeHours} CE hrs</p>
+                        <p className="font-[Georgia,serif] text-xs text-[#7A6A54] italic mt-0.5">
+                          {req.selectedArticles?.length || 0} article(s) &middot; {new Date(req.createdAt).toLocaleDateString()}
                         </p>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <span className={`px-2 py-0.5 rounded-full text-[11px] font-medium font-[Georgia,serif] ${statusColors[req.status] || 'bg-gray-100 text-gray-700'}`}>
+                      <div className="flex items-center gap-3 ml-4">
+                        <span className="px-2.5 py-1 rounded text-xs font-semibold font-[Georgia,serif] italic"
+                          style={{ background: s.bg, color: s.color }}>
                           {req.status.replace(/_/g, ' ')}
                         </span>
-                        {(req.status === 'test_ready' || req.status === 'in_progress') && (
+                        {['test_ready', 'in_progress'].includes(req.status) && req.questions?.length > 0 && (
                           <button
                             onClick={() => openPosttest(req)}
-                            className="px-3 py-1 bg-[#7B2D3E] text-[#FAF5EC] rounded text-[11px] font-[Georgia,serif] font-semibold hover:bg-[#9B3A4E] focus-visible:outline-2 focus-visible:outline-[#8B5E2E] focus-visible:outline-offset-2"
+                            className="px-3 py-1.5 rounded bg-[#7B2D3E] text-[#FAF5EC] text-xs font-semibold font-[Georgia,serif] hover:bg-[#9B3A4E] transition-colors focus-visible:outline-2 focus-visible:outline-[#8B5E2E] focus-visible:outline-offset-2"
                           >
                             Take Posttest
                           </button>
@@ -530,102 +511,121 @@ export default function ResearchReadyCE() {
         />
       )}
 
-      {/* ── Posttest Modal ── */}
-      {posttestRequest && !posttestResult && (
+      {/* Posttest Modal */}
+      {posttestRequest && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4" role="dialog" aria-label="Posttest assessment">
-          <div className="bg-[#FAF5EC] rounded-2xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6">
-            <h2 className="font-[Georgia,serif] text-xl font-bold text-[#2A1F0E] mb-1">
-              {posttestRequest.courseTitle || 'Posttest Assessment'}
-            </h2>
-            <p className="font-[Georgia,serif] text-[12px] text-[#5C4D3A] mb-6">
-              10 questions · 75% required to pass · {posttestRequest.contentArea}
-            </p>
+          <div className="bg-[#FAF5EC] rounded-2xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            {/* Modal header */}
+            <div className="sticky top-0 bg-[#FAF5EC] border-b border-[#DDD9D3] p-5 flex items-center justify-between rounded-t-2xl z-10">
+              <div>
+                <h2 className="font-[Georgia,serif] text-lg font-bold text-[#2A1F0E]">
+                  {posttestRequest.courseTitle || 'RNR CE Posttest'}
+                </h2>
+                <p className="font-[Georgia,serif] text-xs text-[#7A6A54] italic mt-0.5">
+                  {posttestRequest.contentArea} &middot; 75% required to pass
+                </p>
+              </div>
+              <button onClick={() => { setPosttestRequest(null); setPosttestResult(null); }}
+                className="p-1.5 text-[#7A6A54] hover:text-[#2A1F0E] rounded-lg hover:bg-[#EAE7E2] focus-visible:outline-2 focus-visible:outline-[#8B5E2E] focus-visible:outline-offset-2"
+                aria-label="Close posttest">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
 
-            {(posttestRequest.questions || []).map((q, qi) => (
-              <fieldset key={qi} className="mb-6 border border-[#EAE7E2] rounded-lg p-4 bg-[#FDF8EE]">
-                <legend className="font-[Georgia,serif] text-[13px] font-semibold text-[#2A1F0E] px-2">
-                  {qi + 1}. {q.question}
-                </legend>
-                <div className="mt-3 space-y-2">
-                  {(q.options || []).map((opt, oi) => (
-                    <label key={oi} className="flex items-start gap-3 p-2 rounded-lg hover:bg-[#F5EEE0] cursor-pointer">
-                      <input
-                        type="radio"
-                        name={`q${qi}`}
-                        value={oi}
-                        checked={posttestAnswers[qi] === oi}
-                        onChange={() => setPosttestAnswers(prev => ({ ...prev, [qi]: oi }))}
-                        className="mt-0.5 accent-[#7B2D3E]"
-                      />
-                      <span className="font-[Georgia,serif] text-[12px] text-[#2A1F0E]">{opt}</span>
-                    </label>
-                  ))}
+            {/* Result banner */}
+            {posttestResult && (
+              <div className={`mx-5 mt-4 p-4 rounded-lg border ${posttestResult.passed
+                ? 'bg-[#EEF5EA] border-[#4A7C59]'
+                : 'bg-[#FAF0ED] border-[#7B2D3E]'}`}
+                aria-live="assertive">
+                <div className="flex items-center gap-3">
+                  {posttestResult.passed
+                    ? <CheckCircle className="w-6 h-6 text-[#4A7C59]" />
+                    : <XCircle className="w-6 h-6 text-[#7B2D3E]" />}
+                  <div>
+                    <p className="font-[Georgia,serif] font-bold text-[#2A1F0E]">
+                      {posttestResult.passed ? 'Congratulations! You passed.' : 'Not yet — review and retry.'}
+                    </p>
+                    <p className="font-[Georgia,serif] text-sm text-[#5C4D3A]">
+                      Score: {posttestResult.score}% ({posttestResult.correctCount}/{posttestResult.totalQuestions} correct)
+                    </p>
+                    {!posttestResult.passed && (
+                      <p className="font-[Georgia,serif] text-xs text-[#7A6A54] mt-1 italic">
+                        {posttestResult.attemptsUsed < 2
+                          ? 'You may retake once. Review the article and try again.'
+                          : 'Please review the article and contact support.'}
+                      </p>
+                    )}
+                  </div>
                 </div>
-              </fieldset>
-            ))}
+                {posttestResult.passed && (
+                  <div className="mt-3 flex items-center gap-2">
+                    <Award className="w-4 h-4 text-[#8B5E2E]" />
+                    <p className="font-[Georgia,serif] text-xs text-[#8B5E2E] font-semibold">
+                      CE credit recorded &middot; Certificate: {posttestResult.certificateNumber}
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
 
-            <div className="flex gap-3 mt-4">
-              <button
-                onClick={submitPosttest}
-                disabled={submittingPosttest || Object.keys(posttestAnswers).length < (posttestRequest.questions?.length || 10)}
-                className="flex-1 py-3 bg-[#8B5E2E] text-[#FDF8EE] font-[Georgia,serif] font-bold rounded-xl hover:bg-[#A5712E] disabled:opacity-50 transition-colors focus-visible:outline-2 focus-visible:outline-[#8B5E2E] focus-visible:outline-offset-2"
-              >
-                {submittingPosttest ? 'Submitting...' : 'Submit Assessment'}
-              </button>
-              <button
-                onClick={() => { setPosttestRequest(null); setPosttestAnswers({}); }}
-                className="px-6 py-3 border border-[#DDD9D3] text-[#5C4D3A] font-[Georgia,serif] rounded-xl hover:bg-[#F5EEE0] focus-visible:outline-2 focus-visible:outline-[#8B5E2E] focus-visible:outline-offset-2"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+            {/* Questions */}
+            {!posttestResult?.passed && (
+              <div className="p-5 space-y-6">
+                {(posttestRequest.questions || []).map((q, qi) => (
+                  <fieldset key={qi} className="bg-[#F5EEE0] border border-[#DDD9D3] rounded-lg p-4">
+                    <legend className="font-[Georgia,serif] text-sm font-semibold text-[#2A1F0E] px-2">
+                      {qi + 1}. {q.question}
+                    </legend>
+                    <div className="mt-3 space-y-2">
+                      {(q.options || []).map((opt, oi) => (
+                        <label key={oi}
+                          className={`flex items-start gap-3 p-2.5 rounded-lg cursor-pointer transition-colors ${
+                            posttestAnswers[qi] === oi
+                              ? 'bg-[#FDF8EE] border-[1.5px] border-[#7B2D3E]'
+                              : 'bg-[#FAF5EC] border border-[#EAE7E2] hover:border-[#DDD9D3]'
+                          }`}>
+                          <input
+                            type="radio"
+                            name={`q-${qi}`}
+                            checked={posttestAnswers[qi] === oi}
+                            onChange={() => setPosttestAnswers(prev => ({ ...prev, [qi]: oi }))}
+                            className="mt-0.5 accent-[#7B2D3E]"
+                          />
+                          <span className="font-[Georgia,serif] text-sm text-[#2A1F0E]">{opt}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </fieldset>
+                ))}
 
-      {/* Posttest Result */}
-      {posttestResult && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4" role="dialog" aria-label="Posttest result">
-          <div className="bg-[#FAF5EC] rounded-2xl shadow-xl max-w-md w-full p-6 text-center">
-            <div aria-live="assertive">
-              {posttestResult.passed ? (
-                <>
-                  <CheckCircle className="w-16 h-16 mx-auto text-green-600 mb-4" />
-                  <h2 className="font-[Georgia,serif] text-xl font-bold text-[#2A1F0E] mb-2">Congratulations!</h2>
-                  <p className="font-[Georgia,serif] text-[14px] text-[#5C4D3A] mb-2">
-                    Score: {posttestResult.score}% · {posttestResult.ceHours} CE hours earned
-                  </p>
-                  <p className="font-[Georgia,serif] text-[12px] text-[#7A6A54] mb-4">
-                    Certificate: {posttestResult.certificateNumber}
-                  </p>
-                  <a
-                    href="/credentials"
-                    className="inline-block px-6 py-2.5 bg-[#8B5E2E] text-[#FDF8EE] font-[Georgia,serif] font-semibold rounded-xl hover:bg-[#A5712E]"
-                  >
-                    View in Credentials
-                  </a>
-                </>
-              ) : (
-                <>
-                  <XCircle className="w-16 h-16 mx-auto text-[#7B2D3E] mb-4" />
-                  <h2 className="font-[Georgia,serif] text-xl font-bold text-[#2A1F0E] mb-2">Not quite</h2>
-                  <p className="font-[Georgia,serif] text-[14px] text-[#5C4D3A] mb-2">
-                    Score: {posttestResult.score}% · You need 75% to pass.
-                  </p>
-                  <p className="font-[Georgia,serif] text-[12px] text-[#7A6A54] mb-4">
-                    {posttestResult.attemptsUsed < 2
-                      ? 'You may retake once. Review the article and try again.'
-                      : 'Please review the article and contact support.'}
-                  </p>
-                </>
-              )}
-            </div>
-            <button
-              onClick={() => { setPosttestResult(null); setPosttestRequest(null); setPosttestAnswers({}); }}
-              className="mt-4 px-6 py-2 border border-[#DDD9D3] text-[#5C4D3A] font-[Georgia,serif] rounded-xl hover:bg-[#F5EEE0] focus-visible:outline-2 focus-visible:outline-[#8B5E2E] focus-visible:outline-offset-2"
-            >
-              Close
-            </button>
+                <button
+                  onClick={submitPosttest}
+                  disabled={submittingPosttest || Object.keys(posttestAnswers).length < (posttestRequest.questions?.length || 0)}
+                  className="w-full py-3 rounded-lg bg-[#8B5E2E] text-[#FDF8EE] font-[Georgia,serif] font-semibold text-sm hover:bg-[#A5712E] transition-colors disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-2 focus-visible:outline-[#8B5E2E] focus-visible:outline-offset-2"
+                >
+                  {submittingPosttest ? 'Submitting...' : 'Submit Posttest'}
+                </button>
+              </div>
+            )}
+
+            {/* Close on pass */}
+            {posttestResult?.passed && (
+              <div className="p-5 text-center">
+                <a
+                  href="/credentials"
+                  className="inline-block px-6 py-2.5 rounded-lg bg-[#8B5E2E] text-[#FDF8EE] font-[Georgia,serif] font-semibold text-sm hover:bg-[#A5712E] transition-colors mr-3"
+                >
+                  View in Credentials
+                </a>
+                <button
+                  onClick={() => { setPosttestRequest(null); setPosttestResult(null); }}
+                  className="px-6 py-2.5 rounded-lg border border-[#DDD9D3] text-[#5C4D3A] font-[Georgia,serif] font-semibold text-sm hover:bg-[#F5EEE0] transition-colors focus-visible:outline-2 focus-visible:outline-[#8B5E2E] focus-visible:outline-offset-2"
+                >
+                  Done
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}
