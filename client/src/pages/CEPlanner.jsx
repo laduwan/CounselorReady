@@ -30,13 +30,32 @@ function ResearchReadyRecs({ deficits }) {
     if (deficits.length === 0) return;
     const fetchAll = async () => {
       const results = {};
-      for (const d of deficits.slice(0, 3)) {
-        try {
-          const { data } = await api.get('/research-ready/search', {
-            params: { q: d.category, per_page: 3, desired_hours: d.remaining }
-          });
-          if (data.results?.length > 0) results[d.category] = { articles: data.results, deficit: d };
-        } catch { /* non-fatal */ }
+      try {
+        const { data: recData } = await api.get('/research-ready/recommendations');
+        const recs = recData.recommendations || [];
+        for (const rec of recs.slice(0, 3)) {
+          try {
+            const { data } = await api.get('/research-ready/search', {
+              params: { q: rec.suggestedSearch || rec.category, per_page: 3, desired_hours: rec.suggestedHours }
+            });
+            if (data.results?.length > 0) {
+              results[rec.category] = {
+                articles: data.results,
+                deficit: { category: rec.category, remaining: rec.hoursNeeded }
+              };
+            }
+          } catch { /* non-fatal */ }
+        }
+      } catch {
+        // Fallback: use deficits directly if recommendations endpoint fails
+        for (const d of deficits.slice(0, 3)) {
+          try {
+            const { data } = await api.get('/research-ready/search', {
+              params: { q: d.category, per_page: 3, desired_hours: d.remaining }
+            });
+            if (data.results?.length > 0) results[d.category] = { articles: data.results, deficit: d };
+          } catch { /* non-fatal */ }
+        }
       }
       setArticles(results);
       setLoaded(true);
