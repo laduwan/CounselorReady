@@ -64,13 +64,20 @@ function ResearchReadyRecs({ deficits }) {
 
   return (
     <div className="p-4 border-t border-[#DDD9D3]">
+      <section
+        className="bg-[#FAF5EC] border border-[#DDD9D3] rounded-[10px] p-6 mb-4"
+        aria-label="RNR CE recommendations for your deficit content areas"
+      >
+        <h3 className="font-[Georgia,serif] text-[16px] font-semibold text-[#8B5E2E] mb-4">
+          Researched-N-Ready: Fill Your Gap
+        </h3>
       {Object.entries(articles).map(([category, { articles: arts, deficit }]) => (
         <div key={category} className="mb-4 bg-[#FDF8EE] border-l-[3px] border-l-[#7B2D3E] rounded-r-lg p-4">
           <div className="flex items-center gap-2 mb-1">
             <Beaker className="w-4 h-4 text-[#7B2D3E]" />
-            <h3 className="font-[Georgia,serif] text-sm font-semibold text-[#7B2D3E]">
-              RNR CE — Fill your {category} deficit
-            </h3>
+            <h4 className="font-[Georgia,serif] text-sm font-semibold text-[#7B2D3E]">
+              Fill your {category} deficit
+            </h4>
           </div>
           <p className="font-[Georgia,serif] text-[10px] italic text-[#5C4D3A] mb-3">
             {deficit.remaining} hours needed &middot; matched articles below
@@ -97,6 +104,7 @@ function ResearchReadyRecs({ deficits }) {
           </div>
         </div>
       ))}
+      </section>
     </div>
   );
 }

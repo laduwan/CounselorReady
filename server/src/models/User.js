@@ -200,6 +200,9 @@ const userSchema = new mongoose.Schema({
     lastUpdated: { type: Date, default: Date.now }
   },
   
+  // Saved RNR CE articles
+  savedRNRArticles: { type: [mongoose.Schema.Types.ObjectId], ref: 'ScholarlyArticle', default: [] },
+
   // Whitelabel partner association
   partnerId: {
     type: mongoose.Schema.Types.ObjectId,
