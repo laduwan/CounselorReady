@@ -108,6 +108,33 @@ Show a diff summary before committing. If you touched a file not in the task lis
 ## When In Doubt
 Stop. Ask. Do not guess, do not approximate, do not "make it work" by changing something adjacent. The cost of asking is zero. The cost of unwiring a stable feature is high.
 ---
+## Dead Code Audit (P1-T1 — March 2026)
+
+### `server/src/services/researchSynthesis.js`
+**Status: UNREFERENCED DEAD CODE — distinct function, not a duplicate.**
+- Purpose: Uses Anthropic Claude to perform meta-analysis and comparative analysis of multiple scholarly articles, then generates full CEU course content (4 modules, 15+ questions).
+- Functions: `synthesizeMetaAnalysis()`, `synthesizeComparativeAnalysis()`, `generateCourseFromSynthesis()`
+- NOT a duplicate of `openAlex.js` — openAlex.js is a search/fetch service; this is a synthesis/content-generation service.
+- Not imported or referenced anywhere in the codebase (grep confirms zero references).
+- Candidate for future "Research Synthesis" advanced feature but currently unused.
+- **Do not delete** — flag for product review.
+
+### `server/src/services/scholarlySearch.js`
+**Status: UNREFERENCED DEAD CODE — wrapper around openAlex.js + CrossRef, not a duplicate.**
+- Purpose: Unified search across CrossRef AND OpenAlex APIs with deduplication by DOI/title.
+- Functions: `searchScholarlyDatabases()`, `fetchArticlesForSynthesis()`
+- Imports from `openAlex.js` (uses `searchArticles` and `decodeAbstractInvertedIndex`).
+- NOT a duplicate — it EXTENDS openAlex.js by adding CrossRef as a second data source.
+- Not imported or referenced anywhere in the codebase (grep confirms zero references).
+- Candidate for future multi-source search but currently unused.
+- **Do not delete** — flag for product review.
+
+### Route Guard Audit (P1-T7)
+- Learner routes with auth middleware: `/search`, `/request`, `/my-requests`, `/request/:id`, `/request/:id/content`, `/request/:id/complete`, `/recommendations`, `/saved`, `/engagement/:courseId`
+- Admin routes with auth + requireAdmin: `/currency-check`, `/build-ce`, `/queue`, `/request/:id/approve`, `/request/:id/reject`, `/request/:id/rebuild`, `/request/:id/status`
+- All routes properly guarded as of this audit.
+
+---
 ## Active Feature Status (as of March 2026)
 ⚠️ This table is manually maintained. Do not treat it as authoritative — verify actual file state before assuming status.
 
