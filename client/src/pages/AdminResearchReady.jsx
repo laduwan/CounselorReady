@@ -8,20 +8,20 @@ import { CheckCircle, XCircle, Eye, Clock, AlertTriangle, BookOpen } from 'lucid
 import CEBuildPreview from '../components/researchReady/CEBuildPreview';
 
 const statusStyles = {
-  pending: { bg: 'bg-[#F8EEDC]', text: 'text-[#C49040]', label: 'Pending' },
-  approved: { bg: 'bg-green-100', text: 'text-green-700', label: 'Approved' },
-  generating: { bg: 'bg-purple-100', text: 'text-purple-800', label: 'Generating' },
-  test_ready: { bg: 'bg-green-100', text: 'text-green-700', label: 'Test Ready' },
-  in_progress: { bg: 'bg-teal-100', text: 'text-teal-800', label: 'In Progress' },
-  completed: { bg: 'bg-green-100', text: 'text-green-700', label: 'Completed' },
+  pending: { bg: 'bg-[#F8EEDC]', text: 'text-[#8B5E2E]', label: 'Pending' },
+  approved: { bg: 'bg-[#EEF5EA]', text: 'text-[#2A4A18]', label: 'Approved' },
+  generating: { bg: 'bg-[#F8EEDC]', text: 'text-[#A5712E]', label: 'Generating' },
+  test_ready: { bg: 'bg-[#EEF5EA]', text: 'text-[#2A4A18]', label: 'Test Ready' },
+  in_progress: { bg: 'bg-[#FDF8EE]', text: 'text-[#8B5E2E]', label: 'In Progress' },
+  completed: { bg: 'bg-[#EEF5EA]', text: 'text-[#2A4A18]', label: 'Completed' },
   rejected: { bg: 'bg-[#FAF0ED]', text: 'text-[#7B2D3E]', label: 'Rejected' }
 };
 
 const verdictStyles = {
-  approved: { bg: 'bg-green-100', text: 'text-green-700', label: 'Approved' },
-  approved_with_note: { bg: 'bg-yellow-100', text: 'text-yellow-700', label: 'Note' },
-  hold_for_review: { bg: 'bg-orange-100', text: 'text-orange-700', label: 'Hold' },
-  replace_suggested: { bg: 'bg-red-100', text: 'text-red-700', label: 'Replace' }
+  approved: { bg: 'bg-[#EEF5EA]', text: 'text-[#2A4A18]', label: 'Approved' },
+  approved_with_note: { bg: 'bg-[#F8EEDC]', text: 'text-[#8B5E2E]', label: 'Note' },
+  hold_for_review: { bg: 'bg-[#FBF2E0]', text: 'text-[#A5712E]', label: 'Hold' },
+  replace_suggested: { bg: 'bg-[#FAF0ED]', text: 'text-[#7B2D3E]', label: 'Replace' }
 };
 
 export default function AdminResearchReady() {

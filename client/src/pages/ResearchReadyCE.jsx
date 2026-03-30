@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
-import { Search, BookOpen, Filter, X, CheckCircle, XCircle } from 'lucide-react';
+import { Search, BookOpen, Filter, Award, X, CheckCircle, XCircle } from 'lucide-react';
 import ArticleCard from '../components/researchReady/ArticleCard';
 import CEHoursSelector from '../components/researchReady/CEHoursSelector';
 import PairingTray from '../components/researchReady/PairingTray';
@@ -53,80 +53,12 @@ export default function ResearchReadyCE() {
   const [currencyArticle, setCurrencyArticle] = useState(null);
   const [buildingCE, setBuildingCE] = useState(false);
 
-  // Posttest
-  const [posttestCourse, setPosttestCourse] = useState(null);
-  const [posttestAnswers, setPosttestAnswers] = useState({});
-  const [posttestSubmitted, setPosttestSubmitted] = useState(false);
-  const [posttestScore, setPosttestScore] = useState(null);
-  const [posttestPassed, setPosttestPassed] = useState(false);
-  const [posttestRetryAvailable, setPosttestRetryAvailable] = useState(true);
-  const [posttestSubmitting, setPosttestSubmitting] = useState(false);
-
-  // My requests
+  // My requests + posttest
   const [myRequests, setMyRequests] = useState([]);
-
-  useEffect(() => {
-    loadMyRequests();
-  }, []);
-
-  async function loadMyRequests() {
-    try {
-      const { data } = await api.get('/research-ready/my-requests');
-      setMyRequests(data.requests || []);
-    } catch { /* non-fatal */ }
-  }
-
-  function openPosttest(course) {
-    setPosttestCourse(course);
-    setPosttestAnswers({});
-    setPosttestSubmitted(false);
-    setPosttestScore(null);
-    setPosttestPassed(false);
-  }
-
-  async function submitPosttest() {
-    if (!posttestCourse) return;
-    const questions = posttestCourse.questions || [];
-    if (Object.keys(posttestAnswers).length < questions.length) {
-      alert('Please answer all questions before submitting.');
-      return;
-    }
-
-    setPosttestSubmitting(true);
-    const correct = questions.filter((q, i) => posttestAnswers[i] === q.correct).length;
-    const score = Math.round((correct / questions.length) * 100);
-    const passed = score >= 75;
-
-    setPosttestScore(score);
-    setPosttestPassed(passed);
-    setPosttestSubmitted(true);
-
-    if (passed) {
-      try {
-        await api.post(`/research-ready/request/${posttestCourse._id}/complete`, {
-          answers: Object.values(posttestAnswers),
-          score
-        });
-        loadMyRequests();
-      } catch (err) {
-        console.error('Completion POST failed:', err);
-      }
-    } else {
-      if (!posttestRetryAvailable) {
-        // No more retries
-      } else {
-        setPosttestRetryAvailable(false);
-      }
-    }
-    setPosttestSubmitting(false);
-  }
-
-  function retryPosttest() {
-    setPosttestAnswers({});
-    setPosttestSubmitted(false);
-    setPosttestScore(null);
-    setPosttestPassed(false);
-  }
+  const [posttestRequest, setPosttestRequest] = useState(null);
+  const [posttestAnswers, setPosttestAnswers] = useState({});
+  const [posttestSubmitting, setPosttestSubmitting] = useState(false);
+  const [posttestResult, setPosttestResult] = useState(null);
 
   // Prefill from URL params
   useEffect(() => {
@@ -136,6 +68,42 @@ export default function ResearchReadyCE() {
       doSearch(q);
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Load my requests on mount
+  useEffect(() => {
+    loadMyRequests();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  async function loadMyRequests() {
+    try {
+      const { data } = await api.get('/research-ready/my-requests');
+      setMyRequests(data.requests || []);
+    } catch { /* non-fatal */ }
+  }
+
+  function openPosttest(request) {
+    setPosttestAnswers({});
+    setPosttestResult(null);
+    setPosttestRequest(request);
+  }
+
+  async function submitPosttest() {
+    if (!posttestRequest) return;
+    setPosttestSubmitting(true);
+    try {
+      const { data } = await api.post(`/research-ready/request/${posttestRequest._id}/complete`, {
+        answers: posttestAnswers
+      });
+      setPosttestResult(data);
+      if (data.passed) {
+        loadMyRequests();
+      }
+    } catch (err) {
+      alert('Posttest submission failed: ' + (err.response?.data?.error || err.message));
+    } finally {
+      setPosttestSubmitting(false);
+    }
+  }
 
   async function doSearch(searchQuery = query) {
     if (!searchQuery?.trim()) return;
@@ -274,20 +242,18 @@ export default function ResearchReadyCE() {
   }
 
   return (
-    <div className="bg-[#FAF5EC] min-h-screen -m-6">
-      {/* Woodgrain Header */}
-      <div style={{ background: 'linear-gradient(135deg, #3D2E18 0%, #2A2520 100%)' }} className="px-6 py-8 mb-6">
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold uppercase tracking-[0.05em] mb-3" style={{ background: 'rgba(196,144,64,0.2)', border: '1px solid rgba(196,144,64,0.3)', color: '#C49040' }}>
-          <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 14l9-5-9-5-9 5 9 5z"/><path d="M12 14l6.16-3.422A12.083 12.083 0 0121 17.5C21 20 16.97 22 12 22S3 20 3 17.5a12.083 12.083 0 012.84-6.922L12 14z"/></svg>
+    <div className="bg-[#FAF5EC] min-h-screen -m-6 p-6">
+      {/* Woodgrain Hero */}
+      <div className="rounded-xl p-8 mb-6" style={{ background: 'linear-gradient(135deg, #3D2E18 0%, #2A2520 100%)' }}>
+        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold tracking-wide uppercase mb-3"
+          style={{ background: 'rgba(196,144,64,0.2)', border: '1px solid rgba(196,144,64,0.3)', color: '#C49040' }}>
           NBCC ACEP #7760
-        </div>
+        </span>
         <h1 className="font-[Georgia,serif] text-[1.75rem] font-bold text-[#FDF8EE] mb-2">Researched-N-Ready CE</h1>
-        <p className="font-[Georgia,serif] text-[0.95rem]" style={{ color: 'rgba(221,217,211,0.85)' }}>
+        <p className="font-[Georgia,serif] text-[0.95rem] text-[rgba(221,217,211,0.85)] max-w-xl italic">
           Current research. Earned credit. Search open-access articles, verify currency, and build CE courses backed by peer-reviewed scholarship.
         </p>
       </div>
-
-      <div className="px-6 pb-6">
 
       {/* CE Hours Selector */}
       <CEHoursSelector selected={desiredHours} onSelect={handleHoursChange} />
@@ -434,149 +400,155 @@ export default function ResearchReadyCE() {
 
       {/* My Requests */}
       {myRequests.length > 0 && (
-        <div className="mt-8">
-          <p className="font-[Georgia,serif] text-[10px] uppercase tracking-[0.12em] text-[#5C4D3A] italic mb-3">My Requests</p>
-          <div className="space-y-2">
-            {myRequests.map(r => (
-              <div key={r._id} className="flex items-center justify-between bg-[#F5EEE0] border border-[#DDD9D3] rounded-lg px-4 py-3">
-                <div>
-                  <p className="font-[Georgia,serif] text-[13px] font-semibold text-[#2A1F0E]">{r.contentArea} &middot; {r.totalCeHours} CE hrs</p>
-                  <p className="font-[Georgia,serif] text-[11px] italic text-[#5C4D3A]">{r.selectedArticles?.length} article(s) &middot; {new Date(r.createdAt).toLocaleDateString()}</p>
-                </div>
-                <div className="flex items-center gap-3">
-                  <span className={`px-2 py-0.5 rounded-full text-[11px] font-semibold font-[Georgia,serif] ${
-                    r.status === 'pending' ? 'bg-[#F8EEDC] text-[#C49040]' :
-                    r.status === 'completed' ? 'bg-green-100 text-green-700' :
-                    r.status === 'rejected' ? 'bg-[#FAF0ED] text-[#7B2D3E]' :
-                    'bg-[#FAF6F4] text-[#7B2D3E]'
-                  }`}>{r.status.replace(/_/g, ' ')}</span>
-                  {['approved', 'posttest_ready', 'test_ready'].includes(r.status) && r.questions?.length > 0 && (
-                    <button
-                      onClick={() => openPosttest(r)}
-                      className="px-3 py-1.5 bg-[#7B2D3E] text-[#FAF5EC] rounded font-[Georgia,serif] text-[11px] font-semibold hover:bg-[#9B3A4E] transition-colors"
-                    >
-                      Take Posttest
-                    </button>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Currency Check Modal */}
-      {currencyData && (
-        <CurrencyCheckModal
-          verdict={currencyData.verdict}
-          newerArticles={currencyData.newerArticles}
-          onClose={() => { setCurrencyData(null); setCurrencyArticle(null); }}
-          onProceed={handleProceedToBuild}
-        />
-      )}
-
-      {/* Posttest Modal */}
-      {posttestCourse && (
-        <div className="fixed inset-0 z-50 overflow-y-auto">
-          <div className="flex min-h-screen items-center justify-center p-4">
-            <div className="fixed inset-0 bg-black/40" onClick={() => setPosttestCourse(null)} />
-            <div className="relative bg-[#FAF5EC] rounded-2xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-              {/* Header */}
-              <div className="sticky top-0 bg-[#FAF5EC] border-b border-[#DDD9D3] px-6 py-4 flex items-center justify-between z-10">
-                <div>
-                  <h2 className="font-[Georgia,serif] text-lg font-bold text-[#2A1F0E]">Posttest Assessment</h2>
-                  <p className="font-[Georgia,serif] text-[12px] text-[#5C4D3A] italic">{posttestCourse.courseTitle || posttestCourse.contentArea} &middot; {posttestCourse.totalCeHours} CE hrs</p>
-                </div>
-                <button onClick={() => setPosttestCourse(null)} className="text-[#7A6A54] hover:text-[#2A1F0E] p-1">
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-
-              <div className="p-6">
-                {/* Score result */}
-                {posttestSubmitted && (
-                  <div className={`mb-6 p-4 rounded-xl border ${posttestPassed ? 'bg-green-50 border-green-200' : 'bg-[#FAF0ED] border-red-200'}`}>
-                    <div className="flex items-center gap-3">
-                      {posttestPassed ? (
-                        <CheckCircle className="w-6 h-6 text-green-600" />
-                      ) : (
-                        <XCircle className="w-6 h-6 text-[#7B2D3E]" />
-                      )}
-                      <div>
-                        <p className="font-[Georgia,serif] text-[15px] font-bold text-[#2A1F0E]">
-                          Score: {posttestScore}% {posttestPassed ? '— Passed!' : '— Did not pass'}
-                        </p>
-                        <p className="font-[Georgia,serif] text-[12px] text-[#5C4D3A]">
-                          {posttestPassed
-                            ? 'Congratulations! Your CE certificate has been generated.'
-                            : posttestRetryAvailable
-                              ? 'You need 75% to pass. You have one retry available.'
-                              : 'No retries remaining. Please contact support.'}
-                        </p>
-                      </div>
-                    </div>
-                    {!posttestPassed && posttestRetryAvailable && (
+        <div className="mt-8 border-t border-[#DDD9D3] pt-6">
+          <h2 className="font-[Georgia,serif] text-lg font-bold text-[#2A1F0E] mb-4">My Requests</h2>
+          <div className="space-y-3">
+            {myRequests.map(req => {
+              const statusMap = {
+                pending: { bg: '#F8EEDC', color: '#8B5E2E' },
+                approved: { bg: '#EEF5EA', color: '#2A4A18' },
+                test_ready: { bg: '#FDF8EE', color: '#7B2D3E' },
+                in_progress: { bg: '#FDF8EE', color: '#7B2D3E' },
+                completed: { bg: '#EEF5EA', color: '#2A4A18' },
+                rejected: { bg: '#FAF0ED', color: '#7B2D3E' },
+                failed: { bg: '#FAF0ED', color: '#8A3020' }
+              };
+              const s = statusMap[req.status] || statusMap.pending;
+              return (
+                <div key={req._id} className="flex items-center justify-between bg-[#F5EEE0] border border-[#DDD9D3] rounded-lg p-4">
+                  <div className="min-w-0 flex-1">
+                    <p className="font-[Georgia,serif] text-sm font-semibold text-[#2A1F0E] truncate">{req.contentArea} &middot; {req.totalCeHours} CE hrs</p>
+                    <p className="font-[Georgia,serif] text-xs text-[#7A6A54] italic mt-0.5">
+                      {req.selectedArticles?.length || 0} article(s) &middot; {new Date(req.createdAt).toLocaleDateString()}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-3 ml-4">
+                    <span className="px-2.5 py-1 rounded text-xs font-semibold font-[Georgia,serif] italic"
+                      style={{ background: s.bg, color: s.color }}>
+                      {req.status.replace(/_/g, ' ')}
+                    </span>
+                    {['test_ready', 'in_progress'].includes(req.status) && req.questions?.length > 0 && (
                       <button
-                        onClick={retryPosttest}
-                        className="mt-3 px-4 py-2 bg-[#8B5E2E] text-[#FDF8EE] rounded font-[Georgia,serif] text-[12px] font-semibold hover:bg-[#A5712E] transition-colors"
+                        onClick={() => openPosttest(req)}
+                        className="px-3 py-1.5 rounded bg-[#7B2D3E] text-[#FAF5EC] text-xs font-semibold font-[Georgia,serif] hover:bg-[#9B3A4E] transition-colors"
                       >
-                        Retry Posttest
+                        Take Posttest
                       </button>
                     )}
                   </div>
-                )}
-
-                {/* Questions */}
-                {!posttestSubmitted && (
-                  <div className="space-y-6">
-                    {(posttestCourse.questions || []).map((q, qi) => (
-                      <div key={qi} className="bg-[#F5EEE0] border border-[#DDD9D3] rounded-xl p-4">
-                        <p className="font-[Georgia,serif] text-[10px] uppercase tracking-[0.1em] text-[#C49040] font-semibold mb-1">{q.tag}</p>
-                        <p className="font-[Georgia,serif] text-[13px] text-[#2A1F0E] font-medium mb-3">{qi + 1}. {q.question}</p>
-                        <div className="space-y-2">
-                          {q.options.map((opt, oi) => (
-                            <label
-                              key={oi}
-                              className={`flex items-center gap-3 p-2.5 rounded-lg cursor-pointer transition-colors ${
-                                posttestAnswers[qi] === oi
-                                  ? 'bg-[#FDF8EE] border-[1.5px] border-[#7B2D3E]'
-                                  : 'bg-[#FAF5EC] border border-[#DDD9D3] hover:border-[#C49040]'
-                              }`}
-                            >
-                              <input
-                                type="radio"
-                                name={`q-${qi}`}
-                                checked={posttestAnswers[qi] === oi}
-                                onChange={() => setPosttestAnswers(prev => ({ ...prev, [qi]: oi }))}
-                                className="accent-[#7B2D3E]"
-                              />
-                              <span className="font-[Georgia,serif] text-[12px] text-[#2A1F0E]">{opt}</span>
-                            </label>
-                          ))}
-                        </div>
-                      </div>
-                    ))}
-
-                    <div className="flex justify-between items-center pt-4 border-t border-[#DDD9D3]">
-                      <p className="font-[Georgia,serif] text-[11px] italic text-[#5C4D3A]">
-                        {Object.keys(posttestAnswers).length} of {(posttestCourse.questions || []).length} answered &middot; 75% required to pass
-                      </p>
-                      <button
-                        onClick={submitPosttest}
-                        disabled={posttestSubmitting || Object.keys(posttestAnswers).length < (posttestCourse.questions || []).length}
-                        className="px-6 py-2.5 bg-[#8B5E2E] text-[#FDF8EE] rounded-lg font-[Georgia,serif] text-[13px] font-semibold hover:bg-[#A5712E] transition-colors disabled:opacity-50"
-                      >
-                        {posttestSubmitting ? 'Submitting...' : 'Submit Assessment'}
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       )}
-      </div>{/* end px-6 content wrapper */}
+
+      {/* Posttest Modal */}
+      {posttestRequest && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+          <div className="bg-[#FAF5EC] rounded-2xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            {/* Modal header */}
+            <div className="sticky top-0 bg-[#FAF5EC] border-b border-[#DDD9D3] p-5 flex items-center justify-between rounded-t-2xl z-10">
+              <div>
+                <h2 className="font-[Georgia,serif] text-lg font-bold text-[#2A1F0E]">RNR CE Posttest</h2>
+                <p className="font-[Georgia,serif] text-xs text-[#7A6A54] italic mt-0.5">
+                  {posttestRequest.contentArea} &middot; 75% required to pass
+                </p>
+              </div>
+              <button onClick={() => { setPosttestRequest(null); setPosttestResult(null); }}
+                className="p-1.5 text-[#7A6A54] hover:text-[#2A1F0E] rounded-lg hover:bg-[#EAE7E2]">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Result banner */}
+            {posttestResult && (
+              <div className={`mx-5 mt-4 p-4 rounded-lg border ${posttestResult.passed
+                ? 'bg-[#EEF5EA] border-[#4A7C59]'
+                : 'bg-[#FAF0ED] border-[#7B2D3E]'}`}>
+                <div className="flex items-center gap-3">
+                  {posttestResult.passed
+                    ? <CheckCircle className="w-6 h-6 text-[#4A7C59]" />
+                    : <XCircle className="w-6 h-6 text-[#7B2D3E]" />}
+                  <div>
+                    <p className="font-[Georgia,serif] font-bold text-[#2A1F0E]">
+                      {posttestResult.passed ? 'Congratulations! You passed.' : 'Not yet — review and retry.'}
+                    </p>
+                    <p className="font-[Georgia,serif] text-sm text-[#5C4D3A]">
+                      Score: {posttestResult.score}% ({posttestResult.correctCount}/{posttestResult.totalQuestions} correct)
+                    </p>
+                    {!posttestResult.passed && (
+                      <p className="font-[Georgia,serif] text-xs text-[#7A6A54] mt-1 italic">
+                        {posttestResult.message}
+                      </p>
+                    )}
+                  </div>
+                </div>
+                {posttestResult.passed && (
+                  <div className="mt-3 flex items-center gap-2">
+                    <Award className="w-4 h-4 text-[#8B5E2E]" />
+                    <p className="font-[Georgia,serif] text-xs text-[#8B5E2E] font-semibold">
+                      CE credit recorded. View in Credentials.
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Questions */}
+            {!posttestResult?.passed && (
+              <div className="p-5 space-y-6">
+                {(posttestRequest.questions || []).map((q, qi) => (
+                  <div key={qi} className="bg-[#F5EEE0] border border-[#DDD9D3] rounded-lg p-4">
+                    <p className="font-[Georgia,serif] text-sm font-semibold text-[#2A1F0E] mb-3">
+                      {qi + 1}. {q.question}
+                    </p>
+                    <div className="space-y-2">
+                      {(q.options || []).map((opt, oi) => (
+                        <label key={oi}
+                          className={`flex items-start gap-3 p-2.5 rounded-lg cursor-pointer transition-colors ${
+                            posttestAnswers[qi] === oi
+                              ? 'bg-[#FDF8EE] border-[1.5px] border-[#7B2D3E]'
+                              : 'bg-[#FAF5EC] border border-[#EAE7E2] hover:border-[#DDD9D3]'
+                          }`}>
+                          <input
+                            type="radio"
+                            name={`q-${qi}`}
+                            checked={posttestAnswers[qi] === oi}
+                            onChange={() => setPosttestAnswers(prev => ({ ...prev, [qi]: oi }))}
+                            className="mt-0.5 accent-[#7B2D3E]"
+                          />
+                          <span className="font-[Georgia,serif] text-sm text-[#2A1F0E]">{opt}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+
+                <button
+                  onClick={submitPosttest}
+                  disabled={posttestSubmitting || Object.keys(posttestAnswers).length < (posttestRequest.questions?.length || 0)}
+                  className="w-full py-3 rounded-lg bg-[#8B5E2E] text-[#FDF8EE] font-[Georgia,serif] font-semibold text-sm hover:bg-[#A5712E] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  {posttestSubmitting ? 'Submitting...' : 'Submit Posttest'}
+                </button>
+              </div>
+            )}
+
+            {/* Close on pass */}
+            {posttestResult?.passed && (
+              <div className="p-5 text-center">
+                <button
+                  onClick={() => { setPosttestRequest(null); setPosttestResult(null); }}
+                  className="px-6 py-2.5 rounded-lg bg-[#8B5E2E] text-[#FDF8EE] font-[Georgia,serif] font-semibold text-sm hover:bg-[#A5712E] transition-colors"
+                >
+                  Done
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
