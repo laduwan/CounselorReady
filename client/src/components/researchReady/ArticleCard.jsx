@@ -12,9 +12,7 @@ export default function ArticleCard({ article, onCreateCE, onSelectForPairing, i
   const isSufficient = article.wcStatus === 'sufficient';
   const isThin = article.wcStatus === 'thin';
 
-  const cardClass = isSufficient
-    ? 'bg-[#F8EEDC] border-l-[3px] border-l-[#7B2D3E] border-t-0 border-r-0 border-b-0 rounded-r-xl'
-    : 'bg-[#F5EEE0] border border-[#DDD9D3] rounded-xl';
+  const cardClass = 'bg-[#FAF5EC] border border-[#DDD9D3] rounded-xl';
 
   function handlePrint() {
     if (article.oaUrl) {
@@ -70,11 +68,11 @@ export default function ArticleCard({ article, onCreateCE, onSelectForPairing, i
       </div>
 
       {/* Journal */}
-      <p className="font-[Georgia,serif] text-[10px] italic text-[#5C4D3A] mb-1">
+      <p className="font-[Georgia,serif] text-[13px] italic text-[#5C4D3A] mb-1">
         {article.journal}
       </p>
       {/* Authors */}
-      <p className="font-[Georgia,serif] text-[10px] text-[#7A6A54] mb-3 line-clamp-1">
+      <p className="font-[Georgia,serif] text-[13px] text-[#5C4D3A] mb-3 line-clamp-1">
         {article.authors}
       </p>
 
@@ -108,27 +106,27 @@ export default function ArticleCard({ article, onCreateCE, onSelectForPairing, i
       </div>
 
       {/* Action Strip */}
-      <div className="border-t border-[#DDD9D3] pt-3">
+      <div className="bg-[#F5EEE0] border-t border-[#EAE7E2] -mx-5 -mb-5 px-5 py-3 rounded-b-xl">
         <div className="flex flex-wrap items-center gap-2">
           {/* Primary action */}
           {isPairingMode ? (
             <button
               onClick={() => onSelectForPairing(article)}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#7B2D3E] text-[#FAF5EC] rounded font-[Georgia,serif] text-[10px] uppercase tracking-[0.05em] hover:bg-[#9B3A4E] transition-colors"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#8B5E2E] text-[#FDF8EE] rounded font-[Georgia,serif] text-[12px] font-bold hover:bg-[#A5712E] transition-colors"
             >
               <Plus className="w-3.5 h-3.5" /> Pair Article
             </button>
           ) : isThin ? (
             <button
               onClick={() => onCreateCE(article)}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#8B5E2E] text-[#FAF5EC] rounded font-[Georgia,serif] text-[10px] uppercase tracking-[0.05em] hover:bg-[#A5712E] transition-colors"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#8B5E2E] text-[#FDF8EE] rounded font-[Georgia,serif] text-[12px] font-bold hover:bg-[#A5712E] transition-colors"
             >
               Pair with another article
             </button>
           ) : (
             <button
               onClick={() => onCreateCE(article)}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#7B2D3E] text-[#FAF5EC] rounded font-[Georgia,serif] text-[10px] uppercase tracking-[0.05em] hover:bg-[#9B3A4E] transition-colors"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#8B5E2E] text-[#FDF8EE] rounded font-[Georgia,serif] text-[12px] font-bold hover:bg-[#A5712E] transition-colors"
             >
               <Plus className="w-3.5 h-3.5" /> Create CE
             </button>
@@ -140,32 +138,38 @@ export default function ArticleCard({ article, onCreateCE, onSelectForPairing, i
               href={article.oaUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 px-3 py-1.5 bg-[#F5EEE0] border border-[#DDD9D3] text-[#3D2E18] rounded font-[Georgia,serif] text-[10px] uppercase tracking-[0.05em] hover:border-[#C49040] hover:text-[#8B5E2E] hover:bg-[#FDF8EE] transition-colors"
+              className="inline-flex items-center gap-1 text-[12px] font-[Georgia,serif] text-[#8B5E2E] hover:underline hover:text-[#A5712E] transition-colors"
             >
-              <ExternalLink className="w-3 h-3" /> Read article
+              <ExternalLink className="w-3 h-3" /> Read
             </a>
           )}
+
+          <span className="text-[#DDD9D3]">&middot;</span>
 
           {/* Print */}
           <button
             onClick={handlePrint}
-            className="inline-flex items-center gap-1 px-3 py-1.5 bg-[#F5EEE0] border border-[#DDD9D3] text-[#3D2E18] rounded font-[Georgia,serif] text-[10px] uppercase tracking-[0.05em] hover:border-[#C49040] hover:text-[#8B5E2E] hover:bg-[#FDF8EE] transition-colors"
+            className="inline-flex items-center gap-1 text-[12px] font-[Georgia,serif] text-[#8B5E2E] hover:underline hover:text-[#A5712E] transition-colors"
           >
             <Printer className="w-3 h-3" /> Print
           </button>
 
+          <span className="text-[#DDD9D3]">&middot;</span>
+
           {/* Download */}
           <button
             onClick={handleDownload}
-            className="inline-flex items-center gap-1 px-3 py-1.5 bg-[#F5EEE0] border border-[#DDD9D3] text-[#3D2E18] rounded font-[Georgia,serif] text-[10px] uppercase tracking-[0.05em] hover:border-[#C49040] hover:text-[#8B5E2E] hover:bg-[#FDF8EE] transition-colors"
+            className="inline-flex items-center gap-1 text-[12px] font-[Georgia,serif] text-[#8B5E2E] hover:underline hover:text-[#A5712E] transition-colors"
           >
             <Download className="w-3 h-3" /> Download
           </button>
 
+          <span className="text-[#DDD9D3]">&middot;</span>
+
           {/* Save */}
           <button
             onClick={handleSave}
-            className="inline-flex items-center gap-1 px-3 py-1.5 bg-[#F5EEE0] border border-[#DDD9D3] text-[#3D2E18] rounded font-[Georgia,serif] text-[10px] uppercase tracking-[0.05em] hover:border-[#C49040] hover:text-[#8B5E2E] hover:bg-[#FDF8EE] transition-colors"
+            className="inline-flex items-center gap-1 text-[12px] font-[Georgia,serif] text-[#8B5E2E] hover:underline hover:text-[#A5712E] transition-colors"
           >
             <Bookmark className="w-3 h-3" /> Save
           </button>

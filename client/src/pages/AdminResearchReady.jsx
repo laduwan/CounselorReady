@@ -8,13 +8,13 @@ import { CheckCircle, XCircle, Eye, Clock, AlertTriangle, BookOpen } from 'lucid
 import CEBuildPreview from '../components/researchReady/CEBuildPreview';
 
 const statusStyles = {
-  pending: { bg: 'bg-yellow-100', text: 'text-yellow-800', label: 'Pending' },
-  approved: { bg: 'bg-blue-100', text: 'text-blue-800', label: 'Approved' },
+  pending: { bg: 'bg-[#F8EEDC]', text: 'text-[#C49040]', label: 'Pending' },
+  approved: { bg: 'bg-green-100', text: 'text-green-700', label: 'Approved' },
   generating: { bg: 'bg-purple-100', text: 'text-purple-800', label: 'Generating' },
-  test_ready: { bg: 'bg-green-100', text: 'text-green-800', label: 'Test Ready' },
+  test_ready: { bg: 'bg-green-100', text: 'text-green-700', label: 'Test Ready' },
   in_progress: { bg: 'bg-teal-100', text: 'text-teal-800', label: 'In Progress' },
-  completed: { bg: 'bg-green-100', text: 'text-green-800', label: 'Completed' },
-  rejected: { bg: 'bg-red-100', text: 'text-red-800', label: 'Rejected' }
+  completed: { bg: 'bg-green-100', text: 'text-green-700', label: 'Completed' },
+  rejected: { bg: 'bg-[#FAF0ED]', text: 'text-[#7B2D3E]', label: 'Rejected' }
 };
 
 const verdictStyles = {
@@ -164,10 +164,10 @@ export default function AdminResearchReady() {
                             <>
                               <button
                                 onClick={() => handleApprove(course._id)}
-                                className="p-1.5 text-green-500 hover:text-green-700 rounded-lg hover:bg-green-50"
+                                className="inline-flex items-center gap-1 px-2 py-1 text-[11px] font-semibold font-[Georgia,serif] text-green-700 bg-green-50 rounded hover:bg-green-100 transition-colors"
                                 title="Approve"
                               >
-                                <CheckCircle className="w-4 h-4" />
+                                <CheckCircle className="w-3.5 h-3.5" /> Approve
                               </button>
                               {rejectingId === course._id ? (
                                 <div className="flex items-center gap-1">
@@ -194,10 +194,10 @@ export default function AdminResearchReady() {
                               ) : (
                                 <button
                                   onClick={() => setRejectingId(course._id)}
-                                  className="p-1.5 text-red-400 hover:text-red-700 rounded-lg hover:bg-red-50"
+                                  className="inline-flex items-center gap-1 px-2 py-1 text-[11px] font-semibold font-[Georgia,serif] text-[#7B2D3E] bg-[#FAF0ED] rounded hover:bg-red-100 transition-colors"
                                   title="Reject"
                                 >
-                                  <XCircle className="w-4 h-4" />
+                                  <XCircle className="w-3.5 h-3.5" /> Reject
                                 </button>
                               )}
                             </>
