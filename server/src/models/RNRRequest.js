@@ -97,7 +97,8 @@ const rnrRequestSchema = new mongoose.Schema({
       'in_progress',   // learner started but hasn't passed yet
       'completed',     // learner passed posttest
       'failed',        // exhausted attempts
-      'rejected'       // admin rejected
+      'rejected',      // admin rejected
+      'error'          // AI generation failed — admin can retry
     ],
     default: 'pending',
     index: true

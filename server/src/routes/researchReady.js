@@ -12,12 +12,14 @@
 
 import express from 'express';
 import { protect, requireAdmin } from '../middleware/auth.js';
-import { searchArticles } from '../services/openAlex.js';
+import { searchArticles, enrichWithFullText, fetchArticleWithFullText } from '../services/openAlex.js';
 import { checkCurrency } from '../services/currencyCheck.js';
 import { buildCE } from '../services/ceBuild.js';
 import { generateArticleContent } from '../services/articleContentGenerator.js';
 import { generateSyllabus } from '../services/syllabusGenerator.js';
 import RNRRequest from '../models/RNRRequest.js';
+import ResearchReadyCourse from '../models/ResearchReadyCourse.js';
+import ScholarlyArticle from '../models/ScholarlyArticle.js';
 import Certificate from '../models/Certificate.js';
 import UserCredential from '../models/UserCredential.js';
 import User from '../models/User.js';
@@ -346,7 +348,7 @@ router.get('/request/:id/content', protect, async (req, res) => {
 router.get('/queue', protect, requireAdmin, async (req, res) => {
   try {
     const requests = await RNRRequest.find({
-      status: { $in: ['pending', 'approved', 'generating', 'test_ready', 'in_progress'] }
+      status: { $in: ['pending', 'approved', 'generating', 'test_ready', 'in_progress', 'error'] }
     })
       .sort({ createdAt: -1 })
       .lean();
@@ -455,8 +457,7 @@ router.patch('/request/:id/approve', protect, requireAdmin, async (req, res) => 
       console.log(`[RNR] Build complete for request ${request._id} — ${articleResult.wordCount} words, ${request.questions.length} questions, ${calculateCE(articleResult.wordCount)} CE hrs`);
     } catch (buildErr) {
       console.error(`[RNR] Build failed for ${request._id}:`, buildErr.message);
-      // Revert to approved so admin can retry
-      request.status = 'approved';
+      request.status = 'error';
       request.adminNote = `Build failed: ${buildErr.message}`;
       await request.save();
     }
@@ -499,8 +500,8 @@ router.post('/request/:id/rebuild', protect, requireAdmin, async (req, res) => {
     const request = await RNRRequest.findById(req.params.id);
     if (!request) return res.status(404).json({ error: 'Request not found' });
 
-    if (!['approved', 'generating'].includes(request.status)) {
-      return res.status(400).json({ error: `Can only rebuild for approved/generating requests — current: ${request.status}` });
+    if (!['approved', 'generating', 'error'].includes(request.status)) {
+      return res.status(400).json({ error: `Can only rebuild for approved/generating/error requests — current: ${request.status}` });
     }
 
     request.status = 'generating';
@@ -563,7 +564,7 @@ router.post('/request/:id/rebuild', protect, requireAdmin, async (req, res) => {
       console.log(`[RNR] Rebuild complete for ${request._id} — ${articleResult.wordCount} words, ${request.questions.length} questions`);
     } catch (buildErr) {
       console.error(`[RNR] Rebuild failed for ${request._id}:`, buildErr.message);
-      request.status = 'approved';
+      request.status = 'error';
       request.adminNote = `Rebuild failed: ${buildErr.message}`;
       await request.save();
     }
@@ -866,6 +867,180 @@ router.get('/recommendations', protect, async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({ error: 'Failed to generate recommendations' });
+  }
+});
+
+
+// ═══════════════════════════════════════════════════════════════
+// DOWNLOAD PROXY — serves PDF as attachment to avoid publisher walls
+// GET /api/research-ready/download/:articleId
+// ═══════════════════════════════════════════════════════════════
+router.get('/download/:articleId', protect, async (req, res) => {
+  try {
+    // Look up article in RNRRequest selected articles or ResearchReadyCourse
+    const request = await RNRRequest.findOne({
+      'selectedArticles.openAlexId': req.params.articleId
+    }).lean();
+
+    let pdfUrl = '';
+    let courseTitle = 'article';
+
+    if (request) {
+      const article = request.selectedArticles.find(a => a.openAlexId === req.params.articleId);
+      pdfUrl = article?.oaUrl || '';
+      courseTitle = request.courseTitle || article?.title || 'article';
+    } else {
+      // Try ResearchReadyCourse
+      const course = await ResearchReadyCourse.findOne({
+        $or: [{ _id: req.params.articleId }, { oaUrl: { $exists: true } }]
+      }).lean();
+      if (course) {
+        pdfUrl = course.fullTextUrl || course.oaUrl || '';
+        courseTitle = course.courseTitle || course.title || 'article';
+      }
+    }
+
+    if (!pdfUrl) {
+      return res.status(404).json({ error: 'No downloadable URL found for this article' });
+    }
+
+    // Fetch and pipe PDF
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 30000);
+    try {
+      const pdfRes = await fetch(pdfUrl, { signal: controller.signal });
+      if (!pdfRes.ok) {
+        return res.status(502).json({ error: 'Failed to fetch article PDF' });
+      }
+
+      const slug = courseTitle.replace(/[^a-zA-Z0-9]+/g, '-').substring(0, 60).replace(/-+$/, '');
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `attachment; filename="${slug}.pdf"`);
+
+      const buffer = Buffer.from(await pdfRes.arrayBuffer());
+      res.send(buffer);
+    } finally {
+      clearTimeout(timeout);
+    }
+  } catch (error) {
+    console.error('Download proxy error:', error.message);
+    res.status(500).json({ error: 'Download failed: ' + error.message });
+  }
+});
+
+
+// ═══════════════════════════════════════════════════════════════
+// SAVE ARTICLE
+// POST /api/research-ready/saved/:articleId
+// ═══════════════════════════════════════════════════════════════
+router.post('/saved/:articleId', protect, async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const articleId = req.params.articleId;
+
+    await User.findByIdAndUpdate(userId, {
+      $addToSet: { savedRNRArticles: articleId }
+    });
+
+    res.json({ success: true, message: 'Article saved' });
+  } catch (error) {
+    console.error('Save article error:', error.message);
+    res.status(500).json({ error: 'Failed to save article' });
+  }
+});
+
+
+// ═══════════════════════════════════════════════════════════════
+// UNSAVE ARTICLE
+// DELETE /api/research-ready/saved/:articleId
+// ═══════════════════════════════════════════════════════════════
+router.delete('/saved/:articleId', protect, async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const articleId = req.params.articleId;
+
+    await User.findByIdAndUpdate(userId, {
+      $pull: { savedRNRArticles: articleId }
+    });
+
+    res.json({ success: true, message: 'Article removed' });
+  } catch (error) {
+    console.error('Unsave article error:', error.message);
+    res.status(500).json({ error: 'Failed to remove article' });
+  }
+});
+
+
+// ═══════════════════════════════════════════════════════════════
+// GET SAVED ARTICLES
+// GET /api/research-ready/saved
+// ═══════════════════════════════════════════════════════════════
+router.get('/saved', protect, async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).select('savedRNRArticles').lean();
+    const savedIds = user?.savedRNRArticles || [];
+
+    if (!savedIds.length) {
+      return res.json({ articles: [] });
+    }
+
+    // Look up saved articles from ScholarlyArticle or from recent RNRRequests
+    const articles = await ScholarlyArticle.find({
+      _id: { $in: savedIds }
+    }).lean().catch(() => []);
+
+    // Also check RNRRequest selected articles
+    const requests = await RNRRequest.find({
+      user: req.user._id,
+      'selectedArticles.openAlexId': { $in: savedIds.map(String) }
+    }).select('selectedArticles').lean();
+
+    const fromRequests = requests.flatMap(r =>
+      r.selectedArticles.filter(a => savedIds.some(id => String(id) === a.openAlexId))
+    );
+
+    const combined = [...articles, ...fromRequests];
+    res.json({ articles: combined });
+  } catch (error) {
+    console.error('Get saved articles error:', error.message);
+    res.status(500).json({ error: 'Failed to load saved articles' });
+  }
+});
+
+
+// ═══════════════════════════════════════════════════════════════
+// ENGAGEMENT TRACKING
+// POST /api/research-ready/engagement/:courseId
+// ═══════════════════════════════════════════════════════════════
+router.post('/engagement/:courseId', protect, async (req, res) => {
+  try {
+    // Try RNRRequest first
+    const request = await RNRRequest.findOne({
+      _id: req.params.courseId,
+      user: req.user._id
+    });
+
+    if (request) {
+      // Store engagement on the request (via a simple field — not in model yet but we track it)
+      if (!request.adminNote?.includes('engagement_confirmed')) {
+        request.adminNote = (request.adminNote || '') + ' engagement_confirmed';
+      }
+      await request.save();
+      return res.json({ success: true, engagementConfirmed: true });
+    }
+
+    // Try ResearchReadyCourse
+    const course = await ResearchReadyCourse.findById(req.params.courseId);
+    if (course) {
+      course.engagementConfirmed = true;
+      await course.save();
+      return res.json({ success: true, engagementConfirmed: true });
+    }
+
+    res.status(404).json({ error: 'Course not found' });
+  } catch (error) {
+    console.error('Engagement tracking error:', error.message);
+    res.status(500).json({ error: 'Failed to record engagement' });
   }
 });
 

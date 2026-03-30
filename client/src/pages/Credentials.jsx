@@ -405,23 +405,26 @@ export default function Credentials() {
 function RnrCertTile({ cert, rnrMeta, formatDate, onDelete }) {
   const [expanded, setExpanded] = useState(false);
   const courseTitle = rnrMeta.courseTitle || cert.title;
-  const articleTitles = rnrMeta.articleTitles || [];
 
   return (
     <div
-      className="bg-[#F8EEDC] border-l-[3px] border-l-[#7B2D3E] rounded-r-xl p-5 hover:shadow-md transition-shadow cursor-pointer"
+      className="bg-[#FAF5EC] border border-[#DDD9D3] border-l-[3px] border-l-[#7B2D3E] rounded-r-xl p-5 hover:shadow-md transition-shadow cursor-pointer"
       onClick={() => setExpanded(!expanded)}
+      role="button"
+      aria-expanded={expanded}
+      tabIndex={0}
+      onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setExpanded(!expanded); } }}
     >
       {/* At-a-glance (collapsed) */}
-      <h3 className="font-[Georgia,serif] text-[13px] text-[#2A1F0E] font-semibold mb-2 line-clamp-2">
+      <h3 className="font-[Georgia,serif] text-[15px] text-[#2A1F0E] font-bold mb-2 leading-snug">
         {courseTitle}
       </h3>
       <div className="flex flex-wrap items-center gap-2 mb-2">
-        <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-[#7B2D3E] text-[#FAF5EC]">
+        <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-[#8B5E2E] text-[#FDF8EE]">
           {cert.ceHours} CE hrs
         </span>
         {cert.category && (
-          <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-[#F4F1ED] text-[#5C4D3A]">
+          <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-[#F8EEDC] text-[#8B5E2E]">
             {cert.category}
           </span>
         )}
@@ -429,7 +432,7 @@ function RnrCertTile({ cert, rnrMeta, formatDate, onDelete }) {
           NBCC Approved
         </span>
       </div>
-      <p className="font-[Georgia,serif] text-[10px] text-[#7A6A54] mb-3">
+      <p className="font-[Georgia,serif] text-[11px] text-[#5C4D3A] mb-3">
         Completed {formatDate(cert.completionDate)}
       </p>
 
@@ -439,15 +442,16 @@ function RnrCertTile({ cert, rnrMeta, formatDate, onDelete }) {
             href={cert.fileUrl}
             download
             onClick={e => e.stopPropagation()}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#7B2D3E] text-[#FAF5EC] rounded text-[10px] font-[Georgia,serif] uppercase tracking-[0.05em] hover:bg-[#9B3A4E] transition-colors"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#8B5E2E] text-[#FDF8EE] rounded text-[10px] font-[Georgia,serif] uppercase tracking-[0.05em] hover:bg-[#A5712E] transition-colors focus-visible:outline-2 focus-visible:outline-[#8B5E2E] focus-visible:outline-offset-2"
+            aria-label={`Download CE syllabus for ${courseTitle}`}
           >
             <Download className="w-3 h-3" /> Download Syllabus
           </a>
         )}
         <button
           onClick={e => { e.stopPropagation(); onDelete(cert._id); }}
-          className="p-1.5 text-[#7A6A54] hover:text-red-600 rounded-lg hover:bg-red-50 transition-colors"
-          title="Delete certificate"
+          className="p-1.5 text-[#7A6A54] hover:text-red-600 rounded-lg hover:bg-red-50 transition-colors focus-visible:outline-2 focus-visible:outline-[#8B5E2E] focus-visible:outline-offset-2"
+          aria-label="Delete certificate"
         >
           <Trash2 className="w-3.5 h-3.5" />
         </button>
@@ -473,6 +477,16 @@ function RnrCertTile({ cert, rnrMeta, formatDate, onDelete }) {
             </p>
           )}
 
+          {/* Full text source + URL (audit trail) */}
+          {rnrMeta.fullTextSource && (
+            <p className="font-[Georgia,serif] text-[10px] text-[#7A6A54]">
+              Full text source: {rnrMeta.fullTextSource}
+              {rnrMeta.fullTextUrl && (
+                <> — <a href={rnrMeta.fullTextUrl} target="_blank" rel="noopener noreferrer" className="text-[#8B5E2E] underline hover:text-[#A5712E]">{rnrMeta.fullTextUrl}</a></>
+              )}
+            </p>
+          )}
+
           {/* Learning objectives */}
           {rnrMeta.objectivesMet?.length > 0 && (
             <div>
@@ -481,13 +495,16 @@ function RnrCertTile({ cert, rnrMeta, formatDate, onDelete }) {
               </p>
               <ol className="list-decimal list-inside space-y-1">
                 {rnrMeta.objectivesMet.map((obj, i) => (
-                  <li key={i} className="font-[Georgia,serif] text-[11px] text-[#2A1F0E]">{obj}</li>
+                  <li key={i} className="font-[Georgia,serif] text-[11px] text-[#2A1F0E] flex items-start gap-1">
+                    <CheckCircle className="w-3 h-3 text-green-600 flex-shrink-0 mt-0.5" />
+                    <span>{obj}</span>
+                  </li>
                 ))}
               </ol>
             </div>
           )}
 
-          {/* Assessment score */}
+          {/* Assessment score + engagement */}
           {rnrMeta.assessmentScore != null && (
             <p className="font-[Georgia,serif] text-[11px] text-[#2A1F0E]">
               Assessment Score: <strong>{rnrMeta.assessmentScore}%</strong>
@@ -496,11 +513,23 @@ function RnrCertTile({ cert, rnrMeta, formatDate, onDelete }) {
               )}
             </p>
           )}
+          {rnrMeta.engagementConfirmed != null && (
+            <p className="font-[Georgia,serif] text-[10px] text-[#7A6A54]">
+              Engagement confirmed: {rnrMeta.engagementConfirmed ? 'Yes' : 'No'}
+            </p>
+          )}
 
           {/* CE hour calculation */}
           {rnrMeta.ceCalcFormula && (
             <p className="font-[Georgia,serif] text-[10px] text-[#7A6A54]">
               {rnrMeta.ceCalcFormula}
+            </p>
+          )}
+
+          {/* Research hours */}
+          {rnrMeta.researchHours != null && (
+            <p className="font-[Georgia,serif] text-[10px] text-[#7A6A54]">
+              Research hours: {rnrMeta.researchHours}
             </p>
           )}
 
