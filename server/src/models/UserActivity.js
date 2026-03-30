@@ -39,7 +39,7 @@ const userActivitySchema = new mongoose.Schema({
   // Contextual data
   courseId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Course',
+    ref: 'InteractiveCourse',
     index: true
   },
   courseName: { type: String },
