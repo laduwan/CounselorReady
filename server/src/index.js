@@ -55,7 +55,6 @@ import referralsRoutes from './routes/referrals.js';
 import boardAlertsRoutes from './routes/boardAlerts.js';
 import cePlannerRoutes from './routes/cePlanner.js';
 import imageUploadRoutes from './routes/imageUpload.js';
-import adminStatsRoutes from './routes/adminStats.js';
 import researchReadyRoutes from './routes/researchReady.js';
 import toolsRoutes from './routes/tools.js';
 import toolRoutes from './routes/toolRoutes.js';
@@ -96,7 +95,7 @@ app.use(cors({
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'X-Partner-Id', 'X-Partner-Slug']
 }));
 
 app.use('/api/payments/webhook', express.raw({ type: 'application/json' }));
@@ -180,7 +179,6 @@ app.use('/api/referrals', referralsRoutes);
 app.use('/api/board-alerts', boardAlertsRoutes);
 app.use('/api/ce-planner', cePlannerRoutes);
 app.use('/api/images', imageUploadRoutes);
-app.use('/api/admin/stats', adminStatsRoutes);
 app.use('/api/research-ready', researchReadyRoutes);
 app.use('/api/tools', toolsRoutes);
 app.use('/api/tool-actions', toolRoutes);
@@ -218,7 +216,6 @@ const REQUIRED_ROUTES = {
   '/api/partners':            partnersRoutes,
   '/api/recommendations':     recommendationsRoutes,
   '/api/images':              imageUploadRoutes,
-  '/api/admin/stats':         adminStatsRoutes,
   '/api/admin/courses':       bulkUploadRoutes,
 };
 

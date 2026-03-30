@@ -5,13 +5,15 @@
 
 import express from 'express';
 import mongoose from 'mongoose';
+import { Readable } from 'stream';
+import { v2 as cloudinary } from 'cloudinary';
 import { Course, CourseProgress, ContentInteraction } from '../models/InteractiveCourse.js';
 import Certificate from '../models/Certificate.js';
 import Evaluation from '../models/Evaluation.js';
 import User from '../models/User.js';
 import UserCredential from '../models/UserCredential.js';
 import Gamification from '../models/Gamification.js';
-import { protect } from '../middleware/auth.js';
+import { protect, requireAdmin } from '../middleware/auth.js';
 import { generateCertificate, generateCertificateNumber } from '../utils/certificate.js';
 import { logActivity, ACTIVITY_TYPES } from '../services/activityTrackingService.js';
 
@@ -124,6 +126,22 @@ router.get('/', async (req, res) => {
     });
   } catch (error) {
     console.error('Error fetching courses:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch courses' });
+  }
+});
+
+/**
+ * GET /api/interactive-courses/admin/all
+ * Admin: list all courses (all statuses) for migration/management
+ */
+router.get('/admin/all', protect, requireAdmin, async (req, res) => {
+  try {
+    const courses = await Course.find({})
+      .select('title slug description status ceHours categories tags wordCount createdAt updatedAt')
+      .sort({ createdAt: -1 });
+    res.json({ success: true, data: courses, total: courses.length });
+  } catch (error) {
+    console.error('Error fetching all courses for admin:', error);
     res.status(500).json({ success: false, error: 'Failed to fetch courses' });
   }
 });
@@ -356,7 +374,8 @@ router.post('/:id/assessment', protect, async (req, res) => {
       });
 
       calculatedScore = correctCount / questions.length;
-      calculatedPassed = calculatedScore >= (course.assessment.passThreshold || 0.8);
+      const threshold = course.assessment.passThreshold ?? (course.assessment.passingScore != null ? course.assessment.passingScore / 100 : 0.75);
+      calculatedPassed = calculatedScore >= threshold;
     }
 
     // Record attempt
@@ -691,6 +710,21 @@ router.post('/:id/certificate', protect, async (req, res) => {
       verificationCode: certificate?.verificationCode
     });
 
+    // Upload PDF to Cloudinary
+    const uploadResult = await new Promise((resolve, reject) => {
+      const uploadStream = cloudinary.uploader.upload_stream(
+        { resource_type: 'raw', folder: 'certificates', public_id: `cert_${certificate?._id || 'new'}_${Date.now()}` },
+        (error, result) => {
+          if (error) return reject(error);
+          resolve(result);
+        }
+      );
+      const readable = new Readable();
+      readable.push(pdfBuffer);
+      readable.push(null);
+      readable.pipe(uploadStream);
+    });
+
     // Save certificate record if new
     if (!certificate) {
       certificate = new Certificate({
@@ -706,7 +740,8 @@ router.post('/:id/certificate', protect, async (req, res) => {
         approvingBody: 'NBCC',
         approvalNumber: course.acepNumber || '#7760',
         certificateNumber,
-        source: 'platform'
+        source: 'platform',
+        fileUrl: uploadResult.secure_url
       });
       await certificate.save();
 
@@ -756,12 +791,19 @@ router.post('/:id/certificate', protect, async (req, res) => {
       // Record gamification: course complete + certificate earned
       recordGamification(req.user._id, 'course_complete', { ceHours: course.ceHours || 1 });
       recordGamification(req.user._id, 'certificate_earned');
+    } else {
+      // Existing certificate — update fileUrl
+      certificate.fileUrl = uploadResult.secure_url;
+      await certificate.save();
     }
 
-    // Send PDF
-    res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `attachment; filename="${course.slug || course._id}_certificate.pdf"`);
-    res.send(pdfBuffer);
+    // Return JSON (PDF is served via GET /certificates/:id/serve)
+    res.json({
+      success: true,
+      certificateId: certificate._id,
+      fileUrl: certificate.fileUrl,
+      message: 'Certificate generated successfully'
+    });
 
   } catch (error) {
     console.error('Error generating certificate:', error);
