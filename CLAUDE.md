@@ -1,4 +1,3 @@
-[CLAUDE(4).md](https://github.com/user-attachments/files/26329659/CLAUDE.4.md)
 # CounselorReady — Claude Code Instructions
 ## GA Integrated Therapeutic Perspectives LLC · NBCC ACEP #7760
 ---

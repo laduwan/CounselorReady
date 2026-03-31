@@ -3443,7 +3443,7 @@ function stripHtml(html) {
 function renderAssessment() {
   const area = document.getElementById('crContentArea');
   const qs = course.assessment?.questions || [];
-  const passingScore = course.assessment?.passingScore || 80;
+  const passingScore = course.assessment?.passingScore || 75;
   const maxAttempts = course.assessment?.maxAttempts || 3;
   
   if (qs.length === 0) {
@@ -3531,7 +3531,7 @@ function submitAssessment() {
   renderAssessmentResult();
 
   // PostHog: course completion tracking
-  const passed = score >= (course.assessment.passingScore || 80);
+  const passed = score >= (course.assessment.passingScore || 75);
   if (passed && window.posthog) {
     posthog.capture('course_completed', {
       courseId: course._id,
@@ -3576,7 +3576,7 @@ function submitAssessment() {
 function renderAssessmentResult() {
   const area = document.getElementById('crContentArea');
   const score = assessmentState.score;
-  const passing = course.assessment?.passingScore || 80;
+  const passing = course.assessment?.passingScore || 75;
   const passed = score >= passing;
   const maxAttempts = course.assessment?.maxAttempts || 3;
   

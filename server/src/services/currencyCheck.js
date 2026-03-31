@@ -36,8 +36,10 @@ async function callClaude(prompt) {
 
 /**
  * Run currency check on an article.
+ * Accepts fullText for more accurate AI verdict — methods, sample, and discussion
+ * are in the body, not the abstract.
  */
-export async function checkCurrency({ title, authors, journal, year, abstract, topic }) {
+export async function checkCurrency({ title, authors, journal, year, abstract, fullText, topic }) {
   // Step 1: Find newer articles on the same topic
   const newerArticles = await fetchNewerArticles({
     topic,
@@ -50,10 +52,18 @@ export async function checkCurrency({ title, authors, journal, year, abstract, t
     : 'No newer open-access articles found on this topic.';
 
   // Step 2: Call Anthropic for currency verdict
+  // Use full text if available for more accurate analysis
+  const textForAI = fullText
+    ? fullText.substring(0, 15000)
+    : abstract || '';
+  const textLabel = fullText
+    ? 'FULL ARTICLE TEXT (truncated to 15,000 words)'
+    : 'Abstract';
+
   const prompt = `You are a CE quality reviewer for CounselorReady, an NBCC ACEP-approved provider (#7760).
 
 SOURCE ARTICLE: "${title}" (${authors}, ${journal}, ${year})
-Abstract: ${abstract}
+${textLabel}: ${textForAI}
 
 NEWER OPEN-ACCESS ARTICLES ON THIS TOPIC (${year + 1}–2025):
 ${newerList}

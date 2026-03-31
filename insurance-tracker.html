@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Insurance Panel Tracker | CounselorReady</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script>
+    tailwind.config={theme:{extend:{
+      colors:{
+        burgundy:{50:'#fdf5f6',100:'#fae8eb',200:'#f5d0d6',300:'#eba9b5',400:'#dd768a',500:'#c94d65',600:'#a83350',700:'#8B2635',800:'#6b1d34',900:'#4a1524'},
+        hunter:{100:'#e3ebe5',500:'#4A7C59',600:'#3D6A4A',700:'#34503d',800:'#2b4133'},
+        gold:{50:'#fdf9f0',100:'#f9f0db',400:'#D4A855'},
+        honey:{400:'#D4A855'}
+      },
+      fontFamily:{display:['Cormorant Garamond','Georgia','serif'],body:['Lato','system-ui','sans-serif']}
+    }}}
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Lato:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body{font-family:'Lato',system-ui,sans-serif}
+    .font-display{font-family:'Cormorant Garamond',Georgia,serif}
+    .panel-details{max-height:0;overflow:hidden;transition:max-height .35s ease,opacity .3s ease;opacity:0}
+    .panel-details.open{max-height:1200px;opacity:1}
+    .chevron-icon{transition:transform .25s ease}
+    .chevron-icon.open{transform:rotate(180deg)}
+  </style>
+</head>
+<body class="bg-stone-50 min-h-screen">
+
+  <!-- Header -->
+  <header class="bg-white border-b border-hunter-100 sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+      <a href="/dashboard.html" class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl flex items-center justify-center shadow-md" style="background:linear-gradient(135deg,#8b2542,#6b1d34)">
+          <span class="font-display font-bold text-lg" style="position:relative;display:inline-block;width:22px;height:22px">
+            <span style="color:#D4A855;position:absolute;top:-3px;left:0">C</span>
+            <span style="color:#4A7C59;position:absolute;top:5px;left:6px">R</span>
+          </span>
+        </div>
+        <span class="font-display font-semibold text-xl"><span style="color:#6b1d34">Counselor</span><span style="color:#4A7C59">Ready</span></span>
+      </a>
+      <nav class="hidden md:flex items-center gap-1">
+        <a href="/dashboard.html" class="px-4 py-2 rounded-lg text-sm font-medium text-gray-600 hover:text-burgundy-800 hover:bg-burgundy-50 transition-colors">Dashboard</a>
+        <a href="/courses.html" class="px-4 py-2 rounded-lg text-sm font-medium text-gray-600 hover:text-burgundy-800 hover:bg-burgundy-50 transition-colors">Courses</a>
+        <a href="/credentials.html" class="px-4 py-2 rounded-lg text-sm font-medium text-gray-600 hover:text-burgundy-800 hover:bg-burgundy-50 transition-colors">Credentials</a>
+        <a href="#" class="px-4 py-2 rounded-lg text-sm font-medium text-burgundy-800 bg-burgundy-50 border border-burgundy-200">Practice</a>
+        <a href="/organization.html" class="px-4 py-2 rounded-lg text-sm font-medium text-gray-600 hover:text-burgundy-800 hover:bg-burgundy-50 transition-colors">Team</a>
+      </nav>
+      <div class="flex items-center gap-3">
+        <button class="relative p-2 text-gray-400 hover:text-burgundy-700"><i class="fas fa-bell text-lg"></i></button>
+        <div class="flex items-center gap-2">
+          <div class="w-9 h-9 rounded-full bg-burgundy-100 text-burgundy-800 flex items-center justify-center text-sm font-bold" id="userAvatar">--</div>
+          <span class="text-sm font-medium text-gray-700 hidden lg:inline" id="userName"></span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-4xl mx-auto px-6 py-8">
+    <a href="/credentials.html" class="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-burgundy-700 mb-4"><i class="fas fa-chevron-left text-xs"></i> Credentials</a>
+
+    <div class="flex items-start justify-between mb-6">
+      <div>
+        <h1 class="font-display text-3xl font-semibold text-burgundy-900">Insurance Panel Tracker</h1>
+        <p class="text-gray-500 mt-1">Track your insurance credentialing applications</p>
+      </div>
+      <button onclick="toggleForm()" id="addBtn" class="px-4 py-2 bg-burgundy-800 text-white rounded-lg text-sm font-semibold hover:bg-burgundy-900 transition-colors"><i class="fas fa-plus mr-2"></i>Add Panel</button>
+    </div>
+
+    <!-- Loading -->
+    <div id="loading" class="text-center py-20">
+      <div style="width:36px;height:36px;border:3px solid #e7e5e4;border-top-color:#6B1D34;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 12px"></div>
+      <p class="text-gray-400 text-sm">Loading insurance panels...</p>
+    </div>
+
+    <!-- Add/Edit Form -->
+    <div id="panelForm" class="hidden bg-white rounded-xl border border-gray-200 p-6 mb-6">
+      <h2 class="font-display text-xl font-semibold text-burgundy-900 mb-4" id="formTitle">Add Insurance Panel</h2>
+      <form onsubmit="handleSubmit(event)">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <div class="md:col-span-2"><label class="block text-xs font-semibold text-gray-600 mb-1">Insurance Company *</label><input id="fCompany" required class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm"></div>
+          <div><label class="block text-xs font-semibold text-gray-600 mb-1">Panel Type</label>
+            <select id="fPanelType" class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm">
+              <option value="in_network">In-Network</option><option value="out_of_network">Out-of-Network</option>
+            </select>
+          </div>
+          <div><label class="block text-xs font-semibold text-gray-600 mb-1">Application Status</label>
+            <select id="fStatus" class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm">
+              <option value="not_started">Not Started</option><option value="gathering_docs">Gathering Documents</option>
+              <option value="submitted">Submitted</option><option value="under_review">Under Review</option>
+              <option value="approved">Approved</option><option value="denied">Denied</option>
+              <option value="recredentialing">Recredentialing</option>
+            </select>
+          </div>
+          <div><label class="block text-xs font-semibold text-gray-600 mb-1">Application Date</label><input id="fAppDate" type="date" class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm"></div>
+          <div><label class="block text-xs font-semibold text-gray-600 mb-1">CAQH ID</label><input id="fCaqh" class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm"></div>
+          <div><label class="block text-xs font-semibold text-gray-600 mb-1">Contact Name</label><input id="fContactName" class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm"></div>
+          <div><label class="block text-xs font-semibold text-gray-600 mb-1">Contact Phone</label><input id="fContactPhone" class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm"></div>
+          <div><label class="block text-xs font-semibold text-gray-600 mb-1">Contact Email</label><input id="fContactEmail" type="email" class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm"></div>
+          <div><label class="block text-xs font-semibold text-gray-600 mb-1">Portal URL</label><input id="fPortal" type="url" class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm" placeholder="https://"></div>
+          <div><label class="block text-xs font-semibold text-gray-600 mb-1">Next Follow-Up</label><input id="fFollowUp" type="date" class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm"></div>
+          <div class="md:col-span-2"><label class="block text-xs font-semibold text-gray-600 mb-1">Notes</label><textarea id="fNotes" rows="2" class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm"></textarea></div>
+        </div>
+        <div class="flex gap-2">
+          <button type="submit" class="px-4 py-2 bg-burgundy-800 text-white rounded-lg text-sm font-semibold" id="submitBtn">Add Panel</button>
+          <button type="button" onclick="cancelForm()" class="px-4 py-2 border border-gray-200 rounded-lg text-sm text-gray-600">Cancel</button>
+        </div>
+      </form>
+    </div>
+
+    <div id="content" class="hidden">
+      <!-- Status Summary -->
+      <div id="statusCards" class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6"></div>
+
+      <!-- Panels List -->
+      <div id="panelsList"></div>
+
+      <!-- Empty State -->
+      <div id="emptyState" class="hidden text-center py-16 bg-white rounded-xl border border-gray-200">
+        <div class="w-16 h-16 rounded-full bg-burgundy-50 flex items-center justify-center mx-auto mb-4"><i class="fas fa-shield-halved text-2xl text-burgundy-400"></i></div>
+        <p class="text-gray-700 font-semibold">No insurance panels tracked yet</p>
+        <p class="text-gray-400 text-sm mt-1">Add one to start tracking your credentialing progress.</p>
+      </div>
+    </div>
+  </main>
+
+  <!-- Message Toast -->
+  <div id="toast" class="hidden fixed bottom-6 right-6 px-4 py-3 rounded-lg text-sm font-semibold shadow-lg z-50"></div>
+
+<style>@keyframes spin{to{transform:rotate(360deg)}}</style>
+
+<script>
+const API=location.hostname==='localhost'?'http://localhost:5000':'https://api.counselorready.com';
+const T=localStorage.getItem('token');
+if(!T)location.href='/login.html';
+
+try{const p=JSON.parse(atob(T.split('.')[1]));
+document.getElementById('userName').textContent=p.name||'';
+document.getElementById('userAvatar').textContent=(p.name||'--').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+}catch(e){}
+
+let credentials=[],editingId=null;
+
+const STATUS_CFG={
+  not_started:{label:'Not Started',bg:'#f3f4f6',color:'#374151',icon:'fa-circle'},
+  gathering_docs:{label:'Gathering Docs',bg:'#dbeafe',color:'#1d4ed8',icon:'fa-file-lines'},
+  submitted:{label:'Submitted',bg:'#e0e7ff',color:'#4338ca',icon:'fa-paper-plane'},
+  under_review:{label:'Under Review',bg:'#fef3c7',color:'#92400e',icon:'fa-clock'},
+  approved:{label:'Approved',bg:'#d1fae5',color:'#065f46',icon:'fa-circle-check'},
+  denied:{label:'Denied',bg:'#fee2e2',color:'#991b1b',icon:'fa-circle-xmark'},
+  recredentialing:{label:'Recredentialing',bg:'#f3e8ff',color:'#7c3aed',icon:'fa-rotate'}
+};
+
+const DEFAULT_CHECKLIST=[
+  {name:'W-9 Form',required:true,uploaded:false},
+  {name:'State License Copy',required:true,uploaded:false},
+  {name:'Malpractice Insurance Certificate',required:true,uploaded:false},
+  {name:'NPI Verification',required:true,uploaded:false},
+  {name:'CAQH Profile Updated',required:true,uploaded:false},
+  {name:'Diploma / Transcripts',required:false,uploaded:false},
+  {name:'Board Certification',required:false,uploaded:false},
+  {name:'DEA Registration (if applicable)',required:false,uploaded:false}
+];
+
+async function init(){
+  try{
+    const r=await fetch(`${API}/api/insurance-credentials`,{headers:{Authorization:`Bearer ${T}`}});
+    if(!r.ok)throw new Error('Failed to load');
+    credentials=await r.json();
+    document.getElementById('loading').style.display='none';
+    document.getElementById('content').classList.remove('hidden');
+    if(!credentials.length){document.getElementById('emptyState').classList.remove('hidden');return;}
+    renderStatusCards();renderPanels();
+  }catch(e){document.getElementById('loading').innerHTML='<p style="color:#6B1D34;font-weight:600">'+e.message+'</p>';}
+}
+
+function renderStatusCards(){
+  const counts={};
+  credentials.forEach(c=>{counts[c.applicationStatus]=(counts[c.applicationStatus]||0)+1;});
+  const important=['approved','under_review','submitted','not_started'];
+  document.getElementById('statusCards').innerHTML=important.map(s=>{
+    const cfg=STATUS_CFG[s]||STATUS_CFG.not_started;
+    return`<div class="bg-white rounded-xl border border-gray-200 p-4 text-center">
+      <p class="text-2xl font-bold font-display" style="color:${cfg.color}">${counts[s]||0}</p>
+      <p class="text-xs text-gray-500 mt-1">${cfg.label}</p>
+    </div>`;
+  }).join('');
+}
+
+function renderPanels(){
+  const el=document.getElementById('panelsList');
+  if(!credentials.length){el.innerHTML='';document.getElementById('emptyState').classList.remove('hidden');return;}
+  document.getElementById('emptyState').classList.add('hidden');
+  el.innerHTML=credentials.map((c,i)=>{
+    const cfg=STATUS_CFG[c.applicationStatus]||STATUS_CFG.not_started;
+    const checklist=c.documentsChecklist||[];
+    const done=checklist.filter(d=>d.uploaded).length;
+    return`<div class="bg-white rounded-xl border border-gray-200 mb-4 overflow-hidden">
+      <button onclick="togglePanel(${i})" class="w-full px-5 py-4 flex items-center justify-between text-left hover:bg-stone-50 transition-colors">
+        <div class="flex items-center gap-3 flex-1 min-w-0">
+          <div class="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0" style="background:${cfg.bg}"><i class="fas ${cfg.icon}" style="color:${cfg.color}"></i></div>
+          <div class="min-w-0">
+            <p class="text-sm font-semibold text-gray-800 truncate">${c.insuranceCompany}</p>
+            <p class="text-xs text-gray-400 mt-0.5">${c.panelType==='in_network'?'In-Network':'Out-of-Network'} &middot; Docs: ${done}/${checklist.length}</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-3">
+          <span class="px-2.5 py-1 rounded-full text-xs font-semibold" style="background:${cfg.bg};color:${cfg.color}">${cfg.label}</span>
+          <i class="fas fa-chevron-down chevron-icon text-gray-400" id="chev${i}"></i>
+        </div>
+      </button>
+      <div class="panel-details" id="detail${i}">
+        <div class="px-5 pb-5 border-t border-gray-100 pt-4">
+          <div class="grid grid-cols-2 gap-4 text-sm mb-4">
+            ${c.caqhId?'<div><span class="text-xs text-gray-400">CAQH ID</span><p class="font-medium text-gray-700">'+c.caqhId+'</p></div>':''}
+            ${c.applicationDate?'<div><span class="text-xs text-gray-400">Applied</span><p class="font-medium text-gray-700">'+new Date(c.applicationDate).toLocaleDateString()+'</p></div>':''}
+            ${c.contactName?'<div><span class="text-xs text-gray-400">Contact</span><p class="font-medium text-gray-700">'+c.contactName+'</p></div>':''}
+            ${c.contactPhone?'<div><span class="text-xs text-gray-400">Phone</span><p class="font-medium text-gray-700">'+c.contactPhone+'</p></div>':''}
+            ${c.contactEmail?'<div><span class="text-xs text-gray-400">Email</span><p class="font-medium text-gray-700">'+c.contactEmail+'</p></div>':''}
+            ${c.nextFollowUpDate?'<div><span class="text-xs text-gray-400">Follow-up</span><p class="font-medium text-gray-700">'+new Date(c.nextFollowUpDate).toLocaleDateString()+'</p></div>':''}
+            ${c.portalUrl?'<div class="col-span-2"><span class="text-xs text-gray-400">Portal</span><p><a href="'+c.portalUrl+'" target="_blank" class="text-burgundy-700 hover:underline text-sm">'+c.portalUrl+'</a></p></div>':''}
+          </div>
+          ${c.notes?'<div class="mb-4"><span class="text-xs text-gray-400">Notes</span><p class="text-sm text-gray-600 mt-1">'+c.notes+'</p></div>':''}
+          <!-- Checklist -->
+          <div class="mb-4">
+            <h4 class="text-xs font-semibold text-gray-600 mb-2">Documents Checklist</h4>
+            <div class="space-y-1.5">${checklist.map((d,di)=>`<label class="flex items-center gap-2 cursor-pointer group">
+              <input type="checkbox" ${d.uploaded?'checked':''} onchange="toggleChecklist('${c._id}',${di})" class="rounded border-gray-300 text-burgundy-800 focus:ring-burgundy-500">
+              <span class="text-sm ${d.uploaded?'text-gray-400 line-through':'text-gray-700'}">${d.name}${d.required?' <span class="text-red-400">*</span>':''}</span>
+            </label>`).join('')}</div>
+          </div>
+          <div class="flex gap-2">
+            <button onclick="editPanel('${c._id}')" class="px-3 py-1.5 border border-gray-200 rounded-lg text-xs font-medium text-gray-600 hover:bg-gray-50"><i class="fas fa-edit mr-1"></i>Edit</button>
+            <button onclick="deletePanel('${c._id}')" class="px-3 py-1.5 border border-red-200 rounded-lg text-xs font-medium text-red-600 hover:bg-red-50"><i class="fas fa-trash mr-1"></i>Delete</button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function togglePanel(i){
+  const d=document.getElementById('detail'+i);
+  const c=document.getElementById('chev'+i);
+  d.classList.toggle('open');c.classList.toggle('open');
+}
+
+function toggleForm(){
+  editingId=null;
+  document.getElementById('formTitle').textContent='Add Insurance Panel';
+  document.getElementById('submitBtn').textContent='Add Panel';
+  clearForm();
+  document.getElementById('panelForm').classList.toggle('hidden');
+}
+
+function cancelForm(){document.getElementById('panelForm').classList.add('hidden');editingId=null;}
+
+function clearForm(){
+  ['fCompany','fCaqh','fContactName','fContactPhone','fContactEmail','fPortal','fNotes'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('fPanelType').value='in_network';
+  document.getElementById('fStatus').value='not_started';
+  document.getElementById('fAppDate').value='';
+  document.getElementById('fFollowUp').value='';
+}
+
+function editPanel(id){
+  const c=credentials.find(x=>x._id===id);if(!c)return;
+  editingId=id;
+  document.getElementById('formTitle').textContent='Edit Insurance Panel';
+  document.getElementById('submitBtn').textContent='Update Panel';
+  document.getElementById('fCompany').value=c.insuranceCompany||'';
+  document.getElementById('fPanelType').value=c.panelType||'in_network';
+  document.getElementById('fStatus').value=c.applicationStatus||'not_started';
+  document.getElementById('fAppDate').value=c.applicationDate?c.applicationDate.split('T')[0]:'';
+  document.getElementById('fCaqh').value=c.caqhId||'';
+  document.getElementById('fContactName').value=c.contactName||'';
+  document.getElementById('fContactPhone').value=c.contactPhone||'';
+  document.getElementById('fContactEmail').value=c.contactEmail||'';
+  document.getElementById('fPortal').value=c.portalUrl||'';
+  document.getElementById('fFollowUp').value=c.nextFollowUpDate?c.nextFollowUpDate.split('T')[0]:'';
+  document.getElementById('fNotes').value=c.notes||'';
+  document.getElementById('panelForm').classList.remove('hidden');
+  document.getElementById('panelForm').scrollIntoView({behavior:'smooth'});
+}
+
+async function handleSubmit(e){
+  e.preventDefault();
+  const body={
+    insuranceCompany:document.getElementById('fCompany').value,
+    panelType:document.getElementById('fPanelType').value,
+    applicationStatus:document.getElementById('fStatus').value,
+    applicationDate:document.getElementById('fAppDate').value||undefined,
+    caqhId:document.getElementById('fCaqh').value,
+    contactName:document.getElementById('fContactName').value,
+    contactPhone:document.getElementById('fContactPhone').value,
+    contactEmail:document.getElementById('fContactEmail').value,
+    portalUrl:document.getElementById('fPortal').value,
+    nextFollowUpDate:document.getElementById('fFollowUp').value||undefined,
+    notes:document.getElementById('fNotes').value,
+    documentsChecklist:editingId?undefined:DEFAULT_CHECKLIST
+  };
+  try{
+    const url=editingId?`${API}/api/insurance-credentials/${editingId}`:`${API}/api/insurance-credentials`;
+    const method=editingId?'PUT':'POST';
+    const r=await fetch(url,{method,headers:{Authorization:`Bearer ${T}`,'Content-Type':'application/json'},body:JSON.stringify(body)});
+    if(!r.ok){const d=await r.json();throw new Error(d.error||'Failed');}
+    showToast(editingId?'Updated successfully':'Insurance panel added','success');
+    cancelForm();
+    const rr=await fetch(`${API}/api/insurance-credentials`,{headers:{Authorization:`Bearer ${T}`}});
+    credentials=await rr.json();
+    renderStatusCards();renderPanels();
+  }catch(e){showToast(e.message,'error');}
+}
+
+async function toggleChecklist(id,idx){
+  try{
+    await fetch(`${API}/api/insurance-credentials/${id}/checklist/${idx}`,{method:'PATCH',headers:{Authorization:`Bearer ${T}`}});
+    const c=credentials.find(x=>x._id===id);
+    if(c&&c.documentsChecklist&&c.documentsChecklist[idx])c.documentsChecklist[idx].uploaded=!c.documentsChecklist[idx].uploaded;
+    renderPanels();
+  }catch(e){showToast('Failed to update checklist','error');}
+}
+
+async function deletePanel(id){
+  if(!confirm('Delete this insurance panel?'))return;
+  try{
+    await fetch(`${API}/api/insurance-credentials/${id}`,{method:'DELETE',headers:{Authorization:`Bearer ${T}`}});
+    credentials=credentials.filter(c=>c._id!==id);
+    renderStatusCards();renderPanels();
+    showToast('Panel deleted','success');
+  }catch(e){showToast('Failed to delete','error');}
+}
+
+function showToast(msg,type){
+  const t=document.getElementById('toast');
+  t.textContent=msg;
+  t.style.background=type==='error'?'#fee2e2':'#d1fae5';
+  t.style.color=type==='error'?'#991b1b':'#065f46';
+  t.classList.remove('hidden');
+  setTimeout(()=>t.classList.add('hidden'),3000);
+}
+
+document.addEventListener('DOMContentLoaded',init);
+</script>
+<script src="/js/cr-icons.js"></script>
+</body>
+</html>
