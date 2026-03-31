@@ -3,7 +3,7 @@
 # ═══════════════════════════════════════════════════════════════
 
 # ── Root ──
-/                    /index.html               200
+/                    /landing.html             200
 
 # ── User-facing pages ──
 /dashboard           /dashboard.html           200
@@ -89,18 +89,7 @@
 /admin-quick-links   /admin-quick-links.html   200
 /interactive-courses /interactive-courses.html  200
 /landing             /landing.html              200
-/achievements        /achievements.html         200
-/board-alerts        /board-alerts.html         200
-/ce-planner          /ce-planner.html           200
-/referrals           /referrals.html            200
-/recommendations     /recommendations.html      200
-/legacy-vault        /legacy-vault.html         200
-/supervision         /supervision.html          200
-/organization        /organization.html         200
-/group-licenses      /group-licenses.html       200
-/insurance-tracker   /insurance-tracker.html    200
 /messages            /messages.html             200
-/research-ready      /research-ready.html       200
 /welcome             /welcome.html              200
 
 # ── Catch-all: 404 (NOT SPA rewrite) ──
