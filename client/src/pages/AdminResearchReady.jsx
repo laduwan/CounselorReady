@@ -203,10 +203,10 @@ export default function AdminResearchReady() {
                             <>
                               <button
                                 onClick={() => handleApprove(course._id)}
-                                className="p-1.5 text-green-500 hover:text-green-700 rounded-lg hover:bg-green-50 focus-visible:outline-2 focus-visible:outline-[#8B5E2E] focus-visible:outline-offset-2"
+                                className="inline-flex items-center gap-1 px-2 py-1 text-[11px] font-semibold font-[Georgia,serif] text-green-700 bg-green-50 rounded hover:bg-green-100 transition-colors focus-visible:outline-2 focus-visible:outline-[#8B5E2E] focus-visible:outline-offset-2"
                                 aria-label="Approve request"
                               >
-                                <CheckCircle className="w-4 h-4" />
+                                <CheckCircle className="w-3.5 h-3.5" /> Approve
                               </button>
                               {rejectingId === course._id ? (
                                 <div className="flex items-center gap-1">
@@ -234,10 +234,10 @@ export default function AdminResearchReady() {
                               ) : (
                                 <button
                                   onClick={() => setRejectingId(course._id)}
-                                  className="p-1.5 text-red-400 hover:text-red-700 rounded-lg hover:bg-red-50 focus-visible:outline-2 focus-visible:outline-[#8B5E2E] focus-visible:outline-offset-2"
+                                  className="inline-flex items-center gap-1 px-2 py-1 text-[11px] font-semibold font-[Georgia,serif] text-[#7B2D3E] bg-[#FAF0ED] rounded hover:bg-red-100 transition-colors focus-visible:outline-2 focus-visible:outline-[#8B5E2E] focus-visible:outline-offset-2"
                                   aria-label="Reject request"
                                 >
-                                  <XCircle className="w-4 h-4" />
+                                  <XCircle className="w-3.5 h-3.5" /> Reject
                                 </button>
                               )}
                             </>
