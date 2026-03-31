@@ -329,12 +329,12 @@
     async function loadCourses() {
       const token = localStorage.getItem('token');
       try {
-        const response = await fetch(`${API_URL}/api/courses/admin/all`, {
+        const response = await fetch(`${API_URL}/api/interactive-courses/admin/all`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         if (response.ok) {
           const data = await response.json();
-          courses = data.courses || [];
+          courses = data.data || data.courses || [];
           
           const select = document.getElementById('courseSelect');
           select.innerHTML = '<option value="">Select a course...</option>' + 
