@@ -1734,7 +1734,7 @@ function crAuthHeaders() {
 }
 
 function crSlugOrId() {
-  return course?.slug || course?._id || '';
+  return course?._id || course?.slug || '';
 }
 
 async function crPost(path, body) {
@@ -3509,7 +3509,7 @@ function assessmentSelect(qIdx, optIdx) {
   renderAssessment();
 }
 
-function submitAssessment() {
+async function submitAssessment() {
   const qs = course.assessment.questions;
   let correct = 0;
   
@@ -3528,10 +3528,35 @@ function submitAssessment() {
   assessmentState.score = score;
   assessmentState.attempts++;
   
+  const passed = score >= (course.assessment.passingScore || 75);
+
+  // POST assessment to backend BEFORE rendering result (must complete before cert pipeline)
+  if (passed && crAuthHeaders()) {
+    const area = document.getElementById('crContentArea');
+    area.innerHTML = '<div style="text-align:center;padding:60px"><div class="cr-spinner" style="margin:0 auto 16px"></div><p style="color:var(--cr-text-muted)">Saving your results\u2026</p></div>';
+    document.getElementById('crNavButtons').style.display = 'none';
+
+    const answersPayload = Object.entries(assessmentState.answers).map(([qi, oi]) => ({
+      questionIndex: parseInt(qi), selectedOption: oi
+    }));
+    try {
+      await crPost('/assessment', {
+        answers: answersPayload,
+        score: score / 100,
+        passed: true,
+        attempt: assessmentState.attempts
+      });
+      certPipelineState.assessmentSaved = true;
+      console.log('[CR] Assessment saved to backend');
+    } catch (err) {
+      console.warn('[CR] Assessment save failed:', err.message);
+      certPipelineState.assessmentSaveError = err.message;
+    }
+  }
+
   renderAssessmentResult();
 
   // PostHog: course completion tracking
-  const passed = score >= (course.assessment.passingScore || 75);
   if (passed && window.posthog) {
     posthog.capture('course_completed', {
       courseId: course._id,
@@ -3553,24 +3578,6 @@ function submitAssessment() {
     }, '*');
   }
 
-  // POST assessment to backend (async, non-blocking)
-  if (passed) {
-    const answersPayload = Object.entries(assessmentState.answers).map(([qi, oi]) => ({
-      questionIndex: parseInt(qi), selectedOption: oi
-    }));
-    crPost('/assessment', {
-      answers: answersPayload,
-      score: score / 100,
-      passed: true,
-      attempt: assessmentState.attempts
-    }).then(() => {
-      certPipelineState.assessmentSaved = true;
-      console.log('[CR] Assessment saved to backend');
-    }).catch(err => {
-      console.warn('[CR] Assessment save failed:', err.message);
-      // Still allow local flow — cert generation will fail if not auth'd
-    });
-  }
 }
 
 function renderAssessmentResult() {
@@ -3598,9 +3605,17 @@ function renderAssessmentResult() {
     // Check if user is authenticated
     const token = localStorage.getItem('token');
     if (token) {
-      html += `<button class="cr-btn cr-btn-success" style="margin-top:20px" data-action="startCertPipeline">
-        Continue to Certificate →
-      </button>`;
+      if (certPipelineState.assessmentSaveError) {
+        html += `<div style="margin-top:20px;padding:14px;background:#FEF2F2;border:1.5px solid #DC2626;border-radius:10px;text-align:left">
+          <p style="font-weight:700;color:#991B1B;margin:0 0 6px">\u26a0\ufe0f Your score could not be saved</p>
+          <p style="font-size:0.83em;color:var(--cr-text-secondary);margin:0 0 12px">${esc(certPipelineState.assessmentSaveError)}</p>
+          <button class="cr-btn cr-btn-primary" data-action="retryAssessmentSave">Retry Save</button>
+        </div>`;
+      } else {
+        html += `<button class="cr-btn cr-btn-success" style="margin-top:20px" data-action="startCertPipeline">
+          Continue to Certificate \u2192
+        </button>`;
+      }
       html += `<p style="font-size:0.78em;color:var(--cr-text-muted);margin-top:8px">You'll complete a brief evaluation and attestation before downloading your certificate.</p>`;
     } else {
       html += `<div style="margin-top:20px;padding:16px;background:var(--cr-gold-faded);border:1.5px solid var(--cr-gold);border-radius:10px">
@@ -3963,6 +3978,32 @@ function downloadCertificate() {
         <a href="/dashboard.html" style="font-size:0.83rem;color:var(--cr-burgundy);font-weight:600;text-decoration:none">Go to Dashboard</a>
       </div>`;
     });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// RETRY ASSESSMENT SAVE
+// ═══════════════════════════════════════════════════════════════
+async function retryAssessmentSave() {
+  const area = document.getElementById('crContentArea');
+  area.innerHTML = '<div style="text-align:center;padding:60px"><div class="cr-spinner" style="margin:0 auto 16px"></div><p style="color:var(--cr-text-muted)">Saving your results\u2026</p></div>';
+
+  const answersPayload = Object.entries(assessmentState.answers).map(([qi, oi]) => ({
+    questionIndex: parseInt(qi), selectedOption: oi
+  }));
+  try {
+    await crPost('/assessment', {
+      answers: answersPayload,
+      score: assessmentState.score / 100,
+      passed: true,
+      attempt: assessmentState.attempts
+    });
+    certPipelineState.assessmentSaved = true;
+    certPipelineState.assessmentSaveError = null;
+    console.log('[CR] Assessment saved on retry');
+  } catch (err) {
+    certPipelineState.assessmentSaveError = err.message;
+  }
+  renderAssessmentResult();
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -5224,6 +5265,7 @@ document.addEventListener('click', function(e) {
     
     // ─── Certificate Pipeline ───
     case 'startCertPipeline': renderEvaluation(); break;
+    case 'retryAssessmentSave': retryAssessmentSave(); break;
     case 'submitEvaluation': submitEvaluation(); break;
     case 'submitAttestation': submitAttestation(); break;
     case 'downloadCertificate': downloadCertificate(); break;
