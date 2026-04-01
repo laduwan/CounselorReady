@@ -713,7 +713,7 @@ router.post('/:id/certificate', protect, async (req, res) => {
     // Upload PDF to Cloudinary
     const uploadResult = await new Promise((resolve, reject) => {
       const uploadStream = cloudinary.uploader.upload_stream(
-        { resource_type: 'raw', folder: 'certificates', public_id: `cert_${certificate?._id || 'new'}_${Date.now()}` },
+        { resource_type: 'raw', folder: 'certificates', format: 'pdf', public_id: `cert_${certificate?._id || 'new'}_${Date.now()}` },
         (error, result) => {
           if (error) return reject(error);
           resolve(result);
