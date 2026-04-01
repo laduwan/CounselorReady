@@ -12,7 +12,7 @@
     tailwind.config={theme:{extend:{
       fontFamily:{display:['Cormorant Garamond','Georgia','serif'],body:['Lato','Calibri','sans-serif']},
       colors:{
-        burgundy:{50:'#FDF5F7',100:'#FAE8EB',200:'#F5D0D6',300:'#E8A4B2',400:'#D4708A',500:'#C94D65',600:'#A83350',700:'#8B2542',800:'#6B1D34',900:'#4A1524'},
+        burgundy:{50:'#FDF5F7',100:'#FAE8EB',200:'#F5D0D6',300:'#E8A4B2',400:'#D4708A',500:'#C94D65',600:'#A83350',700:'#8B2542',800:'#6B1D34',900:'#4A1524',950:'#2D0A16'},
         navy:{50:'#F0F4F7',100:'#D9E2EA',200:'#B3C5D4',300:'#7A98AE',400:'#4A6B82',500:'#284157',600:'#1F3345',700:'#172736',800:'#101C27'},
         hunter:{50:'#F2F7F4',100:'#E4EBE6',200:'#C9D7CD',300:'#A3BDA9',400:'#7A9E84',500:'#4A7C59',600:'#3D6A4A',700:'#305538',800:'#234027'},
         honey:{50:'#FDF9F0',100:'#F9F0DB',200:'#F3E0B5',300:'#EACD86',400:'#D4A855',500:'#C49545',600:'#A67936',700:'#865E2C',800:'#6B4A25'},
@@ -59,12 +59,14 @@
           <span style="color:#6B1D34">Counselor</span><span style="color:#3D6A4A">Ready</span>
         </span>
       </a>
+      <!-- Desktop Nav — matches courses page -->
       <nav class="hidden lg:flex items-center gap-1">
         <a href="/dashboard.html" class="nav-link active">Dashboard</a>
         <a href="/courses.html" class="nav-link">Courses</a>
         <a href="/credentials.html" class="nav-link">Credentials</a>
-        <a href="/supervision.html" class="nav-link">Practice</a>
-        <a href="/organization.html" class="nav-link">Team</a>
+        <a href="/certificates.html" class="nav-link">CE Certificates</a>
+        <a href="/messages.html" class="nav-link">Messages</a>
+        <a href="/dashboard.html" class="nav-link" style="font-size:12px;color:#78716c">&larr; Back to Dashboard</a>
       </nav>
       <div class="flex items-center gap-2">
         <a href="/admin.html" id="adminBadge" class="hidden items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full" style="color:#6B1D34;background:#FDF5F7;border:1px solid #6B1D34;text-decoration:none">
@@ -103,32 +105,20 @@
         </button>
       </div>
     </div>
+    <!-- Mobile Nav — matches courses page -->
     <div id="mobileNav" class="hidden lg:hidden border-t border-stone-200 bg-white px-4 py-3 space-y-1">
       <a href="/dashboard.html" class="block px-4 py-2.5 rounded-lg text-sm font-semibold" style="color:#6B1D34;background:#FDF5F7">Dashboard</a>
       <a href="/courses.html" class="block px-4 py-2.5 rounded-lg text-sm" style="color:#57534e">Courses</a>
-      <div style="padding-left:12px">
-        <a href="/research-ready.html" class="block px-4 py-2 rounded-lg text-sm" style="color:#78716c">Researched-N-Ready</a>
-        <a href="/recommendations.html" class="block px-4 py-2 rounded-lg text-sm" style="color:#78716c">Recommendations</a>
-        <a href="/achievements.html" class="block px-4 py-2 rounded-lg text-sm" style="color:#78716c">Achievements</a>
-      </div>
       <a href="/credentials.html" class="block px-4 py-2.5 rounded-lg text-sm" style="color:#57534e">Credentials</a>
-      <div style="padding-left:12px">
-        <a href="/ce-planner.html" class="block px-4 py-2 rounded-lg text-sm" style="color:#78716c">CE Planner</a>
-        <a href="/audit.html" class="block px-4 py-2 rounded-lg text-sm" style="color:#78716c">Audit Kit</a>
-        <a href="/board-alerts.html" class="block px-4 py-2 rounded-lg text-sm" style="color:#78716c">Board Alerts</a>
-      </div>
-      <a href="/supervision.html" class="block px-4 py-2.5 rounded-lg text-sm" style="color:#57534e">Practice</a>
-      <div style="padding-left:12px">
-        <a href="/insurance-tracker.html" class="block px-4 py-2 rounded-lg text-sm" style="color:#78716c">Insurance Tracker</a>
-      </div>
-      <a href="/organization.html" class="block px-4 py-2.5 rounded-lg text-sm" style="color:#57534e">Team</a>
-      <div style="padding-left:12px">
-        <a href="/group-licenses.html" class="block px-4 py-2 rounded-lg text-sm" style="color:#78716c">Group Licenses</a>
-      </div>
+      <a href="/certificates.html" class="block px-4 py-2.5 rounded-lg text-sm" style="color:#57534e">CE Certificates</a>
+      <a href="/messages.html" class="block px-4 py-2.5 rounded-lg text-sm" style="color:#57534e">Messages</a>
       <div style="border-top:1px solid #F1EFE9;margin:6px 0;padding-top:6px">
-        <a href="/legacy-vault.html" class="block px-4 py-2 rounded-lg text-sm" style="color:#57534e">Legacy Vault</a>
-        <a href="/referrals.html" class="block px-4 py-2 rounded-lg text-sm" style="color:#57534e">Referrals</a>
-        <a href="/partner-dashboard.html" class="block px-4 py-2 rounded-lg text-sm" style="color:#57534e">Partner Portal</a>
+        <a href="/research-ready.html" class="block px-4 py-2 rounded-lg text-sm" style="color:#78716c">Researched-N-Ready</a>
+        <a href="/ce-planner.html" class="block px-4 py-2 rounded-lg text-sm" style="color:#78716c">CE Planner</a>
+        <a href="/achievements.html" class="block px-4 py-2 rounded-lg text-sm" style="color:#78716c">Achievements</a>
+        <a href="/referrals.html" class="block px-4 py-2 rounded-lg text-sm" style="color:#78716c">Referrals</a>
+        <a href="/partner-dashboard.html" class="block px-4 py-2 rounded-lg text-sm" style="color:#78716c">Partner Portal</a>
+        <a href="/legacy-vault.html" class="block px-4 py-2 rounded-lg text-sm" style="color:#78716c">Legacy Vault</a>
       </div>
       <a href="/admin.html" id="adminMob" class="hidden px-4 py-2.5 rounded-lg text-sm font-semibold" style="color:#6B1D34;background:#FDF5F7">Admin Panel</a>
     </div>
@@ -196,7 +186,7 @@
       </div>
 
       <div class="space-y-6">
-        <!-- CE Progress — navy bars -->
+        <!-- CE Progress -->
         <div class="bg-white rounded-xl border border-burgundy-100 shadow-sm p-5">
           <h2 class="font-display text-lg font-semibold text-burgundy-800 mb-4">CE Progress</h2>
           <div id="progressList" class="space-y-3"><div class="text-center py-6"><div class="w-14 h-14 bg-hunter-50 rounded-full flex items-center justify-center mx-auto mb-3"><svg class="w-7 h-7 text-hunter-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg></div><p class="text-navy-400 text-sm">Add credentials to track CE progress</p><a href="/credentials.html" class="inline-block mt-2 text-xs text-burgundy-700 hover:text-burgundy-800 font-semibold" style="text-decoration:none">+ Add Credential</a></div></div>
@@ -209,7 +199,36 @@
       </div>
     </div>
   </main>
-  <footer class="max-w-7xl mx-auto px-4 sm:px-6 py-6 mt-4"><div class="text-center text-xs text-navy-300">&copy; 2026 GAITP LLC. CounselorReady&trade; &mdash; Learn. License. Lead.&reg;</div></footer>
+
+  <!-- Footer — full burgundy with NBCC badge + provider disclosure + policy links -->
+  <footer class="bg-burgundy-950 mt-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-10">
+      <!-- NBCC Badge + Disclosure -->
+      <div class="flex flex-col md:flex-row items-center justify-center gap-6 mb-6">
+        <img src="/images/nbcc-provider-badge.jpg" alt="NBCC Approved Continuing Education Provider" class="h-20 w-auto">
+        <div class="text-center md:text-left">
+          <p class="text-white font-semibold text-sm">NBCC Approved Provider</p>
+          <p class="text-burgundy-300 text-xs">ACEP #7760</p>
+        </div>
+      </div>
+      <div class="mb-6">
+        <p class="text-burgundy-400 text-xs leading-relaxed text-center max-w-4xl mx-auto">
+          CounselorReady is operated by GA Integrated Therapeutic Perspectives LLC, an NBCC Approved Continuing Education Provider (ACEP #7760). Programs that do not qualify for NBCC credit are clearly identified. GA Integrated Therapeutic Perspectives LLC is solely responsible for all aspects of the programs. NCMHCE&reg; is a registered trademark of the National Board for Certified Counselors, Inc. (NBCC). CounselorReady is not affiliated with, endorsed by, or sponsored by NBCC.
+        </p>
+      </div>
+      <div class="border-t border-burgundy-800 pt-6 flex flex-col md:flex-row justify-between items-center gap-4">
+        <p class="text-burgundy-400 text-sm">&copy; 2026 CounselorReady. All rights reserved.</p>
+        <div class="flex flex-wrap items-center justify-center gap-4 md:gap-6">
+          <a href="/privacy.html" class="text-burgundy-400 hover:text-white text-sm transition-colors">Privacy</a>
+          <a href="/terms.html" class="text-burgundy-400 hover:text-white text-sm transition-colors">Terms</a>
+          <a href="/refund-policy.html" class="text-burgundy-400 hover:text-white text-sm transition-colors">Refunds</a>
+          <a href="/ada-accommodations.html" class="text-burgundy-400 hover:text-white text-sm transition-colors">ADA Accommodations</a>
+          <a href="/non-discrimination.html" class="text-burgundy-400 hover:text-white text-sm transition-colors">Non-Discrimination</a>
+          <a href="/complaint-resolution.html" class="text-burgundy-400 hover:text-white text-sm transition-colors">Complaints</a>
+        </div>
+      </div>
+    </div>
+  </footer>
 
   <script>
     const API=location.hostname==='localhost'?'http://localhost:5000':'https://api.counselorready.com';
