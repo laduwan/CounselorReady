@@ -1734,7 +1734,7 @@ function crAuthHeaders() {
 }
 
 function crSlugOrId() {
-  return course?._id || course?.slug || '';
+  return course?.slug || course?._id || '';
 }
 
 async function crPost(path, body) {
@@ -3540,7 +3540,7 @@ async function submitAssessment() {
       questionIndex: parseInt(qi), selectedOption: oi
     }));
     try {
-      await crPost('/assessment', {
+      await crPost('/progress/assessment', {
         answers: answersPayload,
         score: score / 100,
         passed: true,
