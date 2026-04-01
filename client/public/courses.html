@@ -318,28 +318,37 @@
 
     async function enrollCourse(courseId) {
       const token = localStorage.getItem('token');
-      
+
       if (!token) {
         alert('Please log in to enroll in courses');
         window.location.href = '/login.html';
         return;
       }
-      
+
+      // Find the course slug for redirect
+      const course = allCourses.find(c => c._id === courseId);
+      const slug = course?.slug || courseId;
+
       try {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 10000);
         const response = await fetch(`${API_URL}/api/interactive-courses/${courseId}/enroll`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
-          }
+          },
+          signal: controller.signal
         });
-        
+        clearTimeout(timeout);
+
         if (response.ok) {
-          alert('Enrolled successfully!');
-          await loadCourses(); // Reload to show updated enrollment
+          window.location.href = '/interactive-course.html?slug=' + slug;
         } else {
           const data = await response.json();
-          if (data.code === 'SUBSCRIPTION_REQUIRED') {
+          if (response.status === 400 && (data.error || '').toLowerCase().includes('already enrolled')) {
+            window.location.href = '/interactive-course.html?slug=' + slug;
+          } else if (data.code === 'SUBSCRIPTION_REQUIRED') {
             alert('This course requires an active subscription. Please subscribe to access.');
           } else {
             alert(data.error || 'Failed to enroll');
