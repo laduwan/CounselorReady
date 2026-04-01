@@ -197,12 +197,14 @@ export async function generateCertificate(data) {
     doc.font('Helvetica').fontSize(7).fillColor('#666666');
     doc.text('Authorized Signature', 60 + sigColW, sigY + 52, { width: sigColW, align: 'center' });
 
-    // ── FOOTER (simplified, one line) ──
-    const footerY = H - 48;
+    // ── FOOTER ──
+    const footerY = H - 52;
+    doc.font('Helvetica').fontSize(6).fillColor('#888888');
+    doc.text('Verify at counselorready.com/verify', 0, footerY, { align: 'center', width: W });
     doc.font('Helvetica').fontSize(6.5).fillColor('#888888');
     doc.text(
       `NBCC Approved Continuing Education Provider, ${acepNumber}. The provider is solely responsible for all aspects of the program.`,
-      50, footerY, { align: 'center', width: W - 100 }
+      50, footerY + 12, { align: 'center', width: W - 100 }
     );
 
     doc.end();
