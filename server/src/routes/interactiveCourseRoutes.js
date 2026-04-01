@@ -698,22 +698,19 @@ router.post('/:id/certificate', protect, async (req, res) => {
 
     // Generate PDF
     const pdfBuffer = await generateCertificate({
-      studentName: `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email,
-      courseTitle: course.title,
+      holderName: `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email,
+      courseName: course.title,
       ceHours: course.ceHours || 1,
-      ceCategory: course.categories?.[0] || 'Core',
       completionDate: progress.completedAt || new Date(),
       certificateNumber,
-      objectives: course.objectives || [],
-      approvingBody: 'NBCC',
-      approvalNumber: course.acepNumber || '#7760',
+      acepNumber: course.acepNumber || '#7760',
       verificationCode: certificate?.verificationCode
     });
 
     // Upload PDF to Cloudinary
     const uploadResult = await new Promise((resolve, reject) => {
       const uploadStream = cloudinary.uploader.upload_stream(
-        { resource_type: 'raw', folder: 'certificates', public_id: `cert_${certificate?._id || 'new'}_${Date.now()}` },
+        { resource_type: 'raw', folder: 'certificates', format: 'pdf', public_id: `cert_${certificate?._id || 'new'}_${Date.now()}` },
         (error, result) => {
           if (error) return reject(error);
           resolve(result);
