@@ -199,9 +199,9 @@ export async function generateCertificate(data) {
 
     // ── FOOTER ──
     const footerY = H - 52;
-    doc.font('Helvetica').fontSize(6).fillColor('#888888');
+    doc.font('Helvetica-Bold').fontSize(7).fillColor('#777777');
     doc.text('Verify at counselorready.com/verify', 0, footerY, { align: 'center', width: W });
-    doc.font('Helvetica').fontSize(6.5).fillColor('#888888');
+    doc.font('Helvetica').fontSize(6).fillColor('#AAAAAA');
     doc.text(
       `Ga Integrated Therapeutic Perspectives, LLC has been approved by NBCC as an Approved Continuing Education Provider, ${acepNumber}. ` +
       'Programs that do not qualify for NBCC credit are clearly identified. Ga Integrated Therapeutic Perspectives, LLC is solely responsible for all aspects of the program.',
