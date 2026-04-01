@@ -135,20 +135,15 @@ export async function generateCertificate(data) {
     doc.font('Times-Bold').fontSize(titleFontSize).fillColor(HUNTER_GREEN);
     doc.text(courseName, 60, 225, { align: 'center', width: W - 120 });
 
-    // ── CE HOURS ──
-    const hoursY = courseName.length > 50 ? 260 : 252;
-    doc.font('Helvetica-Bold').fontSize(14).fillColor(BURGUNDY);
-    doc.text(`${ceHours} NBCC Clock Hour${ceHours !== 1 ? 's' : ''} Awarded`, 0, hoursY, { align: 'center', width: W });
-
-    // Content area if provided
-    let nextY = hoursY + 18;
-    if (ceCategory) {
-      doc.font('Helvetica-Bold').fontSize(10).fillColor(HUNTER_GREEN);
-      doc.text(`Content Area: ${ceCategory}`, 0, nextY, { align: 'center', width: W });
-      nextY += 16;
-    }
+    // ── INSTRUCTOR + ASYNCHRONOUS ──
+    const instrY = courseName.length > 50 ? 255 : 250;
+    doc.font('Helvetica').fontSize(10).fillColor(NAVY);
+    doc.text(`Instructor: ${instructorName}`, 0, instrY, { align: 'center', width: W });
+    doc.font('Helvetica-Oblique').fontSize(9).fillColor(DARK_GREEN);
+    doc.text('Asynchronous', 0, instrY + 15, { align: 'center', width: W });
 
     // ── LEARNING OBJECTIVES (if provided, compact) ──
+    let nextY = instrY + 32;
     if (objectives.length > 0 && objectives.length <= 6) {
       nextY += 4;
       doc.font('Helvetica-Bold').fontSize(9).fillColor(HUNTER_GREEN);
@@ -162,33 +157,11 @@ export async function generateCertificate(data) {
       });
     }
 
-    // ── DETAILS ROW: Date | Certificate # | Verification ──
-    const detailY = Math.max(nextY + 10, 370);
-    const colWidth = (W - 120) / 3;
-
-    // Date
-    doc.font('Helvetica').fontSize(8).fillColor('#666666');
-    doc.text('Date of Completion', 60, detailY, { width: colWidth, align: 'center' });
-    doc.font('Helvetica-Bold').fontSize(10).fillColor(NAVY);
-    doc.text(formattedDate, 60, detailY + 12, { width: colWidth, align: 'center' });
-
-    // Certificate Number
-    doc.font('Helvetica').fontSize(8).fillColor('#666666');
-    doc.text('Certificate Number', 60 + colWidth, detailY, { width: colWidth, align: 'center' });
-    doc.font('Helvetica-Bold').fontSize(10).fillColor(NAVY);
-    doc.text(certificateNumber, 60 + colWidth, detailY + 12, { width: colWidth, align: 'center' });
-
-    // Verification
-    doc.font('Helvetica').fontSize(8).fillColor('#666666');
-    doc.text('Verification', 60 + colWidth * 2, detailY, { width: colWidth, align: 'center' });
-    doc.font('Helvetica-Bold').fontSize(10).fillColor(NAVY);
-    doc.text(verificationCode, 60 + colWidth * 2, detailY + 12, { width: colWidth, align: 'center' });
-
-    // ── SIGNATURE SECTION ──
-    const sigY = detailY + 42;
+    // ── SIGNATURE SECTION (two columns) ──
+    const sigY = Math.max(nextY + 16, 370);
     const sigColW = (W - 120) / 2;
 
-    // Left: Instructor signature
+    // Left: Authorized Signature
     try {
       if (fs.existsSync(SIGNATURE_PATH)) {
         doc.image(SIGNATURE_PATH, (60 + sigColW / 2) - 60, sigY - 5, { width: 120, height: 40 });
@@ -199,14 +172,13 @@ export async function generateCertificate(data) {
     doc.font('Helvetica').fontSize(8).fillColor(NAVY);
     doc.text(instructorName, 60, sigY + 40, { width: sigColW, align: 'center' });
     doc.font('Helvetica').fontSize(7).fillColor('#666666');
-    doc.text('Instructor / Presenter', 60, sigY + 52, { width: sigColW, align: 'center' });
+    doc.text('Authorized Signature', 60, sigY + 52, { width: sigColW, align: 'center' });
 
-    // Right: Provider
-    doc.moveTo(60 + sigColW + 30, sigY + 35).lineTo(60 + sigColW * 2 - 30, sigY + 35).lineWidth(0.5).stroke('#999999');
-    doc.font('Helvetica').fontSize(8).fillColor(NAVY);
-    doc.text('GA Integrated Therapeutic Perspectives LLC', 60 + sigColW, sigY + 40, { width: sigColW, align: 'center' });
-    doc.font('Helvetica').fontSize(7).fillColor('#666666');
-    doc.text(`${approvingBody} Approved Provider, ${acepNumber}`, 60 + sigColW, sigY + 52, { width: sigColW, align: 'center' });
+    // Right: Completion info
+    doc.font('Helvetica-Bold').fontSize(11).fillColor(NAVY);
+    doc.text(`Completed ${formattedDate}`, 60 + sigColW, sigY + 20, { width: sigColW, align: 'center' });
+    doc.font('Helvetica').fontSize(8).fillColor(HUNTER_GREEN);
+    doc.text('NBCC ACEP Approved', 60 + sigColW, sigY + 36, { width: sigColW, align: 'center' });
 
     // ── NBCC SEAL (bottom-right, quarter-sized ~70pt) ──
     try {
@@ -216,18 +188,32 @@ export async function generateCertificate(data) {
       }
     } catch (e) { /* no seal image */ }
 
-    // ── FOOTER: ACEP COMPLIANCE STATEMENT ──
-    const footerY = H - 58;
+    // ── BOTTOM ROW: Content Area + CE Hours | Verify URL | Certificate # ──
+    const bottomY = H - 72;
+    const bottomColW = (W - 100) / 3;
+
+    // Left: Content area / CE hours
+    const ceLabel = ceCategory
+      ? `${ceCategory} / ${ceHours} CE Hour${ceHours !== 1 ? 's' : ''}`
+      : `${ceHours} CE Hour${ceHours !== 1 ? 's' : ''}`;
+    doc.font('Helvetica').fontSize(8).fillColor(NAVY);
+    doc.text(ceLabel, 50, bottomY, { width: bottomColW, align: 'left' });
+
+    // Center: Verify URL
+    doc.font('Helvetica').fontSize(8).fillColor('#888888');
+    doc.text('Verify at counselorready.com/verify', 50 + bottomColW, bottomY, { width: bottomColW, align: 'center' });
+
+    // Right: Certificate number
+    doc.font('Helvetica').fontSize(8).fillColor(NAVY);
+    doc.text(`Certificate #: ${certificateNumber}`, 50 + bottomColW * 2, bottomY, { width: bottomColW, align: 'right' });
+
+    // ── FOOTER (simplified, one line) ──
+    const footerY = H - 48;
     doc.font('Helvetica').fontSize(6.5).fillColor('#888888');
     doc.text(
-      `Ga Integrated Therapeutic Perspectives, LLC has been approved by NBCC as an Approved Continuing Education Provider, ${acepNumber}. ` +
-      'Programs that do not qualify for NBCC credit are clearly identified. Ga Integrated Therapeutic Perspectives, LLC is solely responsible for all aspects of the program.',
+      `NBCC Approved Continuing Education Provider, ${acepNumber}. The provider is solely responsible for all aspects of the program.`,
       50, footerY, { align: 'center', width: W - 100 }
     );
-
-    // Verify URL
-    doc.font('Helvetica').fontSize(6).fillColor('#AAAAAA');
-    doc.text('Verify at counselorready.com/verify', 0, H - 38, { align: 'center', width: W });
 
     doc.end();
   });
