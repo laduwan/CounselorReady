@@ -3912,11 +3912,20 @@ function downloadCertificate() {
   })
     .then(res => {
       if (!res.ok) return res.json().then(err => { throw new Error(err.error || err.message || 'Certificate generation failed'); });
-      return res.blob();
+      return res.json();
     })
-    .then(blob => {
-      const url = URL.createObjectURL(blob);
-      const filename = (course.slug || 'certificate') + '_certificate.pdf';
+    .then(data => {
+      if (!data.success || !data.fileUrl) throw new Error(data.message || 'Certificate generation failed');
+
+      const fileUrl = data.fileUrl;
+
+      // Trigger download via anchor element
+      const a = document.createElement('a');
+      a.href = fileUrl;
+      a.download = 'CounselorReady_Certificate.pdf';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
 
       area.innerHTML = `<div style="max-width:500px;margin:0 auto;padding:40px;text-align:center">
         <div style="font-size:3rem;margin-bottom:16px">🎓</div>
@@ -3925,7 +3934,7 @@ function downloadCertificate() {
           ${esc(course.title || '')} · ${course.ceHours || 1} CE Hour${(course.ceHours || 1) !== 1 ? 's' : ''}
         </p>
 
-        <a href="${url}" download="${esc(filename)}"
+        <a href="${esc(fileUrl)}" download="CounselorReady_Certificate.pdf"
           style="display:inline-flex;align-items:center;gap:8px;padding:14px 28px;background:var(--cr-burgundy);color:#fff;
           font-weight:700;font-size:0.95rem;border-radius:10px;text-decoration:none;transition:background 0.15s"
           onmouseover="this.style.background='var(--cr-burgundy-light)'"
