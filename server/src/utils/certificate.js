@@ -15,6 +15,7 @@ const __dirname = path.dirname(__filename);
 
 const LOGO_PATH = path.join(__dirname, '../templates/logo.jpg');
 const SIGNATURE_PATH = path.join(__dirname, '../templates/signature.png');
+const NBCC_SEAL_PATH = path.join(__dirname, '../templates/nbcc-acep-logo.jpg');
 
 // CounselorReady brand colors
 const BURGUNDY = '#6B1D34';
@@ -206,6 +207,14 @@ export async function generateCertificate(data) {
     doc.text('GA Integrated Therapeutic Perspectives LLC', 60 + sigColW, sigY + 40, { width: sigColW, align: 'center' });
     doc.font('Helvetica').fontSize(7).fillColor('#666666');
     doc.text(`${approvingBody} Approved Provider, ${acepNumber}`, 60 + sigColW, sigY + 52, { width: sigColW, align: 'center' });
+
+    // ── NBCC SEAL (bottom-right, quarter-sized ~70pt) ──
+    try {
+      if (fs.existsSync(NBCC_SEAL_PATH)) {
+        const sealSize = 70;
+        doc.image(NBCC_SEAL_PATH, W - sealSize - 40, H - sealSize - 45, { width: sealSize, height: sealSize });
+      }
+    } catch (e) { /* no seal image */ }
 
     // ── FOOTER: ACEP COMPLIANCE STATEMENT ──
     const footerY = H - 58;
