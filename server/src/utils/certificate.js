@@ -143,17 +143,17 @@ export async function generateCertificate(data) {
     doc.font('Helvetica-Oblique').fontSize(9).fillColor(DARK_GREEN);
     doc.text('Asynchronous', 0, instrY + 15, { align: 'center', width: W });
 
-    // ── LEARNING OBJECTIVES (if provided, compact, centered) ──
+    // ── LEARNING OBJECTIVES (if provided, centered) ──
     let nextY = instrY + 40;
     if (objectives.length > 0 && objectives.length <= 6) {
-      doc.font('Helvetica-Bold').fontSize(8).fillColor(HUNTER_GREEN);
+      doc.font('Helvetica-Bold').fontSize(9).fillColor(HUNTER_GREEN);
       doc.text('Learning Objectives:', 120, nextY, { width: W - 240, align: 'center' });
-      nextY += 11;
-      doc.font('Helvetica').fontSize(7).fillColor(NAVY);
+      nextY += 13;
+      doc.font('Helvetica').fontSize(8).fillColor(NAVY);
       objectives.forEach((obj, i) => {
         const text = `${i + 1}. ${String(obj).substring(0, 120)}`;
         doc.text(text, 130, nextY, { width: W - 260, align: 'center' });
-        nextY += 9;
+        nextY += 11;
       });
     }
 
