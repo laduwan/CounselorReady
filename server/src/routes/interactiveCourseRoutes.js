@@ -701,8 +701,11 @@ router.post('/:id/certificate', protect, async (req, res) => {
       holderName: `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email,
       courseName: course.title,
       ceHours: course.ceHours || 1,
+      ceCategory: course.categories?.[0] || 'Core',
       completionDate: progress.completedAt || new Date(),
       certificateNumber,
+      objectives: course.objectives || [],
+      approvingBody: 'NBCC',
       acepNumber: course.acepNumber || '#7760',
       verificationCode: certificate?.verificationCode
     });
