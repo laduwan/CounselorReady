@@ -175,10 +175,11 @@ export async function generateCertificate(data) {
     doc.text('Authorized Signature', 60, sigY + 52, { width: sigColW, align: 'center' });
 
     // Right: Completion info
+    doc.moveTo(60 + sigColW + 30, sigY + 35).lineTo(60 + sigColW * 2 - 30, sigY + 35).lineWidth(0.5).stroke('#999999');
     doc.font('Helvetica-Bold').fontSize(11).fillColor(NAVY);
-    doc.text(`Completed ${formattedDate}`, 60 + sigColW, sigY + 20, { width: sigColW, align: 'center' });
+    doc.text(`Completed ${formattedDate}`, 60 + sigColW, sigY + 40, { width: sigColW, align: 'center' });
     doc.font('Helvetica').fontSize(8).fillColor(HUNTER_GREEN);
-    doc.text('NBCC ACEP Approved', 60 + sigColW, sigY + 36, { width: sigColW, align: 'center' });
+    doc.text('NBCC ACEP Approved', 60 + sigColW, sigY + 52, { width: sigColW, align: 'center' });
 
     // ── NBCC SEAL (bottom-right, quarter-sized ~70pt) ──
     try {
