@@ -1,261 +1,268 @@
 /**
- * Copyright (c) 2026 CounselorReady, a subsidiary of Ga Integrated Therapeutic Perspectives, LLC.
- * All rights reserved. Proprietary and confidential.
- * Unauthorized copying or distribution is strictly prohibited.
+ * CounselorReady Certificate Generator
+ * NBCC ACEP #7760 Compliant CE Certificates
+ * Uses PDFKit — produces landscape Letter PDF with brand design
  */
-// Certificate Generation and Signing Utilities for CounselorReady
-// ==============================================================
-// Complete file with PDF generation AND signed URL fix (ES6 version)
 
 import PDFDocument from 'pdfkit';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { v2 as cloudinary } from 'cloudinary';
 
-// Configure Cloudinary
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET
-});
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-// =====================================
-// PDF GENERATION FUNCTIONS
-// =====================================
+const LOGO_PATH = path.join(__dirname, '../templates/logo.jpg');
+const SIGNATURE_PATH = path.join(__dirname, '../templates/signature.png');
+
+// CounselorReady brand colors
+const BURGUNDY = '#6B1D34';
+const HUNTER_GREEN = '#4A7C59';
+const DARK_GREEN = '#3D6A4A';
+const HONEY_GOLD = '#D4A855';
+const NAVY = '#284157';
 
 /**
- * Generate a certificate PDF buffer
- * @param {Object} options - Certificate data
- * @param {Object} [customization] - Visual customization from course settings
+ * Generate an NBCC ACEP compliant certificate PDF
+ * @param {Object} data
+ * @param {string} data.holderName - Learner's full name
+ * @param {string} data.courseName - Course title
+ * @param {Date}   data.completionDate - Date completed
+ * @param {number} data.ceHours - CE clock hours awarded
+ * @param {string} data.certificateNumber - Unique cert ID (e.g., CR-2026-XXXXXX)
+ * @param {string} [data.acepNumber] - ACEP provider number (default: '#7760')
+ * @param {string} [data.instructorName] - Instructor/presenter name
+ * @param {string} [data.verificationCode] - Verification code for online lookup
+ * @param {string} [data.ceCategory] - NBCC content area
+ * @param {string[]} [data.objectives] - Learning objectives array
+ * @param {string} [data.approvingBody] - e.g., 'NBCC'
+ * @returns {Promise<Buffer>} PDF buffer
  */
-export async function generateCertificate({
-  holderName,
-  courseName,
-  completionDate,
-  ceHours,
-  certificateNumber,
-  instructorName = 'CounselorReady',
-  acepNumber = 'ACEP #7760',
-  verificationCode,
-  customization = {}
-}) {
+export async function generateCertificate(data) {
+  const holderName = String(data.holderName || 'Participant');
+  const courseName = String(data.courseName || 'Course');
+  const ceHours = Number(data.ceHours) || 1;
+  const certificateNumber = String(data.certificateNumber || 'CR-000000');
+  const acepNumber = String(data.acepNumber || 'ACEP #7760');
+  const instructorName = String(data.instructorName || 'Kejuiana Johnson, MA, LPC, NCC, CPCS, BC-TMH');
+  const verificationCode = data.verificationCode || certificateNumber;
+  const ceCategory = data.ceCategory || '';
+  const objectives = Array.isArray(data.objectives) ? data.objectives : [];
+  const approvingBody = data.approvingBody || 'NBCC';
+  const completionDate = data.completionDate || new Date();
+
+  const formattedDate = new Date(completionDate).toLocaleDateString('en-US', {
+    year: 'numeric', month: 'long', day: 'numeric'
+  });
+
   return new Promise((resolve, reject) => {
+    const doc = new PDFDocument({
+      size: 'LETTER',
+      layout: 'landscape',
+      margins: { top: 40, bottom: 40, left: 50, right: 50 },
+      info: {
+        Title: `CounselorReady Certificate - ${courseName}`,
+        Author: 'GA Integrated Therapeutic Perspectives LLC',
+        Subject: 'Continuing Education Certificate',
+        Creator: 'CounselorReady'
+      }
+    });
+
+    const chunks = [];
+    doc.on('data', chunk => chunks.push(chunk));
+    doc.on('end', () => resolve(Buffer.concat(chunks)));
+    doc.on('error', reject);
+
+    const W = doc.page.width;
+    const H = doc.page.height;
+
+    // ── WHITE BACKGROUND ──
+    doc.rect(0, 0, W, H).fill('#FFFFFF');
+
+    // ── TRIPLE DECORATIVE BORDERS ──
+    // Outer: Burgundy
+    doc.rect(15, 15, W - 30, H - 30).lineWidth(3).stroke(BURGUNDY);
+    // Middle: Gold
+    doc.rect(22, 22, W - 44, H - 44).lineWidth(1).stroke(HONEY_GOLD);
+    // Inner: Hunter Green
+    doc.rect(28, 28, W - 56, H - 56).lineWidth(2).stroke(HUNTER_GREEN);
+
+    // ── LOGO WATERMARK (centered, faint) ──
     try {
-      const c = {
-        layout: customization.layout || 'classic',
-        orientation: customization.orientation || 'landscape',
-        borderColor: customization.borderColor || '#10B981',
-        accentColor: customization.accentColor || '#06B6D4',
-        headerColor: customization.headerColor || '#1e293b',
-        textColor: customization.textColor || '#64748b',
-        backgroundColor: customization.backgroundColor || '#f8fafc',
-        signerName: customization.signerName || 'CounselorReady',
-        signerTitle: customization.signerTitle || `NBCC Provider ${acepNumber}`,
-        certificateTitle: customization.certificateTitle || 'Certificate of Completion',
-        customFooter: customization.customFooter || '',
-        showVerificationCode: customization.showVerificationCode !== false,
-        showCeHours: customization.showCeHours !== false,
-        showCompletionDate: customization.showCompletionDate !== false,
-        showNbccLogo: customization.showNbccLogo !== false
-      };
-
-      const doc = new PDFDocument({
-        size: 'LETTER',
-        layout: c.orientation,
-        margin: 50
-      });
-
-      const chunks = [];
-      doc.on('data', chunk => chunks.push(chunk));
-      doc.on('end', () => resolve(Buffer.concat(chunks)));
-      doc.on('error', reject);
-
-      const formattedDate = new Date(completionDate).toLocaleDateString('en-US', {
-        year: 'numeric', month: 'long', day: 'numeric'
-      });
-
-      const W = doc.page.width;
-      const H = doc.page.height;
-
-      // ── Background ──
-      doc.rect(0, 0, W, H).fill(c.backgroundColor);
-
-      if (c.layout === 'classic' || c.layout === 'elegant') {
-        // Double border
-        const bm = 30;
-        doc.rect(bm, bm, W - bm * 2, H - bm * 2).lineWidth(3).stroke(c.borderColor);
-        doc.rect(bm + 10, bm + 10, W - bm * 2 - 20, H - bm * 2 - 20).lineWidth(1).stroke(c.accentColor);
-      } else if (c.layout === 'modern') {
-        // Top accent bar
-        doc.rect(0, 0, W, 12).fill(c.borderColor);
-        doc.rect(0, H - 12, W, 12).fill(c.borderColor);
-      } else if (c.layout === 'minimal') {
-        // Thin top line only
-        doc.rect(50, 40, W - 100, 2).fill(c.borderColor);
-        doc.rect(50, H - 42, W - 100, 2).fill(c.borderColor);
+      if (fs.existsSync(LOGO_PATH)) {
+        doc.opacity(0.06).image(LOGO_PATH, (W - 160) / 2, (H - 160) / 2 - 10, { width: 160, height: 160 });
+        doc.opacity(1);
       }
+    } catch (e) { doc.opacity(1); }
 
-      // ── Y positions scale with orientation ──
-      const isLandscape = c.orientation === 'landscape';
-      const yScale = isLandscape ? 1 : 1.3;
-      let yPos = isLandscape ? 60 : 80;
+    // ── HEADER: Provider Name ──
+    doc.font('Times-Italic').fontSize(22).fillColor(HUNTER_GREEN);
+    doc.text('Ga Integrated Therapeutic Perspectives, LLC', 0, 48, { align: 'center', width: W });
 
-      // ── Header ──
-      doc.fontSize(14).fillColor(c.textColor).text('COUNSELORREADY', 0, yPos, { align: 'center' });
-      yPos += 18;
-      if (c.showNbccLogo) {
-        doc.fontSize(10).fillColor('#94a3b8').text('NBCC Approved Continuing Education Provider #7760', 0, yPos, { align: 'center' });
-        yPos += 22;
-      } else {
-        yPos += 12;
-      }
+    // ACEP line
+    doc.font('Helvetica-Bold').fontSize(9).fillColor(HUNTER_GREEN);
+    doc.text(`${approvingBody} Approved Continuing Education Provider, ${acepNumber}`, 0, 73, { align: 'center', width: W });
 
-      // ── Title ──
-      const titleSize = c.layout === 'elegant' ? 40 : 36;
-      doc.fontSize(titleSize).fillColor(c.headerColor).font('Helvetica-Bold')
-         .text(c.certificateTitle, 0, yPos, { align: 'center' });
-      yPos += titleSize + 14;
+    // ── CERTIFICATE TITLE ──
+    doc.font('Times-Italic').fontSize(28).fillColor(BURGUNDY);
+    doc.text('Certificate of Completion', 0, 95, { align: 'center', width: W });
 
-      // Decorative line
-      if (c.layout !== 'minimal') {
-        doc.moveTo(W / 2 - 150, yPos).lineTo(W / 2 + 150, yPos).lineWidth(2).stroke(c.borderColor);
-      }
-      yPos += 20;
+    // Home Study indicator
+    doc.font('Helvetica').fontSize(8).fillColor(DARK_GREEN);
+    doc.text('Home Study Program', 0, 126, { align: 'center', width: W });
 
-      // ── "This certifies that" ──
-      doc.fontSize(14).fillColor(c.textColor).font('Helvetica')
-         .text('This certifies that', 0, yPos, { align: 'center' });
-      yPos += 28;
+    // ── CERTIFIES THAT + LEARNER NAME ──
+    doc.font('Times-Roman').fontSize(12).fillColor(NAVY);
+    doc.text('This certifies that', 0, 148, { align: 'center', width: W });
 
-      // ── Holder name ──
-      const nameSize = c.layout === 'elegant' ? 32 : 28;
-      doc.fontSize(nameSize).fillColor(c.headerColor).font('Helvetica-Bold')
-         .text(holderName, 0, yPos, { align: 'center' });
-      yPos += nameSize + 12;
+    // Learner name — large, underlined
+    const nameY = 168;
+    doc.font('Times-Bold').fontSize(26).fillColor(BURGUNDY);
+    const nameWidth = doc.widthOfString(holderName);
+    const nameX = (W - nameWidth) / 2;
+    doc.text(holderName, 0, nameY, { align: 'center', width: W });
+    // Underline
+    doc.moveTo(nameX, nameY + 30).lineTo(nameX + nameWidth, nameY + 30).lineWidth(1).stroke(BURGUNDY);
 
-      // ── "has successfully completed" ──
-      doc.fontSize(14).fillColor(c.textColor).font('Helvetica')
-         .text('has successfully completed', 0, yPos, { align: 'center' });
-      yPos += 26;
+    // "has successfully completed"
+    doc.font('Times-Roman').fontSize(12).fillColor(NAVY);
+    doc.text('has successfully completed', 0, 206, { align: 'center', width: W });
 
-      // ── Course name ──
-      doc.fontSize(20).fillColor(c.headerColor).font('Helvetica-Bold')
-         .text(courseName, 50, yPos, { align: 'center', width: W - 100 });
-      yPos += 40;
+    // ── COURSE TITLE ──
+    const titleFontSize = courseName.length > 50 ? 16 : 20;
+    doc.font('Times-Bold').fontSize(titleFontSize).fillColor(HUNTER_GREEN);
+    doc.text(courseName, 60, 225, { align: 'center', width: W - 120 });
 
-      // ── CE Hours ──
-      if (c.showCeHours) {
-        doc.fontSize(16).fillColor(c.textColor).font('Helvetica')
-           .text(`${ceHours} Continuing Education Hours`, 0, yPos, { align: 'center' });
-        yPos += 26;
-      }
+    // ── CE HOURS ──
+    const hoursY = courseName.length > 50 ? 260 : 252;
+    doc.font('Helvetica-Bold').fontSize(14).fillColor(BURGUNDY);
+    doc.text(`${ceHours} NBCC Clock Hour${ceHours !== 1 ? 's' : ''} Awarded`, 0, hoursY, { align: 'center', width: W });
 
-      // ── Completion date ──
-      if (c.showCompletionDate) {
-        doc.fontSize(14).fillColor(c.textColor)
-           .text(`Completed on ${formattedDate}`, 0, yPos, { align: 'center' });
-        yPos += 24;
-      }
-
-      // ── Certificate number ──
-      doc.fontSize(12).fillColor('#94a3b8')
-         .text(`Certificate #${certificateNumber}`, 0, yPos, { align: 'center' });
-      yPos += 20;
-
-      // ── Verification code ──
-      if (c.showVerificationCode && verificationCode) {
-        doc.fontSize(10).fillColor('#94a3b8')
-           .text(`Verification: counselorready.com/verify/${verificationCode}`, 0, yPos, { align: 'center' });
-        yPos += 20;
-      }
-
-      // ── Signature section ──
-      const sigY = Math.max(yPos + 20, isLandscape ? 460 : 620);
-      const leftX = 100;
-      const rightX = W - 250;
-
-      // Left side - Instructor
-      doc.moveTo(leftX, sigY - 10).lineTo(leftX + 200, sigY - 10).lineWidth(1).stroke('#cbd5e1');
-      doc.fontSize(12).fillColor(c.headerColor).text(instructorName, leftX, sigY, { align: 'center', width: 200 });
-      doc.fontSize(10).fillColor(c.textColor).text('Instructor', leftX, sigY + 20, { align: 'center', width: 200 });
-
-      // Right side - Provider
-      doc.moveTo(rightX, sigY - 10).lineTo(rightX + 200, sigY - 10).lineWidth(1).stroke('#cbd5e1');
-      doc.fontSize(12).fillColor(c.headerColor).text(c.signerName, rightX, sigY, { align: 'center', width: 200 });
-      doc.fontSize(10).fillColor(c.textColor).text(c.signerTitle, rightX, sigY + 20, { align: 'center', width: 200 });
-
-      // ── Footer ──
-      const footerY = sigY + 50;
-      if (c.customFooter) {
-        doc.fontSize(8).fillColor('#94a3b8').text(c.customFooter, 0, footerY, { align: 'center' });
-      } else {
-        doc.fontSize(8).fillColor('#94a3b8')
-           .text('This certificate verifies completion of continuing education requirements', 0, footerY, { align: 'center' });
-      }
-      doc.fontSize(8).fillColor('#94a3b8').text('GAITP LLC | counselorready.com', 0, footerY + 14, { align: 'center' });
-
-      doc.end();
-    } catch (error) {
-      reject(error);
+    // Content area if provided
+    let nextY = hoursY + 18;
+    if (ceCategory) {
+      doc.font('Helvetica-Bold').fontSize(10).fillColor(HUNTER_GREEN);
+      doc.text(`Content Area: ${ceCategory}`, 0, nextY, { align: 'center', width: W });
+      nextY += 16;
     }
+
+    // ── LEARNING OBJECTIVES (if provided, compact) ──
+    if (objectives.length > 0 && objectives.length <= 6) {
+      nextY += 4;
+      doc.font('Helvetica-Bold').fontSize(9).fillColor(HUNTER_GREEN);
+      doc.text('Learning Objectives:', 80, nextY, { width: W - 160 });
+      nextY += 13;
+      doc.font('Helvetica').fontSize(8).fillColor(NAVY);
+      objectives.forEach((obj, i) => {
+        const text = `${i + 1}. ${String(obj).substring(0, 120)}`;
+        doc.text(text, 90, nextY, { width: W - 180 });
+        nextY += 11;
+      });
+    }
+
+    // ── DETAILS ROW: Date | Certificate # | Verification ──
+    const detailY = Math.max(nextY + 10, 370);
+    const colWidth = (W - 120) / 3;
+
+    // Date
+    doc.font('Helvetica').fontSize(8).fillColor('#666666');
+    doc.text('Date of Completion', 60, detailY, { width: colWidth, align: 'center' });
+    doc.font('Helvetica-Bold').fontSize(10).fillColor(NAVY);
+    doc.text(formattedDate, 60, detailY + 12, { width: colWidth, align: 'center' });
+
+    // Certificate Number
+    doc.font('Helvetica').fontSize(8).fillColor('#666666');
+    doc.text('Certificate Number', 60 + colWidth, detailY, { width: colWidth, align: 'center' });
+    doc.font('Helvetica-Bold').fontSize(10).fillColor(NAVY);
+    doc.text(certificateNumber, 60 + colWidth, detailY + 12, { width: colWidth, align: 'center' });
+
+    // Verification
+    doc.font('Helvetica').fontSize(8).fillColor('#666666');
+    doc.text('Verification', 60 + colWidth * 2, detailY, { width: colWidth, align: 'center' });
+    doc.font('Helvetica-Bold').fontSize(10).fillColor(NAVY);
+    doc.text(verificationCode, 60 + colWidth * 2, detailY + 12, { width: colWidth, align: 'center' });
+
+    // ── SIGNATURE SECTION ──
+    const sigY = detailY + 42;
+    const sigColW = (W - 120) / 2;
+
+    // Left: Instructor signature
+    try {
+      if (fs.existsSync(SIGNATURE_PATH)) {
+        doc.image(SIGNATURE_PATH, (60 + sigColW / 2) - 60, sigY - 5, { width: 120, height: 40 });
+      }
+    } catch (e) { /* no signature image */ }
+
+    doc.moveTo(60 + 30, sigY + 35).lineTo(60 + sigColW - 30, sigY + 35).lineWidth(0.5).stroke('#999999');
+    doc.font('Helvetica').fontSize(8).fillColor(NAVY);
+    doc.text(instructorName, 60, sigY + 40, { width: sigColW, align: 'center' });
+    doc.font('Helvetica').fontSize(7).fillColor('#666666');
+    doc.text('Instructor / Presenter', 60, sigY + 52, { width: sigColW, align: 'center' });
+
+    // Right: Provider
+    doc.moveTo(60 + sigColW + 30, sigY + 35).lineTo(60 + sigColW * 2 - 30, sigY + 35).lineWidth(0.5).stroke('#999999');
+    doc.font('Helvetica').fontSize(8).fillColor(NAVY);
+    doc.text('GA Integrated Therapeutic Perspectives LLC', 60 + sigColW, sigY + 40, { width: sigColW, align: 'center' });
+    doc.font('Helvetica').fontSize(7).fillColor('#666666');
+    doc.text(`${approvingBody} Approved Provider, ${acepNumber}`, 60 + sigColW, sigY + 52, { width: sigColW, align: 'center' });
+
+    // ── FOOTER: ACEP COMPLIANCE STATEMENT ──
+    const footerY = H - 58;
+    doc.font('Helvetica').fontSize(6.5).fillColor('#888888');
+    doc.text(
+      `Ga Integrated Therapeutic Perspectives, LLC has been approved by NBCC as an Approved Continuing Education Provider, ${acepNumber}. ` +
+      'Programs that do not qualify for NBCC credit are clearly identified. Ga Integrated Therapeutic Perspectives, LLC is solely responsible for all aspects of the program.',
+      50, footerY, { align: 'center', width: W - 100 }
+    );
+
+    // Verify URL
+    doc.font('Helvetica').fontSize(6).fillColor('#AAAAAA');
+    doc.text('Verify at counselorready.com/verify', 0, H - 38, { align: 'center', width: W });
+
+    doc.end();
   });
 }
 
 /**
- * Generate unique certificate number
+ * Generate a unique certificate number
  */
-export async function generateCertificateNumber() {
+export async function generateCertificateNumber(courseId, userId) {
   const year = new Date().getFullYear();
-  const timestamp = Date.now();
-  const random = Math.floor(Math.random() * 1000);
-  
-  // Format: CR-YYYY-XXXXXX (where X is timestamp + random)
-  return `CR-${year}-${timestamp.toString().slice(-6)}${random.toString().padStart(3, '0')}`;
+  const rand = Math.floor(Math.random() * 1000000000).toString().padStart(9, '0');
+  return `CR-${year}-${rand}`;
 }
 
-// =====================================
-// CLOUDINARY SIGNED URL FUNCTIONS
-// =====================================
-
 /**
- * Generate a signed URL for secure certificate access
+ * Generate a signed Cloudinary URL for secure certificate access
  */
-export function generateSignedCertificateUrl(publicId, options = {}) {
-  const defaultOptions = {
+export function generateSignedCertificateUrl(publicId, expiresInSeconds = 86400) {
+  return cloudinary.url(publicId, {
     resource_type: 'raw',
+    type: 'authenticated',
     sign_url: true,
-    secure: true,
-    expires_at: Math.floor(Date.now() / 1000) + (24 * 60 * 60), // 24 hours
-    type: 'upload'
-  };
-
-  return cloudinary.url(publicId, { ...defaultOptions, ...options });
+    expires_at: Math.floor(Date.now() / 1000) + expiresInSeconds
+  });
 }
 
 /**
- * Extract public_id from existing Cloudinary URL
+ * Extract Cloudinary public_id from a URL
  */
-export function extractPublicIdFromUrl(cloudinaryUrl) {
-  if (!cloudinaryUrl) return null;
-  
+export function extractPublicIdFromUrl(url) {
+  if (!url) return null;
   try {
-    const urlParts = cloudinaryUrl.split('/');
-    const uploadIndex = urlParts.findIndex(part => part === 'upload');
-    
-    if (uploadIndex === -1) return null;
-    
-    // Get everything after /upload/v[version]/
-    const pathAfterVersion = urlParts.slice(uploadIndex + 2).join('/');
-    
-    // Remove file extension
-    const publicId = pathAfterVersion.replace(/\.[^/.]+$/, '');
-    
-    return publicId;
-  } catch (error) {
-    console.error('Failed to extract public_id from URL:', error);
+    const urlObj = new URL(url);
+    const pathParts = urlObj.pathname.split('/');
+    const uploadIdx = pathParts.indexOf('upload');
+    if (uploadIdx === -1) return null;
+    // Skip version segment (v1234567890)
+    const startIdx = pathParts[uploadIdx + 1]?.startsWith('v') ? uploadIdx + 2 : uploadIdx + 1;
+    return pathParts.slice(startIdx).join('/');
+  } catch (e) {
     return null;
   }
 }
 
-// Default export for backward compatibility
 export default {
   generateCertificate,
   generateCertificateNumber,
