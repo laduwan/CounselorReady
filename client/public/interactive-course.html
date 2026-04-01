@@ -1734,18 +1734,23 @@ function crAuthHeaders() {
 }
 
 function crSlugOrId() {
-  return course?._id || course?.slug || '';
+  return course?.slug || course?._id || '';
 }
 
 async function crPost(path, body) {
   const headers = crAuthHeaders();
-  if (!headers) throw new Error('NOT_AUTHENTICATED');
-  const res = await fetch(crApiBase() + '/api/interactive-courses/' + crSlugOrId() + path, {
-    method: 'POST', headers, body: JSON.stringify(body)
-  });
+  if (!headers) throw Object.assign(new Error('NOT_AUTHENTICATED'), { status: 401 });
+  let res;
+  try {
+    res = await fetch(crApiBase() + '/api/interactive-courses/' + crSlugOrId() + path, {
+      method: 'POST', headers, body: JSON.stringify(body)
+    });
+  } catch (e) {
+    throw Object.assign(new Error('Network error — check your connection'), { status: 0, isNetwork: true });
+  }
   if (!res.ok) {
     const err = await res.json().catch(() => ({ error: 'Request failed' }));
-    throw new Error(err.error || err.message || 'Request failed');
+    throw Object.assign(new Error(err.error || err.message || 'Request failed'), { status: res.status });
   }
   return res;
 }
@@ -3540,17 +3545,26 @@ async function submitAssessment() {
       questionIndex: parseInt(qi), selectedOption: oi
     }));
     try {
-      await crPost('/assessment', {
+      const saveRes = await crPost('/assessment', {
         answers: answersPayload,
         score: score / 100,
         passed: true,
         attempt: assessmentState.attempts
       });
+      const saveData = await saveRes.json().catch(() => null);
       certPipelineState.assessmentSaved = true;
+      certPipelineState.assessmentSaveError = null;
+      certPipelineState.assessmentSaveErrorStatus = null;
+      // Update displayed score from backend if available
+      if (saveData?.data?.score != null) {
+        assessmentState.score = saveData.data.score;
+      }
       console.log('[CR] Assessment saved to backend');
     } catch (err) {
       console.warn('[CR] Assessment save failed:', err.message);
       certPipelineState.assessmentSaveError = err.message;
+      certPipelineState.assessmentSaveErrorStatus = err.status || 0;
+      certPipelineState.assessmentSaveIsNetwork = !!err.isNetwork;
     }
   }
 
@@ -3606,10 +3620,14 @@ function renderAssessmentResult() {
     const token = localStorage.getItem('token');
     if (token) {
       if (certPipelineState.assessmentSaveError) {
-        html += `<div style="margin-top:20px;padding:14px;background:#FEF2F2;border:1.5px solid #DC2626;border-radius:10px;text-align:left">
+        const errStatus = certPipelineState.assessmentSaveErrorStatus;
+        const isNoAttempts = errStatus === 400 && certPipelineState.assessmentSaveError.includes('No attempts remaining');
+        const isAuthError = errStatus === 401 || certPipelineState.assessmentSaveError === 'NOT_AUTHENTICATED';
+        html += `<div role="alert" style="margin-top:20px;padding:14px;background:#FEF2F2;border:1.5px solid #DC2626;border-radius:10px;text-align:left">
           <p style="font-weight:700;color:#991B1B;margin:0 0 6px">\u26a0\ufe0f Your score could not be saved</p>
           <p style="font-size:0.83em;color:var(--cr-text-secondary);margin:0 0 12px">${esc(certPipelineState.assessmentSaveError)}</p>
-          <button class="cr-btn cr-btn-primary" data-action="retryAssessmentSave">Retry Save</button>
+          ${isAuthError ? '<a href="/login.html" style="color:var(--cr-burgundy);font-weight:700;font-size:0.85em">Sign in again</a>' : ''}
+          ${!isNoAttempts && !isAuthError ? '<button class="cr-btn cr-btn-primary" data-action="retryAssessmentSave">Retry Save</button>' : ''}
         </div>`;
       } else {
         html += `<button class="cr-btn cr-btn-success" style="margin-top:20px" data-action="startCertPipeline">
@@ -3704,7 +3722,7 @@ function renderEvaluation() {
       <textarea id="eval-suggestions" rows="2" style="width:100%;padding:10px 12px;border:1.5px solid var(--cr-border);border-radius:8px;font-size:0.85rem;font-family:inherit;resize:vertical;outline:none" placeholder="How could we make this course better?"></textarea>
     </div>
 
-    <div id="eval-error" style="display:none;padding:10px 14px;background:#FEF2F2;border:1px solid #DC2626;border-radius:8px;color:#991B1B;font-size:0.83rem;margin-bottom:12px"></div>
+    <div id="eval-error" role="alert" style="display:none;padding:10px 14px;background:#FEF2F2;border:1px solid #DC2626;border-radius:8px;color:#991B1B;font-size:0.83rem;margin-bottom:12px"></div>
 
     <button class="cr-btn cr-btn-success" data-action="submitEvaluation" style="width:100%">
       Submit Evaluation →
@@ -3839,7 +3857,7 @@ function renderAttestation() {
       </span>
     </label>
 
-    <div id="attest-error" style="display:none;padding:10px 14px;background:#FEF2F2;border:1px solid #DC2626;border-radius:8px;color:#991B1B;font-size:0.83rem;margin-bottom:12px"></div>
+    <div id="attest-error" role="alert" style="display:none;padding:10px 14px;background:#FEF2F2;border:1px solid #DC2626;border-radius:8px;color:#991B1B;font-size:0.83rem;margin-bottom:12px"></div>
 
     <button class="cr-btn cr-btn-success" data-action="submitAttestation" style="width:100%">
       Submit Attestation & Get Certificate →
@@ -3916,7 +3934,7 @@ function downloadCertificate() {
     })
     .then(blob => {
       const url = URL.createObjectURL(blob);
-      const filename = (course.slug || 'certificate') + '_certificate.pdf';
+      const filename = 'CounselorReady_Certificate_' + (course.slug || 'certificate') + '.pdf';
 
       area.innerHTML = `<div style="max-width:500px;margin:0 auto;padding:40px;text-align:center">
         <div style="font-size:3rem;margin-bottom:16px">🎓</div>
@@ -3969,7 +3987,7 @@ function downloadCertificate() {
       else if (msg.includes('Evaluation required')) hint = 'The course evaluation was not recorded. Please go back and try again.';
       else if (msg.includes('Attestation required')) hint = 'The attestation was not recorded. Please go back and try again.';
 
-      area.innerHTML = `<div style="max-width:500px;margin:0 auto;padding:40px;text-align:center">
+      area.innerHTML = `<div role="alert" style="max-width:500px;margin:0 auto;padding:40px;text-align:center">
         <div style="font-size:2rem;margin-bottom:12px">⚠️</div>
         <h3 style="color:var(--cr-navy)">Certificate Generation Failed</h3>
         <p style="font-size:0.85rem;color:var(--cr-text-secondary);margin-bottom:8px">${esc(msg)}</p>
@@ -3991,17 +4009,25 @@ async function retryAssessmentSave() {
     questionIndex: parseInt(qi), selectedOption: oi
   }));
   try {
-    await crPost('/assessment', {
+    const saveRes = await crPost('/assessment', {
       answers: answersPayload,
       score: assessmentState.score / 100,
       passed: true,
       attempt: assessmentState.attempts
     });
+    const saveData = await saveRes.json().catch(() => null);
     certPipelineState.assessmentSaved = true;
     certPipelineState.assessmentSaveError = null;
+    certPipelineState.assessmentSaveErrorStatus = null;
+    certPipelineState.assessmentSaveIsNetwork = false;
+    if (saveData?.data?.score != null) {
+      assessmentState.score = saveData.data.score;
+    }
     console.log('[CR] Assessment saved on retry');
   } catch (err) {
     certPipelineState.assessmentSaveError = err.message;
+    certPipelineState.assessmentSaveErrorStatus = err.status || 0;
+    certPipelineState.assessmentSaveIsNetwork = !!err.isNetwork;
   }
   renderAssessmentResult();
 }
