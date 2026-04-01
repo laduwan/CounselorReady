@@ -15,6 +15,7 @@ import UserCredential from '../models/UserCredential.js';
 import Gamification from '../models/Gamification.js';
 import { protect, requireAdmin } from '../middleware/auth.js';
 import { generateCertificate, generateCertificateNumber } from '../utils/certificate.js';
+import { generatePDF } from '../services/certificateService.js';
 import { logActivity, ACTIVITY_TYPES } from '../services/activityTrackingService.js';
 
 const router = express.Router();
@@ -696,33 +697,15 @@ router.post('/:id/certificate', protect, async (req, res) => {
     const certificateNumber = certificate?.certificateNumber ||
       await generateCertificateNumber(course._id, req.user._id);
 
-    // Generate PDF
-    const pdfBuffer = await generateCertificate({
-      studentName: `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email,
-      courseTitle: course.title,
-      ceHours: course.ceHours || 1,
-      ceCategory: course.categories?.[0] || 'Core',
-      completionDate: progress.completedAt || new Date(),
+    // Generate branded PDF and upload to Cloudinary via certificateService
+    const pdfUrl = await generatePDF({
       certificateNumber,
-      objectives: course.objectives || [],
-      approvingBody: 'NBCC',
-      approvalNumber: course.acepNumber || '#7760',
-      verificationCode: certificate?.verificationCode
-    });
-
-    // Upload PDF to Cloudinary
-    const uploadResult = await new Promise((resolve, reject) => {
-      const uploadStream = cloudinary.uploader.upload_stream(
-        { resource_type: 'raw', folder: 'certificates', public_id: `cert_${certificate?._id || 'new'}_${Date.now()}` },
-        (error, result) => {
-          if (error) return reject(error);
-          resolve(result);
-        }
-      );
-      const readable = new Readable();
-      readable.push(pdfBuffer);
-      readable.push(null);
-      readable.pipe(uploadStream);
+      userName: `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email,
+      courseTitle: course.title,
+      completionDate: progress.completedAt || new Date(),
+      ceHours: course.ceHours || 1,
+      nbccNumber: user.nbccNumber || '',
+      providerNumber: '7760'
     });
 
     // Save certificate record if new
@@ -741,7 +724,7 @@ router.post('/:id/certificate', protect, async (req, res) => {
         approvalNumber: course.acepNumber || '#7760',
         certificateNumber,
         source: 'platform',
-        fileUrl: uploadResult.secure_url
+        fileUrl: pdfUrl
       });
       await certificate.save();
 
@@ -793,7 +776,7 @@ router.post('/:id/certificate', protect, async (req, res) => {
       recordGamification(req.user._id, 'certificate_earned');
     } else {
       // Existing certificate — update fileUrl
-      certificate.fileUrl = uploadResult.secure_url;
+      certificate.fileUrl = pdfUrl;
       await certificate.save();
     }
 
