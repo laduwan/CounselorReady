@@ -605,10 +605,26 @@ router.post('/:id/attestation', protect, async (req, res) => {
     
     await progress.save();
 
+    // Log course completion activity
+    try {
+      const user = await User.findById(req.user._id);
+      await logActivity(ACTIVITY_TYPES.COURSE_COMPLETED, {
+        courseId: course._id,
+        courseName: course.title,
+        ceHours: course.ceHours || 1
+      }, {
+        userId: req.user._id,
+        userName: `${user?.firstName || ''} ${user?.lastName || ''}`.trim() || user?.name || user?.email,
+        userEmail: user?.email
+      });
+    } catch (activityErr) {
+      console.error('Failed to log course completion activity:', activityErr);
+    }
+
     res.json({
       success: true,
       message: 'Attestation recorded successfully',
-      data: { 
+      data: {
         attestationAgreed: true,
         completedAt: progress.completedAt
       }
