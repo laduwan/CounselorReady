@@ -15,7 +15,6 @@ import UserCredential from '../models/UserCredential.js';
 import Gamification from '../models/Gamification.js';
 import { protect, requireAdmin } from '../middleware/auth.js';
 import { generateCertificate, generateCertificateNumber } from '../utils/certificate.js';
-import { generatePDF } from '../services/certificateService.js';
 import { logActivity, ACTIVITY_TYPES } from '../services/activityTrackingService.js';
 
 const router = express.Router();
@@ -697,16 +696,36 @@ router.post('/:id/certificate', protect, async (req, res) => {
     const certificateNumber = certificate?.certificateNumber ||
       await generateCertificateNumber(course._id, req.user._id);
 
-    // Generate branded PDF and upload to Cloudinary via certificateService
-    const pdfUrl = await generatePDF({
-      certificateNumber,
-      userName: `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email,
-      courseTitle: course.title,
+    // Generate certificate PDF buffer via ../utils/certificate.js
+    const userName = `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email;
+    const pdfBuffer = await generateCertificate({
+      holderName: userName,
+      courseName: course.title,
       completionDate: progress.completedAt || new Date(),
       ceHours: course.ceHours || 1,
-      nbccNumber: user.nbccNumber || '',
-      providerNumber: '7760'
+      certificateNumber,
+      acepNumber: course.acepNumber || 'ACEP #7760'
     });
+
+    // Upload PDF buffer to Cloudinary
+    const uploadResult = await new Promise((resolve, reject) => {
+      const uploadStream = cloudinary.uploader.upload_stream(
+        {
+          resource_type: 'raw',
+          folder: 'certificates',
+          public_id: `cert_${certificateNumber}_${Date.now()}`
+        },
+        (error, result) => {
+          if (error) return reject(error);
+          resolve(result);
+        }
+      );
+      const readable = new Readable();
+      readable.push(pdfBuffer);
+      readable.push(null);
+      readable.pipe(uploadStream);
+    });
+    const pdfUrl = uploadResult.secure_url;
 
     // Save certificate record if new
     if (!certificate) {
