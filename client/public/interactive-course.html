@@ -1456,6 +1456,25 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
      MAIN LAYOUT
      ═══════════════════════════════════════════════════════════════ -->
 <div id="crApp" class="cr-layout" style="display:none">
+
+<!-- Subscription Gate Overlay -->
+<div id="crGateSubscription" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.7);align-items:center;justify-content:center">
+  <div style="background:#fff;border-radius:16px;max-width:480px;width:90%;padding:40px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.3)">
+    <div style="width:64px;height:64px;background:#FDF5F7;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px">
+      <svg width="32" height="32" fill="none" stroke="#6B1D34" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+    </div>
+    <h2 style="font-family:'Cormorant Garamond',Georgia,serif;font-size:24px;color:#6B1D34;margin:0 0 8px">Subscription Required</h2>
+    <p id="crGateMsg" style="color:#57534e;font-size:15px;margin:0 0 24px;line-height:1.5">You've used your free CE hours. Subscribe for unlimited access to all courses.</p>
+    <a href="/subscription.html" style="display:inline-block;background:#6B1D34;color:#fff;padding:12px 32px;border-radius:10px;font-weight:600;text-decoration:none;font-size:15px;margin-bottom:12px">View Plans</a>
+    <br>
+    <a href="/courses.html" style="color:#4A7C59;font-size:13px;text-decoration:none">← Browse free courses</a>
+  </div>
+</div>
+
+<!-- Free Hours Banner (shown inside course for free-tier users) -->
+<div id="crFreeHoursBanner" style="display:none;background:linear-gradient(135deg,#FDF9F0,#F9F0DB);border:1px solid #EACD86;border-radius:10px;padding:10px 16px;margin:0 16px 12px;font-size:13px;color:#865E2C;text-align:center">
+  <span id="crFreeHoursText"></span> — <a href="/subscription.html" style="color:#6B1D34;font-weight:600;text-decoration:underline">Upgrade for unlimited access</a>
+</div>
   
   <!-- SIDEBAR OVERLAY (mobile) -->
   <div class="cr-sidebar-overlay" id="crOverlay" data-action="closeSidebar"></div>
@@ -2044,6 +2063,59 @@ function loadCourse(data) {
       courseCode: course.courseCode || '',
       ceHours: course.ceHours || 0
     });
+  }
+
+  // ── CONTENT GATING ──────────────────────────────────────────
+  // Check if backend returned preview/gated content
+  if (course._isPreview || course._freeHoursExhausted) {
+    document.getElementById('crLoading').style.display = 'none';
+    const gateEl = document.getElementById('crGateSubscription');
+    if (gateEl) {
+      gateEl.style.display = 'flex';
+      const msgEl = document.getElementById('crGateMsg');
+      if (course._freeHoursExhausted) {
+        msgEl.textContent = 'You\'ve used your ' + (course._freeHoursUsed || 4) + ' free CE hours. Subscribe for unlimited access to all courses.';
+      } else {
+        msgEl.textContent = 'This course requires a subscription. Subscribe for unlimited access to all courses and CE tracking.';
+      }
+    }
+    return; // Don't render stripped content
+  }
+
+  // Show free hours remaining banner for free-tier users
+  if (course._freeHoursRemaining != null && course._freeHoursRemaining > 0) {
+    const bannerEl = document.getElementById('crFreeHoursBanner');
+    const textEl = document.getElementById('crFreeHoursText');
+    if (bannerEl && textEl) {
+      textEl.textContent = course._freeHoursRemaining + ' free CE hour' + (course._freeHoursRemaining !== 1 ? 's' : '') + ' remaining';
+      bannerEl.style.display = 'block';
+    }
+  }
+
+  // ── Auto-enroll on course load (ensures backend has enrollment record) ──
+  const token = localStorage.getItem('token');
+  if (token && crSlugOrId()) {
+    fetch(crApiBase() + '/api/interactive-courses/' + crSlugOrId() + '/enroll', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' }
+    }).then(r => {
+      if (r.status === 403) {
+        // Subscription required — show gate
+        return r.json().then(d => {
+          if (d.code === 'SUBSCRIPTION_REQUIRED') {
+            const gateEl = document.getElementById('crGateSubscription');
+            if (gateEl) {
+              gateEl.style.display = 'flex';
+              const msgEl = document.getElementById('crGateMsg');
+              if (msgEl) msgEl.textContent = d.message || 'A subscription is required to access this course.';
+            }
+          }
+        });
+      }
+      return r.json().then(d => {
+        if (d.success) console.log('[CReady] Enrollment confirmed');
+      });
+    }).catch(() => {});
   }
 
   // ── Feature hooks + initial render ──
@@ -5003,6 +5075,32 @@ function saveProgress() {
   saveState('completed', [...completedSections]);
   saveState('visited', [...visitedSections]);
   saveState('view', currentView);
+
+  // Sync completed sections to backend (fire-and-forget)
+  crSyncSection(currentSectionIndex);
+}
+
+// Sync section progress to backend
+function crSyncSection(sectionIndex) {
+  const token = localStorage.getItem('token');
+  const id = crSlugOrId();
+  if (!token || !id) return;
+
+  const section = course?.sections?.[sectionIndex];
+  const totalBlocks = section?.contentBlocks?.length || 0;
+  const allBlockIndices = Array.from({ length: totalBlocks }, (_, i) => i);
+  const isComplete = completedSections.has(sectionIndex);
+
+  fetch(crApiBase() + '/api/interactive-courses/' + id + '/progress/section/' + sectionIndex, {
+    method: 'PUT',
+    headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      viewedBlocks: allBlockIndices,
+      completedBlocks: isComplete ? allBlockIndices : [],
+      status: isComplete ? 'completed' : 'in_progress',
+      timeSpent: 0
+    })
+  }).catch(() => {});
 }
 
 function restoreProgress() {
