@@ -122,7 +122,7 @@ router.get('/admin/analytics', protect, requireAdmin, async (req, res) => {
           { $group: { _id: '$courseId', count: { $sum: 1 } } }
         ]).toArray(),
         db.collection('interactivecourseprogresses').aggregate([
-          { $match: { courseId: { $in: allPartnerCourseIds }, completed: true } },
+          { $match: { courseId: { $in: allPartnerCourseIds }, status: 'completed' } },
           { $group: { _id: '$courseId', count: { $sum: 1 }, hours: { $sum: { $ifNull: ['$ceHours', 0] } } } }
         ]).toArray()
       ]);
@@ -278,7 +278,7 @@ router.get('/my/courses', protect, requirePartnerAdmin, async (req, res) => {
           { $group: { _id: '$courseId', count: { $sum: 1 } } }
         ]).toArray(),
         db.collection('interactivecourseprogresses').aggregate([
-          { $match: { courseId: { $in: courseIds }, completed: true } },
+          { $match: { courseId: { $in: courseIds }, status: 'completed' } },
           { $group: { _id: '$courseId', count: { $sum: 1 } } }
         ]).toArray()
       ]);
@@ -906,11 +906,11 @@ router.get('/my/stats', protect, requirePartnerAdmin, async (req, res) => {
     if (userIds.length > 0) {
       const [regularCompletions, interactiveCompletions] = await Promise.all([
         db.collection('usercourseprogresses').aggregate([
-          { $match: { userId: { $in: userIds }, completed: true } },
+          { $match: { userId: { $in: userIds }, status: 'completed' } },
           { $group: { _id: null, count: { $sum: 1 }, hours: { $sum: { $ifNull: ['$ceHours', 0] } } } }
         ]).toArray(),
         db.collection('interactivecourseprogresses').aggregate([
-          { $match: { userId: { $in: userIds }, completed: true } },
+          { $match: { userId: { $in: userIds }, status: 'completed' } },
           { $group: { _id: null, count: { $sum: 1 }, hours: { $sum: { $ifNull: ['$ceHours', 0] } } } }
         ]).toArray()
       ]);
@@ -932,7 +932,7 @@ router.get('/my/stats', protect, requirePartnerAdmin, async (req, res) => {
           { $group: { _id: '$courseId', count: { $sum: 1 } } }
         ]).toArray(),
         db.collection('interactivecourseprogresses').aggregate([
-          { $match: { courseId: { $in: courseIds }, completed: true } },
+          { $match: { courseId: { $in: courseIds }, status: 'completed' } },
           { $group: { _id: '$courseId', count: { $sum: 1 } } }
         ]).toArray()
       ]);
@@ -1224,7 +1224,7 @@ router.get('/my/reports/courses', protect, requirePartnerAdmin, async (req, res)
           { $group: { _id: '$courseId', count: { $sum: 1 } } }
         ]).toArray(),
         db.collection('interactivecourseprogresses').aggregate([
-          { $match: { courseId: { $in: courseIds }, completed: true } },
+          { $match: { courseId: { $in: courseIds }, status: 'completed' } },
           { $group: { _id: '$courseId', count: { $sum: 1 } } }
         ]).toArray()
       ]);
@@ -1448,11 +1448,11 @@ router.get('/:id/stats', protect, requireAdmin, async (req, res) => {
     if (userIds.length > 0) {
       const [regularCompletions, interactiveCompletions] = await Promise.all([
         db.collection('usercourseprogresses').aggregate([
-          { $match: { userId: { $in: userIds }, completed: true } },
+          { $match: { userId: { $in: userIds }, status: 'completed' } },
           { $group: { _id: null, count: { $sum: 1 }, hours: { $sum: { $ifNull: ['$ceHours', 0] } } } }
         ]).toArray(),
         db.collection('interactivecourseprogresses').aggregate([
-          { $match: { userId: { $in: userIds }, completed: true } },
+          { $match: { userId: { $in: userIds }, status: 'completed' } },
           { $group: { _id: null, count: { $sum: 1 }, hours: { $sum: { $ifNull: ['$ceHours', 0] } } } }
         ]).toArray()
       ]);
@@ -1475,7 +1475,7 @@ router.get('/:id/stats', protect, requireAdmin, async (req, res) => {
           { $group: { _id: '$courseId', count: { $sum: 1 } } }
         ]).toArray(),
         db.collection('interactivecourseprogresses').aggregate([
-          { $match: { courseId: { $in: courseIds }, completed: true } },
+          { $match: { courseId: { $in: courseIds }, status: 'completed' } },
           { $group: { _id: '$courseId', count: { $sum: 1 } } }
         ]).toArray()
       ]);
@@ -1564,7 +1564,7 @@ router.get('/:id/courses', protect, requireAdmin, async (req, res) => {
         { $group: { _id: '$courseId', count: { $sum: 1 } } }
       ]).toArray(),
       db.collection('interactivecourseprogresses').aggregate([
-        { $match: { courseId: { $in: courseIds }, completed: true } },
+        { $match: { courseId: { $in: courseIds }, status: 'completed' } },
         { $group: { _id: '$courseId', count: { $sum: 1 } } }
       ]).toArray()
     ]);
@@ -1601,7 +1601,7 @@ router.get('/:id/courses/:courseId/analytics', protect, requireAdmin, async (req
 
     const [enrollments, completions, avgProgress] = await Promise.all([
       db.collection('interactivecourseprogresses').countDocuments({ courseId }),
-      db.collection('interactivecourseprogresses').countDocuments({ courseId, completed: true }),
+      db.collection('interactivecourseprogresses').countDocuments({ courseId, status: 'completed' }),
       db.collection('interactivecourseprogresses').aggregate([
         { $match: { courseId } },
         { $group: { _id: null, avg: { $avg: { $ifNull: ['$progressPercent', 0] } } } }
