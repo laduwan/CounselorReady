@@ -13,7 +13,7 @@ import Evaluation from '../models/Evaluation.js';
 import User from '../models/User.js';
 import UserCredential from '../models/UserCredential.js';
 import Gamification from '../models/Gamification.js';
-import { protect, requireAdmin } from '../middleware/auth.js';
+import { protect, requireAdmin, optionalAuth } from '../middleware/auth.js';
 import { generateCertificate, generateCertificateNumber } from '../utils/certificate.js';
 import { logActivity, ACTIVITY_TYPES } from '../services/activityTrackingService.js';
 
@@ -26,6 +26,95 @@ async function findCourseByIdOrSlug(param) {
   }
   return Course.findOne({ slug: param });
 }
+
+// ── CONTENT GATING ──────────────────────────────────────────
+const FREE_CE_HOUR_LIMIT = 4; // Free users get 4 CE hours before paywall
+
+/**
+ * Strip sensitive content from course for preview/unauthenticated users.
+ * Removes: assessment answers, deep section content (keeps titles + first block preview).
+ */
+function stripContent(courseObj) {
+  const obj = courseObj.toObject ? courseObj.toObject() : { ...courseObj };
+
+  // Strip assessment answers
+  if (obj.assessment?.questions) {
+    obj.assessment.questions = obj.assessment.questions.map(q => ({
+      ...q,
+      options: q.options?.map(o => ({ text: o.text })), // remove isCorrect
+      explanation: undefined
+    }));
+  }
+
+  // Strip section content — keep titles and first text block (truncated) for preview
+  if (obj.sections) {
+    obj.sections = obj.sections.map(s => {
+      const firstText = s.contentBlocks?.find(b => b.type === 'text');
+      const preview = firstText?.content?.substring(0, 300) || '';
+      return {
+        _id: s._id,
+        title: s.title,
+        contentBlocks: [{ type: 'text', content: preview + (preview.length >= 300 ? '…' : '') }],
+        _stripped: true
+      };
+    });
+  }
+
+  obj._isPreview = true;
+  return obj;
+}
+
+/**
+ * Gate course content based on user authentication, subscription, and enrollment.
+ * Returns: full course, stripped preview, or course with metadata flags.
+ */
+async function gateContent(courseObj, user) {
+  // No user → preview only
+  if (!user) return stripContent(courseObj);
+
+  // Admin → always full
+  if (user.role === 'admin') return courseObj;
+
+  // Check enrollment
+  const progress = await CourseProgress.findOne({ userId: user._id, courseId: courseObj._id });
+  const isEnrolled = !!progress;
+
+  // Free course → full content for anyone logged in
+  if (courseObj.accessType === 'free') return courseObj;
+
+  // Individual purchase → full content
+  const hasPurchased = user.purchasedCourses?.some(
+    id => id.toString() === courseObj._id.toString()
+  );
+  if (hasPurchased) return courseObj;
+
+  // Active subscription check
+  const subPlan = user.subscription?.plan || 'free';
+  const subStatus = user.subscription?.status || 'free';
+  const isActiveSub = ['active', 'trial', 'lifetime'].includes(subStatus);
+
+  if (isActiveSub && subPlan !== 'free') return courseObj;
+
+  // Free-tier users: check CE hour budget
+  const freeHoursUsed = user.freeHoursUsed ?? 0;
+  const courseHours = courseObj.ceHours || courseObj.ceuHours || 1;
+
+  if (freeHoursUsed < FREE_CE_HOUR_LIMIT) {
+    const courseWithMeta = courseObj.toObject ? courseObj.toObject() : { ...courseObj };
+    courseWithMeta._freeHoursRemaining = FREE_CE_HOUR_LIMIT - freeHoursUsed;
+    courseWithMeta._freeHoursUsed = freeHoursUsed;
+    return courseWithMeta;
+  }
+
+  // Exhausted free hours + no subscription → strip
+  const stripped = stripContent(courseObj);
+  stripped._freeHoursExhausted = true;
+  stripped._freeHoursUsed = freeHoursUsed;
+  return stripped;
+}
+
+// Export for testing
+export { gateContent as _gateContent, stripContent as _stripContent };
 
 // Helper: record gamification activity (non-blocking)
 async function recordGamification(userId, type, metadata = {}) {
@@ -148,9 +237,9 @@ router.get('/admin/all', protect, requireAdmin, async (req, res) => {
 
 /**
  * GET /api/interactive-courses/slug/:slug
- * Get full course details by slug
+ * Get course details by slug — content gated by auth/subscription
  */
-router.get('/slug/:slug', async (req, res) => {
+router.get('/slug/:slug', optionalAuth, async (req, res) => {
   try {
     const course = await Course.findOne({ 
       slug: req.params.slug,
@@ -161,7 +250,8 @@ router.get('/slug/:slug', async (req, res) => {
       return res.status(404).json({ success: false, error: 'Course not found' });
     }
 
-    res.json({ success: true, data: course });
+    const gated = await gateContent(course, req.user);
+    res.json({ success: true, data: gated });
   } catch (error) {
     console.error('Error fetching course:', error);
     res.status(500).json({ success: false, error: 'Failed to fetch course' });
@@ -170,9 +260,9 @@ router.get('/slug/:slug', async (req, res) => {
 
 /**
  * GET /api/interactive-courses/:id
- * Get full course details by ID
+ * Get course details by ID — content gated by auth/subscription
  */
-router.get('/:id', async (req, res) => {
+router.get('/:id', optionalAuth, async (req, res) => {
   try {
     const course = await findCourseByIdOrSlug(req.params.id);
 
@@ -180,7 +270,8 @@ router.get('/:id', async (req, res) => {
       return res.status(404).json({ success: false, error: 'Course not found' });
     }
 
-    res.json({ success: true, data: course });
+    const gated = await gateContent(course, req.user);
+    res.json({ success: true, data: gated });
   } catch (error) {
     console.error('Error fetching course:', error);
     res.status(500).json({ success: false, error: 'Failed to fetch course' });
@@ -234,7 +325,7 @@ router.get('/:id/progress', protect, async (req, res) => {
 
 /**
  * POST /api/interactive-courses/:id/enroll
- * Enroll user in a course
+ * Enroll user in a course — enforces subscription/payment/free-hour limits
  */
 router.post('/:id/enroll', protect, async (req, res) => {
   try {
@@ -251,6 +342,45 @@ router.post('/:id/enroll', protect, async (req, res) => {
 
     if (progress) {
       return res.json({ success: true, message: 'Already enrolled', data: progress });
+    }
+
+    // ── ACCESS CHECK ──
+    const user = req.user;
+    const subPlan = user.subscription?.plan || 'free';
+    const subStatus = user.subscription?.status || 'free';
+    const isActiveSub = ['active', 'trial', 'lifetime'].includes(subStatus);
+    const isAdmin = user.role === 'admin';
+    const isFree = course.accessType === 'free';
+    const hasPurchased = user.purchasedCourses?.some(
+      id => id.toString() === course._id.toString()
+    );
+
+    let accessGranted = false;
+    let usedFreeHours = false;
+
+    if (isAdmin || isFree || hasPurchased) {
+      accessGranted = true;
+    } else if (isActiveSub && subPlan !== 'free') {
+      accessGranted = true;
+    } else {
+      // Free-tier: check CE hour budget
+      const freeHoursUsed = user.freeHoursUsed ?? 0;
+      const courseHours = course.ceHours || course.ceuHours || 1;
+      if (freeHoursUsed + courseHours <= FREE_CE_HOUR_LIMIT) {
+        accessGranted = true;
+        usedFreeHours = true;
+      }
+    }
+
+    if (!accessGranted) {
+      return res.status(403).json({
+        success: false,
+        error: 'Subscription required',
+        code: 'SUBSCRIPTION_REQUIRED',
+        message: `You've used your ${FREE_CE_HOUR_LIMIT} free CE hours. Subscribe for unlimited access.`,
+        freeHoursUsed: user.freeHoursUsed ?? 0,
+        freeHoursLimit: FREE_CE_HOUR_LIMIT
+      });
     }
 
     // Create new enrollment
@@ -270,6 +400,12 @@ router.post('/:id/enroll', protect, async (req, res) => {
     });
 
     await progress.save();
+
+    // Increment free hours used (fire-and-forget)
+    if (usedFreeHours) {
+      const courseHours = course.ceHours || course.ceuHours || 1;
+      User.findByIdAndUpdate(user._id, { $inc: { freeHoursUsed: courseHours } }).catch(() => {});
+    }
 
     // Log enrollment to admin activity feed (fire-and-forget)
     logActivity(ACTIVITY_TYPES.USER_ENROLLED, {
@@ -651,7 +787,7 @@ router.post('/:id/attestation', protect, async (req, res) => {
     res.json({
       success: true,
       message: 'Attestation recorded successfully',
-      data: {
+      data: { 
         attestationAgreed: true,
         completedAt: progress.completedAt
       }
