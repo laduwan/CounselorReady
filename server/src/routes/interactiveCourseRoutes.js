@@ -651,7 +651,7 @@ router.post('/:id/attestation', protect, async (req, res) => {
     res.json({
       success: true,
       message: 'Attestation recorded successfully',
-      data: { 
+      data: {
         attestationAgreed: true,
         completedAt: progress.completedAt
       }
