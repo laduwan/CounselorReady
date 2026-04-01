@@ -697,14 +697,17 @@ router.post('/:id/certificate', protect, async (req, res) => {
       await generateCertificateNumber(course._id, req.user._id);
 
     // Generate certificate PDF buffer via ../utils/certificate.js
-    const userName = `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email;
+    const userName = `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.name || user.email;
     const pdfBuffer = await generateCertificate({
       holderName: userName,
       courseName: course.title,
       completionDate: progress.completedAt || new Date(),
       ceHours: course.ceHours || 1,
       certificateNumber,
-      acepNumber: course.acepNumber || 'ACEP #7760'
+      acepNumber: 'ACEP #7760',
+      ceCategory: course.ceCategory || course.contentArea || course.categories?.[0] || 'Counseling Theory/Practice and the Counseling Relationship',
+      objectives: course.learningObjectives || course.objectives || [],
+      approvingBody: 'NBCC'
     });
 
     // Upload PDF buffer to Cloudinary
