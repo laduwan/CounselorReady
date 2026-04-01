@@ -21,6 +21,13 @@ if (!process.env.ADMIN_NOTIFICATION_EMAIL) {
   console.warn(`[ActivityTracking] ADMIN_NOTIFICATION_EMAIL not set — defaulting to ${ADMIN_EMAIL}`);
 }
 
+// Configurable: comma-separated list of activity types to SKIP email notifications for.
+// Set ADMIN_NOTIFY_DISABLED_TYPES in .env to opt out of specific notifications.
+// Example: ADMIN_NOTIFY_DISABLED_TYPES=payment_succeeded,payment_failed,quiz_passed,quiz_failed
+const DISABLED_NOTIFY_TYPES = new Set(
+  (process.env.ADMIN_NOTIFY_DISABLED_TYPES || '').split(',').map(t => t.trim()).filter(Boolean)
+);
+
 /**
  * Activity types for tracking
  */
@@ -106,34 +113,56 @@ export async function logActivity(type, data, options = {}) {
 }
 
 /**
- * Build subject line for admin notification (only for key event types)
+ * Build subject line for admin notification.
+ * All activity types have a notification — disable unwanted ones via ADMIN_NOTIFY_DISABLED_TYPES.
  */
 function getNotificationSubject(type, data, userInfo) {
-  const { userEmail } = userInfo;
+  const { userName, userEmail } = userInfo;
+  const name = userName || userEmail;
   switch (type) {
     case ACTIVITY_TYPES.USER_REGISTERED:
       return `New Registration: ${userEmail}`;
+    case ACTIVITY_TYPES.USER_LOGIN:
+      return `User Login: ${userEmail}`;
     case ACTIVITY_TYPES.USER_ENROLLED:
       return `New Enrollment: ${userEmail} enrolled in ${data.courseName || 'a course'}`;
+    case ACTIVITY_TYPES.PAYMENT_SUCCEEDED:
+      return `Payment Received: ${userEmail} — $${((data.amount || 0) / 100).toFixed(2)}`;
+    case ACTIVITY_TYPES.PAYMENT_FAILED:
+      return `Payment Failed: ${userEmail}`;
+    case ACTIVITY_TYPES.COURSE_STARTED:
+      return `Course Started: ${userEmail} started ${data.courseName || 'a course'}`;
     case ACTIVITY_TYPES.COURSE_COMPLETED:
       return `Course Completed: ${userEmail} completed ${data.courseName || 'a course'}`;
-    case ACTIVITY_TYPES.CERTIFICATE_GENERATED:
-      return `Certificate Earned: ${userEmail} - ${data.courseName || 'a course'}`;
+    case ACTIVITY_TYPES.COURSE_FAILED:
+      return `Course Failed: ${userEmail} — ${data.courseName || 'a course'}`;
+    case ACTIVITY_TYPES.QUIZ_PASSED:
+      return `Quiz Passed: ${name} — ${data.courseName || 'a course'} (${data.score}%)`;
+    case ACTIVITY_TYPES.QUIZ_FAILED:
+      return `Quiz Failed: ${name} — ${data.courseName || 'a course'} (${data.score}%, needed ${data.passingScore}%)`;
     case ACTIVITY_TYPES.SUBSCRIPTION_STARTED:
       return `New Subscription: ${userEmail} - ${data.plan || 'unknown plan'}`;
     case ACTIVITY_TYPES.SUBSCRIPTION_CANCELED:
       return `Subscription Canceled: ${userEmail}`;
+    case ACTIVITY_TYPES.CERTIFICATE_GENERATED:
+      return `Certificate Earned: ${userEmail} - ${data.courseName || 'a course'}`;
+    case ACTIVITY_TYPES.LESSON_COMPLETED:
+      return `Lesson Completed: ${name} — ${data.lessonName || 'a lesson'} in ${data.courseName || 'a course'}`;
     default:
       return null;
   }
 }
 
 /**
- * Send plain email notification to admin for key activity events
+ * Send plain email notification to admin for activity events.
+ * Disable specific types via ADMIN_NOTIFY_DISABLED_TYPES env var.
  */
 async function sendAdminNotification(type, data, userInfo) {
+  // Allow opting out of specific notification types
+  if (DISABLED_NOTIFY_TYPES.has(type)) return;
+
   const subject = getNotificationSubject(type, data, userInfo);
-  if (!subject) return; // Not a notifiable event type
+  if (!subject) return;
 
   try {
     const timestamp = new Date().toLocaleString('en-US', { dateStyle: 'full', timeStyle: 'short' });
