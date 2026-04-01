@@ -109,13 +109,9 @@ export async function generateCertificate(data) {
     doc.font('Times-Italic').fontSize(28).fillColor(BURGUNDY);
     doc.text('Certificate of Completion', 0, 95, { align: 'center', width: W });
 
-    // Home Study indicator
-    doc.font('Helvetica').fontSize(8).fillColor(DARK_GREEN);
-    doc.text('Home Study Program', 0, 126, { align: 'center', width: W });
-
     // ── CERTIFIES THAT + LEARNER NAME ──
     doc.font('Times-Roman').fontSize(12).fillColor(NAVY);
-    doc.text('This certifies that', 0, 148, { align: 'center', width: W });
+    doc.text('This certifies that', 0, 128, { align: 'center', width: W });
 
     // Learner name — large, underlined
     const nameY = 168;
@@ -147,10 +143,9 @@ export async function generateCertificate(data) {
     doc.font('Helvetica-Oblique').fontSize(9).fillColor(DARK_GREEN);
     doc.text('Asynchronous', 0, instrY + 15, { align: 'center', width: W });
 
-    // ── LEARNING OBJECTIVES (if provided, compact, centered, spaced down) ──
-    let nextY = instrY + 55;
+    // ── LEARNING OBJECTIVES (if provided, centered) ──
+    let nextY = instrY + 40;
     if (objectives.length > 0 && objectives.length <= 6) {
-      nextY += 4;
       doc.font('Helvetica-Bold').fontSize(9).fillColor(HUNTER_GREEN);
       doc.text('Learning Objectives:', 120, nextY, { width: W - 240, align: 'center' });
       nextY += 13;
@@ -166,15 +161,15 @@ export async function generateCertificate(data) {
     const sigY = Math.max(nextY + 40, 395);
     const sigColW = (W - 120) / 2;
 
-    // Left: Content area / CE hours above line, Certificate # below line
-    const ceLabel = ceCategory
-      ? `${ceCategory} / ${ceHours} CE Hour${ceHours !== 1 ? 's' : ''}`
-      : `${ceHours} CE Hour${ceHours !== 1 ? 's' : ''}`;
-    doc.font('Helvetica').fontSize(9).fillColor(NAVY);
-    doc.text(ceLabel, 60, sigY + 22, { width: sigColW, align: 'center' });
+    // Left: Content area above line, CE hours (bold) + Certificate # below line
+    if (ceCategory) {
+      doc.font('Helvetica').fontSize(8).fillColor(NAVY);
+      doc.text(ceCategory, 60, sigY + 22, { width: sigColW, align: 'center' });
+    }
     doc.moveTo(60 + 30, sigY + 35).lineTo(60 + sigColW - 30, sigY + 35).lineWidth(0.5).stroke('#999999');
-    doc.font('Helvetica').fontSize(8).fillColor(NAVY);
-    doc.text(`Certificate #: ${certificateNumber}`, 60, sigY + 40, { width: sigColW, align: 'center' });
+    doc.font('Helvetica-Bold').fontSize(9).fillColor(NAVY);
+    const ceText = `${ceHours} CE Hour${ceHours !== 1 ? 's' : ''}`;
+    doc.text(`${ceText}  |  Certificate #: ${certificateNumber}`, 60, sigY + 40, { width: sigColW, align: 'center' });
 
     // NBCC SEAL (centered between the two signature columns)
     try {
