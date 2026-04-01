@@ -713,7 +713,7 @@ router.post('/:id/certificate', protect, async (req, res) => {
         {
           resource_type: 'raw',
           folder: 'certificates',
-          public_id: `cert_${certificateNumber}_${Date.now()}`
+          public_id: `cert_${certificateNumber}_${Date.now()}.pdf`
         },
         (error, result) => {
           if (error) return reject(error);
