@@ -273,14 +273,15 @@ router.post('/:id/enroll', protect, async (req, res) => {
 
     // Log enrollment to admin activity feed (fire-and-forget)
     logActivity(ACTIVITY_TYPES.USER_ENROLLED, {
+      courseId: course._id,
+      courseName: course.title,
+      ceHours: course.ceHours
+    }, {
       userId: req.user._id,
       userName: req.user.profile?.firstName
         ? `${req.user.profile.firstName} ${req.user.profile.lastName || ''}`.trim()
         : req.user.email,
-      userEmail: req.user.email,
-      courseId: course._id,
-      courseName: course.title,
-      ceHours: course.ceHours
+      userEmail: req.user.email
     }).catch(err => console.error('Activity log error:', err));
 
     res.status(201).json({ success: true, message: 'Enrolled successfully', data: progress });
@@ -395,6 +396,33 @@ router.post('/:id/assessment', protect, async (req, res) => {
       progress.assessmentPassed = true;
       // Don't mark as fully completed yet - need evaluation + attestation
       recordGamification(req.user._id, 'quiz_pass');
+
+      // Log assessment passed
+      logActivity(ACTIVITY_TYPES.QUIZ_PASSED, {
+        courseId: course._id,
+        courseName: course.title,
+        score: Math.round(calculatedScore * 100),
+        passingScore: Math.round((course.assessment.passThreshold ?? 0.75) * 100),
+        isAssessment: true
+      }, {
+        userId: req.user._id,
+        userName: req.user.profile?.firstName ? `${req.user.profile.firstName} ${req.user.profile.lastName || ''}`.trim() : req.user.email,
+        userEmail: req.user.email
+      }).catch(() => {});
+    } else {
+      // Log assessment failed
+      logActivity(ACTIVITY_TYPES.QUIZ_FAILED, {
+        courseId: course._id,
+        courseName: course.title,
+        score: Math.round(calculatedScore * 100),
+        passingScore: Math.round((course.assessment.passThreshold ?? 0.75) * 100),
+        isAssessment: true,
+        attemptsRemaining: progress.assessmentAttemptsRemaining - 1
+      }, {
+        userId: req.user._id,
+        userName: req.user.profile?.firstName ? `${req.user.profile.firstName} ${req.user.profile.lastName || ''}`.trim() : req.user.email,
+        userEmail: req.user.email
+      }).catch(() => {});
     }
 
     // Update best score
@@ -605,21 +633,20 @@ router.post('/:id/attestation', protect, async (req, res) => {
     
     await progress.save();
 
-    // Log course completion activity
-    try {
-      const user = await User.findById(req.user._id);
-      await logActivity(ACTIVITY_TYPES.COURSE_COMPLETED, {
-        courseId: course._id,
-        courseName: course.title,
-        ceHours: course.ceHours || 1
-      }, {
-        userId: req.user._id,
-        userName: `${user?.firstName || ''} ${user?.lastName || ''}`.trim() || user?.name || user?.email,
-        userEmail: user?.email
-      });
-    } catch (activityErr) {
-      console.error('Failed to log course completion activity:', activityErr);
-    }
+    // Log course completed
+    logActivity(ACTIVITY_TYPES.COURSE_COMPLETED, {
+      courseId: course._id,
+      courseName: course.title,
+      ceHours: course.ceHours || course.ceuHours,
+      completedAt: progress.completedAt
+    }, {
+      userId: req.user._id,
+      userName: req.user.profile?.firstName ? `${req.user.profile.firstName} ${req.user.profile.lastName || ''}`.trim() : req.user.email,
+      userEmail: req.user.email
+    }).catch(() => {});
+
+    // Gamification
+    recordGamification(req.user._id, 'course_complete');
 
     res.json({
       success: true,
@@ -772,6 +799,18 @@ router.post('/:id/certificate', protect, async (req, res) => {
       progress.certificateIssuedAt = new Date();
       progress.status = 'certified';
       await progress.save();
+
+      // Log certificate generated
+      logActivity(ACTIVITY_TYPES.CERTIFICATE_GENERATED, {
+        courseId: course._id,
+        courseName: course.title,
+        ceHours: course.ceHours || course.ceuHours,
+        certificateNumber
+      }, {
+        userId: req.user._id,
+        userName: user.firstName ? `${user.firstName} ${user.lastName || ''}`.trim() : user.email,
+        userEmail: user.email
+      }).catch(() => {});
 
       // Auto-allocate CE hours to user's credentials
       try {
@@ -934,8 +973,22 @@ router.put('/:id/progress/section/:sectionIndex', protect, async (req, res) => {
     // Update status
     if (!sectionProgress.startedAt) {
       sectionProgress.startedAt = new Date();
+      const isFirstStart = !progress.startedAt;
       progress.startedAt = progress.startedAt || new Date();
       progress.status = 'in_progress';
+
+      // Log course started on very first section access
+      if (isFirstStart) {
+        logActivity(ACTIVITY_TYPES.COURSE_STARTED, {
+          courseId: course._id,
+          courseName: course.title,
+          ceHours: course.ceHours || course.ceuHours
+        }, {
+          userId: req.user._id,
+          userName: req.user.profile?.firstName ? `${req.user.profile.firstName} ${req.user.profile.lastName || ''}`.trim() : req.user.email,
+          userEmail: req.user.email
+        }).catch(() => {});
+      }
     }
     sectionProgress.status = 'in_progress';
 
@@ -948,6 +1001,19 @@ router.put('/:id/progress/section/:sectionIndex', protect, async (req, res) => {
     if (allBlocksViewed || explicitComplete) {
       sectionProgress.status = 'completed';
       sectionProgress.completedAt = sectionProgress.completedAt || new Date();
+
+      // Log section completion (fire-and-forget)
+      logActivity(ACTIVITY_TYPES.LESSON_COMPLETED, {
+        courseId: course._id,
+        courseName: course.title,
+        lessonName: section.title || `Section ${parseInt(sectionIndex) + 1}`,
+        sectionIndex: parseInt(sectionIndex)
+      }, {
+        notifyAdmin: false,
+        userId: req.user._id,
+        userName: req.user.profile?.firstName ? `${req.user.profile.firstName} ${req.user.profile.lastName || ''}`.trim() : req.user.email,
+        userEmail: req.user.email
+      }).catch(() => {});
     }
 
     progress.lastAccessedAt = new Date();
@@ -1033,6 +1099,32 @@ router.post('/:id/progress/section/:sectionIndex/quiz', protect, async (req, res
     if (passed) {
       sectionProgress.quizPassed = true;
       recordGamification(req.user._id, 'quiz_pass');
+
+      // Log quiz passed
+      logActivity(ACTIVITY_TYPES.QUIZ_PASSED, {
+        courseId: course._id,
+        courseName: course.title,
+        sectionName: section.title || `Section ${parseInt(sectionIndex) + 1}`,
+        score: Math.round(score * 100),
+        passingScore: Math.round((section.quizPassThreshold || 0.8) * 100)
+      }, {
+        userId: req.user._id,
+        userName: req.user.profile?.firstName ? `${req.user.profile.firstName} ${req.user.profile.lastName || ''}`.trim() : req.user.email,
+        userEmail: req.user.email
+      }).catch(() => {});
+    } else {
+      // Log quiz failed
+      logActivity(ACTIVITY_TYPES.QUIZ_FAILED, {
+        courseId: course._id,
+        courseName: course.title,
+        sectionName: section.title || `Section ${parseInt(sectionIndex) + 1}`,
+        score: Math.round(score * 100),
+        passingScore: Math.round((section.quizPassThreshold || 0.8) * 100)
+      }, {
+        userId: req.user._id,
+        userName: req.user.profile?.firstName ? `${req.user.profile.firstName} ${req.user.profile.lastName || ''}`.trim() : req.user.email,
+        userEmail: req.user.email
+      }).catch(() => {});
     }
 
     // Update best score
