@@ -693,8 +693,8 @@ router.post('/:id/certificate', protect, async (req, res) => {
     });
 
     // Generate certificate number if needed
-    const certificateNumber = certificate?.certificateNumber || 
-      generateCertificateNumber(course._id, req.user._id);
+    const certificateNumber = certificate?.certificateNumber ||
+      await generateCertificateNumber(course._id, req.user._id);
 
     // Generate PDF
     const pdfBuffer = await generateCertificate({
