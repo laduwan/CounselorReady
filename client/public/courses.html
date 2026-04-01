@@ -14,7 +14,7 @@
             burgundy: {
               50: '#fdf5f6', 100: '#fae8eb', 200: '#f5d0d6', 300: '#eba9b5',
               400: '#dd768a', 500: '#c94d65', 600: '#a83350', 700: '#8b2542',
-              800: '#6b1d34', 900: '#4a1524', 950: '#2d0a14'
+              800: '#6b1d34', 900: '#4a1524',950:'#2D0A16', 950: '#2d0a14'
             },
             forest: {
               50: '#f3f6f4', 100: '#e3ebe5', 200: '#c8d7cc', 300: '#a1bba8',
@@ -37,37 +37,23 @@
   <style>
     body { font-family: 'Lato', system-ui, sans-serif; }
     .font-display { font-family: 'Cormorant Garamond', Georgia, serif; }
+  
+    /* Shared nav styles */
+    .dd{display:none;position:absolute;top:100%;margin-top:6px;background:#fff;border-radius:10px;box-shadow:0 10px 40px rgba(107,29,52,.12);border:1px solid #FAE8EB;z-index:50;padding:6px 0;min-width:210px}
+    .dd.open{display:block}
+    .dd a{display:flex;align-items:center;gap:10px;padding:8px 16px;font-size:13px;color:#284157;text-decoration:none;transition:background .1s}
+    .dd a:hover{background:#F2F7F4}
+    .ov{display:none;position:fixed;inset:0;z-index:40}.ov.open{display:block}
+    .nav-link{padding:6px 12px;border-radius:6px;font-size:13px;font-weight:500;color:#57534e;text-decoration:none;display:flex;align-items:center;gap:4px;transition:all .15s}
+    .nav-link:hover{color:#6B1D34;background:#FDF5F7}
+    .nav-link.active{color:#6B1D34;background:#FDF5F7;font-weight:600;border-bottom:2px solid #6B1D34}
   </style>
 </head>
 <body class="bg-stone-50 min-h-screen">
   
   <!-- Header -->
-  <header class="bg-white border-b border-hunter-100 sticky top-0 z-50">
-    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-      <a href="/" class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-xl flex items-center justify-center shadow-md" style="background: linear-gradient(135deg, #8b2542, #6b1d34);">
-          <span class="font-display font-bold text-lg" style="position: relative; display: inline-block; width: 22px; height: 22px;"><span style="color: #D4A855; position: absolute; top: -3px; left: 0;">C</span><span style="color: #4A7C59; position: absolute; top: 5px; left: 6px;">R</span></span>
-        </div>
-        <span class="font-display font-semibold text-xl">
-          <span class="text-burgundy-800">Counselor</span><span class="text-hunter-600">Ready</span>
-        </span>
-      </a>
-      
-      <nav class="hidden md:flex items-center gap-8">
-        <a href="/dashboard.html" class="text-hunter-600 hover:text-hunter-700 transition-colors">Dashboard</a>
-        <a href="/courses.html" class="text-burgundy-800 font-medium border-b-2 border-burgundy-700 pb-1">Courses</a>
-        <a href="/credentials.html" class="text-hunter-600 hover:text-hunter-700 transition-colors">Credentials</a>
-        <a href="/certificates.html" class="text-hunter-600 hover:text-hunter-700 transition-colors">CE Certificates</a>
-        <a href="/messages.html" class="text-hunter-600 hover:text-hunter-700 transition-colors">Messages</a>
-      </nav>
-
-      <div class="flex items-center gap-4">
-        <a href="/dashboard.html" class="text-hunter-600 hover:text-hunter-700 text-sm">
-          ← Back to Dashboard
-        </a>
-      </div>
-    </div>
-  </header>
+  <div id="cr-header"></div>
+  <script src="/shared/nav-footer.js"></script>
 
   <!-- Main Content -->
   <main class="max-w-7xl mx-auto px-6 py-8">
@@ -350,7 +336,9 @@
           if (response.status === 400 && (data.error || '').toLowerCase().includes('already enrolled')) {
             window.location.href = '/interactive-course.html?slug=' + slug;
           } else if (data.code === 'SUBSCRIPTION_REQUIRED') {
-            alert('This course requires an active subscription. Please subscribe to access.');
+            if (confirm(data.message || 'This course requires a subscription. View plans?')) {
+              window.location.href = '/subscription.html';
+            }
           } else {
             alert(data.error || 'Failed to enroll');
           }
@@ -380,5 +368,7 @@
     }
   </script>
 
+
+  <div id="cr-footer"></div>
 </body>
 </html>
