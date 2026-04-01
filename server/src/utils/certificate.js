@@ -142,17 +142,17 @@ export async function generateCertificate(data) {
     doc.font('Helvetica-Oblique').fontSize(9).fillColor(DARK_GREEN);
     doc.text('Asynchronous', 0, instrY + 15, { align: 'center', width: W });
 
-    // ── LEARNING OBJECTIVES (if provided, compact) ──
-    let nextY = instrY + 32;
+    // ── LEARNING OBJECTIVES (if provided, compact, centered, spaced down) ──
+    let nextY = instrY + 55;
     if (objectives.length > 0 && objectives.length <= 6) {
       nextY += 4;
       doc.font('Helvetica-Bold').fontSize(9).fillColor(HUNTER_GREEN);
-      doc.text('Learning Objectives:', 80, nextY, { width: W - 160 });
+      doc.text('Learning Objectives:', 120, nextY, { width: W - 240, align: 'center' });
       nextY += 13;
       doc.font('Helvetica').fontSize(8).fillColor(NAVY);
       objectives.forEach((obj, i) => {
         const text = `${i + 1}. ${String(obj).substring(0, 120)}`;
-        doc.text(text, 90, nextY, { width: W - 180 });
+        doc.text(text, 130, nextY, { width: W - 260, align: 'center' });
         nextY += 11;
       });
     }
@@ -161,24 +161,25 @@ export async function generateCertificate(data) {
     const sigY = Math.max(nextY + 16, 370);
     const sigColW = (W - 120) / 2;
 
-    // Left: Authorized Signature
+    // Left: Completion info
+    doc.moveTo(60 + 30, sigY + 35).lineTo(60 + sigColW - 30, sigY + 35).lineWidth(0.5).stroke('#999999');
+    doc.font('Helvetica-Bold').fontSize(11).fillColor(NAVY);
+    doc.text(`Completed ${formattedDate}`, 60, sigY + 40, { width: sigColW, align: 'center' });
+    doc.font('Helvetica').fontSize(8).fillColor(HUNTER_GREEN);
+    doc.text('NBCC ACEP Approved', 60, sigY + 52, { width: sigColW, align: 'center' });
+
+    // Right: Authorized Signature
     try {
       if (fs.existsSync(SIGNATURE_PATH)) {
-        doc.image(SIGNATURE_PATH, (60 + sigColW / 2) - 60, sigY - 5, { width: 120, height: 40 });
+        doc.image(SIGNATURE_PATH, (60 + sigColW + sigColW / 2) - 60, sigY - 5, { width: 120, height: 40 });
       }
     } catch (e) { /* no signature image */ }
 
-    doc.moveTo(60 + 30, sigY + 35).lineTo(60 + sigColW - 30, sigY + 35).lineWidth(0.5).stroke('#999999');
+    doc.moveTo(60 + sigColW + 30, sigY + 35).lineTo(60 + sigColW * 2 - 30, sigY + 35).lineWidth(0.5).stroke('#999999');
     doc.font('Helvetica').fontSize(8).fillColor(NAVY);
-    doc.text(instructorName, 60, sigY + 40, { width: sigColW, align: 'center' });
+    doc.text(instructorName, 60 + sigColW, sigY + 40, { width: sigColW, align: 'center' });
     doc.font('Helvetica').fontSize(7).fillColor('#666666');
-    doc.text('Authorized Signature', 60, sigY + 52, { width: sigColW, align: 'center' });
-
-    // Right: Completion info
-    doc.font('Helvetica-Bold').fontSize(11).fillColor(NAVY);
-    doc.text(`Completed ${formattedDate}`, 60 + sigColW, sigY + 20, { width: sigColW, align: 'center' });
-    doc.font('Helvetica').fontSize(8).fillColor(HUNTER_GREEN);
-    doc.text('NBCC ACEP Approved', 60 + sigColW, sigY + 36, { width: sigColW, align: 'center' });
+    doc.text('Authorized Signature', 60 + sigColW, sigY + 52, { width: sigColW, align: 'center' });
 
     // ── NBCC SEAL (bottom-right, quarter-sized ~70pt) ──
     try {
