@@ -135,8 +135,13 @@ export async function generateCertificate(data) {
     doc.font('Times-Bold').fontSize(titleFontSize).fillColor(HUNTER_GREEN);
     doc.text(courseName, 60, 225, { align: 'center', width: W - 120 });
 
-    // ── INSTRUCTOR + ASYNCHRONOUS ──
-    const instrY = courseName.length > 50 ? 255 : 250;
+    // ── COMPLETION DATE (after course title) ──
+    const dateY = courseName.length > 50 ? 255 : 250;
+    doc.font('Helvetica').fontSize(10).fillColor(NAVY);
+    doc.text(`Completed ${formattedDate}`, 0, dateY, { align: 'center', width: W });
+
+    // ── INSTRUCTOR + ASYNCHRONOUS (spaced down 2 lines after date) ──
+    const instrY = dateY + 28;
     doc.font('Helvetica').fontSize(10).fillColor(NAVY);
     doc.text(`Instructor: ${instructorName}`, 0, instrY, { align: 'center', width: W });
     doc.font('Helvetica-Oblique').fontSize(9).fillColor(DARK_GREEN);
@@ -157,16 +162,27 @@ export async function generateCertificate(data) {
       });
     }
 
-    // ── SIGNATURE SECTION (two columns) ──
-    const sigY = Math.max(nextY + 16, 370);
+    // ── SIGNATURE SECTION (two columns, spaced down 2-3 lines) ──
+    const sigY = Math.max(nextY + 40, 395);
     const sigColW = (W - 120) / 2;
 
-    // Left: Completion info
+    // Left: Content area / CE hours above line, Certificate # below line
+    const ceLabel = ceCategory
+      ? `${ceCategory} / ${ceHours} CE Hour${ceHours !== 1 ? 's' : ''}`
+      : `${ceHours} CE Hour${ceHours !== 1 ? 's' : ''}`;
+    doc.font('Helvetica').fontSize(9).fillColor(NAVY);
+    doc.text(ceLabel, 60, sigY + 22, { width: sigColW, align: 'center' });
     doc.moveTo(60 + 30, sigY + 35).lineTo(60 + sigColW - 30, sigY + 35).lineWidth(0.5).stroke('#999999');
-    doc.font('Helvetica-Bold').fontSize(11).fillColor(NAVY);
-    doc.text(`Completed ${formattedDate}`, 60, sigY + 40, { width: sigColW, align: 'center' });
-    doc.font('Helvetica').fontSize(8).fillColor(HUNTER_GREEN);
-    doc.text('NBCC ACEP Approved', 60, sigY + 52, { width: sigColW, align: 'center' });
+    doc.font('Helvetica').fontSize(8).fillColor(NAVY);
+    doc.text(`Certificate #: ${certificateNumber}`, 60, sigY + 40, { width: sigColW, align: 'center' });
+
+    // NBCC SEAL (centered between the two signature columns)
+    try {
+      if (fs.existsSync(NBCC_SEAL_PATH)) {
+        const sealSize = 70;
+        doc.image(NBCC_SEAL_PATH, (W - sealSize) / 2, sigY - 5, { width: sealSize, height: sealSize });
+      }
+    } catch (e) { /* no seal image */ }
 
     // Right: Authorized Signature
     try {
@@ -180,33 +196,6 @@ export async function generateCertificate(data) {
     doc.text(instructorName, 60 + sigColW, sigY + 40, { width: sigColW, align: 'center' });
     doc.font('Helvetica').fontSize(7).fillColor('#666666');
     doc.text('Authorized Signature', 60 + sigColW, sigY + 52, { width: sigColW, align: 'center' });
-
-    // ── NBCC SEAL (bottom-right, quarter-sized ~70pt) ──
-    try {
-      if (fs.existsSync(NBCC_SEAL_PATH)) {
-        const sealSize = 70;
-        doc.image(NBCC_SEAL_PATH, W - sealSize - 40, H - sealSize - 45, { width: sealSize, height: sealSize });
-      }
-    } catch (e) { /* no seal image */ }
-
-    // ── BOTTOM ROW: Content Area + CE Hours | Verify URL | Certificate # ──
-    const bottomY = H - 72;
-    const bottomColW = (W - 100) / 3;
-
-    // Left: Content area / CE hours
-    const ceLabel = ceCategory
-      ? `${ceCategory} / ${ceHours} CE Hour${ceHours !== 1 ? 's' : ''}`
-      : `${ceHours} CE Hour${ceHours !== 1 ? 's' : ''}`;
-    doc.font('Helvetica').fontSize(8).fillColor(NAVY);
-    doc.text(ceLabel, 50, bottomY, { width: bottomColW, align: 'left' });
-
-    // Center: Verify URL
-    doc.font('Helvetica').fontSize(8).fillColor('#888888');
-    doc.text('Verify at counselorready.com/verify', 50 + bottomColW, bottomY, { width: bottomColW, align: 'center' });
-
-    // Right: Certificate number
-    doc.font('Helvetica').fontSize(8).fillColor(NAVY);
-    doc.text(`Certificate #: ${certificateNumber}`, 50 + bottomColW * 2, bottomY, { width: bottomColW, align: 'right' });
 
     // ── FOOTER (simplified, one line) ──
     const footerY = H - 48;
