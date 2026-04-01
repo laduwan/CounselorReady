@@ -203,7 +203,8 @@ export async function generateCertificate(data) {
     doc.text('Verify at counselorready.com/verify', 0, footerY, { align: 'center', width: W });
     doc.font('Helvetica').fontSize(6.5).fillColor('#888888');
     doc.text(
-      `NBCC Approved Continuing Education Provider, ${acepNumber}. The provider is solely responsible for all aspects of the program.`,
+      `Ga Integrated Therapeutic Perspectives, LLC has been approved by NBCC as an Approved Continuing Education Provider, ${acepNumber}. ` +
+      'Programs that do not qualify for NBCC credit are clearly identified. Ga Integrated Therapeutic Perspectives, LLC is solely responsible for all aspects of the program.',
       50, footerY + 12, { align: 'center', width: W - 100 }
     );
 
