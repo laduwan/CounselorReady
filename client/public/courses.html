@@ -343,6 +343,7 @@
         clearTimeout(timeout);
 
         if (response.ok) {
+          alert('Enrolled successfully!');
           window.location.href = '/interactive-course.html?slug=' + slug;
         } else {
           const data = await response.json();
