@@ -53,8 +53,10 @@ const userSchema = new mongoose.Schema({
     quarter: { type: String } // e.g., "2026-Q1"
   }],
   
-  // Free tier CE hour tracking
-  freeHoursUsed: { type: Number, default: 0, min: 0 },
+  // Free tier tracking
+  freeHoursUsed: { type: Number, default: 0, min: 0 }, // deprecated — kept for backward compat
+  freeCoursesThisMonth: { type: Number, default: 0, min: 0 },
+  freeCoursesResetMonth: { type: String, default: '' }, // format: "2026-04"
 
   // Subscription
   subscription: {
