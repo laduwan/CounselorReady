@@ -438,29 +438,23 @@
       .navbar-links { gap: 0.75rem; }
       .navbar-links a { font-size: 0.82rem; }
     }
+  
+    /* Shared nav styles */
+    .dd{display:none;position:absolute;top:100%;margin-top:6px;background:#fff;border-radius:10px;box-shadow:0 10px 40px rgba(107,29,52,.12);border:1px solid #FAE8EB;z-index:50;padding:6px 0;min-width:210px}
+    .dd.open{display:block}
+    .dd a{display:flex;align-items:center;gap:10px;padding:8px 16px;font-size:13px;color:#284157;text-decoration:none;transition:background .1s}
+    .dd a:hover{background:#F2F7F4}
+    .ov{display:none;position:fixed;inset:0;z-index:40}.ov.open{display:block}
+    .nav-link{padding:6px 12px;border-radius:6px;font-size:13px;font-weight:500;color:#57534e;text-decoration:none;display:flex;align-items:center;gap:4px;transition:all .15s}
+    .nav-link:hover{color:#6B1D34;background:#FDF5F7}
+    .nav-link.active{color:#6B1D34;background:#FDF5F7;font-weight:600;border-bottom:2px solid #6B1D34}
   </style>
 </head>
 <body>
 
   <!-- Navigation -->
-  <header style="background:#6B1D34;color:#fff;position:sticky;top:0;z-index:50;padding:0 1.5rem;height:56px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 8px rgba(107,29,52,0.25)">
-    <a href="/dashboard.html" style="display:flex;align-items:center;gap:12px;text-decoration:none">
-      <div style="width:36px;height:36px;background:rgba(0,0,0,0.15);border-radius:10px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden">
-        <span style="font-family:'Cormorant Garamond',Georgia,serif;font-weight:700;font-size:17px;color:#D0768A;position:absolute;top:3px;left:6px">C</span>
-        <span style="font-family:'Cormorant Garamond',Georgia,serif;font-weight:700;font-size:14px;color:#7EB88E;position:absolute;bottom:3px;left:13px">R</span>
-      </div>
-      <span style="font-family:'Cormorant Garamond',Georgia,serif;font-size:1.35rem">
-        <span style="color:#f2a8be;font-weight:700">Counselor</span><span style="color:#98c3a9;font-weight:700">Ready</span>
-      </span>
-    </a>
-    <div style="display:flex;align-items:center;gap:1.25rem;font-size:14px">
-      <a href="/dashboard.html" style="color:rgba(255,255,255,0.7);text-decoration:none">Dashboard</a>
-      <a href="/courses.html" style="color:rgba(255,255,255,0.7);text-decoration:none">Courses</a>
-      <a href="/credentials.html" style="color:rgba(255,255,255,0.7);text-decoration:none">Credentials</a>
-      <a href="/certificates.html" style="color:rgba(255,255,255,0.7);text-decoration:none">Certificates</a>
-      <a href="/settings.html" style="color:#fff;text-decoration:none;font-weight:600;border-bottom:2px solid #D4A855;padding-bottom:2px">Settings</a>
-    </div>
-  </header>
+  <div id="cr-header"></div>
+  <script src="/shared/nav-footer.js"></script>
 
   <div class="page-container">
     <!-- Page Header -->
@@ -1088,6 +1082,8 @@
       setTimeout(() => toast.classList.remove('show'), 3000);
     }
   </script>
+
+  <div id="cr-footer"></div>
 </body>
 </html>
 

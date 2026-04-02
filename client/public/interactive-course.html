@@ -1822,9 +1822,7 @@ async function crPost(path, body) {
   
   if (slug) {
     const base = apiBase || (location.origin.includes('localhost') ? 'http://localhost:5000' : 'https://api.counselorready.com');
-    const token = localStorage.getItem('token');
-    const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
-    fetch(`${base}/api/interactive-courses/slug/${slug}`, { headers })
+    fetch(`${base}/api/interactive-courses/slug/${slug}`)
       .then(r => { if (!r.ok) throw new Error('API ' + r.status); return r.json(); })
       .then(data => {
         const cd = data.data || data.course || data;
@@ -2069,14 +2067,14 @@ function loadCourse(data) {
 
   // ── CONTENT GATING ──────────────────────────────────────────
   // Check if backend returned preview/gated content
-  if (course._isPreview || course._freeCoursesExhausted || course._subscriptionRequired) {
+  if (course._isPreview || course._freeHoursExhausted) {
     document.getElementById('crLoading').style.display = 'none';
     const gateEl = document.getElementById('crGateSubscription');
     if (gateEl) {
       gateEl.style.display = 'flex';
       const msgEl = document.getElementById('crGateMsg');
-      if (course._freeCoursesExhausted) {
-        msgEl.textContent = 'You\'ve used your ' + (course._freeCoursesUsed || 4) + '/' + (course._freeCoursesLimit || 4) + ' free courses this month. Subscribe for unlimited access or come back next month.';
+      if (course._freeHoursExhausted) {
+        msgEl.textContent = 'You\'ve used your ' + (course._freeHoursUsed || 4) + ' free CE hours. Subscribe for unlimited access to all courses.';
       } else {
         msgEl.textContent = 'This course requires a subscription. Subscribe for unlimited access to all courses and CE tracking.';
       }
@@ -2084,12 +2082,12 @@ function loadCourse(data) {
     return; // Don't render stripped content
   }
 
-  // Show free courses remaining banner for free-tier users
-  if (course._freeCoursesRemaining != null && course._freeCoursesRemaining > 0) {
+  // Show free hours remaining banner for free-tier users
+  if (course._freeHoursRemaining != null && course._freeHoursRemaining > 0) {
     const bannerEl = document.getElementById('crFreeHoursBanner');
     const textEl = document.getElementById('crFreeHoursText');
     if (bannerEl && textEl) {
-      textEl.textContent = course._freeCoursesRemaining + ' free course' + (course._freeCoursesRemaining !== 1 ? 's' : '') + ' remaining this month';
+      textEl.textContent = course._freeHoursRemaining + ' free CE hour' + (course._freeHoursRemaining !== 1 ? 's' : '') + ' remaining';
       bannerEl.style.display = 'block';
     }
   }
