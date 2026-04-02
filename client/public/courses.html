@@ -335,6 +335,10 @@
           const data = await response.json();
           if (response.status === 400 && (data.error || '').toLowerCase().includes('already enrolled')) {
             window.location.href = '/interactive-course.html?slug=' + slug;
+          } else if (data.code === 'FREE_LIMIT_REACHED') {
+            if (confirm(data.message || 'You\'ve used your 4 free courses this month. Subscribe for unlimited access?')) {
+              window.location.href = '/subscription.html';
+            }
           } else if (data.code === 'SUBSCRIPTION_REQUIRED') {
             if (confirm(data.message || 'This course requires a subscription. View plans?')) {
               window.location.href = '/subscription.html';
