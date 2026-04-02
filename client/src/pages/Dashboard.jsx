@@ -315,7 +315,7 @@ export default function Dashboard() {
                     <Check className="w-3.5 h-3.5" /> Save
                   </button>
                 </div>
-              )
+              )}
             </div>
 
             {!editingActions ? (
