@@ -1822,7 +1822,9 @@ async function crPost(path, body) {
   
   if (slug) {
     const base = apiBase || (location.origin.includes('localhost') ? 'http://localhost:5000' : 'https://api.counselorready.com');
-    fetch(`${base}/api/interactive-courses/slug/${slug}`)
+    const authToken = localStorage.getItem('token');
+    const fetchHeaders = authToken ? { 'Authorization': 'Bearer ' + authToken } : {};
+    fetch(`${base}/api/interactive-courses/slug/${slug}`, { headers: fetchHeaders })
       .then(r => { if (!r.ok) throw new Error('API ' + r.status); return r.json(); })
       .then(data => {
         const cd = data.data || data.course || data;
@@ -5664,7 +5666,9 @@ document.addEventListener('keydown', function(e) {
     var slug = params.get('slug');
     if (!slug) return;
     var base = location.origin.includes('localhost') ? 'http://localhost:5000' : 'https://api.counselorready.com';
-    fetch(base + '/api/interactive-courses/slug/' + slug)
+    var authTk = localStorage.getItem('token');
+    var hdrs = authTk ? { 'Authorization': 'Bearer ' + authTk } : {};
+    fetch(base + '/api/interactive-courses/slug/' + slug, { headers: hdrs })
       .then(function(r) { return r.json(); })
       .then(function(d) {
         var c = d.data || d.course || d;
