@@ -26,6 +26,7 @@ These files are complete and stable. Do NOT open, read, or modify them unless th
 - `server/src/routes/courseRoutes.js` — do not touch
 - `server/src/routes/certificates.js` — do not touch unless task names it
 - `server/src/routes/adminStripe.js` — do not touch
+- `server/src/routes/interactiveCourseRoutes.js` — NEVER rewrite. 1518+ lines. Full course pipeline (gateContent, assessment, evaluation, attestation, certificate, gamification, free course monthly limit). If this file drops below 1000 lines, it has been destroyed. Do NOT embed mongoose.model() calls — models are imported from server/src/models/.
 ### Backend models — locked
 - `server/src/models/User.js` — do not add, remove, or rename fields unless task names it
 - `server/src/models/Course.js` — do not touch
@@ -129,3 +130,14 @@ This file has a history of being overwritten with incomplete versions, breaking 
 4. **The REQUIRED_ROUTES object at the bottom is a startup integrity check.** If you add a new route, add it there too. The server will log which routes are broken on every boot.
 5. **If the task requires adding a new route:** add the import AND the `app.use()` mount AND an entry in REQUIRED_ROUTES. All three or nothing.
 6. **Current route count: 37 mounts.** If your version has fewer, you dropped something.
+
+---
+## ⚠️ PROTECTED FILE: server/src/routes/interactiveCourseRoutes.js
+This file has been destroyed TWICE by being rewritten from 1518 lines to 388 lines with inline model schemas, crashing the server with OverwriteModelError.
+### Rules for interactiveCourseRoutes.js
+1. **NEVER rewrite this file from scratch.** It is 1518+ lines. If your version is under 1000 lines, you destroyed it.
+2. **NEVER add mongoose.model() calls.** Models are imported from `server/src/models/`. Inline schemas cause `OverwriteModelError: Cannot overwrite InteractiveCourse model once compiled` crashes.
+3. **NEVER remove gateContent, findCourseByIdOrSlug, assessment, evaluation, attestation, or certificate routes.** These are the complete course completion pipeline.
+4. **Only make targeted edits** — add new endpoints or modify specific functions. Never replace the whole file.
+5. **Key functions that MUST exist:** `gateContent()`, `stripContent()`, `findCourseByIdOrSlug()`, `getFreeCoursesUsed()`, `incrementFreeCoursesUsed()`, `recordGamification()`
+6. **Key routes that MUST exist:** GET `/`, GET `/:id`, GET `/slug/:slug`, POST `/:id/enroll`, POST `/:id/assessment`, POST `/:id/evaluation`, POST `/:id/attestation`, GET `/:id/certificate`, PUT `/:id/progress/section/:sectionIndex`
