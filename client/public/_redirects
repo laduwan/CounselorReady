@@ -92,5 +92,9 @@
 /messages            /messages.html             200
 /welcome             /welcome.html              200
 
+# ── React SPA routes (served via Vite-built index.html) ──
+/admin/course-builder  /index.html  200
+/admin-course-builder  /index.html  200
+
 # ── Catch-all: 404 (NOT SPA rewrite) ──
 /*                   /404.html                 404
