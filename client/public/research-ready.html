@@ -113,9 +113,23 @@
     .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 
     @media(max-width:640px){.page{padding:1rem 1rem 6rem;}.hero{padding:1.5rem;}.hero h1{font-size:1.3rem;}.search-wrap{flex-direction:column;}.btn-search{padding:10px;}.hour-selector{gap:6px;}.hour-pill{min-width:70px;padding:8px 12px;}.ac-footer{flex-direction:column;align-items:flex-start;}.navbar{padding:0 1rem;}.navbar-links{gap:0.75rem;}.navbar-links a{font-size:11px;}}
+  
+    /* Shared nav styles */
+    .dd{display:none;position:absolute;top:100%;margin-top:6px;background:#fff;border-radius:10px;box-shadow:0 10px 40px rgba(107,29,52,.12);border:1px solid #FAE8EB;z-index:50;padding:6px 0;min-width:210px}
+    .dd.open{display:block}
+    .dd a{display:flex;align-items:center;gap:10px;padding:8px 16px;font-size:13px;color:#284157;text-decoration:none;transition:background .1s}
+    .dd a:hover{background:#F2F7F4}
+    .ov{display:none;position:fixed;inset:0;z-index:40}.ov.open{display:block}
+    .nav-link{padding:6px 12px;border-radius:6px;font-size:13px;font-weight:500;color:#57534e;text-decoration:none;display:flex;align-items:center;gap:4px;transition:all .15s}
+    .nav-link:hover{color:#6B1D34;background:#FDF5F7}
+    .nav-link.active{color:#6B1D34;background:#FDF5F7;font-weight:600;border-bottom:2px solid #6B1D34}
   </style>
 </head>
 <body>
+
+  <div id="cr-header"></div>
+  <script src="/shared/nav-footer.js"></script>
+
   <nav class="navbar"><a href="/dashboard" class="navbar-brand"><div class="logo-mark"><span class="c">C</span><span class="r">R</span></div><div class="navbar-title"><span class="counselor">Counselor</span><span class="ready">Ready</span></div></a><div class="navbar-links"><a href="/dashboard">Dashboard</a><a href="/courses">Courses</a><a href="/credentials">Credentials</a><a href="/research-ready" class="active">Research CE</a><a href="/settings">Settings</a></div></nav>
   <div class="page">
     <div class="hero"><div class="hero-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 14l9-5-9-5-9 5 9 5z"/><path d="M12 14l6.16-3.422A12.083 12.083 0 0121 17.5C21 20 16.97 22 12 22S3 20 3 17.5a12.083 12.083 0 012.84-6.922L12 14z"/></svg>NBCC ACEP #7760</div><h1>Researched-N-Ready CE</h1><p>Current research. Earned credit. Search open-access articles, verify currency, and build CE courses backed by peer-reviewed scholarship.</p></div>
@@ -149,5 +163,7 @@
     function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3500);}
     loadMyRequests();
   </script>
+
+  <div id="cr-footer"></div>
 </body>
 </html>

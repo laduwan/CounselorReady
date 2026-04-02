@@ -8,7 +8,7 @@
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
   <script>
     tailwind.config={theme:{extend:{colors:{
-      burgundy:{50:'#FDF2F5',100:'#fae8eb',200:'#f5d0d6',700:'#8b2542',800:'#6b1d34',900:'#4a1524'},
+      burgundy:{50:'#FDF2F5',100:'#fae8eb',200:'#f5d0d6',700:'#8b2542',800:'#6b1d34',900:'#4a1524',950:'#2D0A16'},
       hunter:{50:'#F2F7F3',100:'#e4ebe6',500:'#4A7C59',600:'#3d6649'},
       honey:{50:'#FDF9F0',100:'#F9F0DB',400:'#D4A855',700:'#865E2C'},
       navy:{50:'#F0F4F7',500:'#284157'},stone:{50:'#F8F7F4'}
@@ -24,21 +24,22 @@
     .track-card.active{border-color:#6B1D34;background:#FDF2F5}
     .milestone-bar{height:8px;background:#e7e5e4;border-radius:4px;overflow:hidden}
     .milestone-fill{height:100%;border-radius:4px;transition:width .8s cubic-bezier(.4,0,.2,1)}
+  
+    /* Shared nav styles */
+    .dd{display:none;position:absolute;top:100%;margin-top:6px;background:#fff;border-radius:10px;box-shadow:0 10px 40px rgba(107,29,52,.12);border:1px solid #FAE8EB;z-index:50;padding:6px 0;min-width:210px}
+    .dd.open{display:block}
+    .dd a{display:flex;align-items:center;gap:10px;padding:8px 16px;font-size:13px;color:#284157;text-decoration:none;transition:background .1s}
+    .dd a:hover{background:#F2F7F4}
+    .ov{display:none;position:fixed;inset:0;z-index:40}.ov.open{display:block}
+    .nav-link{padding:6px 12px;border-radius:6px;font-size:13px;font-weight:500;color:#57534e;text-decoration:none;display:flex;align-items:center;gap:4px;transition:all .15s}
+    .nav-link:hover{color:#6B1D34;background:#FDF5F7}
+    .nav-link.active{color:#6B1D34;background:#FDF5F7;font-weight:600;border-bottom:2px solid #6B1D34}
   </style>
 </head>
 <body class="min-h-screen">
 
-<header style="background:#fff;border-bottom:1px solid #e7e5e4;position:sticky;top:0;z-index:40">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-    <a href="/dashboard.html" class="flex items-center gap-3" style="text-decoration:none">
-      <div style="width:42px;height:42px;border-radius:.75rem;background:#6B1D34;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(107,29,52,.25)">
-        <span style="position:relative;display:inline-block;width:24px;height:24px"><span class="font-display" style="color:#D0768A;position:absolute;top:-3px;left:0;font-weight:700;font-size:19px">C</span><span class="font-display" style="color:#4A7C59;position:absolute;top:4px;left:6px;font-weight:700;font-size:16px">R</span></span>
-      </div>
-      <span class="font-display hidden sm:inline" style="font-weight:700;font-size:1.5rem"><span style="color:#6B1D34">Counselor</span><span style="color:#4A7C59">Ready</span></span>
-    </a>
-    <a href="/dashboard.html" class="text-sm" style="color:#78716c;text-decoration:none">Back to Dashboard</a>
-  </div>
-</header>
+<div id="cr-header"></div>
+  <script src="/shared/nav-footer.js"></script>
 
 <main class="max-w-4xl mx-auto px-4 sm:px-6 py-8">
 
@@ -260,5 +261,7 @@
 
   document.addEventListener('DOMContentLoaded',init);
 </script>
+
+  <div id="cr-footer"></div>
 </body>
 </html>

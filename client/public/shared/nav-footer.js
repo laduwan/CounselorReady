@@ -82,7 +82,7 @@
 
   // ── HEADER HTML ───────────────────────────────────────────
   const headerHTML = `
-  <header style="background:#fff;border-bottom:1px solid #e7e5e4;position:sticky;top:0;z-index:40;box-shadow:0 1px 3px rgba(107,29,52,.08)">
+  <header style="background:#fff;border-bottom:1px solid #e7e5e4;position:sticky;top:0;z-index:50;box-shadow:0 1px 3px rgba(107,29,52,.08)">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
       <a href="/dashboard.html" class="flex items-center gap-3 flex-shrink-0" style="text-decoration:none">
         <div style="width:42px;height:42px;border-radius:.75rem;background:#6B1D34;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(107,29,52,.25)">

@@ -9,7 +9,7 @@
   <script>
     tailwind.config={theme:{extend:{
       colors:{
-        burgundy:{50:'#fdf5f6',100:'#fae8eb',200:'#f5d0d6',700:'#8b2542',800:'#6b1d34',900:'#4a1524'},
+        burgundy:{50:'#fdf5f6',100:'#fae8eb',200:'#f5d0d6',700:'#8b2542',800:'#6b1d34',900:'#4a1524',950:'#2D0A16'},
         hunter:{50:'#F2F7F4',100:'#e4ebe6',500:'#4A7C59',600:'#3d6649'},
         honey:{50:'#FDF9F0',100:'#F9F0DB',400:'#D4A855',700:'#865E2C'},
         navy:{50:'#F0F4F7',500:'#284157'},
@@ -29,28 +29,23 @@
     .xp-bar{transition:width .8s cubic-bezier(.4,0,.2,1)}
     .streak-flame{animation:flicker 1.5s ease-in-out infinite}
     @keyframes flicker{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.85;transform:scale(1.05)}}
+  
+    /* Shared nav styles */
+    .dd{display:none;position:absolute;top:100%;margin-top:6px;background:#fff;border-radius:10px;box-shadow:0 10px 40px rgba(107,29,52,.12);border:1px solid #FAE8EB;z-index:50;padding:6px 0;min-width:210px}
+    .dd.open{display:block}
+    .dd a{display:flex;align-items:center;gap:10px;padding:8px 16px;font-size:13px;color:#284157;text-decoration:none;transition:background .1s}
+    .dd a:hover{background:#F2F7F4}
+    .ov{display:none;position:fixed;inset:0;z-index:40}.ov.open{display:block}
+    .nav-link{padding:6px 12px;border-radius:6px;font-size:13px;font-weight:500;color:#57534e;text-decoration:none;display:flex;align-items:center;gap:4px;transition:all .15s}
+    .nav-link:hover{color:#6B1D34;background:#FDF5F7}
+    .nav-link.active{color:#6B1D34;background:#FDF5F7;font-weight:600;border-bottom:2px solid #6B1D34}
   </style>
 </head>
 <body class="bg-stone-50 min-h-screen">
 
   <!-- Header -->
-  <header class="bg-white border-b border-stone-200 sticky top-0 z-50">
-    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-      <a href="/" class="flex items-center gap-3" style="text-decoration:none">
-        <div class="w-10 h-10 rounded-xl flex items-center justify-center shadow-md" style="background:linear-gradient(135deg,#8b2542,#6b1d34)">
-          <span class="font-display font-bold text-lg" style="position:relative;display:inline-block;width:22px;height:22px"><span style="color:#D4A855;position:absolute;top:-3px;left:0">C</span><span style="color:#4A7C59;position:absolute;top:5px;left:6px">R</span></span>
-        </div>
-        <span class="font-display font-semibold text-xl"><span class="text-burgundy-800">Counselor</span><span class="text-hunter-500">Ready</span></span>
-      </a>
-      <nav class="hidden md:flex items-center gap-8">
-        <a href="/dashboard.html" class="text-stone-500 hover:text-stone-700 text-sm">Dashboard</a>
-        <a href="/courses.html" class="text-stone-500 hover:text-stone-700 text-sm">Courses</a>
-        <a href="/credentials.html" class="text-stone-500 hover:text-stone-700 text-sm">Credentials</a>
-        <a href="/achievements.html" class="text-burgundy-800 font-semibold text-sm border-b-2 border-burgundy-700 pb-1">Achievements</a>
-      </nav>
-      <a href="/dashboard.html" class="text-stone-500 hover:text-stone-700 text-sm" style="text-decoration:none">Back to Dashboard</a>
-    </div>
-  </header>
+  <div id="cr-header"></div>
+  <script src="/shared/nav-footer.js"></script>
 
   <main class="max-w-7xl mx-auto px-6 py-8">
 
@@ -222,5 +217,7 @@
 
   document.addEventListener('DOMContentLoaded',init);
 </script>
+
+  <div id="cr-footer"></div>
 </body>
 </html>
