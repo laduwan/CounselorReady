@@ -607,7 +607,7 @@ STEP 11 — Run blockLinter before publishing
 ─────────────────────────────────────────────
 const issues = blockLinter(courseJSON);
 const errors = issues.filter(i => i.severity === 'error');
-if (errors.length) { /* block publish button */ }
+if (errors.length) { [block publish button] }
 console.table(issues);
 
 
