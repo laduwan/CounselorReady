@@ -7,7 +7,6 @@
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Lato:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
-  <link rel="stylesheet" href="/lib/fontawesome/css/all.min.css">
   <script>
     tailwind.config = {
       theme: {
@@ -749,5 +748,6 @@
     function showToast(msg,bg='#6B1D34'){const el=document.getElementById('toastMsg');el.textContent=msg;el.style.background=bg;document.getElementById('toast').classList.remove('hidden');clearTimeout(window._tt);window._tt=setTimeout(()=>document.getElementById('toast').classList.add('hidden'),3500);}
   </script>
   </main></div>
+<script src="/js/cr-icons.js"></script>
 </body>
 </html>
