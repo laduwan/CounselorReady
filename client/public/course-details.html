@@ -762,7 +762,16 @@
           document.getElementById('startCourseBtn').textContent = 'Continue Course';
         }
       } else {
-        if (accessTier === 'free') {
+        if (accessTier === 'free' && currentCourse._freeCoursesExhausted) {
+          // Monthly free course limit hit
+          document.getElementById('startCourseBtn').classList.add('hidden');
+          document.getElementById('subscribeLink').classList.remove('hidden');
+          document.getElementById('subscribeLink').textContent = 'Subscribe for Unlimited Access';
+          const used = currentCourse._freeCoursesUsed || 4;
+          const limit = currentCourse._freeCoursesLimit || 4;
+          const subDesc = document.getElementById('subscriptionPriceDisplay');
+          if (subDesc) subDesc.innerHTML = `<p style="color:#6B1D34;font-size:14px;font-weight:600;margin-bottom:8px">You\u2019ve used ${used}/${limit} free courses this month</p><p style="color:#78716c;font-size:13px">Subscribe for unlimited access, or come back next month for 4 more free courses.</p>`;
+        } else if (accessTier === 'free') {
           document.getElementById('startCourseBtn').classList.remove('hidden');
           document.getElementById('subscribeLink').classList.add('hidden');
         } else {
@@ -775,10 +784,15 @@
     // Check if user has access to the course
     function checkUserAccess(requiredTier) {
       if (!currentUser) return false;
-      if (requiredTier === 'free') return true;
       
-      // Already enrolled = already has access (they paid or were granted access)
+      // Already enrolled = already has access
       if (userProgress && userProgress._id) return true;
+      
+      // Free-tier course: check monthly limit from API gate flags
+      if (requiredTier === 'free') {
+        if (currentCourse._freeCoursesExhausted) return false;
+        return true;
+      }
       
       const userTier = currentUser.subscription?.plan || 'free';
       const userStatus = currentUser.subscription?.status;
