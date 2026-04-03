@@ -221,7 +221,7 @@ function BlockEditor({ block, onChange }) {
 function SortableBlockCard({ id, block, blockIndex, sectionIndex, editingBlockIndex, setEditingBlockIndex, onUpdate, onRemove, onDuplicate }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
   const cfg     = BLOCK_TYPE_CONFIG[block.type] || { label: block.type, icon: "📦", color: C.textMuted };
-  const isKC    = KC_BLOCK_TYPES.has(block.type);
+  const isKC    = KC_BLOCK_TYPES.includes(block.type);
   const editing = editingBlockIndex === blockIndex;
 
   return (

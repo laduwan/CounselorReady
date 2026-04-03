@@ -1,197 +1,194 @@
-// ─────────────────────────────────────────────────────────────────────────────
-// CounselorReady CourseBuilder — courseBuilderValidator.js
-// Pure validation function. No side effects.
-// Returns { errors: [], warnings: [] } for ACEP compliance gating.
-// ─────────────────────────────────────────────────────────────────────────────
+// ─── Course Builder Validator ─────────────────────────────────────────────
+// DROP INTO: /client/src/components/CourseBuilder/courseBuilderValidator.js
+//
+// Pure function: validateCourse(state) → { errors: [], warnings: [] }
+// Each item: { code, severity, message, tab?, section?, fix? }
 
-import { ACEP_RULES, VALIDATION_CODES as V, KC_BLOCK_TYPES } from "./constants.js";
-import { countCourseWords, countSectionWords, countBlockWords, countKCsInSection } from "./utils.js";
+import {
+  countCourseWords,
+  countKCsInSection,
+  countSectionWords,
+  countWords,
+} from "./utils.js";
+
+import {
+  ACEP_RULES,
+  VALIDATION_CODES,
+  KC_BLOCK_TYPES,
+} from "./constants.js";
 
 /**
- * validateCourse(state) → { errors: [...], warnings: [...] }
- *
- * Each item: { code, severity, message, tab?, section?, fix? }
- *   code     — VALIDATION_CODES key
- *   severity — "error" | "warning"
- *   message  — human-readable description
- *   tab      — tab index to navigate to for fix (0=Info, 1=Content, 2=Assessment, 3=References, 4=ACEP)
- *   section  — optional section index (for per-section checks)
- *   fix      — { tab, section? } for jump-to-fix buttons
+ * Validate a CourseBuilder state object against ACEP compliance rules.
+ * @param {object} state - Full CourseBuilder state
+ * @returns {{ errors: Array, warnings: Array }}
  */
 export function validateCourse(state) {
   const errors = [];
   const warnings = [];
 
-  // ── Metadata checks (tab 0) ──────────────────────────────────────────────
+  const err = (code, message, extra = {}) =>
+    errors.push({ code, severity: "error", message, ...extra });
+
+  const warn = (code, message, extra = {}) =>
+    warnings.push({ code, severity: "warning", message, ...extra });
+
+  // ── ERRORS ──────────────────────────────────────────────────────────────
 
   if (!state.title?.trim()) {
-    errors.push({
-      code: V.MISSING_TITLE,
-      severity: "error",
-      message: "Course title is required.",
+    err(VALIDATION_CODES.MISSING_TITLE, "Course title is required.", {
       tab: 0,
       fix: { tab: 0 },
     });
   }
 
   if (!state.ceHours || state.ceHours <= 0) {
-    errors.push({
-      code: V.MISSING_CE_HOURS,
-      severity: "error",
-      message: "CE hours must be greater than zero.",
+    err(VALIDATION_CODES.MISSING_CE_HOURS, "CE hours must be greater than 0.", {
       tab: 0,
       fix: { tab: 0 },
     });
   }
 
-  if (!state.objectives || state.objectives.length === 0) {
-    errors.push({
-      code: V.NO_OBJECTIVES,
-      severity: "error",
-      message: "At least one learning objective is required (ACEP).",
-      tab: 0,
-      fix: { tab: 0 },
+  if ((state.objectives || []).length === 0) {
+    err(
+      VALIDATION_CODES.NO_OBJECTIVES,
+      "At least one learning objective is required.",
+      { tab: 0, fix: { tab: 0 } }
+    );
+  }
+
+  if ((state.targetAudience || []).length === 0) {
+    err(
+      VALIDATION_CODES.NO_TARGET_AUDIENCE,
+      "Target audience must be specified.",
+      { tab: 0, fix: { tab: 0 } }
+    );
+  }
+
+  // Word count (10% tolerance)
+  const totalWords = countCourseWords(state);
+  const minWords = (state.ceHours || 0) * ACEP_RULES.MIN_WORDS_PER_CE_HOUR * 0.9;
+  if (totalWords < minWords) {
+    err(
+      VALIDATION_CODES.WORD_COUNT_LOW,
+      `Word count (${totalWords.toLocaleString()}) is below the minimum ` +
+        `(${Math.round(minWords).toLocaleString()} words for ${state.ceHours} CE hour${state.ceHours !== 1 ? "s" : ""}). ` +
+        `Need ${(Math.round(minWords) - totalWords).toLocaleString()} more words.`,
+      { tab: 1, fix: { tab: 1 } }
+    );
+  }
+
+  // Assessment question count
+  const questions = state.assessment?.questions || [];
+  if (questions.length < ACEP_RULES.MIN_ASSESSMENT_QUESTIONS) {
+    err(
+      VALIDATION_CODES.ASSESSMENT_TOO_FEW,
+      `Final exam has ${questions.length} question${questions.length !== 1 ? "s" : ""}; ` +
+        `minimum is ${ACEP_RULES.MIN_ASSESSMENT_QUESTIONS}.`,
+      { tab: 2, fix: { tab: 2 } }
+    );
+  }
+
+  // Unset correct answers
+  const badQuestions = questions.filter(q => {
+    const ca = q.correctAnswer;
+    const opts = q.options || [];
+    return (
+      ca === undefined ||
+      ca === null ||
+      ca < 0 ||
+      ca >= opts.length ||
+      opts.every(o => !(typeof o === "string" ? o : o?.text || "").trim())
+    );
+  });
+  if (badQuestions.length > 0) {
+    err(
+      VALIDATION_CODES.CORRECT_ANSWER_UNSET,
+      `${badQuestions.length} question${badQuestions.length !== 1 ? "s" : ""} ` +
+        `have no correct answer set or have empty options.`,
+      { tab: 2, fix: { tab: 2 } }
+    );
+  }
+
+  // References
+  if ((state.references || []).length === 0) {
+    err(VALIDATION_CODES.NO_REFERENCES, "At least one reference is required.", {
+      tab: 3,
+      fix: { tab: 3 },
     });
   }
 
-  if (!state.targetAudience || state.targetAudience.length === 0) {
-    errors.push({
-      code: V.NO_TARGET_AUDIENCE,
-      severity: "error",
-      message: "At least one target audience is required (ACEP).",
-      tab: 0,
-      fix: { tab: 0 },
-    });
+  // Section divider check
+  const sections = state.modules || state.sections || [];
+  const hasDivider = sections.some(s =>
+    (s.blocks || s.contentBlocks || []).some(b => b.type === "sectionDivider")
+  );
+  if (sections.length === 0 || !hasDivider) {
+    err(
+      VALIDATION_CODES.NO_SECTION_DIVIDER,
+      "Course must have at least one section with a Section Divider block.",
+      { tab: 1, fix: { tab: 1 } }
+    );
   }
 
-  // ── Content checks (tab 1) ───────────────────────────────────────────────
+  // ── WARNINGS ────────────────────────────────────────────────────────────
 
-  if (!state.sections || state.sections.length === 0) {
-    errors.push({
-      code: V.NO_SECTION_DIVIDER,
-      severity: "error",
-      message: "Course must have at least one section.",
-      tab: 1,
-      fix: { tab: 1 },
-    });
-  }
+  sections.forEach((section, i) => {
+    const label = section.title ? `"${section.title}"` : `#${i + 1}`;
 
-  const totalWords = countCourseWords(state.sections);
-  const targetWords = (state.ceHours || 0) * ACEP_RULES.WORDS_PER_CE_HOUR;
-  // Allow 10% tolerance
-  if (targetWords > 0 && totalWords < targetWords * 0.9) {
-    errors.push({
-      code: V.WORD_COUNT_LOW,
-      severity: "error",
-      message: `Word count (${totalWords.toLocaleString()}) is below 90% of the ${targetWords.toLocaleString()} required for ${state.ceHours} CE hours.`,
-      tab: 1,
-      fix: { tab: 1 },
-    });
-  }
-
-  // Per-section checks
-  (state.sections || []).forEach((section, si) => {
+    // KC count per section
     const kcCount = countKCsInSection(section);
-
-    if (kcCount < ACEP_RULES.MIN_KC_PER_SECTION) {
-      warnings.push({
-        code: V.KC_COUNT_LOW,
-        severity: "warning",
-        message: `Section ${si + 1} "${section.title}" has ${kcCount} knowledge check(s) — minimum is ${ACEP_RULES.MIN_KC_PER_SECTION}.`,
-        tab: 1,
-        section: si,
-        fix: { tab: 1, section: si },
-      });
+    if (kcCount < ACEP_RULES.KC_PER_SECTION.MIN) {
+      warn(
+        VALIDATION_CODES.KC_COUNT_LOW,
+        `Section ${i + 1} ${label} has ${kcCount} knowledge check${kcCount !== 1 ? "s" : ""}; ` +
+          `minimum is ${ACEP_RULES.KC_PER_SECTION.MIN}.`,
+        { tab: 1, section: i, fix: { tab: 1, section: i } }
+      );
+    }
+    if (kcCount > ACEP_RULES.KC_PER_SECTION.MAX) {
+      warn(
+        VALIDATION_CODES.KC_COUNT_HIGH,
+        `Section ${i + 1} ${label} has ${kcCount} knowledge checks; ` +
+          `maximum is ${ACEP_RULES.KC_PER_SECTION.MAX}.`,
+        { tab: 1, section: i, fix: { tab: 1, section: i } }
+      );
     }
 
-    if (kcCount > ACEP_RULES.MAX_KC_PER_SECTION) {
-      warnings.push({
-        code: V.KC_COUNT_HIGH,
-        severity: "warning",
-        message: `Section ${si + 1} "${section.title}" has ${kcCount} knowledge checks — maximum is ${ACEP_RULES.MAX_KC_PER_SECTION}.`,
-        tab: 1,
-        section: si,
-        fix: { tab: 1, section: si },
-      });
-    }
-
-    // Text block word limits
-    (section.contentBlocks || []).forEach((block) => {
-      if (block.type === "text") {
-        const bw = countBlockWords(block);
-        if (bw > ACEP_RULES.MAX_WORDS_PER_TEXT_BLOCK) {
-          warnings.push({
-            code: V.TEXT_BLOCK_TOO_LONG,
-            severity: "warning",
-            message: `A text block in Section ${si + 1} "${section.title}" has ${bw.toLocaleString()} words — max is ${ACEP_RULES.MAX_WORDS_PER_TEXT_BLOCK}.`,
-            tab: 1,
-            section: si,
-            fix: { tab: 1, section: si },
-          });
+    // Text block word length
+    (section.blocks || section.contentBlocks || []).forEach((b, bi) => {
+      if (b.type === "text" && b.content) {
+        const wc = countWords(b.content);
+        if (wc > ACEP_RULES.MAX_TEXT_BLOCK_WORDS) {
+          warn(
+            VALIDATION_CODES.TEXT_BLOCK_TOO_LONG,
+            `Section ${i + 1} ${label}, block ${bi + 1}: text block is ` +
+              `${wc.toLocaleString()} words (max ${ACEP_RULES.MAX_TEXT_BLOCK_WORDS.toLocaleString()}). ` +
+              `Split into smaller blocks.`,
+            { tab: 1, section: i, fix: { tab: 1, section: i } }
+          );
         }
       }
     });
   });
 
-  // ── Assessment checks (tab 2) ────────────────────────────────────────────
-
-  const questions = state.assessment?.questions || [];
-
-  if (questions.length < ACEP_RULES.MIN_ASSESSMENT_QUESTIONS) {
-    errors.push({
-      code: V.ASSESSMENT_TOO_FEW,
-      severity: "error",
-      message: `Assessment has ${questions.length} question(s) — minimum is ${ACEP_RULES.MIN_ASSESSMENT_QUESTIONS}.`,
-      tab: 2,
-      fix: { tab: 2 },
-    });
-  }
-
-  // Check for unset correct answers
-  questions.forEach((q, qi) => {
-    const opts = q.options || [];
-    const allEmpty = opts.every((o) => !o?.trim());
-    if (allEmpty || q.correctAnswer == null || q.correctAnswer < 0 || q.correctAnswer >= opts.length) {
-      errors.push({
-        code: V.CORRECT_ANSWER_UNSET,
-        severity: "error",
-        message: `Question ${qi + 1}: correct answer is not set or options are empty.`,
-        tab: 2,
-        fix: { tab: 2 },
-      });
-    }
-  });
-
-  // Answer distribution skew check
+  // Answer distribution skew (only meaningful once we have enough questions)
   if (questions.length >= ACEP_RULES.MIN_ASSESSMENT_QUESTIONS) {
-    const dist = [0, 0, 0, 0]; // A, B, C, D
-    questions.forEach((q) => {
-      const idx = q.correctAnswer ?? 0;
-      if (idx >= 0 && idx < 4) dist[idx]++;
+    const dist = [0, 0, 0, 0];
+    questions.forEach(q => {
+      const ca = Number(q.correctAnswer);
+      if (ca >= 0 && ca < 4) dist[ca]++;
     });
-    const maxFreq = ACEP_RULES.MAX_ANSWER_OPTION_FREQUENCY;
-    dist.forEach((count, i) => {
-      if (questions.length > 0 && count / questions.length > maxFreq) {
-        warnings.push({
-          code: V.ANSWER_DIST_SKEWED,
-          severity: "warning",
-          message: `Answer option ${["A", "B", "C", "D"][i]} is correct ${count} times (${Math.round((count / questions.length) * 100)}%) — max recommended is ${Math.round(maxFreq * 100)}%.`,
-          tab: 2,
-          fix: { tab: 2 },
-        });
+    dist.forEach((count, idx) => {
+      const pct = count / questions.length;
+      if (pct > ACEP_RULES.MAX_ANSWER_DIST_PCT) {
+        warn(
+          VALIDATION_CODES.ANSWER_DIST_SKEWED,
+          `Answer option ${String.fromCharCode(65 + idx)} is correct ` +
+            `${Math.round(pct * 100)}% of the time (max ${ACEP_RULES.MAX_ANSWER_DIST_PCT * 100}%). ` +
+            `Redistribute correct answers across options.`,
+          { tab: 2, fix: { tab: 2 } }
+        );
       }
-    });
-  }
-
-  // ── References checks (tab 3) ────────────────────────────────────────────
-
-  if (!state.references || state.references.length === 0) {
-    errors.push({
-      code: V.NO_REFERENCES,
-      severity: "error",
-      message: "At least one reference is required (ACEP).",
-      tab: 3,
-      fix: { tab: 3 },
     });
   }
 
