@@ -10,22 +10,26 @@
 //        /admin/course-builder               (new course)
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { CourseBuilderProvider, useCourseBuilder } from "./CourseBuilderContext.jsx";
 import MetadataTab      from "./tabs/MetadataTab.jsx";
 import ContentEditorTab from "./tabs/ContentEditorTab.jsx";
+import AssessmentTab    from "./tabs/AssessmentTab.jsx";
+import ReferencesTab    from "./tabs/ReferencesTab.jsx";
+import ACEPCheckerTab   from "./tabs/ACEPCheckerTab.jsx";
 import { C, ACEP_RULES } from "./constants.js";
 import { countCourseWords, countKCsInSection } from "./utils.js";
 import { publishCourse } from "./courseBuilderApi.js";
+import { validateCourse } from "./courseBuilderValidator.js";
 
 // ─── Tab config ───────────────────────────────────────────────────────────────
 
 const TABS = [
   { label: "Course Info",     icon: "ℹ️" },
   { label: "Content Editor",  icon: "📝" },
-  { label: "Assessment",      icon: "✅", comingSoon: true },
-  { label: "References",      icon: "📚", comingSoon: true },
-  { label: "ACEP Compliance", icon: "⚖️", comingSoon: true },
+  { label: "Assessment",      icon: "✅" },
+  { label: "References",      icon: "📚" },
+  { label: "ACEP Compliance", icon: "⚖️" },
   { label: "Preview",         icon: "👁",  comingSoon: true },
   { label: "AI Assistant",    icon: "🤖", comingSoon: true },
 ];
@@ -91,6 +95,10 @@ function CourseBuilderShell() {
     canUndo, canRedo, undo, redo,
   } = useCourseBuilder();
 
+  // Validation for publish gate
+  const { errors } = useMemo(() => validateCourse(state), [state]);
+  const hasErrors = errors.length > 0;
+
   // Ensure we start on Section 1 for new courses
   useEffect(() => {
     if (!state._id && state.sections.length === 0) {
@@ -101,6 +109,11 @@ function CourseBuilderShell() {
   }, []);
 
   async function handlePublish() {
+    // If there are errors, jump to ACEP tab instead of publishing
+    if (hasErrors) {
+      setActiveTab(4);
+      return;
+    }
     if (!confirm("Publish this course? It will become visible to enrolled learners.")) return;
     try {
       await doSave(false); // save first
@@ -183,16 +196,18 @@ function CourseBuilderShell() {
           {saveStatus === "saving" ? "Saving..." : "Save"}
         </button>
 
-        {/* Publish button */}
+        {/* Publish button — shows error count when not ready */}
         <button
           onClick={handlePublish}
           style={{
             padding: "7px 18px", borderRadius: 7, border: "none",
-            background: C.hunterGreen, color: "#fff",
+            background: hasErrors ? C.danger : C.hunterGreen,
+            color: "#fff",
             fontWeight: 700, fontSize: 13, cursor: "pointer",
+            display: "flex", alignItems: "center", gap: 6,
           }}
         >
-          Publish
+          {hasErrors ? `${errors.length} Error${errors.length !== 1 ? "s" : ""}` : "Publish"}
         </button>
       </div>
 
@@ -208,7 +223,7 @@ function CourseBuilderShell() {
             <button
               key={tab.label}
               onClick={() => !tab.comingSoon && setActiveTab(i)}
-              title={tab.comingSoon ? "Coming in Phase 2–3" : undefined}
+              title={tab.comingSoon ? "Coming soon" : undefined}
               style={{
                 padding: "13px 18px", border: "none", background: "transparent",
                 borderBottom: active ? `3px solid ${C.burgundy}` : "3px solid transparent",
@@ -229,6 +244,9 @@ function CourseBuilderShell() {
       <div style={{ flex: 1, overflowY: "auto", padding: 24 }}>
         {activeTab === 0 && <MetadataTab />}
         {activeTab === 1 && <ContentEditorTab />}
+        {activeTab === 2 && <AssessmentTab />}
+        {activeTab === 3 && <ReferencesTab />}
+        {activeTab === 4 && <ACEPCheckerTab />}
       </div>
 
     </div>
