@@ -191,18 +191,27 @@ export const BLOCK_DEFAULTS = {
 
 export const ACEP_RULES = {
   WORDS_PER_CE_HOUR: 6000,       // NBCC requirement — non-negotiable
+  MIN_WORDS_PER_CE_HOUR: 6000,   // alias used by validator
   MIN_KC_PER_SECTION: 2,
   MAX_KC_PER_SECTION: 5,
+  KC_PER_SECTION: { MIN: 2, MAX: 5 },  // nested alias used by validator/ACEP tab
   MIN_ASSESSMENT_QUESTIONS: 15,
   MAX_ASSESSMENT_QUESTIONS: 25,
   PASS_THRESHOLD: 0.80,
   MAX_ATTEMPTS: 3,
   MAX_WORDS_PER_TEXT_BLOCK: 1500,
-  MAX_ANSWER_OPTION_FREQUENCY: 0.40,  // no single answer option > 40% of all questions
+  MAX_TEXT_BLOCK_WORDS: 1500,    // alias used by validator
+  MAX_ANSWER_OPTION_FREQUENCY: 0.40,
+  MAX_ANSWER_DIST_PCT: 0.40,    // alias used by validator
 };
 
 // KC block types (count toward KC-per-section rule)
-export const KC_BLOCK_TYPES = new Set(["multipleChoice", "multiSelect", "matching"]);
+// Array form used by validator; Set form used by legacy code
+export const KC_BLOCK_TYPES = [
+  "multipleChoice", "multiSelect", "matching",
+  "cardSort", "sequencing", "timeline",
+];
+export const KC_BLOCK_TYPES_SET = new Set(KC_BLOCK_TYPES);
 
 // ACEP provider hardcoded defaults (per platform spec)
 export const ACEP_PROVIDER = {
