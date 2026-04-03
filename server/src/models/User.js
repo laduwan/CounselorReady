@@ -34,8 +34,11 @@ const userSchema = new mongoose.Schema({
   
   // Individual course purchases (for à la carte buying)
   purchasedCourses: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Course'
+    courseId: { type: mongoose.Schema.Types.ObjectId },
+    slug: String,
+    purchasedAt: { type: Date, default: Date.now },
+    amount: Number,
+    stripeSessionId: String
   }],
   
   // Primary state for Free/Professional users (VIP can track any)
@@ -309,7 +312,7 @@ userSchema.methods.canAccessCourse = function(course) {
   if (course.accessTier === 'free' || !course.accessTier) return true;
   
   // Check if user has purchased this specific course
-  if (course.price && this.purchasedCourses?.includes(course._id)) return true;
+  if (course.price && this.purchasedCourses?.some(pc => pc.courseId?.toString() === course._id?.toString())) return true;
   
   // Check subscription tier
   const tierLevels = { 'free': 0, 'starter': 1, 'professional': 2, 'vip': 3 };
