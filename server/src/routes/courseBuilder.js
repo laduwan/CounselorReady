@@ -680,7 +680,7 @@ function slugify(title) {
 router.post('/save', protect, adminOnly, async (req, res) => {
   try {
     const courseData = req.body;
-    const InteractiveCourse = (await import('../models/InteractiveCourse.js')).default;
+    const { Course: InteractiveCourse } = await import('../models/InteractiveCourse.js');
 
     // Clean transient fields
     delete courseData._wordCount;
