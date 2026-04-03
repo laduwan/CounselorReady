@@ -2,13 +2,13 @@
 // DROP INTO: /client/src/components/CourseBuilder/tabs/ReferencesTab.jsx
 // Uses useCourseBuilder() hook — no props.
 
-import { useCourseBuilder } from "../index.jsx";
+import { useCourseBuilder } from "../CourseBuilderContext.jsx";
 
 const C = {
   burgundy: "#6B1D34", burgundyFaded: "rgba(107,29,52,0.08)",
   green: "#4A7C59", greenFaded: "rgba(74,124,89,0.08)",
   gold: "#D4A855", goldFaded: "rgba(212,168,85,0.12)",
-  navy: "#34495E",
+  navy: "#284157",
   bg: "#FAFAF8", card: "#FFFFFF",
   border: "#E8E4DF", borderLight: "#F0EDE8",
   text: "#2C2C2C", textMuted: "#6B7280", textLight: "#9CA3AF",
@@ -43,7 +43,7 @@ function formatAPA(ref) {
   return { authorYear: afterAuthorYear, title, source };
 }
 
-function APAPreview({ ref: r }) {
+function APAPreview({ reference: r }) {
   const parts = formatAPA(r);
   if (!parts) return null;
   const { authorYear, title, source } = parts;
@@ -135,7 +135,7 @@ function ReferenceCard({ ref: r, index, total, onUpdate, onRemove, onMove }) {
           />
         </div>
 
-        <APAPreview ref={r} />
+        <APAPreview reference={r} />
       </div>
     </div>
   );
@@ -205,7 +205,7 @@ export default function ReferencesTab() {
         references.map((ref, i) => (
           <ReferenceCard
             key={ref.id}
-            ref={ref}
+            reference={ref}
             index={i}
             total={references.length}
             onUpdate={changes => updateRef(ref.id, changes)}
