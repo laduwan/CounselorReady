@@ -776,23 +776,21 @@
     function checkUserAccess(requiredTier) {
       if (!currentUser) return false;
       if (requiredTier === 'free') return true;
-      
-      // Already enrolled = already has access (they paid or were granted access)
-      if (userProgress && userProgress._id) return true;
-      
+
+      // Check individual purchase
+      if (currentUser.purchasedCourses && currentUser.purchasedCourses.length > 0) {
+        const owned = currentUser.purchasedCourses.some(
+          pc => pc.courseId === currentCourse._id || pc.slug === currentCourse.slug
+        );
+        if (owned) return true;
+      }
+
+      // Fall back to subscription
       const userTier = currentUser.subscription?.plan || 'free';
       const userStatus = currentUser.subscription?.status;
-      
-      // Allow active, trial, and lifetime subscriptions
-      const validStatuses = ['active', 'trial', 'lifetime'];
-      if (!validStatuses.includes(userStatus)) return false;
-      
-      // Check if course was individually purchased
-      const purchased = (currentUser.purchasedCourses || []).map(String);
-      if (currentCourse?._id && purchased.includes(String(currentCourse._id))) return true;
-      
-      const tierLevels = { 'free': 0, 'starter': 1, 'professional': 2, 'premium': 3, 'vip': 4, 'annual_vip': 4, 'lifetime': 4 };
-      return (tierLevels[userTier] || 0) >= (tierLevels[requiredTier] || 0);
+      if (userStatus !== 'active') return false;
+      const tierLevels = { 'free': 0, 'professional': 1, 'vip': 2 };
+      return tierLevels[userTier] >= tierLevels[requiredTier];
     }
     
     // Start/continue course
@@ -833,15 +831,53 @@
     }
     
     // Purchase course individually
-    function purchaseCourse() {
+    async function purchaseCourse() {
       if (!currentUser) {
         window.location.href = `/login.html?redirect=${encodeURIComponent(window.location.href)}`;
         return;
       }
-      
-      // TODO: Implement individual course purchase with Stripe
-      alert('Individual course purchases coming soon! For now, subscribe for unlimited access.');
-      window.location.href = '/subscription.html';
+
+      const btn = document.querySelector('[onclick="purchaseCourse()"]');
+      const originalText = btn ? btn.textContent : '';
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = 'Redirecting to checkout...';
+      }
+
+      try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`${API_URL}/api/payments/purchase-course`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ courseId: currentCourse._id })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          if (data.error === 'You already own this course') {
+            window.location.href = `/interactive-course.html?slug=${currentCourse.slug}`;
+            return;
+          }
+          throw new Error(data.error || 'Purchase failed');
+        }
+
+        if (data.url) {
+          window.location.href = data.url;
+        } else {
+          throw new Error('No checkout URL returned');
+        }
+      } catch (error) {
+        console.error('Purchase error:', error);
+        alert(error.message || 'Something went wrong. Please try again.');
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = originalText;
+        }
+      }
     }
     
     // Helper functions
