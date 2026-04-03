@@ -88,6 +88,11 @@ export const A = {
   ADD_REFERENCE:        "ADD_REFERENCE",
   UPDATE_REFERENCE:     "UPDATE_REFERENCE",
   REMOVE_REFERENCE:     "REMOVE_REFERENCE",
+  MOVE_REFERENCE:       "MOVE_REFERENCE",
+
+  // Field-level (used by Phase 3 tabs)
+  SET_FIELD:            "SET_FIELD",
+  UPDATE_OBJECTIVE:     "UPDATE_OBJECTIVE",
 
   // Lifecycle
   LOAD_COURSE:          "LOAD_COURSE",
@@ -329,9 +334,10 @@ export function courseBuilderReducer(state, action) {
     // ── Assessment ────────────────────────────────────────────────────────────
 
     case A.ADD_ASSESSMENT_Q: {
+      const id = uid();
       const q = action.question
-        ? { ...action.question, _tempId: uid() }
-        : newAssessmentQuestion();
+        ? { ...action.question, _tempId: id, id }
+        : { ...newAssessmentQuestion(), id };
       return {
         ...state,
         assessment: {
@@ -342,12 +348,14 @@ export function courseBuilderReducer(state, action) {
     }
 
     case A.UPDATE_ASSESSMENT_Q: {
+      const updates = action.updates || action.changes;
       return {
         ...state,
         assessment: {
           ...state.assessment,
           questions: state.assessment.questions.map((q, i) =>
-            i === action.qIndex ? { ...q, ...action.updates } : q
+            (action.id ? (q._tempId === action.id || q.id === action.id) : i === action.qIndex)
+              ? { ...q, ...updates } : q
           ),
         },
       };
@@ -358,7 +366,9 @@ export function courseBuilderReducer(state, action) {
         ...state,
         assessment: {
           ...state.assessment,
-          questions: state.assessment.questions.filter((_, i) => i !== action.qIndex),
+          questions: state.assessment.questions.filter((q, i) =>
+            action.id ? (q._tempId !== action.id && q.id !== action.id) : i !== action.qIndex
+          ),
         },
       };
     }
@@ -378,18 +388,20 @@ export function courseBuilderReducer(state, action) {
     case A.SET_ASSESSMENT_META: {
       return {
         ...state,
-        assessment: { ...state.assessment, ...action.updates },
+        assessment: { ...state.assessment, ...(action.updates || action.changes) },
       };
     }
 
     // ── References ────────────────────────────────────────────────────────────
 
     case A.ADD_REFERENCE: {
+      const id = uid();
       const ref = {
-        _tempId: uid(),
+        _tempId: id,
+        id,
         title: "",
         author: "",
-        year: new Date().getFullYear(),
+        year: String(new Date().getFullYear()),
         source: "",
         ...(action.reference || {}),
       };
@@ -397,10 +409,12 @@ export function courseBuilderReducer(state, action) {
     }
 
     case A.UPDATE_REFERENCE: {
+      const updates = action.updates || action.changes;
       return {
         ...state,
         references: state.references.map((r, i) =>
-          i === action.refIndex ? { ...r, ...action.updates } : r
+          (action.id ? (r._tempId === action.id || r.id === action.id) : i === action.refIndex)
+            ? { ...r, ...updates } : r
         ),
       };
     }
@@ -408,8 +422,30 @@ export function courseBuilderReducer(state, action) {
     case A.REMOVE_REFERENCE: {
       return {
         ...state,
-        references: state.references.filter((_, i) => i !== action.refIndex),
+        references: state.references.filter((r, i) =>
+          action.id ? (r._tempId !== action.id && r.id !== action.id) : i !== action.refIndex
+        ),
       };
+    }
+
+    case A.MOVE_REFERENCE: {
+      const { from, to } = action;
+      if (from === to) return state;
+      const refs = [...state.references];
+      const [moved] = refs.splice(from, 1);
+      refs.splice(to, 0, moved);
+      return { ...state, references: refs };
+    }
+
+    // ── Field-level (Phase 3 tab compat) ─────────────────────────────────────
+
+    case A.SET_FIELD:
+      return { ...state, [action.field]: action.value };
+
+    case A.UPDATE_OBJECTIVE: {
+      const objs = [...state.objectives];
+      objs[action.index] = action.text;
+      return { ...state, objectives: objs };
     }
 
     // ── Lifecycle ─────────────────────────────────────────────────────────────
