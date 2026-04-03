@@ -16,7 +16,7 @@ import InteractiveCourseCatalog from './pages/InteractiveCourseCatalog';
 // Components
 import Layout from './components/Layout';
 import CourseViewer from './components/CourseViewer';
-import CourseBuilder from './components/CourseBuilder';
+import CourseBuilder from './components/course-builder/index.jsx';
 import ResearchReadyCE from './pages/ResearchReadyCE';
 import AdminResearchReady from './pages/AdminResearchReady';
 
