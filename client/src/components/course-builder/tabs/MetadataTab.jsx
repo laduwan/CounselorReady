@@ -247,8 +247,8 @@ export default function MetadataTab() {
             <label style={S.label}>Access Type</label>
             <select style={S.select} {...field("accessType")}>
               <option value="free">Free</option>
+              <option value="paid">Paid</option>
               <option value="subscription">Subscription</option>
-              <option value="purchase">Purchase</option>
             </select>
           </div>
           <div>

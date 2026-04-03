@@ -18,7 +18,7 @@ export const INITIAL_STATE = {
   ceCategory: "General",
   level: "Intermediate",
   category: "Clinical Practice",
-  accessType: "subscription",
+  accessType: "paid",
   price: 0,
   pricingTier: "standard",
   status: "draft",

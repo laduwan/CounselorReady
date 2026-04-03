@@ -88,6 +88,7 @@ function CourseBuilderShell() {
     state, activeTab, setActiveTab,
     isDirty, doSave, saveStatus,
     isLoading, loadError,
+    canUndo, canRedo, undo, redo,
   } = useCourseBuilder();
 
   // Ensure we start on Section 1 for new courses
@@ -158,6 +159,12 @@ function CourseBuilderShell() {
 
         {/* Word count */}
         <WordCountBar />
+
+        {/* Undo / Redo */}
+        <button title="Undo (Ctrl+Z)" onClick={undo} disabled={!canUndo}
+          style={{ background: "none", border: "none", color: canUndo ? "#fff" : "#ffffff30", cursor: canUndo ? "pointer" : "default", fontSize: 18, padding: "4px 6px" }}>↩</button>
+        <button title="Redo (Ctrl+Shift+Z)" onClick={redo} disabled={!canRedo}
+          style={{ background: "none", border: "none", color: canRedo ? "#fff" : "#ffffff30", cursor: canRedo ? "pointer" : "default", fontSize: 18, padding: "4px 6px" }}>↪</button>
 
         {/* Save status */}
         <SaveBadge />
