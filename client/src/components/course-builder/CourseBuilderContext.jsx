@@ -86,9 +86,10 @@ export function CourseBuilderProvider({ children, initialCourseId = null }) {
       setSaveError(null);
       try {
         const result = await saveCourse(state);
-        // If this was a new course, load the returned _id back into state
+        // If this was a new course, store the _id and push it into the URL
         if (!state._id && result.course?._id) {
           dispatch({ type: A.SET_METADATA, field: "_id", value: result.course._id });
+          window.history.replaceState({}, "", `/admin/course-builder?id=${result.course._id}`);
         }
         setLastSaved(new Date());
         setIsDirty(false);
