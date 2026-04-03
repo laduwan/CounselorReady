@@ -134,7 +134,7 @@ export function countBlockWords(block) {
  * Count total words across all content blocks in a section.
  */
 export function countSectionWords(section) {
-  return (section.contentBlocks || []).reduce(
+  return (section.blocks || section.contentBlocks || []).reduce(
     (sum, block) => sum + countBlockWords(block),
     0
   );
@@ -142,8 +142,12 @@ export function countSectionWords(section) {
 
 /**
  * Count total words across the entire course.
+ * Accepts either a sections array or a full state object.
  */
-export function countCourseWords(sections) {
+export function countCourseWords(stateOrSections) {
+  const sections = Array.isArray(stateOrSections)
+    ? stateOrSections
+    : (stateOrSections?.modules || stateOrSections?.sections || []);
   return (sections || []).reduce(
     (sum, section) => sum + countSectionWords(section),
     0
@@ -154,7 +158,7 @@ export function countCourseWords(sections) {
 
 /** Count knowledge check blocks in a section. */
 export function countKCsInSection(section) {
-  return (section.contentBlocks || []).filter(b => KC_BLOCK_TYPES.has(b.type)).length;
+  return (section.blocks || section.contentBlocks || []).filter(b => KC_BLOCK_TYPES.includes(b.type)).length;
 }
 
 // ─── Strip temp IDs before save ──────────────────────────────────────────────
