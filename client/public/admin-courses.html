@@ -354,12 +354,19 @@
 
     const params = new URLSearchParams(window.location.search);
     const courseId = params.get('id');
-    if (!courseId) { alert('No course ID'); window.location.href = '/admin-courses.html'; }
-
     let course = null;
 
-    // ── Load ──
-    document.addEventListener('DOMContentLoaded', loadCourse);
+    if (!courseId) {
+      document.addEventListener('DOMContentLoaded', () => {
+        document.getElementById('loadingState').innerHTML =
+          '<div class="text-center py-20">' +
+          '<p class="text-lg font-semibold text-gray-700 mb-2">No course ID provided</p>' +
+          '<p class="text-sm text-gray-500 mb-6">Open a course from the dashboard to edit it here.</p>' +
+          '<a href="/admin-dashboard.html" class="btn-primary inline-block">← Back to Dashboard</a></div>';
+      });
+    } else {
+      document.addEventListener('DOMContentLoaded', loadCourse);
+    }
 
     async function loadCourse() {
       try {
@@ -381,8 +388,11 @@
         document.getElementById('loadingState').classList.add('hidden');
         document.getElementById('mainContent').classList.remove('hidden');
       } catch (e) {
-        alert('Failed to load course: ' + e.message);
-        window.location.href = '/admin-courses.html';
+        document.getElementById('loadingState').innerHTML =
+          '<div class="text-center py-20">' +
+          '<p class="text-lg font-semibold text-gray-700 mb-2">Failed to load course</p>' +
+          '<p class="text-sm text-gray-500 mb-6">' + e.message + '</p>' +
+          '<a href="/admin-dashboard.html" class="btn-primary inline-block">← Back to Dashboard</a></div>';
       }
     }
 
