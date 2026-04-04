@@ -94,6 +94,7 @@
     <!-- Tabs -->
     <div class="flex border-b border-gray-200 mb-6">
       <button class="tab-btn active" onclick="showTab('info',this)">Course Info</button>
+      <button class="tab-btn" onclick="showTab('rules',this)">Course Rules</button>
       <button class="tab-btn" onclick="showTab('sections',this)">Sections &amp; Content</button>
       <button class="tab-btn" onclick="showTab('assessment',this)">Assessment</button>
       <button class="tab-btn" onclick="showTab('references',this)">References</button>
@@ -145,6 +146,166 @@
           <label class="text-sm font-medium text-gray-700">Target Audience (one per line)</label>
           <textarea id="f-targetAudience" class="input mt-1" rows="2" placeholder="LPCs, LCSWs, LMFTs..."></textarea>
         </div>
+      </div>
+    </div>
+
+    <!-- ═══ TAB: Course Rules ═══ -->
+    <div id="tab-rules" class="hidden">
+      <div class="space-y-6">
+
+        <!-- Delivery & Format -->
+        <div class="bg-white rounded-xl border p-6">
+          <h3 class="font-semibold text-gray-900 mb-4">Delivery &amp; Format</h3>
+          <div class="grid grid-cols-3 gap-4">
+            <div>
+              <label class="text-sm font-medium text-gray-700">Delivery Format</label>
+              <select id="r-deliveryFormat" class="input mt-1">
+                <option value="async">Async (self-paced)</option>
+                <option value="live">Live</option>
+                <option value="hybrid">Hybrid</option>
+              </select>
+            </div>
+            <div>
+              <label class="text-sm font-medium text-gray-700">Access Type</label>
+              <select id="r-accessType" class="input mt-1">
+                <option value="subscription">Subscription</option>
+                <option value="free">Free</option>
+                <option value="purchase">One-time Purchase</option>
+              </select>
+            </div>
+            <div>
+              <label class="text-sm font-medium text-gray-700">Total Estimated Time (min)</label>
+              <input id="r-totalEstimatedTime" type="number" class="input mt-1" min="0" placeholder="Auto-calculated if blank">
+            </div>
+          </div>
+        </div>
+
+        <!-- Progression Rules -->
+        <div class="bg-white rounded-xl border p-6">
+          <h3 class="font-semibold text-gray-900 mb-4">Progression Rules</h3>
+          <div class="grid grid-cols-2 gap-x-8 gap-y-4">
+            <label class="flex items-center gap-3 cursor-pointer">
+              <input type="checkbox" id="r-linearProgression" class="w-4 h-4 rounded text-hunter-600">
+              <div>
+                <p class="text-sm font-medium text-gray-800">Linear Progression</p>
+                <p class="text-xs text-gray-500">Learners must complete sections in order</p>
+              </div>
+            </label>
+            <label class="flex items-center gap-3 cursor-pointer">
+              <input type="checkbox" id="r-enforceMinTime" class="w-4 h-4 rounded text-hunter-600">
+              <div>
+                <p class="text-sm font-medium text-gray-800">Enforce Minimum Time</p>
+                <p class="text-xs text-gray-500">Require spending a minimum % of estimated time</p>
+              </div>
+            </label>
+            <label class="flex items-center gap-3 cursor-pointer">
+              <input type="checkbox" id="r-dripContent" class="w-4 h-4 rounded text-hunter-600">
+              <div>
+                <p class="text-sm font-medium text-gray-800">Drip Content</p>
+                <p class="text-xs text-gray-500">Release sections on a schedule instead of all at once</p>
+              </div>
+            </label>
+            <label class="flex items-center gap-3 cursor-pointer">
+              <input type="checkbox" id="r-narrationEnabled" class="w-4 h-4 rounded text-hunter-600">
+              <div>
+                <p class="text-sm font-medium text-gray-800">Narration</p>
+                <p class="text-xs text-gray-500">Enable text-to-speech narration for course content</p>
+              </div>
+            </label>
+          </div>
+          <div class="grid grid-cols-3 gap-4 mt-4">
+            <div>
+              <label class="text-sm font-medium text-gray-700">Min Time % Required</label>
+              <input id="r-minTimePercent" type="number" class="input mt-1" min="0" max="100" step="5" placeholder="80">
+            </div>
+            <div>
+              <label class="text-sm font-medium text-gray-700">Time Per Section (min)</label>
+              <input id="r-timePerSection" type="number" class="input mt-1" min="0" placeholder="15">
+            </div>
+            <div>
+              <label class="text-sm font-medium text-gray-700">Drip Interval (days)</label>
+              <input id="r-dripIntervalDays" type="number" class="input mt-1" min="0" placeholder="0 = off">
+            </div>
+          </div>
+        </div>
+
+        <!-- Assessment Rules -->
+        <div class="bg-white rounded-xl border p-6">
+          <h3 class="font-semibold text-gray-900 mb-4">Assessment Rules</h3>
+          <div class="grid grid-cols-3 gap-4 mb-4">
+            <div>
+              <label class="text-sm font-medium text-gray-700">Attempts Allowed</label>
+              <select id="r-attemptsAllowed" class="input mt-1">
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3 (default)</option>
+                <option value="5">5</option>
+                <option value="10">10</option>
+                <option value="0">Unlimited</option>
+              </select>
+            </div>
+            <div>
+              <label class="text-sm font-medium text-gray-700">Passing Score (%)</label>
+              <input id="r-passingScore" type="number" class="input mt-1" min="50" max="100" step="5" placeholder="80">
+            </div>
+            <div>
+              <label class="text-sm font-medium text-gray-700">Assessment Time Limit (min)</label>
+              <input id="r-assessmentTimeLimit" type="number" class="input mt-1" min="0" placeholder="30, 0 = no limit">
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-x-8 gap-y-4">
+            <label class="flex items-center gap-3 cursor-pointer">
+              <input type="checkbox" id="r-shuffleQuestions" class="w-4 h-4 rounded text-hunter-600">
+              <div>
+                <p class="text-sm font-medium text-gray-800">Shuffle Questions on Retake</p>
+                <p class="text-xs text-gray-500">Randomize question order on each attempt</p>
+              </div>
+            </label>
+            <label class="flex items-center gap-3 cursor-pointer">
+              <input type="checkbox" id="r-shuffleOptions" class="w-4 h-4 rounded text-hunter-600">
+              <div>
+                <p class="text-sm font-medium text-gray-800">Shuffle Answer Options</p>
+                <p class="text-xs text-gray-500">Randomize option order within each question</p>
+              </div>
+            </label>
+            <label class="flex items-center gap-3 cursor-pointer">
+              <input type="checkbox" id="r-showCorrectAnswers" class="w-4 h-4 rounded text-hunter-600">
+              <div>
+                <p class="text-sm font-medium text-gray-800">Show Correct Answers</p>
+                <p class="text-xs text-gray-500">Reveal correct answers after submission</p>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <!-- Completion Requirements -->
+        <div class="bg-white rounded-xl border p-6">
+          <h3 class="font-semibold text-gray-900 mb-4">Completion Requirements</h3>
+          <div class="grid grid-cols-2 gap-x-8 gap-y-4">
+            <label class="flex items-center gap-3 cursor-pointer">
+              <input type="checkbox" id="r-requireEvaluation" class="w-4 h-4 rounded text-hunter-600">
+              <div>
+                <p class="text-sm font-medium text-gray-800">Require Evaluation</p>
+                <p class="text-xs text-gray-500">NBCC requires a course evaluation after the assessment</p>
+              </div>
+            </label>
+            <label class="flex items-center gap-3 cursor-pointer">
+              <input type="checkbox" id="r-requireAttestation" class="w-4 h-4 rounded text-hunter-600">
+              <div>
+                <p class="text-sm font-medium text-gray-800">Require Attestation</p>
+                <p class="text-xs text-gray-500">Learner must agree to an attestation statement before certificate</p>
+              </div>
+            </label>
+            <label class="flex items-center gap-3 cursor-pointer">
+              <input type="checkbox" id="r-certificateEnabled" class="w-4 h-4 rounded text-hunter-600">
+              <div>
+                <p class="text-sm font-medium text-gray-800">Certificate Enabled</p>
+                <p class="text-xs text-gray-500">Generate PDF certificate on completion</p>
+              </div>
+            </label>
+          </div>
+        </div>
+
       </div>
     </div>
 
@@ -255,11 +416,45 @@
       renderSections();
       renderQuestions();
       renderReferences();
+      populateRules();
+    }
+
+    function populateRules() {
+      const st = course.settings || {};
+
+      // Delivery
+      document.getElementById('r-deliveryFormat').value = course.deliveryFormat || st.deliveryFormat || 'async';
+      document.getElementById('r-accessType').value = course.accessType || st.accessType || 'subscription';
+      document.getElementById('r-totalEstimatedTime').value = course.totalEstimatedTime || st.totalEstimatedTime || '';
+
+      // Progression
+      document.getElementById('r-linearProgression').checked = st.linearProgression ?? true;
+      document.getElementById('r-enforceMinTime').checked = st.enforceMinTime ?? true;
+      document.getElementById('r-dripContent').checked = st.dripContent ?? false;
+      document.getElementById('r-narrationEnabled').checked = st.narrationEnabled ?? course.narrationEnabled ?? false;
+      document.getElementById('r-minTimePercent').value = st.minTimePercent ?? 80;
+      document.getElementById('r-timePerSection').value = st.timePerSection ?? '';
+      document.getElementById('r-dripIntervalDays').value = st.dripIntervalDays ?? '';
+
+      // Assessment rules
+      const assess = course.assessment || {};
+      const attempts = assess.attemptsAllowed ?? st.attemptsAllowed ?? 3;
+      document.getElementById('r-attemptsAllowed').value = String(attempts);
+      document.getElementById('r-passingScore').value = Math.round((assess.passThreshold || (st.passingScore ? st.passingScore / 100 : 0.8)) * 100);
+      document.getElementById('r-assessmentTimeLimit').value = assess.timeLimit ?? st.assessmentTimeLimit ?? 30;
+      document.getElementById('r-shuffleQuestions').checked = assess.shuffleQuestions ?? st.shuffleQuestions ?? true;
+      document.getElementById('r-shuffleOptions').checked = assess.shuffleOptions ?? st.shuffleOptions ?? true;
+      document.getElementById('r-showCorrectAnswers').checked = st.showCorrectAnswers ?? false;
+
+      // Completion
+      document.getElementById('r-requireEvaluation').checked = st.requireEvaluation ?? true;
+      document.getElementById('r-requireAttestation').checked = st.requireAttestation ?? true;
+      document.getElementById('r-certificateEnabled').checked = st.certificateEnabled ?? true;
     }
 
     // ── Tabs ──
     function showTab(tab, btn) {
-      ['info','sections','assessment','references'].forEach(t => {
+      ['info','rules','sections','assessment','references'].forEach(t => {
         document.getElementById('tab-' + t).classList.toggle('hidden', t !== tab);
       });
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -286,6 +481,11 @@
                 <span class="text-lg font-bold text-burgundy-700">${si + 1}</span>
                 <input value="${esc(sec.title || 'Untitled Section')}" onchange="course.sections[${si}].title=this.value"
                   onclick="event.stopPropagation()" class="input font-semibold" style="max-width:400px">
+                <div class="flex items-center gap-1" onclick="event.stopPropagation()">
+                  <input type="number" value="${sec.estimatedTime || 15}" min="1" max="120" style="width:60px"
+                    class="input text-xs text-center" onchange="course.sections[${si}].estimatedTime=parseInt(this.value)||15">
+                  <span class="text-xs text-gray-400">min</span>
+                </div>
               </div>
               <div class="flex items-center gap-2">
                 <span class="text-xs text-gray-400">${blocks.length} block${blocks.length!==1?'s':''}</span>
@@ -554,6 +754,42 @@
       if (!course.assessment) course.assessment = {};
       course.assessment.passThreshold = (parseFloat(v('f-passThreshold')) || 80) / 100;
       course.assessment.attemptsAllowed = parseInt(v('f-attemptsAllowed')) || 3;
+
+      // ── Course Rules ──
+      const cb = id => document.getElementById(id)?.checked ?? false;
+      const nv = id => { const val = document.getElementById(id)?.value; return val ? parseFloat(val) : null; };
+
+      course.deliveryFormat = document.getElementById('r-deliveryFormat')?.value || 'async';
+      course.accessType = document.getElementById('r-accessType')?.value || 'subscription';
+      const totalTime = nv('r-totalEstimatedTime');
+      if (totalTime) course.totalEstimatedTime = totalTime;
+
+      // Assessment rules from rules tab (merge with assessment tab values)
+      const attemptsVal = parseInt(document.getElementById('r-attemptsAllowed')?.value) || 0;
+      course.assessment.attemptsAllowed = attemptsVal; // 0 = unlimited
+      const passingVal = nv('r-passingScore');
+      if (passingVal) course.assessment.passThreshold = passingVal / 100;
+      const timeLimitVal = nv('r-assessmentTimeLimit');
+      if (timeLimitVal !== null) course.assessment.timeLimit = timeLimitVal;
+      course.assessment.shuffleQuestions = cb('r-shuffleQuestions');
+      course.assessment.shuffleOptions = cb('r-shuffleOptions');
+
+      // Settings object
+      course.settings = {
+        linearProgression: cb('r-linearProgression'),
+        enforceMinTime: cb('r-enforceMinTime'),
+        minTimePercent: nv('r-minTimePercent') || 80,
+        timePerSection: nv('r-timePerSection'),
+        dripContent: cb('r-dripContent'),
+        dripIntervalDays: nv('r-dripIntervalDays') || 0,
+        narrationEnabled: cb('r-narrationEnabled'),
+        showCorrectAnswers: cb('r-showCorrectAnswers'),
+        requireEvaluation: cb('r-requireEvaluation'),
+        requireAttestation: cb('r-requireAttestation'),
+        certificateEnabled: cb('r-certificateEnabled'),
+        passingScore: nv('r-passingScore') || 80,
+        attemptsAllowed: attemptsVal,
+      };
 
       // Normalize section order
       (course.sections || []).forEach((sec, si) => {
