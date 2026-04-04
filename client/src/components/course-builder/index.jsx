@@ -123,7 +123,7 @@ function CourseBuilderShell() {
       const result = await publishCourse(state);
       if (result?.course?._id) {
         alert("✓ Course published successfully.");
-        window.location.href = "/public/admin-courses.html";
+        window.location.href = "/admin-courses.html";
       }
     } catch (err) {
       alert(`Publish failed: ${err.message}`);
@@ -157,7 +157,7 @@ function CourseBuilderShell() {
         height: 56, flexShrink: 0,
       }}>
         {/* Logo / back */}
-        <a href="/public/admin-courses.html" style={{ color: "#ffffff80", textDecoration: "none", fontSize: 13, fontWeight: 500 }}>
+        <a href="/admin-courses.html" style={{ color: "#ffffff80", textDecoration: "none", fontSize: 13, fontWeight: 500 }}>
           ← Courses
         </a>
         <div style={{ width: 1, height: 20, background: "#ffffff30" }} />
