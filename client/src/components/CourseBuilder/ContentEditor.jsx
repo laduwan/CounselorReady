@@ -2,19 +2,21 @@
 import { useState, useCallback } from "react";
 import {
   Plus, Trash2, GripVertical, ChevronDown, ChevronRight,
-  ArrowUp, ArrowDown, Copy
+  ArrowUp, ArrowDown, Copy, Eye, EyeOff
 } from "lucide-react";
 import { C, BLOCK_TYPES, BLOCK_DEFAULTS, KNOWLEDGE_CHECK_TYPES, ENGAGEMENT_TYPES, CONTENT_TYPES } from "./constants";
 import { S } from "./styles";
 import { uid, countBlockWords } from "./utils";
 import BlockEditor from "./BlockEditor";
 import BlockPicker from "./BlockPicker";
+import BlockPreview from "./BlockPreview";
 import InsertBar from "./InsertBar";
 
 function ContentEditor({ courseData, setCourseData }) {
   const [activeModule, setActiveModule] = useState(0);
   const [showBlockMenu, setShowBlockMenu] = useState(null);
   const [editingBlock, setEditingBlock] = useState(null);
+  const [showPreview, setShowPreview] = useState(true);
 
   const modules = courseData?.modules || [];
   const currentModule = modules[activeModule] || { blocks: [], title: "No modules" };
@@ -59,9 +61,18 @@ function ContentEditor({ courseData, setCourseData }) {
     if (editingBlock === from) setEditingBlock(to);
   };
 
+  const duplicateBlock = (blockIndex) => {
+    const newModules = [...modules];
+    const newBlocks = [...(newModules[activeModule].blocks || [])];
+    const clone = { ...JSON.parse(JSON.stringify(newBlocks[blockIndex])), id: uid() };
+    newBlocks.splice(blockIndex + 1, 0, clone);
+    newModules[activeModule] = { ...newModules[activeModule], blocks: newBlocks };
+    setCourseData({ ...courseData, modules: newModules });
+    setEditingBlock(blockIndex + 1);
+  };
+
   const blockConfig = (type) => BLOCK_TYPES.find(b => b.type === type) || { label: type, icon: "?", color: C.textMuted, category: "content" };
 
-  // Module stats for sidebar
   const getModuleStats = (mod) => {
     const blocks = mod.blocks || [];
     return {
@@ -111,10 +122,32 @@ function ContentEditor({ courseData, setCourseData }) {
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
           <h3 style={{ fontSize: 18, fontWeight: 700, color: C.navy, margin: 0 }}>{currentModule.title}</h3>
           <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+            {/* Preview toggle */}
+            <button
+              onClick={() => setShowPreview(p => !p)}
+              style={{
+                ...S.btnSecondary,
+                fontSize: 12, padding: "6px 12px",
+                background: showPreview ? C.greenFaded : "transparent",
+                borderColor: showPreview ? C.green : C.border,
+                color: showPreview ? C.green : C.textMuted,
+              }}
+              title={showPreview ? "Hide student preview" : "Show student preview"}
+            >
+              {showPreview ? <Eye size={13} /> : <EyeOff size={13} />}
+              {showPreview ? "Preview On" : "Preview Off"}
+            </button>
             <span style={S.badge(C.green)}>{(currentModule.blocks || []).filter(b => KNOWLEDGE_CHECK_TYPES.includes(b.type)).length} knowledge checks</span>
             <span style={{ fontSize: 13, color: C.textMuted }}>{(currentModule.blocks || []).length} blocks</span>
           </div>
         </div>
+
+        {/* Callout syntax hint */}
+        {showPreview && (
+          <div style={{ marginBottom: 12, padding: "6px 12px", background: C.goldFaded, borderRadius: 8, border: `1px solid ${C.gold}`, fontSize: 11, color: "#92600A", display: "flex", alignItems: "center", gap: 6 }}>
+            💡 <strong>Tip:</strong> Use <code style={{ background: "rgba(0,0,0,0.06)", padding: "0 4px", borderRadius: 3 }}>{"{{callout:hipaa}}"}</code> or <code style={{ background: "rgba(0,0,0,0.06)", padding: "0 4px", borderRadius: 3 }}>{"{{alert:ethics}}"}</code> in text blocks to add inline pills. Preview shows how students see them.
+          </div>
+        )}
 
         <InsertBar onInsert={() => setShowBlockMenu(-1)} active={showBlockMenu === -1} />
         {showBlockMenu === -1 && <BlockPicker onPick={(type) => addBlock(type, -1)} onClose={() => setShowBlockMenu(null)} />}
@@ -128,25 +161,37 @@ function ContentEditor({ courseData, setCourseData }) {
             <div key={block.id}>
               <div style={{
                 border: `1px solid ${isEditing ? C.burgundy : C.border}`, borderRadius: 10, marginBottom: 4, background: C.card,
-                borderLeft: isKC ? `4px solid ${C.burgundy}` : isEngagement ? `4px solid ${C.purple}` : undefined,
+                borderLeft: isKC ? `4px solid ${C.burgundy}` : isEngagement ? `4px solid #7C3AED` : undefined,
                 boxShadow: isEditing ? `0 0 0 2px ${C.burgundy}22` : "none",
               }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 14px", borderBottom: isEditing ? `1px solid ${C.borderLight}` : "none", cursor: "pointer" }}
                   onClick={() => setEditingBlock(isEditing ? null : i)}>
-                  <span style={{ cursor: "grab", color: C.textLight, fontSize: 12 }}>â ¿</span>
+                  <span style={{ cursor: "grab", color: C.textLight, fontSize: 12 }}>⠿</span>
                   <span style={{ width: 26, height: 26, borderRadius: 6, background: cfg.color + "14", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13 }}>{cfg.icon}</span>
                   <span style={{ fontWeight: 600, fontSize: 13, flex: 1, color: C.navy }}>{cfg.label}</span>
                   {isKC && <span style={{ fontSize: 9, fontWeight: 700, color: C.burgundy, background: C.burgundyFaded, padding: "2px 6px", borderRadius: 4 }}>KC</span>}
                   <span style={{ fontSize: 11, color: C.textLight }}>{countBlockWords(block)}w</span>
                   <div style={{ display: "flex", gap: 2 }}>
-                    <button onClick={(e) => { e.stopPropagation(); moveBlock(i, i - 1); }} style={{ background: "none", border: "none", cursor: "pointer", padding: 3, opacity: i === 0 ? 0.3 : 1, fontSize: 12 }}>â–²</button>
-                    <button onClick={(e) => { e.stopPropagation(); moveBlock(i, i + 1); }} style={{ background: "none", border: "none", cursor: "pointer", padding: 3, opacity: i === currentModule.blocks.length - 1 ? 0.3 : 1, fontSize: 12 }}>â–¼</button>
-                    <button onClick={(e) => { e.stopPropagation(); removeBlock(i); }} style={{ background: "none", border: "none", cursor: "pointer", padding: 3, color: C.danger, fontSize: 12 }}>âœ•</button>
+                    <button onClick={(e) => { e.stopPropagation(); moveBlock(i, i - 1); }} style={{ background: "none", border: "none", cursor: "pointer", padding: 3, opacity: i === 0 ? 0.3 : 1, fontSize: 12 }} title="Move up">▲</button>
+                    <button onClick={(e) => { e.stopPropagation(); moveBlock(i, i + 1); }} style={{ background: "none", border: "none", cursor: "pointer", padding: 3, opacity: i === currentModule.blocks.length - 1 ? 0.3 : 1, fontSize: 12 }} title="Move down">▼</button>
+                    <button onClick={(e) => { e.stopPropagation(); duplicateBlock(i); }} style={{ background: "none", border: "none", cursor: "pointer", padding: 3, fontSize: 12, color: C.textMuted }} title="Duplicate">⧉</button>
+                    <button onClick={(e) => { e.stopPropagation(); removeBlock(i); }} style={{ background: "none", border: "none", cursor: "pointer", padding: 3, color: C.danger, fontSize: 12 }} title="Delete">✕</button>
                   </div>
                 </div>
                 {isEditing && (
-                  <div style={{ padding: 14 }}>
-                    <BlockEditor block={block} onChange={(updates) => updateBlock(i, updates)} />
+                  <div style={{ display: showPreview ? "grid" : "block", gridTemplateColumns: showPreview ? "1fr 1fr" : "1fr", gap: 16, padding: 14 }}>
+                    <div>
+                      <div style={{ fontSize: 11, fontWeight: 700, color: C.textMuted, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 8 }}>✏️ Edit</div>
+                      <BlockEditor block={block} onChange={(updates) => updateBlock(i, updates)} />
+                    </div>
+                    {showPreview && (
+                      <div style={{ borderLeft: `1px solid ${C.borderLight}`, paddingLeft: 16 }}>
+                        <div style={{ fontSize: 11, fontWeight: 700, color: C.green, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 8 }}>👁 Student View</div>
+                        <div style={{ background: "#FDFCFA", border: `1px solid ${C.borderLight}`, borderRadius: 8, padding: 16 }}>
+                          <BlockPreview block={block} />
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -158,9 +203,9 @@ function ContentEditor({ courseData, setCourseData }) {
 
         {(currentModule.blocks || []).length === 0 && (
           <div style={{ textAlign: "center", padding: 60, color: C.textMuted, border: `2px dashed ${C.border}`, borderRadius: 12 }}>
-            <div style={{ fontSize: 32, marginBottom: 8 }}>ðŸ“</div>
+            <div style={{ fontSize: 32, marginBottom: 8 }}>📝</div>
             <p style={{ fontSize: 15, fontWeight: 600 }}>No content blocks yet</p>
-            <p style={{ fontSize: 13, marginBottom: 16 }}>Choose from 17 block types organized by Content, Knowledge Checks, and Engagement</p>
+            <p style={{ fontSize: 13, marginBottom: 16 }}>Choose from {BLOCK_TYPES.length} block types organized by Content, Knowledge Checks, and Engagement</p>
             <button style={S.btnPrimary} onClick={() => setShowBlockMenu(-1)}>+ Add First Block</button>
           </div>
         )}
@@ -168,6 +213,5 @@ function ContentEditor({ courseData, setCourseData }) {
     </div>
   );
 }
-
 
 export default ContentEditor;
