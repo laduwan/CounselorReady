@@ -1,5 +1,5 @@
 // DROP INTO: client/src/components/CourseBuilder/ReferencesManager.jsx
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Plus, Trash2, ArrowUp, ArrowDown, Check, Loader2 } from "lucide-react";
 import { C } from "./constants";
 import { S } from "./styles";
