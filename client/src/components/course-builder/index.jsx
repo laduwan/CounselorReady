@@ -17,6 +17,7 @@ import ContentEditorTab from "./tabs/ContentEditorTab.jsx";
 import AssessmentTab    from "./tabs/AssessmentTab.jsx";
 import ReferencesTab    from "./tabs/ReferencesTab.jsx";
 import ACEPCheckerTab   from "./tabs/ACEPCheckerTab.jsx";
+import AIAssistantTab  from "./tabs/AIAssistantTab.jsx";
 import { C, ACEP_RULES } from "./constants.js";
 import { countCourseWords, countKCsInSection } from "./utils.js";
 import { publishCourse } from "./courseBuilderApi.js";
@@ -34,7 +35,7 @@ const TABS = [
   { label: "References",      icon: "📚" },
   { label: "ACEP Compliance", icon: "⚖️" },
   { label: "Preview",         icon: "👁",  comingSoon: true },
-  { label: "AI Assistant",    icon: "🤖", comingSoon: true },
+  { label: "AI Assistant",    icon: "🤖" },
 ];
 
 // ─── Save status badge ────────────────────────────────────────────────────────
@@ -248,6 +249,7 @@ function CourseBuilderShell() {
         {activeTab === 2 && <AssessmentTab />}
         {activeTab === 3 && <ReferencesTab />}
         {activeTab === 4 && <ACEPCheckerTab />}
+        {activeTab === 6 && <AIAssistantTab />}
       </div>
 
     </div>
