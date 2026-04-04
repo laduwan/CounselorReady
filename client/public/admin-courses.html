@@ -569,6 +569,8 @@
                 class="h-8 px-3 rounded-lg text-xs font-medium bg-gold-50 hover:bg-gold-100 text-gold-700 transition-colors flex items-center" title="Delivery Format & Content Areas">Meta</button>
               <button onclick="openEditModal('${c._id}','${src}')"
                 class="h-8 px-3 rounded-lg text-xs font-medium bg-forest-50 hover:bg-forest-100 text-forest-700 transition-colors flex items-center">Edit</button>
+              <a href="/admin-course-edit.html?id=${c._id}"
+                class="h-8 px-3 rounded-lg text-xs font-medium border border-forest-300 text-forest-700 hover:bg-forest-50 transition-colors flex items-center no-underline" title="Full content editor">Full Edit</a>
               <button onclick="deleteCourse('${c._id}','${esc(c.title)}','${src}')"
                 class="h-8 px-3 rounded-lg text-xs font-medium bg-burgundy-50 hover:bg-burgundy-100 text-burgundy-700 transition-colors">Delete</button>
             </div>
