@@ -1014,7 +1014,7 @@
     <!-- Buttons -->
     <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:8px">
       <button onclick="closeEditModal()" style="padding:10px 20px;border:1px solid #E5E2DC;border-radius:10px;background:#fff;font-family:inherit;font-size:14px;font-weight:600;color:#6B7280;cursor:pointer">Cancel</button>
-      <button onclick="saveEditModal()" id="editSaveBtn" style="padding:10px 24px;border:none;border-radius:10px;background:#4A7C59;color:#fff;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer">Save Changes</button>
+      <button onclick="saveEdit()" id="editSaveBtn" style="padding:10px 24px;border:none;border-radius:10px;background:#4A7C59;color:#fff;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer">Save Changes</button>
     </div>
   </div>
 </div>
@@ -1113,7 +1113,7 @@
     document.getElementById('editModal').style.display = 'none';
   }
 
-  async function saveEditModal() {
+  async function saveEdit() {
     const courseId = document.getElementById('editCourseId').value;
     const source = document.getElementById('editCourseSource').value;
     const isNew = !courseId;
