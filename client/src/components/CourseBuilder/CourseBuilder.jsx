@@ -4,7 +4,7 @@
 
 import { useState, useEffect } from "react";
 import jsPDF from "jspdf";
-import { Save, Download, Loader2, Check } from "lucide-react";
+import { Save, Download, Loader2, Check, BookOpen, Users, BarChart3, Mail, BadgeCheck, Home } from "lucide-react";
 import { C, BLOCK_TYPES } from "./constants";
 import { S } from "./styles";
 import { uid, countBlockWords } from "./utils";
@@ -242,7 +242,6 @@ export default function CourseBuilderV2() {
     <div style={S.container}>
       <link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600;6..72,700;6..72,800&display=swap" rel="stylesheet" />
       <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Lato:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
-      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 
       {/* Admin Header — matches platform */}
       <div style={{ background: "#4a1524", color: "#fff", position: "sticky", top: 0, zIndex: 50 }}>
@@ -260,16 +259,16 @@ export default function CourseBuilderV2() {
             </div>
             <span style={{ color: "rgba(255,255,255,0.15)", fontSize: 20, margin: "0 4px" }}>|</span>
             <nav style={{ display: "flex", gap: 2, fontSize: 13, fontFamily: "'Lato', sans-serif" }}>
-              <a href="/admin-courses.html" style={{ color: "rgba(255,255,255,0.7)", textDecoration: "none", padding: "6px 10px", borderRadius: 6, display: "flex", alignItems: "center", gap: 6 }}><i className="fas fa-book" style={{ fontSize: 11 }}></i> Courses</a>
-              <a href="/admin-users.html" style={{ color: "rgba(255,255,255,0.7)", textDecoration: "none", padding: "6px 10px", borderRadius: 6, display: "flex", alignItems: "center", gap: 6 }}><i className="fas fa-users" style={{ fontSize: 11 }}></i> Users</a>
-              <a href="/admin-analytics.html" style={{ color: "rgba(255,255,255,0.7)", textDecoration: "none", padding: "6px 10px", borderRadius: 6, display: "flex", alignItems: "center", gap: 6 }}><i className="fas fa-chart-line" style={{ fontSize: 11 }}></i> Analytics</a>
-              <a href="/admin-messages.html" style={{ color: "rgba(255,255,255,0.7)", textDecoration: "none", padding: "6px 10px", borderRadius: 6, display: "flex", alignItems: "center", gap: 6 }}><i className="fas fa-envelope" style={{ fontSize: 11 }}></i> Messages</a>
-              <a href="/admin-credentials.html" style={{ color: "rgba(255,255,255,0.7)", textDecoration: "none", padding: "6px 10px", borderRadius: 6, display: "flex", alignItems: "center", gap: 6 }}><i className="fas fa-id-card" style={{ fontSize: 11 }}></i> Credentials</a>
+              <a href="/admin-courses.html" style={{ color: "rgba(255,255,255,0.7)", textDecoration: "none", padding: "6px 10px", borderRadius: 6, display: "flex", alignItems: "center", gap: 6 }}><BookOpen size={11} /> Courses</a>
+              <a href="/admin-users.html" style={{ color: "rgba(255,255,255,0.7)", textDecoration: "none", padding: "6px 10px", borderRadius: 6, display: "flex", alignItems: "center", gap: 6 }}><Users size={11} /> Users</a>
+              <a href="/admin-analytics.html" style={{ color: "rgba(255,255,255,0.7)", textDecoration: "none", padding: "6px 10px", borderRadius: 6, display: "flex", alignItems: "center", gap: 6 }}><BarChart3 size={11} /> Analytics</a>
+              <a href="/admin-messages.html" style={{ color: "rgba(255,255,255,0.7)", textDecoration: "none", padding: "6px 10px", borderRadius: 6, display: "flex", alignItems: "center", gap: 6 }}><Mail size={11} /> Messages</a>
+              <a href="/admin-credentials.html" style={{ color: "rgba(255,255,255,0.7)", textDecoration: "none", padding: "6px 10px", borderRadius: 6, display: "flex", alignItems: "center", gap: 6 }}><BadgeCheck size={11} /> Credentials</a>
             </nav>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 16, fontSize: 14, fontFamily: "'Lato', sans-serif" }}>
             <span style={{ color: "rgba(255,255,255,0.4)" }}>Admin</span>
-            <a href="/dashboard.html" style={{ color: "rgba(255,255,255,0.5)", textDecoration: "none", display: "flex", alignItems: "center", gap: 5 }}><i className="fas fa-home" style={{ fontSize: 11 }}></i> Exit to Dashboard</a>
+            <a href="/dashboard.html" style={{ color: "rgba(255,255,255,0.5)", textDecoration: "none", display: "flex", alignItems: "center", gap: 5 }}><Home size={11} /> Exit to Dashboard</a>
           </div>
         </div>
       </div>
