@@ -770,4 +770,221 @@ router.post('/save', protect, adminOnly, async (req, res) => {
   }
 });
 
+// ═══════════════════════════════════════════════════════════════════
+// PUBLISH — save + set published status
+// ═══════════════════════════════════════════════════════════════════
+
+router.post('/publish', protect, adminOnly, async (req, res) => {
+  try {
+    const { Course: InteractiveCourse } = await import('../models/InteractiveCourse.js');
+    const courseData = req.body;
+    const courseId = courseData._id;
+
+    if (!courseId) {
+      return res.status(400).json({ success: false, error: 'Course must be saved before publishing (no _id)' });
+    }
+
+    // Basic validation before publishing
+    const errors = [];
+    if (!courseData.title || courseData.title.trim().length < 3) errors.push('Title is required (min 3 chars)');
+    if (!courseData.ceHours || courseData.ceHours < 1) errors.push('CE hours must be at least 1');
+    if (!courseData.sections || courseData.sections.length === 0) errors.push('At least one section is required');
+    if (!courseData.objectives || courseData.objectives.length === 0) errors.push('At least one learning objective is required');
+
+    // Word count check
+    let totalChars = 0;
+    if (courseData.sections && Array.isArray(courseData.sections)) {
+      courseData.sections.forEach(section => {
+        (section.contentBlocks || []).forEach(block => {
+          const raw = block.textContent || block.content || block.text || block.html || block.body || '';
+          const plain = raw.replace(/<[^>]+>/g, ' ').replace(/&\w+;/g, ' ').trim();
+          totalChars += plain.length;
+        });
+      });
+    }
+    const wordCount = Math.round(totalChars / 5);
+    const targetWords = (courseData.ceHours || 0) * 6000;
+    if (wordCount < targetWords * 0.8) {
+      errors.push(`Word count ${wordCount} is below 80% of target ${targetWords} (NBCC ACEP requirement)`);
+    }
+
+    // Assessment check
+    const assessmentQs = courseData.assessment?.questions || [];
+    if (assessmentQs.length < 15) {
+      errors.push(`Assessment has ${assessmentQs.length} questions (minimum 15 required)`);
+    }
+
+    if (errors.length > 0) {
+      return res.status(422).json({ success: false, errors, error: errors.join('; ') });
+    }
+
+    // Set publish fields
+    delete courseData._id;
+    courseData.status = 'published';
+    courseData.isPublished = true;
+    courseData.wordCount = wordCount;
+    courseData.publishedAt = new Date();
+
+    // Hardcoded presenter/provider (same as save)
+    courseData.presenter = {
+      name: 'Kejuiana Johnson',
+      credentials: 'MA, LPC, NCC, CPCS, BC-TMH',
+      licenseNumber: 'LPC009587',
+      licenseState: 'Georgia',
+      category: 'category1'
+    };
+    courseData.ceProvider = 'GA Integrated Therapeutic Perspectives LLC';
+    courseData.acepNumber = '7760';
+    if (courseData.acepProvider) delete courseData.acepProvider;
+
+    const course = await InteractiveCourse.findByIdAndUpdate(
+      courseId,
+      { $set: courseData },
+      { new: true, runValidators: false }
+    );
+
+    if (!course) {
+      return res.status(404).json({ success: false, error: 'Course not found' });
+    }
+
+    res.json({
+      success: true,
+      course: {
+        _id: course._id,
+        slug: course.slug,
+        title: course.title,
+        status: course.status,
+        isPublished: course.isPublished
+      }
+    });
+
+  } catch (error) {
+    console.error('Publish course error:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// ═══════════════════════════════════════════════════════════════════
+// VALIDATE — server-side ACEP compliance check (no save)
+// ═══════════════════════════════════════════════════════════════════
+
+router.post('/validate', protect, adminOnly, async (req, res) => {
+  try {
+    const courseData = req.body;
+    const errors = [];
+    const warnings = [];
+
+    // Title
+    if (!courseData.title || courseData.title.trim().length < 3) errors.push({ field: 'title', message: 'Title is required (min 3 chars)' });
+
+    // CE Hours
+    if (!courseData.ceHours || courseData.ceHours < 1) errors.push({ field: 'ceHours', message: 'CE hours must be at least 1' });
+
+    // Objectives
+    const objectives = courseData.objectives || [];
+    if (objectives.length === 0) errors.push({ field: 'objectives', message: 'At least one learning objective is required' });
+
+    // Sections
+    const sections = courseData.sections || [];
+    if (sections.length === 0) errors.push({ field: 'sections', message: 'At least one content section is required' });
+
+    // Word count
+    let totalChars = 0;
+    sections.forEach(section => {
+      (section.contentBlocks || []).forEach(block => {
+        const raw = block.textContent || block.content || block.text || block.html || block.body || '';
+        const plain = raw.replace(/<[^>]+>/g, ' ').replace(/&\w+;/g, ' ').trim();
+        totalChars += plain.length;
+      });
+    });
+    const wordCount = Math.round(totalChars / 5);
+    const targetWords = (courseData.ceHours || 0) * 6000;
+    if (wordCount < targetWords) {
+      errors.push({ field: 'wordCount', message: `${wordCount} words — need ${targetWords} (${courseData.ceHours} CE × 6,000 words)` });
+    } else if (wordCount < targetWords * 1.1) {
+      warnings.push({ field: 'wordCount', message: `Word count ${wordCount} is close to minimum ${targetWords}` });
+    }
+
+    // Assessment
+    const assessmentQs = courseData.assessment?.questions || [];
+    if (assessmentQs.length < 15) {
+      errors.push({ field: 'assessment', message: `${assessmentQs.length} questions — minimum 15 required` });
+    }
+
+    // Answer distribution check
+    if (assessmentQs.length >= 15) {
+      const answerCounts = [0, 0, 0, 0];
+      assessmentQs.forEach(q => {
+        const idx = typeof q.correctAnswer === 'number' ? q.correctAnswer : -1;
+        if (idx >= 0 && idx < 4) answerCounts[idx]++;
+      });
+      const maxPct = Math.max(...answerCounts) / assessmentQs.length;
+      if (maxPct > 0.4) {
+        warnings.push({ field: 'assessment', message: `Answer distribution skewed — one option is correct ${Math.round(maxPct * 100)}% of the time (max 40%)` });
+      }
+    }
+
+    // References
+    const refs = courseData.references || [];
+    if (refs.length < 3) {
+      warnings.push({ field: 'references', message: `${refs.length} references — recommend at least 3` });
+    }
+
+    // Description
+    if (!courseData.description || courseData.description.length < 20) {
+      warnings.push({ field: 'description', message: 'Course description is missing or very short' });
+    }
+
+    res.json({
+      valid: errors.length === 0,
+      errors,
+      warnings,
+      wordCount,
+      targetWords,
+      assessmentCount: assessmentQs.length
+    });
+
+  } catch (error) {
+    console.error('Validate course error:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// ═══════════════════════════════════════════════════════════════════
+// LOAD BY SLUG — fetch a course for editing by slug
+// ═══════════════════════════════════════════════════════════════════
+
+router.get('/slug/:slug', protect, adminOnly, async (req, res) => {
+  try {
+    const { Course: InteractiveCourse } = await import('../models/InteractiveCourse.js');
+    const course = await InteractiveCourse.findOne({ slug: req.params.slug });
+    if (!course) {
+      return res.status(404).json({ success: false, error: 'Course not found' });
+    }
+    res.json({ success: true, course });
+  } catch (error) {
+    console.error('Load course by slug error:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// ═══════════════════════════════════════════════════════════════════
+// LOAD BY ID — fetch a course for editing
+// IMPORTANT: This route MUST be last — `:id` is a catch-all param
+// ═══════════════════════════════════════════════════════════════════
+
+router.get('/:id', protect, adminOnly, async (req, res) => {
+  try {
+    const { Course: InteractiveCourse } = await import('../models/InteractiveCourse.js');
+    const course = await InteractiveCourse.findById(req.params.id);
+    if (!course) {
+      return res.status(404).json({ success: false, error: 'Course not found' });
+    }
+    res.json({ success: true, course });
+  } catch (error) {
+    console.error('Load course error:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 export default router;
