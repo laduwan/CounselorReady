@@ -28,7 +28,6 @@
   </style>
 </head>
 <body class="bg-stone-50 min-h-screen">
-  
 
   <!-- Admin Header -->
   <header class="bg-burgundy-900 text-white sticky top-0 z-50">
@@ -44,6 +43,14 @@
           </span>
           <span class="ml-2 text-xs bg-gold-500 text-white px-2 py-0.5 rounded-full font-semibold">ADMIN</span>
         </div>
+        <nav class="flex items-center gap-1 ml-4">
+          <a href="/dashboard.html" class="px-3 py-1 rounded-full text-xs font-medium text-burgundy-200 hover:text-white hover:bg-burgundy-800 transition-colors">Dashboard</a>
+          <a href="/courses.html" class="px-3 py-1 rounded-full text-xs font-medium text-burgundy-200 hover:text-white hover:bg-burgundy-800 transition-colors">Courses</a>
+          <a href="/credentials.html" class="px-3 py-1 rounded-full text-xs font-medium text-burgundy-200 hover:text-white hover:bg-burgundy-800 transition-colors">Credentials</a>
+          <a href="/ce-tracker.html" class="px-3 py-1 rounded-full text-xs font-medium text-burgundy-200 hover:text-white hover:bg-burgundy-800 transition-colors">CE</a>
+          <a href="/certificates.html" class="px-3 py-1 rounded-full text-xs font-medium text-burgundy-200 hover:text-white hover:bg-burgundy-800 transition-colors">Certificates</a>
+          <a href="/messages.html" class="px-3 py-1 rounded-full text-xs font-medium text-burgundy-200 hover:text-white hover:bg-burgundy-800 transition-colors">Messages</a>
+        </nav>
       </div>
       <div class="flex items-center gap-4 text-sm">
         <span class="text-burgundy-200" id="adminEmail">Admin</span>
@@ -540,6 +547,8 @@
               <button onclick="openMetaModal('${c._id}','${esc(c.title)}','${src}',this)"
                 class="h-8 px-3 rounded-lg text-xs font-medium bg-gold-50 hover:bg-gold-100 text-gold-700 transition-colors flex items-center" title="Delivery Format & Content Areas">Meta</button>
               <a href="/admin-course-editor.html?id=${c._id}"
+                class="h-8 px-3 rounded-lg text-xs font-medium bg-burgundy-50 hover:bg-burgundy-100 text-burgundy-700 transition-colors flex items-center" title="Full course editor with sections, assessment, references">Full Edit</a>
+              <a href="/admin/course-builder?id=${c._id}"
                 class="h-8 px-3 rounded-lg text-xs font-medium bg-forest-50 hover:bg-forest-100 text-forest-700 transition-colors flex items-center">Edit</a>
               <button onclick="deleteCourse('${c._id}','${esc(c.title)}','${src}')"
                 class="h-8 px-3 rounded-lg text-xs font-medium bg-burgundy-50 hover:bg-burgundy-100 text-burgundy-700 transition-colors">Delete</button>
