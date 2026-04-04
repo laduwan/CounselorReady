@@ -13,7 +13,7 @@ export const C = {
   purple: "#7C3AED", teal: "#0F766E", amber: "#B45309", slate: "#1E293B",
 };
 
-// ─── Block Type Registry — 17 Total ───
+// ─── Block Type Registry — 20 Total ───
 export const BLOCK_TYPES = [
   // Content (auto-complete on render)
   { type: "sectionDivider", label: "Section Divider", icon: "§", color: C.navy, category: "content" },
@@ -23,6 +23,8 @@ export const BLOCK_TYPES = [
   { type: "accordion", label: "Accordion", icon: "≡", color: C.gold, category: "content" },
   { type: "resources", label: "Resources", icon: "🔎", color: C.navy, category: "content" },
   { type: "videoEmbed", label: "Video + Markers", icon: "🎬", color: C.slate, category: "content" },
+  { type: "callout", label: "Callout Box", icon: "ℹ️", color: "#3B82F6", category: "content" },
+  { type: "keyTakeaway", label: "Key Takeaway", icon: "🔑", color: C.gold, category: "content" },
   // Knowledge Checks (graded, count for ACEP)
   { type: "multipleChoice", label: "Multiple Choice", icon: "◉", color: C.burgundy, category: "assessment" },
   { type: "multiSelect", label: "Multi-Select", icon: "☑", color: C.burgundyLight, category: "assessment" },
@@ -30,6 +32,7 @@ export const BLOCK_TYPES = [
   { type: "cardSort", label: "Card Sort", icon: "🗂", color: "#0284C7", category: "assessment" },
   { type: "sequencing", label: "Sequencing", icon: "📋", color: C.navy, category: "assessment" },
   { type: "timeline", label: "Timeline", icon: "📅", color: C.teal, category: "assessment" },
+  { type: "fillInBlank", label: "Fill in the Blank", icon: "✏️", color: C.amber, category: "assessment" },
   // Interactive Engagement
   { type: "reflection", label: "Reflection", icon: "💭", color: C.green, category: "interactive" },
   { type: "hotspot", label: "Hotspot / Diagram", icon: "🎯", color: C.purple, category: "interactive" },
@@ -55,6 +58,10 @@ export const BLOCK_DEFAULTS = {
   scenarioTree: { scenarioTitle: "", instructions: "", startNode: "start", nodes: { start: { text: "", choices: [{ text: "", next: "" }], feedback: null } } },
   flashcardDeck: { instructions: "", flashcards: [{ id: "f1", front: "", back: "" }] },
   videoEmbed: { videoTitle: "", videoUrl: "", videoDuration: "", thumbnailUrl: "", markers: [{ id: "v1", time: "0:00", label: "", prompt: "" }] },
+  // ── New block types (from CourseViewerPatch) ──
+  callout: { calloutType: "info", title: "", content: "", items: [] },
+  keyTakeaway: { title: "", content: "", points: [] },
+  fillInBlank: { instructions: "", sentence: "", blanks: [{ answer: "", hint: "" }] },
 };
 
 export const ACEP_RULES = {
@@ -64,6 +71,6 @@ export const ACEP_RULES = {
   passThreshold: 0.80,
 };
 
-export const KNOWLEDGE_CHECK_TYPES = ["multipleChoice", "multiSelect", "matching", "cardSort", "sequencing", "timeline"];
+export const KNOWLEDGE_CHECK_TYPES = ["multipleChoice", "multiSelect", "matching", "cardSort", "sequencing", "timeline", "fillInBlank"];
 export const ENGAGEMENT_TYPES = ["accordion", "hotspot", "scenarioTree", "flashcardDeck", "reflection"];
-export const CONTENT_TYPES = ["sectionDivider", "text", "imageText", "image", "resources", "videoEmbed"];
+export const CONTENT_TYPES = ["sectionDivider", "text", "imageText", "image", "resources", "videoEmbed", "callout", "keyTakeaway"];
