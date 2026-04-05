@@ -22,6 +22,7 @@
     { label: 'Courses', href: '/courses.html' },
     { label: 'Credentials', href: '/credentials.html' },
     { label: 'CE Certificates', href: '/certificates.html' },
+    { label: 'Blog', href: '/blog.html' },
     { label: 'Messages', href: '/messages.html' },
   ];
 
@@ -33,6 +34,7 @@
     { label: 'Referrals', href: '/referrals.html' },
     { label: 'Partner Portal', href: '/partner-dashboard.html' },
     { label: 'Legacy Vault', href: '/legacy-vault.html' },
+    { label: 'Blog (Admin)', href: '/admin-blog.html' },
   ];
 
   // ── POLICY LINKS (footer) ────────────────────────────────
