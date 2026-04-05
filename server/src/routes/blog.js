@@ -1,8 +1,12 @@
 import express from 'express';
+import multer from 'multer';
+import matter from 'gray-matter';
 import { protect, requireAdmin } from '../middleware/auth.js';
 import BlogPost from '../models/BlogPost.js';
 
 const router = express.Router();
+
+const upload = multer({ storage: multer.memoryStorage() });
 
 // ============================================================
 // PUBLIC ROUTES (no auth required)
@@ -143,6 +147,53 @@ router.post('/admin', authenticateToken, isAdmin, async (req, res) => {
     }
     console.error('Create post error:', err);
     res.status(500).json({ error: 'Failed to create post' });
+  }
+});
+
+// POST /api/blog/admin/upload — upload .md file with frontmatter
+router.post('/admin/upload', authenticateToken, isAdmin, upload.single('file'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file uploaded' });
+    }
+
+    const raw = req.file.buffer.toString('utf8');
+    const { data, content } = matter(raw);
+
+    if (!data.title) {
+      return res.status(400).json({ error: 'Title is required in frontmatter' });
+    }
+
+    const toArray = (val) => {
+      if (Array.isArray(val)) return val;
+      if (typeof val === 'string') {
+        return val.split(',').map(s => s.trim()).filter(Boolean);
+      }
+      return [];
+    };
+
+    const post = new BlogPost({
+      title: data.title,
+      content,
+      excerpt: data.excerpt || undefined,
+      author: data.author || undefined,
+      category: data.category || undefined,
+      tags: toArray(data.tags),
+      metaTitle: data.metaTitle || undefined,
+      metaDescription: data.metaDescription || undefined,
+      targetKeywords: toArray(data.targetKeywords),
+      status: data.status || 'draft',
+      featuredImage: data.featuredImage || undefined
+    });
+
+    await post.save();
+    res.status(201).json({ post, message: 'Post uploaded' });
+  } catch (err) {
+    if (err.code === 11000) {
+      return res.status(400).json({ error: 'A post with this slug already exists. Change the title slightly.' });
+    }
+    console.error('Upload post error:', err);
+    res.status(500).json({ error: 'Failed to upload post' });
   }
 });
 
