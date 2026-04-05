@@ -63,9 +63,15 @@
         </a>
         <h1 class="font-display text-xl font-semibold text-burgundy">Blog Manager</h1>
       </div>
-      <button onclick="showEditor()" class="bg-burgundy hover:bg-burgundy-dark text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors">
-        + New Post
-      </button>
+      <div class="flex items-center gap-2">
+        <input type="file" id="md-upload-input" accept=".md" class="hidden" onchange="uploadMarkdown(event)">
+        <button onclick="document.getElementById('md-upload-input').click()" class="bg-white border border-burgundy text-burgundy hover:bg-burgundy hover:text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors">
+          Upload .md
+        </button>
+        <button onclick="showEditor()" class="bg-burgundy hover:bg-burgundy-dark text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors">
+          + New Post
+        </button>
+      </div>
     </div>
   </header>
 
@@ -481,6 +487,39 @@
         }
       } catch (err) {
         toast('Network error', true);
+      }
+    }
+
+    // ============================================================
+    // MARKDOWN UPLOAD
+    // ============================================================
+    async function uploadMarkdown(event) {
+      const input = event.target;
+      const file = input.files && input.files[0];
+      if (!file) return;
+
+      const formData = new FormData();
+      formData.append('file', file);
+
+      try {
+        const res = await fetch(`${API}/admin/upload`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${getToken()}` },
+          body: formData
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+          toast(data.error || 'Upload failed', true);
+          return;
+        }
+
+        toast(data.message || 'Post uploaded');
+        loadPosts();
+      } catch (err) {
+        toast('Network error — check connection', true);
+      } finally {
+        input.value = '';
       }
     }
 
