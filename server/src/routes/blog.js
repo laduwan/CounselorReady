@@ -158,7 +158,8 @@ router.post('/admin/upload', authenticateToken, isAdmin, upload.single('file'), 
     }
 
     const raw = req.file.buffer.toString('utf8');
-    const { data, content } = matter(raw);
+    const clean = raw.replace(/^\uFEFF/, '');
+    const { data, content } = matter(clean);
 
     if (!data.title) {
       return res.status(400).json({ error: 'Title is required in frontmatter' });
