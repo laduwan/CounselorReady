@@ -873,7 +873,7 @@
       delete payload._id;
 
       try {
-        const r = await fetch(`${API_URL}/api/interactive-courses/${courseId}`, {
+        const r = await fetch(`${API_URL}/api/admin/courses/${courseId}`, {
           method: 'PUT',
           headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
