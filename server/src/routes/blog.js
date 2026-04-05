@@ -54,24 +54,8 @@ router.get('/sitemap', async (req, res) => {
   }
 });
 
-// GET /api/blog/:slug — single published post by slug (public)
-router.get('/:slug', async (req, res) => {
-  try {
-    const post = await BlogPost.findOne({
-      slug: req.params.slug,
-      status: 'published'
-    });
-
-    if (!post) {
-      return res.status(404).json({ error: 'Post not found' });
-    }
-
-    res.json({ post });
-  } catch (err) {
-    console.error('Blog post error:', err);
-    res.status(500).json({ error: 'Failed to load post' });
-  }
-});
+// NOTE: GET /:slug is defined LAST in this file so it cannot shadow
+// /admin/* routes. See bottom of file.
 
 
 // ============================================================
@@ -226,6 +210,29 @@ router.post('/admin/:id/toggle', authenticateToken, isAdmin, async (req, res) =>
   } catch (err) {
     console.error('Toggle post error:', err);
     res.status(500).json({ error: 'Failed to toggle post status' });
+  }
+});
+
+// ============================================================
+// PUBLIC SLUG ROUTE (defined LAST so specific paths win)
+// ============================================================
+
+// GET /api/blog/:slug — single published post by slug (public)
+router.get('/:slug', async (req, res) => {
+  try {
+    const post = await BlogPost.findOne({
+      slug: req.params.slug,
+      status: 'published'
+    });
+
+    if (!post) {
+      return res.status(404).json({ error: 'Post not found' });
+    }
+
+    res.json({ post });
+  } catch (err) {
+    console.error('Blog post error:', err);
+    res.status(500).json({ error: 'Failed to load post' });
   }
 });
 
