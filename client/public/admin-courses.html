@@ -111,7 +111,7 @@
           <button onclick="openAIModal()" class="bg-forest-500 hover:bg-forest-600 text-white font-medium px-3 py-2 rounded-xl flex items-center gap-1.5 text-sm transition-colors">
             <i class="fas fa-wand-magic-sparkles text-xs"></i> Create with AI
           </button>
-          <a href="/admin-course-editor.html" class="bg-burgundy-800 hover:bg-burgundy-900 text-white font-semibold px-4 py-2 rounded-xl flex items-center gap-1.5 text-sm transition-colors">
+          <a href="/admin-course-edit.html" class="bg-burgundy-800 hover:bg-burgundy-900 text-white font-semibold px-4 py-2 rounded-xl flex items-center gap-1.5 text-sm transition-colors">
             <i class="fas fa-plus text-xs"></i> New Course
           </a>
         </div>
@@ -546,7 +546,7 @@
                 class="w-8 h-8 rounded-lg flex items-center justify-center text-sm bg-gold-50 hover:bg-gold-100 text-gold-700 transition-colors" title="Duplicate">📋</button>
               <button onclick="openMetaModal('${c._id}','${esc(c.title)}','${src}',this)"
                 class="h-8 px-3 rounded-lg text-xs font-medium bg-gold-50 hover:bg-gold-100 text-gold-700 transition-colors flex items-center" title="Delivery Format & Content Areas">Meta</button>
-              <a href="/admin-course-editor.html?id=${c._id}"
+              <a href="/admin-course-edit.html?id=${c._id}"
                 class="h-8 px-3 rounded-lg text-xs font-medium bg-burgundy-50 hover:bg-burgundy-100 text-burgundy-700 transition-colors flex items-center" title="Full course editor with sections, assessment, references">Full Edit</a>
               <a href="/admin/course-builder?id=${c._id}"
                 class="h-8 px-3 rounded-lg text-xs font-medium bg-forest-50 hover:bg-forest-100 text-forest-700 transition-colors flex items-center">Edit</a>
@@ -685,7 +685,7 @@
         closeAIModal();
         showToast('✓ Generated! Opening editor...', '#4A7C59');
         const cid = d.data?._id || d.course?._id || d._id;
-        setTimeout(() => { window.location.href = cid ? `/admin-course-editor.html?id=${cid}` : '/admin-courses.html'; }, 1500);
+        setTimeout(() => { window.location.href = cid ? `/admin-course-edit.html?id=${cid}` : '/admin-courses.html'; }, 1500);
       } catch(e) {
         showToast('Error: ' + e.message, '#dc2626');
       } finally {
