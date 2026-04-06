@@ -841,10 +841,65 @@ router.post('/apply-promo', protect, async (req, res) => {
 // INDIVIDUAL COURSE PURCHASE ROUTES
 // ============================================
 
+// @route   POST /api/payments/validate-coupon
+// @desc    Validate a coupon/promo code and return discount info for course purchase
+// @access  Private
+router.post('/validate-coupon', protect, async (req, res) => {
+  if (!stripe) {
+    return res.status(503).json({ valid: false, error: 'Payment system not configured' });
+  }
+
+  try {
+    const { code, courseId, price } = req.body;
+
+    if (!code) {
+      return res.status(400).json({ valid: false, error: 'No code provided' });
+    }
+
+    // Look up promotion code in Stripe
+    const promotionCodes = await stripe.promotionCodes.list({
+      code: code.toUpperCase(),
+      active: true,
+      limit: 1
+    });
+
+    if (!promotionCodes.data.length) {
+      return res.status(400).json({ valid: false, error: 'Invalid or expired code' });
+    }
+
+    const promo = promotionCodes.data[0];
+    const coupon = promo.coupon;
+
+    // Calculate discount
+    let discountDescription = '';
+    let finalPrice = price || 0;
+
+    if (coupon.percent_off) {
+      discountDescription = `${coupon.percent_off}% off`;
+      finalPrice = price * (1 - coupon.percent_off / 100);
+    } else if (coupon.amount_off) {
+      const amountOff = coupon.amount_off / 100; // Stripe stores in cents
+      discountDescription = `$${amountOff} off`;
+      finalPrice = Math.max(0, price - amountOff);
+    }
+
+    res.json({
+      valid: true,
+      message: 'Discount code applied!',
+      discountDescription,
+      finalPrice: Math.round(finalPrice * 100) / 100,
+      couponId: coupon.id
+    });
+  } catch (error) {
+    console.error('Validate coupon error:', error);
+    res.status(500).json({ valid: false, error: 'Failed to validate code' });
+  }
+});
+
 // POST /purchase-course — Stripe Checkout for one-time course purchase
 router.post('/purchase-course', protect, async (req, res) => {
   try {
-    const { courseId } = req.body;
+    const { courseId, couponCode } = req.body;
     if (!courseId) {
       return res.status(400).json({ error: 'courseId is required' });
     }
@@ -881,7 +936,7 @@ router.post('/purchase-course', protect, async (req, res) => {
       await user.save();
     }
 
-    const session = await stripe.checkout.sessions.create({
+    const sessionParams = {
       customer: customerId,
       mode: 'payment',
       payment_method_types: ['card'],
@@ -905,7 +960,26 @@ router.post('/purchase-course', protect, async (req, res) => {
       },
       success_url: `${process.env.CLIENT_URL}/purchase-success.html?session_id={CHECKOUT_SESSION_ID}&slug=${course.slug}`,
       cancel_url: `${process.env.CLIENT_URL}/course-details.html?slug=${course.slug}&cancelled=true`
-    });
+    };
+
+    // Add discount if coupon code provided
+    if (couponCode) {
+      try {
+        const promotionCodes = await stripe.promotionCodes.list({
+          code: couponCode.toUpperCase(),
+          active: true,
+          limit: 1
+        });
+        if (promotionCodes.data.length) {
+          sessionParams.discounts = [{ promotion_code: promotionCodes.data[0].id }];
+        }
+      } catch (err) {
+        console.error('Coupon lookup error:', err);
+        // Continue without discount rather than failing the purchase
+      }
+    }
+
+    const session = await stripe.checkout.sessions.create(sessionParams);
 
     res.json({ url: session.url, sessionId: session.id });
   } catch (error) {

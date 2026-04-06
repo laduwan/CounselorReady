@@ -220,7 +220,7 @@
                   <div class="text-4xl font-bold text-burgundy-900">$<span id="individualPrice">0</span></div>
                   <span class="text-sm text-forest-500">one-time payment</span>
                 </div>
-                <button onclick="purchaseCourse()" class="w-full bg-burgundy-700 hover:bg-burgundy-800 text-white font-semibold py-3 px-6 rounded-xl transition-colors mb-3">
+                <button onclick="openPurchaseModal()" class="w-full bg-burgundy-700 hover:bg-burgundy-800 text-white font-semibold py-3 px-6 rounded-xl transition-colors mb-3">
                   Buy This Course
                 </button>
                 <div class="text-center text-sm text-forest-500">or</div>
@@ -287,15 +287,77 @@
     </div>
   </main>
 
+  <!-- Purchase Modal -->
+  <div id="purchaseModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-xl shadow-xl max-w-md w-full overflow-hidden">
+      <!-- Header -->
+      <div class="bg-gradient-to-r from-burgundy-700 to-burgundy-800 p-5">
+        <div class="flex justify-between items-start">
+          <div>
+            <p class="text-burgundy-200 text-xs font-medium uppercase tracking-wide mb-1">Individual Purchase</p>
+            <h3 class="font-display text-xl font-semibold text-white" id="modalCourseName">Course Title</h3>
+          </div>
+          <button onclick="closePurchaseModal()" class="text-burgundy-200 hover:text-white text-2xl leading-none">&times;</button>
+        </div>
+      </div>
+
+      <div class="p-6">
+        <!-- Price Display -->
+        <div class="flex items-center justify-between mb-5 pb-4 border-b border-forest-100">
+          <span class="text-forest-600 font-medium">Course Price</span>
+          <span class="text-2xl font-bold text-burgundy-900" id="modalPrice">$0</span>
+        </div>
+
+        <!-- Discount Code -->
+        <div class="mb-5">
+          <label class="block text-sm font-medium text-forest-700 mb-2">Have a discount code?</label>
+          <div class="flex gap-2">
+            <input type="text" id="purchaseCouponInput" placeholder="e.g. TELEHEALTH20"
+              class="flex-1 px-4 py-2.5 border border-forest-200 rounded-lg focus:ring-2 focus:ring-burgundy-500 outline-none uppercase text-sm"
+              onkeydown="if(event.key==='Enter'){event.preventDefault();applyPurchaseCoupon()}">
+            <button onclick="applyPurchaseCoupon()" id="applyCouponBtn"
+              class="px-4 py-2.5 bg-burgundy-700 hover:bg-burgundy-800 text-white rounded-lg text-sm font-semibold transition-colors">
+              Apply
+            </button>
+          </div>
+          <div id="couponFeedback" class="hidden mt-2 p-2.5 rounded-lg text-sm"></div>
+        </div>
+
+        <!-- Discounted Price (shown after valid coupon) -->
+        <div id="discountSummary" class="hidden mb-5 p-3 bg-green-50 border border-green-200 rounded-lg">
+          <div class="flex items-center justify-between text-sm">
+            <span class="text-green-700">Discount applied</span>
+            <span class="text-green-700 font-medium" id="discountDescription"></span>
+          </div>
+          <div class="flex items-center justify-between mt-1">
+            <span class="text-green-800 font-semibold">You pay</span>
+            <span class="text-green-800 font-bold text-lg" id="discountedPrice"></span>
+          </div>
+        </div>
+
+        <!-- Checkout Button -->
+        <button onclick="proceedToCheckout()" id="checkoutBtn"
+          class="w-full bg-burgundy-700 hover:bg-burgundy-800 text-white font-semibold py-3.5 rounded-xl transition-colors text-base">
+          Continue to Checkout
+        </button>
+
+        <p class="text-xs text-forest-400 mt-3 text-center">
+          Secure checkout powered by Stripe. Instant course access after payment.
+        </p>
+      </div>
+    </div>
+  </div>
+
   <!-- Footer -->
   <div id="cr-footer"></div>
 
   <script>
     const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://api.counselorready.com';
-    
+
     let currentCourse = null;
     let currentUser = null;
     let userProgress = null;
+    let appliedCouponCode = null;
     
     // Get course slug from URL
     function getCourseSlug() {
@@ -830,35 +892,123 @@
       window.location.href = '/interactive-course.html?slug=' + slug;
     }
     
-    // Purchase course individually
-    async function purchaseCourse() {
+    // --- Purchase Flow ---
+    function openPurchaseModal() {
       if (!currentUser) {
         window.location.href = `/login.html?redirect=${encodeURIComponent(window.location.href)}`;
         return;
       }
+      appliedCouponCode = null;
+      document.getElementById('modalCourseName').textContent = currentCourse.title;
+      document.getElementById('modalPrice').textContent = '$' + currentCourse.price;
+      document.getElementById('purchaseCouponInput').value = '';
+      document.getElementById('couponFeedback').classList.add('hidden');
+      document.getElementById('discountSummary').classList.add('hidden');
+      document.getElementById('checkoutBtn').disabled = false;
+      document.getElementById('checkoutBtn').textContent = 'Continue to Checkout';
+      document.getElementById('purchaseModal').classList.remove('hidden');
+    }
 
-      const btn = document.querySelector('[onclick="purchaseCourse()"]');
-      const originalText = btn ? btn.textContent : '';
-      if (btn) {
-        btn.disabled = true;
-        btn.textContent = 'Redirecting to checkout...';
+    function closePurchaseModal() {
+      document.getElementById('purchaseModal').classList.add('hidden');
+    }
+
+    // Close modal on backdrop click
+    document.getElementById('purchaseModal').addEventListener('click', function(e) {
+      if (e.target === this) closePurchaseModal();
+    });
+
+    async function applyPurchaseCoupon() {
+      const code = document.getElementById('purchaseCouponInput').value.trim();
+      const feedback = document.getElementById('couponFeedback');
+      const applyBtn = document.getElementById('applyCouponBtn');
+
+      if (!code) {
+        feedback.textContent = 'Please enter a discount code.';
+        feedback.className = 'mt-2 p-2.5 rounded-lg text-sm bg-red-50 text-red-700 border border-red-200';
+        feedback.classList.remove('hidden');
+        return;
       }
+
+      applyBtn.disabled = true;
+      applyBtn.textContent = '...';
+
+      try {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 10000);
+        const response = await fetch(`${API_URL}/api/payments/validate-coupon`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ code, courseId: currentCourse._id, price: currentCourse.price }),
+          signal: controller.signal
+        });
+        clearTimeout(timeout);
+
+        const data = await response.json();
+
+        if (response.ok && data.valid) {
+          appliedCouponCode = code;
+          feedback.textContent = 'Discount code applied!';
+          feedback.className = 'mt-2 p-2.5 rounded-lg text-sm bg-green-50 text-green-700 border border-green-200';
+          feedback.classList.remove('hidden');
+
+          const summary = document.getElementById('discountSummary');
+          document.getElementById('discountDescription').textContent = data.discountDescription || data.message || 'Discount';
+          document.getElementById('discountedPrice').textContent = data.finalPrice !== undefined ? `$${Number(data.finalPrice).toFixed(2)}` : '';
+          if (data.finalPrice !== undefined) {
+            summary.classList.remove('hidden');
+          }
+        } else {
+          appliedCouponCode = null;
+          feedback.textContent = data.error || 'Invalid or expired code.';
+          feedback.className = 'mt-2 p-2.5 rounded-lg text-sm bg-red-50 text-red-700 border border-red-200';
+          feedback.classList.remove('hidden');
+          document.getElementById('discountSummary').classList.add('hidden');
+        }
+      } catch (err) {
+        // If validate-coupon endpoint is unreachable, accept the code and let purchase-course handle it
+        appliedCouponCode = code;
+        feedback.textContent = 'Code will be applied at checkout.';
+        feedback.className = 'mt-2 p-2.5 rounded-lg text-sm bg-gold-50 text-forest-700 border border-gold-200';
+        feedback.classList.remove('hidden');
+        document.getElementById('discountSummary').classList.add('hidden');
+      } finally {
+        applyBtn.disabled = false;
+        applyBtn.textContent = 'Apply';
+      }
+    }
+
+    async function proceedToCheckout() {
+      const btn = document.getElementById('checkoutBtn');
+      btn.disabled = true;
+      btn.textContent = 'Redirecting to checkout...';
 
       try {
         const token = localStorage.getItem('token');
+        const body = { courseId: currentCourse._id };
+        if (appliedCouponCode) body.couponCode = appliedCouponCode;
+
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 15000);
         const response = await fetch(`${API_URL}/api/payments/purchase-course`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify({ courseId: currentCourse._id })
+          body: JSON.stringify(body),
+          signal: controller.signal
         });
+        clearTimeout(timeout);
 
         const data = await response.json();
 
         if (!response.ok) {
           if (data.error === 'You already own this course') {
+            closePurchaseModal();
             window.location.href = `/interactive-course.html?slug=${currentCourse.slug}`;
             return;
           }
@@ -872,11 +1022,12 @@
         }
       } catch (error) {
         console.error('Purchase error:', error);
-        alert(error.message || 'Something went wrong. Please try again.');
-        if (btn) {
-          btn.disabled = false;
-          btn.textContent = originalText;
-        }
+        const feedback = document.getElementById('couponFeedback');
+        feedback.textContent = error.message || 'Something went wrong. Please try again.';
+        feedback.className = 'mt-2 p-2.5 rounded-lg text-sm bg-red-50 text-red-700 border border-red-200';
+        feedback.classList.remove('hidden');
+        btn.disabled = false;
+        btn.textContent = 'Continue to Checkout';
       }
     }
     
