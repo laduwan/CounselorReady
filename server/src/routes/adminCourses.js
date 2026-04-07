@@ -1128,18 +1128,18 @@ router.post('/courses', protect, adminOnly, async (req, res) => {
 // @access  Admin only
 router.get('/courses/:courseId', protect, adminOnly, async (req, res) => {
   try {
-    const course = await Course.findById(req.params.courseId);
-    
+    const course = await InteractiveCourse.findById(req.params.courseId);
+
     if (!course) {
       return res.status(404).json({ error: 'Course not found' });
     }
-    
+
     // Get enrollment stats
-    const enrollmentCount = await UserCourseProgress.countDocuments({ 
-      courseId: course._id 
+    const enrollmentCount = await InteractiveCourseProgress.countDocuments({
+      courseId: course._id
     });
-    
-    const completionCount = await UserCourseProgress.countDocuments({ 
+
+    const completionCount = await InteractiveCourseProgress.countDocuments({
       courseId: course._id,
       status: 'completed'
     });
@@ -1165,17 +1165,17 @@ router.get('/courses/:courseId', protect, adminOnly, async (req, res) => {
 // @access  Admin only
 router.put('/courses/:courseId', protect, adminOnly, async (req, res) => {
   try {
-    const course = await Course.findById(req.params.courseId);
-    
+    const course = await InteractiveCourse.findById(req.params.courseId);
+
     if (!course) {
       return res.status(404).json({ error: 'Course not found' });
     }
-    
+
     const updates = req.body;
-    
+
     // If slug is being changed, check for conflicts
     if (updates.slug && updates.slug !== course.slug) {
-      const existingCourse = await Course.findOne({ 
+      const existingCourse = await InteractiveCourse.findOne({
         slug: updates.slug,
         _id: { $ne: course._id }
       });
