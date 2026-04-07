@@ -546,6 +546,84 @@ router.get('/billing-history', protect, async (req, res) => {
 });
 
 // ============================================
+// COURSE CHECKOUT (one-time purchase)
+// ============================================
+
+// @route   POST /api/payments/create-course-checkout
+// @desc    Create a one-time Stripe checkout for a paid course
+// @access  Private
+router.post('/create-course-checkout', protect, async (req, res) => {
+  if (!stripe) {
+    return res.status(503).json({ error: 'Payment system not configured' });
+  }
+
+  try {
+    const { courseId } = req.body;
+    if (!courseId) {
+      return res.status(400).json({ error: 'courseId is required' });
+    }
+
+    const course = await mongoose.connection.db
+      .collection('interactivecourses')
+      .findOne({ _id: new mongoose.Types.ObjectId(courseId) });
+
+    if (!course) {
+      return res.status(404).json({ error: 'Course not found' });
+    }
+
+    if (course.accessType === 'free') {
+      return res.status(400).json({ error: 'Course is free' });
+    }
+
+    const user = await User.findById(req.user._id);
+
+    // Create or get Stripe customer
+    let customerId = user.stripeCustomerId;
+    if (!customerId) {
+      const customer = await stripe.customers.create({
+        email: user.email,
+        name: `${user.firstName || ''} ${user.lastName || ''}`.trim(),
+        metadata: {
+          userId: user._id.toString()
+        }
+      });
+      customerId = customer.id;
+      await User.findByIdAndUpdate(user._id, { stripeCustomerId: customerId });
+    }
+
+    const session = await stripe.checkout.sessions.create({
+      customer: customerId,
+      payment_method_types: ['card'],
+      line_items: [{
+        price_data: {
+          currency: 'usd',
+          unit_amount: Math.round(course.price * 100),
+          product_data: {
+            name: course.title,
+            description: course.ceHours + ' CE Hours'
+          }
+        },
+        quantity: 1
+      }],
+      mode: 'payment',
+      success_url: `https://counselorready.com/course-success.html?session_id={CHECKOUT_SESSION_ID}&courseId=${course._id.toString()}`,
+      cancel_url: 'https://counselorready.com/catalog.html',
+      metadata: {
+        type: 'course_purchase',
+        courseId: course._id.toString(),
+        userId: req.user._id.toString(),
+        slug: course.slug || ''
+      }
+    });
+
+    res.json({ sessionId: session.id, url: session.url });
+  } catch (error) {
+    console.error('Create course checkout error:', error);
+    res.status(500).json({ error: 'Failed to create course checkout session' });
+  }
+});
+
+// ============================================
 // STRIPE WEBHOOK
 // ============================================
 
