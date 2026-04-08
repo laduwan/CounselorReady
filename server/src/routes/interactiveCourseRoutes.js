@@ -16,6 +16,11 @@ import Gamification from '../models/Gamification.js';
 import { protect, requireAdmin, optionalAuth } from '../middleware/auth.js';
 import { generateCertificate, generateCertificateNumber } from '../utils/certificate.js';
 import { logActivity, ACTIVITY_TYPES } from '../services/activityTrackingService.js';
+import twilio from 'twilio';
+
+const twilioClient = process.env.TWILIO_ACCOUNT_SID
+  ? twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN)
+  : null;
 
 const router = express.Router();
 
@@ -419,6 +424,15 @@ router.post('/:id/enroll', protect, async (req, res) => {
         : req.user.email,
       userEmail: req.user.email
     }).catch(err => console.error('Activity log error:', err));
+
+    // SMS notification (fire-and-forget)
+    if (twilioClient && process.env.ADMIN_PHONE) {
+      twilioClient.messages.create({
+        body: `CounselorReady: New enrollment\n${req.user.email} enrolled in "${course.title}"`,
+        from: process.env.TWILIO_PHONE_NUMBER,
+        to: process.env.ADMIN_PHONE
+      }).catch(e => console.error('SMS error:', e));
+    }
 
     res.status(201).json({ success: true, message: 'Enrolled successfully', data: progress });
   } catch (error) {
