@@ -1404,6 +1404,92 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
   .cr-highlight { background: none !important; border-bottom: 1px solid #999; }
   .cr-accordion-body { max-height: none !important; padding: 12px 0 !important; }
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   MINIMUM TIME TIMER WIDGET
+   ═══════════════════════════════════════════════════════════════ */
+.cr-timer-widget {
+  position: fixed;
+  bottom: 90px;
+  right: 24px;
+  z-index: 49;
+  background: #fff;
+  border: 2px solid var(--cr-border);
+  border-radius: var(--cr-radius);
+  padding: 14px 18px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+  font-family: var(--cr-font-body);
+  min-width: 200px;
+  transition: border-color 0.3s, background 0.3s;
+}
+.cr-timer-widget.met {
+  border-color: #4A7C59;
+  background: #f0f8f3;
+}
+.cr-timer-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--cr-text-muted);
+  margin-bottom: 4px;
+  font-weight: 700;
+}
+.cr-timer-display {
+  font-size: 28px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: #6B1D34;
+  line-height: 1.2;
+}
+.cr-timer-widget.met .cr-timer-display {
+  color: #4A7C59;
+}
+.cr-timer-required {
+  font-size: 12px;
+  color: var(--cr-text-secondary);
+  margin-top: 2px;
+}
+.cr-timer-bar {
+  height: 6px;
+  background: #e8e5e0;
+  border-radius: 3px;
+  margin-top: 8px;
+  overflow: hidden;
+}
+.cr-timer-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  background: #6B1D34;
+  transition: width 0.5s ease, background 0.3s;
+  width: 0%;
+}
+.cr-timer-widget.met .cr-timer-bar-fill {
+  background: #4A7C59;
+}
+.cr-timer-met-msg {
+  display: none;
+  font-size: 12px;
+  color: #4A7C59;
+  font-weight: 700;
+  margin-top: 6px;
+}
+.cr-timer-widget.met .cr-timer-met-msg {
+  display: block;
+}
+/* When timer is present, push a11y panel and floating buttons above it */
+body.cr-has-timer .cr-a11y-toggle { bottom: 220px; }
+body.cr-has-timer .cr-a11y-panel { bottom: 284px; }
+body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
+@media print {
+  .cr-timer-widget { display: none !important; }
+}
+@media (max-width: 600px) {
+  .cr-timer-widget { bottom: 80px; right: 12px; min-width: 160px; padding: 10px 14px; }
+  .cr-timer-display { font-size: 22px; }
+  body.cr-has-timer .cr-a11y-toggle { bottom: 200px; }
+  body.cr-has-timer .cr-a11y-panel { bottom: 264px; }
+  body.cr-has-timer .cr-glossary-btn { bottom: 200px; }
+}
 </style>
 <!-- .docx parsing -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
@@ -1738,6 +1824,12 @@ let assessmentState = { answers: {}, submitted: false, score: null, attempts: 0 
 let certPipelineState = { assessmentSaved: false, evaluationDone: false, attestationDone: false };
 let ttsActive = false;
 let ttsUtterance = null;
+
+// Minimum-time timer state
+let crTimerInterval = null;
+let crTimerElapsed = 0;
+let crTimerRequired = 0;
+let crTimerPaused = false;
 
 // ═══════════════════════════════════════════════════════════════
 // API HELPERS
@@ -2126,12 +2218,112 @@ function loadCourse(data) {
   initTranslation();
   buildSectionNav();
   renderCurrentSection();
+
+  // Start minimum-time timer if course requires it
+  initMinimumTimer();
 }
 
 function showError(msg) {
   document.getElementById('crLoading').style.display = 'none';
   document.getElementById('crError').style.display = 'flex';
   document.getElementById('crErrorMsg').textContent = msg;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// MINIMUM TIME TIMER
+// ═══════════════════════════════════════════════════════════════
+function initMinimumTimer() {
+  const mins = course.minimumTimeMinutes;
+  if (!mins || mins <= 0) return;
+  crTimerRequired = mins * 60;
+
+  // Restore elapsed from localStorage
+  const storageKey = 'cr_timer_' + (course._id || course.slug || 'unknown');
+  const saved = parseInt(localStorage.getItem(storageKey), 10);
+  if (saved > 0) crTimerElapsed = saved;
+
+  // Create widget DOM
+  const widget = document.createElement('div');
+  widget.className = 'cr-timer-widget' + (crTimerElapsed >= crTimerRequired ? ' met' : '');
+  widget.id = 'crTimerWidget';
+  widget.innerHTML =
+    '<div class="cr-timer-label">Time in Course</div>' +
+    '<div class="cr-timer-display" id="crTimerDisplay">00:00</div>' +
+    '<div class="cr-timer-required" id="crTimerReq">Required: ' + formatTimerTime(crTimerRequired) + '</div>' +
+    '<div class="cr-timer-bar"><div class="cr-timer-bar-fill" id="crTimerBarFill"></div></div>' +
+    '<div class="cr-timer-met-msg" id="crTimerMetMsg">✓ Time requirement met — exam unlocked</div>';
+  document.body.appendChild(widget);
+  document.body.classList.add('cr-has-timer');
+
+  // Visibility change — pause when tab hidden
+  document.addEventListener('visibilitychange', function() {
+    crTimerPaused = document.visibilityState === 'hidden';
+  });
+
+  // Initial render
+  updateTimerDisplay();
+
+  // If already met on load, enable assessment immediately
+  if (crTimerElapsed >= crTimerRequired) {
+    enableAssessmentBtn();
+  } else {
+    disableAssessmentBtn();
+  }
+
+  // Tick every second
+  crTimerInterval = setInterval(function() {
+    if (crTimerPaused) return;
+    crTimerElapsed++;
+    localStorage.setItem(storageKey, crTimerElapsed);
+    updateTimerDisplay();
+
+    if (crTimerElapsed >= crTimerRequired && !widget.classList.contains('met')) {
+      widget.classList.add('met');
+      enableAssessmentBtn();
+    }
+  }, 1000);
+}
+
+function formatTimerTime(totalSec) {
+  const h = Math.floor(totalSec / 3600);
+  const m = Math.floor((totalSec % 3600) / 60);
+  const s = totalSec % 60;
+  if (h > 0) return h + ':' + String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+  return String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+}
+
+function updateTimerDisplay() {
+  const el = document.getElementById('crTimerDisplay');
+  if (el) el.textContent = formatTimerTime(crTimerElapsed);
+  const bar = document.getElementById('crTimerBarFill');
+  if (bar) {
+    const pct = Math.min(100, Math.round((crTimerElapsed / crTimerRequired) * 100));
+    bar.style.width = pct + '%';
+  }
+}
+
+function disableAssessmentBtn() {
+  const btn = document.getElementById('crNavAssessBtn');
+  if (btn) {
+    btn.disabled = true;
+    btn.style.opacity = '0.5';
+    btn.style.cursor = 'not-allowed';
+    btn.title = 'Complete the required time before taking the assessment';
+  }
+}
+
+function enableAssessmentBtn() {
+  const btn = document.getElementById('crNavAssessBtn');
+  if (btn) {
+    btn.disabled = false;
+    btn.style.opacity = '';
+    btn.style.cursor = '';
+    btn.title = '';
+  }
+}
+
+function isTimerGateActive() {
+  return crTimerRequired > 0 && crTimerElapsed < crTimerRequired;
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -2283,6 +2475,11 @@ function nextSection() {
 }
 
 function showAssessment() {
+  if (isTimerGateActive()) {
+    const remaining = crTimerRequired - crTimerElapsed;
+    alert('Please spend at least ' + formatTimerTime(crTimerRequired) + ' in the course before taking the assessment. ' + formatTimerTime(remaining) + ' remaining.');
+    return;
+  }
   currentView = 'assessment';
   completedSections.add(currentSectionIndex);
   renderAssessment();
