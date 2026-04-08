@@ -294,6 +294,18 @@ const CourseSchema = new mongoose.Schema({
   approvalBody: { type: String, default: 'NBCC' },
   price: Number,
 
+  // Course delivery rules
+  minimumTimeMinutes: { type: Number, default: 0 },
+  dripEnabled: { type: Boolean, default: false },
+  dripIntervalMinutes: { type: Number, default: 0 },
+  dripSectionsPerInterval: { type: Number, default: 1 },
+  enforceSectionOrder: { type: Boolean, default: true },
+  previousSectionsReviewable: { type: Boolean, default: true },
+  narrationEnabled: { type: Boolean, default: false },
+  attestationRequired: { type: Boolean, default: true },
+  certificateEnabled: { type: Boolean, default: true },
+  maxAttempts: { type: Number, default: 3 },
+
   // Calculated fields
   totalEstimatedTime: Number, // in minutes
   totalContentBlocks: Number,
