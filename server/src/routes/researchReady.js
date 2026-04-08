@@ -1021,10 +1021,7 @@ router.post('/engagement/:courseId', protect, async (req, res) => {
     });
 
     if (request) {
-      // Store engagement on the request (via a simple field — not in model yet but we track it)
-      if (!request.adminNote?.includes('engagement_confirmed')) {
-        request.adminNote = (request.adminNote || '') + ' engagement_confirmed';
-      }
+      request.engagementConfirmed = true;
       await request.save();
       return res.json({ success: true, engagementConfirmed: true });
     }
