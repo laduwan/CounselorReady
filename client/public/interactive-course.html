@@ -4182,10 +4182,36 @@ function downloadCertificate() {
     method: 'POST', headers
   })
     .then(res => {
-      if (!res.ok) return res.json().then(err => { throw new Error(err.error || err.message || 'Certificate generation failed'); });
+      if (!res.ok) return res.json().then(err => {
+        if (res.status === 403 && err.code === 'PAYMENT_REQUIRED') {
+          const slug = course?.slug || crSlugOrId();
+          const area = document.getElementById('crContentArea');
+          area.innerHTML = `<div style="max-width:500px;margin:0 auto;padding:40px;text-align:center">
+            <div style="font-size:2.5rem;margin-bottom:16px">🔒</div>
+            <h3 style="font-family:var(--cr-font-display);font-weight:700;color:var(--cr-navy);margin-bottom:8px">Purchase Required</h3>
+            <p style="font-size:0.9rem;color:var(--cr-text-secondary);margin-bottom:20px;line-height:1.5">
+              A purchase is required to receive your certificate.<br>
+              Please visit the course page to complete your purchase.
+            </p>
+            <a href="/course-details.html?slug=${encodeURIComponent(slug)}"
+              style="display:inline-block;padding:14px 28px;background:var(--cr-burgundy);color:#fff;
+              font-weight:700;font-size:0.95rem;border-radius:10px;text-decoration:none;transition:background 0.15s"
+              onmouseover="this.style.background='var(--cr-burgundy-light)'"
+              onmouseout="this.style.background='var(--cr-burgundy)'">
+              View Course &amp; Purchase
+            </a>
+            <div style="margin-top:16px">
+              <a href="/dashboard.html" style="font-size:0.83rem;color:var(--cr-burgundy);font-weight:600;text-decoration:none">&larr; Back to Dashboard</a>
+            </div>
+          </div>`;
+          return; // stop the promise chain
+        }
+        throw new Error(err.error || err.message || 'Certificate generation failed');
+      });
       return res.json();
     })
     .then(data => {
+      if (!data) return; // PAYMENT_REQUIRED already handled above
       if (!data.success || !data.fileUrl) throw new Error(data.message || 'Certificate generation failed');
 
       const fileUrl = data.fileUrl;
