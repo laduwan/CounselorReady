@@ -31,7 +31,15 @@ const articleSchema = new mongoose.Schema({
     type: String,
     enum: ['sufficient', 'borderline', 'thin'],
     default: 'sufficient'
-  }
+  },
+  fullTextSource: {
+    type: String,
+    enum: ['pdf', 'landing_page', 'pmc', 'abstract_only'],
+    default: 'abstract_only'
+  },
+  abstractOnly: { type: Boolean, default: true },
+  instructionalWordCount: { type: Number, default: 0 },
+  rawWordCount: { type: Number, default: 0 }
 }, { _id: false });
 
 const posttestQuestionSchema = new mongoose.Schema({
@@ -130,6 +138,9 @@ const rnrRequestSchema = new mongoose.Schema({
   passingScore: { type: Number, default: 75 },
   bestScore: { type: Number, default: 0 },
   passed: { type: Boolean, default: false },
+
+  // ── Engagement ──
+  engagementConfirmed: { type: Boolean, default: false },
 
   // ── Completion ──
   completedAt: { type: Date },
