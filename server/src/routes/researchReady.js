@@ -12,7 +12,7 @@
 
 import express from 'express';
 import { protect, requireAdmin } from '../middleware/auth.js';
-import { searchArticles, enrichWithFullText, fetchArticleWithFullText } from '../services/openAlex.js';
+import { searchArticles } from '../services/openAlex.js';
 import { checkCurrency } from '../services/currencyCheck.js';
 import { buildCE } from '../services/ceBuild.js';
 import { generateArticleContent } from '../services/articleContentGenerator.js';
