@@ -21,16 +21,14 @@
     *{margin:0;padding:0;box-sizing:border-box;}
     body{font-family:Georgia,'Times New Roman',serif;background:var(--egg);color:var(--espresso);line-height:1.6;}
 
-    .navbar{background:#2A2520;padding:0 2rem;height:64px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 1px 3px rgba(0,0,0,0.12);position:sticky;top:0;z-index:100;}
-    .navbar-brand{display:flex;align-items:center;gap:10px;text-decoration:none;}
-    .logo-mark{width:38px;height:38px;background:linear-gradient(135deg,#C49040,#8B5E2E);border-radius:10px;display:flex;align-items:center;justify-content:center;font-family:Georgia,serif;font-weight:700;}
-    .logo-mark .c{color:#FDF8EE;font-size:17px;}.logo-mark .r{color:#DDD9D3;font-size:14px;margin-left:-3px;}
-    .navbar-title{font-family:Georgia,serif;font-size:1.15rem;}
-    .navbar-title .counselor{color:#C49040;font-weight:700;}.navbar-title .ready{color:#DDD9D3;font-weight:700;}
-    .navbar-links{display:flex;align-items:center;gap:1.25rem;}
-    .navbar-links a{color:rgba(221,217,211,0.8);text-decoration:none;font-size:14px;font-weight:500;font-family:Georgia,serif;transition:color var(--t);}
-    .navbar-links a:hover,.navbar-links a.active{color:#FDF8EE;}
-    .navbar-links a:focus-visible{outline:2px solid #C49040;outline-offset:2px;border-radius:3px;}
+    /* Woodgrain palette overrides for shared nav on this page */
+    #cr-header header{background:#2A2520!important;border-bottom:1px solid rgba(196,144,64,0.2)!important;box-shadow:0 1px 3px rgba(0,0,0,0.18)!important;}
+    #cr-header header a span[style*="color:#6B1D34"]{color:#C49040!important;}
+    #cr-header header a span[style*="color:#3D6A4A"]{color:#DDD9D3!important;}
+    #cr-header header div[style*="background:#6B1D34"]{background:linear-gradient(135deg,#C49040,#8B5E2E)!important;}
+    #cr-header .nav-link{color:rgba(221,217,211,0.8)!important;font-family:Georgia,serif!important;}
+    #cr-header .nav-link:hover,#cr-header .nav-link.active{color:#FDF8EE!important;background:rgba(196,144,64,0.15)!important;}
+    #cr-header .nav-link.active{border-bottom:2px solid #C49040!important;}
 
     .page{max-width:960px;margin:0 auto;padding:2rem 1.5rem 4rem;}
     .hero{background:linear-gradient(135deg,#3D2E18 0%,#2A2520 100%);border-radius:var(--radius);padding:2.5rem 2rem;margin-bottom:2rem;color:#FDF8EE;}
