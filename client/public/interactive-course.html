@@ -1410,9 +1410,9 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
    ═══════════════════════════════════════════════════════════════ */
 .cr-timer-widget {
   position: fixed;
-  bottom: 24px;
+  bottom: 90px;
   right: 24px;
-  z-index: 9000;
+  z-index: 49;
   background: #fff;
   border: 2px solid var(--cr-border);
   border-radius: var(--cr-radius);
@@ -1476,12 +1476,19 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
 .cr-timer-widget.met .cr-timer-met-msg {
   display: block;
 }
+/* When timer is present, push a11y panel and floating buttons above it */
+body.cr-has-timer .cr-a11y-toggle { bottom: 220px; }
+body.cr-has-timer .cr-a11y-panel { bottom: 284px; }
+body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
 @media print {
   .cr-timer-widget { display: none !important; }
 }
 @media (max-width: 600px) {
-  .cr-timer-widget { bottom: 12px; right: 12px; min-width: 160px; padding: 10px 14px; }
+  .cr-timer-widget { bottom: 80px; right: 12px; min-width: 160px; padding: 10px 14px; }
   .cr-timer-display { font-size: 22px; }
+  body.cr-has-timer .cr-a11y-toggle { bottom: 200px; }
+  body.cr-has-timer .cr-a11y-panel { bottom: 264px; }
+  body.cr-has-timer .cr-glossary-btn { bottom: 200px; }
 }
 </style>
 <!-- .docx parsing -->
@@ -2246,6 +2253,7 @@ function initMinimumTimer() {
     '<div class="cr-timer-bar"><div class="cr-timer-bar-fill" id="crTimerBarFill"></div></div>' +
     '<div class="cr-timer-met-msg" id="crTimerMetMsg">✓ Time requirement met — exam unlocked</div>';
   document.body.appendChild(widget);
+  document.body.classList.add('cr-has-timer');
 
   // Visibility change — pause when tab hidden
   document.addEventListener('visibilitychange', function() {
