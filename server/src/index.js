@@ -56,6 +56,7 @@ import boardAlertsRoutes from './routes/boardAlerts.js';
 import cePlannerRoutes from './routes/cePlanner.js';
 import imageUploadRoutes from './routes/imageUpload.js';
 import researchReadyRoutes from './routes/researchReady.js';
+import adminCoursesRoutes from './routes/adminCourses.js';
 import toolsRoutes from './routes/tools.js';
 import toolRoutes from './routes/toolRoutes.js';
 import partnersRoutes from './routes/partners.js';
@@ -170,6 +171,7 @@ app.use('/api/lti', ltiRoutes);
 app.use('/api/xapi', xapiRoutes);
 app.use('/api/cebroker', cebrokerRoutes);
 app.use('/api/help', helpRoutes);
+app.use('/api/admin', adminCoursesRoutes);
 app.use('/api/admin/courses', bulkUploadRoutes);
 app.use('/api/course-builder', courseBuilderRoutes);
 app.use('/api/narration', narrationRoutes);
@@ -219,6 +221,7 @@ const REQUIRED_ROUTES = {
   '/api/recommendations':     recommendationsRoutes,
   '/api/images':              imageUploadRoutes,
   '/api/admin/courses':       bulkUploadRoutes,
+  '/api/admin/course-mgmt':   adminCoursesRoutes,
   '/api/blog':                blogRoutes,
 };
 
