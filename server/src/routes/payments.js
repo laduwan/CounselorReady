@@ -12,6 +12,11 @@ import Partner from '../models/Partner.js';
 import { protect } from '../middleware/auth.js';
 import { logActivity, ACTIVITY_TYPES } from '../services/activityTrackingService.js';
 import { sendPaymentFailedEmail, sendPaymentRecoveredEmail } from '../services/hardshipEmailService.js';
+import twilio from 'twilio';
+
+const twilioClient = process.env.TWILIO_ACCOUNT_SID
+  ? twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN)
+  : null;
 
 const router = express.Router();
 
@@ -697,6 +702,15 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
             userName: buyer?.profile?.firstName || '',
             userEmail: buyer?.email || ''
           }).catch(() => {});
+
+          // SMS notification (fire-and-forget)
+          if (twilioClient && process.env.ADMIN_PHONE) {
+            twilioClient.messages.create({
+              body: `CounselorReady: Payment\n${buyer?.email} paid for "${slug}"`,
+              from: process.env.TWILIO_PHONE_NUMBER,
+              to: process.env.ADMIN_PHONE
+            }).catch(e => console.error('SMS error:', e));
+          }
           break;
         }
 
