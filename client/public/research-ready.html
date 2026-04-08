@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Researched-N-Ready CE | CounselorReady</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
   <style>
     :root {
       --egg:#FAF5EC;--egg2:#F5EEE0;--egg3:#EDE3D0;
@@ -21,14 +22,8 @@
     *{margin:0;padding:0;box-sizing:border-box;}
     body{font-family:Georgia,'Times New Roman',serif;background:var(--egg);color:var(--espresso);line-height:1.6;}
 
-    /* Woodgrain palette overrides for shared nav on this page */
-    #cr-header header{background:#2A2520!important;border-bottom:1px solid rgba(196,144,64,0.2)!important;box-shadow:0 1px 3px rgba(0,0,0,0.18)!important;}
-    #cr-header header a span[style*="color:#6B1D34"]{color:#C49040!important;}
-    #cr-header header a span[style*="color:#3D6A4A"]{color:#DDD9D3!important;}
-    #cr-header header div[style*="background:#6B1D34"]{background:linear-gradient(135deg,#C49040,#8B5E2E)!important;}
-    #cr-header .nav-link{color:rgba(221,217,211,0.8)!important;font-family:Georgia,serif!important;}
-    #cr-header .nav-link:hover,#cr-header .nav-link.active{color:#FDF8EE!important;background:rgba(196,144,64,0.15)!important;}
-    #cr-header .nav-link.active{border-bottom:2px solid #C49040!important;}
+    /* Woodgrain palette for shared nav on this page */
+    #cr-header header{background:#2A2520!important;border-bottom:1px solid rgba(196,144,64,0.2)!important;}
 
     .page{max-width:960px;margin:0 auto;padding:2rem 1.5rem 4rem;}
     .hero{background:linear-gradient(135deg,#3D2E18 0%,#2A2520 100%);border-radius:var(--radius);padding:2.5rem 2rem;margin-bottom:2rem;color:#FDF8EE;}
@@ -110,7 +105,7 @@
     .toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--espresso2);color:var(--egg);padding:10px 22px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;font-family:Georgia,serif;box-shadow:var(--shadow-md);opacity:0;transition:all 0.3s ease;z-index:200;pointer-events:none;}
     .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 
-    @media(max-width:640px){.page{padding:1rem 1rem 6rem;}.hero{padding:1.5rem;}.hero h1{font-size:1.3rem;}.search-wrap{flex-direction:column;}.btn-search{padding:10px;}.hour-selector{gap:6px;}.hour-pill{min-width:70px;padding:8px 12px;}.ac-footer{flex-direction:column;align-items:flex-start;}.navbar{padding:0 1rem;}.navbar-links{gap:0.75rem;}.navbar-links a{font-size:11px;}}
+    @media(max-width:640px){.page{padding:1rem 1rem 6rem;}.hero{padding:1.5rem;}.hero h1{font-size:1.3rem;}.search-wrap{flex-direction:column;}.btn-search{padding:10px;}.hour-selector{gap:6px;}.hour-pill{min-width:70px;padding:8px 12px;}.ac-footer{flex-direction:column;align-items:flex-start;}}
   
     /* Shared nav styles */
     .dd{display:none;position:absolute;top:100%;margin-top:6px;background:#fff;border-radius:10px;box-shadow:0 10px 40px rgba(107,29,52,.12);border:1px solid #FAE8EB;z-index:50;padding:6px 0;min-width:210px}
@@ -118,9 +113,9 @@
     .dd a{display:flex;align-items:center;gap:10px;padding:8px 16px;font-size:13px;color:#284157;text-decoration:none;transition:background .1s}
     .dd a:hover{background:#F2F7F4}
     .ov{display:none;position:fixed;inset:0;z-index:40}.ov.open{display:block}
-    .nav-link{padding:6px 12px;border-radius:6px;font-size:13px;font-weight:500;color:#57534e;text-decoration:none;display:flex;align-items:center;gap:4px;transition:all .15s}
-    .nav-link:hover{color:#6B1D34;background:#FDF5F7}
-    .nav-link.active{color:#6B1D34;background:#FDF5F7;font-weight:600;border-bottom:2px solid #6B1D34}
+    .nav-link{padding:6px 12px;border-radius:6px;font-size:13px;font-weight:500;color:rgba(221,217,211,0.8);text-decoration:none;display:flex;align-items:center;gap:4px;transition:all .15s;font-family:Georgia,serif}
+    .nav-link:hover{color:#FDF8EE;background:rgba(196,144,64,0.15)}
+    .nav-link.active{color:#FDF8EE;background:rgba(196,144,64,0.15);font-weight:600;border-bottom:2px solid #C49040}
   </style>
 </head>
 <body>
