@@ -18,8 +18,11 @@
  *   3. contentBlock type "quiz" with isExam:true → assessment.questions[]
  *      (removed from sections; captured as final exam questions)
  *   4. type "text" and type "sectionDivider" are preserved as-is
- *   5. assessment.passingScore = 80, assessment.maxAttempts = 3
- *   6. status: "draft" for safety
+ *   5. assessment.passingScore = 80, assessment.attemptsAllowed = 999 (unlimited)
+ *   6. maxAttempts: 999 at course level (unlimited, per admin-editor dropdown)
+ *   7. estimatedTime per section = Math.round(ceHours * 60 / numSections) minutes
+ *   8. minimumTimeMinutes = ceHours * 60 at course level (ACEP seat-time enforcement)
+ *   9. status: "draft" for safety
  *   7. Upsert by slug (delete existing + insert)
  *
  * Uses native MongoDB driver via mongoose.connection.db
@@ -145,23 +148,36 @@ function processContentBlocks(contentBlocks, assessmentQuestions) {
  */
 function transformCourse(course) {
   const assessmentQuestions = [];
+  const modules = course.modules || [];
 
-  const sections = (course.modules || []).map((module, idx) => ({
+  // Compute per-section seat time: total CE minutes divided evenly across sections.
+  // 1 CE hour = 60 minutes. Round up to nearest whole minute.
+  const totalMinutes = (course.ceHours || 1) * 60;
+  const minutesPerSection = Math.round(totalMinutes / (modules.length || 1));
+
+  const sections = modules.map((module, idx) => ({
     title: module.title,
     order: module.order ?? (idx + 1),
+    estimatedTime: minutesPerSection,   // ACEP-required seat time per section
     contentBlocks: processContentBlocks(module.contentBlocks || [], assessmentQuestions)
   }));
 
   // Destructure out modules and the old assessment shape; spread everything else
-  const { modules, assessment: originalAssessment, ...rest } = course;
+  const { modules: _modules, assessment: originalAssessment, ...rest } = course;
 
   return {
     ...rest,
     sections,
+    // Course-level delivery rules
+    minimumTimeMinutes: totalMinutes,   // total seat-time enforcement (ceHours × 60)
+    maxAttempts: 999,                   // unlimited exam retries (matches admin-editor "Unlimited")
     assessment: {
-      passingScore: originalAssessment?.passingScore ?? 80,
-      maxAttempts:  originalAssessment?.maxAttempts  ?? 3,
-      questions:    assessmentQuestions
+      passingScore:    originalAssessment?.passingScore ?? 80,
+      passThreshold:   0.8,
+      attemptsAllowed: 999,             // unlimited (route reads this field)
+      maxAttempts:     999,             // belt-and-suspenders for any legacy reader
+      shuffleQuestions: true,
+      questions:       assessmentQuestions
     },
     status: 'draft'   // Safety: review before publishing
   };
@@ -210,7 +226,7 @@ async function seedAll() {
         n + s.contentBlocks.filter(b => b.type === 'multipleChoice').length, 0);
 
       console.log(`✅ ${course.courseCode}  UPSERTED  |  ${course.title}`);
-      console.log(`   ${course.ceHours} CE hrs  |  ${sectionCount} sections  |  ${kcCount} knowledge-check Qs  |  ${examQCount} exam Qs  |  status: draft`);
+      console.log(`   ${course.ceHours} CE hrs  |  ${sectionCount} sections (${transformed.minimumTimeMinutes} min total)  |  ${kcCount} KC Qs  |  ${examQCount} exam Qs  |  attempts: unlimited  |  status: draft`);
       passed++;
     } catch (err) {
       console.error(`❌ ${course.courseCode} FAILED:`, err.message);
