@@ -1187,6 +1187,9 @@ router.put('/courses/:courseId', protect, adminOnly, async (req, res) => {
       }
     }
     
+    // Strip nbccContentAreas to prevent saving mismatched enum values from stale data
+    delete updates.nbccContentAreas;
+
     // Update fields
     Object.keys(updates).forEach(key => {
       course[key] = updates[key];
