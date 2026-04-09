@@ -17,7 +17,7 @@ const OPENALEX_BASE = 'https://api.openalex.org/works';
 const MAILTO = process.env.CROSSREF_MAILTO || 'contact@gaintegrated.com';
 
 // Psychology / Counseling concept IDs for filtering
-const COUNSELING_CONCEPTS = 'C15744967|C2776903|C118552586|C144024400|C203014093|C139719470';
+const COUNSELING_CONCEPTS = 'C15744967|C2776903|C118552586';
 
 /**
  * Fetch PDF buffer from a URL with timeout.
