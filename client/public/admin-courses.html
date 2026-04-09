@@ -511,7 +511,8 @@
       const ceHours = c.ceHours || c.ceuHours || 0;
       const target = ceHours * WORDS_PER_CE_HOUR;
       const wordPct = target > 0 ? Math.min(100, Math.round((c._words / target) * 100)) : 0;
-      const sections = c.sectionCount || c.moduleCount || (c.sections || c.modules || []).length;
+      const modules = c.moduleCount || 0;
+      const sections = c.sectionCount || (c.sections || c.modules || []).length;
       const price = c.price ? `$${c.price}` : null;
       const tier = c.accessTier || c.pricingTier || null;
 
@@ -540,21 +541,27 @@
                 title="${pub ? 'Unpublish' : 'Publish'}">
                 ${pub ? '📤' : '📥'}
               </button>
+              <a href="/interactive-course.html?id=${c._id}" target="_blank"
+                class="w-8 h-8 rounded-lg flex items-center justify-center text-sm bg-navy-50 hover:bg-navy-100 text-navy-700 transition-colors" title="View course">📖</a>
+              <button onclick="copyLink('${c.slug || c._id}')"
+                class="w-8 h-8 rounded-lg flex items-center justify-center text-sm bg-sky-50 hover:bg-sky-100 text-sky-700 transition-colors" title="Copy course link">🔗</button>
               <a href="/admin-course-preview.html?id=${c._id}"
                 class="w-8 h-8 rounded-lg flex items-center justify-center text-sm bg-purple-50 hover:bg-purple-100 text-purple-700 transition-colors" title="Preview">👁️</a>
+              <button onclick="openQuickEdit('${c._id}','${src}')"
+                class="w-8 h-8 rounded-lg flex items-center justify-center text-sm bg-forest-50 hover:bg-forest-100 text-forest-700 transition-colors" title="Quick edit">⚡</button>
+              <a href="/admin-course-editor.html?id=${c._id}"
+                class="w-8 h-8 rounded-lg flex items-center justify-center text-sm bg-burgundy-50 hover:bg-burgundy-100 text-burgundy-700 transition-colors" title="Full editor">✏️</a>
+              <button onclick="openMetaModal('${c._id}','${esc(c.title)}','${src}',this)"
+                class="w-8 h-8 rounded-lg flex items-center justify-center text-sm bg-gold-50 hover:bg-gold-100 text-gold-700 transition-colors" title="Meta & content areas">🏷️</button>
               <button onclick="duplicateCourse('${c._id}','${esc(c.title)}')"
                 class="w-8 h-8 rounded-lg flex items-center justify-center text-sm bg-gold-50 hover:bg-gold-100 text-gold-700 transition-colors" title="Duplicate">📋</button>
-              <button onclick="openMetaModal('${c._id}','${esc(c.title)}','${src}',this)"
-                class="h-8 px-3 rounded-lg text-xs font-medium bg-gold-50 hover:bg-gold-100 text-gold-700 transition-colors flex items-center" title="Delivery Format & Content Areas">Meta</button>
-              <a href="/admin-course-editor.html?id=${c._id}"
-                class="h-8 px-3 rounded-lg text-xs font-medium bg-burgundy-50 hover:bg-burgundy-100 text-burgundy-700 transition-colors flex items-center" title="Full course editor with sections, assessment, references">Full Edit</a>
-              <a href="/admin/course-builder?id=${c._id}"
-                class="h-8 px-3 rounded-lg text-xs font-medium bg-forest-50 hover:bg-forest-100 text-forest-700 transition-colors flex items-center">Edit</a>
               <button onclick="deleteCourse('${c._id}','${esc(c.title)}','${src}')"
-                class="h-8 px-3 rounded-lg text-xs font-medium bg-burgundy-50 hover:bg-burgundy-100 text-burgundy-700 transition-colors">Delete</button>
+                class="w-8 h-8 rounded-lg flex items-center justify-center text-sm bg-red-50 hover:bg-red-100 text-red-700 transition-colors" title="Delete">🗑️</button>
             </div>
           </div>
           <div class="flex items-center gap-4 text-sm flex-wrap">
+            <span class="text-forest-600"><strong class="text-forest-800">${modules}</strong> modules</span>
+            <span class="text-forest-300">·</span>
             <span class="text-forest-600"><strong class="text-forest-800">${sections}</strong> sections</span>
             <span class="text-forest-300">·</span>
             <span class="text-forest-600"><strong class="text-forest-800">${ceHours}</strong> CE hrs</span>
@@ -882,7 +889,130 @@
   document.getElementById('metaModal').addEventListener('click', function(e) {
     if (e.target === this) closeMetaModal();
   });
+
+  // ═══════════════════════════════════════════════════════════════
+  // QUICK EDIT MODAL — title, CE hours, status, price
+  // ═══════════════════════════════════════════════════════════════
+  let qeCourseId = '', qeSrc = '';
+
+  async function openQuickEdit(courseId, src) {
+    qeCourseId = courseId; qeSrc = src;
+    const modal = document.getElementById('quickEditModal');
+    modal.style.display = 'flex';
+    document.getElementById('qeForm').style.display = 'none';
+    document.getElementById('qeLoading').style.display = 'block';
+
+    try {
+      const endpoint = src === 'interactive'
+        ? `${API_URL}/api/interactive-courses/${courseId}`
+        : `${API_URL}/api/admin/courses/${courseId}`;
+      const r = await fetch(endpoint, { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } });
+      const data = await r.json();
+      const c = data.course || data;
+
+      document.getElementById('qeTitle').value = c.title || '';
+      document.getElementById('qeCeHours').value = c.ceHours || 0;
+      document.getElementById('qeStatus').value = c.status || 'draft';
+      document.getElementById('qePrice').value = c.price || 0;
+      document.getElementById('qeModalLabel').textContent = (c.title || '').substring(0, 50);
+
+      document.getElementById('qeLoading').style.display = 'none';
+      document.getElementById('qeForm').style.display = 'block';
+    } catch (err) {
+      console.error(err);
+      showToast('Failed to load course', '#DC2626');
+      closeQuickEdit();
+    }
+  }
+
+  function closeQuickEdit() {
+    document.getElementById('quickEditModal').style.display = 'none';
+  }
+
+  async function saveQuickEdit() {
+    const payload = {
+      title: document.getElementById('qeTitle').value.trim(),
+      ceHours: parseFloat(document.getElementById('qeCeHours').value) || 0,
+      status: document.getElementById('qeStatus').value,
+      price: parseFloat(document.getElementById('qePrice').value) || 0
+    };
+    if (payload.status === 'published') payload.isPublished = true;
+    if (payload.status === 'draft') payload.isPublished = false;
+
+    try {
+      const endpoint = qeSrc === 'interactive'
+        ? `${API_URL}/api/interactive-courses/${qeCourseId}`
+        : `${API_URL}/api/admin/courses/${qeCourseId}`;
+      const r = await fetch(endpoint, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+        body: JSON.stringify(payload)
+      });
+      if (!r.ok) throw new Error('Save failed');
+      showToast('✓ Saved', '#4A7C59');
+      closeQuickEdit();
+      loadCourses(1);
+    } catch (err) {
+      console.error(err);
+      showToast('Save failed', '#DC2626');
+    }
+  }
+
+  document.getElementById('quickEditModal').addEventListener('click', function(e) {
+    if (e.target === this) closeQuickEdit();
+  });
+
+  function copyLink(slugOrId) {
+    const url = `${window.location.origin}/course-details.html?slug=${slugOrId}`;
+    navigator.clipboard.writeText(url).then(() => {
+      showToast('✓ Link copied', '#4A7C59');
+    }).catch(() => {
+      prompt('Copy this link:', url);
+    });
+  }
 </script>
+
+<!-- Quick Edit Modal -->
+<div id="quickEditModal" style="display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,0.4);display:none;align-items:center;justify-content:center;font-family:inherit">
+  <div style="background:#fff;border-radius:16px;padding:24px;width:420px;max-width:90vw;box-shadow:0 20px 60px rgba(0,0,0,0.15)">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <div>
+        <h3 style="font-size:16px;font-weight:700;color:#1a1a1a;margin:0">Quick Edit</h3>
+        <p id="qeModalLabel" style="font-size:12px;color:#6B7280;margin:2px 0 0"></p>
+      </div>
+      <button onclick="closeQuickEdit()" style="background:none;border:none;font-size:20px;cursor:pointer;color:#6B7280">&times;</button>
+    </div>
+    <div id="qeLoading" style="text-align:center;padding:2rem;color:#6B7280;font-size:13px">Loading...</div>
+    <div id="qeForm" style="display:none">
+      <div style="margin-bottom:12px">
+        <label style="display:block;font-size:12px;font-weight:600;color:#374151;margin-bottom:4px">Title</label>
+        <input id="qeTitle" type="text" style="width:100%;padding:8px 12px;border:1px solid #E5E2DC;border-radius:8px;font-size:14px;font-family:inherit">
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px">
+        <div>
+          <label style="display:block;font-size:12px;font-weight:600;color:#374151;margin-bottom:4px">CE Hours</label>
+          <input id="qeCeHours" type="number" step="0.5" min="0" style="width:100%;padding:8px 12px;border:1px solid #E5E2DC;border-radius:8px;font-size:14px;font-family:inherit">
+        </div>
+        <div>
+          <label style="display:block;font-size:12px;font-weight:600;color:#374151;margin-bottom:4px">Status</label>
+          <select id="qeStatus" style="width:100%;padding:8px 12px;border:1px solid #E5E2DC;border-radius:8px;font-size:14px;font-family:inherit">
+            <option value="draft">Draft</option>
+            <option value="published">Published</option>
+            <option value="archived">Archived</option>
+          </select>
+        </div>
+        <div>
+          <label style="display:block;font-size:12px;font-weight:600;color:#374151;margin-bottom:4px">Price ($)</label>
+          <input id="qePrice" type="number" step="0.01" min="0" style="width:100%;padding:8px 12px;border:1px solid #E5E2DC;border-radius:8px;font-size:14px;font-family:inherit">
+        </div>
+      </div>
+      <div style="display:flex;justify-content:flex-end;gap:8px">
+        <button onclick="closeQuickEdit()" style="padding:10px 20px;border:1px solid #E5E2DC;border-radius:10px;background:#fff;font-family:inherit;font-size:14px;font-weight:600;color:#6B7280;cursor:pointer">Cancel</button>
+        <button onclick="saveQuickEdit()" style="padding:10px 20px;border:none;border-radius:10px;background:#4A7C59;font-family:inherit;font-size:14px;font-weight:600;color:#fff;cursor:pointer">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 </body>
 </html>
