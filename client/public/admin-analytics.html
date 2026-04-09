@@ -717,7 +717,7 @@
       const token = localStorage.getItem('token');
       const filter = document.getElementById('activityFilter').value;
       
-      let url = `${API_URL}/api/admin/activity?limit=50`;
+      let url = `${API_URL}/api/analytics/admin/activity/search?limit=50`;
       if (filter) {
         url += `&type=${filter}`;
       }

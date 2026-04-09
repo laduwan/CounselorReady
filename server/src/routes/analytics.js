@@ -745,34 +745,42 @@ router.get('/admin/funnel', protect, async (req, res) => {
       createdAt: { $gte: since }
     });
 
-    // Stage 2: Users who enrolled in at least one course
-    const enrolledUsers = await UserCourseProgress.distinct('userId', {
-      enrolledAt: { $gte: since }
-    });
-    const enrolledCount = enrolledUsers.length;
+    // Stage 2: Users who enrolled in at least one course (legacy + interactive)
+    const [legacyEnrolled, interactiveEnrolled] = await Promise.all([
+      UserCourseProgress.distinct('userId', { enrolledAt: { $gte: since } }),
+      mongoose.connection.db.collection('interactivecourseprogresses')
+        .distinct('userId', { enrolledAt: { $gte: since } })
+    ]);
+    const enrolledCount = new Set([...legacyEnrolled.map(String), ...interactiveEnrolled.map(String)]).size;
 
-    // Stage 3: Users who made a payment (have active/trialing subscription or bought a course)
-    const paidCount = await User.countDocuments({
-      createdAt: { $gte: since },
-      $or: [
-        { 'subscription.status': { $in: ['active', 'trialing'] } },
-        { stripeCustomerId: { $exists: true, $ne: null } }
-      ]
+    // Stage 3: Users who made a payment during this period (from UserActivity — timestamp-accurate)
+    const paidUsers = await UserActivity.distinct('userId', {
+      type: { $in: ['payment_succeeded', 'subscription_started'] },
+      timestamp: { $gte: since }
     });
+    const paidCount = paidUsers.length;
 
-    // Stage 4: Users who started a course (status in_progress or completed)
-    const startedUsers = await UserCourseProgress.distinct('userId', {
-      enrolledAt: { $gte: since },
-      status: { $in: ['in_progress', 'completed'] }
-    });
-    const startedCount = startedUsers.length;
+    // Stage 4: Users who started a course (legacy + interactive)
+    const [legacyStarted, interactiveStarted] = await Promise.all([
+      UserCourseProgress.distinct('userId', {
+        enrolledAt: { $gte: since },
+        status: { $in: ['in_progress', 'completed'] }
+      }),
+      mongoose.connection.db.collection('interactivecourseprogresses')
+        .distinct('userId', {
+          enrolledAt: { $gte: since },
+          status: { $in: ['in_progress', 'completed'] }
+        })
+    ]);
+    const startedCount = new Set([...legacyStarted.map(String), ...interactiveStarted.map(String)]).size;
 
-    // Stage 5: Users who completed at least one course
-    const completedUsers = await UserCourseProgress.distinct('userId', {
-      completedAt: { $gte: since },
-      status: 'completed'
-    });
-    const completedCount = completedUsers.length;
+    // Stage 5: Users who completed at least one course (legacy + interactive)
+    const [legacyCompleted, interactiveCompleted] = await Promise.all([
+      UserCourseProgress.distinct('userId', { completedAt: { $gte: since }, status: 'completed' }),
+      mongoose.connection.db.collection('interactivecourseprogresses')
+        .distinct('userId', { completedAt: { $gte: since }, status: 'completed' })
+    ]);
+    const completedCount = new Set([...legacyCompleted.map(String), ...interactiveCompleted.map(String)]).size;
 
     // Build funnel stages with conversion rates
     const stages = [
@@ -831,7 +839,7 @@ async function getAverageFunnelTimes(since) {
               $cond: [
                 { $ne: ['$status', 'not_started'] },
                 { $subtract: [
-                  { $ifNull: [{ $arrayElemAt: ['$lessonsCompleted.completedAt', 0] }, '$enrolledAt'] },
+                  { $ifNull: [{ $min: '$lessonsCompleted.completedAt' }, '$enrolledAt'] },
                   '$enrolledAt'
                 ]},
                 null
@@ -842,7 +850,10 @@ async function getAverageFunnelTimes(since) {
             $avg: {
               $cond: [
                 { $eq: ['$status', 'completed'] },
-                { $subtract: ['$completedAt', '$enrolledAt'] },
+                { $subtract: [
+                  '$completedAt',
+                  { $ifNull: [{ $min: '$lessonsCompleted.completedAt' }, '$enrolledAt'] }
+                ]},
                 null
               ]
             }
@@ -891,43 +902,30 @@ router.get('/admin/funnel/trend', protect, async (req, res) => {
       { $sort: { _id: 1 } }
     ]);
 
-    const enrollments = await UserCourseProgress.aggregate([
-      { $match: { enrolledAt: { $gte: since } } },
-      {
-        $group: {
-          _id: { $dateToString: { format: '%Y-%U', date: '$enrolledAt' } },
-          count: { $sum: 1 },
-          uniqueUsers: { $addToSet: '$userId' }
-        }
-      },
-      {
-        $project: {
-          _id: 1,
-          count: 1,
-          uniqueUsers: { $size: '$uniqueUsers' }
-        }
-      },
+    const weeklyAgg = (field, matchExtra = {}) => [
+      { $match: { [field]: { $gte: since }, ...matchExtra } },
+      { $group: { _id: { $dateToString: { format: '%Y-%U', date: `$${field}` } }, uniqueUsers: { $addToSet: '$userId' } } },
+      { $project: { _id: 1, uniqueUsers: { $size: '$uniqueUsers' } } },
       { $sort: { _id: 1 } }
+    ];
+
+    const mergeWeekly = (a, b) => {
+      const map = {};
+      for (const row of a) map[row._id] = (map[row._id] || 0) + row.uniqueUsers;
+      for (const row of b) map[row._id] = (map[row._id] || 0) + row.uniqueUsers;
+      return Object.entries(map).map(([_id, uniqueUsers]) => ({ _id, uniqueUsers })).sort((x, y) => x._id < y._id ? -1 : 1);
+    };
+
+    const db = mongoose.connection.db;
+    const [legacyEnrollTrend, interactiveEnrollTrend, legacyCompleteTrend, interactiveCompleteTrend] = await Promise.all([
+      UserCourseProgress.aggregate(weeklyAgg('enrolledAt')),
+      db.collection('interactivecourseprogresses').aggregate(weeklyAgg('enrolledAt')).toArray(),
+      UserCourseProgress.aggregate(weeklyAgg('completedAt', { status: 'completed' })),
+      db.collection('interactivecourseprogresses').aggregate(weeklyAgg('completedAt', { status: 'completed' })).toArray()
     ]);
 
-    const completions = await UserCourseProgress.aggregate([
-      { $match: { completedAt: { $gte: since }, status: 'completed' } },
-      {
-        $group: {
-          _id: { $dateToString: { format: '%Y-%U', date: '$completedAt' } },
-          count: { $sum: 1 },
-          uniqueUsers: { $addToSet: '$userId' }
-        }
-      },
-      {
-        $project: {
-          _id: 1,
-          count: 1,
-          uniqueUsers: { $size: '$uniqueUsers' }
-        }
-      },
-      { $sort: { _id: 1 } }
-    ]);
+    const enrollments = mergeWeekly(legacyEnrollTrend, interactiveEnrollTrend);
+    const completions = mergeWeekly(legacyCompleteTrend, interactiveCompleteTrend);
 
     res.json({ registrations, enrollments, completions });
   } catch (error) {
