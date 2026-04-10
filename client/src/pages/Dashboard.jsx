@@ -75,40 +75,20 @@ export default function Dashboard() {
   const [savedActionIds, setSavedActionIds] = useState(loadSavedActions);
   const [editingActions, setEditingActions] = useState(false);
   const [draftActionIds, setDraftActionIds] = useState([]);
-  const [surveyData, setSurveyData] = useState(null);
-  const [surveyDismissed, setSurveyDismissed] = useState(() => {
-    try {
-      const dismissed = localStorage.getItem('cr_survey_dismissed');
-      if (!dismissed) return false;
-      const ts = parseInt(dismissed);
-      // Re-show after 24 hours if dismissed without submitting
-      return Date.now() - ts < 24 * 60 * 60 * 1000;
-    } catch { return false; }
-  });
-  const [surveySubmitted, setSurveySubmitted] = useState(false);
-  const [npsScore, setNpsScore] = useState(null);
-  const [npsLove, setNpsLove] = useState('');
-  const [npsImprove, setNpsImprove] = useState('');
-  const [satScore, setSatScore] = useState(0);
-  const [satRatings, setSatRatings] = useState({ courseQuality: 0, easeOfUse: 0, valueForMoney: 0, customerSupport: 0, ceTracking: 0, certificateProcess: 0 });
-  const [satFeedback, setSatFeedback] = useState('');
-  const [surveySubmitting, setSurveySubmitting] = useState(false);
 
   useEffect(() => {
     const fetchData = async (retries = 2) => {
       try {
-        const [coursesRes, credentialsRes, certsRes, activityRes, surveyRes] = await Promise.all([
+        const [coursesRes, credentialsRes, certsRes, activityRes] = await Promise.all([
           api.get('/interactive-courses/user/my-courses'),
           api.get('/credentials/user/dashboard'),
           api.get('/certificates/my').catch(() => ({ data: { certificates: [] } })),
-          api.get('/analytics/my-activity?limit=10').catch(() => ({ data: { activities: [] } })),
-          api.get('/analytics/survey/check').catch(() => ({ data: { showSurvey: false } }))
+          api.get('/analytics/my-activity?limit=10').catch(() => ({ data: { activities: [] } }))
         ]);
         setCourses(coursesRes.data.data || coursesRes.data.enrolledCourses || []);
         setCredentials(credentialsRes.data);
         setCertificates(certsRes.data.certificates || certsRes.data || []);
         setActivity(activityRes.data.activities || []);
-        if (surveyRes.data.showSurvey) setSurveyData(surveyRes.data);
       } catch (error) {
         if (retries > 0 && !error.response) {
           await new Promise(r => setTimeout(r, 3000));
@@ -133,53 +113,6 @@ export default function Dashboard() {
   const totalCEHours = Math.max(credentialCEHours, certificateCEHours);
   const totalCredentials = credentials.summary?.totalCredentials || 0;
   const certCount = Array.isArray(certificates) ? certificates.length : 0;
-
-  const dismissSurvey = () => {
-    setSurveyDismissed(true);
-    localStorage.setItem('cr_survey_dismissed', String(Date.now()));
-  };
-
-  const submitNpsSurvey = async () => {
-    if (npsScore === null) return;
-    setSurveySubmitting(true);
-    try {
-      await api.post('/analytics/survey/nps', {
-        npsScore,
-        whatDoYouLove: npsLove,
-        whatCouldImprove: npsImprove,
-        trigger: surveyData?.trigger || 'manual'
-      });
-      setSurveySubmitted(true);
-      localStorage.setItem('cr_survey_dismissed', String(Date.now()));
-      setTimeout(() => { setSurveyData(null); setSurveySubmitted(false); }, 2500);
-    } catch (err) {
-      console.error('NPS survey submit error:', err);
-    } finally {
-      setSurveySubmitting(false);
-    }
-  };
-
-  const submitSatisfactionSurvey = async () => {
-    if (!satScore) return;
-    setSurveySubmitting(true);
-    try {
-      await api.post('/analytics/survey/satisfaction', {
-        satisfactionScore: satScore,
-        ratings: satRatings,
-        feedback: satFeedback,
-        trigger: surveyData?.trigger || 'manual'
-      });
-      setSurveySubmitted(true);
-      localStorage.setItem('cr_survey_dismissed', String(Date.now()));
-      setTimeout(() => { setSurveyData(null); setSurveySubmitted(false); }, 2500);
-    } catch (err) {
-      console.error('Satisfaction survey submit error:', err);
-    } finally {
-      setSurveySubmitting(false);
-    }
-  };
-
-  const showSurvey = surveyData?.showSurvey && !surveyDismissed && !surveySubmitted;
 
   if (loading) {
     return (
@@ -666,163 +599,6 @@ export default function Dashboard() {
           </div>
         </div>
       </div>
-
-      {/* NPS / Satisfaction Survey Modal */}
-      {showSurvey && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.4)' }}>
-          <div className="bg-white rounded-2xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-6 relative">
-            <button onClick={dismissSurvey} className="absolute top-4 right-4 text-stone-400 hover:text-stone-600">
-              <X className="w-5 h-5" />
-            </button>
-
-            {surveySubmitted ? (
-              <div className="text-center py-8">
-                <CheckCircle className="w-12 h-12 text-forest-600 mx-auto mb-3" />
-                <p className="text-lg font-semibold text-forest-800">Thank you for your feedback!</p>
-                <p className="text-sm text-forest-600 mt-1">Your response helps us improve CounselorReady.</p>
-              </div>
-            ) : surveyData.surveyType === 'nps' ? (
-              <>
-                <h3 className="text-lg font-bold text-burgundy-800 mb-1">How likely are you to recommend CounselorReady?</h3>
-                <p className="text-sm text-forest-600 mb-5">On a scale of 0 to 10</p>
-
-                <div className="flex gap-1 justify-center mb-6 flex-wrap">
-                  {[0,1,2,3,4,5,6,7,8,9,10].map(n => (
-                    <button
-                      key={n}
-                      onClick={() => setNpsScore(n)}
-                      className={`w-10 h-10 rounded-lg text-sm font-semibold border-2 transition-all ${
-                        npsScore === n
-                          ? 'border-burgundy-700 bg-burgundy-700 text-white'
-                          : n <= 6
-                            ? 'border-red-200 text-red-600 hover:bg-red-50'
-                            : n <= 8
-                              ? 'border-amber-200 text-amber-600 hover:bg-amber-50'
-                              : 'border-green-200 text-green-600 hover:bg-green-50'
-                      }`}
-                    >
-                      {n}
-                    </button>
-                  ))}
-                </div>
-                <div className="flex justify-between text-xs text-stone-400 mb-5 px-1">
-                  <span>Not at all likely</span>
-                  <span>Extremely likely</span>
-                </div>
-
-                <div className="space-y-3 mb-5">
-                  <div>
-                    <label className="text-sm font-medium text-forest-700 block mb-1">What do you love about CounselorReady?</label>
-                    <textarea
-                      value={npsLove}
-                      onChange={e => setNpsLove(e.target.value)}
-                      className="w-full border border-stone-200 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-burgundy-300 focus:border-burgundy-300 outline-none"
-                      rows={2}
-                      placeholder="Optional"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-forest-700 block mb-1">What could we improve?</label>
-                    <textarea
-                      value={npsImprove}
-                      onChange={e => setNpsImprove(e.target.value)}
-                      className="w-full border border-stone-200 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-burgundy-300 focus:border-burgundy-300 outline-none"
-                      rows={2}
-                      placeholder="Optional"
-                    />
-                  </div>
-                </div>
-
-                <div className="flex gap-3 justify-end">
-                  <button onClick={dismissSurvey} className="px-4 py-2 text-sm text-stone-500 hover:text-stone-700">
-                    Maybe later
-                  </button>
-                  <button
-                    onClick={submitNpsSurvey}
-                    disabled={npsScore === null || surveySubmitting}
-                    className="px-5 py-2 text-sm font-medium text-white rounded-lg disabled:opacity-50 transition-colors"
-                    style={{ background: '#6B1D34' }}
-                  >
-                    {surveySubmitting ? 'Submitting...' : 'Submit'}
-                  </button>
-                </div>
-              </>
-            ) : (
-              /* Satisfaction survey */
-              <>
-                <h3 className="text-lg font-bold text-burgundy-800 mb-1">How satisfied are you with CounselorReady?</h3>
-                <p className="text-sm text-forest-600 mb-5">Rate your experience across these areas</p>
-
-                <div className="mb-5">
-                  <label className="text-sm font-medium text-forest-700 block mb-2">Overall Satisfaction</label>
-                  <div className="flex gap-2">
-                    {[1,2,3,4,5].map(n => (
-                      <button
-                        key={n}
-                        onClick={() => setSatScore(n)}
-                        className="transition-transform hover:scale-110"
-                      >
-                        <Star className={`w-7 h-7 ${n <= satScore ? 'fill-amber-400 text-amber-400' : 'text-stone-300'}`} />
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="space-y-3 mb-5">
-                  {[
-                    { key: 'courseQuality', label: 'Course Quality' },
-                    { key: 'easeOfUse', label: 'Ease of Use' },
-                    { key: 'valueForMoney', label: 'Value for Money' },
-                    { key: 'customerSupport', label: 'Customer Support' },
-                    { key: 'ceTracking', label: 'CE Tracking' },
-                    { key: 'certificateProcess', label: 'Certificate Process' }
-                  ].map(({ key, label }) => (
-                    <div key={key} className="flex items-center justify-between">
-                      <span className="text-sm text-forest-700">{label}</span>
-                      <div className="flex gap-1">
-                        {[1,2,3,4,5].map(n => (
-                          <button
-                            key={n}
-                            onClick={() => setSatRatings(prev => ({ ...prev, [key]: n }))}
-                            className="transition-transform hover:scale-110"
-                          >
-                            <Star className={`w-5 h-5 ${n <= satRatings[key] ? 'fill-amber-400 text-amber-400' : 'text-stone-300'}`} />
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="mb-5">
-                  <label className="text-sm font-medium text-forest-700 block mb-1">Additional feedback</label>
-                  <textarea
-                    value={satFeedback}
-                    onChange={e => setSatFeedback(e.target.value)}
-                    className="w-full border border-stone-200 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-burgundy-300 focus:border-burgundy-300 outline-none"
-                    rows={2}
-                    placeholder="Optional"
-                  />
-                </div>
-
-                <div className="flex gap-3 justify-end">
-                  <button onClick={dismissSurvey} className="px-4 py-2 text-sm text-stone-500 hover:text-stone-700">
-                    Maybe later
-                  </button>
-                  <button
-                    onClick={submitSatisfactionSurvey}
-                    disabled={!satScore || surveySubmitting}
-                    className="px-5 py-2 text-sm font-medium text-white rounded-lg disabled:opacity-50 transition-colors"
-                    style={{ background: '#6B1D34' }}
-                  >
-                    {surveySubmitting ? 'Submitting...' : 'Submit'}
-                  </button>
-                </div>
-              </>
-            )}
-          </div>
-        </div>
-      )}
     </div>
   );
 }
