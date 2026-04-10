@@ -16,8 +16,32 @@ import { ceWordCount } from '../utils/ceWordCount.js';
 const OPENALEX_BASE = 'https://api.openalex.org/works';
 const MAILTO = process.env.CROSSREF_MAILTO || 'contact@gaintegrated.com';
 
-// Psychology / Counseling concept IDs for filtering
-const COUNSELING_CONCEPTS = 'C15744967|C2776903|C118552586|C144024400|C203014093|C139719470';
+
+/**
+ * COUNSELING_CONCEPTS — OpenAlex concept ID filter
+ *
+ * What these are:
+ *   C15744967   Psychology         — broad psychology umbrella; catches most
+ *                                    counseling-adjacent research
+ *   C2776903    Counseling         — clinical counseling, psychotherapy,
+ *                                    therapeutic alliance, counselor education
+ *   C118552586  Clinical Psychology — assessment, diagnosis, evidence-based
+ *                                    treatment, CBT, DBT, trauma-focused therapy
+ *
+ * How to use:
+ *   Add or remove concept IDs using the pipe-separated format: 'Cxxx|Cyyy|Czzz'
+ *   Find concept IDs at: https://api.openalex.org/concepts?search=<term>
+ *   The filter matches any article tagged with AT LEAST ONE of the listed concepts.
+ *   Broader concepts (Psychology) return more results; narrower ones filter tighter.
+ *
+ * Expected outcome:
+ *   Search results and currency checks will only return open-access journal
+ *   articles that OpenAlex has classified under Psychology, Counseling, or
+ *   Clinical Psychology. Articles outside these domains (e.g. pure neuroscience,
+ *   medical research, social work without a counseling angle) will be excluded.
+ *   Removing a concept widens the filter; adding one narrows it.
+ */
+const COUNSELING_CONCEPTS = 'C15744967|C2776903|C118552586';
 
 /**
  * Fetch PDF buffer from a URL with timeout.
