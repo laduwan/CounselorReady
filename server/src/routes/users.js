@@ -783,4 +783,63 @@ router.post('/promo', protect, async (req, res) => {
   }
 });
 
+// @route   GET /api/users/tool-access/:toolKey
+// @desc    Check whether the current user has unlocked a specific clinical tool
+// @access  Private
+router.get('/tool-access/:toolKey', protect, async (req, res) => {
+  try {
+    const { toolKey } = req.params;
+    const user = await User.findById(req.user._id).select('unlockedTools');
+
+    const tool = user?.unlockedTools?.find(t => t.toolKey === toolKey);
+
+    if (!tool) {
+      return res.status(403).json({
+        hasAccess: false,
+        message: 'Tool not unlocked',
+        toolKey
+      });
+    }
+
+    if (tool.expiresAt && new Date(tool.expiresAt) < new Date()) {
+      return res.status(403).json({
+        hasAccess: false,
+        expired: true,
+        expiresAt: tool.expiresAt,
+        message: 'Tool access has expired. Complete the course again to renew.',
+        toolKey
+      });
+    }
+
+    return res.json({
+      hasAccess: true,
+      toolKey,
+      unlockedAt: tool.unlockedAt,
+      expiresAt: tool.expiresAt
+    });
+  } catch (error) {
+    console.error('Tool access check error:', error);
+    res.status(500).json({ error: 'Failed to check tool access' });
+  }
+});
+
+// @route   GET /api/users/unlocked-tools
+// @desc    List all currently active unlocked tools for the user
+// @access  Private
+router.get('/unlocked-tools', protect, async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).select('unlockedTools');
+    const now = new Date();
+
+    const tools = (user?.unlockedTools || []).filter(
+      t => !t.expiresAt || new Date(t.expiresAt) > now
+    );
+
+    res.json({ tools });
+  } catch (error) {
+    console.error('List unlocked tools error:', error);
+    res.status(500).json({ error: 'Failed to list unlocked tools' });
+  }
+});
+
 export default router;

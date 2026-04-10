@@ -961,6 +961,24 @@ router.post('/:id/certificate', protect, async (req, res) => {
 
       // Update progress with certificate reference
       progress.certificateId = certificate._id;
+      if (course.bonusResource?.unlockedOnCompletion && course.bonusResource?.type === 'reference_guide') {
+        const toolKey = course.bonusResource.toolKey || course.slug + '-tool';
+        const toolUser = await User.findById(req.user._id);
+        if (toolUser) {
+          const alreadyUnlocked = (toolUser.unlockedTools || []).some(t => t.toolKey === toolKey);
+          if (!alreadyUnlocked) {
+            await User.findByIdAndUpdate(req.user._id, {
+              $push: { unlockedTools: {
+                toolKey,
+                unlockedAt: new Date(),
+                courseId: course._id,
+                expiresAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)
+              }}
+            });
+            console.log(`[ToolUnlock] User ${req.user._id} unlocked tool: ${toolKey}`);
+          }
+        }
+      }
       progress.certificateIssuedAt = new Date();
       progress.status = 'certified';
       await progress.save();
