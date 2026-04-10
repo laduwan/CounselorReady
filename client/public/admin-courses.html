@@ -5,7 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin Courses - CounselorReady</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
   <script>
     tailwind.config = {
       theme: {
@@ -14,7 +14,7 @@
             burgundy: { 50:'#fdf2f5',100:'#fce7ed',200:'#f8cfdb',300:'#f2a8be',700:'#8b2542',800:'#6b1d34',900:'#4a1524',950:'#2d0a14' },
             forest: { 50:'#f2f7f4',100:'#e0ede5',200:'#c3dccc',300:'#98c3a9',400:'#6ba881',500:'#4a7c59',600:'#3d6549',700:'#33523d',800:'#2b4233' },
             gold: { 50:'#fdf9ef',100:'#faf0d5',400:'#e4b54e',500:'#d4a855',600:'#b8893a',700:'#996b2e' },
-            navy: { 800:'#34495e',900:'#2c3e50' }
+            navy: { 800:'#284157',900:'#1e3245' }
           }
         }
       }
@@ -560,13 +560,11 @@
             </div>
           </div>
           <div class="flex items-center gap-4 text-sm flex-wrap">
-            <span class="text-forest-600"><strong class="text-forest-800">${modules}</strong> modules</span>
-            <span class="text-forest-300">·</span>
-            <span class="text-forest-600"><strong class="text-forest-800">${sections}</strong> sections</span>
-            <span class="text-forest-300">·</span>
-            <span class="text-forest-600"><strong class="text-forest-800">${ceHours}</strong> CE hrs</span>
+            <span class="text-forest-600"><strong class="text-burgundy-800 text-base">${ceHours}</strong> CE hrs</span>
             <span class="text-forest-300">·</span>
             <span class="text-forest-600"><strong class="text-forest-800">${c._words.toLocaleString()}</strong> words</span>
+            <span class="text-forest-300">·</span>
+            <span class="text-forest-600"><strong class="text-forest-800">${sections}</strong> sections</span>
             ${target > 0 ? `
             <span class="text-forest-300">·</span>
             <span class="inline-flex items-center gap-2">
@@ -863,8 +861,13 @@
     };
 
     try {
-      const r = await fetch(`${API_URL}/api/interactive-courses/${courseId}/metadata`, {
-        method: 'PATCH',
+      const course = allCourses.find(c => c._id === courseId);
+      const src = course?._source || 'interactivecourses';
+      const endpoint = src === 'courses'
+        ? `${API_URL}/api/admin/courses/${courseId}`
+        : `${API_URL}/api/interactive-courses/${courseId}`;
+      const r = await fetch(endpoint, {
+        method: 'PUT',
         headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
@@ -903,7 +906,7 @@
     document.getElementById('qeLoading').style.display = 'block';
 
     try {
-      const endpoint = src === 'interactive'
+      const endpoint = src !== 'courses'
         ? `${API_URL}/api/interactive-courses/${courseId}`
         : `${API_URL}/api/admin/courses/${courseId}`;
       const r = await fetch(endpoint, { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } });
@@ -940,7 +943,7 @@
     if (payload.status === 'draft') payload.isPublished = false;
 
     try {
-      const endpoint = qeSrc === 'interactive'
+      const endpoint = qeSrc !== 'courses'
         ? `${API_URL}/api/interactive-courses/${qeCourseId}`
         : `${API_URL}/api/admin/courses/${qeCourseId}`;
       const r = await fetch(endpoint, {
@@ -951,15 +954,17 @@
       if (!r.ok) throw new Error('Save failed');
       showToast('✓ Saved', '#4A7C59');
       closeQuickEdit();
-      loadCourses(1);
+      loadCourses();
     } catch (err) {
       console.error(err);
       showToast('Save failed', '#DC2626');
     }
   }
 
-  document.getElementById('quickEditModal').addEventListener('click', function(e) {
-    if (e.target === this) closeQuickEdit();
+  document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('quickEditModal')?.addEventListener('click', function(e) {
+      if (e.target === this) closeQuickEdit();
+    });
   });
 
   function copyLink(slugOrId) {
