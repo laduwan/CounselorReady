@@ -70,6 +70,8 @@ import toolAnalyticsRoutes from './routes/toolAnalytics.js';
 // ═══════════════════════════════════════════════════════════════
 import { initializeScheduler } from './services/notificationScheduler.js';
 import { initializeBoardMonitor } from './services/boardMonitorService.js';
+import cron from 'node-cron';
+import { runDeadlineReminders } from './services/ceDeadlineReminder.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -301,6 +303,11 @@ const startServer = async () => {
   await connectDB();
   initializeScheduler();
   initializeBoardMonitor();
+  // CE deadline reminders — daily at 9 AM ET
+  cron.schedule('0 9 * * *', () => {
+    runDeadlineReminders().catch(err => console.error('CE deadline reminder error:', err.message));
+  }, { timezone: 'America/New_York' });
+  console.log('CE deadline reminder cron scheduled (daily 9 AM ET)');
   verifyRoutes();
   app.listen(PORT, () => {
     console.log(`

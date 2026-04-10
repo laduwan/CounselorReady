@@ -16,6 +16,7 @@ import Gamification from '../models/Gamification.js';
 import { protect, requireAdmin, optionalAuth } from '../middleware/auth.js';
 import { generateCertificate, generateCertificateNumber } from '../utils/certificate.js';
 import { logActivity, ACTIVITY_TYPES } from '../services/activityTrackingService.js';
+import { checkAndSendFreeLimit } from '../services/freeCourseLimitEmail.js';
 import twilio from 'twilio';
 
 const twilioClient = process.env.TWILIO_ACCOUNT_SID
@@ -1016,6 +1017,11 @@ router.post('/:id/certificate', protect, async (req, res) => {
       // Record gamification: course complete + certificate earned
       recordGamification(req.user._id, 'course_complete', { ceHours: course.ceHours || 1 });
       recordGamification(req.user._id, 'certificate_earned');
+
+      // Check and send free-tier limit email
+      checkAndSendFreeLimit(req.user._id).catch(err =>
+        console.error('Free limit email check error (non-fatal):', err.message)
+      );
     } else {
       // Existing certificate — update fileUrl
       certificate.fileUrl = pdfUrl;
