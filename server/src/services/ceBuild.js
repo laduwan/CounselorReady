@@ -59,7 +59,7 @@ export async function buildCE({
 
   const prompt = `You are a CE course designer for CounselorReady, an NBCC ACEP-approved provider (#7760).
 
-Article: "${title}" (${authors}, ${journal}, ${year})
+${title.includes(' | ') ? `Articles:\n${title.split(' | ').map((t, i) => `  ${i+1}. "${t.trim()}"`).join('\n')}\nAuthors: ${authors}\nJournals: ${journal}` : `Article: "${title}" (${authors}, ${journal}, ${year})`}
 Topic area: ${topic}
 CE Hours: ${ceHours} (${researchHours} Research)
 Format: ${format}
@@ -89,6 +89,7 @@ course_title rules:
 - Standalone article: trim and reformat the article title as a professional CE course name. Drop filler openings like "A study of...", "An analysis of...", etc. Example: "The supervisory working alliance and counselor development: A longitudinal study of LPC trainees" → "Supervisory Alliance and Counselor Development: A CE Review"
 - Comparative format: "Then and Now: Evolution of [Topic]" or "Comparative Analysis: [Topic]"
 - Integrative format: "Integrative Review: [Topic Area]"
+- Multiple articles: synthesize the shared themes into one unified academic title. Example: articles about supervision models + ethical gatekeeping → "Clinical Supervision and Ethical Gatekeeping: A Meta-Analytic Review". Never join article titles with | or &. Find the conceptual thread.
 - Max 80 characters.`;
 
   const rawResponse = await callClaude(prompt);
