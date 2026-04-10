@@ -7,7 +7,6 @@ import { ImpersonateProvider } from './context/ImpersonateContext';
 import Landing from './pages/Landing';
 import Login from './pages/Login';
 import Register from './pages/Register';
-import Dashboard from './pages/Dashboard';
 import Courses from './pages/Courses';
 import CourseView from './pages/CourseView';
 import Credentials from './pages/Credentials';
@@ -106,12 +105,10 @@ function AppRoutes() {
         <PublicRoute><Register /></PublicRoute>
       } />
 
+      {/* Dashboard — static HTML (current design); bypass SPA */}
+      <Route path="/dashboard" element={<HardRedirect to="/dashboard.html" />} />
+
       {/* Protected routes */}
-      <Route path="/dashboard" element={
-        <ProtectedRoute>
-          <Layout><Dashboard /></Layout>
-        </ProtectedRoute>
-      } />
       <Route path="/courses" element={
         <ProtectedRoute>
           <Layout><Courses /></Layout>
