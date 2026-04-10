@@ -1838,6 +1838,19 @@ function crApiBase() {
   return location.origin.includes('localhost') ? 'http://localhost:5000' : 'https://api.counselorready.com';
 }
 
+// ── PostHog analytics helper ──────────────────────────────────
+function phCapture(event, props) {
+  try {
+    const base = {
+      course_id: course?._id,
+      course_slug: course?.slug,
+      course_title: course?.title,
+      ce_hours: course?.ceHours
+    };
+    if (window.posthog) window.posthog.capture(event, { ...base, ...props });
+  } catch (e) {}
+}
+
 function crAuthHeaders() {
   const token = localStorage.getItem('token');
   if (!token) return null;
@@ -2448,6 +2461,10 @@ function detectModuleGroups() {
 
 function goToSection(i) {
   if (currentView === 'assessment') currentView = 'section';
+  phCapture('section_complete', {
+    section_index: currentSectionIndex,
+    section_title: course?.sections?.[currentSectionIndex]?.title || ('Section ' + (currentSectionIndex + 1))
+  });
   completedSections.add(currentSectionIndex);
   visitedSections.add(i);
   currentSectionIndex = i;
@@ -3801,6 +3818,12 @@ async function submitAssessment() {
   
   const passed = score >= (course.assessment.passingScore || 75);
 
+  phCapture(passed ? 'assessment_passed' : 'assessment_failed', {
+    score,
+    attempts: assessmentState.attempts,
+    passing_score: course.assessment?.passingScore || 75
+  });
+
   // POST assessment to backend BEFORE rendering result (must complete before cert pipeline)
   if (passed && crAuthHeaders()) {
     const area = document.getElementById('crContentArea');
@@ -4057,6 +4080,7 @@ function submitEvaluation() {
   crPost('/evaluation', { responses })
     .then(() => {
       certPipelineState.evaluationDone = true;
+      phCapture('evaluation_submitted', {});
       renderAttestation();
     })
     .catch(err => {
@@ -4142,6 +4166,7 @@ function submitAttestation() {
   crPost('/attestation', { agreed: true })
     .then(() => {
       certPipelineState.attestationDone = true;
+      phCapture('course_completed', {});
       downloadCertificate();
     })
     .catch(err => {
