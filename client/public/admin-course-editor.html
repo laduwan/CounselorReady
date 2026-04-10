@@ -413,5 +413,7 @@ function previewCourse() { window.open(`cready-viewer.html?id=${courseId}`, '_bl
 function escHtml(str) { return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
 function showToast(msg, type='success') { const t = document.getElementById('toast'); t.textContent = msg; t.className = `toast ${type} show`; setTimeout(() => t.classList.remove('show'), 3000); }
 </script>
+<script src="/shared/nav-footer.js"></script>
+<div id="cr-footer"></div>
 </body>
 </html>
