@@ -345,9 +345,11 @@
               <p id="modalUserEmail" class="text-white/80 text-sm"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="3f5a525e56537f5a475e524f535a115c5052">[email&#160;protected]</a></p>
             </div>
           </div>
-          <button onclick="closeUserModal()" class="text-white/80 hover:text-white">
-            <i class="fas fa-times text-xl"></i>
-          </button>
+          <button onclick="closeUserModal()"
+            style="width:36px;height:36px;min-width:36px;border-radius:50%;background:rgba(255,255,255,0.2);border:none;cursor:pointer;color:#fff;font-size:18px;display:flex;align-items:center;justify-content:center;transition:background 0.15s;flex-shrink:0"
+            onmouseover="this.style.background='rgba(255,255,255,0.35)'"
+            onmouseout="this.style.background='rgba(255,255,255,0.2)'"
+            aria-label="Close">✕</button>
         </div>
       </div>
       
