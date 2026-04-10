@@ -889,7 +889,10 @@
         }
       }
 
-      window.location.href = '/interactive-course.html?slug=' + slug;
+      const _btn = document.getElementById('startCourseBtn');
+      _btn.textContent = '✓ Enrolled! Opening course...';
+      _btn.disabled = true;
+      setTimeout(() => { window.location.href = '/interactive-course.html?slug=' + slug; }, 800);
     }
     
     // --- Purchase Flow ---
