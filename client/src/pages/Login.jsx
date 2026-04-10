@@ -42,7 +42,7 @@ export default function Login() {
     try {
       await login(email, password);
       const redirect = new URLSearchParams(location.search).get('redirect');
-      navigate(redirect || '/dashboard');
+      window.location.href = redirect || '/dashboard.html';
     } catch (err) {
       setError(err.response?.data?.error || 'Login failed. Please try again.');
     } finally {

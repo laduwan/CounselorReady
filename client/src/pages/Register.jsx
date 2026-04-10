@@ -89,7 +89,7 @@ export default function Register() {
       }
 
       const redirect = new URLSearchParams(location.search).get('redirect');
-      navigate(redirect || '/dashboard');
+      window.location.href = redirect || '/dashboard.html';
     } catch (err) {
       setError(err.response?.data?.error || 'Registration failed. Please try again.');
     } finally {

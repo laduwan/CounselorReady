@@ -1,7 +1,6 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useParams } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
-import { ImpersonateProvider } from './context/ImpersonateContext';
 
 // Pages
 import Landing from './pages/Landing';
@@ -62,7 +61,7 @@ function AdminRoute({ children }) {
   }
 
   if (user?.role !== 'admin') {
-    return <Navigate to="/dashboard" replace />;
+    return <HardRedirect to="/dashboard.html" />;
   }
 
   return children;
@@ -81,7 +80,7 @@ function PublicRoute({ children }) {
   }
 
   if (isAuthenticated) {
-    return <Navigate to="/dashboard" replace />;
+    return <HardRedirect to="/dashboard.html" />;
   }
 
   return children;
@@ -105,8 +104,7 @@ function AppRoutes() {
         <PublicRoute><Register /></PublicRoute>
       } />
 
-      {/* Dashboard — static HTML (current design); bypass SPA */}
-      <Route path="/dashboard" element={<HardRedirect to="/dashboard.html" />} />
+      {/* Dashboard is served by client/public/dashboard.html — not a React route */}
 
       {/* Protected routes */}
       <Route path="/courses" element={
@@ -172,9 +170,7 @@ function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <ImpersonateProvider>
-          <AppRoutes />
-        </ImpersonateProvider>
+        <AppRoutes />
       </AuthProvider>
     </BrowserRouter>
   );
