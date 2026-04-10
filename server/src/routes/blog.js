@@ -168,14 +168,21 @@ router.post('/admin/upload', authenticateToken, isAdmin, upload.single('file'), 
       const title = h1Match ? h1Match[1].trim() : 'Untitled Post';
 
       const firstPara = body.split('\n\n').find(p => !p.startsWith('#') && p.trim().length > 20);
-      const excerpt = firstPara ? firstPara.trim().substring(0, 200) : '';
+      let excerpt;
+      if (firstPara) {
+        excerpt = firstPara.trim().substring(0, 200);
+      } else {
+        // No standalone paragraph — strip headings and use body text
+        const stripped = body.replace(/^#.*$/gm, '').trim();
+        excerpt = stripped ? stripped.substring(0, 200) : title;
+      }
 
       data = {
         ...data,
         title,
         author: 'Kejuiana Johnson, LPC, NCC, CPCS, BC-TMH',
         date: new Date().toISOString().split('T')[0],
-        category: 'General',
+        category: 'problem-solution',
         tags: [],
         excerpt
       };
