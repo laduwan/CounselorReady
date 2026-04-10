@@ -17,7 +17,7 @@ const COLORS = {
   stone: '#f5f5f4'
 };
 
-const FREE_COURSE_LIMIT = 2;
+const FREE_COURSE_LIMIT = 4;
 
 const emailWrapper = (content, preheader = '') => `
 <!DOCTYPE html>
