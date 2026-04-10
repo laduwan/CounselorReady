@@ -1,0 +1,5 @@
+
+1. freeCourseLimitEmail.js → server/src/services/. Call checkAndSendFreeLimit(userId) from your course completion flow after the 4th free course. Sends branded upgrade email via Resend, marks sent so it doesn't repeat that month.
+2. ceDeadlineReminder.js → server/src/services/. Wire into a daily cron (cron.schedule('0 9 * * *', runDeadlineReminders) in index.js). Sends email + SMS at 90, 60, and 30 days before credential renewal. Tells them exactly how many hours they still need.
+3. landing-social-proof-sections.html — Two HTML snippets to paste into landing.html: a stats bar (50+ courses, 100+ CE hours, ACEP #7760, 19 accessibility features) after the hero, and 3 testimonial cards before pricing. Replace the placeholder testimonials with real ones when you have them.
+4. Blog_Post_Queue_19_Posts.md — All 19 remaining posts with target keywords, angles, and CTAs, organized by search volume priority. Tier 1 first (state requirement pages), Tier 2 next (conversion-focused), Tier 3 last (authority building). Want me to start writing any of these?
