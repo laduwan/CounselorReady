@@ -40,7 +40,16 @@ const userSchema = new mongoose.Schema({
     amount: Number,
     stripeSessionId: String
   }],
-  
+
+  unlockedTools: [
+    {
+      toolKey: { type: String, required: true },
+      unlockedAt: { type: Date, default: Date.now },
+      courseId: { type: mongoose.Schema.Types.ObjectId, ref: 'Course' },
+      expiresAt: { type: Date }
+    }
+  ],
+
   // Primary state for Free/Professional users (VIP can track any)
   primaryState: {
     type: String,
