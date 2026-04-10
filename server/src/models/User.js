@@ -60,6 +60,8 @@ const userSchema = new mongoose.Schema({
   freeHoursUsed: { type: Number, default: 0, min: 0 }, // deprecated — kept for backward compat
   freeCoursesThisMonth: { type: Number, default: 0, min: 0 },
   freeCoursesResetMonth: { type: String, default: '' }, // format: "2026-04"
+  freeCoursesUsedThisMonth: { type: Number, default: 0 },
+  freeLimitEmailSentThisMonth: { type: Boolean, default: false },
 
   // Subscription
   subscription: {
