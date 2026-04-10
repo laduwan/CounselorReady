@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useParams } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { ImpersonateProvider } from './context/ImpersonateContext';
 
 // Pages
 import Landing from './pages/Landing';
@@ -174,7 +175,9 @@ function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <AppRoutes />
+        <ImpersonateProvider>
+          <AppRoutes />
+        </ImpersonateProvider>
       </AuthProvider>
     </BrowserRouter>
   );
