@@ -397,7 +397,8 @@ async function saveAll() {
     const token = localStorage.getItem('token');
     const res = await fetch(`${API}/admin/courses/${courseId}`, { method:'PUT', headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`}, body:JSON.stringify(payload) });
     if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.message||`HTTP ${res.status}`); }
-    courseData = await res.json().catch(() => payload);
+    const saved = await res.json().catch(() => payload);
+    courseData = saved.course || saved;
     showToast('Saved successfully','success');
     const sEl = document.getElementById('metaStatus'); sEl.textContent = status;
     sEl.className = status==='published' ? 'text-xs px-2.5 py-0.5 rounded-full font-bold bg-green-100 text-green-700' : 'text-xs px-2.5 py-0.5 rounded-full font-bold bg-yellow-100 text-yellow-800';
