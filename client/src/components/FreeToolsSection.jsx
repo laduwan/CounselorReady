@@ -70,6 +70,23 @@ const TOOLS = [
   },
 ];
 
+const API_BASE = import.meta.env.VITE_API_URL || 'https://api.counselorready.com/api';
+
+function trackToolClick(toolHref) {
+  const slug = toolHref.split('/').pop().replace('.html', '');
+  const sessionId = localStorage.getItem('cr_tool_session')
+    || Math.random().toString(36).slice(2) + Date.now().toString(36);
+  localStorage.setItem('cr_tool_session', sessionId);
+  localStorage.setItem('cr_tool_ref', slug);
+
+  fetch(`${API_BASE}/tool-analytics/click`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ toolSlug: slug, sessionId, referrer: window.location.pathname }),
+    keepalive: true
+  }).catch(() => {});
+}
+
 export default function FreeToolsSection() {
   return (
     <section style={{ background: '#F5F5DC', padding: '72px 24px' }}>
@@ -124,6 +141,7 @@ export default function FreeToolsSection() {
             <a
               key={tool.href}
               href={tool.href}
+              onClick={() => trackToolClick(tool.href)}
               style={{
                 display: 'block',
                 background: '#fff',
