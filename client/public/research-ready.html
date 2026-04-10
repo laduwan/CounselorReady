@@ -120,12 +120,25 @@
     .footer-bar *{position:relative;z-index:1}
     .footer-text{font-family:'Cinzel',serif;font-size:8px;letter-spacing:0.15em;text-transform:uppercase;color:rgba(240,223,160,0.45)}
 
+    .search-info{margin-bottom:20px;border:1px solid rgba(192,144,64,0.2);border-radius:4px;overflow:hidden}
+    .search-info-toggle{width:100%;background:rgba(192,144,64,0.06);border:none;padding:10px 16px;display:flex;align-items:center;gap:8px;font-family:'Cinzel',serif;font-size:9px;letter-spacing:0.15em;text-transform:uppercase;color:#8B6820;cursor:pointer;text-align:left}
+    .search-info-toggle:hover{background:rgba(192,144,64,0.1)}
+    .search-info-caret{margin-left:auto;font-size:8px;transition:transform 0.2s}
+    .search-info-toggle[aria-expanded="true"] .search-info-caret{transform:rotate(180deg)}
+    .search-info-body{padding:16px;background:rgba(192,144,64,0.03);border-top:1px solid rgba(192,144,64,0.15)}
+    .search-info-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:12px}
+    .search-info-item{padding:10px 12px;background:#FAF7F0;border-radius:3px;border:1px solid rgba(192,144,64,0.15)}
+    .search-info-label{font-family:'Cinzel',serif;font-size:8.5px;letter-spacing:0.12em;text-transform:uppercase;color:#6B1D34;margin-bottom:5px}
+    .search-info-desc{font-size:12px;color:#6B5744;line-height:1.55;font-style:italic}
+    .search-info-note{font-size:12px;color:#9C8472;font-style:italic;line-height:1.6;padding-top:8px;border-top:1px solid rgba(192,144,64,0.12)}
+
     @media(max-width:640px){
       .body-inner{padding:20px 24px;margin:0 8px}
       .masthead{padding:24px 24px 20px}
       .mast-title{font-size:22px}
       .corner-flourish{display:none}
       .footer-bar{padding:14px 24px}
+      .search-info-grid{grid-template-columns:1fr}
     }
 
   </style>
@@ -180,6 +193,32 @@
           <button class="chip" onclick="chipSearch(this)">Group Counseling</button>
           <button class="chip" onclick="chipSearch(this)">Substance Use</button>
           <button class="chip" onclick="chipSearch(this)">Career Development</button>
+        </div>
+
+        <div class="search-info">
+          <button class="search-info-toggle" onclick="toggleSearchInfo(this)" aria-expanded="false">
+            <span class="o">&#10022;</span> What will I find here? <span class="search-info-caret">&#9660;</span>
+          </button>
+          <div class="search-info-body" id="searchInfoBody" hidden>
+            <div class="search-info-grid">
+              <div class="search-info-item">
+                <div class="search-info-label">Psychology</div>
+                <div class="search-info-desc">Broad psychology umbrella — covers counseling-adjacent research across clinical, developmental, and applied domains.</div>
+              </div>
+              <div class="search-info-item">
+                <div class="search-info-label">Counseling</div>
+                <div class="search-info-desc">Clinical counseling, psychotherapy, therapeutic alliance, counselor education, and supervision literature.</div>
+              </div>
+              <div class="search-info-item">
+                <div class="search-info-label">Clinical Psychology</div>
+                <div class="search-info-desc">Assessment, diagnosis, and evidence-based treatment — CBT, DBT, trauma-focused therapy, and structured interventions.</div>
+              </div>
+            </div>
+            <div class="search-info-note">
+              All results are open-access peer-reviewed articles classified by OpenAlex under one or more of these domains.
+              Articles outside these fields — pure neuroscience, general medicine, social work without a counseling angle — are excluded.
+            </div>
+          </div>
         </div>
         <div id="resultsHeader" style="display:none">
           <div class="scroll-divider">
@@ -437,6 +476,13 @@
         <div class="saved-card-meta">${esc(a.journal || '')} &middot; ${a.year || ''} &middot; ${(a.ceHours || 0)} CE hr${(a.ceHours || 0) !== 1 ? 's' : ''}</div>
       </div>`).join('');
     } catch { el.innerHTML = '<div class="empty-state">Failed to load. Please try again.</div>'; }
+  }
+
+  function toggleSearchInfo(btn) {
+    const body = document.getElementById('searchInfoBody');
+    const expanded = btn.getAttribute('aria-expanded') === 'true';
+    btn.setAttribute('aria-expanded', !expanded);
+    body.hidden = expanded;
   }
 
   function esc(s) { const d = document.createElement('div'); d.textContent = s || ''; return d.innerHTML; }
