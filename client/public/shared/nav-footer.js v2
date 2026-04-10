@@ -143,29 +143,55 @@
   </header>`;
 
   // ── FOOTER HTML ───────────────────────────────────────────
-  const policyLinksHTML = policyLinks.map(l =>
-    `<a href="${l.href}" class="text-burgundy-400 hover:text-white text-sm transition-colors">${l.label}</a>`
-  ).join('\n          ');
+  const policyItems = policyLinks.map(l =>
+    `<a href="${l.href}" style="font-size:11px;color:rgba(255,255,255,0.6);text-decoration:none;transition:color .15s" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(255,255,255,0.6)'">${l.label}</a>`
+  ).join('\n            <span style="color:rgba(255,255,255,0.2)">&middot;</span>\n            ');
 
   const footerHTML = `
-  <footer class="bg-burgundy-950 mt-8">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-10">
-      <div class="flex flex-col md:flex-row items-center justify-center gap-6 mb-6">
-        <img src="/images/nbcc-provider-badge.jpg" alt="NBCC Approved Continuing Education Provider" class="h-20 w-auto">
-        <div class="text-center md:text-left">
-          <p class="text-white font-semibold text-sm">NBCC Approved Provider</p>
-          <p class="text-burgundy-300 text-xs">ACEP #7760</p>
+  <footer style="background:#2D0A16;margin-top:2rem">
+    <div style="max-width:900px;margin:0 auto;padding:40px 24px 28px;font-family:'Lato',Calibri,sans-serif">
+      <div style="display:flex;flex-wrap:wrap;gap:32px;align-items:flex-start;margin-bottom:28px">
+        <div style="flex:1;min-width:220px">
+          <div class="font-display" style="font-size:24px;font-weight:700;margin-bottom:8px">
+            <span style="color:#D0768A">Counselor</span><span style="color:#4A7C59">Ready</span>
+          </div>
+          <div class="font-display" style="font-size:13px;color:#D4A855;letter-spacing:0.15em;font-weight:500;margin-bottom:12px">LEARN. LICENSE. LEAD.</div>
+          <p style="font-size:12px;line-height:1.7;color:rgba(255,255,255,0.75);max-width:280px;margin:0">The continuing education platform built by a counselor, for counselors. Track credentials, complete courses, stay audit-ready.</p>
+        </div>
+        <div style="display:flex;align-items:center;gap:16px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:16px 20px;min-width:260px">
+          <div style="width:64px;height:64px;background:#fff;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden">
+            <img src="/images/logo/nbcc-acep-logo.jpg" alt="NBCC Approved Continuing Education Provider" style="width:56px;height:56px;object-fit:contain" onerror="this.onerror=null;this.src='/images/nbcc-provider-badge.jpg'">
+          </div>
+          <div>
+            <div style="font-size:13px;font-weight:600;color:#fff;line-height:1.4">NBCC Approved Provider</div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.6);margin-top:2px">ACEP #7760 &middot; GAITP LLC</div>
+          </div>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:24px;flex:1;min-width:200px;justify-content:flex-end">
+          <div>
+            <h4 style="font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#D4A855;margin:0 0 10px">Platform</h4>
+            <a href="/courses.html" style="display:block;font-size:12px;color:rgba(255,255,255,0.75);text-decoration:none;padding:3px 0;transition:color .15s" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(255,255,255,0.75)'">Browse courses</a>
+            <a href="/research-ready.html" style="display:block;font-size:12px;color:rgba(255,255,255,0.75);text-decoration:none;padding:3px 0;transition:color .15s" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(255,255,255,0.75)'">Researched-N-Ready</a>
+            <a href="/credentials.html" style="display:block;font-size:12px;color:rgba(255,255,255,0.75);text-decoration:none;padding:3px 0;transition:color .15s" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(255,255,255,0.75)'">Credentials</a>
+            <a href="/certificates.html" style="display:block;font-size:12px;color:rgba(255,255,255,0.75);text-decoration:none;padding:3px 0;transition:color .15s" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(255,255,255,0.75)'">CE certificates</a>
+          </div>
+          <div>
+            <h4 style="font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#D4A855;margin:0 0 10px">Support</h4>
+            <a href="/help.html" style="display:block;font-size:12px;color:rgba(255,255,255,0.75);text-decoration:none;padding:3px 0;transition:color .15s" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(255,255,255,0.75)'">Help center</a>
+            <a href="/blog.html" style="display:block;font-size:12px;color:rgba(255,255,255,0.75);text-decoration:none;padding:3px 0;transition:color .15s" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(255,255,255,0.75)'">Blog</a>
+            <a href="mailto:support@counselorready.com" style="display:block;font-size:12px;color:rgba(255,255,255,0.75);text-decoration:none;padding:3px 0;transition:color .15s" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(255,255,255,0.75)'">Contact us</a>
+            <a href="/about.html" style="display:block;font-size:12px;color:rgba(255,255,255,0.75);text-decoration:none;padding:3px 0;transition:color .15s" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(255,255,255,0.75)'">About</a>
+          </div>
         </div>
       </div>
-      <div class="mb-6">
-        <p class="text-burgundy-400 text-xs leading-relaxed text-center max-w-4xl mx-auto">
-          CounselorReady is operated by GA Integrated Therapeutic Perspectives LLC, an NBCC Approved Continuing Education Provider (ACEP #7760). Programs that do not qualify for NBCC credit are clearly identified. GA Integrated Therapeutic Perspectives LLC is solely responsible for all aspects of the programs. NCMHCE&reg; is a registered trademark of the National Board for Certified Counselors, Inc. (NBCC). CounselorReady is not affiliated with, endorsed by, or sponsored by NBCC.
-        </p>
-      </div>
-      <div class="border-t border-burgundy-800 pt-6 flex flex-col md:flex-row justify-between items-center gap-4">
-        <p class="text-burgundy-400 text-sm">&copy; ${new Date().getFullYear()} CounselorReady. All rights reserved.</p>
-        <div class="flex flex-wrap items-center justify-center gap-4 md:gap-6">
-          ${policyLinksHTML}
+      <div style="height:1px;background:linear-gradient(to right,transparent,rgba(255,255,255,0.1),transparent);margin-bottom:20px"></div>
+      <p style="font-size:10.5px;line-height:1.7;color:rgba(255,255,255,0.45);text-align:center;max-width:720px;margin:0 auto 20px">
+        CounselorReady is operated by GA Integrated Therapeutic Perspectives LLC, an NBCC Approved Continuing Education Provider (ACEP #7760). Programs that do not qualify for NBCC credit are clearly identified. GA Integrated Therapeutic Perspectives LLC is solely responsible for all aspects of the programs. NCMHCE&reg; is a registered trademark of the National Board for Certified Counselors, Inc. (NBCC). CounselorReady is not affiliated with, endorsed by, or sponsored by NBCC.
+      </p>
+      <div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px">
+        <p style="font-size:11px;color:rgba(255,255,255,0.45);margin:0">&copy; ${new Date().getFullYear()} CounselorReady. All rights reserved.</p>
+        <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center">
+          ${policyItems}
         </div>
       </div>
     </div>
