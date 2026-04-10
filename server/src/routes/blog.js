@@ -159,10 +159,29 @@ router.post('/admin/upload', authenticateToken, isAdmin, upload.single('file'), 
 
     const raw = req.file.buffer.toString('utf8');
     const clean = raw.replace(/^\uFEFF/, '');
-    const { data, content } = matter(clean);
+    let { data, content } = matter(clean);
 
+    // Auto-generate frontmatter when missing
     if (!data.title) {
-      return res.status(400).json({ error: 'Title is required in frontmatter' });
+      const body = content.trim() || clean.trim();
+      const h1Match = body.match(/^#\s+(.+)$/m);
+      const title = h1Match ? h1Match[1].trim() : 'Untitled Post';
+
+      const firstPara = body.split('\n\n').find(p => !p.startsWith('#') && p.trim().length > 20);
+      const excerpt = firstPara ? firstPara.trim().substring(0, 200) : '';
+
+      data = {
+        ...data,
+        title,
+        author: 'Kejuiana Johnson, LPC, NCC, CPCS, BC-TMH',
+        date: new Date().toISOString().split('T')[0],
+        category: 'General',
+        tags: [],
+        excerpt
+      };
+
+      // Use full file as content when no frontmatter was present
+      if (!content.trim()) content = clean.trim();
     }
 
     const toArray = (val) => {
