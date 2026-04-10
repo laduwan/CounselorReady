@@ -120,6 +120,12 @@
     .footer-bar *{position:relative;z-index:1}
     .footer-text{font-family:'Cinzel',serif;font-size:8px;letter-spacing:0.15em;text-transform:uppercase;color:rgba(240,223,160,0.45)}
 
+    .rnr-intro{border-left:3px solid rgba(192,144,64,0.4);padding:14px 18px;margin-bottom:28px;background:rgba(192,144,64,0.04);border-radius:0 4px 4px 0}
+    .rnr-intro p{font-size:14px;color:#3D2B1A;line-height:1.75;margin-bottom:10px}
+    .rnr-intro p:last-child{margin-bottom:0}
+    .rnr-intro strong{font-weight:600;color:#1C1208}
+    .rnr-intro-expect{font-size:13px !important;color:#6B5744 !important;font-style:italic}
+
     .search-info{margin-bottom:20px;border:1px solid rgba(192,144,64,0.2);border-radius:4px;overflow:hidden}
     .search-info-toggle{width:100%;background:rgba(192,144,64,0.06);border:none;padding:10px 16px;display:flex;align-items:center;gap:8px;font-family:'Cinzel',serif;font-size:9px;letter-spacing:0.15em;text-transform:uppercase;color:#8B6820;cursor:pointer;text-align:left}
     .search-info-toggle:hover{background:rgba(192,144,64,0.1)}
@@ -170,6 +176,13 @@
     <div class="wg-sidebar wg-sidebar-r"></div>
 
     <div class="body-inner">
+
+      <div class="rnr-intro">
+        <p><strong>Researched &amp; Ready</strong> is a self-directed continuing education feature built for licensed counselors who want their CE grounded in current scholarship.</p>
+        <p>Search our library of open-access, peer-reviewed journal articles, select what's relevant to your practice, and submit them for CE credit. Once submitted, our system generates a structured clinical article and a 10-question posttest drawn directly from the research. Pass at 75% and your certificate and NBCC syllabus are issued automatically.</p>
+        <p class="rnr-intro-expect"><span class="o">&#10022;</span> <strong>What to expect:</strong> Articles are pulled from OpenAlex and filtered to psychology, counseling, and clinical psychology domains. CE hours are calculated at 1 hour per 6,000 instructional words. Most requests are approved and ready within one business day.</p>
+      </div>
+
       <div class="tabs">
         <div class="tab active" onclick="switchTab(0)">Search Articles</div>
         <div class="tab" onclick="switchTab(1)">Saved Articles</div>
