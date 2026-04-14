@@ -839,28 +839,69 @@ router.delete('/users/:userId/enrollments/:courseId', protect, adminOnly, async 
 router.post('/users/:userId/enrollments/:courseId/reset', protect, adminOnly, async (req, res) => {
   try {
     const { userId, courseId } = req.params;
-    
+
     const enrollment = await UserCourseProgress.findOne({ userId, courseId });
-    if (!enrollment) {
-      return res.status(404).json({ error: 'Enrollment not found' });
+    if (enrollment) {
+      // Reset progress but keep enrollment
+      enrollment.completedLessons = [];
+      enrollment.quizAttempts = [];
+      enrollment.currentModule = 0;
+      enrollment.currentLesson = 0;
+      enrollment.status = 'not_started';
+      enrollment.completed = false;
+      enrollment.completedAt = null;
+      enrollment.progressPercent = 0;
+
+      await enrollment.save();
+
+      return res.json({
+        message: 'Course progress reset successfully',
+        enrollment
+      });
     }
-    
-    // Reset progress but keep enrollment
-    enrollment.completedLessons = [];
-    enrollment.quizAttempts = [];
-    enrollment.currentModule = 0;
-    enrollment.currentLesson = 0;
-    enrollment.status = 'not_started';
-    enrollment.completed = false;
-    enrollment.completedAt = null;
-    enrollment.progressPercent = 0;
-    
-    await enrollment.save();
-    
-    res.json({ 
-      message: 'Course progress reset successfully',
-      enrollment
-    });
+
+    const interactiveEnrollment = await InteractiveCourseProgress.findOne({ userId: userId, courseId: courseId });
+    if (interactiveEnrollment) {
+      // Reset progress but keep enrollment (interactive course fields)
+      if (Array.isArray(interactiveEnrollment.sectionProgress)) {
+        interactiveEnrollment.sectionProgress.forEach((section) => {
+          section.viewedBlocks = [];
+          section.completedBlocks = [];
+          section.quizAttempts = [];
+          section.quizPassed = false;
+          section.bestQuizScore = undefined;
+          section.startedAt = undefined;
+          section.completedAt = undefined;
+          section.timeSpent = 0;
+          section.status = 'not_started';
+        });
+      }
+      interactiveEnrollment.currentSectionIndex = 0;
+      interactiveEnrollment.assessmentAttempts = [];
+      interactiveEnrollment.assessmentPassed = false;
+      interactiveEnrollment.bestAssessmentScore = undefined;
+      interactiveEnrollment.evaluationSubmitted = false;
+      interactiveEnrollment.evaluationSubmittedAt = undefined;
+      interactiveEnrollment.evaluationId = undefined;
+      interactiveEnrollment.attestationAgreed = false;
+      interactiveEnrollment.attestationAgreedAt = undefined;
+      interactiveEnrollment.overallProgress = 0;
+      interactiveEnrollment.status = 'not_started';
+      interactiveEnrollment.startedAt = undefined;
+      interactiveEnrollment.completedAt = undefined;
+      interactiveEnrollment.totalTimeSpent = 0;
+      interactiveEnrollment.certificateId = undefined;
+      interactiveEnrollment.certificateIssuedAt = undefined;
+
+      await interactiveEnrollment.save();
+
+      return res.json({
+        message: 'Course progress reset successfully',
+        enrollment: interactiveEnrollment
+      });
+    }
+
+    return res.status(404).json({ error: 'Enrollment not found' });
   } catch (error) {
     console.error('Admin reset progress error:', error);
     res.status(500).json({ error: 'Failed to reset progress' });
@@ -874,27 +915,81 @@ router.post('/users/:userId/enrollments/:courseId/complete', protect, adminOnly,
   try {
     const { userId, courseId } = req.params;
     const { note } = req.body; // Optional admin note
-    
+
     const user = await User.findById(userId);
-    const course = await Course.findById(courseId);
-    
-    if (!user || !course) {
-      return res.status(404).json({ error: 'User or course not found' });
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
     }
-    
-    // Find or create enrollment
+
+    // Try legacy course first, then interactive course
+    const legacyCourse = await Course.findById(courseId);
+    const interactiveCourse = legacyCourse ? null : await InteractiveCourse.findById(courseId);
+
+    if (!legacyCourse && !interactiveCourse) {
+      return res.status(404).json({ error: 'Course not found' });
+    }
+
+    // Prefer an existing enrollment on whichever model already has it
     let enrollment = await UserCourseProgress.findOne({ userId, courseId });
-    
-    if (!enrollment) {
-      enrollment = new UserCourseProgress({
-        userId,
-        courseId,
-        enrolled: true,
-        enrolledAt: new Date()
+
+    if (enrollment) {
+      enrollment.status = 'completed';
+      enrollment.completed = true;
+      enrollment.completedAt = new Date();
+      enrollment.progressPercent = 100;
+      enrollment.adminCompleted = true;
+      enrollment.adminNote = note || 'Manually completed by admin';
+      enrollment.adminCompletedBy = req.user._id;
+      enrollment.adminCompletedAt = new Date();
+
+      await enrollment.save();
+
+      return res.json({
+        message: `Course marked complete for ${user.firstName} ${user.lastName}`,
+        enrollment
       });
     }
-    
-    // Mark as complete
+
+    let interactiveEnrollment = await InteractiveCourseProgress.findOne({ userId: userId, courseId: courseId });
+
+    if (interactiveEnrollment || interactiveCourse) {
+      if (!interactiveEnrollment) {
+        interactiveEnrollment = new InteractiveCourseProgress({
+          userId,
+          courseId,
+          enrolledAt: new Date()
+        });
+      }
+
+      interactiveEnrollment.status = 'completed';
+      interactiveEnrollment.completedAt = new Date();
+      interactiveEnrollment.overallProgress = 100;
+      interactiveEnrollment.assessmentPassed = true;
+      interactiveEnrollment.evaluationSubmitted = true;
+      interactiveEnrollment.evaluationSubmittedAt = interactiveEnrollment.evaluationSubmittedAt || new Date();
+      interactiveEnrollment.attestationAgreed = true;
+      interactiveEnrollment.attestationAgreedAt = interactiveEnrollment.attestationAgreedAt || new Date();
+      interactiveEnrollment.adminCompleted = true;
+      interactiveEnrollment.adminNote = note || 'Manually completed by admin';
+      interactiveEnrollment.adminCompletedBy = req.user._id;
+      interactiveEnrollment.adminCompletedAt = new Date();
+
+      await interactiveEnrollment.save();
+
+      return res.json({
+        message: `Course marked complete for ${user.firstName} ${user.lastName}`,
+        enrollment: interactiveEnrollment
+      });
+    }
+
+    // No existing enrollment and the course is a legacy course — create a new legacy enrollment
+    enrollment = new UserCourseProgress({
+      userId,
+      courseId,
+      enrolled: true,
+      enrolledAt: new Date()
+    });
+
     enrollment.status = 'completed';
     enrollment.completed = true;
     enrollment.completedAt = new Date();
@@ -903,10 +998,10 @@ router.post('/users/:userId/enrollments/:courseId/complete', protect, adminOnly,
     enrollment.adminNote = note || 'Manually completed by admin';
     enrollment.adminCompletedBy = req.user._id;
     enrollment.adminCompletedAt = new Date();
-    
+
     await enrollment.save();
-    
-    res.json({ 
+
+    res.json({
       message: `Course marked complete for ${user.firstName} ${user.lastName}`,
       enrollment
     });
