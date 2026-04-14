@@ -91,7 +91,7 @@ router.post('/users/:userId/certificates/:certId/regenerate', protect, adminOnly
 
     const oldPublicId = cert.fileKey;
 
-    cert.fileUrl = newUrl;
+    cert.fileUrl = newUrl.includes('?') ? `${newUrl}&t=${Date.now()}` : `${newUrl}?t=${Date.now()}`;
     const newPublicId = extractCloudinaryPublicId(newUrl);
     if (newPublicId) cert.fileKey = newPublicId;
     await cert.save();
