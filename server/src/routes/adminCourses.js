@@ -818,14 +818,14 @@ router.post('/users/:userId/enroll', protect, adminOnly, async (req, res) => {
 router.delete('/users/:userId/enrollments/:courseId', protect, adminOnly, async (req, res) => {
   try {
     const { userId, courseId } = req.params;
-    
-    const enrollment = await UserCourseProgress.findOne({ userId, courseId });
-    if (!enrollment) {
+
+    const legacyResult = await UserCourseProgress.deleteOne({ userId, courseId });
+    const interactiveResult = await InteractiveCourseProgress.deleteOne({ userId, courseId });
+
+    if ((legacyResult.deletedCount || 0) === 0 && (interactiveResult.deletedCount || 0) === 0) {
       return res.status(404).json({ error: 'Enrollment not found' });
     }
-    
-    await UserCourseProgress.deleteOne({ userId, courseId });
-    
+
     res.json({ message: 'User unenrolled successfully' });
   } catch (error) {
     console.error('Admin unenroll error:', error);
