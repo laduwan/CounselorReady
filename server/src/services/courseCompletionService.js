@@ -11,7 +11,7 @@ import Certificate from '../models/Certificate.js';
 import { Course, CourseProgress } from '../models/InteractiveCourse.js';
 import User from '../models/User.js';
 import UserCredential from '../models/UserCredential.js';
-import { generateCertificatePDF } from '../utils/certificate.js';
+import certificateService from './certificateService.js';
 import { sendCertificateEmail } from './courseEmailService.js';
 import { triggerCourseCompleted, triggerCertificateReady, triggerCeMilestone } from './notificationTriggerService.js';
 
@@ -52,15 +52,16 @@ export async function processCourseCompletion({ userId, courseId, assessmentScor
     const certificateNumber = await Certificate.getNextCertificateNumber();
 
     // 4. Generate PDF
-    const userName = `${user.profile?.firstName || ''} ${user.profile?.lastName || ''}`.trim() || user.email;
-    
-    const pdfResult = await generateCertificatePDF({
-      recipientName: userName,
-      courseName: course.title,
-      ceHours: course.ceuHours || course.ceHours,
-      completionDate: progress.completedAt || new Date(),
+    const userName = `${(user.firstName || '')} ${(user.lastName || '')}`.trim() || user.email;
+
+    const fileUrl = await certificateService.generatePDF({
       certificateNumber,
-      providerNumber: course.approvalNumber || '#7760'
+      userName,
+      courseTitle: course.title,
+      completionDate: progress.completedAt || new Date(),
+      ceHours: course.ceuHours || course.ceHours,
+      nbccNumber: course.nbccProgramNumber || '',
+      providerNumber: '7760'
     });
 
     // 5. Create certificate record
@@ -75,7 +76,7 @@ export async function processCourseCompletion({ userId, courseId, assessmentScor
       ceHours: course.ceuHours || course.ceHours,
       nbccApproved: true,
       acepNumber: course.ceuApprovalNumber || 'ACEP #7760',
-      fileUrl: pdfResult.url,
+      fileUrl,
       source: 'platform'
     });
 
@@ -128,7 +129,7 @@ export async function processCourseCompletion({ userId, courseId, assessmentScor
     }
 
     // 7. Send email notification (async - don't wait)
-    sendCompletionEmail(user, course, certificate, pdfResult.url).catch(err => {
+    sendCompletionEmail(user, course, certificate, fileUrl).catch(err => {
       console.error('Failed to send certificate email:', err);
     });
 
