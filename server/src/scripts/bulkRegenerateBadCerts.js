@@ -39,7 +39,7 @@ async function main() {
 
   // 2. Look up each cert's user
   const userIds = [...new Set(allCerts.map(c => c.userId?.toString()).filter(Boolean))];
-  const users = await User.find({ _id: { $in: userIds } }).select('firstName lastName email').lean();
+  const users = await User.find({ _id: { $in: userIds } }).select('profile.firstName profile.lastName email').lean();
   const userMap = {};
   users.forEach(u => { userMap[u._id.toString()] = u; });
 
@@ -47,7 +47,7 @@ async function main() {
   const needsRegen = allCerts.filter(cert => {
     const user = userMap[cert.userId?.toString()];
     if (!user) return false;
-    return (user.firstName || '').trim().length > 0;
+    return (user.profile?.firstName || '').trim().length > 0;
   });
 
   console.log(`Eligible for regeneration: ${needsRegen.length}`);
@@ -56,7 +56,7 @@ async function main() {
     console.log('\n--- DRY RUN ---');
     for (const cert of needsRegen) {
       const u = userMap[cert.userId.toString()];
-      const name = `${u.firstName || ''} ${u.lastName || ''}`.trim();
+      const name = `${u.profile?.firstName || ''} ${u.profile?.lastName || ''}`.trim();
       const hasUrl = cert.fileUrl ? 'has URL' : 'NO URL';
       console.log(`  ${cert.certificateNumber} | ${u.email} → "${name}" | ${hasUrl}`);
     }
@@ -97,7 +97,7 @@ async function main() {
     await Promise.all(batch.map(async (cert) => {
       const user = userMap[cert.userId.toString()];
       const course = courseMap[cert.courseId?.toString()];
-      const userName = `${(user.firstName || '')} ${(user.lastName || '')}`.trim() || user.email;
+      const userName = `${(user.profile?.firstName || '')} ${(user.profile?.lastName || '')}`.trim() || user.email;
 
       if (!course) {
         console.log(`  SKIP ${cert.certificateNumber} — course not found`);
@@ -154,4 +154,6 @@ async function main() {
 }
 
 main().catch(err => {
-  console.error('Fata
+  console.error('Fatal error:', err);
+  process.exit(1);
+});
