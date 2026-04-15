@@ -52,7 +52,7 @@ export async function processCourseCompletion({ userId, courseId, assessmentScor
     const certificateNumber = await Certificate.getNextCertificateNumber();
 
     // 4. Generate PDF
-    const userName = `${(user.firstName || '')} ${(user.lastName || '')}`.trim() || user.email;
+    const userName = `${(user.profile?.firstName || '')} ${(user.profile?.lastName || '')}`.trim() || user.email;
 
     const fileUrl = await certificateService.generatePDF({
       certificateNumber,
