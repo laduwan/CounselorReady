@@ -11,6 +11,7 @@
  */
 
 import mongoose from 'mongoose';
+// Run validator first: node src/scripts/validateSeed.js src/scripts/seedCredentialTemplates.js
 import dotenv from 'dotenv';
 import { stateLicenses } from '../data/allStates.js';
 

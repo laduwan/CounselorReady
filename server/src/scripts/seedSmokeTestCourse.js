@@ -13,6 +13,7 @@
 // ================================================================
 
 import mongoose from 'mongoose';
+// Run validator first: node src/scripts/validateSeed.js src/scripts/seedSmokeTestCourse.js
 import dotenv from 'dotenv';
 import { Course, CourseProgress } from '../models/InteractiveCourse.js';
 

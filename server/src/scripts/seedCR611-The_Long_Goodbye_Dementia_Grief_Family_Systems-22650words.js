@@ -9,6 +9,7 @@
  * CE Hours: 3.0 | NBCC ACEP #7760
  */
 import mongoose from 'mongoose';
+// Run validator first: node src/scripts/validateSeed.js src/scripts/seedCR611-The_Long_Goodbye_Dementia_Grief_Family_Systems-22650words.js
 import dotenv from 'dotenv';
 dotenv.config();
 const MONGODB_URI = process.env.MONGODB_URI;

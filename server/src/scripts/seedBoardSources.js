@@ -1,6 +1,7 @@
 // seedBoardSources.js — Run in Render shell: node seedBoardSources.js
 // Seeds BoardSource entries so the board monitor has URLs to watch
 import mongoose from 'mongoose';
+// Run validator first: node src/scripts/validateSeed.js src/scripts/seedBoardSources.js
 
 const MONGODB_URI = process.env.MONGODB_URI;
 if (!MONGODB_URI) { console.error('No MONGODB_URI'); process.exit(1); }
