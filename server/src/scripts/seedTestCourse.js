@@ -3,6 +3,7 @@
 // Run in Render shell: node src/scripts/seedTestCourse.js
 
 import mongoose from 'mongoose';
+// Run validator first: node src/scripts/validateSeed.js src/scripts/seedTestCourse.js
 import dotenv from 'dotenv';
 dotenv.config();
 

@@ -11,6 +11,7 @@
  */
 
 import mongoose from 'mongoose';
+// Run validator first: node src/scripts/validateSeed.js src/scripts/seedNewCourses.js
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';

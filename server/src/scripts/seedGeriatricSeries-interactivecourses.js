@@ -39,6 +39,7 @@
  */
 
 import mongoose from 'mongoose';
+// Run validator first: node src/scripts/validateSeed.js src/scripts/seedGeriatricSeries-interactivecourses.js
 import { createRequire } from 'module';
 import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';

@@ -4,6 +4,7 @@
 // Or from server dir: node src/scripts/seed-references.js
 // =============================================================================
 import mongoose from 'mongoose';
+// Run validator first: node src/scripts/validateSeed.js src/scripts/seed-references.js
 import dotenv from 'dotenv';
 dotenv.config();
 
