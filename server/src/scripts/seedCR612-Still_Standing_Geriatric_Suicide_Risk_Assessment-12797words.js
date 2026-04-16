@@ -9,6 +9,7 @@
  * CE Hours: 2.0 | NBCC ACEP #7760
  */
 import mongoose from 'mongoose';
+// Run validator first: node src/scripts/validateSeed.js src/scripts/seedCR612-Still_Standing_Geriatric_Suicide_Risk_Assessment-12797words.js
 import dotenv from 'dotenv';
 dotenv.config();
 const MONGODB_URI = process.env.MONGODB_URI;

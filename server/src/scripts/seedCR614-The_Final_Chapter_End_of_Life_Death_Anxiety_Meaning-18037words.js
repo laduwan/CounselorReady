@@ -6,6 +6,7 @@
 #!/usr/bin/env node
 // CR-614: The Final Chapter — End-of-Life Counseling | 3 CE | NBCC ACEP #7760
 import mongoose from 'mongoose';
+// Run validator first: node src/scripts/validateSeed.js src/scripts/seedCR614-The_Final_Chapter_End_of_Life_Death_Anxiety_Meaning-18037words.js
 import dotenv from 'dotenv';
 dotenv.config();
 const MONGODB_URI = process.env.MONGODB_URI;
