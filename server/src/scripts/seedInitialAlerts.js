@@ -1,6 +1,7 @@
 // seedInitialAlerts.js — Run in Render shell: node seedInitialAlerts.js
 // Creates a few manual board alerts so the page isn't empty
 import mongoose from 'mongoose';
+// Run validator first: node src/scripts/validateSeed.js src/scripts/seedInitialAlerts.js
 
 const MONGODB_URI = process.env.MONGODB_URI;
 if (!MONGODB_URI) { console.error('No MONGODB_URI'); process.exit(1); }
