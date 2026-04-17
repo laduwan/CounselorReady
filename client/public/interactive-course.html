@@ -5724,7 +5724,7 @@ async function checkAndShowNPS() {
   try {
     const token = localStorage.getItem('token');
     if (!token) return;
-    const res = await fetch(`${API_BASE}/api/analytics/survey/check`, {
+    const res = await fetch(`${crApiBase()}/api/analytics/survey/check`, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
     if (!res.ok) return;
@@ -5768,7 +5768,7 @@ async function submitNPS() {
   try {
     const token = localStorage.getItem('token');
     const comment = document.getElementById('nps-comment').value;
-    await fetch(`${API_BASE}/api/analytics/survey/nps`, {
+    await fetch(`${crApiBase()}/api/analytics/survey/nps`, {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({
