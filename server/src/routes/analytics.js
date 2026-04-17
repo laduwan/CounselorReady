@@ -462,7 +462,7 @@ router.get('/admin/overview', protect, async (req, res) => {
           _id: null,
           totalEnrollments: { $sum: 1 },
           totalCompletions: { $sum: { $cond: [{ $eq: ['$status', 'completed'] }, 1, 0] } },
-          totalEvaluations: { $sum: { $cond: [{ $eq: ['$evaluationCompleted', true] }, 1, 0] } }
+          totalEvaluations: { $sum: { $cond: [{ $eq: ['$evaluationSubmitted', true] }, 1, 0] } }
         }
       }
     ]);
@@ -475,8 +475,8 @@ router.get('/admin/overview', protect, async (req, res) => {
           $group: {
             _id: null,
             totalEnrollments: { $sum: 1 },
-            totalCompletions: { $sum: { $cond: [{ $eq: ['$status', 'completed'] }, 1, 0] } },
-            totalEvaluations: { $sum: { $cond: [{ $eq: ['$evaluationCompleted', true] }, 1, 0] } }
+            totalCompletions: { $sum: { $cond: [{ $in: ['$status', ['completed', 'certified']] }, 1, 0] } },
+            totalEvaluations: { $sum: { $cond: [{ $eq: ['$evaluationSubmitted', true] }, 1, 0] } }
           }
         }
       ]).toArray();
@@ -595,14 +595,12 @@ router.get('/admin/overview', protect, async (req, res) => {
       .limit(10);
     
     // Also get recent course evaluations (from UserCourseProgress)
-    const recentEvaluations = await UserCourseProgress.find({
-      evaluationCompleted: true
-    })
-      .populate('userId', 'email profile.firstName profile.lastName')
-      .populate('courseId', 'title')
-      .sort({ evaluationCompletedAt: -1 })
+    const recentEvaluations = await mongoose.connection.db
+      .collection('evaluations')
+      .find({ isDeleted: false })
+      .sort({ createdAt: -1 })
       .limit(10)
-      .select('userId courseId evaluationResponses evaluationCompletedAt');
+      .toArray();
     
     res.json({
       nps: npsData,
