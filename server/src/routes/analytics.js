@@ -8,6 +8,7 @@ import mongoose from 'mongoose';
 import { protect } from '../middleware/auth.js';
 import Course from '../models/Course.js';
 import Evaluation from '../models/Evaluation.js';
+import InteractiveCourse from '../models/InteractiveCourse.js';
 import PlatformSurvey from '../models/PlatformSurvey.js';
 import UserCourseProgress from '../models/UserCourseProgress.js';
 import User from '../models/User.js';
@@ -595,19 +596,27 @@ router.get('/admin/overview', protect, async (req, res) => {
       .sort({ createdAt: -1 })
       .limit(10);
     
-    // Also get recent course evaluations — populated so frontend can render user + course
+    // Recent course evaluations — populate user from users, but courses live in TWO collections
+    // (`courses` legacy + `interactivecourses` primary), so do a manual two-collection lookup.
     const recentEvaluationsRaw = await Evaluation.find({ isDeleted: false })
       .sort({ createdAt: -1 })
       .limit(10)
       .populate('user', 'email profile')
-      .populate('course', 'title courseCode')
       .lean();
+
+    const courseIds = [...new Set(recentEvaluationsRaw.map(ev => String(ev.course)).filter(Boolean))];
+    const [legacyCourses, interactiveCourses] = await Promise.all([
+      Course.find({ _id: { $in: courseIds } }).select('title courseCode').lean(),
+      InteractiveCourse.find({ _id: { $in: courseIds } }).select('title courseCode').lean(),
+    ]);
+    const courseMap = new Map();
+    [...legacyCourses, ...interactiveCourses].forEach(c => courseMap.set(String(c._id), c));
 
     // Rename user → userId and course → courseId to match frontend contract
     const recentEvaluations = recentEvaluationsRaw.map(ev => ({
       ...ev,
       userId: ev.user,
-      courseId: ev.course,
+      courseId: courseMap.get(String(ev.course)) || null,
     }));
     
     res.json({
