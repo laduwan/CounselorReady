@@ -7,11 +7,11 @@ import express from 'express';
 import mongoose from 'mongoose';
 import { protect } from '../middleware/auth.js';
 import Course from '../models/Course.js';
+import Evaluation from '../models/Evaluation.js';
 import PlatformSurvey from '../models/PlatformSurvey.js';
 import UserCourseProgress from '../models/UserCourseProgress.js';
 import User from '../models/User.js';
 import UserActivity from '../models/UserActivity.js';
-import Evaluation from '../models/Evaluation.js';
 
 const router = express.Router();
 
@@ -595,7 +595,7 @@ router.get('/admin/overview', protect, async (req, res) => {
       .sort({ createdAt: -1 })
       .limit(10);
     
-    // Also get recent course evaluations (populated so frontend can render user + course)
+    // Also get recent course evaluations — populated so frontend can render user + course
     const recentEvaluationsRaw = await Evaluation.find({ isDeleted: false })
       .sort({ createdAt: -1 })
       .limit(10)
@@ -603,7 +603,7 @@ router.get('/admin/overview', protect, async (req, res) => {
       .populate('course', 'title courseCode')
       .lean();
 
-    // Rename user → userId and course → courseId to match frontend expectations
+    // Rename user → userId and course → courseId to match frontend contract
     const recentEvaluations = recentEvaluationsRaw.map(ev => ({
       ...ev,
       userId: ev.user,
