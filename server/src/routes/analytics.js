@@ -11,6 +11,7 @@ import PlatformSurvey from '../models/PlatformSurvey.js';
 import UserCourseProgress from '../models/UserCourseProgress.js';
 import User from '../models/User.js';
 import UserActivity from '../models/UserActivity.js';
+import Evaluation from '../models/Evaluation.js';
 
 const router = express.Router();
 
@@ -594,13 +595,20 @@ router.get('/admin/overview', protect, async (req, res) => {
       .sort({ createdAt: -1 })
       .limit(10);
     
-    // Also get recent course evaluations (from UserCourseProgress)
-    const recentEvaluations = await mongoose.connection.db
-      .collection('evaluations')
-      .find({ isDeleted: false })
+    // Also get recent course evaluations (populated so frontend can render user + course)
+    const recentEvaluationsRaw = await Evaluation.find({ isDeleted: false })
       .sort({ createdAt: -1 })
       .limit(10)
-      .toArray();
+      .populate('user', 'email profile')
+      .populate('course', 'title courseCode')
+      .lean();
+
+    // Rename user → userId and course → courseId to match frontend expectations
+    const recentEvaluations = recentEvaluationsRaw.map(ev => ({
+      ...ev,
+      userId: ev.user,
+      courseId: ev.course,
+    }));
     
     res.json({
       nps: npsData,
