@@ -843,17 +843,22 @@
         const user = ev.userId?.email || 'Unknown';
         const name = [ev.userId?.profile?.firstName, ev.userId?.profile?.lastName].filter(Boolean).join(' ');
         const course = ev.courseId?.title || 'Unknown Course';
-        const date = ev.evaluationCompletedAt ? new Date(ev.evaluationCompletedAt).toLocaleDateString() : '';
+        const date = ev.submittedAt
+          ? new Date(ev.submittedAt).toLocaleDateString()
+          : (ev.createdAt ? new Date(ev.createdAt).toLocaleDateString() : '');
 
-        // Extract ratings from evaluation responses
+        // Build ratings line from ratings object + overallRating
         let ratingsHtml = '';
-        if (ev.evaluationResponses && ev.evaluationResponses.length > 0) {
-          const ratingResponses = ev.evaluationResponses.filter(r => r.type === 'rating' && r.answer);
-          if (ratingResponses.length > 0) {
-            ratingsHtml = ratingResponses.slice(0, 3).map(r =>
-              `<span class="text-xs text-forest-600">${r.question?.slice(0, 30) || 'Rating'}: <strong>${r.answer}/5</strong></span>`
-            ).join(' · ');
-          }
+        const r = ev.ratings || {};
+        const parts = [];
+        if (ev.overallRating)   parts.push(`Overall: <strong>${ev.overallRating}/5</strong>`);
+        if (r.contentQuality)   parts.push(`Content: <strong>${r.contentQuality}/5</strong>`);
+        if (r.relevance)        parts.push(`Relevance: <strong>${r.relevance}/5</strong>`);
+        if (r.engagement)       parts.push(`Engagement: <strong>${r.engagement}/5</strong>`);
+        if (parts.length) {
+          ratingsHtml = parts.slice(0, 3)
+            .map(p => `<span class="text-xs text-forest-600">${p}</span>`)
+            .join(' · ');
         }
 
         return `
