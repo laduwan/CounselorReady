@@ -1019,6 +1019,9 @@
         }
 
         if (data.url) {
+          if (typeof gtag_report_conversion === 'function') {
+            gtag_report_conversion(data.sessionId || data.session?.id || '', data.finalPrice != null ? data.finalPrice : currentCourse.price);
+          }
           window.location.href = data.url;
         } else {
           throw new Error('No checkout URL returned');

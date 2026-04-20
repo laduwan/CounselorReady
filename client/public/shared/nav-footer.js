@@ -282,4 +282,25 @@
       .then(() => document.getElementById('notifDot')?.classList.add('hidden'))
       .catch(() => {});
   };
+
+  // ── GOOGLE ADS CONVERSION TRACKING ────────────────────────
+  if (!window.gtag) {
+    const gtagScript = document.createElement('script');
+    gtagScript.async = true;
+    gtagScript.src = 'https://www.googletagmanager.com/gtag/js?id=AW-16681104079';
+    document.head.appendChild(gtagScript);
+    window.dataLayer = window.dataLayer || [];
+    window.gtag = function () { window.dataLayer.push(arguments); };
+    window.gtag('js', new Date());
+    window.gtag('config', 'AW-16681104079');
+  }
+
+  window.gtag_report_conversion = function (transactionId, value) {
+    window.gtag('event', 'conversion', {
+      'send_to': 'AW-16681104079/301FCOXuxp8cEM_llZI-',
+      'transaction_id': transactionId || '',
+      'value': value || 0,
+      'currency': 'USD'
+    });
+  };
 })();
