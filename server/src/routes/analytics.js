@@ -451,37 +451,55 @@ router.get('/admin/overview', protect, async (req, res) => {
     // Satisfaction averages from platform surveys
     const satisfactionData = await PlatformSurvey.getSatisfactionAverages(startDate, endDate);
     
-    // Get REAL stats from UserCourseProgress
-    const progressFilter = {};
-    if (startDate || endDate) {
-      progressFilter.completedAt = dateFilter;
-    }
-    
-    const progressStats = await UserCourseProgress.aggregate([
-      { $match: progressFilter },
-      {
-        $group: {
-          _id: null,
-          totalEnrollments: { $sum: 1 },
-          totalCompletions: { $sum: { $cond: [{ $eq: ['$status', 'completed'] }, 1, 0] } },
-          totalEvaluations: { $sum: { $cond: [{ $eq: ['$evaluationSubmitted', true] }, 1, 0] } }
+    // Date window applied per-metric via $cond — NOT as a top-level $match.
+    // Ensures in-progress enrollments still count toward totalEnrollments
+    // when a window is active, and that completions without completedAt
+    // stamped (older rows, interactive `certified` rows) aren't silently dropped.
+    const hasWindow = !!(startDate || endDate);
+    const inWindow = (field) => {
+      const conds = [{ $ne: [`$${field}`, null] }];
+      if (startDate) conds.push({ $gte: [`$${field}`, startDate] });
+      if (endDate)   conds.push({ $lte: [`$${field}`, endDate] });
+      return { $and: conds };
+    };
+
+    const buildGroup = (completedStatuses, hasEvalSubmittedAt) => ({
+      _id: null,
+      totalEnrollments: { $sum: 1 },
+      totalCompletions: {
+        $sum: {
+          $cond: [
+            hasWindow
+              ? { $and: [{ $in: ['$status', completedStatuses] }, inWindow('completedAt')] }
+              : { $in: ['$status', completedStatuses] },
+            1, 0
+          ]
+        }
+      },
+      totalEvaluations: {
+        $sum: {
+          $cond: [
+            hasWindow && hasEvalSubmittedAt
+              ? { $and: [{ $eq: ['$evaluationSubmitted', true] }, inWindow('evaluationSubmittedAt')] }
+              : { $eq: ['$evaluationSubmitted', true] },
+            1, 0
+          ]
         }
       }
+    });
+
+    // UserCourseProgress has evaluationCompletedAt but no evaluationSubmittedAt,
+    // so evaluations are counted unconditionally across the whole collection.
+    const legacyHasEvalAt = false;
+
+    const progressStats = await UserCourseProgress.aggregate([
+      { $group: buildGroup(['completed'], legacyHasEvalAt) }
     ]);
 
     const interactiveProgressStats = await mongoose.connection.db
       .collection('interactivecourseprogresses')
-      .aggregate([
-        { $match: progressFilter },
-        {
-          $group: {
-            _id: null,
-            totalEnrollments: { $sum: 1 },
-            totalCompletions: { $sum: { $cond: [{ $in: ['$status', ['completed', 'certified']] }, 1, 0] } },
-            totalEvaluations: { $sum: { $cond: [{ $eq: ['$evaluationSubmitted', true] }, 1, 0] } }
-          }
-        }
-      ]).toArray();
+      .aggregate([{ $group: buildGroup(['completed', 'certified'], false) }])
+      .toArray();
 
     // Get total courses count
     const totalCourses = await Course.countDocuments({ status: 'published' });
