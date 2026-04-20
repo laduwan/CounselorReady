@@ -335,9 +335,28 @@
           </div>
         </div>
 
+        <!-- Policy Acknowledgment -->
+        <div class="mb-4 p-3 bg-stone-50 border border-stone-200 rounded-lg">
+          <label class="flex items-start gap-3 cursor-pointer">
+            <input type="checkbox" id="policyAckCheckbox" onchange="toggleCheckoutBtn()"
+              class="mt-0.5 w-4 h-4 rounded border-gray-300 text-burgundy-700 flex-shrink-0" style="accent-color:#6B1D34">
+            <span class="text-xs text-gray-600 leading-relaxed">
+              I have read and agree to the
+              <a href="/refund-policy.html" target="_blank" class="text-burgundy-700 underline font-medium">Refund Policy</a>
+              and
+              <a href="/terms.html" target="_blank" class="text-burgundy-700 underline font-medium">Terms of Service</a>.
+              I acknowledge the
+              <a href="/complaint-resolution.html" target="_blank" class="text-burgundy-700 underline font-medium">Complaint &amp; Grievance Process</a>
+              and
+              <a href="/ada-accommodations.html" target="_blank" class="text-burgundy-700 underline font-medium">ADA Accommodations</a>
+              available to me.
+            </span>
+          </label>
+        </div>
+
         <!-- Checkout Button -->
-        <button onclick="proceedToCheckout()" id="checkoutBtn"
-          class="w-full bg-burgundy-700 hover:bg-burgundy-800 text-white font-semibold py-3.5 rounded-xl transition-colors text-base">
+        <button onclick="proceedToCheckout()" id="checkoutBtn" disabled
+          class="w-full bg-burgundy-700 text-white font-semibold py-3.5 rounded-xl transition-colors text-base opacity-50 cursor-not-allowed">
           Continue to Checkout
         </button>
 
@@ -909,7 +928,18 @@
       document.getElementById('discountSummary').classList.add('hidden');
       document.getElementById('checkoutBtn').disabled = false;
       document.getElementById('checkoutBtn').textContent = 'Continue to Checkout';
+      document.getElementById('policyAckCheckbox').checked = false;
+      toggleCheckoutBtn();
       document.getElementById('purchaseModal').classList.remove('hidden');
+    }
+
+    function toggleCheckoutBtn() {
+      const checked = document.getElementById("policyAckCheckbox")?.checked;
+      const btn = document.getElementById("checkoutBtn");
+      btn.disabled = !checked;
+      btn.classList.toggle("opacity-50", !checked);
+      btn.classList.toggle("cursor-not-allowed", !checked);
+      btn.classList.toggle("hover:bg-burgundy-800", !!checked);
     }
 
     function closePurchaseModal() {
@@ -1100,4 +1130,4 @@
     document.addEventListener('DOMContentLoaded', loadCourse);
   </script>
 </body>
-</html>
+  </html>
