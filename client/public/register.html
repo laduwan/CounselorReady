@@ -155,10 +155,15 @@
                 class="w-5 h-5 mt-0.5 text-burgundy-600 border-forest-300 rounded focus:ring-burgundy-500 flex-shrink-0"
               >
               <span class="text-sm text-forest-700 leading-relaxed">
-                I agree to the 
-                <a href="/terms.html" target="_blank" class="text-burgundy-700 underline hover:text-burgundy-800">Terms of Service</a>, 
-                <a href="/privacy.html" target="_blank" class="text-burgundy-700 underline hover:text-burgundy-800">Privacy Policy</a>, and 
+                I agree to the
+                <a href="/terms.html" target="_blank" class="text-burgundy-700 underline hover:text-burgundy-800">Terms of Service</a>,
+                <a href="/privacy.html" target="_blank" class="text-burgundy-700 underline hover:text-burgundy-800">Privacy Policy</a>, and
                 <a href="/refund-policy.html" target="_blank" class="text-burgundy-700 underline hover:text-burgundy-800">Refund Policy</a>.
+                I acknowledge the
+                <a href="/non-discrimination.html" target="_blank" class="text-burgundy-700 underline hover:text-burgundy-800">Non-Discrimination Policy</a>,
+                <a href="/ada-accommodations.html" target="_blank" class="text-burgundy-700 underline hover:text-burgundy-800">ADA Accommodations</a>,
+                and
+                <a href="/complaint-resolution.html" target="_blank" class="text-burgundy-700 underline hover:text-burgundy-800">Complaint &amp; Grievance Process</a>.
               </span>
             </label>
           </div>
@@ -242,7 +247,7 @@
 
         // Validate terms agreement
         if (!agreeTerms) {
-          errorText.textContent = 'You must agree to the Terms of Service, Privacy Policy, and Refund Policy.';
+          errorText.textContent = 'You must agree to the Terms of Service, Privacy Policy, Refund Policy, and acknowledge the Non-Discrimination Policy, ADA Accommodations, and Complaint & Grievance Process.';
           errorMessage.classList.remove('hidden');
           return;
         }
