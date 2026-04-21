@@ -99,22 +99,26 @@ export async function generateCertificate(data) {
 
     // ── HEADER: Provider Name ──
     doc.font('Times-Italic').fontSize(22).fillColor(HUNTER_GREEN);
-    doc.text('Ga Integrated Therapeutic Perspectives, LLC', 0, 48, { align: 'center', width: W });
+    doc.text('Ga Integrated Therapeutic Perspectives', 0, 46, { align: 'center', width: W });
 
-    // ACEP line
+    // Website URL
+    doc.font('Helvetica').fontSize(9).fillColor(HUNTER_GREEN);
+    doc.text('https://GaIntegratedPerspectives.com', 0, 72, { align: 'center', width: W });
+
+    // ACEP provider line
     doc.font('Helvetica-Bold').fontSize(9).fillColor(HUNTER_GREEN);
-    doc.text(`${approvingBody} Approved Continuing Education Provider, ${acepNumber}`, 0, 73, { align: 'center', width: W });
+    doc.text(`ACEP PROVIDER #${String(acepNumber).replace(/[^\d]/g, '') || '7760'}`, 0, 85, { align: 'center', width: W });
 
     // ── CERTIFICATE TITLE ──
     doc.font('Times-Italic').fontSize(28).fillColor(BURGUNDY);
-    doc.text('Certificate of Completion', 0, 95, { align: 'center', width: W });
+    doc.text('Certificate of Completion', 0, 104, { align: 'center', width: W });
 
     // ── CERTIFIES THAT + LEARNER NAME ──
     doc.font('Times-Roman').fontSize(12).fillColor(NAVY);
-    doc.text('This certifies that', 0, 128, { align: 'center', width: W });
+    doc.text('This is to certify that', 0, 140, { align: 'center', width: W });
 
     // Learner name — large, underlined
-    const nameY = 168;
+    const nameY = 170;
     doc.font('Times-Bold').fontSize(26).fillColor(BURGUNDY);
     const nameWidth = doc.widthOfString(holderName);
     const nameX = (W - nameWidth) / 2;
@@ -122,86 +126,89 @@ export async function generateCertificate(data) {
     // Underline
     doc.moveTo(nameX, nameY + 30).lineTo(nameX + nameWidth, nameY + 30).lineWidth(1).stroke(BURGUNDY);
 
-    // "has successfully completed"
+    // "has successfully completed the course"
     doc.font('Times-Roman').fontSize(12).fillColor(NAVY);
-    doc.text('has successfully completed', 0, 206, { align: 'center', width: W });
+    doc.text('has successfully completed the course', 0, 208, { align: 'center', width: W });
 
     // ── COURSE TITLE ──
     const titleFontSize = courseName.length > 50 ? 16 : 20;
     doc.font('Times-Bold').fontSize(titleFontSize).fillColor(HUNTER_GREEN);
-    doc.text(courseName, 60, 225, { align: 'center', width: W - 120 });
+    doc.text(courseName, 60, 228, { align: 'center', width: W - 120 });
 
     // ── COMPLETION DATE (after course title) ──
-    const dateY = courseName.length > 50 ? 255 : 250;
+    const dateY = courseName.length > 50 ? 258 : 255;
     doc.font('Helvetica').fontSize(10).fillColor(NAVY);
     doc.text(`Completed ${formattedDate}`, 0, dateY, { align: 'center', width: W });
 
-    // ── INSTRUCTOR + ASYNCHRONOUS (spaced down 2 lines after date) ──
-    const instrY = dateY + 28;
+    // ── INSTRUCTOR + ASYNCHRONOUS ──
+    const instrY = dateY + 24;
     doc.font('Helvetica').fontSize(10).fillColor(NAVY);
     doc.text(`Instructor: ${instructorName}`, 0, instrY, { align: 'center', width: W });
     doc.font('Helvetica-Oblique').fontSize(9).fillColor(DARK_GREEN);
-    doc.text('Asynchronous', 0, instrY + 15, { align: 'center', width: W });
+    doc.text('Asynchronous', 0, instrY + 14, { align: 'center', width: W });
 
-    // ── LEARNING OBJECTIVES (if provided, centered) ──
-    let nextY = instrY + 40;
-    if (objectives.length > 0 && objectives.length <= 6) {
+    // ── LEARNING OBJECTIVES (3–5 listed, centered) ──
+    let nextY = instrY + 38;
+    const objsToShow = objectives.slice(0, 5);
+    if (objsToShow.length > 0) {
       doc.font('Helvetica-Bold').fontSize(9).fillColor(HUNTER_GREEN);
       doc.text('Learning Objectives:', 120, nextY, { width: W - 240, align: 'center' });
       nextY += 13;
       doc.font('Helvetica').fontSize(8).fillColor(NAVY);
-      objectives.forEach((obj, i) => {
-        const text = `${i + 1}. ${String(obj).substring(0, 120)}`;
+      objsToShow.forEach((obj, i) => {
+        const text = `Objective ${i + 1}: ${String(obj).substring(0, 120)}`;
         doc.text(text, 130, nextY, { width: W - 260, align: 'center' });
         nextY += 11;
       });
     }
 
-    // ── SIGNATURE SECTION (two columns, spaced down 2-3 lines) ──
-    const sigY = Math.max(nextY + 40, 395);
-    const sigColW = (W - 120) / 2;
+    // ── BOTTOM SECTION: three columns (CE info | NBCC seal | signature) ──
+    const sigY = Math.max(nextY + 35, 410);
+    const colW = (W - 120) / 3;
+    const leftX = 60;
+    const centerX = 60 + colW;
+    const rightX = 60 + colW * 2;
+    const lineY = sigY + 40;
 
-    // Left: Content area above line, CE hours (bold) + Certificate # below line
-    if (ceCategory) {
-      doc.font('Helvetica').fontSize(8).fillColor(NAVY);
-      doc.text(ceCategory, 60, sigY + 22, { width: sigColW, align: 'center' });
-    }
-    doc.moveTo(60 + 30, sigY + 35).lineTo(60 + sigColW - 30, sigY + 35).lineWidth(0.5).stroke('#999999');
-    doc.font('Helvetica-Bold').fontSize(9).fillColor(NAVY);
-    const ceText = `${ceHours} CE Hour${ceHours !== 1 ? 's' : ''}`;
-    doc.text(`${ceText}  |  Certificate #: ${certificateNumber}`, 60, sigY + 40, { width: sigColW, align: 'center' });
+    // LEFT: content area + CE hours ABOVE line, cert # BELOW line
+    doc.font('Helvetica-Bold').fontSize(10).fillColor(NAVY);
+    const ceLabel = ceCategory
+      ? `${ceHours} CE Hour${ceHours !== 1 ? 's' : ''}  •  ${ceCategory}`
+      : `${ceHours} CE Hour${ceHours !== 1 ? 's' : ''}`;
+    doc.text(ceLabel, leftX, sigY + 22, { width: colW, align: 'center' });
+    doc.moveTo(leftX + 20, lineY).lineTo(leftX + colW - 20, lineY).lineWidth(0.5).stroke('#999999');
+    doc.font('Helvetica').fontSize(8).fillColor(NAVY);
+    doc.text(`Certificate #: ${certificateNumber}`, leftX, lineY + 5, { width: colW, align: 'center' });
 
-    // NBCC SEAL (centered between the two signature columns)
+    // CENTER: NBCC seal
     try {
       if (fs.existsSync(NBCC_SEAL_PATH)) {
-        const sealSize = 70;
-        doc.image(NBCC_SEAL_PATH, (W - sealSize) / 2, sigY - 5, { width: sealSize, height: sealSize });
+        const sealSize = 72;
+        doc.image(NBCC_SEAL_PATH, centerX + (colW - sealSize) / 2, sigY - 2, { width: sealSize, height: sealSize });
       }
     } catch (e) { /* no seal image */ }
 
-    // Right: Authorized Signature
+    // RIGHT: signature image ABOVE line, instructor printed name + ACEP # BELOW line
     try {
       if (fs.existsSync(SIGNATURE_PATH)) {
-        doc.image(SIGNATURE_PATH, (60 + sigColW + sigColW / 2) - 60, sigY - 5, { width: 120, height: 40 });
+        doc.image(SIGNATURE_PATH, rightX + (colW - 130) / 2, sigY, { width: 130, height: 38 });
       }
     } catch (e) { /* no signature image */ }
-
-    doc.moveTo(60 + sigColW + 30, sigY + 35).lineTo(60 + sigColW * 2 - 30, sigY + 35).lineWidth(0.5).stroke('#999999');
-    doc.font('Helvetica').fontSize(8).fillColor(NAVY);
-    doc.text(instructorName, 60 + sigColW, sigY + 40, { width: sigColW, align: 'center' });
+    doc.moveTo(rightX + 20, lineY).lineTo(rightX + colW - 20, lineY).lineWidth(0.5).stroke('#999999');
+    doc.font('Helvetica-Bold').fontSize(8).fillColor(NAVY);
+    doc.text(instructorName, rightX, lineY + 5, { width: colW, align: 'center' });
     doc.font('Helvetica').fontSize(7).fillColor('#666666');
-    doc.text('Authorized Signature', 60 + sigColW, sigY + 52, { width: sigColW, align: 'center' });
+    doc.text(`ACEP PROVIDER #${String(acepNumber).replace(/[^\d]/g, '') || '7760'}`, rightX, lineY + 17, { width: colW, align: 'center' });
 
-    // ── FOOTER ──
-    const footerY = H - 52;
-    doc.font('Helvetica-Bold').fontSize(7).fillColor('#777777');
-    doc.text('Verify at counselorready.com/verify', 0, footerY, { align: 'center', width: W });
-    doc.font('Helvetica').fontSize(6).fillColor('#AAAAAA');
+    // ── FOOTER: GaITP contact info + verify URL ──
+    const footerY = H - 50;
+    doc.font('Helvetica').fontSize(7).fillColor('#555555');
     doc.text(
-      `Ga Integrated Therapeutic Perspectives, LLC has been approved by NBCC as an Approved Continuing Education Provider, ${acepNumber}. ` +
-      'Programs that do not qualify for NBCC credit are clearly identified. Ga Integrated Therapeutic Perspectives, LLC is solely responsible for all aspects of the program.',
-      50, footerY + 12, { align: 'center', width: W - 100 }
+      'Ga Integrated Therapeutic Perspectives, LLC  •  202 E General Stewart Way, Hinesville, GA 31313  •  678-664-4003  •  info@gaintegratedperspectives.com',
+      40, footerY, { align: 'center', width: W - 80 }
     );
+    doc.font('Helvetica-Bold').fontSize(7).fillColor('#777777');
+    doc.text('Verify at counselorready.com/verify', 0, footerY + 13, { align: 'center', width: W });
 
     doc.end();
   });
