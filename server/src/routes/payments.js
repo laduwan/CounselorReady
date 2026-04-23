@@ -1050,7 +1050,7 @@ router.post('/purchase-course', protect, async (req, res) => {
         userId: user._id.toString(),
         slug: course.slug
       },
-      success_url: `${process.env.CLIENT_URL}/purchase-success.html?session_id={CHECKOUT_SESSION_ID}&slug=${course.slug}`,
+      success_url: req.body.successUrl || `${process.env.CLIENT_URL}/purchase-success.html?session_id={CHECKOUT_SESSION_ID}&slug=${course.slug}`,
       cancel_url: `${process.env.CLIENT_URL}/course-details.html?slug=${course.slug}&cancelled=true`
     };
 
