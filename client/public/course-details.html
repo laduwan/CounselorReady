@@ -1023,6 +1023,7 @@
         const token = localStorage.getItem('token');
         const body = { courseId: currentCourse._id };
         if (appliedCouponCode) body.couponCode = appliedCouponCode;
+        body.successUrl = `${window.location.origin}/checkout-success.html?course=${encodeURIComponent(currentCourse.slug)}&slug=${encodeURIComponent(currentCourse.slug)}&name=${encodeURIComponent(currentCourse.title)}&session_id={CHECKOUT_SESSION_ID}`;
 
         const controller = new AbortController();
         const timeout = setTimeout(() => controller.abort(), 15000);
