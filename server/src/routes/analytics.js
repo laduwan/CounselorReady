@@ -480,8 +480,8 @@ router.get('/admin/overview', protect, async (req, res) => {
         $sum: {
           $cond: [
             hasWindow && hasEvalSubmittedAt
-              ? { $and: [{ $eq: ['$evaluationSubmitted', true] }, inWindow('evaluationSubmittedAt')] }
-              : { $eq: ['$evaluationSubmitted', true] },
+              ? { $and: [{ $eq: ['$evaluationCompleted', true] }, inWindow('evaluationCompletedAt')] }
+              : { $eq: ['$evaluationCompleted', true] },
             1, 0
           ]
         }
@@ -622,7 +622,12 @@ router.get('/admin/overview', protect, async (req, res) => {
       .populate('user', 'email profile')
       .lean();
 
-    const courseIds = [...new Set(recentEvaluationsRaw.map(ev => String(ev.course)).filter(Boolean))];
+    const courseIds = [...new Set(
+      recentEvaluationsRaw
+        .map(ev => ev.course)
+        .filter(id => id && mongoose.Types.ObjectId.isValid(id))
+        .map(id => String(id))
+    )];
     const [legacyCourses, interactiveCourses] = await Promise.all([
       Course.find({ _id: { $in: courseIds } }).select('title courseCode').lean(),
       InteractiveCourse.find({ _id: { $in: courseIds } }).select('title courseCode').lean(),
@@ -649,7 +654,7 @@ router.get('/admin/overview', protect, async (req, res) => {
       recentEvaluations
     });
   } catch (error) {
-    console.error('Admin overview error:', error);
+    console.error('Admin overview error:', error?.stack || error);
     res.status(500).json({ error: 'Failed to get analytics overview' });
   }
 });
