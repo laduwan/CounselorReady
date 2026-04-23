@@ -10,6 +10,8 @@
 //   adminAI.js       — AI quiz/course/module generation
 
 import express from 'express';
+import { v2 as cloudinary } from 'cloudinary';
+import { Readable } from 'stream';
 import adminUsersRouter from './adminUsers.js';
 import adminCoursesRouter from './adminCourses.js';
 import adminAIRouter from './adminAI.js';
@@ -18,9 +20,16 @@ import adminStripeRouter from './adminStripe.js';
 import adminCouponsRouter from './adminCoupons.js';
 import Certificate from '../models/Certificate.js';
 import certificateService from '../services/certificateService.js';
+import { generateCertificate } from '../utils/certificate.js';
 import { protect } from '../middleware/auth.js';
 
 const router = express.Router();
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
+});
 
 const adminOnly = (req, res, next) => {
   if (!req.user || req.user.role !== 'admin') {
@@ -79,15 +88,35 @@ router.post('/users/:userId/certificates/:certId/regenerate', protect, adminOnly
       `${user.profile?.firstName || ''} ${user.profile?.lastName || ''}`.trim() || user.email || 'Unknown';
     const courseTitle = course.title || cert.title;
 
-    const newUrl = await certificateService.generatePDF({
-      certificateNumber: cert.certificateNumber,
-      userName,
-      courseTitle,
+    const pdfBuffer = await generateCertificate({
+      holderName: userName,
+      courseName: courseTitle,
       completionDate: cert.completionDate,
       ceHours: cert.ceHours,
-      nbccNumber: course.nbccProgramNumber || '',
-      providerNumber: '7760'
+      certificateNumber: cert.certificateNumber,
+      acepNumber: cert.acepNumber || 'ACEP #7760',
+      ceCategory: cert.category || ''
     });
+
+    const uploadResult = await new Promise((resolve, reject) => {
+      const uploadStream = cloudinary.uploader.upload_stream(
+        {
+          resource_type: 'raw',
+          folder: 'certificates',
+          public_id: `cert_${cert.certificateNumber}_${Date.now()}.pdf`
+        },
+        (error, result) => {
+          if (error) return reject(error);
+          resolve(result);
+        }
+      );
+      const readable = new Readable();
+      readable.push(pdfBuffer);
+      readable.push(null);
+      readable.pipe(uploadStream);
+    });
+
+    const newUrl = uploadResult.secure_url;
 
     const oldPublicId = cert.fileKey;
 
