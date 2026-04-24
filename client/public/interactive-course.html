@@ -146,6 +146,55 @@
 [data-reading-guide="true"] .cr-reading-guide { display: block; }
 
 /* ═══════════════════════════════════════════════════════════════
+   ADAPTIVE REMEDIATION (v1 — added Apr 24, 2026)
+   Shown on wrong KC answers when block.remediation.blockId is set.
+   ═══════════════════════════════════════════════════════════════ */
+.cr-remediation-btn {
+  margin-top: 12px;
+  padding: 10px 18px;
+  background: var(--cr-navy-faded);
+  border: 2px solid var(--cr-navy);
+  color: var(--cr-navy);
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 0.9em;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all var(--cr-transition);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  line-height: 1.2;
+}
+.cr-remediation-btn:hover {
+  background: var(--cr-navy);
+  color: #fff;
+  transform: translateY(-1px);
+}
+.cr-remediation-btn:focus-visible {
+  outline: 3px solid var(--cr-gold);
+  outline-offset: 2px;
+}
+.cr-block.cr-remediation-highlight {
+  animation: cr-remediation-pulse 3s ease-out;
+  border-left: 4px solid var(--cr-burgundy);
+  background: var(--cr-burgundy-faded);
+  padding: 8px 12px 8px 16px;
+  border-radius: 4px 8px 8px 4px;
+  transition: background 0.3s ease, border-color 0.3s ease;
+}
+@keyframes cr-remediation-pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(107, 29, 52, 0); }
+  30%  { box-shadow: 0 0 0 8px rgba(107, 29, 52, 0.22); }
+  100% { box-shadow: 0 0 0 0 rgba(107, 29, 52, 0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cr-block.cr-remediation-highlight { animation: none; }
+}
+[data-reduced-motion="true"] .cr-block.cr-remediation-highlight { animation: none; }
+
+/* ═══════════════════════════════════════════════════════════════
    RESET & BASE
    ═══════════════════════════════════════════════════════════════ */
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
@@ -2933,6 +2982,60 @@ function renderCurrentSection() {
 }
 
 // ═══════════════════════════════════════════════════════════════
+// ADAPTIVE REMEDIATION HELPERS (v1)
+// Used by multipleChoice / multiSelect / matching render + submit.
+// ═══════════════════════════════════════════════════════════════
+function buildRemediationButtonHTML(block) {
+  if (!block || !block.remediation || !block.remediation.blockId) return '';
+  const msg = esc(block.remediation.message || 'Review this content');
+  const targetId = esc(block.remediation.blockId);
+  return `<button class="cr-remediation-btn"
+    style="display:none"
+    data-action="jumpToBlock"
+    data-target-id="${targetId}"
+    aria-label="Review the content that teaches this concept">
+    📖 ${msg}
+  </button>`;
+}
+
+function revealRemediationButton(container) {
+  if (!container) return;
+  const btn = container.querySelector('.cr-remediation-btn');
+  if (btn) btn.style.display = '';
+}
+
+function jumpToBlock(blockId) {
+  if (!blockId) return;
+  let target = null;
+  try {
+    target = document.querySelector('[data-block-id="' + (CSS && CSS.escape ? CSS.escape(blockId) : blockId) + '"]');
+  } catch (e) {
+    target = document.querySelector('[data-block-id]');
+  }
+  if (!target) {
+    srAnnounce('Referenced content could not be found');
+    return;
+  }
+  const reducedMotion = document.body.getAttribute('data-reduced-motion') === 'true'
+    || (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  target.scrollIntoView({
+    behavior: reducedMotion ? 'auto' : 'smooth',
+    block: 'center'
+  });
+  target.classList.add('cr-remediation-highlight');
+  const hadTabindex = target.hasAttribute('tabindex');
+  const originalTabindex = target.getAttribute('tabindex');
+  if (!hadTabindex) target.setAttribute('tabindex', '-1');
+  try { target.focus({ preventScroll: true }); } catch (e) { target.focus(); }
+  setTimeout(() => {
+    target.classList.remove('cr-remediation-highlight');
+    if (!hadTabindex) target.removeAttribute('tabindex');
+    else if (originalTabindex !== null) target.setAttribute('tabindex', originalTabindex);
+  }, 3000);
+  srAnnounce('Jumped to content that covers this question');
+}
+
+// ═══════════════════════════════════════════════════════════════
 // BLOCK RENDERER
 // ═══════════════════════════════════════════════════════════════
 function renderBlock(block, index) {
@@ -2940,6 +3043,8 @@ function renderBlock(block, index) {
   wrap.className = 'cr-block';
   wrap.dataset.blockType = block.type;
   wrap.dataset.blockIndex = index;
+  // Stable block ID (enables remediation jump-back targeting)
+  if (block.id) wrap.dataset.blockId = block.id;
   
   // Apply block-level accessibility properties if present
   if (block.accessibility) {
@@ -3138,6 +3243,7 @@ function renderMultipleChoice(wrap, block, blockIndex) {
   html += `</div>
     <button class="cr-kc-submit" disabled data-action="submitMC" data-target="${id}" data-correct="${correctIdx}">Check Answer</button>
     <div class="cr-kc-explanation">${block.explanation || ''}</div>
+    ${buildRemediationButtonHTML(block)}
   </div>`;
   wrap.innerHTML = html;
   return wrap;
@@ -3159,6 +3265,7 @@ function submitMC(id, correctIdx) {
   if (!el || el.dataset.answered) return;
   el.dataset.answered = 'true';
   const selected = parseInt(el.dataset.selected);
+  const isWrong = selected !== correctIdx;
   
   el.querySelectorAll('.cr-kc-option').forEach((o, i) => {
     o.classList.add('answered');
@@ -3170,6 +3277,7 @@ function submitMC(id, correctIdx) {
   if (explEl) explEl.classList.add('show');
   const submitBtn = el.querySelector('.cr-kc-submit');
   if (submitBtn) submitBtn.style.display = 'none';
+  if (isWrong) revealRemediationButton(el);
   srAnnounce(selected === correctIdx ? 'Correct!' : 'Incorrect. The correct answer is shown.');
 }
 
@@ -3193,6 +3301,7 @@ function renderMultiSelect(wrap, block, blockIndex) {
   html += `</div>
     <button class="cr-kc-submit" disabled data-action="submitMS" data-target="${id}">Check Answer</button>
     <div class="cr-kc-explanation">${block.explanation || ''}</div>
+    ${buildRemediationButtonHTML(block)}
   </div>`;
   wrap.innerHTML = html;
   return wrap;
@@ -3213,6 +3322,11 @@ function submitMS(id) {
   if (!el || el.dataset.answered) return;
   el.dataset.answered = 'true';
   const correctIdxs = el.dataset.correct.split(',').map(Number);
+  const selectedIdxs = [...el.querySelectorAll('.cr-kc-option.selected')]
+    .map(o => parseInt(o.dataset.idx));
+  const hasAllCorrect = correctIdxs.every(i => selectedIdxs.includes(i));
+  const hasOnlyCorrect = selectedIdxs.every(i => correctIdxs.includes(i));
+  const isWrong = !hasAllCorrect || !hasOnlyCorrect;
   
   el.querySelectorAll('.cr-kc-option').forEach((o, i) => {
     o.classList.add('answered');
@@ -3226,6 +3340,7 @@ function submitMS(id) {
   if (explEl) explEl.classList.add('show');
   const submitBtn = el.querySelector('.cr-kc-submit');
   if (submitBtn) submitBtn.style.display = 'none';
+  if (isWrong) revealRemediationButton(el);
 }
 
 // ─── MATCHING ───
@@ -3248,9 +3363,10 @@ function renderMatching(wrap, block, blockIndex) {
       </div>
     </div>
     <p id="${id}-status" style="margin-top:12px;font-size:0.85em;color:var(--cr-text-muted)">0/${pairs.length} matched</p>
+    ${buildRemediationButtonHTML(block)}
   </div>`;
   wrap.innerHTML = html;
-  wrap.querySelector('.cr-matching')._matchState = { selectedTerm: null, matched: new Set(), total: pairs.length };
+  wrap.querySelector('.cr-matching')._matchState = { selectedTerm: null, matched: new Set(), total: pairs.length, remediationShown: false };
   return wrap;
 }
 
@@ -3287,6 +3403,11 @@ function selectMatchDef(id, defIdx) {
     def.style.borderColor = 'var(--cr-danger)';
     setTimeout(() => { def.style.borderColor = ''; }, 800);
     srAnnounce('Not a match. Try again.');
+    // Reveal remediation button on first wrong attempt
+    if (!state.remediationShown) {
+      state.remediationShown = true;
+      revealRemediationButton(el);
+    }
   }
 }
 
@@ -5731,6 +5852,9 @@ document.addEventListener('click', function(e) {
     
     // ─── Hotspot ───
     case 'hsReveal': hsReveal(target, parseInt(el.dataset.spot)); break;
+    
+    // ─── Adaptive Remediation ───
+    case 'jumpToBlock': jumpToBlock(el.dataset.targetId); break;
     
     // ─── Navigation ───
     case 'prevSection': prevSection(); break;
