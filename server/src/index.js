@@ -64,6 +64,7 @@ import notificationsRoutes from './routes/notifications.js';
 import recommendationsRoutes from './routes/recommendations.js';
 import blogRoutes from './routes/blog.js';
 import toolAnalyticsRoutes from './routes/toolAnalytics.js';
+import remediationRoutes from './routes/remediation.js';
 
 // ═══════════════════════════════════════════════════════════════
 // SERVICE IMPORTS
@@ -192,6 +193,7 @@ app.use('/api/partners', partnersRoutes);
 app.use('/api/recommendations', recommendationsRoutes);
 app.use('/api/blog', blogRoutes);
 app.use('/api/tool-analytics', toolAnalyticsRoutes);
+app.use('/api/remediation', remediationRoutes);
 
 app.use('/templates', express.static(path.join(__dirname, 'templates')));
 
