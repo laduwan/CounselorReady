@@ -5,7 +5,7 @@
  */
 import User from '../models/User.js';
 import UserActivity from '../models/UserActivity.js';
-import { sendAdminAlert } from './adminNotificationService.js';
+import { sendAdminAlertIfEnabled } from './adminNotificationService.js';
 
 /**
  * Activity types for tracking
@@ -45,7 +45,7 @@ export async function logActivity(type, data, options = {}) {
   // Persist to dedicated UserActivity collection (scalable, queryable)
   try {
     await UserActivity.create({
-      userId,
+      userId: userId || undefined,
       type,
       userName,
       userEmail,
@@ -78,7 +78,7 @@ export async function logActivity(type, data, options = {}) {
 
   // Send branded admin alert if enabled (non-blocking, never throws)
   if (notifyAdmin) {
-    sendAdminAlert(type, { userName, userEmail, ...data });
+    sendAdminAlertIfEnabled(type, { userName, userEmail, ...data });
   }
 
   return activity;
