@@ -1,6 +1,34 @@
 import mongoose from 'mongoose';
 
 // ============================================================================
+// REMEDIATION SUB-SCHEMA
+// ----------------------------------------------------------------------------
+// Optional. Attached to KC content blocks (multipleChoice, multiSelect,
+// matching) to enable adaptive remediation: when a learner answers wrong,
+// CReady Viewer shows a "Review this content" button that jumps back to
+// the block that teaches the tested concept.
+//
+// blockId references the `id` field of another content block within the
+// SAME section (seed scripts and CourseBuilder set stable string IDs on
+// every block; Mongoose persists them via strict:false on ContentBlockSchema).
+// If the referenced block is missing, the viewer silently omits the button.
+// ============================================================================
+const RemediationSchema = new mongoose.Schema({
+  blockId: { type: String, default: '' },
+  message: { type: String, default: '' },
+  confidence: {
+    type: String,
+    enum: ['high', 'medium', 'low', ''],
+    default: ''
+  },
+  source: {
+    type: String,
+    enum: ['manual', 'ai', ''],
+    default: ''
+  }
+}, { _id: false });
+
+// ============================================================================
 // COURSE SCHEMA - Defines course structure with sections and content blocks
 // ============================================================================
 const ContentBlockSchema = new mongoose.Schema({
@@ -57,6 +85,12 @@ const ContentBlockSchema = new mongoose.Schema({
     isCorrect: Boolean
   }],
   explanation: String,
+
+  // ── ADAPTIVE REMEDIATION (optional, KC blocks only) ──
+  // Valid on: multipleChoice, multiSelect, matching
+  // Ignored by viewer on all other block types.
+  // See RemediationSchema above.
+  remediation: RemediationSchema,
   
   // Image + Text card
   image: String,
