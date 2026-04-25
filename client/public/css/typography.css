@@ -1,174 +1,177 @@
-/* ═══════════════════════════════════════════════════════════════════
-   CounselorReady Typography v2.0
-   Depends on: design-tokens.css (must be loaded first)
-   ═══════════════════════════════════════════════════════════════════ */
+/* ============================================================
+   CounselorReady — Design Tokens
+   Authority: CounselorReady_Color_Spec_v1.docx
+   Code authority: this file. If anything else disagrees, this wins.
+   --------------------------------------------------------------
+   Import once on every page (static HTML and React):
+     <link rel="stylesheet" href="/css/design-tokens.css">
+     @import url('/css/design-tokens.css');
+   ============================================================ */
 
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Lato:wght@300;400;600;700&display=swap');
+:root {
 
-/* ── Base ─────────────────────────────────────────────────────────── */
-body {
-  font-family: var(--cr-font-body);
-  font-size: var(--cr-text-body);
-  font-weight: var(--cr-weight-body);
-  line-height: var(--cr-leading-normal);
-  color: var(--cr-text);
-  background-color: var(--cr-bg);
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  /* ---------- BRAND CORE (4 anchors) ---------------------- */
+  --cr-burgundy:       #6B1D34;   /* H1, logo, CTAs, alerts        */
+  --cr-hunter:         #4A7C59;   /* H3, primary buttons, nav      */
+  --cr-honey:          #D4A855;   /* accents, badges, progress     */
+  --cr-navy:           #284157;   /* H2, secondary text, footers   */
+
+  /* ---------- BURGUNDY SCALE ------------------------------ */
+  --cr-burgundy-50:    #FDF5F6;
+  --cr-burgundy-100:   #FAE8EB;
+  --cr-burgundy-200:   #F5D0D6;
+  --cr-burgundy-300:   #EBA9B5;
+  --cr-burgundy-400:   #DD768A;   /* "Counselor" on burgundy bg    */
+  --cr-burgundy-500:   #C94D65;
+  --cr-burgundy-600:   #A83350;
+  --cr-burgundy-700:   #8B2542;   /* hover / pressed CTA           */
+  --cr-burgundy-800:   #6B1D34;   /* PRIMARY brand                 */
+  --cr-burgundy-900:   #4A1524;
+
+  /* ---------- HUNTER GREEN SCALE -------------------------- */
+  --cr-hunter-50:      #F3F6F4;
+  --cr-hunter-100:     #E3EBE5;
+  --cr-hunter-200:     #C8D7CC;
+  --cr-hunter-300:     #A1BBA8;
+  --cr-hunter-400:     #759A7F;
+  --cr-hunter-500:     #547C5F;
+  --cr-hunter-600:     #3D6A4A;   /* hover on primary button       */
+  --cr-hunter-700:     #4A7C59;   /* PRIMARY brand                 */
+  --cr-hunter-800:     #3D6A4A;
+  --cr-hunter-900:     #2B4133;
+
+  /* ---------- HONEY / GOLD SCALE -------------------------- */
+  --cr-honey-50:       #FDF9F0;
+  --cr-honey-100:      #F9F0DB;
+  --cr-honey-200:      #F3E0B5;
+  --cr-honey-300:      #EACD86;
+  --cr-honey-400:      #D4A855;   /* PRIMARY brand                 */
+  --cr-honey-500:      #C49545;
+  --cr-honey-600:      #A67936;
+  --cr-honey-700:      #D4A855;   /* same as 400 — Tailwind alias  */
+  --cr-honey-800:      #B8903A;   /* hover                         */
+  --cr-honey-900:      #6B4A25;
+
+  /* ---------- NAVY SCALE ---------------------------------- */
+  --cr-navy-50:        #F0F4F7;
+  --cr-navy-100:       #DCE5EC;
+  --cr-navy-200:       #B8CBD9;
+  --cr-navy-300:       #93B0C5;
+  --cr-navy-400:       #5C82A0;
+  --cr-navy-500:       #284157;   /* PRIMARY brand                 */
+  --cr-navy-600:       #1F344A;
+  --cr-navy-700:       #182838;
+  --cr-navy-800:       #111D29;
+  --cr-navy-900:       #0A121A;
+
+  /* ---------- EGGSHELL (course canvas only) --------------- */
+  --cr-eggshell-50:    #F5F5DC;   /* COURSE CONTENT AREA ONLY      */
+  --cr-eggshell-100:   #EDEDD0;
+  --cr-eggshell-200:   #E2E2BE;
+  --cr-eggshell-300:   #D4D4A4;
+
+  /* ---------- STONE (platform page bg) -------------------- */
+  --cr-stone-50:       #F8F7F4;   /* ALL platform pages            */
+  --cr-stone-100:      #F0EFEA;
+  --cr-stone-200:      #E5E3DC;
+
+  /* ---------- SEMANTIC TOKENS ----------------------------- */
+  --cr-bg:                #F8F7F4;     /* platform pages           */
+  --cr-bg-content:        #F5F5DC;     /* course viewer ONLY       */
+  --cr-card:              #FFFFFF;
+  --cr-border:            #E2E2BE;
+  --cr-border-light:      #EDEDD0;
+  --cr-border-stone:      #E5E3DC;
+
+  /* Text */
+  --cr-text:              #2C2C2C;
+  --cr-text-muted:        #6B7280;
+  --cr-text-light:        #9CA3AF;
+
+  /* Headings */
+  --cr-h1:                #6B1D34;
+  --cr-h2:                #284157;
+  --cr-h3:                #4A7C59;
+  --cr-h4:                #284157;
+
+  /* Buttons */
+  --cr-btn-primary-bg:    #4A7C59;
+  --cr-btn-primary-hover: #3D6A4A;
+  --cr-btn-primary-text:  #FFFFFF;
+
+  --cr-btn-cta-bg:        #6B1D34;
+  --cr-btn-cta-hover:     #8B2542;
+  --cr-btn-cta-text:      #FFFFFF;
+
+  --cr-btn-ghost-bg:      transparent;
+  --cr-btn-ghost-border:  #284157;
+  --cr-btn-ghost-text:    #284157;
+
+  /* Accent / status */
+  --cr-accent:            #D4A855;
+  --cr-success:           #059669;
+  --cr-error:             #DC2626;
+  --cr-warning:           #D4A855;
+  --cr-info:              #284157;
+
+  /* Links */
+  --cr-link:              #284157;
+  --cr-link-hover:        #6B1D34;
+
+  /* Chrome */
+  --cr-nav-bg:            #6B1D34;
+  --cr-nav-text:          #FFFFFF;
+  --cr-footer-bg:         #284157;
+  --cr-footer-text:       #FFFFFF;
+  --cr-footer-text-muted: #B8CBD9;
+
+  /* Block-type accents (course player) */
+  --cr-block-content:      #284157;   /* navy   */
+  --cr-block-knowledge:    #6B1D34;   /* burg   */
+  --cr-block-engagement:   #4A7C59;   /* hunter */
+  --cr-block-progress:     #D4A855;   /* honey  */
+
+  /* Shadows */
+  --cr-shadow-sm:  0 1px 2px rgba(40, 65, 87, 0.06);
+  --cr-shadow:     0 1px 4px rgba(40, 65, 87, 0.08), 0 1px 2px rgba(40, 65, 87, 0.04);
+  --cr-shadow-md:  0 4px 12px rgba(40, 65, 87, 0.10), 0 2px 4px rgba(40, 65, 87, 0.05);
+  --cr-shadow-lg:  0 10px 30px rgba(40, 65, 87, 0.12), 0 4px 8px rgba(40, 65, 87, 0.06);
+
+  /* Radius */
+  --cr-radius-sm:  6px;
+  --cr-radius:     10px;
+  --cr-radius-md:  12px;
+  --cr-radius-lg:  16px;
+  --cr-radius-xl:  20px;
+
+  /* Spacing rhythm */
+  --cr-space-1:  4px;
+  --cr-space-2:  8px;
+  --cr-space-3:  12px;
+  --cr-space-4:  16px;
+  --cr-space-5:  20px;
+  --cr-space-6:  24px;
+  --cr-space-8:  32px;
+  --cr-space-10: 40px;
+  --cr-space-12: 48px;
+
+  /* Transition */
+  --cr-transition: all 0.2s ease-in-out;
+  --cr-transition-fast: all 0.15s ease-in-out;
 }
 
-/* ── Headings ─────────────────────────────────────────────────────── */
-h1, .cr-h1 {
-  font-family: var(--cr-font-display);
-  font-size: var(--cr-text-h1);
-  font-weight: var(--cr-weight-h1);
-  color: var(--cr-h1);
-  line-height: var(--cr-leading-tight);
-  margin-top: var(--cr-space-2xl);
-  margin-bottom: var(--cr-space-lg);
-  letter-spacing: -0.01em;
-}
-
-h2, .cr-h2 {
-  font-family: var(--cr-font-display);
-  font-size: var(--cr-text-h2);
-  font-weight: var(--cr-weight-h2);
-  color: var(--cr-h2);
-  line-height: var(--cr-leading-tight);
-  margin-top: var(--cr-space-xl);
-  margin-bottom: var(--cr-space-md);
-}
-
-h3, .cr-h3 {
-  font-family: var(--cr-font-body);
-  font-size: var(--cr-text-h3);
-  font-weight: var(--cr-weight-h3);
-  color: var(--cr-h3);
-  line-height: var(--cr-leading-tight);
-  margin-top: var(--cr-space-lg);
-  margin-bottom: var(--cr-space-sm);
-}
-
-h4, .cr-h4 {
-  font-family: var(--cr-font-body);
-  font-size: var(--cr-text-h4);
-  font-weight: var(--cr-weight-h4);
-  color: var(--cr-h4);
-  line-height: var(--cr-leading-tight);
-  margin-top: var(--cr-space-lg);
-  margin-bottom: var(--cr-space-sm);
-}
-
-h1:first-child, h2:first-child, h3:first-child, h4:first-child {
-  margin-top: 0;
-}
-
-/* ── Body Text ────────────────────────────────────────────────────── */
-p {
-  margin-bottom: var(--cr-space-md);
-  line-height: var(--cr-leading-relaxed);
-  color: var(--cr-text);
-}
-
-p:last-child {
-  margin-bottom: 0;
-}
-
-strong, b { font-weight: 700; }
-em, i { font-style: italic; }
-
-/* ── Small / Caption ──────────────────────────────────────────────── */
-small, .cr-small, .cr-caption {
-  font-size: var(--cr-text-small);
-  color: var(--cr-text-muted);
-  line-height: var(--cr-leading-normal);
-}
-
-/* ── Labels ───────────────────────────────────────────────────────── */
-.cr-label {
-  font-family: var(--cr-font-body);
-  font-size: var(--cr-text-label);
-  font-weight: var(--cr-weight-label);
-  color: var(--cr-navy-600);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-/* ── Links ────────────────────────────────────────────────────────── */
-a {
-  color: var(--cr-link);
-  text-decoration: underline;
-  text-decoration-color: var(--cr-navy-200);
-  text-underline-offset: 2px;
-  transition: color 0.2s ease, text-decoration-color 0.2s ease;
-}
-
-a:hover {
-  color: var(--cr-link-hover);
-  text-decoration-color: var(--cr-burgundy-600);
-}
-
-a:focus-visible {
-  outline: 2px solid var(--cr-focus);
+/* ============================================================
+   DEPRECATED HEX BLOCKERS
+   These rules visibly break any element that still uses old hex
+   so they get caught in QA. Remove once codebase is clean.
+   ============================================================ */
+/* Uncomment during cleanup audits:
+[style*="#34495E"], [style*="#34495e"],
+[style*="#40634A"], [style*="#40634a"],
+[style*="#7D4E57"], [style*="#7d4e57"],
+[style*="#FAFAF8"], [style*="#FAFAF9"],
+[style*="#d4a012"], [style*="#D4A012"] {
+  outline: 3px dashed #DC2626 !important;
   outline-offset: 2px;
-  border-radius: 2px;
 }
-
-/* ── Lists ────────────────────────────────────────────────────────── */
-ul, ol {
-  margin-bottom: var(--cr-space-md);
-  padding-left: var(--cr-space-lg);
-}
-
-li {
-  margin-bottom: var(--cr-space-xs);
-  line-height: var(--cr-leading-relaxed);
-}
-
-li::marker {
-  color: var(--cr-green-600);
-}
-
-/* ── Blockquotes ──────────────────────────────────────────────────── */
-blockquote {
-  border-left: 4px solid var(--cr-honey-500);
-  background: var(--cr-honey-50);
-  padding: var(--cr-space-md) var(--cr-space-lg);
-  margin: var(--cr-space-lg) 0;
-  border-radius: 0 var(--cr-radius-sm) var(--cr-radius-sm) 0;
-  font-style: italic;
-  color: var(--cr-text-secondary);
-}
-
-blockquote p:last-child { margin-bottom: 0; }
-
-/* ── Tables ───────────────────────────────────────────────────────── */
-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin: var(--cr-space-lg) 0;
-  font-size: var(--cr-text-small);
-}
-
-thead th {
-  background: var(--cr-navy-50);
-  color: var(--cr-navy-600);
-  font-weight: var(--cr-weight-label);
-  text-align: left;
-  padding: var(--cr-space-sm) var(--cr-space-md);
-  border-bottom: 2px solid var(--cr-navy-200);
-  font-size: var(--cr-text-label);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-
-tbody td {
-  padding: var(--cr-space-sm) var(--cr-space-md);
-  border-bottom: 1px solid var(--cr-border-light);
-  color: var(--cr-text-secondary);
-  vertical-align: top;
-}
-
-tbody tr:hover {
-  background: var(--cr-bg-alt);
-}
+*/
