@@ -1,3 +1,4 @@
+[CLAUDE(8).md](https://github.com/user-attachments/files/27072766/CLAUDE.8.md)
 # CounselorReady — Claude Code Instructions
 ## GA Integrated Therapeutic Perspectives LLC · NBCC ACEP #7760
 ---
@@ -32,11 +33,26 @@ These files are complete and stable. Do NOT open, read, or modify them unless th
 - `server/src/models/Course.js` — do not touch
 - `server/src/models/Certificate.js` — do not touch unless task names it
 - `server/src/models/UserCourseProgress.js` — do not touch
-### Frontend components — locked (fully)
-- `client/src/components/CourseViewer.jsx` — NEVER TOUCH. This is the core course player.
-- `client/src/components/CourseBuilder.jsx` — NEVER TOUCH.
-- `client/src/components/Layout.jsx` — do not touch unless task names it
-- `client/src/components/AccessibilityProvider.jsx` — do not touch
+### Frontend — viewers and builders (locked)
+
+**Architecture note:** This platform is **static-HTML-first**. The course player is intentionally a single HTML file, not a React component. CC's default is to suggest React patterns; reject them for anything in the course-playback path.
+
+- `client/public/interactive-course.html` — **THE LIVE COURSE PLAYER.** 6,329-line single-file HTML+CSS+JS player (the "CReady Viewer"). This is the viewer Ke built to replace the original ready-built React viewer, specifically to avoid content stripping and gain full layout control. Every production static path (`/courses.html`, `/course-details.html`, `/course-player.html`, `/course-player-unified.html`) loads this. Edits require explicit task-level naming and surgical scope only — no refactoring, no splitting into separate files, no "while I was there" cleanup. The single-file architecture is intentional (product brief / licensing). Verify with `grep` after every edit. **This file replaces, does not coexist with, any React-based viewer.**
+
+- `client/src/components/CourseViewer.jsx` — **LEGACY / DO NOT EXTEND.** Originally part of the ready-built React viewer system that the static `interactive-course.html` replaced. The file itself is now 3,749 lines and exports `CourseBuilderV2` (CourseBuilder code dropped into a viewer-named file at some point). It is wired to `/learn/:slug` in App.jsx, but production traffic does not flow through that route — Layout nav and course-details pages all bypass React and load `interactive-course.html` directly. **Do not "fix" the filename, do not migrate code in or out, do not suggest re-routing Dashboard tiles to make `/learn/:slug` work, do not propose a React rewrite of the viewer. This component is being left to die, not repaired.**
+
+- `client/src/components/CourseBuilder.jsx` — DO NOT TOUCH.
+- `client/src/components/CourseViewerPatch.jsx` — 633 lines of patch helpers imported by `CourseViewer.jsx`. Same legacy status. Do not extend.
+- `client/src/components/Layout.jsx` — do not touch unless task names it. (Note: it correctly links course nav to the static `/courses.html`, not to React routes — preserve this.)
+- `client/src/components/AccessibilityProvider.jsx` — do not touch.
+
+### Files that LOOK like duplicates but are not — leave alone
+- `client/public/interactive-course-legacy.html` (2,674 lines) — older snapshot, do not delete or "consolidate"
+- `client/src/components/interactive-course.html` (2,902 lines) — orphan duplicate not imported anywhere; do not delete without a dedicated task
+- `client/public/course-player.html` (13L), `course-player-unified.html` (4L), `courses-unified.html` (8L) — redirect shells that point to `/interactive-course.html`. Do not "improve" them; their job is to forward old URLs.
+
+### React vs static — decision rule
+When a task touches anything course-playback related, default to editing the static HTML files (`interactive-course.html`, `courses.html`, `course-details.html`). Only touch React (`/client/src/`) when the task is explicitly about a non-playback feature (RNR CE, dashboard widgets, admin tools). If a task seems to require routing course playback through React, **stop and ask** — that direction is against architecture.
 ### Frontend config — locked
 - `client/tailwind.config.cjs` — color palette and font families are locked
 - `client/src/index.css` — base layer and component layer styles are locked
@@ -117,8 +133,47 @@ Stop. Ask. Do not guess, do not approximate, do not "make it work" by changing s
 | Extend Trial +3 days | 🔧 Needs route | 🔧 Needs button | Prompt ready |
 | Certificate tile (article CE) | 🔧 Needs rnrMeta | 🔧 Needs tile variant | In RNR v2 |
 | CE Planner RNR block | ✅ Route exists | 🔧 Needs UI block | In RNR v2 |
-| CourseViewer | ✅ Locked | ✅ Locked | Do not touch |
+| Course Player (live) | ✅ Locked | ✅ Static `interactive-course.html` — Ke's hand-built viewer | Do not touch without scoped task |
+| React viewer (`/learn/:slug`, CourseViewer.jsx) | — | ⚠️ Legacy / deprecated — do not extend | Do not touch, do not "fix" |
 | Auth / Payments / Courses | ✅ Locked | ✅ Locked | Do not touch |
+
+---
+## ⚠️ PROTECTED FILE: client/public/interactive-course.html
+**This is the live course player and the canonical viewer for this platform.** Single-file HTML+CSS+JS at 6,329 lines (the "CReady Viewer"). Ke built this specifically to replace the original ready-built React viewer system, which stripped content and limited layout flexibility. **It is intentionally NOT a React component.**
+
+Every production static path converges here: `courses.html`, `course-details.html`, `course-player.html`, `course-player-unified.html` all redirect or link to `/interactive-course.html?slug=X`. Layout nav points to `/courses.html`, not to a React route — preserve that.
+
+### Rules for interactive-course.html
+1. **Never rewrite from scratch.** It is 6,329 lines for a reason — entire 17-block-type renderer, 19 accessibility features, viewer state machine, and the cr-* CSS system in one file.
+2. **Surgical edits only.** No refactoring. No "while I was there" cleanup. No reformatting.
+3. **No file-structure changes.** Do not extract CSS to a separate file. Do not extract JS to a separate file. Do not split into modules. Single-file architecture is intentional and required for the product brief / licensing model.
+4. **Never propose migrating this to React.** The whole point of this file existing is to NOT be React. If a task seems to require a React rewrite of the player, stop and ask — that is against architecture.
+5. **Do not call this file legacy, redirect shell, or stale duplicate.** It is the production viewer. The actual redirect shells are `course-player.html`, `course-player-unified.html`, and `courses-unified.html` (each under 15 lines). The actual legacy is `CourseViewer.jsx`.
+6. **Do not assume `cready-viewer.html`, `cready-viewer.css`, or `cready-viewer.js` exist.** They do not. A file split was scoped but never executed. Any prompt or doc that references those filenames is stale.
+7. **Verify after every edit:** paste raw `grep` output into the PR description proving the change landed and nothing else was touched. `git diff --stat main` should typically show exactly one file changed.
+
+---
+## ⚠️ PROTECTED FILE: client/src/components/CourseViewer.jsx (LEGACY)
+**Despite the filename, this is NOT the active course viewer.** This component is a remnant of the original ready-built React viewer system that the static `client/public/interactive-course.html` was built specifically to replace.
+
+The file currently contains 3,749 lines of `CourseBuilderV2` code (BlockEditor, AIGenerator, ACEPChecker, parseMarkdownToCourse — all builder UI, no viewer state). Whoever last edited it dropped builder code into a viewer-named file. The mismatch is part of the legacy mess, not a bug to fix.
+
+The `/learn/:slug` route in `App.jsx` still points here. Production traffic does NOT flow through that route — the live navigation (`Layout.jsx → /courses.html → /interactive-course.html`) bypasses React entirely.
+
+### Rules for CourseViewer.jsx
+1. **Do not extend it.** No new features, no migration of code in or out, no "fixes" to make `/learn/:slug` work.
+2. **Do not rename it** to match its contents, do not split it into proper builder/viewer files. Those are dedicated cleanup tasks that must be scoped explicitly.
+3. **Do not propose React rewrites of the static viewer.** The static `interactive-course.html` is intentional. React is not the path forward for course playback.
+4. **`CourseViewerPatch.jsx`** (633 lines, imported by this file) — same legacy status. Do not extend.
+5. **If a task seems to require touching this file**, stop and ask whether the task should target the static viewer instead.
+This file has a history of being overwritten with incomplete versions, breaking all routes that get dropped.
+### Rules for index.js
+1. **NEVER rewrite this file from scratch.** Always read the current version first, then make targeted additions.
+2. **NEVER remove any `import` or `app.use()` line.** If a route seems unused, leave it — removing it breaks the frontend page that depends on it.
+3. **NEVER change the interactiveCourseRoutes import.** It MUST point to `./routes/interactiveCourseRoutes.js` (NOT `courseRoutes.js`). The stripped `courseRoutes.js` is missing certificate generation, evaluation, attestation, gamification, and CE auto-allocation.
+4. **The REQUIRED_ROUTES object at the bottom is a startup integrity check.** If you add a new route, add it there too. The server will log which routes are broken on every boot.
+5. **If the task requires adding a new route:** add the import AND the `app.use()` mount AND an entry in REQUIRED_ROUTES. All three or nothing.
+6. **Current route count: 37 mounts.** If your version has fewer, you dropped something.
 
 ---
 ## ⚠️ PROTECTED FILE: server/src/index.js
