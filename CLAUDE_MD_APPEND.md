@@ -1,3 +1,4 @@
+[CLAUDE_MD_APPEND(2).md](https://github.com/user-attachments/files/27072869/CLAUDE_MD_APPEND.2.md)
 # ═══════════════════════════════════════════════════════════════
 # APPEND THIS BLOCK TO THE END OF CLAUDE.md
 # ═══════════════════════════════════════════════════════════════
@@ -6,7 +7,7 @@
 
 **READ THIS BEFORE WRITING OR MODIFYING ANY SEED SCRIPT.**
 
-The course player (`interactive-course.html`, `cready-viewer.html`, `cr-course-viewer.html`) renders content from `modules[].contentBlocks[]` in the `interactivecourses` collection. Seed scripts MUST write data that the player can render without transformation. No migration scripts. No post-processing. The seed is the single source of truth.
+The course player is `client/public/interactive-course.html` (the live, single-file CReady Viewer). It renders content from `modules[].contentBlocks[]` in the `interactivecourses` collection. Seed scripts MUST write data that the player can render without transformation. No migration scripts. No post-processing. The seed is the single source of truth. Do NOT reference `cready-viewer.html`, `cready-viewer.css`, `cready-viewer.js`, or `cr-course-viewer.html` — those filenames appear in stale docs but the files do not exist in this repo.
 
 ### Collection
 
