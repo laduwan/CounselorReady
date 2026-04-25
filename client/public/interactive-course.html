@@ -1490,6 +1490,12 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
   body.cr-has-timer .cr-a11y-panel { bottom: 264px; }
   body.cr-has-timer .cr-glossary-btn { bottom: 200px; }
 }
+  /* ADA controls — guaranteed reachability above overlays */
+  .cr-a11y-toggle,
+  .cr-a11y-panel {
+    z-index: 99998;
+    isolation: isolate;
+  }
 </style>
 <!-- .docx parsing -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
