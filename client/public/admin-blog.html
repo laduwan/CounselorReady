@@ -5,28 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Blog Manager - CounselorReady Admin</title>
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Lato:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="/css/design-tokens.css">
+  <link rel="stylesheet" href="/css/typography.css">
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="/js/tailwind-config.js"></script>
+  
   <!-- Markdown renderer -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.1/marked.min.js"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            burgundy: { DEFAULT: '#6B1D34', light: '#8B3D54', dark: '#4B0D24' },
-            navy: { DEFAULT: '#284157', light: '#3A5A73' },
-            honey: { DEFAULT: '#D4A855', light: '#E4C875' },
-            hunter: { DEFAULT: '#4A7C59' }
-          },
-          fontFamily: {
-            display: ['Cormorant Garamond', 'serif'],
-            sans: ['Lato', 'sans-serif']
-          }
-        }
-      }
-    }
-  </script>
+  
   <style>
     body { font-family: 'Lato', sans-serif; }
     .prose h1 { font-size: 1.75rem; font-weight: 700; margin: 1.5rem 0 0.75rem; color: #6B1D34; }
