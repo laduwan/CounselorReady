@@ -1,4 +1,4 @@
-[CLAUDE_MD_APPEND(2).md](https://github.com/user-attachments/files/27072869/CLAUDE_MD_APPEND.2.md)
+[CLAUDE_MD_APPEND(3).md](https://github.com/user-attachments/files/27077838/CLAUDE_MD_APPEND.3.md)
 # ═══════════════════════════════════════════════════════════════
 # APPEND THIS BLOCK TO THE END OF CLAUDE.md
 # ═══════════════════════════════════════════════════════════════
@@ -174,3 +174,37 @@ Every seed script should validate before writing to DB:
 7. Word count ≥ `ceHours × 6000`
 8. References ≥ 15 with `title`, `author`, `year`, `source`
 9. No deprecated hex values (`#34495E`, `#40634A`, `#34503D`)
+
+---
+
+### Inline Callouts & Alerts (Authoring Syntax)
+
+The viewer ships with a fully-wired callout/alert system that no current seed script uses. When writing or editing seeds for ethics, telehealth, suicide/crisis, supervision, or mandated-reporter content, **prefer inline callouts over plain prose** for compliance terms.
+
+**Inline syntax** in any `text` or `imageText` block's `content`:
+
+```html
+<p>Confirm {{callout:informed-consent}} is documented before beginning telehealth services.
+Failure to act on credible threats may trigger {{alert:duty-to-warn}} obligations under the
+{{callout:aca-code}}.</p>
+```
+
+**Built-in callout IDs** (no setup needed): `hipaa`, `aca-code`, `duty-to-warn`, `informed-consent`, `telehealth-rule`, `mandatory-report`, `lpc-a-note`, `nbcc-standard`, `phi`, `gcscw`.
+
+**Built-in alert types**: `ethics`, `mandatory`, `donot`, `document`, `supervisor`, `legal`, `protocol`.
+
+**Per-block custom callouts**: declare in a `callouts` object on the block — see `CREADY-VIEWER-ARCHITECTURE.md` §5A.5.
+
+**Standalone `callout` block** for a discrete bordered visual:
+
+```javascript
+{
+  type: "callout",
+  order: 4,
+  calloutType: "ethics",   // info | warning | ethics | clinical | tip | key | donot | protocol
+  title: "Dual Relationship Warning",
+  content: "<p>Providing therapy to a current supervisee constitutes a prohibited dual relationship under ACA Code F.6.a.</p>"
+}
+```
+
+**Full reference**: `CREADY-VIEWER-ARCHITECTURE.md` §5A. Do not reinvent — use the existing system.
