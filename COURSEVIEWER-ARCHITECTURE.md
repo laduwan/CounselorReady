@@ -1,4 +1,4 @@
-[CREADY-VIEWER-ARCHITECTURE.md](https://github.com/user-attachments/files/27072748/CREADY-VIEWER-ARCHITECTURE.md)
+[CREADY-VIEWER-ARCHITECTURE(1).md](https://github.com/user-attachments/files/27077961/CREADY-VIEWER-ARCHITECTURE.1.md)
 # CReady™ Viewer — Architecture & Diagnostic Reference
 
 **File:** `client/public/interactive-course.html`
@@ -129,6 +129,157 @@ Two parsers handle text:
 Both are home-grown (no `marked` or `markdown-it`). They are minimal and have known edge cases — see §11.
 
 The `text` block specifically does **not** call the markdown parser. It runs `block.content` through `parseCalloutSyntax` (which is mostly pass-through with callout-syntax expansion) and emits straight to `innerHTML`. That means `text` blocks expect their content to already be HTML, not markdown.
+
+---
+
+## 5A. Inline Callout & Alert Authoring Syntax
+
+The viewer ships with an authoring syntax for inline callouts (styled tooltip pills) and alerts (badge boxes) that any text or imageText block can use. **As of April 2026 it is fully wired but not yet adopted in any production seed script** — pure undocumented capability sitting unused.
+
+### 5A.1 Two ways to author callouts
+
+| Form | Where it lives | Use when |
+|---|---|---|
+| **Inline syntax** — `{{callout:id}}`, `{{alert:type}}` | Embedded in a `text` or `imageText` block's `content` HTML | You want a styled term inside flowing prose: "Confirm `{{callout:informed-consent}}` is documented." |
+| **Standalone block** — `{ type: "callout", ... }` | Its own contentBlock | You want a discrete bordered box that calls out a rule, warning, or tip in its own visual section |
+
+Both render through the same color/icon vocabulary but layer differently. Mix freely.
+
+### 5A.2 Built-in callout IDs (no setup — just reference them)
+
+These are pre-defined in `CALLOUT_LIBRARY` inside the viewer. Every seed script in the repo can use them without declaring anything:
+
+| ID | Label | Type / pill style | What it means |
+|---|---|---|---|
+| `hipaa` | HIPAA | definition (green) | Health Insurance Portability and Accountability Act |
+| `aca-code` | ACA Code of Ethics | reference (sand) | American Counseling Association ethical framework |
+| `duty-to-warn` | Duty to Warn | ethics (gold) | Tarasoff obligation to protect identifiable third parties |
+| `informed-consent` | Informed Consent | definition (green) | Pre-treatment understanding of fees, limits, risks |
+| `telehealth-rule` | GA Rule 135 | reference (sand) | Georgia Composite Board Rule 135-11-.01 (telemental health) |
+| `mandatory-report` | Mandatory Reporting | warning (red) | GA mandated reporting for child/elder/disabled abuse |
+| `lpc-a-note` | LPC-A Note | clinical (navy) | Pre-licensed associate must obtain supervisor approval |
+| `nbcc-standard` | NBCC Standard | reference (sand) | NBCC standard for NCC/ACEP-approved providers |
+| `phi` | PHI | definition (green) | Protected Health Information |
+| `gcscw` | GCSCW | reference (sand) | Georgia Composite Board of Social Work |
+
+### 5A.3 Alert types (`{{alert:type}}`)
+
+Alerts are heavier-weight than callouts — they signal "stop and pay attention." Seven types ship in `ALERT_STYLES`:
+
+| Type | Label | Visual | Use for |
+|---|---|---|---|
+| `ethics` | ⚖️ Ethics Alert | gold | ACA/NBCC ethical principle in play |
+| `mandatory` | 🚨 Mandatory Report | red | Triggers state-mandated reporting duty |
+| `donot` | ⛔ Do Not | red | Prohibited action under code/law |
+| `document` | 📋 Must Document | navy | Documentation legally required at this point |
+| `supervisor` | 👁️ Supervisor Required | purple | Pre-licensed must escalate before acting |
+| `legal` | ⚖️ Legal Exposure | dark red | Civil/criminal liability risk |
+| `protocol` | 🔴 Protocol Required | orange | Specific clinical protocol must be followed |
+
+### 5A.4 Pill color types (for custom callouts)
+
+When you define a custom callout per-block (next section), pick from these color types in `PILL_COLORS`:
+
+| Type | Pill style | When to use |
+|---|---|---|
+| `definition` | Green + 📖 | Defining a term |
+| `clinical` | Navy + 🩺 | Clinical concept or framework |
+| `ethics` | Gold + ⚖️ | Ethical principle or code section |
+| `example` | Gold + 💬 | Concrete example or vignette pointer |
+| `reference` | Sand + 📎 | Citing a code, rule, or standard |
+| `warning` | Red + ⚠️ | Risk, hazard, or thing to avoid |
+
+### 5A.5 Per-block custom callouts
+
+If a course needs callouts not in the built-in library, declare them in the block's `callouts` object. Custom IDs override the global library for that block only:
+
+```javascript
+{
+  type: "text",
+  order: 5,
+  callouts: {
+    "medical-necessity": {
+      label: "Medical Necessity",
+      type: "clinical",
+      body: "Documentation must demonstrate that services are reasonable and necessary to treat the diagnosed condition."
+    },
+    "golden-thread": {
+      label: "Golden Thread",
+      type: "definition",
+      body: "Continuous documentation chain linking diagnosis → treatment plan → progress notes."
+    }
+  },
+  content: "<p>Every progress note must establish {{callout:medical-necessity}} via the {{callout:golden-thread}} framework.</p>"
+}
+```
+
+A custom callout needs three fields: `label` (visible text on the pill), `type` (one of §5A.4), `body` (the tooltip content shown on hover).
+
+### 5A.6 Standalone callout block
+
+For a discrete bordered callout that takes its own visual section (not inline), use `type: "callout"` as a contentBlock. Eight `calloutType` values are defined in `renderCallout`'s `cfgMap`:
+
+| `calloutType` | Visual | Use for |
+|---|---|---|
+| `info` | navy + ℹ️ | General reference |
+| `warning` | gold + ⚠️ | Caution, risk |
+| `ethics` | gold + ⚖️ | Ethical principle |
+| `clinical` | navy + 🩺 | Clinical concept |
+| `tip` | green + 💡 | Practical tip |
+| `key` | gold + 🔑 | Key takeaway |
+| `donot` | red + ⛔ | Prohibited |
+| `protocol` | orange + 📋 | Required protocol |
+
+Block shape:
+
+```javascript
+{
+  type: "callout",
+  order: 4,
+  calloutType: "ethics",
+  title: "Dual Relationship Warning",
+  content: "<p>Providing therapy to a current supervisee constitutes a prohibited dual relationship under ACA Code F.6.a.</p>"
+}
+```
+
+Optional fields: `calloutItems[]` or `items[]` for bulleted lists inside the callout.
+
+### 5A.7 Where callouts render
+
+| Block type | Inline `{{callout:}}` / `{{alert:}}` works? | Notes |
+|---|---|---|
+| `text` | Yes | Runs `block.content` through `parseCalloutSyntax` (line ~3159) |
+| `imageText` | Yes | Runs `block.content` through `parseCalloutSyntax` (line ~3172) |
+| `accordion` items | No | Accordion bodies bypass `parseCalloutSyntax` — strictly markdown-parsed |
+| `multipleChoice`, `multiSelect` etc. | No | Question/option text is escaped as plaintext |
+| Standalone `callout` block | n/a | Uses block-level fields, not inline syntax |
+
+If you need callout pills inside an accordion or KC option, that's a viewer extension task — out of scope for current seed authoring.
+
+### 5A.8 When to use which
+
+- **Inline callouts** for terms inside flowing prose where you want learners to hover and see the definition without breaking reading. Best for: HIPAA, ACA-Code, GA rule citations, technical terms.
+- **Inline alerts** for one-shot attention pulls inside a paragraph — "If the client makes a credible threat, `{{alert:duty-to-warn}}` may be triggered."
+- **Standalone callout blocks** for discrete reminders that deserve their own visual real estate — a boxed "Dual Relationship Warning" between paragraphs of an ethics course.
+
+### 5A.9 Adoption status (April 2026)
+
+Zero seed scripts in the repo currently use any callout syntax. The system is fully implemented in `interactive-course.html` (parseCalloutSyntax line 3133, CALLOUT_LIBRARY line ~3090, renderCallout in dispatcher) and ready to use. Suggested high-value retrofits, in priority order:
+
+1. **Telehealth courses** (CR-TMH601, CR-TMH602) — heavy use of `{{callout:hipaa}}`, `{{callout:phi}}`, `{{callout:telehealth-rule}}`, `{{alert:document}}`
+2. **Ethics courses** (CR-ETH301, CR-601) — `{{callout:aca-code}}`, `{{callout:duty-to-warn}}`, `{{alert:ethics}}`, standalone callouts for boundary scenarios
+3. **Suicide / crisis courses** — `{{callout:mandatory-report}}`, `{{alert:mandatory}}`, `{{callout:duty-to-warn}}`, `{{alert:protocol}}`
+4. **Supervision courses** (CR-TMH602) — `{{callout:lpc-a-note}}`, `{{alert:supervisor}}`
+5. **Mandated reporter / abuse content** — `{{callout:mandatory-report}}`, `{{alert:mandatory}}`, `{{alert:legal}}`
+
+All viewer styles use the `cr-*` prefix. The system inside the file:
+
+- **Design tokens** — top of `<style>`: `--cr-burgundy`, `--cr-green`, `--cr-gold`, `--cr-navy` (= `#284157`), `--cr-stone`, `--cr-eggshell`, `--cr-text`, `--cr-text-muted`, plus typography tokens (`--cr-font-display` = Cormorant Garamond, `--cr-font-body` = Lato).
+- **Block styles** — `.cr-block`, `.cr-section-divider`, `.cr-prose`, `.cr-card`, `.cr-flashcard*`, `.cr-scenario*`, `.cr-matching*`, `.cr-cardsort*`, etc.
+- **Accessibility variants** — `.cr-large-text`, `.cr-high-contrast`, `.cr-dark-mode`, `.cr-dyslexia-font`, `.cr-reduced-motion`, etc. — toggled by adding/removing classes on `<body>` or a wrapper.
+- **Course content scope** — `.cr-prose` wraps user-authored HTML so heading/paragraph styles only apply to course content, not viewer chrome.
+
+**Eggshell `#F5F5DC` background applies only to the course-content area inside this viewer.** Do not propagate it to admin pages, settings, or anywhere else.
 
 ---
 
