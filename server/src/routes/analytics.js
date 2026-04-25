@@ -8,7 +8,7 @@ import mongoose from 'mongoose';
 import { protect } from '../middleware/auth.js';
 import Course from '../models/Course.js';
 import Evaluation from '../models/Evaluation.js';
-import InteractiveCourse from '../models/InteractiveCourse.js';
+import { Course as InteractiveCourse } from '../models/InteractiveCourse.js';
 import PlatformSurvey from '../models/PlatformSurvey.js';
 import UserCourseProgress from '../models/UserCourseProgress.js';
 import User from '../models/User.js';
