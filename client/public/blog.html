@@ -30,27 +30,13 @@
   }
   </script>
 
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Lato:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            burgundy: { DEFAULT: '#6B1D34', light: '#8B3D54' },
-            navy: { DEFAULT: '#284157' },
-            honey: { DEFAULT: '#D4A855' },
-            hunter: { DEFAULT: '#4A7C59' },
-            cream: { DEFAULT: '#FAF5EC' }
-          },
-          fontFamily: {
-            display: ['Cormorant Garamond', 'serif'],
-            sans: ['Lato', 'sans-serif']
-          }
-        }
-      }
-    }
-  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="/css/design-tokens.css">
+  <link rel="stylesheet" href="/css/typography.css">
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="/js/tailwind-config.js"></script>
+
   <style>
     body { font-family: 'Lato', sans-serif; }
   </style>

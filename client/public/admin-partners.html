@@ -5,24 +5,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Partner Management - CounselorReady Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="/css/design-tokens.css">
+  <link rel="stylesheet" href="/css/typography.css">
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            burgundy: { 50:'#fdf2f5',100:'#fce7ed',200:'#f8cfdb',300:'#f2a8be',700:'#8b2542',800:'#6b1d34',900:'#4a1524',950:'#2d0a14' },
-            forest: { 50:'#f2f7f4',100:'#e0ede5',200:'#c3dccc',300:'#98c3a9',400:'#6ba881',500:'#4a7c59',600:'#3d6549',700:'#33523d',800:'#2b4233' },
-            gold: { 50:'#fdf9ef',100:'#faf0d5',400:'#e4b54e',500:'#d4a855',600:'#b8893a',700:'#996b2e' },
-            navy: { 800:'#284157',900:'#1B3046' },
-            hunter: { 100: '#e8f0ea', 200: '#d1e1d5', 500: '#4A7C59', 600: '#3d6649', 700: '#34503d' },
-            honey: { 100: '#fef3d1', 200: '#fde7a3', 400: '#D4A855', 500: '#c99a4a', 600: '#b8893f' },
-          }
-        }
-      }
-    }
-  </script>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Lato:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="/js/tailwind-config.js"></script>
+
   <link rel="stylesheet" href="/lib/fontawesome/css/all.min.css">
   <style>
     body{background:#F8F7F4; font-family: 'Lato', system-ui, sans-serif; }
@@ -43,7 +32,6 @@
 
   <div id="cr-header"></div>
   <script src="/shared/nav-footer.js"></script>
-
 
   <!-- Admin Header -->
   <header class="bg-burgundy-800 text-white sticky top-0 z-50">
@@ -724,7 +712,6 @@
 
   function closeCoursesModal() { document.getElementById('coursesModal').classList.add('hidden'); }
 </script>
-
 
   <div id="cr-footer"></div>
 </body>

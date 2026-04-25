@@ -54,7 +54,7 @@ export default function Landing() {
 
       {/* ── HERO ── */}
       <section className="relative py-24 px-4 overflow-hidden">
-        <div className="absolute inset-0" style={{ background: '#fafaf9' }}></div>
+        <div className="absolute inset-0" style={{ background: '#F8F7F4' }}></div>
         <div className="absolute top-20 right-10 w-72 h-72 rounded-full blur-3xl" style={{ background: 'rgba(212,168,85,0.15)' }}></div>
         <div className="absolute bottom-10 left-10 w-96 h-96 rounded-full blur-3xl" style={{ background: 'rgba(56,170,246,0.1)' }}></div>
         <div className="absolute top-32 left-20 w-2 h-2 rounded-full float-animation" style={{ background: '#D4A855' }}></div>

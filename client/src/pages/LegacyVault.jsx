@@ -653,7 +653,7 @@ function PlanTab() {
   if (loading) return <div className="text-center py-12 text-stone-400">Loading...</div>;
 
   const statusColors = {
-    'not-started': { bg: '#f5f5f4', text: '#78716c' },
+    'not-started': { bg: '#F0EFEA', text: '#78716c' },
     'in-progress': { bg: '#fef3c7', text: '#92400e' },
     'complete': { bg: '#d1fae5', text: '#065f46' },
   };

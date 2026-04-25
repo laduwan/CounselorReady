@@ -5,27 +5,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Update Course Content - CounselorReady</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="/css/design-tokens.css">
+  <link rel="stylesheet" href="/css/typography.css">
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            burgundy: {
-              50: '#fdf5f6', 100: '#fae8eb', 200: '#f5d0d6', 300: '#eba9b5',
-              400: '#dd768a', 500: '#c94d65', 600: '#a83350', 700: '#8b2542',
-              800: '#6b1d34', 900: '#4a1524',950:'#2D0A16', 950: '#2d0a14'
-            },
-            forest: {
-              50: '#f3f6f4', 100: '#e3ebe5', 200: '#c8d7cc', 300: '#a1bba8',
-              400: '#759a7f', 500: '#547c5f', 600: '#4A7C59', 700: '#34503d',
-              800: '#2b4133', 900: '#1f3025', 950: '#121c16'
-            }
-          }
-        }
-      }
-    }
-  </script>
+  <script src="/js/tailwind-config.js"></script>
+  
   <style>
     /* Shared nav styles */
     .dd{display:none;position:absolute;top:100%;margin-top:6px;background:#fff;border-radius:10px;box-shadow:0 10px 40px rgba(107,29,52,.12);border:1px solid #FAE8EB;z-index:50;padding:6px 0;min-width:210px}
@@ -43,7 +29,6 @@
   <div id="cr-header"></div>
   <script src="/shared/nav-footer.js"></script>
 
-  
   <div class="max-w-2xl w-full bg-white rounded-xl border border-burgundy-100 shadow-lg p-8">
     <h1 class="text-3xl font-bold text-burgundy-900 mb-2">Update Course Content</h1>
     <p class="text-forest-600 mb-6">This will add real educational content to your sample courses.</p>
