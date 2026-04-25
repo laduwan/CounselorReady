@@ -146,6 +146,55 @@
 [data-reading-guide="true"] .cr-reading-guide { display: block; }
 
 /* ═══════════════════════════════════════════════════════════════
+   ADAPTIVE REMEDIATION (v1 — added Apr 24, 2026)
+   Shown on wrong KC answers when block.remediation.blockId is set.
+   ═══════════════════════════════════════════════════════════════ */
+.cr-remediation-btn {
+  margin-top: 12px;
+  padding: 10px 18px;
+  background: var(--cr-navy-faded);
+  border: 2px solid var(--cr-navy);
+  color: var(--cr-navy);
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 0.9em;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all var(--cr-transition);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  line-height: 1.2;
+}
+.cr-remediation-btn:hover {
+  background: var(--cr-navy);
+  color: #fff;
+  transform: translateY(-1px);
+}
+.cr-remediation-btn:focus-visible {
+  outline: 3px solid var(--cr-gold);
+  outline-offset: 2px;
+}
+.cr-block.cr-remediation-highlight {
+  animation: cr-remediation-pulse 3s ease-out;
+  border-left: 4px solid var(--cr-burgundy);
+  background: var(--cr-burgundy-faded);
+  padding: 8px 12px 8px 16px;
+  border-radius: 4px 8px 8px 4px;
+  transition: background 0.3s ease, border-color 0.3s ease;
+}
+@keyframes cr-remediation-pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(107, 29, 52, 0); }
+  30%  { box-shadow: 0 0 0 8px rgba(107, 29, 52, 0.22); }
+  100% { box-shadow: 0 0 0 0 rgba(107, 29, 52, 0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cr-block.cr-remediation-highlight { animation: none; }
+}
+[data-reduced-motion="true"] .cr-block.cr-remediation-highlight { animation: none; }
+
+/* ═══════════════════════════════════════════════════════════════
    RESET & BASE
    ═══════════════════════════════════════════════════════════════ */
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
@@ -1490,6 +1539,185 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
   body.cr-has-timer .cr-a11y-panel { bottom: 264px; }
   body.cr-has-timer .cr-glossary-btn { bottom: 200px; }
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   NPS SURVEY MODAL — branded, self-contained, no Tailwind deps
+   ═══════════════════════════════════════════════════════════════ */
+.cr-nps-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(45, 45, 45, 0.55);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 200ms ease;
+}
+.cr-nps-backdrop.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+.cr-nps-modal {
+  background: var(--cr-surface);
+  border-radius: 16px;
+  padding: 40px 36px 32px;
+  max-width: 520px;
+  width: 100%;
+  box-shadow: 0 20px 60px rgba(107, 29, 52, 0.18), 0 8px 24px rgba(0, 0, 0, 0.08);
+  border: 1px solid var(--cr-burgundy-faded);
+  transform: translateY(12px) scale(0.98);
+  transition: transform 250ms cubic-bezier(0.2, 0.9, 0.3, 1.1);
+}
+.cr-nps-backdrop.active .cr-nps-modal {
+  transform: translateY(0) scale(1);
+}
+.cr-nps-title {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 28px;
+  font-weight: 600;
+  color: var(--cr-burgundy);
+  margin: 0 0 8px;
+  line-height: 1.2;
+}
+.cr-nps-question {
+  font-family: 'Lato', system-ui, sans-serif;
+  font-size: 15px;
+  color: var(--cr-text-secondary);
+  margin: 0 0 24px;
+  line-height: 1.5;
+}
+.cr-nps-scale {
+  display: grid;
+  grid-template-columns: repeat(11, 1fr);
+  gap: 6px;
+  margin-bottom: 10px;
+}
+.cr-nps-btn {
+  font-family: 'Lato', system-ui, sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  height: 42px;
+  border: 1.5px solid var(--cr-burgundy-faded);
+  background: var(--cr-surface);
+  color: var(--cr-text-secondary);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+.cr-nps-btn:hover {
+  border-color: var(--cr-burgundy);
+  background: var(--cr-burgundy-faded);
+  color: var(--cr-burgundy);
+  transform: translateY(-1px);
+}
+.cr-nps-btn.selected {
+  background: var(--cr-burgundy);
+  border-color: var(--cr-burgundy);
+  color: #FFFFFF;
+  box-shadow: 0 4px 12px rgba(107, 29, 52, 0.25);
+}
+.cr-nps-scale-labels {
+  display: flex;
+  justify-content: space-between;
+  font-family: 'Lato', system-ui, sans-serif;
+  font-size: 12px;
+  color: var(--cr-text-muted);
+  margin-bottom: 22px;
+  padding: 0 4px;
+  letter-spacing: 0.01em;
+}
+.cr-nps-followup {
+  display: none;
+  margin-bottom: 20px;
+  animation: cr-nps-slide-in 250ms ease;
+}
+.cr-nps-followup.active {
+  display: block;
+}
+@keyframes cr-nps-slide-in {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.cr-nps-textarea {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1.5px solid var(--cr-burgundy-faded);
+  border-radius: 10px;
+  font-family: 'Lato', system-ui, sans-serif;
+  font-size: 14px;
+  color: var(--cr-text);
+  background: var(--cr-stone);
+  resize: vertical;
+  min-height: 80px;
+  line-height: 1.5;
+  transition: border-color 150ms ease, background 150ms ease;
+  box-sizing: border-box;
+}
+.cr-nps-textarea:focus {
+  outline: none;
+  border-color: var(--cr-burgundy);
+  background: var(--cr-surface);
+  box-shadow: 0 0 0 3px var(--cr-burgundy-faded);
+}
+.cr-nps-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  align-items: center;
+}
+.cr-nps-skip {
+  font-family: 'Lato', system-ui, sans-serif;
+  font-size: 14px;
+  color: var(--cr-text-muted);
+  background: transparent;
+  border: none;
+  padding: 10px 16px;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: color 150ms ease, background 150ms ease;
+}
+.cr-nps-skip:hover {
+  color: var(--cr-text-secondary);
+  background: var(--cr-stone);
+}
+.cr-nps-submit {
+  display: none;
+  font-family: 'Lato', system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: #FFFFFF;
+  background: var(--cr-green);
+  border: none;
+  padding: 11px 22px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 150ms ease, transform 100ms ease;
+  letter-spacing: 0.02em;
+}
+.cr-nps-submit.active {
+  display: inline-block;
+}
+.cr-nps-submit:hover {
+  background: #3D6A4A;
+  transform: translateY(-1px);
+}
+.cr-nps-submit:active {
+  transform: translateY(0);
+}
+@media (max-width: 520px) {
+  .cr-nps-modal { padding: 28px 22px 22px; border-radius: 14px; }
+  .cr-nps-title { font-size: 24px; }
+  .cr-nps-question { font-size: 14px; margin-bottom: 18px; }
+  .cr-nps-scale { gap: 4px; }
+  .cr-nps-btn { height: 38px; font-size: 14px; }
+  .cr-nps-actions { justify-content: stretch; }
+  .cr-nps-submit { flex: 1; }
+}
   /* ADA controls — guaranteed reachability above overlays */
   .cr-a11y-toggle,
   .cr-a11y-panel {
@@ -2760,6 +2988,60 @@ function renderCurrentSection() {
 }
 
 // ═══════════════════════════════════════════════════════════════
+// ADAPTIVE REMEDIATION HELPERS (v1)
+// Used by multipleChoice / multiSelect / matching render + submit.
+// ═══════════════════════════════════════════════════════════════
+function buildRemediationButtonHTML(block) {
+  if (!block || !block.remediation || !block.remediation.blockId) return '';
+  const msg = esc(block.remediation.message || 'Review this content');
+  const targetId = esc(block.remediation.blockId);
+  return `<button class="cr-remediation-btn"
+    style="display:none"
+    data-action="jumpToBlock"
+    data-target-id="${targetId}"
+    aria-label="Review the content that teaches this concept">
+    📖 ${msg}
+  </button>`;
+}
+
+function revealRemediationButton(container) {
+  if (!container) return;
+  const btn = container.querySelector('.cr-remediation-btn');
+  if (btn) btn.style.display = '';
+}
+
+function jumpToBlock(blockId) {
+  if (!blockId) return;
+  let target = null;
+  try {
+    target = document.querySelector('[data-block-id="' + (CSS && CSS.escape ? CSS.escape(blockId) : blockId) + '"]');
+  } catch (e) {
+    target = document.querySelector('[data-block-id]');
+  }
+  if (!target) {
+    srAnnounce('Referenced content could not be found');
+    return;
+  }
+  const reducedMotion = document.body.getAttribute('data-reduced-motion') === 'true'
+    || (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  target.scrollIntoView({
+    behavior: reducedMotion ? 'auto' : 'smooth',
+    block: 'center'
+  });
+  target.classList.add('cr-remediation-highlight');
+  const hadTabindex = target.hasAttribute('tabindex');
+  const originalTabindex = target.getAttribute('tabindex');
+  if (!hadTabindex) target.setAttribute('tabindex', '-1');
+  try { target.focus({ preventScroll: true }); } catch (e) { target.focus(); }
+  setTimeout(() => {
+    target.classList.remove('cr-remediation-highlight');
+    if (!hadTabindex) target.removeAttribute('tabindex');
+    else if (originalTabindex !== null) target.setAttribute('tabindex', originalTabindex);
+  }, 3000);
+  srAnnounce('Jumped to content that covers this question');
+}
+
+// ═══════════════════════════════════════════════════════════════
 // BLOCK RENDERER
 // ═══════════════════════════════════════════════════════════════
 function renderBlock(block, index) {
@@ -2767,6 +3049,8 @@ function renderBlock(block, index) {
   wrap.className = 'cr-block';
   wrap.dataset.blockType = block.type;
   wrap.dataset.blockIndex = index;
+  // Stable block ID (enables remediation jump-back targeting)
+  if (block.id) wrap.dataset.blockId = block.id;
   
   // Apply block-level accessibility properties if present
   if (block.accessibility) {
@@ -2965,6 +3249,7 @@ function renderMultipleChoice(wrap, block, blockIndex) {
   html += `</div>
     <button class="cr-kc-submit" disabled data-action="submitMC" data-target="${id}" data-correct="${correctIdx}">Check Answer</button>
     <div class="cr-kc-explanation">${block.explanation || ''}</div>
+    ${buildRemediationButtonHTML(block)}
   </div>`;
   wrap.innerHTML = html;
   return wrap;
@@ -2986,6 +3271,7 @@ function submitMC(id, correctIdx) {
   if (!el || el.dataset.answered) return;
   el.dataset.answered = 'true';
   const selected = parseInt(el.dataset.selected);
+  const isWrong = selected !== correctIdx;
   
   el.querySelectorAll('.cr-kc-option').forEach((o, i) => {
     o.classList.add('answered');
@@ -2997,6 +3283,7 @@ function submitMC(id, correctIdx) {
   if (explEl) explEl.classList.add('show');
   const submitBtn = el.querySelector('.cr-kc-submit');
   if (submitBtn) submitBtn.style.display = 'none';
+  if (isWrong) revealRemediationButton(el);
   srAnnounce(selected === correctIdx ? 'Correct!' : 'Incorrect. The correct answer is shown.');
 }
 
@@ -3020,6 +3307,7 @@ function renderMultiSelect(wrap, block, blockIndex) {
   html += `</div>
     <button class="cr-kc-submit" disabled data-action="submitMS" data-target="${id}">Check Answer</button>
     <div class="cr-kc-explanation">${block.explanation || ''}</div>
+    ${buildRemediationButtonHTML(block)}
   </div>`;
   wrap.innerHTML = html;
   return wrap;
@@ -3040,6 +3328,11 @@ function submitMS(id) {
   if (!el || el.dataset.answered) return;
   el.dataset.answered = 'true';
   const correctIdxs = el.dataset.correct.split(',').map(Number);
+  const selectedIdxs = [...el.querySelectorAll('.cr-kc-option.selected')]
+    .map(o => parseInt(o.dataset.idx));
+  const hasAllCorrect = correctIdxs.every(i => selectedIdxs.includes(i));
+  const hasOnlyCorrect = selectedIdxs.every(i => correctIdxs.includes(i));
+  const isWrong = !hasAllCorrect || !hasOnlyCorrect;
   
   el.querySelectorAll('.cr-kc-option').forEach((o, i) => {
     o.classList.add('answered');
@@ -3053,6 +3346,7 @@ function submitMS(id) {
   if (explEl) explEl.classList.add('show');
   const submitBtn = el.querySelector('.cr-kc-submit');
   if (submitBtn) submitBtn.style.display = 'none';
+  if (isWrong) revealRemediationButton(el);
 }
 
 // ─── MATCHING ───
@@ -3075,9 +3369,10 @@ function renderMatching(wrap, block, blockIndex) {
       </div>
     </div>
     <p id="${id}-status" style="margin-top:12px;font-size:0.85em;color:var(--cr-text-muted)">0/${pairs.length} matched</p>
+    ${buildRemediationButtonHTML(block)}
   </div>`;
   wrap.innerHTML = html;
-  wrap.querySelector('.cr-matching')._matchState = { selectedTerm: null, matched: new Set(), total: pairs.length };
+  wrap.querySelector('.cr-matching')._matchState = { selectedTerm: null, matched: new Set(), total: pairs.length, remediationShown: false };
   return wrap;
 }
 
@@ -3114,6 +3409,11 @@ function selectMatchDef(id, defIdx) {
     def.style.borderColor = 'var(--cr-danger)';
     setTimeout(() => { def.style.borderColor = ''; }, 800);
     srAnnounce('Not a match. Try again.');
+    // Reveal remediation button on first wrong attempt
+    if (!state.remediationShown) {
+      state.remediationShown = true;
+      revealRemediationButton(el);
+    }
   }
 }
 
@@ -5559,6 +5859,9 @@ document.addEventListener('click', function(e) {
     // ─── Hotspot ───
     case 'hsReveal': hsReveal(target, parseInt(el.dataset.spot)); break;
     
+    // ─── Adaptive Remediation ───
+    case 'jumpToBlock': jumpToBlock(el.dataset.targetId); break;
+    
     // ─── Navigation ───
     case 'prevSection': prevSection(); break;
     case 'nextSection': nextSection(); break;
@@ -5749,24 +6052,26 @@ function showNPSModal(trigger) {
     const btn = document.createElement('button');
     btn.textContent = i;
     btn.dataset.score = i;
-    btn.className = 'w-9 h-9 rounded-lg border border-slate-200 text-sm font-medium hover:bg-burgundy-50 hover:border-burgundy-300 transition-colors';
+    btn.className = 'cr-nps-btn';
     btn.onclick = () => selectNPSScore(i);
     btnContainer.appendChild(btn);
   }
   modal.dataset.trigger = trigger || 'course_completion';
-  modal.classList.remove('hidden');
+  selectedNPSScore = null;
+  document.getElementById('nps-followup').classList.remove('active');
+  document.getElementById('nps-submit-btn').classList.remove('active');
+  document.getElementById('nps-comment').value = '';
+  modal.classList.add('active');
 }
 
 function selectNPSScore(score) {
   selectedNPSScore = score;
-  document.querySelectorAll('#nps-buttons button').forEach(btn => {
+  document.querySelectorAll('#nps-buttons .cr-nps-btn').forEach(btn => {
     const s = parseInt(btn.dataset.score);
-    btn.className = s === score
-      ? 'w-9 h-9 rounded-lg border-2 border-burgundy-700 bg-burgundy-700 text-white text-sm font-medium transition-colors'
-      : 'w-9 h-9 rounded-lg border border-slate-200 text-sm font-medium hover:bg-burgundy-50 hover:border-burgundy-300 transition-colors';
+    btn.classList.toggle('selected', s === score);
   });
-  document.getElementById('nps-followup').classList.remove('hidden');
-  document.getElementById('nps-submit-btn').classList.remove('hidden');
+  document.getElementById('nps-followup').classList.add('active');
+  document.getElementById('nps-submit-btn').classList.add('active');
 }
 
 async function submitNPS() {
@@ -5790,7 +6095,7 @@ async function submitNPS() {
 }
 
 function dismissNPS() {
-  document.getElementById('nps-modal').classList.add('hidden');
+  document.getElementById('nps-modal').classList.remove('active');
 }
 
 </script>
@@ -6006,23 +6311,23 @@ function dismissNPS() {
 <script src="shareWidget.js"></script>
 <script src="/shared/nav-footer.js"></script>
 <div id="cr-footer"></div>
-<div id="nps-modal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-  <div class="bg-white rounded-2xl p-8 max-w-lg w-full shadow-2xl">
-    <h3 class="font-display text-2xl font-semibold text-burgundy-900 mb-2">One quick question</h3>
-    <p class="text-slate-600 mb-6">How likely are you to recommend CounselorReady to a colleague?</p>
-    <div class="flex justify-between gap-1 mb-2" id="nps-buttons">
+<div id="nps-modal" class="cr-nps-backdrop" role="dialog" aria-modal="true" aria-labelledby="nps-title">
+  <div class="cr-nps-modal">
+    <h3 id="nps-title" class="cr-nps-title">One quick question</h3>
+    <p class="cr-nps-question">How likely are you to recommend CounselorReady to a colleague?</p>
+    <div class="cr-nps-scale" id="nps-buttons">
       <!-- 0-10 buttons injected by JS -->
     </div>
-    <div class="flex justify-between text-xs text-slate-400 mb-6">
+    <div class="cr-nps-scale-labels">
       <span>Not likely</span><span>Very likely</span>
     </div>
-    <div id="nps-followup" class="hidden mb-4">
-      <textarea id="nps-comment" rows="3" placeholder="What's the main reason for your score? (optional)"
-        class="w-full border border-slate-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-burgundy-300 resize-none"></textarea>
+    <div id="nps-followup" class="cr-nps-followup">
+      <textarea id="nps-comment" rows="3" class="cr-nps-textarea"
+        placeholder="What's the main reason for your score? (optional)"></textarea>
     </div>
-    <div class="flex gap-3 justify-end">
-      <button onclick="dismissNPS()" class="px-4 py-2 text-slate-500 hover:text-slate-700 text-sm">Skip</button>
-      <button id="nps-submit-btn" onclick="submitNPS()" class="hidden px-6 py-2 bg-burgundy-700 hover:bg-burgundy-800 text-white text-sm font-medium rounded-xl transition-colors">Submit</button>
+    <div class="cr-nps-actions">
+      <button onclick="dismissNPS()" class="cr-nps-skip">Skip</button>
+      <button id="nps-submit-btn" onclick="submitNPS()" class="cr-nps-submit">Submit</button>
     </div>
   </div>
 </div>

@@ -278,7 +278,6 @@ const userSchema = new mongoose.Schema({
 });
 
 // Index for faster queries
-userSchema.index({ email: 1 });
 userSchema.index({ 'subscription.status': 1 });
 userSchema.index({ 'profile.state': 1 });
 userSchema.index({ 'subscription.paymentFailedAt': 1 });

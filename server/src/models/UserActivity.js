@@ -9,7 +9,6 @@ const userActivitySchema = new mongoose.Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-    required: true,
     index: true
   },
   type: {
@@ -46,7 +45,7 @@ const userActivitySchema = new mongoose.Schema({
   data: { type: mongoose.Schema.Types.Mixed },
 
   // Timestamps
-  timestamp: { type: Date, default: Date.now, index: true }
+  timestamp: { type: Date, default: Date.now }
 }, {
   timestamps: false
 });
