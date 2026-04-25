@@ -9,7 +9,7 @@ export const C = {
   burgundyFaded:"#6B1D3420",
   hunterGreen:  "#4A7C59",
   honey:        "#D4A855",
-  navy:         "#284157",   // ← correct value per Color_Spec_v1 (NOT #34495E)
+  navy:         "#284157",   // ← correct value per Color_Spec_v1 (NOT #284157)
   stone:        "#F8F7F4",
   card:         "#FFFFFF",
   border:       "#E5E0D8",

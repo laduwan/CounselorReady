@@ -4,40 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CE Certificates - CounselorReady</title>
+    <link rel="stylesheet" href="/css/design-tokens.css">
+    <link rel="stylesheet" href="/css/typography.css">
+    <script src="/js/tailwind-config.js"></script>
     <script src="https://cdn.tailwindcss.com/3.4.17"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Lato:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        burgundy: {
-                            50: '#FFF5E8', 100: '#FAE8D0', 200: '#F0D5B0',
-                            300: '#E88A9E', 400: '#D0607A', 500: '#A83350',
-                            600: '#6B1D34', 700: '#571828', 800: '#43121E', 900: '#2F0C15',950:'#2D0A16',
-                        },
-                        hunter: {
-                            50: '#F2F7F3', 100: '#E0ECE3', 200: '#C2D9C8',
-                            300: '#96BCA0', 400: '#6B9E78', 500: '#5A9469',
-                            600: '#4A7C59', 700: '#3B6347', 800: '#2D4C37', 900: '#1F3526',
-                        },
-                        honey: {
-                            50: '#FFFDF5', 100: '#FFF8E1', 200: '#FFEDB3',
-                            300: '#FFDD7A', 400: '#E8BF5E', 500: '#D4A855',
-                            600: '#C49A40', 700: '#A67F2D', 800: '#876520', 900: '#5C4414',
-                        },
-                        navy: { 500: '#284157', 600: '#284157', 700: '#1E3448' }
-                    },
-                    fontFamily: {
-                        display: ['Cormorant Garamond', 'Georgia', 'serif'],
-                        body: ['Lato', 'Helvetica Neue', 'Arial', 'sans-serif'],
-                    }
-                }
-            }
-        }
-    </script>
+
     <style>
         body { font-family: 'Lato', 'Helvetica Neue', Arial, sans-serif; background: #F8F7F4; margin: 0; }
         .font-display { font-family: 'Cormorant Garamond', Georgia, serif; }
@@ -51,7 +24,7 @@
         .nav-link { padding:6px 12px;border-radius:6px;font-size:14px;font-weight:500;color:#57534e;text-decoration:none;display:flex;align-items:center;gap:4px;transition:all .15s; }
         .nav-link:hover { color:#8B2542;background:#FFF5E8; }
         .nav-link.active { color:#8B2542;background:#FFF5E8;font-weight:600;border-bottom:2px solid #6B1D34; }
-        .cert-card { background:linear-gradient(180deg,#fff 0%,#FAFAF8 100%);border:1px solid #E0ECE3;border-radius:14px;padding:20px;transition:border-color .15s,box-shadow .15s;display:flex;flex-direction:column; }
+        .cert-card { background:linear-gradient(180deg,#fff 0%,#F8F7F4 100%);border:1px solid #E0ECE3;border-radius:14px;padding:20px;transition:border-color .15s,box-shadow .15s;display:flex;flex-direction:column; }
         .cert-card:hover { border-color:#96BCA0;box-shadow:0 6px 20px rgba(74,124,89,.1); }
         .stat-card { background:#fff;border:1px solid #e7e5e4;border-radius:12px;padding:18px 20px;border-left:4px solid #A83350; }
         .hour-badge { background:linear-gradient(135deg,#FFF8E1,#FFEDB3);color:#876520;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px; }

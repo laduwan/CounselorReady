@@ -5,22 +5,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin Courses - CounselorReady</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="/css/design-tokens.css">
+  <link rel="stylesheet" href="/css/typography.css">
+  <script src="/js/tailwind-config.js"></script>
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            burgundy: { 50:'#fdf2f5',100:'#fce7ed',200:'#f8cfdb',300:'#f2a8be',700:'#8b2542',800:'#6b1d34',900:'#4a1524',950:'#2d0a14' },
-            forest: { 50:'#f2f7f4',100:'#e0ede5',200:'#c3dccc',300:'#98c3a9',400:'#6ba881',500:'#4a7c59',600:'#3d6549',700:'#33523d',800:'#2b4233' },
-            gold: { 50:'#fdf9ef',100:'#faf0d5',400:'#e4b54e',500:'#d4a855',600:'#b8893a',700:'#996b2e' },
-            navy: { 800:'#284157',900:'#1e3245' }
-          }
-        }
-      }
-    }
-  </script>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Lato:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     body { font-family: 'Lato', system-ui, sans-serif; }
@@ -105,7 +96,7 @@
           <a href="/admin-users.html" class="bg-forest-50 hover:bg-forest-100 text-forest-700 font-medium px-3 py-2 rounded-xl flex items-center gap-1.5 text-sm transition-colors">
             <i class="fas fa-users text-xs"></i> Users
           </a>
-          <button onclick="showToast('Bulk pricing coming soon','#34495e')" class="bg-green-50 hover:bg-green-100 text-green-700 font-medium px-3 py-2 rounded-xl flex items-center gap-1.5 text-sm transition-colors">
+          <button onclick="showToast('Bulk pricing coming soon','#284157')" class="bg-green-50 hover:bg-green-100 text-green-700 font-medium px-3 py-2 rounded-xl flex items-center gap-1.5 text-sm transition-colors">
             <i class="fas fa-tag text-xs"></i> Bulk Pricing
           </button>
           <button onclick="openAIModal()" class="bg-forest-500 hover:bg-forest-600 text-white font-medium px-3 py-2 rounded-xl flex items-center gap-1.5 text-sm transition-colors">
@@ -610,7 +601,7 @@
 
     async function bulkPublish(pub) {
       const targets = filtered.filter(c => pub ? c.status !== 'published' : c.status === 'published');
-      if (!targets.length) { showToast('No courses to update', '#34495e'); return; }
+      if (!targets.length) { showToast('No courses to update', '#284157'); return; }
       confirm2(`${pub ? 'Publish' : 'Unpublish'} ${targets.length} Courses`,
         `This will ${pub ? 'publish' : 'unpublish'} ${targets.length} courses currently shown.`,
         async () => {
@@ -654,7 +645,7 @@
     // ── Duplicate ──
     async function duplicateCourse(id, title) {
       try {
-        showToast('Duplicating...', '#34495e');
+        showToast('Duplicating...', '#284157');
         const r = await fetch(`${API_URL}/api/interactive-courses/${id}/duplicate`, {
           method: 'POST', headers: { Authorization: `Bearer ${token}` }
         });
