@@ -167,7 +167,7 @@ export default function Layout({ children }) {
                 if (link.static) {
                   return (
                     <a key={link.href} href={link.href} style={style}
-                      onMouseEnter={e => { if (!active) e.currentTarget.style.background = '#EDEDD0'; }}
+                      onMouseEnter={e => { if (!active) e.currentTarget.style.background = '#F0EFEA'; }}
                       onMouseLeave={e => { if (!active) e.currentTarget.style.background = 'transparent'; }}>
                       {link.name}
                     </a>
@@ -175,7 +175,7 @@ export default function Layout({ children }) {
                 }
                 return (
                   <Link key={link.href} to={link.href} style={style}
-                    onMouseEnter={e => { if (!active) e.currentTarget.style.background = '#EDEDD0'; }}
+                    onMouseEnter={e => { if (!active) e.currentTarget.style.background = '#F0EFEA'; }}
                     onMouseLeave={e => { if (!active) e.currentTarget.style.background = 'transparent'; }}>
                     {link.name}
                   </Link>
@@ -188,14 +188,14 @@ export default function Layout({ children }) {
                   onMouseLeave={() => setOpenDropdown(null)}>
                   {link.static ? (
                     <a href={link.href} style={style}
-                      onMouseEnter={e => { if (!active) e.currentTarget.style.background = '#EDEDD0'; }}
+                      onMouseEnter={e => { if (!active) e.currentTarget.style.background = '#F0EFEA'; }}
                       onMouseLeave={e => { if (!active) e.currentTarget.style.background = 'transparent'; }}>
                       {link.name}
                       <ChevronDown style={{ width: 14, height: 14, opacity: 0.5, transition: 'transform 0.15s', transform: openDropdown === link.name ? 'rotate(180deg)' : 'rotate(0)' }} />
                     </a>
                   ) : (
                     <Link to={link.href} style={style}
-                      onMouseEnter={e => { if (!active) e.currentTarget.style.background = '#EDEDD0'; }}
+                      onMouseEnter={e => { if (!active) e.currentTarget.style.background = '#F0EFEA'; }}
                       onMouseLeave={e => { if (!active) e.currentTarget.style.background = 'transparent'; }}>
                       {link.name}
                       <ChevronDown style={{ width: 14, height: 14, opacity: 0.5, transition: 'transform 0.15s', transform: openDropdown === link.name ? 'rotate(180deg)' : 'rotate(0)' }} />
@@ -221,7 +221,7 @@ export default function Layout({ children }) {
                               <a key={child.href} href={child.href}
                                 onClick={() => setOpenDropdown(null)}
                                 style={childStyle}
-                                onMouseEnter={e => { if (!childActive) e.target.style.background = '#EDEDD0'; }}
+                                onMouseEnter={e => { if (!childActive) e.target.style.background = '#F0EFEA'; }}
                                 onMouseLeave={e => { if (!childActive) e.target.style.background = 'transparent'; }}>
                                 {child.name}
                               </a>
@@ -231,7 +231,7 @@ export default function Layout({ children }) {
                             <Link key={child.href} to={child.href}
                               onClick={() => setOpenDropdown(null)}
                               style={childStyle}
-                              onMouseEnter={e => { if (!childActive) e.target.style.background = '#EDEDD0'; }}
+                              onMouseEnter={e => { if (!childActive) e.target.style.background = '#F0EFEA'; }}
                               onMouseLeave={e => { if (!childActive) e.target.style.background = 'transparent'; }}>
                               {child.name}
                             </Link>
