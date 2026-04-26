@@ -28,6 +28,7 @@ const EVENT_CONFIG = {
   subscription_started:  { emoji: '💳', label: 'New Subscription',       color: GOLD,      adminLink: '/admin-users.html'     },
   subscription_canceled: { emoji: '⚠️', label: 'Subscription Canceled',  color: '#B45309', adminLink: '/admin-users.html'     },
   certificate_generated: { emoji: '📜', label: 'Certificate Generated',  color: GREEN,     adminLink: '/admin-analytics.html' },
+  tool_used:             { emoji: '🛠️', label: 'Free Tool Used',         color: NAVY,      adminLink: '/admin-tool-analytics.html' },
 };
 
 function buildEmailHtml({ emoji, label, color, rows, adminLink }) {
@@ -144,6 +145,15 @@ export async function sendAdminAlert(eventType, data = {}) {
         ['Course', data.courseName || ''],
         ['Cert #', data.certNumber || ''],
         ['CE Hrs', data.ceHours ? `${data.ceHours} hrs` : ''],
+      ];
+      break;
+    case 'tool_used':
+      subject += ` — ${data.toolName || data.tool || 'tool'}`;
+      rows = [
+        ['Tool',  data.toolName || data.tool || ''],
+        ['Event', data.event || 'used'],
+        ['User',  data.userName || data.userEmail || 'Anonymous'],
+        ['State', data.state || ''],
       ];
       break;
     default:

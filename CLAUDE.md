@@ -274,3 +274,35 @@ This file has been destroyed TWICE by being rewritten from 1518 lines to 388 lin
 4. **Only make targeted edits** — add new endpoints or modify specific functions. Never replace the whole file.
 5. **Key functions that MUST exist:** `gateContent()`, `stripContent()`, `findCourseByIdOrSlug()`, `getFreeCoursesUsed()`, `incrementFreeCoursesUsed()`, `recordGamification()`
 6. **Key routes that MUST exist:** GET `/`, GET `/:id`, GET `/slug/:slug`, POST `/:id/enroll`, POST `/:id/assessment`, POST `/:id/evaluation`, POST `/:id/attestation`, GET `/:id/certificate`, PUT `/:id/progress/section/:sectionIndex`
+
+---
+## Protected Services — Do Not Modify Without Explicit Authorization
+
+The following files implement core platform notification, tracking, and webhook infrastructure. Bugs in these files are silent — they don't throw errors, they just stop working. Past incidents (commits 43db65e and 590b68d) demonstrate that "tightening" or "refactoring" these files has broken the entire admin notification pipeline without anyone noticing for weeks.
+
+NEVER modify these files unless Ke explicitly says "edit [filename]" or "fix the bug in [filename]":
+
+- `server/src/services/activityTrackingService.js`
+- `server/src/services/adminNotificationService.js`
+- `server/src/services/notificationTriggerService.js`
+- `server/src/services/notificationScheduler.js`
+- `server/src/services/reminderService.js`
+- `server/src/routes/payments.js` (Stripe webhook handler)
+- `server/src/jobs/dailyNotificationCheck.js`
+- `server/src/jobs/renewalReminderJob.js`
+
+If a user-reported issue could be solved by editing one of these files, STOP and surface that to Ke as a recommendation. Do not unilaterally edit them.
+
+## Destructive Database Scripts — Never Run Without Explicit Confirmation
+
+The following scripts perform mass deletes from production data. They MUST NOT be invoked without an explicit, written instruction from Ke containing the exact script name and the words "run in production":
+
+- `server/src/scripts/selectiveWipe.js`
+- Any script containing `deleteMany` against `interactivecourses`, `interactivecourseprogresses`, `users`, `usercredentials`, `notifications`, `useractivities`, `payments`, or `certificates`
+- Any `cleanup*.js`, `reset*.js`, `purge*.js`, or `wipe*.js` script in `server/src/scripts/`
+
+Creating or refactoring such scripts is allowed; running them is not. If you find yourself about to run one, stop and ask.
+
+## Activity Tracking Wiring — Always Use logActivity
+
+When adding new user-facing endpoints (purchases, signups, tool usage, content generation, etc.), the corresponding activity event MUST be logged via `logActivity()` from `activityTrackingService.js`. Never call `UserActivity.create()` directly, and never write a one-off `Resend.emails.send()` for admin notifications. The central service handles persistence, admin feed, and email alerts uniformly.

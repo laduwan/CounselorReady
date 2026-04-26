@@ -5,7 +5,7 @@
  */
 import User from '../models/User.js';
 import UserActivity from '../models/UserActivity.js';
-import { sendAdminAlertIfEnabled } from './adminNotificationService.js';
+import { sendAdminAlert } from './adminNotificationService.js';
 
 /**
  * Activity types for tracking
@@ -24,7 +24,8 @@ export const ACTIVITY_TYPES = {
   SUBSCRIPTION_STARTED: 'subscription_started',
   SUBSCRIPTION_CANCELED: 'subscription_canceled',
   CERTIFICATE_GENERATED: 'certificate_generated',
-  LESSON_COMPLETED: 'lesson_completed'
+  LESSON_COMPLETED: 'lesson_completed',
+  TOOL_USED: 'tool_used'
 };
 
 /**
@@ -78,7 +79,7 @@ export async function logActivity(type, data, options = {}) {
 
   // Send branded admin alert if enabled (non-blocking, never throws)
   if (notifyAdmin) {
-    sendAdminAlertIfEnabled(type, { userName, userEmail, ...data });
+    sendAdminAlert(type, { userName, userEmail, ...data });
   }
 
   return activity;

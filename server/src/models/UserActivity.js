@@ -28,7 +28,8 @@ const userActivitySchema = new mongoose.Schema({
       'quiz_failed',
       'course_completed',
       'course_failed',
-      'certificate_generated'
+      'certificate_generated',
+      'tool_used'
     ],
     index: true
   },
