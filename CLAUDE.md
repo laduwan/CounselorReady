@@ -148,9 +148,87 @@ Every production static path converges here: `courses.html`, `course-details.htm
 2. **Surgical edits only.** No refactoring. No "while I was there" cleanup. No reformatting.
 3. **No file-structure changes.** Do not extract CSS to a separate file. Do not extract JS to a separate file. Do not split into modules. Single-file architecture is intentional and required for the product brief / licensing model.
 4. **Never propose migrating this to React.** The whole point of this file existing is to NOT be React. If a task seems to require a React rewrite of the player, stop and ask — that is against architecture.
-5. **Do not call this file legacy, redirect shell, or stale duplicate.** It is the production viewer. The actual redirect shells are `course-player.html`, `course-player-unified.html`, and `courses-unified.html` (each under 15 lines). The actual legacy is `CourseViewer.jsx`.
-6. **Do not assume `cready-viewer.html`, `cready-viewer.css`, or `cready-viewer.js` exist.** They do not. A file split was scoped but never executed. Any prompt or doc that references those filenames is stale.
-7. **Verify after every edit:** paste raw `grep` output into the PR description proving the change landed and nothing else was touched. `git diff --stat main` should typically show exactly one file changed.
+5. ## Chat-Display Artifacts in Prompts
+
+When receiving prompts from Ke (or any LLM-generated source) containing code,
+text inside chat interfaces may be auto-linkified by the rendering layer in ways
+that corrupt the underlying code. This is a DISPLAY artifact, NOT actual code.
+
+### Common artifacts to recognize and ignore
+
+**JavaScript property access (e.g., `this.style.display`):**
+Chat UIs sometimes interpret dotted identifiers as domains and wrap them in
+markdown link syntax. You may see:
+
+  - `[this.style](http://this.style).display='none'`
+  - `[window.location](http://window.location).href = ...`
+  - `[document.body](http://document.body).innerHTML = ...`
+  - `[user.email](http://user.email).toLowerCase()`
+
+The actual underlying code is always the un-bracketed, un-URL-wrapped form:
+
+  - `this.style.display='none'`
+  - `window.location.href = ...`
+  - `document.body.innerHTML = ...`
+  - `user.email.toLowerCase()`
+
+**Email-style strings inside code:**
+Anything resembling an email or domain may be auto-linkified even when it's
+clearly part of a code expression, regex, or string literal.
+
+**File paths with dots:**
+Paths like `nav-footer.js` or `index.html` are usually safe, but watch for
+`config.api.url` style chains in object access — same auto-linking risk.
+
+### Mandatory behavior
+
+1. **Take all JavaScript, TypeScript, JSX, HTML attributes, and code expressions
+   as LITERAL.** If a code snippet contains markdown link syntax around
+   identifiers, STRIP the markdown — do not preserve it, do not "fix" it by
+   adding parens or URLs.
+
+2. **Never insert URLs into code that didn't have them in the original intent.**
+   Markdown link syntax inside JS/HTML/CSS is always an artifact, never a
+   feature.
+
+3. **When in doubt, ask Ke before substituting.** Per existing "When in doubt:
+   stop, ask" governance, surface the ambiguity rather than guessing.
+
+4. **Do not "improve" code by linkifying identifiers.** Even if you think a
+   property name "looks like" it could be a URL, it isn't.
+
+### Worked example
+
+Ke sends a prompt containing:
+  `onerror="this.style.display='none'"`
+
+Chat UI may render that as:
+  `onerror="[this.style](http://this.style).display='none'"`
+
+The CORRECT interpretation when writing this attribute to a file:
+  `onerror="this.style.display='none'"`
+
+The INCORRECT interpretation (do NOT do this):
+  `onerror="[this.style](http://this.style).display='none'"`
+
+The corrupted form is invalid JavaScript and will throw a parse error in the
+browser. Always strip the markdown link wrapping from JS code.
+
+### When this rule applies
+
+- Any prompt from Ke containing inline code
+- Any code block that appears to have URLs embedded mid-expression
+- Any HTML attribute value containing what looks like a markdown link inside
+  an `on*` event handler, `style`, `data-*`, or other attribute
+
+### When this rule does NOT apply
+
+- Genuine href/src attributes pointing to real URLs
+- Documentation prose where URLs are intentionally referenced
+- Configuration files where API endpoints are legitimately URLs
+6. **Do not call this file legacy, redirect shell, or stale duplicate.** It is the production viewer. The actual redirect shells are `course-player.html`, `course-player-unified.html`, and `courses-unified.html` (each under 15 lines). The actual legacy is `CourseViewer.jsx`.
+7. **Do not assume `cready-viewer.html`, `cready-viewer.css`, or `cready-viewer.js` exist.** They do not. A file split was scoped but never executed. Any prompt or doc that references those filenames is stale.
+8. **Verify after every edit:** paste raw `grep` output into the PR description proving the change landed and nothing else was touched. `git diff --stat main` should typically show exactly one file changed.
 
 ---
 ## ⚠️ PROTECTED FILE: client/src/components/CourseViewer.jsx (LEGACY)
