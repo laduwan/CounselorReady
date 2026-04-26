@@ -74,7 +74,7 @@ router.post('/users/:userId/certificates/:certId/regenerate', protect, adminOnly
     const { userId, certId } = req.params;
 
     const cert = await Certificate.findOne({ _id: certId, userId })
-      .populate('userId', 'profile.firstName profile.lastName email')
+      .populate('userId', 'profile.firstName profile.lastName profile.certificateName email')
       .populate('courseId', 'title ceHours nbccProgramNumber slug');
 
     if (!cert) {
@@ -85,7 +85,10 @@ router.post('/users/:userId/certificates/:certId/regenerate', protect, adminOnly
     const course = cert.courseId || {};
 
     const userName =
-      `${user.profile?.firstName || ''} ${user.profile?.lastName || ''}`.trim() || user.email || 'Unknown';
+      (user.profile?.certificateName?.trim()) ||
+      `${user.profile?.firstName || ''} ${user.profile?.lastName || ''}`.trim() ||
+      user.email ||
+      'Unknown';
     const courseTitle = course.title || cert.title;
 
     const pdfBuffer = await generateCertificate({

@@ -26,6 +26,7 @@ const userSchema = new mongoose.Schema({
   profile: {
     firstName: { type: String, required: true, trim: true },
     lastName: { type: String, trim: true, default: '' },
+    certificateName: { type: String, trim: true, maxLength: 200 },
     avatar: { type: String },
     state: { type: String, uppercase: true }, // For CE requirements
     timezone: { type: String, default: 'America/New_York' },

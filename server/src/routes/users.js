@@ -31,10 +31,10 @@ router.get('/profile', protect, async (req, res) => {
 // @access  Private
 router.put('/profile', protect, async (req, res) => {
   try {
-    const { firstName, lastName, state, timezone, phone, fullName } = req.body;
-    
+    const { firstName, lastName, certificateName, state, timezone, phone, fullName } = req.body;
+
     const user = await User.findById(req.user._id);
-    
+
     // Support fullName as single field (split into first/last)
     if (fullName && !firstName && !lastName) {
       const parts = fullName.trim().split(/\s+/);
@@ -44,6 +44,7 @@ router.put('/profile', protect, async (req, res) => {
       if (firstName !== undefined) user.profile.firstName = firstName;
       if (lastName !== undefined) user.profile.lastName = lastName;
     }
+    if (certificateName !== undefined) user.profile.certificateName = certificateName;
     if (state && typeof state === 'string') user.profile.state = state.toUpperCase();
     if (timezone) user.profile.timezone = timezone;
     if (phone !== undefined) user.profile.phone = phone;
