@@ -7,6 +7,7 @@ import express from 'express';
 import jwt from 'jsonwebtoken';
 import { protect } from '../middleware/auth.js';
 import ToolClick from '../models/ToolClick.js';
+import { logActivity, ACTIVITY_TYPES } from '../services/activityTrackingService.js';
 
 const router = express.Router();
 
@@ -45,6 +46,13 @@ router.post('/click', async (req, res) => {
     timestamp: new Date()
   }).catch(err => console.error('[ToolAnalytics] click write failed:', err.message));
 
+  logActivity(ACTIVITY_TYPES.TOOL_USED, {
+    tool: toolSlug,
+    toolName: toolSlug,
+    event: 'click',
+    referrer
+  }).catch(err => console.error('[ToolAnalytics] activity log failed:', err.message));
+
   res.json({ success: true });
 });
 
@@ -68,6 +76,12 @@ router.post('/conversion', async (req, res) => {
     userAgent: req.headers['user-agent'],
     timestamp: new Date()
   }).catch(err => console.error('[ToolAnalytics] conversion write failed:', err.message));
+
+  logActivity(ACTIVITY_TYPES.TOOL_USED, {
+    tool: toolSlug,
+    toolName: toolSlug,
+    event: 'conversion'
+  }, { userId: userId || undefined }).catch(err => console.error('[ToolAnalytics] activity log failed:', err.message));
 
   res.json({ success: true });
 });

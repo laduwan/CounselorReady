@@ -4,6 +4,7 @@
 
 import express from 'express';
 import { ToolLicense, ToolUsageLog } from '../models/ToolAccess.js';
+import { logActivity, ACTIVITY_TYPES } from '../services/activityTrackingService.js';
 
 const router = express.Router();
 
@@ -99,6 +100,14 @@ router.post('/:tool/verify-license', async (req, res) => {
       userAgent: req.get('User-Agent')
     });
 
+    logActivity(ACTIVITY_TYPES.TOOL_USED, {
+      tool,
+      toolName: tool,
+      event: 'license_verified',
+      state: licenseState,
+      credentialType
+    }, { userEmail: req.body.email }).catch(err => console.error('[toolRoutes] activity log failed:', err.message));
+
     res.status(201).json({
       success: true,
       message: 'License verified successfully',
@@ -137,6 +146,12 @@ router.post('/:tool/track', async (req, res) => {
       ip: req.ip,
       userAgent: req.get('User-Agent')
     });
+
+    logActivity(ACTIVITY_TYPES.TOOL_USED, {
+      tool,
+      toolName: tool,
+      event: req.body.event || 'track'
+    }, { userEmail: req.body.email }).catch(err => console.error('[toolRoutes] activity log failed:', err.message));
 
     res.json({ success: true });
 
