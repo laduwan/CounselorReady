@@ -75,7 +75,7 @@ router.post('/users/:userId/certificates/:certId/regenerate', protect, adminOnly
 
     const cert = await Certificate.findOne({ _id: certId, userId })
       .populate('userId', 'profile.firstName profile.lastName profile.certificateName email')
-      .populate('courseId', 'title ceHours nbccProgramNumber slug');
+      .populate('courseId', 'title ceHours nbccProgramNumber slug learningObjectives objectives ceCategory contentArea categories');
 
     if (!cert) {
       return res.status(404).json({ success: false, error: 'Certificate not found for this user' });
@@ -97,8 +97,11 @@ router.post('/users/:userId/certificates/:certId/regenerate', protect, adminOnly
       completionDate: cert.completionDate,
       ceHours: cert.ceHours,
       certificateNumber: cert.certificateNumber,
+      verificationCode: cert.verificationCode || cert.certificateNumber,
       acepNumber: cert.acepNumber || 'ACEP #7760',
-      ceCategory: cert.category || ''
+      ceCategory: course.ceCategory || course.contentArea || course.categories?.[0] || 'Counseling Theory/Practice and the Counseling Relationship',
+      objectives: course.learningObjectives || course.objectives || [],
+      approvingBody: 'NBCC'
     });
 
     const uploadResult = await new Promise((resolve, reject) => {
