@@ -721,6 +721,11 @@
               <input type="text" class="form-input" id="prof-lastName" placeholder="Last name">
             </div>
           </div>
+          <div class="form-group" style="margin-bottom:20px">
+            <label class="form-label">Name on Certificate</label>
+            <input type="text" class="form-input" id="prof-certificateName" placeholder="e.g. Dr. Jane M. Doe, LPC, NCC" maxlength="200">
+            <p style="margin-top:6px;font-size:13px;color:#6b6b66">Name as it should appear on your CE certificates. Match your license name to ensure board acceptance. Leave blank to use your first and last name.</p>
+          </div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
             <div class="form-group">
               <label class="form-label">Email</label>
@@ -946,6 +951,7 @@
         // -- Profile tab --
         document.getElementById('prof-firstName').value = user.profile?.firstName || '';
         document.getElementById('prof-lastName').value = user.profile?.lastName || '';
+        document.getElementById('prof-certificateName').value = user.profile?.certificateName || '';
         document.getElementById('prof-email').value = user.email || '';
         document.getElementById('prof-phone').value = user.profile?.phone || '';
         if (user.profile?.state) {
@@ -991,6 +997,7 @@
           body: JSON.stringify({
             firstName: document.getElementById('prof-firstName').value,
             lastName: document.getElementById('prof-lastName').value,
+            certificateName: document.getElementById('prof-certificateName').value,
             phone: document.getElementById('prof-phone').value,
             state: document.getElementById('prof-state').value,
             timezone: document.getElementById('prof-timezone').value,
