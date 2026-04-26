@@ -905,7 +905,10 @@ router.post('/:id/certificate', protect, async (req, res) => {
       await generateCertificateNumber(course._id, req.user._id);
 
     // Generate certificate PDF buffer via ../utils/certificate.js
-    const userName = `${(user.profile?.firstName || '')} ${(user.profile?.lastName || '')}`.trim() || user.email;
+    const userName =
+      (user.profile?.certificateName?.trim()) ||
+      `${(user.profile?.firstName || '')} ${(user.profile?.lastName || '')}`.trim() ||
+      user.email;
     const pdfBuffer = await generateCertificate({
       holderName: userName,
       courseName: course.title,
