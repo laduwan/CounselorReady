@@ -148,14 +148,14 @@
   ).join('\n            <span style="color:rgba(255,255,255,0.2)">&middot;</span>\n            ');
 
   const footerHTML = `
-  <footer style="background:#2D0A16;margin-top:2rem">
+  <footer style="background:#3B0F1D;margin-top:2rem">
     <div style="max-width:900px;margin:0 auto;padding:40px 24px 28px;font-family:'Lato',Calibri,sans-serif">
       <div style="display:flex;flex-wrap:wrap;gap:32px;align-items:flex-start;margin-bottom:28px">
         <div style="flex:1;min-width:220px">
           <div class="font-display" style="font-size:24px;font-weight:700;margin-bottom:8px">
-            <span style="color:#D0768A">Counselor</span><span style="color:#4A7C59">Ready</span>
+            <span style="color:#D0768A">Counselor</span><span style="color:#4A7C59">Ready</span>&trade;
           </div>
-          <div class="font-display" style="font-size:13px;color:#D4A855;letter-spacing:0.15em;font-weight:500;margin-bottom:12px">LEARN. LICENSE. LEAD.</div>
+          <div class="font-display" style="font-size:13px;color:#D4A855;letter-spacing:0.15em;font-weight:500;margin-bottom:12px">LEARN. LICENSE. LEAD.&trade;</div>
           <p style="font-size:12px;line-height:1.7;color:rgba(255,255,255,0.75);max-width:280px;margin:0">The continuing education platform built by a counselor, for counselors. Track credentials, complete courses, stay audit-ready.</p>
         </div>
         <div style="display:flex;align-items:center;gap:16px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:16px 20px;min-width:260px">
@@ -189,7 +189,7 @@
         CounselorReady is operated by GA Integrated Therapeutic Perspectives LLC, an NBCC Approved Continuing Education Provider (ACEP #7760). Programs that do not qualify for NBCC credit are clearly identified. GA Integrated Therapeutic Perspectives LLC is solely responsible for all aspects of the programs. NCMHCE&reg; is a registered trademark of the National Board for Certified Counselors, Inc. (NBCC). CounselorReady is not affiliated with, endorsed by, or sponsored by NBCC.
       </p>
       <div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px">
-        <p style="font-size:11px;color:rgba(255,255,255,0.45);margin:0">&copy; ${new Date().getFullYear()} CounselorReady. All rights reserved.</p>
+        <p style="font-size:11px;color:rgba(255,255,255,0.45);margin:0">&copy; ${new Date().getFullYear()} GA Integrated Therapeutic Perspectives LLC. CounselorReady&trade; is a trademark of GAITP LLC. All rights reserved.</p>
         <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center">
           ${policyItems}
         </div>
