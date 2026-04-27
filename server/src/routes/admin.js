@@ -22,6 +22,7 @@ import Certificate from '../models/Certificate.js';
 import certificateService from '../services/certificateService.js';
 import { generateCertificate } from '../utils/certificate.js';
 import { protect } from '../middleware/auth.js';
+import { runDailyNotificationCheck } from '../jobs/dailyNotificationCheck.js';
 
 const router = express.Router();
 
@@ -161,5 +162,65 @@ router.use('/coupons', adminCouponsRouter);
 router.use('/', adminUsersRouter);
 router.use('/', adminCoursesRouter);
 router.use('/', adminAIRouter);
+
+// ── MANUAL NOTIFICATION TRIGGER (admin only, for testing) ────────
+router.post('/trigger-daily-check', protect, async (req, res) => {
+  if (req.user.role !== 'admin') {
+    return res.status(403).json({ error: 'Admin access required' });
+  }
+
+  const { userId } = req.query;
+
+  try {
+    console.log(`[Admin] Manual daily check triggered by ${req.user.email}${userId ? ` for userId=${userId}` : ' (all users)'}`);
+
+    if (userId) {
+      // Run for a single user — useful for targeted trial email testing
+      // Temporarily override the User.find to return just this one user
+      // by passing userId context into the function via a wrapper
+      const User = (await import('../models/User.js')).default;
+      const user = await User.findById(userId).select('_id notifications liabilityInsurance subscription email profile createdAt');
+      if (!user) return res.status(404).json({ error: 'User not found' });
+
+      // Run the full check but only for this user by monkey-patching temporarily
+      // Simpler: just call the triggers directly based on their trial state
+      const { triggerTrialEndingSoon, triggerTrialEndingTomorrow, triggerTrialEnded, triggerNonPaidCheckIn } = await import('../services/notificationTriggerService.js');
+
+      const now = new Date();
+      const results = [];
+
+      if (user.subscription?.status === 'trial' && user.subscription?.trialEndsAt) {
+        const trialEnd = new Date(user.subscription.trialEndsAt);
+        const daysRemaining = Math.ceil((trialEnd - now) / (1000 * 60 * 60 * 24));
+        results.push({ field: 'daysRemaining', value: daysRemaining });
+
+        if (daysRemaining === 2) {
+          await triggerTrialEndingSoon(userId, { trialEndsAt: trialEnd, daysRemaining });
+          results.push({ trigger: 'triggerTrialEndingSoon', fired: true });
+        } else if (daysRemaining === 1) {
+          await triggerTrialEndingTomorrow(userId, { trialEndsAt: trialEnd });
+          results.push({ trigger: 'triggerTrialEndingTomorrow', fired: true });
+        } else if (daysRemaining <= 0) {
+          await triggerTrialEnded(userId);
+          results.push({ trigger: 'triggerTrialEnded', fired: true });
+        } else {
+          results.push({ trigger: 'none', reason: `daysRemaining=${daysRemaining} — no trigger fires at this value (triggers fire at 2, 1, ≤0)` });
+        }
+      } else {
+        results.push({ status: user.subscription?.status, reason: 'User is not in trial status or has no trialEndsAt' });
+      }
+
+      return res.json({ success: true, userId, results });
+    }
+
+    // Run for all users
+    const stats = await runDailyNotificationCheck();
+    return res.json({ success: true, scope: 'all users', stats });
+
+  } catch (err) {
+    console.error('[Admin] trigger-daily-check error:', err.message);
+    return res.status(500).json({ error: err.message });
+  }
+});
 
 export default router;
