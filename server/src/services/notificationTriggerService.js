@@ -480,6 +480,177 @@ export async function triggerWeeklyDigest(userId, { credentials, recentCompletio
   }
 }
 
+// ─── Trial Conversion Triggers ───────────────────────────────────────────────
+
+export async function triggerTrialEndingSoon(userId, { trialEndsAt, daysRemaining }) {
+  try {
+    const user = await User.findById(userId);
+    if (!user) return;
+    if (user.subscription?.trialEmailsSent?.includes('ending_soon')) return;
+
+    const name = getUserName(user);
+    const friendlyDate = new Date(trialEndsAt).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+
+    await createInAppNotification(userId, {
+      type: 'trial',
+      title: `Your trial ends in ${daysRemaining} days`,
+      message: `Pick a plan to keep your CE tracking, courses, and credential management active after ${friendlyDate}.`,
+      urgency: 'warning',
+      link: '/subscription.html'
+    });
+
+    if (shouldSendEmail(user, 'email.trial')) {
+      await sendNotificationEmail(user.email, `Your CounselorReady trial ends ${friendlyDate}`, `
+        <h2 style="color:#2D4A3E;margin-top:0;">Your trial ends in ${daysRemaining} days, ${name}</h2>
+        <p>Your 7-day free trial of CounselorReady ends on <strong>${friendlyDate}</strong>. Pick a plan now to keep your courses, credential tracking, and CE certificate library active without interruption.</p>
+        <table style="width:100%;border-collapse:collapse;margin:20px 0;">
+          <tr>
+            <td style="padding:14px;background:#FBF7F0;border-radius:8px;">
+              <strong style="color:#6b1d34;">Starter — $19.99/mo</strong><br/>
+              <span style="color:#666;font-size:14px;">CE tracking + course library</span>
+            </td>
+          </tr>
+          <tr><td style="height:8px;"></td></tr>
+          <tr>
+            <td style="padding:14px;background:#FBF7F0;border-radius:8px;border:2px solid #4A7C59;">
+              <strong style="color:#6b1d34;">Professional — $29.99/mo</strong> <span style="color:#4A7C59;font-size:12px;font-weight:bold;">MOST POPULAR</span><br/>
+              <span style="color:#666;font-size:14px;">Everything in Starter + Researched-N-Ready CE</span>
+            </td>
+          </tr>
+          <tr><td style="height:8px;"></td></tr>
+          <tr>
+            <td style="padding:14px;background:#FBF7F0;border-radius:8px;">
+              <strong style="color:#6b1d34;">VIP — $49.99/mo</strong><br/>
+              <span style="color:#666;font-size:14px;">Everything + multi-state tracking + hardship pause</span>
+            </td>
+          </tr>
+        </table>
+        <div style="text-align:center;margin:24px 0;">
+          <a href="${BASE_URL}/subscription.html" style="background:#6b1d34;color:#fff;padding:14px 28px;text-decoration:none;border-radius:6px;font-weight:bold;">Choose Your Plan</a>
+        </div>
+        <p style="font-size:13px;color:#666;text-align:center;">Questions? Reply to this email — we read every one.</p>
+      `);
+    }
+
+    user.subscription.trialEmailsSent = [...(user.subscription.trialEmailsSent || []), 'ending_soon'];
+    await user.save();
+  } catch (err) {
+    console.error('[NotifTrigger] triggerTrialEndingSoon error:', err.message);
+  }
+}
+
+export async function triggerTrialEndingTomorrow(userId, { trialEndsAt }) {
+  try {
+    const user = await User.findById(userId);
+    if (!user) return;
+    if (user.subscription?.trialEmailsSent?.includes('ending_tomorrow')) return;
+
+    const name = getUserName(user);
+
+    await createInAppNotification(userId, {
+      type: 'trial',
+      title: 'Your trial ends tomorrow',
+      message: 'Pick a plan today to avoid losing access to your courses and credential tracking.',
+      urgency: 'urgent',
+      link: '/subscription.html'
+    });
+
+    if (shouldSendEmail(user, 'email.trial')) {
+      await sendNotificationEmail(user.email, 'Your CounselorReady trial ends tomorrow', `
+        <h2 style="color:#6b1d34;margin-top:0;">${name}, your trial ends tomorrow</h2>
+        <p>Tomorrow your CounselorReady free trial ends. After that, you'll lose access to:</p>
+        <ul style="line-height:1.8;color:#444;">
+          <li>Your CE course progress and certificates</li>
+          <li>Credential tracking for your license</li>
+          <li>Researched-N-Ready CE library</li>
+          <li>State board renewal monitoring</li>
+        </ul>
+        <p>Pick any plan and keep everything you've built so far.</p>
+        <div style="text-align:center;margin:24px 0;">
+          <a href="${BASE_URL}/subscription.html" style="background:#6b1d34;color:#fff;padding:14px 28px;text-decoration:none;border-radius:6px;font-weight:bold;">Choose Your Plan</a>
+        </div>
+      `);
+    }
+
+    user.subscription.trialEmailsSent = [...(user.subscription.trialEmailsSent || []), 'ending_tomorrow'];
+    await user.save();
+  } catch (err) {
+    console.error('[NotifTrigger] triggerTrialEndingTomorrow error:', err.message);
+  }
+}
+
+export async function triggerTrialEnded(userId) {
+  try {
+    const user = await User.findById(userId);
+    if (!user) return;
+    if (user.subscription?.trialEmailsSent?.includes('ended')) return;
+
+    const name = getUserName(user);
+
+    await createInAppNotification(userId, {
+      type: 'trial',
+      title: 'Your trial has ended',
+      message: 'Pick a plan to restore access to your courses and credential tracking.',
+      urgency: 'warning',
+      link: '/subscription.html'
+    });
+
+    if (shouldSendEmail(user, 'email.trial')) {
+      await sendNotificationEmail(user.email, 'Your CounselorReady trial has ended', `
+        <h2 style="color:#2D4A3E;margin-top:0;">Trial ended — your account is on hold, ${name}</h2>
+        <p>Your 7-day free trial has ended. Your account is preserved, but premium features are paused until you pick a plan.</p>
+        <p><strong>Your data is safe.</strong> Course progress, completed CE hours, and credential records are all still here.</p>
+        <p>Pick a plan whenever you're ready — your account picks right back up where you left off.</p>
+        <div style="text-align:center;margin:24px 0;">
+          <a href="${BASE_URL}/subscription.html" style="background:#6b1d34;color:#fff;padding:14px 28px;text-decoration:none;border-radius:6px;font-weight:bold;">Restore Access</a>
+        </div>
+        <p style="font-size:13px;color:#666;text-align:center;">Have feedback about your trial? Reply to this email — we'd love to hear what worked and what didn't.</p>
+      `);
+    }
+
+    user.subscription.trialEmailsSent = [...(user.subscription.trialEmailsSent || []), 'ended'];
+    await user.save();
+  } catch (err) {
+    console.error('[NotifTrigger] triggerTrialEnded error:', err.message);
+  }
+}
+
+export async function triggerNonPaidCheckIn(userId, { daysSinceRegistration }) {
+  try {
+    const user = await User.findById(userId);
+    if (!user) return;
+
+    const name = getUserName(user);
+
+    await createInAppNotification(userId, {
+      type: 'info',
+      title: 'How are your CE hours looking?',
+      message: 'Your renewal is coming. Take a quick look at where your hours stand and what you still need.',
+      urgency: 'info',
+      link: '/credentials.html'
+    });
+
+    if (shouldSendEmail(user, 'email.checkIn')) {
+      await sendNotificationEmail(user.email, 'Renewal coming up — where do your CE hours stand?', `
+        <h2 style="color:#2D4A3E;margin-top:0;">Quick check-in, ${name}</h2>
+        <p>It's been a while since we last connected. Your license renewal is coming up sooner than you think — here's a 30-second prompt to make sure you're on track.</p>
+        <p><strong>Three things worth doing today:</strong></p>
+        <ul style="line-height:1.8;color:#444;">
+          <li>Open your CounselorReady dashboard and confirm your renewal date is correct.</li>
+          <li>Check how many CE hours you've earned vs. how many your state requires.</li>
+          <li>Pick one course for this month — even one hour now beats scrambling at renewal time.</li>
+        </ul>
+        <div style="text-align:center;margin:24px 0;">
+          <a href="${BASE_URL}/dashboard.html" style="background:#6b1d34;color:#fff;padding:14px 28px;text-decoration:none;border-radius:6px;font-weight:bold;">Check My Status</a>
+        </div>
+        <p style="font-size:13px;color:#666;text-align:center;">Not ready to commit to a paid plan? That's fine — your free account will always be here when you need it.</p>
+      `);
+    }
+  } catch (err) {
+    console.error('[NotifTrigger] triggerNonPaidCheckIn error:', err.message);
+  }
+}
+
 export default {
   shouldSendEmail,
   shouldSendSms,
@@ -492,5 +663,9 @@ export default {
   triggerCredentialExpiring,
   triggerInsuranceExpiring,
   triggerNewCourseAnnouncement,
-  triggerWeeklyDigest
+  triggerWeeklyDigest,
+  triggerTrialEndingSoon,
+  triggerTrialEndingTomorrow,
+  triggerTrialEnded,
+  triggerNonPaidCheckIn
 };

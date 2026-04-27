@@ -14,7 +14,7 @@ const notificationSchema = new mongoose.Schema({
   },
   type: {
     type: String,
-    enum: ['credential_expiring', 'ce_reminder', 'course_completed', 'system', 'welcome', 'info', 'badge_earned', 'referral', 'supervision'],
+    enum: ['credential_expiring', 'ce_reminder', 'course_completed', 'system', 'welcome', 'info', 'badge_earned', 'referral', 'supervision', 'trial'],
     required: true
   },
   title: {
