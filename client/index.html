@@ -194,32 +194,6 @@
       </div>
     </section>
 
-    <!-- ── FREE TOOLS ── -->
-    <section style="background:#F5F5DC;padding:72px 24px">
-      <div style="max-width:1100px;margin:0 auto">
-        <div style="text-align:center;margin-bottom:48px">
-          <span style="display:inline-block;background:#4A7C59;color:#fff;font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;padding:4px 14px;border-radius:99px;margin-bottom:16px">Free Clinical Tools</span>
-          <h2 style="font-family:'Cormorant Garamond',Georgia,serif;font-size:clamp(28px,4vw,40px);font-weight:700;color:#6B1D34;margin:0 0 16px;line-height:1.2">
-            Built for the clinician building from scratch
-          </h2>
-          <p style="font-size:17px;color:#4A4A4A;max-width:560px;margin:0 auto;line-height:1.6">
-            No login required. No cost. Just practical tools that save you time on the paperwork so you can focus on clients.
-          </p>
-        </div>
-
-        <div id="tools-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:20px;margin-bottom:40px"></div>
-
-        <div style="text-align:center">
-          <a href="/tools/index.html" style="display:inline-flex;align-items:center;gap:8px;background:#6B1D34;color:#fff;padding:14px 32px;border-radius:8px;font-family:'Lato',sans-serif;font-weight:700;font-size:15px;text-decoration:none;letter-spacing:0.02em">
-            View All Free Tools →
-          </a>
-          <p style="margin-top:12px;font-size:13px;color:#888">
-            AI Note Writer: 3 free notes/day · Unlimited with a CounselorReady subscription
-          </p>
-        </div>
-      </div>
-    </section>
-
     <!-- ── PRICING ── -->
     <section id="pricing" class="py-24 px-4" style="background:#F8F7F4">
       <div class="max-w-6xl mx-auto">
@@ -349,58 +323,6 @@
   <!-- ── FOOTER ── -->
   <div id="cr-footer"></div>
   <script src="/shared/nav-footer.js"></script>
-
-  <script>
-    // ── FREE TOOLS DATA ───────────────────────────────────────
-    const TOOLS = [
-      { icon:'📝', title:'AI Note Writer',          description:'Generate SOAP, DAP, BIRP & narrative notes from session bullet points.', href:'/tools/note-writer.html',       badge:'3/day free' },
-      { icon:'🧾', title:'Superbill Generator',     description:'Create insurance-ready superbills with CPT codes, NPI & diagnosis fields.', href:'/tools/superbill.html',          badge:'Free' },
-      { icon:'🚨', title:'Crisis Safety Plan Builder', description:'Interactive Stanley-Brown safety plan — complete with clients on-screen.', href:'/tools/safety-plan.html',        badge:'Free' },
-      { icon:'📋', title:'Treatment Plan Builder',  description:'Goals, objectives & interventions auto-populated by presenting problem.',  href:'/tools/treatment-plan.html',     badge:'Free' },
-      { icon:'📄', title:'Informed Consent Generator', description:'Customized consent packets with HIPAA, No Surprises Act & telehealth addenda.', href:'/tools/informed-consent.html', badge:'Free' },
-      { icon:'⚖️', title:'Sliding Scale Calculator', description:'Generate a tiered fee schedule based on federal poverty guidelines.',       href:'/tools/sliding-scale.html',      badge:'Free' },
-      { icon:'🔍', title:'Diagnosis Quick Reference', description:'DSM-5-TR lookup with differential prompts and ICD-10 code mapping.',        href:'/tools/diagnosis-helper.html',   badge:'Free' },
-      { icon:'🏥', title:'Involuntary Hold Guide',   description:'State-by-state 1013 / Baker Act / 5150 criteria, forms & time limits.',    href:'/tools/hold-guide.html',         badge:'Free' },
-      { icon:'✅', title:'Practice Startup Checklist', description:'Everything a new independent clinician needs to open their doors.',        href:'/tools/startup-checklist.html', badge:'Free' },
-    ];
-
-    const API_BASE = 'https://api.counselorready.com/api';
-
-    function trackToolClick(slug) {
-      const sessionId = localStorage.getItem('cr_tool_session') || Math.random().toString(36).slice(2) + Date.now().toString(36);
-      localStorage.setItem('cr_tool_session', sessionId);
-      localStorage.setItem('cr_tool_ref', slug);
-      fetch(API_BASE + '/tool-analytics/click', {
-        method:'POST', headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({ toolSlug: slug, sessionId, referrer: window.location.pathname }),
-        keepalive: true
-      }).catch(()=>{});
-    }
-
-    const grid = document.getElementById('tools-grid');
-    TOOLS.forEach(tool => {
-      const slug = tool.href.split('/').pop().replace('.html','');
-      const isFree = tool.badge === '3/day free';
-      const card = document.createElement('a');
-      card.href = tool.href;
-      card.onclick = () => trackToolClick(slug);
-      card.style.cssText = 'display:block;background:#fff;border:1px solid #E2E2BE;border-radius:12px;padding:20px 22px;text-decoration:none;transition:box-shadow .15s,border-color .15s;box-shadow:0 1px 4px rgba(0,0,0,0.05)';
-      card.onmouseenter = e => { e.currentTarget.style.boxShadow='0 4px 16px rgba(107,29,52,0.12)'; e.currentTarget.style.borderColor='#6B1D34'; };
-      card.onmouseleave = e => { e.currentTarget.style.boxShadow='0 1px 4px rgba(0,0,0,0.05)';    e.currentTarget.style.borderColor='#E2E2BE'; };
-      card.innerHTML = `
-        <div style="display:flex;align-items:flex-start;gap:14px">
-          <span style="font-size:28px;line-height:1">${tool.icon}</span>
-          <div style="flex:1">
-            <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
-              <span style="font-family:'Lato',sans-serif;font-weight:700;font-size:15px;color:#284157">${tool.title}</span>
-              <span style="font-size:10px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;background:${isFree?'#FDF5F7':'#F2F7F4'};color:${isFree?'#6B1D34':'#4A7C59'};border:1px solid ${isFree?'#F5D0D6':'#C9D7CD'};padding:2px 7px;border-radius:99px">${tool.badge}</span>
-            </div>
-            <p style="font-size:13px;color:#5A5A5A;margin:0;line-height:1.5">${tool.description}</p>
-          </div>
-        </div>`;
-      grid.appendChild(card);
-    });
-  </script>
 
 </body>
   </html>
