@@ -9,6 +9,7 @@
  * CE Hours: 2.0 | NBCC ACEP #7760
  */
 import mongoose from 'mongoose';
+// Run validator first: node src/scripts/validateSeed.js src/scripts/seedCR613-Seasoned_and_Struggling_Substance_Use_Older_Adults-12000words.js
 import dotenv from 'dotenv';
 dotenv.config();
 const MONGODB_URI = process.env.MONGODB_URI;

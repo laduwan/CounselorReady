@@ -5,42 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Verify Email - CounselorReady</title>
   <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="/css/design-tokens.css">
+  <link rel="stylesheet" href="/css/typography.css">
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            burgundy: {
-              50: '#fdf5f6', 100: '#fae8eb', 200: '#f5d0d6', 300: '#eba9b5',
-              400: '#dd768a', 500: '#c94d65', 600: '#a83350', 700: '#8B2635',
-              800: '#6b1d34', 900: '#4a1524', 950: '#2d0a14'
-            },
-            forest: {
-              50: '#f3f6f4', 100: '#e3ebe5', 200: '#c8d7cc', 300: '#a1bba8',
-              400: '#759a7f', 500: '#547c5f', 600: '#4A7C59', 700: '#34503d',
-              800: '#2b4133', 900: '#1f3025', 950: '#121c16'
-            },
-            gold: {
-              50: '#fdf9f0', 100: '#f9f0db', 200: '#f3e0b5', 300: '#eacd86',
-              400: '#D4A855', 500: '#c49545', 600: '#a67936', 700: '#865e2c',
-              800: '#6b4a25', 900: '#4d351b'
-            },
-            hunter: { 50: '#F2F7F3', 100: '#E4EBE6', 600: '#4A7C59', 700: '#395F45' },
-            honey: { 100: '#FFF9E6', 400: '#D4A855', 600: '#B8872C' },
-            navy: { 500: '#456177', 600: '#284157', 700: '#2C3E50' }
-          },
-          fontFamily: {
-            'display': ['Cormorant Garamond', 'Georgia', 'serif'],
-            'sans': ['Lato', 'system-ui', 'sans-serif']
-          }
-        }
-      }
-    }
-  </script>
+  <script src="/js/tailwind-config.js"></script>
+
 </head>
-<body class="min-h-screen bg-stone-50 flex items-center justify-center p-4">
+<body class="min-h-screen bg-stone-50 flex items-center justify-center p-4" style="background:#F8F7F4">
   <div class="max-w-md w-full">
     <!-- Logo -->
     <div class="text-center mb-8">
@@ -181,5 +154,8 @@
 
     verifyEmail();
   </script>
-<script src="/js/footer.js"></script></body>
+<script src="/js/footer.js"></script>
+<script src="/shared/nav-footer.js"></script>
+<div id="cr-footer"></div>
+</body>
 </html>

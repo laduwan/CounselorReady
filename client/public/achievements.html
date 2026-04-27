@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Achievements | CounselorReady</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="/css/design-tokens.css">
+  <link rel="stylesheet" href="/css/typography.css">
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="/js/tailwind-config.js"></script>
+
+  <style>
+    body{font-family:'Lato',system-ui,sans-serif}
+    .font-display{font-family:'Cormorant Garamond',Georgia,serif}
+    .badge-card{transition:transform .2s,box-shadow .2s}
+    .badge-card:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.08)}
+    .badge-card.earned{border-color:#4A7C59}
+    .badge-card.locked{opacity:.55}
+    .xp-bar{transition:width .8s cubic-bezier(.4,0,.2,1)}
+    .streak-flame{animation:flicker 1.5s ease-in-out infinite}
+    @keyframes flicker{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.85;transform:scale(1.05)}}
+  
+    /* Shared nav styles */
+    .dd{display:none;position:absolute;top:100%;margin-top:6px;background:#fff;border-radius:10px;box-shadow:0 10px 40px rgba(107,29,52,.12);border:1px solid #FAE8EB;z-index:50;padding:6px 0;min-width:210px}
+    .dd.open{display:block}
+    .dd a{display:flex;align-items:center;gap:10px;padding:8px 16px;font-size:13px;color:#284157;text-decoration:none;transition:background .1s}
+    .dd a:hover{background:#F2F7F4}
+    .ov{display:none;position:fixed;inset:0;z-index:40}.ov.open{display:block}
+    .nav-link{padding:6px 12px;border-radius:6px;font-size:13px;font-weight:500;color:#57534e;text-decoration:none;display:flex;align-items:center;gap:4px;transition:all .15s}
+    .nav-link:hover{color:#6B1D34;background:#FDF5F7}
+    .nav-link.active{color:#6B1D34;background:#FDF5F7;font-weight:600;border-bottom:2px solid #6B1D34}
+  </style>
+</head>
+<body class="bg-stone-50 min-h-screen">
+
+  <!-- Header -->
+  <div id="cr-header"></div>
+  <script src="/shared/nav-footer.js"></script>
+
+  <main class="max-w-7xl mx-auto px-6 py-8">
+
+    <!-- Loading -->
+    <div id="loading" class="text-center py-20">
+      <div class="w-10 h-10 border-3 border-stone-200 border-t-burgundy-700 rounded-full animate-spin mx-auto mb-4"></div>
+      <p class="text-stone-400">Loading achievements...</p>
+    </div>
+
+    <div id="content" class="hidden">
+
+      <!-- Hero stats -->
+      <div class="bg-white rounded-2xl border border-stone-200 shadow-sm p-6 mb-8">
+        <div class="flex flex-col md:flex-row md:items-center gap-6">
+          <!-- Level circle -->
+          <div class="flex-shrink-0 flex flex-col items-center">
+            <div class="w-24 h-24 rounded-full flex items-center justify-center" style="background:linear-gradient(135deg,#6B1D34,#8b2542)">
+              <div class="text-center">
+                <p class="text-3xl font-bold text-white font-display" id="userLevel">1</p>
+                <p class="text-[10px] text-burgundy-200 uppercase tracking-wider">Level</p>
+              </div>
+            </div>
+          </div>
+          <!-- XP + stats -->
+          <div class="flex-1">
+            <h1 class="font-display text-2xl font-semibold text-burgundy-800 mb-1">Your Achievements</h1>
+            <p class="text-stone-500 text-sm mb-4">Keep learning to earn XP, badges, and climb the leaderboard.</p>
+            <div class="mb-3">
+              <div class="flex justify-between text-sm mb-1">
+                <span class="text-stone-500">XP Progress</span>
+                <span class="font-semibold text-burgundy-800"><span id="currentXp">0</span> XP &middot; <span id="xpToNext">500</span> to next level</span>
+              </div>
+              <div class="w-full bg-stone-100 rounded-full h-3 overflow-hidden">
+                <div class="xp-bar h-full rounded-full" id="xpBar" style="width:0%;background:linear-gradient(90deg,#6B1D34,#D4A855)"></div>
+              </div>
+            </div>
+            <div class="flex gap-6 text-sm">
+              <div><span class="font-bold text-burgundy-800" id="statCourses">0</span> <span class="text-stone-400">courses</span></div>
+              <div><span class="font-bold text-hunter-500" id="statHours">0</span> <span class="text-stone-400">CE hours</span></div>
+              <div><span class="font-bold text-honey-400" id="statQuizzes">0</span> <span class="text-stone-400">quizzes</span></div>
+              <div class="flex items-center gap-1">
+                <svg class="w-4 h-4 text-orange-500 streak-flame" id="streakIcon" fill="currentColor" viewBox="0 0 24 24"><path d="M12 23c-3.6 0-8-2.4-8-8.3C4 9.3 8.3 4.5 11 1.5l1-.9 1 .9c2.7 3 7 7.8 7 13.2 0 5.9-4.4 8.3-8 8.3z"/></svg>
+                <span class="font-bold text-orange-600" id="statStreak">0</span>
+                <span class="text-stone-400">day streak</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Badges grid -->
+      <h2 class="font-display text-xl font-semibold text-burgundy-800 mb-4">Badges</h2>
+      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mb-10" id="badgesGrid"></div>
+
+      <!-- Leaderboard -->
+      <h2 class="font-display text-xl font-semibold text-burgundy-800 mb-4">Leaderboard</h2>
+      <div class="flex gap-2 mb-4" id="lbTabs">
+        <button onclick="loadLeaderboard('alltime')" class="lb-tab px-4 py-2 rounded-lg text-sm font-semibold bg-burgundy-800 text-white" data-period="alltime">All Time</button>
+        <button onclick="loadLeaderboard('monthly')" class="lb-tab px-4 py-2 rounded-lg text-sm font-semibold bg-stone-100 text-stone-500" data-period="monthly">This Month</button>
+        <button onclick="loadLeaderboard('weekly')" class="lb-tab px-4 py-2 rounded-lg text-sm font-semibold bg-stone-100 text-stone-500" data-period="weekly">This Week</button>
+      </div>
+      <div class="bg-white rounded-xl border border-stone-200 shadow-sm overflow-hidden" id="leaderboardCard">
+        <div id="leaderboardList" class="divide-y divide-stone-100"></div>
+        <div id="myRank" class="border-t-2 border-burgundy-100 bg-burgundy-50 p-4 text-sm"></div>
+      </div>
+    </div>
+  </main>
+
+<script>
+  const API=location.hostname==='localhost'?'http://localhost:5000':'https://api.counselorready.com';
+  const T=localStorage.getItem('token');
+  if(!T)location.href='/login.html';
+
+  const BADGE_ICONS={
+    trophy:'<svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5 3h14l-1.5 8a5.5 5.5 0 01-11 0L5 3zM12 17v4m-4 0h8"/></svg>',
+    star:'<svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.56 5.82 22 7 14.14l-5-4.87 6.91-1.01z"/></svg>',
+    crown:'<svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2 18l3-11 5 5 2-10 2 10 5-5 3 11z"/></svg>',
+    gem:'<svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 3h12l4 7-10 11L2 10z"/></svg>',
+    flame:'<svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 23c-3.6 0-8-2.4-8-8.3C4 9.3 8.3 4.5 11 1.5l1-.9 1 .9c2.7 3 7 7.8 7 13.2 0 5.9-4.4 8.3-8 8.3z"/></svg>',
+    fire:'<svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 23c-3.6 0-8-2.4-8-8.3C4 9.3 8.3 4.5 11 1.5l1-.9 1 .9c2.7 3 7 7.8 7 13.2 0 5.9-4.4 8.3-8 8.3z"/></svg>',
+    medal:'<svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="9" r="6" stroke-width="1.5"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 14.5L6.5 22l5.5-3 5.5 3L16 14.5"/></svg>',
+    award:'<svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 15l-3 6 1-4-3 1 5-7 3 6-1-4 3 1z"/><circle cx="12" cy="8" r="6" stroke-width="1.5"/></svg>',
+    clock:'<svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" stroke-width="1.5"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 7v5l3 3"/></svg>',
+    zap:'<svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>',
+    'check-circle':'<svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>'
+  };
+
+  async function init(){
+    try{
+      const r=await fetch(`${API}/api/gamification/my`,{headers:{Authorization:`Bearer ${T}`}});
+      if(!r.ok)throw new Error('Failed to load');
+      const data=await r.json();
+
+      document.getElementById('loading').style.display='none';
+      document.getElementById('content').classList.remove('hidden');
+
+      // Stats
+      document.getElementById('userLevel').textContent=data.level||1;
+      document.getElementById('currentXp').textContent=data.xp||0;
+      document.getElementById('xpToNext').textContent=data.xpToNextLevel||500;
+      document.getElementById('statCourses').textContent=data.totalCoursesCompleted||0;
+      document.getElementById('statHours').textContent=data.totalCEHoursEarned||0;
+      document.getElementById('statQuizzes').textContent=data.totalQuizzesPassed||0;
+      document.getElementById('statStreak').textContent=data.currentStreak||0;
+
+      if(!data.currentStreak)document.getElementById('streakIcon').style.display='none';
+
+      // XP bar
+      const xpInLevel=data.xp%500;
+      const pct=Math.round((xpInLevel/500)*100);
+      setTimeout(()=>{document.getElementById('xpBar').style.width=pct+'%'},100);
+
+      // Badges
+      const badges=data.availableBadges||[];
+      document.getElementById('badgesGrid').innerHTML=badges.map(b=>{
+        const icon=BADGE_ICONS[b.icon]||BADGE_ICONS.star;
+        const earned=b.earned;
+        const earnedDate=earned&&b.earnedAt?new Date(b.earnedAt).toLocaleDateString():'';
+        return`
+          <div class="badge-card bg-white rounded-xl border ${earned?'border-hunter-500':'border-stone-200'} p-5 text-center ${earned?'earned':'locked'}">
+            <div class="w-14 h-14 mx-auto rounded-full flex items-center justify-center mb-3 ${earned?'bg-honey-100 text-honey-700':'bg-stone-100 text-stone-300'}">
+              ${icon}
+            </div>
+            <h3 class="font-semibold text-sm ${earned?'text-burgundy-800':'text-stone-400'}">${b.name}</h3>
+            <p class="text-xs mt-1 ${earned?'text-stone-500':'text-stone-300'}">${b.description}</p>
+            ${earned?`<p class="text-[10px] text-hunter-500 mt-2 font-medium">Earned ${earnedDate}</p>`:'<p class="text-[10px] text-stone-300 mt-2">Locked</p>'}
+          </div>
+        `;
+      }).join('');
+
+      loadLeaderboard('alltime');
+    }catch(e){
+      document.getElementById('loading').innerHTML=`<p class="text-burgundy-700 font-semibold">${e.message}</p>`;
+    }
+  }
+
+  async function loadLeaderboard(period){
+    // Tab styling
+    document.querySelectorAll('.lb-tab').forEach(t=>{
+      if(t.dataset.period===period){t.className='lb-tab px-4 py-2 rounded-lg text-sm font-semibold bg-burgundy-800 text-white'}
+      else{t.className='lb-tab px-4 py-2 rounded-lg text-sm font-semibold bg-stone-100 text-stone-500'}
+    });
+
+    try{
+      const r=await fetch(`${API}/api/gamification/leaderboard?period=${period}`,{headers:{Authorization:`Bearer ${T}`}});
+      if(!r.ok)return;
+      const data=await r.json();
+
+      const medalColors=['#D4A855','#9CA3AF','#CD7F32'];
+      document.getElementById('leaderboardList').innerHTML=(data.leaderboard||[]).map((p,i)=>`
+        <div class="flex items-center gap-4 px-5 py-3 ${i<3?'bg-honey-50':''}">
+          <span class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0" style="${i<3?`background:${medalColors[i]};color:#fff`:'background:#F1EFE9;color:#57534e'}">${p.rank}</span>
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-medium text-burgundy-800 truncate">${p.name||'Anonymous'}</p>
+            <p class="text-xs text-stone-400">Level ${p.level} &middot; ${p.badges} badges &middot; ${p.streak}d streak</p>
+          </div>
+          <span class="text-sm font-bold text-burgundy-800">${p.xp.toLocaleString()} XP</span>
+        </div>
+      `).join('')||(data.leaderboard?.length===0?'<div class="p-6 text-center text-stone-400 text-sm">No activity yet. Be the first!</div>':'');
+
+      const myRankEl=document.getElementById('myRank');
+      if(data.myRank){
+        myRankEl.innerHTML=`<span class="font-semibold text-burgundy-800">Your rank: #${data.myRank}</span> &middot; ${(data.myXp||0).toLocaleString()} XP`;
+      }else{
+        myRankEl.innerHTML='<span class="text-stone-400">Complete a course to appear on the leaderboard</span>';
+      }
+    }catch(e){console.error(e)}
+  }
+
+  document.addEventListener('DOMContentLoaded',init);
+</script>
+
+  <div id="cr-footer"></div>
+</body>
+</html>

@@ -7,6 +7,8 @@ import express from 'express';
 import mongoose from 'mongoose';
 import { protect } from '../middleware/auth.js';
 import Course from '../models/Course.js';
+import Evaluation from '../models/Evaluation.js';
+import { Course as InteractiveCourse } from '../models/InteractiveCourse.js';
 import PlatformSurvey from '../models/PlatformSurvey.js';
 import UserCourseProgress from '../models/UserCourseProgress.js';
 import User from '../models/User.js';
@@ -449,24 +451,56 @@ router.get('/admin/overview', protect, async (req, res) => {
     // Satisfaction averages from platform surveys
     const satisfactionData = await PlatformSurvey.getSatisfactionAverages(startDate, endDate);
     
-    // Get REAL stats from UserCourseProgress
-    const progressFilter = {};
-    if (startDate || endDate) {
-      progressFilter.completedAt = dateFilter;
-    }
-    
-    const progressStats = await UserCourseProgress.aggregate([
-      { $match: progressFilter },
-      {
-        $group: {
-          _id: null,
-          totalEnrollments: { $sum: 1 },
-          totalCompletions: { $sum: { $cond: [{ $eq: ['$status', 'completed'] }, 1, 0] } },
-          totalEvaluations: { $sum: { $cond: [{ $eq: ['$evaluationCompleted', true] }, 1, 0] } }
+    // Date window applied per-metric via $cond — NOT as a top-level $match.
+    // Ensures in-progress enrollments still count toward totalEnrollments
+    // when a window is active, and that completions without completedAt
+    // stamped (older rows, interactive `certified` rows) aren't silently dropped.
+    const hasWindow = !!(startDate || endDate);
+    const inWindow = (field) => {
+      const conds = [{ $ne: [`$${field}`, null] }];
+      if (startDate) conds.push({ $gte: [`$${field}`, startDate] });
+      if (endDate)   conds.push({ $lte: [`$${field}`, endDate] });
+      return { $and: conds };
+    };
+
+    const buildGroup = (completedStatuses, hasEvalSubmittedAt) => ({
+      _id: null,
+      totalEnrollments: { $sum: 1 },
+      totalCompletions: {
+        $sum: {
+          $cond: [
+            hasWindow
+              ? { $and: [{ $in: ['$status', completedStatuses] }, inWindow('completedAt')] }
+              : { $in: ['$status', completedStatuses] },
+            1, 0
+          ]
+        }
+      },
+      totalEvaluations: {
+        $sum: {
+          $cond: [
+            hasWindow && hasEvalSubmittedAt
+              ? { $and: [{ $eq: ['$evaluationCompleted', true] }, inWindow('evaluationCompletedAt')] }
+              : { $eq: ['$evaluationCompleted', true] },
+            1, 0
+          ]
         }
       }
+    });
+
+    // UserCourseProgress has evaluationCompletedAt but no evaluationSubmittedAt,
+    // so evaluations are counted unconditionally across the whole collection.
+    const legacyHasEvalAt = false;
+
+    const progressStats = await UserCourseProgress.aggregate([
+      { $group: buildGroup(['completed'], legacyHasEvalAt) }
     ]);
-    
+
+    const interactiveProgressStats = await mongoose.connection.db
+      .collection('interactivecourseprogresses')
+      .aggregate([{ $group: buildGroup(['completed', 'certified'], false) }])
+      .toArray();
+
     // Get total courses count
     const totalCourses = await Course.countDocuments({ status: 'published' });
     
@@ -483,16 +517,20 @@ router.get('/admin/overview', protect, async (req, res) => {
       }
     ]);
     
-    // Combine course stats
+    // Combine course stats (legacy + interactive)
+    const combinedEnrollments = (progressStats[0]?.totalEnrollments || 0) + (interactiveProgressStats[0]?.totalEnrollments || 0);
+    const combinedCompletions = (progressStats[0]?.totalCompletions || 0) + (interactiveProgressStats[0]?.totalCompletions || 0);
+    const combinedEvaluations = (progressStats[0]?.totalEvaluations || 0) + (interactiveProgressStats[0]?.totalEvaluations || 0);
+
     const courseStats = {
       totalCourses,
-      totalEnrollments: progressStats[0]?.totalEnrollments || 0,
-      totalCompletions: progressStats[0]?.totalCompletions || 0,
-      totalEvaluations: progressStats[0]?.totalEvaluations || 0,
+      totalEnrollments: combinedEnrollments,
+      totalCompletions: combinedCompletions,
+      totalEvaluations: combinedEvaluations,
       avgRating: ratingStats[0]?.avgRating ? Math.round(ratingStats[0].avgRating * 10) / 10 : 0,
       totalRatings: ratingStats[0]?.totalRatings || 0,
-      avgCompletionRate: progressStats[0]?.totalEnrollments > 0 
-        ? Math.round((progressStats[0].totalCompletions / progressStats[0].totalEnrollments) * 100) 
+      avgCompletionRate: combinedEnrollments > 0
+        ? Math.round((combinedCompletions / combinedEnrollments) * 100)
         : 0
     };
     
@@ -526,7 +564,35 @@ router.get('/admin/overview', protect, async (req, res) => {
         }
       }
     ]);
-    
+
+    const topByEnrollmentInteractive = await mongoose.connection.db
+      .collection('interactivecourseprogresses')
+      .aggregate([
+        { $group: { _id: '$courseId', enrollments: { $sum: 1 } } },
+        { $sort: { enrollments: -1 } },
+        { $limit: 5 },
+        {
+          $lookup: {
+            from: 'interactivecourses',
+            localField: '_id',
+            foreignField: '_id',
+            as: 'course'
+          }
+        },
+        { $unwind: '$course' },
+        {
+          $project: {
+            _id: '$course._id',
+            title: '$course.title',
+            analytics: { enrollments: '$enrollments' }
+          }
+        }
+      ]).toArray();
+
+    const allTopByEnrollment = [...topByEnrollment, ...topByEnrollmentInteractive]
+      .sort((a, b) => b.analytics.enrollments - a.analytics.enrollments)
+      .slice(0, 5);
+
     // Top courses by rating
     const topByRating = await Course.find({ 
       status: 'published',
@@ -548,29 +614,47 @@ router.get('/admin/overview', protect, async (req, res) => {
       .sort({ createdAt: -1 })
       .limit(10);
     
-    // Also get recent course evaluations (from UserCourseProgress)
-    const recentEvaluations = await UserCourseProgress.find({
-      evaluationCompleted: true
-    })
-      .populate('userId', 'email profile.firstName profile.lastName')
-      .populate('courseId', 'title')
-      .sort({ evaluationCompletedAt: -1 })
+    // Recent course evaluations — populate user from users, but courses live in TWO collections
+    // (`courses` legacy + `interactivecourses` primary), so do a manual two-collection lookup.
+    const recentEvaluationsRaw = await Evaluation.find({ isDeleted: false })
+      .sort({ createdAt: -1 })
       .limit(10)
-      .select('userId courseId evaluationResponses evaluationCompletedAt');
+      .populate('user', 'email profile')
+      .lean();
+
+    const courseIds = [...new Set(
+      recentEvaluationsRaw
+        .map(ev => ev.course)
+        .filter(id => id && mongoose.Types.ObjectId.isValid(id))
+        .map(id => String(id))
+    )];
+    const [legacyCourses, interactiveCourses] = await Promise.all([
+      Course.find({ _id: { $in: courseIds } }).select('title courseCode').lean(),
+      InteractiveCourse.find({ _id: { $in: courseIds } }).select('title courseCode').lean(),
+    ]);
+    const courseMap = new Map();
+    [...legacyCourses, ...interactiveCourses].forEach(c => courseMap.set(String(c._id), c));
+
+    // Rename user → userId and course → courseId to match frontend contract
+    const recentEvaluations = recentEvaluationsRaw.map(ev => ({
+      ...ev,
+      userId: ev.user,
+      courseId: courseMap.get(String(ev.course)) || null,
+    }));
     
     res.json({
       nps: npsData,
       satisfaction: satisfactionData,
       courses: courseStats,
       topCourses: {
-        byEnrollment: topByEnrollment,
+        byEnrollment: allTopByEnrollment,
         byRating: topByRating
       },
       recentFeedback,
       recentEvaluations
     });
   } catch (error) {
-    console.error('Admin overview error:', error);
+    console.error('Admin overview error:', error?.stack || error);
     res.status(500).json({ error: 'Failed to get analytics overview' });
   }
 });
@@ -699,34 +783,42 @@ router.get('/admin/funnel', protect, async (req, res) => {
       createdAt: { $gte: since }
     });
 
-    // Stage 2: Users who enrolled in at least one course
-    const enrolledUsers = await UserCourseProgress.distinct('userId', {
-      enrolledAt: { $gte: since }
-    });
-    const enrolledCount = enrolledUsers.length;
+    // Stage 2: Users who enrolled in at least one course (legacy + interactive)
+    const [legacyEnrolled, interactiveEnrolled] = await Promise.all([
+      UserCourseProgress.distinct('userId', { enrolledAt: { $gte: since } }),
+      mongoose.connection.db.collection('interactivecourseprogresses')
+        .distinct('userId', { enrolledAt: { $gte: since } })
+    ]);
+    const enrolledCount = new Set([...legacyEnrolled.map(String), ...interactiveEnrolled.map(String)]).size;
 
-    // Stage 3: Users who made a payment (have active/trialing subscription or bought a course)
-    const paidCount = await User.countDocuments({
-      createdAt: { $gte: since },
-      $or: [
-        { 'subscription.status': { $in: ['active', 'trialing'] } },
-        { stripeCustomerId: { $exists: true, $ne: null } }
-      ]
+    // Stage 3: Users who made a payment during this period (from UserActivity — timestamp-accurate)
+    const paidUsers = await UserActivity.distinct('userId', {
+      type: { $in: ['payment_succeeded', 'subscription_started'] },
+      timestamp: { $gte: since }
     });
+    const paidCount = paidUsers.length;
 
-    // Stage 4: Users who started a course (status in_progress or completed)
-    const startedUsers = await UserCourseProgress.distinct('userId', {
-      enrolledAt: { $gte: since },
-      status: { $in: ['in_progress', 'completed'] }
-    });
-    const startedCount = startedUsers.length;
+    // Stage 4: Users who started a course (legacy + interactive)
+    const [legacyStarted, interactiveStarted] = await Promise.all([
+      UserCourseProgress.distinct('userId', {
+        enrolledAt: { $gte: since },
+        status: { $in: ['in_progress', 'completed'] }
+      }),
+      mongoose.connection.db.collection('interactivecourseprogresses')
+        .distinct('userId', {
+          enrolledAt: { $gte: since },
+          status: { $in: ['in_progress', 'completed'] }
+        })
+    ]);
+    const startedCount = new Set([...legacyStarted.map(String), ...interactiveStarted.map(String)]).size;
 
-    // Stage 5: Users who completed at least one course
-    const completedUsers = await UserCourseProgress.distinct('userId', {
-      completedAt: { $gte: since },
-      status: 'completed'
-    });
-    const completedCount = completedUsers.length;
+    // Stage 5: Users who completed at least one course (legacy + interactive)
+    const [legacyCompleted, interactiveCompleted] = await Promise.all([
+      UserCourseProgress.distinct('userId', { completedAt: { $gte: since }, status: 'completed' }),
+      mongoose.connection.db.collection('interactivecourseprogresses')
+        .distinct('userId', { completedAt: { $gte: since }, status: 'completed' })
+    ]);
+    const completedCount = new Set([...legacyCompleted.map(String), ...interactiveCompleted.map(String)]).size;
 
     // Build funnel stages with conversion rates
     const stages = [
@@ -785,7 +877,7 @@ async function getAverageFunnelTimes(since) {
               $cond: [
                 { $ne: ['$status', 'not_started'] },
                 { $subtract: [
-                  { $ifNull: [{ $arrayElemAt: ['$lessonsCompleted.completedAt', 0] }, '$enrolledAt'] },
+                  { $ifNull: [{ $min: '$lessonsCompleted.completedAt' }, '$enrolledAt'] },
                   '$enrolledAt'
                 ]},
                 null
@@ -796,7 +888,10 @@ async function getAverageFunnelTimes(since) {
             $avg: {
               $cond: [
                 { $eq: ['$status', 'completed'] },
-                { $subtract: ['$completedAt', '$enrolledAt'] },
+                { $subtract: [
+                  '$completedAt',
+                  { $ifNull: [{ $min: '$lessonsCompleted.completedAt' }, '$enrolledAt'] }
+                ]},
                 null
               ]
             }
@@ -845,43 +940,30 @@ router.get('/admin/funnel/trend', protect, async (req, res) => {
       { $sort: { _id: 1 } }
     ]);
 
-    const enrollments = await UserCourseProgress.aggregate([
-      { $match: { enrolledAt: { $gte: since } } },
-      {
-        $group: {
-          _id: { $dateToString: { format: '%Y-%U', date: '$enrolledAt' } },
-          count: { $sum: 1 },
-          uniqueUsers: { $addToSet: '$userId' }
-        }
-      },
-      {
-        $project: {
-          _id: 1,
-          count: 1,
-          uniqueUsers: { $size: '$uniqueUsers' }
-        }
-      },
+    const weeklyAgg = (field, matchExtra = {}) => [
+      { $match: { [field]: { $gte: since }, ...matchExtra } },
+      { $group: { _id: { $dateToString: { format: '%Y-%U', date: `$${field}` } }, uniqueUsers: { $addToSet: '$userId' } } },
+      { $project: { _id: 1, uniqueUsers: { $size: '$uniqueUsers' } } },
       { $sort: { _id: 1 } }
+    ];
+
+    const mergeWeekly = (a, b) => {
+      const map = {};
+      for (const row of a) map[row._id] = (map[row._id] || 0) + row.uniqueUsers;
+      for (const row of b) map[row._id] = (map[row._id] || 0) + row.uniqueUsers;
+      return Object.entries(map).map(([_id, uniqueUsers]) => ({ _id, uniqueUsers })).sort((x, y) => x._id < y._id ? -1 : 1);
+    };
+
+    const db = mongoose.connection.db;
+    const [legacyEnrollTrend, interactiveEnrollTrend, legacyCompleteTrend, interactiveCompleteTrend] = await Promise.all([
+      UserCourseProgress.aggregate(weeklyAgg('enrolledAt')),
+      db.collection('interactivecourseprogresses').aggregate(weeklyAgg('enrolledAt')).toArray(),
+      UserCourseProgress.aggregate(weeklyAgg('completedAt', { status: 'completed' })),
+      db.collection('interactivecourseprogresses').aggregate(weeklyAgg('completedAt', { status: 'completed' })).toArray()
     ]);
 
-    const completions = await UserCourseProgress.aggregate([
-      { $match: { completedAt: { $gte: since }, status: 'completed' } },
-      {
-        $group: {
-          _id: { $dateToString: { format: '%Y-%U', date: '$completedAt' } },
-          count: { $sum: 1 },
-          uniqueUsers: { $addToSet: '$userId' }
-        }
-      },
-      {
-        $project: {
-          _id: 1,
-          count: 1,
-          uniqueUsers: { $size: '$uniqueUsers' }
-        }
-      },
-      { $sort: { _id: 1 } }
-    ]);
+    const enrollments = mergeWeekly(legacyEnrollTrend, interactiveEnrollTrend);
+    const completions = mergeWeekly(legacyCompleteTrend, interactiveCompleteTrend);
 
     res.json({ registrations, enrollments, completions });
   } catch (error) {

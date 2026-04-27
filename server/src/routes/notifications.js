@@ -6,8 +6,10 @@
 import express from 'express';
 import rateLimit from 'express-rate-limit';
 import Notification from '../models/Notification.js';
+import User from '../models/User.js';
 import { protect } from '../middleware/auth.js';
 import { validate } from '../middleware/validate.js';
+import { sendTestSMS } from '../services/calendarSmsService.js';
 
 const router = express.Router();
 
@@ -170,6 +172,31 @@ router.delete('/:id', protect, async (req, res) => {
     res.json({ message: 'Deleted' });
   } catch (error) {
     res.status(500).json({ error: error.message });
+  }
+});
+
+// ── Test SMS (verify phone number) ──
+router.post('/test-sms', protect, async (req, res) => {
+  try {
+    const { phone } = req.body;
+    if (!phone) return res.status(400).json({ error: 'Phone number is required' });
+
+    const result = await sendTestSMS(phone);
+    if (!result || !result.success) {
+      return res.status(500).json({ error: result?.error || 'Failed to send test SMS' });
+    }
+
+    // Update user phone and verification status
+    await User.findByIdAndUpdate(req.user._id, {
+      phone,
+      smsVerified: true,
+      smsRemindersEnabled: true
+    });
+
+    res.json({ message: 'Test SMS sent successfully', verified: true });
+  } catch (error) {
+    console.error('Test SMS error:', error);
+    res.status(500).json({ error: 'Failed to send test SMS' });
   }
 });
 

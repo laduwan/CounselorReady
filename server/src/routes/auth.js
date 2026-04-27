@@ -204,6 +204,7 @@ router.post('/login', async (req, res) => {
 // Get current user
 router.get('/me', protect, async (req, res) => {
   try {
+    res.set('Cache-Control', 'no-store');
     res.json({ user: req.user.toJSON() });
   } catch (error) {
     console.error('Get user error:', error);
@@ -293,26 +294,31 @@ router.post('/reset-password', async (req, res) => {
     user.passwordResetToken = undefined;
     user.passwordResetExpires = undefined;
     await user.save();
-    
-    await resend.emails.send({
-      from: 'CounselorReady <noreply@counselorready.com>',
-      to: user.email,
-      subject: 'Password Changed - CounselorReady',
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <div style="background: linear-gradient(135deg, #34503d, #6b1d34); padding: 30px; text-align: center;">
-            <h1 style="color: #facc15; margin: 0;">CounselorReady</h1>
+
+    // Send confirmation email (non-blocking — don't fail the reset if email fails)
+    try {
+      await resend.emails.send({
+        from: 'CounselorReady <noreply@counselorready.com>',
+        to: user.email,
+        subject: 'Password Changed - CounselorReady',
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <div style="background: linear-gradient(135deg, #34503d, #6b1d34); padding: 30px; text-align: center;">
+              <h1 style="color: #facc15; margin: 0;">CounselorReady</h1>
+            </div>
+            <div style="padding: 30px; background: #fff;">
+              <h2 style="color: #34503d;">Password Changed Successfully</h2>
+              <p>Hi ${user.profile?.firstName || 'there'},</p>
+              <p>Your password has been successfully changed.</p>
+              <p>If you did not make this change, contact us immediately at support@counselorready.com.</p>
+            </div>
           </div>
-          <div style="padding: 30px; background: #fff;">
-            <h2 style="color: #34503d;">Password Changed Successfully</h2>
-            <p>Hi ${user.profile?.firstName || 'there'},</p>
-            <p>Your password has been successfully changed.</p>
-            <p>If you did not make this change, contact us immediately at support@counselorready.com.</p>
-          </div>
-        </div>
-      `
-    });
-    
+        `
+      });
+    } catch (emailErr) {
+      console.error('Password reset confirmation email failed (non-blocking):', emailErr.message);
+    }
+
     res.json({ message: 'Password reset successful' });
   } catch (error) {
     console.error('Reset password error:', error);
@@ -434,6 +440,108 @@ router.post('/resend-verification', protect, async (req, res) => {
   } catch (error) {
     console.error('Resend verification error:', error);
     res.status(500).json({ error: 'Failed to resend verification email' });
+  }
+});
+
+// GET notification preferences
+router.get('/notification-preferences', protect, async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    res.json({
+      notifications: user.notifications || {},
+      phone: user.phone || user.profile?.phone || null
+    });
+  } catch (error) {
+    console.error('Get notification preferences error:', error);
+    res.status(500).json({ error: 'Failed to get notification preferences' });
+  }
+});
+
+// PUT update-notifications (granular)
+router.put('/update-notifications', protect, async (req, res) => {
+  try {
+    const { email, sms, timing, inApp, unsubscribeAll } = req.body;
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    // Initialize if needed
+    if (!user.notifications) user.notifications = {};
+
+    // Allowlists
+    const emailKeys = ['courseCompleted', 'certificateReady', 'courseReminder', 'ceRenewalReminders', 'ceMilestones', 'lowHoursAlert', 'credentialExpiring', 'insuranceExpiring', 'newCourseAnnouncements', 'promotions', 'platformUpdates', 'weeklyDigest'];
+    const smsKeys = ['enabled', 'ceRenewalReminders', 'lowHoursAlert', 'credentialExpiring', 'insuranceExpiring', 'courseCompleted', 'ceMilestones'];
+    const validReminderDays = [7, 14, 30, 60, 90];
+    const validInsuranceDays = [7, 14, 30, 60];
+
+    // Update email prefs
+    if (email && typeof email === 'object') {
+      if (!user.notifications.email) user.notifications.email = {};
+      for (const key of emailKeys) {
+        if (typeof email[key] === 'boolean') {
+          user.notifications.email[key] = email[key];
+        }
+      }
+    }
+
+    // Update SMS prefs
+    if (sms && typeof sms === 'object') {
+      if (!user.notifications.sms) user.notifications.sms = {};
+      for (const key of smsKeys) {
+        if (typeof sms[key] === 'boolean') {
+          user.notifications.sms[key] = sms[key];
+        }
+      }
+    }
+
+    // Update timing prefs
+    if (timing && typeof timing === 'object') {
+      if (!user.notifications.timing) user.notifications.timing = {};
+      if (Array.isArray(timing.reminderDays)) {
+        const filtered = timing.reminderDays.filter(d => validReminderDays.includes(d));
+        if (filtered.length > 0) user.notifications.timing.reminderDays = filtered;
+      }
+      if (typeof timing.lowHoursThreshold === 'number' && timing.lowHoursThreshold >= 14 && timing.lowHoursThreshold <= 180) {
+        user.notifications.timing.lowHoursThreshold = timing.lowHoursThreshold;
+      }
+      if (Array.isArray(timing.insuranceReminderDays)) {
+        const filtered = timing.insuranceReminderDays.filter(d => validInsuranceDays.includes(d));
+        if (filtered.length > 0) user.notifications.timing.insuranceReminderDays = filtered;
+      }
+      if (timing.quietHoursStart !== undefined) user.notifications.timing.quietHoursStart = timing.quietHoursStart;
+      if (timing.quietHoursEnd !== undefined) user.notifications.timing.quietHoursEnd = timing.quietHoursEnd;
+    }
+
+    // Update inApp prefs
+    if (inApp && typeof inApp === 'object') {
+      if (!user.notifications.inApp) user.notifications.inApp = {};
+      const inAppKeys = ['showBannerAnnouncements', 'showCourseProgress', 'showCeTracker'];
+      for (const key of inAppKeys) {
+        if (typeof inApp[key] === 'boolean') {
+          user.notifications.inApp[key] = inApp[key];
+        }
+      }
+    }
+
+    // Unsubscribe all
+    if (typeof unsubscribeAll === 'boolean') {
+      user.notifications.unsubscribeAll = unsubscribeAll;
+    }
+
+    user.notifications.lastUpdated = new Date();
+
+    // Core fix: Mongoose doesn't auto-detect nested object changes
+    user.markModified('notifications');
+    await user.save();
+
+    res.json({
+      message: 'Notification preferences updated',
+      notifications: user.notifications
+    });
+  } catch (error) {
+    console.error('Update notifications error:', error);
+    res.status(500).json({ error: 'Failed to update notification preferences' });
   }
 });
 

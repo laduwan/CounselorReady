@@ -5,77 +5,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CounselorReady - Professional CE Management</title>
+  <link rel="stylesheet" href="/css/design-tokens.css">
+  <link rel="stylesheet" href="/css/typography.css">
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            burgundy: {
-              50: '#fdf5f6',
-              100: '#fae8eb',
-              200: '#f5d0d6',
-              300: '#eba9b5',
-              400: '#dd768a',
-              500: '#c94d65',
-              600: '#a83350',
-              700: '#8b2542',
-              800: '#6b1d34',
-              900: '#4a1524',
-              950: '#2d0a14'
-            },
-            hunter: {
-              50: '#f5f8f5',
-              100: '#eaf0eb',
-              200: '#d5e1d7',
-              300: '#b5ccb9',
-              400: '#8fb096',
-              500: '#6a9472',
-              600: '#4A7C59',
-              700: '#355E3B',
-              800: '#2D4F33',
-              900: '#1F3825',
-              950: '#121f15'
-            },
-            honey: {
-              50: '#fdf9f0',
-              100: '#f9f0db',
-              200: '#f3e0b5',
-              300: '#eacd86',
-              400: '#D4A855',
-              500: '#c49545',
-              600: '#a67936',
-              700: '#865e2c',
-              800: '#6b4a25',
-              900: '#4d351b'
-            },
-            azure: {
-              50: '#f0f7ff',
-              100: '#e0effe',
-              200: '#bae0fd',
-              300: '#7dc8fb',
-              400: '#38aaf6',
-              500: '#0e8fe7',
-              600: '#0270c5',
-              700: '#0359a0',
-              800: '#074b84',
-              900: '#0c406e'
-            },
-            navy: {
-              700: '#284157',
-            }
-          },
-          fontFamily: {
-            'display': ['Cormorant Garamond', 'Georgia', 'serif'],
-            'body': ['Lato', 'system-ui', 'sans-serif']
-          }
-        }
-      }
-    }
-  </script>
+  <script src="/js/tailwind-config.js"></script>
+  
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700&family=Lato:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
   <style>
     body { 
       font-family: 'Lato', system-ui, sans-serif; 
@@ -137,6 +74,7 @@
         <a href="#features" class="text-hunter-700 hover:text-hunter-500 text-sm font-medium tracking-wide transition-colors">Features</a>
         <a href="#pricing" class="text-hunter-700 hover:text-hunter-500 text-sm font-medium tracking-wide transition-colors">Pricing</a>
         <a href="/about.html" class="text-hunter-700 hover:text-hunter-500 text-sm font-medium tracking-wide transition-colors">About</a>
+        <a href="/tools/index.html" class="text-hunter-700 hover:text-hunter-500 text-sm font-medium tracking-wide transition-colors">Free Tools</a>
       </nav>
       <div class="flex items-center gap-4">
        <a href="/login.html" class="text-hunter-700 hover:text-hunter-500 text-sm font-medium transition-colors">Sign in</a>
@@ -182,8 +120,66 @@
           Learn more
         </a>
       </div>
-      
+      <div class="mt-6 flex justify-center">
+        <a href="/tools/index.html" class="inline-flex items-center gap-2 text-sm font-semibold px-5 py-2.5 rounded-full border-2 border-hunter-600 text-hunter-700 hover:bg-hunter-50 transition-all" style="background: rgba(74,124,89,0.07);">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+          Free Clinical Tools — No account needed
+        </a>
+      </div>
+
       <p class="mt-6 text-sm text-hunter-600/70">No credit card required • Cancel anytime</p>
+    </div>
+  </section>
+
+  <!-- NBCC Approval Trust Strip -->
+  <section style="background:#F8F7F4;border-top:1px solid rgba(107,29,52,0.15);border-bottom:1px solid rgba(107,29,52,0.15);padding:24px 20px;">
+    <div style="max-width:1152px;margin:0 auto;">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap;">
+        <div style="display:flex;align-items:center;gap:16px;">
+          <img src="/images/nbcc-acep-logo.jpg" alt="NBCC Approved Continuing Education Provider" style="width:76px;height:76px;object-fit:contain;flex-shrink:0;" onerror="this.style.display='none'">
+          <div>
+            <p style="font-family:'Cormorant Garamond',Georgia,serif;font-size:18px;font-weight:600;color:#4A7C59;margin:0;line-height:1.2;">NBCC Approved Continuing Education Provider</p>
+            <p style="font-size:13px;color:#284157;margin:4px 0 0;">
+              <span style="font-weight:600;color:#6B1D34;">ACEP #7760</span>
+              <span style="margin:0 8px;opacity:0.4;">·</span>
+              <span>GA Integrated Therapeutic Perspectives LLC</span>
+            </p>
+          </div>
+        </div>
+        <nav style="display:flex;align-items:center;gap:14px;font-size:13px;color:#284157;flex-shrink:0;flex-wrap:wrap;justify-content:center;">
+          <a href="/refund-policy.html" style="color:#284157;text-decoration:none;">Refund Policy</a>
+          <span style="opacity:0.3;">|</span>
+          <a href="/complaint-resolution.html" style="color:#284157;text-decoration:none;">Complaint Process</a>
+          <span style="opacity:0.3;">|</span>
+          <a href="/ada-accommodations.html" style="color:#284157;text-decoration:none;">ADA Accommodations</a>
+        </nav>
+      </div>
+    </div>
+  </section>
+  <!-- /NBCC Approval Trust Strip -->
+
+  <!-- Social Proof Bar -->
+  <section class="py-8 px-4 bg-burgundy-950">
+    <div class="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-center gap-8 md:gap-16 text-center">
+      <div>
+        <p class="font-display text-2xl font-semibold text-honey-400">NBCC ACEP #7760</p>
+        <p class="text-burgundy-200 text-sm mt-1">Approved CE Provider</p>
+      </div>
+      <div class="hidden md:block w-px h-10 bg-burgundy-700"></div>
+      <div>
+        <p class="font-display text-2xl font-semibold text-white">500+</p>
+        <p class="text-burgundy-200 text-sm mt-1">Counselors Trust Us</p>
+      </div>
+      <div class="hidden md:block w-px h-10 bg-burgundy-700"></div>
+      <div>
+        <p class="font-display text-2xl font-semibold text-white">2,000+</p>
+        <p class="text-burgundy-200 text-sm mt-1">CE Hours Delivered</p>
+      </div>
+      <div class="hidden md:block w-px h-10 bg-burgundy-700"></div>
+      <div>
+        <p class="font-display text-2xl font-semibold text-white">50 States</p>
+        <p class="text-burgundy-200 text-sm mt-1">Credential Tracking</p>
+      </div>
     </div>
   </section>
 
@@ -461,6 +457,71 @@
     </script>
   </section>
 
+  <!-- Testimonials -->
+  <section class="py-24 px-4 bg-stone-50">
+    <div class="max-w-5xl mx-auto">
+      <div class="text-center mb-16">
+        <span class="text-honey-600 font-medium text-sm tracking-widest uppercase">Testimonials</span>
+        <h2 class="font-display text-3xl md:text-4xl font-semibold text-burgundy-950 mt-3 mb-4">
+          What counselors are saying
+        </h2>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- Testimonial 1 -->
+        <div class="bg-white rounded-2xl p-8 shadow-sm border border-gray-100">
+          <div class="flex items-center gap-1 mb-4">
+            <svg class="w-5 h-5 text-honey-500" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+            <svg class="w-5 h-5 text-honey-500" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+            <svg class="w-5 h-5 text-honey-500" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+            <svg class="w-5 h-5 text-honey-500" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+            <svg class="w-5 h-5 text-honey-500" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+          </div>
+          <p class="text-hunter-700 text-base leading-relaxed mb-6">
+            "I used to track my CEs in a spreadsheet and pray I didn't miss a deadline. CounselorReady sends me reminders and keeps everything organized. I actually feel confident at renewal time now."
+          </p>
+          <div>
+            <p class="font-display font-semibold text-burgundy-950">Sarah M.</p>
+            <p class="text-hunter-600 text-sm">Licensed Professional Counselor, TX</p>
+          </div>
+        </div>
+        <!-- Testimonial 2 -->
+        <div class="bg-white rounded-2xl p-8 shadow-sm border border-gray-100">
+          <div class="flex items-center gap-1 mb-4">
+            <svg class="w-5 h-5 text-honey-500" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+            <svg class="w-5 h-5 text-honey-500" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+            <svg class="w-5 h-5 text-honey-500" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+            <svg class="w-5 h-5 text-honey-500" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+            <svg class="w-5 h-5 text-honey-500" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+          </div>
+          <p class="text-hunter-700 text-base leading-relaxed mb-6">
+            "The courses are interactive and actually engaging — not the boring slide decks I'm used to. Plus, the certificates auto-upload to my vault. Such a time saver for multi-state licenses."
+          </p>
+          <div>
+            <p class="font-display font-semibold text-burgundy-950">James R.</p>
+            <p class="text-hunter-600 text-sm">Licensed Clinical Social Worker, GA &amp; FL</p>
+          </div>
+        </div>
+        <!-- Testimonial 3 -->
+        <div class="bg-white rounded-2xl p-8 shadow-sm border border-gray-100">
+          <div class="flex items-center gap-1 mb-4">
+            <svg class="w-5 h-5 text-honey-500" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+            <svg class="w-5 h-5 text-honey-500" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+            <svg class="w-5 h-5 text-honey-500" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+            <svg class="w-5 h-5 text-honey-500" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+            <svg class="w-5 h-5 text-honey-500" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+          </div>
+          <p class="text-hunter-700 text-base leading-relaxed mb-6">
+            "As someone licensed in three states, keeping track of different renewal dates was a nightmare. The credential tracker with deadline reminders is a game-changer. Worth every penny."
+          </p>
+          <div>
+            <p class="font-display font-semibold text-burgundy-950">Dr. Angela T.</p>
+            <p class="text-hunter-600 text-sm">Licensed Marriage &amp; Family Therapist, CA, NV &amp; AZ</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- Pricing -->
   <section id="pricing" class="py-24 px-4 bg-stone-50">
     <div class="max-w-6xl mx-auto">
@@ -600,8 +661,6 @@
       </div>
     </div>
   </section>
-  
-
 
   <!-- Testimonial / Trust -->
   <section class="py-20 px-4 bg-white border-t border-hunter-100">
@@ -642,49 +701,7 @@
   </section>
 
   <!-- Footer -->
-  <footer class="py-16 px-4 bg-hunter-900">
-    <div class="max-w-6xl mx-auto">
-      <div class="flex flex-col md:flex-row justify-between items-center gap-8 mb-8">
-        <div class="flex items-center gap-3">
-          <div class="w-11 h-11 rounded-xl flex items-center justify-center shadow-lg" style="background: linear-gradient(135deg, #8b2542, #6b1d34);">
-            <span class="font-display font-bold text-xl" style="position: relative; display: inline-block; width: 28px; height: 28px;"><span style="color: #D4A855; position: absolute; top: -4px; left: 0;">C</span><span style="color: #4A7C59; position: absolute; top: 6px; left: 8px;">R</span></span>
-          </div>
-          <span class="font-display font-semibold text-2xl">
-            <span class="text-white">Counselor</span><span class="text-honey-300">Ready</span>
-          </span>
-        </div>
-        <nav class="flex items-center gap-8">
-          <a href="#features" class="text-hunter-300 hover:text-white text-sm transition-colors">Features</a>
-          <a href="#pricing" class="text-hunter-300 hover:text-white text-sm transition-colors">Pricing</a>
-          <a href="/about.html" class="text-hunter-300 hover:text-white text-sm transition-colors">About</a>
-          <a href="/help.html" class="text-hunter-300 hover:text-white text-sm transition-colors">Help</a>
-          <a href="mailto:support@counselorready.com" class="text-hunter-300 hover:text-white text-sm transition-colors">Contact</a>
-        </nav>
-      </div>
-      
-      <!-- NBCC Badge and ACEP Disclosure -->
-      <div class="border-t border-hunter-700 py-8 mb-6">
-        <div class="flex flex-col md:flex-row items-center justify-center gap-6 mb-6">
-          <img src="/images/nbcc-acep-logo.jpg" alt="NBCC Approved Continuing Education Provider" class="h-20 w-auto">
-          <div class="text-center md:text-left">
-            <p class="text-white font-semibold text-sm">NBCC Approved Provider</p>
-            <p class="text-burgundy-300 text-sm">ACEP #7760</p>
-          </div>
-        </div>
-        <p class="text-burgundy-400 text-xs leading-relaxed text-center max-w-4xl mx-auto">
-          CounselorReady is operated by Ga Integrated Therapeutic Perspectives LLC, an NBCC Approved Continuing Education Provider (ACEP #7760). Programs that do not qualify for NBCC credit are clearly identified. Ga Integrated Therapeutic Perspectives LLC is solely responsible for all aspects of the programs. NCMHCE® is a registered trademark of the National Board for Certified Counselors, Inc. (NBCC). CounselorReady is not affiliated with, endorsed by, or sponsored by NBCC.
-        </p>
-      </div>
-      
-      <div class="border-t border-burgundy-800 pt-6 flex flex-col md:flex-row justify-between items-center gap-4">
-        <p class="text-burgundy-400 text-sm">© 2025 CounselorReady. All rights reserved.</p>
-        <div class="flex items-center gap-6">
-          <a href="/privacy.html" class="text-burgundy-400 hover:text-white text-sm transition-colors">Privacy Policy</a>
-          <a href="/terms.html" class="text-burgundy-400 hover:text-white text-sm transition-colors">Terms of Service</a>
-          <a href="/refund-policy.html" class="text-burgundy-400 hover:text-white text-sm transition-colors">Refund Policy</a>
-        </div>
-      </div>
-    </div>
-  </footer>
+<script src="/shared/nav-footer.js"></script>
+<div id="cr-footer"></div>
 </body>
 </html>

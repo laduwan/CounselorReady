@@ -5,39 +5,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Settings | CounselorReady</title>
-  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            burgundy: {
-              50: '#fdf5f6', 100: '#fae8eb', 200: '#f5d0d6', 300: '#eba9b5',
-              400: '#dd768a', 500: '#c94d65', 600: '#a83350', 700: '#8b2542',
-              800: '#6b1d34', 900: '#4a1524', 950: '#2d0a14'
-            },
-            forest: {
-              50: '#f3f6f4', 100: '#e3ebe5', 200: '#c8d7cc', 300: '#a1bba8',
-              400: '#759a7f', 500: '#547c5f', 600: '#4A7C59', 700: '#34503d',
-              800: '#2b4133', 900: '#1f3025', 950: '#121c16'
-            },
-            gold: {
-              50: '#fdf9f0', 100: '#f9f0db', 200: '#f3e0b5', 300: '#eacd86',
-              400: '#D4A855', 500: '#c49545', 600: '#a67936', 700: '#865e2c',
-              800: '#6b4a25', 900: '#4d351b'
-            }
-          },
-          fontFamily: {
-            'display': ['Cormorant Garamond', 'Georgia', 'serif'],
-            'body': ['Lato', 'system-ui', 'sans-serif']
-          }
-        }
-      }
-    }
-  </script>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Lato:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="/js/tailwind-config.js"></script>
   <style>
     :root {
       --burgundy: #6B1D34;
@@ -47,12 +17,12 @@
       --honey: #D4A855;
       --honey-light: #E4C475;
       --navy: #284157;
-      --navy-light: #3A5470;
+      --navy-light: #4A6580;
       --moss-600: #4A7C59;
       --moss-700: #3D6A4A;
       --dustyrose-600: #8B2542;
       --dustyrose-700: #6B1D34;
-      --bg: #fafaf9;
+      --bg: #F8F7F4;
       --card-bg: #FFFFFF;
       --border: #E5E2DC;
       --text-primary: #2C2C2C;
@@ -74,7 +44,50 @@
       color: var(--text-primary);
       line-height: 1.6;
     }
-    .font-display { font-family: 'Cormorant Garamond', Georgia, serif; }
+
+    /* -- Navigation Bar -- */
+    .navbar {
+      background: linear-gradient(135deg, var(--burgundy) 0%, var(--burgundy-light) 100%);
+      padding: 0 2rem;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 2px 8px rgba(107, 29, 52, 0.2);
+    }
+    .navbar-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+    }
+    .logo-mark {
+      width: 42px; height: 42px;
+      background: linear-gradient(145deg, #7d2340, #5a1829);
+      border: 1.5px solid rgba(255,255,255,0.15);
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      position: relative;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+    .logo-mark .c { color: #D0768A; font-family: 'Cormorant Garamond', Georgia, serif; font-weight: 700; font-size: 19px; position: absolute; top: 6px; left: 9px; }
+    .logo-mark .r { color: #4A7C59; font-family: 'Cormorant Garamond', Georgia, serif; font-weight: 700; font-size: 16px; position: absolute; top: 13px; left: 15px; }
+    .navbar-title {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 1.4rem;
+      letter-spacing: 0.01em;
+    }
+    .navbar-title .counselor { color: #D0768A; font-weight: 700; }
+    .navbar-title .ready { color: #7EB88E; font-weight: 700; }
+    .navbar-links {
+      display: flex; align-items: center; gap: 1.25rem;
+    }
+    .navbar-links a {
+      color: rgba(255,255,255,0.8); text-decoration: none;
+      font-size: 0.9rem; font-weight: 500;
+      transition: color 0.2s;
+    }
+    .navbar-links a:hover, .navbar-links a.active { color: #fff; }
 
     /* -- Page Layout -- */
     .page-container {
@@ -86,7 +99,7 @@
       margin-bottom: 2rem;
     }
     .page-header h1 {
-      font-family: 'Cormorant Garamond', serif;
+      font-family: 'Cormorant Garamond', Georgia, serif;
       font-size: 1.75rem;
       color: var(--burgundy);
       margin-bottom: 0.25rem;
@@ -96,29 +109,35 @@
       font-size: 0.95rem;
     }
 
-    /* Settings Tabs */
+    /* -- Settings Tabs -- */
     .settings-tabs {
       display: flex;
-      gap: 0.5rem;
-      margin-bottom: 1.5rem;
-      border-bottom: 2px solid var(--border);
-      padding-bottom: 0;
+      gap: 6px;
+      margin-bottom: 2rem;
+      background: #F0EDEA;
+      border-radius: 12px;
+      padding: 4px;
+      width: fit-content;
     }
     .settings-tab {
-      padding: 0.6rem 1.25rem;
-      border: none;
-      background: none;
+      padding: 10px 24px;
       font-size: 0.9rem;
       font-weight: 600;
-      font-family: inherit;
+      font-family: 'Lato', sans-serif;
       color: var(--text-secondary);
+      background: none;
+      border: none;
       cursor: pointer;
-      border-bottom: 2px solid transparent;
-      margin-bottom: -2px;
-      transition: color 0.2s, border-color 0.2s;
+      border-radius: 10px;
+      transition: all 0.2s;
+      letter-spacing: 0.01em;
     }
-    .settings-tab:hover { color: var(--navy); }
-    .settings-tab.active { color: var(--navy); border-bottom-color: var(--hunter); }
+    .settings-tab:hover { color: var(--burgundy); background: rgba(255,255,255,0.6); }
+    .settings-tab.active {
+      color: var(--burgundy);
+      background: #fff;
+      box-shadow: 0 1px 4px rgba(107,29,52,0.1);
+    }
 
     /* -- Cards -- */
     .card {
@@ -147,9 +166,9 @@
     .card-header-icon.honey { background: #FFFBEB; color: #B8860B; }
     .card-header-icon.navy { background: #EFF6FF; color: var(--navy); }
     .card-header h2 {
-      font-family: 'Cormorant Garamond', serif;
+      font-family: 'Cormorant Garamond', Georgia, serif;
       font-size: 1.1rem;
-      color: var(--navy);
+      color: var(--text-primary);
     }
     .card-header p {
       font-size: 0.85rem;
@@ -172,7 +191,7 @@
     }
     .toggle-row:hover {
       border-color: #C5C0B8;
-      background: #FAFAF8;
+      background: #F8F7F4;
     }
     .toggle-row.active {
       border-color: var(--hunter);
@@ -197,7 +216,7 @@
     .toggle-icon.alert { background: #FFF7ED; color: #EA580C; }
     .toggle-icon.milestone { background: #FFFBEB; color: #B8860B; }
     .toggle-icon.progress { background: #FDF2F8; color: var(--burgundy); }
-    .toggle-label { font-weight: 600; color: var(--navy); font-size: 0.95rem; }
+    .toggle-label { font-weight: 600; color: var(--text-primary); font-size: 0.95rem; }
     .toggle-desc { font-size: 0.82rem; color: var(--text-secondary); margin-top: 2px; }
     .toggle-switch {
       position: relative;
@@ -250,7 +269,7 @@
       display: block;
       font-weight: 600;
       font-size: 0.88rem;
-      color: var(--navy);
+      color: var(--text-primary);
       margin-bottom: 0.4rem;
     }
     .form-input {
@@ -323,7 +342,7 @@
       align-items: center;
       gap: 0.6rem;
       padding: 0.65rem 0.85rem;
-      background: #FAFAF8;
+      background: #F8F7F4;
       border-radius: 8px;
       font-size: 0.85rem;
       color: var(--text-secondary);
@@ -400,7 +419,7 @@
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.8px;
-      color: var(--navy);
+      color: var(--text-muted);
     }
     .section-divider::after {
       content: '';
@@ -421,66 +440,41 @@
       .navbar-links { gap: 0.75rem; }
       .navbar-links a { font-size: 0.82rem; }
     }
+  
+    /* Shared nav styles */
+    .dd{display:none;position:absolute;top:100%;margin-top:6px;background:#fff;border-radius:10px;box-shadow:0 10px 40px rgba(107,29,52,.12);border:1px solid #FAE8EB;z-index:50;padding:6px 0;min-width:210px}
+    .dd.open{display:block}
+    .dd a{display:flex;align-items:center;gap:10px;padding:8px 16px;font-size:13px;color:#284157;text-decoration:none;transition:background .1s}
+    .dd a:hover{background:#F2F7F4}
+    .ov{display:none;position:fixed;inset:0;z-index:40}.ov.open{display:block}
+    .nav-link{padding:6px 12px;border-radius:6px;font-size:13px;font-weight:500;color:#57534e;text-decoration:none;display:flex;align-items:center;gap:4px;transition:all .15s}
+    .nav-link:hover{color:#6B1D34;background:#FDF5F7}
+    .nav-link.active{color:#6B1D34;background:#FDF5F7;font-weight:600;border-bottom:2px solid #6B1D34}
   </style>
 </head>
 <body>
 
-  <!-- Header -->
-  <header class="bg-white border-b border-stone-200 sticky top-0 z-50">
-    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-      <a href="/" class="flex items-center gap-3" style="text-decoration:none">
-        <div class="w-10 h-10 rounded-xl flex items-center justify-center shadow-md" style="background: linear-gradient(135deg, #8b2542, #6b1d34);">
-          <span class="font-display font-bold text-lg" style="position: relative; display: inline-block; width: 22px; height: 22px;"><span style="color: #D4A855; position: absolute; top: -3px; left: 0;">C</span><span style="color: #4A7C59; position: absolute; top: 5px; left: 6px;">R</span></span>
-        </div>
-        <span class="font-display font-semibold text-xl">
-          <span class="text-burgundy-800">Counselor</span><span class="text-hunter-600">Ready</span>
-        </span>
-      </a>
-
-      <nav class="hidden md:flex items-center gap-8">
-        <a href="/dashboard.html" class="text-forest-500 hover:text-forest-700 transition-colors" style="text-decoration:none">Dashboard</a>
-        <a href="/courses.html" class="text-forest-500 hover:text-forest-700 transition-colors" style="text-decoration:none">Courses</a>
-        <a href="/credentials.html" class="text-forest-500 hover:text-forest-700 transition-colors" style="text-decoration:none">Credentials</a>
-        <a href="/certificates.html" class="text-forest-500 hover:text-forest-700 transition-colors" style="text-decoration:none">CE Certificates</a>
-        <a href="/settings.html" class="text-forest-700 font-medium border-b-2 border-forest-600 pb-1" style="text-decoration:none">Settings</a>
-      </nav>
-
-      <div class="flex items-center gap-4">
-        <button onclick="toggleUserMenu()" class="flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-forest-50 transition-colors">
-          <div class="w-8 h-8 bg-burgundy-100 rounded-full flex items-center justify-center">
-            <span id="userInitial" class="text-burgundy-700 font-semibold text-sm">?</span>
-          </div>
-          <svg class="w-4 h-4 text-forest-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-          </svg>
-        </button>
-        <div id="userMenu" class="hidden absolute right-6 top-16 bg-white rounded-xl shadow-xl border border-burgundy-100 py-2 w-48 z-50">
-          <a href="/settings.html" class="block px-4 py-2 text-forest-700 hover:bg-forest-50 transition-colors" style="text-decoration:none">Settings</a>
-          <a href="/subscription.html" class="block px-4 py-2 text-forest-700 hover:bg-forest-50 transition-colors" style="text-decoration:none">Subscription</a>
-          <hr class="my-2 border-burgundy-100">
-          <button onclick="logout()" class="w-full text-left px-4 py-2 text-burgundy-700 hover:bg-burgundy-50 transition-colors">Sign Out</button>
-        </div>
-      </div>
-    </div>
-  </header>
+  <!-- Navigation -->
+  <div id="cr-header"></div>
+  <script src="/shared/nav-footer.js"></script>
 
   <div class="page-container">
     <!-- Page Header -->
-    <div class="page-header">
+    <div class="page-header" style="display:flex;align-items:baseline;gap:12px;margin-bottom:2rem">
       <h1>Settings</h1>
-      <p>Manage your account, notification preferences, and subscription</p>
+      <span style="color:#D4A855;font-size:13px;letter-spacing:0.03em">Account &middot; Notifications &middot; Billing</span>
     </div>
 
     <!-- Settings Tabs -->
     <div class="settings-tabs">
       <button class="settings-tab active" data-tab="notifications" onclick="switchTab('notifications')">
-        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align:-2px;margin-right:5px;"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>Notifications
+        Notifications
       </button>
       <button class="settings-tab" data-tab="profile" onclick="switchTab('profile')">
-        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align:-2px;margin-right:5px;"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Profile
+        Profile
       </button>
       <button class="settings-tab" data-tab="account" onclick="switchTab('account')">
-        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align:-2px;margin-right:5px;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>Account
+         Account
       </button>
     </div>
 
@@ -560,7 +554,7 @@
                 <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
               </div>
               <div>
-                <div class="toggle-label">SMS Reminders <span class="vip-badge">... VIP</span></div>
+                <div class="toggle-label">SMS Reminders <span class="vip-badge">2605 VIP</span></div>
                 <div class="toggle-desc">Text message alerts for upcoming credential deadlines</div>
               </div>
             </div>
@@ -580,7 +574,7 @@
               </div>
               <div>
                 <div class="toggle-label">Weekly Progress Summary</div>
-                <div class="toggle-desc">Every Monday " see your CE progress across all credentials</div>
+                <div class="toggle-desc">Every Monday — see your CE progress across all credentials</div>
               </div>
             </div>
             <div class="toggle-switch">
@@ -674,7 +668,7 @@
           </div>
           <p style="margin-top: 1rem; font-size: 0.84rem; color: var(--text-secondary);">
             These reminders are sent automatically based on the expiration dates in your 
-            <a href="/credentials.html" style="color: var(--hunter); font-weight: 600; text-decoration: none;">Credentials</a> page. 
+            <a href="/credentials" style="color: var(--hunter); font-weight: 600; text-decoration: none;">Credentials</a> page. 
             Keep your license dates updated for accurate reminders.
           </p>
         </div>
@@ -685,11 +679,11 @@
         <div class="card-body" style="padding: 1rem 1.5rem;">
           <div class="tracker-banner">
             <div class="tracker-banner-text">
-              <svg width="22" height="22" fill="none" stroke="#4A7C59" stroke-width="1.75" viewBox="0 0 24 24" style="flex-shrink:0;"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>
+              <span></span>
               <p>Want to see a <strong>preview of your upcoming reminders</strong> and manage detailed CE tracking? Visit the CE Tracker on your dashboard.</p>
             </div>
             <a href="/dashboard#ce-tracker" class="btn-secondary" style="white-space: nowrap; text-decoration: none;">
-              Open CE Tracker &rarr;
+              Open CE Tracker →
             </a>
           </div>
         </div>
@@ -715,37 +709,134 @@
           </div>
           <div>
             <h2>Profile Information</h2>
-            <p>Manage your personal details and professional info</p>
+            <p>Your name, location, and contact details</p>
           </div>
         </div>
         <div class="card-body">
-          <p style="color: var(--text-secondary); font-size: 0.92rem;">
-            Profile settings are managed on your existing profile page. 
-            <a href="/profile" style="color: var(--hunter); font-weight: 600;">Go to Profile &rarr;</a>
-          </p>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
+            <div class="form-group">
+              <label class="form-label">First Name</label>
+              <input type="text" class="form-input" id="prof-firstName" placeholder="First name">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Last Name</label>
+              <input type="text" class="form-input" id="prof-lastName" placeholder="Last name">
+            </div>
+          </div>
+          <div class="form-group" style="margin-bottom:20px">
+            <label class="form-label">Name on Certificate</label>
+            <input type="text" class="form-input" id="prof-certificateName" placeholder="e.g. Dr. Jane M. Doe, LPC, NCC" maxlength="200">
+            <p style="margin-top:6px;font-size:13px;color:#6b6b66">Name as it should appear on your CE certificates. Match your license name to ensure board acceptance. Leave blank to use your first and last name.</p>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
+            <div class="form-group">
+              <label class="form-label">Email</label>
+              <input type="email" class="form-input" id="prof-email" disabled style="background:#f3f3f0;cursor:not-allowed">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Phone</label>
+              <input type="tel" class="form-input" id="prof-phone" placeholder="(555) 555-5555">
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
+            <div class="form-group">
+              <label class="form-label">Primary State (for CE requirements)</label>
+              <select class="form-input" id="prof-state">
+                <option value="">Select state...</option>
+                <option>AL</option><option>AK</option><option>AZ</option><option>AR</option><option>CA</option><option>CO</option><option>CT</option><option>DE</option><option>FL</option><option>GA</option><option>HI</option><option>ID</option><option>IL</option><option>IN</option><option>IA</option><option>KS</option><option>KY</option><option>LA</option><option>ME</option><option>MD</option><option>MA</option><option>MI</option><option>MN</option><option>MS</option><option>MO</option><option>MT</option><option>NE</option><option>NV</option><option>NH</option><option>NJ</option><option>NM</option><option>NY</option><option>NC</option><option>ND</option><option>OH</option><option>OK</option><option>OR</option><option>PA</option><option>RI</option><option>SC</option><option>SD</option><option>TN</option><option>TX</option><option>UT</option><option>VT</option><option>VA</option><option>WA</option><option>WV</option><option>WI</option><option>WY</option><option>DC</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Timezone</label>
+              <select class="form-input" id="prof-timezone">
+                <option value="America/New_York">Eastern (ET)</option>
+                <option value="America/Chicago">Central (CT)</option>
+                <option value="America/Denver">Mountain (MT)</option>
+                <option value="America/Los_Angeles">Pacific (PT)</option>
+                <option value="America/Anchorage">Alaska (AKT)</option>
+                <option value="Pacific/Honolulu">Hawaii (HT)</option>
+              </select>
+            </div>
+          </div>
+          <button class="btn-primary" onclick="saveProfile()" id="profileSaveBtn">Save Profile</button>
         </div>
       </div>
     </div>
 
-    <!-- -- -->
-    <!-- ACCOUNT TAB (placeholder)              -->
-    <!-- -- -->
+    <!-- ACCOUNT TAB -->
     <div class="tab-panel" id="tab-account">
-      <div class="card">
+      <!-- Change Password -->
+      <div class="card" style="margin-bottom:20px">
         <div class="card-header">
           <div class="card-header-icon burgundy">
             <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
           </div>
           <div>
-            <h2>Account & Security</h2>
-            <p>Password, subscription, and account management</p>
+            <h2>Change Password</h2>
+            <p>Update your account password</p>
           </div>
         </div>
         <div class="card-body">
-          <p style="color: var(--text-secondary); font-size: 0.92rem;">
-            Manage your password and subscription on the 
-            <a href="/subscription.html" style="color: var(--hunter); font-weight: 600;">Subscription page &rarr;</a>
-          </p>
+          <div class="form-group" style="margin-bottom:16px">
+            <label class="form-label">Current Password</label>
+            <input type="password" class="form-input" id="pw-current" placeholder="Enter current password">
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
+            <div class="form-group">
+              <label class="form-label">New Password</label>
+              <input type="password" class="form-input" id="pw-new" placeholder="At least 8 characters">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Confirm New Password</label>
+              <input type="password" class="form-input" id="pw-confirm" placeholder="Repeat new password">
+            </div>
+          </div>
+          <p id="pw-error" style="color:#dc2626;font-size:13px;margin-bottom:12px;display:none"></p>
+          <button class="btn-primary" onclick="changePassword()" id="pwSaveBtn">Update Password</button>
+        </div>
+      </div>
+
+      <!-- Subscription -->
+      <div class="card" style="margin-bottom:20px">
+        <div class="card-header">
+          <div class="card-header-icon" style="background:var(--success-bg);color:var(--success-text)">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          </div>
+          <div>
+            <h2>Subscription</h2>
+            <p id="acct-plan-desc">Manage your plan and billing</p>
+          </div>
+        </div>
+        <div class="card-body">
+          <div style="display:flex;align-items:center;gap:16px;margin-bottom:16px">
+            <div>
+              <span style="font-weight:700;color:var(--burgundy);font-size:1.1rem" id="acct-plan-name">Loading...</span>
+              <span id="acct-plan-badge" style="display:inline-block;margin-left:8px;padding:2px 10px;border-radius:20px;font-size:11px;font-weight:600;background:var(--success-bg);color:var(--success-text)"></span>
+            </div>
+          </div>
+          <a href="/subscription.html" style="color:var(--hunter);font-weight:600;font-size:14px;text-decoration:none">Manage Subscription →</a>
+        </div>
+      </div>
+
+      <!-- Delete Account -->
+      <div class="card" style="border-color:#fca5a5">
+        <div class="card-header">
+          <div class="card-header-icon" style="background:#FEF2F2;color:#991B1B">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+          </div>
+          <div>
+            <h2 style="color:#991B1B">Delete Account</h2>
+            <p>Permanently delete your account and all data</p>
+          </div>
+        </div>
+        <div class="card-body">
+          <p style="color:var(--text-secondary);font-size:13px;margin-bottom:16px">This action cannot be undone. All your courses, certificates, credentials, and CE records will be permanently removed.</p>
+          <div id="delete-confirm-section" style="display:none;margin-bottom:16px">
+            <label class="form-label" style="color:#991B1B">Type your email to confirm</label>
+            <input type="email" class="form-input" id="delete-email" placeholder="your@email.com" style="border-color:#fca5a5;margin-bottom:12px">
+            <button onclick="deleteAccount()" style="background:#991B1B;color:#fff;border:none;padding:10px 20px;border-radius:10px;font-weight:600;font-size:14px;cursor:pointer">Permanently Delete My Account</button>
+          </div>
+          <button onclick="document.getElementById('delete-confirm-section').style.display='block';this.style.display='none'" style="background:none;border:1px solid #fca5a5;color:#991B1B;padding:8px 16px;border-radius:10px;font-weight:600;font-size:13px;cursor:pointer" id="delete-show-btn">Delete Account...</button>
         </div>
       </div>
     </div>
@@ -759,22 +850,8 @@
   </div>
 
   <script>
-    // User menu
-    function toggleUserMenu() {
-      document.getElementById('userMenu').classList.toggle('hidden');
-    }
-    document.addEventListener('click', (e) => {
-      if (!e.target.closest('button') && !e.target.closest('#userMenu')) {
-        document.getElementById('userMenu')?.classList.add('hidden');
-      }
-    });
-    function logout() {
-      localStorage.removeItem('token');
-      window.location.href = '/login.html';
-    }
-
-    const API_BASE = window.location.hostname === 'localhost'
-      ? 'http://localhost:5000/api'
+    const API_BASE = window.location.hostname === 'localhost' 
+      ? 'http://localhost:5000/api' 
       : 'https://api.counselorready.com/api';
 
     // -- Tab Switching --
@@ -801,101 +878,221 @@
         const input = row.querySelector('input[type="checkbox"]');
         if (input && input.checked) row.classList.add('active');
       });
-      loadNotificationSettings();
+      loadAllSettings();
     });
 
-    // -- Load Settings from API --
-    async function loadNotificationSettings() {
-      try {
-        const token = localStorage.getItem('token');
-        if (!token) return;
-
-        const res = await fetch(`${API_BASE}/auth/me`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        if (!res.ok) return;
-
-        const data = await res.json();
-        const user = data.user || data;
-
-        // Populate contact info
-        if (user.email) document.getElementById('notif-email').value = user.email;
-        if (user.phone) document.getElementById('notif-phone').value = user.phone;
-
-        // Populate notification prefs if they exist
-        const prefs = user.notificationPreferences || user.notifications || {};
-        if (typeof prefs.emailReminders === 'boolean') {
-          document.getElementById('toggle-email').checked = prefs.emailReminders;
-          updateToggleRow('row-email', prefs.emailReminders);
-        }
-        if (typeof prefs.smsReminders === 'boolean') {
-          document.getElementById('toggle-sms').checked = prefs.smsReminders;
-          updateToggleRow('row-sms', prefs.smsReminders);
-        }
-        if (typeof prefs.weeklyProgress === 'boolean') {
-          document.getElementById('toggle-weekly').checked = prefs.weeklyProgress;
-          updateToggleRow('row-weekly', prefs.weeklyProgress);
-        }
-        if (typeof prefs.fallingBehindAlert === 'boolean') {
-          document.getElementById('toggle-alert').checked = prefs.fallingBehindAlert;
-          updateToggleRow('row-alert', prefs.fallingBehindAlert);
-        }
-        if (typeof prefs.ceMilestones === 'boolean') {
-          document.getElementById('toggle-milestone').checked = prefs.ceMilestones;
-          updateToggleRow('row-milestone', prefs.ceMilestones);
-        }
-        if (typeof prefs.courseProgressReminders === 'boolean') {
-          document.getElementById('toggle-progress').checked = prefs.courseProgressReminders;
-          updateToggleRow('row-progress', prefs.courseProgressReminders);
-        }
-      } catch (err) {
-        console.error('Failed to load notification settings:', err);
-      }
-    }
-
-    // -- Save Settings to API --
+    // -- Save Notification Settings --
     async function saveNotificationSettings() {
       const payload = {
-        phone: document.getElementById('notif-phone').value,
-        notificationPreferences: {
-          emailReminders: document.getElementById('toggle-email').checked,
-          smsReminders: document.getElementById('toggle-sms').checked,
-          weeklyProgress: document.getElementById('toggle-weekly').checked,
-          fallingBehindAlert: document.getElementById('toggle-alert').checked,
-          ceMilestones: document.getElementById('toggle-milestone').checked,
-          courseProgressReminders: document.getElementById('toggle-progress').checked,
-        }
+        emailReminders: document.getElementById('toggle-email').checked,
+        smsReminders: document.getElementById('toggle-sms').checked,
+        weeklyProgress: document.getElementById('toggle-weekly').checked,
+        fallingBehindAlert: document.getElementById('toggle-alert').checked,
+        ceMilestones: document.getElementById('toggle-milestone').checked,
+        courseProgressReminders: document.getElementById('toggle-progress').checked,
       };
 
       try {
         const token = localStorage.getItem('token');
-        const res = await fetch(`${API_BASE}/users/profile`, {
+        // Save phone to profile
+        const phone = document.getElementById('notif-phone').value;
+        if (phone) {
+          await fetch(`${API_BASE}/users/profile`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify({ phone })
+          });
+        }
+        // Save notification prefs to correct endpoint
+        const res = await fetch(`${API_BASE}/users/notifications`, {
           method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
           body: JSON.stringify(payload)
         });
 
         if (res.ok) {
-          showToast();
+          showToast('Notification preferences saved!');
         } else {
           const err = await res.json();
-          alert('Failed to save: ' + (err.message || 'Unknown error'));
+          alert('Failed to save: ' + (err.error || 'Unknown error'));
         }
       } catch (err) {
         console.error('Save error:', err);
-        alert('Network error -- please try again.');
+        alert('Network error \u2014 please try again.');
+      }
+    }
+
+    // -- Load all settings on page load --
+    async function loadAllSettings() {
+      const token = localStorage.getItem('token');
+      if (!token) { window.location.href = '/login.html'; return; }
+
+      try {
+        const res = await fetch(`${API_BASE}/auth/me`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!res.ok) { window.location.href = '/login.html'; return; }
+
+        const data = await res.json();
+        const user = data.user || data;
+
+        // -- Notifications tab --
+        if (user.email) document.getElementById('notif-email').value = user.email;
+        if (user.profile?.phone) document.getElementById('notif-phone').value = user.profile.phone;
+        const prefs = user.notifications || {};
+        const toggles = { email: 'toggle-email', sms: 'toggle-sms', weekly: 'toggle-weekly', alert: 'toggle-alert', milestone: 'toggle-milestone', progress: 'toggle-progress' };
+        const prefKeys = { email: 'emailReminders', sms: 'smsReminders', weekly: 'weeklyProgress', alert: 'fallingBehindAlert', milestone: 'ceMilestones', progress: 'courseProgressReminders' };
+        Object.keys(toggles).forEach(k => {
+          const val = prefs[prefKeys[k]];
+          if (typeof val === 'boolean') {
+            document.getElementById(toggles[k]).checked = val;
+            updateToggleRow('row-' + k, val);
+          }
+        });
+
+        // -- Profile tab --
+        document.getElementById('prof-firstName').value = user.profile?.firstName || '';
+        document.getElementById('prof-lastName').value = user.profile?.lastName || '';
+        document.getElementById('prof-certificateName').value = user.profile?.certificateName || '';
+        document.getElementById('prof-email').value = user.email || '';
+        document.getElementById('prof-phone').value = user.profile?.phone || '';
+        if (user.profile?.state) {
+          const sel = document.getElementById('prof-state');
+          for (let i = 0; i < sel.options.length; i++) {
+            if (sel.options[i].value === user.profile.state || sel.options[i].text === user.profile.state) {
+              sel.selectedIndex = i; break;
+            }
+          }
+        }
+        if (user.profile?.timezone) {
+          document.getElementById('prof-timezone').value = user.profile.timezone;
+        }
+
+        // -- Account tab --
+        const plan = user.subscription?.plan || 'free';
+        const status = user.subscription?.status || 'free';
+        const planNames = { free: 'Free', starter: 'Starter', professional: 'Professional', vip: 'VIP', annual_vip: 'Annual VIP', lifetime: 'Lifetime' };
+        document.getElementById('acct-plan-name').textContent = planNames[plan] || plan;
+        const badge = document.getElementById('acct-plan-badge');
+        badge.textContent = status.charAt(0).toUpperCase() + status.slice(1);
+        if (status === 'active' || status === 'lifetime') {
+          badge.style.background = 'var(--success-bg)'; badge.style.color = 'var(--success-text)';
+        } else if (status === 'trial') {
+          badge.style.background = 'var(--warning-bg)'; badge.style.color = 'var(--warning-text)';
+        } else {
+          badge.style.background = '#FEF2F2'; badge.style.color = '#991B1B';
+        }
+      } catch (err) {
+        console.error('Failed to load settings:', err);
+      }
+    }
+
+    // -- Save Profile --
+    async function saveProfile() {
+      const btn = document.getElementById('profileSaveBtn');
+      btn.textContent = 'Saving...'; btn.disabled = true;
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`${API_BASE}/users/profile`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({
+            firstName: document.getElementById('prof-firstName').value,
+            lastName: document.getElementById('prof-lastName').value,
+            certificateName: document.getElementById('prof-certificateName').value,
+            phone: document.getElementById('prof-phone').value,
+            state: document.getElementById('prof-state').value,
+            timezone: document.getElementById('prof-timezone').value,
+          })
+        });
+        if (res.ok) {
+          showToast('Profile saved!');
+        } else {
+          const err = await res.json();
+          alert('Failed to save: ' + (err.error || 'Unknown error'));
+        }
+      } catch (err) {
+        alert('Network error \u2014 please try again.');
+      } finally {
+        btn.textContent = 'Save Profile'; btn.disabled = false;
+      }
+    }
+
+    // -- Change Password --
+    async function changePassword() {
+      const current = document.getElementById('pw-current').value;
+      const newPw = document.getElementById('pw-new').value;
+      const confirm = document.getElementById('pw-confirm').value;
+      const errEl = document.getElementById('pw-error');
+      errEl.style.display = 'none';
+
+      if (!current || !newPw) { errEl.textContent = 'All fields are required'; errEl.style.display = 'block'; return; }
+      if (newPw.length < 8) { errEl.textContent = 'New password must be at least 8 characters'; errEl.style.display = 'block'; return; }
+      if (newPw !== confirm) { errEl.textContent = 'Passwords do not match'; errEl.style.display = 'block'; return; }
+
+      const btn = document.getElementById('pwSaveBtn');
+      btn.textContent = 'Updating...'; btn.disabled = true;
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`${API_BASE}/auth/change-password`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({ currentPassword: current, newPassword: newPw })
+        });
+        if (res.ok) {
+          showToast('Password updated!');
+          document.getElementById('pw-current').value = '';
+          document.getElementById('pw-new').value = '';
+          document.getElementById('pw-confirm').value = '';
+        } else {
+          const err = await res.json();
+          errEl.textContent = err.error || 'Failed to update password';
+          errEl.style.display = 'block';
+        }
+      } catch (err) {
+        errEl.textContent = 'Network error \u2014 please try again.';
+        errEl.style.display = 'block';
+      } finally {
+        btn.textContent = 'Update Password'; btn.disabled = false;
+      }
+    }
+
+    // -- Delete Account --
+    async function deleteAccount() {
+      const email = document.getElementById('delete-email').value;
+      if (!email) { alert('Please enter your email to confirm.'); return; }
+      if (!window.confirm('This will permanently delete your account, all courses, certificates, and CE records. This cannot be undone. Are you sure?')) return;
+
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`${API_BASE}/users/account`, {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({ confirmEmail: email })
+        });
+        if (res.ok) {
+          localStorage.removeItem('token');
+          alert('Your account has been deleted.');
+          window.location.href = '/';
+        } else {
+          const err = await res.json();
+          alert(err.error || 'Failed to delete account.');
+        }
+      } catch (err) {
+        alert('Network error \u2014 please try again.');
       }
     }
 
     // -- Toast --
-    function showToast() {
+    function showToast(msg) {
       const toast = document.getElementById('toast');
+      if (msg) toast.querySelector('span').textContent = msg;
       toast.classList.add('show');
       setTimeout(() => toast.classList.remove('show'), 3000);
     }
   </script>
-<script src="/js/footer.js"></script></body>
+
+  <div id="cr-footer"></div>
+</body>
 </html>
+

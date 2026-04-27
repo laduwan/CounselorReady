@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pass the Key | CounselorReady</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="/css/design-tokens.css">
+  <link rel="stylesheet" href="/css/typography.css">
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="/js/tailwind-config.js"></script>
+
+  <style>
+    body{font-family:'Lato',system-ui,sans-serif;background:#F8F7F4}
+    .font-display{font-family:'Cormorant Garamond',Georgia,serif}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .track-card{border:2px solid #e7e5e4;border-radius:16px;padding:24px;transition:all .2s;cursor:pointer}
+    .track-card:hover{border-color:#6B1D34;box-shadow:0 4px 16px rgba(107,29,52,.1)}
+    .track-card.active{border-color:#6B1D34;background:#FDF2F5}
+    .milestone-bar{height:8px;background:#e7e5e4;border-radius:4px;overflow:hidden}
+    .milestone-fill{height:100%;border-radius:4px;transition:width .8s cubic-bezier(.4,0,.2,1)}
+  
+    /* Shared nav styles */
+    .dd{display:none;position:absolute;top:100%;margin-top:6px;background:#fff;border-radius:10px;box-shadow:0 10px 40px rgba(107,29,52,.12);border:1px solid #FAE8EB;z-index:50;padding:6px 0;min-width:210px}
+    .dd.open{display:block}
+    .dd a{display:flex;align-items:center;gap:10px;padding:8px 16px;font-size:13px;color:#284157;text-decoration:none;transition:background .1s}
+    .dd a:hover{background:#F2F7F4}
+    .ov{display:none;position:fixed;inset:0;z-index:40}.ov.open{display:block}
+    .nav-link{padding:6px 12px;border-radius:6px;font-size:13px;font-weight:500;color:#57534e;text-decoration:none;display:flex;align-items:center;gap:4px;transition:all .15s}
+    .nav-link:hover{color:#6B1D34;background:#FDF5F7}
+    .nav-link.active{color:#6B1D34;background:#FDF5F7;font-weight:600;border-bottom:2px solid #6B1D34}
+  </style>
+</head>
+<body class="min-h-screen">
+
+<div id="cr-header"></div>
+  <script src="/shared/nav-footer.js"></script>
+
+<main class="max-w-4xl mx-auto px-4 sm:px-6 py-8">
+
+  <div id="loading" class="text-center py-20">
+    <div style="width:36px;height:36px;border:3px solid #e7e5e4;border-top-color:#6B1D34;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 12px"></div>
+    <p class="text-stone-400 text-sm">Loading referral program...</p>
+  </div>
+
+  <div id="content" class="hidden">
+
+    <!-- Hero -->
+    <div class="text-center mb-8">
+      <h1 class="font-display text-3xl sm:text-4xl font-bold" style="color:#6B1D34">Pass the Key</h1>
+      <p class="text-stone-500 mt-2">Share CounselorReady with colleagues. Earn rewards at every milestone.</p>
+    </div>
+
+    <!-- Referral Link -->
+    <div class="bg-white rounded-2xl border border-stone-200 p-6 mb-6" style="box-shadow:0 1px 3px rgba(107,29,52,.06)">
+      <label class="text-xs font-semibold uppercase tracking-wide" style="color:#284157">Your referral link</label>
+      <div class="flex items-center gap-2 mt-2">
+        <input type="text" id="refLink" readonly class="flex-1 text-sm px-4 py-2.5 rounded-lg" style="background:#F8F7F4;border:1px solid #E5E2DC;color:#284157;font-family:monospace">
+        <button onclick="copyLink()" id="copyBtn" class="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold" style="background:#6B1D34;color:#fff;border:none;cursor:pointer">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg> Copy
+        </button>
+      </div>
+      <div class="flex items-center gap-3 mt-3">
+        <span class="text-xs" style="color:#78716c">Code: <strong style="color:#6B1D34;letter-spacing:.05em" id="refCode">—</strong></span>
+        <button onclick="shareEmail()" class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="background:#F0F4F7;color:#284157;border:none;cursor:pointer">Email</button>
+        <button onclick="shareText()" class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="background:#F0F4F7;color:#284157;border:none;cursor:pointer">Text</button>
+        <button onclick="shareNative()" class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="background:#F0F4F7;color:#284157;border:none;cursor:pointer">Share</button>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
+      <div class="bg-white rounded-xl border border-stone-200 p-4 text-center"><p class="text-xl font-bold font-display" style="color:#6B1D34" id="sClicks">0</p><p class="text-[10px] mt-1" style="color:#78716c">Clicks</p></div>
+      <div class="bg-white rounded-xl border border-stone-200 p-4 text-center"><p class="text-xl font-bold font-display" style="color:#284157" id="sSignups">0</p><p class="text-[10px] mt-1" style="color:#78716c">Signups</p></div>
+      <div class="bg-white rounded-xl border border-stone-200 p-4 text-center"><p class="text-xl font-bold font-display" style="color:#4A7C59" id="sConversions">0</p><p class="text-[10px] mt-1" style="color:#78716c">Paid conversions</p></div>
+      <div class="bg-white rounded-xl border border-stone-200 p-4 text-center"><p class="text-xl font-bold font-display" style="color:#D4A855" id="sCredits">$0</p><p class="text-[10px] mt-1" style="color:#78716c">Credits balance</p></div>
+    </div>
+
+    <!-- 3 Tracks -->
+    <h2 class="font-display text-xl font-semibold mb-4" style="color:#6B1D34">Choose your track</h2>
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8" id="trackCards">
+
+      <div class="track-card" id="track1" onclick="selectTrack(1)">
+        <div class="flex items-center gap-2 mb-3">
+          <div style="width:36px;height:36px;border-radius:10px;background:#F2F7F3;display:flex;align-items:center;justify-content:center"><svg class="w-5 h-5" style="color:#4A7C59" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div>
+          <div><p class="text-sm font-bold" style="color:#6B1D34">Track 1</p><p class="text-[10px]" style="color:#78716c">Steady savings</p></div>
+        </div>
+        <p class="text-xs" style="color:#57534e"><strong style="color:#4A7C59">$5 credit</strong> for every colleague who subscribes. Plus $0.50 pending per signup (converts after they earn 10 CE hrs).</p>
+      </div>
+
+      <div class="track-card" id="track2" onclick="selectTrack(2)">
+        <div class="flex items-center gap-2 mb-3">
+          <div style="width:36px;height:36px;border-radius:10px;background:#FDF2F5;display:flex;align-items:center;justify-content:center"><svg class="w-5 h-5" style="color:#6B1D34" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg></div>
+          <div><p class="text-sm font-bold" style="color:#6B1D34">Track 2</p><p class="text-[10px]" style="color:#78716c">Course unlock</p></div>
+        </div>
+        <p class="text-xs" style="color:#57534e"><strong style="color:#6B1D34">5 paid referrals</strong> unlocks a free premium course. Choose Intake to Remit or TeleMental Health, with optional Supervision add-on.</p>
+        <div class="mt-3" id="t2progress"></div>
+      </div>
+
+      <div class="track-card" id="track3" onclick="selectTrack(3)">
+        <div class="flex items-center gap-2 mb-3">
+          <div style="width:36px;height:36px;border-radius:10px;background:#FDF9F0;display:flex;align-items:center;justify-content:center"><svg class="w-5 h-5" style="color:#D4A855" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg></div>
+          <div><p class="text-sm font-bold" style="color:#6B1D34">Track 3</p><p class="text-[10px]" style="color:#78716c">Revenue share</p></div>
+        </div>
+        <p class="text-xs" style="color:#57534e"><strong style="color:#D4A855">50 paid referrals</strong> earns a $100 cash bonus + 10% monthly revenue share via Stripe Connect.</p>
+        <div class="mt-3" id="t3progress"></div>
+      </div>
+    </div>
+
+    <!-- Track 2 Redemption (hidden until unlocked) -->
+    <div id="redeemSection" class="hidden bg-white rounded-xl border-2 border-honey-400 p-6 mb-8">
+      <h3 class="font-display text-lg font-semibold mb-3" style="color:#6B1D34">Redeem your free course</h3>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+        <label class="flex items-center gap-3 p-4 rounded-xl border-2 border-stone-200 cursor-pointer hover:border-burgundy-200" style="background:#fff">
+          <input type="radio" name="courseChoice" value="intake-to-remit" style="accent-color:#6B1D34">
+          <div><p class="text-sm font-semibold" style="color:#6B1D34">Intake to Remit</p><p class="text-xs" style="color:#78716c">Revenue Cycle Management</p></div>
+        </label>
+        <label class="flex items-center gap-3 p-4 rounded-xl border-2 border-stone-200 cursor-pointer hover:border-burgundy-200" style="background:#fff">
+          <input type="radio" name="courseChoice" value="telemental-health" style="accent-color:#6B1D34">
+          <div><p class="text-sm font-semibold" style="color:#6B1D34">TeleMental Health</p><p class="text-xs" style="color:#78716c">Mastering Virtual Practice</p></div>
+        </label>
+      </div>
+      <label class="flex items-center gap-2 mb-4 text-sm" style="color:#57534e"><input type="checkbox" id="supeAddon" style="accent-color:#4A7C59"> Add Supervision track (free)</label>
+      <button onclick="redeemCourse()" class="px-5 py-2.5 rounded-lg text-sm font-semibold" style="background:#4A7C59;color:#fff;border:none;cursor:pointer" id="redeemBtn">Redeem course</button>
+      <p id="redeemMsg" class="text-xs mt-2" style="color:#4A7C59"></p>
+    </div>
+
+    <!-- Referrals List -->
+    <div class="bg-white rounded-xl border border-stone-200 overflow-hidden">
+      <div class="p-5 border-b border-stone-100 flex items-center justify-between">
+        <h2 class="font-display text-lg font-semibold" style="color:#6B1D34">Your referrals</h2>
+        <span class="text-xs" style="color:#78716c" id="pendingLabel"></span>
+      </div>
+      <div id="refList"></div>
+    </div>
+
+  </div>
+</main>
+
+<script>
+  const API=location.hostname==='localhost'?'http://localhost:5000':'https://api.counselorready.com';
+  const T=localStorage.getItem('token');
+  if(!T)location.href='/login.html';
+  let refLink='',data=null;
+
+  async function init(){
+    try{
+      const r=await fetch(`${API}/api/referrals/my`,{headers:{Authorization:`Bearer ${T}`}});
+      if(!r.ok)throw new Error('Failed to load');
+      data=await r.json();
+      document.getElementById('loading').style.display='none';
+      document.getElementById('content').classList.remove('hidden');
+      render();
+    }catch(e){
+      document.getElementById('loading').innerHTML=`<p style="color:#6B1D34;font-weight:600">${e.message}</p>`;
+    }
+  }
+
+  function render(){
+    refLink=data.referralLink;
+    document.getElementById('refLink').value=refLink;
+    document.getElementById('refCode').textContent=data.referralCode;
+    document.getElementById('sClicks').textContent=data.stats.totalClicks;
+    document.getElementById('sSignups').textContent=data.stats.totalSignups;
+    document.getElementById('sConversions').textContent=data.stats.totalPaidConversions;
+    document.getElementById('sCredits').textContent='$'+data.stats.creditsBalance;
+
+    // Active track
+    document.querySelectorAll('.track-card').forEach(c=>c.classList.remove('active'));
+    document.getElementById('track'+data.activeTrack).classList.add('active');
+
+    // Track 2 progress
+    const t2=data.milestones.track2;
+    const t2pct=Math.min(100,Math.round((t2.progress/t2.threshold)*100));
+    document.getElementById('t2progress').innerHTML=`
+      <div class="milestone-bar"><div class="milestone-fill" style="width:${t2pct}%;background:#6B1D34"></div></div>
+      <p class="text-[10px] mt-1" style="color:#78716c">${t2.progress}/${t2.threshold} paid referrals${t2.unlocked?' — Unlocked!':''}</p>`;
+
+    // Track 3 progress
+    const t3=data.milestones.track3;
+    const t3pct=Math.min(100,Math.round((t3.progress/t3.threshold)*100));
+    document.getElementById('t3progress').innerHTML=`
+      <div class="milestone-bar"><div class="milestone-fill" style="width:${t3pct}%;background:#D4A855"></div></div>
+      <p class="text-[10px] mt-1" style="color:#78716c">${t3.progress}/${t3.threshold} paid referrals${t3.unlocked?' — Unlocked!':''}</p>`;
+
+    // Show redeem section if track 2 unlocked and not redeemed
+    if(t2.unlocked&&!t2.redeemed){
+      document.getElementById('redeemSection').classList.remove('hidden');
+    }else if(t2.redeemed){
+      document.getElementById('redeemSection').classList.remove('hidden');
+      document.getElementById('redeemSection').innerHTML=`<p class="text-sm" style="color:#4A7C59;font-weight:600">Course redeemed: ${t2.courseChoice==='intake-to-remit'?'Intake to Remit':'TeleMental Health'}${t2.supervisionAddon?' + Supervision':''}</p>`;
+    }
+
+    // Pending label
+    if(data.stats.pendingRegistrationCredits>0){
+      document.getElementById('pendingLabel').textContent=`${data.stats.pendingRegistrationCredits} pending reg credits ($${(data.stats.pendingRegistrationCredits*0.5).toFixed(2)})`;
+    }
+
+    // Referrals list
+    const list=document.getElementById('refList');
+    if(!data.referrals||!data.referrals.length){
+      list.innerHTML='<div class="p-8 text-center"><p class="text-stone-400 text-sm">No referrals yet. Share your link to get started!</p></div>';
+    }else{
+      const statusColors={clicked:'background:#F8F7F4;color:#78716c',pending:'background:#FDF9F0;color:#865E2C',registered:'background:#F0F4F7;color:#284157',trialing:'background:#F0F4F7;color:#284157',subscribed:'background:#E0ECE3;color:#2D4C37',rewarded:'background:#E0ECE3;color:#2D4C37',churned:'background:#FDF2F5;color:#6B1D34'};
+      const statusLabels={clicked:'Clicked',registered:'Signed up',trialing:'Trial',subscribed:'Subscribed',rewarded:'Rewarded',churned:'Churned'};
+      list.innerHTML=data.referrals.map(r=>{
+        const date=r.registeredAt?new Date(r.registeredAt).toLocaleDateString('en-US',{month:'short',day:'numeric'}):'';
+        const ceNote=r.ceHoursCompleted>0?`<span class="text-[10px]" style="color:#4A7C59">${r.ceHoursCompleted} CE hrs</span>`:'';
+        const regCredit=r.registrationCreditStatus==='pending'?'<span class="text-[10px]" style="color:#D4A855">$0.50 pending</span>':r.registrationCreditStatus==='qualified'||r.registrationCreditStatus==='converted'?'<span class="text-[10px]" style="color:#4A7C59">Credit converted</span>':'';
+        return`<div class="flex items-center justify-between px-5 py-3 border-b border-stone-50">
+          <div class="flex-1 min-w-0"><p class="text-sm font-medium truncate" style="color:#284157">${r.email}</p><div class="flex items-center gap-3 mt-0.5">${date?'<span class="text-[10px]" style="color:#78716c">'+date+'</span>':''}${ceNote}${regCredit}</div></div>
+          <span class="text-[10px] font-semibold px-2.5 py-1 rounded-full" style="${statusColors[r.status]||''}">${statusLabels[r.status]||r.status}</span>
+        </div>`;
+      }).join('');
+    }
+  }
+
+  async function selectTrack(t){
+    try{
+      await fetch(`${API}/api/referrals/track`,{method:'PUT',headers:{Authorization:`Bearer ${T}`,'Content-Type':'application/json'},body:JSON.stringify({track:t})});
+      data.activeTrack=t;
+      document.querySelectorAll('.track-card').forEach(c=>c.classList.remove('active'));
+      document.getElementById('track'+t).classList.add('active');
+    }catch(e){console.error(e)}
+  }
+
+  async function redeemCourse(){
+    const choice=document.querySelector('input[name=courseChoice]:checked')?.value;
+    if(!choice){alert('Select a course first');return}
+    const btn=document.getElementById('redeemBtn');
+    btn.textContent='Redeeming...';btn.disabled=true;
+    try{
+      const r=await fetch(`${API}/api/referrals/redeem-course`,{method:'POST',headers:{Authorization:`Bearer ${T}`,'Content-Type':'application/json'},body:JSON.stringify({courseChoice:choice,supervisionAddon:document.getElementById('supeAddon').checked})});
+      const d=await r.json();
+      if(!r.ok)throw new Error(d.error);
+      document.getElementById('redeemMsg').textContent=d.message;
+      setTimeout(()=>location.reload(),1500);
+    }catch(e){alert(e.message)}finally{btn.textContent='Redeem course';btn.disabled=false}
+  }
+
+  function copyLink(){
+    navigator.clipboard.writeText(refLink).then(()=>{
+      const b=document.getElementById('copyBtn');
+      b.innerHTML='<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Copied!';
+      b.style.background='#4A7C59';
+      setTimeout(()=>{b.innerHTML='<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg> Copy';b.style.background='#6B1D34'},2000);
+    });
+  }
+  function shareEmail(){
+    const s=encodeURIComponent('Join me on CounselorReady — CE tracking made easy');
+    const b=encodeURIComponent('Hey! I\'ve been using CounselorReady to track my CE hours and manage my credentials across multiple states.\n\nSign up with my referral link:\n'+refLink+'\n\nYou get a 7-day free trial with 1 free CE course included. They have NBCC-approved courses, AI credential scanning, and multi-state tracking.\n\nLet me know if you have questions!');
+    window.open('mailto:?subject='+s+'&body='+b);
+  }
+  function shareText(){window.open('sms:?body='+encodeURIComponent('Hey! Check out CounselorReady for CE tracking & NBCC courses. 7-day free trial + 1 free CE: '+refLink))}
+  function shareNative(){if(navigator.share)navigator.share({title:'CounselorReady',text:'Join me on CounselorReady — CE tracking & NBCC courses.',url:refLink});else copyLink()}
+
+  document.addEventListener('DOMContentLoaded',init);
+</script>
+
+  <div id="cr-footer"></div>
+</body>
+</html>

@@ -31,10 +31,10 @@ router.get('/profile', protect, async (req, res) => {
 // @access  Private
 router.put('/profile', protect, async (req, res) => {
   try {
-    const { firstName, lastName, state, timezone, phone, fullName } = req.body;
-    
+    const { firstName, lastName, certificateName, state, timezone, phone, fullName } = req.body;
+
     const user = await User.findById(req.user._id);
-    
+
     // Support fullName as single field (split into first/last)
     if (fullName && !firstName && !lastName) {
       const parts = fullName.trim().split(/\s+/);
@@ -44,6 +44,7 @@ router.put('/profile', protect, async (req, res) => {
       if (firstName !== undefined) user.profile.firstName = firstName;
       if (lastName !== undefined) user.profile.lastName = lastName;
     }
+    if (certificateName !== undefined) user.profile.certificateName = certificateName;
     if (state && typeof state === 'string') user.profile.state = state.toUpperCase();
     if (timezone) user.profile.timezone = timezone;
     if (phone !== undefined) user.profile.phone = phone;
@@ -91,7 +92,8 @@ router.put('/notifications', protect, async (req, res) => {
     if (fallingBehindAlert !== undefined) user.notifications.fallingBehindAlert = fallingBehindAlert;
     if (ceMilestones !== undefined) user.notifications.ceMilestones = ceMilestones;
     if (courseProgressReminders !== undefined) user.notifications.courseProgressReminders = courseProgressReminders;
-    
+
+    user.markModified('notifications');
     await user.save();
     
     res.json({
@@ -723,6 +725,121 @@ router.get('/insurance/compare', protect, async (req, res) => {
   } catch (error) {
     console.error('Compare insurance error:', error);
     res.status(500).json({ error: 'Failed to compare rates' });
+  }
+});
+
+// @route   POST /api/users/promo
+// @desc    Apply a promo/discount code to user's active subscription
+// @access  Private
+router.post('/promo', protect, async (req, res) => {
+  if (!stripe) {
+    return res.status(503).json({ error: 'Payment system not configured' });
+  }
+
+  try {
+    const { code } = req.body;
+
+    if (!code) {
+      return res.status(400).json({ error: 'Promo code is required' });
+    }
+
+    // Look up promotion code in Stripe
+    const promoCodes = await stripe.promotionCodes.list({
+      code: code.toUpperCase(),
+      active: true,
+      limit: 1
+    });
+
+    if (promoCodes.data.length === 0) {
+      return res.status(404).json({ error: 'Promo code not found or expired' });
+    }
+
+    const promoCode = promoCodes.data[0];
+    const coupon = promoCode.coupon;
+
+    // Check if user has an active Stripe subscription
+    const user = await User.findById(req.user._id);
+    if (!user || !user.stripeSubscriptionId) {
+      return res.status(400).json({ error: 'No active subscription found. Use this code when subscribing.' });
+    }
+
+    // Apply the coupon to the existing subscription
+    await stripe.subscriptions.update(user.stripeSubscriptionId, {
+      coupon: coupon.id
+    });
+
+    const discountDesc = coupon.percent_off
+      ? `${coupon.percent_off}% off`
+      : `$${(coupon.amount_off / 100).toFixed(2)} off`;
+
+    res.json({
+      message: `Promo code applied! You now get ${discountDesc} your subscription.`
+    });
+  } catch (error) {
+    console.error('Apply promo code error:', error);
+    if (error.type === 'StripeInvalidRequestError') {
+      return res.status(400).json({ error: error.message });
+    }
+    res.status(500).json({ error: 'Failed to apply promo code' });
+  }
+});
+
+// @route   GET /api/users/tool-access/:toolKey
+// @desc    Check whether the current user has unlocked a specific clinical tool
+// @access  Private
+router.get('/tool-access/:toolKey', protect, async (req, res) => {
+  try {
+    const { toolKey } = req.params;
+    const user = await User.findById(req.user._id).select('unlockedTools');
+
+    const tool = user?.unlockedTools?.find(t => t.toolKey === toolKey);
+
+    if (!tool) {
+      return res.status(403).json({
+        hasAccess: false,
+        message: 'Tool not unlocked',
+        toolKey
+      });
+    }
+
+    if (tool.expiresAt && new Date(tool.expiresAt) < new Date()) {
+      return res.status(403).json({
+        hasAccess: false,
+        expired: true,
+        expiresAt: tool.expiresAt,
+        message: 'Tool access has expired. Complete the course again to renew.',
+        toolKey
+      });
+    }
+
+    return res.json({
+      hasAccess: true,
+      toolKey,
+      unlockedAt: tool.unlockedAt,
+      expiresAt: tool.expiresAt
+    });
+  } catch (error) {
+    console.error('Tool access check error:', error);
+    res.status(500).json({ error: 'Failed to check tool access' });
+  }
+});
+
+// @route   GET /api/users/unlocked-tools
+// @desc    List all currently active unlocked tools for the user
+// @access  Private
+router.get('/unlocked-tools', protect, async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).select('unlockedTools');
+    const now = new Date();
+
+    const tools = (user?.unlockedTools || []).filter(
+      t => !t.expiresAt || new Date(t.expiresAt) > now
+    );
+
+    res.json({ tools });
+  } catch (error) {
+    console.error('List unlocked tools error:', error);
+    res.status(500).json({ error: 'Failed to list unlocked tools' });
   }
 });
 

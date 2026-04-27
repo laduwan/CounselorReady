@@ -68,7 +68,10 @@ function ProfileSettings({ user }) {
   const [formData, setFormData] = useState({
     firstName: user?.profile?.firstName || '',
     lastName: user?.profile?.lastName || '',
-    state: user?.profile?.state || ''
+    state: user?.profile?.state || '',
+    phone: user?.profile?.phone || user?.phone || '',
+    licenseType: user?.profile?.licenseType || '',
+    licenseNumber: user?.profile?.licenseNumber || '',
   });
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
@@ -157,6 +160,44 @@ function ProfileSettings({ user }) {
             ))}
           </select>
           <p className="text-xs text-gray-500 mt-1">Used to show relevant CE requirements</p>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Phone
+          </label>
+          <input
+            type="tel"
+            value={formData.phone}
+            onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
+            className="input-field"
+          />
+        </div>
+
+        <div className="grid sm:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              License Type
+            </label>
+            <input
+              type="text"
+              value={formData.licenseType}
+              onChange={(e) => setFormData(prev => ({ ...prev, licenseType: e.target.value }))}
+              className="input-field"
+              placeholder="e.g. LPC, LCSW, LMFT"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              License Number
+            </label>
+            <input
+              type="text"
+              value={formData.licenseNumber}
+              onChange={(e) => setFormData(prev => ({ ...prev, licenseNumber: e.target.value }))}
+              className="input-field"
+            />
+          </div>
         </div>
 
         <button

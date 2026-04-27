@@ -1,612 +1,388 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Course Details - CounselorReady</title>
+  <title>Courses - CounselorReady</title>
+  <link rel="stylesheet" href="/css/design-tokens.css">
+  <link rel="stylesheet" href="/css/typography.css">
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Lato:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          fontFamily: {
-            display: ['Cormorant Garamond', 'Georgia', 'serif'],
-            body: ['Lato', 'sans-serif'],
-          },
-          colors: {
-            burgundy: {
-              50:  '#FDF5F7',
-              100: '#FAE8ED',
-              200: '#F3C8D3',
-              300: '#E89AAD',
-              400: '#D96A84',
-              500: '#C43F5D',
-              600: '#A62847',
-              700: '#8B2542',
-              800: '#6B1D34',
-              900: '#4E1526',
-            },
-            hunter: {
-              50:  '#F2F7F4',
-              100: '#E0EDE5',
-              200: '#C0DACA',
-              300: '#92BFA3',
-              400: '#5E9E78',
-              500: '#4A7C59',
-              600: '#3D6A4A',
-              700: '#305538',
-              800: '#264430',
-              900: '#1D3526',
-            },
-            honey: {
-              50:  '#FEF9EE',
-              100: '#FDF0D0',
-              200: '#FBDF9A',
-              300: '#EACD86',
-              400: '#D4A855',
-              500: '#C49545',
-              600: '#A87A35',
-              700: '#8B6228',
-            },
-            navy: {
-              50:  '#F0F4F8',
-              100: '#D9E3ED',
-              200: '#B0C5D8',
-              300: '#7EA0BC',
-              400: '#4A6B82',
-              500: '#284157',
-              600: '#1F3345',
-              700: '#172535',
-            },
-          }
-        }
-      }
-    };
-  </script>
+  <script src="/js/tailwind-config.js"></script>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  
   <style>
-    body { font-family: 'Lato', sans-serif; background: #F8F7F4; }
+    body{background:#F8F7F4; font-family: 'Lato', system-ui, sans-serif; }
     .font-display { font-family: 'Cormorant Garamond', Georgia, serif; }
-    .cr-logo-counselor { color: #6B1D34; }
-    .cr-logo-ready     { color: #4A7C59; }
+  
+    /* Shared nav styles */
+    .dd{display:none;position:absolute;top:100%;margin-top:6px;background:#fff;border-radius:10px;box-shadow:0 10px 40px rgba(107,29,52,.12);border:1px solid #FAE8EB;z-index:50;padding:6px 0;min-width:210px}
+    .dd.open{display:block}
+    .dd a{display:flex;align-items:center;gap:10px;padding:8px 16px;font-size:13px;color:#284157;text-decoration:none;transition:background .1s}
+    .dd a:hover{background:#F2F7F4}
+    .ov{display:none;position:fixed;inset:0;z-index:40}.ov.open{display:block}
+    .nav-link{padding:6px 12px;border-radius:6px;font-size:13px;font-weight:500;color:#57534e;text-decoration:none;display:flex;align-items:center;gap:4px;transition:all .15s}
+    .nav-link:hover{color:#6B1D34;background:#FDF5F7}
+    .nav-link.active{color:#6B1D34;background:#FDF5F7;font-weight:600;border-bottom:2px solid #6B1D34}
   </style>
 </head>
-<body class="min-h-screen">
-
+<body class="bg-stone-50 min-h-screen">
+  
   <!-- Header -->
-  <header class="bg-white border-b border-burgundy-100 sticky top-0 z-50 shadow-sm">
-    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-      <a href="/courses.html" class="flex items-center gap-3">
-        <div class="w-9 h-9 rounded-lg flex items-center justify-center relative" style="background: linear-gradient(135deg, #6B1D34, #8B2542);">
-          <span style="font-family:'Cormorant Garamond',serif; font-weight:700; font-size:17px; color:#D0768A; position:absolute; top:2px; left:5px; z-index:2;">C</span>
-          <span style="font-family:'Cormorant Garamond',serif; font-weight:700; font-size:14px; color:#4A7C59; position:absolute; top:7px; left:11px; z-index:1;">R</span>
+  <div id="cr-header"></div>
+  <script src="/shared/nav-footer.js"></script>
+
+  <!-- NBCC Approval Trust Strip -->
+  <section style="background:#F8F7F4;border-top:1px solid rgba(107,29,52,0.15);border-bottom:1px solid rgba(107,29,52,0.15);padding:24px 20px;">
+    <div style="max-width:1152px;margin:0 auto;">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap;">
+        <div style="display:flex;align-items:center;gap:16px;">
+          <img src="/images/nbcc-acep-logo.jpg" alt="NBCC Approved Continuing Education Provider" style="width:76px;height:76px;object-fit:contain;flex-shrink:0;" onerror="this.style.display='none'">
+          <div>
+            <p style="font-family:'Cormorant Garamond',Georgia,serif;font-size:18px;font-weight:600;color:#4A7C59;margin:0;line-height:1.2;">NBCC Approved Continuing Education Provider</p>
+            <p style="font-size:13px;color:#284157;margin:4px 0 0;">
+              <span style="font-weight:600;color:#6B1D34;">ACEP #7760</span>
+              <span style="margin:0 8px;opacity:0.4;">·</span>
+              <span>GA Integrated Therapeutic Perspectives LLC</span>
+            </p>
+          </div>
         </div>
-        <span class="font-display font-semibold text-xl">
-          <span class="cr-logo-counselor">Counselor</span><span class="cr-logo-ready">Ready</span>
-        </span>
-      </a>
-      <nav class="hidden md:flex items-center gap-8">
-        <a href="/dashboard.html" class="text-hunter-600 hover:text-hunter-700 text-sm transition-colors">Dashboard</a>
-        <a href="/courses.html" class="text-burgundy-800 font-medium text-sm">Courses</a>
-        <a href="/credentials.html" class="text-hunter-600 hover:text-hunter-700 text-sm transition-colors">Credentials</a>
-        <a href="/certificates.html" class="text-hunter-600 hover:text-hunter-700 text-sm transition-colors">CE Certificates</a>
-      </nav>
-      <a href="/courses.html" class="text-hunter-600 hover:text-hunter-700 text-sm flex items-center gap-1 transition-colors">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
-        Back to Courses
-      </a>
+        <nav style="display:flex;align-items:center;gap:14px;font-size:13px;color:#284157;flex-shrink:0;flex-wrap:wrap;justify-content:center;">
+          <a href="/refund-policy.html" style="color:#284157;text-decoration:none;">Refund Policy</a>
+          <span style="opacity:0.3;">|</span>
+          <a href="/complaint-resolution.html" style="color:#284157;text-decoration:none;">Complaint Process</a>
+          <span style="opacity:0.3;">|</span>
+          <a href="/ada-accommodations.html" style="color:#284157;text-decoration:none;">ADA Accommodations</a>
+        </nav>
+      </div>
     </div>
-  </header>
-
-  <!-- Loading -->
-  <div id="loadingState" class="max-w-7xl mx-auto px-6 py-20 flex items-center justify-center">
-    <div class="text-center">
-      <div class="w-12 h-12 border-4 border-burgundy-200 border-t-burgundy-700 rounded-full animate-spin mx-auto mb-4"></div>
-      <p class="text-hunter-600 font-body">Loading course details...</p>
-    </div>
-  </div>
-
-  <!-- Error -->
-  <div id="errorState" class="hidden max-w-7xl mx-auto px-6 py-16">
-    <div class="bg-red-50 border border-red-200 rounded-xl p-10 text-center max-w-lg mx-auto">
-      <div class="text-5xl mb-4">😕</div>
-      <h2 class="font-display text-3xl font-semibold text-red-800 mb-2">Course Not Found</h2>
-      <p class="text-red-600 mb-6" id="errorMessage">The requested course could not be found.</p>
-      <a href="/courses.html" class="inline-flex items-center gap-2 bg-burgundy-800 hover:bg-burgundy-900 text-white font-semibold px-6 py-3 rounded-xl transition-colors">
-        Browse All Courses
-      </a>
-    </div>
-  </div>
+  </section>
+  <!-- /NBCC Approval Trust Strip -->
 
   <!-- Main Content -->
-  <main id="courseContent" class="hidden max-w-7xl mx-auto px-6 py-10">
+  <main class="max-w-7xl mx-auto px-6 py-8">
+    
+    <!-- Page Header -->
+    <div class="flex items-center justify-between mb-8">
+      <div>
+        <h1 class="font-display text-3xl font-semibold text-burgundy-900 mb-2">CE Course Library</h1>
+        <p class="text-forest-600">Earn continuing education credits with our professionally designed courses.</p>
+      </div>
+      <button onclick="syncCourses()" id="syncBtn" class="inline-flex items-center gap-2 bg-forest-100 hover:bg-forest-200 text-forest-700 font-semibold px-4 py-2 rounded-xl transition-colors">
+        <svg id="syncIcon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+        </svg>
+        Sync
+      </button>
+    </div>
 
-    <!-- Breadcrumb -->
-    <nav class="text-sm mb-6">
-      <ol class="flex items-center gap-2 text-hunter-500">
-        <li><a href="/courses.html" class="hover:text-burgundy-700 transition-colors">Courses</a></li>
-        <li class="text-hunter-300">/</li>
-        <li id="breadcrumbTitle" class="text-navy-500 truncate max-w-xs">Course</li>
-      </ol>
-    </nav>
-
-    <!-- Hero Banner -->
-    <div class="bg-gradient-to-r from-burgundy-800 to-burgundy-700 rounded-2xl overflow-hidden mb-8 shadow-lg">
-      <div class="md:flex">
-        <!-- Thumbnail -->
-        <div class="md:w-72 h-48 md:h-auto flex-shrink-0 relative overflow-hidden bg-burgundy-900">
-          <img id="heroThumbnail" class="hidden w-full h-full object-cover" src="" alt="">
-          <div id="heroPlaceholder" class="w-full h-full flex items-center justify-center">
-            <svg class="w-20 h-20 text-burgundy-300 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
-            </svg>
-          </div>
+    <!-- Filters & Search -->
+    <div class="bg-white rounded-xl border border-burgundy-100 shadow-sm p-6 mb-6">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <!-- Search -->
+        <div class="md:col-span-2">
+          <label for="search" class="block text-sm font-medium text-forest-700 mb-2">Search Courses</label>
+          <input type="text" id="search" placeholder="Search by title or topic..." onkeyup="filterCourses()" class="w-full px-4 py-3 border border-forest-200 rounded-xl focus:ring-2 focus:ring-burgundy-500 focus:border-burgundy-500 outline-none">
         </div>
-        <!-- Info -->
-        <div class="flex-1 p-8 text-white">
-          <div class="flex flex-wrap gap-2 mb-4">
-            <span id="heroCategoryBadge" class="bg-white/15 text-white text-xs font-semibold px-3 py-1 rounded-full"></span>
-            <span id="heroCEBadge" class="bg-honey-400/80 text-burgundy-900 text-xs font-bold px-3 py-1 rounded-full"></span>
-            <span id="heroLevelBadge" class="bg-white/10 text-white/90 text-xs font-medium px-3 py-1 rounded-full"></span>
-          </div>
-          <h1 id="courseTitle" class="font-display text-4xl md:text-5xl font-bold text-white mb-2 leading-tight"></h1>
-          <p id="courseSubtitle" class="text-burgundy-100 text-lg mb-5"></p>
-          <div class="flex flex-wrap gap-6 text-sm text-burgundy-100">
-            <span class="flex items-center gap-2">
-              <svg class="w-4 h-4 text-honey-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-              <span id="heroHours">0 CE Hours</span>
-            </span>
-            <span class="flex items-center gap-2">
-              <svg class="w-4 h-4 text-honey-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
-              <span id="heroInstructor">CounselorReady</span>
-            </span>
-            <span class="flex items-center gap-2">
-              <svg class="w-4 h-4 text-honey-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/></svg>
-              NBCC Approved · ACEP #7760
-            </span>
-          </div>
+
+        <!-- Filter by CEU Category -->
+        <div>
+          <label for="filterCategory" class="block text-sm font-medium text-forest-700 mb-2">CE Category</label>
+          <select id="filterCategory" onchange="filterCourses()" class="w-full px-4 py-3 border border-forest-200 rounded-xl focus:ring-2 focus:ring-burgundy-500 focus:border-burgundy-500 outline-none">
+            <option value="">All Categories</option>
+            <option value="ethics">Ethics</option>
+            <option value="core">Core</option>
+            <option value="related">Related</option>
+            <option value="supervision">Supervision</option>
+            <option value="telehealth">Telehealth</option>
+          </select>
+        </div>
+
+        <!-- Filter by Access Type -->
+        <div>
+          <label for="filterAccess" class="block text-sm font-medium text-forest-700 mb-2">Access</label>
+          <select id="filterAccess" onchange="filterCourses()" class="w-full px-4 py-3 border border-forest-200 rounded-xl focus:ring-2 focus:ring-burgundy-500 focus:border-burgundy-500 outline-none">
+            <option value="">All Courses</option>
+            <option value="free">Free Only</option>
+            <option value="enrolled">My Courses</option>
+          </select>
         </div>
       </div>
     </div>
 
-    <!-- Two-Column Layout -->
-    <div class="lg:grid lg:grid-cols-3 lg:gap-8">
-
-      <!-- Left: Course Details -->
-      <div class="lg:col-span-2 space-y-6">
-
-        <!-- Description -->
-        <div class="bg-white rounded-xl border border-burgundy-100 shadow-sm p-6">
-          <h2 class="font-display text-3xl font-semibold text-burgundy-600 mb-4">About This Course</h2>
-          <p id="courseDescription" class="text-navy-600 leading-relaxed"></p>
-        </div>
-
-        <!-- Learning Objectives -->
-        <div id="objectivesSection" class="hidden bg-white rounded-xl border border-burgundy-100 shadow-sm p-6">
-          <h2 class="font-display text-3xl font-semibold text-burgundy-600 mb-4 flex items-center gap-2">
-            <svg class="w-6 h-6 text-hunter-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-            Learning Objectives
-          </h2>
-          <ul id="objectivesList" class="space-y-3"></ul>
-        </div>
-
-        <!-- Target Audience -->
-        <div id="audienceSection" class="hidden bg-white rounded-xl border border-burgundy-100 shadow-sm p-6">
-          <h2 class="font-display text-3xl font-semibold text-burgundy-600 mb-4 flex items-center gap-2">
-            <svg class="w-6 h-6 text-hunter-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-            Who This Course Is For
-          </h2>
-          <div id="audienceList" class="flex flex-wrap gap-2"></div>
-        </div>
-
-        <!-- Course Sections -->
-        <div id="sectionsSection" class="hidden bg-white rounded-xl border border-burgundy-100 shadow-sm p-6">
-          <h2 class="font-display text-3xl font-semibold text-burgundy-600 mb-4 flex items-center gap-2">
-            <svg class="w-6 h-6 text-hunter-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
-            Course Content
-          </h2>
-          <div id="sectionsList" class="divide-y divide-burgundy-50"></div>
-        </div>
-
-        <!-- ACEP Info -->
-        <div class="bg-hunter-50 border border-hunter-200 rounded-xl p-6">
-          <div class="flex items-start gap-4">
-            <div class="w-12 h-12 bg-hunter-500 rounded-xl flex items-center justify-center flex-shrink-0">
-              <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/></svg>
-            </div>
-            <div>
-              <h3 class="font-display text-xl font-semibold text-hunter-700 mb-1">NBCC Approved Continuing Education</h3>
-              <p class="text-hunter-600 text-sm leading-relaxed">GA Integrated Therapeutic Perspectives LLC (GAITP LLC) has been approved by NBCC as an Approved Continuing Education Provider, ACEP #7760. Programs that do not qualify for NBCC credit are clearly identified. GAITP LLC is solely responsible for all aspects of the programs.</p>
-            </div>
-          </div>
-        </div>
-
+    <!-- Course Grid -->
+    <div id="coursesList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <!-- Loading State -->
+      <div class="md:col-span-3 text-center py-12">
+        <div class="inline-block w-8 h-8 border-4 border-burgundy-200 border-t-burgundy-700 rounded-full animate-spin"></div>
+        <p class="text-forest-500 mt-4">Loading courses...</p>
       </div>
+    </div>
 
-      <!-- Right: Pricing Sidebar -->
-      <div class="lg:col-span-1 mt-6 lg:mt-0">
-        <div class="sticky top-24 space-y-4">
-
-          <!-- Pricing Card -->
-          <div class="bg-white rounded-xl border border-burgundy-100 shadow-lg overflow-hidden">
-            <!-- Card Header -->
-            <div class="bg-gradient-to-r from-burgundy-800 to-burgundy-700 p-5 text-center">
-              <p class="text-burgundy-100 text-xs font-medium mb-1">NBCC Approved Provider #7760</p>
-              <p id="pricingHeaderLabel" class="text-white font-display text-lg font-semibold">Enroll Today</p>
-            </div>
-
-            <div class="p-6 space-y-4">
-
-              <!-- Price Display -->
-              <div id="priceDisplay" class="text-center py-2"></div>
-
-              <!-- Access Perks -->
-              <ul class="space-y-2 text-sm text-navy-600">
-                <li class="flex items-center gap-2">
-                  <svg class="w-4 h-4 text-hunter-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
-                  Certificate of Completion
-                </li>
-                <li class="flex items-center gap-2">
-                  <svg class="w-4 h-4 text-hunter-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
-                  NBCC CE Credit Tracked Automatically
-                </li>
-                <li class="flex items-center gap-2">
-                  <svg class="w-4 h-4 text-hunter-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
-                  Lifetime Access
-                </li>
-                <li class="flex items-center gap-2">
-                  <svg class="w-4 h-4 text-hunter-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
-                  Mobile Friendly
-                </li>
-              </ul>
-
-              <!-- Primary CTA -->
-              <button id="primaryCTA" onclick="handlePrimaryCTA()"
-                class="w-full bg-burgundy-800 hover:bg-burgundy-900 text-white font-semibold py-3 px-6 rounded-xl transition-colors text-center">
-                Start Course
-              </button>
-
-              <!-- Secondary CTA (subscribe link if paid) -->
-              <div id="secondaryCTA" class="hidden text-center">
-                <p class="text-navy-500 text-xs mb-2">Don't have a subscription?</p>
-                <a href="/settings.html#subscription" class="text-hunter-600 hover:text-hunter-700 text-sm font-medium underline underline-offset-2 transition-colors">
-                  View Subscription Plans
-                </a>
-              </div>
-
-            </div>
-          </div>
-
-          <!-- CE Category Card -->
-          <div class="bg-white rounded-xl border border-burgundy-100 shadow-sm p-5">
-            <h3 class="font-semibold text-hunter-700 text-sm mb-3">CE Category</h3>
-            <div id="categoryBadge" class="inline-flex items-center gap-2 px-3 py-1.5 bg-hunter-50 text-hunter-700 rounded-full text-sm font-medium border border-hunter-200">
-              <span id="categoryName">Core</span>
-              <span class="text-hunter-400">·</span>
-              <span id="categoryHours">0</span> Hours
-            </div>
-          </div>
-
-          <!-- Course Details Table -->
-          <div class="bg-white rounded-xl border border-burgundy-100 shadow-sm p-5">
-            <h3 class="font-semibold text-hunter-700 text-sm mb-3">Course Details</h3>
-            <dl class="space-y-2 text-sm">
-              <div class="flex justify-between">
-                <dt class="text-navy-400">CE Hours</dt>
-                <dd id="detailCE" class="font-medium text-navy-600">—</dd>
-              </div>
-              <div class="flex justify-between">
-                <dt class="text-navy-400">Level</dt>
-                <dd id="detailLevel" class="font-medium text-navy-600">—</dd>
-              </div>
-              <div class="flex justify-between">
-                <dt class="text-navy-400">Delivery</dt>
-                <dd id="detailDelivery" class="font-medium text-navy-600">Online</dd>
-              </div>
-              <div class="flex justify-between">
-                <dt class="text-navy-400">Sections</dt>
-                <dd id="detailSections" class="font-medium text-navy-600">—</dd>
-              </div>
-              <div class="flex justify-between">
-                <dt class="text-navy-400">Approving Body</dt>
-                <dd class="font-medium text-navy-600">NBCC</dd>
-              </div>
-            </dl>
-          </div>
-
-        </div>
+    <!-- Empty State -->
+    <div id="emptyState" class="hidden bg-white rounded-xl border border-burgundy-100 shadow-sm p-12 text-center">
+      <div class="w-20 h-20 bg-forest-100 rounded-full flex items-center justify-center mx-auto mb-4">
+        <svg class="w-10 h-10 text-forest-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+        </svg>
       </div>
+      <h3 class="font-display text-xl font-semibold text-burgundy-900 mb-2">No courses found</h3>
+      <p class="text-forest-600">Try adjusting your filters or check back soon for new courses.</p>
     </div>
   </main>
 
-  <!-- Footer -->
-  <footer class="bg-burgundy-900 text-white mt-16">
-    <div class="max-w-7xl mx-auto px-6 py-8">
-      <div class="flex flex-col md:flex-row justify-between items-center gap-4">
-        <div class="flex items-center gap-3">
-          <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background: linear-gradient(135deg, #6B1D34, #8B2542);">
-            <span class="font-display font-bold text-sm text-white">CR</span>
-          </div>
-          <span class="font-display text-lg">
-            <span style="color:#D0768A;">Counselor</span><span style="color:#4A7C59;">Ready</span>
-          </span>
-        </div>
-        <div class="text-burgundy-200 text-sm">NBCC Approved Continuing Education Provider #7760</div>
-        <div class="flex gap-6 text-sm text-burgundy-200">
-          <a href="/privacy.html" class="hover:text-white transition-colors">Privacy</a>
-          <a href="/terms.html" class="hover:text-white transition-colors">Terms</a>
-          <a href="/help.html" class="hover:text-white transition-colors">Help</a>
-        </div>
-      </div>
-      <p class="text-center text-burgundy-300 text-xs mt-4">© 2026 GAITP LLC. CounselorReady™ — Learn. License. Lead.®</p>
-    </div>
-  </footer>
-
   <script>
-    const API_URL = window.location.hostname === 'localhost'
-      ? 'http://localhost:5000'
-      : 'https://api.counselorready.com';
+    // ── Quick-enrollment link redirect ──────────────────────────
+    // Handles /courses.html?en=SLUG links (generated by admin share tools)
+    // and forwards them directly to the correct course detail page.
+    (function() {
+      const _en = new URLSearchParams(location.search).get('enroll');
+      if (_en) { location.replace('/course-details.html?slug=' + encodeURIComponent(_en)); }
+    })();
+    // ────────────────────────────────────────────────────────────
 
-    let currentCourse = null;
-    let currentUser   = null;
+    const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://api.counselorready.com';
+    let allCourses = [];
 
-    function getCourseSlug() {
-      return new URLSearchParams(window.location.search).get('slug');
-    }
-
-    async function loadCourse() {
-      const slug = getCourseSlug();
-      if (!slug) { showError('No course specified'); return; }
-
+    async function loadCourses() {
       const token = localStorage.getItem('token');
-      const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
-
+      
       try {
-        const res = await fetch(`${API_URL}/api/interactive-courses/slug/${slug}`, { headers });
-        if (!res.ok) {
-          showError(res.status === 404 ? 'Course not found' : 'Failed to load course');
-          return;
-        }
-        const data = await res.json();
-        currentCourse = data.data || data.course || data;
-
+        const headers = {};
         if (token) {
-          try {
-            const uRes = await fetch(`${API_URL}/api/auth/me`, { headers });
-            if (uRes.ok) {
-              const uData = await uRes.json();
-              currentUser = uData.user || uData;
-            }
-          } catch {}
+          headers['Authorization'] = `Bearer ${token}`;
         }
 
-        renderCourse();
-      } catch (e) {
-        console.error(e);
-        showError('Failed to load course');
+        const response = await fetch(`${API_URL}/api/interactive-courses?limit=100`, { headers, cache: 'no-store' });
+        const data = await response.json();
+        
+        allCourses = data.data || data.courses || [];
+        renderCourses(allCourses);
+      } catch (error) {
+        console.error('Load courses error:', error);
+        document.getElementById('coursesList').innerHTML = `
+          <div class="md:col-span-3 text-center py-12">
+            <p class="text-burgundy-600">Failed to load courses. Please try again.</p>
+          </div>
+        `;
       }
     }
 
-    function showError(msg) {
-      document.getElementById('loadingState').classList.add('hidden');
-      document.getElementById('courseContent').classList.add('hidden');
-      document.getElementById('errorState').classList.remove('hidden');
-      document.getElementById('errorMessage').textContent = msg;
+    // SVG badge icons
+    const ICON_MEDAL = '<svg style="width:14px;height:14px;flex-shrink:0" fill="none" stroke="currentColor" stroke-width="1.3" viewBox="0 0 16 18" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="6.5" r="5"/><path d="M5 11l-1 6 4-2 4 2-1-6"/></svg>';
+    const ICON_CLOCK = '<svg style="width:14px;height:14px;flex-shrink:0" fill="none" stroke="currentColor" stroke-width="1.3" viewBox="0 0 14 14" stroke-linecap="round" stroke-linejoin="round"><circle cx="7" cy="7" r="6"/><path d="M7 3.5v4l2.8 1.7"/></svg>';
+    const ICON_SEAL = '<svg style="width:14px;height:14px;flex-shrink:0" fill="none" stroke="currentColor" stroke-width="1.2" viewBox="0 0 16 16" stroke-linecap="round" stroke-linejoin="round"><path d="M8 1.5l1.4 2h2.4l-.1 2.4 2.1 1.1-1.4 2 1.5 1.8-2.1 1.2.2 2.4-2.4-.1L8 16l-1.6-2.3-2.4.1.2-2.4-2.1-1.2 1.5-1.8-1.4-2L4.3 5.9 4.2 3.5h2.4z"/><path d="M6 8.2l1.3 1.3 2.7-2.7"/></svg>';
+
+    function getContentAreas(course) {
+      const areas = course.nbccContentAreas || course.contentAreas || [];
+      if (!areas.length) return [];
+      return areas.slice(0, 3).map(a => typeof a === 'string' ? a : (a.text || a.name || a));
     }
 
-    function renderCourse() {
-      const c = currentCourse;
-      document.getElementById('loadingState').classList.add('hidden');
-      document.getElementById('errorState').classList.add('hidden');
-      document.getElementById('courseContent').classList.remove('hidden');
-
-      document.title = `${c.title} — CounselorReady`;
-
-      // Breadcrumb
-      document.getElementById('breadcrumbTitle').textContent = c.title;
-
-      // Hero
-      document.getElementById('courseTitle').textContent      = c.title || '';
-      document.getElementById('courseSubtitle').textContent   = c.subtitle || '';
-      document.getElementById('heroHours').textContent        = `${c.ceHours || c.ceuHours || 0} CE Hours`;
-      document.getElementById('heroInstructor').textContent   = c.instructor || 'CounselorReady';
-
-      const category = c.ceuCategories?.[0]?.category || c.ceCategory || c.category || 'Core';
-      document.getElementById('heroCategoryBadge').textContent = category;
-      document.getElementById('heroCEBadge').textContent       = `${c.ceHours || c.ceuHours || 0} CE Hours`;
-      document.getElementById('heroLevelBadge').textContent    = c.level || 'Intermediate';
-
-      // Thumbnail
-      if (c.thumbnail) {
-        document.getElementById('heroThumbnail').src = c.thumbnail;
-        document.getElementById('heroThumbnail').classList.remove('hidden');
-        document.getElementById('heroPlaceholder').classList.add('hidden');
-      }
-
-      // Description
-      document.getElementById('courseDescription').textContent = c.description || '';
-
-      // Learning objectives
-      const objectives = c.objectives || [];
-      if (objectives.length) {
-        document.getElementById('objectivesSection').classList.remove('hidden');
-        document.getElementById('objectivesList').innerHTML = objectives.map(obj => `
-          <li class="flex items-start gap-3">
-            <svg class="w-5 h-5 text-hunter-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-            </svg>
-            <span class="text-navy-600">${escHtml(obj)}</span>
-          </li>`).join('');
-      }
-
-      // Target audience
-      const audience = c.targetAudience || [];
-      if (audience.length) {
-        document.getElementById('audienceSection').classList.remove('hidden');
-        document.getElementById('audienceList').innerHTML = audience.map(a =>
-          `<span class="bg-navy-50 text-navy-600 px-3 py-1 rounded-full text-sm border border-navy-100">${escHtml(a)}</span>`
-        ).join('');
-      }
-
-      // Sections list
-      const sections = c.sections || [];
-      if (sections.length) {
-        document.getElementById('sectionsSection').classList.remove('hidden');
-        document.getElementById('sectionsList').innerHTML = sections.map((s, i) => `
-          <div class="py-3 flex items-center gap-3">
-            <span class="w-7 h-7 rounded-full bg-burgundy-100 text-burgundy-700 text-xs font-bold flex items-center justify-center flex-shrink-0">${i + 1}</span>
-            <span class="text-navy-600 text-sm font-medium">${escHtml(s.title || `Section ${i + 1}`)}</span>
-          </div>`).join('');
-      }
-
-      // Details table
-      document.getElementById('detailCE').textContent       = `${c.ceHours || c.ceuHours || 0} Hours`;
-      document.getElementById('detailLevel').textContent    = c.level || 'Intermediate';
-      document.getElementById('detailDelivery').textContent = c.deliveryMethod || 'Online';
-      document.getElementById('detailSections').textContent = sections.length ? `${sections.length} Sections` : '—';
-
-      // CE Category badge
-      const catHours = c.ceuCategories?.[0]?.hours || c.ceHours || c.ceuHours || 0;
-      document.getElementById('categoryName').textContent  = category;
-      document.getElementById('categoryHours').textContent = catHours;
-
-      // ── Pricing Card ──
-      renderPricingCard(c);
+    function getFormatInfo(course) {
+      const f = (course.deliveryFormat || course.format || 'async').toLowerCase();
+      if (f.includes('live')) return { label: 'Live', bg: 'rgba(107,29,52,0.10)', color: '#6B1D34' };
+      if (f.includes('hybrid')) return { label: 'Hybrid', bg: 'rgba(40,65,87,0.10)', color: '#284157' };
+      return { label: 'Async', bg: 'rgba(74,124,89,0.12)', color: '#4A7C59' };
     }
 
-    function renderPricingCard(c) {
-      const accessType  = c.accessType  || 'subscription';
-      const accessTier  = c.accessTier  || 'professional';
-      const price       = c.price       || 0;
-      const pricingTier = c.pricingTier || 'standard';
-      const isEnrolled  = !!(c.enrollment?.enrolled || c.userProgress?.enrolled);
-
-      const priceDisplay  = document.getElementById('priceDisplay');
-      const primaryCTA    = document.getElementById('primaryCTA');
-      const secondaryCTA  = document.getElementById('secondaryCTA');
-      const headerLabel   = document.getElementById('pricingHeaderLabel');
-
-      // Tier labels
-      const tierLabels = {
-        free: 'Free Access',
-        starter: 'Starter Plan · $19.99/mo',
-        professional: 'Professional Plan · $29.99/mo',
-        vip: 'VIP Plan · $49.99/mo',
-      };
-
-      if (isEnrolled) {
-        // Already enrolled — show progress/continue
-        headerLabel.textContent = 'You\'re Enrolled';
-        priceDisplay.innerHTML = `
-          <div class="inline-flex items-center gap-2 bg-hunter-50 text-hunter-700 px-4 py-2 rounded-full text-sm font-semibold border border-hunter-200">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-            Enrolled
-          </div>`;
-        primaryCTA.textContent = 'Continue Learning';
-        primaryCTA.className = 'w-full bg-hunter-600 hover:bg-hunter-700 text-white font-semibold py-3 px-6 rounded-xl transition-colors text-center';
-        secondaryCTA.classList.add('hidden');
-
-      } else if (accessType === 'free') {
-        headerLabel.textContent = 'Free Course';
-        priceDisplay.innerHTML = `
-          <div class="text-center">
-            <span class="font-display text-4xl font-bold text-hunter-600">Free</span>
-          </div>`;
-        primaryCTA.textContent = 'Start Free Course';
-        primaryCTA.className = 'w-full bg-hunter-600 hover:bg-hunter-700 text-white font-semibold py-3 px-6 rounded-xl transition-colors text-center';
-                secondaryCTA.classList.add('hidden');
-
-      } else if (accessType === 'paid') {
-        headerLabel.textContent = 'Individual Purchase';
-        priceDisplay.innerHTML = `
-          <div class="text-center">
-            <span class="text-navy-400 text-sm">One-time payment</span><br>
-            <span class="font-display text-4xl font-bold text-burgundy-800">$${Number(price).toFixed(2)}</span>
-          </div>`;
-        primaryCTA.textContent = 'Buy This Course';
-        primaryCTA.className = 'w-full bg-burgundy-800 hover:bg-burgundy-900 text-white font-semibold py-3 px-6 rounded-xl transition-colors text-center';
-        secondaryCTA.classList.remove('hidden');
-
-      } else {
-        const tierNames = {
-          free: 'Free',
-          starter: 'Starter Plan',
-          professional: 'Professional Plan',
-          vip: 'VIP Plan',
-        };
-        const tierPrices = { free: 0, starter: 19.99, professional: 29.99, vip: 49.99 };
-        const tierName  = tierNames[accessTier]  || 'Professional Plan';
-        const tierPrice = tierPrices[accessTier] || 29.99;
-        headerLabel.textContent = 'NBCC Approved Provider #7760';
-        priceDisplay.innerHTML = `
-          <div class="text-center">
-            <p class="text-hunter-500 text-sm">Included with</p>
-            <p class="text-hunter-700 text-2xl font-bold font-display">${escHtml(tierName)}</p>
-            <p class="text-hunter-500 text-sm">$${tierPrice.toFixed(2)}/month</p>
-          </div>`;
-        primaryCTA.textContent = 'Start Course';
-        primaryCTA.className = 'w-full bg-hunter-700 hover:bg-hunter-800 text-white font-semibold py-3 px-6 rounded-xl transition-colors text-center';
-        secondaryCTA.classList.remove('hidden');
+    function renderCourses(courses) {
+      const container = document.getElementById('coursesList');
+      const emptyState = document.getElementById('emptyState');
+      
+      if (courses.length === 0) {
+        container.classList.add('hidden');
+        emptyState.classList.remove('hidden');
+        return;
       }
+      
+      container.classList.remove('hidden');
+      emptyState.classList.add('hidden');
+      
+      const html = courses.map(course => {
+        const isEnrolled = course.enrollment?.enrolled;
+        const isFree = course.accessType === 'free';
+        const progress = course.enrollment?.percentComplete || 0;
+        
+        // Get primary CEU category
+        const primaryCategory = course.ceuCategories?.[0] || (course.categories?.[0] ? {hours: course.ceHours, category: course.categories[0]} : null);
+        const categoryLabel = primaryCategory ? `${primaryCategory.hours} hrs ${primaryCategory.category}` : '';
+        
+        return `
+          <div class="bg-white rounded-xl border border-burgundy-100 shadow-sm overflow-hidden hover:shadow-lg transition-shadow">
+            <!-- Thumbnail -->
+            <div class="h-48 bg-gradient-to-br from-burgundy-100 to-forest-100 flex items-center justify-center">
+              ${course.thumbnail ? 
+                `<img src="${course.thumbnail}" alt="${course.title}" class="w-full h-full object-cover">` :
+                `<svg class="w-16 h-16 text-burgundy-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                </svg>`
+              }
+            </div>
+
+            <!-- Content -->
+            <div class="p-5">
+              <!-- Title -->
+              <h3 class="font-display text-xl font-semibold text-burgundy-900 mb-2 line-clamp-2">${course.title}</h3>
+              
+              ${course.subtitle ? `<p class="text-forest-600 text-sm mb-3">${course.subtitle}</p>` : ''}
+              
+              <!-- Description -->
+              <p class="text-forest-500 text-sm mb-4 line-clamp-2">${course.description}</p>
+
+              <!-- Badges -->
+              <div class="flex flex-wrap items-center gap-1.5 mb-2">
+                ${(function(){
+                  const ceHours = course.ceHours || course.ceuHours || 1;
+                  const minutes = ceHours * 60;
+                  const body = course.approvingBody === 'ACEP' ? 'NBCC' : (course.approvingBody || 'NBCC');
+                  return `
+                    <span style="display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:12px;font-size:10px;font-weight:600;background:rgba(74,124,89,0.12);color:#4A7C59">${ICON_MEDAL} ${ceHours} CE Hr${ceHours !== 1 ? 's' : ''}</span>
+                    <span style="display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:12px;font-size:10px;font-weight:600;background:rgba(40,65,87,0.10);color:#284157">${ICON_CLOCK} ${minutes} min</span>
+                    <span style="display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:12px;font-size:10px;font-weight:600;background:rgba(107,29,52,0.10);color:#6B1D34">${ICON_SEAL} ${body}</span>
+                    ${isFree ? '<span class="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs font-medium">FREE</span>' : ''}
+                  `;
+                })()}
+              </div>
+              <!-- Content area pills -->
+              <div class="flex flex-wrap gap-1 mb-4">
+                ${getContentAreas(course).map(a => `<span style="padding:3px 10px;border-radius:11px;font-size:9px;font-weight:500;background:rgba(212,168,85,0.15);color:#8B6914">${a}</span>`).join('')}
+              </div>
+
+              <!-- Progress Bar (if enrolled) -->
+              ${isEnrolled ? `
+                <div class="mb-4">
+                  <div class="flex items-center justify-between text-xs text-forest-600 mb-1">
+                    <span>Progress</span>
+                    <span>${progress}%</span>
+                  </div>
+                  <div class="w-full bg-forest-100 rounded-full h-2">
+                    <div class="bg-burgundy-600 h-2 rounded-full transition-all" style="width: ${progress}%"></div>
+                  </div>
+                </div>
+              ` : ''}
+
+              <!-- Action Button -->
+              <div class="flex items-center justify-between">
+                ${isEnrolled ? `
+            <a href="/interactive-course.html?slug=${course.slug}" class="flex-1 text-center bg-burgundy-800 hover:bg-burgundy-900 text-white font-semibold px-4 py-2 rounded-xl transition-colors">
+                    Continue Learning
+                  </a>
+                ` : isFree ? `
+                  <button onclick="enrollCourse('${course._id}')" class="flex-1 bg-forest-700 hover:bg-forest-800 text-white font-semibold px-4 py-2 rounded-xl transition-colors">
+                    Start Free Course
+                  </button>
+                ` : `
+                  <a href="/course-details.html?slug=${course.slug}" class="flex-1 text-center bg-burgundy-800 hover:bg-burgundy-900 text-white font-semibold px-4 py-2 rounded-xl transition-colors">
+                    View Details
+                  </a>
+                `}
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+      
+      container.innerHTML = html;
     }
 
-    function handlePrimaryCTA() {
-      const c = currentCourse;
-      if (!c) return;
+    function filterCourses() {
+      const search = document.getElementById('search').value.toLowerCase();
+      const category = document.getElementById('filterCategory').value;
+      const access = document.getElementById('filterAccess').value;
+      
+      let filtered = allCourses.filter(course => {
+        // Search filter
+        const matchesSearch = !search || 
+          course.title.toLowerCase().includes(search) ||
+          course.description.toLowerCase().includes(search);
+        
+        // Category filter
+        const matchesCategory = !category || 
+          course.ceuCategories?.some(cat => cat.category.toLowerCase() === category);
+        
+        // Access filter
+        let matchesAccess = true;
+        if (access === 'free') {
+          matchesAccess = course.accessType === 'free';
+        } else if (access === 'enrolled') {
+          matchesAccess = course.enrollment?.enrolled;
+        }
+        
+        return matchesSearch && matchesCategory && matchesAccess;
+      });
+      
+      renderCourses(filtered);
+    }
+
+    async function enrollCourse(courseId) {
       const token = localStorage.getItem('token');
+
       if (!token) {
-        window.location.href = `/login.html?redirect=${encodeURIComponent(window.location.href)}`;
+        alert('Please log in to enroll in courses');
+        window.location.href = '/login.html';
         return;
       }
-      const isEnrolled = !!(c.enrollment?.enrolled || c.userProgress?.enrolled);
-      if (isEnrolled) {
-        window.location.href = `/interactive-course.html?slug=${c.slug}`;
-        return;
-      }
-      if (c.accessType === 'free') {
-        enrollAndStart(c);
-      } else if (c.accessType === 'paid') {
-        purchaseCourse(c);
-      } else {
-        enrollAndStart(c);
-      }
-    }
 
-    async function enrollAndStart(c) {
-      try {
-        const token = localStorage.getItem('token');
-        await fetch(`${API_URL}/api/interactive-courses/${c._id}/enroll`, {
-          method: 'POST',
-          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
-        });
-      } catch {}
-      window.location.href = `/interactive-course.html?slug=${c.slug}`;
-    }
+      // Find the course slug for redirect
+      const course = allCourses.find(c => c._id === courseId);
+      const slug = course?.slug || courseId;
 
-    async function purchaseCourse(c) {
-      const token = localStorage.getItem('token');
       try {
-        const res = await fetch(`${API_URL}/api/payments/course-checkout`, {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 10000);
+        const response = await fetch(`${API_URL}/api/interactive-courses/${courseId}/enroll`, {
           method: 'POST',
-          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ courseId: c._id })
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          signal: controller.signal
         });
-        const data = await res.json();
-        if (data.url) window.location.href = data.url;
-        else alert(data.error || 'Checkout failed. Please try again.');
-      } catch {
+        clearTimeout(timeout);
+
+        if (response.ok) {
+          alert('Enrolled successfully!');
+          window.location.href = '/interactive-course.html?slug=' + slug;
+        } else {
+          const data = await response.json();
+          if (response.status === 400 && (data.error || '').toLowerCase().includes('already enrolled')) {
+            window.location.href = '/interactive-course.html?slug=' + slug;
+          } else if (data.code === 'SUBSCRIPTION_REQUIRED') {
+            if (confirm(data.message || 'This course requires a subscription. View plans?')) {
+              window.location.href = '/subscription.html';
+            }
+          } else {
+            alert(data.error || 'Failed to enroll');
+          }
+        }
+      } catch (error) {
+        console.error('Enroll error:', error);
         alert('Network error. Please try again.');
       }
     }
 
-    function escHtml(str) {
-      if (!str) return '';
-      const d = document.createElement('div');
-      d.textContent = str;
-      return d.innerHTML;
-    }
+    // Load courses on page load
+    document.addEventListener('DOMContentLoaded', loadCourses);
 
-    document.addEventListener('DOMContentLoaded', loadCourse);
+    async function syncCourses() {
+      const btn = document.getElementById('syncBtn');
+      const icon = document.getElementById('syncIcon');
+      
+      btn.disabled = true;
+      icon.classList.add('animate-spin');
+      
+      await loadCourses();
+      
+      setTimeout(() => {
+        btn.disabled = false;
+        icon.classList.remove('animate-spin');
+      }, 500);
+    }
   </script>
+
+  <div id="cr-footer"></div>
 </body>
-</html>
+  </html>

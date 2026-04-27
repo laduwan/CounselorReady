@@ -4,6 +4,7 @@
  * Unauthorized copying or distribution is strictly prohibited.
  */
 import mongoose from 'mongoose';
+// Run validator first: node src/scripts/validateSeed.js src/scripts/seedFadingVoices.js
 import Course from '../models/Course.js';
 import dotenv from 'dotenv';
 dotenv.config();

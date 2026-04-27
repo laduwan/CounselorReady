@@ -7,6 +7,7 @@
 // Run: node src/scripts/reseedSuicideRisk.js
 
 import mongoose from 'mongoose';
+// Run validator first: node src/scripts/validateSeed.js src/scripts/reseedSuicideRisk.js
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';

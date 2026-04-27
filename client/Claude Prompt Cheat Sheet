@@ -1,0 +1,99 @@
+# CounselorReady —
+
+## Before Any Code Changes
+"Read the actual files before writing anything. Show me what you found, then propose changes."
+
+## Before Route/Wiring Work
+"Check the repo first — read index.js and the route files before touching anything."
+
+## Before Replacing Files
+"Diff against what exists — compare your output to current code before replacing."
+
+## When Something Seems Off
+"Don't assume, grep — search the actual codebase instead of working from memory."
+
+## Before Generating Anything
+"Show me your findings before generating."
+
+## After Uploading Files
+"I uploaded [file]. Read it first, summarize what you see, then we'll decide what to do."
+
+## For Audit Script Changes
+"Test your endpoint paths against the actual route files before adding them to the script."
+
+## Before Writing Any Seed Script
+"Seed scripts write to `interactivecourses` — never `courses`. Use `modules[].contentBlocks[]` — never `lessons[]`. Only the 17 valid block types. No `knowledgeCheck` wrappers — expand into individual `multipleChoice` blocks. No `quiz` blocks with `isExam: true` — put the exam in the top-level `assessment` object. Options are always string arrays with integer `correctAnswer` — never `{ text, isCorrect }` objects. No migration scripts — fix the seed and re-run it."
+
+## Before Writing Any Migration Script
+"Stop. Don't write a migration script. Fix the seed script instead and re-run it. Migration scripts have broken courses every time they've been used."
+
+## Before Proposing Option Format Changes
+"Options format is `options: ['A', 'B', 'C', 'D']` with `correctAnswer: 2` (integer). Never convert to `{ text, isCorrect }` objects. This is in COURSE_SCHEMA_SPEC Section 4, bolded as THE MOST COMMON BUG."
+
+---
+
+## CRITICAL RULES — READ BEFORE TOUCHING ANYTHING
+
+### Route Registration
+- **All routes are registered in `server/src/index.js`.** Do NOT add, remove, or rewrite any `import` or `app.use()` line without including ALL existing routes. The file header says "37 route mounts" — count them before and after your edit. If the count drops, you broke something.
+- **Never rewrite index.js from scratch.** Only add new lines. The startup integrity check will catch regressions.
+- Route file `interactiveCourseRoutes.js` (1109+ lines) is the FULL course pipeline. `courseRoutes.js` (665 lines) is a STRIPPED version missing certificate/evaluation/attestation/gamification. The import MUST point to `interactiveCourseRoutes.js`.
+
+### Icons — No Font Awesome
+- **Never add Font Awesome CSS links.** CSP blocks them and emoji render as empty boxes.
+- **Use `cr-icons.js`** — all pages load `<script src="/js/cr-icons.js"></script>` before `</body>`. It auto-replaces `<i class="fas fa-xxx">` with inline SVGs.
+- **For new icons in templates/JS**, keep using `<i class="fas fa-whatever">` — cr-icons.js will replace them. Or use inline SVGs directly.
+- **Never use emoji in buttons or UI elements.** They render as garbled characters or giant empty boxes.
+
+### Fonts
+- Display/headings: `Cormorant Garamond` (never Merriweather)
+- Body: `Lato` (never Source Sans)
+- DOCX output: Georgia (headings), Calibri (body)
+
+### Colors — ONLY these hex values
+- Burgundy: `#6B1D34` (H1, logo, CTAs)
+- Hunter Green: `#4A7C59` (H2, buttons, nav)
+- Honey/Gold: `#D4A855` (accents, badges — never on "CounselorReady" wordmark)
+- Navy: `#284157` (H3, secondary text)
+- Stone: `#F8F7F4` (page backgrounds)
+- **NEVER use:** `#34495E` (old Navy), `#40634A` (old Forest), `#34503D`
+
+### Logo Rules
+- "CounselorReady" = two separate spans: "Counselor" + "Ready"
+- On burgundy backgrounds: Counselor = `#f2a8be` (rose), Ready = `#98c3a9` (sage)
+- On light backgrounds: Counselor = `#6B1D34` (burgundy), Ready = `#4A7C59` (hunter)
+- CR monogram: C = rose/burgundy, R = green, on dark burgundy rounded square
+- Never single-color, never gold on the wordmark
+
+### Frontend Access Checks
+- `checkUserAccess()` must accept `status: 'active'`, `'trial'`, AND `'lifetime'`
+- Enrolled users always get access regardless of tier
+- Individual purchases (`purchasedCourses`) bypass tier checks
+- Tier levels: free=0, starter=1, professional=2, premium=3, vip=4, annual_vip=4, lifetime=4
+
+### MutationObservers
+- **Tailwind CDN has its own MutationObserver.** Any page-level observer that modifies DOM on every mutation will infinite-loop with Tailwind.
+- Always debounce MutationObservers with `setTimeout(fn, 150+)`.
+- Never inject DOM elements inside an observer callback without a guard (`if (el.dataset.replaced) return`).
+
+### Admin Pages
+- `limit=200` for course listing fetches (50 causes pagination hangs)
+- `status=all` parameter needed to show drafts alongside published
+- No legacy `GET /api/admin/courses` fetch — all courses are in `interactivecourses` collection
+
+### Render Shell
+- Port is 10000 (not 5000) — `curl http://localhost:10000/health`
+- Working dir: `~/project/src/server`
+- Run scripts: `node src/scripts/[filename].js`
+- For inline scripts: enter `node` REPL first, then paste JS
+- `!` character breaks `node -e` — use scripts instead
+
+### Collections
+- `interactivecourses` = active (all courses live here)
+- `courses` = legacy (do not wire frontend to this)
+- `usercourseprogresses` = progress tracking (lowercase pluralized)
+
+### File Delivery
+- Output to `/mnt/user-data/outputs/` then `present_files`
+- For HTML edits, targeted `str_replace` on specific functions is more reliable than full rewrites
+- Always validate JS with `new Function(code)` before delivering HTML with embedded scripts

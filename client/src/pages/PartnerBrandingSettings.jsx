@@ -27,13 +27,13 @@ const COLOR_SCHEMES = {
   graphite: { label: 'Graphite', primary: '#374151', accent: '#9CA3AF', bg: '#F3F4F6' },
 
   // Khaki / Earth
-  khaki: { label: 'Khaki', primary: '#78716C', accent: '#A8A29E', bg: '#FAFAF9' },
+  khaki: { label: 'Khaki', primary: '#78716C', accent: '#A8A29E', bg: '#F8F7F4' },
   sand: { label: 'Sand', primary: '#92400E', accent: '#D4A855', bg: '#FFFBEB' },
   olive: { label: 'Olive', primary: '#4D7C0F', accent: '#A3E635', bg: '#F7FEE7' },
 
   // Popular backgrounds
   'clean-white': { label: 'Clean White', primary: '#111827', accent: '#3B82F6', bg: '#FFFFFF' },
-  'warm-stone': { label: 'Warm Stone', primary: '#44403C', accent: '#78716C', bg: '#FAFAF9' },
+  'warm-stone': { label: 'Warm Stone', primary: '#44403C', accent: '#78716C', bg: '#F8F7F4' },
   'cool-gray': { label: 'Cool Gray', primary: '#1F2937', accent: '#6366F1', bg: '#F9FAFB' },
   'soft-blue': { label: 'Soft Blue', primary: '#1E40AF', accent: '#60A5FA', bg: '#F0F9FF' },
   cream: { label: 'Cream', primary: '#78350F', accent: '#D97706', bg: '#FFFBEB' },
@@ -159,7 +159,7 @@ export default function PartnerBrandingSettings() {
 
   const previewPrimary = form.primaryColor;
   const previewAccent = form.accentColor;
-  const previewBg = useCustomColors ? '#FAFAF9' : (COLOR_SCHEMES[form.colorScheme]?.bg || '#fdf5f6');
+  const previewBg = useCustomColors ? '#F8F7F4' : (COLOR_SCHEMES[form.colorScheme]?.bg || '#fdf5f6');
 
   return (
     <div className="space-y-6">
@@ -261,7 +261,7 @@ export default function PartnerBrandingSettings() {
             className="relative p-3 rounded-xl border-2 text-left transition-all hover:shadow-md"
             style={{
               borderColor: useCustomColors ? form.primaryColor : '#e7e5e4',
-              background: '#FAFAF9',
+              background: '#F8F7F4',
             }}
           >
             {useCustomColors && (

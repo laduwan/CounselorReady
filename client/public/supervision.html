@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Supervision Tracker | CounselorReady</title>
+  <link rel="stylesheet" href="/css/design-tokens.css">
+  <link rel="stylesheet" href="/css/typography.css">
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="/js/tailwind-config.js"></script>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  
+  <style>
+    body{background:#F8F7F4;font-family:'Lato',system-ui,sans-serif}
+    .font-display{font-family:'Cormorant Garamond',Georgia,serif}
+    .progress-fill{transition:width .8s cubic-bezier(.4,0,.2,1)}
+  
+    /* Shared nav styles */
+    .dd{display:none;position:absolute;top:100%;margin-top:6px;background:#fff;border-radius:10px;box-shadow:0 10px 40px rgba(107,29,52,.12);border:1px solid #FAE8EB;z-index:50;padding:6px 0;min-width:210px}
+    .dd.open{display:block}
+    .dd a{display:flex;align-items:center;gap:10px;padding:8px 16px;font-size:13px;color:#284157;text-decoration:none;transition:background .1s}
+    .dd a:hover{background:#F2F7F4}
+    .ov{display:none;position:fixed;inset:0;z-index:40}.ov.open{display:block}
+    .nav-link{padding:6px 12px;border-radius:6px;font-size:13px;font-weight:500;color:#57534e;text-decoration:none;display:flex;align-items:center;gap:4px;transition:all .15s}
+    .nav-link:hover{color:#6B1D34;background:#FDF5F7}
+    .nav-link.active{color:#6B1D34;background:#FDF5F7;font-weight:600;border-bottom:2px solid #6B1D34}
+  </style>
+</head>
+<body class="bg-stone-50 min-h-screen">
+
+  <!-- Header -->
+  <div id="cr-header"></div>
+  <script src="/shared/nav-footer.js"></script>
+
+  <main class="max-w-5xl mx-auto px-6 py-8">
+    <a href="/credentials.html" class="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-burgundy-700 mb-4"><i class="fas fa-chevron-left text-xs"></i> Credentials</a>
+
+    <div class="flex items-start justify-between mb-6">
+      <div>
+        <h1 class="font-display text-3xl font-semibold text-burgundy-900">Supervision Tracker</h1>
+        <p class="text-gray-500 mt-1">Track supervision hours toward licensure</p>
+      </div>
+      <button onclick="toggleCreate()" class="px-4 py-2 bg-burgundy-800 text-white rounded-lg text-sm font-semibold hover:bg-burgundy-900 transition-colors"><i class="fas fa-plus mr-2"></i>New Log</button>
+    </div>
+
+    <!-- Loading -->
+    <div id="loading" class="text-center py-20">
+      <div style="width:36px;height:36px;border:3px solid #e7e5e4;border-top-color:#6B1D34;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 12px"></div>
+      <p class="text-gray-400 text-sm">Loading supervision logs...</p>
+    </div>
+
+    <!-- Create Form -->
+    <div id="createForm" class="hidden bg-white rounded-xl border border-gray-200 p-6 mb-6">
+      <h2 class="font-display text-xl font-semibold text-burgundy-900 mb-4">New Supervision Log</h2>
+      <form onsubmit="createLog(event)">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <div><label class="block text-xs font-semibold text-gray-600 mb-1">Supervisor Name *</label><input id="supName" required class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm"></div>
+          <div><label class="block text-xs font-semibold text-gray-600 mb-1">Credentials</label><input id="supCreds" class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm"></div>
+          <div><label class="block text-xs font-semibold text-gray-600 mb-1">License Number</label><input id="supLicense" class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm"></div>
+          <div><label class="block text-xs font-semibold text-gray-600 mb-1">Email</label><input id="supEmail" type="email" class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm"></div>
+          <div><label class="block text-xs font-semibold text-gray-600 mb-1">Supervisor State</label><input id="supState" class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm" maxlength="2" placeholder="GA"></div>
+          <div><label class="block text-xs font-semibold text-gray-600 mb-1">License Type</label>
+            <select id="licType" class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm">
+              <option value="LPC">LPC</option><option value="LCSW">LCSW</option><option value="LMFT">LMFT</option>
+              <option value="LPC-MHSP">LPC-MHSP</option><option value="LCPC">LCPC</option><option value="LPCC">LPCC</option>
+            </select>
+          </div>
+          <div><label class="block text-xs font-semibold text-gray-600 mb-1">Your State</label><input id="yourState" class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm" maxlength="2" placeholder="GA"></div>
+          <div><label class="block text-xs font-semibold text-gray-600 mb-1">Total Hours Required</label><input id="totalHrs" type="number" value="100" class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm"></div>
+          <div><label class="block text-xs font-semibold text-gray-600 mb-1">Start Date</label><input id="startDate" type="date" class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm"></div>
+          <div><label class="block text-xs font-semibold text-gray-600 mb-1">Target Completion</label><input id="targetDate" type="date" class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm"></div>
+        </div>
+        <div class="flex gap-2">
+          <button type="submit" class="px-4 py-2 bg-burgundy-800 text-white rounded-lg text-sm font-semibold">Create Log</button>
+          <button type="button" onclick="toggleCreate()" class="px-4 py-2 border border-gray-200 rounded-lg text-sm text-gray-600">Cancel</button>
+        </div>
+      </form>
+    </div>
+
+    <div id="content" class="hidden">
+      <div id="emptyState" class="hidden text-center py-16 bg-white rounded-xl border border-gray-200">
+        <div class="w-16 h-16 rounded-full bg-burgundy-50 flex items-center justify-center mx-auto mb-4"><i class="fas fa-user-tie text-2xl text-burgundy-400"></i></div>
+        <p class="text-gray-700 font-semibold">No supervision logs yet</p>
+        <p class="text-gray-400 text-sm mt-1">Create one to start tracking your supervision hours.</p>
+      </div>
+
+      <div id="mainLayout" class="hidden grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="md:col-span-1">
+          <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+            <div class="p-4 border-b border-gray-100"><h3 class="text-sm font-semibold text-gray-700">Supervision Logs</h3></div>
+            <div id="logList" class="divide-y divide-gray-50"></div>
+          </div>
+        </div>
+        <div class="md:col-span-2">
+          <div id="logDetail" class="space-y-4"></div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Session Modal -->
+  <div id="sessionModal" class="hidden fixed inset-0 z-50 flex items-center justify-center" style="background:rgba(0,0,0,.4)">
+    <div class="bg-white rounded-xl p-6 w-full max-w-lg mx-4">
+      <h3 class="font-display text-xl font-semibold text-burgundy-900 mb-4">Add Session</h3>
+      <form onsubmit="addSession(event)">
+        <div class="grid grid-cols-2 gap-4 mb-4">
+          <div><label class="block text-xs font-semibold text-gray-600 mb-1">Date *</label><input id="sessDate" type="date" required class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm"></div>
+          <div><label class="block text-xs font-semibold text-gray-600 mb-1">Hours *</label><input id="sessHours" type="number" step="0.25" min="0.25" value="1" required class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm"></div>
+          <div><label class="block text-xs font-semibold text-gray-600 mb-1">Type</label>
+            <select id="sessType" class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm">
+              <option value="individual">Individual</option><option value="group">Group</option><option value="triadic">Triadic</option>
+            </select>
+          </div>
+          <div><label class="block text-xs font-semibold text-gray-600 mb-1">Modality</label>
+            <select id="sessMod" class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm">
+              <option value="in_person">In Person</option><option value="telehealth">Telehealth</option><option value="phone">Phone</option>
+            </select>
+          </div>
+          <div class="col-span-2"><label class="block text-xs font-semibold text-gray-600 mb-1">Topics (comma-separated)</label><input id="sessTopics" class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm" placeholder="Ethics, Treatment planning"></div>
+          <div class="col-span-2"><label class="block text-xs font-semibold text-gray-600 mb-1">Notes</label><textarea id="sessNotes" rows="2" class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm"></textarea></div>
+        </div>
+        <div class="flex gap-2">
+          <button type="submit" class="px-4 py-2 bg-hunter-500 text-white rounded-lg text-sm font-semibold">Add Session</button>
+          <button type="button" onclick="closeSessionModal()" class="px-4 py-2 border border-gray-200 rounded-lg text-sm text-gray-600">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+<style>@keyframes spin{to{transform:rotate(360deg)}}</style>
+
+<script>
+const API=location.hostname==='localhost'?'http://localhost:5000':'https://api.counselorready.com';
+const T=localStorage.getItem('token');
+if(!T)location.href='/login.html';
+
+try{const p=JSON.parse(atob(T.split('.')[1]));
+document.getElementById('userName').textContent=p.name||'';
+document.getElementById('userAvatar').textContent=(p.name||'--').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+}catch(e){}
+
+let logs=[],selectedId=null;
+
+async function init(){
+  try{
+    const r=await fetch(`${API}/api/supervision`,{headers:{Authorization:`Bearer ${T}`}});
+    if(!r.ok)throw new Error('Failed to load');
+    const d=await r.json();
+    logs=d.logs||(Array.isArray(d)?d:[]);
+    document.getElementById('loading').style.display='none';
+    document.getElementById('content').classList.remove('hidden');
+    if(!logs.length){document.getElementById('emptyState').classList.remove('hidden');return;}
+    document.getElementById('mainLayout').classList.remove('hidden');
+    selectedId=logs[0]._id;
+    renderLogList();renderDetail();
+  }catch(e){document.getElementById('loading').innerHTML='<p style="color:#6B1D34;font-weight:600">'+e.message+'</p>';}
+}
+
+function renderLogList(){
+  const el=document.getElementById('logList');
+  el.innerHTML=logs.map(l=>{
+    const hrs=l.sessions?l.sessions.reduce((s,se)=>s+(se.hours||0),0):0;
+    const pct=l.totalHoursRequired?Math.min(100,Math.round(hrs/l.totalHoursRequired*100)):0;
+    const active=l._id===selectedId;
+    return`<button onclick="selectLog('${l._id}')" class="w-full text-left px-4 py-3 hover:bg-stone-50 transition-colors ${active?'bg-burgundy-50 border-l-4 border-burgundy-800':''}">
+      <p class="text-sm font-semibold text-gray-800 truncate">${l.supervisor?.name||'Untitled'}</p>
+      <p class="text-xs text-gray-400 mt-0.5">${l.licenseType||''} &middot; ${hrs}/${l.totalHoursRequired||0} hrs (${pct}%)</p>
+      <div class="w-full bg-gray-100 rounded-full h-1 mt-1.5"><div class="h-1 rounded-full progress-fill" style="width:${pct}%;background:#4A7C59"></div></div>
+    </button>`;
+  }).join('');
+}
+
+function selectLog(id){selectedId=id;renderLogList();renderDetail();}
+
+function renderDetail(){
+  const l=logs.find(x=>x._id===selectedId);
+  if(!l){document.getElementById('logDetail').innerHTML='';return;}
+  const hrs=l.sessions?l.sessions.reduce((s,se)=>s+(se.hours||0),0):0;
+  const pct=l.totalHoursRequired?Math.min(100,Math.round(hrs/l.totalHoursRequired*100)):0;
+  const sessions=(l.sessions||[]).slice().sort((a,b)=>new Date(b.date)-new Date(a.date));
+  const typeLabels={individual:'Individual',group:'Group',triadic:'Triadic'};
+  const modLabels={in_person:'In Person',telehealth:'Telehealth',phone:'Phone'};
+
+  document.getElementById('logDetail').innerHTML=`
+    <div class="bg-white rounded-xl border border-gray-200 p-5">
+      <div class="flex items-start justify-between">
+        <div>
+          <h2 class="font-display text-2xl font-semibold text-burgundy-900">${l.supervisor?.name||'Supervisor'}</h2>
+          <p class="text-sm text-gray-500 mt-1">${l.supervisor?.credentials||''} ${l.supervisor?.licenseNumber?'#'+l.supervisor.licenseNumber:''}</p>
+          ${l.supervisor?.email?'<p class="text-sm text-gray-500">'+l.supervisor.email+'</p>':''}
+          <p class="text-xs text-gray-400 mt-1">${l.licenseType||''} &middot; ${l.state||''}</p>
+        </div>
+        <button onclick="deleteLog()" class="text-gray-300 hover:text-red-500 transition-colors"><i class="fas fa-trash"></i></button>
+      </div>
+    </div>
+    <div class="bg-white rounded-xl border border-gray-200 p-5">
+      <div class="flex items-center justify-between mb-2">
+        <h3 class="text-sm font-semibold text-gray-700">Progress</h3>
+        <span class="text-sm font-bold" style="color:#4A7C59">${hrs} / ${l.totalHoursRequired||0} hours (${pct}%)</span>
+      </div>
+      <div class="w-full bg-gray-100 rounded-full h-3"><div class="h-3 rounded-full progress-fill" style="width:${pct}%;background:#4A7C59"></div></div>
+      <div class="flex justify-between text-xs text-gray-400 mt-2">
+        <span>Start: ${l.startDate?new Date(l.startDate).toLocaleDateString():'-'}</span>
+        <span>Target: ${l.targetCompletionDate?new Date(l.targetCompletionDate).toLocaleDateString():'-'}</span>
+      </div>
+    </div>
+    <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+      <div class="p-4 border-b border-gray-100 flex items-center justify-between">
+        <h3 class="text-sm font-semibold text-gray-700">Sessions (${sessions.length})</h3>
+        <button onclick="openSessionModal()" class="px-3 py-1.5 bg-hunter-500 text-white rounded-lg text-xs font-semibold hover:bg-hunter-600"><i class="fas fa-plus mr-1"></i>Add Session</button>
+      </div>
+      ${sessions.length?sessions.map(s=>`<div class="px-5 py-3 border-b border-gray-50 last:border-0">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-gray-800">${new Date(s.date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}</p>
+            <p class="text-xs text-gray-500 mt-0.5">${typeLabels[s.type]||s.type} &middot; ${modLabels[s.modality]||s.modality} &middot; <strong>${s.hours}h</strong></p>
+            ${s.topics&&s.topics.length?'<div class="flex flex-wrap gap-1 mt-1">'+s.topics.map(t=>'<span class="px-2 py-0.5 bg-stone-100 text-stone-600 rounded text-xs">'+t+'</span>').join('')+'</div>':''}
+            ${s.notes?'<p class="text-xs text-gray-400 mt-1">'+s.notes+'</p>':''}
+          </div>
+          <button onclick="deleteSession('${s._id}')" class="text-gray-300 hover:text-red-500 text-xs"><i class="fas fa-trash"></i></button>
+        </div>
+      </div>`).join(''):'<div class="p-8 text-center"><p class="text-gray-400 text-sm">No sessions recorded yet.</p></div>'}
+    </div>`;
+}
+
+function toggleCreate(){document.getElementById('createForm').classList.toggle('hidden');}
+
+async function createLog(e){
+  e.preventDefault();
+  try{
+    const body={
+      supervisor:{name:document.getElementById('supName').value,credentials:document.getElementById('supCreds').value,licenseNumber:document.getElementById('supLicense').value,email:document.getElementById('supEmail').value,state:document.getElementById('supState').value},
+      licenseType:document.getElementById('licType').value,state:document.getElementById('yourState').value,
+      totalHoursRequired:parseInt(document.getElementById('totalHrs').value)||100,
+      startDate:document.getElementById('startDate').value,targetCompletionDate:document.getElementById('targetDate').value
+    };
+    const r=await fetch(`${API}/api/supervision`,{method:'POST',headers:{Authorization:`Bearer ${T}`,'Content-Type':'application/json'},body:JSON.stringify(body)});
+    if(!r.ok){const d=await r.json();throw new Error(d.error||'Failed');}
+    const d=await r.json();
+    logs.unshift(d);selectedId=d._id;
+    document.getElementById('createForm').classList.add('hidden');
+    document.getElementById('emptyState').classList.add('hidden');
+    document.getElementById('mainLayout').classList.remove('hidden');
+    renderLogList();renderDetail();
+  }catch(e){alert(e.message);}
+}
+
+function openSessionModal(){document.getElementById('sessDate').value=new Date().toISOString().split('T')[0];document.getElementById('sessionModal').classList.remove('hidden');}
+function closeSessionModal(){document.getElementById('sessionModal').classList.add('hidden');}
+
+async function addSession(e){
+  e.preventDefault();
+  try{
+    const body={date:document.getElementById('sessDate').value,hours:parseFloat(document.getElementById('sessHours').value),type:document.getElementById('sessType').value,modality:document.getElementById('sessMod').value,topics:document.getElementById('sessTopics').value.split(',').map(t=>t.trim()).filter(Boolean),notes:document.getElementById('sessNotes').value};
+    const r=await fetch(`${API}/api/supervision/${selectedId}/sessions`,{method:'POST',headers:{Authorization:`Bearer ${T}`,'Content-Type':'application/json'},body:JSON.stringify(body)});
+    if(!r.ok){const d=await r.json();throw new Error(d.error||'Failed');}
+    const d=await r.json();
+    logs=logs.map(l=>l._id===d._id?d:l);
+    closeSessionModal();renderLogList();renderDetail();
+  }catch(e){alert(e.message);}
+}
+
+async function deleteLog(){
+  if(!confirm('Delete this supervision log and all its sessions?'))return;
+  try{
+    await fetch(`${API}/api/supervision/${selectedId}`,{method:'DELETE',headers:{Authorization:`Bearer ${T}`}});
+    logs=logs.filter(l=>l._id!==selectedId);
+    selectedId=logs.length?logs[0]._id:null;
+    if(!logs.length){document.getElementById('mainLayout').classList.add('hidden');document.getElementById('emptyState').classList.remove('hidden');}
+    else{renderLogList();renderDetail();}
+  }catch(e){alert('Failed to delete');}
+}
+
+async function deleteSession(sid){
+  if(!confirm('Delete this session?'))return;
+  try{
+    await fetch(`${API}/api/supervision/${selectedId}/sessions/${sid}`,{method:'DELETE',headers:{Authorization:`Bearer ${T}`}});
+    const l=logs.find(x=>x._id===selectedId);
+    if(l)l.sessions=l.sessions.filter(s=>s._id!==sid);
+    renderLogList();renderDetail();
+  }catch(e){alert('Failed to delete');}
+}
+
+document.addEventListener('DOMContentLoaded',init);
+</script>
+<script src="/js/cr-icons.js"></script>
+
+  <div id="cr-footer"></div>
+</body>
+</html>

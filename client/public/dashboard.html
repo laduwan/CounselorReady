@@ -5,21 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dashboard - CounselorReady</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 36 36'><rect width='36' height='36' rx='8' fill='%236B1D34'/><text x='5' y='22' font-family='Georgia' font-weight='bold' font-size='17' fill='white'>C</text><text x='14' y='28' font-family='Georgia' font-weight='bold' font-size='14' fill='%234A7C59'>R</text></svg>">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="/css/design-tokens.css">
+  <link rel="stylesheet" href="/css/typography.css">
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="/js/tailwind-config.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Lato:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <script>
-    tailwind.config={theme:{extend:{
-      fontFamily:{display:['Cormorant Garamond','Georgia','serif'],body:['Lato','Calibri','sans-serif']},
-      colors:{
-        burgundy:{50:'#FDF5F7',100:'#FAE8EB',200:'#F5D0D6',300:'#E8A4B2',400:'#D4708A',500:'#C94D65',600:'#A83350',700:'#8B2542',800:'#6B1D34',900:'#4A1524'},
-        navy:{50:'#F0F4F7',100:'#D9E2EA',200:'#B3C5D4',300:'#7A98AE',400:'#4A6B82',500:'#284157',600:'#1F3345',700:'#172736',800:'#101C27'},
-        hunter:{50:'#F2F7F4',100:'#E4EBE6',200:'#C9D7CD',300:'#A3BDA9',400:'#7A9E84',500:'#4A7C59',600:'#3D6A4A',700:'#305538',800:'#234027'},
-        honey:{50:'#FDF9F0',100:'#F9F0DB',200:'#F3E0B5',300:'#EACD86',400:'#D4A855',500:'#C49545',600:'#A67936',700:'#865E2C',800:'#6B4A25'},
-        stone:{50:'#F8F7F4',100:'#F1EFE9',200:'#E2DED3'},
-      }
-    }}}
-  </script>
+
   <style>
     body{font-family:'Lato','Calibri',sans-serif;background:#F8F7F4;margin:0}
     .font-display{font-family:'Cormorant Garamond',Georgia,serif}
@@ -46,93 +38,8 @@
 </head>
 <body class="min-h-screen">
 
-  <header style="background:#fff;border-bottom:1px solid #e7e5e4;position:sticky;top:0;z-index:40;box-shadow:0 1px 3px rgba(107,29,52,.08)">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-      <a href="/dashboard.html" class="flex items-center gap-3 flex-shrink-0" style="text-decoration:none">
-        <div style="width:42px;height:42px;border-radius:.75rem;background:#6B1D34;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(107,29,52,.25)">
-          <span style="position:relative;display:inline-block;width:24px;height:24px">
-            <span class="font-display" style="color:#D4A855;position:absolute;top:-3px;left:0;font-weight:700;font-size:19px">C</span>
-            <span class="font-display" style="color:#7A9E84;position:absolute;top:4px;left:6px;font-weight:700;font-size:16px">R</span>
-          </span>
-        </div>
-        <span class="font-display hidden sm:inline" style="font-weight:700;font-size:1.5rem;letter-spacing:.015em">
-          <span style="color:#6B1D34">Counselor</span><span style="color:#3D6A4A">Ready</span>
-        </span>
-      </a>
-      <nav class="hidden lg:flex items-center gap-1">
-        <a href="/dashboard.html" class="nav-link active">Dashboard</a>
-        <a href="/courses.html" class="nav-link">Courses</a>
-        <a href="/credentials.html" class="nav-link">Credentials</a>
-        <a href="/supervision.html" class="nav-link">Practice</a>
-        <a href="/organization.html" class="nav-link">Team</a>
-      </nav>
-      <div class="flex items-center gap-2">
-        <a href="/admin.html" id="adminBadge" class="hidden items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full" style="color:#6B1D34;background:#FDF5F7;border:1px solid #6B1D34;text-decoration:none">
-          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
-          Admin
-        </a>
-        <div class="relative">
-          <button onclick="toggle('notif')" class="p-2 rounded-lg hover:bg-stone-100 transition-colors relative">
-            <svg class="w-5 h-5" style="color:#78716c" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
-            <span id="notifDot" class="hidden absolute top-1 right-1 w-2.5 h-2.5 bg-burgundy-800 rounded-full border-2 border-white"></span>
-          </button>
-          <div class="ov" id="notifOv" onclick="close('notif')"></div>
-          <div class="dd" id="notifDd" style="width:300px;right:0;padding:0">
-            <div style="padding:10px 16px;border-bottom:1px solid #F1EFE9;display:flex;justify-content:space-between;align-items:center"><span style="font-weight:600;font-size:13px;color:#6B1D34">Notifications</span><button onclick="markAllRead()" style="font-size:11px;color:#4A7C59;font-weight:600;background:none;border:none;cursor:pointer">Mark all read</button></div>
-            <div id="notifList" style="max-height:280px;overflow-y:auto;padding:4px 0"><div style="padding:20px 16px;text-align:center;color:#7A98AE;font-size:12px">No notifications yet</div></div>
-          </div>
-        </div>
-        <div class="relative">
-          <button onclick="toggle('user')" class="flex items-center gap-2 p-1 rounded-lg hover:bg-stone-100 transition-colors">
-            <div style="width:32px;height:32px;border-radius:50%;background:#6B1D34;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:600" id="avatarInit">U</div>
-            <span class="hidden md:block text-sm font-medium truncate" style="color:#57534e;max-width:120px" id="avatarName"></span>
-            <svg class="w-3.5 h-3.5 hidden md:block" style="color:#a8a29e" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-          </button>
-          <div class="ov" id="userOv" onclick="close('user')"></div>
-          <div class="dd" id="userDd" style="width:210px;right:0">
-            <div style="padding:10px 16px;border-bottom:1px solid #F1EFE9"><p style="font-size:13px;font-weight:600;color:#44403c;margin:0" id="menuName">User</p><p style="font-size:11px;color:#78716c;margin:2px 0 0" id="menuEmail"></p><span id="menuPlan" style="display:inline-block;margin-top:4px;font-size:10px;padding:2px 8px;border-radius:10px;font-weight:600;background:#FDF5F7;color:#6B1D34"></span></div>
-            <a href="/admin.html" id="menuAdminLink" style="display:none;color:#6B1D34"><svg class="w-4 h-4" style="color:#6B1D34" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg> Admin Panel</a>
-            <a href="/settings.html"><svg class="w-4 h-4" style="color:#7A98AE" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><circle cx="12" cy="12" r="3"/></svg> Settings</a>
-            <a href="/messages.html"><svg class="w-4 h-4" style="color:#7A98AE" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg> Messages</a>
-            <div style="border-top:1px solid #F1EFE9;margin-top:4px;padding-top:4px"><a href="#" onclick="logout();return false" style="color:#DC2626"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg> Sign out</a></div>
-          </div>
-        </div>
-        <button onclick="toggleMobile()" class="lg:hidden p-2 rounded-lg hover:bg-stone-100" style="color:#78716c">
-          <svg id="hamOpen" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
-          <svg id="hamClose" class="w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-        </button>
-      </div>
-    </div>
-    <div id="mobileNav" class="hidden lg:hidden border-t border-stone-200 bg-white px-4 py-3 space-y-1">
-      <a href="/dashboard.html" class="block px-4 py-2.5 rounded-lg text-sm font-semibold" style="color:#6B1D34;background:#FDF5F7">Dashboard</a>
-      <a href="/courses.html" class="block px-4 py-2.5 rounded-lg text-sm" style="color:#57534e">Courses</a>
-      <div style="padding-left:12px">
-        <a href="/research-ready.html" class="block px-4 py-2 rounded-lg text-sm" style="color:#78716c">Researched-N-Ready</a>
-        <a href="/recommendations.html" class="block px-4 py-2 rounded-lg text-sm" style="color:#78716c">Recommendations</a>
-        <a href="/achievements.html" class="block px-4 py-2 rounded-lg text-sm" style="color:#78716c">Achievements</a>
-      </div>
-      <a href="/credentials.html" class="block px-4 py-2.5 rounded-lg text-sm" style="color:#57534e">Credentials</a>
-      <div style="padding-left:12px">
-        <a href="/ce-planner.html" class="block px-4 py-2 rounded-lg text-sm" style="color:#78716c">CE Planner</a>
-        <a href="/audit.html" class="block px-4 py-2 rounded-lg text-sm" style="color:#78716c">Audit Kit</a>
-        <a href="/board-alerts.html" class="block px-4 py-2 rounded-lg text-sm" style="color:#78716c">Board Alerts</a>
-      </div>
-      <a href="/supervision.html" class="block px-4 py-2.5 rounded-lg text-sm" style="color:#57534e">Practice</a>
-      <div style="padding-left:12px">
-        <a href="/insurance-tracker.html" class="block px-4 py-2 rounded-lg text-sm" style="color:#78716c">Insurance Tracker</a>
-      </div>
-      <a href="/organization.html" class="block px-4 py-2.5 rounded-lg text-sm" style="color:#57534e">Team</a>
-      <div style="padding-left:12px">
-        <a href="/group-licenses.html" class="block px-4 py-2 rounded-lg text-sm" style="color:#78716c">Group Licenses</a>
-      </div>
-      <div style="border-top:1px solid #F1EFE9;margin:6px 0;padding-top:6px">
-        <a href="/legacy-vault.html" class="block px-4 py-2 rounded-lg text-sm" style="color:#57534e">Legacy Vault</a>
-        <a href="/referrals.html" class="block px-4 py-2 rounded-lg text-sm" style="color:#57534e">Referrals</a>
-        <a href="/partner-dashboard.html" class="block px-4 py-2 rounded-lg text-sm" style="color:#57534e">Partner Portal</a>
-      </div>
-      <a href="/admin.html" id="adminMob" class="hidden px-4 py-2.5 rounded-lg text-sm font-semibold" style="color:#6B1D34;background:#FDF5F7">Admin Panel</a>
-    </div>
-  </header>
+  <div id="cr-header"></div>
+  <script src="/shared/nav-footer.js"></script>
 
   <main class="max-w-7xl mx-auto px-4 sm:px-6 py-6">
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-3">
@@ -196,7 +103,7 @@
       </div>
 
       <div class="space-y-6">
-        <!-- CE Progress — navy bars -->
+        <!-- CE Progress -->
         <div class="bg-white rounded-xl border border-burgundy-100 shadow-sm p-5">
           <h2 class="font-display text-lg font-semibold text-burgundy-800 mb-4">CE Progress</h2>
           <div id="progressList" class="space-y-3"><div class="text-center py-6"><div class="w-14 h-14 bg-hunter-50 rounded-full flex items-center justify-center mx-auto mb-3"><svg class="w-7 h-7 text-hunter-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg></div><p class="text-navy-400 text-sm">Add credentials to track CE progress</p><a href="/credentials.html" class="inline-block mt-2 text-xs text-burgundy-700 hover:text-burgundy-800 font-semibold" style="text-decoration:none">+ Add Credential</a></div></div>
@@ -209,19 +116,48 @@
       </div>
     </div>
   </main>
-  <footer class="max-w-7xl mx-auto px-4 sm:px-6 py-6 mt-4"><div class="text-center text-xs text-navy-300">&copy; 2026 GAITP LLC. CounselorReady&trade; &mdash; Learn. License. Lead.&reg;</div></footer>
+
+  <!-- Footer — full burgundy with NBCC badge + provider disclosure + policy links -->
+  <div id="cr-footer"></div>
 
   <script>
     const API=location.hostname==='localhost'?'http://localhost:5000':'https://api.counselorready.com';
     const T=localStorage.getItem('token');if(!T)location.href='/login.html';
-    function toggle(id){document.getElementById(id+'Dd').classList.toggle('open');document.getElementById(id+'Ov').classList.toggle('open');}
-    function close(id){document.getElementById(id+'Dd').classList.remove('open');document.getElementById(id+'Ov').classList.remove('open');}
-    function toggleMobile(){document.getElementById('mobileNav').classList.toggle('hidden');document.getElementById('hamOpen').classList.toggle('hidden');document.getElementById('hamClose').classList.toggle('hidden');}
-    function logout(){localStorage.removeItem('token');localStorage.removeItem('user');location.href='/login.html';}
+    // Welcome message (user data loaded by shared nav-footer.js)
+    setTimeout(()=>{try{const u=JSON.parse(localStorage.getItem('user')||'{}');const f=u.profile?.firstName||u.firstName||'';if(f){const el=document.getElementById('welcomeMsg');if(el)el.textContent='Welcome back, '+f+'!';}}catch(e){}},600);
+    async function loadStats(){try{
+      // Sync certificates → credentials first
+      await fetch(`${API}/api/credentials/sync`,{method:'POST',headers:{Authorization:`Bearer ${T}`}}).catch(()=>{});
 
-    async function loadUser(){try{const r=await fetch(`${API}/api/auth/me`,{headers:{Authorization:`Bearer ${T}`}});if(!r.ok)throw 0;const d=await r.json(),u=d.user||d,f=u.profile?.firstName||u.firstName||'',l=u.profile?.lastName||u.lastName||'';document.getElementById('welcomeMsg').textContent=`Welcome back, ${f||'there'}!`;document.getElementById('avatarInit').textContent=`${f.charAt(0)}${l.charAt(0)}`.toUpperCase()||'U';document.getElementById('avatarName').textContent=f||u.email?.split('@')[0]||'';document.getElementById('menuName').textContent=`${f} ${l}`.trim()||'User';document.getElementById('menuEmail').textContent=u.email||'';const p=u.subscription?.plan||'free';document.getElementById('menuPlan').textContent=p.charAt(0).toUpperCase()+p.slice(1)+' plan';if(u.role==='admin'||u.isAdmin){document.getElementById('adminBadge')?.classList.remove('hidden');document.getElementById('adminBadge')?.classList.add('flex');document.getElementById('adminMob')?.classList.remove('hidden');const ml=document.getElementById('menuAdminLink');if(ml)ml.style.display='flex';}localStorage.setItem('user',JSON.stringify(u));}catch(e){console.error(e);}}
+      const[cR,crR,pR]=await Promise.all([
+        fetch(`${API}/api/certificates`,{headers:{Authorization:`Bearer ${T}`}}),
+        fetch(`${API}/api/credentials`,{headers:{Authorization:`Bearer ${T}`}}),
+        fetch(`${API}/api/interactive-courses/user/my-courses`,{headers:{Authorization:`Bearer ${T}`}}).catch(()=>null)
+      ]);
 
-    async function loadStats(){try{const[cR,crR,pR]=await Promise.all([fetch(`${API}/api/certificates`,{headers:{Authorization:`Bearer ${T}`}}),fetch(`${API}/api/credentials`,{headers:{Authorization:`Bearer ${T}`}}),fetch(`${API}/api/interactive-courses/user/my-courses`,{headers:{Authorization:`Bearer ${T}`}}).catch(()=>null)]);if(cR.ok){const c=await cR.json(),l=Array.isArray(c)?c:(c.certificates||[]);document.getElementById('certificatesCount').textContent=l.length;const h=l.reduce((s,x)=>s+(parseFloat(x.ceHours)||0),0);document.getElementById('totalHours').textContent=h%1===0?h:h.toFixed(1);}if(crR.ok){const c=await crR.json(),l=Array.isArray(c)?c:(c.credentials||[]);document.getElementById('credentialsCount').textContent=l.length;renderProgress(l);renderRenewals(l);}if(pR?.ok){const p=await pR.json();const list=p.data||(Array.isArray(p)?p:[]);document.getElementById('coursesCompleted').textContent=list.filter(x=>x.status==='completed').length;renderCourses(list);}}catch(e){console.error(e);}}
+      // Certificates count
+      let certCount=0;
+      if(cR.ok){const c=await cR.json(),l=Array.isArray(c)?c:(c.certificates||[]);certCount=l.length;document.getElementById('certificatesCount').textContent=l.length;}
+
+      // Credentials — this is the source of truth for CE hours
+      if(crR.ok){
+        const c=await crR.json(),l=Array.isArray(c)?c:(c.credentials||[]);
+        document.getElementById('credentialsCount').textContent=l.length;
+
+        // CE Hours = sum of all totalCEUsCompleted across credentials (deduplicated)
+        // If no credentials, fall back to certificate hours
+        if(l.length>0){
+          const totalHrs=l.reduce((s,x)=>s+(x.totalCEUsCompleted||0),0);
+          document.getElementById('totalHours').textContent=totalHrs%1===0?totalHrs:totalHrs.toFixed(1);
+        }
+
+        renderProgress(l);
+        renderRenewals(l);
+      }
+
+      // Courses completed
+      if(pR?.ok){const p=await pR.json();const list=p.data||(Array.isArray(p)?p:[]);document.getElementById('coursesCompleted').textContent=list.filter(x=>x.status==='completed'||x.status==='certified').length;renderCourses(list);}
+    }catch(e){console.error('Dashboard loadStats error:',e);}}
 
     function credLabel(x){
       const generic=['state_license','national_cert','specialty_cert','training','custom','other'];
@@ -242,7 +178,17 @@
         const n=credLabel(x);
         const e=x.totalCEUsCompleted||0,r=x.totalCEUsRequired||0;
         const p=r>0?Math.min(100,Math.round(e/r*100)):0;
-        return`<div><div class="flex items-center justify-between mb-1"><span class="text-sm font-medium text-burgundy-800 truncate pr-2">${n}</span><span class="text-xs text-navy-400 flex-shrink-0">${e}/${r} hrs</span></div><div class="h-2 bg-stone-100 rounded-full overflow-hidden"><div class="progress-fill h-full rounded-full" style="width:${p}%;background:#284157"></div></div></div>`;
+        const remaining=Math.max(0,r-e);
+        const barColor=p>=100?'#4A7C59':p>=50?'#D4A855':'#6B1D34';
+
+        // Show top gap categories
+        const gaps=(x.requirements||[]).filter(rq=>rq.hoursRequired>0&&(rq.hoursCompleted||0)<rq.hoursRequired).slice(0,2);
+        const gapHtml=gaps.length?'<div class="flex gap-1 mt-1.5">'+gaps.map(g=>{
+          const gl=Math.max(0,g.hoursRequired-(g.hoursCompleted||0));
+          return'<span class="text-[10px] px-1.5 py-0.5 rounded" style="background:rgba(212,168,85,.15);color:#8B6914">'+g.category+': '+gl+'hr left</span>';
+        }).join('')+'</div>':'';
+
+        return`<div class="mb-3"><div class="flex items-center justify-between mb-1"><span class="text-sm font-medium text-burgundy-800 truncate pr-2">${n}</span><span class="text-xs font-semibold flex-shrink-0" style="color:${barColor}">${remaining>0?remaining+' hrs left':'Complete'}</span></div><div class="flex items-center gap-2"><div class="flex-1 h-2 bg-stone-100 rounded-full overflow-hidden"><div class="progress-fill h-full rounded-full" style="width:${p}%;background:${barColor}"></div></div><span class="text-[10px] text-navy-400 w-8 text-right">${e}/${r}</span></div>${gapHtml}</div>`;
       }).join('');
     }
 
@@ -279,11 +225,7 @@
         </a>`;
       }).join('');
     }
-
-    async function loadNotifs(){try{const r=await fetch(`${API}/api/notifications?limit=8`,{headers:{Authorization:`Bearer ${T}`}});if(!r.ok)return;const d=await r.json(),n=d.notifications||[],u=d.unreadCount||0;if(u>0)document.getElementById('notifDot').classList.remove('hidden');if(n.length)document.getElementById('notifList').innerHTML=n.map(x=>`<div style="padding:10px 16px;border-bottom:1px solid #F1EFE9;${x.read?'':'background:#FDF5F7;'}" class="hover:bg-stone-50 cursor-pointer"><p style="font-size:13px;font-weight:500;color:#44403c;margin:0">${x.title||''}</p><p style="font-size:11px;color:#78716c;margin:2px 0 0">${x.message||''}</p></div>`).join('');}catch(e){}}
-    async function markAllRead(){try{await fetch(`${API}/api/notifications/read-all`,{method:'PATCH',headers:{Authorization:`Bearer ${T}`}});document.getElementById('notifDot').classList.add('hidden');}catch(e){}}
-
-    loadUser();loadStats();loadNotifs();
-  </script>
+    loadStats();
+    </script>
 </body>
 </html>

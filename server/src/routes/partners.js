@@ -122,7 +122,7 @@ router.get('/admin/analytics', protect, requireAdmin, async (req, res) => {
           { $group: { _id: '$courseId', count: { $sum: 1 } } }
         ]).toArray(),
         db.collection('interactivecourseprogresses').aggregate([
-          { $match: { courseId: { $in: allPartnerCourseIds }, completed: true } },
+          { $match: { courseId: { $in: allPartnerCourseIds }, status: 'completed' } },
           { $group: { _id: '$courseId', count: { $sum: 1 }, hours: { $sum: { $ifNull: ['$ceHours', 0] } } } }
         ]).toArray()
       ]);
@@ -278,7 +278,7 @@ router.get('/my/courses', protect, requirePartnerAdmin, async (req, res) => {
           { $group: { _id: '$courseId', count: { $sum: 1 } } }
         ]).toArray(),
         db.collection('interactivecourseprogresses').aggregate([
-          { $match: { courseId: { $in: courseIds }, completed: true } },
+          { $match: { courseId: { $in: courseIds }, status: 'completed' } },
           { $group: { _id: '$courseId', count: { $sum: 1 } } }
         ]).toArray()
       ]);
@@ -380,345 +380,6 @@ router.delete('/my/courses/:courseId', protect, requirePartnerAdmin, async (req,
 
     await course.deleteOne();
     res.json({ message: 'Course deleted' });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// ── Admin: get single partner ──
-router.get('/:id', protect, requireAdmin, async (req, res) => {
-  try {
-    const partner = await Partner.findById(req.params.id)
-      .populate('createdBy', 'email profile.firstName profile.lastName');
-
-    if (!partner) {
-      return res.status(404).json({ error: 'Partner not found' });
-    }
-
-    const userCount = await User.countDocuments({ partnerId: partner._id });
-    res.json({ partner: { ...partner.toObject(), userCount } });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// ── Admin: create partner ──
-router.post('/', protect, requireAdmin, async (req, res) => {
-  try {
-    const { name, slug, branding, contact, defaultPlan } = req.body;
-
-    if (!name || !slug) {
-      return res.status(400).json({ error: 'Name and slug are required' });
-    }
-
-    const existing = await Partner.findOne({ slug: slug.toLowerCase() });
-    if (existing) {
-      return res.status(400).json({ error: 'A partner with this slug already exists' });
-    }
-
-    const partner = await Partner.create({
-      name,
-      slug: slug.toLowerCase(),
-      branding: branding || {},
-      contact: contact || {},
-      defaultPlan: defaultPlan || 'free',
-      createdBy: req.user._id
-    });
-
-    res.status(201).json({ partner });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// ── Admin: update partner ──
-router.put('/:id', protect, requireAdmin, async (req, res) => {
-  try {
-    const { name, slug, branding, contact, defaultPlan, active } = req.body;
-
-    const partner = await Partner.findById(req.params.id);
-    if (!partner) {
-      return res.status(404).json({ error: 'Partner not found' });
-    }
-
-    // Check slug uniqueness if changing
-    if (slug && slug.toLowerCase() !== partner.slug) {
-      const existing = await Partner.findOne({ slug: slug.toLowerCase() });
-      if (existing) {
-        return res.status(400).json({ error: 'A partner with this slug already exists' });
-      }
-    }
-
-    if (name !== undefined) partner.name = name;
-    if (slug !== undefined) partner.slug = slug.toLowerCase();
-    if (branding !== undefined) partner.branding = { ...partner.branding.toObject?.() || partner.branding, ...branding };
-    if (contact !== undefined) partner.contact = { ...partner.contact.toObject?.() || partner.contact, ...contact };
-    if (defaultPlan !== undefined) partner.defaultPlan = defaultPlan;
-    if (active !== undefined) partner.active = active;
-
-    await partner.save();
-    res.json({ partner });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// ── Admin: list users for a partner ──
-router.get('/:id/users', protect, requireAdmin, async (req, res) => {
-  try {
-    const users = await User.find({ partnerId: req.params.id })
-      .select('email profile.firstName profile.lastName subscription.plan subscription.status createdAt')
-      .sort({ createdAt: -1 })
-      .lean();
-
-    res.json({ users, total: users.length });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// ── Admin: partner-scoped analytics ──
-router.get('/:id/stats', protect, requireAdmin, async (req, res) => {
-  try {
-    const partnerId = new mongoose.Types.ObjectId(req.params.id);
-    const db = mongoose.connection.db;
-
-    // Get all user IDs for this partner
-    const partnerUsers = await User.find({ partnerId }).select('_id').lean();
-    const userIds = partnerUsers.map(u => u._id);
-
-    const totalUsers = userIds.length;
-
-    // Active users (logged in within last 30 days)
-    const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-    const activeUsers = await User.countDocuments({
-      partnerId,
-      lastLoginAt: { $gte: thirtyDaysAgo }
-    });
-
-    // Course completions from both progress collections
-    let coursesCompleted = 0;
-    let ceHoursEarned = 0;
-
-    if (userIds.length > 0) {
-      const [regularCompletions, interactiveCompletions] = await Promise.all([
-        db.collection('usercourseprogresses').aggregate([
-          { $match: { userId: { $in: userIds }, completed: true } },
-          { $group: { _id: null, count: { $sum: 1 }, hours: { $sum: { $ifNull: ['$ceHours', 0] } } } }
-        ]).toArray(),
-        db.collection('interactivecourseprogresses').aggregate([
-          { $match: { userId: { $in: userIds }, completed: true } },
-          { $group: { _id: null, count: { $sum: 1 }, hours: { $sum: { $ifNull: ['$ceHours', 0] } } } }
-        ]).toArray()
-      ]);
-
-      coursesCompleted = (regularCompletions[0]?.count || 0) + (interactiveCompletions[0]?.count || 0);
-      ceHoursEarned = (regularCompletions[0]?.hours || 0) + (interactiveCompletions[0]?.hours || 0);
-    }
-
-    // Per-course breakdown for partner-owned courses
-    const partnerCourses = await InteractiveCourse.find({ partnerId })
-      .select('title slug ceHours status')
-      .lean();
-
-    let courseBreakdown = [];
-    if (partnerCourses.length > 0) {
-      const courseIds = partnerCourses.map(c => c._id);
-      const [courseEnrollments, courseCompletions] = await Promise.all([
-        db.collection('interactivecourseprogresses').aggregate([
-          { $match: { courseId: { $in: courseIds } } },
-          { $group: { _id: '$courseId', count: { $sum: 1 } } }
-        ]).toArray(),
-        db.collection('interactivecourseprogresses').aggregate([
-          { $match: { courseId: { $in: courseIds }, completed: true } },
-          { $group: { _id: '$courseId', count: { $sum: 1 } } }
-        ]).toArray()
-      ]);
-
-      const enrollMap = Object.fromEntries(courseEnrollments.map(e => [e._id.toString(), e.count]));
-      const completeMap = Object.fromEntries(courseCompletions.map(c => [c._id.toString(), c.count]));
-
-      courseBreakdown = partnerCourses.map(c => ({
-        courseId: c._id,
-        title: c.title,
-        enrollments: enrollMap[c._id.toString()] || 0,
-        completions: completeMap[c._id.toString()] || 0,
-        completionRate: (enrollMap[c._id.toString()] || 0) > 0
-          ? Math.round(((completeMap[c._id.toString()] || 0) / enrollMap[c._id.toString()]) * 100)
-          : 0
-      }));
-    }
-
-    res.json({ totalUsers, activeUsers, coursesCompleted, ceHoursEarned, courseBreakdown });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// ── Admin: delete partner ──
-router.delete('/:id', protect, requireAdmin, async (req, res) => {
-  try {
-    const partner = await Partner.findById(req.params.id);
-    if (!partner) {
-      return res.status(404).json({ error: 'Partner not found' });
-    }
-
-    // Unlink users from this partner
-    await User.updateMany({ partnerId: partner._id }, { $unset: { partnerId: 1 } });
-    await partner.deleteOne();
-
-    res.json({ message: 'Partner deleted and users unlinked' });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// ── Admin: promote user to partner_admin ──
-router.post('/:id/set-admin', protect, requireAdmin, async (req, res) => {
-  try {
-    const partner = await Partner.findById(req.params.id);
-    if (!partner) {
-      return res.status(404).json({ error: 'Partner not found' });
-    }
-
-    const { email } = req.body;
-    if (!email) {
-      return res.status(400).json({ error: 'Email is required' });
-    }
-
-    const user = await User.findOne({ email: email.toLowerCase() });
-    if (!user) {
-      return res.status(404).json({ error: 'User not found with that email' });
-    }
-
-    user.role = 'partner_admin';
-    user.partnerId = partner._id;
-    await user.save();
-
-    res.json({ message: `${email} promoted to partner admin for ${partner.name}` });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// ── Admin: view partner courses ──
-router.get('/:id/courses', protect, requireAdmin, async (req, res) => {
-  try {
-    const courses = await InteractiveCourse.find({ partnerId: req.params.id })
-      .select('title slug ceHours status publishedAt totalEstimatedTime')
-      .sort({ createdAt: -1 })
-      .lean();
-
-    // Attach enrollment/completion counts
-    const db = mongoose.connection.db;
-    const courseIds = courses.map(c => c._id);
-
-    const [enrollments, completions] = await Promise.all([
-      db.collection('interactivecourseprogresses').aggregate([
-        { $match: { courseId: { $in: courseIds } } },
-        { $group: { _id: '$courseId', count: { $sum: 1 } } }
-      ]).toArray(),
-      db.collection('interactivecourseprogresses').aggregate([
-        { $match: { courseId: { $in: courseIds }, completed: true } },
-        { $group: { _id: '$courseId', count: { $sum: 1 } } }
-      ]).toArray()
-    ]);
-
-    const enrollMap = Object.fromEntries(enrollments.map(e => [e._id.toString(), e.count]));
-    const completeMap = Object.fromEntries(completions.map(c => [c._id.toString(), c.count]));
-
-    const results = courses.map(c => ({
-      ...c,
-      enrollments: enrollMap[c._id.toString()] || 0,
-      completions: completeMap[c._id.toString()] || 0
-    }));
-
-    res.json({ courses: results });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// ── Admin: view partner course analytics ──
-router.get('/:id/courses/:courseId/analytics', protect, requireAdmin, async (req, res) => {
-  try {
-    const course = await InteractiveCourse.findOne({
-      _id: req.params.courseId,
-      partnerId: req.params.id
-    }).lean();
-
-    if (!course) {
-      return res.status(404).json({ error: 'Course not found for this partner' });
-    }
-
-    const db = mongoose.connection.db;
-    const courseId = new mongoose.Types.ObjectId(req.params.courseId);
-
-    const [enrollments, completions, avgProgress] = await Promise.all([
-      db.collection('interactivecourseprogresses').countDocuments({ courseId }),
-      db.collection('interactivecourseprogresses').countDocuments({ courseId, completed: true }),
-      db.collection('interactivecourseprogresses').aggregate([
-        { $match: { courseId } },
-        { $group: { _id: null, avg: { $avg: { $ifNull: ['$progressPercent', 0] } } } }
-      ]).toArray()
-    ]);
-
-    res.json({
-      course: { _id: course._id, title: course.title, slug: course.slug },
-      enrollments,
-      completions,
-      completionRate: enrollments > 0 ? Math.round((completions / enrollments) * 100) : 0,
-      avgProgress: Math.round(avgProgress[0]?.avg || 0)
-    });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// ══════════════════════════════════════════════
-// PARTNER COURSE CATALOG (public for partner users)
-// ══════════════════════════════════════════════
-
-// ── Public: list published courses for a partner ──
-router.get('/slug/:slug/courses', async (req, res) => {
-  try {
-    const partner = await Partner.findOne({
-      slug: req.params.slug.toLowerCase(),
-      active: true
-    });
-    if (!partner) {
-      return res.status(404).json({ error: 'Partner not found' });
-    }
-
-    const { search, category, page = 1, limit = 50 } = req.query;
-    const query = { partnerId: partner._id, status: 'published' };
-
-    if (search) {
-      query.$or = [
-        { title: { $regex: search, $options: 'i' } },
-        { description: { $regex: search, $options: 'i' } }
-      ];
-    }
-    if (category) query.categories = category;
-
-    const courses = await InteractiveCourse.find(query)
-      .select('title slug description thumbnail ceHours totalEstimatedTime categories tags status')
-      .sort({ publishedAt: -1 })
-      .skip((page - 1) * limit)
-      .limit(parseInt(limit))
-      .lean();
-
-    const total = await InteractiveCourse.countDocuments(query);
-
-    res.json({
-      partner: {
-        name: partner.name,
-        branding: partner.branding
-      },
-      courses,
-      pagination: { page: parseInt(page), limit: parseInt(limit), total, pages: Math.ceil(total / limit) }
-    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -1245,11 +906,11 @@ router.get('/my/stats', protect, requirePartnerAdmin, async (req, res) => {
     if (userIds.length > 0) {
       const [regularCompletions, interactiveCompletions] = await Promise.all([
         db.collection('usercourseprogresses').aggregate([
-          { $match: { userId: { $in: userIds }, completed: true } },
+          { $match: { userId: { $in: userIds }, status: 'completed' } },
           { $group: { _id: null, count: { $sum: 1 }, hours: { $sum: { $ifNull: ['$ceHours', 0] } } } }
         ]).toArray(),
         db.collection('interactivecourseprogresses').aggregate([
-          { $match: { userId: { $in: userIds }, completed: true } },
+          { $match: { userId: { $in: userIds }, status: 'completed' } },
           { $group: { _id: null, count: { $sum: 1 }, hours: { $sum: { $ifNull: ['$ceHours', 0] } } } }
         ]).toArray()
       ]);
@@ -1271,7 +932,7 @@ router.get('/my/stats', protect, requirePartnerAdmin, async (req, res) => {
           { $group: { _id: '$courseId', count: { $sum: 1 } } }
         ]).toArray(),
         db.collection('interactivecourseprogresses').aggregate([
-          { $match: { courseId: { $in: courseIds }, completed: true } },
+          { $match: { courseId: { $in: courseIds }, status: 'completed' } },
           { $group: { _id: '$courseId', count: { $sum: 1 } } }
         ]).toArray()
       ]);
@@ -1563,7 +1224,7 @@ router.get('/my/reports/courses', protect, requirePartnerAdmin, async (req, res)
           { $group: { _id: '$courseId', count: { $sum: 1 } } }
         ]).toArray(),
         db.collection('interactivecourseprogresses').aggregate([
-          { $match: { courseId: { $in: courseIds }, completed: true } },
+          { $match: { courseId: { $in: courseIds }, status: 'completed' } },
           { $group: { _id: '$courseId', count: { $sum: 1 } } }
         ]).toArray()
       ]);
@@ -1667,6 +1328,346 @@ router.get('/my/reports/completions', protect, requirePartnerAdmin, async (req, 
     res.status(500).json({ error: error.message });
   }
 });
+
+// ── Admin: get single partner ──
+router.get('/:id', protect, requireAdmin, async (req, res) => {
+  try {
+    const partner = await Partner.findById(req.params.id)
+      .populate('createdBy', 'email profile.firstName profile.lastName');
+
+    if (!partner) {
+      return res.status(404).json({ error: 'Partner not found' });
+    }
+
+    const userCount = await User.countDocuments({ partnerId: partner._id });
+    res.json({ partner: { ...partner.toObject(), userCount } });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ── Admin: create partner ──
+router.post('/', protect, requireAdmin, async (req, res) => {
+  try {
+    const { name, slug, branding, contact, defaultPlan } = req.body;
+
+    if (!name || !slug) {
+      return res.status(400).json({ error: 'Name and slug are required' });
+    }
+
+    const existing = await Partner.findOne({ slug: slug.toLowerCase() });
+    if (existing) {
+      return res.status(400).json({ error: 'A partner with this slug already exists' });
+    }
+
+    const partner = await Partner.create({
+      name,
+      slug: slug.toLowerCase(),
+      branding: branding || {},
+      contact: contact || {},
+      defaultPlan: defaultPlan || 'free',
+      createdBy: req.user._id
+    });
+
+    res.status(201).json({ partner });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ── Admin: update partner ──
+router.put('/:id', protect, requireAdmin, async (req, res) => {
+  try {
+    const { name, slug, branding, contact, defaultPlan, active } = req.body;
+
+    const partner = await Partner.findById(req.params.id);
+    if (!partner) {
+      return res.status(404).json({ error: 'Partner not found' });
+    }
+
+    // Check slug uniqueness if changing
+    if (slug && slug.toLowerCase() !== partner.slug) {
+      const existing = await Partner.findOne({ slug: slug.toLowerCase() });
+      if (existing) {
+        return res.status(400).json({ error: 'A partner with this slug already exists' });
+      }
+    }
+
+    if (name !== undefined) partner.name = name;
+    if (slug !== undefined) partner.slug = slug.toLowerCase();
+    if (branding !== undefined) partner.branding = { ...partner.branding.toObject?.() || partner.branding, ...branding };
+    if (contact !== undefined) partner.contact = { ...partner.contact.toObject?.() || partner.contact, ...contact };
+    if (defaultPlan !== undefined) partner.defaultPlan = defaultPlan;
+    if (active !== undefined) partner.active = active;
+
+    await partner.save();
+    res.json({ partner });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ── Admin: list users for a partner ──
+router.get('/:id/users', protect, requireAdmin, async (req, res) => {
+  try {
+    const users = await User.find({ partnerId: req.params.id })
+      .select('email profile.firstName profile.lastName subscription.plan subscription.status createdAt')
+      .sort({ createdAt: -1 })
+      .lean();
+
+    res.json({ users, total: users.length });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ── Admin: partner-scoped analytics ──
+router.get('/:id/stats', protect, requireAdmin, async (req, res) => {
+  try {
+    const partnerId = new mongoose.Types.ObjectId(req.params.id);
+    const db = mongoose.connection.db;
+
+    // Get all user IDs for this partner
+    const partnerUsers = await User.find({ partnerId }).select('_id').lean();
+    const userIds = partnerUsers.map(u => u._id);
+
+    const totalUsers = userIds.length;
+
+    // Active users (logged in within last 30 days)
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    const activeUsers = await User.countDocuments({
+      partnerId,
+      lastLoginAt: { $gte: thirtyDaysAgo }
+    });
+
+    // Course completions from both progress collections
+    let coursesCompleted = 0;
+    let ceHoursEarned = 0;
+
+    if (userIds.length > 0) {
+      const [regularCompletions, interactiveCompletions] = await Promise.all([
+        db.collection('usercourseprogresses').aggregate([
+          { $match: { userId: { $in: userIds }, status: 'completed' } },
+          { $group: { _id: null, count: { $sum: 1 }, hours: { $sum: { $ifNull: ['$ceHours', 0] } } } }
+        ]).toArray(),
+        db.collection('interactivecourseprogresses').aggregate([
+          { $match: { userId: { $in: userIds }, status: 'completed' } },
+          { $group: { _id: null, count: { $sum: 1 }, hours: { $sum: { $ifNull: ['$ceHours', 0] } } } }
+        ]).toArray()
+      ]);
+
+      coursesCompleted = (regularCompletions[0]?.count || 0) + (interactiveCompletions[0]?.count || 0);
+      ceHoursEarned = (regularCompletions[0]?.hours || 0) + (interactiveCompletions[0]?.hours || 0);
+    }
+
+    // Per-course breakdown for partner-owned courses
+    const partnerCourses = await InteractiveCourse.find({ partnerId })
+      .select('title slug ceHours status')
+      .lean();
+
+    let courseBreakdown = [];
+    if (partnerCourses.length > 0) {
+      const courseIds = partnerCourses.map(c => c._id);
+      const [courseEnrollments, courseCompletions] = await Promise.all([
+        db.collection('interactivecourseprogresses').aggregate([
+          { $match: { courseId: { $in: courseIds } } },
+          { $group: { _id: '$courseId', count: { $sum: 1 } } }
+        ]).toArray(),
+        db.collection('interactivecourseprogresses').aggregate([
+          { $match: { courseId: { $in: courseIds }, status: 'completed' } },
+          { $group: { _id: '$courseId', count: { $sum: 1 } } }
+        ]).toArray()
+      ]);
+
+      const enrollMap = Object.fromEntries(courseEnrollments.map(e => [e._id.toString(), e.count]));
+      const completeMap = Object.fromEntries(courseCompletions.map(c => [c._id.toString(), c.count]));
+
+      courseBreakdown = partnerCourses.map(c => ({
+        courseId: c._id,
+        title: c.title,
+        enrollments: enrollMap[c._id.toString()] || 0,
+        completions: completeMap[c._id.toString()] || 0,
+        completionRate: (enrollMap[c._id.toString()] || 0) > 0
+          ? Math.round(((completeMap[c._id.toString()] || 0) / enrollMap[c._id.toString()]) * 100)
+          : 0
+      }));
+    }
+
+    res.json({ totalUsers, activeUsers, coursesCompleted, ceHoursEarned, courseBreakdown });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ── Admin: delete partner ──
+router.delete('/:id', protect, requireAdmin, async (req, res) => {
+  try {
+    const partner = await Partner.findById(req.params.id);
+    if (!partner) {
+      return res.status(404).json({ error: 'Partner not found' });
+    }
+
+    // Unlink users from this partner
+    await User.updateMany({ partnerId: partner._id }, { $unset: { partnerId: 1 } });
+    await partner.deleteOne();
+
+    res.json({ message: 'Partner deleted and users unlinked' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ── Admin: promote user to partner_admin ──
+router.post('/:id/set-admin', protect, requireAdmin, async (req, res) => {
+  try {
+    const partner = await Partner.findById(req.params.id);
+    if (!partner) {
+      return res.status(404).json({ error: 'Partner not found' });
+    }
+
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ error: 'Email is required' });
+    }
+
+    const user = await User.findOne({ email: email.toLowerCase() });
+    if (!user) {
+      return res.status(404).json({ error: 'User not found with that email' });
+    }
+
+    user.role = 'partner_admin';
+    user.partnerId = partner._id;
+    await user.save();
+
+    res.json({ message: `${email} promoted to partner admin for ${partner.name}` });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ── Admin: view partner courses ──
+router.get('/:id/courses', protect, requireAdmin, async (req, res) => {
+  try {
+    const courses = await InteractiveCourse.find({ partnerId: req.params.id })
+      .select('title slug ceHours status publishedAt totalEstimatedTime')
+      .sort({ createdAt: -1 })
+      .lean();
+
+    // Attach enrollment/completion counts
+    const db = mongoose.connection.db;
+    const courseIds = courses.map(c => c._id);
+
+    const [enrollments, completions] = await Promise.all([
+      db.collection('interactivecourseprogresses').aggregate([
+        { $match: { courseId: { $in: courseIds } } },
+        { $group: { _id: '$courseId', count: { $sum: 1 } } }
+      ]).toArray(),
+      db.collection('interactivecourseprogresses').aggregate([
+        { $match: { courseId: { $in: courseIds }, status: 'completed' } },
+        { $group: { _id: '$courseId', count: { $sum: 1 } } }
+      ]).toArray()
+    ]);
+
+    const enrollMap = Object.fromEntries(enrollments.map(e => [e._id.toString(), e.count]));
+    const completeMap = Object.fromEntries(completions.map(c => [c._id.toString(), c.count]));
+
+    const results = courses.map(c => ({
+      ...c,
+      enrollments: enrollMap[c._id.toString()] || 0,
+      completions: completeMap[c._id.toString()] || 0
+    }));
+
+    res.json({ courses: results });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ── Admin: view partner course analytics ──
+router.get('/:id/courses/:courseId/analytics', protect, requireAdmin, async (req, res) => {
+  try {
+    const course = await InteractiveCourse.findOne({
+      _id: req.params.courseId,
+      partnerId: req.params.id
+    }).lean();
+
+    if (!course) {
+      return res.status(404).json({ error: 'Course not found for this partner' });
+    }
+
+    const db = mongoose.connection.db;
+    const courseId = new mongoose.Types.ObjectId(req.params.courseId);
+
+    const [enrollments, completions, avgProgress] = await Promise.all([
+      db.collection('interactivecourseprogresses').countDocuments({ courseId }),
+      db.collection('interactivecourseprogresses').countDocuments({ courseId, status: 'completed' }),
+      db.collection('interactivecourseprogresses').aggregate([
+        { $match: { courseId } },
+        { $group: { _id: null, avg: { $avg: { $ifNull: ['$progressPercent', 0] } } } }
+      ]).toArray()
+    ]);
+
+    res.json({
+      course: { _id: course._id, title: course.title, slug: course.slug },
+      enrollments,
+      completions,
+      completionRate: enrollments > 0 ? Math.round((completions / enrollments) * 100) : 0,
+      avgProgress: Math.round(avgProgress[0]?.avg || 0)
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ══════════════════════════════════════════════
+// PARTNER COURSE CATALOG (public for partner users)
+// ══════════════════════════════════════════════
+
+// ── Public: list published courses for a partner ──
+router.get('/slug/:slug/courses', async (req, res) => {
+  try {
+    const partner = await Partner.findOne({
+      slug: req.params.slug.toLowerCase(),
+      active: true
+    });
+    if (!partner) {
+      return res.status(404).json({ error: 'Partner not found' });
+    }
+
+    const { search, category, page = 1, limit = 50 } = req.query;
+    const query = { partnerId: partner._id, status: 'published' };
+
+    if (search) {
+      query.$or = [
+        { title: { $regex: search, $options: 'i' } },
+        { description: { $regex: search, $options: 'i' } }
+      ];
+    }
+    if (category) query.categories = category;
+
+    const courses = await InteractiveCourse.find(query)
+      .select('title slug description thumbnail ceHours totalEstimatedTime categories tags status')
+      .sort({ publishedAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(parseInt(limit))
+      .lean();
+
+    const total = await InteractiveCourse.countDocuments(query);
+
+    res.json({
+      partner: {
+        name: partner.name,
+        branding: partner.branding
+      },
+      courses,
+      pagination: { page: parseInt(page), limit: parseInt(limit), total, pages: Math.ceil(total / limit) }
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 
 // ══════════════════════════════════════════════════════════════
 // ── Admin Support Endpoints (audit, health, notes, quick-fix)

@@ -10,6 +10,7 @@
 import express from 'express';
 import jwt from 'jsonwebtoken';
 import Anthropic from '@anthropic-ai/sdk';
+import { logActivity, ACTIVITY_TYPES } from '../services/activityTrackingService.js';
 
 const router = express.Router();
 
@@ -255,6 +256,16 @@ Session context:
       remaining: rateCheck.remaining === Infinity ? 'unlimited' : rateCheck.remaining,
       limit: rateCheck.limit === Infinity ? 'unlimited' : rateCheck.limit
     });
+
+    logActivity(ACTIVITY_TYPES.TOOL_USED, {
+      tool: 'note-writer',
+      toolName: 'Note Writer',
+      event: 'generation_complete',
+      tier: getUserTier(req.user)
+    }, {
+      userId: req.user?.id || undefined,
+      userEmail: req.user?.email || undefined
+    }).catch(err => console.error('[tools] activity log failed:', err.message));
 
   } catch (err) {
     console.error('Note generation error:', err.message);

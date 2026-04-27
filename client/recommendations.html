@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart CE Recommendations | CounselorReady</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            burgundy: {
+              50: '#fdf5f6', 100: '#fae8eb', 200: '#f5d0d6', 300: '#eba9b5',
+              400: '#dd768a', 500: '#c94d65', 600: '#a83350', 700: '#8B2635',
+              800: '#6b1d34', 900: '#4a1524', 950: '#2d0a14'
+            },
+            forest: {
+              50: '#f3f6f4', 100: '#e3ebe5', 200: '#c8d7cc', 300: '#a1bba8',
+              400: '#759a7f', 500: '#547c5f', 600: '#4A7C59', 700: '#34503d',
+              800: '#2b4133', 900: '#1f3025'
+            },
+            hunter: { 100: '#e3ebe5', 500: '#4A7C59', 600: '#3D6A4A', 700: '#34503d', 800: '#2b4133' },
+            gold: {
+              50: '#fdf9f0', 100: '#f9f0db', 200: '#f3e0b5', 300: '#eacd86',
+              400: '#D4A855', 500: '#c49545', 600: '#a67936', 700: '#865e2c'
+            },
+            honey: { 400: '#D4A855' }
+          },
+          fontFamily: {
+            'display': ['Cormorant Garamond', 'Georgia', 'serif'],
+            'body': ['Lato', 'system-ui', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Lato:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Lato', system-ui, sans-serif; }
+    .font-display { font-family: 'Cormorant Garamond', Georgia, serif; }
+  </style>
+</head>
+<body class="bg-stone-50 min-h-screen">
+
+  <!-- ═══════ HEADER (matches dashboard.html) ═══════ -->
+  <header class="bg-white border-b border-hunter-100 sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+      <a href="/dashboard.html" class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl flex items-center justify-center shadow-md" style="background: linear-gradient(135deg, #8b2542, #6b1d34);">
+          <span class="font-display font-bold text-lg" style="position:relative;display:inline-block;width:22px;height:22px;">
+            <span style="color:#D4A855;position:absolute;top:-3px;left:0;">C</span>
+            <span style="color:#4A7C59;position:absolute;top:5px;left:6px;">R</span>
+          </span>
+        </div>
+        <span class="font-display font-semibold text-xl">
+          <span style="color:#6b1d34">Counselor</span><span style="color:#4A7C59">Ready</span>
+        </span>
+      </a>
+      <nav class="hidden md:flex items-center gap-1">
+        <a href="/dashboard.html" class="px-4 py-2 rounded-lg text-sm font-medium text-gray-600 hover:text-burgundy-800 hover:bg-burgundy-50 transition-colors">Dashboard</a>
+        <a href="/courses.html" class="px-4 py-2 rounded-lg text-sm font-medium text-burgundy-800 bg-burgundy-50 border border-burgundy-200">Courses</a>
+        <a href="/credentials.html" class="px-4 py-2 rounded-lg text-sm font-medium text-gray-600 hover:text-burgundy-800 hover:bg-burgundy-50 transition-colors">Credentials</a>
+        <a href="/practice.html" class="px-4 py-2 rounded-lg text-sm font-medium text-gray-600 hover:text-burgundy-800 hover:bg-burgundy-50 transition-colors">Practice</a>
+        <a href="/team.html" class="px-4 py-2 rounded-lg text-sm font-medium text-gray-600 hover:text-burgundy-800 hover:bg-burgundy-50 transition-colors">Team</a>
+      </nav>
+      <div class="flex items-center gap-3">
+        <button id="notifBell" class="relative p-2 text-gray-400 hover:text-burgundy-700">
+          <i class="fas fa-bell text-lg"></i>
+          <span id="notifDot" class="hidden absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+        </button>
+        <div class="flex items-center gap-2">
+          <div class="w-9 h-9 rounded-full bg-burgundy-100 text-burgundy-800 flex items-center justify-center text-sm font-bold" id="userAvatar">--</div>
+          <span class="text-sm font-medium text-gray-700 hidden lg:inline" id="userName"></span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ═══════ MAIN CONTENT ═══════ -->
+  <main class="max-w-4xl mx-auto px-6 py-8">
+
+    <!-- Breadcrumb -->
+    <a href="/courses.html" class="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-burgundy-700 mb-4">
+      <i class="fas fa-chevron-left text-xs"></i> Courses
+    </a>
+
+    <!-- Page Header -->
+    <div class="mb-6">
+      <h1 class="font-display text-3xl font-semibold text-burgundy-900">Smart CE Recommendations</h1>
+      <p class="text-gray-500 mt-1">Personalized course suggestions based on your credentials and requirements</p>
+    </div>
+
+    <!-- Loading -->
+    <div id="loading" class="text-center py-16">
+      <div class="animate-spin rounded-full h-10 w-10 border-4 border-burgundy-200 border-t-burgundy-700 mx-auto mb-4"></div>
+      <p class="text-gray-500">Loading recommendations...</p>
+    </div>
+
+    <!-- Content (hidden until loaded) -->
+    <div id="content" class="hidden">
+
+      <!-- Summary Cards -->
+      <div id="summaryCards" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8"></div>
+
+      <!-- Upcoming Expirations -->
+      <div id="expirations" class="hidden mb-8"></div>
+
+      <!-- Recommended Courses Heading -->
+      <h2 class="font-display text-xl font-semibold text-burgundy-900 mb-4">Recommended For You</h2>
+
+      <!-- Course List -->
+      <div id="courseList" class="space-y-4"></div>
+
+      <!-- Empty State -->
+      <div id="emptyState" class="hidden bg-gray-50 rounded-xl p-8 text-center">
+        <i class="fas fa-lightbulb text-4xl text-gray-300 mb-4"></i>
+        <p class="text-gray-500">No recommendations available yet. Add credentials to get personalized course suggestions.</p>
+      </div>
+
+    </div>
+
+  </main>
+
+  <script>
+    const API = location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://api.counselorready.com';
+    const T = localStorage.getItem('token');
+    if (!T) location.href = '/login.html';
+
+    // ── Set user avatar from JWT ──
+    try {
+      const p = JSON.parse(atob(T.split('.')[1]));
+      document.getElementById('userName').textContent = p.name || '';
+      document.getElementById('userAvatar').textContent = (p.name || '--').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+    } catch (e) {}
+
+    // ── Escape HTML ──
+    function esc(str) {
+      if (!str) return '';
+      const d = document.createElement('div');
+      d.textContent = str;
+      return d.innerHTML;
+    }
+
+    // ── Init ──
+    document.addEventListener('DOMContentLoaded', init);
+
+    async function init() {
+      try {
+        const res = await fetch(`${API}/api/recommendations`, {
+          headers: { 'Authorization': `Bearer ${T}` }
+        });
+
+        if (!res.ok) throw new Error('Failed to load recommendations');
+        const data = await res.json();
+
+        document.getElementById('loading').classList.add('hidden');
+        document.getElementById('content').classList.remove('hidden');
+
+        renderSummary(data.summary);
+        renderExpirations(data.summary?.upcomingExpirations);
+        renderCourses(data.recommendations);
+      } catch (err) {
+        console.error('Failed to load recommendations:', err);
+        document.getElementById('loading').classList.add('hidden');
+        document.getElementById('content').classList.remove('hidden');
+        document.getElementById('emptyState').classList.remove('hidden');
+      }
+    }
+
+    // ── Summary Cards ──
+    function renderSummary(summary) {
+      if (!summary) return;
+      const container = document.getElementById('summaryCards');
+      container.innerHTML = `
+        <div class="rounded-xl border border-burgundy-300 p-5" style="background: linear-gradient(135deg, #fae8eb, #f5d0d6);">
+          <div class="text-3xl font-bold text-burgundy-800">${esc(String(summary.totalHoursNeeded ?? 0))}</div>
+          <div class="text-sm text-burgundy-700 font-medium">CE Hours Needed</div>
+        </div>
+        <div class="bg-white rounded-xl border border-gray-200 p-5">
+          <div class="text-3xl font-bold text-gray-900">${esc(String(summary.coursesCompleted ?? 0))}</div>
+          <div class="text-sm text-gray-500">Courses Completed</div>
+        </div>
+        <div class="bg-white rounded-xl border border-gray-200 p-5">
+          <div class="text-3xl font-bold text-gray-900">${esc(String(summary.coursesAvailable ?? 0))}</div>
+          <div class="text-sm text-gray-500">Courses Available</div>
+        </div>
+      `;
+    }
+
+    // ── Upcoming Expirations ──
+    function renderExpirations(expirations) {
+      if (!expirations || expirations.length === 0) return;
+      const container = document.getElementById('expirations');
+      container.classList.remove('hidden');
+      container.innerHTML = `
+        <div class="bg-amber-50 border border-amber-200 rounded-xl p-5">
+          <h2 class="font-display font-semibold text-amber-800 text-lg mb-3">
+            <i class="fas fa-exclamation-triangle mr-2"></i>Upcoming Credential Expirations
+          </h2>
+          <div class="space-y-2">
+            ${expirations.map(exp => `
+              <div class="flex justify-between items-center">
+                <span class="text-sm text-amber-900 font-medium">${esc(exp.credential)}</span>
+                <div class="text-right">
+                  <div class="text-sm text-amber-700">Expires ${new Date(exp.expirationDate).toLocaleDateString()}</div>
+                  <div class="text-xs text-amber-600">${esc(String(exp.hoursNeeded))} hours needed</div>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    // ── Recommended Courses ──
+    function renderCourses(recommendations) {
+      const container = document.getElementById('courseList');
+      const emptyState = document.getElementById('emptyState');
+
+      if (!recommendations || recommendations.length === 0) {
+        emptyState.classList.remove('hidden');
+        return;
+      }
+
+      container.innerHTML = recommendations.map(course => {
+        // Relevance reasons
+        const reasonBadges = (course.reasons || []).map(reason =>
+          `<span class="text-xs px-2 py-1 bg-burgundy-100 text-burgundy-800 rounded-full">${esc(reason)}</span>`
+        ).join('');
+
+        // Approval badges
+        const approvalBadges = (course.approvals || []).map(approval =>
+          `<span class="text-xs px-2 py-0.5 bg-hunter-100 text-hunter-700 rounded-full font-medium">
+            <i class="fas fa-check-circle mr-1"></i>${esc(approval)}
+          </span>`
+        ).join('');
+
+        // Meta info items
+        const metaItems = [];
+        if (course.ceHours) metaItems.push(`<span><i class="fas fa-clock mr-1"></i>${esc(String(course.ceHours))} CE Hours</span>`);
+        if (course.category) metaItems.push(`<span class="capitalize">${esc(course.category)}</span>`);
+        if (course.accessTier) metaItems.push(`<span class="capitalize">${esc(course.accessTier)}</span>`);
+
+        return `
+          <div class="bg-white rounded-xl border border-gray-200 p-5 hover:border-burgundy-400 transition cursor-pointer"
+               onclick="window.location.href='/course-details.html?slug=${encodeURIComponent(course.slug || '')}'">
+            <div class="flex justify-between items-start">
+              <div class="flex-1 min-w-0">
+                <h3 class="font-semibold text-gray-900 mb-1">${esc(course.title)}</h3>
+                ${metaItems.length ? `<div class="flex items-center gap-3 text-sm text-gray-500 mb-2">${metaItems.join('')}</div>` : ''}
+                ${course.summary ? `<p class="text-sm text-gray-600 mb-2">${esc(course.summary)}</p>` : ''}
+                ${course.description && !course.summary ? `<p class="text-sm text-gray-600 mb-2">${esc(course.description.substring(0, 160))}${course.description.length > 160 ? '...' : ''}</p>` : ''}
+                ${reasonBadges ? `<div class="flex flex-wrap gap-2 mb-2">${reasonBadges}</div>` : ''}
+                ${approvalBadges ? `<div class="flex flex-wrap gap-2">${approvalBadges}</div>` : ''}
+              </div>
+              <div class="ml-4 flex flex-col items-end gap-2">
+                ${course.relevanceScore != null ? `
+                  <div class="bg-burgundy-200 text-burgundy-800 rounded-full w-10 h-10 flex items-center justify-center font-bold text-sm" title="Relevance score">
+                    ${esc(String(course.relevanceScore))}
+                  </div>
+                ` : ''}
+                <a href="/course-details.html?slug=${encodeURIComponent(course.slug || '')}"
+                   class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-burgundy-700 text-white text-xs font-medium rounded-lg hover:bg-burgundy-800 transition-colors"
+                   onclick="event.stopPropagation()">
+                  Start Course <i class="fas fa-arrow-right text-xs"></i>
+                </a>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+  </script>
+<script src="/js/cr-icons.js"></script>
+</body>
+</html>

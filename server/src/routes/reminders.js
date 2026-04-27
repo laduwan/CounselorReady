@@ -144,7 +144,56 @@ router.post('/run-check', protect, async (req, res) => {
 // ============================================
 
 import UserCredential from '../models/UserCredential.js';
-import { generateICSFile, generateInsuranceICS, sendTestSMS, sendSMSReminder } from '../services/calendarSmsService.js';
+import User from '../models/User.js';
+import { generateCredentialICS, generateAllCredentialsICS, generateInsuranceICS } from '../services/calendarService.js';
+import { sendTestSMS, sendSMSReminder } from '../services/calendarSmsService.js';
+
+// @route   GET /api/reminders/calendar/insurance
+// @desc    Download ICS calendar file for insurance renewal
+// @access  Private
+// NOTE: This route must be defined BEFORE /calendar/:credentialId to avoid "insurance" matching as a credentialId
+router.get('/calendar/insurance', protect, async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+
+    if (!user.liabilityInsurance || (!user.liabilityInsurance.expirationDate && !user.liabilityInsurance.renewalDate)) {
+      return res.status(400).json({ error: 'No insurance renewal date set' });
+    }
+
+    const icsContent = generateInsuranceICS(user.liabilityInsurance, user);
+
+    res.setHeader('Content-Type', 'text/calendar; charset=utf-8');
+    res.setHeader('Content-Disposition', 'attachment; filename="insurance_renewal_reminder.ics"');
+    res.send(icsContent);
+  } catch (error) {
+    console.error('Generate insurance calendar error:', error);
+    res.status(500).json({ error: 'Failed to generate calendar file' });
+  }
+});
+
+// @route   GET /api/reminders/calendar/all
+// @desc    Download ICS calendar file with ALL credential renewals + insurance
+// @access  Private
+router.get('/calendar/all', protect, async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    const credentials = await UserCredential.find({ userId: req.user._id });
+
+    const credentialsWithDates = credentials.filter(c => c.expirationDate);
+    if (!credentialsWithDates.length && !user.liabilityInsurance?.expirationDate) {
+      return res.status(400).json({ error: 'No credentials or insurance with expiration dates found' });
+    }
+
+    const icsContent = generateAllCredentialsICS(user, credentials);
+
+    res.setHeader('Content-Type', 'text/calendar; charset=utf-8');
+    res.setHeader('Content-Disposition', 'attachment; filename="counselorready_all_renewals.ics"');
+    res.send(icsContent);
+  } catch (error) {
+    console.error('Generate all calendars error:', error);
+    res.status(500).json({ error: 'Failed to generate calendar file' });
+  }
+});
 
 // @route   GET /api/reminders/calendar/:credentialId
 // @desc    Download ICS calendar file for credential expiration
@@ -155,44 +204,22 @@ router.get('/calendar/:credentialId', protect, async (req, res) => {
       _id: req.params.credentialId,
       userId: req.user._id
     });
-    
+
     if (!credential) {
       return res.status(404).json({ error: 'Credential not found' });
     }
-    
+
     if (!credential.expirationDate) {
       return res.status(400).json({ error: 'No expiration date set for this credential' });
     }
-    
-    const icsContent = generateICSFile(credential, req.user);
-    
+
+    const icsContent = generateCredentialICS(credential, req.user);
+
     res.setHeader('Content-Type', 'text/calendar; charset=utf-8');
     res.setHeader('Content-Disposition', `attachment; filename="${credential.name.replace(/[^a-zA-Z0-9]/g, '_')}_reminder.ics"`);
     res.send(icsContent);
   } catch (error) {
     console.error('Generate calendar error:', error);
-    res.status(500).json({ error: 'Failed to generate calendar file' });
-  }
-});
-
-// @route   GET /api/reminders/calendar/insurance
-// @desc    Download ICS calendar file for insurance renewal
-// @access  Private
-router.get('/calendar/insurance', protect, async (req, res) => {
-  try {
-    const user = await User.findById(req.user._id);
-    
-    if (!user.liabilityInsurance || !user.liabilityInsurance.renewalDate) {
-      return res.status(400).json({ error: 'No insurance renewal date set' });
-    }
-    
-    const icsContent = generateInsuranceICS(user.liabilityInsurance, user);
-    
-    res.setHeader('Content-Type', 'text/calendar; charset=utf-8');
-    res.setHeader('Content-Disposition', 'attachment; filename="insurance_renewal_reminder.ics"');
-    res.send(icsContent);
-  } catch (error) {
-    console.error('Generate insurance calendar error:', error);
     res.status(500).json({ error: 'Failed to generate calendar file' });
   }
 });

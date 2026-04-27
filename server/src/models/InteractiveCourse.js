@@ -1,9 +1,32 @@
-/**
- * Copyright (c) 2026 CounselorReady, a subsidiary of Ga Integrated Therapeutic Perspectives, LLC.
- * All rights reserved. Proprietary and confidential.
- * Unauthorized copying or distribution is strictly prohibited.
- */
 import mongoose from 'mongoose';
+
+// ============================================================================
+// REMEDIATION SUB-SCHEMA
+// ----------------------------------------------------------------------------
+// Optional. Attached to KC content blocks (multipleChoice, multiSelect,
+// matching) to enable adaptive remediation: when a learner answers wrong,
+// CReady Viewer shows a "Review this content" button that jumps back to
+// the block that teaches the tested concept.
+//
+// blockId references the `id` field of another content block within the
+// SAME section (seed scripts and CourseBuilder set stable string IDs on
+// every block; Mongoose persists them via strict:false on ContentBlockSchema).
+// If the referenced block is missing, the viewer silently omits the button.
+// ============================================================================
+const RemediationSchema = new mongoose.Schema({
+  blockId: { type: String, default: '' },
+  message: { type: String, default: '' },
+  confidence: {
+    type: String,
+    enum: ['high', 'medium', 'low', ''],
+    default: ''
+  },
+  source: {
+    type: String,
+    enum: ['manual', 'ai', ''],
+    default: ''
+  }
+}, { _id: false });
 
 // ============================================================================
 // COURSE SCHEMA - Defines course structure with sections and content blocks
@@ -11,7 +34,33 @@ import mongoose from 'mongoose';
 const ContentBlockSchema = new mongoose.Schema({
   type: {
     type: String,
-    enum: ['accordion', 'matching', 'multipleChoice', 'multiSelect', 'imageText', 'sectionDivider', 'text', 'video', 'reflection', 'resources'],
+    enum: [
+      'accordion',
+      'callout',
+      'cardSort',
+      'deliverables',
+      'fillInBlank',
+      'flashcardDeck',
+      'hotspot',
+      'image',
+      'imageText',
+      'keyTakeaway',
+      'knowledgeCheck',
+      'matching',
+      'multiSelect',
+      'multipleChoice',
+      'quiz',
+      'references',
+      'reflection',
+      'resources',
+      'scenarioTree',
+      'sectionDivider',
+      'sequencing',
+      'text',
+      'timeline',
+      'video',
+      'videoEmbed',
+    ],
     required: true
   },
   order: { type: Number, required: true },
@@ -36,6 +85,12 @@ const ContentBlockSchema = new mongoose.Schema({
     isCorrect: Boolean
   }],
   explanation: String,
+
+  // ── ADAPTIVE REMEDIATION (optional, KC blocks only) ──
+  // Valid on: multipleChoice, multiSelect, matching
+  // Ignored by viewer on all other block types.
+  // See RemediationSchema above.
+  remediation: RemediationSchema,
   
   // Image + Text card
   image: String,
@@ -57,20 +112,102 @@ const ContentBlockSchema = new mongoose.Schema({
   videoDuration: Number, // in seconds
   
   // Reflection
-  minLength: Number,
+  minLength: { type: Number, default: 50 },
   
   // Resources
   resources: [{
     title: String,
     url: String,
-    type: String
+    type: { type: String, enum: ['pdf', 'video', 'link', 'article', 'website', 'book', 'xlsx', 'xls', 'csv', 'docx', 'doc', 'pptx', 'ppt', 'zip', 'worksheet', 'toolkit', 'template', 'guide'], default: 'link' }
+  }],
+
+  // ── callout ──
+  calloutType: { type: String, enum: ['info', 'warning', 'ethics', 'clinical', 'tip', 'key', 'donot', 'protocol'], default: 'info' },
+  calloutItems: [String],
+
+  // ── fillInBlank ──
+  blanks: [{
+    prompt: String,
+    answer: String,
+    acceptAlternates: [String],
+  }],
+
+  // ── keyTakeaway ──
+  takeaways: [String],
+
+  // ── video / videoEmbed ──
+  videoTitle: String,
+  markers: [{
+    time: String,
+    label: String,
+    prompt: String
+  }],
+
+  // ── flashcardDeck ──
+  flashcards: [{
+    id: String,
+    front: String,
+    back: String
+  }],
+
+  // ── scenarioTree ──
+  scenarioTitle: String,
+  startNode: { type: String, default: 'start' },
+  nodes: { type: mongoose.Schema.Types.Mixed },
+
+  // ── cardSort ──
+  categories: [String],
+  cards: [{
+    id: String,
+    text: String,
+    correctCategory: String
+  }],
+
+  // ── sequencing ──
+  steps: [{
+    id: String,
+    text: String,
+    order: Number
+  }],
+
+  // ── timeline ──
+  events: [{
+    year: String,
+    text: String
+  }],
+
+  // ── hotspot ──
+  hotspotImage: String,
+  imageDescription: String,
+  hotspots: [{
+    x: Number,
+    y: Number,
+    label: String,
+    info: String,
+    description: String
+  }],
+
+  // ── image (standalone) ──
+  imageUrl: String,
+  imageAltText: String,
+  imageCaption: String,
+  imageSize: { type: String, enum: ['small', 'medium', 'full'], default: 'full' },
+  imageAlignment: { type: String, enum: ['left', 'center', 'right'], default: 'center' },
+
+  // ── references ──
+  references: [{
+    formatted: String,
+    title: String,
+    author: String,
+    year: Number,
+    source: String,
+    url: String
   }]
-});
+}, { _id: false, strict: false });
 
 const SectionSchema = new mongoose.Schema({
   title: { type: String, required: true },
   description: String,
-  module: String, // Group label for sidebar navigation (e.g. "Module 1: Foundations")
   order: { type: Number, required: true },
   contentBlocks: [ContentBlockSchema],
   
@@ -98,9 +235,6 @@ const CourseSchema = new mongoose.Schema({
   description: { type: String, required: true },
   thumbnail: String,
   
-  // Course code (admin-assigned identifier, e.g. CR-ETH301)
-  courseCode: { type: String, trim: true },
-
   // CE/Accreditation info
   ceHours: { type: Number, required: true },
   ceProvider: { type: String, default: 'NBCC ACEP #7760' },
@@ -150,30 +284,68 @@ const CourseSchema = new mongoose.Schema({
     category: { type: String, enum: ['category1', 'category2', 'category3'] } // ACEP categories
   },
   
-  // References (ACEP required) - supports both string citations and {title, author, year, source, citation} objects
+  // References (ACEP required) — supports strings or {author,year,title,source,citation} objects
   references: [mongoose.Schema.Types.Mixed],
   
-  // Partner ownership (optional — set when partner creates course)
-  partnerId: { type: mongoose.Schema.Types.ObjectId, ref: 'Partner' },
-
+  // Supplementary resources (PDFs, worksheets, links)
+  resources: [mongoose.Schema.Types.Mixed],
+  
   // Metadata
   author: String,
   publishedAt: Date,
   updatedAt: { type: Date, default: Date.now },
-  status: {
-    type: String,
-    enum: ['draft', 'published', 'archived'],
-    default: 'draft'
+  status: { 
+    type: String, 
+    enum: ['draft', 'published', 'archived'], 
+    default: 'draft' 
   },
-  expiresAt: { type: Date, default: null, index: { expires: 0, sparse: true } },
+  
+  // Delivery & compliance
+  deliveryFormat: { 
+    type: String, 
+    enum: ['async', 'live', 'hybrid'], 
+    default: 'async' 
+  },
+  nbccContentAreas: [{
+    type: String,
+    enum: [
+      'Counseling Theory/Practice',
+      'Human Growth and Development',
+      'Social and Cultural Foundations',
+      'Group Dynamics',
+      'Career Development',
+      'Assessment',
+      'Research/Program Evaluation',
+      'Professional Identity',
+      'Wellness and Prevention'
+    ]
+  }],
+  accessType: {
+    type: String,
+    enum: ['free', 'subscription', 'purchase'],
+    default: 'subscription'
+  },
+  approvalBody: { type: String, default: 'NBCC' },
+  price: Number,
+
+  // Course delivery rules
+  minimumTimeMinutes: { type: Number, default: 0 },
+  dripEnabled: { type: Boolean, default: false },
+  dripIntervalMinutes: { type: Number, default: 0 },
+  dripSectionsPerInterval: { type: Number, default: 1 },
+  enforceSectionOrder: { type: Boolean, default: true },
+  previousSectionsReviewable: { type: Boolean, default: true },
+  narrationEnabled: { type: Boolean, default: false },
+  attestationRequired: { type: Boolean, default: true },
+  certificateEnabled: { type: Boolean, default: true },
+  maxAttempts: { type: Number, default: 3 },
 
   // Calculated fields
   totalEstimatedTime: Number, // in minutes
   totalContentBlocks: Number,
   totalQuizQuestions: Number,
-  wordCount: Number, // pre-computed for admin dashboard
-  rawMarkdown: { type: String }
-
+  wordCount: Number // pre-computed for admin dashboard
+  
 }, { timestamps: true });
 
 // Pre-save hook to calculate totals
@@ -229,20 +401,16 @@ const SectionProgressSchema = new mongoose.Schema({
   timeSpent: { type: Number, default: 0 }, // seconds
   
   // Status
-  status: {
-    type: String,
-    enum: ['not_started', 'in_progress', 'completed'],
-    default: 'not_started'
-  },
-
-  // Adaptive learning — set when an adaptive rule unlocks this section out of order
-  adaptivelyUnlocked: { type: Boolean, default: false }
+  status: { 
+    type: String, 
+    enum: ['not_started', 'in_progress', 'completed'], 
+    default: 'not_started' 
+  }
 });
 
 const CourseProgressSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   courseId: { type: mongoose.Schema.Types.ObjectId, ref: 'InteractiveCourse', required: true },
-  partnerId: { type: mongoose.Schema.Types.ObjectId, ref: 'Partner' },
   
   // Section progress
   sectionProgress: [SectionProgressSchema],

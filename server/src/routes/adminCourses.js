@@ -15,7 +15,9 @@ import CredentialTemplate from '../models/CredentialTemplate.js';
 import Announcement from '../models/Announcement.js';
 import UserCourseProgress from '../models/UserCourseProgress.js';
 import UserCredential from '../models/UserCredential.js';
+import { Course as InteractiveCourse, CourseProgress as InteractiveCourseProgress } from '../models/InteractiveCourse.js';
 import { protect } from '../middleware/auth.js';
+import { triggerNewCourseAnnouncement } from '../services/notificationTriggerService.js';
 
 const router = express.Router();
 
@@ -706,20 +708,46 @@ router.put('/broadcasts/:id/deactivate', protect, adminOnly, async (req, res) =>
 // @access  Admin only
 router.get('/users/:userId/enrollments', protect, adminOnly, async (req, res) => {
   try {
-    const enrollments = await UserCourseProgress.find({ userId: req.params.userId })
-      .populate('courseId', 'title slug ceuHours ceuEligible thumbnail')
-      .sort({ enrolledAt: -1 });
-    
-    // Get all courses for the "enroll in" dropdown
-    const allCourses = await Course.find({ status: 'published' })
-      .select('title slug ceuHours category')
-      .sort({ title: 1 });
-    
+    // Query both legacy and interactive course progress
+    const [legacyEnrollments, interactiveEnrollments] = await Promise.all([
+      UserCourseProgress.find({ userId: req.params.userId })
+        .populate('courseId', 'title slug ceuHours ceuEligible thumbnail')
+        .sort({ enrolledAt: -1 }),
+      InteractiveCourseProgress.find({ userId: req.params.userId })
+        .populate('courseId', 'title slug ceHours ceuHours thumbnail')
+        .sort({ enrolledAt: -1 })
+    ]);
+
+    // Normalize interactive enrollments to match legacy shape
+    const normalizedInteractive = interactiveEnrollments.map(e => {
+      const obj = e.toObject();
+      obj._source = 'interactive';
+      return obj;
+    });
+
+    const enrollments = [
+      ...legacyEnrollments.map(e => { const obj = e.toObject(); obj._source = 'legacy'; return obj; }),
+      ...normalizedInteractive
+    ].sort((a, b) => new Date(b.enrolledAt || b.createdAt || 0) - new Date(a.enrolledAt || a.createdAt || 0));
+
+    // Get all courses for the "enroll in" dropdown (both legacy + interactive)
+    const [allLegacyCourses, allInteractiveCourses] = await Promise.all([
+      Course.find({ status: 'published' })
+        .select('title slug ceuHours category')
+        .sort({ title: 1 }),
+      InteractiveCourse.find({ status: 'published' })
+        .select('title slug ceHours categories')
+        .sort({ title: 1 })
+    ]);
+
     // Filter out already enrolled courses
-    const enrolledCourseIds = enrollments.map(e => e.courseId?._id?.toString());
-    const availableCourses = allCourses.filter(c => !enrolledCourseIds.includes(c._id.toString()));
-    
-    res.json({ 
+    const enrolledCourseIds = enrollments.map(e => e.courseId?._id?.toString()).filter(Boolean);
+    const availableCourses = [
+      ...allLegacyCourses.filter(c => !enrolledCourseIds.includes(c._id.toString())),
+      ...allInteractiveCourses.filter(c => !enrolledCourseIds.includes(c._id.toString()))
+    ];
+
+    res.json({
       enrollments,
       availableCourses
     });
@@ -790,14 +818,14 @@ router.post('/users/:userId/enroll', protect, adminOnly, async (req, res) => {
 router.delete('/users/:userId/enrollments/:courseId', protect, adminOnly, async (req, res) => {
   try {
     const { userId, courseId } = req.params;
-    
-    const enrollment = await UserCourseProgress.findOne({ userId, courseId });
-    if (!enrollment) {
+
+    const legacyResult = await UserCourseProgress.deleteOne({ userId, courseId });
+    const interactiveResult = await InteractiveCourseProgress.deleteOne({ userId, courseId });
+
+    if ((legacyResult.deletedCount || 0) === 0 && (interactiveResult.deletedCount || 0) === 0) {
       return res.status(404).json({ error: 'Enrollment not found' });
     }
-    
-    await UserCourseProgress.deleteOne({ userId, courseId });
-    
+
     res.json({ message: 'User unenrolled successfully' });
   } catch (error) {
     console.error('Admin unenroll error:', error);
@@ -811,28 +839,69 @@ router.delete('/users/:userId/enrollments/:courseId', protect, adminOnly, async 
 router.post('/users/:userId/enrollments/:courseId/reset', protect, adminOnly, async (req, res) => {
   try {
     const { userId, courseId } = req.params;
-    
+
     const enrollment = await UserCourseProgress.findOne({ userId, courseId });
-    if (!enrollment) {
-      return res.status(404).json({ error: 'Enrollment not found' });
+    if (enrollment) {
+      // Reset progress but keep enrollment
+      enrollment.completedLessons = [];
+      enrollment.quizAttempts = [];
+      enrollment.currentModule = 0;
+      enrollment.currentLesson = 0;
+      enrollment.status = 'not_started';
+      enrollment.completed = false;
+      enrollment.completedAt = null;
+      enrollment.progressPercent = 0;
+
+      await enrollment.save();
+
+      return res.json({
+        message: 'Course progress reset successfully',
+        enrollment
+      });
     }
-    
-    // Reset progress but keep enrollment
-    enrollment.completedLessons = [];
-    enrollment.quizAttempts = [];
-    enrollment.currentModule = 0;
-    enrollment.currentLesson = 0;
-    enrollment.status = 'not_started';
-    enrollment.completed = false;
-    enrollment.completedAt = null;
-    enrollment.progressPercent = 0;
-    
-    await enrollment.save();
-    
-    res.json({ 
-      message: 'Course progress reset successfully',
-      enrollment
-    });
+
+    const interactiveEnrollment = await InteractiveCourseProgress.findOne({ userId: userId, courseId: courseId });
+    if (interactiveEnrollment) {
+      // Reset progress but keep enrollment (interactive course fields)
+      if (Array.isArray(interactiveEnrollment.sectionProgress)) {
+        interactiveEnrollment.sectionProgress.forEach((section) => {
+          section.viewedBlocks = [];
+          section.completedBlocks = [];
+          section.quizAttempts = [];
+          section.quizPassed = false;
+          section.bestQuizScore = undefined;
+          section.startedAt = undefined;
+          section.completedAt = undefined;
+          section.timeSpent = 0;
+          section.status = 'not_started';
+        });
+      }
+      interactiveEnrollment.currentSectionIndex = 0;
+      interactiveEnrollment.assessmentAttempts = [];
+      interactiveEnrollment.assessmentPassed = false;
+      interactiveEnrollment.bestAssessmentScore = undefined;
+      interactiveEnrollment.evaluationSubmitted = false;
+      interactiveEnrollment.evaluationSubmittedAt = undefined;
+      interactiveEnrollment.evaluationId = undefined;
+      interactiveEnrollment.attestationAgreed = false;
+      interactiveEnrollment.attestationAgreedAt = undefined;
+      interactiveEnrollment.overallProgress = 0;
+      interactiveEnrollment.status = 'not_started';
+      interactiveEnrollment.startedAt = undefined;
+      interactiveEnrollment.completedAt = undefined;
+      interactiveEnrollment.totalTimeSpent = 0;
+      interactiveEnrollment.certificateId = undefined;
+      interactiveEnrollment.certificateIssuedAt = undefined;
+
+      await interactiveEnrollment.save();
+
+      return res.json({
+        message: 'Course progress reset successfully',
+        enrollment: interactiveEnrollment
+      });
+    }
+
+    return res.status(404).json({ error: 'Enrollment not found' });
   } catch (error) {
     console.error('Admin reset progress error:', error);
     res.status(500).json({ error: 'Failed to reset progress' });
@@ -846,27 +915,81 @@ router.post('/users/:userId/enrollments/:courseId/complete', protect, adminOnly,
   try {
     const { userId, courseId } = req.params;
     const { note } = req.body; // Optional admin note
-    
+
     const user = await User.findById(userId);
-    const course = await Course.findById(courseId);
-    
-    if (!user || !course) {
-      return res.status(404).json({ error: 'User or course not found' });
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
     }
-    
-    // Find or create enrollment
+
+    // Try legacy course first, then interactive course
+    const legacyCourse = await Course.findById(courseId);
+    const interactiveCourse = legacyCourse ? null : await InteractiveCourse.findById(courseId);
+
+    if (!legacyCourse && !interactiveCourse) {
+      return res.status(404).json({ error: 'Course not found' });
+    }
+
+    // Prefer an existing enrollment on whichever model already has it
     let enrollment = await UserCourseProgress.findOne({ userId, courseId });
-    
-    if (!enrollment) {
-      enrollment = new UserCourseProgress({
-        userId,
-        courseId,
-        enrolled: true,
-        enrolledAt: new Date()
+
+    if (enrollment) {
+      enrollment.status = 'completed';
+      enrollment.completed = true;
+      enrollment.completedAt = new Date();
+      enrollment.progressPercent = 100;
+      enrollment.adminCompleted = true;
+      enrollment.adminNote = note || 'Manually completed by admin';
+      enrollment.adminCompletedBy = req.user._id;
+      enrollment.adminCompletedAt = new Date();
+
+      await enrollment.save();
+
+      return res.json({
+        message: `Course marked complete for ${user.firstName} ${user.lastName}`,
+        enrollment
       });
     }
-    
-    // Mark as complete
+
+    let interactiveEnrollment = await InteractiveCourseProgress.findOne({ userId: userId, courseId: courseId });
+
+    if (interactiveEnrollment || interactiveCourse) {
+      if (!interactiveEnrollment) {
+        interactiveEnrollment = new InteractiveCourseProgress({
+          userId,
+          courseId,
+          enrolledAt: new Date()
+        });
+      }
+
+      interactiveEnrollment.status = 'completed';
+      interactiveEnrollment.completedAt = new Date();
+      interactiveEnrollment.overallProgress = 100;
+      interactiveEnrollment.assessmentPassed = true;
+      interactiveEnrollment.evaluationSubmitted = true;
+      interactiveEnrollment.evaluationSubmittedAt = interactiveEnrollment.evaluationSubmittedAt || new Date();
+      interactiveEnrollment.attestationAgreed = true;
+      interactiveEnrollment.attestationAgreedAt = interactiveEnrollment.attestationAgreedAt || new Date();
+      interactiveEnrollment.adminCompleted = true;
+      interactiveEnrollment.adminNote = note || 'Manually completed by admin';
+      interactiveEnrollment.adminCompletedBy = req.user._id;
+      interactiveEnrollment.adminCompletedAt = new Date();
+
+      await interactiveEnrollment.save();
+
+      return res.json({
+        message: `Course marked complete for ${user.firstName} ${user.lastName}`,
+        enrollment: interactiveEnrollment
+      });
+    }
+
+    // No existing enrollment and the course is a legacy course — create a new legacy enrollment
+    enrollment = new UserCourseProgress({
+      userId,
+      courseId,
+      enrolled: true,
+      enrolledAt: new Date()
+    });
+
     enrollment.status = 'completed';
     enrollment.completed = true;
     enrollment.completedAt = new Date();
@@ -875,10 +998,10 @@ router.post('/users/:userId/enrollments/:courseId/complete', protect, adminOnly,
     enrollment.adminNote = note || 'Manually completed by admin';
     enrollment.adminCompletedBy = req.user._id;
     enrollment.adminCompletedAt = new Date();
-    
+
     await enrollment.save();
-    
-    res.json({ 
+
+    res.json({
       message: `Course marked complete for ${user.firstName} ${user.lastName}`,
       enrollment
     });
@@ -934,71 +1057,23 @@ router.get('/enrollments/search', protect, adminOnly, async (req, res) => {
 // @access  Admin only
 router.get('/courses', protect, adminOnly, async (req, res) => {
   try {
-    const courses = await Course.find()
-      .select('title slug category ceuHours ceHours status enrollmentCount createdAt isExternal externalUrl importType source wordCount moduleCount price ceuCategories modules courseCode')
-      .sort({ createdAt: -1 })
-      .lean();
+    const [legacyCourses, interactiveCourses] = await Promise.all([
+      Course.find()
+        .select('title slug category ceuHours ceHours status enrollmentCount createdAt isExternal externalUrl importType source wordCount moduleCount price ceuCategories courseCode')
+        .sort({ createdAt: -1 })
+        .lean(),
+      InteractiveCourse.find()
+        .select('title slug ceHours status enrollmentCount createdAt wordCount courseCode isPublished')
+        .sort({ createdAt: -1 })
+        .lean()
+    ]);
 
-    // Helper: strip HTML and count words from a string
-    const countWords = (str) => {
-      if (!str) return 0;
-      return str.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().split(' ').filter(Boolean).length;
-    };
+    const legacy = legacyCourses.map(c => ({ ...c, _collection: 'courses', wordCount: c.wordCount || 0 }));
+    const interactive = interactiveCourses.map(c => ({ ...c, _collection: 'interactivecourses', wordCount: c.wordCount || 0 }));
 
-    // Helper: count words across all content blocks in a module
-    const countBlockWords = (block) => {
-      let w = 0;
-      w += countWords(block.content);
-      w += countWords(block.question);
-      w += countWords(block.explanation);
-      w += countWords(block.instructions);
-      w += countWords(block.imageCaption);
-      (block.options || []).forEach(o => { w += countWords(o.text); });
-      (block.accordionItems || []).forEach(a => { w += countWords(a.title) + countWords(a.content); });
-      (block.matchingPairs || []).forEach(p => { w += countWords(p.term) + countWords(p.definition); });
-      (block.cards || []).forEach(c => { w += countWords(c.text); });
-      (block.steps || []).forEach(s => { w += countWords(s.text); });
-      (block.events || []).forEach(e => { w += countWords(e.text); });
-      (block.hotspots || []).forEach(h => { w += countWords(h.label) + countWords(h.info); });
-      (block.flashcards || []).forEach(f => { w += countWords(f.front) + countWords(f.back); });
-      (block.markers || []).forEach(m => { w += countWords(m.label) + countWords(m.prompt); });
-      if (block.nodes) {
-        Object.values(block.nodes).forEach(n => {
-          w += countWords(n.text);
-          w += countWords(n.feedback?.message);
-          (n.choices || []).forEach(c => { w += countWords(c.text); });
-        });
-      }
-      // Also handle old-style lessons (non-interactive courses)
-      w += countWords(block.lessonContent);
-      return w;
-    };
+    const all = [...interactive, ...legacy];
 
-    const coursesWithWordCount = courses.map(course => {
-      // Use cached wordCount if valid
-      if (course.wordCount && course.wordCount > 0) {
-        const { modules, ...rest } = course;
-        return rest;
-      }
-
-      // Compute from modules content
-      let computed = 0;
-      (course.modules || []).forEach(mod => {
-        // Interactive courses use contentBlocks
-        (mod.contentBlocks || []).forEach(block => {
-          computed += countBlockWords(block);
-        });
-        // Legacy courses use lessons
-        (mod.lessons || []).forEach(lesson => {
-          if (lesson.content) computed += countWords(lesson.content);
-        });
-      });
-
-      const { modules, ...rest } = course;
-      return { ...rest, wordCount: computed };
-    });
-
-    res.json({ courses: coursesWithWordCount });
+    res.json({ courses: all });
   } catch (error) {
     console.error('Get admin courses error:', error);
     res.status(500).json({ error: 'Failed to get courses' });
@@ -1148,18 +1223,18 @@ router.post('/courses', protect, adminOnly, async (req, res) => {
 // @access  Admin only
 router.get('/courses/:courseId', protect, adminOnly, async (req, res) => {
   try {
-    const course = await Course.findById(req.params.courseId);
-    
+    const course = await InteractiveCourse.findById(req.params.courseId);
+
     if (!course) {
       return res.status(404).json({ error: 'Course not found' });
     }
-    
+
     // Get enrollment stats
-    const enrollmentCount = await UserCourseProgress.countDocuments({ 
-      courseId: course._id 
+    const enrollmentCount = await InteractiveCourseProgress.countDocuments({
+      courseId: course._id
     });
-    
-    const completionCount = await UserCourseProgress.countDocuments({ 
+
+    const completionCount = await InteractiveCourseProgress.countDocuments({
       courseId: course._id,
       status: 'completed'
     });
@@ -1185,17 +1260,17 @@ router.get('/courses/:courseId', protect, adminOnly, async (req, res) => {
 // @access  Admin only
 router.put('/courses/:courseId', protect, adminOnly, async (req, res) => {
   try {
-    const course = await Course.findById(req.params.courseId);
-    
+    const course = await InteractiveCourse.findById(req.params.courseId);
+
     if (!course) {
       return res.status(404).json({ error: 'Course not found' });
     }
-    
+
     const updates = req.body;
-    
+
     // If slug is being changed, check for conflicts
     if (updates.slug && updates.slug !== course.slug) {
-      const existingCourse = await Course.findOne({ 
+      const existingCourse = await InteractiveCourse.findOne({
         slug: updates.slug,
         _id: { $ne: course._id }
       });
@@ -1207,6 +1282,9 @@ router.put('/courses/:courseId', protect, adminOnly, async (req, res) => {
       }
     }
     
+    // Strip nbccContentAreas to prevent saving mismatched enum values from stale data
+    delete updates.nbccContentAreas;
+
     // Update fields
     Object.keys(updates).forEach(key => {
       course[key] = updates[key];
@@ -1242,8 +1320,19 @@ router.patch('/courses/:courseId/publish', protect, adminOnly, async (req, res) 
     course.status = publish ? 'published' : 'draft';
     course.publishedAt = publish ? new Date() : null;
     await course.save();
-    
-    res.json({ 
+
+    // Send new course announcement when publishing
+    if (publish) {
+      triggerNewCourseAnnouncement({
+        courseTitle: course.title,
+        courseSlug: course.slug,
+        ceHours: course.ceuHours || course.ceHours,
+        contentArea: course.category || course.contentArea,
+        description: course.description
+      }).catch(err => console.error('triggerNewCourseAnnouncement failed:', err));
+    }
+
+    res.json({
       success: true,
       course,
       message: publish ? 'Course published' : 'Course unpublished'

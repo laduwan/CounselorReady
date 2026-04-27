@@ -1,807 +1,1113 @@
-<!--
-  ╔═══════════════════════════════════════════════════════════════════════╗
-  ║  COURSE PAGE — APPROVED DESIGN                                      ║
-  ║                                                                     ║
-  ║  This page's layout, color palette (burgundy / forest / honey),     ║
-  ║  typography, card structure, and gradient treatment are the          ║
-  ║  canonical course page design. Do NOT alter the visual design       ║
-  ║  unless explicitly requested by the product owner.                  ║
-  ║                                                                     ║
-  ║  Tailwind color config: burgundy, forest, honey (from design-tokens)║
-  ║  Fonts: Cormorant Garamond (display) + Lato (body)                  ║
-  ║  Last approved: 2026-03-08                                          ║
-  ╚═══════════════════════════════════════════════════════════════════════╝
--->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <link rel="icon" type="image/svg+xml" href="./favicon.svg">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Courses - CounselorReady</title>
+  <title>Course Details - CounselorReady</title>
+  <link rel="stylesheet" href="/css/design-tokens.css">
+  <link rel="stylesheet" href="/css/typography.css">
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            burgundy: {
-              50: '#fdf5f6', 100: '#fae8eb', 200: '#f5d0d6', 300: '#eba9b5',
-              400: '#dd768a', 500: '#c94d65', 600: '#a83350', 700: '#8b2542',
-              800: '#6b1d34', 900: '#4a1524', 950: '#2d0a14'
-            },
-            forest: {
-              50: '#f3f6f4', 100: '#e3ebe5', 200: '#c8d7cc', 300: '#a1bba8',
-              400: '#759a7f', 500: '#547c5f', 600: '#4A7C59', 700: '#34503d',
-              800: '#2b4133', 900: '#1f3025', 950: '#121c16'
-            },
-            honey: {
-              50: '#FDF9F0', 100: '#F9F0DB', 200: '#F3E0B5', 300: '#EACD86',
-              400: '#D4A855', 500: '#C49545', 600: '#A67936', 700: '#865E2C',
-              800: '#6B4A25'
-            }
-          },
-          fontFamily: {
-            'display': ['Cormorant Garamond', 'Georgia', 'serif'],
-            'body': ['Lato', 'system-ui', 'sans-serif']
-          }
-        }
-      }
-    }
-  </script>
+  <script src="/js/tailwind-config.js"></script>
+  
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Lato:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
   <style>
-    body { font-family: 'Lato', system-ui, sans-serif; }
+    body{background:#F8F7F4; font-family: 'Lato', system-ui, sans-serif; }
     .font-display { font-family: 'Cormorant Garamond', Georgia, serif; }
+  
+    /* Shared nav styles */
+    .dd{display:none;position:absolute;top:100%;margin-top:6px;background:#fff;border-radius:10px;box-shadow:0 10px 40px rgba(107,29,52,.12);border:1px solid #FAE8EB;z-index:50;padding:6px 0;min-width:210px}
+    .dd.open{display:block}
+    .dd a{display:flex;align-items:center;gap:10px;padding:8px 16px;font-size:13px;color:#284157;text-decoration:none;transition:background .1s}
+    .dd a:hover{background:#F2F7F4}
+    .ov{display:none;position:fixed;inset:0;z-index:40}.ov.open{display:block}
+    .nav-link{padding:6px 12px;border-radius:6px;font-size:13px;font-weight:500;color:#57534e;text-decoration:none;display:flex;align-items:center;gap:4px;transition:all .15s}
+    .nav-link:hover{color:#6B1D34;background:#FDF5F7}
+    .nav-link.active{color:#6B1D34;background:#FDF5F7;font-weight:600;border-bottom:2px solid #6B1D34}
   </style>
 </head>
 <body class="bg-stone-50 min-h-screen">
   
   <!-- Header -->
-  <header class="bg-white border-b border-forest-100 sticky top-0 z-50">
-    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-      <a href="/" class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-xl flex items-center justify-center shadow-md" style="background: linear-gradient(135deg, #8b2542, #6b1d34);">
-          <span class="font-display font-bold text-lg" style="position: relative; display: inline-block; width: 22px; height: 22px;"><span style="color: #D4A855; position: absolute; top: -3px; left: 0;">C</span><span style="color: #4A7C59; position: absolute; top: 5px; left: 6px;">R</span></span>
-        </div>
-        <span class="font-display font-semibold text-xl">
-          <span class="text-burgundy-800">Counselor</span><span class="text-forest-600">Ready</span>
-        </span>
+  <div id="cr-header"></div>
+  <script src="/shared/nav-footer.js"></script>
+
+  <!-- Loading State -->
+  <div id="loadingState" class="max-w-7xl mx-auto px-6 py-12">
+    <div class="flex items-center justify-center">
+      <div class="w-10 h-10 border-4 border-burgundy-200 border-t-burgundy-700 rounded-full animate-spin"></div>
+      <span class="ml-4 text-forest-600">Loading course details...</span>
+    </div>
+  </div>
+
+  <!-- Error State -->
+  <div id="errorState" class="hidden max-w-7xl mx-auto px-6 py-12">
+    <div class="bg-red-50 border border-red-200 rounded-xl p-8 text-center">
+      <div class="text-4xl mb-4">😕</div>
+      <h2 class="font-display text-2xl font-semibold text-red-800 mb-2">Course Not Found</h2>
+      <p class="text-red-600 mb-4" id="errorMessage">The requested course could not be found.</p>
+      <a href="/courses.html" class="inline-flex items-center gap-2 bg-burgundy-700 hover:bg-burgundy-800 text-white font-semibold px-6 py-3 rounded-xl transition-colors">
+        Browse All Courses
       </a>
-      
-      <nav class="hidden md:flex items-center gap-8">
-        <a href="/dashboard.html" class="text-forest-600 hover:text-forest-700 transition-colors">Dashboard</a>
-        <a href="/courses.html" class="text-burgundy-800 font-medium border-b-2 border-burgundy-700 pb-1">Courses</a>
-        <a href="/credentials.html" class="text-forest-600 hover:text-forest-700 transition-colors">Credentials</a>
-        <a href="/certificates.html" class="text-forest-600 hover:text-forest-700 transition-colors">CE Certificates</a>
-        <a href="/messages.html" class="text-forest-600 hover:text-forest-700 transition-colors">Messages</a>
-      </nav>
-
-      <div class="flex items-center gap-4">
-        <a href="/dashboard.html" class="text-forest-600 hover:text-forest-700 text-sm">
-          ← Back to Dashboard
-        </a>
-      </div>
     </div>
-  </header>
+  </div>
 
-  <!-- Main Content -->
-  <main class="max-w-7xl mx-auto px-6 py-8">
+  <!-- Course Content -->
+  <main id="courseContent" class="hidden max-w-7xl mx-auto px-6 py-8">
     
-    <!-- Page Header -->
-    <div class="flex items-center justify-between mb-8">
-      <div>
-        <h1 class="font-display text-3xl font-semibold text-burgundy-900 mb-2">CE Course Library</h1>
-        <p class="text-forest-600">Earn continuing education credits with our professionally designed courses.</p>
-      </div>
-      <button onclick="syncCourses()" id="syncBtn" class="inline-flex items-center gap-2 bg-forest-100 hover:bg-forest-200 text-forest-700 font-semibold px-4 py-2 rounded-xl transition-colors">
-        <svg id="syncIcon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
-        </svg>
-        Sync
-      </button>
-    </div>
+    <!-- Breadcrumb -->
+    <nav class="text-sm mb-6">
+      <ol class="flex items-center gap-2 text-forest-500">
+        <li><a href="/courses.html" class="hover:text-burgundy-700">Courses</a></li>
+        <li>/</li>
+        <li id="breadcrumbCategory" class="text-forest-700">Category</li>
+      </ol>
+    </nav>
 
-    <!-- Researched-N-Ready CE -->
-    <a href="/research-ready.html" class="block mb-6 group" style="text-decoration:none">
-      <div class="relative overflow-hidden rounded-xl border border-burgundy-100 shadow-sm bg-white hover:shadow-md transition-all">
-        <div style="position:absolute;top:0;right:0;width:200px;height:200px;opacity:.04;pointer-events:none">
-          <svg class="w-full h-full text-burgundy-800" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.75 3.104v5.714a2.25 2.25 0 01-.659 1.591L5 14.5M9.75 3.104c-.251.023-.501.05-.75.082m.75-.082a24.301 24.301 0 014.5 0m0 0v5.714c0 .597.237 1.17.659 1.591L19.8 15.3M14.25 3.104c.251.023.501.05.75.082M19.8 15.3l-1.57.393A9.065 9.065 0 0112 15a9.065 9.065 0 00-6.23.693L5 14.5m14.8.8l1.402 5.608c.168.673-.43 1.282-1.097 1.103l-3.2-.865a2.25 2.25 0 00-1.174.005l-3.096.88a2.25 2.25 0 01-1.174-.005l-3.2-.865c-.667-.179-1.265.43-1.097 1.103L5 14.5"/></svg>
-        </div>
-        <div class="flex items-center gap-4 p-4">
-          <div class="flex-shrink-0 w-12 h-12 rounded-xl flex items-center justify-center" style="background:linear-gradient(135deg,#8B2542,#6B1D34)">
-            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      
+      <!-- Main Content Column -->
+      <div class="lg:col-span-2 space-y-6">
+        
+        <!-- Course Header -->
+        <div class="bg-white rounded-xl border border-burgundy-100 shadow-sm overflow-hidden">
+          <!-- Thumbnail -->
+          <div id="courseThumbnailContainer" class="h-64 bg-gradient-to-br from-burgundy-700 to-burgundy-900 flex items-center justify-center">
+            <img id="courseThumbnail" class="hidden w-full h-full object-cover" alt="Course thumbnail">
+            <div id="thumbnailPlaceholder" class="text-center">
+              <div class="text-6xl mb-2">📚</div>
+              <span class="text-burgundy-200 text-sm">Continuing Education</span>
+            </div>
           </div>
-          <div class="flex-1 min-w-0">
-            <h3 class="font-display text-base font-semibold text-burgundy-800">Researched-N-Ready CE</h3>
-            <p class="text-forest-500 text-sm">Search peer-reviewed articles, verify currency, and build CE courses &mdash; backed by scholarly research.</p>
+          
+          <div class="p-6">
+            <!-- Badges -->
+            <div id="complianceBadges" class="flex flex-wrap gap-2 mb-4">
+              <!-- Badges will be inserted here -->
+            </div>
+            
+            <h1 id="courseTitle" class="font-display text-3xl font-bold text-burgundy-900 mb-2">Course Title</h1>
+            <p id="courseSubtitle" class="text-lg text-forest-600 mb-4"></p>
+            
+            <!-- Quick Stats -->
+            <div class="flex flex-wrap gap-4 text-sm text-forest-600 mb-4">
+              <span class="flex items-center gap-1">
+                <svg class="w-5 h-5 text-gold-500" fill="currentColor" viewBox="0 0 20 20"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"/></svg>
+                <span id="courseCEHours">0</span> CE Hours
+              </span>
+              <span class="flex items-center gap-1">
+                <svg class="w-5 h-5 text-forest-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+                <span id="courseModuleCount">0</span> Modules
+              </span>
+              <span class="flex items-center gap-1">
+                <svg class="w-5 h-5 text-forest-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                <span id="courseLessonCount">0</span> Lessons
+              </span>
+              <span id="courseInstructorContainer" class="flex items-center gap-1">
+                <svg class="w-5 h-5 text-forest-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                <span id="courseInstructor">Instructor</span>
+              </span>
+            </div>
+            
+            <!-- Description -->
+            <div class="prose max-w-none">
+              <p id="courseDescription" class="text-forest-700 leading-relaxed"></p>
+            </div>
           </div>
-          <span class="flex-shrink-0 flex items-center gap-1.5 text-white text-xs font-semibold px-4 py-2 rounded-lg" style="background:#6B1D34">Explore <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg></span>
+        </div>
+        
+        <!-- Learning Objectives -->
+        <div id="objectivesSection" class="hidden bg-white rounded-xl border border-burgundy-100 shadow-sm p-6">
+          <h2 class="font-display text-xl font-semibold text-burgundy-900 mb-4 flex items-center gap-2">
+            <svg class="w-6 h-6 text-forest-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            Learning Objectives
+          </h2>
+          <ul id="objectivesList" class="space-y-3">
+            <!-- Objectives will be inserted here -->
+          </ul>
+        </div>
+        
+        <!-- Presenter/Author Information (NBCC Section F) -->
+        <div id="presenterSection" class="hidden bg-white rounded-xl border border-burgundy-100 shadow-sm p-6">
+          <h2 class="font-display text-xl font-semibold text-burgundy-900 mb-4 flex items-center gap-2">
+            <svg class="w-6 h-6 text-forest-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+            Presenter/Author
+          </h2>
+          <div class="flex items-start gap-4">
+            <div class="w-16 h-16 bg-burgundy-100 rounded-full flex items-center justify-center text-burgundy-700 text-2xl font-display font-bold" id="presenterAvatar">
+              <!-- Avatar initials -->
+            </div>
+            <div class="flex-1">
+              <h3 class="font-semibold text-burgundy-800 text-lg" id="presenterName">Presenter Name</h3>
+              <p class="text-forest-600 text-sm" id="presenterCredentials">Credentials</p>
+              <p class="text-forest-500 text-sm mt-1" id="presenterDegree">Degree • Institution</p>
+              <p class="text-forest-500 text-sm" id="presenterLicense">License Info</p>
+              <p class="text-forest-600 text-sm mt-2" id="presenterBio">Bio text</p>
+              <div id="presenterQualification" class="mt-2 p-2 bg-forest-50 rounded-lg text-sm text-forest-700 hidden">
+                <!-- Qualification statement -->
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Course Outline -->
+        <div id="outlineSection" class="bg-white rounded-xl border border-burgundy-100 shadow-sm p-6">
+          <h2 class="font-display text-xl font-semibold text-burgundy-900 mb-4 flex items-center gap-2">
+            <svg class="w-6 h-6 text-forest-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
+            Course Outline
+          </h2>
+          <div id="modulesList" class="space-y-4">
+            <!-- Modules will be inserted here -->
+          </div>
+        </div>
+        
+        <!-- References Section (NBCC Section J.6.a.5) -->
+        <div id="referencesSection" class="hidden bg-white rounded-xl border border-burgundy-100 shadow-sm p-6">
+          <h2 class="font-display text-xl font-semibold text-burgundy-900 mb-4 flex items-center gap-2">
+            <svg class="w-6 h-6 text-forest-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+            References
+          </h2>
+          <ol id="referencesList" class="space-y-2 list-decimal list-inside text-sm text-forest-700">
+            <!-- References will be inserted here -->
+          </ol>
+        </div>
+        
+        <!-- Dynamic Approval Statements Container -->
+        <div id="approvalStatementsContainer">
+          <!-- Approval statements will be dynamically inserted here based on course approvals -->
+        </div>
+        
+      </div>
+      
+      <!-- Sidebar -->
+      <div class="lg:col-span-1">
+        <div class="sticky top-24 space-y-6">
+          
+          <!-- Pricing Card -->
+          <div class="bg-white rounded-xl border border-burgundy-100 shadow-lg overflow-hidden">
+            <div id="pricingCardHeader" class="bg-gradient-to-r from-burgundy-700 to-burgundy-800 p-4 text-center">
+              <span class="text-burgundy-100 text-sm" id="pricingApprovalBadge">NBCC Approved Provider #7760</span>
+            </div>
+            
+            <div class="p-6">
+              <!-- Individual Price (if available) -->
+              <div id="individualPriceSection" class="hidden mb-6">
+                <div class="text-center mb-4">
+                  <span class="text-sm text-forest-500">Individual Purchase</span>
+                  <div class="text-4xl font-bold text-burgundy-900">$<span id="individualPrice">0</span></div>
+                  <span class="text-sm text-forest-500">one-time payment</span>
+                </div>
+                <button onclick="openPurchaseModal()" class="w-full bg-burgundy-700 hover:bg-burgundy-800 text-white font-semibold py-3 px-6 rounded-xl transition-colors mb-3">
+                  Buy This Course
+                </button>
+                <div class="text-center text-sm text-forest-500">or</div>
+              </div>
+              
+              <!-- Subscription Access -->
+              <div id="subscriptionSection" class="text-center">
+                <div id="subscriptionPriceDisplay" class="mb-4">
+                  <span class="text-sm text-forest-500">Included with</span>
+                  <div class="text-2xl font-bold text-forest-700" id="subscriptionTierName">Professional Plan</div>
+                  <span class="text-sm text-forest-500">$<span id="subscriptionPrice">19</span>/month</span>
+                </div>
+                
+                <button id="startCourseBtn" onclick="startCourse()" class="w-full bg-forest-700 hover:bg-forest-800 text-white font-semibold py-3 px-6 rounded-xl transition-colors mb-3">
+                  Start Course
+                </button>
+                
+                <a href="/subscription.html" id="subscribeLink" class="hidden block w-full bg-gold-400 hover:bg-gold-500 text-burgundy-900 font-semibold py-3 px-6 rounded-xl transition-colors text-center">
+                  Subscribe to Access
+                </a>
+                
+                <p class="text-xs text-forest-500 mt-4">
+                  Get unlimited access to all courses with a subscription
+                </p>
+              </div>
+            </div>
+            
+            <!-- Features -->
+            <div class="border-t border-burgundy-100 p-4 bg-stone-50">
+              <ul class="space-y-2 text-sm text-forest-600">
+                <li class="flex items-center gap-2">
+                  <svg class="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                  Instant CE Certificate
+                </li>
+                <li class="flex items-center gap-2">
+                  <svg class="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                  Self-Paced Learning
+                </li>
+                <li class="flex items-center gap-2">
+                  <svg class="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                  Lifetime Access
+                </li>
+                <li class="flex items-center gap-2">
+                  <svg class="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                  Mobile Friendly
+                </li>
+              </ul>
+            </div>
+          </div>
+          
+          <!-- CE Category Card -->
+          <div id="categoryCard" class="bg-white rounded-xl border border-burgundy-100 shadow-sm p-4">
+            <h3 class="font-semibold text-forest-700 mb-2">CE Category</h3>
+            <div id="categoryBadge" class="inline-flex items-center gap-2 px-3 py-1 bg-forest-100 text-forest-700 rounded-full text-sm">
+              <span id="categoryName">Core</span>
+              <span>•</span>
+              <span id="categoryHours">0</span> Hours
+            </div>
+          </div>
+          
         </div>
       </div>
-    </a>
-
-    <!-- Filters & Search -->
-    <div class="bg-white rounded-xl border border-burgundy-100 shadow-sm p-6 mb-6">
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <!-- Search -->
-        <div class="md:col-span-2">
-          <label for="search" class="block text-sm font-medium text-forest-700 mb-2">Search Courses</label>
-          <input type="text" id="search" placeholder="Search by title or topic..." onkeyup="filterCourses()" class="w-full px-4 py-3 border border-forest-200 rounded-xl focus:ring-2 focus:ring-burgundy-500 focus:border-burgundy-500 outline-none">
-        </div>
-
-        <!-- Filter by CEU Category -->
-        <div>
-          <label for="filterCategory" class="block text-sm font-medium text-forest-700 mb-2">CE Category</label>
-          <select id="filterCategory" onchange="filterCourses()" class="w-full px-4 py-3 border border-forest-200 rounded-xl focus:ring-2 focus:ring-burgundy-500 focus:border-burgundy-500 outline-none">
-            <option value="">All Categories</option>
-            <option value="ethics">Ethics</option>
-            <option value="core">Core</option>
-            <option value="related">Related</option>
-            <option value="supervision">Supervision</option>
-            <option value="telehealth">Telehealth</option>
-          </select>
-        </div>
-
-        <!-- Filter by Access Type -->
-        <div>
-          <label for="filterAccess" class="block text-sm font-medium text-forest-700 mb-2">Access</label>
-          <select id="filterAccess" onchange="filterCourses()" class="w-full px-4 py-3 border border-forest-200 rounded-xl focus:ring-2 focus:ring-burgundy-500 focus:border-burgundy-500 outline-none">
-            <option value="">All Courses</option>
-            <option value="free">Free Only</option>
-            <option value="enrolled">My Courses</option>
-          </select>
-        </div>
-      </div>
+      
     </div>
-
-    <!-- Course Grid -->
-    <div id="coursesList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      <!-- Loading State -->
-      <div class="md:col-span-3 text-center py-12">
-        <div class="inline-block w-8 h-8 border-4 border-burgundy-200 border-t-burgundy-700 rounded-full animate-spin"></div>
-        <p class="text-forest-500 mt-4">Loading courses...</p>
-      </div>
-    </div>
-
-    <!-- Empty State -->
-    <div id="emptyState" class="hidden bg-white rounded-xl border border-burgundy-100 shadow-sm p-12 text-center">
-      <div class="w-20 h-20 bg-forest-100 rounded-full flex items-center justify-center mx-auto mb-4">
-        <svg class="w-10 h-10 text-forest-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
-        </svg>
-      </div>
-      <h3 class="font-display text-xl font-semibold text-burgundy-900 mb-2">No courses found</h3>
-      <p class="text-forest-600">Try adjusting your filters or check back soon for new courses.</p>
-    </div>
-
-    <!-- Single Course Detail View (hidden by default) -->
-    <div id="courseDetail" class="hidden"></div>
   </main>
+
+  <!-- Purchase Modal -->
+  <div id="purchaseModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-xl shadow-xl max-w-md w-full overflow-hidden">
+      <!-- Header -->
+      <div class="bg-gradient-to-r from-burgundy-700 to-burgundy-800 p-5">
+        <div class="flex justify-between items-start">
+          <div>
+            <p class="text-burgundy-200 text-xs font-medium uppercase tracking-wide mb-1">Individual Purchase</p>
+            <h3 class="font-display text-xl font-semibold text-white" id="modalCourseName">Course Title</h3>
+          </div>
+          <button onclick="closePurchaseModal()" class="text-burgundy-200 hover:text-white text-2xl leading-none">&times;</button>
+        </div>
+      </div>
+
+      <div class="p-6">
+        <!-- Price Display -->
+        <div class="flex items-center justify-between mb-5 pb-4 border-b border-forest-100">
+          <span class="text-forest-600 font-medium">Course Price</span>
+          <span class="text-2xl font-bold text-burgundy-900" id="modalPrice">$0</span>
+        </div>
+
+        <!-- Discount Code -->
+        <div class="mb-5">
+          <label class="block text-sm font-medium text-forest-700 mb-2">Have a discount code?</label>
+          <div class="flex gap-2">
+            <input type="text" id="purchaseCouponInput" placeholder="e.g. TELEHEALTH20"
+              class="flex-1 px-4 py-2.5 border border-forest-200 rounded-lg focus:ring-2 focus:ring-burgundy-500 outline-none uppercase text-sm"
+              onkeydown="if(event.key==='Enter'){event.preventDefault();applyPurchaseCoupon()}">
+            <button onclick="applyPurchaseCoupon()" id="applyCouponBtn"
+              class="px-4 py-2.5 bg-burgundy-700 hover:bg-burgundy-800 text-white rounded-lg text-sm font-semibold transition-colors">
+              Apply
+            </button>
+          </div>
+          <div id="couponFeedback" class="hidden mt-2 p-2.5 rounded-lg text-sm"></div>
+        </div>
+
+        <!-- Discounted Price (shown after valid coupon) -->
+        <div id="discountSummary" class="hidden mb-5 p-3 bg-green-50 border border-green-200 rounded-lg">
+          <div class="flex items-center justify-between text-sm">
+            <span class="text-green-700">Discount applied</span>
+            <span class="text-green-700 font-medium" id="discountDescription"></span>
+          </div>
+          <div class="flex items-center justify-between mt-1">
+            <span class="text-green-800 font-semibold">You pay</span>
+            <span class="text-green-800 font-bold text-lg" id="discountedPrice"></span>
+          </div>
+        </div>
+
+        <!-- Policy Acknowledgment -->
+        <div class="mb-4 p-3 bg-stone-50 border border-stone-200 rounded-lg">
+          <label class="flex items-start gap-3 cursor-pointer">
+            <input type="checkbox" id="policyAckCheckbox" onchange="toggleCheckoutBtn()"
+              class="mt-0.5 w-4 h-4 rounded border-gray-300 text-burgundy-700 flex-shrink-0" style="accent-color:#6B1D34">
+            <span class="text-xs text-gray-600 leading-relaxed">
+              I have read and agree to the
+              <a href="/refund-policy.html" target="_blank" class="text-burgundy-700 underline font-medium">Refund Policy</a>
+              and
+              <a href="/terms.html" target="_blank" class="text-burgundy-700 underline font-medium">Terms of Service</a>.
+              I acknowledge the
+              <a href="/complaint-resolution.html" target="_blank" class="text-burgundy-700 underline font-medium">Complaint &amp; Grievance Process</a>
+              and
+              <a href="/ada-accommodations.html" target="_blank" class="text-burgundy-700 underline font-medium">ADA Accommodations</a>
+              available to me.
+            </span>
+          </label>
+        </div>
+
+        <!-- Checkout Button -->
+        <button onclick="proceedToCheckout()" id="checkoutBtn" disabled
+          class="w-full bg-burgundy-700 text-white font-semibold py-3.5 rounded-xl transition-colors text-base opacity-50 cursor-not-allowed">
+          Continue to Checkout
+        </button>
+
+        <p class="text-xs text-forest-400 mt-3 text-center">
+          Secure checkout powered by Stripe. Instant course access after payment.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div id="cr-footer"></div>
 
   <script>
     const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://api.counselorready.com';
-    let allCourses = [];
-    const slugParam = new URLSearchParams(window.location.search).get('slug');
 
-    // HTML escape helper
-    function esc(str) {
-      if (!str) return '';
-      const div = document.createElement('div');
-      div.textContent = str;
-      return div.innerHTML;
+    let currentCourse = null;
+    let currentUser = null;
+    let userProgress = null;
+    let appliedCouponCode = null;
+    
+    // Get course slug from URL
+    function getCourseSlug() {
+      const params = new URLSearchParams(window.location.search);
+      return params.get('slug');
     }
-
-    // ── Single Course Detail View ──────────────────────────────────
-
-    async function loadSingleCourse(slug) {
-      // Hide catalog elements
-      document.querySelector('.flex.items-center.justify-between.mb-8')?.classList.add('hidden');  // page header
-      document.querySelector('a[href="/research-ready.html"]')?.classList.add('hidden');                // research-ready banner
-      document.querySelector('.bg-white.rounded-xl.border.border-burgundy-100.shadow-sm.p-6.mb-6')?.classList.add('hidden'); // filters
-      document.getElementById('coursesList')?.classList.add('hidden');
-      document.getElementById('emptyState')?.classList.add('hidden');
-      document.getElementById('syncBtn')?.closest('.flex')?.classList.add('hidden');
-
-      // Show detail container with loading state
-      const detailEl = document.getElementById('courseDetail');
-      detailEl.classList.remove('hidden');
-      detailEl.innerHTML = `
-        <div class="text-center py-16">
-          <div class="inline-block w-8 h-8 border-4 border-burgundy-200 border-t-burgundy-700 rounded-full animate-spin"></div>
-          <p class="text-forest-500 mt-4">Loading course...</p>
-        </div>
-      `;
-
+    
+    // Load course details
+    async function loadCourse() {
+      const slug = getCourseSlug();
+      
+      if (!slug) {
+        showError('No course specified');
+        return;
+      }
+      
       const token = localStorage.getItem('token');
-      const headers = {};
-      if (token) headers['Authorization'] = `Bearer ${token}`;
-
+      
       try {
-        const courseRes = await fetch(`${API_URL}/api/interactive-courses/slug/${encodeURIComponent(slug)}`, { headers });
-        if (!courseRes.ok) {
-          detailEl.innerHTML = `
-            <div class="bg-white rounded-xl border border-burgundy-100 shadow-sm p-12 text-center">
-              <h3 class="font-display text-xl font-semibold text-burgundy-900 mb-2">Course not found</h3>
-              <p class="text-forest-600 mb-6">The course you're looking for doesn't exist or has been removed.</p>
-              <a href="/course-details.html" class="inline-flex items-center gap-2 bg-burgundy-800 hover:bg-burgundy-900 text-white font-semibold px-6 py-3 rounded-xl transition-colors">
-                ← Browse All Courses
-              </a>
-            </div>
-          `;
+        const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+        
+        const response = await fetch(`${API_URL}/api/interactive-courses/slug/${slug}`, { headers });
+        
+        if (!response.ok) {
+          if (response.status === 404) {
+            showError('Course not found');
+          } else {
+            showError('Failed to load course');
+          }
           return;
         }
-        const courseData = await courseRes.json();
-        const course = courseData.data || courseData.course || courseData;
-
-        // Check enrollment
-        let enrollment = null;
-        if (token && course._id) {
+        
+        const data = await response.json();
+        currentCourse = data.data || data.course || data;
+        userProgress = data.progress || null;
+        
+        // Load user info if logged in
+        if (token) {
           try {
-            const progressRes = await fetch(`${API_URL}/api/interactive-courses/${course._id}/progress`, { headers });
-            if (progressRes.ok) {
-              const progressData = await progressRes.json();
-              enrollment = progressData.data || progressData;
+            const userResponse = await fetch(`${API_URL}/api/auth/me`, { headers });
+            if (userResponse.ok) {
+              const userData = await userResponse.json();
+              currentUser = userData.user || userData;
             }
           } catch (e) {
-            console.warn('Could not fetch enrollment:', e);
+            console.log('Could not load user info');
+          }
+          
+          // Check if already enrolled
+          if (currentCourse?._id) {
+            try {
+              const progResponse = await fetch(`${API_URL}/api/interactive-courses/${currentCourse._id}/progress`, { headers });
+              if (progResponse.ok) {
+                const progData = await progResponse.json();
+                userProgress = progData.data || progData;
+              }
+            } catch (e) {
+              console.log('Could not load progress');
+            }
           }
         }
-
-        renderCourseDetail(course, enrollment);
-        document.title = `${course.title} - CounselorReady`;
+        
+        renderCourse();
+        
       } catch (error) {
-        console.error('Load single course error:', error);
-        detailEl.innerHTML = `
-          <div class="bg-white rounded-xl border border-burgundy-100 shadow-sm p-12 text-center">
-            <h3 class="font-display text-xl font-semibold text-burgundy-900 mb-2">Failed to load course</h3>
-            <p class="text-forest-600 mb-6">Please try again later.</p>
-            <a href="/course-details.html" class="inline-flex items-center gap-2 bg-burgundy-800 hover:bg-burgundy-900 text-white font-semibold px-6 py-3 rounded-xl transition-colors">
-              ← Browse All Courses
-            </a>
-          </div>
-        `;
+        console.error('Load course error:', error);
+        showError('Failed to load course');
       }
     }
+    
+    // Show error state
+    function showError(message) {
+      document.getElementById('loadingState').classList.add('hidden');
+      document.getElementById('courseContent').classList.add('hidden');
+      document.getElementById('errorState').classList.remove('hidden');
+      document.getElementById('errorMessage').textContent = message;
+    }
+    
+    // Render course details
+    function renderCourse() {
+      document.getElementById('loadingState').classList.add('hidden');
+      document.getElementById('errorState').classList.add('hidden');
+      document.getElementById('courseContent').classList.remove('hidden');
+      
+      // Set page title
+      document.title = `${currentCourse.title} - CounselorReady`;
+      
+      // Basic info
+      document.getElementById('courseTitle').textContent = currentCourse.title;
+      document.getElementById('courseSubtitle').textContent = currentCourse.subtitle || '';
+      document.getElementById('courseDescription').textContent = currentCourse.description || '';
+      document.getElementById('courseCEHours').textContent = currentCourse.ceuHours || 0;
+      document.getElementById('courseInstructor').textContent = currentCourse.instructor || 'CounselorReady';
+      
+      // Module and lesson counts
+      const modules = currentCourse.modules || [];
+      const lessonCount = modules.reduce((sum, m) => sum + (m.lessons?.length || 0), 0);
+      document.getElementById('courseModuleCount').textContent = modules.length;
+      document.getElementById('courseLessonCount').textContent = lessonCount;
+      
+      // Thumbnail
+      if (currentCourse.thumbnail) {
+        document.getElementById('courseThumbnail').src = currentCourse.thumbnail;
+        document.getElementById('courseThumbnail').classList.remove('hidden');
+        document.getElementById('thumbnailPlaceholder').classList.add('hidden');
+      }
+      
+      // Category
+      const category = currentCourse.ceuCategories?.[0]?.category || currentCourse.category || 'Core';
+      const categoryHours = currentCourse.ceuCategories?.[0]?.hours || currentCourse.ceuHours || 0;
+      document.getElementById('categoryName').textContent = capitalizeFirst(category);
+      document.getElementById('categoryHours').textContent = categoryHours;
+      document.getElementById('breadcrumbCategory').textContent = capitalizeFirst(category);
+      
+      // Compliance badges
+      renderBadges();
+      
+      // Learning objectives
+      renderObjectives();
+      
+      // Presenter/Author information
+      renderPresenter();
+      
+      // Course outline (modules)
+      renderModules();
+      
+      // References
+      renderReferences();
+      
+      // Pricing
+      renderPricing();
+    }
+    
+    // Render compliance badges
+    // SVG icons for badges
+    const ICON_MEDAL = '<svg style="width:14px;height:14px;flex-shrink:0" fill="none" stroke="currentColor" stroke-width="1.3" viewBox="0 0 16 18" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="6.5" r="5"/><path d="M5 11l-1 6 4-2 4 2-1-6"/></svg>';
+    const ICON_CLOCK = '<svg style="width:14px;height:14px;flex-shrink:0" fill="none" stroke="currentColor" stroke-width="1.3" viewBox="0 0 14 14" stroke-linecap="round" stroke-linejoin="round"><circle cx="7" cy="7" r="6"/><path d="M7 3.5v4l2.8 1.7"/></svg>';
+    const ICON_SEAL = '<svg style="width:14px;height:14px;flex-shrink:0" fill="none" stroke="currentColor" stroke-width="1.2" viewBox="0 0 16 16" stroke-linecap="round" stroke-linejoin="round"><path d="M8 1.5l1.4 2h2.4l-.1 2.4 2.1 1.1-1.4 2 1.5 1.8-2.1 1.2.2 2.4-2.4-.1L8 16l-1.6-2.3-2.4.1.2-2.4-2.1-1.2 1.5-1.8-1.4-2L4.3 5.9 4.2 3.5h2.4z"/><path d="M6 8.2l1.3 1.3 2.7-2.7"/></svg>';
 
-    function renderCourseDetail(course, enrollment) {
-      const detailEl = document.getElementById('courseDetail');
-      const isEnrolled = enrollment?.enrolled;
-      const isFree = course.accessType === 'free';
-      const progress = enrollment?.percentComplete || 0;
-      const ceHours = course.ceHours || course.ceuHours || 0;
-      const sections = course.sections || [];
-      const objectives = course.learningObjectives || course.objectives || [];
-      const presenter = course.presenter || course.author || null;
-      const presenterName = typeof presenter === 'string' ? presenter : (presenter?.name || '');
-      const presenterBio = typeof presenter === 'object' ? (presenter?.bio || '') : '';
-      const presenterCredentials = typeof presenter === 'object' ? (presenter?.credentials || '') : '';
+    function renderBadges() {
+      const container = document.getElementById('complianceBadges');
+      const ceHours = currentCourse.ceHours || currentCourse.ceuHours || 1;
+      const minutes = ceHours * 60;
+      let badges = '';
 
-      // Build CEU badges
-      const ceuBadges = (course.ceuCategories || []).map(cat =>
-        `<span class="bg-honey-100 text-honey-700 px-3 py-1 rounded-full text-sm font-medium">${esc(cat.hours + ' hrs ' + cat.category)}</span>`
-      ).join('');
-      const ceBadge = ceHours ? `<span class="bg-honey-100 text-honey-700 px-3 py-1 rounded-full text-sm font-medium">${ceHours} CE Hours</span>` : '';
+      // Medal + CE Hours (hunter)
+      badges += `<span style="display:inline-flex;align-items:center;gap:4px;padding:4px 11px;border-radius:13px;font-size:11px;font-weight:600;background:rgba(74,124,89,0.12);color:#4A7C59">${ICON_MEDAL} ${ceHours} CE Hr${ceHours !== 1 ? 's' : ''}</span>`;
 
-      // CTA button
-      let ctaButton = '';
-      if (isEnrolled) {
-        ctaButton = `<a href="/interactive-course.html?slug=${esc(course.slug)}" class="block w-full text-center bg-burgundy-800 hover:bg-burgundy-900 text-white font-semibold px-6 py-3 rounded-xl transition-colors">Continue Learning</a>`;
-      } else if (isFree) {
-        ctaButton = `<button onclick="enrollAndStart('${esc(course._id)}', '${esc(course.slug)}')" class="block w-full bg-forest-700 hover:bg-forest-800 text-white font-semibold px-6 py-3 rounded-xl transition-colors">Enroll Free &amp; Start</button>`;
+      // Clock + Minutes (navy)
+      badges += `<span style="display:inline-flex;align-items:center;gap:4px;padding:4px 11px;border-radius:13px;font-size:11px;font-weight:600;background:rgba(40,65,87,0.10);color:#284157">${ICON_CLOCK} ${minutes} min</span>`;
+
+      // Seal + Approval body (burgundy)
+      let activeApprovals = [];
+      if (currentCourse.approvals && currentCourse.approvals.length > 0) {
+        activeApprovals = currentCourse.approvals.filter(a => a.status === 'approved');
+      } else if (currentCourse.approvingBody) {
+        const legacyBody = currentCourse.approvingBody === 'ACEP' ? 'NBCC' : currentCourse.approvingBody;
+        activeApprovals = [{ body: legacyBody, providerNumber: currentCourse.approvalNumber || '#7760', status: 'approved' }];
       } else {
-        // Subscription tier options based on course accessTier
-        const courseTier = course.accessTier || 'starter';
-        const isPremium = courseTier === 'premium';
-        const tierHierarchy = ['starter', 'professional', 'vip'];
-        const tierIndex = tierHierarchy.indexOf(courseTier);
-        const availableTiers = tierIndex >= 0 ? tierHierarchy.slice(tierIndex) : [];
-        const tierInfo = {
-          starter:      { label: 'Starter',       price: '19.99' },
-          professional: { label: 'Professional',  price: '29.99' },
-          vip:          { label: 'VIP',            price: '49.99' }
-        };
+        activeApprovals = [{ body: 'NBCC', providerNumber: '#7760', status: 'approved' }];
+      }
+      activeApprovals.forEach(approval => {
+        badges += `<span style="display:inline-flex;align-items:center;gap:4px;padding:4px 11px;border-radius:13px;font-size:11px;font-weight:600;background:rgba(107,29,52,0.10);color:#6B1D34">${ICON_SEAL} ${approval.body || 'NBCC'}</span>`;
+      });
 
-        const tierCards = availableTiers.map(t => {
-          const info = tierInfo[t];
-          return `
-            <a href="/subscription.html?plan=${t}" class="block border border-burgundy-200 rounded-lg p-3 hover:border-burgundy-500 hover:bg-burgundy-50 transition-all text-center">
-              <span class="block text-sm font-semibold text-burgundy-800">${info.label}</span>
-              <span class="block text-xs text-forest-600 mt-0.5">$${info.price}/mo</span>
-            </a>
-          `;
-        }).join('');
+      // Content area pills (honey)
+      let areas = currentCourse.nbccContentAreas || currentCourse.contentAreas || [];
+      if (!areas.length) {
+        const area = currentCourse.nbccContentArea || currentCourse.nbccContentAreaDisplay;
+        if (area) areas = [area];
+      }
+      if (areas.length) {
+        badges += '<div style="width:100%;height:6px"></div>';
+        areas.slice(0, 3).forEach(a => {
+          const label = typeof a === 'string' ? a : (a.text || a.name || a);
+          badges += `<span style="display:inline-flex;padding:4px 11px;border-radius:12px;font-size:10px;font-weight:500;background:rgba(212,168,85,0.15);color:#8B6914;margin-right:4px">${label}</span>`;
+        });
+      }
 
-        const coursePrice = course.price || 0;
-        const buyButton = coursePrice > 0 ? `
-          <button onclick="purchaseCourse('${esc(course._id)}', '${esc(course.slug)}')" class="block w-full text-center border-2 border-forest-600 text-forest-700 hover:bg-forest-50 font-semibold px-6 py-3 rounded-xl transition-colors">
-            Buy This Course Only — $${coursePrice}
-          </button>
-        ` : '';
-
-        const divider = availableTiers.length > 0 && coursePrice > 0 ? `
-          <div class="relative my-4">
-            <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-burgundy-200"></div></div>
-            <div class="relative flex justify-center"><span class="bg-white px-3 text-xs text-forest-500">or</span></div>
-          </div>
-        ` : '';
-
-        if (isPremium) {
-          // Premium courses: purchase only, no subscription tier includes them
-          ctaButton = `
-            <div>
-              <p class="text-sm font-medium text-burgundy-800 mb-3">This premium course is available for individual purchase</p>
-              ${buyButton || `<a href="/subscription.html" class="block w-full text-center bg-burgundy-800 hover:bg-burgundy-900 text-white font-semibold px-6 py-3 rounded-xl transition-colors">Subscribe to Access</a>`}
+      container.innerHTML = badges;
+      renderApprovalStatements(activeApprovals);
+    }
+    
+    // Render approval statements based on course approvals
+    function renderApprovalStatements(activeApprovals) {
+      const container = document.getElementById('approvalStatementsContainer');
+      
+      // Approval statement templates
+      const approvalStatements = {
+        'NBCC': {
+          title: 'NBCC Approved Provider',
+          logo: '/images/nbcc-acep-logo.jpg',
+          gradient: 'from-forest-50 to-burgundy-50',
+          borderColor: 'border-forest-200',
+          textColor: 'text-forest-800',
+          getStatement: (providerNumber) => `GA Integrated Therapeutic Perspectives LLC has been approved by NBCC as an Approved Continuing Education Provider, ACEP No. ${providerNumber || '7760'}. Programs that do not qualify for NBCC credit are clearly identified. GA Integrated Therapeutic Perspectives LLC is solely responsible for all aspects of the programs.`
+        },
+        'GCSCW': {
+          title: 'Georgia Composite Board Approved',
+          logo: '/images/gcscw-logo.png',
+          gradient: 'from-blue-50 to-indigo-50',
+          borderColor: 'border-blue-200',
+          textColor: 'text-blue-800',
+          getStatement: (providerNumber) => `GA Integrated Therapeutic Perspectives LLC is approved by the Georgia Composite Board of Professional Counselors, Social Workers, and Marriage & Family Therapists to provide continuing education.${providerNumber ? ` Provider Number: ${providerNumber}` : ''}`
+        },
+        'GA-LPC-Board': {
+          title: 'Georgia LPC Board Approved',
+          logo: null,
+          gradient: 'from-indigo-50 to-purple-50',
+          borderColor: 'border-indigo-200',
+          textColor: 'text-indigo-800',
+          getStatement: (providerNumber) => `This program has been approved by the Georgia Board of Professional Counselors for continuing education credit.${providerNumber ? ` Provider Number: ${providerNumber}` : ''}`
+        },
+        'GA-LCSW-Board': {
+          title: 'Georgia LCSW Board Approved',
+          logo: null,
+          gradient: 'from-purple-50 to-pink-50',
+          borderColor: 'border-purple-200',
+          textColor: 'text-purple-800',
+          getStatement: (providerNumber) => `This program has been approved by the Georgia Board of Licensed Clinical Social Workers for continuing education credit.${providerNumber ? ` Provider Number: ${providerNumber}` : ''}`
+        },
+        'ACA': {
+          title: 'ACA Approved Provider',
+          logo: null,
+          gradient: 'from-teal-50 to-green-50',
+          borderColor: 'border-teal-200',
+          textColor: 'text-teal-800',
+          getStatement: (providerNumber) => `GA Integrated Therapeutic Perspectives LLC is an American Counseling Association approved continuing education provider.${providerNumber ? ` Provider Number: ${providerNumber}` : ''}`
+        },
+        'NASW': {
+          title: 'NASW Approved Provider',
+          logo: null,
+          gradient: 'from-cyan-50 to-blue-50',
+          borderColor: 'border-cyan-200',
+          textColor: 'text-cyan-800',
+          getStatement: (providerNumber) => `GA Integrated Therapeutic Perspectives LLC is approved by the National Association of Social Workers as a continuing education provider.${providerNumber ? ` Provider Number: ${providerNumber}` : ''}`
+        }
+      };
+      
+      let statementsHTML = '';
+      
+      activeApprovals.forEach(approval => {
+        const config = approvalStatements[approval.body];
+        
+        if (config) {
+          const providerNumber = approval.providerNumber || '';
+          const logoImg = config.logo 
+            ? `<img src="${config.logo}" alt="${approval.body} Logo" class="w-16 h-16 object-contain" onerror="this.style.display='none'">`
+            : `<div class="w-16 h-16 rounded-full bg-forest-100 flex items-center justify-center">
+                <span class="text-2xl text-forest-600">✓</span>
+               </div>`;
+          
+          statementsHTML += `
+            <div class="bg-gradient-to-r ${config.gradient} rounded-xl border ${config.borderColor} p-6 mb-4">
+              <div class="flex items-start gap-4">
+                ${logoImg}
+                <div>
+                  <h3 class="font-semibold ${config.textColor} mb-2">${config.title}</h3>
+                  <p class="text-sm text-forest-700 leading-relaxed">
+                    ${config.getStatement(providerNumber)}
+                  </p>
+                </div>
+              </div>
             </div>
           `;
         } else {
-          ctaButton = `
-            <div>
-              <p class="text-sm font-medium text-burgundy-800 mb-3">Subscribe to unlock this course</p>
-              <div class="grid ${availableTiers.length > 2 ? 'grid-cols-3' : availableTiers.length === 2 ? 'grid-cols-2' : 'grid-cols-1'} gap-2">
-                ${tierCards}
+          // Generic approval statement for unknown bodies
+          statementsHTML += `
+            <div class="bg-gradient-to-r from-gray-50 to-stone-50 rounded-xl border border-gray-200 p-6 mb-4">
+              <div class="flex items-start gap-4">
+                <div class="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center">
+                  <span class="text-2xl text-gray-600">✓</span>
+                </div>
+                <div>
+                  <h3 class="font-semibold text-gray-800 mb-2">${approval.body} Approved</h3>
+                  <p class="text-sm text-gray-700 leading-relaxed">
+                    This program has been approved for continuing education credit.${approval.providerNumber ? ` Provider Number: ${approval.providerNumber}` : ''}
+                  </p>
+                </div>
               </div>
-              ${divider}
-              ${buyButton}
             </div>
           `;
         }
+      });
+      
+      container.innerHTML = statementsHTML;
+    }
+    
+    // Render learning objectives
+    function renderObjectives() {
+      const objectives = currentCourse.objectives || [];
+      const section = document.getElementById('objectivesSection');
+      const list = document.getElementById('objectivesList');
+      
+      if (objectives.length === 0) {
+        section.classList.add('hidden');
+        return;
+      }
+      
+      section.classList.remove('hidden');
+      list.innerHTML = objectives.map(obj => `
+        <li class="flex items-start gap-3">
+          <span class="flex-shrink-0 w-6 h-6 rounded-full bg-forest-100 text-forest-600 flex items-center justify-center text-sm">✓</span>
+          <span class="text-forest-700">${escapeHtml(obj)}</span>
+        </li>
+      `).join('');
+    }
+    
+    // Render presenter/author information (NBCC Section F compliance)
+    function renderPresenter() {
+      const presenter = currentCourse.presenter;
+      const section = document.getElementById('presenterSection');
+      
+      // If no presenter object, use legacy instructor field
+      if (!presenter || !presenter.name) {
+        const instructorName = currentCourse.instructor || 'GA Integrated Therapeutic Perspectives LLC';
+        
+        // Show section with default info
+        section.classList.remove('hidden');
+        document.getElementById('presenterAvatar').textContent = instructorName.split(' ').map(w => w[0]).join('').substring(0, 2);
+        document.getElementById('presenterName').textContent = instructorName;
+        document.getElementById('presenterCredentials').textContent = 'NBCC Approved Continuing Education Provider';
+        document.getElementById('presenterDegree').textContent = 'ACEP #7760';
+        document.getElementById('presenterLicense').textContent = '';
+        document.getElementById('presenterBio').textContent = 'This course is provided by an NBCC Approved Continuing Education Provider meeting all Category 1 presenter requirements for clinical content.';
+        return;
+      }
+      
+      section.classList.remove('hidden');
+      
+      // Avatar initials
+      const initials = presenter.name.split(' ').map(w => w[0]).join('').substring(0, 2);
+      document.getElementById('presenterAvatar').textContent = initials;
+      
+      // Name and credentials
+      document.getElementById('presenterName').textContent = presenter.name;
+      document.getElementById('presenterCredentials').textContent = presenter.credentials || '';
+      
+      // Degree and institution
+      const degreeInfo = [presenter.degree, presenter.institution].filter(Boolean).join(' • ');
+      document.getElementById('presenterDegree').textContent = degreeInfo;
+      
+      // License info
+      const licenseInfo = presenter.licenseNumber && presenter.licenseState 
+        ? `License: ${presenter.licenseNumber} (${presenter.licenseState})`
+        : '';
+      document.getElementById('presenterLicense').textContent = licenseInfo;
+      
+      // Bio
+      document.getElementById('presenterBio').textContent = presenter.bio || '';
+      
+      // Qualification statement
+      const qualStatement = document.getElementById('presenterQualification');
+      if (presenter.qualificationStatement) {
+        qualStatement.textContent = presenter.qualificationStatement;
+        qualStatement.classList.remove('hidden');
+      } else {
+        qualStatement.classList.add('hidden');
+      }
+    }
+    
+    // Render references section (NBCC Section J.6.a.5 compliance)
+    function renderReferences() {
+      const references = currentCourse.references || [];
+      const section = document.getElementById('referencesSection');
+      const list = document.getElementById('referencesList');
+      
+      if (references.length === 0) {
+        section.classList.add('hidden');
+        return;
+      }
+      
+      section.classList.remove('hidden');
+      list.innerHTML = references.map(ref => {
+        // Format reference in APA-ish style
+        let refText = '';
+        if (ref.author) refText += ref.author;
+        if (ref.year) refText += ` (${ref.year})`;
+        if (ref.title) refText += refText ? `. ${ref.title}` : ref.title;
+        if (ref.source) refText += `. <em>${escapeHtml(ref.source)}</em>`;
+        if (ref.doi) refText += `. DOI: ${ref.doi}`;
+        if (ref.url) refText += `. <a href="${escapeHtml(ref.url)}" target="_blank" class="text-burgundy-700 underline">Link</a>`;
+        
+        return `<li class="text-forest-700 leading-relaxed">${refText}</li>`;
+      }).join('');
+    }
+    
+    // Render course modules
+    function renderModules() {
+      const modules = currentCourse.modules || [];
+      const container = document.getElementById('modulesList');
+      
+      if (modules.length === 0) {
+        container.innerHTML = '<p class="text-forest-500">Course content is being prepared...</p>';
+        return;
+      }
+      
+      container.innerHTML = modules.map((mod, mi) => `
+        <div class="border border-forest-200 rounded-lg overflow-hidden">
+          <div class="bg-forest-50 px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <span class="w-8 h-8 rounded-full bg-burgundy-100 text-burgundy-700 flex items-center justify-center font-semibold text-sm">${mi + 1}</span>
+              <h3 class="font-semibold text-forest-800">${escapeHtml(mod.title)}</h3>
+            </div>
+            <span class="text-sm text-forest-500">${mod.lessons?.length || 0} lessons</span>
+          </div>
+          <div class="divide-y divide-forest-100">
+            ${(mod.lessons || []).map((lesson, li) => `
+              <div class="px-4 py-2 flex items-center gap-3 text-sm">
+                <span class="w-6 h-6 rounded-full ${getLessonIcon(lesson.type)} flex items-center justify-center text-xs">
+                  ${getLessonIconSymbol(lesson.type)}
+                </span>
+                <span class="text-forest-700">${escapeHtml(lesson.title)}</span>
+                <span class="ml-auto text-forest-400">${lesson.duration || 10} min</span>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `).join('');
+    }
+    
+    // Render pricing section
+    function renderPricing() {
+      const price = currentCourse.price;
+      const accessTier = currentCourse.accessTier || 'professional';
+      
+      // Update approval badge in pricing card header
+      updatePricingApprovalBadge();
+      
+      // Individual price section
+      if (price && price > 0) {
+        document.getElementById('individualPriceSection').classList.remove('hidden');
+        document.getElementById('individualPrice').textContent = price;
+      } else {
+        document.getElementById('individualPriceSection').classList.add('hidden');
+      }
+      
+      // Subscription tier
+      const tierNames = {
+        'free': 'Free',
+        'professional': 'Professional Plan',
+        'vip': 'VIP Plan'
+      };
+      const tierPrices = {
+        'free': 0,
+        'professional': 19,
+        'vip': 49
+      };
+      
+      document.getElementById('subscriptionTierName').textContent = tierNames[accessTier] || 'Professional Plan';
+      document.getElementById('subscriptionPrice').textContent = tierPrices[accessTier] || 19;
+      
+      // Check if user has access
+      const hasAccess = checkUserAccess(accessTier);
+      
+      if (hasAccess) {
+        document.getElementById('startCourseBtn').classList.remove('hidden');
+        document.getElementById('subscribeLink').classList.add('hidden');
+        
+        // Update button text based on progress
+        if (userProgress && userProgress.status === 'completed') {
+          document.getElementById('startCourseBtn').textContent = 'Review Course';
+        } else if (userProgress && userProgress.currentLesson > 0) {
+          document.getElementById('startCourseBtn').textContent = 'Continue Course';
+        }
+      } else {
+        if (accessTier === 'free') {
+          document.getElementById('startCourseBtn').classList.remove('hidden');
+          document.getElementById('subscribeLink').classList.add('hidden');
+        } else {
+          document.getElementById('startCourseBtn').classList.add('hidden');
+          document.getElementById('subscribeLink').classList.remove('hidden');
+        }
+      }
+    }
+    
+    // Check if user has access to the course
+    function checkUserAccess(requiredTier) {
+      if (!currentUser) return false;
+      if (requiredTier === 'free') return true;
+
+      // Check individual purchase
+      if (currentUser.purchasedCourses && currentUser.purchasedCourses.length > 0) {
+        const owned = currentUser.purchasedCourses.some(
+          pc => pc.courseId === currentCourse._id || pc.slug === currentCourse.slug
+        );
+        if (owned) return true;
       }
 
-      // Progress bar for enrolled users
-      const progressBar = isEnrolled ? `
-        <div class="mb-6">
-          <div class="flex items-center justify-between text-sm text-forest-600 mb-2">
-            <span>Your Progress</span>
-            <span class="font-semibold">${progress}%</span>
-          </div>
-          <div class="w-full bg-forest-100 rounded-full h-3">
-            <div class="bg-burgundy-600 h-3 rounded-full transition-all" style="width: ${progress}%"></div>
-          </div>
-        </div>
-      ` : '';
-
-      // Objectives list
-      const objectivesHtml = objectives.length > 0 ? `
-        <div class="bg-white rounded-xl border border-burgundy-100 shadow-sm p-6 mb-6">
-          <h2 class="font-display text-2xl font-semibold text-burgundy-900 mb-4">Learning Objectives</h2>
-          <ul class="space-y-3">
-            ${objectives.map(obj => `
-              <li class="flex items-start gap-3">
-                <svg class="w-5 h-5 text-forest-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                </svg>
-                <span class="text-forest-700">${esc(typeof obj === 'string' ? obj : obj.text || obj.objective || '')}</span>
-              </li>
-            `).join('')}
-          </ul>
-        </div>
-      ` : '';
-
-      // Course outline
-      const outlineHtml = sections.length > 0 ? `
-        <div class="bg-white rounded-xl border border-burgundy-100 shadow-sm p-6 mb-6">
-          <h2 class="font-display text-2xl font-semibold text-burgundy-900 mb-4">Course Outline</h2>
-          <div class="space-y-3">
-            ${sections.map((section, i) => `
-              <div class="flex items-center gap-3 p-3 rounded-lg bg-stone-50">
-                <span class="w-8 h-8 rounded-full bg-burgundy-100 text-burgundy-700 flex items-center justify-center text-sm font-semibold flex-shrink-0">${i + 1}</span>
-                <span class="text-forest-700 font-medium">${esc(section.title || section.name || 'Section ' + (i + 1))}</span>
-              </div>
-            `).join('')}
-          </div>
-        </div>
-      ` : '';
-
-      // Presenter section
-      const presenterHtml = presenterName ? `
-        <div class="bg-white rounded-xl border border-burgundy-100 shadow-sm p-6 mb-6">
-          <h2 class="font-display text-2xl font-semibold text-burgundy-900 mb-4">Presenter</h2>
-          <div class="flex items-start gap-4">
-            <div class="w-14 h-14 rounded-full bg-gradient-to-br from-burgundy-100 to-forest-100 flex items-center justify-center flex-shrink-0">
-              <span class="font-display text-xl font-semibold text-burgundy-700">${esc(presenterName.charAt(0))}</span>
-            </div>
-            <div>
-              <h3 class="font-semibold text-burgundy-900">${esc(presenterName)}${presenterCredentials ? ', ' + esc(presenterCredentials) : ''}</h3>
-              ${presenterBio ? `<p class="text-forest-600 text-sm mt-1">${esc(presenterBio)}</p>` : ''}
-            </div>
-          </div>
-        </div>
-      ` : '';
-
-      detailEl.innerHTML = `
-        <!-- Back link -->
-        <a href="/course-details.html" class="inline-flex items-center gap-2 text-forest-600 hover:text-forest-700 mb-6 transition-colors">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
-          Back to Course Library
-        </a>
-
-        <!-- Hero Section -->
-        <div class="bg-white rounded-xl border border-burgundy-100 shadow-sm overflow-hidden mb-6">
-          <div class="h-56 bg-gradient-to-br from-forest-100 to-burgundy-200 flex items-center justify-center relative">
-            ${course.thumbnail ?
-              `<img src="${esc(course.thumbnail)}" alt="${esc(course.title)}" class="w-full h-full object-cover">` :
-              `<svg class="w-20 h-20 text-burgundy-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
-              </svg>`
-            }
-          </div>
-          <div class="p-6">
-            <h1 class="font-display text-3xl font-semibold text-burgundy-900 mb-2">${esc(course.title)}</h1>
-            ${course.subtitle ? `<p class="text-forest-600 text-lg mb-4">${esc(course.subtitle)}</p>` : ''}
-            <div class="flex flex-wrap items-center gap-2">
-              ${ceBadge}
-              ${ceuBadges}
-              ${isFree ? '<span class="bg-forest-100 text-forest-700 px-3 py-1 rounded-full text-sm font-medium">FREE</span>' : ''}
-              ${course.ceuApprovalNumber ? `<span class="bg-burgundy-100 text-burgundy-700 px-3 py-1 rounded-full text-sm font-medium">CE #${esc(course.ceuApprovalNumber)}</span>` : ''}
-            </div>
-          </div>
-        </div>
-
-        <!-- Content Grid: Main + Sidebar -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <!-- Main Content -->
-          <div class="lg:col-span-2">
-            <!-- Description -->
-            <div class="bg-white rounded-xl border border-burgundy-100 shadow-sm p-6 mb-6">
-              <h2 class="font-display text-2xl font-semibold text-burgundy-900 mb-4">About This Course</h2>
-              <p class="text-forest-700 leading-relaxed">${esc(course.description)}</p>
-            </div>
-
-            ${objectivesHtml}
-            ${outlineHtml}
-            ${presenterHtml}
-          </div>
-
-          <!-- Sidebar -->
-          <div class="lg:col-span-1">
-            <div class="bg-white rounded-xl border border-burgundy-100 shadow-sm p-6 sticky top-24">
-              ${progressBar}
-              ${ctaButton}
-
-              <!-- Course Metadata -->
-              <div class="mt-6 space-y-4 text-sm">
-                ${ceHours ? `
-                  <div class="flex items-center justify-between text-forest-600">
-                    <span class="flex items-center gap-2">
-                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/></svg>
-                      CE Hours
-                    </span>
-                    <span class="font-semibold text-burgundy-800">${ceHours}</span>
-                  </div>
-                ` : ''}
-                ${course.totalEstimatedTime ? `
-                  <div class="flex items-center justify-between text-forest-600">
-                    <span class="flex items-center gap-2">
-                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                      Duration
-                    </span>
-                    <span class="font-semibold text-burgundy-800">${course.totalEstimatedTime} min</span>
-                  </div>
-                ` : ''}
-                ${sections.length > 0 ? `
-                  <div class="flex items-center justify-between text-forest-600">
-                    <span class="flex items-center gap-2">
-                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
-                      Sections
-                    </span>
-                    <span class="font-semibold text-burgundy-800">${sections.length}</span>
-                  </div>
-                ` : ''}
-                ${course.accessType ? `
-                  <div class="flex items-center justify-between text-forest-600">
-                    <span class="flex items-center gap-2">
-                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-                      Access
-                    </span>
-                    <span class="font-semibold text-burgundy-800">${isFree ? 'Free' : 'Subscription'}</span>
-                  </div>
-                ` : ''}
-              </div>
-            </div>
-          </div>
-        </div>
-      `;
+      // Fall back to subscription
+      const userTier = currentUser.subscription?.plan || 'free';
+      const userStatus = currentUser.subscription?.status;
+      if (userStatus !== 'active') return false;
+      const tierLevels = { 'free': 0, 'professional': 1, 'vip': 2 };
+      return tierLevels[userTier] >= tierLevels[requiredTier];
     }
-
-    async function enrollAndStart(courseId, slug) {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        alert('Please log in to enroll in courses');
-        window.location.href = '/login.html';
+    
+    // Start/continue course
+    async function startCourse() {
+      if (!currentUser) {
+        window.location.href = `/login.html?redirect=${encodeURIComponent(window.location.href)}`;
         return;
       }
 
+      const slug = currentCourse.slug;
+      const accessTier = currentCourse.accessTier || 'professional';
+
+      // Enroll if not already enrolled (works for all access tiers — backend handles access checks)
+      if (!userProgress || !userProgress._id) {
+        try {
+          const token = localStorage.getItem('token');
+          const controller = new AbortController();
+          const timeout = setTimeout(() => controller.abort(), 10000);
+          const res = await fetch(`${API_URL}/api/interactive-courses/${slug}/enroll`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            },
+            signal: controller.signal
+          });
+          clearTimeout(timeout);
+          if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            console.error('Free enrollment failed:', err);
+          }
+        } catch (e) {
+          console.error('Free enrollment error:', e);
+        }
+      }
+
+      const _btn = document.getElementById('startCourseBtn');
+      _btn.textContent = '✓ Enrolled! Opening course...';
+      _btn.disabled = true;
+      setTimeout(() => { window.location.href = '/interactive-course.html?slug=' + slug; }, 800);
+    }
+    
+    // --- Purchase Flow ---
+    function openPurchaseModal() {
+      if (!currentUser) {
+        window.location.href = `/login.html?redirect=${encodeURIComponent(window.location.href)}`;
+        return;
+      }
+      appliedCouponCode = null;
+      document.getElementById('modalCourseName').textContent = currentCourse.title;
+      document.getElementById('modalPrice').textContent = '$' + currentCourse.price;
+      document.getElementById('purchaseCouponInput').value = '';
+      document.getElementById('couponFeedback').classList.add('hidden');
+      document.getElementById('discountSummary').classList.add('hidden');
+      document.getElementById('checkoutBtn').disabled = false;
+      document.getElementById('checkoutBtn').textContent = 'Continue to Checkout';
+      document.getElementById('policyAckCheckbox').checked = false;
+      toggleCheckoutBtn();
+      document.getElementById('purchaseModal').classList.remove('hidden');
+    }
+
+    function toggleCheckoutBtn() {
+      const checked = document.getElementById("policyAckCheckbox")?.checked;
+      const btn = document.getElementById("checkoutBtn");
+      btn.disabled = !checked;
+      btn.classList.toggle("opacity-50", !checked);
+      btn.classList.toggle("cursor-not-allowed", !checked);
+      btn.classList.toggle("hover:bg-burgundy-800", !!checked);
+    }
+
+    function closePurchaseModal() {
+      document.getElementById('purchaseModal').classList.add('hidden');
+    }
+
+    // Close modal on backdrop click
+    document.getElementById('purchaseModal').addEventListener('click', function(e) {
+      if (e.target === this) closePurchaseModal();
+    });
+
+    async function applyPurchaseCoupon() {
+      const code = document.getElementById('purchaseCouponInput').value.trim();
+      const feedback = document.getElementById('couponFeedback');
+      const applyBtn = document.getElementById('applyCouponBtn');
+
+      if (!code) {
+        feedback.textContent = 'Please enter a discount code.';
+        feedback.className = 'mt-2 p-2.5 rounded-lg text-sm bg-red-50 text-red-700 border border-red-200';
+        feedback.classList.remove('hidden');
+        return;
+      }
+
+      applyBtn.disabled = true;
+      applyBtn.textContent = '...';
+
       try {
-        const response = await fetch(`${API_URL}/api/interactive-courses/${courseId}/enroll`, {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 10000);
+        const response = await fetch(`${API_URL}/api/payments/validate-coupon`, {
           method: 'POST',
           headers: {
-            'Authorization': `Bearer ${token}`,
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
             'Content-Type': 'application/json'
-          }
+          },
+          body: JSON.stringify({ code, courseId: currentCourse._id, price: currentCourse.price }),
+          signal: controller.signal
         });
+        clearTimeout(timeout);
 
-        if (response.ok) {
-          window.location.href = `/interactive-course.html?slug=${encodeURIComponent(slug)}`;
-        } else {
-          const data = await response.json();
-          if (data.code === 'SUBSCRIPTION_REQUIRED') {
-            alert('This course requires an active subscription.');
-            window.location.href = '/subscription.html';
-          } else {
-            alert(data.error || 'Failed to enroll');
+        const data = await response.json();
+
+        if (response.ok && data.valid) {
+          appliedCouponCode = code;
+          feedback.textContent = 'Discount code applied!';
+          feedback.className = 'mt-2 p-2.5 rounded-lg text-sm bg-green-50 text-green-700 border border-green-200';
+          feedback.classList.remove('hidden');
+
+          const summary = document.getElementById('discountSummary');
+          document.getElementById('discountDescription').textContent = data.discountDescription || data.message || 'Discount';
+          document.getElementById('discountedPrice').textContent = data.finalPrice !== undefined ? `$${Number(data.finalPrice).toFixed(2)}` : '';
+          if (data.finalPrice !== undefined) {
+            summary.classList.remove('hidden');
           }
+        } else {
+          appliedCouponCode = null;
+          feedback.textContent = data.error || 'Invalid or expired code.';
+          feedback.className = 'mt-2 p-2.5 rounded-lg text-sm bg-red-50 text-red-700 border border-red-200';
+          feedback.classList.remove('hidden');
+          document.getElementById('discountSummary').classList.add('hidden');
         }
-      } catch (error) {
-        console.error('Enroll error:', error);
-        alert('Network error. Please try again.');
+      } catch (err) {
+        // If validate-coupon endpoint is unreachable, accept the code and let purchase-course handle it
+        appliedCouponCode = code;
+        feedback.textContent = 'Code will be applied at checkout.';
+        feedback.className = 'mt-2 p-2.5 rounded-lg text-sm bg-gold-50 text-forest-700 border border-gold-200';
+        feedback.classList.remove('hidden');
+        document.getElementById('discountSummary').classList.add('hidden');
+      } finally {
+        applyBtn.disabled = false;
+        applyBtn.textContent = 'Apply';
       }
     }
 
-    async function purchaseCourse(courseId, slug) {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        alert('Please log in to purchase courses');
-        window.location.href = '/login.html';
-        return;
-      }
+    async function proceedToCheckout() {
+      const btn = document.getElementById('checkoutBtn');
+      btn.disabled = true;
+      btn.textContent = 'Redirecting to checkout...';
 
       try {
+        const token = localStorage.getItem('token');
+        const body = { courseId: currentCourse._id };
+        if (appliedCouponCode) body.couponCode = appliedCouponCode;
+        body.successUrl = `${window.location.origin}/checkout-success.html?course=${encodeURIComponent(currentCourse.slug)}&slug=${encodeURIComponent(currentCourse.slug)}&name=${encodeURIComponent(currentCourse.title)}&session_id={CHECKOUT_SESSION_ID}`;
+
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 15000);
         const response = await fetch(`${API_URL}/api/payments/purchase-course`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify({ courseId })
+          body: JSON.stringify(body),
+          signal: controller.signal
         });
+        clearTimeout(timeout);
 
         const data = await response.json();
-        if (response.ok && data.url) {
+
+        if (!response.ok) {
+          if (data.error === 'You already own this course') {
+            closePurchaseModal();
+            window.location.href = `/interactive-course.html?slug=${currentCourse.slug}`;
+            return;
+          }
+          throw new Error(data.error || 'Purchase failed');
+        }
+
+        if (data.url) {
+          if (typeof gtag_report_conversion === 'function') {
+            gtag_report_conversion(data.sessionId || data.session?.id || '', data.finalPrice != null ? data.finalPrice : currentCourse.price);
+          }
           window.location.href = data.url;
-        } else if (data.code === 'ALREADY_PURCHASED') {
-          window.location.href = `/interactive-course.html?slug=${encodeURIComponent(slug)}`;
         } else {
-          alert(data.error || 'Failed to start purchase');
+          throw new Error('No checkout URL returned');
         }
       } catch (error) {
         console.error('Purchase error:', error);
-        alert('Network error. Please try again.');
-      }
-    }
-
-    // ── Catalog View ───────────────────────────────────────────────
-
-    async function loadCourses() {
-      const token = localStorage.getItem('token');
-      
-      try {
-        const headers = {};
-        if (token) {
-          headers['Authorization'] = `Bearer ${token}`;
-        }
-
-        const response = await fetch(`${API_URL}/api/interactive-courses?limit=100`, { headers, cache: 'no-store' });
-        const data = await response.json();
-        
-        allCourses = data.data || data.courses || [];
-        renderCourses(allCourses);
-      } catch (error) {
-        console.error('Load courses error:', error);
-        document.getElementById('coursesList').innerHTML = `
-          <div class="md:col-span-3 text-center py-12">
-            <p class="text-burgundy-600">Failed to load courses. Please try again.</p>
-          </div>
-        `;
-      }
-    }
-
-    function renderCourses(courses) {
-      const container = document.getElementById('coursesList');
-      const emptyState = document.getElementById('emptyState');
-      
-      if (courses.length === 0) {
-        container.classList.add('hidden');
-        emptyState.classList.remove('hidden');
-        return;
-      }
-      
-      container.classList.remove('hidden');
-      emptyState.classList.add('hidden');
-      
-      const html = courses.map(course => {
-        const isEnrolled = course.enrollment?.enrolled;
-        const isFree = course.accessType === 'free';
-        const progress = course.enrollment?.percentComplete || 0;
-        
-        // Get primary CEU category
-        const primaryCategory = course.ceuCategories?.[0] || (course.categories?.[0] ? {hours: course.ceHours, category: course.categories[0]} : null);
-        const categoryLabel = primaryCategory ? `${primaryCategory.hours} hrs ${primaryCategory.category}` : '';
-        
-        return `
-          <div class="bg-white rounded-xl border border-burgundy-100 shadow-sm overflow-hidden hover:shadow-lg transition-shadow">
-            <!-- Thumbnail — gradient green to rose with deep rose book icon -->
-            <div class="h-48 bg-gradient-to-br from-forest-100 to-burgundy-200 flex items-center justify-center">
-              ${course.thumbnail ?
-                `<img src="${course.thumbnail}" alt="${course.title}" class="w-full h-full object-cover">` :
-                `<svg class="w-16 h-16 text-burgundy-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
-                </svg>`
-              }
-            </div>
-
-            <!-- Content -->
-            <div class="p-5">
-              <!-- Title -->
-              <h3 class="font-display text-xl font-semibold text-burgundy-900 mb-2 line-clamp-2">${course.title}</h3>
-              
-              ${course.subtitle ? `<p class="text-forest-600 text-sm mb-3">${course.subtitle}</p>` : ''}
-              
-              <!-- Description (sage) -->
-              <p class="text-forest-600 text-sm mb-4 line-clamp-2">${course.description}</p>
-
-              <!-- Meta Info Pills -->
-              <div class="flex flex-wrap items-center gap-2 mb-4">
-                ${course.ceHours || course.ceuHours ? `
-                  <span class="bg-honey-100 text-honey-700 px-2 py-1 rounded-full text-xs font-medium">
-                    ${course.ceHours || course.ceuHours} CE Hours
-                  </span>
-                ` : ''}
-
-                ${categoryLabel ? `
-                  <span class="bg-forest-100 text-forest-700 px-2 py-1 rounded-full text-xs font-medium">
-                    ${categoryLabel}
-                  </span>
-                ` : ''}
-
-                ${course.ceuApprovalNumber || (course.ceHours ? "7760" : null) ? `
-                  <span class="bg-burgundy-100 text-burgundy-700 px-2 py-1 rounded-full text-xs font-medium">
-                    CE #${course.ceuApprovalNumber || (course.ceHours ? "7760" : null)}
-                  </span>
-                ` : ''}
-
-                ${isFree ? `
-                  <span class="bg-forest-100 text-forest-700 px-2 py-1 rounded-full text-xs font-medium">
-                    FREE
-                  </span>
-                ` : ''}
-              </div>
-
-              <!-- Duration with clock icon -->
-              <div class="flex items-center gap-1 text-sm text-forest-500 mb-4">
-                <svg class="w-4 h-4 text-forest-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                </svg>
-                <span>${course.totalEstimatedTime || 60} min</span>
-              </div>
-
-              <!-- Progress Bar (if enrolled) -->
-              ${isEnrolled ? `
-                <div class="mb-4">
-                  <div class="flex items-center justify-between text-xs text-forest-600 mb-1">
-                    <span>Progress</span>
-                    <span>${progress}%</span>
-                  </div>
-                  <div class="w-full bg-forest-100 rounded-full h-2">
-                    <div class="bg-burgundy-600 h-2 rounded-full transition-all" style="width: ${progress}%"></div>
-                  </div>
-                </div>
-              ` : ''}
-
-              <!-- Action Button -->
-              <div class="flex items-center justify-between">
-                ${isEnrolled ? `
-            <a href="/interactive-course.html?slug=${course.slug}" class="flex-1 text-center bg-burgundy-800 hover:bg-burgundy-900 text-white font-semibold px-4 py-2 rounded-xl transition-colors">
-                    Continue Learning
-                  </a>
-                ` : isFree ? `
-                  <button onclick="enrollCourse('${course._id}')" class="flex-1 bg-forest-700 hover:bg-forest-800 text-white font-semibold px-4 py-2 rounded-xl transition-colors">
-                    Start Free Course
-                  </button>
-                ` : `
-                  <a href="/course-details.html?slug=${course.slug}" class="flex-1 text-center bg-burgundy-800 hover:bg-burgundy-900 text-white font-semibold px-4 py-2 rounded-xl transition-colors">
-                    View Details
-                  </a>
-                `}
-              </div>
-            </div>
-          </div>
-        `;
-      }).join('');
-      
-      container.innerHTML = html;
-    }
-
-    function filterCourses() {
-      const search = document.getElementById('search').value.toLowerCase();
-      const category = document.getElementById('filterCategory').value;
-      const access = document.getElementById('filterAccess').value;
-      
-      let filtered = allCourses.filter(course => {
-        // Search filter
-        const matchesSearch = !search || 
-          course.title.toLowerCase().includes(search) ||
-          course.description.toLowerCase().includes(search);
-        
-        // Category filter
-        const matchesCategory = !category || 
-          course.ceuCategories?.some(cat => cat.category.toLowerCase() === category);
-        
-        // Access filter
-        let matchesAccess = true;
-        if (access === 'free') {
-          matchesAccess = course.accessType === 'free';
-        } else if (access === 'enrolled') {
-          matchesAccess = course.enrollment?.enrolled;
-        }
-        
-        return matchesSearch && matchesCategory && matchesAccess;
-      });
-      
-      renderCourses(filtered);
-    }
-
-    async function enrollCourse(courseId) {
-      const token = localStorage.getItem('token');
-      
-      if (!token) {
-        alert('Please log in to enroll in courses');
-        window.location.href = '/login.html';
-        return;
-      }
-      
-      try {
-        const response = await fetch(`${API_URL}/api/interactive-courses/${courseId}/enroll`, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        });
-        
-        if (response.ok) {
-          alert('Enrolled successfully!');
-          await loadCourses(); // Reload to show updated enrollment
-        } else {
-          const data = await response.json();
-          if (data.code === 'SUBSCRIPTION_REQUIRED') {
-            alert('This course requires an active subscription. Please subscribe to access.');
-          } else {
-            alert(data.error || 'Failed to enroll');
-          }
-        }
-      } catch (error) {
-        console.error('Enroll error:', error);
-        alert('Network error. Please try again.');
-      }
-    }
-
-    // Route based on slug param
-    document.addEventListener('DOMContentLoaded', () => {
-      if (slugParam) {
-        loadSingleCourse(slugParam);
-      } else {
-        loadCourses();
-      }
-    });
-
-    async function syncCourses() {
-      const btn = document.getElementById('syncBtn');
-      const icon = document.getElementById('syncIcon');
-      
-      btn.disabled = true;
-      icon.classList.add('animate-spin');
-      
-      await loadCourses();
-      
-      setTimeout(() => {
+        const feedback = document.getElementById('couponFeedback');
+        feedback.textContent = error.message || 'Something went wrong. Please try again.';
+        feedback.className = 'mt-2 p-2.5 rounded-lg text-sm bg-red-50 text-red-700 border border-red-200';
+        feedback.classList.remove('hidden');
         btn.disabled = false;
-        icon.classList.remove('animate-spin');
-      }, 500);
+        btn.textContent = 'Continue to Checkout';
+      }
     }
+    
+    // Helper functions
+    function capitalizeFirst(str) {
+      return str.charAt(0).toUpperCase() + str.slice(1);
+    }
+    
+    // Update pricing card approval badge based on course approvals
+    function updatePricingApprovalBadge() {
+      const badgeEl = document.getElementById('pricingApprovalBadge');
+      
+      let activeApprovals = [];
+      
+      if (currentCourse.approvals && currentCourse.approvals.length > 0) {
+        activeApprovals = currentCourse.approvals.filter(a => a.status === 'approved');
+      } else if (currentCourse.approvingBody) {
+        const legacyBody = currentCourse.approvingBody === 'ACEP' ? 'NBCC' : currentCourse.approvingBody;
+        activeApprovals = [{
+          body: legacyBody,
+          providerNumber: currentCourse.approvalNumber || '#7760'
+        }];
+      } else {
+        activeApprovals = [{ body: 'NBCC', providerNumber: '#7760' }];
+      }
+      
+      if (activeApprovals.length === 1) {
+        const approval = activeApprovals[0];
+        const providerNum = approval.providerNumber || '';
+        badgeEl.textContent = `${approval.body} Approved Provider${providerNum ? ' ' + providerNum : ''}`;
+      } else if (activeApprovals.length > 1) {
+        const bodies = activeApprovals.map(a => a.body).join(' • ');
+        badgeEl.textContent = `Multi-Approved: ${bodies}`;
+      } else {
+        badgeEl.textContent = 'Continuing Education Course';
+      }
+    }
+    
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+    
+    function getLessonIcon(type) {
+      switch(type) {
+        case 'video': return 'bg-blue-100 text-blue-600';
+        case 'quiz': return 'bg-green-100 text-green-600';
+        case 'download': return 'bg-purple-100 text-purple-600';
+        default: return 'bg-forest-100 text-forest-600';
+      }
+    }
+    
+    function getLessonIconSymbol(type) {
+      switch(type) {
+        case 'video': return '▶';
+        case 'quiz': return '?';
+        case 'download': return '↓';
+        default: return '📄';
+      }
+    }
+    
+    // Initialize
+    document.addEventListener('DOMContentLoaded', loadCourse);
   </script>
-
 </body>
-</html>
+  </html>

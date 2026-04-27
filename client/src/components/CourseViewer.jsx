@@ -9,14 +9,22 @@ import {
   BookOpen, Brain, ClipboardCheck, ArrowUp, ArrowDown, Copy,
   Settings, Eye, Wand2, FileUp, BarChart3, Zap, Save, Download
 } from "lucide-react";
+import {
+  parseAuthoringSyntax,
+  SlimCalloutBlock,
+  SlimSectionDivider,
+  SlimAccordion,
+  blockLinter,
+  SHARED_CALLOUT_LIBRARY,
+} from './CourseViewerPatch';
 
 // ─── Brand Colors ───
 const C = {
   burgundy: "#6B1D34", burgundyLight: "#8B2D4A", burgundyFaded: "rgba(107,29,52,0.08)",
   green: "#4A7C59", greenLight: "#5A9469", greenFaded: "rgba(74,124,89,0.08)",
   gold: "#D4A855", goldLight: "#E0BC72", goldFaded: "rgba(212,168,85,0.12)",
-  navy: "#34495E", navyLight: "#4A6278",
-  bg: "#FAFAF8", card: "#FFFFFF",
+  navy: "#284157", navyLight: "#4A6278",
+  bg: "#F8F7F4", card: "#FFFFFF",
   border: "#E8E4DF", borderLight: "#F0EDE8",
   text: "#2C2C2C", textMuted: "#6B7280", textLight: "#9CA3AF",
   danger: "#DC2626", dangerFaded: "rgba(220,38,38,0.08)",
@@ -34,6 +42,9 @@ const BLOCK_TYPES = [
   { type: "image", label: "Standalone Image", icon: "📷", color: C.teal, category: "content" },
   { type: "accordion", label: "Accordion", icon: "≡", color: C.gold, category: "content" },
   { type: "resources", label: "Resources", icon: "📎", color: C.navy, category: "content" },
+  { type: "callout", label: "Callout", icon: "ℹ️", color: C.teal, category: "content" },
+  { type: "keyTakeaway", label: "Key Takeaway", icon: "🔑", color: C.gold, category: "content" },
+  { type: "deliverables", label: "Deliverables", icon: "📥", color: C.gold, category: "content" },
   { type: "videoEmbed", label: "Video + Markers", icon: "🎬", color: C.slate, category: "content" },
   // ── Knowledge Checks (graded, count for ACEP) ──
   { type: "multipleChoice", label: "Multiple Choice", icon: "◉", color: C.burgundy, category: "assessment" },
@@ -41,6 +52,9 @@ const BLOCK_TYPES = [
   { type: "matching", label: "Matching", icon: "↔", color: C.navyLight, category: "assessment" },
   { type: "cardSort", label: "Card Sort", icon: "🗂", color: "#0284C7", category: "assessment" },
   { type: "sequencing", label: "Sequencing", icon: "📋", color: C.navy, category: "assessment" },
+  { type: "fillInBlank", label: "Fill in Blank", icon: "✏️", color: C.green, category: "assessment" },
+  { type: "knowledgeCheck", label: "Knowledge Check", icon: "🎯", color: C.burgundy, category: "assessment" },
+  { type: "quiz", label: "Quiz Block", icon: "📝", color: C.burgundyLight, category: "assessment" },
   { type: "timeline", label: "Timeline", icon: "📅", color: C.teal, category: "assessment" },
   // ── Interactive Engagement ──
   { type: "reflection", label: "Reflection", icon: "💭", color: C.green, category: "interactive" },
@@ -67,6 +81,12 @@ const BLOCK_DEFAULTS = {
   scenarioTree: { scenarioTitle: "", instructions: "", startNode: "start", nodes: { start: { text: "", choices: [{ text: "", next: "" }], feedback: null } } },
   flashcardDeck: { instructions: "", flashcards: [{ id: "f1", front: "", back: "" }] },
   videoEmbed: { videoTitle: "", videoUrl: "", videoDuration: "", thumbnailUrl: "", markers: [{ id: "v1", time: "0:00", label: "", prompt: "" }] },
+  callout: { calloutType: "info", title: "", content: "", calloutItems: [] },
+  keyTakeaway: { title: "Key Takeaways", takeaways: [] },
+  deliverables: { title: "Downloadable Materials", resources: [] },
+  fillInBlank: { title: "", blanks: [{ prompt: "", answer: "", acceptAlternates: [] }] },
+  knowledgeCheck: { question: "", options: [{ text: "", isCorrect: false }], explanation: "" },
+  quiz: { question: "", options: [{ text: "", isCorrect: false }], explanation: "" },
 };
 
 const ACEP_RULES = {
@@ -370,7 +390,7 @@ function BlockEditor({ block, onChange }) {
             <div>
               <div style={{ fontSize: 10, fontWeight: 700, color: C.green, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 4 }}>Student Preview</div>
               <div style={{ background: "#FDFCFA", border: `1px solid ${C.borderLight}`, borderRadius: 8, padding: 16, minHeight: 220, maxHeight: 400, overflow: "auto", fontSize: 15, lineHeight: 1.75, fontFamily: "'Newsreader', Georgia, serif", color: C.text }}
-                dangerouslySetInnerHTML={{ __html: block.content || "<em style='color:#9CA3AF'>Start typing to see preview...</em>" }} />
+                dangerouslySetInnerHTML={{ __html: parseAuthoringSyntax(block.content || '', block.callouts || {}) || "<em style='color:#9CA3AF'>Start typing to see preview...</em>" }} />
             </div>
           </div>
           <div style={{ fontSize: 11, color: C.textLight, marginTop: 4 }}>{countWords(block.content)} words</div>
@@ -575,6 +595,51 @@ function BlockEditor({ block, onChange }) {
     // ═══ NEW BLOCK TYPE #17: VIDEO EMBED ═══
     case "videoEmbed":
       return <VideoEmbedEditor block={block} onChange={onChange} />;
+
+    case 'callout':
+      return (
+        <>
+          <label style={S.label}>Callout Type</label>
+          <select value={block.calloutType || 'info'} onChange={e => onChange({ calloutType: e.target.value })} style={S.input}>
+            {['info','warning','ethics','clinical','tip','key','donot','protocol'].map(t => <option key={t} value={t}>{t}</option>)}
+          </select>
+          <label style={S.label}>Title</label>
+          <input value={block.title || ''} onChange={e => onChange({ title: e.target.value })} style={S.input} placeholder="Callout title" />
+          <label style={S.label}>Content (HTML)</label>
+          <textarea value={block.content || ''} onChange={e => onChange({ content: e.target.value })} style={{ ...S.input, minHeight: 80 }} placeholder="Callout body text" />
+          <label style={S.label}>Bullet Items (one per line)</label>
+          <textarea value={(block.calloutItems || []).join('\n')} onChange={e => onChange({ calloutItems: e.target.value.split('\n').filter(Boolean) })} style={{ ...S.input, minHeight: 60 }} placeholder="Item 1\nItem 2" />
+        </>
+      );
+
+    case 'keyTakeaway':
+      return (
+        <div style={{ background: C.goldFaded, border: `1.5px solid ${C.gold}`, borderRadius: 12, padding: '16px 20px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: (block.takeaways||[]).length ? 10 : 0 }}>
+            <span style={{ fontSize: '1.1rem' }}>🔑</span>
+            <span style={{ fontWeight: 700, fontSize: '0.9rem', color: C.navy }}>{block.title || 'Key Takeaways'}</span>
+          </div>
+          {block.content && <div style={{ fontSize: '0.85rem', marginBottom: 8 }} dangerouslySetInnerHTML={{ __html: block.content }} />}
+          {(block.takeaways||[]).length > 0 && (
+            <ul style={{ margin: 0, paddingLeft: 18 }}>
+              {block.takeaways.map((t, i) => <li key={i} style={{ fontSize: '0.85rem', lineHeight: 1.65, marginBottom: 3, color: C.text }}>{t}</li>)}
+            </ul>
+          )}
+        </div>
+      );
+
+    case 'fillInBlank':
+      return (
+        <div style={{ background: '#fff', border: `1px solid ${C.border}`, borderRadius: 12, padding: 20 }}>
+          {block.title && <h3 style={{ fontWeight: 700, color: C.navy, marginBottom: 12 }}>{block.title}</h3>}
+          {(block.blanks||[]).map((b, i) => (
+            <div key={i} style={{ marginBottom: 12 }}>
+              <label style={{ fontSize: '0.85rem', fontWeight: 600, display: 'block', marginBottom: 4 }}>{b.prompt || 'Fill in:'}</label>
+              <input type="text" disabled placeholder={b.answer} style={{ width: '100%', padding: '8px 12px', border: `1.5px solid ${C.border}`, borderRadius: 8, fontSize: '0.85rem', background: C.bg }} />
+            </div>
+          ))}
+        </div>
+      );
 
     default:
       return <p style={{ color: C.textMuted, fontSize: 13 }}>Editor not available for block type: {block.type}</p>;
@@ -1559,12 +1624,12 @@ function ContentEditor({ courseData, setCourseData }) {
                     </div>
                   )}
                   {block.type === "text" && (
-                    <div style={{ fontSize: 15, lineHeight: 1.7, color: C.text }} dangerouslySetInnerHTML={{ __html: block.content || "<em>Empty text block</em>" }} />
+                    <div style={{ fontSize: 15, lineHeight: 1.7, color: C.text }} dangerouslySetInnerHTML={{ __html: parseAuthoringSyntax(block.content || block.textContent || '', block.callouts || {}) || "<em>Empty text block</em>" }} />
                   )}
                   {block.type === "imageText" && (
                     <div style={{ display: "flex", gap: 20, flexDirection: block.imagePosition === "right" ? "row-reverse" : "row", alignItems: "flex-start" }}>
                       {block.image && <img src={block.image} alt={block.imageAlt || ""} style={{ width: "40%", borderRadius: 8 }} />}
-                      <div style={{ flex: 1, fontSize: 15, lineHeight: 1.7 }} dangerouslySetInnerHTML={{ __html: block.content || "" }} />
+                      <div style={{ flex: 1, fontSize: 15, lineHeight: 1.7 }} dangerouslySetInnerHTML={{ __html: parseAuthoringSyntax(block.content || '', block.callouts || {}) }} />
                     </div>
                   )}
                   {block.type === "image" && block.imageUrl && (

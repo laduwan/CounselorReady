@@ -5,37 +5,16 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Privacy Policy - CounselorReady</title>
+  <link rel="stylesheet" href="/css/design-tokens.css">
+  <link rel="stylesheet" href="/css/typography.css">
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            burgundy: {
-              50: '#fdf5f6', 100: '#fae8eb', 200: '#f5d0d6', 300: '#eba9b5',
-              400: '#dd768a', 500: '#c94d65', 600: '#a83350', 700: '#8b2542',
-              800: '#6b1d34', 900: '#4a1524',
-            },
-            forest: {
-              50: '#f3f6f4', 100: '#e3ebe5', 200: '#c8d7cc', 300: '#a1bba8',
-              400: '#759a7f', 500: '#547c5f', 600: '#4A7C59', 700: '#34503d',
-              800: '#2b4133', 900: '#1f3025',
-            },
-            gold: { 300: '#fde047', 400: '#facc15', 500: '#d4a012' }
-          },
-          fontFamily: {
-            'display': ['Cormorant Garamond', 'Georgia', 'serif'],
-            'body': ['Lato', 'system-ui', 'sans-serif']
-          }
-        }
-      }
-    }
-  </script>
+  <script src="/js/tailwind-config.js"></script>
+  
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Lato:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
   <style>
-    body { font-family: 'Lato', system-ui, sans-serif; }
+    body{background:#F8F7F4; font-family: 'Lato', system-ui, sans-serif; }
     .font-display { font-family: 'Cormorant Garamond', Georgia, serif; }
   </style>
 </head>
@@ -145,7 +124,7 @@
           <li>Opt out of marketing communications</li>
           <li>Withdraw consent where applicable</li>
         </ul>
-        <p class="mt-4">To exercise these rights, contact us at <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="b3c0c6c3c3dcc1c7f3d0dcc6ddc0d6dfdcc1c1d6d2d7ca9dd0dcde">[email&#160;protected]</a>.</p>
+        <p class="mt-4">To exercise these rights, contact us at <a href="mailto:legal@counselorready.com" class="text-burgundy-700 underline">legal@counselorready.com</a>.</p>
       </section>
 
       <section>
@@ -179,7 +158,7 @@
 
       <section>
         <h2 class="font-display text-2xl font-semibold text-burgundy-800 mb-4">11. California Privacy Rights (CCPA)</h2>
-        <p>California residents have additional rights under the CCPA, including the right to know what personal information we collect, request deletion, and opt out of sales (we do not sell personal information). To exercise these rights, contact us at <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="b7c4c2c7c7d8c5c3f7d4d8c2d9c4d2dbd8c5c5d2d6d3ce99d4d8da">[email&#160;protected]</a>.</p>
+        <p>California residents have additional rights under the CCPA, including the right to know what personal information we collect, request deletion, and opt out of sales (we do not sell personal information). To exercise these rights, contact us at <a href="mailto:legal@counselorready.com" class="text-burgundy-700 underline">legal@counselorready.com</a>.</p>
       </section>
 
       <section>
@@ -191,8 +170,11 @@
         <h2 class="font-display text-2xl font-semibold text-burgundy-800 mb-4">13. Contact Us</h2>
         <p>For questions or concerns about this Privacy Policy or our data practices, contact us at:</p>
         <p class="mt-2">
-          <strong>Ga Integrated Therapeutic Perspectives LLC</strong><br>
-          Email: <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="44373134342b36300427272e2931282b3636212527332a6a272b29">[email&#160;protected]</a>
+          <strong>GA Integrated Therapeutic Perspectives LLC</strong><br>
+          PO Box 1417<br>
+          Hinesville, GA 31310<br>
+          Email: <a href="mailto:legal@counselorready.com" class="text-burgundy-700 underline">legal@counselorready.com</a><br>
+          Phone: <a href="tel:+16786644003" class="text-burgundy-700 underline">(678) 664-4003</a>
         </p>
       </section>
 
@@ -200,12 +182,9 @@
   </main>
 
   <!-- Footer -->
-  <footer class="py-8 px-4 bg-white border-t border-burgundy-100 mt-12">
-    <div class="max-w-4xl mx-auto text-center">
-      <p class="text-forest-500 text-sm">© 2025 CounselorReady. All rights reserved.</p>
-      <p class="text-forest-400 text-xs mt-2">Ga Integrated Therapeutic Perspectives LLC | NBCC ACEP #7760</p>
-    </div>
-  </footer>
 
-<script src="/js/footer.js"></script></body>
+<script src="/js/footer.js"></script>
+<script src="/shared/nav-footer.js"></script>
+<div id="cr-footer"></div>
+</body>
 </html>

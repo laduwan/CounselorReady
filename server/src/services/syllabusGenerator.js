@@ -60,10 +60,16 @@ function textRun(text, options = {}) {
 export async function generateSyllabus({
   course, answers, score, certificateId, completionDate
 }) {
-  const rawCalc = (course.wordCount / 6000).toFixed(2);
+  const instructionalWC = course.instructionalWordCount || course.wordCount;
+  const rawWC = course.rawWordCount || course.wordCount;
+  const rawCalc = (instructionalWC / 6000).toFixed(2);
+  const ceCalcFormula = course.ceCalcFormula || `${instructionalWC.toLocaleString()} ÷ 6,000 = ${rawCalc} → ${course.ceHours} CE hr(s)`;
   const completionDateStr = new Date(completionDate).toLocaleDateString('en-US', {
     year: 'numeric', month: 'long', day: 'numeric'
   });
+  const fullTextSourceLabel = course.fullTextSource ? `Full article text retrieved from ${course.fullTextSource}${course.fullTextUrl ? ': ' + course.fullTextUrl : ''}` : '';
+  const engagementStatus = course.engagementConfirmed ? 'Yes' : 'No';
+  const researchHrs = course.researchHours || course.ceHours; // peer-reviewed = research hours
 
   // Build question results
   const questionResults = course.questions.map((q, i) => {
@@ -120,13 +126,18 @@ export async function generateSyllabus({
                     new Paragraph({
                       alignment: AlignmentType.CENTER,
                       spacing: { after: 60 },
-                      children: [textRun(course.title, { bold: true, size: 22, color: WHITE })]
+                      children: [textRun(course.courseTitle || course.title, { bold: true, size: 22, color: WHITE })]
                     }),
+                    ...(course.courseTitle && course.courseTitle !== course.title ? [new Paragraph({
+                      alignment: AlignmentType.CENTER,
+                      spacing: { after: 40 },
+                      children: [textRun(`Source article: ${course.title}`, { size: 16, color: 'F0D0D8', italics: true })]
+                    })] : []),
                     new Paragraph({
                       alignment: AlignmentType.CENTER,
                       spacing: { after: 100 },
                       children: [textRun(
-                        `${course.format.charAt(0).toUpperCase() + course.format.slice(1)} Format  |  ${course.ceHours} CE Hour(s)  |  Completed ${completionDateStr}`,
+                        `${(course.format || 'standalone').charAt(0).toUpperCase() + (course.format || 'standalone').slice(1)} Format  |  ${course.ceHours} CE Hour(s)  |  Completed ${completionDateStr}`,
                         { size: 18, color: 'F0D0D8' }
                       )]
                     })
@@ -174,13 +185,18 @@ export async function generateSyllabus({
             }),
             new TableRow({
               children: [
-                shadedCell('Article Word Count', LIGHT_GRAY, { bold: true }),
-                shadedCell(`${course.wordCount.toLocaleString()} words`, WHITE),
+                shadedCell('Raw Word Count', LIGHT_GRAY, { bold: true }),
+                shadedCell(`${rawWC.toLocaleString()} words (total tokens)`, WHITE),
+                shadedCell('Instructional Prose', LIGHT_GRAY, { bold: true }),
+                shadedCell(`${instructionalWC.toLocaleString()} words (after exclusions)`, WHITE)
+              ]
+            }),
+            new TableRow({
+              children: [
                 shadedCell('CE Hour Calculation', LIGHT_GRAY, { bold: true }),
-                shadedCell(
-                  `${course.wordCount.toLocaleString()} words / 6,000 words/hr = ${rawCalc} -> rounded down to ${course.ceHours} CE hr(s)`,
-                  WHITE
-                )
+                shadedCell(ceCalcFormula, WHITE),
+                shadedCell('Research Hours', LIGHT_GRAY, { bold: true }),
+                shadedCell(`${researchHrs} (peer-reviewed = research hours)`, WHITE)
               ]
             })
           ]
@@ -203,13 +219,17 @@ export async function generateSyllabus({
                       children: [textRun('Article Citation (APA 7th Edition)', { bold: true, color: GREEN, size: 22 })]
                     }),
                     new Paragraph({
-                      spacing: { after: 80 },
+                      spacing: { after: 60 },
                       children: [
                         textRun(`${course.authors} (${course.year}). ${course.title}. `, {}),
                         textRun(course.journal, { italics: true }),
                         textRun(course.doi ? `. ${course.doi}` : '.', {})
                       ]
-                    })
+                    }),
+                    ...(fullTextSourceLabel ? [new Paragraph({
+                      spacing: { after: 80 },
+                      children: [textRun(fullTextSourceLabel, { size: 18, italics: true, color: '666666' })]
+                    })] : [])
                   ]
                 })
               ]
@@ -345,21 +365,28 @@ export async function generateSyllabus({
                     new Paragraph({
                       spacing: { after: 60 },
                       children: [textRun(
-                        `Word count: ${course.wordCount.toLocaleString()} words. CE credit calculated at 6,000 words per 1.0 CE hour, rounded down to the nearest 0.5 hours.`,
+                        `Instructional word count: ${instructionalWC.toLocaleString()} words. CE credit calculated at 6,000 words per 1.0 CE hour, rounded down to the nearest 0.5 hours.`,
                         { size: 18 }
                       )]
                     }),
                     new Paragraph({
                       spacing: { after: 60 },
                       children: [textRun(
-                        `Research hour allocation: ${course.researchHours} research hour(s) (0.5 x CE hours, minimum 0.5).`,
+                        `Research hour allocation: ${researchHrs} research hour(s) (peer-reviewed article = research hours).`,
                         { size: 18 }
                       )]
                     }),
                     new Paragraph({
                       spacing: { after: 60 },
                       children: [textRun(
-                        'Retain this syllabus for a minimum of 5 years from the completion date for audit and verification purposes.',
+                        `Learner confirmed full article access via Read view prior to assessment: ${engagementStatus}`,
+                        { size: 18 }
+                      )]
+                    }),
+                    new Paragraph({
+                      spacing: { after: 60 },
+                      children: [textRun(
+                        'Retain this syllabus for a minimum of 5 years from the completion date for audit and verification purposes per NBCC documentation requirements.',
                         { size: 18, italics: true }
                       )]
                     }),

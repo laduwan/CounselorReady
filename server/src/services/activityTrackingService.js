@@ -3,22 +3,9 @@
  * All rights reserved. Proprietary and confidential.
  * Unauthorized copying or distribution is strictly prohibited.
  */
-import { Resend } from 'resend';
 import User from '../models/User.js';
 import UserActivity from '../models/UserActivity.js';
-
-const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
-
-if (!resend) {
-  console.warn('[ActivityTracking] RESEND_API_KEY not set — admin email notifications are disabled');
-}
-
-// Admin email(s) to receive notifications
-const ADMIN_EMAILS = process.env.ADMIN_NOTIFICATION_EMAILS?.split(',').map(e => e.trim()).filter(Boolean) || ['admin@counselorready.com'];
-
-if (!process.env.ADMIN_NOTIFICATION_EMAILS) {
-  console.warn(`[ActivityTracking] ADMIN_NOTIFICATION_EMAILS not set — defaulting to ${ADMIN_EMAILS.join(', ')}`);
-}
+import { sendAdminAlert } from './adminNotificationService.js';
 
 /**
  * Activity types for tracking
@@ -37,7 +24,8 @@ export const ACTIVITY_TYPES = {
   SUBSCRIPTION_STARTED: 'subscription_started',
   SUBSCRIPTION_CANCELED: 'subscription_canceled',
   CERTIFICATE_GENERATED: 'certificate_generated',
-  LESSON_COMPLETED: 'lesson_completed'
+  LESSON_COMPLETED: 'lesson_completed',
+  TOOL_USED: 'tool_used'
 };
 
 /**
@@ -45,7 +33,7 @@ export const ACTIVITY_TYPES = {
  */
 export async function logActivity(type, data, options = {}) {
   const { notifyAdmin = true, userId, userName, userEmail } = options;
-  
+
   const activity = {
     type,
     data,
@@ -54,11 +42,11 @@ export async function logActivity(type, data, options = {}) {
     userEmail,
     timestamp: new Date()
   };
-  
+
   // Persist to dedicated UserActivity collection (scalable, queryable)
   try {
     await UserActivity.create({
-      userId,
+      userId: userId || undefined,
       type,
       userName,
       userEmail,
@@ -88,140 +76,13 @@ export async function logActivity(type, data, options = {}) {
   } catch (error) {
     console.error('Failed to log to admin feed:', error);
   }
-  
-  // Send email notification if enabled
+
+  // Send branded admin alert if enabled (non-blocking, never throws)
   if (notifyAdmin) {
-    if (resend) {
-      await sendAdminNotification(type, data, { userName, userEmail });
-    } else {
-      console.warn(`[ActivityTracking] Skipping admin notification for ${type} — Resend not configured`);
-    }
+    sendAdminAlert(type, { userName, userEmail, ...data });
   }
 
   return activity;
-}
-
-/**
- * Send email notification to admin
- */
-async function sendAdminNotification(type, data, userInfo) {
-  const { userName, userEmail } = userInfo;
-  
-  const notifications = {
-    [ACTIVITY_TYPES.USER_REGISTERED]: {
-      subject: `🎉 New User Registration: ${userName || userEmail}`,
-      emoji: '🎉',
-      title: 'New User Registered',
-      message: `<strong>${userName || 'A new user'}</strong> (${userEmail}) just created an account.`
-    },
-    [ACTIVITY_TYPES.USER_ENROLLED]: {
-      subject: `📚 Course Enrollment: ${userName || userEmail}`,
-      emoji: '📚',
-      title: 'Course Enrollment',
-      message: `<strong>${userName}</strong> enrolled in <strong>${data.courseName}</strong>.`
-    },
-    [ACTIVITY_TYPES.COURSE_COMPLETED]: {
-      subject: `✅ Course Completed: ${userName || userEmail}`,
-      emoji: '✅',
-      title: 'Course Completed',
-      message: `<strong>${userName}</strong> completed <strong>${data.courseName}</strong> (${data.ceHours || 0} CE hours).`
-    },
-    [ACTIVITY_TYPES.QUIZ_PASSED]: {
-      subject: `🎯 Quiz Passed: ${userName || userEmail}`,
-      emoji: '🎯',
-      title: 'Quiz Passed',
-      message: `<strong>${userName}</strong> passed the quiz in <strong>${data.courseName}</strong> with a score of <strong>${data.score}%</strong>.`
-    },
-    [ACTIVITY_TYPES.QUIZ_FAILED]: {
-      subject: `❌ Quiz Failed: ${userName || userEmail}`,
-      emoji: '❌',
-      title: 'Quiz Failed',
-      message: `<strong>${userName}</strong> did not pass the quiz in <strong>${data.courseName}</strong>. Score: <strong>${data.score}%</strong> (needed ${data.passingScore}%).`
-    },
-    [ACTIVITY_TYPES.SUBSCRIPTION_STARTED]: {
-      subject: `💳 New Subscription: ${userName || userEmail}`,
-      emoji: '💳',
-      title: 'New Subscription',
-      message: `<strong>${userName}</strong> subscribed to the <strong>${data.plan?.toUpperCase()}</strong> plan.`
-    },
-    [ACTIVITY_TYPES.SUBSCRIPTION_CANCELED]: {
-      subject: `⚠️ Subscription Canceled: ${userName || userEmail}`,
-      emoji: '⚠️',
-      title: 'Subscription Canceled',
-      message: `<strong>${userName}</strong> canceled their <strong>${data.plan?.toUpperCase()}</strong> subscription.`
-    },
-    [ACTIVITY_TYPES.PAYMENT_SUCCEEDED]: {
-      subject: `💰 Payment Received: ${userName || userEmail}`,
-      emoji: '💰',
-      title: 'Payment Received',
-      message: `<strong>${userName || userEmail}</strong> completed a payment of <strong>$${((data.amount || 0) / 100).toFixed(2)}</strong> (${data.type === 'course_purchase' ? 'course purchase' : data.plan?.toUpperCase() + ' subscription'}).`
-    },
-    [ACTIVITY_TYPES.PAYMENT_FAILED]: {
-      subject: `🚨 Payment Failed: ${userName || userEmail}`,
-      emoji: '🚨',
-      title: 'Payment Failed',
-      message: `<strong>${userName || userEmail}</strong>'s payment failed. Their subscription is now <strong>past due</strong>.`
-    },
-    [ACTIVITY_TYPES.CERTIFICATE_GENERATED]: {
-      subject: `📜 Certificate Generated: ${userName || userEmail}`,
-      emoji: '📜',
-      title: 'Certificate Generated',
-      message: `<strong>${userName}</strong> generated a certificate for <strong>${data.courseName}</strong>.`
-    }
-  };
-  
-  const notification = notifications[type];
-  if (!notification) return;
-  
-  try {
-    await resend.emails.send({
-      from: 'CounselorReady <noreply@counselorready.com>',
-      to: ADMIN_EMAILS,
-      subject: notification.subject,
-      html: `
-        <!DOCTYPE html>
-        <html>
-        <head>
-          <style>
-            body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
-            .container { max-width: 500px; margin: 0 auto; padding: 20px; }
-            .header { background: linear-gradient(135deg, #4A7C59, #34503d); color: white; padding: 20px; text-align: center; border-radius: 10px 10px 0 0; }
-            .content { background: #fff; padding: 25px; border: 1px solid #e5e5e5; border-top: none; border-radius: 0 0 10px 10px; }
-            .activity-box { background: #f8f9fa; border-left: 4px solid #4A7C59; padding: 15px; margin: 15px 0; border-radius: 0 8px 8px 0; }
-            .emoji { font-size: 32px; margin-bottom: 10px; }
-            .timestamp { color: #888; font-size: 12px; margin-top: 15px; }
-            .cta-button { display: inline-block; background: #8b2542; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; margin-top: 15px; font-weight: 600; }
-          </style>
-        </head>
-        <body>
-          <div class="container">
-            <div class="header">
-              <div class="emoji">${notification.emoji}</div>
-              <h2 style="margin: 0;">${notification.title}</h2>
-            </div>
-            <div class="content">
-              <div class="activity-box">
-                <p style="margin: 0;">${notification.message}</p>
-              </div>
-              ${data.details ? `<p style="color: #666; font-size: 14px;">${data.details}</p>` : ''}
-              <center>
-                <a href="https://counselorready.com/admin-analytics.html" class="cta-button">View Dashboard</a>
-              </center>
-              <p class="timestamp">📅 ${new Date().toLocaleString('en-US', { dateStyle: 'full', timeStyle: 'short' })}</p>
-            </div>
-          </div>
-        </body>
-        </html>
-      `
-    });
-    
-    console.log(`Admin notification sent: ${type}`);
-  } catch (error) {
-    console.error(`[ActivityTracking] Failed to send admin notification for ${type}:`, error.message || error);
-    if (error.statusCode) {
-      console.error(`[ActivityTracking] Resend API status: ${error.statusCode}`, error.body || '');
-    }
-  }
 }
 
 /**

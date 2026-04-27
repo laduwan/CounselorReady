@@ -5,45 +5,43 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin Courses - CounselorReady</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="/css/design-tokens.css">
+  <link rel="stylesheet" href="/css/typography.css">
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            burgundy: { 50:'#fdf2f5',100:'#fce7ed',200:'#f8cfdb',300:'#f2a8be',700:'#8b2542',800:'#6b1d34',900:'#4a1524',950:'#2d0a14' },
-            forest: { 50:'#f2f7f4',100:'#e0ede5',200:'#c3dccc',300:'#98c3a9',400:'#6ba881',500:'#4a7c59',600:'#3d6549',700:'#33523d',800:'#2b4233' },
-            gold: { 50:'#fdf9ef',100:'#faf0d5',400:'#e4b54e',500:'#d4a855',600:'#b8893a',700:'#996b2e' },
-            navy: { 500:'#284157',600:'#1F3345',700:'#172736' },
-            hunter: { 100: '#e8f0ea', 500: '#4A7C59', 600: '#3d6649' },
-            honey: { 100: '#fef3d1', 400: '#D4A855', 500: '#c99a4a' }
-          }
-        }
-      }
-    }
-  </script>
-  <link href="https://fonts.googleapis.com/css2?family=Source+Serif+Pro:wght@400;600;700&family=Source+Sans+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/lib/fontawesome/css/all.min.css">
+  <script src="/js/tailwind-config.js"></script>
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-    body { font-family: 'Source Sans Pro', system-ui, sans-serif; }
-    .font-display { font-family: 'Source Serif Pro', Georgia, serif; }
+    body { font-family: 'Lato', system-ui, sans-serif; }
+    .font-display { font-family: 'Cormorant Garamond', Georgia, serif; }
   </style>
 </head>
 <body class="bg-stone-50 min-h-screen">
 
   <!-- Admin Header -->
-  <header class="bg-burgundy-800 text-white sticky top-0 z-50">
-    <div class="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
+  <header class="bg-burgundy-900 text-white sticky top-0 z-50">
+    <div class="max-w-full px-6 py-3 flex items-center justify-between">
       <div class="flex items-center gap-4">
-        <div class="w-9 h-9 bg-white/10 rounded-lg flex items-center justify-center">
-          <span class="font-display font-bold"><span class="text-honey-400">C</span><span class="text-hunter-500">R</span></span>
+        <div class="w-9 h-9 bg-burgundy-800 rounded-lg flex items-center justify-center relative overflow-hidden">
+          <span class="font-display font-bold text-gold-400 absolute" style="font-size:16px;top:2px;left:5px;">C</span>
+          <span class="font-display font-bold text-forest-400 absolute" style="font-size:16px;bottom:2px;left:13px;">R</span>
         </div>
         <div>
           <span class="font-display font-semibold text-lg">
-            <span class="text-burgundy-200">Counselor</span><span class="text-hunter-500">Ready</span>
+            <span style="color:#f2a8be">Counselor</span><span style="color:#98c3a9">Ready</span>
           </span>
-          <span class="ml-2 text-xs bg-honey-400 text-white px-2 py-0.5 rounded-full font-semibold">ADMIN</span>
+          <span class="ml-2 text-xs bg-gold-500 text-white px-2 py-0.5 rounded-full font-semibold">ADMIN</span>
         </div>
+        <nav class="flex items-center gap-1 ml-4">
+          <a href="/dashboard.html" class="px-3 py-1 rounded-full text-xs font-medium text-burgundy-200 hover:text-white hover:bg-burgundy-800 transition-colors">Dashboard</a>
+          <a href="/courses.html" class="px-3 py-1 rounded-full text-xs font-medium text-burgundy-200 hover:text-white hover:bg-burgundy-800 transition-colors">Courses</a>
+          <a href="/credentials.html" class="px-3 py-1 rounded-full text-xs font-medium text-burgundy-200 hover:text-white hover:bg-burgundy-800 transition-colors">Credentials</a>
+          <a href="/ce-tracker.html" class="px-3 py-1 rounded-full text-xs font-medium text-burgundy-200 hover:text-white hover:bg-burgundy-800 transition-colors">CE</a>
+          <a href="/certificates.html" class="px-3 py-1 rounded-full text-xs font-medium text-burgundy-200 hover:text-white hover:bg-burgundy-800 transition-colors">Certificates</a>
+          <a href="/messages.html" class="px-3 py-1 rounded-full text-xs font-medium text-burgundy-200 hover:text-white hover:bg-burgundy-800 transition-colors">Messages</a>
+        </nav>
       </div>
       <div class="flex items-center gap-4 text-sm">
         <span class="text-burgundy-200" id="adminEmail">Admin</span>
@@ -56,58 +54,37 @@
 
   <div class="flex">
     <!-- Sidebar -->
-<aside class="w-64 bg-burgundy-800 min-h-[calc(100vh-52px)] sticky top-[52px] p-4">
-    <nav class="space-y-1">
-      <a href="/admin.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
-        <i class="fas fa-th-large w-5"></i>
-        Admin Hub
-      </a>
-      <a href="/admin-analytics.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
-        <i class="fas fa-chart-line w-5"></i>
-        Analytics
-      </a>
-      <a href="/admin-users.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
-        <i class="fas fa-users w-5"></i>
-        Users
-      </a>
-      <a href="/admin-courses.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg bg-burgundy-700 text-white">
-        <i class="fas fa-book w-5"></i>
-        Courses
-      </a>
-      <a href="/admin-coupons.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
-        <i class="fas fa-tags w-5"></i>
-        Coupons
-      </a>
-      <a href="/admin-stripe.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
-        <i class="fab fa-stripe-s w-5"></i>
-        Stripe
-      </a>
-      <a href="/admin-messages.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
-        <i class="fas fa-envelope w-5"></i>
-        Messages
-      </a>
-      <a href="/admin-credentials.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
-        <i class="fas fa-id-card w-5"></i>
-        Credentials
-      </a>
-      <a href="/admin-hardship.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
-        <i class="fas fa-hand-holding-heart w-5"></i>
-        Hardship
-      </a>
-      <a href="/admin-integrations.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
-        <i class="fas fa-plug w-5"></i>
-        Integrations
-      </a>
-      <a href="/admin-migration.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
-        <i class="fas fa-database w-5"></i>
-        Migration
-      </a>
-      <a href="/admin-help.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
-        <i class="fas fa-question-circle w-5"></i>
-        Help Center
-      </a>
-    </nav>
-  </aside>
+    <aside class="w-52 bg-white border-r border-burgundy-100 min-h-[calc(100vh-52px)] sticky top-[52px] p-4">
+      <nav class="space-y-1 text-sm">
+        <a href="/admin-courses.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-burgundy-50 text-burgundy-800 font-medium">
+          <i class="fas fa-book w-4 text-burgundy-600"></i> Courses
+        </a>
+        <a href="/admin-users.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
+          <i class="fas fa-users w-4"></i> Users
+        </a>
+        <a href="/admin-analytics.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
+          <i class="fas fa-chart-line w-4"></i> Analytics
+        </a>
+        <a href="/admin-messages.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
+          <i class="fas fa-envelope w-4"></i> Messages
+        </a>
+        <a href="/admin-credentials.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
+          <i class="fas fa-id-card w-4"></i> Credentials
+        </a>
+        <a href="/admin-hardship.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
+          <i class="fas fa-hand-holding-heart w-4"></i> Hardship
+        </a>
+        <a href="/admin-integrations.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
+          <i class="fas fa-plug w-4"></i> Integrations
+        </a>
+        <a href="/admin-migration.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
+          <i class="fas fa-database w-4"></i> Migration
+        </a>
+        <a href="/admin-help.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
+          <i class="fas fa-question-circle w-4"></i> Help Center
+        </a>
+      </nav>
+    </aside>
 
     <!-- Main Content -->
     <main class="flex-1 p-6 min-w-0">
@@ -125,7 +102,7 @@
           <button onclick="openAIModal()" class="bg-forest-500 hover:bg-forest-600 text-white font-medium px-3 py-2 rounded-xl flex items-center gap-1.5 text-sm transition-colors">
             <i class="fas fa-wand-magic-sparkles text-xs"></i> Create with AI
           </button>
-          <a href="/admin/course-builder" class="bg-burgundy-800 hover:bg-burgundy-900 text-white font-semibold px-4 py-2 rounded-xl flex items-center gap-1.5 text-sm transition-colors">
+          <a href="/admin-course-editor.html" class="bg-burgundy-800 hover:bg-burgundy-900 text-white font-semibold px-4 py-2 rounded-xl flex items-center gap-1.5 text-sm transition-colors">
             <i class="fas fa-plus text-xs"></i> New Course
           </a>
         </div>
@@ -297,8 +274,6 @@
               <option value="3" selected>3 Hours</option>
               <option value="4">4 Hours</option>
               <option value="6">6 Hours</option>
-              <option value="7">7 Hours</option>
-              <option value="8">8 Hours</option>
             </select>
           </div>
           <div>
@@ -414,12 +389,12 @@
         try {
           let p = 1;
           while (true) {
-            const r = await fetch(`${API_URL}/api/interactive-courses?status=all&page=${p}&limit=50`, {
+            const r = await fetch(`${API_URL}/api/interactive-courses?page=${p}&limit=50`, {
               headers: { Authorization: `Bearer ${token}` }
             });
             if (!r.ok) break;
             const d = await r.json();
-            const batch = (d.courses || d.data || []).map(c => ({ ...c, _source: 'interactivecourses' }));
+            const batch = (d.data || []).map(c => ({ ...c, _source: 'interactivecourses' }));
             // Prefer interactivecourses version (deduplicate by slug)
             batch.forEach(ic => {
               const idx = courses.findIndex(c => c.slug === ic.slug);
@@ -527,7 +502,8 @@
       const ceHours = c.ceHours || c.ceuHours || 0;
       const target = ceHours * WORDS_PER_CE_HOUR;
       const wordPct = target > 0 ? Math.min(100, Math.round((c._words / target) * 100)) : 0;
-      const sections = c.sectionCount || c.moduleCount || (c.sections || c.modules || []).length;
+      const modules = c.moduleCount || 0;
+      const sections = c.sectionCount || (c.sections || c.modules || []).length;
       const price = c.price ? `$${c.price}` : null;
       const tier = c.accessTier || c.pricingTier || null;
 
@@ -556,25 +532,30 @@
                 title="${pub ? 'Unpublish' : 'Publish'}">
                 ${pub ? '📤' : '📥'}
               </button>
-              <a href="/interactive-course.html?slug=${c.slug}"
+              <a href="/interactive-course.html?id=${c._id}" target="_blank"
+                class="w-8 h-8 rounded-lg flex items-center justify-center text-sm bg-navy-50 hover:bg-navy-100 text-navy-700 transition-colors" title="View course">📖</a>
+              <button onclick="copyLink('${c.slug || c._id}')"
+                class="w-8 h-8 rounded-lg flex items-center justify-center text-sm bg-sky-50 hover:bg-sky-100 text-sky-700 transition-colors" title="Copy course link">🔗</button>
+              <a href="/admin-course-preview.html?id=${c._id}"
                 class="w-8 h-8 rounded-lg flex items-center justify-center text-sm bg-purple-50 hover:bg-purple-100 text-purple-700 transition-colors" title="Preview">👁️</a>
+              <button onclick="openQuickEdit('${c._id}','${src}')"
+                class="w-8 h-8 rounded-lg flex items-center justify-center text-sm bg-forest-50 hover:bg-forest-100 text-forest-700 transition-colors" title="Quick edit">⚡</button>
+              <a href="/admin-course-editor.html?id=${c._id}"
+                class="w-8 h-8 rounded-lg flex items-center justify-center text-sm bg-burgundy-50 hover:bg-burgundy-100 text-burgundy-700 transition-colors" title="Full editor">✏️</a>
+              <button onclick="openMetaModal('${c._id}','${esc(c.title)}','${src}',this)"
+                class="w-8 h-8 rounded-lg flex items-center justify-center text-sm bg-gold-50 hover:bg-gold-100 text-gold-700 transition-colors" title="Meta & content areas">🏷️</button>
               <button onclick="duplicateCourse('${c._id}','${esc(c.title)}')"
                 class="w-8 h-8 rounded-lg flex items-center justify-center text-sm bg-gold-50 hover:bg-gold-100 text-gold-700 transition-colors" title="Duplicate">📋</button>
-              <a href="/admin-course-edit.html?id=${c._id}&src=${src === 'courses' ? 'legacy' : 'interactive'}"
-                class="h-8 px-3 rounded-lg text-xs font-medium bg-forest-50 hover:bg-forest-100 text-forest-700 transition-colors flex items-center">Edit</a>
-              <a href="/admin/course-builder?id=${c._id}"
-                class="h-8 px-3 rounded-lg text-xs font-medium bg-purple-50 hover:bg-purple-100 text-purple-700 transition-colors flex items-center">Builder</a>
               <button onclick="deleteCourse('${c._id}','${esc(c.title)}','${src}')"
-                class="h-8 px-3 rounded-lg text-xs font-medium bg-burgundy-50 hover:bg-burgundy-100 text-burgundy-700 transition-colors">Delete</button>
+                class="w-8 h-8 rounded-lg flex items-center justify-center text-sm bg-red-50 hover:bg-red-100 text-red-700 transition-colors" title="Delete">🗑️</button>
             </div>
           </div>
           <div class="flex items-center gap-4 text-sm flex-wrap">
-            ${c.courseCode ? `<span class="font-mono text-xs px-2 py-0.5 rounded bg-forest-50 text-forest-700 border border-forest-200">${esc(c.courseCode)}</span><span class="text-forest-300">·</span>` : ''}
-            <span class="text-forest-600"><strong class="text-forest-800">${ceHours}</strong> CE hrs</span>
-            <span class="text-forest-300">·</span>
-            <span class="text-forest-600"><strong class="text-forest-800">${sections}</strong> modules</span>
+            <span class="text-forest-600"><strong class="text-burgundy-800 text-base">${ceHours}</strong> CE hrs</span>
             <span class="text-forest-300">·</span>
             <span class="text-forest-600"><strong class="text-forest-800">${c._words.toLocaleString()}</strong> words</span>
+            <span class="text-forest-300">·</span>
+            <span class="text-forest-600"><strong class="text-forest-800">${sections}</strong> sections</span>
             ${target > 0 ? `
             <span class="text-forest-300">·</span>
             <span class="inline-flex items-center gap-2">
@@ -608,7 +589,7 @@
             } else {
               r = await fetch(`${API_URL}/api/interactive-courses/${id}`, {
                 method: 'PUT', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-                body: JSON.stringify({ status: pub ? 'published' : 'draft', isPublished: pub })
+                body: JSON.stringify({ status: pub ? 'published' : 'draft' })
               });
             }
             if (!r.ok) throw new Error('Update failed');
@@ -635,7 +616,7 @@
               } else {
                 await fetch(`${API_URL}/api/interactive-courses/${c._id}`, {
                   method: 'PUT', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ status: pub ? 'published' : 'draft', isPublished: pub })
+                  body: JSON.stringify({ status: pub ? 'published' : 'draft' })
                 });
               }
               done++;
@@ -700,7 +681,7 @@
         closeAIModal();
         showToast('✓ Generated! Opening editor...', '#4A7C59');
         const cid = d.data?._id || d.course?._id || d._id;
-        setTimeout(() => { window.location.href = cid ? `/admin/course-builder?id=${cid}` : '/admin/course-builder'; }, 1500);
+        setTimeout(() => { window.location.href = cid ? `/admin-course-editor.html?id=${cid}` : '/admin-courses.html'; }, 1500);
       } catch(e) {
         showToast('Error: ' + e.message, '#dc2626');
       } finally {
@@ -717,7 +698,7 @@
       document.getElementById('confirmModal').style.display = 'flex';
     }
     function closeConfirm() { document.getElementById('confirmModal').style.display = 'none'; pendingFn = null; }
-    function doConfirm() { const fn = pendingFn; closeConfirm(); if (fn) fn(); }
+    function doConfirm() { closeConfirm(); if (pendingFn) pendingFn(); }
 
     function showToast(msg, bg = '#6b1d34') {
       const el = document.getElementById('toastMsg');
@@ -734,5 +715,302 @@
 
     init();
   </script>
-<script src="/js/footer.js"></script></body>
+<!-- Metadata Modal -->
+<div id="metaModal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.5);display:none;align-items:center;justify-content:center">
+  <div style="background:#fff;border-radius:16px;max-width:520px;width:90%;max-height:85vh;overflow-y:auto;padding:28px;box-shadow:0 20px 60px rgba(0,0,0,0.15)">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+      <h3 style="font-family:'Cormorant Garamond',Georgia,serif;font-size:20px;font-weight:700;color:#6B1D34" id="metaModalTitle">Course Metadata</h3>
+      <button onclick="closeMetaModal()" style="background:none;border:none;font-size:20px;cursor:pointer;color:#6B7280">&times;</button>
+    </div>
+    <input type="hidden" id="metaCourseId">
+
+    <!-- Delivery Format -->
+    <label style="display:block;font-size:13px;font-weight:600;color:#284157;margin-bottom:6px">Delivery Format</label>
+    <select id="metaDeliveryFormat" style="width:100%;padding:10px 14px;border:1px solid #E5E2DC;border-radius:10px;font-family:inherit;font-size:14px;margin-bottom:16px;outline:none">
+      <option value="async">Async (self-paced)</option>
+      <option value="live">Live</option>
+      <option value="hybrid">Hybrid</option>
+    </select>
+
+    <!-- Access Type -->
+    <label style="display:block;font-size:13px;font-weight:600;color:#284157;margin-bottom:6px">Access Type</label>
+    <select id="metaAccessType" style="width:100%;padding:10px 14px;border:1px solid #E5E2DC;border-radius:10px;font-family:inherit;font-size:14px;margin-bottom:16px;outline:none">
+      <option value="free">Free</option>
+      <option value="subscription">Subscription</option>
+      <option value="purchase">One-time Purchase</option>
+    </select>
+
+    <!-- Approval Body -->
+    <label style="display:block;font-size:13px;font-weight:600;color:#284157;margin-bottom:6px">Approval Body</label>
+    <select id="metaApprovalBody" style="width:100%;padding:10px 14px;border:1px solid #E5E2DC;border-radius:10px;font-family:inherit;font-size:14px;margin-bottom:16px;outline:none">
+      <option value="NBCC">NBCC</option>
+      <option value="LPC-GA">LPC-GA</option>
+      <option value="GCSW">GCSW</option>
+      <option value="LMFT">LMFT</option>
+      <option value="APA">APA</option>
+      <option value="ACA">ACA</option>
+      <option value="NASW">NASW</option>
+    </select>
+
+    <!-- Level -->
+    <label style="display:block;font-size:13px;font-weight:600;color:#284157;margin-bottom:6px">Level</label>
+    <select id="metaLevel" style="width:100%;padding:10px 14px;border:1px solid #E5E2DC;border-radius:10px;font-family:inherit;font-size:14px;margin-bottom:16px;outline:none">
+      <option value="Beginner">Beginner</option>
+      <option value="Intermediate">Intermediate</option>
+      <option value="Advanced">Advanced</option>
+      <option value="All Levels">All Levels</option>
+    </select>
+
+    <!-- NBCC Content Areas (checkboxes) -->
+    <label style="display:block;font-size:13px;font-weight:600;color:#284157;margin-bottom:8px">NBCC Content Areas <span style="font-weight:400;color:#9CA3AF">(select up to 3)</span></label>
+    <div id="metaContentAreas" style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:20px">
+    </div>
+
+    <!-- Save -->
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:8px">
+      <button onclick="closeMetaModal()" style="padding:10px 20px;border:1px solid #E5E2DC;border-radius:10px;background:#fff;font-family:inherit;font-size:14px;font-weight:600;color:#6B7280;cursor:pointer">Cancel</button>
+      <button onclick="saveMetadata()" id="metaSaveBtn" style="padding:10px 24px;border:none;border-radius:10px;background:#4A7C59;color:#fff;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer">Save</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const NBCC_AREAS = [
+    'Counseling Theory/Practice',
+    'Human Growth and Development',
+    'Social and Cultural Foundations',
+    'Group Dynamics',
+    'Career Development',
+    'Assessment',
+    'Research/Program Evaluation',
+    'Professional Identity',
+    'Wellness and Prevention'
+  ];
+
+  // Build checkboxes once
+  (function() {
+    const container = document.getElementById('metaContentAreas');
+    container.innerHTML = NBCC_AREAS.map((area, i) => `
+      <label style="display:flex;align-items:center;gap:6px;padding:6px 8px;border-radius:8px;background:#F8F7F4;cursor:pointer;font-size:12px;color:#2C2C2C">
+        <input type="checkbox" name="nbccArea" value="${area}" 
+          style="accent-color:#4A7C59;width:16px;height:16px;cursor:pointer"
+          onchange="limitContentAreas(this)">
+        ${area}
+      </label>
+    `).join('');
+  })();
+
+  function limitContentAreas(el) {
+    const checked = document.querySelectorAll('input[name=nbccArea]:checked');
+    if (checked.length > 3) {
+      el.checked = false;
+      showToast('Max 3 content areas', '#b8893f');
+    }
+  }
+
+  function openMetaModal(courseId, title) {
+    document.getElementById('metaCourseId').value = courseId;
+    document.getElementById('metaModalTitle').textContent = title;
+
+    // Find course data
+    const course = allCourses.find(c => c._id === courseId);
+    if (course) {
+      document.getElementById('metaDeliveryFormat').value = course.deliveryFormat || 'async';
+      document.getElementById('metaAccessType').value = course.accessType || 'subscription';
+      document.getElementById('metaApprovalBody').value = course.approvalBody || course.approvingBody || 'NBCC';
+      document.getElementById('metaLevel').value = course.level || course.difficulty || 'Intermediate';
+
+      // Check content area boxes
+      const areas = course.nbccContentAreas || [];
+      document.querySelectorAll('input[name=nbccArea]').forEach(cb => {
+        cb.checked = areas.includes(cb.value);
+      });
+    }
+
+    const modal = document.getElementById('metaModal');
+    modal.style.display = 'flex';
+  }
+
+  function closeMetaModal() {
+    document.getElementById('metaModal').style.display = 'none';
+  }
+
+  async function saveMetadata() {
+    const courseId = document.getElementById('metaCourseId').value;
+    const btn = document.getElementById('metaSaveBtn');
+    btn.textContent = 'Saving...';
+    btn.disabled = true;
+
+    const checkedAreas = Array.from(document.querySelectorAll('input[name=nbccArea]:checked')).map(cb => cb.value);
+
+    const payload = {
+      deliveryFormat: document.getElementById('metaDeliveryFormat').value,
+      accessType: document.getElementById('metaAccessType').value,
+      approvalBody: document.getElementById('metaApprovalBody').value,
+      level: document.getElementById('metaLevel').value,
+      nbccContentAreas: checkedAreas
+    };
+
+    try {
+      const course = allCourses.find(c => c._id === courseId);
+      const src = course?._source || 'interactivecourses';
+      const endpoint = src === 'courses'
+        ? `${API_URL}/api/admin/courses/${courseId}`
+        : `${API_URL}/api/interactive-courses/${courseId}`;
+      const r = await fetch(endpoint, {
+        method: 'PUT',
+        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (!r.ok) {
+        const d = await r.json();
+        throw new Error(d.error || 'Save failed');
+      }
+
+      showToast('Metadata saved', '#4A7C59');
+      closeMetaModal();
+      loadCourses(); // Refresh cards
+    } catch(e) {
+      showToast('Error: ' + e.message, '#dc2626');
+    } finally {
+      btn.textContent = 'Save';
+      btn.disabled = false;
+    }
+  }
+
+  // Close modal on backdrop click
+  document.getElementById('metaModal').addEventListener('click', function(e) {
+    if (e.target === this) closeMetaModal();
+  });
+
+  // ═══════════════════════════════════════════════════════════════
+  // QUICK EDIT MODAL — title, CE hours, status, price
+  // ═══════════════════════════════════════════════════════════════
+  let qeCourseId = '', qeSrc = '';
+
+  async function openQuickEdit(courseId, src) {
+    qeCourseId = courseId; qeSrc = src;
+    const modal = document.getElementById('quickEditModal');
+    modal.style.display = 'flex';
+    document.getElementById('qeForm').style.display = 'none';
+    document.getElementById('qeLoading').style.display = 'block';
+
+    try {
+      const endpoint = src !== 'courses'
+        ? `${API_URL}/api/interactive-courses/${courseId}`
+        : `${API_URL}/api/admin/courses/${courseId}`;
+      const r = await fetch(endpoint, { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } });
+      const data = await r.json();
+      const c = data.course || data;
+
+      document.getElementById('qeTitle').value = c.title || '';
+      document.getElementById('qeCeHours').value = c.ceHours || 0;
+      document.getElementById('qeStatus').value = c.status || 'draft';
+      document.getElementById('qePrice').value = c.price || 0;
+      document.getElementById('qeModalLabel').textContent = (c.title || '').substring(0, 50);
+
+      document.getElementById('qeLoading').style.display = 'none';
+      document.getElementById('qeForm').style.display = 'block';
+    } catch (err) {
+      console.error(err);
+      showToast('Failed to load course', '#DC2626');
+      closeQuickEdit();
+    }
+  }
+
+  function closeQuickEdit() {
+    document.getElementById('quickEditModal').style.display = 'none';
+  }
+
+  async function saveQuickEdit() {
+    const payload = {
+      title: document.getElementById('qeTitle').value.trim(),
+      ceHours: parseFloat(document.getElementById('qeCeHours').value) || 0,
+      status: document.getElementById('qeStatus').value,
+      price: parseFloat(document.getElementById('qePrice').value) || 0
+    };
+    if (payload.status === 'published') payload.isPublished = true;
+    if (payload.status === 'draft') payload.isPublished = false;
+
+    try {
+      const endpoint = qeSrc !== 'courses'
+        ? `${API_URL}/api/interactive-courses/${qeCourseId}`
+        : `${API_URL}/api/admin/courses/${qeCourseId}`;
+      const r = await fetch(endpoint, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+        body: JSON.stringify(payload)
+      });
+      if (!r.ok) throw new Error('Save failed');
+      showToast('✓ Saved', '#4A7C59');
+      closeQuickEdit();
+      loadCourses();
+    } catch (err) {
+      console.error(err);
+      showToast('Save failed', '#DC2626');
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('quickEditModal')?.addEventListener('click', function(e) {
+      if (e.target === this) closeQuickEdit();
+    });
+  });
+
+  function copyLink(slugOrId) {
+    const url = `${window.location.origin}/course-details.html?slug=${slugOrId}`;
+    navigator.clipboard.writeText(url).then(() => {
+      showToast('✓ Link copied', '#4A7C59');
+    }).catch(() => {
+      prompt('Copy this link:', url);
+    });
+  }
+</script>
+
+<!-- Quick Edit Modal -->
+<div id="quickEditModal" style="display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,0.4);display:none;align-items:center;justify-content:center;font-family:inherit">
+  <div style="background:#fff;border-radius:16px;padding:24px;width:420px;max-width:90vw;box-shadow:0 20px 60px rgba(0,0,0,0.15)">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <div>
+        <h3 style="font-size:16px;font-weight:700;color:#1a1a1a;margin:0">Quick Edit</h3>
+        <p id="qeModalLabel" style="font-size:12px;color:#6B7280;margin:2px 0 0"></p>
+      </div>
+      <button onclick="closeQuickEdit()" style="background:none;border:none;font-size:20px;cursor:pointer;color:#6B7280">&times;</button>
+    </div>
+    <div id="qeLoading" style="text-align:center;padding:2rem;color:#6B7280;font-size:13px">Loading...</div>
+    <div id="qeForm" style="display:none">
+      <div style="margin-bottom:12px">
+        <label style="display:block;font-size:12px;font-weight:600;color:#374151;margin-bottom:4px">Title</label>
+        <input id="qeTitle" type="text" style="width:100%;padding:8px 12px;border:1px solid #E5E2DC;border-radius:8px;font-size:14px;font-family:inherit">
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px">
+        <div>
+          <label style="display:block;font-size:12px;font-weight:600;color:#374151;margin-bottom:4px">CE Hours</label>
+          <input id="qeCeHours" type="number" step="0.5" min="0" style="width:100%;padding:8px 12px;border:1px solid #E5E2DC;border-radius:8px;font-size:14px;font-family:inherit">
+        </div>
+        <div>
+          <label style="display:block;font-size:12px;font-weight:600;color:#374151;margin-bottom:4px">Status</label>
+          <select id="qeStatus" style="width:100%;padding:8px 12px;border:1px solid #E5E2DC;border-radius:8px;font-size:14px;font-family:inherit">
+            <option value="draft">Draft</option>
+            <option value="published">Published</option>
+            <option value="archived">Archived</option>
+          </select>
+        </div>
+        <div>
+          <label style="display:block;font-size:12px;font-weight:600;color:#374151;margin-bottom:4px">Price ($)</label>
+          <input id="qePrice" type="number" step="0.01" min="0" style="width:100%;padding:8px 12px;border:1px solid #E5E2DC;border-radius:8px;font-size:14px;font-family:inherit">
+        </div>
+      </div>
+      <div style="display:flex;justify-content:flex-end;gap:8px">
+        <button onclick="closeQuickEdit()" style="padding:10px 20px;border:1px solid #E5E2DC;border-radius:10px;background:#fff;font-family:inherit;font-size:14px;font-weight:600;color:#6B7280;cursor:pointer">Cancel</button>
+        <button onclick="saveQuickEdit()" style="padding:10px 20px;border:none;border-radius:10px;background:#4A7C59;font-family:inherit;font-size:14px;font-weight:600;color:#fff;cursor:pointer">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="/shared/nav-footer.js"></script>
+<div id="cr-footer"></div>
+</body>
 </html>
