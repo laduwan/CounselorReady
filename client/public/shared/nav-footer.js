@@ -198,11 +198,21 @@
   </footer>`;
 
   // ── INJECT ────────────────────────────────────────────────
-  const headerEl = document.getElementById('cr-header');
-  const footerEl = document.getElementById('cr-footer');
+  // Inject immediately if divs already exist; otherwise defer until DOM is
+  // parsed. This makes the script tag's position in the page irrelevant —
+  // <head>, top of <body>, or before the divs in <body> all work.
+  function crInject() {
+    const headerEl = document.getElementById('cr-header');
+    const footerEl = document.getElementById('cr-footer');
+    if (headerEl) headerEl.innerHTML = headerHTML;
+    if (footerEl) footerEl.innerHTML = footerHTML;
+  }
 
-  if (headerEl) headerEl.innerHTML = headerHTML;
-  if (footerEl) footerEl.innerHTML = footerHTML;
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', crInject);
+  } else {
+    crInject();
+  }
 
   // ── SHARED FUNCTIONS (global) ─────────────────────────────
   window.toggleCRDropdown = function (id) {
