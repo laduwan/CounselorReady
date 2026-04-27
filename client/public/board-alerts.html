@@ -1,31 +1,34 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Board Alerts - CounselorReady</title>
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 36 36'><rect width='36' height='36' rx='8' fill='%236B1D34'/><text x='5' y='22' font-family='Georgia' font-weight='bold' font-size='17' fill='white'>C</text><text x='14' y='28' font-family='Georgia' font-weight='bold' font-size='14' fill='%234A7C59'>R</text></svg>">
+  <title>Board Alerts | CounselorReady</title>
+  <link rel="stylesheet" href="/css/design-tokens.css">
+  <link rel="stylesheet" href="/css/typography.css">
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="/js/tailwind-config.js"></script>
+  
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Lato:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <script>
-    tailwind.config={theme:{extend:{
-      fontFamily:{display:['Cormorant Garamond','Georgia','serif'],body:['Lato','Calibri','sans-serif']},
-      colors:{
-        burgundy:{50:'#FDF5F7',100:'#FAE8EB',200:'#F5D0D6',300:'#E8A4B2',400:'#D4708A',500:'#C94D65',600:'#A83350',700:'#8B2542',800:'#6B1D34',900:'#4A1524'},
-        navy:{50:'#F0F4F7',100:'#D9E2EA',200:'#B3C5D4',300:'#7A98AE',400:'#4A6B82',500:'#284157',600:'#1F3345',700:'#172736',800:'#101C27'},
-        hunter:{50:'#F2F7F4',100:'#E4EBE6',200:'#C9D7CD',300:'#A3BDA9',400:'#7A9E84',500:'#4A7C59',600:'#3D6A4A',700:'#305538',800:'#234027'},
-        honey:{50:'#FDF9F0',100:'#F9F0DB',200:'#F3E0B5',300:'#EACD86',400:'#D4A855',500:'#C49545',600:'#A67936',700:'#865E2C',800:'#6B4A25'},
-        stone:{50:'#F8F7F4',100:'#F1EFE9',200:'#E2DED3'},
-      }
-    }}}
-  </script>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  
   <style>
-    body{font-family:'Lato','Calibri',sans-serif;background:#F8F7F4;margin:0}
-    .font-display{font-family:'Cormorant Garamond',Georgia,serif}
-    @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-    .anim{animation:fadeUp .3s ease forwards;opacity:0}
-    .d1{animation-delay:.04s}.d2{animation-delay:.08s}.d3{animation-delay:.12s}.d4{animation-delay:.16s}
+    body{background:#F8F7F4; font-family: 'Lato', system-ui, sans-serif; }
+    .font-display { font-family: 'Cormorant Garamond', Georgia, serif; }
+
+    /* Expandable card animation */
+    .alert-details { max-height: 0; overflow: hidden; transition: max-height 0.35s ease, opacity 0.3s ease; opacity: 0; }
+    .alert-details.open { max-height: 800px; opacity: 1; }
+    .chevron-icon { transition: transform 0.25s ease; }
+    .chevron-icon.open { transform: rotate(180deg); }
+
+    /* Change highlight row */
+    .diff-added { background: #ecfdf5; }
+    .diff-removed { background: #fef2f2; }
+    .diff-changed { background: #fffbeb; }
+  
+    /* Shared nav styles */
     .dd{display:none;position:absolute;top:100%;margin-top:6px;background:#fff;border-radius:10px;box-shadow:0 10px 40px rgba(107,29,52,.12);border:1px solid #FAE8EB;z-index:50;padding:6px 0;min-width:210px}
     .dd.open{display:block}
     .dd a{display:flex;align-items:center;gap:10px;padding:8px 16px;font-size:13px;color:#284157;text-decoration:none;transition:background .1s}
@@ -34,350 +37,379 @@
     .nav-link{padding:6px 12px;border-radius:6px;font-size:13px;font-weight:500;color:#57534e;text-decoration:none;display:flex;align-items:center;gap:4px;transition:all .15s}
     .nav-link:hover{color:#6B1D34;background:#FDF5F7}
     .nav-link.active{color:#6B1D34;background:#FDF5F7;font-weight:600;border-bottom:2px solid #6B1D34}
-    .filter-btn{padding:6px 14px;font-size:13px;font-weight:500;cursor:pointer;border:none;transition:all .15s}
-    .filter-btn.active{background:#6B1D34;color:#fff}
-    .filter-btn:not(.active){background:#fff;color:#57534e}
-    .filter-btn:not(.active):hover{background:#F8F7F4}
-    .alert-card{transition:all .15s}
-    .history-toggle{cursor:pointer;border:none;background:none;padding:0}
-    .history-panel{display:none;margin-top:8px}
-    .history-panel.open{display:block}
   </style>
 </head>
-<body class="min-h-screen">
+<body class="bg-stone-50 min-h-screen">
 
-  <!-- ═══ HEADER (identical to dashboard.html) ═══ -->
-  <header style="background:#fff;border-bottom:1px solid #e7e5e4;position:sticky;top:0;z-index:40;box-shadow:0 1px 3px rgba(107,29,52,.08)">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-      <a href="/dashboard.html" class="flex items-center gap-3 flex-shrink-0" style="text-decoration:none">
-        <div style="width:42px;height:42px;border-radius:.75rem;background:#6B1D34;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(107,29,52,.25)">
-          <span style="position:relative;display:inline-block;width:24px;height:24px">
-            <span class="font-display" style="color:#D4A855;position:absolute;top:-3px;left:0;font-weight:700;font-size:19px">C</span>
-            <span class="font-display" style="color:#7A9E84;position:absolute;top:4px;left:6px;font-weight:700;font-size:16px">R</span>
-          </span>
-        </div>
-        <span class="font-display hidden sm:inline" style="font-weight:700;font-size:1.5rem;letter-spacing:.015em">
-          <span style="color:#6B1D34">Counselor</span><span style="color:#3D6A4A">Ready</span>
-        </span>
-      </a>
-      <nav class="hidden lg:flex items-center gap-1">
-        <a href="/dashboard.html" class="nav-link">Dashboard</a>
-        <a href="/courses.html" class="nav-link">Courses</a>
-        <a href="/credentials.html" class="nav-link active">Credentials</a>
-        <a href="/supervision.html" class="nav-link">Practice</a>
-        <a href="/organization.html" class="nav-link">Team</a>
-      </nav>
-      <div class="flex items-center gap-2">
-        <a href="/admin.html" id="adminBadge" class="hidden items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full" style="color:#6B1D34;background:#FDF5F7;border:1px solid #6B1D34;text-decoration:none">
-          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
-          Admin
-        </a>
-        <div class="relative">
-          <button onclick="toggle('user')" class="flex items-center gap-2 p-1 rounded-lg hover:bg-stone-100 transition-colors">
-            <div style="width:32px;height:32px;border-radius:50%;background:#6B1D34;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:600" id="avatarInit">U</div>
-            <span class="hidden md:block text-sm font-medium truncate" style="color:#57534e;max-width:120px" id="avatarName"></span>
-            <svg class="w-3.5 h-3.5 hidden md:block" style="color:#a8a29e" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-          </button>
-          <div class="ov" id="userOv" onclick="close('user')"></div>
-          <div class="dd" id="userDd" style="width:210px;right:0">
-            <div style="padding:10px 16px;border-bottom:1px solid #F1EFE9"><p style="font-size:13px;font-weight:600;color:#44403c;margin:0" id="menuName">User</p><p style="font-size:11px;color:#78716c;margin:2px 0 0" id="menuEmail"></p><span id="menuPlan" style="display:inline-block;margin-top:4px;font-size:10px;padding:2px 8px;border-radius:10px;font-weight:600;background:#FDF5F7;color:#6B1D34"></span></div>
-            <a href="/admin.html" id="menuAdminLink" style="display:none;color:#6B1D34"><svg class="w-4 h-4" style="color:#6B1D34" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg> Admin Panel</a>
-            <a href="/settings.html"><svg class="w-4 h-4" style="color:#7A98AE" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><circle cx="12" cy="12" r="3"/></svg> Settings</a>
-            <a href="/messages.html"><svg class="w-4 h-4" style="color:#7A98AE" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg> Messages</a>
-            <div style="border-top:1px solid #F1EFE9;margin-top:4px;padding-top:4px"><a href="#" onclick="logout();return false" style="color:#DC2626"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg> Sign out</a></div>
-          </div>
-        </div>
-        <button onclick="toggleMobile()" class="lg:hidden p-2 rounded-lg hover:bg-stone-100" style="color:#78716c">
-          <svg id="hamOpen" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
-          <svg id="hamClose" class="w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-        </button>
-      </div>
-    </div>
-    <div id="mobileNav" class="hidden lg:hidden border-t border-stone-200 bg-white px-4 py-3 space-y-1">
-      <a href="/dashboard.html" class="block px-4 py-2.5 rounded-lg text-sm" style="color:#57534e">Dashboard</a>
-      <a href="/courses.html" class="block px-4 py-2.5 rounded-lg text-sm" style="color:#57534e">Courses</a>
-      <a href="/credentials.html" class="block px-4 py-2.5 rounded-lg text-sm font-semibold" style="color:#6B1D34;background:#FDF5F7">Credentials</a>
-      <div style="padding-left:12px">
-        <a href="/ce-planner.html" class="block px-4 py-2 rounded-lg text-sm" style="color:#78716c">CE Planner</a>
-        <a href="/audit.html" class="block px-4 py-2 rounded-lg text-sm" style="color:#78716c">Audit Kit</a>
-        <a href="/board-alerts.html" class="block px-4 py-2 rounded-lg text-sm font-semibold" style="color:#6B1D34">Board Alerts</a>
-      </div>
-      <a href="/supervision.html" class="block px-4 py-2.5 rounded-lg text-sm" style="color:#57534e">Practice</a>
-      <a href="/organization.html" class="block px-4 py-2.5 rounded-lg text-sm" style="color:#57534e">Team</a>
-      <a href="/admin.html" id="adminMob" class="hidden px-4 py-2.5 rounded-lg text-sm font-semibold" style="color:#6B1D34;background:#FDF5F7">Admin Panel</a>
-    </div>
-  </header>
+  <!-- ═══════ HEADER (matches dashboard.html) ═══════ -->
+  <div id="cr-header"></div>
+  <script src="/shared/nav-footer.js"></script>
 
-  <!-- ═══ MAIN CONTENT ═══ -->
-  <main class="max-w-4xl mx-auto px-4 sm:px-6 py-6">
+  <!-- ═══════ MAIN CONTENT ═══════ -->
+  <main class="max-w-4xl mx-auto px-6 py-8">
+
     <!-- Breadcrumb -->
-    <a href="/credentials.html" class="inline-flex items-center gap-1.5 text-sm text-stone-500 hover:text-burgundy-700 mb-3 transition-colors" style="text-decoration:none">
-      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
-      Credentials
+    <a href="/credentials.html" class="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-burgundy-700 mb-4">
+      <i class="fas fa-chevron-left text-xs"></i> Credentials
     </a>
 
     <!-- Page Header -->
-    <div class="flex items-center justify-between mb-6">
+    <div class="flex items-start justify-between mb-6">
       <div>
-        <h1 class="font-display text-2xl font-semibold text-burgundy-800">Board Alerts</h1>
-        <p class="text-navy-400 text-sm mt-0.5">Licensing board changes relevant to your credentials</p>
+        <h1 class="font-display text-3xl font-semibold text-burgundy-900">Board Alerts</h1>
+        <p class="text-gray-500 mt-1">Licensing board rules for your credentials — changes highlighted</p>
       </div>
-      <span id="unreadBadge" class="hidden px-3 py-1 bg-red-100 text-red-700 rounded-full text-sm font-medium"></span>
+      <div id="unreadBadge" class="hidden px-3 py-1 bg-red-100 text-red-700 text-sm font-bold rounded-full"></div>
     </div>
 
     <!-- Filters -->
-    <div class="flex flex-wrap gap-3 mb-6">
-      <div class="flex rounded-lg border overflow-hidden text-sm">
-        <button class="filter-btn active" onclick="setFilter('all')">All</button>
-        <button class="filter-btn" onclick="setFilter('unread')">Unread</button>
-        <button class="filter-btn" onclick="setFilter('urgent')">Urgent</button>
+    <div class="flex flex-wrap items-center gap-3 mb-6">
+      <div class="flex bg-white border border-gray-200 rounded-lg overflow-hidden">
+        <button onclick="setFilter('all')" data-filter="all" class="filter-btn px-4 py-2 text-sm font-medium bg-burgundy-800 text-white">All</button>
+        <button onclick="setFilter('changes')" data-filter="changes" class="filter-btn px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50">Changes</button>
+        <button onclick="setFilter('urgent')" data-filter="urgent" class="filter-btn px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50">Urgent</button>
       </div>
-      <select id="stateFilter" onchange="applyFilters()" class="px-3 py-1.5 border rounded-lg text-sm bg-white" style="display:none">
-        <option value="all">All States</option>
+      <select id="stateFilter" onchange="applyFilters()" class="px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white">
+        <option value="">All States</option>
       </select>
     </div>
 
     <!-- Loading -->
-    <div id="loading" class="flex justify-center py-12">
-      <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-burgundy-700"></div>
+    <div id="loading" class="text-center py-16">
+      <div class="animate-spin rounded-full h-10 w-10 border-4 border-burgundy-200 border-t-burgundy-700 mx-auto mb-4"></div>
+      <p class="text-gray-500">Loading board rules...</p>
     </div>
-
-    <!-- Alerts Container -->
-    <div id="alertsList" class="space-y-3" style="display:none"></div>
 
     <!-- Empty State -->
-    <div id="emptyState" class="bg-white rounded-xl border p-12 text-center" style="display:none">
-      <svg class="w-12 h-12 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
-      <h2 id="emptyTitle" class="text-lg font-semibold text-gray-700 mb-2">No Alerts Yet</h2>
-      <p id="emptyMsg" class="text-gray-500">Board alerts for your state will appear here when licensing rules change.</p>
+    <div id="emptyState" class="hidden text-center py-16">
+      <i class="fas fa-bell-slash text-4xl text-gray-300 mb-4"></i>
+      <p class="text-gray-500">No credentials found. <a href="/credentials.html" class="text-burgundy-700 font-medium hover:underline">Add a credential</a> to see board rules.</p>
     </div>
+
+    <!-- Alert Cards -->
+    <div id="alertsList" class="space-y-4"></div>
+
   </main>
 
-  <footer class="max-w-7xl mx-auto px-4 sm:px-6 py-6 mt-4"><div class="text-center text-xs text-navy-300">&copy; 2026 GAITP LLC. CounselorReady&trade; &mdash; Learn. License. Lead.&reg;</div></footer>
-
   <script>
-    const API=location.hostname==='localhost'?'http://localhost:5000':'https://api.counselorready.com';
-    const T=localStorage.getItem('token');if(!T)location.href='/login.html';
+    const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://api.counselorready.com';
+    const token = localStorage.getItem('token');
+    let allAlerts = [];
+    let currentFilter = 'all';
 
-    // ── Shared utilities ──
-    function toggle(id){document.getElementById(id+'Dd').classList.toggle('open');document.getElementById(id+'Ov').classList.toggle('open');}
-    function close(id){document.getElementById(id+'Dd').classList.remove('open');document.getElementById(id+'Ov').classList.remove('open');}
-    function toggleMobile(){document.getElementById('mobileNav').classList.toggle('hidden');document.getElementById('hamOpen').classList.toggle('hidden');document.getElementById('hamClose').classList.toggle('hidden');}
-    function logout(){localStorage.removeItem('token');localStorage.removeItem('user');location.href='/login.html';}
+    // ── Init ──
+    document.addEventListener('DOMContentLoaded', async () => {
+      if (!token) { window.location.href = '/login.html?redirect=/board-alerts.html'; return; }
 
-    async function loadUser(){
-      try{
-        const r=await fetch(`${API}/api/auth/me`,{headers:{Authorization:`Bearer ${T}`}});
-        if(!r.ok)throw 0;
-        const d=await r.json(),u=d.user||d;
-        const f=u.profile?.firstName||u.firstName||'',l=u.profile?.lastName||u.lastName||'';
-        document.getElementById('avatarInit').textContent=`${f.charAt(0)}${l.charAt(0)}`.toUpperCase()||'U';
-        document.getElementById('avatarName').textContent=f||u.email?.split('@')[0]||'';
-        document.getElementById('menuName').textContent=`${f} ${l}`.trim()||'User';
-        document.getElementById('menuEmail').textContent=u.email||'';
-        const p=u.subscription?.plan||'free';
-        document.getElementById('menuPlan').textContent=p.charAt(0).toUpperCase()+p.slice(1)+' plan';
-        if(u.role==='admin'||u.isAdmin){
-          document.getElementById('adminBadge')?.classList.remove('hidden');
-          document.getElementById('adminBadge')?.classList.add('flex');
-          document.getElementById('adminMob')?.classList.remove('hidden');
-          const ml=document.getElementById('menuAdminLink');if(ml)ml.style.display='flex';
+      // Set user avatar
+      try {
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        if (user.firstName) {
+          document.getElementById('userAvatar').textContent = (user.firstName[0] + (user.lastName?.[0] || '')).toUpperCase();
+          document.getElementById('userName').textContent = user.firstName;
         }
-      }catch(e){console.error(e);}
-    }
+      } catch(e) {}
 
-    // ── Board Alerts Logic ──
-    let allAlerts=[];
-    let currentFilter='all';
+      await loadAlerts();
+    });
 
-    const severityCfg={
-      urgent:{color:'text-red-600',bg:'bg-red-50',border:'border-red-200',badge:'bg-red-100 text-red-800',
-        icon:'<svg class="w-5 h-5 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4.5c-.77-.833-2.694-.833-3.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>',
-        iconMuted:'<svg class="w-5 h-5 mt-0.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4.5c-.77-.833-2.694-.833-3.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>'},
-      important:{color:'text-yellow-600',bg:'bg-yellow-50',border:'border-yellow-200',badge:'bg-yellow-100 text-yellow-800',
-        icon:'<svg class="w-5 h-5 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>',
-        iconMuted:'<svg class="w-5 h-5 mt-0.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>'},
-      info:{color:'text-blue-600',bg:'bg-blue-50',border:'border-blue-200',badge:'bg-blue-100 text-blue-800',
-        icon:'<svg class="w-5 h-5 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>',
-        iconMuted:'<svg class="w-5 h-5 mt-0.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>'}
-    };
+    // ── Load Alerts ──
+    async function loadAlerts() {
+      try {
+        const res = await fetch(`${API_URL}/api/credentials/board-alerts`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
 
-    const categoryLabels={
-      ce_requirement_change:'CE Requirement Change',renewal_process:'Renewal Process',
-      fee_change:'Fee Change',scope_of_practice:'Scope of Practice',
-      new_regulation:'New Regulation',deadline:'Deadline',supervision:'Supervision',other:'Other'
-    };
+        if (!res.ok) {
+          // Fallback: build alerts client-side from credentials + templates
+          await loadAlertsFallback();
+          return;
+        }
 
-    async function loadAlerts(){
-      try{
-        const r=await fetch(`${API}/api/board-alerts`,{headers:{Authorization:`Bearer ${T}`}});
-        if(!r.ok)throw new Error('Failed to load alerts');
-        allAlerts=await r.json();
-        buildStateFilter();
-        applyFilters();
-      }catch(e){
-        console.error(e);
-        document.getElementById('emptyTitle').textContent='Unable to Load Alerts';
-        document.getElementById('emptyMsg').textContent='Please try again later.';
-        document.getElementById('emptyState').style.display='';
-      }finally{
-        document.getElementById('loading').style.display='none';
+        const data = await res.json();
+        allAlerts = data.alerts || [];
+
+        // Update unread badge
+        const withChanges = allAlerts.filter(a => a.hasChanges).length;
+        if (withChanges > 0) {
+          const badge = document.getElementById('unreadBadge');
+          badge.textContent = withChanges + ' change' + (withChanges > 1 ? 's' : '');
+          badge.classList.remove('hidden');
+        }
+
+        populateStateFilter();
+        renderAlerts();
+      } catch (err) {
+        console.error('Load alerts error:', err);
+        await loadAlertsFallback();
       }
     }
 
-    function buildStateFilter(){
-      const states=[...new Set(allAlerts.map(a=>a.state).filter(Boolean))].sort();
-      if(states.length>1){
-        const sel=document.getElementById('stateFilter');
-        sel.style.display='';
-        states.forEach(s=>{const o=document.createElement('option');o.value=s;o.textContent=s;sel.appendChild(o);});
+    // ── Fallback: build from /api/credentials ──
+    async function loadAlertsFallback() {
+      try {
+        const res = await fetch(`${API_URL}/api/credentials`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        const creds = data.data || data.credentials || data || [];
+
+        allAlerts = (Array.isArray(creds) ? creds : [])
+          .filter(c => c.credentialType === 'state_license')
+          .map(cred => ({
+          credentialId: cred._id,
+          code: cred.credentialCode || cred.name?.split(' ')[0] || '??',
+          state: cred.state || '',
+          name: cred.name || 'Unknown',
+          issuingBody: cred.issuingBody || '',
+          renewalCycle: cred.renewalCycle || 24,
+          totalCEUsRequired: cred.totalCEUsRequired || 0,
+          notes: cred.notes || '',
+          renewalUrl: null,
+          boardUrl: null,
+          currentRules: (cred.requirements || []).map(r => ({ category: r.category, hoursRequired: r.hoursRequired })),
+          savedRules: (cred.requirements || []).map(r => ({ category: r.category, hoursRequired: r.hoursRequired })),
+          changes: [],
+          severity: 'info',
+          hasChanges: false,
+          postedAt: cred.updatedAt || cred.createdAt || new Date().toISOString()
+        }));
+
+        populateStateFilter();
+        renderAlerts();
+      } catch (err) {
+        document.getElementById('loading').classList.add('hidden');
+        document.getElementById('emptyState').classList.remove('hidden');
       }
     }
 
-    function setFilter(f){
-      currentFilter=f;
-      document.querySelectorAll('.filter-btn').forEach(b=>{
-        b.classList.toggle('active',b.textContent.toLowerCase()===f);
+    // ── State Filter ──
+    function populateStateFilter() {
+      const states = [...new Set(allAlerts.map(a => a.state).filter(Boolean))].sort();
+      const sel = document.getElementById('stateFilter');
+      states.forEach(s => {
+        const opt = document.createElement('option');
+        opt.value = s; opt.textContent = s;
+        sel.appendChild(opt);
+      });
+    }
+
+    // ── Filters ──
+    function setFilter(f) {
+      currentFilter = f;
+      document.querySelectorAll('.filter-btn').forEach(b => {
+        const isActive = b.dataset.filter === f;
+        b.className = `filter-btn px-4 py-2 text-sm font-medium ${isActive ? 'bg-burgundy-800 text-white' : 'text-gray-600 hover:bg-gray-50'}`;
       });
       applyFilters();
     }
 
-    function applyFilters(){
-      const stateVal=document.getElementById('stateFilter').value;
-      let filtered=allAlerts;
-      if(currentFilter==='unread')filtered=filtered.filter(a=>!a.acknowledged);
-      if(currentFilter==='urgent')filtered=filtered.filter(a=>a.severity==='urgent');
-      if(stateVal!=='all')filtered=filtered.filter(a=>a.state===stateVal);
-
-      const unread=allAlerts.filter(a=>!a.acknowledged).length;
-      const badge=document.getElementById('unreadBadge');
-      if(unread>0){badge.textContent=unread+' unread';badge.classList.remove('hidden');}
-      else{badge.classList.add('hidden');}
-
-      renderAlerts(filtered);
+    function applyFilters() {
+      renderAlerts();
     }
 
-    function renderAlerts(list){
-      const container=document.getElementById('alertsList');
-      const empty=document.getElementById('emptyState');
-      if(!list.length){
-        container.style.display='none';
-        empty.style.display='';
-        document.getElementById('emptyTitle').textContent=allAlerts.length===0?'No Alerts Yet':'No Matching Alerts';
-        document.getElementById('emptyMsg').textContent=allAlerts.length===0?'Board alerts for your state will appear here when licensing rules change.':'Try adjusting your filters.';
+    function getFiltered() {
+      let filtered = [...allAlerts];
+      const stateVal = document.getElementById('stateFilter').value;
+      if (stateVal) filtered = filtered.filter(a => a.state === stateVal);
+      if (currentFilter === 'changes') filtered = filtered.filter(a => a.hasChanges);
+      if (currentFilter === 'urgent') filtered = filtered.filter(a => a.severity === 'urgent' || a.severity === 'important');
+      return filtered;
+    }
+
+    // ── Render ──
+    function renderAlerts() {
+      document.getElementById('loading').classList.add('hidden');
+      const filtered = getFiltered();
+      const container = document.getElementById('alertsList');
+
+      if (filtered.length === 0) {
+        container.innerHTML = '';
+        document.getElementById('emptyState').classList.remove('hidden');
         return;
       }
-      empty.style.display='none';
-      container.style.display='';
-      container.innerHTML=list.map((alert,i)=>{
-        const s=severityCfg[alert.severity]||severityCfg.info;
-        const ack=alert.acknowledged;
-        const icon=ack?s.iconMuted:`<span class="${s.color}">${s.icon}</span>`;
-        const credTypes=alert.credentialTypes?.length?`<span class="text-xs text-gray-500">${alert.credentialTypes.join(', ')}</span>`:'';
-        const details=alert.details?`<p class="text-sm text-gray-500 mb-2">${esc(alert.details)}</p>`:'';
-        const source=alert.sourceUrl?`<a href="${esc(alert.sourceUrl)}" target="_blank" rel="noopener noreferrer" class="text-burgundy-700 hover:underline flex items-center gap-1" style="text-decoration:none">Source <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg></a>`:'';
-        const effectiveDate=alert.effectiveDate?`<span>Effective: ${new Date(alert.effectiveDate).toLocaleDateString()}</span>`:'';
-        const markBtn=!ack?`<button onclick="acknowledge('${alert._id}')" class="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-gray-600 bg-white border rounded-lg hover:bg-gray-50 shrink-0"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Mark Read</button>`:'';
-        const history=renderChangeHistory(alert);
+      document.getElementById('emptyState').classList.add('hidden');
 
-        return`<div class="alert-card rounded-xl border ${ack?'bg-white border-gray-200':`${s.bg} ${s.border}`} anim d${Math.min(i+1,4)}">
-          <div class="p-4">
-            <div class="flex items-start gap-3">
-              ${icon}
-              <div class="flex-1">
-                <div class="flex items-center gap-2 mb-1 flex-wrap">
-                  <h3 class="font-medium ${ack?'text-gray-600':'text-gray-900'}">${esc(alert.title)}</h3>
-                  <span class="px-2 py-0.5 rounded-full text-xs font-medium ${s.badge}">${alert.severity}</span>
-                  <span class="px-2 py-0.5 rounded-full text-xs bg-gray-100 text-gray-600">${esc(alert.state||'')}</span>
-                  ${credTypes}
-                </div>
-                <p class="text-sm mb-2 ${ack?'text-gray-500':'text-gray-700'}">${esc(alert.summary||'')}</p>
-                ${details}
-                ${history}
-                <div class="flex items-center gap-4 text-xs text-gray-500">
-                  <span>${categoryLabels[alert.category]||alert.category||''}</span>
-                  ${effectiveDate}
-                  <span>Posted: ${new Date(alert.createdAt).toLocaleDateString()}</span>
-                  ${source}
-                </div>
-              </div>
-              ${markBtn}
-            </div>
-          </div>
-        </div>`;
-      }).join('');
-    }
+      container.innerHTML = filtered.map((alert, idx) => {
+        const severityStyles = {
+          urgent: 'border-l-4 border-l-red-500 bg-red-50/50',
+          important: 'border-l-4 border-l-amber-400 bg-amber-50/40',
+          info: 'border-l-4 border-l-blue-300 bg-white'
+        };
+        const severityBadge = {
+          urgent: '<span class="px-2 py-0.5 bg-red-100 text-red-700 text-xs font-bold rounded-full uppercase">urgent</span>',
+          important: '<span class="px-2 py-0.5 bg-amber-100 text-amber-700 text-xs font-bold rounded-full uppercase">important</span>',
+          info: '<span class="px-2 py-0.5 bg-blue-100 text-blue-600 text-xs font-bold rounded-full uppercase">info</span>'
+        };
+        const iconBg = { urgent: 'bg-red-100 text-red-600', important: 'bg-amber-100 text-amber-600', info: 'bg-blue-100 text-blue-600' };
+        const iconSvg = alert.severity === 'urgent'
+          ? '<i class="fas fa-exclamation-triangle"></i>'
+          : alert.severity === 'important'
+            ? '<i class="fas fa-exclamation-circle"></i>'
+            : '<i class="fas fa-info-circle"></i>';
 
-    function renderChangeHistory(alert){
-      if(!alert.changeHistory?.length)return'';
-      const last=alert.changeHistory[alert.changeHistory.length-1];
-      const count=alert.changeHistory.length;
-      const fieldLabel={title:'Title',summary:'Summary',details:'Details',category:'Category',severity:'Severity',effectiveDate:'Effective Date',sourceUrl:'Source URL',credentialTypes:'Credential Types'};
+        // Build summary line
+        const cycleTxt = alert.renewalCycle ? `${alert.renewalCycle / 12}-year cycle` : '';
+        const summary = `${alert.totalCEUsRequired} CE hrs${cycleTxt ? ' per ' + cycleTxt : ''}. ${(alert.notes || '').substring(0, 120)}`;
 
-      const entries=[...alert.changeHistory].reverse().map((ch,idx)=>{
-        const fields=Object.entries(ch.previousValues||{}).filter(([,v])=>v!==undefined&&v!==null).map(([field,oldVal])=>{
-          const fmtVal=(val,f)=>{
-            if(val===null||val===undefined||val==='')return'(empty)';
-            if(f==='effectiveDate')return new Date(val).toLocaleDateString();
-            if(f==='category')return categoryLabels[val]||val;
-            if(Array.isArray(val))return val.join(', ')||'(none)';
-            return String(val);
-          };
-          const currentVal=alert[field];
-          return`<div class="mb-2 last:mb-0">
-            <span class="text-xs font-medium text-gray-500 uppercase tracking-wide">${fieldLabel[field]||field}</span>
-            <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:start;margin-top:4px">
-              <div class="px-2.5 py-1.5 rounded bg-red-50 border border-red-100">
-                <span class="text-xs font-medium text-red-700 block mb-0.5">Was</span>
-                <span class="text-sm text-red-900">${esc(fmtVal(oldVal,field))}</span>
-              </div>
-              <svg class="w-4 h-4 text-gray-400" style="margin-top:10px" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
-              <div class="px-2.5 py-1.5 rounded bg-green-50 border border-green-100">
-                <span class="text-xs font-medium text-green-700 block mb-0.5">Now</span>
-                <span class="text-sm text-green-900">${esc(fmtVal(currentVal,field))}</span>
-              </div>
-            </div>
-          </div>`;
+        // Build category table rows
+        const ruleRows = (alert.currentRules || []).map(r => {
+          const saved = (alert.savedRules || []).find(s => s.category === r.category);
+          const changed = saved && saved.hoursRequired !== r.hoursRequired;
+          const isNew = !saved;
+          const rowClass = isNew ? 'diff-added' : changed ? 'diff-changed' : '';
+          const changeNote = isNew
+            ? '<span class="text-green-600 text-xs font-bold ml-2">NEW</span>'
+            : changed
+              ? `<span class="text-amber-600 text-xs font-bold ml-2">was ${saved.hoursRequired}hr</span>`
+              : '';
+          return `<tr class="${rowClass}">
+            <td class="px-4 py-2 text-sm font-medium text-gray-800">${esc(r.category)}${changeNote}</td>
+            <td class="px-4 py-2 text-sm text-right font-semibold">${r.hoursRequired} hrs</td>
+          </tr>`;
         }).join('');
 
-        const note=ch.changeNote?`<span class="text-xs text-gray-500 italic">${esc(ch.changeNote)}</span>`:'';
-        return`<div class="border border-gray-200 rounded-lg bg-white overflow-hidden">
-          <div class="px-3 py-2 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
-            <span class="text-xs font-medium text-gray-700">Amendment &mdash; ${new Date(ch.amendedAt).toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'})}</span>
-            ${note}
+        // Check for removed categories
+        const removedRows = (alert.savedRules || [])
+          .filter(s => !(alert.currentRules || []).find(c => c.category === s.category))
+          .map(s => `<tr class="diff-removed">
+            <td class="px-4 py-2 text-sm font-medium text-gray-400 line-through">${esc(s.category)} <span class="text-red-500 text-xs font-bold ml-2">REMOVED</span></td>
+            <td class="px-4 py-2 text-sm text-right text-gray-400 line-through">${s.hoursRequired} hrs</td>
+          </tr>`).join('');
+
+        // Changes summary
+        const changesList = (alert.changes || []).map(c =>
+          `<div class="flex items-center gap-2 text-sm py-1">
+            <span class="w-2 h-2 rounded-full flex-shrink-0 ${c.severity === 'important' ? 'bg-amber-400' : c.severity === 'urgent' ? 'bg-red-500' : 'bg-blue-400'}"></span>
+            <span class="font-medium text-gray-700">${esc(c.label)}:</span>
+            <span class="text-red-500 line-through">${esc(c.oldValue)}</span>
+            <i class="fas fa-arrow-right text-xs text-gray-400"></i>
+            <span class="text-green-700 font-semibold">${esc(c.newValue)}</span>
+          </div>`
+        ).join('');
+
+        // Board URL
+        // Board URL from backend (real state board link)
+        const boardUrl = alert.boardUrl || alert.renewalUrl || null;
+
+        return `
+        <div class="rounded-xl border border-gray-200 overflow-hidden shadow-sm ${severityStyles[alert.severity] || severityStyles.info}">
+          <!-- Card Header (always visible) -->
+          <button onclick="toggleAlert(${idx})" class="w-full text-left px-5 py-4 flex items-start gap-4 hover:bg-gray-50/50 transition-colors" aria-expanded="false" id="alertBtn${idx}">
+            <div class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${iconBg[alert.severity] || iconBg.info}">
+              ${iconSvg}
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-2 flex-wrap mb-1">
+                <span class="font-bold text-gray-900">${esc(alert.code)} ${alert.totalCEUsRequired} CE${cycleTxt ? '/' + cycleTxt.replace(' cycle','') : ''}</span>
+                ${severityBadge[alert.severity] || severityBadge.info}
+                ${alert.state ? `<span class="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs font-medium rounded">${esc(alert.state)}</span>` : ''}
+                <span class="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs font-medium rounded">${esc(alert.code)}</span>
+                ${alert.hasChanges ? '<span class="px-2 py-0.5 bg-green-100 text-green-700 text-xs font-bold rounded-full">CHANGED</span>' : ''}
+              </div>
+              <p class="text-sm text-gray-600 truncate">${esc(summary)}</p>
+              <p class="text-xs text-gray-400 mt-1">Posted: ${new Date(alert.postedAt).toLocaleDateString()}</p>
+            </div>
+            <i class="fas fa-chevron-down text-gray-400 mt-1 chevron-icon" id="chevron${idx}"></i>
+          </button>
+
+          <!-- Expandable Detail Panel -->
+          <div class="alert-details" id="alertDetails${idx}">
+            <div class="px-5 pb-5 pt-1 border-t border-gray-100">
+
+              <!-- Full Board Rules Table -->
+              <div class="mb-4">
+                <h3 class="text-xs font-bold uppercase tracking-wide text-gray-500 mb-2">
+                  <i class="fas fa-gavel mr-1"></i> Current Board Requirements
+                </h3>
+                <table class="w-full border border-gray-200 rounded-lg overflow-hidden">
+                  <thead>
+                    <tr class="bg-gray-50">
+                      <th class="px-4 py-2 text-left text-xs font-bold text-gray-500 uppercase">Category</th>
+                      <th class="px-4 py-2 text-right text-xs font-bold text-gray-500 uppercase">Required</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-gray-100">
+                    ${ruleRows}
+                    ${removedRows}
+                    <tr class="bg-gray-50 font-bold">
+                      <td class="px-4 py-2 text-sm text-gray-900">Total</td>
+                      <td class="px-4 py-2 text-sm text-right text-burgundy-800">${alert.totalCEUsRequired} hrs</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <!-- Metadata Row -->
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+                <div class="bg-gray-50 rounded-lg p-3">
+                  <p class="text-xs text-gray-500 font-medium">Renewal Cycle</p>
+                  <p class="text-sm font-bold text-gray-800">${alert.renewalCycle ? (alert.renewalCycle >= 12 ? (alert.renewalCycle / 12) + ' year' + (alert.renewalCycle > 12 ? 's' : '') : alert.renewalCycle + ' months') : 'N/A'}</p>
+                </div>
+                <div class="bg-gray-50 rounded-lg p-3">
+                  <p class="text-xs text-gray-500 font-medium">Issuing Body</p>
+                  <p class="text-sm font-bold text-gray-800 truncate">${esc(alert.issuingBody || 'N/A')}</p>
+                </div>
+                <div class="bg-gray-50 rounded-lg p-3">
+                  <p class="text-xs text-gray-500 font-medium">Credential</p>
+                  <p class="text-sm font-bold text-gray-800">${esc(alert.name || alert.code)}</p>
+                </div>
+                <div class="bg-gray-50 rounded-lg p-3">
+                  <p class="text-xs text-gray-500 font-medium">State</p>
+                  <p class="text-sm font-bold text-gray-800">${esc(alert.state || 'National')}</p>
+                </div>
+              </div>
+
+              <!-- Board Notes -->
+              ${alert.notes ? `
+              <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+                <p class="text-xs font-bold text-blue-700 uppercase mb-1"><i class="fas fa-sticky-note mr-1"></i> Board Notes</p>
+                <p class="text-sm text-blue-900">${esc(alert.notes)}</p>
+              </div>` : ''}
+
+              <!-- Changes Section -->
+              ${alert.hasChanges ? `
+              <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4">
+                <p class="text-xs font-bold text-amber-700 uppercase mb-2"><i class="fas fa-exchange-alt mr-1"></i> What Changed</p>
+                ${changesList}
+              </div>` : ''}
+
+              <!-- Board Website Link -->
+              <div class="flex items-center justify-between pt-2">
+                ${boardUrl ? `<a href="${boardUrl}" target="_blank" rel="noopener" class="inline-flex items-center gap-2 text-sm font-medium text-burgundy-700 hover:text-burgundy-900 hover:underline">
+                  <i class="fas fa-external-link-alt text-xs"></i>
+                  Visit ${esc(alert.state || '')} State Board Website
+                </a>` : `<span class="text-xs text-gray-400">Board website not available</span>`}
+                <a href="/credentials.html" class="text-xs text-gray-400 hover:text-gray-600">View My Credential &rarr;</a>
+              </div>
+
+            </div>
           </div>
-          <div class="p-3">${fields}</div>
         </div>`;
       }).join('');
-
-      return`<div class="mb-2">
-        <button class="history-toggle inline-flex items-center gap-1.5 text-xs font-medium text-burgundy-700 hover:text-burgundy-800 transition-colors" onclick="toggleHistory(this)">
-          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-          Amended ${count} ${count===1?'time':'times'} &mdash; last amended ${new Date(last.amendedAt).toLocaleDateString()}
-          <svg class="w-3 h-3 chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-        </button>
-        <div class="history-panel mt-2 space-y-2">${entries}</div>
-      </div>`;
     }
 
-    function toggleHistory(btn){
-      const panel=btn.nextElementSibling;
-      panel.classList.toggle('open');
-      const chev=btn.querySelector('.chevron');
-      chev.style.transform=panel.classList.contains('open')?'rotate(180deg)':'';
+    // ── Toggle expand/collapse ──
+    function toggleAlert(idx) {
+      const details = document.getElementById('alertDetails' + idx);
+      const chevron = document.getElementById('chevron' + idx);
+      const btn = document.getElementById('alertBtn' + idx);
+      const isOpen = details.classList.contains('open');
+      details.classList.toggle('open');
+      chevron.classList.toggle('open');
+      btn.setAttribute('aria-expanded', !isOpen);
     }
 
-    async function acknowledge(id){
-      try{
-        await fetch(`${API}/api/board-alerts/${id}/acknowledge`,{method:'POST',headers:{Authorization:`Bearer ${T}`,'Content-Type':'application/json'}});
-        allAlerts=allAlerts.map(a=>a._id===id?{...a,acknowledged:true}:a);
-        applyFilters();
-      }catch(e){console.error(e);}
+    // ── Escape HTML ──
+    function esc(str) {
+      if (!str) return '';
+      const d = document.createElement('div');
+      d.textContent = str;
+      return d.innerHTML;
     }
-
-    function esc(s){if(!s)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
-
-    loadUser();loadAlerts();
   </script>
+<script src="/js/cr-icons.js"></script>
+
+  <div id="cr-footer"></div>
 </body>
 </html>

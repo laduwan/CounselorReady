@@ -5,21 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CE Planner - CounselorReady</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 36 36'><rect width='36' height='36' rx='8' fill='%236B1D34'/><text x='5' y='22' font-family='Georgia' font-weight='bold' font-size='17' fill='white'>C</text><text x='14' y='28' font-family='Georgia' font-weight='bold' font-size='14' fill='%234A7C59'>R</text></svg>">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="/css/design-tokens.css">
+  <link rel="stylesheet" href="/css/typography.css">
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="/js/tailwind-config.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Lato:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <script>
-    tailwind.config={theme:{extend:{
-      fontFamily:{display:['Cormorant Garamond','Georgia','serif'],body:['Lato','Calibri','sans-serif']},
-      colors:{
-        burgundy:{50:'#FDF5F7',100:'#FAE8EB',200:'#F5D0D6',300:'#E8A4B2',400:'#D4708A',500:'#C94D65',600:'#A83350',700:'#8B2542',800:'#6B1D34',900:'#4A1524'},
-        navy:{50:'#F0F4F7',100:'#D9E2EA',200:'#B3C5D4',300:'#7A98AE',400:'#4A6B82',500:'#284157',600:'#1F3345',700:'#172736',800:'#101C27'},
-        hunter:{50:'#F2F7F4',100:'#E4EBE6',200:'#C9D7CD',300:'#A3BDA9',400:'#7A9E84',500:'#4A7C59',600:'#3D6A4A',700:'#305538',800:'#234027'},
-        honey:{50:'#FDF9F0',100:'#F9F0DB',200:'#F3E0B5',300:'#EACD86',400:'#D4A855',500:'#C49545',600:'#A67936',700:'#865E2C',800:'#6B4A25'},
-        stone:{50:'#F8F7F4',100:'#F1EFE9',200:'#E2DED3'},
-      }
-    }}}
-  </script>
+
   <style>
     body{font-family:'Lato','Calibri',sans-serif;background:#F8F7F4;margin:0}
     .font-display{font-family:'Cormorant Garamond',Georgia,serif}
@@ -42,66 +34,8 @@
 <body class="min-h-screen">
 
   <!-- ═══ HEADER (identical to dashboard.html) ═══ -->
-  <header style="background:#fff;border-bottom:1px solid #e7e5e4;position:sticky;top:0;z-index:40;box-shadow:0 1px 3px rgba(107,29,52,.08)">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-      <a href="/dashboard.html" class="flex items-center gap-3 flex-shrink-0" style="text-decoration:none">
-        <div style="width:42px;height:42px;border-radius:.75rem;background:#6B1D34;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(107,29,52,.25)">
-          <span style="position:relative;display:inline-block;width:24px;height:24px">
-            <span class="font-display" style="color:#D4A855;position:absolute;top:-3px;left:0;font-weight:700;font-size:19px">C</span>
-            <span class="font-display" style="color:#7A9E84;position:absolute;top:4px;left:6px;font-weight:700;font-size:16px">R</span>
-          </span>
-        </div>
-        <span class="font-display hidden sm:inline" style="font-weight:700;font-size:1.5rem;letter-spacing:.015em">
-          <span style="color:#6B1D34">Counselor</span><span style="color:#3D6A4A">Ready</span>
-        </span>
-      </a>
-      <nav class="hidden lg:flex items-center gap-1">
-        <a href="/dashboard.html" class="nav-link">Dashboard</a>
-        <a href="/courses.html" class="nav-link">Courses</a>
-        <a href="/credentials.html" class="nav-link active">Credentials</a>
-        <a href="/supervision.html" class="nav-link">Practice</a>
-        <a href="/organization.html" class="nav-link">Team</a>
-      </nav>
-      <div class="flex items-center gap-2">
-        <a href="/admin.html" id="adminBadge" class="hidden items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full" style="color:#6B1D34;background:#FDF5F7;border:1px solid #6B1D34;text-decoration:none">
-          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
-          Admin
-        </a>
-        <div class="relative">
-          <button onclick="toggle('user')" class="flex items-center gap-2 p-1 rounded-lg hover:bg-stone-100 transition-colors">
-            <div style="width:32px;height:32px;border-radius:50%;background:#6B1D34;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:600" id="avatarInit">U</div>
-            <span class="hidden md:block text-sm font-medium truncate" style="color:#57534e;max-width:120px" id="avatarName"></span>
-            <svg class="w-3.5 h-3.5 hidden md:block" style="color:#a8a29e" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-          </button>
-          <div class="ov" id="userOv" onclick="close('user')"></div>
-          <div class="dd" id="userDd" style="width:210px;right:0">
-            <div style="padding:10px 16px;border-bottom:1px solid #F1EFE9"><p style="font-size:13px;font-weight:600;color:#44403c;margin:0" id="menuName">User</p><p style="font-size:11px;color:#78716c;margin:2px 0 0" id="menuEmail"></p><span id="menuPlan" style="display:inline-block;margin-top:4px;font-size:10px;padding:2px 8px;border-radius:10px;font-weight:600;background:#FDF5F7;color:#6B1D34"></span></div>
-            <a href="/admin.html" id="menuAdminLink" style="display:none;color:#6B1D34"><svg class="w-4 h-4" style="color:#6B1D34" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg> Admin Panel</a>
-            <a href="/settings.html"><svg class="w-4 h-4" style="color:#7A98AE" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><circle cx="12" cy="12" r="3"/></svg> Settings</a>
-            <a href="/messages.html"><svg class="w-4 h-4" style="color:#7A98AE" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg> Messages</a>
-            <div style="border-top:1px solid #F1EFE9;margin-top:4px;padding-top:4px"><a href="#" onclick="logout();return false" style="color:#DC2626"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg> Sign out</a></div>
-          </div>
-        </div>
-        <button onclick="toggleMobile()" class="lg:hidden p-2 rounded-lg hover:bg-stone-100" style="color:#78716c">
-          <svg id="hamOpen" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
-          <svg id="hamClose" class="w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-        </button>
-      </div>
-    </div>
-    <div id="mobileNav" class="hidden lg:hidden border-t border-stone-200 bg-white px-4 py-3 space-y-1">
-      <a href="/dashboard.html" class="block px-4 py-2.5 rounded-lg text-sm" style="color:#57534e">Dashboard</a>
-      <a href="/courses.html" class="block px-4 py-2.5 rounded-lg text-sm" style="color:#57534e">Courses</a>
-      <a href="/credentials.html" class="block px-4 py-2.5 rounded-lg text-sm font-semibold" style="color:#6B1D34;background:#FDF5F7">Credentials</a>
-      <div style="padding-left:12px">
-        <a href="/ce-planner.html" class="block px-4 py-2 rounded-lg text-sm font-semibold" style="color:#6B1D34">CE Planner</a>
-        <a href="/audit.html" class="block px-4 py-2 rounded-lg text-sm" style="color:#78716c">Audit Kit</a>
-        <a href="/board-alerts.html" class="block px-4 py-2 rounded-lg text-sm" style="color:#78716c">Board Alerts</a>
-      </div>
-      <a href="/supervision.html" class="block px-4 py-2.5 rounded-lg text-sm" style="color:#57534e">Practice</a>
-      <a href="/organization.html" class="block px-4 py-2.5 rounded-lg text-sm" style="color:#57534e">Team</a>
-      <a href="/admin.html" id="adminMob" class="hidden px-4 py-2.5 rounded-lg text-sm font-semibold" style="color:#6B1D34;background:#FDF5F7">Admin Panel</a>
-    </div>
-  </header>
+  <div id="cr-header"></div>
+  <script src="/shared/nav-footer.js"></script>
 
   <!-- ═══ MAIN CONTENT ═══ -->
   <main class="max-w-5xl mx-auto px-4 sm:px-6 py-6">
@@ -147,18 +81,13 @@
     </div>
   </main>
 
-  <footer class="max-w-7xl mx-auto px-4 sm:px-6 py-6 mt-4"><div class="text-center text-xs text-navy-300">&copy; 2026 GAITP LLC. CounselorReady&trade; &mdash; Learn. License. Lead.&reg;</div></footer>
+  <div id="cr-footer"></div>
 
   <script>
     const API=location.hostname==='localhost'?'http://localhost:5000':'https://api.counselorready.com';
     const T=localStorage.getItem('token');if(!T)location.href='/login.html';
 
     // ── Shared utilities ──
-    function toggle(id){document.getElementById(id+'Dd').classList.toggle('open');document.getElementById(id+'Ov').classList.toggle('open');}
-    function close(id){document.getElementById(id+'Dd').classList.remove('open');document.getElementById(id+'Ov').classList.remove('open');}
-    function toggleMobile(){document.getElementById('mobileNav').classList.toggle('hidden');document.getElementById('hamOpen').classList.toggle('hidden');document.getElementById('hamClose').classList.toggle('hidden');}
-    function logout(){localStorage.removeItem('token');localStorage.removeItem('user');location.href='/login.html';}
-
     async function loadUser(){
       try{
         const r=await fetch(`${API}/api/auth/me`,{headers:{Authorization:`Bearer ${T}`}});
@@ -273,7 +202,11 @@
         if(item.recommendations?.length){
           const recItems=item.recommendations.map(rec=>{
             if(rec.suggestedCourses?.length){
-              return rec.suggestedCourses.map(course=>`<a href="/interactive-course.html?slug=${esc(course.slug)}" class="rec-link bg-burgundy-100 hover:bg-burgundy-200 mb-2" style="text-decoration:none"><div class="flex items-center gap-3"><svg class="w-4 h-4 text-burgundy-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg><div><p class="text-sm font-medium text-gray-900">${esc(course.title)}</p><p class="text-xs text-gray-500">${course.ceHours} CE hours &bull; ${esc(rec.category)}</p></div></div><svg class="w-4 h-4 text-burgundy-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg></a>`).join('');
+              const syncWarn=rec.needsSynchronous?'<p class="text-xs text-red-600 font-medium mb-2">* Your state requires synchronous (live) hours for this category</p>':'';
+              return syncWarn+rec.suggestedCourses.map(course=>{
+                const fmt=course.deliveryFormat||'async';
+                const fmtBadge=fmt==='live'?'<span style="background:#6B1D34;color:#fff;font-size:9px;font-weight:600;padding:2px 6px;border-radius:8px;margin-left:6px">LIVE</span>':fmt==='hybrid'?'<span style="background:#284157;color:#fff;font-size:9px;font-weight:600;padding:2px 6px;border-radius:8px;margin-left:6px">HYBRID</span>':'<span style="background:#4A7C59;color:#fff;font-size:9px;font-weight:600;padding:2px 6px;border-radius:8px;margin-left:6px">ASYNC</span>';
+                return`<a href="/interactive-course.html?slug=${esc(course.slug)}" class="rec-link bg-burgundy-100 hover:bg-burgundy-200 mb-2" style="text-decoration:none"><div class="flex items-center gap-3"><svg class="w-4 h-4 text-burgundy-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg><div><p class="text-sm font-medium text-gray-900">${esc(course.title)}${fmtBadge}</p><p class="text-xs text-gray-500">${course.ceHours} CE hours &bull; ${esc(rec.category)}</p></div></div><svg class="w-4 h-4 text-burgundy-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg></a>`}).join('');
             }
             return rec.note?`<p class="text-sm text-gray-500 italic">${esc(rec.note)}</p>`:'';
           }).join('');
@@ -288,8 +221,8 @@
                 <span class="px-2 py-0.5 rounded-full text-xs font-medium ${c.badge}">${urgencyLabels[item.urgency]||item.urgency}</span>
               </div>
               <p class="text-sm text-gray-500">
-                ${item.state?esc(item.state)+' &bull; ':''}Expires: ${item.expirationDate?new Date(item.expirationDate).toLocaleDateString():'N/A'}${item.daysUntilExpiration!==null&&item.daysUntilExpiration!==undefined?' ('+item.daysUntilExpiration+' days)':''}
-                &bull; <span class="text-burgundy-600">Auto-synced from your credentials &amp; certificates</span>
+                ${item.state?esc(item.state)+' &bull; ':''}${item.issuingBody?esc(item.issuingBody)+' &bull; ':''}Expires: ${item.expirationDate?new Date(item.expirationDate).toLocaleDateString():'N/A'}${item.daysUntilExpiration!==null&&item.daysUntilExpiration!==undefined?' ('+item.daysUntilExpiration+' days)':''}
+                ${item.licenseNumber?'&bull; #'+esc(item.licenseNumber):''}
               </p>
             </div>
             ${pace}
@@ -312,8 +245,7 @@
     }
 
     function esc(s){if(!s)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
-
-    loadUser();loadPlan();
+    loadPlan();
   </script>
 </body>
 </html>

@@ -12,6 +12,8 @@ import UserCredential from '../models/UserCredential.js';
 import CredentialTemplate from '../models/CredentialTemplate.js';
 import Certificate from '../models/Certificate.js';
 import { protect, requireSubscription } from '../middleware/auth.js';
+import { syncCredentialToCalendar, removeEventFromCalendar } from '../services/googleCalendarService.js';
+import User from '../models/User.js';
 
 const router = express.Router();
 
@@ -195,7 +197,19 @@ router.post('/', protect, async (req, res) => {
     
     const credential = await UserCredential.create(credentialData);
     credential.updateStatus();
-    
+
+    // Auto-sync to Google Calendar if connected and enabled
+    if (credential.expirationDate) {
+      try {
+        const fullUser = await User.findById(req.user._id);
+        if (fullUser.googleCalendar?.connected && fullUser.googleCalendar?.syncEnabled) {
+          await syncCredentialToCalendar(fullUser, credential);
+        }
+      } catch (syncErr) {
+        console.error('Google Calendar auto-sync error (non-blocking):', syncErr.message);
+      }
+    }
+
     res.status(201).json({
       message: 'Credential added',
       credential
@@ -446,6 +460,141 @@ router.post('/recalculate', protect, async (req, res) => {
   }
 });
 
+// @route   GET /api/credentials/board-alerts
+// @desc    Board rules for user's credentials with change highlighting
+// @access  Private
+router.get('/board-alerts', protect, async (req, res) => {
+  try {
+    // Real state licensing board URLs for counseling professions
+    const boardUrls = {
+      AL: 'https://abec.alabama.gov/', AK: 'https://www.commerce.alaska.gov/web/cbpl/ProfessionalLicensing/BoardofProfessionalCounselors.aspx',
+      AZ: 'https://www.azbbhe.us/', AR: 'https://www.arbcec.arkansas.gov/',
+      CA: 'https://www.bbs.ca.gov/', CO: 'https://dpo.colorado.gov/MentalHealth',
+      CT: 'https://portal.ct.gov/DPH/Practitioner-Licensing--Investigations/Professional-Counselor/Professional-Counselor',
+      DE: 'https://dpr.delaware.gov/boards/profcounselors/', DC: 'https://dchealth.dc.gov/service/professional-counseling-licensing',
+      FL: 'https://floridasmentalhealthprofessions.gov/', GA: 'https://sos.ga.gov/georgia-board-professional-counselors-social-workers-and-marriage-and-family-therapists',
+      HI: 'https://cca.hawaii.gov/pvl/boards/mental_health/', ID: 'https://ibol.idaho.gov/IBOL/BoardPage.aspx?Bureau=COU',
+      IL: 'https://idfpr.illinois.gov/profs/profcoun.asp', IN: 'https://www.in.gov/pla/professions/behavioral-health-and-human-services-licensing-board/',
+      IA: 'https://idph.iowa.gov/Licensure/Iowa-Board-of-Behavioral-Science', KS: 'https://ksbsrb.ks.gov/',
+      KY: 'https://lpc.ky.gov/', LA: 'https://www.lpcboard.org/',
+      ME: 'https://www.maine.gov/pfr/professionallicensing/professions/counseling/', MD: 'https://health.maryland.gov/bopc/',
+      MA: 'https://www.mass.gov/orgs/board-of-registration-of-allied-mental-health-and-human-services-professions',
+      MI: 'https://www.michigan.gov/lara/bureau-list/bpl/occ/prof/counseling', MN: 'https://mn.gov/boards/behavioral-health-therapy/',
+      MS: 'https://www.lpc.ms.gov/', MO: 'https://pr.mo.gov/counselors.asp',
+      MT: 'https://boards.bsd.dli.mt.gov/license-education/behavioral-health', NE: 'https://dhhs.ne.gov/licensure/Pages/Mental-Health-Practice.aspx',
+      NV: 'https://marriage.nv.gov/', NH: 'https://www.oplc.nh.gov/mental-health-practice',
+      NJ: 'https://www.njconsumeraffairs.gov/pc/', NM: 'https://www.rld.nm.gov/boards-and-commissions/counseling-and-therapy-practice-board/',
+      NY: 'http://www.op.nysed.gov/prof/mhp/', NC: 'https://www.ncblpc.org/',
+      ND: 'https://www.ndblpc.org/', OH: 'https://cswmft.ohio.gov/',
+      OK: 'https://www.ok.gov/behavioralhealth/', OR: 'https://www.oregon.gov/oblpct/',
+      PA: 'https://www.dos.pa.gov/ProfessionalLicensing/BoardsCommissions/SocialWorkersMarriageanFamilyTherapistsandProfessionalCounselors/',
+      RI: 'https://health.ri.gov/licenses/detail.php?id=234', SC: 'https://llr.sc.gov/cou/',
+      SD: 'https://dss.sd.gov/licensingboards/counselor/', TN: 'https://www.tn.gov/health/health-program-areas/health-professional-boards/pc-board.html',
+      TX: 'https://www.bhec.texas.gov/', UT: 'https://dopl.utah.gov/mental-health/',
+      VT: 'https://sos.vermont.gov/allied-mental-health/', VA: 'https://www.dhp.virginia.gov/counseling/',
+      WA: 'https://doh.wa.gov/licenses-permits-and-certificates/professions-new-renew-702/counselor-credential-702',
+      WV: 'https://wvbec.org/', WI: 'https://dsps.wi.gov/pages/Professions/LPC/',
+      WY: 'https://mentalhealth.wyo.gov/'
+    };
+
+    // Only state licenses — not national certs or specialty certs
+    const userCredentials = await UserCredential.find({
+      userId: req.user._id,
+      credentialType: 'state_license'
+    }).populate('templateId');
+
+    const alerts = [];
+
+    for (const cred of userCredentials) {
+      let template = cred.templateId;
+      if (!template && cred.code && cred.state) {
+        template = await CredentialTemplate.findOne({ code: cred.code, state: cred.state, type: 'state_license' });
+      }
+      if (!template && cred.name && cred.state) {
+        template = await CredentialTemplate.findOne({
+          type: 'state_license', state: cred.state,
+          $or: [
+            { code: (cred.code || cred.name.split(' ')[0]).toUpperCase() },
+            { name: { $regex: cred.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), $options: 'i' } }
+          ]
+        });
+      }
+      if (!template) continue;
+
+      const state = (template.state || cred.state || '').toUpperCase();
+
+      const savedRules = (cred.requirements || []).map(r => ({ category: r.category, hoursRequired: r.hoursRequired }));
+      const savedTotal = cred.totalCEUsRequired || savedRules.reduce((s, r) => s + r.hoursRequired, 0);
+      const savedNotes = cred.notes || '';
+      const savedCycle = cred.renewalCycle;
+
+      const currentRules = (template.requirements || []).map(r => ({ category: r.category, hoursRequired: r.hoursRequired }));
+      const currentTotal = template.totalCEUsRequired || currentRules.reduce((s, r) => s + r.hoursRequired, 0);
+      const currentNotes = template.notes || '';
+      const currentCycle = template.renewalCycle;
+
+      const changes = [];
+
+      if (savedTotal && currentTotal !== savedTotal) {
+        changes.push({ field: 'totalCEUsRequired', label: 'Total CE Hours', oldValue: savedTotal + ' hours', newValue: currentTotal + ' hours', severity: Math.abs(currentTotal - savedTotal) >= 5 ? 'important' : 'info' });
+      }
+      if (savedCycle && currentCycle && currentCycle !== savedCycle) {
+        changes.push({ field: 'renewalCycle', label: 'Renewal Cycle', oldValue: savedCycle + ' months', newValue: currentCycle + ' months', severity: 'important' });
+      }
+
+      const allCats = new Set([...savedRules.map(r => r.category), ...currentRules.map(r => r.category)]);
+      for (const cat of allCats) {
+        const saved = savedRules.find(r => r.category === cat);
+        const current = currentRules.find(r => r.category === cat);
+        if (!saved && current) {
+          changes.push({ field: `category:${cat}`, label: `${cat} (NEW)`, oldValue: 'Not required', newValue: current.hoursRequired + ' hours', severity: 'important' });
+        } else if (saved && !current) {
+          changes.push({ field: `category:${cat}`, label: `${cat} (REMOVED)`, oldValue: saved.hoursRequired + ' hours', newValue: 'No longer required', severity: 'info' });
+        } else if (saved && current && saved.hoursRequired !== current.hoursRequired) {
+          changes.push({ field: `category:${cat}`, label: cat, oldValue: saved.hoursRequired + ' hours', newValue: current.hoursRequired + ' hours', severity: current.hoursRequired > saved.hoursRequired ? 'important' : 'info' });
+        }
+      }
+
+      if (savedNotes && currentNotes && currentNotes !== savedNotes) {
+        changes.push({ field: 'notes', label: 'Board Notes', oldValue: (savedNotes || '(none)').substring(0, 80), newValue: (currentNotes || '(none)').substring(0, 80), severity: 'info' });
+      }
+
+      let severity = 'info';
+      if (changes.some(c => c.severity === 'urgent')) severity = 'urgent';
+      else if (changes.some(c => c.severity === 'important')) severity = 'important';
+
+      // Resolve board URL: template.renewalUrl > hardcoded lookup > null
+      const boardUrl = template.renewalUrl || boardUrls[state] || null;
+
+      alerts.push({
+        credentialId: cred._id, templateId: template._id,
+        code: template.code || cred.code, state,
+        name: template.name || cred.name, issuingBody: template.issuingBody || cred.issuingBody,
+        renewalCycle: currentCycle, totalCEUsRequired: currentTotal,
+        notes: currentNotes, boardUrl,
+        currentRules, savedRules, changes,
+        severity: changes.length > 0 ? severity : 'info',
+        hasChanges: changes.length > 0,
+        postedAt: template.lastVerifiedAt || template.updatedAt || template.createdAt
+      });
+    }
+
+    const sevOrder = { urgent: 0, important: 1, info: 2 };
+    alerts.sort((a, b) => {
+      if (a.hasChanges !== b.hasChanges) return a.hasChanges ? -1 : 1;
+      return (sevOrder[a.severity] || 2) - (sevOrder[b.severity] || 2);
+    });
+
+    res.json({
+      success: true, alerts,
+      summary: { total: alerts.length, withChanges: alerts.filter(a => a.hasChanges).length, urgent: alerts.filter(a => a.severity === 'urgent').length }
+    });
+  } catch (err) {
+    console.error('Board alerts error:', err);
+    res.status(500).json({ success: false, error: 'Failed to load board alerts' });
+  }
+});
+
 // @route   GET /api/credentials/:id
 // @desc    Get single credential
 // @access  Private
@@ -502,7 +651,19 @@ router.put('/:id', protect, async (req, res) => {
     
     credential.updateStatus();
     await credential.save();
-    
+
+    // Auto-sync to Google Calendar if connected and enabled
+    if (credential.expirationDate) {
+      try {
+        const fullUser = await User.findById(req.user._id);
+        if (fullUser.googleCalendar?.connected && fullUser.googleCalendar?.syncEnabled) {
+          await syncCredentialToCalendar(fullUser, credential);
+        }
+      } catch (syncErr) {
+        console.error('Google Calendar auto-sync error (non-blocking):', syncErr.message);
+      }
+    }
+
     res.json({
       message: 'Credential updated',
       credential
@@ -529,7 +690,17 @@ router.delete('/:id', protect, async (req, res) => {
     if (!credential) {
       return res.status(404).json({ error: 'Credential not found' });
     }
-    
+
+    // Remove from Google Calendar if connected
+    try {
+      const fullUser = await User.findById(req.user._id);
+      if (fullUser.googleCalendar?.connected) {
+        await removeEventFromCalendar(fullUser, req.params.id);
+      }
+    } catch (syncErr) {
+      console.error('Google Calendar event remove error (non-blocking):', syncErr.message);
+    }
+
     res.json({ message: 'Credential deleted' });
   } catch (error) {
     console.error('Delete credential error:', error);

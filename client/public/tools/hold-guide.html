@@ -1,0 +1,1411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>State Involuntary Hold Guide — CounselorReady</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Lato:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --burgundy: #6B1D34;
+  --burgundy-light: #8B3A54;
+  --burgundy-deep: #4A1224;
+  --rose: #D0768A;
+  --green: #4A7C59;
+  --green-light: #5A9469;
+  --green-deep: #345640;
+  --gold: #D4A855;
+  --gold-warm: #C49A40;
+  --navy: #284157;
+  --navy-deep: #1A2D3D;
+  --eggshell: #F5F5DC;
+  --stone: #EDEADF;
+  --cream: #F9F6EF;
+}
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: 'Lato', 'Segoe UI', sans-serif;
+  background: var(--stone);
+  color: #2A2A2A;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── HEADER ───────────────────────────── */
+.site-header {
+  background: linear-gradient(145deg, var(--burgundy-deep) 0%, var(--burgundy) 40%, var(--burgundy-light) 100%);
+  padding: 14px 28px 12px;
+  box-shadow: 0 3px 14px rgba(74,18,36,0.4);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  border-bottom: 2px solid var(--gold);
+}
+.header-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
+.logo { font-family: 'Cormorant Garamond', Georgia, serif; font-weight: 700; font-size: 22px; letter-spacing: -0.5px; }
+.logo-counselor { color: var(--rose); }
+.logo-ready { color: var(--green-light); }
+.header-badge {
+  background: var(--gold);
+  color: var(--burgundy-deep);
+  font-size: 10px;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 4px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.header-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+}
+.header-title svg { flex-shrink: 0; width: 16px; height: 16px; }
+.header-sub { color: rgba(255,255,255,0.5); font-size: 11px; margin-top: 4px; line-height: 1.4; }
+
+/* ── DISCLAIMER ───────────────────────── */
+.disclaimer-bar {
+  background: rgba(61,46,18,0.7);
+  padding: 9px 28px;
+  font-size: 11.5px;
+  color: rgba(212,168,85,0.85);
+  line-height: 1.5;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-bottom: 1px solid rgba(90,68,32,0.5);
+}
+.disclaimer-bar svg { flex-shrink: 0; }
+.disclaimer-bar strong { color: #F0C060; }
+
+/* ── 988 BANNER ──────────────────────── */
+.crisis-banner {
+  background: rgba(26,45,61,0.75);
+  padding: 10px 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #B8C8D4;
+  border-bottom: 1px solid rgba(40,65,87,0.6);
+}
+.crisis-988 {
+  background: linear-gradient(135deg, var(--green), var(--green-light));
+  color: #fff;
+  font-size: 16px;
+  font-weight: 800;
+  padding: 4px 14px;
+  border-radius: 6px;
+  letter-spacing: 2px;
+}
+
+/* ── MAIN LAYOUT ─────────────────────── */
+.main-container {
+  max-width: 840px;
+  margin: 0 auto;
+  padding: 28px 20px 60px;
+}
+
+/* ── STATE SELECTOR ──────────────────── */
+.selector-card {
+  background: var(--navy-deep);
+  border-radius: 14px;
+  padding: 24px 28px;
+  margin-bottom: 28px;
+  box-shadow: 0 4px 16px rgba(26,45,61,0.3);
+  border: 1px solid #35546B;
+}
+.selector-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--gold);
+  margin-bottom: 10px;
+  display: block;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.selector-row { display: flex; gap: 12px; }
+.search-wrap { position: relative; flex: 1; }
+.search-wrap svg { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); pointer-events: none; }
+.search-input {
+  width: 100%;
+  padding: 12px 16px 12px 42px;
+  border-radius: 8px;
+  border: 2px solid #35546B;
+  background: #1A2D3D;
+  font-family: 'Lato', sans-serif;
+  font-size: 14px;
+  color: #E8E8E8;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.search-input::placeholder { color: #6A8BA0; }
+.search-input:focus { border-color: var(--gold); }
+.state-select {
+  padding: 12px 16px;
+  border-radius: 8px;
+  border: 2px solid #35546B;
+  background: #1A2D3D;
+  font-family: 'Lato', sans-serif;
+  font-size: 14px;
+  color: #E8E8E8;
+  cursor: pointer;
+  min-width: 200px;
+  outline: none;
+}
+.state-select:focus { border-color: var(--gold); }
+.state-select option { background: #1A2D3D; color: #E8E8E8; }
+
+/* Quick Tags */
+.quick-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+.quick-tag {
+  padding: 6px 14px;
+  border-radius: 6px;
+  border: 1.5px solid #35546B;
+  background: transparent;
+  color: #8AABBE;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: 'Lato', sans-serif;
+  transition: all 0.15s;
+}
+.quick-tag:hover { border-color: var(--gold); color: var(--gold); background: rgba(212,168,85,0.08); }
+.quick-tag.active {
+  border-color: var(--gold);
+  background: rgba(212,168,85,0.15);
+  color: var(--gold);
+  font-weight: 700;
+}
+
+/* ── STATE CARD ──────────────────────── */
+.state-card {
+  animation: fadeUp 0.35s ease;
+  box-shadow: 0 6px 24px rgba(0,0,0,0.15);
+  border-radius: 14px;
+  overflow: hidden;
+}
+@keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
+.card-header {
+  background: linear-gradient(145deg, rgba(74,18,36,0.92) 0%, rgba(107,29,52,0.9) 60%, rgba(139,58,84,0.88) 100%);
+  padding: 22px 28px;
+  color: #fff;
+  position: relative;
+}
+.card-header::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--gold), var(--gold-warm), var(--gold));
+}
+.card-header-state {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 8px;
+}
+.card-header-name {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.2;
+  margin-bottom: 6px;
+}
+.card-header-code {
+  font-size: 13px;
+  color: rgba(255,255,255,0.65);
+  font-style: italic;
+}
+
+.card-body {
+  background: var(--cream);
+  border: 1px solid #D5CFC0;
+  border-top: none;
+}
+
+/* Phone Bar */
+.phone-bar {
+  background: rgba(52,86,64,0.75);
+  padding: 12px 32px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #C8E0C8;
+  letter-spacing: 0.3px;
+}
+.phone-bar svg { opacity: 0.8; }
+
+/* Sections */
+.card-section {
+  padding: 20px 32px;
+  border-bottom: 1px solid #D5CFC0;
+}
+.card-section:last-child { border-bottom: none; }
+.section-label {
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  margin-bottom: 10px;
+}
+.label-burgundy { color: var(--burgundy); }
+.label-green { color: var(--green-deep); }
+.label-navy { color: var(--navy); }
+.label-gold { color: var(--gold-warm); }
+.section-text { font-size: 14.5px; line-height: 1.8; color: #333; }
+
+/* Duration Row */
+.duration-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 32px;
+  border-bottom: 1px solid #D5CFC0;
+  background: rgba(74,124,89,0.06);
+}
+.duration-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: rgba(74,124,89,0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.duration-icon svg { stroke: #fff; }
+.duration-label { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.2px; color: var(--green-deep); }
+.duration-value { font-size: 15px; color: #2A2A2A; margin-top: 3px; font-weight: 500; }
+
+/* Pill Tags */
+.pill-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.pill {
+  padding: 7px 16px;
+  border-radius: 6px;
+  background: rgba(40,65,87,0.75);
+  font-size: 13px;
+  color: #D8E4EE;
+  font-weight: 500;
+}
+
+/* Collapsible */
+.collapsible-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 0;
+}
+.collapsible-btn svg { transition: transform 0.25s; }
+.collapsible-btn.open svg { transform: rotate(180deg); }
+
+/* Numbered Steps */
+.steps-list { margin-top: 16px; }
+.step-item {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 16px;
+  align-items: flex-start;
+}
+.step-num {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(107,29,52,0.85);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.step-text { font-size: 14.5px; line-height: 1.7; color: #333; padding-top: 5px; }
+
+/* Form Box */
+.form-box {
+  padding: 14px 18px;
+  background: rgba(52,86,64,0.7);
+  border-radius: 8px;
+  font-size: 14px;
+  color: #D0E4D0;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+}
+
+/* Additional Forms */
+.addl-form {
+  padding: 14px 18px;
+  margin-bottom: 10px;
+  background: rgba(212,168,85,0.08);
+  border-radius: 8px;
+  border-left: 4px solid var(--gold);
+}
+.addl-form-name { font-size: 13.5px; font-weight: 700; color: var(--navy); margin-bottom: 4px; }
+.addl-form-desc { font-size: 13px; color: #666; line-height: 1.5; }
+
+/* Key Notes Box */
+.key-notes-box {
+  padding: 18px 20px;
+  background: rgba(107,29,52,0.82);
+  border-radius: 8px;
+  font-size: 14px;
+  line-height: 1.8;
+  color: #F0D8DE;
+}
+.key-notes-box strong { color: var(--gold); }
+
+/* ── FOOTER ──────────────────────────── */
+.page-footer {
+  margin-top: 36px;
+  padding: 24px 28px;
+  background: var(--navy-deep);
+  border-radius: 12px;
+  font-size: 13px;
+  color: #7A99AD;
+  line-height: 1.7;
+  text-align: center;
+  box-shadow: 0 2px 12px rgba(26,45,61,0.25);
+}
+.footer-logo {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-weight: 700;
+  font-size: 17px;
+}
+
+/* ── NOT FOUND ───────────────────────── */
+.not-covered {
+  text-align: center;
+  padding: 52px 28px;
+  background: var(--cream);
+  border-radius: 14px;
+  border: 1px solid #D5CFC0;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+}
+.not-covered h3 {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 24px;
+  color: var(--navy);
+  margin-bottom: 10px;
+}
+.not-covered p { font-size: 14px; color: #888; line-height: 1.6; }
+
+/* ── PRINT BTN ───────────────────────── */
+.print-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  background: var(--navy);
+  color: #D8E4EE;
+  border: none;
+  border-radius: 8px;
+  font-size: 13.5px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: 'Lato', sans-serif;
+  transition: all 0.15s;
+  margin-top: 20px;
+  box-shadow: 0 2px 8px rgba(40,65,87,0.3);
+}
+.print-btn:hover { background: var(--navy-deep); }
+
+/* ── FORM WIZARD ──────────────────────── */
+.wizard-launcher {
+  padding: 20px 32px;
+  border-bottom: 1px solid #D5CFC0;
+}
+.wizard-btn {
+  width: 100%;
+  padding: 16px 24px;
+  background: linear-gradient(135deg, var(--gold-warm), var(--gold));
+  color: var(--burgundy-deep);
+  border: none;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 800;
+  font-family: 'Lato', sans-serif;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  letter-spacing: 0.3px;
+  box-shadow: 0 3px 12px rgba(212,168,85,0.35);
+  transition: all 0.15s;
+}
+.wizard-btn:hover { box-shadow: 0 4px 16px rgba(212,168,85,0.5); transform: translateY(-1px); }
+.wizard-btn svg { flex-shrink: 0; }
+
+.wizard-panel {
+  background: var(--navy-deep);
+  border-radius: 0 0 14px 14px;
+  overflow: hidden;
+  margin-top: -1px;
+}
+.wizard-header {
+  background: linear-gradient(135deg, var(--navy-deep), var(--navy));
+  padding: 20px 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 2px solid var(--gold);
+}
+.wizard-header-title {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--gold);
+}
+.wizard-header-sub { font-size: 12px; color: #7A99AD; margin-top: 2px; }
+.wizard-close {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.15);
+  color: #8AABBE;
+  width: 32px; height: 32px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+}
+.wizard-close:hover { background: rgba(255,255,255,0.15); color: #fff; }
+
+/* Progress Bar */
+.wizard-progress {
+  display: flex;
+  padding: 0 28px;
+  background: rgba(0,0,0,0.15);
+}
+.wizard-progress-step {
+  flex: 1;
+  padding: 10px 0;
+  text-align: center;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: #506878;
+  border-bottom: 3px solid transparent;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+.wizard-progress-step.active {
+  color: var(--gold);
+  border-bottom-color: var(--gold);
+}
+.wizard-progress-step.completed {
+  color: var(--green-light);
+  border-bottom-color: var(--green);
+}
+
+/* Wizard Body */
+.wizard-body { padding: 24px 28px; }
+.wizard-step-title {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: #E8E8E8;
+  margin-bottom: 6px;
+}
+.wizard-step-desc {
+  font-size: 13px;
+  color: #7A99AD;
+  margin-bottom: 20px;
+  line-height: 1.6;
+}
+.wiz-field { margin-bottom: 18px; }
+.wiz-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--gold);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin-bottom: 6px;
+}
+.wiz-hint {
+  font-size: 11.5px;
+  color: #6A8BA0;
+  margin-bottom: 6px;
+  font-style: italic;
+  line-height: 1.5;
+}
+.wiz-input {
+  width: 100%;
+  padding: 11px 14px;
+  border-radius: 8px;
+  border: 2px solid #35546B;
+  background: #1A2D3D;
+  color: #E8E8E8;
+  font-family: 'Lato', sans-serif;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.wiz-input:focus { border-color: var(--gold); }
+.wiz-input::placeholder { color: #506878; }
+textarea.wiz-input { resize: vertical; line-height: 1.6; min-height: 80px; }
+
+.wiz-row { display: flex; gap: 14px; }
+.wiz-row .wiz-field { flex: 1; }
+
+.wiz-radio-group { display: flex; flex-wrap: wrap; gap: 8px; }
+.wiz-radio {
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: 2px solid #35546B;
+  background: transparent;
+  color: #8AABBE;
+  font-family: 'Lato', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.wiz-radio:hover { border-color: #5A7A90; }
+.wiz-radio.selected {
+  border-color: var(--gold);
+  background: rgba(212,168,85,0.12);
+  color: var(--gold);
+  font-weight: 700;
+}
+
+.wiz-prompt-box {
+  background: rgba(107,29,52,0.15);
+  border: 1px solid rgba(208,118,138,0.25);
+  border-radius: 8px;
+  padding: 14px 16px;
+  margin-bottom: 16px;
+}
+.wiz-prompt-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--rose);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin-bottom: 6px;
+}
+.wiz-prompt-text {
+  font-size: 13px;
+  color: #D8B8C0;
+  line-height: 1.6;
+}
+
+/* Wizard Footer */
+.wizard-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 28px;
+  background: rgba(0,0,0,0.1);
+  border-top: 1px solid rgba(255,255,255,0.06);
+}
+.wiz-nav-btn {
+  padding: 10px 24px;
+  border-radius: 8px;
+  font-family: 'Lato', sans-serif;
+  font-size: 13.5px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.15s;
+}
+.wiz-back {
+  background: transparent;
+  border: 1.5px solid #35546B;
+  color: #8AABBE;
+}
+.wiz-back:hover { border-color: #5A7A90; color: #C8D8E4; }
+.wiz-next {
+  background: linear-gradient(135deg, var(--gold-warm), var(--gold));
+  border: none;
+  color: var(--burgundy-deep);
+}
+.wiz-next:hover { box-shadow: 0 2px 10px rgba(212,168,85,0.4); }
+.wiz-next:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* ── ASSEMBLED OUTPUT ────────────────── */
+.assembled-output {
+  background: #fff;
+  border-radius: 10px;
+  margin: 16px 0;
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+}
+.assembled-header {
+  background: linear-gradient(135deg, var(--burgundy-deep), var(--burgundy));
+  padding: 16px 20px;
+  color: #fff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.assembled-header h3 {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 18px;
+  font-weight: 700;
+}
+.assembled-body {
+  padding: 20px;
+  font-size: 13.5px;
+  line-height: 1.8;
+  color: #2A2A2A;
+}
+.assembled-section {
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #E8E4D8;
+}
+.assembled-section:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+.assembled-section-label {
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--burgundy);
+  margin-bottom: 6px;
+}
+.assembled-row { margin-bottom: 4px; }
+.assembled-row strong { color: var(--navy); }
+.assembled-actions {
+  display: flex;
+  gap: 10px;
+  padding: 16px 20px;
+  background: #F5F3EE;
+  border-top: 1px solid #E8E4D8;
+}
+.assembled-act-btn {
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-family: 'Lato', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.15s;
+}
+.act-print {
+  background: var(--navy);
+  color: #D8E4EE;
+  border: none;
+  flex: 1;
+  justify-content: center;
+}
+.act-print:hover { background: var(--navy-deep); }
+.act-copy {
+  background: #fff;
+  color: var(--navy);
+  border: 1.5px solid #D5CFC0;
+  flex: 1;
+  justify-content: center;
+}
+.act-copy:hover { border-color: var(--green); color: var(--green); }
+.act-restart {
+  background: transparent;
+  color: var(--rose);
+  border: 1.5px solid rgba(208,118,138,0.3);
+}
+.act-restart:hover { border-color: var(--rose); }
+
+.wiz-timestamp {
+  font-size: 11px;
+  color: #506878;
+  text-align: center;
+  padding: 8px;
+}
+
+@media print {
+  .site-header { position: static; box-shadow: none; border-bottom: 2px solid #333; }
+  .selector-card, .quick-tags, .print-btn, .crisis-banner, .wizard-launcher, .wizard-panel { display: none !important; }
+  .assembled-output { box-shadow: none; border: 1px solid #ccc; break-inside: avoid; }
+  .assembled-actions { display: none !important; }
+  .assembled-output, .assembled-header, .assembled-body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .state-card { break-inside: avoid; box-shadow: none; }
+  body { background: #fff; }
+  .card-header, .phone-bar, .key-notes-box, .form-box, .duration-icon, .step-num, .pill, .disclaimer-bar, .crisis-banner {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .card-body { border: 1px solid #ccc; }
+}
+
+@media (max-width: 600px) {
+  .selector-row { flex-direction: column; }
+  .state-select { min-width: 100%; }
+  .card-header-name { font-size: 22px; }
+  .card-section, .duration-row, .phone-bar { padding-left: 20px; padding-right: 20px; }
+  .card-header { padding: 18px 20px; }
+  .site-header { padding: 12px 16px 10px; }
+  .disclaimer-bar, .crisis-banner { padding-left: 16px; padding-right: 16px; }
+  .wiz-row { flex-direction: column; gap: 0; }
+  .wizard-body { padding: 18px 18px; }
+  .wizard-header { padding: 14px 18px; }
+  .wizard-footer { padding: 12px 18px; }
+  .wizard-launcher { padding: 16px 20px; }
+  .assembled-body { padding: 16px; }
+}
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-top">
+    <span class="logo"><span class="logo-counselor">Counselor</span><span class="logo-ready">Ready</span></span>
+    <span class="header-badge">Free Tool</span>
+  </div>
+  <div class="header-title">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#D4A855" stroke-width="2"><path d="M12 22s-8-4.5-8-11.8A8 8 0 0 1 12 2a8 8 0 0 1 8 8.2c0 7.3-8 11.8-8 11.8z"/><circle cx="12" cy="10" r="3"/></svg>
+    State Involuntary Hold Guide
+  </div>
+  <div class="header-sub">Quick reference for emergency involuntary hold procedures by state — 1013, Baker Act, 5150, 302, M-1, and more.</div>
+</header>
+
+<div class="disclaimer-bar">
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#D4A855" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+  <span><strong>Legal Reference Only.</strong> Always verify against current state statutes and facility policies. Laws change. Consult your supervisor, legal counsel, or licensing board. <strong>Privacy:</strong> CounselorReady does not capture, transmit, or retain any information entered in this tool. All data stays in your browser and is erased when you close or refresh the page.</span>
+</div>
+
+<div class="crisis-banner">
+  National Crisis Line <span class="crisis-988">988</span> Suicide &amp; Crisis Lifeline — call or text, 24/7
+</div>
+
+<main class="main-container">
+  <div class="selector-card">
+    <label class="selector-label">Select Your State</label>
+    <div class="selector-row">
+      <div class="search-wrap">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6A8BA0" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" class="search-input" id="searchInput" placeholder="Search state, statute, or hold name..." oninput="filterStates()">
+      </div>
+      <select class="state-select" id="stateSelect" onchange="selectState(this.value)"></select>
+    </div>
+    <div class="quick-tags" id="quickTags"></div>
+  </div>
+
+  <div id="stateDisplay"></div>
+
+  <div style="text-align:center;">
+    <button class="print-btn" onclick="window.print()">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+      Print This State
+    </button>
+  </div>
+
+  <div class="page-footer">
+    <span class="footer-logo"><span style="color:var(--rose)">Counselor</span><span style="color:var(--green-light)">Ready</span></span>
+    — Free clinical tools for the independent practitioner.<br>
+    <span id="stateCount"></span> states covered &middot; <strong style="color:#A8C0D0">counselorready.com</strong> for CE courses, credential tracking &amp; more.<br>
+    <span style="font-size:11px;color:#5A7A8D">This tool does not capture, store, or transmit any data you enter. Everything stays in your browser and is erased on close.</span><br>
+    <span style="font-size:11px;color:#506878;margin-top:4px;display:inline-block">&copy; 2026 GA Integrated Therapeutic Perspectives LLC (GAITP LLC). All rights reserved.</span>
+  </div>
+</main>
+
+<script>
+const S={
+"Alabama":{name:"Involuntary Commitment (Probate Court Order)",code:"Ala. Code § 22-52-10",criteria:"Person poses a real and present threat of substantial harm to self or others, or is unable to care for themselves due to mental illness.",duration:"Up to 5 days for emergency detention; commitment hearing within 5 days.",who:["Licensed physician","Law enforcement officer","Any person (via probate court petition)"],steps:["Petitioner files a sworn petition with the probate court describing dangerous behavior.","A licensed physician or psychologist must examine the individual within 24 hours.","If criteria met, the probate judge issues an order for involuntary commitment.","Individual is transported to a designated mental health facility.","A commitment hearing is held within 5 days of admission."],notes:"Alabama uses a judicial model — a probate court judge must authorize commitment. Emergency detention allows up to 5 days while waiting for a hearing.",form:"Petition for Involuntary Commitment (filed with Probate Court)",phone:"Alabama Crisis Line: 988"},
+"Alaska":{name:"Emergency Detention / 72-Hour Hold",code:"Alaska Stat. § 47.30.700–47.30.915",criteria:"Person is mentally ill and likely to cause harm to self or others, or is gravely disabled.",duration:"72-hour evaluation period; 30-day commitment if court orders.",who:["Licensed physician","Any person (via petition to court)","Peace officer with probable cause"],steps:["A peace officer or physician may initiate emergency detention if imminent danger exists.","The person is taken to a designated evaluation facility.","A mental health professional must evaluate within 24 hours.","If further detention needed, a petition is filed with the superior court.","A court hearing is held within 72 hours of detention."],notes:"Alaska allows peace officers to initiate emergency detention without a court order when there is probable cause of imminent danger.",form:"Petition for Court-Ordered Evaluation / Emergency Detention Order",phone:"Careline (Alaska): 1-877-266-4357"},
+"Arizona":{name:"Emergency Petition for Evaluation",code:"A.R.S. § 36-520 to 36-546",criteria:"Person is, as a result of mental disorder, a danger to self or others, or is persistently or acutely disabled and in need of treatment.",duration:"24-hour pre-petition screening; 72-hour emergency admission; up to 180-day court-ordered treatment.",who:["Any responsible individual (via petition)","Physician","Peace officer"],steps:["Any person may file a petition for court-ordered evaluation.","A pre-petition screening by an approved agency must occur within 24 hours.","If criteria met, the screening agency files an application for emergency admission.","Individual is transported to an approved evaluation facility.","A hearing is held within 6 days of the petition filing."],notes:"Arizona's process involves a mandatory pre-petition screening step. The petitioner must describe specific behaviors (not conclusions) demonstrating dangerousness.",form:"Petition for Court-Ordered Evaluation (Form PC-100 or county equivalent)",phone:"Arizona Crisis Line: 1-800-631-1314 or 988"},
+"Arkansas":{name:"72-Hour Emergency Admission",code:"Ark. Code § 20-47-210",criteria:"Person has a mental illness and poses a clear and present danger to self or others or is gravely disabled.",duration:"72 hours; judicial commitment hearing if continued treatment needed.",who:["Licensed physician","Any person 18+ (via petition to court)","Law enforcement officer"],steps:["A physician certifies the need for emergency admission.","Individual is transported to a treatment facility.","Evaluation occurs within 72 hours.","If further treatment needed, a petition for involuntary admission is filed.","Court hearing held within 7 days of petition filing."],notes:"Arkansas allows any adult to petition the court. The physician certification is the key document for emergency admission.",form:"Physician's Certificate for Emergency Admission",phone:"Arkansas Crisis Line: 988"},
+"California":{name:"5150 (Involuntary Psychiatric Hold)",code:"Cal. Welf. & Inst. Code § 5150",criteria:"Person is, as a result of a mental health disorder, a danger to self or others, or gravely disabled (unable to provide food, clothing, or shelter).",duration:"72 hours; extendable to 14 days (5250) and 30 days (5270).",who:["Peace officer","Mental health professional (designated by county)","Mobile crisis team member"],steps:["An authorized person determines the individual meets 5150 criteria.","Complete the 5150 Application documenting specific behaviors observed.","Transport individual to a county-designated 5150 facility.","Facility staff conduct initial evaluation upon arrival.","The 72-hour hold begins upon arrival at the facility."],notes:"Only designated professionals can initiate a 5150 — not family members directly. Each county maintains a list of approved designees. The hold is 72 HOURS, not 3 calendar days.",form:"Application for 72-Hour Detention for Evaluation and Treatment (Form 5150)",phone:"California Crisis: 988 or CalHOPE: 1-833-317-4673",extra:[{name:"5250 — 14-Day Certification",desc:"Filed when the 72-hour hold is insufficient and continued treatment is needed."},{name:"5270 — 30-Day Additional Certification",desc:"For individuals who remain gravely disabled after the 5250 period."}]},
+"Colorado":{name:"M-1 Hold (72-Hour Treatment & Evaluation)",code:"C.R.S. § 27-65-105",criteria:"Person appears to have a mental illness and is an imminent danger to self or others or is gravely disabled.",duration:"72 hours; extendable by court order for 3 months (short-term) or 6 months (long-term).",who:["Licensed professional (physician, psychologist, LPC, LCSW, LMFT, psychiatric nurse, certified addiction counselor)","Peace officer","Emergency medical service provider"],steps:["An authorized professional or peace officer determines M-1 criteria are met.","Complete the M-1 form.","Transport individual to a designated facility.","Facility conducts evaluation within 72 hours.","If further treatment needed, a court petition is filed for short-term certification."],notes:"Colorado is one of the broadest states for who can initiate — <strong>LPCs, LCSWs, and LMFTs can all write an M-1</strong>. This is significant for community-based clinicians.",form:"M-1 — Certification for Emergency 72-Hour Treatment and Evaluation",phone:"Colorado Crisis Services: 1-844-493-8255 or text TALK to 38255"},
+"Connecticut":{name:"Physician's Emergency Certificate (PEC)",code:"Conn. Gen. Stat. § 17a-502",criteria:"Person has psychiatric disabilities and is dangerous to self or others or is gravely disabled.",duration:"15-day observation; court hearing if commitment sought.",who:["Licensed physician (PEC-1)","Two physicians for extended commitment (PEC-2)","Probate court"],steps:["A physician examines the individual and determines emergency commitment criteria are met.","Physician completes PEC-1 form and arranges transport.","Individual is admitted for up to 15 days of observation.","If longer treatment needed, two physicians certify (PEC-2).","Probate court hearing held within 10 days of PEC-2 filing."],notes:"Connecticut requires a <strong>PHYSICIAN specifically</strong> for the initial PEC. The 15-day observation window is notably longer than most states.",form:"PEC-1 (Physician's Emergency Certificate)",phone:"Connecticut Crisis: 211 or 988"},
+"Delaware":{name:"Emergency Involuntary Commitment",code:"Del. Code tit. 16, § 5122",criteria:"Person has a mental condition and poses a real and present danger to self or others, or is unable to make responsible decisions regarding hospitalization.",duration:"24-hour emergency detention; probable cause hearing within 24 hours; 14-day commitment with court order.",who:["Licensed physician","Qualified mental health professional","Police officer","Paramedic"],steps:["An authorized person determines emergency criteria are met.","Individual is taken to a psychiatric facility.","A physician must examine within 24 hours.","A probable cause hearing is held within 24 hours.","If commitment criteria met, court may order up to 14 days."],notes:"Delaware's 24-hour hearing requirement is one of the fastest judicial review timelines in the country.",form:"Application for Emergency Detention",phone:"Delaware Crisis: 1-800-652-2929 or 988"},
+"District of Columbia":{name:"Emergency Involuntary Hospitalization",code:"D.C. Code § 21-521 to 21-528",criteria:"Person is mentally ill and, because of the illness, likely to injure self or others if not immediately detained.",duration:"48 hours for emergency observation; 7-day commitment with court order.",who:["Police officer","Licensed physician","Qualified psychologist","Qualified psychiatric nurse"],steps:["An authorized person files an emergency application.","Individual is transported to a designated facility.","Physician or psychologist examines within 24 hours.","If further commitment needed, a petition is filed with the court.","Court hearing held within 7 days."],notes:"DC operates under its own mental health code, separate from any state. The 48-hour emergency window is standard for the district.",form:"Emergency Application for Involuntary Hospitalization",phone:"DC Access Helpline: 1-888-793-4357 or 988"},
+"Florida":{name:"Baker Act (Involuntary Examination)",code:"Fla. Stat. § 394.463",criteria:"Person has a mental illness and without treatment is likely to suffer from neglect or refuse to care for themselves, OR there is substantial likelihood of imminent harm to self or others.",duration:"72 hours for examination; commitment petition filed within that window if needed.",who:["Judge (via ex parte order)","Law enforcement officer","Licensed physician, clinical psychologist, psychiatric nurse, LMHC, LMFT, or LCSW"],steps:["An authorized professional or officer determines Baker Act criteria are met.","Complete the BA-52a (Certificate of Professional Initiating Involuntary Examination).","Individual is transported to the nearest designated receiving facility.","Facility must examine within 72 hours.","If further treatment needed, a petition for involuntary placement is filed."],notes:"Florida's Baker Act is one of the most well-known statutes. <strong>LMHCs, LMFTs, and LCSWs CAN initiate</strong>. Minors have additional protections under the Act.",form:"BA-52a — Certificate of Professional Initiating Involuntary Examination",phone:"Florida Crisis: 988 or Abuse Hotline: 1-800-962-2873",extra:[{name:"BA-52b — Certificate of Law Enforcement Officer",desc:"Used when law enforcement initiates the Baker Act."},{name:"Marchman Act (Fla. Stat. § 397)",desc:"Separate statute for involuntary substance abuse assessment and treatment."}]},
+"Georgia":{name:"1013 (Emergency Involuntary Hold)",code:"O.C.G.A. § 37-3-41",criteria:"Person is mentally ill and presents a substantial risk of imminent harm to self or others, OR is so unable to care for own physical health and safety as to create an imminently life-endangering crisis.",duration:"Up to 48 hours (business hours) for evaluation; up to 5 additional days for court hearing if commitment sought.",who:["Licensed physician","Licensed psychologist","Licensed clinical social worker (LCSW)","Licensed professional counselor (LPC)","Advanced practice registered nurse (APRN)"],steps:["Authorized professional evaluates the individual and determines 1013 criteria are met.","Complete Form 1013 — the Emergency Receiving/Evaluation Certificate.","Document specific behaviors, statements, and observations (not just conclusions).","Arrange transport (ambulance or law enforcement) to a designated emergency receiving facility.","Receiving facility must evaluate within 48 hours.","If longer treatment is needed, a 1014 petition for court-ordered evaluation is filed."],notes:"<strong>Georgia LPCs CAN initiate a 1013</strong> — this changed in recent years and many clinicians are unaware. The form requires SPECIFIC BEHAVIORAL OBSERVATIONS, not diagnostic conclusions. A 1013 is for evaluation, not treatment — treatment requires the subsequent 1014 process. The 48-hour clock runs on business hours.",form:"Form 1013 — Emergency Receiving/Evaluation Certificate",phone:"Georgia Crisis & Access Line (GCAL): 1-800-715-4225",extra:[{name:"1014 — Petition for Court-Ordered Evaluation",desc:"Filed after 1013 if commitment sought. Requires court hearing."},{name:"1015 — Transportation Order",desc:"Authorizes law enforcement or EMS to transport the individual to a receiving facility."},{name:"2013 — Involuntary Hold for Substance Abuse",desc:"Separate process for substance abuse emergencies, similar structure to the 1013."}]},
+"Hawaii":{name:"Emergency Hospitalization (48-Hour Hold)",code:"Haw. Rev. Stat. § 334-59",criteria:"Person is mentally ill or substance abusing and is imminently dangerous to self or others.",duration:"48 hours; extended to 90 days with court order.",who:["Licensed physician","Police officer","Any person (via petition to family court)"],steps:["A physician or police officer determines emergency criteria are met.","Individual is transported to an approved facility.","A physician must examine within 48 hours.","If continued treatment needed, a petition is filed with the family court.","Court hearing held within the statutory period."],notes:"Hawaii uses the family court system for commitment proceedings, distinct from most states that use probate or general jurisdiction courts.",form:"Application for Emergency Hospitalization",phone:"Hawaii Crisis Line: 988 or 1-800-753-6879"},
+"Idaho":{name:"Emergency Involuntary Hold",code:"Idaho Code § 66-326",criteria:"Person is mentally ill and likely to injure self or others or is gravely disabled.",duration:"24 hours for emergency hold; commitment hearing within 7 days.",who:["Licensed physician","Designated examiner","Peace officer"],steps:["An authorized person determines emergency criteria are met.","Individual is taken to a facility for evaluation.","A designated examiner evaluates within 24 hours.","If continued treatment needed, a petition for commitment is filed.","Court hearing held within 7 days."],notes:"Idaho's 24-hour emergency hold is shorter than many states, requiring quick evaluation and decision-making.",form:"Certificate of Emergency Hold",phone:"Idaho Crisis: 988 or 208-334-0808"},
+"Illinois":{name:"Petition for Involuntary Admission",code:"405 ILCS 5/3-600 to 5/3-611",criteria:"Person is mentally ill and reasonably expected to inflict serious physical harm upon self or another in the near future, or is unable to provide for basic physical needs.",duration:"24-hour emergency detention; 5-day extended observation; commitment hearing within 5 days.",who:["Any person aged 18+ (via petition)","Peace officer","Physician certification"],steps:["Any adult can file a petition describing behavior that meets criteria.","A physician must examine and certify the need for emergency admission.","Individual is admitted to a mental health facility.","Within 24 hours, two physicians must examine and certify continued need.","If involuntary admission sought beyond 5 days, a court hearing is held."],notes:"Illinois is notable for allowing any person 18+ to petition. The process requires physician certification to confirm.",form:"Petition for Involuntary Admission / Physician's Certification",phone:"Illinois Crisis: 988 or CARES Line: 1-800-345-9049"},
+"Indiana":{name:"Immediate Detention (Emergency Detention)",code:"Ind. Code § 12-26-4",criteria:"Person is mentally ill and dangerous (substantial risk of physical harm to self or others) or is gravely disabled.",duration:"72 hours; commitment hearing within 72 hours of filing.",who:["Licensed physician","Any person (via application to court)","Law enforcement"],steps:["Application for emergency detention is filed.","A physician examines and certifies.","Individual transported to an approved facility.","Within 72 hours, a hearing is held on the commitment petition.","If commitment ordered, treatment for up to 90 days initially."],notes:"Indiana uses 'immediate detention' terminology. The 72-hour hearing window from filing keeps the judicial review process relatively quick.",form:"Application for Emergency Detention / Physician's Certificate",phone:"Indiana Crisis: 988 or 1-800-662-4357"},
+"Iowa":{name:"Emergency Hospitalization",code:"Iowa Code § 229.22",criteria:"Person is seriously mentally impaired and likely to physically injure self or others if not immediately detained.",duration:"48 hours; judicial hospitalization hearing within 5 days.",who:["Any interested person (via application)","Law enforcement","Physician"],steps:["An interested person files an application with the clerk of court.","A judge reviews and may issue an order for hospitalization.","Individual is taken to a facility for evaluation.","A physician examines within 48 hours.","A full commitment hearing is held within 5 days."],notes:"Iowa's process goes through the clerk of court and requires a judge's review even for emergency holds.",form:"Application for Emergency Hospitalization",phone:"Iowa Crisis: 988 or Foundation 2: 1-800-332-4224"},
+"Kansas":{name:"Emergency Observation and Treatment",code:"K.S.A. § 59-29c01 et seq.",criteria:"Person is mentally ill and presents a likelihood of causing harm to self or others.",duration:"72 hours for emergency observation; commitment hearing within the statutory period.",who:["Any adult (via petition)","Law enforcement","Licensed physician or psychologist"],steps:["A petition is filed with the district court.","The court may order a mental health evaluation.","If emergency criteria met, individual is transported to a facility.","Evaluation conducted within 72 hours.","If continued treatment needed, a commitment hearing is scheduled."],notes:"Kansas uses 'care and treatment' rather than 'commitment' terminology. The process is court-driven.",form:"Petition for Involuntary Commitment for Care and Treatment",phone:"Kansas Crisis: 988"},
+"Kentucky":{name:"72-Hour Involuntary Hospitalization",code:"KRS § 202A.028",criteria:"Person is mentally ill and presents a danger to self or others, or is unable to provide for basic personal needs.",duration:"72 hours for emergency detention; 14-day commitment with court order.",who:["Any qualified mental health professional","Peace officer (with QMHP certification)","Any interested person (via petition to court)"],steps:["A qualified mental health professional evaluates and certifies.","Individual is transported to a psychiatric facility.","Facility evaluates within 72 hours.","If further treatment needed, a petition is filed with district court.","Commitment hearing held within 14 days."],notes:"Kentucky requires a 'qualified mental health professional' (QMHP) for certification, which includes LPCs, LCSWs, and psychologists in addition to physicians.",form:"Certificate for Emergency Involuntary Hospitalization",phone:"Kentucky Crisis: 988"},
+"Louisiana":{name:"PEC / CEC (Physician's or Coroner's Emergency Certificate)",code:"La. R.S. § 28:53",criteria:"Person is mentally ill or has substance abuse issues and is in need of immediate treatment to prevent harm to self or others.",duration:"72 hours under PEC/CEC; judicial commitment hearing within 72 hours.",who:["Licensed physician (PEC)","Coroner (CEC)","Any interested person (via petition to coroner)"],steps:["A physician or coroner examines and certifies the individual meets criteria.","Complete the PEC or CEC form.","Individual is transported to a treatment facility.","Evaluation and treatment begin immediately.","If continued commitment needed, a judicial hearing is held within 72 hours."],notes:"Louisiana's unique coroner system gives the coroner authority to issue emergency certificates. LPCs cannot initiate directly — must go through physician or coroner.",form:"PEC (Physician's Emergency Certificate) or CEC (Coroner's Emergency Certificate)",phone:"Louisiana Crisis: 988 or 1-800-749-2673"},
+"Maine":{name:"Blue Paper (Emergency Involuntary Admission)",code:"34-B M.R.S. § 3863",criteria:"Person has a mental illness and poses a likelihood of serious harm to self or others.",duration:"18 hours for emergency admission; judicial commitment hearing within 14 days.",who:["Licensed physician or clinical professional","Law enforcement (with physician certification)","Any person (via application to district court)"],steps:["A physician or clinical professional certifies the need for emergency admission.","The 'Blue Paper' application is completed.","Individual is transported to a psychiatric facility.","Facility evaluates within 18 hours.","If commitment needed, a judicial hearing is scheduled within 14 days."],notes:"Maine's <strong>'Blue Paper'</strong> (named for the form color) has an 18-hour window — one of the shortest emergency hold periods in the country.",form:"Blue Paper — Application for Emergency Involuntary Admission",phone:"Maine Crisis: 988 or 1-888-568-1112"},
+"Maryland":{name:"Emergency Petition (EP)",code:"Md. Code, Health-General § 10-622 to 10-632",criteria:"Person has a mental disorder and presents a danger to self or others.",duration:"Up to 30 hours for initial evaluation; hearing within 10 days for involuntary admission.",who:["Any interested person (via EP to court)","Licensed health care professional","Peace officer"],steps:["Petitioner files an Emergency Petition with the court or a peace officer endorses.","Individual is taken to the nearest emergency facility.","Physician must examine within the EP period (up to 30 hours).","If commitment criteria met, a Clinical Certificate is completed.","Hearing before an administrative law judge within 10 days."],notes:"Maryland's EP can be filed by anyone. The 30-hour evaluation window is specific to Maryland. An administrative law judge (not a regular judge) conducts the hearing.",form:"Emergency Petition (EP) — filed with District Court",phone:"Maryland Crisis: 988 or 211 press 1"},
+"Massachusetts":{name:"Section 12 (Temporary Hospitalization)",code:"M.G.L. c. 123, § 12",criteria:"Person has a mental illness and failure to hospitalize would create a likelihood of serious harm by reason of mental illness.",duration:"72 hours for evaluation; conditional voluntary or court commitment follows.",who:["Licensed physician","Qualified psychiatric nurse mental health clinical specialist","Licensed psychologist (designated)","Police officer (for transport only)"],steps:["A physician or authorized clinician examines and determines Section 12 criteria are met.","Complete the Section 12 application form.","Individual is transported to a designated facility.","Facility evaluates during the 72-hour hold.","If continued treatment needed, a Section 7/8 commitment petition is filed."],notes:"Massachusetts' <strong>Section 12</strong> is widely referenced. Police can transport but cannot independently initiate — a clinical evaluation is required.",form:"Section 12 — Application for Temporary Hospitalization",phone:"Massachusetts Crisis: 988 or 877-382-1609"},
+"Michigan":{name:"Petition for Mental Health Treatment",code:"MCL § 330.1427 to 330.1434",criteria:"Person has a mental illness and can reasonably be expected to seriously physically injure self or others in the near future, or is unable to provide for basic necessities of life.",duration:"24 hours for emergency admission; full hearing within 7 days.",who:["Any individual (via petition to court)","Peace officer","Licensed physician or psychiatrist"],steps:["A petition is filed with probate court.","The court may issue an order for emergency examination.","Individual is taken to a psychiatric facility.","A physician examines within 24 hours.","A full probable cause hearing is held within 7 days."],notes:"Michigan's process is court-driven through probate court. The 24-hour emergency window is short, but the 7-day hearing provides judicial oversight.",form:"Petition for Mental Health Treatment",phone:"Michigan Crisis: 988"},
+"Minnesota":{name:"Emergency Hold (72-Hour Hold)",code:"Minn. Stat. § 253B.05",criteria:"Person is mentally ill, developmentally disabled, or chemically dependent and is in danger of harming self or others.",duration:"72 hours; judicial commitment hearing within 14 days.",who:["Licensed physician","Licensed psychologist","Licensed social worker","Police officer"],steps:["An authorized professional or peace officer determines emergency criteria are met.","A written statement documenting the grounds is completed.","Individual is transported to a treatment facility.","Facility evaluates during the 72-hour hold.","If commitment sought, a petition is filed and hearing held within 14 days."],notes:"Minnesota's statute covers mental illness, developmental disability, AND chemical dependency — broader than many states. LCSWs can initiate.",form:"Statement of Emergency Hold / Physician's Certificate",phone:"Minnesota Crisis: 988"},
+"Mississippi":{name:"Emergency Commitment",code:"Miss. Code § 41-21-67",criteria:"Person is mentally ill and poses a substantial likelihood of physical harm to self or others, or is unable to provide for basic physical needs.",duration:"72 hours for emergency detention; commitment hearing within 7 days.",who:["Any interested person (via affidavit to chancellor)","Law enforcement","Licensed physician"],steps:["An interested person files an affidavit with the chancery court.","The chancellor may issue an order for emergency detention.","Individual is transported to a facility.","A physician examines and certifies.","A commitment hearing is held within 7 days."],notes:"Mississippi uses the <strong>chancery court (chancellor)</strong> for commitment proceedings — unique to Mississippi's judicial structure.",form:"Affidavit for Emergency Commitment (filed with Chancery Court)",phone:"Mississippi Crisis: 988"},
+"Missouri":{name:"96-Hour Emergency Detention",code:"Mo. Rev. Stat. § 632.300 to 632.325",criteria:"Person has a mental disorder and presents a likelihood of serious physical harm to self or others.",duration:"96 hours; commitment hearing within the statutory period.",who:["Licensed physician or health officer","Peace officer (with physician's certificate)","Any person (via application to court)"],steps:["An authorized person determines emergency criteria are met.","A physician's certificate or court application is completed.","Individual is transported to a mental health facility.","Facility evaluates during the 96-hour hold.","If commitment needed, a judicial hearing is scheduled."],notes:"Missouri's <strong>96-hour hold</strong> is longer than the typical 72 hours in most states, providing more evaluation time.",form:"Application for 96-Hour Emergency Detention / Physician's Certificate",phone:"Missouri Crisis: 988"},
+"Montana":{name:"Emergency Detention",code:"Mont. Code § 53-21-129",criteria:"Person has a mental disorder and poses an imminent threat of self-inflicted injury or injury to others.",duration:"Up to 5 days; commitment hearing within 5 days.",who:["Licensed physician or professional person","Peace officer","County attorney (via petition)"],steps:["An authorized person or peace officer determines emergency criteria are met.","Individual is transported to a facility.","A professional person evaluates.","If continued treatment needed, the county attorney files a commitment petition.","A hearing is held within 5 days."],notes:"Montana involves the county attorney in the commitment petition process, adding a layer of legal oversight.",form:"Emergency Detention Application",phone:"Montana Crisis: 988"},
+"Nebraska":{name:"Emergency Protective Custody (EPC)",code:"Neb. Rev. Stat. § 71-919 to 71-921",criteria:"Person is mentally ill and dangerous — presents a substantial risk of serious harm to self or others.",duration:"36 hours for EPC; commitment hearing within the statutory period.",who:["Law enforcement officer","Any person (via petition to county attorney)","Licensed physician"],steps:["A law enforcement officer or physician determines emergency criteria are met.","Individual is placed in emergency protective custody.","A mental health professional evaluates within 36 hours.","If further treatment needed, the county attorney files a petition.","A commitment hearing is scheduled."],notes:"Nebraska's <strong>36-hour EPC window</strong> is relatively short. The county attorney plays a key role in filing commitment petitions.",form:"Emergency Protective Custody Application",phone:"Nebraska Crisis: 988"},
+"Nevada":{name:"Legal 2000 (Emergency Admission / 72-Hour Hold)",code:"NRS § 433A.160",criteria:"Person has a mental illness and is a person in a mental health crisis — dangerous to self or others or unable to provide for basic needs.",duration:"72 hours; judicial commitment hearing if continued treatment needed.",who:["Licensed physician","Licensed psychologist","Licensed clinical social worker","Physician assistant","Advanced practice registered nurse","Police officer (in certain circumstances)"],steps:["An authorized professional determines Legal 2000 criteria are met.","Complete the Legal 2000 form documenting specific observations.","Individual is transported to a designated mental health facility.","Facility evaluates during the 72-hour hold.","If further treatment needed, a petition for involuntary admission is filed."],notes:"Nevada's <strong>'Legal 2000'</strong> is named for the NRS section. Broad range of authorized professionals including LCSWs and APRNs.",form:"Legal 2000 — Application for Emergency Admission",phone:"Nevada Crisis: 988"},
+"New Hampshire":{name:"Involuntary Emergency Admission (IEA)",code:"N.H. Rev. Stat. § 135-C:27 to 135-C:34",criteria:"Person is in such a mental condition as a result of mental illness as to create a potentially serious likelihood of danger to self or others.",duration:"3-day hold; probable cause hearing within 3 days.",who:["Licensed physician or APRN","Any person (via petition to probate court)","Police officer"],steps:["A physician or APRN certifies the need for emergency admission.","Individual is transported to a designated receiving facility.","Facility evaluates during the 3-day hold.","A probable cause hearing is held within 3 days.","If commitment ordered, treatment may continue up to 2 years with review."],notes:"New Hampshire's IEA process is relatively streamlined. Probate court handles proceedings.",form:"Certificate for Involuntary Emergency Admission",phone:"New Hampshire Crisis: 988 or 1-800-852-3388"},
+"New Jersey":{name:"Emergency Screening / Temporary Commitment",code:"N.J.S.A. § 30:4-27.1 to 30:4-27.24",criteria:"Person is mentally ill and dangerous to self or others or property, or is in need of involuntary commitment.",duration:"72-hour screening certificate; up to 20 days temporary commitment; full hearing follows.",who:["Screening service psychiatrist","Police officer","Any interested person (via screening service referral)"],steps:["Individual is referred to or brought to a designated screening center.","A screening psychiatrist evaluates within the screening period.","If criteria met, a screening certificate is completed.","Individual is admitted to a short-term care facility.","A temporary commitment hearing is held within 20 days."],notes:"New Jersey routes through <strong>designated screening centers</strong> — not every ER qualifies. The screening service model is distinctive.",form:"Screening Certificate / Clinical Certificate for Temporary Commitment",phone:"New Jersey Crisis: 988 or NJ MentalHealthCares: 1-866-202-4357"},
+"New Mexico":{name:"Emergency Involuntary Commitment",code:"N.M. Stat. § 43-1-10 to 43-1-15",criteria:"Person has a mental disorder, is likely to benefit from treatment, and is in danger of causing harm to self or others.",duration:"7-day commitment; 30-day extended commitment with court order.",who:["Licensed physician","Licensed psychologist","Peace officer","Any person (via application to district court)"],steps:["An authorized person evaluates and certifies.","Individual is transported to a treatment facility.","Facility evaluates during the 7-day hold.","If continued treatment needed, a petition for extended commitment is filed.","Court hearing scheduled within statutory period."],notes:"New Mexico's <strong>7-day initial hold</strong> is longer than most states, providing a wider evaluation window.",form:"Application for Emergency Involuntary Commitment",phone:"New Mexico Crisis: 988 or 1-855-662-7474"},
+"New York":{name:"9.39 Hold (Emergency Involuntary Admission)",code:"N.Y. Mental Hyg. Law § 9.39",criteria:"Person has a mental illness and poses a substantial risk of physical harm to self or others as manifested by threats/attempts at suicide, self-harm, or homicidal behavior.",duration:"48 hours; extendable to 15 days; court order for further commitment.",who:["Director of a hospital (or designee — typically attending psychiatrist)","Qualified psychiatrist"],steps:["Individual presents to or is brought to a hospital ER.","Attending psychiatrist evaluates and determines 9.39 criteria are met.","Director or designee authorizes involuntary retention for up to 48 hours.","Two examining physicians confirm the need for retention.","If further hospitalization needed, a 9.31 court order is sought."],notes:"New York's 9.39 is initiated <strong>AT the hospital</strong> — community clinicians cannot write a hold order. Call 911 or mobile crisis teams to transport. <strong>Kendra's Law</strong> provides court-ordered outpatient treatment (AOT).",form:"9.39 Admission Form (completed at hospital by psychiatrist)",phone:"NYC Well: 1-888-692-9355 / NYS Crisis: 988",extra:[{name:"9.41 — Emergency Admission for Immediate Observation",desc:"For admission by police, campus police, or ambulance when individual poses a risk."},{name:"Kendra's Law (AOT)",desc:"Court-ordered assisted outpatient treatment for individuals with a history of non-compliance."}]},
+"North Carolina":{name:"Involuntary Commitment (IVC)",code:"N.C.G.S. § 122C-261 to 122C-277",criteria:"Person is mentally ill and dangerous to self or others, or needs treatment to prevent deterioration that would predictably result in dangerousness.",duration:"24-hour custody; hearing within 10 days.",who:["Any individual (via petition to magistrate)","Physician or eligible psychologist","Law enforcement"],steps:["Petitioner appears before a magistrate and describes behavior meeting IVC criteria.","Magistrate issues custody order if probable cause found.","Individual is taken to a 24-hour facility for evaluation.","Physician or psychologist examines within 24 hours.","District court hearing scheduled within 10 days."],notes:"NC uses a <strong>magistrate-based system</strong> — petitioner must go to a magistrate (available 24/7) in person. Different from most states.",form:"Petition and Custody Order for Involuntary Commitment (magistrate forms)",phone:"NC HopeLine: 1-855-587-3463 or 988"},
+"North Dakota":{name:"Emergency Admission",code:"N.D. Cent. Code § 25-03.1-25",criteria:"Person is mentally ill and there is a serious risk of harm to self or others or is gravely disabled.",duration:"72 hours; commitment hearing within 7 days.",who:["Licensed physician","Qualified mental health professional","Law enforcement","Any interested person"],steps:["An authorized person determines emergency criteria are met.","Application for emergency admission is filed.","Individual is transported to a treatment facility.","Evaluation occurs within 72 hours.","If commitment needed, hearing within 7 days."],notes:"North Dakota follows a standard 72-hour emergency hold model with judicial review.",form:"Application for Emergency Admission",phone:"North Dakota Crisis: 988 or 211"},
+"Ohio":{name:"Pink Slip (Emergency Hospitalization)",code:"Ohio Rev. Code § 5122.10",criteria:"Person has a mental illness and presents a substantial risk of physical harm to self or others.",duration:"72 hours; probable cause hearing; judicial commitment up to 90 days.",who:["Licensed physician","Licensed clinical psychologist","Health officer","Parole officer","Police officer","Sheriff"],steps:["An authorized person completes the Pink Slip application documenting specific behaviors.","Individual is transported to a hospital.","Psychiatrist evaluates and determines whether to continue the hold.","Within 72 hours, a probable cause hearing is held.","For longer commitment, a full judicial hearing is scheduled."],notes:"Ohio's <strong>'Pink Slip'</strong> is literally printed on pink paper. Multiple professional categories can initiate.",form:"Application for Emergency Hospitalization ('Pink Slip')",phone:"Ohio Crisis: 988 or text 4HOPE to 741741"},
+"Oklahoma":{name:"Emergency Detention",code:"43A Okl. St. § 5-207",criteria:"Person is mentally ill and presents an imminent danger of harm to self or others.",duration:"72 hours; commitment hearing within statutory period.",who:["Licensed physician","Licensed mental health professional","Peace officer","Any person (via petition to court)"],steps:["An authorized person or peace officer determines emergency criteria are met.","Individual is transported to a facility.","A physician evaluates within the emergency period.","If continued treatment needed, a petition for commitment is filed.","A judicial hearing is scheduled."],notes:"Oklahoma allows a broad range of mental health professionals to initiate emergency detention.",form:"Application for Emergency Detention",phone:"Oklahoma Crisis: 988"},
+"Oregon":{name:"Emergency Commitment (Police Officer Hold / Director's Hold)",code:"ORS § 426.228 to 426.232",criteria:"Person is mentally ill and is a danger to self or others, or is unable to provide for basic personal needs.",duration:"5-day hold for evaluation; commitment hearing within 5 judicial days.",who:["Licensed physician","Community mental health program director","Police officer","Any person (via petition to court)"],steps:["An authorized person or officer determines emergency criteria are met.","Individual is transported to an approved facility.","A physician examines within 24 hours of admission.","The community mental health program reviews.","If commitment needed, a hearing within 5 judicial days."],notes:"Oregon's 5-day <strong>judicial-day</strong> hold can effectively be longer than 5 calendar days depending on weekends and holidays.",form:"Notice of Mental Illness (NMI) / Application for Emergency Commitment",phone:"Oregon Crisis: 988"},
+"Pennsylvania":{name:"302 (Involuntary Emergency Examination)",code:"50 P.S. § 7302",criteria:"Person is severely mentally disabled and in need of immediate treatment. Poses a clear and present danger of harm to self or others within the past 30 days.",duration:"Up to 120 hours; followed by 303 (extended treatment up to 20 days).",who:["Physician","Police officer","Any responsible party (via petition to county administrator)"],steps:["A physician examines and determines 302 criteria are met, OR a warrant is issued by county mental health delegate.","Individual is transported to an approved facility.","An examination must occur within 2 hours of arrival.","The 120-hour period begins from time of arrival.","If further treatment needed, a 303 petition is filed."],notes:"Pennsylvania's <strong>302</strong> is widely referenced. The 120-hour (5-day) window is longer than many states. The <strong>2-hour exam deadline upon arrival</strong> is strict.",form:"302 Petition — Application for Involuntary Emergency Examination",phone:"PA Crisis: 988 or county-specific numbers",extra:[{name:"303 — Extended Involuntary Treatment (up to 20 days)",desc:"Filed when the 302 period is insufficient. Requires court hearing."},{name:"304 — Court-Ordered Involuntary Treatment (up to 90 days)",desc:"For individuals requiring longer-term involuntary treatment."}]},
+"Rhode Island":{name:"Emergency Certification",code:"R.I. Gen. Laws § 40.1-5-7",criteria:"Person has a mental disability and needs immediate care and treatment and poses a likelihood of serious harm to self or others.",duration:"10 days for emergency certification; court commitment if longer treatment needed.",who:["Licensed physician","Licensed psychologist","Police officer (for transport)"],steps:["A physician or psychologist certifies the need for emergency admission.","Individual is transported to a facility.","Facility evaluates and treats during the 10-day period.","If further treatment needed, a court commitment petition is filed.","Court hearing scheduled within statutory period."],notes:"Rhode Island's <strong>10-day emergency certification</strong> is notably longer than most states, providing extended stabilization time.",form:"Emergency Certification for Involuntary Admission",phone:"Rhode Island Crisis: 988 or 1-401-414-5465"},
+"South Carolina":{name:"Emergency Admission",code:"S.C. Code § 44-17-410 to 44-17-440",criteria:"Person has a mental illness and is likely to cause serious harm to self or others if not immediately hospitalized.",duration:"72 hours; judicial commitment hearing within 15 days.",who:["Any person (via application to probate court)","Licensed physician","Law enforcement"],steps:["An application is filed with the probate court or a physician certifies.","A physician examines and certifies.","Individual is transported to a designated facility.","Evaluation during the 72-hour hold.","If commitment needed, hearing within 15 days."],notes:"South Carolina uses the probate court system for commitment proceedings.",form:"Application for Emergency Admission / Physician's Certificate",phone:"South Carolina Crisis: 988"},
+"South Dakota":{name:"Emergency Hold",code:"S.D. Codified Laws § 27A-10-1 to 27A-10-5",criteria:"Person has a mental illness and poses a danger to self or others.",duration:"24 hours initial; 72 hours extended; commitment hearing within statutory period.",who:["Licensed physician","Licensed psychologist","Law enforcement","Any person (via petition to court)"],steps:["An authorized person determines emergency criteria are met.","Individual is placed on a 24-hour hold.","If continued evaluation needed, hold may extend to 72 hours.","A physician or psychologist evaluates.","If commitment needed, a court hearing is scheduled."],notes:"South Dakota's two-stage hold (24 hours then up to 72 hours) provides a graduated approach.",form:"Application for Emergency Hold",phone:"South Dakota Crisis: 988"},
+"Tennessee":{name:"Certificate of Need (Emergency Involuntary Commitment)",code:"Tenn. Code § 33-6-401 to 33-6-427",criteria:"Person has a mental illness and poses an immediate substantial likelihood of serious harm to self or others.",duration:"Up to 7 days; commitment hearing within 5 business days.",who:["Licensed physician","Licensed psychologist","Designated professional (LCSW, LPC in some circumstances)","Law enforcement with physician certification"],steps:["A physician or psychologist evaluates and completes a Certificate of Need.","The certificate documents specific behaviors demonstrating imminent danger.","Individual is transported to a hospital or treatment resource.","Facility evaluates within 24 hours of admission.","Court hearing within 5 business days."],notes:"Tennessee's <strong>'Certificate of Need'</strong> terminology is unique. Behavioral documentation must be specific — vague statements of 'danger' are insufficient.",form:"Certificate of Need for Emergency Involuntary Commitment",phone:"Tennessee Crisis: 988 or 1-855-274-7471"},
+"Texas":{name:"Emergency Detention (ODWP / Peace Officer Apprehension)",code:"Tex. Health & Safety Code § 573.001–573.025",criteria:"Person is mentally ill and presents a substantial risk of serious harm to self or others unless immediately restrained.",duration:"48 hours; 72 hours from filing for temporary commitment hearing.",who:["Peace officer (without warrant based on personal observation)","Any adult (via application to judge or magistrate)","Physician (via emergency detention certificate)"],steps:["A peace officer may apprehend without a warrant if they witness behavior meeting criteria.","Alternatively, any adult may file a written application with a judge.","Individual is transported to a mental health facility or ER.","A physician must examine within 12 hours of arrival.","If commitment recommended, an application for court-ordered services is filed."],notes:"Texas allows peace officer apprehension <strong>without a warrant (ODWP)</strong>. The 12-hour physician exam deadline is strict. Texas also has an outpatient commitment option.",form:"Application for Emergency Detention / Notification of Emergency Detention",phone:"Texas Crisis: 988 or MHMR Crisis (varies by county)"},
+"Utah":{name:"Emergency Involuntary Commitment",code:"Utah Code § 62A-15-629",criteria:"Person has a mental illness and poses a substantial danger of physical injury to self or others, or lacks capacity to provide basic necessities.",duration:"24 hours; commitment hearing within 24 hours of filing.",who:["Licensed physician or mental health officer","Peace officer","Any responsible person (via written application)"],steps:["An authorized person determines emergency criteria are met.","A written application is filed.","Individual is transported to a designated facility.","A physician evaluates within 24 hours.","If continued treatment needed, a commitment hearing is held."],notes:"Utah's 24-hour evaluation window and quick hearing schedule make it one of the faster processes in the country.",form:"Application for Involuntary Emergency Commitment",phone:"Utah Crisis: 988"},
+"Vermont":{name:"Emergency Examination",code:"18 V.S.A. § 7504 to 7510",criteria:"Person is mentally ill and poses a danger of harm to self or others.",duration:"72 hours; commitment hearing within 20 days.",who:["Licensed physician","Any interested person (via application to court)","Law enforcement"],steps:["A physician certifies or a court order is obtained.","Individual is transported to a designated hospital.","Evaluation during the 72-hour hold.","If commitment needed, a petition is filed.","Hearing within 20 days."],notes:"Vermont's <strong>20-day hearing window</strong> is one of the longest pre-commitment periods, reflecting the state's emphasis on community alternatives.",form:"Application for Emergency Examination / Physician's Certificate",phone:"Vermont Crisis: 988"},
+"Virginia":{name:"Temporary Detention Order (TDO)",code:"Va. Code § 37.2-808 to 37.2-821",criteria:"Person has a mental illness and presents an imminent danger to self or others, or is substantially unable to care for self.",duration:"Up to 72 hours (TDO); commitment hearing within that time.",who:["Any responsible person (via petition to magistrate)","Law enforcement (ECO)","Community services board (CSB) evaluator"],steps:["If immediate danger, law enforcement issues an Emergency Custody Order (ECO) — up to 8 hours.","A CSB evaluator conducts an evaluation.","If TDO criteria met, evaluator recommends a TDO to a magistrate.","Magistrate issues TDO; individual transported to a facility.","Commitment hearing within 72 hours."],notes:"Virginia's system is <strong>two-stage: ECO (8 hours) → TDO (72 hours)</strong>. The CSB evaluation is mandatory. Finding a bed is a significant practical challenge.",form:"ECO / TDO — magistrate forms",phone:"Virginia Crisis: 988 or local CSB number"},
+"Washington":{name:"ITA Detention (Involuntary Treatment Act)",code:"RCW 71.05",criteria:"Person has a mental disorder and presents an imminent likelihood of serious harm to self or others, or is gravely disabled.",duration:"72-hour evaluation; 14-day commitment; 90-day; 180-day (escalating).",who:["Designated crisis responder (DCR)","Peace officer (may transport, but DCR must authorize)"],steps:["A designated crisis responder (DCR) evaluates.","If criteria met, DCR completes detention paperwork.","Individual taken to an evaluation and treatment (E&T) facility.","Facility evaluates during 72-hour hold.","If further commitment needed, petition filed for 14-day commitment."],notes:"Washington requires a <strong>Designated Crisis Responder (DCR)</strong> — not just any mental health professional. DCRs are specifically trained and county-appointed.",form:"ITA Detention Form (completed by DCR)",phone:"Washington Crisis: 988 or Crisis Connections: 1-866-427-4747"},
+"West Virginia":{name:"Emergency Involuntary Hospitalization",code:"W. Va. Code § 27-5-2",criteria:"Person is mentally ill and likely to cause serious harm to self or others if not immediately restrained.",duration:"48 hours; probable cause hearing within 48 hours.",who:["Licensed physician","Psychologist","Any adult (via petition to mental hygiene commissioner or circuit court)"],steps:["A physician or psychologist certifies the need.","Individual is transported to a mental health facility.","Evaluation during the 48-hour hold.","Mental hygiene commissioner conducts probable cause hearing within 48 hours.","If commitment ordered, treatment with periodic review."],notes:"West Virginia uses <strong>mental hygiene commissioners</strong> for hearings — a specialized judicial role.",form:"Certificate for Emergency Involuntary Hospitalization",phone:"West Virginia Crisis: 988"},
+"Wisconsin":{name:"Emergency Detention (Three-Party Petition)",code:"Wis. Stat. § 51.15",criteria:"Person is mentally ill, drug dependent, or developmentally disabled and evidences dangerousness to self or others.",duration:"72 hours; probable cause hearing within 72 hours; commitment hearing within 14 days.",who:["Three adults (via three-party petition to court)","Law enforcement officer","Licensed physician or psychologist"],steps:["Three adults may file a petition based on observed behavior, OR a law enforcement officer may detain.","Individual is transported to an approved facility.","A physician evaluates within 24 hours.","Probable cause hearing within 72 hours.","If commitment sought, full hearing within 14 days."],notes:"Wisconsin's unique <strong>'three-party petition'</strong> allows three adult citizens to initiate emergency detention — no professional or law enforcement required.",form:"Three-Party Petition / Emergency Detention Form",phone:"Wisconsin Crisis: 988"},
+"Wyoming":{name:"Emergency Detention",code:"Wyo. Stat. § 25-10-109 to 25-10-110",criteria:"Person is mentally ill and presents an imminent threat of danger to self or others.",duration:"72 hours; commitment hearing within statutory period.",who:["Licensed physician","Licensed psychologist","Peace officer","Any person (via application to court)"],steps:["An authorized person determines emergency criteria are met.","An application for emergency detention is filed.","Individual is transported to a treatment facility.","Evaluation during the 72-hour hold.","If commitment needed, a judicial hearing is scheduled."],notes:"Wyoming follows a standard 72-hour emergency hold model with judicial oversight.",form:"Application for Emergency Detention",phone:"Wyoming Crisis: 988"}
+};
+
+const QT=[
+{s:"Georgia",l:"GA (1013)"},{s:"Florida",l:"FL (Baker Act)"},{s:"California",l:"CA (5150)"},
+{s:"New York",l:"NY (9.39)"},{s:"Pennsylvania",l:"PA (302)"},{s:"Colorado",l:"CO (M-1)"},
+{s:"Texas",l:"TX (Emergency Det.)"},{s:"Ohio",l:"OH (Pink Slip)"},{s:"Virginia",l:"VA (TDO)"},
+{s:"Massachusetts",l:"MA (Section 12)"},{s:"Nevada",l:"NV (Legal 2000)"}
+];
+
+let cur="Georgia";
+function init(){
+  const sel=document.getElementById("stateSelect");
+  const ns=Object.keys(S).sort();
+  ns.forEach(s=>{const o=document.createElement("option");o.value=s;o.textContent=s;sel.appendChild(o)});
+  sel.value=cur;
+  const tEl=document.getElementById("quickTags");
+  QT.forEach(t=>{const b=document.createElement("button");b.className="quick-tag";b.textContent=t.l;b.dataset.state=t.s;b.onclick=()=>selectState(t.s);tEl.appendChild(b)});
+  document.getElementById("stateCount").textContent=ns.length;
+  renderState(cur);
+}
+
+function selectState(n){if(!S[n])return;cur=n;document.getElementById("stateSelect").value=n;document.getElementById("searchInput").value="";uqt();renderState(n)}
+function uqt(){document.querySelectorAll(".quick-tag").forEach(b=>b.classList.toggle("active",b.dataset.state===cur))}
+function filterStates(){
+  const q=document.getElementById("searchInput").value.toLowerCase().trim();
+  if(!q){document.getElementById("searchFeedback")&&(document.getElementById("searchFeedback").style.display="none");return}
+  const m=Object.keys(S).find(s=>{const d=S[s];return s.toLowerCase().includes(q)||d.name.toLowerCase().includes(q)||d.code.toLowerCase().includes(q)||(d.form&&d.form.toLowerCase().includes(q))});
+  if(m){selectState(m);if(document.getElementById("searchFeedback"))document.getElementById("searchFeedback").style.display="none"}
+  else{let fb=document.getElementById("searchFeedback");if(!fb){fb=document.createElement("div");fb.id="searchFeedback";fb.style.cssText="font-size:12px;color:#D4A855;margin-top:8px;padding:0 4px;";document.querySelector(".selector-row").after(fb)}fb.style.display="block";fb.textContent='No match for "'+q+'" — try a state name, statute number, or hold name (e.g. "Baker Act", "5150", "302")'}
+}
+function tog(id){const el=document.getElementById(id);const b=el.previousElementSibling;if(el.style.display==="none"){el.style.display="block";b.classList.add("open")}else{el.style.display="none";b.classList.remove("open")}}
+
+function renderState(n){
+  const d=S[n];if(!d){document.getElementById("stateDisplay").innerHTML=`<div class="not-covered"><h3>Not Found</h3><p>Select a state from above.</p></div>`;return}
+  uqt();
+  const sid=n.replace(/\s/g,'');
+  const st=d.steps.map((s,i)=>`<div class="step-item"><div class="step-num">${i+1}</div><div class="step-text">${s}</div></div>`).join("");
+  const pl=d.who.map(w=>`<span class="pill">${w}</span>`).join("");
+  let ex="";
+  if(d.extra&&d.extra.length){
+    const fi=d.extra.map(f=>`<div class="addl-form"><div class="addl-form-name">${f.name}</div><div class="addl-form-desc">${f.desc}</div></div>`).join("");
+    ex=`<div class="card-section"><button class="collapsible-btn" onclick="tog('ex-${sid}')"><span class="section-label label-gold">Additional Forms (${d.extra.length})</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></button><div id="ex-${sid}" style="display:none;margin-top:12px">${fi}</div></div>`}
+  document.getElementById("stateDisplay").innerHTML=`
+  <div class="state-card">
+    <div class="card-header"><div class="card-header-state">${n}</div><div class="card-header-name">${d.name}</div><div class="card-header-code">${d.code}</div></div>
+    <div class="card-body">
+      <div class="phone-bar"><svg width="18" height="18" viewBox="0 0 24 24" fill="#8BC09A" stroke="none"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.88.36 1.76.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c1.05.34 1.93.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>${d.phone}</div>
+
+      <!-- WIZARD LAUNCHER -->
+      <div class="wizard-launcher">
+        <button class="wizard-btn" onclick="openWizard('${n.replace(/'/g,"\\'")}')">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          Guided Form Preparation — Walk Me Through It
+        </button>
+      </div>
+
+      <div id="wizardMount-${sid}"></div>
+
+      <div class="card-section"><div class="section-label label-burgundy">Legal Criteria</div><p class="section-text">${d.criteria}</p></div>
+      <div class="duration-row"><div class="duration-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div><div><div class="duration-label">Duration</div><div class="duration-value">${d.duration}</div></div></div>
+      <div class="card-section"><div class="section-label label-navy">Who Can Initiate</div><div class="pill-row">${pl}</div></div>
+      <div class="card-section"><button class="collapsible-btn open" onclick="tog('st-${sid}')"><span class="section-label label-burgundy">Step-by-Step Process</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--burgundy)" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></button><div id="st-${sid}" class="steps-list">${st}</div></div>
+      <div class="card-section"><div class="section-label label-green">Required Form</div><div class="form-box">${d.form}</div></div>
+      ${ex}
+      <div class="card-section"><div class="section-label label-burgundy">Key Clinical Notes</div><div class="key-notes-box">${d.notes}</div></div>
+    </div>
+  </div>`;
+}
+
+// ═══════════════════════════════════════════
+// GUIDED FORM WIZARD
+// ═══════════════════════════════════════════
+const WIZ_STEPS = ["Clinician","Client","Observations","Risk & Criteria","Summary"];
+let wizData = {};
+let wizStep = 0;
+let wizState = "";
+
+function openWizard(stateName) {
+  wizState = stateName;
+  wizStep = 0;
+  wizData = {
+    clinName:"", clinCreds:"", clinLicense:"", clinPhone:"",
+    cliInitials:"", cliDOB:"", cliGender:"", cliLocation:"",
+    obsDate:"", obsTime:"", obsBehaviors:"", obsStatements:"", obsMood:"", obsAppearance:"",
+    riskType:"", riskSpecific:"", riskImminence:"", priorAttempts:"",
+    meansAccess:"", voluntaryOffered:"", interventionsAttempted:"", collateralContacts:"",
+    facilityName:"", transportMethod:""
+  };
+  // Prefill date/time
+  const now = new Date();
+  wizData.obsDate = now.toISOString().split('T')[0];
+  wizData.obsTime = now.toTimeString().slice(0,5);
+  renderWizard();
+}
+
+function closeWizard() {
+  const sid = wizState.replace(/\s/g,'');
+  const mount = document.getElementById('wizardMount-'+sid);
+  if(mount) mount.innerHTML = '';
+}
+
+function renderWizard() {
+  const sid = wizState.replace(/\s/g,'');
+  const mount = document.getElementById('wizardMount-'+sid);
+  if(!mount) return;
+  const d = S[wizState];
+
+  // Progress bar
+  const prog = WIZ_STEPS.map((s,i) => {
+    let cls = '';
+    if(i < wizStep) cls = 'completed';
+    else if(i === wizStep) cls = 'active';
+    return `<div class="wizard-progress-step ${cls}" onclick="${i<=wizStep?'wizStep='+i+';renderWizard()':''}">${s}</div>`;
+  }).join('');
+
+  let body = '';
+  if(wizStep === 0) {
+    body = `
+      <div class="wizard-step-title">Your Information</div>
+      <div class="wizard-step-desc">As the initiating clinician, your credentials will appear on the form. This information stays in your browser — nothing is transmitted or stored.</div>
+      <div class="wiz-row">
+        <div class="wiz-field"><label class="wiz-label">Full Name</label><input class="wiz-input" value="${esc(wizData.clinName)}" oninput="wizData.clinName=this.value" placeholder="e.g. Jane Smith"></div>
+        <div class="wiz-field"><label class="wiz-label">Credentials</label><input class="wiz-input" value="${esc(wizData.clinCreds)}" oninput="wizData.clinCreds=this.value" placeholder="e.g. LPC, NCC"></div>
+      </div>
+      <div class="wiz-row">
+        <div class="wiz-field"><label class="wiz-label">License Number</label><input class="wiz-input" value="${esc(wizData.clinLicense)}" oninput="wizData.clinLicense=this.value" placeholder="e.g. LPC009587"></div>
+        <div class="wiz-field"><label class="wiz-label">Phone</label><input class="wiz-input" value="${esc(wizData.clinPhone)}" oninput="wizData.clinPhone=this.value" placeholder="e.g. (404) 555-0123"></div>
+      </div>
+      <div class="wiz-prompt-box">
+        <div class="wiz-prompt-label">Why This Matters</div>
+        <div class="wiz-prompt-text">Your license type determines whether you can legally initiate a ${d.name.split('(')[0].trim()} in ${wizState}. Authorized initiators include: ${d.who.join(', ')}.</div>
+      </div>`;
+  } else if(wizStep === 1) {
+    body = `
+      <div class="wizard-step-title">Client Information</div>
+      <div class="wizard-step-desc">Use initials only — no full names. This protects PHI while you prepare the form.</div>
+      <div class="wiz-row">
+        <div class="wiz-field"><label class="wiz-label">Client Initials</label><input class="wiz-input" value="${esc(wizData.cliInitials)}" oninput="wizData.cliInitials=this.value" placeholder="e.g. J.D."></div>
+        <div class="wiz-field"><label class="wiz-label">Date of Birth</label><input type="date" class="wiz-input" value="${esc(wizData.cliDOB)}" oninput="wizData.cliDOB=this.value"></div>
+      </div>
+      <div class="wiz-row">
+        <div class="wiz-field"><label class="wiz-label">Gender</label>
+          <div class="wiz-radio-group">
+            ${['Male','Female','Non-binary','Other'].map(g=>`<button class="wiz-radio ${wizData.cliGender===g?'selected':''}" onclick="wizData.cliGender='${g}';renderWizard()">${g}</button>`).join('')}
+          </div>
+        </div>
+      </div>
+      <div class="wiz-field"><label class="wiz-label">Current Location</label>
+        <div class="wiz-hint">Where is the client right now? (your office, their home, ER, etc.)</div>
+        <input class="wiz-input" value="${esc(wizData.cliLocation)}" oninput="wizData.cliLocation=this.value" placeholder="e.g. Clinician's office at 123 Peachtree St, Atlanta, GA">
+      </div>`;
+  } else if(wizStep === 2) {
+    body = `
+      <div class="wizard-step-title">Behavioral Observations</div>
+      <div class="wizard-step-desc">Document exactly what you <strong style="color:#D4A855">saw, heard, and observed</strong> — not your conclusions. The form requires specific behavioral evidence.</div>
+      <div class="wiz-row">
+        <div class="wiz-field"><label class="wiz-label">Date of Observation</label><input type="date" class="wiz-input" value="${esc(wizData.obsDate)}" oninput="wizData.obsDate=this.value"></div>
+        <div class="wiz-field"><label class="wiz-label">Time</label><input type="time" class="wiz-input" value="${esc(wizData.obsTime)}" oninput="wizData.obsTime=this.value"></div>
+      </div>
+
+      <div class="wiz-prompt-box">
+        <div class="wiz-prompt-label">Prompt: What Did the Client Say?</div>
+        <div class="wiz-prompt-text">Write direct quotes when possible. Examples: "I want to die," "I have a plan to hurt myself," "I'm going to kill [name]," "I can't take care of myself anymore." Include exact words — these carry legal weight.</div>
+      </div>
+      <div class="wiz-field"><label class="wiz-label">Client Statements (Direct Quotes)</label>
+        <textarea class="wiz-input" rows="3" oninput="wizData.obsStatements=this.value" placeholder='e.g. Client stated: "I don&#39;t want to be here anymore. I have pills at home and I was going to take them tonight."'>${esc(wizData.obsStatements)}</textarea>
+      </div>
+
+      <div class="wiz-prompt-box">
+        <div class="wiz-prompt-label">Prompt: What Did You Observe?</div>
+        <div class="wiz-prompt-text">Describe visible behaviors: crying, agitation, pacing, self-harm marks, disheveled appearance, slurred speech, inability to answer questions, not eating/drinking, paranoid scanning, etc. Be concrete.</div>
+      </div>
+      <div class="wiz-field"><label class="wiz-label">Observable Behaviors</label>
+        <textarea class="wiz-input" rows="3" oninput="wizData.obsBehaviors=this.value" placeholder="e.g. Client was visibly trembling, refused to make eye contact, had fresh lacerations on left forearm, speech was pressured and disorganized...">${esc(wizData.obsBehaviors)}</textarea>
+      </div>
+
+      <div class="wiz-row">
+        <div class="wiz-field"><label class="wiz-label">Mood (Client-Reported)</label><input class="wiz-input" value="${esc(wizData.obsMood)}" oninput="wizData.obsMood=this.value" placeholder='e.g. "Hopeless," "I feel nothing"'></div>
+        <div class="wiz-field"><label class="wiz-label">Appearance / Affect</label><input class="wiz-input" value="${esc(wizData.obsAppearance)}" oninput="wizData.obsAppearance=this.value" placeholder="e.g. Disheveled, flat affect, tearful"></div>
+      </div>`;
+  } else if(wizStep === 3) {
+    body = `
+      <div class="wizard-step-title">Risk Assessment & Criteria</div>
+      <div class="wizard-step-desc">Identify which legal criteria are met for a <strong style="color:#D4A855">${d.name.split('(')[0].trim()}</strong> in ${wizState}.</div>
+
+      <div class="wiz-prompt-box">
+        <div class="wiz-prompt-label">Statutory Criteria — ${wizState}</div>
+        <div class="wiz-prompt-text">${d.criteria}</div>
+      </div>
+
+      <div class="wiz-field"><label class="wiz-label">Primary Risk Type</label>
+        <div class="wiz-radio-group">
+          ${['Danger to Self','Danger to Others','Gravely Disabled / Unable to Care for Self','Multiple Criteria'].map(r=>`<button class="wiz-radio ${wizData.riskType===r?'selected':''}" onclick="wizData.riskType='${r.replace(/'/g,"\\'")}';renderWizard()">${r}</button>`).join('')}
+        </div>
+      </div>
+
+      <div class="wiz-prompt-box">
+        <div class="wiz-prompt-label">Prompt: Why Is This Imminent?</div>
+        <div class="wiz-prompt-text">The form asks for <em>imminent</em> risk. Describe what makes the danger immediate: Has the client expressed a specific plan? Do they have access to means? Have they made recent attempts? Are they refusing food/water/medication? Is there a specific threat with a named target?</div>
+      </div>
+      <div class="wiz-field"><label class="wiz-label">Specific Risk Details</label>
+        <textarea class="wiz-input" rows="3" oninput="wizData.riskSpecific=this.value" placeholder="e.g. Client has a specific plan (overdose on Xanax), has access to the medication at home, expressed intent to carry out the plan tonight, no protective factors identified...">${esc(wizData.riskSpecific)}</textarea>
+      </div>
+
+      <div class="wiz-field"><label class="wiz-label">Imminence</label>
+        <div class="wiz-radio-group">
+          ${['Immediate — within hours','Acute — within 24-48 hours','Near-term — days'].map(r=>`<button class="wiz-radio ${wizData.riskImminence===r?'selected':''}" onclick="wizData.riskImminence='${r.replace(/'/g,"\\'")}';renderWizard()">${r}</button>`).join('')}
+        </div>
+      </div>
+
+      <div class="wiz-field"><label class="wiz-label">Access to Means</label>
+        <div class="wiz-hint">Does the client have access to firearms, medications, sharps, or other lethal means?</div>
+        <textarea class="wiz-input" rows="2" oninput="wizData.meansAccess=this.value" placeholder="e.g. Client reports having a firearm at home; bottle of Xanax (90-count) in purse; lives on 12th floor apartment...">${esc(wizData.meansAccess)}</textarea>
+      </div>
+
+      <div class="wiz-field"><label class="wiz-label">Voluntary Hospitalization Offered?</label>
+        <div class="wiz-hint">Most forms require documentation that voluntary options were offered first.</div>
+        <div class="wiz-radio-group">
+          ${['Yes — client refused','Yes — client unable to consent','No — imminent danger precluded offer','Not applicable'].map(r=>`<button class="wiz-radio ${wizData.voluntaryOffered===r?'selected':''}" onclick="wizData.voluntaryOffered='${r.replace(/'/g,"\\'")}';renderWizard()">${r}</button>`).join('')}
+        </div>
+      </div>
+
+      <div class="wiz-prompt-box">
+        <div class="wiz-prompt-label">Prompt: What Did You Try First?</div>
+        <div class="wiz-prompt-text">Document all less-restrictive interventions attempted before the hold: safety planning, de-escalation, voluntary hospitalization offer, contacting family/supports, crisis hotline referral, medication adjustment, etc.</div>
+      </div>
+      <div class="wiz-field"><label class="wiz-label">Interventions Attempted Prior to Hold</label>
+        <textarea class="wiz-input" rows="2" oninput="wizData.interventionsAttempted=this.value" placeholder="e.g. Offered voluntary admission — client refused. Attempted safety planning — client unable to identify protective factors. Contacted spouse who confirmed escalating behavior over past 48 hours...">${esc(wizData.interventionsAttempted)}</textarea>
+      </div>
+
+      <div class="wiz-field"><label class="wiz-label">Prior Attempts / History</label>
+        <div class="wiz-hint">Any known history of attempts, hospitalizations, or similar crises?</div>
+        <textarea class="wiz-input" rows="2" oninput="wizData.priorAttempts=this.value" placeholder="e.g. One prior suicide attempt in 2023 via overdose, hospitalized for 5 days...">${esc(wizData.priorAttempts)}</textarea>
+      </div>
+
+      <div class="wiz-field"><label class="wiz-label">Collateral Contacts / Who Was Present</label>
+        <div class="wiz-hint">List anyone else who witnessed the behavior, was contacted, or is aware of the hold (family, other providers, law enforcement).</div>
+        <textarea class="wiz-input" rows="2" oninput="wizData.collateralContacts=this.value" placeholder="e.g. Spouse (M.D.) contacted at 4:15pm, confirmed client left a note. Dr. Patel (psychiatrist) notified via phone. Officer J. Rivera responded for transport...">${esc(wizData.collateralContacts)}</textarea>
+      </div>
+
+      <div class="wiz-row">
+        <div class="wiz-field"><label class="wiz-label">Receiving Facility</label><input class="wiz-input" value="${esc(wizData.facilityName)}" oninput="wizData.facilityName=this.value" placeholder="e.g. Grady Memorial Hospital"></div>
+        <div class="wiz-field"><label class="wiz-label">Transport Method</label>
+          <div class="wiz-radio-group">
+            ${['Ambulance/EMS','Law Enforcement','Both (EMS + LE escort)'].map(r=>`<button class="wiz-radio ${wizData.transportMethod===r?'selected':''}" onclick="wizData.transportMethod='${r.replace(/'/g,"\\'")}';renderWizard()">${r}</button>`).join('')}
+          </div>
+        </div>
+      </div>`;
+  } else if(wizStep === 4) {
+    body = buildAssembledOutput();
+  }
+
+  const isLast = wizStep === WIZ_STEPS.length - 2; // step 3 is last before summary
+  const isFirst = wizStep === 0;
+
+  mount.innerHTML = `
+    <div class="wizard-panel">
+      <div class="wizard-header">
+        <div>
+          <div class="wizard-header-title">Form Preparation Guide</div>
+          <div class="wizard-header-sub">${d.form} — ${wizState}</div>
+        </div>
+        <button class="wizard-close" onclick="closeWizard()">&times;</button>
+      </div>
+      <div class="wizard-progress">${prog}</div>
+      <div class="wizard-body">${body}</div>
+      ${wizStep < 4 ? `
+      <div class="wizard-footer">
+        ${!isFirst ? `<button class="wiz-nav-btn wiz-back" onclick="wizStep--;renderWizard()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg> Back</button>` : '<div></div>'}
+        <button class="wiz-nav-btn wiz-next" onclick="wizStep++;renderWizard()">
+          ${isLast ? 'Assemble Summary' : 'Next'} <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+      </div>` : ''}
+      <div class="wiz-timestamp">CounselorReady does not capture, transmit, or retain any information entered here. All data stays in your browser and is erased when you close or refresh.</div>
+    </div>`;
+
+  // Scroll wizard into view
+  mount.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function esc(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function buildAssembledOutput() {
+  const d = S[wizState];
+  const now = new Date();
+  const ts = now.toLocaleString();
+
+  function row(label, val) {
+    if(!val) return '';
+    return `<div class="assembled-row"><strong>${label}:</strong> ${esc(val)}</div>`;
+  }
+
+  const text = [
+    `FORM PREPARATION SUMMARY`,
+    `Generated: ${ts}`,
+    `State: ${wizState}`,
+    `Form: ${d.form}`,
+    `Statute: ${d.code}`,
+    ``,
+    `CLINICIAN INFORMATION`,
+    `Name: ${wizData.clinName}`,
+    `Credentials: ${wizData.clinCreds}`,
+    `License: ${wizData.clinLicense}`,
+    `Phone: ${wizData.clinPhone}`,
+    ``,
+    `CLIENT INFORMATION`,
+    `Initials: ${wizData.cliInitials}`,
+    `DOB: ${wizData.cliDOB}`,
+    `Gender: ${wizData.cliGender}`,
+    `Current Location: ${wizData.cliLocation}`,
+    ``,
+    `BEHAVIORAL OBSERVATIONS`,
+    `Date/Time: ${wizData.obsDate} at ${wizData.obsTime}`,
+    `Client Statements: ${wizData.obsStatements}`,
+    `Observable Behaviors: ${wizData.obsBehaviors}`,
+    `Reported Mood: ${wizData.obsMood}`,
+    `Appearance/Affect: ${wizData.obsAppearance}`,
+    ``,
+    `RISK ASSESSMENT`,
+    `Risk Type: ${wizData.riskType}`,
+    `Specific Details: ${wizData.riskSpecific}`,
+    `Imminence: ${wizData.riskImminence}`,
+    `Prior History: ${wizData.priorAttempts}`,
+    ``,
+    `DISPOSITION`,
+    `Receiving Facility: ${wizData.facilityName}`,
+    `Transport Method: ${wizData.transportMethod}`,
+  ].join('\n');
+
+  return `
+    <div class="wizard-step-title">Form Preparation Summary</div>
+    <div class="wizard-step-desc">Review your assembled information below. Print or copy this to reference while completing the official <strong style="color:#D4A855">${esc(d.form)}</strong>.</div>
+
+    <div class="assembled-output" id="assembledOutput">
+      <div class="assembled-header">
+        <h3>Form Prep Sheet — ${esc(wizState)} ${esc(d.name.split('(')[0].trim())}</h3>
+        <span style="font-size:11px;opacity:0.7">${ts}</span>
+      </div>
+      <div class="assembled-body">
+        <div class="assembled-section">
+          <div class="assembled-section-label">Form Required</div>
+          ${row('Form', d.form)}
+          ${row('Statute', d.code)}
+          ${row('State', wizState)}
+        </div>
+        <div class="assembled-section">
+          <div class="assembled-section-label">Clinician (Initiating Professional)</div>
+          ${row('Name', wizData.clinName)}
+          ${row('Credentials', wizData.clinCreds)}
+          ${row('License #', wizData.clinLicense)}
+          ${row('Contact', wizData.clinPhone)}
+        </div>
+        <div class="assembled-section">
+          <div class="assembled-section-label">Client</div>
+          ${row('Initials', wizData.cliInitials)}
+          ${row('DOB', wizData.cliDOB)}
+          ${row('Gender', wizData.cliGender)}
+          ${row('Current Location', wizData.cliLocation)}
+        </div>
+        <div class="assembled-section">
+          <div class="assembled-section-label">Behavioral Observations (Documented ${esc(wizData.obsDate)} at ${esc(wizData.obsTime)})</div>
+          ${row('Client Statements', wizData.obsStatements)}
+          ${row('Observable Behaviors', wizData.obsBehaviors)}
+          ${row('Reported Mood', wizData.obsMood)}
+          ${row('Appearance / Affect', wizData.obsAppearance)}
+        </div>
+        <div class="assembled-section">
+          <div class="assembled-section-label">Risk Assessment & Legal Criteria</div>
+          ${row('Risk Type', wizData.riskType)}
+          ${row('Specific Risk Details', wizData.riskSpecific)}
+          ${row('Imminence', wizData.riskImminence)}
+          ${row('Access to Means', wizData.meansAccess)}
+          ${row('Voluntary Hospitalization Offered', wizData.voluntaryOffered)}
+          ${row('Interventions Attempted', wizData.interventionsAttempted)}
+          ${row('Prior Attempts / History', wizData.priorAttempts)}
+          ${row('Collateral Contacts / Witnesses', wizData.collateralContacts)}
+        </div>
+        <div class="assembled-section">
+          <div class="assembled-section-label">Disposition & Transport</div>
+          ${row('Receiving Facility', wizData.facilityName)}
+          ${row('Transport Method', wizData.transportMethod)}
+        </div>
+      </div>
+      <div class="assembled-actions">
+        <button class="assembled-act-btn act-print" onclick="printAssembled()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+          Print Prep Sheet
+        </button>
+        <button class="assembled-act-btn act-copy" onclick="copyAssembled()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          Copy as Text
+        </button>
+        <button class="assembled-act-btn act-restart" onclick="wizStep=0;renderWizard()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+          Start Over
+        </button>
+      </div>
+    </div>
+
+    <div class="wiz-prompt-box" style="margin-top:16px">
+      <div class="wiz-prompt-label">Next Steps</div>
+      <div class="wiz-prompt-text">
+        1. Print or copy this prep sheet.<br>
+        2. Complete the official <strong>${esc(d.form)}</strong> using your state's form — transfer the documented information above.<br>
+        3. Arrange transport: ${wizData.transportMethod || 'call 911, ambulance, or law enforcement'}.<br>
+        4. Contact the receiving facility: ${wizData.facilityName || 'your designated emergency receiving facility'}.<br>
+        5. Retain a copy of the completed form for your records.
+      </div>
+    </div>`;
+}
+
+function printAssembled() {
+  const el = document.getElementById('assembledOutput');
+  if(!el) return;
+  const win = window.open('','','width=700,height=900');
+  win.document.write(`<html><head><title>Form Prep Sheet — ${wizState}</title><style>
+    body{font-family:'Segoe UI',sans-serif;padding:32px;color:#222;font-size:13px;line-height:1.7}
+    .assembled-header{background:#6B1D34;color:#fff;padding:16px 20px;border-radius:8px 8px 0 0;margin-bottom:0}
+    .assembled-header h3{font-size:16px;margin:0}
+    .assembled-body{padding:20px;border:1px solid #ddd;border-top:none}
+    .assembled-section{margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid #eee}
+    .assembled-section:last-child{border-bottom:none}
+    .assembled-section-label{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:#6B1D34;margin-bottom:4px}
+    .assembled-row{margin-bottom:3px}
+    .assembled-row strong{color:#284157}
+    .assembled-actions{display:none}
+  </style></head><body>${el.outerHTML}</body></html>`);
+  win.document.close();
+  win.print();
+}
+
+function copyAssembled() {
+  const d = S[wizState];
+  const lines = [
+    `FORM PREPARATION SUMMARY`,
+    `Generated: ${new Date().toLocaleString()}`,
+    `State: ${wizState} | Form: ${d.form} | Statute: ${d.code}`,
+    ``,
+    `═══ CLINICIAN ═══`,
+    `Name: ${wizData.clinName} | Credentials: ${wizData.clinCreds}`,
+    `License: ${wizData.clinLicense} | Phone: ${wizData.clinPhone}`,
+    ``,
+    `═══ CLIENT ═══`,
+    `Initials: ${wizData.cliInitials} | DOB: ${wizData.cliDOB} | Gender: ${wizData.cliGender}`,
+    `Location: ${wizData.cliLocation}`,
+    ``,
+    `═══ OBSERVATIONS (${wizData.obsDate} at ${wizData.obsTime}) ═══`,
+    `Statements: ${wizData.obsStatements}`,
+    `Behaviors: ${wizData.obsBehaviors}`,
+    `Mood: ${wizData.obsMood} | Affect: ${wizData.obsAppearance}`,
+    ``,
+    `═══ RISK ASSESSMENT ═══`,
+    `Type: ${wizData.riskType} | Imminence: ${wizData.riskImminence}`,
+    `Details: ${wizData.riskSpecific}`,
+    `Means Access: ${wizData.meansAccess}`,
+    `Voluntary Hospitalization Offered: ${wizData.voluntaryOffered}`,
+    `Interventions Attempted: ${wizData.interventionsAttempted}`,
+    `Prior History: ${wizData.priorAttempts}`,
+    `Collateral Contacts: ${wizData.collateralContacts}`,
+    ``,
+    `═══ DISPOSITION ═══`,
+    `Facility: ${wizData.facilityName} | Transport: ${wizData.transportMethod}`,
+  ].join('\n');
+
+  navigator.clipboard.writeText(lines).then(() => {
+    const btn = document.querySelector('.act-copy');
+    if(btn){const orig=btn.innerHTML;btn.innerHTML='<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Copied!';btn.style.borderColor='var(--green)';btn.style.color='var(--green)';setTimeout(()=>{btn.innerHTML=orig;btn.style.borderColor='';btn.style.color=''},2000)}
+  });
+}
+document.addEventListener("DOMContentLoaded",init);
+</script>
+<!-- CR Email Capture -->
+<div id="crEmailCapture" style="display:none"></div>
+<script>
+(function(){
+  const API='https://api.counselorready.com';
+  const KEY='cr_email_captured';
+  const DISMISS_KEY='cr_email_dismissed';
+  const SHOW_AFTER=1;
+  let uses=parseInt(sessionStorage.getItem('cr_tool_uses')||'0');
+  function trackUse(){uses++;sessionStorage.setItem('cr_tool_uses',String(uses));maybeShow()}
+  window.crTrackToolUse=trackUse;
+  function maybeShow(){
+    if(localStorage.getItem(KEY)||localStorage.getItem(DISMISS_KEY))return;
+    if(uses<SHOW_AFTER)return;
+    render();
+  }
+  function render(){
+    const el=document.getElementById('crEmailCapture');
+    if(!el)return;
+    el.style.display='block';
+    el.innerHTML=`
+    <div style="background:linear-gradient(135deg,#1A2D3D,#284157);border-radius:14px;padding:24px;margin:20px 0;text-align:center;position:relative;box-shadow:0 4px 16px rgba(26,45,61,.3)">
+      <button onclick="document.getElementById('crEmailCapture').style.display='none';localStorage.setItem('${DISMISS_KEY}','1')" style="position:absolute;top:10px;right:14px;background:none;border:none;color:rgba(255,255,255,.3);font-size:18px;cursor:pointer">&times;</button>
+      <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:20px;font-weight:700;color:#fff;margin-bottom:6px">Want more tools like this?</div>
+      <p style="font-size:13px;color:#8AABBE;margin-bottom:16px;line-height:1.5;max-width:440px;margin-left:auto;margin-right:auto">Get notified when we release new free clinical tools, CE course drops, and practice-building resources. No spam — just useful stuff for clinicians.</p>
+      <div style="display:flex;gap:10px;max-width:420px;margin:0 auto">
+        <input id="crEmailInput" type="email" placeholder="you@example.com" style="flex:1;padding:11px 14px;border-radius:8px;border:2px solid #35546B;background:#1A2D3D;color:#E8E8E8;font-family:'Lato',sans-serif;font-size:14px;outline:none">
+        <button onclick="crSubmitEmail()" style="padding:11px 20px;background:linear-gradient(135deg,#D4A855,#C49A40);color:#4A1224;border:none;border-radius:8px;font-family:'Lato',sans-serif;font-size:14px;font-weight:800;cursor:pointer;white-space:nowrap">Keep Me Posted</button>
+      </div>
+      <div id="crEmailMsg" style="font-size:12px;margin-top:8px;min-height:18px"></div>
+      <div style="font-size:10px;color:rgba(255,255,255,.25);margin-top:8px">No spam. Unsubscribe anytime. We respect your inbox.</div>
+    </div>`;
+  }
+  window.crSubmitEmail=async function(){
+    const input=document.getElementById('crEmailInput');
+    const msg=document.getElementById('crEmailMsg');
+    const email=input.value.trim();
+    if(!email||!email.includes('@')){msg.style.color='#E8A87C';msg.textContent='Please enter a valid email.';return}
+    msg.style.color='#8AABBE';msg.textContent='Saving...';
+    try{
+      const r=await fetch(API+'/api/tools/capture-email',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,source:document.title})});
+      if(r.ok){
+        msg.style.color='#5A9469';msg.textContent="You're in! Watch your inbox.";
+        localStorage.setItem(KEY,email);
+        setTimeout(()=>{document.getElementById('crEmailCapture').style.display='none'},2500);
+      } else {
+        const d=await r.json();
+        msg.style.color='#5A9469';msg.textContent=d.message||"You're already subscribed!";
+        localStorage.setItem(KEY,email);
+      }
+    }catch(e){
+      localStorage.setItem(KEY,email);
+      msg.style.color='#5A9469';msg.textContent="Saved! We'll be in touch.";
+    }
+  };
+  setTimeout(maybeShow,3000);
+})();
+</script>
+<!-- /CR Email Capture -->
+</body>
+</html>

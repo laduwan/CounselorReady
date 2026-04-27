@@ -1,72 +1,328 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>CounselorReady - Professional CE Management</title>
-    <meta name="description" content="CounselorReady - Learn. License. Lead. Professional continuing education management for mental health counselors. NBCC-Approved CE Provider (ACEP #7760)." />
-    <link rel="canonical" href="https://counselorready.com/" />
-
-    <!-- Open Graph -->
-    <meta property="og:type" content="website" />
-    <meta property="og:title" content="CounselorReady - Learn. License. Lead." />
-    <meta property="og:description" content="Professional continuing education for licensed mental health professionals. NBCC-Approved CE Provider (ACEP #7760)." />
-    <meta property="og:url" content="https://counselorready.com/" />
-    <meta property="og:site_name" content="CounselorReady" />
-    <meta property="og:image" content="https://counselorready.com/og-image.png" />
-
-    <!-- Twitter Card -->
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="CounselorReady - Learn. License. Lead." />
-    <meta name="twitter:description" content="Professional continuing education for licensed mental health professionals." />
-  </head>
-  <body>
-    <a href="#main-content" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;" onfocus="this.style.cssText='position:fixed;top:0;left:0;z-index:9999;padding:12px 24px;background:#6B1D34;color:white;font-size:16px;font-family:Lato,sans-serif;text-decoration:none;'" onblur="this.style.cssText='position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;'">Skip to main content</a>
-    <div id="root"></div>
-
-    <!-- Structured data for search engines -->
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "EducationalOrganization",
-      "name": "CounselorReady",
-      "alternateName": "GA Integrated Therapeutic Perspectives LLC",
-      "url": "https://counselorready.com",
-      "description": "NBCC-Approved Continuing Education Provider (ACEP #7760) for licensed mental health professionals.",
-      "sameAs": [],
-      "contactPoint": {
-        "@type": "ContactPoint",
-        "email": "support@counselorready.com",
-        "contactType": "customer service"
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CounselorReady — NBCC-Approved CE for Licensed Counselors</title>
+  <meta name="description" content="Track credentials, complete NBCC-approved CE courses, and stay audit-ready — all in one platform designed for mental health professionals. ACEP #7760.">
+  <link rel="canonical" href="https://counselorready.com/">
+  <meta property="og:title" content="CounselorReady — CE for Licensed Counselors">
+  <meta property="og:description" content="Track credentials, complete NBCC-approved CE courses, and stay audit-ready. Built by a counselor, for counselors.">
+  <meta property="og:url" content="https://counselorready.com/">
+  <meta property="og:type" content="website">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 36 36'><rect width='36' height='36' rx='8' fill='%236B1D34'/><text x='5' y='22' font-family='Georgia' font-weight='bold' font-size='17' fill='%23D4A855'>C</text><text x='14' y='28' font-family='Georgia' font-weight='bold' font-size='14' fill='%234A7C59'>R</text></svg>">
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            burgundy: { 800: '#6b1d34', 900: '#4a1524' },
+          },
+          fontFamily: {
+            display: ['Cormorant Garamond','Georgia','serif'],
+            body: ['Lato','system-ui','sans-serif'],
+          }
+        }
       }
     }
-    </script>
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Lato:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    body { margin: 0; font-family: 'Lato', system-ui, sans-serif; background: #F8F7F4; color: #111827; }
 
-    <!-- Fallback content for crawlers / noscript / screen readers before React hydrates -->
-    <noscript>
-      <header>
-        <nav><a href="/">Home</a> | <a href="/login">Sign In</a> | <a href="/register">Register</a></nav>
-      </header>
-      <main>
-        <h1>CounselorReady — Continuing Education for Mental Health Professionals</h1>
-        <p>NBCC-Approved Continuing Education Provider (ACEP #7760). Learn. License. Lead.</p>
-        <p>Professional CE courses for LPCs, LMHCs, LCSWs, LMFTs, NCCs, and psychologists.</p>
-        <p><a href="/register">Start Your Free Trial</a></p>
-      </main>
-      <footer>
-        <p>© 2026 CounselorReady — GA Integrated Therapeutic Perspectives LLC (GAITP LLC)</p>
-        <p>NBCC Approved Continuing Education Provider — ACEP #7760</p>
-        <nav>
-          <a href="/privacy.html">Privacy Policy</a> |
-          <a href="/terms.html">Terms of Service</a> |
-          <a href="/refund-policy.html">Refund Policy</a> |
-          <a href="mailto:support@counselorready.com">Contact / Complaint / Grievance</a>
-        </nav>
-        <p>ADA accommodations available upon request. Contact support@counselorready.com.</p>
-      </footer>
-    </noscript>
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50%       { transform: translateY(-8px); }
+    }
+    .float-animation { animation: float 6s ease-in-out infinite; }
+    .card-hover { transition: all 0.4s cubic-bezier(0.4,0,0.2,1); }
+    .card-hover:hover { transform: translateY(-4px); }
+    .bg-texture {
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      background-size: 200px;
+    }
+  </style>
+</head>
+<body class="antialiased" style="font-family:'Lato',system-ui,sans-serif">
 
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
-</html>
+  <!-- ── HEADER ── -->
+  <header style="border-bottom:1px solid #d5e1d7;background:rgba(255,255,255,0.8);backdrop-filter:blur(8px);position:sticky;top:0;z-index:50">
+    <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-11 h-11 rounded-xl flex items-center justify-center" style="background:#6B1D34;box-shadow:0 4px 12px rgba(107,29,52,0.3)">
+          <span style="position:relative;display:inline-block;width:28px;height:28px">
+            <span style="color:#D4A855;position:absolute;top:-4px;left:0;font-family:'Cormorant Garamond',Georgia,serif;font-weight:700;font-size:20px">C</span>
+            <span style="color:#4A7C59;position:absolute;top:6px;left:8px;font-family:'Cormorant Garamond',Georgia,serif;font-weight:700;font-size:16px">R</span>
+          </span>
+        </div>
+        <span style="font-family:'Cormorant Garamond',Georgia,serif;font-weight:600;font-size:1.5rem;letter-spacing:0.025em">
+          <span style="color:#6b1d34">Counselor</span><span style="color:#4A7C59">Ready</span>&trade;
+        </span>
+      </div>
+      <nav class="hidden md:flex items-center gap-8">
+        <a href="#features" style="color:#355E3B" class="text-sm font-medium tracking-wide hover:opacity-70 transition-opacity">Features</a>
+        <a href="#pricing"  style="color:#355E3B" class="text-sm font-medium tracking-wide hover:opacity-70 transition-opacity">Pricing</a>
+        <a href="/about.html" style="color:#355E3B" class="text-sm font-medium tracking-wide hover:opacity-70 transition-opacity">About</a>
+      </nav>
+      <div class="flex items-center gap-4">
+        <a href="/login.html" style="color:#355E3B" class="text-sm font-medium hover:opacity-70 transition-opacity">Sign in</a>
+        <a href="/register.html" class="text-white text-sm font-medium px-5 py-2 rounded-lg hover:opacity-90 transition-opacity" style="background:#4A7C59">Start Free Trial</a>
+      </div>
+    </div>
+  </header>
+
+  <main id="main-content">
+
+    <!-- ── HERO ── -->
+    <section class="relative py-24 px-4 overflow-hidden">
+      <div class="absolute inset-0" style="background:#F8F7F4"></div>
+      <div class="absolute top-20 right-10 w-72 h-72 rounded-full blur-3xl" style="background:rgba(212,168,85,0.15)"></div>
+      <div class="absolute bottom-10 left-10 w-96 h-96 rounded-full blur-3xl" style="background:rgba(56,170,246,0.1)"></div>
+      <div class="absolute top-32 left-20 w-2 h-2 rounded-full float-animation" style="background:#D4A855"></div>
+      <div class="absolute top-48 right-32 w-3 h-3 rounded-full float-animation" style="background:#38aaf6;animation-delay:1s"></div>
+      <div class="absolute bottom-32 left-40 w-2 h-2 rounded-full float-animation" style="background:#c94d65;animation-delay:2s"></div>
+
+      <div class="max-w-5xl mx-auto text-center relative" style="z-index:1">
+        <div class="inline-flex items-center gap-2 text-sm font-medium px-5 py-2 rounded-full mb-8 shadow-lg tracking-widest" style="background:#2D4F33;color:#D4A855">
+          Learn. License. Lead.
+        </div>
+
+        <h1 class="mb-6 leading-tight" style="font-family:'Cormorant Garamond',Georgia,serif;font-size:clamp(2.5rem,6vw,4.5rem);font-weight:600;color:#2d0a14">
+          Your CE Credits.<br>
+          <span style="color:#4A7C59">Finally Organized.</span>
+        </h1>
+
+        <p class="text-xl mb-10 max-w-2xl mx-auto font-light leading-relaxed" style="color:rgba(53,94,59,0.8)">
+          Track credentials, complete courses, and stay audit-ready — all in one elegant platform designed for mental health professionals.
+        </p>
+
+        <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
+          <a href="/register.html" class="text-white text-lg font-medium px-8 py-4 rounded-xl flex items-center gap-3 transition-all" style="background:#6B1D34;box-shadow:0 20px 40px rgba(107,29,52,0.25)">
+            Start 7-Day Free Trial
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+          </a>
+          <a href="#features" class="font-medium flex items-center gap-2 transition-colors" style="color:#355E3B">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            Learn more
+          </a>
+        </div>
+        <div class="mt-6 flex flex-col items-center gap-2">
+          <a href="/tools/index.html" class="inline-flex items-center gap-2 text-sm font-semibold px-5 py-2.5 rounded-full border-2 transition-all hover:opacity-80" style="border-color:#4A7C59;color:#355E3B;background:rgba(74,124,89,0.07)">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+            Free Clinical Tools — No account needed
+          </a>
+          <p class="text-sm" style="color:rgba(53,94,59,0.6)">No credit card required · Cancel anytime</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── FEATURES ── -->
+    <section id="features" class="py-24 px-4 bg-white">
+      <div class="max-w-5xl mx-auto">
+        <div class="text-center mb-16">
+          <span class="font-medium text-sm tracking-widest uppercase" style="color:#a67936">Features</span>
+          <h2 class="mt-3 mb-4" style="font-family:'Cormorant Garamond',Georgia,serif;font-size:clamp(1.75rem,4vw,2.5rem);font-weight:600;color:#2d0a14">
+            Everything you need to stay compliant
+          </h2>
+          <p class="max-w-2xl mx-auto text-lg font-light" style="color:rgba(53,94,59,0.8)">
+            Stop juggling spreadsheets and email folders. CounselorReady keeps everything in one place.
+          </p>
+        </div>
+
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <!-- Courses -->
+          <div class="card-hover" style="background:#6B1D34;border-radius:1rem;padding:1.5rem;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;aspect-ratio:1;cursor:pointer">
+            <div style="width:64px;height:64px;background:rgba(255,255,255,0.12);border-radius:0.75rem;display:flex;align-items:center;justify-content:center;margin-bottom:1rem">
+              <svg class="w-8 h-8" style="color:#D4A855" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+            </div>
+            <h3 style="font-family:'Cormorant Garamond',Georgia,serif;font-size:1.25rem;font-weight:600;color:white;margin-bottom:0.25rem">Courses</h3>
+            <p style="font-size:0.875rem;color:#fae8eb">ACEP #7760</p>
+          </div>
+          <!-- Tracker -->
+          <div class="card-hover" style="background:#355E3B;border-radius:1rem;padding:1.5rem;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;aspect-ratio:1;cursor:pointer">
+            <div style="width:64px;height:64px;background:rgba(255,255,255,0.12);border-radius:0.75rem;display:flex;align-items:center;justify-content:center;margin-bottom:1rem">
+              <svg class="w-8 h-8" style="color:#D4A855" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+            </div>
+            <h3 style="font-family:'Cormorant Garamond',Georgia,serif;font-size:1.25rem;font-weight:600;color:white;margin-bottom:0.25rem">Tracker</h3>
+            <p style="font-size:0.875rem;color:#d5e1d7">Multi-state tracking</p>
+          </div>
+          <!-- Storage -->
+          <div class="card-hover" style="background:#284157;border-radius:1rem;padding:1.5rem;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;aspect-ratio:1;cursor:pointer">
+            <div style="width:64px;height:64px;background:rgba(255,255,255,0.12);border-radius:0.75rem;display:flex;align-items:center;justify-content:center;margin-bottom:1rem">
+              <svg class="w-8 h-8" style="color:#D4A855" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/></svg>
+            </div>
+            <h3 style="font-family:'Cormorant Garamond',Georgia,serif;font-size:1.25rem;font-weight:600;color:white;margin-bottom:0.25rem">Storage</h3>
+            <p style="font-size:0.875rem;color:#cbd5e1">Certificate vault</p>
+          </div>
+          <!-- Audit Ready -->
+          <div class="card-hover" style="background:#D4A855;border-radius:1rem;padding:1.5rem;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;aspect-ratio:1;cursor:pointer">
+            <div style="width:64px;height:64px;background:rgba(255,255,255,0.12);border-radius:0.75rem;display:flex;align-items:center;justify-content:center;margin-bottom:1rem">
+              <svg class="w-8 h-8" style="color:#4a1524" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+            </div>
+            <h3 style="font-family:'Cormorant Garamond',Georgia,serif;font-size:1.25rem;font-weight:600;color:#4a1524;margin-bottom:0.25rem">Audit Ready</h3>
+            <p style="font-size:0.875rem;color:#4a1524;opacity:0.7">One-click packages</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── STATS ── -->
+    <section class="py-20 px-4 relative overflow-hidden" style="background:#6B1D34">
+      <div class="bg-texture absolute inset-0" style="opacity:0.05"></div>
+      <div class="absolute top-0 left-0 right-0 h-1" style="background:#D4A855"></div>
+      <div class="max-w-6xl mx-auto relative grid grid-cols-2 md:grid-cols-4 gap-8 text-center" style="z-index:1">
+        <div class="p-6">
+          <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:3rem;font-weight:600;color:#D4A855;margin-bottom:0.5rem">50</div>
+          <div style="color:#f5d0d6;font-size:0.75rem;letter-spacing:0.1em;text-transform:uppercase">States Supported</div>
+        </div>
+        <div class="p-6">
+          <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:3rem;font-weight:600;color:#D4A855;margin-bottom:0.5rem">24/7</div>
+          <div style="color:#f5d0d6;font-size:0.75rem;letter-spacing:0.1em;text-transform:uppercase">Access Anytime</div>
+        </div>
+        <div class="p-6">
+          <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:3rem;font-weight:600;color:#D4A855;margin-bottom:0.5rem">100%</div>
+          <div style="color:#f5d0d6;font-size:0.75rem;letter-spacing:0.1em;text-transform:uppercase">Online Courses</div>
+        </div>
+        <div class="p-6">
+          <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:3rem;font-weight:600;color:#D4A855;margin-bottom:0.5rem">Free</div>
+          <div style="color:#f5d0d6;font-size:0.75rem;letter-spacing:0.1em;text-transform:uppercase">7-Day Trial</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── PRICING ── -->
+    <section id="pricing" class="py-24 px-4" style="background:#F8F7F4">
+      <div class="max-w-6xl mx-auto">
+        <div class="text-center mb-16">
+          <span class="font-medium text-sm tracking-widest uppercase" style="color:#a67936">Pricing</span>
+          <h2 class="mt-3 mb-4" style="font-family:'Cormorant Garamond',Georgia,serif;font-size:clamp(1.75rem,4vw,2.5rem);font-weight:600;color:#2d0a14">
+            Simple, transparent pricing
+          </h2>
+          <p class="text-lg font-light" style="color:rgba(53,94,59,0.8)">Choose the plan that works best for your practice</p>
+        </div>
+
+        <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+
+          <!-- Free -->
+          <div class="bg-white rounded-2xl p-6 border shadow-sm card-hover hover:shadow-xl" style="border-color:#d5e1d7">
+            <div class="font-medium uppercase text-sm tracking-wide mb-3" style="color:#4A7C59">Free</div>
+            <div class="flex items-baseline gap-1 mb-6">
+              <span style="font-family:'Cormorant Garamond',Georgia,serif;font-size:2.5rem;font-weight:600;color:#6b1d34">$0</span>
+              <span class="font-light" style="color:#6a9472">/forever</span>
+            </div>
+            <ul class="space-y-3 mb-8 text-sm">
+              <li class="flex items-start gap-2" style="color:#355E3B"><svg class="w-4 h-4 mt-0.5 flex-shrink-0" style="color:#4A7C59" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>4 CE hours</li>
+              <li class="flex items-start gap-2" style="color:#355E3B"><svg class="w-4 h-4 mt-0.5 flex-shrink-0" style="color:#4A7C59" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>Unlimited certificate uploads</li>
+              <li class="flex items-start gap-2" style="color:#355E3B"><svg class="w-4 h-4 mt-0.5 flex-shrink-0" style="color:#4A7C59" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>Secure document vault</li>
+            </ul>
+            <a href="/register.html" class="block text-center w-full py-3 font-semibold rounded-xl transition-all text-sm border-2 hover:opacity-80" style="border-color:#4A7C59;color:#355E3B;text-decoration:none">Get Started Free</a>
+          </div>
+
+          <!-- Starter -->
+          <div class="bg-white rounded-2xl p-6 border shadow-sm card-hover hover:shadow-xl" style="border-color:#d5e1d7">
+            <div class="font-medium uppercase text-sm tracking-wide mb-3" style="color:#4A7C59">Starter</div>
+            <div class="flex items-baseline gap-1 mb-2">
+              <span style="font-family:'Cormorant Garamond',Georgia,serif;font-size:2.5rem;font-weight:600;color:#6b1d34">$19.99</span>
+              <span class="font-light" style="color:#6a9472">/mo</span>
+            </div>
+            <p class="text-xs mb-4" style="color:#6a9472">Everything in Free, plus:</p>
+            <ul class="space-y-3 mb-8 text-sm">
+              <li class="flex items-start gap-2" style="color:#355E3B"><svg class="w-4 h-4 mt-0.5 flex-shrink-0" style="color:#4A7C59" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>Unlimited CE hours</li>
+              <li class="flex items-start gap-2" style="color:#355E3B"><svg class="w-4 h-4 mt-0.5 flex-shrink-0" style="color:#4A7C59" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>CE tracking</li>
+              <li class="flex items-start gap-2" style="color:#355E3B"><svg class="w-4 h-4 mt-0.5 flex-shrink-0" style="color:#4A7C59" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>AI credential scanning</li>
+              <li class="flex items-start gap-2" style="color:#355E3B"><svg class="w-4 h-4 mt-0.5 flex-shrink-0" style="color:#4A7C59" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>Audit-ready reports</li>
+            </ul>
+            <a href="/register.html?plan=starter" class="block text-center w-full py-3 text-white font-semibold rounded-xl transition-all text-sm hover:opacity-90" style="background:#4A7C59;text-decoration:none">Start Starter</a>
+          </div>
+
+          <!-- Professional (POPULAR) -->
+          <div class="bg-white rounded-2xl p-6 shadow-lg card-hover hover:shadow-xl relative border-2" style="border-color:#D4A855">
+            <div class="absolute -top-3 left-1/2 -translate-x-1/2 text-xs font-bold px-3 py-1 rounded-full" style="background:#D4A855;color:#4a1524">POPULAR</div>
+            <div class="font-medium uppercase text-sm tracking-wide mb-3" style="color:#a67936">Professional</div>
+            <div class="flex items-baseline gap-1 mb-2">
+              <span style="font-family:'Cormorant Garamond',Georgia,serif;font-size:2.5rem;font-weight:600;color:#6b1d34">$29.99</span>
+              <span class="font-light" style="color:#6a9472">/mo</span>
+            </div>
+            <p class="text-xs mb-4" style="color:#6a9472">Everything in Starter, plus:</p>
+            <ul class="space-y-3 mb-8 text-sm">
+              <li class="flex items-start gap-2" style="color:#355E3B"><svg class="w-4 h-4 mt-0.5 flex-shrink-0" style="color:#D4A855" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>Specialty credential tracking (BC-TMH, CPCS, etc.)</li>
+              <li class="flex items-start gap-2" style="color:#355E3B"><svg class="w-4 h-4 mt-0.5 flex-shrink-0" style="color:#D4A855" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>Access to certification courses (Grief, Anger Mgmt, Business Coaching)</li>
+            </ul>
+            <a href="/register.html?plan=professional" class="block text-center w-full py-3 font-semibold rounded-xl transition-all text-sm hover:opacity-90" style="background:#D4A855;color:#4a1524;text-decoration:none">Go Professional</a>
+          </div>
+
+          <!-- VIP -->
+          <div class="relative rounded-2xl p-6 text-white shadow-2xl card-hover overflow-hidden" style="background:#6B1D34">
+            <div class="bg-texture absolute inset-0" style="opacity:0.05"></div>
+            <div class="absolute top-0 left-0 right-0 h-1" style="background:#D4A855"></div>
+            <div class="relative" style="z-index:1">
+              <div class="font-medium uppercase text-sm tracking-wide mb-3" style="color:#D4A855">VIP</div>
+              <div class="flex items-baseline gap-1 mb-2">
+                <span style="font-family:'Cormorant Garamond',Georgia,serif;font-size:2.5rem;font-weight:600">$49.99</span>
+                <span class="font-light" style="color:#f5d0d6">/mo</span>
+              </div>
+              <p class="text-xs mb-4" style="color:#f5d0d6">Everything in Professional, plus:</p>
+              <ul class="space-y-3 mb-8 text-sm">
+                <li class="flex items-start gap-2"><svg class="w-4 h-4 mt-0.5 flex-shrink-0" style="color:#D4A855" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>Multi-state license tracking</li>
+                <li class="flex items-start gap-2"><svg class="w-4 h-4 mt-0.5 flex-shrink-0" style="color:#D4A855" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>Renewal reminders (text &amp; calendar)</li>
+                <li class="flex items-start gap-2"><svg class="w-4 h-4 mt-0.5 flex-shrink-0" style="color:#D4A855" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>1 hardship month/year (rolls over)</li>
+                <li class="flex items-start gap-2"><svg class="w-4 h-4 mt-0.5 flex-shrink-0" style="color:#D4A855" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>Quarterly 1:1 strategy session</li>
+                <li class="flex items-start gap-2"><svg class="w-4 h-4 mt-0.5 flex-shrink-0" style="color:#D4A855" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>Early access to live webinars</li>
+              </ul>
+              <a href="/register.html?plan=vip" class="block text-center w-full py-3 font-bold rounded-xl transition-all text-sm hover:opacity-90" style="background:#D4A855;color:#4a1524;text-decoration:none">Go VIP</a>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ── TESTIMONIAL ── -->
+    <section class="py-20 px-4 bg-white border-t" style="border-color:#d5e1d7">
+      <div class="max-w-4xl mx-auto text-center">
+        <div class="flex justify-center gap-1 mb-6">
+          <svg class="w-6 h-6" style="color:#D4A855" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+          <svg class="w-6 h-6" style="color:#D4A855" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+          <svg class="w-6 h-6" style="color:#D4A855" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+          <svg class="w-6 h-6" style="color:#D4A855" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+          <svg class="w-6 h-6" style="color:#D4A855" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+        </div>
+        <blockquote class="mb-6 leading-relaxed" style="font-family:'Cormorant Garamond',Georgia,serif;font-size:clamp(1.25rem,3vw,1.75rem);font-weight:500;font-style:italic;color:#6b1d34">
+          "Finally, a CE platform that understands what counselors actually need. I went from dreading renewal time to feeling completely organized."
+        </blockquote>
+        <div style="color:#4A7C59">
+          <span class="font-semibold">Dr. Sarah Mitchell</span> · Licensed Professional Counselor, Georgia
+        </div>
+      </div>
+    </section>
+
+    <!-- ── CTA ── -->
+    <section class="py-24 px-4 relative overflow-hidden" style="background:#355E3B">
+      <div class="bg-texture absolute inset-0" style="opacity:0.05"></div>
+      <div class="absolute bottom-0 left-0 right-0 h-1" style="background:#D4A855"></div>
+      <div class="max-w-3xl mx-auto text-center relative" style="z-index:1">
+        <h2 class="mb-4" style="font-family:'Cormorant Garamond',Georgia,serif;font-size:clamp(1.75rem,4vw,2.5rem);font-weight:600;color:white">
+          Ready to simplify your CE tracking?
+        </h2>
+        <p class="mb-10 text-lg font-light" style="color:#b5ccb9">
+          Join counselors across the country who trust CounselorReady to keep their credentials organized.
+        </p>
+        <a href="/register.html" class="inline-flex items-center gap-3 font-semibold px-8 py-4 rounded-xl transition-all shadow-2xl hover:opacity-90" style="background:white;color:#6b1d34;text-decoration:none">
+          Start Your Free Trial
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+        </a>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ── FOOTER ── -->
+  <div id="cr-footer"></div>
+  <script src="/shared/nav-footer.js"></script>
+
+</body>
+  </html>

@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Purchase Confirmed | CounselorReady</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="/css/design-tokens.css">
+  <link rel="stylesheet" href="/css/typography.css">
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="/js/tailwind-config.js"></script>
+  
+  <style>
+    body { font-family: 'Lato', sans-serif; background: #F8F7F4; }
+    .font-display { font-family: 'Cormorant Garamond', serif; }
+
+    /* Checkmark animation */
+    @keyframes scaleIn { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    @keyframes fadeUp  { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    .animate-scale-in { animation: scaleIn 0.4s cubic-bezier(0.34,1.56,0.64,1) forwards; }
+    .animate-fade-up  { animation: fadeUp 0.5s ease forwards; }
+    .delay-1 { animation-delay: 0.15s; opacity: 0; }
+    .delay-2 { animation-delay: 0.3s;  opacity: 0; }
+    .delay-3 { animation-delay: 0.45s; opacity: 0; }
+    .delay-4 { animation-delay: 0.6s;  opacity: 0; }
+
+    /* Modal */
+    #upsellModal { transition: opacity 0.3s ease; }
+    #upsellModal.hidden { opacity: 0; pointer-events: none; }
+    #upsellCard { transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1); }
+    #upsellModal.hidden #upsellCard { transform: scale(0.92) translateY(24px); }
+
+    /* Supervisor badge shimmer */
+    @keyframes shimmer {
+      0%   { background-position: -200% center; }
+      100% { background-position: 200% center; }
+    }
+    .shimmer-badge {
+      background: linear-gradient(90deg, #D4A855 0%, #F0D080 40%, #D4A855 60%, #B8903A 100%);
+      background-size: 200% auto;
+      animation: shimmer 3s linear infinite;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .upsell-pill {
+      background: linear-gradient(135deg, #6B1D34 0%, #8B2542 100%);
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+  <!-- ─── NAV ─── -->
+  <nav class="bg-white border-b border-stone-100 px-6 py-4">
+    <div class="max-w-5xl mx-auto flex items-center justify-between">
+      <a href="/index.html" class="flex items-center gap-2 no-underline">
+        <!-- CR Monogram -->
+        <div class="relative w-9 h-9 rounded-lg flex items-center justify-center"
+             style="background: linear-gradient(135deg,#6B1D34,#8B2542);">
+          <span class="font-display font-bold absolute"
+                style="font-size:17px;color:#6B1D34;z-index:2;top:4px;left:5px;text-shadow:0 0 0 #fff;">C</span>
+          <span class="font-display font-bold absolute"
+                style="font-size:14px;color:#4A7C59;z-index:1;top:9px;left:10px;">R</span>
+          <span class="font-display font-bold absolute"
+                style="font-size:17px;color:rgba(255,255,255,0.25);z-index:0;top:4px;left:5px;">C</span>
+        </div>
+        <span class="font-display text-xl font-semibold">
+          <span style="color:#6B1D34;">Counselor</span><span style="color:#4A7C59;">Ready</span>
+        </span>
+      </a>
+      <a href="/dashboard.html" class="text-sm text-hunter-700 hover:text-burgundy-800 font-medium">My Dashboard →</a>
+    </div>
+  </nav>
+
+  <!-- ─── MAIN ─── -->
+  <main class="flex-1 flex flex-col items-center justify-center px-4 py-16">
+    <div class="max-w-xl w-full text-center">
+
+      <!-- Check circle -->
+      <div class="animate-scale-in mx-auto mb-6 w-20 h-20 rounded-full flex items-center justify-center"
+           style="background: linear-gradient(135deg,#4A7C59,#3D6A4A);">
+        <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+        </svg>
+      </div>
+
+      <h1 class="font-display text-4xl font-bold text-burgundy-800 mb-2 animate-fade-up delay-1">
+        You're Enrolled!
+      </h1>
+      <p id="confirmationSubtitle" class="text-forest-600 text-lg mb-2 animate-fade-up delay-2">
+        Your course is ready to start.
+      </p>
+      <p id="courseNameDisplay" class="font-display text-xl font-semibold text-navy-500 mb-8 animate-fade-up delay-3"></p>
+
+      <div class="flex flex-col sm:flex-row gap-3 justify-center animate-fade-up delay-4">
+        <a id="startCourseBtn" href="/dashboard.html"
+           class="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-white font-semibold transition-colors"
+           style="background:#6B1D34;">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          Start Course Now
+        </a>
+        <a href="/catalog.html"
+           class="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl border border-hunter-700 text-hunter-700 font-semibold hover:bg-hunter-700 hover:text-white transition-colors">
+          Browse More Courses
+        </a>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- ─── UPSELL MODAL (CR-TMH602) ─── -->
+  <div id="upsellModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4"
+       style="background: rgba(40,65,87,0.6); backdrop-filter: blur(4px);">
+    <div id="upsellCard" class="bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden">
+
+      <!-- Header band -->
+      <div class="upsell-pill px-6 py-4 flex items-center justify-between">
+        <div>
+          <p class="text-xs text-burgundy-200 font-semibold uppercase tracking-widest mb-0.5">Exclusive Offer — Supervisors Only</p>
+          <h2 class="font-display text-2xl font-bold text-white leading-tight">
+            Complete Your 9-Hour<br/>Rule 135-11 Requirement
+          </h2>
+        </div>
+        <div class="ml-4 shrink-0 text-center">
+          <p class="text-burgundy-200 text-xs uppercase tracking-wide">Add</p>
+          <p class="font-display text-4xl font-bold shimmer-badge">3 CE</p>
+          <p class="text-burgundy-200 text-xs">Hours</p>
+        </div>
+      </div>
+
+      <!-- Body -->
+      <div class="p-6">
+        <div class="flex items-start gap-3 mb-4 p-3 rounded-xl bg-stone-50 border border-stone-100">
+          <svg class="w-5 h-5 text-hunter-700 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          <p class="text-sm text-forest-600">
+            Georgia Rule 135-11 requires supervisors to complete <strong>6 general + 3 supervisor-specific</strong> telehealth CE hours. You just completed the 6. Add the supervision course to fulfill the full 9-hour requirement.
+          </p>
+        </div>
+
+        <!-- Course card -->
+        <div class="border border-burgundy-100 rounded-xl p-4 mb-5">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="text-xs font-bold uppercase tracking-wider text-white bg-navy-500 px-2 py-0.5 rounded">CR-TMH602</span>
+            <span class="text-xs text-forest-500">Ethics / Supervision</span>
+          </div>
+          <h3 class="font-display text-lg font-semibold text-burgundy-800 leading-snug mb-1">
+            TeleMental Health Supervision:<br/>Georgia Rule 135-11 Compliance for Supervisors
+          </h3>
+          <p class="text-sm text-forest-600 mb-3">
+            Supervisor-specific telehealth training covering dual consent, supervisee competency evaluation, HIPAA obligations, and compliant supervisory agreements — all anchored in clinical vignettes.
+          </p>
+          <div class="flex items-center gap-4 text-sm">
+            <span class="flex items-center gap-1 text-hunter-700 font-medium">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+              3.0 CE Hours
+            </span>
+            <span class="flex items-center gap-1 text-hunter-700 font-medium">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+              NBCC ACEP #7760
+            </span>
+            <span class="flex items-center gap-1 text-hunter-700 font-medium">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+              </svg>
+              Georgia LPC-S / LCSW / LMFT
+            </span>
+          </div>
+        </div>
+
+        <!-- Pricing row -->
+        <div class="flex items-center justify-between mb-5 px-1">
+          <div>
+            <p class="text-xs text-forest-500 uppercase tracking-wide mb-0.5">Bundle Price</p>
+            <div class="flex items-baseline gap-2">
+              <span id="upsellPrice" class="font-display text-3xl font-bold text-burgundy-800">$29</span>
+              <span class="text-sm text-forest-400 line-through" id="upsellOriginalPrice">$49</span>
+              <span class="text-xs font-bold text-white bg-honey-700 px-2 py-0.5 rounded-full">SAVE 41%</span>
+            </div>
+          </div>
+          <div class="text-right">
+            <p class="text-xs text-forest-500">No subscription needed</p>
+            <p class="text-xs text-forest-500">One-time payment</p>
+          </div>
+        </div>
+
+        <!-- CTAs -->
+        <button id="addCourseBtn" onclick="purchaseUpsell()"
+          class="w-full py-3.5 rounded-xl text-white font-bold text-base transition-all hover:opacity-90 active:scale-[0.98] mb-3"
+          style="background: linear-gradient(135deg,#6B1D34,#8B2542);">
+          Add TeleMental Health Supervision — $29
+        </button>
+        <button onclick="closeUpsell()"
+          class="w-full py-2.5 rounded-xl border border-stone-200 text-forest-500 text-sm font-medium hover:bg-stone-50 transition-colors">
+          No thanks, I'll purchase it separately later
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    const API_URL = window.location.hostname === 'localhost'
+      ? 'http://localhost:5000'
+      : 'https://api.counselorready.com';
+
+    // ─── Parse URL params ───────────────────────────────────────────
+    const params   = new URLSearchParams(window.location.search);
+    const courseCode  = (params.get('course') || '').toUpperCase();
+    const sessionId   = params.get('session_id') || '';
+    const courseSlug  = params.get('slug') || '';
+    const courseName  = params.get('name') ? decodeURIComponent(params.get('name')) : '';
+
+    // ─── Update confirmation UI ─────────────────────────────────────
+    if (courseName) {
+      document.getElementById('courseNameDisplay').textContent = courseName;
+    }
+
+    // Wire "Start Course" to course slug if provided
+    if (courseSlug) {
+      document.getElementById('startCourseBtn').href = `/interactive-course.html?slug=${courseSlug}`;
+    }
+
+    // ─── Show upsell for TMH601 purchasers ──────────────────────────
+    const TMH601_CODES = ['CR-TMH601'];
+    const isTMH601 = TMH601_CODES.includes(courseCode);
+
+    function showUpsell() {
+      const modal = document.getElementById('upsellModal');
+      modal.classList.remove('hidden');
+      // Force reflow so transition fires
+      requestAnimationFrame(() => {
+        modal.style.opacity = '1';
+      });
+    }
+
+    function closeUpsell() {
+      const modal = document.getElementById('upsellModal');
+      modal.style.opacity = '0';
+      setTimeout(() => modal.classList.add('hidden'), 300);
+    }
+
+    // Show after short delay so confirmation animates first
+    if (isTMH601) {
+      setTimeout(showUpsell, 1600);
+    }
+
+    // ─── Purchase upsell (CR-TMH602) ─────────────────────────────
+    async function purchaseUpsell() {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        window.location.href = `/login.html?redirect=${encodeURIComponent(window.location.href)}`;
+        return;
+      }
+
+      const btn = document.getElementById('addCourseBtn');
+      btn.disabled = true;
+      btn.textContent = 'Redirecting to checkout…';
+
+      try {
+        const resp = await fetch(`${API_URL}/api/payments/purchase-course`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            courseCode: 'CR-TMH602',
+            successUrl: `${window.location.origin}/checkout-success.html?course=CR-TMH602&name=${encodeURIComponent('TeleMental Health Supervision: Georgia Rule 135-11 Compliance for Supervisors')}`,
+            cancelUrl: window.location.href
+          })
+        });
+
+        const data = await resp.json();
+
+        if (data.url) {
+          window.location.href = data.url;
+        } else {
+          throw new Error(data.error || 'Checkout session failed');
+        }
+      } catch (err) {
+        console.error('Upsell checkout error:', err);
+        btn.disabled = false;
+        btn.textContent = 'Add TeleMental Health Supervision — $29';
+        alert('Something went wrong. Please try again or contact support@counselorready.com.');
+      }
+    }
+
+    // Close modal on backdrop click
+    document.getElementById('upsellModal').addEventListener('click', function(e) {
+      if (e.target === this) closeUpsell();
+    });
+  </script>
+
+</body>
+</html>

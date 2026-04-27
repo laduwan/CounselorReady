@@ -5,43 +5,18 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Help Center - CounselorReady</title>
+  <link rel="stylesheet" href="/css/design-tokens.css">
+  <link rel="stylesheet" href="/css/typography.css">
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            burgundy: {
-              50: '#fdf5f6', 100: '#fae8eb', 200: '#f5d0d6', 300: '#eba9b5',
-              400: '#dd768a', 500: '#c94d65', 600: '#a83350', 700: '#8b2542',
-              800: '#6b1d34', 900: '#4a1524', 950: '#2d0a14'
-            },
-            forest: {
-              50: '#f3f6f4', 100: '#e3ebe5', 200: '#c8d7cc', 300: '#a1bba8',
-              400: '#759a7f', 500: '#547c5f', 600: '#4A7C59', 700: '#34503d',
-              800: '#2b4133', 900: '#1f3025', 950: '#121c16'
-            },
-            honey: {
-              50: '#FDF9F0', 100: '#F9F0DB', 200: '#F3E0B5', 300: '#EACD86',
-              400: '#D4A855', 500: '#C49545', 600: '#A67936', 700: '#865E2C',
-              800: '#6B4A25'
-            }
-          },
-          fontFamily: {
-            'display': ['Cormorant Garamond', 'Georgia', 'serif'],
-            'body': ['Lato', 'system-ui', 'sans-serif']
-          }
-        }
-      }
-    }
-  </script>
+  <script src="/js/tailwind-config.js"></script>
+  
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Lato:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
   <link rel="stylesheet" href="/lib/fontawesome/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <style>
-    body { font-family: 'Lato', system-ui, sans-serif; }
+    body{background:#F8F7F4; font-family: 'Lato', system-ui, sans-serif; }
     .font-display { font-family: 'Cormorant Garamond', Georgia, serif; }
     .category-card:hover { transform: translateY(-2px); }
     .article-content h1 { font-size: 1.75rem; font-weight: 700; margin-bottom: 1rem; color: #6b1d34; }
@@ -55,27 +30,21 @@
     .article-content strong { font-weight: 600; }
     .article-content code { background: #f3f4f6; padding: 0.2rem 0.4rem; border-radius: 0.25rem; font-size: 0.9em; }
     .article-content a { color: #6b1d34; text-decoration: underline; }
+  
+    /* Shared nav styles */
+    .dd{display:none;position:absolute;top:100%;margin-top:6px;background:#fff;border-radius:10px;box-shadow:0 10px 40px rgba(107,29,52,.12);border:1px solid #FAE8EB;z-index:50;padding:6px 0;min-width:210px}
+    .dd.open{display:block}
+    .dd a{display:flex;align-items:center;gap:10px;padding:8px 16px;font-size:13px;color:#284157;text-decoration:none;transition:background .1s}
+    .dd a:hover{background:#F2F7F4}
+    .ov{display:none;position:fixed;inset:0;z-index:40}.ov.open{display:block}
+    .nav-link{padding:6px 12px;border-radius:6px;font-size:13px;font-weight:500;color:#57534e;text-decoration:none;display:flex;align-items:center;gap:4px;transition:all .15s}
+    .nav-link:hover{color:#6B1D34;background:#FDF5F7}
+    .nav-link.active{color:#6B1D34;background:#FDF5F7;font-weight:600;border-bottom:2px solid #6B1D34}
   </style>
 </head>
 <body class="bg-stone-50 min-h-screen">
-  <header class="bg-white border-b border-stone-200 sticky top-0 z-50">
-    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-      <a href="/" class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-xl flex items-center justify-center shadow-md" style="background: linear-gradient(135deg, #8b2542, #6b1d34);">
-          <span class="font-display font-bold text-lg" style="position: relative; display: inline-block; width: 22px; height: 22px;"><span style="color: #D4A855; position: absolute; top: -3px; left: 0;">C</span><span style="color: #4A7C59; position: absolute; top: 5px; left: 6px;">R</span></span>
-        </div>
-        <span class="font-display font-semibold text-xl">
-          <span class="text-burgundy-800">Counselor</span><span class="text-hunter-600">Ready</span>
-        </span>
-      </a>
-      <nav class="flex items-center gap-6">
-        <a href="/courses.html" class="text-forest-500 hover:text-forest-700 transition-colors">Courses</a>
-        <a href="/help.html" class="text-forest-700 font-medium border-b-2 border-forest-600 pb-1">Help</a>
-        <a href="/dashboard.html" id="dashboardLink" class="hidden px-4 py-2 bg-forest-600 text-white rounded-lg hover:bg-forest-700 transition-colors">Dashboard</a>
-        <a href="/login.html" id="loginLink" class="px-4 py-2 bg-burgundy-700 text-white rounded-lg hover:bg-burgundy-800 transition-colors">Login</a>
-      </nav>
-    </div>
-  </header>
+  <div id="cr-header"></div>
+  <script src="/shared/nav-footer.js"></script>
 
   <main>
     <section id="heroSection" class="py-14" style="background: #F5F5DC;">
@@ -178,16 +147,7 @@
     </section>
   </main>
 
-  <footer class="py-8" style="background: #284157; color: #B3C5D4;">
-    <div class="max-w-6xl mx-auto px-6 text-center">
-      <p>&copy; 2026 CounselorReady. All rights reserved.</p>
-      <div class="flex justify-center gap-6 mt-4">
-        <a href="/privacy.html" class="hover:text-white transition-colors" style="color: #B3C5D4;">Privacy</a>
-        <a href="/terms.html" class="hover:text-white transition-colors" style="color: #B3C5D4;">Terms</a>
-        <a href="/about.html" class="hover:text-white transition-colors" style="color: #B3C5D4;">About</a>
-      </div>
-    </div>
-  </footer>
+  <div id="cr-footer"></div>
 
   <script>
     const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:5000/api' : 'https://api.counselorready.com/api';

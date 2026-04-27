@@ -43,36 +43,20 @@ router.get('/overview', protect, adminOnly, async (req, res) => {
     
     // Get completions from BOTH progress collections
     const [regularCompletions, interactiveCompletions] = await Promise.all([
-      db.collection('usercourseprogresses').countDocuments({ 
-        $or: [
-          { status: 'completed' },
-          { completed: true },
-          { progress: 100 }
-        ]
-      }),
-      db.collection('interactivecourseprogresses').countDocuments({ 
-        $or: [
-          { status: 'completed' },
-          { completed: true },
-          { progress: 100 }
-        ]
-      })
+      db.collection('usercourseprogresses').countDocuments({ status: 'completed' }),
+      db.collection('interactivecourseprogresses').countDocuments({ status: 'completed' })
     ]);
     
     // Get recent completions (last 7 days) from both collections
     const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
     const [recentRegular, recentInteractive] = await Promise.all([
       db.collection('usercourseprogresses').countDocuments({
-        $and: [
-          { $or: [{ status: 'completed' }, { completed: true }, { progress: 100 }] },
-          { $or: [{ completedAt: { $gte: sevenDaysAgo } }, { updatedAt: { $gte: sevenDaysAgo } }] }
-        ]
+        status: 'completed',
+        $or: [{ completedAt: { $gte: sevenDaysAgo } }, { updatedAt: { $gte: sevenDaysAgo } }]
       }),
       db.collection('interactivecourseprogresses').countDocuments({
-        $and: [
-          { $or: [{ status: 'completed' }, { completed: true }, { progress: 100 }] },
-          { $or: [{ completedAt: { $gte: sevenDaysAgo } }, { updatedAt: { $gte: sevenDaysAgo } }] }
-        ]
+        status: 'completed',
+        $or: [{ completedAt: { $gte: sevenDaysAgo } }, { updatedAt: { $gte: sevenDaysAgo } }]
       })
     ]);
     
@@ -88,7 +72,7 @@ router.get('/overview', protect, adminOnly, async (req, res) => {
             completed: { $sum: { $cond: [{ $eq: ['$evaluationCompleted', true] }, 1, 0] } },
             pending: { $sum: { $cond: [
               { $and: [
-                { $or: [{ $eq: ['$status', 'completed'] }, { $eq: ['$completed', true] }, { $eq: ['$progress', 100] }] },
+                { $eq: ['$status', 'completed'] },
                 { $ne: ['$evaluationCompleted', true] }
               ]}, 1, 0
             ]}}
@@ -102,7 +86,7 @@ router.get('/overview', protect, adminOnly, async (req, res) => {
             completed: { $sum: { $cond: [{ $eq: ['$evaluationCompleted', true] }, 1, 0] } },
             pending: { $sum: { $cond: [
               { $and: [
-                { $or: [{ $eq: ['$status', 'completed'] }, { $eq: ['$completed', true] }, { $eq: ['$progress', 100] }] },
+                { $eq: ['$status', 'completed'] },
                 { $ne: ['$evaluationCompleted', true] }
               ]}, 1, 0
             ]}}
@@ -114,7 +98,7 @@ router.get('/overview', protect, adminOnly, async (req, res) => {
     // Calculate CE hours from completed courses (join progress with courses)
     const [regularCEHours, interactiveCEHours] = await Promise.all([
       db.collection('usercourseprogresses').aggregate([
-        { $match: { $or: [{ status: 'completed' }, { completed: true }, { progress: 100 }] } },
+        { $match: { status: 'completed' } },
         {
           $lookup: {
             from: 'courses',
@@ -127,7 +111,7 @@ router.get('/overview', protect, adminOnly, async (req, res) => {
         { $group: { _id: null, total: { $sum: { $ifNull: ['$course.ceHours', 0] } } } }
       ]).toArray(),
       db.collection('interactivecourseprogresses').aggregate([
-        { $match: { $or: [{ status: 'completed' }, { completed: true }, { progress: 100 }] } },
+        { $match: { status: 'completed' } },
         {
           $lookup: {
             from: 'interactivecourses',

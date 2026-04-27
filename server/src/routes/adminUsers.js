@@ -7,6 +7,7 @@
 import express from 'express';
 import User from '../models/User.js';
 import Course from '../models/Course.js';
+import { Course as InteractiveCourse, CourseProgress } from '../models/InteractiveCourse.js';
 import Certificate from '../models/Certificate.js';
 import UserCourseProgress from '../models/UserCourseProgress.js';
 import UserCredential from '../models/UserCredential.js';
@@ -22,23 +23,92 @@ const adminOnly = async (req, res, next) => {
   next();
 };
 
+// @route   GET /api/admin/notification-prefs
+// @desc    Get admin notification preferences
+// @access  Admin only
+router.get('/notification-prefs', protect, adminOnly, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select('email adminNotifPrefs');
+    if (!user) return res.status(404).json({ error: 'Admin user not found' });
+
+    const defaults = {
+      notifyRegistration:       true,
+      notifyEnrollment:         true,
+      notifyCompletion:         true,
+      notifyQuizPass:           false,
+      notifyQuizFail:           true,
+      notifySubscriptionStart:  true,
+      notifySubscriptionCancel: true,
+      notifyPayment:            true,
+      notifyPaymentFail:        true,
+      notifyCertificate:        false,
+    };
+
+    const prefs = { ...defaults, ...(user.adminNotifPrefs?.toObject?.() || user.adminNotifPrefs || {}) };
+
+    res.json({ prefs, adminEmail: user.email });
+  } catch (err) {
+    console.error('GET /admin/notification-prefs error:', err);
+    res.status(500).json({ error: 'Failed to load notification preferences' });
+  }
+});
+
+// @route   PUT /api/admin/notification-prefs
+// @desc    Save admin notification preferences
+// @access  Admin only
+router.put('/notification-prefs', protect, adminOnly, async (req, res) => {
+  try {
+    const { prefs } = req.body;
+    if (!prefs || typeof prefs !== 'object') {
+      return res.status(400).json({ error: 'Invalid prefs payload' });
+    }
+
+    // Allowlist keys — never let the client write arbitrary fields
+    const allowed = [
+      'notifyRegistration', 'notifyEnrollment', 'notifyCompletion',
+      'notifyQuizPass', 'notifyQuizFail', 'notifySubscriptionStart',
+      'notifySubscriptionCancel', 'notifyPayment', 'notifyPaymentFail',
+      'notifyCertificate',
+    ];
+
+    const sanitized = {};
+    allowed.forEach(k => {
+      if (typeof prefs[k] === 'boolean') sanitized[k] = prefs[k];
+    });
+
+    await User.findByIdAndUpdate(req.user.id, { $set: { adminNotifPrefs: sanitized } });
+
+    res.json({ success: true, prefs: sanitized });
+  } catch (err) {
+    console.error('PUT /admin/notification-prefs error:', err);
+    res.status(500).json({ error: 'Failed to save notification preferences' });
+  }
+});
+
 // @route   GET /api/admin/stats
 // @desc    Get admin dashboard stats
 // @access  Admin only
 router.get('/stats', protect, adminOnly, async (req, res) => {
   try {
-    const totalUsers = await User.countDocuments();
-    const activeSubscribers = await User.countDocuments({ 
-      'subscription.status': 'active' 
-    });
-    const totalCourses = await Course.countDocuments({ status: 'published' });
-    const totalCertificates = await Certificate.countDocuments();
-    
+    const [totalUsers, activeSubscribers, oldCourseCount, interactiveCourseCount, totalCertificates, oldEnrollments, oldCompletions, interactiveEnrollments, interactiveCompletions] = await Promise.all([
+      User.countDocuments(),
+      User.countDocuments({ 'subscription.status': 'active' }),
+      Course.countDocuments({ status: 'published' }),
+      InteractiveCourse.countDocuments({ status: 'published' }),
+      Certificate.countDocuments(),
+      UserCourseProgress.countDocuments(),
+      UserCourseProgress.countDocuments({ status: 'completed' }),
+      CourseProgress.countDocuments(),
+      CourseProgress.countDocuments({ status: { $in: ['completed', 'certified'] } })
+    ]);
+
     res.json({
       totalUsers,
       activeSubscribers,
-      totalCourses,
-      totalCertificates
+      totalCourses: oldCourseCount + interactiveCourseCount,
+      totalCertificates,
+      totalEnrollments: oldEnrollments + interactiveEnrollments,
+      totalCompletions: oldCompletions + interactiveCompletions
     });
   } catch (error) {
     console.error('Admin stats error:', error);
@@ -157,16 +227,25 @@ router.get('/users', protect, adminOnly, async (req, res) => {
       .skip(skip)
       .limit(limit);
     
-    // Get course counts for each user
+    // Get course counts for each user (both old + interactive systems)
     const userIds = users.map(u => u._id);
-    const courseCounts = await UserCourseProgress.aggregate([
-      { $match: { userId: { $in: userIds } } },
-      { $group: { _id: '$userId', count: { $sum: 1 } } }
+    const [oldCounts, interactiveCounts] = await Promise.all([
+      UserCourseProgress.aggregate([
+        { $match: { userId: { $in: userIds } } },
+        { $group: { _id: '$userId', count: { $sum: 1 } } }
+      ]),
+      CourseProgress.aggregate([
+        { $match: { userId: { $in: userIds } } },
+        { $group: { _id: '$userId', count: { $sum: 1 } } }
+      ])
     ]);
     
     const courseCountMap = {};
-    courseCounts.forEach(c => {
-      courseCountMap[c._id.toString()] = c.count;
+    oldCounts.forEach(c => {
+      courseCountMap[c._id.toString()] = (courseCountMap[c._id.toString()] || 0) + c.count;
+    });
+    interactiveCounts.forEach(c => {
+      courseCountMap[c._id.toString()] = (courseCountMap[c._id.toString()] || 0) + c.count;
     });
     
     // Add course counts to users
@@ -281,6 +360,37 @@ router.put('/users/:userId/subscription', protect, adminOnly, async (req, res) =
   } catch (error) {
     console.error('Update subscription error:', error);
     res.status(500).json({ error: 'Failed to update subscription' });
+  }
+});
+
+// @route   POST /api/admin/users/:userId/extend-trial
+// @desc    Extend free trial by 3 days. If expired, reactivates from today.
+// @access  Admin only
+router.post('/users/:userId/extend-trial', protect, adminOnly, async (req, res) => {
+  try {
+    const user = await User.findById(req.params.userId);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    const currentEnd = user.subscription?.trialEndsAt
+      ? new Date(user.subscription.trialEndsAt)
+      : new Date();
+    // If trial already expired, extend from today; otherwise extend from current end date
+    const base = currentEnd < new Date() ? new Date() : currentEnd;
+    const newEnd = new Date(base);
+    newEnd.setDate(newEnd.getDate() + 3);
+    await User.findByIdAndUpdate(req.params.userId, {
+      $set: {
+        'subscription.trialEndsAt': newEnd,
+        'subscription.status': 'trial'
+      }
+    });
+    console.log(`Trial extended for user ${req.params.userId} → new end: ${newEnd.toISOString()}`);
+    res.json({
+      message: 'Trial extended by 3 days',
+      newTrialEndsAt: newEnd
+    });
+  } catch (err) {
+    console.error('Extend trial error:', err);
+    res.status(500).json({ error: 'Failed to extend trial' });
   }
 });
 
@@ -484,25 +594,44 @@ router.get('/users/:userId/progress', protect, adminOnly, async (req, res) => {
       .populate('credentialId', 'name state')
       .sort({ isPrimary: -1, createdAt: -1 });
     
-    // Get course progress
-    const enrollments = await UserCourseProgress.find({ userId })
-      .populate('courseId', 'title slug category ceuHours modules')
-      .sort({ lastAccessedAt: -1 });
+    // Get course progress from BOTH systems
+    const [oldEnrollments, interactiveEnrollments] = await Promise.all([
+      UserCourseProgress.find({ userId })
+        .populate('courseId', 'title slug category ceuHours modules')
+        .sort({ lastAccessedAt: -1 }),
+      CourseProgress.find({ userId })
+        .populate('courseId', 'title slug categories ceHours ceuHours sections')
+        .sort({ lastAccessedAt: -1 })
+    ]);
     
-    // Calculate stats
-    const completedCourses = enrollments.filter(e => e.status === 'completed').length;
-    const inProgressCourses = enrollments.filter(e => e.status === 'in_progress').length;
+    // Combine and calculate stats
+    const allCompleted = [
+      ...oldEnrollments.filter(e => e.status === 'completed'),
+      ...interactiveEnrollments.filter(e => e.status === 'completed' || e.status === 'certified')
+    ];
+    const allInProgress = [
+      ...oldEnrollments.filter(e => e.status === 'in_progress'),
+      ...interactiveEnrollments.filter(e => e.status === 'in_progress')
+    ];
+    const totalEnrollments = oldEnrollments.length + interactiveEnrollments.length;
+    const completedCourses = allCompleted.length;
+    const inProgressCourses = allInProgress.length;
     
-    // Calculate total CE hours earned
+    // Calculate total CE hours earned from both systems
     let totalCEHoursEarned = 0;
-    for (const enrollment of enrollments) {
+    for (const enrollment of oldEnrollments) {
       if (enrollment.status === 'completed' && enrollment.courseId?.ceuHours) {
         totalCEHoursEarned += enrollment.courseId.ceuHours;
       }
     }
+    for (const enrollment of interactiveEnrollments) {
+      if ((enrollment.status === 'completed' || enrollment.status === 'certified') && (enrollment.courseId?.ceHours || enrollment.courseId?.ceuHours)) {
+        totalCEHoursEarned += enrollment.courseId.ceHours || enrollment.courseId.ceuHours;
+      }
+    }
     
-    // Format course progress for display
-    const courseProgress = enrollments.map(e => {
+    // Format course progress for display — old system
+    const oldCourseProgress = oldEnrollments.map(e => {
       const course = e.courseId;
       const totalLessons = course?.modules?.reduce((sum, m) => sum + (m.lessons?.length || 0), 0) || 0;
       
@@ -521,9 +650,38 @@ router.get('/users/:userId/progress', protect, adminOnly, async (req, res) => {
         completedLessonsCount: e.lessonsCompleted?.length || 0,
         totalLessons,
         adminCompleted: e.adminCompleted,
-        adminNote: e.adminNote
+        adminNote: e.adminNote,
+        system: 'legacy'
       };
     });
+
+    // Format course progress for display — interactive system
+    const interactiveCourseProgress = interactiveEnrollments.map(e => {
+      const course = e.courseId;
+      const totalSections = course?.sections?.length || 0;
+      const completedSections = e.sectionProgress?.filter(s => s.status === 'completed').length || 0;
+      
+      return {
+        enrollmentId: e._id,
+        courseId: course?._id,
+        title: course?.title || 'Unknown Course',
+        category: course?.categories?.[0] || 'General',
+        ceHours: course?.ceHours || course?.ceuHours || 0,
+        progress: e.overallProgress || (totalSections > 0 ? Math.round((completedSections / totalSections) * 100) : 0),
+        status: e.status,
+        completed: e.status === 'completed' || e.status === 'certified',
+        completedAt: e.completedAt,
+        enrolledAt: e.createdAt,
+        lastAccessed: e.lastAccessedAt,
+        completedLessonsCount: completedSections,
+        totalLessons: totalSections,
+        assessmentPassed: e.assessmentPassed,
+        certificateId: e.certificateId,
+        system: 'interactive'
+      };
+    });
+
+    const courseProgress = [...interactiveCourseProgress, ...oldCourseProgress];
     
     // Format credentials
     const formattedCredentials = credentials.map(c => ({
@@ -554,7 +712,7 @@ router.get('/users/:userId/progress', protect, adminOnly, async (req, res) => {
         disabledAt: user.disabledAt
       },
       stats: {
-        totalCourses: enrollments.length,
+        totalCourses: totalEnrollments,
         completedCourses,
         inProgressCourses,
         totalCredentials: credentials.length,

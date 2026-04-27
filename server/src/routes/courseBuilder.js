@@ -455,31 +455,53 @@ router.post('/outline', protect, adminOnly, async (req, res) => {
       return res.status(400).json({ error: 'Title, topic, and CE hours are required' });
     }
 
-    const moduleCount = Math.max(4, ceHours * 2);
+    // 1 CE = 2 content sections + 1 conclusion
+    const contentSections = ceHours * 2;
+    const totalSections = contentSections + 1;
+    const wordsPerSection = Math.round((ceHours * 6000) / contentSections);
 
-    const prompt = `You are an expert instructional designer for mental health continuing education courses. Generate a detailed course outline for NBCC ACEP-compliant CE training.
+    const prompt = `You are an expert instructional designer for NBCC ACEP-compliant mental health CE courses.
 
 COURSE PARAMETERS:
 - Title: ${title}
-- CE Hours: ${ceHours} (requires ${ceHours * WORDS_PER_CE_HOUR}+ words total)
+- CE Hours: ${ceHours} (requires ${ceHours * 6000}+ learner-visible words total)
 - Category: ${category}
 - Level: ${level}
-- Target Audience: ${targetAudience?.join(', ') || 'Licensed mental health professionals'}
-- Topic Description: ${topic}
+- Target Audience: ${(targetAudience || ['Licensed mental health professionals']).join(', ')}
+- Topic: ${topic}
 ${specialInstructions ? `- Special Instructions: ${specialInstructions}` : ''}
 
-Generate a JSON object with this EXACT structure:
+Generate a JSON course outline with EXACTLY this structure:
 {
-  "title": "Course title",
-  "description": "Comprehensive 2-3 paragraph course description",
-  "objectives": ["Learning objective 1", "Learning objective 2", ...],
-  "modules": [
-    { "title": "Module 1: Title Here", "topics": ["Topic 1", "Topic 2", "Topic 3"], "estimatedWords": 3000 },
+  "title": "Full course title",
+  "description": "2-3 paragraph course description for catalog",
+  "objectives": ["Participants will be able to ...", ...],
+  "sections": [
+    {
+      "title": "Section 1: Title Here",
+      "order": 1,
+      "topics": ["Topic A", "Topic B", "Topic C"],
+      "estimatedWords": ${wordsPerSection},
+      "kcCount": 3
+    },
     ...
+    {
+      "title": "Conclusion: Key Takeaways and Practice Integration",
+      "order": ${totalSections},
+      "topics": ["Summary", "Practice application", "Resources"],
+      "estimatedWords": 800,
+      "kcCount": 0
+    }
   ]
 }
 
-Return ONLY valid JSON, no markdown.`;
+Rules:
+- Exactly ${totalSections} sections (${contentSections} content + 1 conclusion)
+- Each content section: ${wordsPerSection} estimated words, 2-3 KCs
+- Conclusion: no KCs
+- Objectives must start with action verbs (Identify, Apply, Analyze, Describe, Demonstrate)
+- Minimum 5 objectives for ${ceHours} CE hours
+- Return ONLY valid JSON, no markdown`;
 
     const response = await anthropic.messages.create({
       model: 'claude-sonnet-4-20250514',
@@ -487,13 +509,13 @@ Return ONLY valid JSON, no markdown.`;
       messages: [{ role: 'user', content: prompt }]
     });
 
-    const content = response.content[0].text;
+    const raw = response.content[0].text;
     let outline;
     try {
-      const jsonMatch = content.match(/\{[\s\S]*\}/);
-      outline = JSON.parse(jsonMatch ? jsonMatch[0] : content);
-    } catch (parseError) {
-      return res.status(500).json({ error: 'Failed to parse outline', raw: content });
+      const match = raw.match(/\{[\s\S]*\}/);
+      outline = JSON.parse(match ? match[0] : raw);
+    } catch {
+      return res.status(500).json({ error: 'Failed to parse outline response', raw });
     }
 
     outline.ceHours = ceHours;
@@ -509,68 +531,72 @@ Return ONLY valid JSON, no markdown.`;
   }
 });
 
+
 router.post('/generate', protect, adminOnly, async (req, res) => {
   try {
     const { title, ceHours, category, level, targetAudience, outline, specialInstructions } = req.body;
 
-    if (!outline || !outline.modules) {
-      return res.status(400).json({ error: 'Outline with modules is required' });
+    if (!outline || !Array.isArray(outline.sections) || outline.sections.length === 0) {
+      return res.status(400).json({ error: 'Outline with sections[] array is required' });
     }
 
-    const wordsPerModule = Math.round((ceHours * WORDS_PER_CE_HOUR) / outline.modules.length);
     const course = {
-      title: outline.title || title,
-      slug: slugify(outline.title || title),
-      description: outline.description,
-      ceHours: ceHours,
-      credits: ceHours,
-      category: category,
-      level: level,
-      contentArea: category,
+      title:          outline.title || title,
+      slug:           slugify(outline.title || title),
+      description:    outline.description || '',
+      ceHours,
+      ceuHours:       ceHours,
+      category,
+      level,
+      ceCategory:     category,
+      contentArea:    category,
       targetAudience: targetAudience || [],
-      objectives: outline.objectives || [],
+      objectives:     outline.objectives || [],
       deliveryMethod: 'online',
-      modules: [],
-      assessment: { questions: [], passThreshold: PASS_THRESHOLD },
-      references: [],
-      isPublished: false,
-      status: 'draft',
-      acepProvider: { name: 'GA Integrated Therapeutic Perspectives LLC', number: '7760' },
-      presenter: {
-        name: 'CounselorReady',
-        credentials: 'NBCC ACEP #7760',
-        qualificationStatement: 'Content developed by licensed mental health professionals.'
-      }
+      accessType:     'subscription',
+      status:         'draft',
+      isPublished:    false,
+      sections:       [],
+      assessment:     { questions: [], passThreshold: 0.80, passingScore: 80, maxAttempts: 3 },
+      references:     [],
     };
 
-    for (let i = 0; i < outline.modules.length; i++) {
-      const mod = outline.modules[i];
-      const moduleContent = await generateModule({
-        moduleNumber: i + 1,
-        moduleTitle: mod.title,
-        topics: mod.topics,
-        wordsTarget: wordsPerModule,
-        courseTitle: course.title,
-        level: level,
-        targetAudience: targetAudience
+    // Generate each section
+    for (let i = 0; i < outline.sections.length; i++) {
+      const sec = outline.sections[i];
+      const isConclusion = i === outline.sections.length - 1;
+      const contentBlocks = await generateSectionBlocks({
+        sectionNumber:  i + 1,
+        sectionTitle:   sec.title,
+        topics:         sec.topics || [],
+        wordsTarget:    sec.estimatedWords || 3000,
+        kcCount:        isConclusion ? 0 : (sec.kcCount || 2),
+        courseTitle:    course.title,
+        level,
+        targetAudience,
+        isConclusion,
       });
-      course.modules.push(moduleContent);
+
+      course.sections.push({
+        title:         sec.title,
+        order:         i + 1,
+        contentBlocks,
+      });
     }
 
+    // Generate final assessment
     course.assessment = await generateAssessment({
-      courseTitle: course.title,
-      modules: course.modules,
-      questionCount: Math.max(MIN_ASSESSMENT_QUESTIONS, ceHours * 7)
+      courseTitle:   course.title,
+      sections:      course.sections,
+      questionCount: Math.max(15, ceHours * 7),
     });
 
+    // Generate references
     course.references = await generateReferences({
       courseTitle: course.title,
-      category: category,
-      topics: outline.modules.map(m => m.title)
+      category,
+      topics:      outline.sections.map(s => s.title),
     });
-
-    course._wordCount = countCourseWords(course);
-    course._requiredWords = ceHours * WORDS_PER_CE_HOUR;
 
     res.json(course);
 
@@ -580,107 +606,289 @@ router.post('/generate', protect, adminOnly, async (req, res) => {
   }
 });
 
-async function generateModule({ moduleNumber, moduleTitle, topics, wordsTarget, courseTitle, level, targetAudience }) {
-  const prompt = `Create content for Module ${moduleNumber}: ${moduleTitle}
 
-Course: ${courseTitle}
-Topics: ${topics?.join(', ') || 'Based on module title'}
-Target words: ${wordsTarget}
+// ─── Generate contentBlocks[] for one section ────────────────────────────────
+// Gold Standard rhythm:
+//   sectionDivider → text (intro) → accordion → text (deep dive) →
+//   [clinical vignette blockquote if content section] →
+//   multipleChoice × kcCount → reflection
+//   Conclusion: sectionDivider → text → accordion → reflection → resources
+
+async function generateSectionBlocks({
+  sectionNumber, sectionTitle, topics, wordsTarget,
+  kcCount, courseTitle, level, targetAudience, isConclusion,
+}) {
+  const audience = (targetAudience || []).join(', ') || 'licensed mental health professionals';
+
+  const prompt = isConclusion
+    ? `You are writing the conclusion section for a CE course titled "${courseTitle}".
+
+Section: "${sectionTitle}"
+
+Generate a JSON array of content blocks for this conclusion section.
+Use EXACTLY this structure — no other block types:
+
+[
+  {
+    "type": "sectionDivider",
+    "title": "${sectionTitle}",
+    "subtitle": "Key Takeaways and Practice Integration",
+    "sectionNumber": ${sectionNumber}
+  },
+  {
+    "type": "text",
+    "heading": "Course Summary",
+    "content": "<p>400-600 word summary paragraph...</p><p>Continue...</p>"
+  },
+  {
+    "type": "accordion",
+    "title": "Module Highlights",
+    "items": [
+      { "title": "Key concept 1", "content": "150-200 word explanation..." },
+      { "title": "Key concept 2", "content": "150-200 word explanation..." },
+      { "title": "Key concept 3", "content": "150-200 word explanation..." }
+    ]
+  },
+  {
+    "type": "reflection",
+    "question": "Ethical Practice Plan: Describe how you will integrate one key learning from this course into your practice within the next 30 days. What specific steps will you take?",
+    "minLength": 100
+  },
+  {
+    "type": "resources",
+    "title": "Additional Resources",
+    "resources": [
+      { "title": "Resource title", "url": "https://example.org", "type": "link" },
+      { "title": "Resource 2", "url": "https://example.org", "type": "link" }
+    ]
+  }
+]
+
+Return ONLY a valid JSON array. No markdown.`
+
+    : `You are writing Section ${sectionNumber} of a CE course titled "${courseTitle}".
+
+Section: "${sectionTitle}"
+Topics to cover: ${topics.join(', ')}
+Target words: ${wordsTarget} (count all text across all blocks)
+Audience: ${audience}
 Level: ${level}
 
-Generate JSON:
-{
-  "title": "${moduleTitle}",
-  "order": ${moduleNumber},
-  "lessons": [
-    { "title": "Lesson title", "order": 1, "type": "text", "content": "<h3>Header</h3><p>Content...</p>", "textContent": "Plain text" }
-  ],
-  "quiz": {
-    "title": "Module ${moduleNumber} Knowledge Check",
-    "questions": [
-      { "question": "Question?", "options": [{ "text": "A", "isCorrect": false }, { "text": "B", "isCorrect": true }], "explanation": "Why B is correct" }
-    ],
-    "passingScore": 0.80
+Generate a JSON array of content blocks using EXACTLY this structure and rhythm:
+
+[
+  {
+    "type": "sectionDivider",
+    "title": "${sectionTitle}",
+    "subtitle": "Brief engaging subtitle",
+    "sectionNumber": ${sectionNumber}
+  },
+  {
+    "type": "text",
+    "heading": "Introduction heading",
+    "content": "<p>300-500 word introduction paragraph(s). Use <strong> for emphasis. Use <p> tags for each paragraph.</p>"
+  },
+  {
+    "type": "accordion",
+    "title": "Accordion title related to core concept",
+    "items": [
+      { "title": "Subtopic 1", "content": "200-300 word explanation with clinical context..." },
+      { "title": "Subtopic 2", "content": "200-300 word explanation..." },
+      { "title": "Subtopic 3", "content": "200-300 word explanation..." },
+      { "title": "Subtopic 4", "content": "200-300 word explanation..." }
+    ]
+  },
+  {
+    "type": "text",
+    "heading": "Deep Dive heading",
+    "content": "<p>800-1200 word detailed content. Multiple paragraphs with <p> tags. Clinical examples, research citations (Author, Year), and practical application.</p><p>Continue the explanation...</p>"
+  },
+  {
+    "type": "text",
+    "heading": "Clinical Application heading",
+    "content": "<blockquote><p><strong>Clinical Vignette:</strong> [200-word realistic case example with a licensed counselor and a client]</p></blockquote>"
+  },
+  ${Array.from({ length: kcCount }, (_, i) => `{
+    "type": "multipleChoice",
+    "question": "Clinical question ${i + 1} testing understanding of ${topics[i % topics.length] || 'course content'}?",
+    "options": ["Option A — plausible distractor", "Option B — plausible distractor", "Option C — correct answer", "Option D — plausible distractor"],
+    "correctAnswer": 2,
+    "explanation": "Option C is correct because... [50-80 word explanation with clinical rationale]"
+  }`).join(',\n  ')}${kcCount > 0 ? ',' : ''}
+  {
+    "type": "reflection",
+    "question": "Reflective practice question: How does this section's content connect to a recent clinical situation you've encountered? What would you do differently now?",
+    "minLength": 75
   }
-}
+]
 
-Write ${wordsTarget}+ words. Include clinical examples. Return ONLY JSON.`;
-
-  const response = await anthropic.messages.create({
-    model: 'claude-sonnet-4-20250514',
-    max_tokens: 8192,
-    messages: [{ role: 'user', content: prompt }]
-  });
-
-  const content = response.content[0].text;
-  const jsonMatch = content.match(/\{[\s\S]*\}/);
-  return JSON.parse(jsonMatch ? jsonMatch[0] : content);
-}
-
-async function generateAssessment({ courseTitle, modules, questionCount }) {
-  const moduleTopics = modules.map(m => m.title).join(', ');
-  
-  const prompt = `Generate ${questionCount} assessment questions for "${courseTitle}".
-Modules: ${moduleTopics}
-
-Return JSON:
-{ "questions": [{ "question": "?", "options": [{ "text": "A", "isCorrect": false }], "explanation": "..." }], "passThreshold": 0.80 }
-
-Return ONLY JSON.`;
+CRITICAL RULES:
+- options[] MUST be plain strings (no objects)
+- correctAnswer MUST be a number (0-based index)
+- Vary which index (0,1,2,3) is correctAnswer across KCs — never all the same
+- No option should appear correct >40% of time across all KCs in this section
+- content fields use HTML: <p>, <strong>, <em>, <ul><li>, <blockquote> only
+- No inline styles, no class attributes
+- Return ONLY a valid JSON array. No markdown.`;
 
   const response = await anthropic.messages.create({
     model: 'claude-sonnet-4-20250514',
     max_tokens: 8192,
-    messages: [{ role: 'user', content: prompt }]
+    messages: [{ role: 'user', content: prompt }],
   });
 
-  const content = response.content[0].text;
-  const jsonMatch = content.match(/\{[\s\S]*\}/);
-  return JSON.parse(jsonMatch ? jsonMatch[0] : content);
+  const raw = response.content[0].text;
+  let blocks;
+  try {
+    const match = raw.match(/\[[\s\S]*\]/);
+    blocks = JSON.parse(match ? match[0] : raw);
+  } catch {
+    // Fallback: return minimal valid section
+    blocks = [
+      { type: 'sectionDivider', title: sectionTitle, sectionNumber, subtitle: '' },
+      { type: 'text', heading: sectionTitle, content: `<p>Content for ${sectionTitle}.</p>` },
+    ];
+  }
+
+  // Enforce schema: options must be [String], correctAnswer must be Number
+  blocks = blocks.map(block => {
+    if (block.type === 'multipleChoice' || block.type === 'multiSelect') {
+      // Normalize options to [String]
+      if (Array.isArray(block.options)) {
+        block.options = block.options.map(o =>
+          typeof o === 'string' ? o : (o?.text || o?.label || String(o) || '')
+        );
+      } else {
+        block.options = ['', '', '', ''];
+      }
+      // Normalize correctAnswer to Number
+      if (typeof block.correctAnswer !== 'number') {
+        // Try to find isCorrect: true in original options
+        const orig = Array.isArray(block.options) ? block.options : [];
+        const idx = orig.findIndex(o => o?.isCorrect === true);
+        block.correctAnswer = idx >= 0 ? idx : 0;
+      }
+    }
+    return block;
+  });
+
+  return blocks;
 }
+
+
+// ─── Generate final assessment ────────────────────────────────────────────────
+
+async function generateAssessment({ courseTitle, sections, questionCount }) {
+  const sectionTitles = sections.map(s => s.title).join(', ');
+
+  const prompt = `Generate ${questionCount} final exam questions for the CE course "${courseTitle}".
+Sections covered: ${sectionTitles}
+
+Requirements:
+- Mix of difficulty: 30% recall, 50% application, 20% analysis
+- Each question must have exactly 4 options
+- Distribute correct answers evenly across positions A(0), B(1), C(2), D(3) — no single position >40%
+- Clinical scenarios preferred over pure recall
+- Minimum 15 questions, maximum 25
+
+Return ONLY a JSON object:
+{
+  "questions": [
+    {
+      "question": "Question text?",
+      "type": "multiple_choice",
+      "options": ["Option A text", "Option B text", "Option C text", "Option D text"],
+      "correctAnswer": 1,
+      "explanation": "Why this answer is correct (50-80 words)."
+    }
+  ],
+  "passThreshold": 0.80,
+  "passingScore": 80,
+  "maxAttempts": 3
+}
+
+Return ONLY valid JSON. No markdown.`;
+
+  const response = await anthropic.messages.create({
+    model: 'claude-sonnet-4-20250514',
+    max_tokens: 8192,
+    messages: [{ role: 'user', content: prompt }],
+  });
+
+  const raw = response.content[0].text;
+  let result;
+  try {
+    const match = raw.match(/\{[\s\S]*\}/);
+    result = JSON.parse(match ? match[0] : raw);
+  } catch {
+    result = { questions: [], passThreshold: 0.80, passingScore: 80, maxAttempts: 3 };
+  }
+
+  // Enforce canonical schema
+  if (Array.isArray(result.questions)) {
+    result.questions = result.questions.map(q => ({
+      question:      q.question || '',
+      type:          'multiple_choice',
+      options:       Array.isArray(q.options)
+        ? q.options.map(o => typeof o === 'string' ? o : (o?.text || String(o) || ''))
+        : ['', '', '', ''],
+      correctAnswer: typeof q.correctAnswer === 'number' ? q.correctAnswer : 0,
+      explanation:   q.explanation || '',
+    }));
+  }
+
+  return result;
+}
+
+
+// ─── Generate references ──────────────────────────────────────────────────────
 
 async function generateReferences({ courseTitle, category, topics }) {
-  const prompt = `Generate 10-15 APA references for "${courseTitle}" (${category}).
+  const prompt = `Generate 10-15 APA-7 formatted references for the CE course "${courseTitle}" (${category}).
 Topics: ${topics.join(', ')}
-Return JSON array: ["Reference 1", "Reference 2", ...]
-Return ONLY JSON array.`;
+
+Return ONLY a JSON array of reference objects:
+[
+  {
+    "author": "Last, F. M., & Last, F. M.",
+    "year": "2023",
+    "title": "Article or book title here",
+    "source": "Journal Name, 45(2), 123–134. https://doi.org/10.xxxx/xxxxx"
+  }
+]
+
+Use realistic but generalized citations — real journal names, plausible DOIs.
+Return ONLY valid JSON array. No markdown.`;
 
   const response = await anthropic.messages.create({
     model: 'claude-sonnet-4-20250514',
     max_tokens: 2048,
-    messages: [{ role: 'user', content: prompt }]
+    messages: [{ role: 'user', content: prompt }],
   });
 
-  const content = response.content[0].text;
-  const jsonMatch = content.match(/\[[\s\S]*\]/);
-  return JSON.parse(jsonMatch ? jsonMatch[0] : content);
+  const raw = response.content[0].text;
+  try {
+    const match = raw.match(/\[[\s\S]*\]/);
+    return JSON.parse(match ? match[0] : raw);
+  } catch {
+    return [];
+  }
 }
 
-function countCourseWords(course) {
-  let total = 0;
-  const countWords = (text) => {
-    if (!text) return 0;
-    return text.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().split(/\s+/).length;
-  };
-  total += countWords(course.description);
-  course.objectives?.forEach(obj => { total += countWords(obj); });
-  course.modules?.forEach(mod => {
-    total += countWords(mod.title);
-    mod.lessons?.forEach(lesson => {
-      total += countWords(lesson.textContent || lesson.content);
-    });
-  });
-  return total;
-}
 
 function slugify(title) {
-  return title.toLowerCase().replace(/['']/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').substring(0, 100);
+  return (title || '')
+    .toLowerCase()
+    .replace(/['']/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .substring(0, 100);
 }
 
 router.post('/save', protect, adminOnly, async (req, res) => {
   try {
     const courseData = req.body;
-    const InteractiveCourse = (await import('../models/InteractiveCourse.js')).default;
+    const { Course: InteractiveCourse } = await import('../models/InteractiveCourse.js');
 
     // Clean transient fields
     delete courseData._wordCount;
@@ -766,6 +974,223 @@ router.post('/save', protect, adminOnly, async (req, res) => {
 
   } catch (error) {
     console.error('Save course error:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// ═══════════════════════════════════════════════════════════════════
+// PUBLISH — save + set published status
+// ═══════════════════════════════════════════════════════════════════
+
+router.post('/publish', protect, adminOnly, async (req, res) => {
+  try {
+    const { Course: InteractiveCourse } = await import('../models/InteractiveCourse.js');
+    const courseData = req.body;
+    const courseId = courseData._id;
+
+    if (!courseId) {
+      return res.status(400).json({ success: false, error: 'Course must be saved before publishing (no _id)' });
+    }
+
+    // Basic validation before publishing
+    const errors = [];
+    if (!courseData.title || courseData.title.trim().length < 3) errors.push('Title is required (min 3 chars)');
+    if (!courseData.ceHours || courseData.ceHours < 1) errors.push('CE hours must be at least 1');
+    if (!courseData.sections || courseData.sections.length === 0) errors.push('At least one section is required');
+    if (!courseData.objectives || courseData.objectives.length === 0) errors.push('At least one learning objective is required');
+
+    // Word count check
+    let totalChars = 0;
+    if (courseData.sections && Array.isArray(courseData.sections)) {
+      courseData.sections.forEach(section => {
+        (section.contentBlocks || []).forEach(block => {
+          const raw = block.textContent || block.content || block.text || block.html || block.body || '';
+          const plain = raw.replace(/<[^>]+>/g, ' ').replace(/&\w+;/g, ' ').trim();
+          totalChars += plain.length;
+        });
+      });
+    }
+    const wordCount = Math.round(totalChars / 5);
+    const targetWords = (courseData.ceHours || 0) * 6000;
+    if (wordCount < targetWords * 0.8) {
+      errors.push(`Word count ${wordCount} is below 80% of target ${targetWords} (NBCC ACEP requirement)`);
+    }
+
+    // Assessment check
+    const assessmentQs = courseData.assessment?.questions || [];
+    if (assessmentQs.length < 15) {
+      errors.push(`Assessment has ${assessmentQs.length} questions (minimum 15 required)`);
+    }
+
+    if (errors.length > 0) {
+      return res.status(422).json({ success: false, errors, error: errors.join('; ') });
+    }
+
+    // Set publish fields
+    delete courseData._id;
+    courseData.status = 'published';
+    courseData.isPublished = true;
+    courseData.wordCount = wordCount;
+    courseData.publishedAt = new Date();
+
+    // Hardcoded presenter/provider (same as save)
+    courseData.presenter = {
+      name: 'Kejuiana Johnson',
+      credentials: 'MA, LPC, NCC, CPCS, BC-TMH',
+      licenseNumber: 'LPC009587',
+      licenseState: 'Georgia',
+      category: 'category1'
+    };
+    courseData.ceProvider = 'GA Integrated Therapeutic Perspectives LLC';
+    courseData.acepNumber = '7760';
+    if (courseData.acepProvider) delete courseData.acepProvider;
+
+    const course = await InteractiveCourse.findByIdAndUpdate(
+      courseId,
+      { $set: courseData },
+      { new: true, runValidators: false }
+    );
+
+    if (!course) {
+      return res.status(404).json({ success: false, error: 'Course not found' });
+    }
+
+    res.json({
+      success: true,
+      course: {
+        _id: course._id,
+        slug: course.slug,
+        title: course.title,
+        status: course.status,
+        isPublished: course.isPublished
+      }
+    });
+
+  } catch (error) {
+    console.error('Publish course error:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// ═══════════════════════════════════════════════════════════════════
+// VALIDATE — server-side ACEP compliance check (no save)
+// ═══════════════════════════════════════════════════════════════════
+
+router.post('/validate', protect, adminOnly, async (req, res) => {
+  try {
+    const courseData = req.body;
+    const errors = [];
+    const warnings = [];
+
+    // Title
+    if (!courseData.title || courseData.title.trim().length < 3) errors.push({ field: 'title', message: 'Title is required (min 3 chars)' });
+
+    // CE Hours
+    if (!courseData.ceHours || courseData.ceHours < 1) errors.push({ field: 'ceHours', message: 'CE hours must be at least 1' });
+
+    // Objectives
+    const objectives = courseData.objectives || [];
+    if (objectives.length === 0) errors.push({ field: 'objectives', message: 'At least one learning objective is required' });
+
+    // Sections
+    const sections = courseData.sections || [];
+    if (sections.length === 0) errors.push({ field: 'sections', message: 'At least one content section is required' });
+
+    // Word count
+    let totalChars = 0;
+    sections.forEach(section => {
+      (section.contentBlocks || []).forEach(block => {
+        const raw = block.textContent || block.content || block.text || block.html || block.body || '';
+        const plain = raw.replace(/<[^>]+>/g, ' ').replace(/&\w+;/g, ' ').trim();
+        totalChars += plain.length;
+      });
+    });
+    const wordCount = Math.round(totalChars / 5);
+    const targetWords = (courseData.ceHours || 0) * 6000;
+    if (wordCount < targetWords) {
+      errors.push({ field: 'wordCount', message: `${wordCount} words — need ${targetWords} (${courseData.ceHours} CE × 6,000 words)` });
+    } else if (wordCount < targetWords * 1.1) {
+      warnings.push({ field: 'wordCount', message: `Word count ${wordCount} is close to minimum ${targetWords}` });
+    }
+
+    // Assessment
+    const assessmentQs = courseData.assessment?.questions || [];
+    if (assessmentQs.length < 15) {
+      errors.push({ field: 'assessment', message: `${assessmentQs.length} questions — minimum 15 required` });
+    }
+
+    // Answer distribution check
+    if (assessmentQs.length >= 15) {
+      const answerCounts = [0, 0, 0, 0];
+      assessmentQs.forEach(q => {
+        const idx = typeof q.correctAnswer === 'number' ? q.correctAnswer : -1;
+        if (idx >= 0 && idx < 4) answerCounts[idx]++;
+      });
+      const maxPct = Math.max(...answerCounts) / assessmentQs.length;
+      if (maxPct > 0.4) {
+        warnings.push({ field: 'assessment', message: `Answer distribution skewed — one option is correct ${Math.round(maxPct * 100)}% of the time (max 40%)` });
+      }
+    }
+
+    // References
+    const refs = courseData.references || [];
+    if (refs.length < 3) {
+      warnings.push({ field: 'references', message: `${refs.length} references — recommend at least 3` });
+    }
+
+    // Description
+    if (!courseData.description || courseData.description.length < 20) {
+      warnings.push({ field: 'description', message: 'Course description is missing or very short' });
+    }
+
+    res.json({
+      valid: errors.length === 0,
+      errors,
+      warnings,
+      wordCount,
+      targetWords,
+      assessmentCount: assessmentQs.length
+    });
+
+  } catch (error) {
+    console.error('Validate course error:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// ═══════════════════════════════════════════════════════════════════
+// LOAD BY SLUG — fetch a course for editing by slug
+// ═══════════════════════════════════════════════════════════════════
+
+router.get('/slug/:slug', protect, adminOnly, async (req, res) => {
+  try {
+    const { Course: InteractiveCourse } = await import('../models/InteractiveCourse.js');
+    const course = await InteractiveCourse.findOne({ slug: req.params.slug });
+    if (!course) {
+      return res.status(404).json({ success: false, error: 'Course not found' });
+    }
+    res.json({ success: true, course });
+  } catch (error) {
+    console.error('Load course by slug error:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// ═══════════════════════════════════════════════════════════════════
+// LOAD BY ID — fetch a course for editing
+// IMPORTANT: This route MUST be last — `:id` is a catch-all param
+// ═══════════════════════════════════════════════════════════════════
+
+router.get('/:id', protect, adminOnly, async (req, res) => {
+  try {
+    const { Course: InteractiveCourse } = await import('../models/InteractiveCourse.js');
+    const course = await InteractiveCourse.findById(req.params.id);
+    if (!course) {
+      return res.status(404).json({ success: false, error: 'Course not found' });
+    }
+    res.json({ success: true, course });
+  } catch (error) {
+    console.error('Load course error:', error);
     res.status(500).json({ success: false, error: error.message });
   }
 });

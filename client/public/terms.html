@@ -5,37 +5,16 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Terms of Service - CounselorReady</title>
+  <link rel="stylesheet" href="/css/design-tokens.css">
+  <link rel="stylesheet" href="/css/typography.css">
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            burgundy: {
-              50: '#fdf5f6', 100: '#fae8eb', 200: '#f5d0d6', 300: '#eba9b5',
-              400: '#dd768a', 500: '#c94d65', 600: '#a83350', 700: '#8b2542',
-              800: '#6b1d34', 900: '#4a1524',
-            },
-            forest: {
-              50: '#f3f6f4', 100: '#e3ebe5', 200: '#c8d7cc', 300: '#a1bba8',
-              400: '#759a7f', 500: '#547c5f', 600: '#4A7C59', 700: '#34503d',
-              800: '#2b4133', 900: '#1f3025',
-            },
-            gold: { 300: '#fde047', 400: '#facc15', 500: '#d4a012' }
-          },
-          fontFamily: {
-            'display': ['Cormorant Garamond', 'Georgia', 'serif'],
-            'body': ['Lato', 'system-ui', 'sans-serif']
-          }
-        }
-      }
-    }
-  </script>
+  <script src="/js/tailwind-config.js"></script>
+  
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Lato:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
   <style>
-    body { font-family: 'Lato', system-ui, sans-serif; }
+    body{background:#F8F7F4; font-family: 'Lato', system-ui, sans-serif; }
     .font-display { font-family: 'Cormorant Garamond', Georgia, serif; }
   </style>
 </head>
@@ -118,7 +97,8 @@
 
       <section>
         <h2 class="font-display text-2xl font-semibold text-burgundy-800 mb-4">8. Intellectual Property</h2>
-        <p>All content, including courses, materials, logos, and software, is the property of GAITP LLC and protected by copyright and other intellectual property laws. You may not reproduce, distribute, or create derivative works without our express written consent.</p>
+        <p>All content — including courses, materials, logos, software, and platform technology — is the property of GA Integrated Therapeutic Perspectives LLC (GAITP LLC) and protected by copyright and other intellectual property laws. You may not reproduce, distribute, or create derivative works without our express written consent.</p>
+        <p class="mt-3"><strong>Trademarks:</strong> CounselorReady&trade;, CReady&trade; Viewer, Researched-N-Ready&trade;, and "Learn. License. Lead."&trade; are trademarks of GA Integrated Therapeutic Perspectives LLC. Unauthorized use of these marks is prohibited.</p>
       </section>
 
       <section>
@@ -158,10 +138,13 @@
 
       <section>
         <h2 class="font-display text-2xl font-semibold text-burgundy-800 mb-4">16. Contact</h2>
-        <p>For questions about these Terms, contact us at:</p>
+        <p>For questions about these Terms or other legal matters, contact us at:</p>
         <p class="mt-2">
-          <strong>Ga Integrated Therapeutic Perspectives LLC</strong><br>
-          Email: <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="a6d5d3d6d6c9d4d2e6c5c9d3c8d5c3cac9d4d4c3c7c2df88c5c9cb">[email&#160;protected]</a>
+          <strong>GA Integrated Therapeutic Perspectives LLC</strong><br>
+          PO Box 1417<br>
+          Hinesville, GA 31310<br>
+          Email: <a href="mailto:legal@counselorready.com" class="text-burgundy-700 underline">legal@counselorready.com</a><br>
+          Phone: <a href="tel:+16786644003" class="text-burgundy-700 underline">(678) 664-4003</a>
         </p>
       </section>
 
@@ -169,12 +152,9 @@
   </main>
 
   <!-- Footer -->
-  <footer class="py-8 px-4 bg-white border-t border-burgundy-100 mt-12">
-    <div class="max-w-4xl mx-auto text-center">
-       <p class="text-forest-500 text-sm">© 2025 CounselorReady. All rights reserved.</p>
-      <p class="text-forest-400 text-xs mt-2">Ga Integrated Therapeutic Perspectives LLC | NBCC ACEP #7760</p>
-    </div>
-  </footer>
 
-<script src="/js/footer.js"></script></body>
+<script src="/js/footer.js"></script>
+<script src="/shared/nav-footer.js"></script>
+<div id="cr-footer"></div>
+</body>
 </html>

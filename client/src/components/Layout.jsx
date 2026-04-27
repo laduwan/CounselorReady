@@ -15,28 +15,16 @@ import BroadcastPopup from './BroadcastPopup';
 
 // React routes use Link; external static HTML pages use <a>
 const navLinks = [
-  { name: 'Dashboard', href: '/dashboard' },
-  { name: 'Courses', href: '/courses', children: [
-    { name: 'Browse Courses',    href: '/courses' },
-    { name: 'Researched-n-Ready', href: '/research-ready' },
-    { name: 'Scholarly Articles', href: '/scholarly-articles' },
-    { name: 'Recommendations',   href: '/recommendations' },
-    { name: 'Achievements',      href: '/achievements' },
+  { name: 'Dashboard', href: '/dashboard.html', static: true },
+  { name: 'Courses', href: '/courses.html', static: true, children: [
+    { name: 'Browse Courses',    href: '/courses.html',        static: true },
+    { name: 'Researched-N-Ready', href: '/research-ready.html', static: true },
   ]},
-  { name: 'Credentials', href: '/credentials', children: [
-    { name: 'My Credentials',    href: '/credentials' },
-    { name: 'CE Planner',        href: '/ce-planner' },
-    { name: 'Audit Kit',         href: '/audit-kit' },
-    { name: 'Board Alerts',      href: '/board-alerts' },
+  { name: 'Credentials', href: '/credentials.html', static: true, children: [
+    { name: 'My Credentials', href: '/credentials.html', static: true },
+    { name: 'Audit Report',   href: '/audit.html',       static: true },
   ]},
-  { name: 'Practice', href: '/supervision', children: [
-    { name: 'Supervision',       href: '/supervision' },
-    { name: 'Insurance Tracker', href: '/insurance-tracker' },
-  ]},
-  { name: 'Team', href: '/organization', children: [
-    { name: 'Organization',      href: '/organization' },
-    { name: 'Group Licenses',    href: '/group-licenses' },
-  ]},
+  { name: 'Free Tools', href: '/tools/index.html', static: true },
 ];
 
 const BURGUNDY      = '#6B1D34';
@@ -133,7 +121,7 @@ export default function Layout({ children }) {
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
 
           {/* Logo — shows partner branding when whitelabel is active */}
-          <Link to="/dashboard" className="flex items-center gap-3 flex-shrink-0">
+          <a href="/dashboard.html" className="flex items-center gap-3 flex-shrink-0" style={{ textDecoration: 'none' }}>
             {partner?.branding?.logoUrl ? (
               <>
                 <img src={partner.branding.logoUrl} alt={partner.branding.companyName || partner.name} style={{ height: 36, width: 'auto', borderRadius: '0.5rem' }} />
@@ -154,7 +142,7 @@ export default function Layout({ children }) {
                 </span>
               </>
             )}
-          </Link>
+          </a>
 
           {/* Desktop Nav */}
           <nav className="hidden lg:flex items-center gap-1">
@@ -176,9 +164,18 @@ export default function Layout({ children }) {
               };
 
               if (!hasChildren) {
+                if (link.static) {
+                  return (
+                    <a key={link.href} href={link.href} style={style}
+                      onMouseEnter={e => { if (!active) e.currentTarget.style.background = '#F0EFEA'; }}
+                      onMouseLeave={e => { if (!active) e.currentTarget.style.background = 'transparent'; }}>
+                      {link.name}
+                    </a>
+                  );
+                }
                 return (
                   <Link key={link.href} to={link.href} style={style}
-                    onMouseEnter={e => { if (!active) e.currentTarget.style.background = '#f5f5f4'; }}
+                    onMouseEnter={e => { if (!active) e.currentTarget.style.background = '#F0EFEA'; }}
                     onMouseLeave={e => { if (!active) e.currentTarget.style.background = 'transparent'; }}>
                     {link.name}
                   </Link>
@@ -189,31 +186,52 @@ export default function Layout({ children }) {
                 <div key={link.name} className="relative"
                   onMouseEnter={() => setOpenDropdown(link.name)}
                   onMouseLeave={() => setOpenDropdown(null)}>
-                  <Link to={link.href} style={style}
-                    onMouseEnter={e => { if (!active) e.currentTarget.style.background = '#f5f5f4'; }}
-                    onMouseLeave={e => { if (!active) e.currentTarget.style.background = 'transparent'; }}>
-                    {link.name}
-                    <ChevronDown style={{ width: 14, height: 14, opacity: 0.5, transition: 'transform 0.15s', transform: openDropdown === link.name ? 'rotate(180deg)' : 'rotate(0)' }} />
-                  </Link>
+                  {link.static ? (
+                    <a href={link.href} style={style}
+                      onMouseEnter={e => { if (!active) e.currentTarget.style.background = '#F0EFEA'; }}
+                      onMouseLeave={e => { if (!active) e.currentTarget.style.background = 'transparent'; }}>
+                      {link.name}
+                      <ChevronDown style={{ width: 14, height: 14, opacity: 0.5, transition: 'transform 0.15s', transform: openDropdown === link.name ? 'rotate(180deg)' : 'rotate(0)' }} />
+                    </a>
+                  ) : (
+                    <Link to={link.href} style={style}
+                      onMouseEnter={e => { if (!active) e.currentTarget.style.background = '#F0EFEA'; }}
+                      onMouseLeave={e => { if (!active) e.currentTarget.style.background = 'transparent'; }}>
+                      {link.name}
+                      <ChevronDown style={{ width: 14, height: 14, opacity: 0.5, transition: 'transform 0.15s', transform: openDropdown === link.name ? 'rotate(180deg)' : 'rotate(0)' }} />
+                    </Link>
+                  )}
                   {openDropdown === link.name && (
                     <div style={{ position: 'absolute', top: '100%', left: 0, paddingTop: 4, zIndex: 50 }}>
                       <div style={{ background: 'white', borderRadius: '0.75rem', border: '1px solid #e7e5e4', boxShadow: '0 4px 12px rgba(0,0,0,0.08)', padding: '0.25rem 0', minWidth: 180 }}>
                         {link.children.map(child => {
                           const childActive = isActive(child.href);
+                          const childStyle = {
+                            display: 'block',
+                            padding: '0.5rem 1rem',
+                            fontSize: '0.8125rem',
+                            fontWeight: childActive ? 600 : 400,
+                            color: childActive ? BURGUNDY : '#57534e',
+                            background: childActive ? BURGUNDY_LIGHT : 'transparent',
+                            textDecoration: 'none',
+                            transition: 'background 0.1s',
+                          };
+                          if (child.static) {
+                            return (
+                              <a key={child.href} href={child.href}
+                                onClick={() => setOpenDropdown(null)}
+                                style={childStyle}
+                                onMouseEnter={e => { if (!childActive) e.target.style.background = '#F0EFEA'; }}
+                                onMouseLeave={e => { if (!childActive) e.target.style.background = 'transparent'; }}>
+                                {child.name}
+                              </a>
+                            );
+                          }
                           return (
                             <Link key={child.href} to={child.href}
                               onClick={() => setOpenDropdown(null)}
-                              style={{
-                                display: 'block',
-                                padding: '0.5rem 1rem',
-                                fontSize: '0.8125rem',
-                                fontWeight: childActive ? 600 : 400,
-                                color: childActive ? BURGUNDY : '#57534e',
-                                background: childActive ? BURGUNDY_LIGHT : 'transparent',
-                                textDecoration: 'none',
-                                transition: 'background 0.1s',
-                              }}
-                              onMouseEnter={e => { if (!childActive) e.target.style.background = '#f5f5f4'; }}
+                              style={childStyle}
+                              onMouseEnter={e => { if (!childActive) e.target.style.background = '#F0EFEA'; }}
                               onMouseLeave={e => { if (!childActive) e.target.style.background = 'transparent'; }}>
                               {child.name}
                             </Link>
@@ -367,10 +385,10 @@ export default function Layout({ children }) {
                         <ShieldCheck className="w-4 h-4" /> Admin Panel
                       </a>
                     )}
-                    <Link to="/settings" onClick={() => setUserMenuOpen(false)}
+                    <a href="/settings.html" onClick={() => setUserMenuOpen(false)}
                       className="flex items-center gap-2 px-4 py-2 text-sm text-stone-700 hover:bg-stone-50 transition-colors">
                       <Settings className="w-4 h-4" /> Settings
-                    </Link>
+                    </a>
                     <button onClick={handleLogout}
                       className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors">
                       <LogOut className="w-4 h-4" /> Sign out
@@ -397,18 +415,32 @@ export default function Layout({ children }) {
               const linkStyle = { display: 'block', padding: '0.625rem 1rem', borderRadius: '0.5rem', fontSize: '0.875rem', fontWeight: 500, textDecoration: 'none', color: active ? BURGUNDY : '#57534e', background: active ? BURGUNDY_LIGHT : 'transparent' };
 
               if (!link.children) {
+                if (link.static) {
+                  return <a key={link.href} href={link.href} onClick={() => setMobileOpen(false)} style={linkStyle}>{link.name}</a>;
+                }
                 return <Link key={link.href} to={link.href} onClick={() => setMobileOpen(false)} style={linkStyle}>{link.name}</Link>;
               }
 
               return (
                 <div key={link.name}>
-                  <Link to={link.href} onClick={() => setMobileOpen(false)} style={linkStyle}>{link.name}</Link>
+                  {link.static ? (
+                    <a href={link.href} onClick={() => setMobileOpen(false)} style={linkStyle}>{link.name}</a>
+                  ) : (
+                    <Link to={link.href} onClick={() => setMobileOpen(false)} style={linkStyle}>{link.name}</Link>
+                  )}
                   <div style={{ paddingLeft: '1rem' }}>
                     {link.children.filter(child => child.href !== link.href).map(child => {
                       const childActive = isActive(child.href);
+                      const childMobileStyle = { display: 'block', padding: '0.375rem 1rem', borderRadius: '0.375rem', fontSize: '0.8125rem', fontWeight: childActive ? 600 : 400, textDecoration: 'none', color: childActive ? BURGUNDY : '#78716c', background: childActive ? BURGUNDY_LIGHT : 'transparent' };
+                      if (child.static) {
+                        return (
+                          <a key={child.href} href={child.href} onClick={() => setMobileOpen(false)} style={childMobileStyle}>
+                            {child.name}
+                          </a>
+                        );
+                      }
                       return (
-                        <Link key={child.href} to={child.href} onClick={() => setMobileOpen(false)}
-                          style={{ display: 'block', padding: '0.375rem 1rem', borderRadius: '0.375rem', fontSize: '0.8125rem', fontWeight: childActive ? 600 : 400, textDecoration: 'none', color: childActive ? BURGUNDY : '#78716c', background: childActive ? BURGUNDY_LIGHT : 'transparent' }}>
+                        <Link key={child.href} to={child.href} onClick={() => setMobileOpen(false)} style={childMobileStyle}>
                           {child.name}
                         </Link>
                       );

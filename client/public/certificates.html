@@ -4,59 +4,32 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CE Certificates - CounselorReady</title>
+    <link rel="stylesheet" href="/css/design-tokens.css">
+    <link rel="stylesheet" href="/css/typography.css">
     <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+    <script src="/js/tailwind-config.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Lato:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        burgundy: {
-                            50: '#FDF2F5', 100: '#FAE8EB', 200: '#F5B8C4',
-                            300: '#E88A9E', 400: '#D0607A', 500: '#A83350',
-                            600: '#6B1D34', 700: '#571828', 800: '#43121E', 900: '#2F0C15',
-                        },
-                        hunter: {
-                            50: '#F2F7F3', 100: '#E0ECE3', 200: '#C2D9C8',
-                            300: '#96BCA0', 400: '#6B9E78', 500: '#5A9469',
-                            600: '#4A7C59', 700: '#3B6347', 800: '#2D4C37', 900: '#1F3526',
-                        },
-                        honey: {
-                            50: '#FFFDF5', 100: '#FFF8E1', 200: '#FFEDB3',
-                            300: '#FFDD7A', 400: '#E8BF5E', 500: '#D4A855',
-                            600: '#C49A40', 700: '#A67F2D', 800: '#876520', 900: '#5C4414',
-                        },
-                        navy: { 500: '#284157', 600: '#284157', 700: '#1E3448' }
-                    },
-                    fontFamily: {
-                        display: ['Cormorant Garamond', 'Georgia', 'serif'],
-                        body: ['Lato', 'Helvetica Neue', 'Arial', 'sans-serif'],
-                    }
-                }
-            }
-        }
-    </script>
+
     <style>
         body { font-family: 'Lato', 'Helvetica Neue', Arial, sans-serif; background: #F8F7F4; margin: 0; }
         .font-display { font-family: 'Cormorant Garamond', Georgia, serif; }
         h1,h2,h3,h4 { font-family: 'Cormorant Garamond', Georgia, serif; }
-        .dd { display:none;position:absolute;top:100%;margin-top:6px;background:#fff;border-radius:10px;box-shadow:0 10px 40px rgba(107,29,52,.12);border:1px solid #FAE8EB;z-index:50;padding:6px 0;min-width:200px; }
+        .dd { display:none;position:absolute;top:100%;margin-top:6px;background:#fff;border-radius:10px;box-shadow:0 10px 40px rgba(107,29,52,.12);border:1px solid #FAE8D0;z-index:50;padding:6px 0;min-width:200px; }
         .dd.open { display:block; }
-        .dd a { display:flex;align-items:center;gap:10px;padding:8px 16px;font-size:13px;color:#284157;text-decoration:none;transition:background .1s; }
-        .dd a:hover { background:#FDF5F7;color:#6B1D34; }
+        .dd a { display:flex;align-items:center;gap:10px;padding:8px 16px;font-size:13px;color:#1F3345;text-decoration:none;transition:background .1s; }
+        .dd a:hover { background:#FFF5E8;color:#8B2542; }
         .ov { display:none;position:fixed;inset:0;z-index:40; }
         .ov.open { display:block; }
-        .nav-link { padding:6px 12px;border-radius:6px;font-size:13px;font-weight:500;color:#57534e;text-decoration:none;display:flex;align-items:center;gap:4px;transition:all .15s; }
-        .nav-link:hover { color:#6B1D34;background:#FDF5F7; }
-        .nav-link.active { color:#6B1D34;background:#FDF5F7;font-weight:600;border-bottom:2px solid #6B1D34; }
-        .cert-card { background:#fff;border:1px solid #e7e5e4;border-radius:14px;padding:20px;transition:border-color .15s,box-shadow .15s;display:flex;flex-direction:column; }
-        .cert-card:hover { border-color:#FAE8EB;box-shadow:0 4px 16px rgba(107,29,52,.08); }
-        .stat-card { background:#fff;border:1px solid #e7e5e4;border-radius:12px;padding:18px 20px; }
-        .hour-badge { background:#FFF8E1;color:#876520;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px; }
-        .nbcc-badge { background:#E0ECE3;color:#2D4C37;font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px; }
-        .cat-badge { background:#FAE8EB;color:#6B1D34;font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px; }
+        .nav-link { padding:6px 12px;border-radius:6px;font-size:14px;font-weight:500;color:#57534e;text-decoration:none;display:flex;align-items:center;gap:4px;transition:all .15s; }
+        .nav-link:hover { color:#8B2542;background:#FFF5E8; }
+        .nav-link.active { color:#8B2542;background:#FFF5E8;font-weight:600;border-bottom:2px solid #6B1D34; }
+        .cert-card { background:linear-gradient(180deg,#fff 0%,#F8F7F4 100%);border:1px solid #E0ECE3;border-radius:14px;padding:20px;transition:border-color .15s,box-shadow .15s;display:flex;flex-direction:column; }
+        .cert-card:hover { border-color:#96BCA0;box-shadow:0 6px 20px rgba(74,124,89,.1); }
+        .stat-card { background:#fff;border:1px solid #e7e5e4;border-radius:12px;padding:18px 20px;border-left:4px solid #A83350; }
+        .hour-badge { background:linear-gradient(135deg,#FFF8E1,#FFEDB3);color:#876520;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px; }
+        .nbcc-badge { background:linear-gradient(135deg,#E0ECE3,#C2D9C8);color:#1F3526;font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px; }
+        .cat-badge { background:linear-gradient(135deg,#FFF5E8,#FAE8D0);color:#8B2542;font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px; }
         input[type="text"], select { font-family: 'Lato', sans-serif; }
         input:focus, select:focus { outline:none;ring:2px;border-color:#6B1D34; }
     </style>
@@ -64,96 +37,8 @@
 <body>
 
 <!-- Header -->
-<header style="background:#fff;border-bottom:1px solid #e7e5e4;position:sticky;top:0;z-index:40;box-shadow:0 1px 3px rgba(107,29,52,.07)">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-        <a href="/dashboard.html" class="flex items-center gap-3 flex-shrink-0" style="text-decoration:none">
-            <div style="width:42px;height:42px;border-radius:.75rem;background:#6B1D34;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(107,29,52,.25)">
-                <span style="position:relative;display:inline-block;width:24px;height:24px">
-                    <span class="font-display" style="color:#D0768A;position:absolute;top:-3px;left:0;font-weight:700;font-size:19px">C</span>
-                    <span class="font-display" style="color:#4A7C59;position:absolute;top:4px;left:6px;font-weight:700;font-size:16px">R</span>
-                </span>
-            </div>
-            <span class="font-display hidden sm:inline" style="font-weight:700;font-size:1.5rem;letter-spacing:.015em">
-                <span style="color:#6B1D34">Counselor</span><span style="color:#4A7C59">Ready</span>
-            </span>
-        </a>
-
-        <nav class="hidden lg:flex items-center gap-1">
-            <a href="/dashboard.html" class="nav-link">Dashboard</a>
-            <a href="/courses.html" class="nav-link">Courses</a>
-            <div class="relative">
-                <button onclick="toggle('creds')" class="nav-link" style="border:none;cursor:pointer">
-                    Credentials
-                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-                </button>
-                <div class="ov" id="credsOv" onclick="close('creds')"></div>
-                <div class="dd" id="credsDd">
-                    <a href="/credentials.html">My Credentials</a>
-                    <a href="/ce-planner.html">CE Planner</a>
-                    <a href="/audit-kit.html">Audit Kit</a>
-                    <a href="/board-alerts.html">Board Alerts</a>
-                </div>
-            </div>
-            <a href="/certificates.html" class="nav-link active">CE Certificates</a>
-            <div class="relative">
-                <button onclick="toggle('practice')" class="nav-link" style="border:none;cursor:pointer">
-                    Practice
-                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-                </button>
-                <div class="ov" id="practiceOv" onclick="close('practice')"></div>
-                <div class="dd" id="practiceDd">
-                    <a href="/supervision.html">Supervision</a>
-                    <a href="/insurance-tracker.html">Insurance Tracker</a>
-                </div>
-            </div>
-            <div class="relative">
-                <button onclick="toggle('team')" class="nav-link" style="border:none;cursor:pointer">
-                    Team
-                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-                </button>
-                <div class="ov" id="teamOv" onclick="close('team')"></div>
-                <div class="dd" id="teamDd">
-                    <a href="/organization.html">Organization</a>
-                    <a href="/group-licenses.html">Group Licenses</a>
-                </div>
-            </div>
-        </nav>
-
-        <div class="flex items-center gap-2">
-            <a href="/admin.html" id="adminBadge" class="hidden items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full" style="color:#6B1D34;background:#FDF5F7;border:1px solid #6B1D34;text-decoration:none">Admin</a>
-            <div class="relative">
-                <button onclick="toggle('user')" class="flex items-center gap-2 p-1 rounded-lg hover:bg-stone-100 transition-colors" style="border:none;background:none;cursor:pointer">
-                    <div style="width:34px;height:34px;border-radius:50%;background:#6B1D34;display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:700" id="avatarInit">K</div>
-                    <span class="hidden md:block text-sm font-medium" style="color:#57534e" id="avatarName">Kejuiana</span>
-                    <svg class="w-3.5 h-3.5 hidden md:block" style="color:#a8a29e" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-                </button>
-                <div class="ov" id="userOv" onclick="close('user')"></div>
-                <div class="dd" id="userDd" style="width:210px;right:0">
-                    <div style="padding:10px 16px;border-bottom:1px solid #F1EFE9">
-                        <p style="font-size:13px;font-weight:600;color:#44403c;margin:0" id="menuName">User</p>
-                        <p style="font-size:11px;color:#78716c;margin:2px 0 0" id="menuEmail"></p>
-                        <span id="menuPlan" style="display:inline-block;margin-top:4px;font-size:10px;padding:2px 8px;border-radius:10px;font-weight:600;background:#FDF5F7;color:#6B1D34"></span>
-                    </div>
-                    <a href="/admin.html" id="menuAdminLink" style="display:none;color:#6B1D34">Admin Panel</a>
-                    <a href="/settings.html">Settings</a>
-                    <div style="border-top:1px solid #F1EFE9;margin-top:4px;padding-top:4px">
-                        <a href="#" onclick="logout();return false" style="color:#DC2626">Sign out</a>
-                    </div>
-                </div>
-            </div>
-            <button onclick="toggleMobile()" class="lg:hidden p-2 rounded-lg hover:bg-stone-100" style="color:#78716c;border:none;background:none;cursor:pointer">
-                <svg id="hamOpen" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
-                <svg id="hamClose" class="w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-            </button>
-        </div>
-    </div>
-    <div id="mobileNav" class="hidden lg:hidden border-t border-stone-200 bg-white px-4 py-3 space-y-1">
-        <a href="/dashboard.html" class="block px-4 py-2.5 rounded-lg text-sm" style="color:#57534e">Dashboard</a>
-        <a href="/courses.html" class="block px-4 py-2.5 rounded-lg text-sm" style="color:#57534e">Courses</a>
-        <a href="/credentials.html" class="block px-4 py-2.5 rounded-lg text-sm" style="color:#57534e">Credentials</a>
-        <a href="/certificates.html" class="block px-4 py-2.5 rounded-lg text-sm font-semibold" style="color:#6B1D34;background:#FDF5F7">CE Certificates</a>
-    </div>
-</header>
+<div id="cr-header"></div>
+  <script src="/shared/nav-footer.js"></script>
 
 <!-- Main -->
 <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -161,7 +46,7 @@
     <!-- Page Header -->
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div>
-            <h1 class="font-display text-4xl font-bold mb-1" style="color:#6B1D34">CE Certificates</h1>
+            <h1 class="font-display text-4xl font-bold mb-1" style="color:#8B2542">CE Certificates</h1>
             <p class="text-stone-500 text-sm">Your proof of continuing education — stored, verified, and ready for audit.</p>
         </div>
         <div class="flex gap-2">
@@ -180,15 +65,15 @@
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
         <div class="stat-card">
             <div class="text-xs font-semibold uppercase tracking-wide mb-1" style="color:#4A7C59">Certificates Stored</div>
-            <div class="text-3xl font-bold font-display" style="color:#6B1D34" id="certificatesStored">11</div>
+            <div class="text-4xl font-bold font-display" style="color:#8B2542" id="certificatesStored">11</div>
         </div>
         <div class="stat-card">
             <div class="text-xs font-semibold uppercase tracking-wide mb-1" style="color:#4A7C59">Total CE Hours</div>
-            <div class="text-3xl font-bold font-display" style="color:#6B1D34" id="totalCeHours">—</div>
+            <div class="text-4xl font-bold font-display" style="color:#8B2542" id="totalCeHours">—</div>
         </div>
         <div class="stat-card">
             <div class="text-xs font-semibold uppercase tracking-wide mb-1" style="color:#D4A855">From NBCC ACEPs</div>
-            <div class="text-3xl font-bold font-display" style="color:#6B1D34" id="fromNbccAceps">—</div>
+            <div class="text-4xl font-bold font-display" style="color:#8B2542" id="fromNbccAceps">—</div>
         </div>
     </div>
 
@@ -198,16 +83,16 @@
             <div class="flex-1 relative">
                 <input type="text" id="searchInput" placeholder="Search certificates..." oninput="filterCerts()"
                     class="w-full pl-10 pr-4 py-2.5 text-sm border border-stone-200 rounded-lg"
-                    style="font-family:'Lato',sans-serif;color:#284157;">
+                    style="font-family:'Lato',sans-serif;color:#1F3345;">
                 <svg class="w-4 h-4 absolute left-3 top-3" style="color:#a8a29e" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
             </div>
-            <select id="yearFilter" onchange="filterCerts()" class="px-4 py-2.5 text-sm border border-stone-200 rounded-lg" style="color:#284157;background:#fff;font-family:'Lato',sans-serif">
+            <select id="yearFilter" onchange="filterCerts()" class="px-4 py-2.5 text-sm border border-stone-200 rounded-lg" style="color:#1F3345;background:#fff;font-family:'Lato',sans-serif">
                 <option value="">All Years</option>
                 <option value="2026">2026</option>
                 <option value="2025">2025</option>
                 <option value="2024">2024</option>
             </select>
-            <select id="sortFilter" onchange="filterCerts()" class="px-4 py-2.5 text-sm border border-stone-200 rounded-lg" style="color:#284157;background:#fff;font-family:'Lato',sans-serif">
+            <select id="sortFilter" onchange="filterCerts()" class="px-4 py-2.5 text-sm border border-stone-200 rounded-lg" style="color:#1F3345;background:#fff;font-family:'Lato',sans-serif">
                 <option value="latest">Latest First</option>
                 <option value="oldest">Oldest First</option>
                 <option value="hours">Most CE Hours</option>
@@ -217,113 +102,134 @@
 
     <!-- Certificates Grid -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5" id="certificatesGrid">
-
-        <!-- Card 1 -->
-        <div class="cert-card" data-year="2025" data-hours="4.5" data-title="counselor self-awareness">
-            <div class="flex items-start gap-3 mb-4">
-                <div style="width:44px;height:44px;border-radius:10px;background:#FAE8EB;display:flex;align-items:center;justify-content:center;flex-shrink:0">
-                    <svg class="w-5 h-5" style="color:#6B1D34" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                </div>
-                <div class="flex-1 min-w-0">
-                    <h3 class="font-semibold text-sm leading-snug mb-1" style="color:#284157;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">The Importance of Counselor Self-Awareness and Work Analysis Surveys for the Counseling Profession</h3>
-                    <p class="text-xs" style="color:#78716c">National Board for Certified Counselors</p>
-                </div>
-            </div>
-            <div class="flex flex-wrap items-center gap-1.5 mb-3">
-                <span class="hour-badge">4.5 CE Hours</span>
-                <span class="nbcc-badge">NBCC</span>
-            </div>
-            <div class="flex items-center justify-between text-xs mb-4" style="color:#78716c">
-                <span>9/28/2025</span>
-                <span style="color:#a8a29e">Verify: CR-AQ0882-0R0V</span>
-            </div>
-            <div class="flex gap-2 mt-auto pt-3 border-t border-stone-100">
-                <button onclick="viewCert(this)" class="flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-semibold rounded-lg transition-colors" style="color:#4A7C59;border:1px solid #C2D9C8;background:#F2F7F3;cursor:pointer">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-                    View
-                </button>
-                <button onclick="downloadCert(this)" class="flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-semibold rounded-lg transition-colors" style="color:#6B1D34;border:1px solid #FAE8EB;background:#FDF2F5;cursor:pointer">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-                    Download
-                </button>
-                <button onclick="deleteCert(this)" class="py-2 px-3 text-xs rounded-lg transition-colors" style="color:#78716c;border:1px solid #e7e5e4;background:#fff;cursor:pointer">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                </button>
-            </div>
+        <div class="text-center py-12 col-span-full" id="loadingState">
+            <p class="text-stone-400 text-sm">Loading certificates...</p>
         </div>
+    </div>
 
-        <!-- Card 2 -->
-        <div class="cert-card" data-year="2025" data-hours="6" data-title="clinical supervision">
-            <div class="flex items-start gap-3 mb-4">
-                <div style="width:44px;height:44px;border-radius:10px;background:#FAE8EB;display:flex;align-items:center;justify-content:center;flex-shrink:0">
-                    <svg class="w-5 h-5" style="color:#6B1D34" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                </div>
-                <div class="flex-1 min-w-0">
-                    <h3 class="font-semibold text-sm leading-snug mb-1" style="color:#284157;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">Problematic Clinical Supervision Experiences and Case Scenarios</h3>
-                    <p class="text-xs" style="color:#78716c">Peak Solutions, LLC</p>
-                </div>
-            </div>
-            <div class="flex flex-wrap items-center gap-1.5 mb-3">
-                <span class="hour-badge">6 CE Hours</span>
-                <span class="cat-badge">Supervision</span>
-                <span class="nbcc-badge">NBCC</span>
-            </div>
-            <div class="flex items-center justify-between text-xs mb-4" style="color:#78716c">
-                <span>7/19/2025</span>
-                <span style="color:#a8a29e">Verify: CR-AM6225-KXGB</span>
-            </div>
-            <div class="flex gap-2 mt-auto pt-3 border-t border-stone-100">
-                <button onclick="viewCert(this)" class="flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-semibold rounded-lg transition-colors" style="color:#4A7C59;border:1px solid #C2D9C8;background:#F2F7F3;cursor:pointer">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-                    View
-                </button>
-                <button onclick="downloadCert(this)" class="flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-semibold rounded-lg transition-colors" style="color:#6B1D34;border:1px solid #FAE8EB;background:#FDF2F5;cursor:pointer">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-                    Download
-                </button>
-                <button onclick="deleteCert(this)" class="py-2 px-3 text-xs rounded-lg transition-colors" style="color:#78716c;border:1px solid #e7e5e4;background:#fff;cursor:pointer">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                </button>
-            </div>
-        </div>
-
-        <!-- Upload CTA Card -->
-        <div class="cert-card flex flex-col items-center justify-center text-center" style="border-style:dashed;border-color:#C2D9C8;cursor:pointer;min-height:220px" onclick="openUploadModal()">
-            <div style="width:44px;height:44px;border-radius:50%;background:#E0ECE3;display:flex;align-items:center;justify-content:center;margin:0 auto 12px">
-                <svg class="w-5 h-5" style="color:#4A7C59" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-            </div>
-            <p class="text-sm font-semibold" style="color:#4A7C59">Upload Certificate</p>
-            <p class="text-xs mt-1" style="color:#a8a29e">PDF, JPG, or PNG accepted</p>
-        </div>
+    <!-- Upload CTA Card (appended dynamically) -->
 
     </div>
 
-    <!-- Empty state (hidden by default) -->
+    <!-- Empty state -->
     <div id="emptyState" class="hidden text-center py-16">
-        <div style="width:56px;height:56px;border-radius:50%;background:#FAE8EB;display:flex;align-items:center;justify-content:center;margin:0 auto 14px">
-            <svg class="w-6 h-6" style="color:#6B1D34" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+        <div style="width:56px;height:56px;border-radius:50%;background:#FAE8D0;display:flex;align-items:center;justify-content:center;margin:0 auto 14px">
+            <svg class="w-6 h-6" style="color:#8B2542" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
         </div>
-        <h3 class="font-display text-xl font-bold mb-2" style="color:#6B1D34">No certificates found</h3>
-        <p class="text-sm text-stone-400">Try adjusting your search or filters.</p>
+        <h3 class="font-display text-xl font-bold mb-2" style="color:#8B2542">No certificates yet</h3>
+        <p class="text-sm text-stone-400 mb-4">Complete a course or upload an external certificate to get started.</p>
+        <button onclick="openUploadModal()" class="text-sm font-semibold px-5 py-2.5 rounded-lg" style="background:#6B1D34;color:#fff;border:none;cursor:pointer">Upload Certificate</button>
     </div>
 
 </main>
 
-<!-- Footer -->
-<footer style="background:#6B1D34;color:#fff;margin-top:48px;padding:24px 0;text-align:center">
-    <div class="max-w-7xl mx-auto px-4">
-        <p class="text-xs" style="color:#D0768A">NBCC ACEP Provider #7760 &nbsp;·&nbsp; © 2026 GAITP LLC. All rights reserved.</p>
-        <p class="text-xs mt-1" style="color:#D0768A">GA Integrated Therapeutic Perspectives LLC</p>
+<!-- Upload Modal -->
+<div id="uploadModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onclick="if(event.target===this)closeUploadModal()">
+  <div class="bg-white rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
+    <div class="p-6 border-b border-stone-200">
+      <div class="flex items-center justify-between">
+        <h2 class="font-display text-xl font-bold" style="color:#8B2542">Upload Certificate</h2>
+        <button onclick="closeUploadModal()" style="background:none;border:none;cursor:pointer;color:#78716c;font-size:20px">&times;</button>
+      </div>
+      <p class="text-xs text-stone-400 mt-1">Upload a PDF, JPG, or PNG of your CE certificate</p>
     </div>
-</footer>
+    <div class="p-6">
+      <!-- File Drop Zone -->
+      <div id="dropZone" style="border:2px dashed #C2D9C8;border-radius:12px;padding:32px;text-align:center;cursor:pointer;transition:border-color .15s;margin-bottom:20px" onclick="document.getElementById('certFile').click()" ondragover="event.preventDefault();this.style.borderColor='#4A7C59'" ondragleave="this.style.borderColor='#C2D9C8'" ondrop="event.preventDefault();this.style.borderColor='#C2D9C8';handleFileDrop(event)">
+        <svg class="w-8 h-8 mx-auto mb-3" style="color:#4A7C59" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+        <p class="text-sm font-semibold" style="color:#4A7C59" id="dropLabel">Drop file here or click to browse</p>
+        <p class="text-xs text-stone-400 mt-1">PDF, JPG, or PNG up to 10MB</p>
+        <input type="file" id="certFile" accept=".pdf,.jpg,.jpeg,.png" style="display:none" onchange="handleFileSelect(this)">
+      </div>
+      <!-- AI Scan Button -->
+      <button onclick="scanCertificate()" id="scanBtn" disabled class="w-full mb-4 flex items-center justify-center gap-2 text-sm font-semibold px-4 py-3 rounded-lg transition-colors disabled:opacity-40" style="background:#284157;color:#fff;border:none;cursor:pointer">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+        <span id="scanBtnText">AI Scan — Auto-fill Details</span>
+      </button>
+      <div id="scanResult" class="hidden mb-4 p-3 rounded-lg text-xs" style="background:#F2F7F3;border:1px solid #C2D9C8;color:#3B6347"></div>
+      <!-- Manual Form -->
+      <div class="space-y-3">
+        <div>
+          <label class="text-xs font-semibold" style="color:#284157">Course/Training Title *</label>
+          <input type="text" id="up_title" class="w-full mt-1 px-3 py-2 text-sm border border-stone-200 rounded-lg" placeholder="e.g. Ethics in Clinical Practice">
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="text-xs font-semibold" style="color:#284157">Provider *</label>
+            <input type="text" id="up_provider" class="w-full mt-1 px-3 py-2 text-sm border border-stone-200 rounded-lg" placeholder="e.g. NBCC">
+          </div>
+          <div>
+            <label class="text-xs font-semibold" style="color:#284157">CE Hours *</label>
+            <input type="number" id="up_ceHours" step="0.5" min="0" class="w-full mt-1 px-3 py-2 text-sm border border-stone-200 rounded-lg" placeholder="3">
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="text-xs font-semibold" style="color:#284157">Completion Date *</label>
+            <input type="date" id="up_date" class="w-full mt-1 px-3 py-2 text-sm border border-stone-200 rounded-lg">
+          </div>
+          <div>
+            <label class="text-xs font-semibold" style="color:#284157">Category</label>
+            <select id="up_category" class="w-full mt-1 px-3 py-2 text-sm border border-stone-200 rounded-lg">
+              <option value="General">General</option>
+              <option value="Ethics">Ethics</option>
+              <option value="Supervision">Supervision</option>
+              <option value="Telehealth">Telehealth</option>
+              <option value="Cultural Diversity">Cultural Diversity</option>
+              <option value="Trauma">Trauma</option>
+              <option value="Core">Core</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="text-xs font-semibold" style="color:#284157">Approving Body</label>
+            <input type="text" id="up_approvingBody" class="w-full mt-1 px-3 py-2 text-sm border border-stone-200 rounded-lg" placeholder="NBCC, APA, etc.">
+          </div>
+          <div>
+            <label class="text-xs font-semibold" style="color:#284157">Approval Number</label>
+            <input type="text" id="up_approvalNumber" class="w-full mt-1 px-3 py-2 text-sm border border-stone-200 rounded-lg" placeholder="ACEP #1234">
+          </div>
+        </div>
+        <div>
+          <label class="text-xs font-semibold" style="color:#284157">Notes</label>
+          <textarea id="up_notes" rows="2" class="w-full mt-1 px-3 py-2 text-sm border border-stone-200 rounded-lg" placeholder="Optional notes"></textarea>
+        </div>
+      </div>
+      <p id="uploadError" class="hidden text-xs mt-3" style="color:#dc2626"></p>
+      <button onclick="submitUpload()" id="submitBtn" class="w-full mt-5 flex items-center justify-center gap-2 text-sm font-semibold px-4 py-3 rounded-lg" style="background:#6B1D34;color:#fff;border:none;cursor:pointer">
+        <span id="submitBtnText">Upload Certificate</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- View Certificate Modal -->
+<div id="viewModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onclick="if(event.target===this)this.classList.add('hidden')">
+  <div class="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
+    <div class="p-4 border-b border-stone-200 flex items-center justify-between">
+      <h2 class="font-display text-lg font-bold" style="color:#8B2542" id="viewTitle">Certificate</h2>
+      <button onclick="document.getElementById('viewModal').classList.add('hidden')" style="background:none;border:none;cursor:pointer;color:#78716c;font-size:20px">&times;</button>
+    </div>
+    <div class="flex-1 overflow-auto p-4">
+      <iframe id="viewFrame" class="w-full" style="height:70vh;border:none;border-radius:8px"></iframe>
+    </div>
+  </div>
+</div>
+
+<!-- Footer -->
+<div id="cr-footer"></div>
 
 <script>
     const API_URL = window.location.hostname === 'localhost'
-        ? 'http://localhost:5001'
+        ? 'http://localhost:5000'
         : 'https://api.counselorready.com';
 
     const token = localStorage.getItem('token');
     if (!token) window.location.href = '/login.html';
+    let allCerts = [];
+    let selectedFile = null;
 
     function toggle(id) {
         const dd = document.getElementById(id+'Dd');
@@ -349,27 +255,7 @@
         window.location.href = '/login.html';
     }
 
-    function filterCerts() {
-        const q = document.getElementById('searchInput').value.toLowerCase();
-        const yr = document.getElementById('yearFilter').value;
-        const cards = document.querySelectorAll('#certificatesGrid .cert-card[data-year]');
-        let visible = 0;
-        cards.forEach(card => {
-            const titleMatch = !q || card.dataset.title.includes(q);
-            const yearMatch = !yr || card.dataset.year === yr;
-            const show = titleMatch && yearMatch;
-            card.style.display = show ? '' : 'none';
-            if (show) visible++;
-        });
-        document.getElementById('emptyState').classList.toggle('hidden', visible > 0);
-    }
-
-    function openUploadModal() { alert('Upload certificate — coming soon!'); }
-    function generateTranscript() { alert('CE Transcript — coming soon!'); }
-    function viewCert(btn) { alert('View certificate — coming soon!'); }
-    function downloadCert(btn) { alert('Download certificate — coming soon!'); }
-    function deleteCert(btn) { if(confirm('Delete this certificate?')) btn.closest('.cert-card').remove(); }
-
+    // ── Load User ────────────────────────────────────────────
     async function loadUserData() {
         try {
             const res = await fetch(`${API_URL}/api/auth/me`, { headers: { 'Authorization': `Bearer ${token}` } });
@@ -394,6 +280,7 @@
         } catch(e) { console.error(e); }
     }
 
+    // ── Load Stats ────────────────────────────────────────────
     async function loadStats() {
         try {
             const res = await fetch(`${API_URL}/api/users/dashboard`, { headers: { 'Authorization': `Bearer ${token}` } });
@@ -405,16 +292,281 @@
         } catch(e) { console.error(e); }
     }
 
+    // ── Load + Render Certificates ────────────────────────────
     async function loadCertificates() {
         try {
             const res = await fetch(`${API_URL}/api/certificates/`, { headers: { 'Authorization': `Bearer ${token}` } });
             if (!res.ok) return;
-            const certs = await res.json();
-            console.log('Certificates loaded:', certs.length);
-            // TODO: Render real certificates from API
+            allCerts = await res.json();
+            renderCertificates(allCerts);
         } catch(e) { console.error(e); }
     }
 
+    function renderCertificates(certs) {
+        const grid = document.getElementById('certificatesGrid');
+        const empty = document.getElementById('emptyState');
+        const loading = document.getElementById('loadingState');
+        if (loading) loading.remove();
+
+        if (!certs.length) {
+            grid.innerHTML = '';
+            empty.classList.remove('hidden');
+            return;
+        }
+        empty.classList.add('hidden');
+
+        grid.innerHTML = certs.map(c => {
+            const date = c.completionDate ? new Date(c.completionDate).toLocaleDateString() : '';
+            const year = c.completionDate ? new Date(c.completionDate).getFullYear() : '';
+            const title = (c.title || 'Untitled').replace(/'/g, "\\'");
+            return `
+            <div class="cert-card" data-id="${c._id}" data-year="${year}" data-hours="${c.ceHours||0}" data-title="${title.toLowerCase()}" data-url="${c.fileUrl||''}">
+                <div class="flex items-start gap-3 mb-4">
+                    <div style="width:44px;height:44px;border-radius:10px;background:#FAE8D0;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                        <svg class="w-5 h-5" style="color:#8B2542" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <h3 class="font-semibold text-sm leading-snug mb-1" style="color:#1F3345;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${c.title||'Untitled'}</h3>
+                        <p class="text-xs" style="color:#78716c">${c.provider||''}</p>
+                    </div>
+                </div>
+                <div class="flex flex-wrap items-center gap-1.5 mb-3">
+                    <span class="hour-badge">${c.ceHours||0} CE Hours</span>
+                    ${c.category && c.category !== 'General' ? `<span class="cat-badge">${c.category}</span>` : ''}
+                    ${c.nbccApproved || c.approvingBody ? `<span class="nbcc-badge">${c.approvingBody||'NBCC'}</span>` : ''}
+                </div>
+                <div class="flex items-center justify-between text-xs mb-4" style="color:#78716c">
+                    <span>${date}</span>
+                    <span style="color:#a8a29e">${c.certificateNumber ? 'Verify: '+c.certificateNumber : c.source === 'upload' ? 'Uploaded' : 'CounselorReady'}</span>
+                </div>
+                <div class="flex gap-2 mt-auto pt-3 border-t border-stone-100">
+                    ${c.fileUrl ? `
+                    <button onclick="viewCert('${c._id}')" class="flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-semibold rounded-lg" style="color:#4A7C59;border:1px solid #C2D9C8;background:#F2F7F3;cursor:pointer">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                        View
+                    </button>
+                    <button onclick="downloadCert('${c.fileUrl}')" class="flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-semibold rounded-lg" style="color:#8B2542;border:1px solid #FAE8D0;background:#FFF5E8;cursor:pointer">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                        Download
+                    </button>` : ''}
+                    <button onclick="deleteCert('${c._id}')" class="py-2 px-3 text-xs rounded-lg" style="color:#78716c;border:1px solid #e7e5e4;background:#fff;cursor:pointer">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                    </button>
+                </div>
+            </div>`;
+        }).join('') + `
+        <div class="cert-card flex flex-col items-center justify-center text-center" style="border-style:dashed;border-color:#C2D9C8;cursor:pointer;min-height:220px" onclick="openUploadModal()">
+            <div style="width:44px;height:44px;border-radius:50%;background:#E0ECE3;display:flex;align-items:center;justify-content:center;margin:0 auto 12px">
+                <svg class="w-5 h-5" style="color:#4A7C59" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+            </div>
+            <p class="text-sm font-semibold" style="color:#4A7C59">Upload Certificate</p>
+            <p class="text-xs mt-1" style="color:#a8a29e">PDF, JPG, or PNG</p>
+        </div>`;
+    }
+
+    // ── Filter ────────────────────────────────────────────────
+    function filterCerts() {
+        const q = document.getElementById('searchInput').value.toLowerCase();
+        const yr = document.getElementById('yearFilter').value;
+        const cards = document.querySelectorAll('#certificatesGrid .cert-card[data-year]');
+        let visible = 0;
+        cards.forEach(card => {
+            const titleMatch = !q || (card.dataset.title||'').includes(q);
+            const yearMatch = !yr || card.dataset.year === yr;
+            const show = titleMatch && yearMatch;
+            card.style.display = show ? '' : 'none';
+            if (show) visible++;
+        });
+    }
+
+    // ── View / Download / Delete ──────────────────────────────
+    function viewCert(certId) {
+        const cert = allCerts.find(c => c._id === certId);
+        if (!cert || !cert.fileUrl) return;
+        document.getElementById('viewTitle').textContent = cert.title || 'Certificate';
+        document.getElementById('viewFrame').src = cert.fileUrl;
+        document.getElementById('viewModal').classList.remove('hidden');
+    }
+
+    function downloadCert(url) {
+        if (!url) return;
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = '';
+        a.target = '_blank';
+        a.click();
+    }
+
+    async function deleteCert(certId) {
+        if (!confirm('Delete this certificate? This cannot be undone.')) return;
+        try {
+            const res = await fetch(`${API_URL}/api/certificates/${certId}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (res.ok) {
+                loadCertificates();
+                loadStats();
+            } else {
+                const data = await res.json();
+                alert(data.error || 'Failed to delete');
+            }
+        } catch(e) { alert('Network error'); }
+    }
+
+    function generateTranscript() { alert('CE Transcript generation coming soon!'); }
+
+    // ── Upload Modal ──────────────────────────────────────────
+    function openUploadModal() {
+        document.getElementById('uploadModal').classList.remove('hidden');
+        resetUploadForm();
+    }
+    function closeUploadModal() {
+        document.getElementById('uploadModal').classList.add('hidden');
+        resetUploadForm();
+    }
+    function resetUploadForm() {
+        selectedFile = null;
+        document.getElementById('certFile').value = '';
+        document.getElementById('dropLabel').textContent = 'Drop file here or click to browse';
+        document.getElementById('scanBtn').disabled = true;
+        document.getElementById('scanResult').classList.add('hidden');
+        document.getElementById('uploadError').classList.add('hidden');
+        ['up_title','up_provider','up_ceHours','up_date','up_approvingBody','up_approvalNumber','up_notes'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.value = '';
+        });
+        document.getElementById('up_category').value = 'General';
+    }
+
+    function handleFileSelect(input) {
+        if (input.files[0]) {
+            selectedFile = input.files[0];
+            document.getElementById('dropLabel').textContent = selectedFile.name;
+            document.getElementById('scanBtn').disabled = false;
+        }
+    }
+    function handleFileDrop(e) {
+        const file = e.dataTransfer.files[0];
+        if (file) {
+            selectedFile = file;
+            document.getElementById('certFile').files = e.dataTransfer.files;
+            document.getElementById('dropLabel').textContent = file.name;
+            document.getElementById('scanBtn').disabled = false;
+        }
+    }
+
+    // ── AI Scan ───────────────────────────────────────────────
+    async function scanCertificate() {
+        if (!selectedFile) return;
+        const btn = document.getElementById('scanBtn');
+        const resultDiv = document.getElementById('scanResult');
+        btn.disabled = true;
+        document.getElementById('scanBtnText').textContent = 'Scanning...';
+
+        try {
+            const formData = new FormData();
+            formData.append('file', selectedFile);
+
+            const res = await fetch(`${API_URL}/api/scan`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` },
+                body: formData
+            });
+
+            const data = await res.json();
+            if (res.ok && data.extracted) {
+                const e = data.extracted;
+                if (e.title) document.getElementById('up_title').value = e.title;
+                if (e.provider) document.getElementById('up_provider').value = e.provider;
+                if (e.ceHours) document.getElementById('up_ceHours').value = e.ceHours;
+                if (e.completionDate) document.getElementById('up_date').value = e.completionDate;
+                if (e.category) document.getElementById('up_category').value = e.category;
+                if (e.approvingBody) document.getElementById('up_approvingBody').value = e.approvingBody;
+                if (e.approvalNumber) document.getElementById('up_approvalNumber').value = e.approvalNumber;
+                resultDiv.textContent = 'AI extracted details — please verify and correct if needed.';
+                resultDiv.classList.remove('hidden');
+            } else {
+                resultDiv.textContent = data.error || 'Scan failed — please fill in details manually.';
+                resultDiv.style.background = '#FEF2F2';
+                resultDiv.style.borderColor = '#fca5a5';
+                resultDiv.style.color = '#991B1B';
+                resultDiv.classList.remove('hidden');
+            }
+        } catch(e) {
+            resultDiv.textContent = 'Scan unavailable — please fill in details manually.';
+            resultDiv.style.background = '#FEF2F2';
+            resultDiv.style.borderColor = '#fca5a5';
+            resultDiv.style.color = '#991B1B';
+            resultDiv.classList.remove('hidden');
+        } finally {
+            btn.disabled = false;
+            document.getElementById('scanBtnText').textContent = 'AI Scan \u2014 Auto-fill Details';
+        }
+    }
+
+    // ── Submit Upload ─────────────────────────────────────────
+    async function submitUpload() {
+        const errEl = document.getElementById('uploadError');
+        errEl.classList.add('hidden');
+
+        const title = document.getElementById('up_title').value.trim();
+        const provider = document.getElementById('up_provider').value.trim();
+        const ceHours = document.getElementById('up_ceHours').value;
+        const completionDate = document.getElementById('up_date').value;
+
+        if (!title || !provider || !ceHours || !completionDate) {
+            errEl.textContent = 'Please fill in title, provider, CE hours, and completion date.';
+            errEl.classList.remove('hidden');
+            return;
+        }
+        if (!selectedFile) {
+            errEl.textContent = 'Please select a certificate file to upload.';
+            errEl.classList.remove('hidden');
+            return;
+        }
+
+        const btn = document.getElementById('submitBtn');
+        btn.disabled = true;
+        document.getElementById('submitBtnText').textContent = 'Uploading...';
+
+        try {
+            const formData = new FormData();
+            formData.append('certificate', selectedFile);
+            formData.append('title', title);
+            formData.append('provider', provider);
+            formData.append('ceHours', ceHours);
+            formData.append('completionDate', completionDate);
+            formData.append('category', document.getElementById('up_category').value);
+            formData.append('approvingBody', document.getElementById('up_approvingBody').value);
+            formData.append('approvalNumber', document.getElementById('up_approvalNumber').value);
+            formData.append('notes', document.getElementById('up_notes').value);
+
+            const res = await fetch(`${API_URL}/api/certificates/upload`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` },
+                body: formData
+            });
+
+            if (res.ok) {
+                closeUploadModal();
+                loadCertificates();
+                loadStats();
+            } else {
+                const data = await res.json();
+                errEl.textContent = data.error || 'Upload failed';
+                errEl.classList.remove('hidden');
+            }
+        } catch(e) {
+            errEl.textContent = 'Network error \u2014 please try again.';
+            errEl.classList.remove('hidden');
+        } finally {
+            btn.disabled = false;
+            document.getElementById('submitBtnText').textContent = 'Upload Certificate';
+        }
+    }
+
+    // ── Init ──────────────────────────────────────────────────
     loadUserData();
     loadStats();
     loadCertificates();

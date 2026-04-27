@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Audit Kit | CounselorReady</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="/css/design-tokens.css">
+  <link rel="stylesheet" href="/css/typography.css">
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="/js/tailwind-config.js"></script>
+
+  <style>body{font-family:'Lato',system-ui,sans-serif;background:#F8F7F4}
+    /* Shared nav styles */
+    .dd{display:none;position:absolute;top:100%;margin-top:6px;background:#fff;border-radius:10px;box-shadow:0 10px 40px rgba(107,29,52,.12);border:1px solid #FAE8EB;z-index:50;padding:6px 0;min-width:210px}
+    .dd.open{display:block}
+    .dd a{display:flex;align-items:center;gap:10px;padding:8px 16px;font-size:13px;color:#284157;text-decoration:none;transition:background .1s}
+    .dd a:hover{background:#F2F7F4}
+    .ov{display:none;position:fixed;inset:0;z-index:40}.ov.open{display:block}
+    .nav-link{padding:6px 12px;border-radius:6px;font-size:13px;font-weight:500;color:#57534e;text-decoration:none;display:flex;align-items:center;gap:4px;transition:all .15s}
+    .nav-link:hover{color:#6B1D34;background:#FDF5F7}
+    .nav-link.active{color:#6B1D34;background:#FDF5F7;font-weight:600;border-bottom:2px solid #6B1D34}
+  </style>
+</head>
+<body class="min-h-screen">
+
+<div id="cr-header"></div>
+  <script src="/shared/nav-footer.js"></script>
+
+<main class="max-w-4xl mx-auto px-4 sm:px-6 py-10">
+  <div style="font-family:'Cormorant Garamond',Georgia,serif" class="text-3xl font-bold mb-2" style="color:#6B1D34">Audit Kit</div>
+  <p class="text-stone-500 mb-8">Everything you need if your licensing board requests documentation of your CE activity.</p>
+
+  <div class="bg-white rounded-2xl border border-stone-200 p-8 mb-6" style="box-shadow:0 1px 3px rgba(107,29,52,.06)">
+    <h2 class="text-lg font-semibold mb-4" style="color:#6B1D34">Your Audit Package</h2>
+    <p class="text-stone-600 text-sm mb-6">When a licensing board audits your CE hours, you need proof of completion. CounselorReady stores all documentation automatically. Click below to generate a complete audit package.</p>
+
+    <div class="space-y-4">
+      <div class="flex items-center gap-4 p-4 rounded-xl bg-stone-50 border border-stone-200">
+        <div class="w-10 h-10 rounded-lg flex items-center justify-center" style="background:#F2F7F3;color:#4A7C59">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+        </div>
+        <div class="flex-1">
+          <p class="text-sm font-semibold" style="color:#284157">CE Certificates</p>
+          <p class="text-xs text-stone-500">All certificates with ACEP #7760, presenter credentials, and CE hours</p>
+        </div>
+        <a href="/certificates.html" class="text-xs font-semibold px-4 py-2 rounded-lg" style="background:#4A7C59;color:#fff;text-decoration:none">View</a>
+      </div>
+
+      <div class="flex items-center gap-4 p-4 rounded-xl bg-stone-50 border border-stone-200">
+        <div class="w-10 h-10 rounded-lg flex items-center justify-center" style="background:#FDF2F5;color:#6B1D34">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+        </div>
+        <div class="flex-1">
+          <p class="text-sm font-semibold" style="color:#284157">CE Hour Summary</p>
+          <p class="text-xs text-stone-500">Total hours by NBCC content area, mapped to your credentials</p>
+        </div>
+        <a href="/credentials.html" class="text-xs font-semibold px-4 py-2 rounded-lg" style="background:#6B1D34;color:#fff;text-decoration:none">View</a>
+      </div>
+
+      <div class="flex items-center gap-4 p-4 rounded-xl bg-stone-50 border border-stone-200">
+        <div class="w-10 h-10 rounded-lg flex items-center justify-center" style="background:#FDF9F0;color:#D4A855">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+        </div>
+        <div class="flex-1">
+          <p class="text-sm font-semibold" style="color:#284157">Download Full Audit Package</p>
+          <p class="text-xs text-stone-500">PDF bundle: certificates + CE summary + course completion records</p>
+        </div>
+        <button onclick="generateAuditPDF()" id="downloadBtn" class="text-xs font-semibold px-4 py-2 rounded-lg" style="background:#D4A855;color:#fff;border:none;cursor:pointer">Download PDF</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-white rounded-2xl border border-stone-200 p-8" style="box-shadow:0 1px 3px rgba(107,29,52,.06)">
+    <h2 class="text-lg font-semibold mb-3" style="color:#6B1D34">What Auditors Look For</h2>
+    <div class="text-sm text-stone-600 space-y-3">
+      <p>Most state licensing boards require three things during a CE audit:</p>
+      <p><strong style="color:#284157">1. Proof of completion</strong> — your CE certificates showing course title, CE hours, completion date, and provider approval number (NBCC ACEP #7760).</p>
+      <p><strong style="color:#284157">2. Content area mapping</strong> — evidence that your CE hours cover required categories like Ethics, Supervision, or your state's specific mandates.</p>
+      <p><strong style="color:#284157">3. Provider verification</strong> — confirmation that your CE provider is approved. CounselorReady operates under GAITP LLC, NBCC ACEP Provider #7760.</p>
+      <p>CounselorReady stores all of this automatically. Your audit package includes everything you need.</p>
+    </div>
+  </div>
+</main>
+
+<script>
+  const API = location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://api.counselorready.com';
+  const T = localStorage.getItem('token');
+  if (!T) location.href = '/login.html';
+
+  async function generateAuditPDF() {
+    const btn = document.getElementById('downloadBtn');
+    btn.textContent = 'Generating...'; btn.disabled = true;
+    try {
+      const r = await fetch(`${API}/api/certificates/audit-package`, {
+        headers: { Authorization: `Bearer ${T}` }
+      });
+      if (r.ok) {
+        const blob = await r.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a'); a.href = url; a.download = 'CounselorReady_Audit_Package.pdf'; a.click();
+        URL.revokeObjectURL(url);
+      } else {
+        alert('Audit package generation coming soon! For now, download individual certificates from the Certificates page.');
+      }
+    } catch (e) {
+      alert('Audit package generation coming soon! For now, download individual certificates from the Certificates page.');
+    } finally {
+      btn.textContent = 'Download PDF'; btn.disabled = false;
+    }
+  }
+</script>
+
+  <div id="cr-footer"></div>
+</body>
+</html>

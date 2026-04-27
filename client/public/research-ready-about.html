@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Researched-N-Ready CE | How It Works | CounselorReady</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Cinzel:wght@400;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'EB Garamond',Georgia,serif;background:#EFE8D6;color:#1C1208;line-height:1.7}
+
+.wg-strip{height:14px;width:100%;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='500' height='14'%3E%3Cfilter id='w'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.012 0.85' numOctaves='5' seed='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0.45 0.35 0 0 0.22 0.3 0.2 0 0 0.12 0.15 0.1 0 0 0.06 0 0 0 1 0'/%3E%3C/filter%3E%3Crect width='500' height='14' filter='url(%23w)'/%3E%3C/svg%3E");background-size:500px 14px}
+.wg-top{border-bottom:1.5px solid rgba(192,144,64,0.5)}
+.wg-bot{border-top:1.5px solid rgba(192,144,64,0.5)}
+.rule{height:4px;background:linear-gradient(to bottom,rgba(192,144,64,0.45) 0,rgba(192,144,64,0.45) 1.5px,transparent 1.5px,transparent 2.5px,rgba(192,144,64,0.45) 2.5px,rgba(192,144,64,0.45) 4px)}
+
+.hero{background:#4A1224;text-align:center;padding:44px 24px 36px;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;inset:0;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3Cpath d='M30 5L35 20L50 20L38 29L43 44L30 35L17 44L22 29L10 20L25 20Z' fill='none' stroke='rgba(192,144,64,0.07)' stroke-width='1'/%3E%3C/svg%3E");background-size:60px 60px}
+.hero *{position:relative;z-index:1}
+.hero-label{font-family:'Cinzel',serif;font-size:9px;letter-spacing:0.22em;text-transform:uppercase;color:rgba(240,223,160,0.55);margin-bottom:10px}
+.hero-title{font-family:'Playfair Display',serif;font-size:32px;font-weight:700;color:#F0DFA0;margin-bottom:6px}
+.hero-sub{font-size:16px;font-style:italic;color:rgba(240,223,160,0.6);max-width:520px;margin:0 auto}
+.hero-ornament{color:rgba(192,144,64,0.4);font-size:14px;letter-spacing:8px;margin-top:14px}
+.fb span:first-child{color:#D0768A}.fb span:last-child{color:#4A7C59}
+
+.page{max-width:680px;margin:0 auto;padding:36px 24px 48px}
+.o{color:#C09040}
+
+h2{font-family:'Playfair Display',serif;font-size:22px;font-weight:600;color:#4A1224;margin:32px 0 12px}
+h2:first-of-type{margin-top:0}
+p{font-size:16px;margin-bottom:14px;color:#3D2B1A}
+.lead{font-size:18px;font-style:italic;color:#5C4D3A;margin-bottom:24px;text-align:center}
+
+.scroll-div{display:flex;align-items:center;gap:12px;margin:28px 0;color:rgba(192,144,64,0.4)}
+.scroll-div::before,.scroll-div::after{content:'';flex:1;height:1px;background:linear-gradient(to right,transparent,rgba(192,144,64,0.35),transparent)}
+
+.steps{list-style:none;counter-reset:step;margin:0 0 24px}
+.steps li{counter-increment:step;padding:14px 16px 14px 56px;background:#FAF7F0;border:1px solid rgba(107,29,52,0.08);border-radius:6px;margin-bottom:10px;position:relative;font-size:15px;color:#3D2B1A}
+.steps li::before{content:counter(step);position:absolute;left:14px;top:12px;width:30px;height:30px;border-radius:50%;background:#4A1224;color:#F0DFA0;font-family:'Cinzel',serif;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:center}
+.steps li strong{color:#1C1208}
+
+.get-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:24px}
+.get-card{background:#FAF7F0;border:1px solid rgba(107,29,52,0.08);border-radius:6px;padding:16px;text-align:center}
+.get-icon{font-size:28px;margin-bottom:6px}
+.get-label{font-family:'Cinzel',serif;font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:#6B1D34;margin-bottom:4px}
+.get-desc{font-size:13px;color:#5C4D3A;line-height:1.5}
+
+.cta-box{background:#4A1224;border-radius:8px;padding:28px 24px;text-align:center;margin-top:32px}
+.cta-box p{color:rgba(240,223,160,0.7);font-size:15px;margin-bottom:14px}
+.cta-btn{display:inline-block;padding:12px 32px;background:#C09040;color:#FAF7F0;border:none;border-radius:4px;font-family:'Cinzel',serif;font-size:11px;letter-spacing:0.12em;text-transform:uppercase;text-decoration:none;font-weight:600;cursor:pointer}
+.cta-btn:hover{background:#A5712E}
+
+.fine{font-size:12px;color:#9C8472;text-align:center;margin-top:20px;font-style:italic}
+
+.footer-bar{background:#4A1224;padding:14px 24px;text-align:center}
+.footer-text{font-family:'Cinzel',serif;font-size:8px;letter-spacing:0.14em;text-transform:uppercase;color:rgba(240,223,160,0.4)}
+
+@media(max-width:520px){.get-grid{grid-template-columns:1fr}.hero-title{font-size:26px}.page{padding:24px 16px 36px}}
+</style>
+</head>
+<body>
+
+<div class="wg-strip wg-top"></div>
+<div class="rule"></div>
+
+<div class="hero">
+  <div class="hero-label"><span class="o">&#10022;</span> A <span class="fb"><span>Counselor</span><span>Ready</span></span> Feature <span class="o">&#10022;</span></div>
+  <div class="hero-title">Researched-N-Ready CE</div>
+  <div class="hero-sub">Turn peer-reviewed research into continuing education credit &mdash; on your terms.</div>
+  <div class="hero-ornament">&#10087; &#10022; &#9830; &#10022; &#10087;</div>
+</div>
+
+<div class="rule"></div>
+
+<div class="page">
+
+  <p class="lead">You choose the research. We build the CE.</p>
+
+  <h2>What is it?</h2>
+  <p>Researched-N-Ready CE lets you search real, peer-reviewed journal articles from the OpenAlex database &mdash; filtered to psychology, counseling psychology, and clinical psychology &mdash; and convert them into NBCC-approved continuing education credit.</p>
+  <p>Instead of sitting through a generic webinar, you read current scholarship that actually matters to your practice. Then you take a short posttest to demonstrate what you learned. Pass at 75% and your CE certificate is generated instantly.</p>
+
+  <div class="scroll-div"><span class="o">&#10022;</span></div>
+
+  <h2>How does it work?</h2>
+  <ol class="steps">
+    <li><strong>Search.</strong> Enter a topic &mdash; trauma-informed care, supervision, motivational interviewing, whatever you need. Browse open-access articles from peer-reviewed journals, filtered to counseling and psychology.</li>
+    <li><strong>Select.</strong> Pick 1&ndash;4 articles that interest you. The platform shows word count, estimated CE hours, and citation count for each article so you can build toward your target hours.</li>
+    <li><strong>Submit.</strong> Send your selection for a quick admin review. Once approved, AI reads your selected articles and generates a 6,200+ word clinical practice article that synthesizes the research into practical application &mdash; plus a posttest tied directly to the content.</li>
+    <li><strong>Read.</strong> Open the generated article right in the platform. You can also print, download, or save it for later. Take your time &mdash; there&rsquo;s no timer.</li>
+    <li><strong>Test.</strong> Take the posttest. 75% to pass, three attempts allowed. Questions are drawn from the generated content, not trick questions from footnotes.</li>
+    <li><strong>Earn.</strong> Pass and your NBCC-approved CE certificate is generated on the spot. Hours are automatically logged to your credentials dashboard.</li>
+  </ol>
+
+  <div class="scroll-div"><span class="o">&#10022;</span></div>
+
+  <h2>What do you get?</h2>
+  <div class="get-grid">
+    <div class="get-card">
+      <div class="get-icon">&#128220;</div>
+      <div class="get-label">CE Certificate</div>
+      <div class="get-desc">NBCC ACEP #7760 approved. Includes course title, CE hours, completion date, and certificate number.</div>
+    </div>
+    <div class="get-card">
+      <div class="get-icon">&#128209;</div>
+      <div class="get-label">NBCC Syllabus</div>
+      <div class="get-desc">Audit-ready syllabus with word count formula, learning objectives, source articles, and assessment score.</div>
+    </div>
+    <div class="get-card">
+      <div class="get-icon">&#128200;</div>
+      <div class="get-label">Auto CE Tracking</div>
+      <div class="get-desc">Hours are automatically allocated to your active credentials. No manual logging needed.</div>
+    </div>
+    <div class="get-card">
+      <div class="get-icon">&#128218;</div>
+      <div class="get-label">The Article Itself</div>
+      <div class="get-desc">A 6,200+ word clinical practice article you can print, save, and reference in your work long after the CE is earned.</div>
+    </div>
+  </div>
+
+  <p class="fine">CE hours are calculated at 6,000 words per hour, rounded down to the nearest half hour, per NBCC standards. All articles are sourced from OpenAlex and filtered to psychology and counseling journals. Credit is awarded under GAITP LLC, NBCC ACEP Provider #7760.</p>
+
+  <div class="cta-box">
+    <p>Ready to earn CE from research that actually matters to your practice?</p>
+    <a href="/research-ready" class="cta-btn">Start Searching</a>
+  </div>
+
+</div>
+
+<div class="rule"></div>
+<div class="wg-strip wg-bot"></div>
+
+<div class="footer-bar">
+  <div class="footer-text"><span class="fb"><span>Counselor</span><span>Ready</span></span> &#10022; NBCC ACEP #7760 &#10022; GAITP LLC &#10022; Learn. License. Lead.</div>
+</div>
+
+<script src="/shared/nav-footer.js"></script>
+<div id="cr-footer"></div>
+</body>
+</html>

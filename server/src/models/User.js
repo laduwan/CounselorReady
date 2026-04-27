@@ -26,6 +26,7 @@ const userSchema = new mongoose.Schema({
   profile: {
     firstName: { type: String, required: true, trim: true },
     lastName: { type: String, trim: true, default: '' },
+    certificateName: { type: String, trim: true, maxLength: 200 },
     avatar: { type: String },
     state: { type: String, uppercase: true }, // For CE requirements
     timezone: { type: String, default: 'America/New_York' },
@@ -34,10 +35,22 @@ const userSchema = new mongoose.Schema({
   
   // Individual course purchases (for à la carte buying)
   purchasedCourses: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Course'
+    courseId: { type: mongoose.Schema.Types.ObjectId },
+    slug: String,
+    purchasedAt: { type: Date, default: Date.now },
+    amount: Number,
+    stripeSessionId: String
   }],
-  
+
+  unlockedTools: [
+    {
+      toolKey: { type: String, required: true },
+      unlockedAt: { type: Date, default: Date.now },
+      courseId: { type: mongoose.Schema.Types.ObjectId, ref: 'Course' },
+      expiresAt: { type: Date }
+    }
+  ],
+
   // Primary state for Free/Professional users (VIP can track any)
   primaryState: {
     type: String,
@@ -53,6 +66,13 @@ const userSchema = new mongoose.Schema({
     quarter: { type: String } // e.g., "2026-Q1"
   }],
   
+  // Free tier tracking
+  freeHoursUsed: { type: Number, default: 0, min: 0 }, // deprecated — kept for backward compat
+  freeCoursesThisMonth: { type: Number, default: 0, min: 0 },
+  freeCoursesResetMonth: { type: String, default: '' }, // format: "2026-04"
+  freeCoursesUsedThisMonth: { type: Number, default: 0 },
+  freeLimitEmailSentThisMonth: { type: Boolean, default: false },
+
   // Subscription
   subscription: {
     status: {
@@ -75,7 +95,14 @@ const userSchema = new mongoose.Schema({
     // Payment failure tracking
     paymentFailedAt: { type: Date },
     paymentFailureCount: { type: Number, default: 0 },
-    paymentRecoveredAt: { type: Date }
+    paymentRecoveredAt: { type: Date },
+
+    // Trial conversion email tracking — prevents double-sending
+    trialEmailsSent: {
+      type: [String],
+      default: []
+      // Possible values: 'ending_soon', 'ending_tomorrow', 'ended'
+    }
   },
   
   // Hardship Pause System (VIP perk)
@@ -135,19 +162,71 @@ const userSchema = new mongoose.Schema({
     lastReminderSent: { type: Date }
   },
   
+  // Phone & SMS verification
+  phone: { type: String },
+  smsVerified: { type: Boolean, default: false },
+  smsRemindersEnabled: { type: Boolean, default: false },
+
+  // Google Calendar Integration
+  googleCalendar: {
+    connected: { type: Boolean, default: false },
+    accessToken: { type: String, default: null },
+    refreshToken: { type: String, default: null },
+    tokenExpiry: { type: Date, default: null },
+    calendarId: { type: String, default: 'primary' },
+    syncEnabled: { type: Boolean, default: false },
+    lastSyncAt: { type: Date, default: null },
+    eventIds: [{
+      credentialId: { type: mongoose.Schema.Types.ObjectId },
+      googleEventId: { type: String },
+      type: { type: String, enum: ['credential', 'insurance'] }
+    }]
+  },
+
   // Notification preferences
   notifications: {
-    emailReminders: { type: Boolean, default: true },
-    smsReminders: { type: Boolean, default: false }, // VIP perk
-    calendarSync: { type: Boolean, default: false }, // VIP perk
-    marketingEmails: { type: Boolean, default: true },
-    reminderFrequency: {
-      type: String,
-      enum: ['6months', '3months', '1month', '1week'],
-      default: '3months'
-    }
+    email: {
+      courseCompleted: { type: Boolean, default: true },
+      certificateReady: { type: Boolean, default: true },
+      courseReminder: { type: Boolean, default: true },
+      ceRenewalReminders: { type: Boolean, default: true },
+      ceMilestones: { type: Boolean, default: true },
+      lowHoursAlert: { type: Boolean, default: true },
+      credentialExpiring: { type: Boolean, default: true },
+      insuranceExpiring: { type: Boolean, default: true },
+      newCourseAnnouncements: { type: Boolean, default: true },
+      promotions: { type: Boolean, default: false },
+      platformUpdates: { type: Boolean, default: false },
+      weeklyDigest: { type: Boolean, default: false },
+    },
+    sms: {
+      enabled: { type: Boolean, default: false },
+      ceRenewalReminders: { type: Boolean, default: true },
+      lowHoursAlert: { type: Boolean, default: true },
+      credentialExpiring: { type: Boolean, default: true },
+      insuranceExpiring: { type: Boolean, default: true },
+      courseCompleted: { type: Boolean, default: false },
+      ceMilestones: { type: Boolean, default: false },
+    },
+    timing: {
+      reminderDays: { type: [Number], default: [90, 30, 7] },
+      lowHoursThreshold: { type: Number, default: 60 },
+      insuranceReminderDays: { type: [Number], default: [30, 14] },
+      quietHoursStart: { type: String, default: null },
+      quietHoursEnd: { type: String, default: null },
+    },
+    inApp: {
+      showBannerAnnouncements: { type: Boolean, default: true },
+      showCourseProgress: { type: Boolean, default: true },
+      showCeTracker: { type: Boolean, default: true },
+    },
+    unsubscribeAll: { type: Boolean, default: false },
+    lastUpdated: { type: Date, default: Date.now }
   },
   
+  // Saved RNR CE articles
+  savedRNRArticles: { type: [mongoose.Schema.Types.ObjectId], ref: 'ScholarlyArticle', default: [] },
+
   // Whitelabel partner association
   partnerId: {
     type: mongoose.Schema.Types.ObjectId,
@@ -179,6 +258,20 @@ const userSchema = new mongoose.Schema({
   memberSince: { type: Date },
   voluntaryCancelDate: { type: Date }, // Track if they voluntarily canceled
   
+  // Admin notification preferences (only used for admin users)
+  adminNotifPrefs: {
+    notifyRegistration:       { type: Boolean, default: true },
+    notifyEnrollment:         { type: Boolean, default: true },
+    notifyCompletion:         { type: Boolean, default: true },
+    notifyQuizPass:           { type: Boolean, default: false },
+    notifyQuizFail:           { type: Boolean, default: true },
+    notifySubscriptionStart:  { type: Boolean, default: true },
+    notifySubscriptionCancel: { type: Boolean, default: true },
+    notifyPayment:            { type: Boolean, default: true },
+    notifyPaymentFail:        { type: Boolean, default: true },
+    notifyCertificate:        { type: Boolean, default: false },
+  },
+
   // Admin activity feed (only used for admin users)
   adminActivityFeed: [{
     type: { type: String },
@@ -193,7 +286,6 @@ const userSchema = new mongoose.Schema({
 });
 
 // Index for faster queries
-userSchema.index({ email: 1 });
 userSchema.index({ 'subscription.status': 1 });
 userSchema.index({ 'profile.state': 1 });
 userSchema.index({ 'subscription.paymentFailedAt': 1 });
@@ -238,7 +330,7 @@ userSchema.methods.canAccessCourse = function(course) {
   if (course.accessTier === 'free' || !course.accessTier) return true;
   
   // Check if user has purchased this specific course
-  if (course.price && this.purchasedCourses?.includes(course._id)) return true;
+  if (course.price && this.purchasedCourses?.some(pc => pc.courseId?.toString() === course._id?.toString())) return true;
   
   // Check subscription tier
   const tierLevels = { 'free': 0, 'starter': 1, 'professional': 2, 'vip': 3 };
@@ -548,6 +640,11 @@ userSchema.methods.toJSON = function() {
   delete user.passwordResetToken;
   delete user.passwordResetExpires;
   delete user.__v;
+  // Strip Google Calendar tokens from API responses
+  if (user.googleCalendar) {
+    delete user.googleCalendar.accessToken;
+    delete user.googleCalendar.refreshToken;
+  }
   return user;
 };
 

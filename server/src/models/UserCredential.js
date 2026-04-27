@@ -83,7 +83,10 @@ const userCredentialSchema = new mongoose.Schema({
     monthsBefore: { type: Number },
     sent: { type: Boolean, default: false },
     sentAt: { type: Date }
-  }]
+  }],
+  reminderSent_90d: { type: Boolean, default: false },
+  reminderSent_60d: { type: Boolean, default: false },
+  reminderSent_30d: { type: Boolean, default: false }
 }, {
   timestamps: true
 });

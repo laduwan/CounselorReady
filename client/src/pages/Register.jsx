@@ -70,7 +70,26 @@ export default function Register() {
       const slug = new URLSearchParams(location.search).get('partner') || localStorage.getItem('cr_partner_slug');
       if (slug) payload.partnerSlug = slug;
       await register(payload);
-      navigate('/dashboard');
+
+      // Tool conversion tracking (fire-and-forget)
+      const toolRef = localStorage.getItem('cr_tool_ref');
+      const toolSession = localStorage.getItem('cr_tool_session');
+      if (toolRef) {
+        const apiBase = import.meta.env.VITE_API_URL || 'https://api.counselorready.com/api';
+        fetch(`${apiBase}/tool-analytics/conversion`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          },
+          body: JSON.stringify({ toolSlug: toolRef, sessionId: toolSession || '' })
+        }).catch(() => {});
+        localStorage.removeItem('cr_tool_ref');
+        localStorage.removeItem('cr_tool_session');
+      }
+
+      const redirect = new URLSearchParams(location.search).get('redirect');
+      window.location.href = redirect || '/dashboard.html';
     } catch (err) {
       setError(err.response?.data?.error || 'Registration failed. Please try again.');
     } finally {

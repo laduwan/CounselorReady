@@ -5,43 +5,112 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>User Management - CounselorReady Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="/css/design-tokens.css">
+  <link rel="stylesheet" href="/css/typography.css">
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            burgundy: { 50: '#fdf5f6', 100: '#fae8eb', 200: '#f5d0d6', 700: '#8b2542', 800: '#6b1d34', 900: '#4a1524' },
-            forest: { 50: '#f3f6f4', 100: '#e3ebe5', 500: '#547c5f', 600: '#4A7C59', 700: '#34503d', 800: '#2b4133' },
-            hunter: { 100: '#e8f0ea', 200: '#d1e1d5', 500: '#4A7C59', 600: '#3d6649', 700: '#34503d' },
-            honey: { 100: '#fef3d1', 200: '#fde7a3', 400: '#D4A855', 500: '#c99a4a', 600: '#b8893f' },
-            gold: { 50: '#fefce8', 100: '#fef9c3', 400: '#facc15', 500: '#d4a012' }
-          }
-        }
-      }
-    }
-  </script>
-  <link href="https://fonts.googleapis.com/css2?family=Source+Serif+Pro:wght@400;600;700&family=Source+Sans+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="/js/tailwind-config.js"></script>
+
   <link rel="stylesheet" href="/lib/fontawesome/css/all.min.css">
   <style>
-    body { font-family: 'Source Sans Pro', system-ui, sans-serif; }
-    .font-display { font-family: 'Source Serif Pro', Georgia, serif; }
+    body{background:#F8F7F4; font-family: 'Lato', system-ui, sans-serif; }
+    .font-display { font-family: 'Cormorant Garamond', Georgia, serif; }
+  
+    /* Shared nav styles */
+    .dd{display:none;position:absolute;top:100%;margin-top:6px;background:#fff;border-radius:10px;box-shadow:0 10px 40px rgba(107,29,52,.12);border:1px solid #FAE8EB;z-index:50;padding:6px 0;min-width:210px}
+    .dd.open{display:block}
+    .dd a{display:flex;align-items:center;gap:10px;padding:8px 16px;font-size:13px;color:#284157;text-decoration:none;transition:background .1s}
+    .dd a:hover{background:#F2F7F4}
+    .ov{display:none;position:fixed;inset:0;z-index:40}.ov.open{display:block}
+    .nav-link{padding:6px 12px;border-radius:6px;font-size:13px;font-weight:500;color:#57534e;text-decoration:none;display:flex;align-items:center;gap:4px;transition:all .15s}
+    .nav-link:hover{color:#6B1D34;background:#FDF5F7}
+    .nav-link.active{color:#6B1D34;background:#FDF5F7;font-weight:600;border-bottom:2px solid #6B1D34}
   </style>
 </head>
 <body class="bg-stone-50 min-h-screen">
 
+  <div id="cr-header"></div>
+  <script src="/shared/nav-footer.js"></script>
+
   <!-- Admin Header -->
-  <header class="bg-burgundy-800 text-white sticky top-0 z-50">
-    <div class="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
+  <header class="bg-burgundy-900 text-white sticky top-0 z-50">
+    <div class="max-w-full px-6 py-3 flex items-center justify-between">
       <div class="flex items-center gap-4">
-        <div class="w-9 h-9 bg-white/10 rounded-lg flex items-center justify-center">
-          <span class="font-display font-bold"><span class="text-honey-400">C</span><span class="text-hunter-500">R</span></span>
+        <div class="w-9 h-9 bg-burgundy-800 rounded-lg flex items-center justify-center relative overflow-hidden">
+          <span class="font-display font-bold text-gold-400 absolute" style="font-size:16px;top:2px;left:5px;">C</span>
+          <span class="font-display font-bold text-forest-400 absolute" style="font-size:16px;bottom:2px;left:13px;">R</span>
         </div>
         <div>
           <span class="font-display font-semibold text-lg">
-            <span class="text-burgundy-200">Counselor</span><span class="text-hunter-500">Ready</span>
+            <span style="color:#f2a8be">Counselor</span><span style="color:#98c3a9">Ready</span>
           </span>
-          <span class="ml-2 text-xs bg-honey-400 text-burgundy-900 px-2 py-0.5 rounded-full font-semibold">ADMIN</span>
+          <span class="ml-2 text-xs bg-gold-500 text-white px-2 py-0.5 rounded-full font-semibold">ADMIN</span>
+        </div>
+      </div>
+      <div class="flex items-center gap-4 text-sm">
+        <span class="text-burgundy-200" id="adminEmail">Admin</span>
+        <a href="/dashboard.html" class="text-burgundy-300 hover:text-white flex items-center gap-1">
+          <i class="fas fa-home text-xs"></i> Exit to Dashboard
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <div class="flex">
+    <!-- Sidebar -->
+    <aside class="w-52 bg-white border-r border-burgundy-100 min-h-[calc(100vh-116px)] sticky top-[116px] p-4">
+      <nav class="space-y-1 text-sm">
+        <a href="/admin-courses.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
+          <i class="fas fa-book w-4 text-burgundy-600"></i> Courses
+        </a>
+        <a href="/admin-course-links.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+          Share Links
+        </a>
+        <a href="/admin-users.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
+          <i class="fas fa-users w-4"></i> Users
+        </a>
+        <a href="/admin-analytics.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
+          <i class="fas fa-chart-line w-4"></i> Analytics
+        </a>
+        <a href="/admin-messages.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
+          <i class="fas fa-envelope w-4"></i> Messages
+        </a>
+        <a href="/admin-credentials.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
+          <i class="fas fa-id-card w-4"></i> Credentials
+        </a>
+        <a href="/admin-hardship.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
+          <i class="fas fa-hand-holding-heart w-4"></i> Hardship
+        </a>
+        <a href="/admin-integrations.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
+          <i class="fas fa-plug w-4"></i> Integrations
+        </a>
+        <a href="/admin-migration.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
+          <i class="fas fa-database w-4"></i> Migration
+        </a>
+        <a href="/admin-help.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
+          <i class="fas fa-question-circle w-4"></i> Help Center
+        </a>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 p-6 min-w-0">
+
+  <!-- Old Admin Header (legacy) -->
+  <header class="bg-burgundy-800 text-white sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <div class="w-9 h-9 bg-burgundy-800 rounded-lg flex items-center justify-center relative overflow-hidden">
+          <span class="font-display font-bold text-gold-400 absolute" style="font-size:16px;top:2px;left:5px;">C</span>
+          <span class="font-display font-bold text-forest-400 absolute" style="font-size:16px;bottom:2px;left:13px;">R</span>
+        </div>
+        <div>
+          <span class="font-display font-semibold text-lg">
+            <span style="color:#f2a8be">Counselor</span><span style="color:#98c3a9">Ready</span>
+          </span>
+          <span class="ml-2 text-xs bg-gold-500 text-white px-2 py-0.5 rounded-full font-semibold">ADMIN</span>
         </div>
       </div>
       <div class="flex items-center gap-4">
@@ -56,7 +125,7 @@
 
   <div class="flex">
     <!-- Sidebar -->
-    <aside class="w-64 bg-burgundy-800 min-h-[calc(100vh-52px)] sticky top-[52px] p-4">
+    <aside class="w-64 bg-burgundy-800 min-h-[calc(100vh-116px)] sticky top-[116px] p-4">
       <nav class="space-y-1">
         <a href="/admin.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
           <i class="fas fa-th-large w-5"></i>
@@ -266,9 +335,11 @@
               <p id="modalUserEmail" class="text-white/80 text-sm"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="3f5a525e56537f5a475e524f535a115c5052">[email&#160;protected]</a></p>
             </div>
           </div>
-          <button onclick="closeUserModal()" class="text-white/80 hover:text-white">
-            <i class="fas fa-times text-xl"></i>
-          </button>
+          <button onclick="closeUserModal()"
+            style="width:36px;height:36px;min-width:36px;border-radius:50%;background:rgba(255,255,255,0.2);border:none;cursor:pointer;color:#fff;font-size:18px;display:flex;align-items:center;justify-content:center;transition:background 0.15s;flex-shrink:0"
+            onmouseover="this.style.background='rgba(255,255,255,0.35)'"
+            onmouseout="this.style.background='rgba(255,255,255,0.2)'"
+            aria-label="Close">✕</button>
         </div>
       </div>
       
@@ -286,6 +357,9 @@
           </button>
           <button onclick="showModalTab('credentials')" class="modal-tab px-6 py-3 text-sm font-medium text-forest-600 border-b-2 border-transparent hover:text-burgundy-700" data-tab="credentials">
             Credentials
+          </button>
+          <button onclick="showModalTab('certificates')" class="modal-tab px-6 py-3 text-sm font-medium text-forest-600 border-b-2 border-transparent hover:text-burgundy-700" data-tab="certificates">
+            Certificates
           </button>
           <button onclick="showModalTab('actions')" class="modal-tab px-6 py-3 text-sm font-medium text-forest-600 border-b-2 border-transparent hover:text-burgundy-700" data-tab="actions">
             Admin Actions
@@ -363,7 +437,7 @@
                 <h3 class="font-semibold text-forest-900">Current Plan</h3>
                 <span id="subPlanBadge" class="px-3 py-1 rounded-full text-sm font-semibold">--</span>
               </div>
-              <div class="grid grid-cols-3 gap-4 text-sm">
+              <div class="grid grid-cols-4 gap-4 text-sm">
                 <div>
                   <p class="text-forest-500">Status</p>
                   <p id="subStatus" class="font-medium text-forest-800">--</p>
@@ -375,6 +449,10 @@
                 <div>
                   <p class="text-forest-500">Renews/Ends</p>
                   <p id="subEnds" class="font-medium text-forest-800">--</p>
+                </div>
+                <div>
+                  <p class="text-forest-500">Trial Ends</p>
+                  <p id="trialEndsAt" class="font-medium text-blue-700">--</p>
                 </div>
               </div>
             </div>
@@ -395,6 +473,25 @@
               <p class="text-xs text-forest-500 mt-2">⚠️ This bypasses Stripe billing. Use for comps/corrections only.</p>
             </div>
             
+            <div class="border-t pt-4">
+              <h3 class="font-semibold text-forest-900 mb-1">Trial Extension</h3>
+              <p class="text-xs text-forest-500 mb-3">Adds 3 days to the trial end date. If the trial has already expired, it reactivates from today.</p>
+              <div class="flex items-center gap-4">
+                <div class="flex-1">
+                  <p class="text-sm text-forest-700">Current trial end: <span id="trialEndsAtInline" class="font-medium text-blue-700">--</span></p>
+                </div>
+                <button
+                  onclick="extendUserTrial()"
+                  id="extendTrialBtn"
+                  class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors"
+                >
+                  <i class="fas fa-clock"></i>
+                  Extend Trial +3 Days
+                </button>
+              </div>
+              <p id="extendTrialMsg" class="text-xs mt-2 hidden"></p>
+            </div>
+
             <div class="border-t pt-4">
               <h3 class="font-semibold text-forest-900 mb-3">Billing Info</h3>
               <div class="grid grid-cols-2 gap-4 text-sm">
@@ -432,7 +529,21 @@
             <p class="text-forest-500 text-center py-8">Loading credentials...</p>
           </div>
         </div>
-        
+
+        <!-- Certificates Tab -->
+        <div id="tab-certificates" class="modal-tab-content hidden">
+          <h3 class="font-semibold text-forest-900 mb-4">Issued Certificates</h3>
+          <div id="userCertificatesList" class="space-y-3">
+            <div class="flex items-center justify-center py-8 text-forest-500">
+              <svg class="animate-spin h-5 w-5 mr-2 text-burgundy-700" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+              </svg>
+              Loading certificates...
+            </div>
+          </div>
+        </div>
+
         <!-- Admin Actions Tab -->
         <div id="tab-actions" class="modal-tab-content hidden">
           <div class="space-y-6">
@@ -765,7 +876,12 @@
       document.getElementById('stripeCustomerId').textContent = user.subscription?.stripeCustomerId || 'Not set';
       document.getElementById('stripeSubId').textContent = user.subscription?.stripeSubscriptionId || 'Not set';
       document.getElementById('changePlanSelect').value = plan;
-      
+      const trialEnd = user.subscription?.trialEndsAt
+        ? new Date(user.subscription.trialEndsAt).toLocaleDateString()
+        : '--';
+      document.getElementById('trialEndsAt').textContent = trialEnd;
+      document.getElementById('trialEndsAtInline').textContent = trialEnd;
+
       // Courses tab
       renderUserCourses(data.courseProgress || []);
       
@@ -853,12 +969,154 @@
       if (activeBtn) {
         activeBtn.classList.add('active', 'border-burgundy-700', 'text-burgundy-700');
       }
-      
+
       // Show content
       document.querySelectorAll('.modal-tab-content').forEach(content => {
         content.classList.add('hidden');
       });
       document.getElementById(`tab-${tab}`).classList.remove('hidden');
+
+      if (tab === 'certificates') {
+        loadUserCertificates();
+      }
+    }
+
+    function showAdminToast(message) {
+      const existing = document.getElementById('adminToast');
+      if (existing) existing.remove();
+      const toast = document.createElement('div');
+      toast.id = 'adminToast';
+      toast.className = 'fixed top-6 right-6 z-50 bg-hunter-700 text-white px-4 py-3 rounded-lg shadow-lg text-sm font-medium';
+      toast.textContent = message;
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 3500);
+    }
+
+    async function loadUserCertificates() {
+      if (!currentUserId) return;
+      const container = document.getElementById('userCertificatesList');
+      container.innerHTML = `
+        <div class="flex items-center justify-center py-8 text-forest-500">
+          <svg class="animate-spin h-5 w-5 mr-2 text-burgundy-700" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+          </svg>
+          Loading certificates...
+        </div>
+      `;
+
+      try {
+        const response = await fetch(`${API_URL}/api/admin/users/${currentUserId}/certificates`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const payload = await response.json();
+        if (!response.ok || !payload.success) {
+          throw new Error(payload.error || 'Failed to load certificates');
+        }
+        renderUserCertificates(payload.data || []);
+      } catch (error) {
+        console.error('Load user certificates error:', error);
+        container.innerHTML = `<p class="text-red-600 text-center py-8">Failed to load certificates: ${error.message}</p>`;
+      }
+    }
+
+    function renderUserCertificates(certificates) {
+      const container = document.getElementById('userCertificatesList');
+      if (!certificates.length) {
+        container.innerHTML = '<p class="text-forest-500 text-center py-8">No certificates for this user.</p>';
+        return;
+      }
+
+      container.innerHTML = certificates.map(cert => {
+        const certNumber = cert.certificateNumber || '—';
+        const courseTitle = (cert.courseId && cert.courseId.title) || cert.title || 'Unknown Course';
+        const ceHours = cert.ceHours != null ? cert.ceHours : (cert.courseId && cert.courseId.ceHours) || 0;
+        const completionDate = cert.completionDate ? new Date(cert.completionDate).toLocaleDateString() : '—';
+        const status = cert.isRevoked ? 'Revoked' : 'Active';
+        const statusClass = cert.isRevoked ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700';
+        const pdfUrl = cert.fileUrl || '';
+        const safeCertNumber = String(certNumber).replace(/'/g, "\\'");
+        return `
+          <div class="border border-forest-200 rounded-lg p-4" data-cert-id="${cert._id}">
+            <div class="flex items-start justify-between mb-3 gap-4">
+              <div class="flex-1 min-w-0">
+                <p class="font-medium text-forest-900 truncate">${courseTitle}</p>
+                <p class="text-xs text-forest-500 font-mono mt-0.5">${certNumber}</p>
+              </div>
+              <span class="px-2 py-1 rounded text-xs font-medium ${statusClass} whitespace-nowrap">${status}</span>
+            </div>
+            <div class="grid grid-cols-2 gap-4 text-xs mb-3">
+              <div>
+                <p class="text-forest-500">CE Hours</p>
+                <p class="font-medium text-forest-800">${ceHours}</p>
+              </div>
+              <div>
+                <p class="text-forest-500">Completion Date</p>
+                <p class="font-medium text-forest-800">${completionDate}</p>
+              </div>
+            </div>
+            <div class="flex gap-2">
+              <button
+                onclick="regenerateUserCertificate('${cert._id}', '${safeCertNumber}', this)"
+                class="inline-flex items-center gap-1.5 bg-gold-600 hover:bg-gold-700 text-white text-xs font-medium px-3 py-1.5 rounded"
+              >
+                <svg class="w-3.5 h-3.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582A7.003 7.003 0 0119 11m1 9v-5h-.581A7.003 7.003 0 015 13"/>
+                </svg>
+                Regenerate
+              </button>
+              ${pdfUrl ? `
+                <a
+                  href="${pdfUrl}"
+                  target="_blank"
+                  rel="noopener"
+                  class="inline-flex items-center gap-1.5 text-forest-600 hover:text-forest-700 text-xs font-medium px-3 py-1.5 rounded border border-forest-200 hover:border-forest-300"
+                >
+                  <svg class="w-3.5 h-3.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3"/>
+                  </svg>
+                  Download
+                </a>
+              ` : ''}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    async function regenerateUserCertificate(certId, certNumber, btn) {
+      if (!currentUserId) return;
+      if (!confirm(`Regenerate certificate ${certNumber}? This will recreate the PDF with the user's current name.`)) {
+        return;
+      }
+
+      const originalHtml = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = `
+        <svg class="animate-spin w-3.5 h-3.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+        </svg>
+        Regenerating...
+      `;
+
+      try {
+        const response = await fetch(`${API_URL}/api/admin/users/${currentUserId}/certificates/${certId}/regenerate`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const payload = await response.json();
+        if (!response.ok || !payload.success) {
+          throw new Error(payload.error || 'Regeneration failed');
+        }
+        showAdminToast('Certificate regenerated');
+        loadUserCertificates();
+      } catch (error) {
+        console.error('Regenerate certificate error:', error);
+        btn.disabled = false;
+        btn.innerHTML = originalHtml;
+        alert(`Failed to regenerate certificate: ${error.message}`);
+      }
     }
     
     function closeUserModal() {
@@ -1024,6 +1282,44 @@
       }
     }
     
+    async function extendUserTrial() {
+      if (!currentUserId) return;
+      const btn = document.getElementById('extendTrialBtn');
+      const msg = document.getElementById('extendTrialMsg');
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Extending...';
+      msg.className = 'text-xs mt-2 hidden';
+      try {
+        const response = await fetch(`${API_URL}/api/admin/users/${currentUserId}/extend-trial`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
+        });
+        const data = await response.json();
+        if (response.ok) {
+          const newDate = new Date(data.newTrialEndsAt).toLocaleDateString();
+          document.getElementById('trialEndsAt').textContent = newDate;
+          document.getElementById('trialEndsAtInline').textContent = newDate;
+          document.getElementById('subStatus').textContent = 'trial';
+          msg.textContent = `✓ Trial extended. New end date: ${newDate}`;
+          msg.className = 'text-xs mt-2 text-green-600';
+        } else {
+          msg.textContent = `✗ ${data.error || 'Failed to extend trial'}`;
+          msg.className = 'text-xs mt-2 text-red-600';
+        }
+      } catch (err) {
+        console.error('Extend trial error:', err);
+        msg.textContent = '✗ Network error — could not extend trial';
+        msg.className = 'text-xs mt-2 text-red-600';
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-clock"></i> Extend Trial +3 Days';
+        msg.classList.remove('hidden');
+      }
+    }
+
     // Admin actions
     async function sendPasswordReset() {
       if (!confirm('Send password reset email to this user?')) return;
@@ -1318,5 +1614,9 @@
     }
   </script>
 
-<script src="/js/footer.js"></script></body>
+<script src="/js/footer.js"></script>
+  </main></div>
+
+  <div id="cr-footer"></div>
+</body>
 </html>

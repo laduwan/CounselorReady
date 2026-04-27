@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title id="page-title">Blog — CounselorReady</title>
+  <meta name="description" id="page-desc" content="">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+
+  <!-- Dynamic OG tags set by JS -->
+  <meta property="og:title" id="og-title" content="">
+  <meta property="og:description" id="og-desc" content="">
+  <meta property="og:type" content="article">
+  <meta property="og:url" id="og-url" content="">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="/css/design-tokens.css">
+  <link rel="stylesheet" href="/css/typography.css">
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="/js/tailwind-config.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.1/marked.min.js"></script>
+
+  <style>
+    body { font-family: 'Lato', sans-serif; }
+    .prose { max-width: 65ch; }
+    .prose h1 { font-family: 'Cormorant Garamond', serif; font-size: 1.75rem; font-weight: 700; margin: 2rem 0 0.75rem; color: #6B1D34; line-height: 1.3; }
+    .prose h2 { font-family: 'Cormorant Garamond', serif; font-size: 1.375rem; font-weight: 700; margin: 1.75rem 0 0.5rem; color: #284157; line-height: 1.3; }
+    .prose h3 { font-size: 1.1rem; font-weight: 600; margin: 1.25rem 0 0.5rem; color: #D4A855; }
+    .prose p { margin: 0.75rem 0; line-height: 1.8; color: #374151; font-size: 1.0625rem; }
+    .prose ul, .prose ol { margin: 0.75rem 0; padding-left: 1.75rem; }
+    .prose li { margin: 0.35rem 0; color: #374151; line-height: 1.7; font-size: 1.0625rem; }
+    .prose ul li { list-style-type: disc; }
+    .prose ol li { list-style-type: decimal; }
+    .prose strong { font-weight: 700; color: #1F2937; }
+    .prose a { color: #6B1D34; text-decoration: underline; text-underline-offset: 2px; }
+    .prose a:hover { color: #8B3D54; }
+    .prose hr { margin: 2rem 0; border-color: #D4A855; opacity: 0.4; }
+    .prose blockquote { border-left: 3px solid #D4A855; padding: 0.5rem 0 0.5rem 1rem; color: #6B7280; font-style: italic; margin: 1.25rem 0; background: #FAF5EC; border-radius: 0 0.5rem 0.5rem 0; }
+    .prose code { background: #F3F4F6; padding: 0.15rem 0.4rem; border-radius: 0.25rem; font-size: 0.9375rem; }
+    .prose pre { background: #1F2937; color: #E5E7EB; padding: 1rem; border-radius: 0.5rem; overflow-x: auto; margin: 1rem 0; }
+    .prose pre code { background: none; padding: 0; color: inherit; }
+    .prose img { border-radius: 0.5rem; margin: 1.5rem 0; }
+    .prose table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+    .prose th, .prose td { border: 1px solid #E5E7EB; padding: 0.5rem 0.75rem; text-align: left; font-size: 0.9375rem; }
+    .prose th { background: #F9FAFB; font-weight: 600; }
+    /* Checkbox styling for checklists */
+    .prose input[type="checkbox"] { margin-right: 0.5rem; accent-color: #6B1D34; }
+  </style>
+</head>
+<body class="bg-cream min-h-screen">
+
+  <!-- Header -->
+  <header class="bg-white border-b border-gray-200">
+    <div class="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
+      <a href="/" class="flex items-center gap-2">
+        <div class="w-8 h-8 bg-burgundy rounded-lg flex items-center justify-center">
+          <span class="text-white font-bold text-xs">CR</span>
+        </div>
+        <span class="font-display text-lg font-semibold text-gray-900">CounselorReady</span>
+      </a>
+      <nav class="flex items-center gap-4">
+        <a href="/courses.html" class="text-gray-600 hover:text-burgundy text-sm font-medium hidden sm:inline">Courses</a>
+        <a href="/blog.html" class="text-burgundy text-sm font-medium">Blog</a>
+        <a href="/login.html" class="text-gray-600 hover:text-burgundy text-sm font-medium">Sign In</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Article -->
+  <main class="max-w-3xl mx-auto px-4 py-8">
+    <!-- Loading state -->
+    <div id="loading" class="text-center py-16">
+      <div class="inline-block w-8 h-8 border-2 border-burgundy border-t-transparent rounded-full animate-spin"></div>
+      <p class="text-gray-400 mt-3 text-sm">Loading post...</p>
+    </div>
+
+    <!-- Error state -->
+    <div id="error" class="text-center py-16 hidden">
+      <p class="text-gray-500 mb-4">Post not found</p>
+      <a href="/blog.html" class="text-burgundy font-medium text-sm hover:underline">Back to Blog</a>
+    </div>
+
+    <!-- Article content -->
+    <article id="article" class="hidden">
+      <div class="mb-6">
+        <a href="/blog.html" class="text-sm text-gray-400 hover:text-burgundy inline-flex items-center gap-1 mb-4">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+          All Posts
+        </a>
+        <div class="flex items-center gap-2 mb-3">
+          <span id="art-category" class="text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 font-medium"></span>
+          <span id="art-read" class="text-xs text-gray-400"></span>
+        </div>
+        <h1 id="art-title" class="font-display text-2xl md:text-3xl font-bold text-burgundy leading-tight mb-3"></h1>
+        <div class="flex items-center gap-3 text-sm text-gray-500">
+          <span id="art-author"></span>
+          <span>·</span>
+          <span id="art-date"></span>
+        </div>
+      </div>
+
+      <hr class="border-honey/40 mb-6">
+
+      <div id="art-content" class="prose"></div>
+
+      <!-- Tags -->
+      <div id="art-tags" class="flex flex-wrap gap-2 mt-8 pt-6 border-t border-gray-200"></div>
+
+      <!-- CTA -->
+      <div class="bg-white rounded-xl border border-gray-200 p-6 mt-8">
+        <h3 class="font-display text-lg font-semibold text-burgundy mb-2">Ready to get your CE hours organized?</h3>
+        <p class="text-sm text-gray-600 mb-4">CounselorReady's free tools help you track CE hours, manage credentials, and stay audit-ready. No subscription required.</p>
+        <div class="flex flex-wrap gap-3">
+          <a href="/register.html" class="bg-burgundy hover:bg-burgundy-dark text-white text-sm font-medium px-5 py-2.5 rounded-lg transition-colors">Start Free</a>
+          <a href="/courses.html" class="bg-white border border-burgundy text-burgundy text-sm font-medium px-5 py-2.5 rounded-lg hover:bg-burgundy/5 transition-colors">Browse Courses</a>
+        </div>
+      </div>
+    </article>
+  </main>
+
+  <!-- Footer -->
+
+  <script>
+    const API = window.location.hostname === 'localhost'
+      ? 'http://localhost:5000/api/blog'
+      : 'https://api.counselorready.com/api/blog';
+
+    async function loadPost() {
+      const params = new URLSearchParams(window.location.search);
+      const slug = params.get('slug');
+
+      if (!slug) {
+        document.getElementById('loading').classList.add('hidden');
+        document.getElementById('error').classList.remove('hidden');
+        return;
+      }
+
+      try {
+        const res = await fetch(`${API}/${slug}`);
+        if (!res.ok) {
+          document.getElementById('loading').classList.add('hidden');
+          document.getElementById('error').classList.remove('hidden');
+          return;
+        }
+
+        const data = await res.json();
+        const post = data.post;
+
+        // Update page meta
+        const titleText = (post.metaTitle || post.title) + ' | CounselorReady';
+        document.getElementById('page-title').textContent = titleText;
+        document.getElementById('page-desc').content = post.metaDescription || post.excerpt || '';
+        document.getElementById('og-title').content = post.metaTitle || post.title;
+        document.getElementById('og-desc').content = post.metaDescription || post.excerpt || '';
+        document.getElementById('og-url').content = `https://counselorready.com/blog-post.html?slug=${post.slug}`;
+
+        // Inject JSON-LD for Article schema
+        const jsonLd = document.createElement('script');
+        jsonLd.type = 'application/ld+json';
+        jsonLd.textContent = JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "Article",
+          "headline": post.title,
+          "description": post.excerpt,
+          "author": {
+            "@type": "Person",
+            "name": post.author || "Kejuiana Johnson"
+          },
+          "publisher": {
+            "@type": "Organization",
+            "name": "CounselorReady"
+          },
+          "datePublished": post.publishedAt,
+          "dateModified": post.updatedAt,
+          "url": `https://counselorready.com/blog-post.html?slug=${post.slug}`,
+          "wordCount": post.wordCount
+        });
+        document.head.appendChild(jsonLd);
+
+        // Populate article
+        const catLabels = { 'state-guide': 'State Guide', 'problem-solution': 'How-To', 'authority': 'Insights', 'clinical': 'Clinical', 'news': 'News' };
+        const catColors = {
+          'state-guide': 'bg-blue-100 text-blue-700',
+          'problem-solution': 'bg-green-100 text-green-700',
+          'authority': 'bg-purple-100 text-purple-700',
+          'clinical': 'bg-amber-100 text-amber-700',
+          'news': 'bg-gray-100 text-gray-700'
+        };
+
+        document.getElementById('art-category').textContent = catLabels[post.category] || post.category;
+        document.getElementById('art-category').className = `text-xs px-2 py-0.5 rounded-full font-medium ${catColors[post.category] || 'bg-gray-100 text-gray-700'}`;
+        document.getElementById('art-read').textContent = `${post.readingTime || 1} min read`;
+        document.getElementById('art-title').textContent = post.title;
+        document.getElementById('art-author').textContent = post.author || 'Kejuiana Johnson';
+        document.getElementById('art-date').textContent = post.publishedAt
+          ? new Date(post.publishedAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+          : '';
+
+        // Render markdown content
+        document.getElementById('art-content').innerHTML = marked.parse(post.content || '');
+
+        // Render tags
+        if (post.tags && post.tags.length > 0) {
+          document.getElementById('art-tags').innerHTML = post.tags.map(tag =>
+            `<a href="/blog.html?tag=${tag}" class="text-xs px-3 py-1 rounded-full bg-gray-100 text-gray-600 hover:bg-burgundy/10 hover:text-burgundy transition-colors">#${tag}</a>`
+          ).join('');
+        }
+
+        // Show article
+        document.getElementById('loading').classList.add('hidden');
+        document.getElementById('article').classList.remove('hidden');
+
+      } catch (err) {
+        console.error('Post load error:', err);
+        document.getElementById('loading').classList.add('hidden');
+        document.getElementById('error').classList.remove('hidden');
+      }
+    }
+
+    loadPost();
+  </script>
+<script src="/shared/nav-footer.js"></script>
+<div id="cr-footer"></div>
+</body>
+</html>

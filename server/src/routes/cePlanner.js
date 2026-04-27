@@ -7,7 +7,7 @@ import express from 'express';
 import UserCredential from '../models/UserCredential.js';
 import Certificate from '../models/Certificate.js';
 import CredentialTemplate from '../models/CredentialTemplate.js';
-import InteractiveCourse from '../models/InteractiveCourse.js';
+import { Course as InteractiveCourse, CourseProgress } from '../models/InteractiveCourse.js';
 import UserCourseProgress from '../models/UserCourseProgress.js';
 import { protect } from '../middleware/auth.js';
 
@@ -93,13 +93,19 @@ router.get('/plan', async (req, res) => {
       }
     }
 
-    // Get available courses
+    // Get available courses (include all matchable fields)
     const courses = await InteractiveCourse.find({ status: 'published' })
-      .select('title slug ceHours categories tags sections.title metadata');
+      .select('title slug ceHours categories tags ceuCategories nbccContentAreas contentAreas deliveryFormat description approvalBody');
 
-    // Get user's completed courses
-    const completedProgress = await UserCourseProgress.find({ userId, status: 'completed' });
-    const completedCourseIds = new Set(completedProgress.map(p => p.courseId.toString()));
+    // Get user's completed courses (check both legacy and interactive progress)
+    const [completedLegacy, completedInteractive] = await Promise.all([
+      UserCourseProgress.find({ userId, status: 'completed' }),
+      CourseProgress.find({ userId, status: { $in: ['completed', 'certified'] } })
+    ]);
+    const completedCourseIds = new Set([
+      ...completedLegacy.map(p => p.courseId.toString()),
+      ...completedInteractive.map(p => p.courseId.toString())
+    ]);
 
     // Build plan per credential
     const plan = credentials.map(cred => {
@@ -112,35 +118,77 @@ router.get('/plan', async (req, res) => {
       for (const req of remaining) {
         if (req.remaining <= 0) continue;
 
-        // Find courses matching this category
-        const categoryLower = req.category.toLowerCase();
-        const reqCategoryNorm = categoryLower.replace(/[-_]/g, ' ');
+        const categoryLower = req.category.toLowerCase().replace(/[-_]/g, ' ');
+
+        // Category alias map: credential requirement → course signals
+        const ALIASES = {
+          'ethics': ['ethics', 'ethical', 'boundaries', 'professional identity'],
+          'core': ['counseling theory', 'counseling practice', 'clinical', 'assessment', 'treatment'],
+          'general': [], // matches everything
+          'related': ['wellness', 'prevention', 'human development', 'social', 'cultural', 'career', 'group dynamics', 'research'],
+          'supervision': ['supervision', 'supervisory', 'cpcs', 'clinical supervisor'],
+          'telehealth': ['telehealth', 'telemental', 'telebehavioral', 'distance', 'technology'],
+          'cultural diversity': ['cultural', 'multicultural', 'diversity', 'social justice', 'equity'],
+          'substance abuse': ['addiction', 'substance', 'substance abuse', 'recovery'],
+          'trauma': ['trauma', 'ptsd', 'crisis', 'resilience']
+        };
+        const aliases = ALIASES[categoryLower] || [categoryLower];
+
         const matchingCourses = courses.filter(c => {
           if (completedCourseIds.has(c._id.toString())) return false;
-          // Match against the categories array (plural) and tags
-          const courseCategories = (c.categories || []).map(cat => (cat || '').toLowerCase().replace(/[-_]/g, ' '));
-          const courseTags = (c.tags || []).map(t => (t || '').toLowerCase().replace(/[-_]/g, ' '));
-          const allLabels = [...courseCategories, ...courseTags];
 
-          // If credential requirement is "General", match all courses
-          if (reqCategoryNorm === 'general') return true;
+          // General matches everything
+          if (categoryLower === 'general') return true;
 
-          // Check if any course category/tag matches the requirement
-          return allLabels.some(label =>
-            label.includes(reqCategoryNorm) || reqCategoryNorm.includes(label)
-          );
+          // Build all searchable text from course
+          const courseCats = (c.categories || []).map(x => (x || '').toLowerCase());
+          const courseTags = (c.tags || []).map(x => (x || '').toLowerCase());
+          const ceuCats = (c.ceuCategories || []).map(x => (typeof x === 'object' ? x.category : x) || '').map(x => x.toLowerCase());
+          const nbccAreas = (c.nbccContentAreas || c.contentAreas || []).map(x => (typeof x === 'string' ? x : x.name || '').toLowerCase());
+          const title = (c.title || '').toLowerCase();
+          const desc = (c.description || '').toLowerCase();
+
+          const allSignals = [...courseCats, ...courseTags, ...ceuCats, ...nbccAreas, title, desc];
+          const combined = allSignals.join(' ');
+
+          // Check if any alias keyword appears in any course signal
+          return aliases.some(alias => combined.includes(alias)) ||
+            allSignals.some(s => s.includes(categoryLower) || categoryLower.includes(s));
+        });
+
+        // Sort: prefer courses with matching deliveryFormat for synchronous requirements
+        const needsSynchronous = categoryLower.includes('ethics') && 
+          (cred.state === 'GA' || cred.name?.includes('GA'));
+        
+        matchingCourses.sort((a, b) => {
+          let scoreA = 0, scoreB = 0;
+          if (needsSynchronous) {
+            if ((a.deliveryFormat || 'async') === 'live') scoreA += 10;
+            if ((a.deliveryFormat || 'async') === 'hybrid') scoreA += 5;
+            if ((b.deliveryFormat || 'async') === 'live') scoreB += 10;
+            if ((b.deliveryFormat || 'async') === 'hybrid') scoreB += 5;
+          }
+          // Prefer courses with explicit nbccContentAreas set
+          if ((a.nbccContentAreas || []).length > 0) scoreA += 3;
+          if ((b.nbccContentAreas || []).length > 0) scoreB += 3;
+          // Prefer higher CE hour courses to fill gaps faster
+          scoreA += Math.min(5, a.ceHours || 0);
+          scoreB += Math.min(5, b.ceHours || 0);
+          return scoreB - scoreA;
         });
 
         if (matchingCourses.length > 0) {
           recommendations.push({
             category: req.category,
             hoursNeeded: req.remaining,
+            needsSynchronous: needsSynchronous || false,
             suggestedCourses: matchingCourses.slice(0, 3).map(c => ({
               id: c._id,
               title: c.title,
               slug: c.slug,
               ceHours: c.ceHours,
-              category: (c.categories && c.categories[0]) || 'General'
+              deliveryFormat: c.deliveryFormat || 'async',
+              category: (c.ceuCategories?.[0]?.category || c.categories?.[0]) || 'General'
             }))
           });
         } else {
@@ -169,6 +217,10 @@ router.get('/plan', async (req, res) => {
       return {
         credentialId: cred._id,
         credentialName: cred.name,
+        credentialType: cred.credentialType,
+        code: cred.code,
+        issuingBody: cred.issuingBody,
+        licenseNumber: cred.licenseNumber,
         state: cred.state,
         expirationDate: cred.expirationDate,
         daysUntilExpiration: daysLeft,

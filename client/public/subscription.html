@@ -5,60 +5,33 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Subscription - CounselorReady</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="/css/design-tokens.css">
+  <link rel="stylesheet" href="/css/typography.css">
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            burgundy: {
-              50: '#fdf5f6', 100: '#fae8eb', 200: '#f5d0d6', 300: '#eba9b5',
-              400: '#dd768a', 500: '#c94d65', 600: '#a83350', 700: '#8b2542',
-              800: '#6b1d34', 900: '#4a1524', 950: '#2d0a14'
-            },
-            hunter: {
-              50: '#f5f8f5', 100: '#e8f0e9', 200: '#d1e1d4', 300: '#a8c7ae',
-              400: '#7ba882', 500: '#4A7C59', 600: '#3d6a4a', 700: '#355E3B',
-              800: '#2a4a2f', 900: '#1f3522', 950: '#121f14'
-            },
-            honey: {
-              50: '#fdf9f0', 100: '#f9f0db', 200: '#f3e0b8', 300: '#ebcb8b',
-              400: '#D4A855', 500: '#c9973d', 600: '#b07f2a', 700: '#936624',
-              800: '#7a5221', 900: '#654420', 950: '#3a250f'
-            },
-            forest: {
-              50: '#f3f6f4', 100: '#e3ebe5', 200: '#c8d7cc', 300: '#a1bba8',
-              400: '#759a7f', 500: '#547c5f', 600: '#4A7C59', 700: '#34503d',
-              800: '#2b4133', 900: '#1f3025', 950: '#121c16'
-            },
-            gold: { 50: '#fefce8', 100: '#fef9c3', 200: '#fef08a', 300: '#fde047', 400: '#facc15', 500: '#d4a012' }
-          }
-        }
-      }
-    }
-  </script>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Lato:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="/js/tailwind-config.js"></script>
+
   <style>
-    body { font-family: 'Lato', system-ui, sans-serif; }
+    body{background:#F8F7F4; font-family: 'Lato', system-ui, sans-serif; }
     .font-display { font-family: 'Cormorant Garamond', Georgia, serif; }
+  
+    /* Shared nav styles */
+    .dd{display:none;position:absolute;top:100%;margin-top:6px;background:#fff;border-radius:10px;box-shadow:0 10px 40px rgba(107,29,52,.12);border:1px solid #FAE8EB;z-index:50;padding:6px 0;min-width:210px}
+    .dd.open{display:block}
+    .dd a{display:flex;align-items:center;gap:10px;padding:8px 16px;font-size:13px;color:#284157;text-decoration:none;transition:background .1s}
+    .dd a:hover{background:#F2F7F4}
+    .ov{display:none;position:fixed;inset:0;z-index:40}.ov.open{display:block}
+    .nav-link{padding:6px 12px;border-radius:6px;font-size:13px;font-weight:500;color:#57534e;text-decoration:none;display:flex;align-items:center;gap:4px;transition:all .15s}
+    .nav-link:hover{color:#6B1D34;background:#FDF5F7}
+    .nav-link.active{color:#6B1D34;background:#FDF5F7;font-weight:600;border-bottom:2px solid #6B1D34}
   </style>
 </head>
 <body class="bg-stone-50 min-h-screen">
   
   <!-- Header -->
-  <header class="bg-white border-b border-hunter-100 sticky top-0 z-50">
-    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-      <a href="/dashboard.html" class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-xl flex items-center justify-center shadow-md" style="background: linear-gradient(135deg, #8b2542, #6b1d34);">
-          <span class="font-display font-bold text-lg" style="position: relative; display: inline-block; width: 22px; height: 22px;"><span style="color: #D4A855; position: absolute; top: -3px; left: 0;">C</span><span style="color: #4A7C59; position: absolute; top: 5px; left: 6px;">R</span></span>
-        </div>
-        <span class="font-display font-semibold text-xl">
-          <span class="text-burgundy-800">Counselor</span><span class="text-hunter-600">Ready</span>
-        </span>
-      </a>
-      <a href="/dashboard.html" class="text-hunter-600 hover:text-hunter-700 text-sm">← Back to Dashboard</a>
-    </div>
-  </header>
+  <div id="cr-header"></div>
+  <script src="/shared/nav-footer.js"></script>
 
   <main class="max-w-5xl mx-auto px-6 py-8">
     <h1 class="font-display text-3xl font-semibold text-burgundy-900 mb-2">Subscription & Billing</h1>
@@ -357,8 +330,8 @@
         return;
       }
 
-      await loadUser();
-      await loadSubscription();
+      await
+    await loadSubscription();
       await loadBillingHistory();
       initStripe();
     }
@@ -725,7 +698,7 @@
       }
       
       try {
-        const response = await fetch(`${API_URL}/api/users/promo`, {
+        const response = await fetch(`${API_URL}/api/payments/apply-promo`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`,
@@ -761,5 +734,7 @@
     document.addEventListener('DOMContentLoaded', init);
   </script>
 
-<script src="/js/footer.js"></script></body>
+<script src="/js/footer.js"></script>
+  <div id="cr-footer"></div>
+</body>
 </html>

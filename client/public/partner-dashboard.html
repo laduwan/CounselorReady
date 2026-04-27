@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Partner Dashboard | CounselorReady</title>
+  <link rel="stylesheet" href="/css/design-tokens.css">
+  <link rel="stylesheet" href="/css/typography.css">
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="/js/tailwind-config.js"></script>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  
+  <style>
+    body{background:#F8F7F4; font-family: 'Lato', system-ui, sans-serif; }
+    .font-display { font-family: 'Cormorant Garamond', Georgia, serif; }
+  
+    /* Shared nav styles */
+    .dd{display:none;position:absolute;top:100%;margin-top:6px;background:#fff;border-radius:10px;box-shadow:0 10px 40px rgba(107,29,52,.12);border:1px solid #FAE8EB;z-index:50;padding:6px 0;min-width:210px}
+    .dd.open{display:block}
+    .dd a{display:flex;align-items:center;gap:10px;padding:8px 16px;font-size:13px;color:#284157;text-decoration:none;transition:background .1s}
+    .dd a:hover{background:#F2F7F4}
+    .ov{display:none;position:fixed;inset:0;z-index:40}.ov.open{display:block}
+    .nav-link{padding:6px 12px;border-radius:6px;font-size:13px;font-weight:500;color:#57534e;text-decoration:none;display:flex;align-items:center;gap:4px;transition:all .15s}
+    .nav-link:hover{color:#6B1D34;background:#FDF5F7}
+    .nav-link.active{color:#6B1D34;background:#FDF5F7;font-weight:600;border-bottom:2px solid #6B1D34}
+  </style>
+</head>
+<body class="bg-stone-50 min-h-screen">
+
+  <!-- ═══════ HEADER (matches dashboard.html) ═══════ -->
+  <div id="cr-header"></div>
+  <script src="/shared/nav-footer.js"></script>
+
+  <!-- ═══════ MAIN CONTENT ═══════ -->
+  <main class="max-w-5xl mx-auto px-6 py-8">
+
+    <!-- Breadcrumb -->
+    <a href="/dashboard.html" class="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-burgundy-700 mb-4">
+      <i class="fas fa-chevron-left text-xs"></i> Dashboard
+    </a>
+
+    <!-- Page Header -->
+    <div class="mb-6">
+      <h1 class="font-display text-3xl font-semibold text-burgundy-900">Partner Dashboard</h1>
+      <p class="text-gray-500 mt-1">Whitelabel partner management</p>
+    </div>
+
+    <!-- Loading -->
+    <div id="loading" class="text-center py-16">
+      <div class="animate-spin rounded-full h-10 w-10 border-4 border-burgundy-200 border-t-burgundy-700 mx-auto mb-4"></div>
+      <p class="text-gray-500">Loading partner data...</p>
+    </div>
+
+    <!-- Empty State (no partner) -->
+    <div id="emptyState" class="hidden text-center py-20">
+      <i class="fas fa-handshake text-5xl text-gray-300 mb-4"></i>
+      <p class="text-lg font-medium text-stone-600">No partner account found</p>
+      <p class="text-sm text-stone-500 mt-1">This page is available to whitelabel distribution partners.</p>
+    </div>
+
+    <!-- Error State -->
+    <div id="errorState" class="hidden text-center py-20">
+      <p class="text-lg font-medium text-red-700">Something went wrong</p>
+      <p class="text-sm text-stone-500 mt-1" id="errorMessage"></p>
+      <button onclick="location.reload()" class="mt-4 px-4 py-2 text-sm rounded-lg border border-stone-300 text-stone-600 hover:bg-stone-50">Try Again</button>
+    </div>
+
+    <!-- Content (hidden until loaded) -->
+    <div id="content" class="hidden space-y-6">
+
+      <!-- Partner Header -->
+      <div id="partnerHeader" class="flex items-center gap-4"></div>
+
+      <!-- Onboarding Banner -->
+      <div id="onboardingBanner" class="hidden"></div>
+
+      <!-- Stat Cards -->
+      <div id="statsGrid" class="grid grid-cols-2 sm:grid-cols-4 gap-4"></div>
+
+      <!-- Quick Actions -->
+      <div id="quickActions" class="grid grid-cols-3 sm:grid-cols-6 gap-3">
+        <a href="/partner/courses" class="bg-white rounded-xl border border-gray-200 p-3 text-center hover:shadow-md transition-shadow">
+          <i class="fas fa-book text-burgundy-800 text-lg mb-1"></i>
+          <p class="text-xs font-medium text-stone-700">Manage Courses</p>
+        </a>
+        <a href="/partner/users" class="bg-white rounded-xl border border-gray-200 p-3 text-center hover:shadow-md transition-shadow">
+          <i class="fas fa-user-plus text-hunter-500 text-lg mb-1"></i>
+          <p class="text-xs font-medium text-stone-700">Manage Users</p>
+        </a>
+        <a href="/partner/bulk-upload" class="bg-white rounded-xl border border-gray-200 p-3 text-center hover:shadow-md transition-shadow">
+          <i class="fas fa-upload text-blue-600 text-lg mb-1"></i>
+          <p class="text-xs font-medium text-stone-700">Bulk Upload</p>
+        </a>
+        <a href="/partner/billing" class="bg-white rounded-xl border border-gray-200 p-3 text-center hover:shadow-md transition-shadow">
+          <i class="fas fa-credit-card text-amber-600 text-lg mb-1"></i>
+          <p class="text-xs font-medium text-stone-700">Billing</p>
+        </a>
+        <a href="/partner/reports" class="bg-white rounded-xl border border-gray-200 p-3 text-center hover:shadow-md transition-shadow">
+          <i class="fas fa-download text-purple-600 text-lg mb-1"></i>
+          <p class="text-xs font-medium text-stone-700">Reports</p>
+        </a>
+        <a href="/partner/email-templates" class="bg-white rounded-xl border border-gray-200 p-3 text-center hover:shadow-md transition-shadow">
+          <i class="fas fa-envelope text-red-600 text-lg mb-1"></i>
+          <p class="text-xs font-medium text-stone-700">Email Templates</p>
+        </a>
+      </div>
+
+      <!-- Recent Activity Banner -->
+      <div id="recentActivity" class="hidden"></div>
+
+      <!-- Distribution Links -->
+      <div id="distributionLinks" class="bg-white rounded-xl border border-gray-200 p-5"></div>
+
+      <!-- Course Performance Table -->
+      <div id="coursePerformance" class="hidden"></div>
+
+      <!-- Partner Details -->
+      <div id="partnerDetails" class="bg-white rounded-xl border border-gray-200 p-5"></div>
+
+    </div>
+
+  </main>
+
+  <script>
+    const API = location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://api.counselorready.com';
+    const T = localStorage.getItem('token');
+    if (!T) location.href = '/login.html';
+
+    // Set user avatar from JWT
+    try {
+      const p = JSON.parse(atob(T.split('.')[1]));
+      document.getElementById('userName').textContent = p.name || '';
+      document.getElementById('userAvatar').textContent = (p.name || '--').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+    } catch (e) {}
+
+    // ── Helpers ──
+    function esc(str) {
+      if (!str) return '';
+      const d = document.createElement('div');
+      d.textContent = str;
+      return d.innerHTML;
+    }
+
+    function copyLink(url, btnId) {
+      navigator.clipboard.writeText(url).then(() => {
+        const btn = document.getElementById(btnId);
+        btn.innerHTML = '<i class="fas fa-check text-xs"></i> Copied!';
+        btn.classList.add('bg-green-100', 'text-green-700');
+        btn.classList.remove('bg-burgundy-50', 'text-burgundy-800');
+        setTimeout(() => {
+          btn.innerHTML = '<i class="fas fa-copy text-xs"></i> Copy';
+          btn.classList.remove('bg-green-100', 'text-green-700');
+          btn.classList.add('bg-burgundy-50', 'text-burgundy-800');
+        }, 2000);
+      });
+    }
+
+    // ── Init ──
+    document.addEventListener('DOMContentLoaded', init);
+
+    async function init() {
+      try {
+        let partner = null;
+        let stats = null;
+        let onboarding = null;
+
+        // Try fetching partner data (partner_admin flow)
+        try {
+          const res = await fetch(`${API}/api/partners/my`, {
+            headers: { 'Authorization': `Bearer ${T}` }
+          });
+          if (res.ok) {
+            const data = await res.json();
+            partner = data.partner;
+          }
+        } catch (e) {}
+
+        if (!partner) {
+          document.getElementById('loading').classList.add('hidden');
+          document.getElementById('emptyState').classList.remove('hidden');
+          return;
+        }
+
+        // Fetch stats and onboarding in parallel
+        const [statsRes, onboardingRes] = await Promise.all([
+          fetch(`${API}/api/partners/my/stats`, {
+            headers: { 'Authorization': `Bearer ${T}` }
+          }).catch(() => null),
+          fetch(`${API}/api/partners/my/onboarding`, {
+            headers: { 'Authorization': `Bearer ${T}` }
+          }).catch(() => null)
+        ]);
+
+        if (statsRes && statsRes.ok) {
+          stats = await statsRes.json();
+        }
+        if (onboardingRes && onboardingRes.ok) {
+          onboarding = await onboardingRes.json();
+        }
+
+        render(partner, stats, onboarding);
+      } catch (err) {
+        document.getElementById('loading').classList.add('hidden');
+        document.getElementById('errorMessage').textContent = err.message || 'Failed to load partner data';
+        document.getElementById('errorState').classList.remove('hidden');
+      }
+    }
+
+    function render(partner, stats, onboarding) {
+      document.getElementById('loading').classList.add('hidden');
+      document.getElementById('content').classList.remove('hidden');
+
+      // ── Partner Header ──
+      const logoHtml = partner.branding?.logoUrl
+        ? `<img src="${esc(partner.branding.logoUrl)}" alt="${esc(partner.name)}" class="h-12 w-auto rounded-lg">`
+        : `<div class="w-12 h-12 rounded-lg flex items-center justify-center text-white font-bold text-xl" style="background:${esc(partner.branding?.primaryColor || '#6b1d34')}">${esc(partner.name.charAt(0))}</div>`;
+
+      document.getElementById('partnerHeader').innerHTML = `
+        ${logoHtml}
+        <div>
+          <h2 class="font-display text-2xl font-bold text-burgundy-800">${esc(partner.branding?.companyName || partner.name)}</h2>
+          <p class="text-sm text-stone-500">${esc(partner.branding?.tagline || 'Whitelabel Partner Dashboard')}</p>
+        </div>
+      `;
+
+      // ── Onboarding Banner ──
+      if (onboarding && onboarding.progress && !onboarding.progress.allRequiredDone) {
+        const pct = onboarding.progress.percentage || 0;
+        document.getElementById('onboardingBanner').innerHTML = `
+          <a href="/partner/onboarding" class="bg-white rounded-xl border border-amber-200 p-4 flex items-center gap-4 hover:shadow-md transition-shadow block" style="background:#fffbeb">
+            <div class="w-10 h-10 rounded-full flex items-center justify-center" style="background:#fef3c7">
+              <i class="fas fa-rocket text-amber-600"></i>
+            </div>
+            <div class="flex-1">
+              <p class="text-sm font-semibold text-stone-900">Finish setting up your account</p>
+              <p class="text-xs text-stone-500 mt-0.5">${onboarding.progress.requiredCompleted || 0} of ${onboarding.progress.requiredTotal || 0} steps completed</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <div class="w-16 bg-stone-200 rounded-full h-1.5">
+                <div class="h-1.5 rounded-full" style="width:${pct}%;background:#d97706"></div>
+              </div>
+              <i class="fas fa-arrow-right text-stone-400 text-sm"></i>
+            </div>
+          </a>
+        `;
+        document.getElementById('onboardingBanner').classList.remove('hidden');
+      }
+
+      // ── Stat Cards ──
+      document.getElementById('statsGrid').innerHTML = `
+        <div class="bg-white rounded-xl border border-gray-200 p-5">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-lg flex items-center justify-center bg-burgundy-50">
+              <i class="fas fa-users text-burgundy-800"></i>
+            </div>
+            <div>
+              <p class="text-2xl font-bold text-stone-900">${stats?.totalUsers ?? partner.userCount ?? 0}</p>
+              <p class="text-xs text-stone-500">Total Users</p>
+            </div>
+          </div>
+        </div>
+        <div class="bg-white rounded-xl border border-gray-200 p-5">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-lg flex items-center justify-center" style="background:#f0fdf4">
+              <i class="fas fa-chart-line text-hunter-500"></i>
+            </div>
+            <div>
+              <p class="text-2xl font-bold text-stone-900">${stats?.activeUsers ?? (partner.active ? 'Active' : 'Paused')}</p>
+              <p class="text-xs text-stone-500">${stats ? 'Active (30d)' : 'Partner Status'}</p>
+            </div>
+          </div>
+        </div>
+        <div class="bg-white rounded-xl border border-gray-200 p-5">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-lg flex items-center justify-center" style="background:#eff6ff">
+              <i class="fas fa-book-open" style="color:#2563eb"></i>
+            </div>
+            <div>
+              <p class="text-2xl font-bold text-stone-900">${stats?.coursesCompleted ?? '--'}</p>
+              <p class="text-xs text-stone-500">Courses Completed</p>
+            </div>
+          </div>
+        </div>
+        <div class="bg-white rounded-xl border border-gray-200 p-5">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-lg flex items-center justify-center" style="background:#fef3c7">
+              <i class="fas fa-award" style="color:#d97706"></i>
+            </div>
+            <div>
+              <p class="text-2xl font-bold text-stone-900">${stats?.ceHoursEarned ?? '--'}</p>
+              <p class="text-xs text-stone-500">CE Hours Earned</p>
+            </div>
+          </div>
+        </div>
+      `;
+
+      // ── Recent Activity Banner ──
+      if (stats?.recentEnrollments > 0) {
+        document.getElementById('recentActivity').innerHTML = `
+          <div class="bg-white rounded-xl border border-green-200 p-4 flex items-center gap-3" style="background:#f0fdf4">
+            <i class="fas fa-chart-line text-hunter-500"></i>
+            <p class="text-sm text-stone-700">
+              <span class="font-bold text-hunter-500">${stats.recentEnrollments}</span> new enrollment${stats.recentEnrollments !== 1 ? 's' : ''} in the last 7 days
+            </p>
+          </div>
+        `;
+        document.getElementById('recentActivity').classList.remove('hidden');
+      }
+
+      // ── Distribution Links ──
+      const origin = window.location.origin;
+      const registerUrl = `${origin}/register?partner=${partner.slug}`;
+      const loginUrl = `${origin}/login?partner=${partner.slug}`;
+      document.getElementById('distributionLinks').innerHTML = `
+        <h2 class="text-sm font-semibold text-stone-900 mb-3">Your Distribution Links</h2>
+        <div class="space-y-3">
+          <div class="flex items-center gap-2">
+            <span class="text-xs text-stone-500 w-20">Register:</span>
+            <code class="flex-1 text-xs bg-stone-50 px-3 py-2 rounded-lg text-stone-700 border border-stone-200 truncate">${esc(registerUrl)}</code>
+            <button id="copyRegBtn" onclick="copyLink('${registerUrl}','copyRegBtn')"
+              class="flex items-center gap-1 px-3 py-2 text-xs font-medium rounded-lg bg-burgundy-50 text-burgundy-800 transition-colors hover:bg-burgundy-100">
+              <i class="fas fa-copy text-xs"></i> Copy
+            </button>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-xs text-stone-500 w-20">Login:</span>
+            <code class="flex-1 text-xs bg-stone-50 px-3 py-2 rounded-lg text-stone-700 border border-stone-200 truncate">${esc(loginUrl)}</code>
+            <button id="copyLoginBtn" onclick="copyLink('${loginUrl}','copyLoginBtn')"
+              class="flex items-center gap-1 px-3 py-2 text-xs font-medium rounded-lg bg-burgundy-50 text-burgundy-800 transition-colors hover:bg-burgundy-100">
+              <i class="fas fa-copy text-xs"></i> Copy
+            </button>
+          </div>
+        </div>
+      `;
+
+      // ── Course Performance ──
+      if (stats?.courseBreakdown?.length > 0) {
+        const rows = stats.courseBreakdown.map(c => {
+          const rateBg = c.completionRate >= 70 ? '#f0fdf4' : c.completionRate >= 40 ? '#fef3c7' : '#fef2f2';
+          const rateColor = c.completionRate >= 70 ? '#4A7C59' : c.completionRate >= 40 ? '#d97706' : '#dc2626';
+          return `
+            <tr class="border-b border-stone-100 last:border-0">
+              <td class="py-2.5 px-3 text-stone-900 font-medium">${esc(c.title)}</td>
+              <td class="py-2.5 px-3 text-right text-stone-600">${c.enrollments}</td>
+              <td class="py-2.5 px-3 text-right text-stone-600">${c.completions}</td>
+              <td class="py-2.5 px-3 text-right">
+                <span class="inline-block px-2 py-0.5 rounded-full text-xs font-medium" style="background:${rateBg};color:${rateColor}">${c.completionRate}%</span>
+              </td>
+            </tr>
+          `;
+        }).join('');
+
+        document.getElementById('coursePerformance').innerHTML = `
+          <div class="bg-white rounded-xl border border-gray-200 p-5">
+            <h2 class="text-sm font-semibold text-stone-900 mb-3">Course Performance</h2>
+            <div class="overflow-x-auto">
+              <table class="w-full text-sm">
+                <thead>
+                  <tr class="border-b border-stone-200">
+                    <th class="text-left py-2 px-3 text-xs font-medium text-stone-500">Course</th>
+                    <th class="text-right py-2 px-3 text-xs font-medium text-stone-500">Enrollments</th>
+                    <th class="text-right py-2 px-3 text-xs font-medium text-stone-500">Completions</th>
+                    <th class="text-right py-2 px-3 text-xs font-medium text-stone-500">Rate</th>
+                  </tr>
+                </thead>
+                <tbody>${rows}</tbody>
+              </table>
+            </div>
+          </div>
+        `;
+        document.getElementById('coursePerformance').classList.remove('hidden');
+      }
+
+      // ── Partner Details ──
+      let detailsHtml = `
+        <h2 class="text-sm font-semibold text-stone-900 mb-3">Partner Details</h2>
+        <dl class="grid grid-cols-2 gap-x-6 gap-y-3 text-sm">
+          <div>
+            <dt class="text-stone-500 text-xs">Slug</dt>
+            <dd class="text-stone-900 font-mono">${esc(partner.slug)}</dd>
+          </div>
+      `;
+      if (partner.contact?.email) {
+        detailsHtml += `
+          <div>
+            <dt class="text-stone-500 text-xs">Email</dt>
+            <dd class="text-stone-900">${esc(partner.contact.email)}</dd>
+          </div>
+        `;
+      }
+      if (partner.contact?.website) {
+        const cleanUrl = partner.contact.website.replace(/^https?:\/\//, '');
+        detailsHtml += `
+          <div>
+            <dt class="text-stone-500 text-xs">Website</dt>
+            <dd>
+              <a href="${esc(partner.contact.website)}" target="_blank" rel="noopener noreferrer"
+                class="flex items-center gap-1 text-burgundy-800 hover:underline">
+                ${esc(cleanUrl)}
+                <i class="fas fa-external-link-alt text-xs"></i>
+              </a>
+            </dd>
+          </div>
+        `;
+      }
+      detailsHtml += `
+          <div>
+            <dt class="text-stone-500 text-xs">Created</dt>
+            <dd class="text-stone-900">${new Date(partner.createdAt).toLocaleDateString()}</dd>
+          </div>
+        </dl>
+      `;
+      document.getElementById('partnerDetails').innerHTML = detailsHtml;
+    }
+  </script>
+<script src="/js/cr-icons.js"></script>
+
+  <div id="cr-footer"></div>
+</body>
+</html>

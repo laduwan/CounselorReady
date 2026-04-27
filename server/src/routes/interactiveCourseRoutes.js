@@ -1,8 +1,3 @@
-/**
- * Copyright (c) 2026 CounselorReady, a subsidiary of Ga Integrated Therapeutic Perspectives, LLC.
- * All rights reserved. Proprietary and confidential.
- * Unauthorized copying or distribution is strictly prohibited.
- */
 // routes/interactiveCourseRoutes.js
 // Interactive course routes for CounselorReady
 // Includes: Course viewing, Progress tracking, Assessment, Evaluation, Attestation, Certificate
@@ -10,117 +5,169 @@
 
 import express from 'express';
 import mongoose from 'mongoose';
+import { Readable } from 'stream';
+import { v2 as cloudinary } from 'cloudinary';
 import { Course, CourseProgress, ContentInteraction } from '../models/InteractiveCourse.js';
 import Certificate from '../models/Certificate.js';
 import Evaluation from '../models/Evaluation.js';
 import User from '../models/User.js';
-import { protect, optionalAuth } from '../middleware/auth.js';
-import { attachTenantScope } from '../middleware/tenantScope.js';
-import { logActivity, ACTIVITY_TYPES } from '../services/activityTrackingService.js';
-import { sendEnrollmentSMS, sendCompletionSMS } from '../services/smsService.js';
+import UserCredential from '../models/UserCredential.js';
+import Gamification from '../models/Gamification.js';
+import { protect, requireAdmin, optionalAuth } from '../middleware/auth.js';
 import { generateCertificate, generateCertificateNumber } from '../utils/certificate.js';
+import { logActivity, ACTIVITY_TYPES } from '../services/activityTrackingService.js';
+import { checkAndSendFreeLimit } from '../services/freeCourseLimitEmail.js';
+import twilio from 'twilio';
+
+const twilioClient = process.env.TWILIO_ACCOUNT_SID
+  ? twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN)
+  : null;
 
 const router = express.Router();
 
-// Apply tenant scoping to all routes — populates req.tenantFilter
-// Note: For unauthenticated routes this sets a default filter.
-// For protected routes, we re-run attachTenantScope AFTER protect
-// so that req.user.partnerId is available for proper partner isolation.
-router.use(attachTenantScope);
-
-// Combined middleware: authenticate first, then re-scope with user context
-const protectAndScope = [protect, attachTenantScope];
-
-/**
- * Helper: resolve course by ObjectId or slug, respecting tenant scope.
- * Partner users can see platform courses (no partnerId) + their own partner's courses.
- * Admins and non-partner users see all courses.
- * Falls back to the legacy "courses" collection when not found in interactivecourses.
- */
-async function findCourseByIdOrSlug(param, tenantFilter = {}) {
-  const partnerConditions = tenantFilter.partnerId
-    ? [{ partnerId: { $exists: false } }, { partnerId: null }, { partnerId: tenantFilter.partnerId }]
-    : null;
-
-  let query;
+// Helper: resolve course by ObjectId or slug
+async function findCourseByIdOrSlug(param) {
   if (mongoose.Types.ObjectId.isValid(param)) {
-    query = partnerConditions
-      ? { $and: [{ _id: param }, { $or: partnerConditions }] }
-      : { _id: param };
-  } else {
-    const slugConditions = [{ slug: param }, { courseCode: param }];
-    query = partnerConditions
-      ? { $and: [{ $or: slugConditions }, { $or: partnerConditions }] }
-      : { $or: slugConditions };
+    return Course.findById(param);
   }
-
-  return Course.findOne(query);
+  return Course.findOne({ slug: param });
 }
 
+// ── CONTENT GATING ──────────────────────────────────────────
+const FREE_CE_HOUR_LIMIT = 4; // Free users get 4 CE hours before paywall
+
 /**
- * Helper: strip learning content for unauthenticated or unenrolled users.
- * Returns full course for admins and enrolled users; metadata-only preview otherwise.
- */
-async function gateContent(courseObj, user) {
-  // No user — preview mode
-  if (!user) return stripContent(courseObj);
-  // Admins always get full content
-  if (user.role === 'admin') return courseObj;
-  // Check enrollment
-  const progress = await CourseProgress.findOne({
-    userId: user._id,
-    courseId: courseObj._id
-  });
-  if (progress) {
-    // Enrolled — check access tier
-    const courseTier = courseObj.accessType || courseObj.pricingTier || 'free';
-    if (courseTier === 'free') return courseObj;
-    const userTier = user.subscription?.plan || 'free';
-    const userStatus = user.subscription?.status;
-    if (userStatus === 'active') {
-      const tierLevels = { free: 0, starter: 1, professional: 2, vip: 3 };
-      if ((tierLevels[userTier] || 0) >= (tierLevels[courseTier] || 0)) {
-        return courseObj;
-      }
-    }
-    // Check individual purchase
-    if (progress.purchased) return courseObj;
-  }
-  // Not enrolled or insufficient tier — return preview
-  return stripContent(courseObj);
-}
-/**
- * Strip contentBlocks and assessment questions for preview mode.
- * Keeps metadata, section titles, and sectionDivider blocks for nav rendering.
+ * Strip sensitive content from course for preview/unauthenticated users.
+ * Removes: assessment answers, deep section content (keeps titles + first block preview).
  */
 function stripContent(courseObj) {
-  if (courseObj.sections) {
-    courseObj.sections = courseObj.sections.map(section => ({
-      title: section.title,
-      _id: section._id,
-      order: section.order,
-      contentBlocks: (section.contentBlocks || [])
-        .filter(block => block.type === 'sectionDivider')
-        .map(block => ({
-          type: block.type,
-          title: block.title,
-          subtitle: block.subtitle,
-          sectionNumber: block.sectionNumber
-        }))
+  const obj = courseObj.toObject ? courseObj.toObject() : { ...courseObj };
+
+  // Strip assessment answers
+  if (obj.assessment?.questions) {
+    obj.assessment.questions = obj.assessment.questions.map(q => ({
+      ...q,
+      options: q.options?.map(o => ({ text: o.text })), // remove isCorrect
+      explanation: undefined
     }));
   }
-  if (courseObj.assessment) {
-    courseObj.assessment = {
-      questionCount: courseObj.assessment.questions?.length || 0,
-      passingScore: courseObj.assessment.passingScore,
-      passThreshold: courseObj.assessment.passThreshold,
-      maxAttempts: courseObj.assessment.maxAttempts || courseObj.assessment.attemptsAllowed,
-      questions: []
-    };
+
+  // Strip section content — keep titles and first text block (truncated) for preview
+  if (obj.sections) {
+    obj.sections = obj.sections.map(s => {
+      const firstText = s.contentBlocks?.find(b => b.type === 'text');
+      const preview = firstText?.content?.substring(0, 300) || '';
+      return {
+        _id: s._id,
+        title: s.title,
+        contentBlocks: [{ type: 'text', content: preview + (preview.length >= 300 ? '…' : '') }],
+        _stripped: true
+      };
+    });
   }
-  delete courseObj.rawMarkdown;
-  courseObj._isPreview = true;
-  return courseObj;
+
+  obj._isPreview = true;
+  return obj;
+}
+
+/**
+ * Gate course content based on user authentication, subscription, and enrollment.
+ * Returns: full course, stripped preview, or course with metadata flags.
+ */
+async function gateContent(courseObj, user) {
+  // No user → preview only
+  if (!user) return stripContent(courseObj);
+
+  // Admin → always full
+  if (user.role === 'admin') return courseObj;
+
+  // Check enrollment
+  const progress = await CourseProgress.findOne({ userId: user._id, courseId: courseObj._id });
+  const isEnrolled = !!progress;
+
+  // Free course → full content for anyone logged in
+  if (courseObj.accessType === 'free') return courseObj;
+
+  // Individual purchase → full content
+  const hasPurchased = user.purchasedCourses?.some(
+    id => id.toString() === courseObj._id.toString()
+  );
+  if (hasPurchased) return courseObj;
+
+  // Active subscription check
+  const subPlan = user.subscription?.plan || 'free';
+  const subStatus = user.subscription?.status || 'free';
+  const isActiveSub = ['active', 'trial', 'lifetime'].includes(subStatus);
+
+  if (isActiveSub && subPlan !== 'free') return courseObj;
+
+  // Free-tier users: check CE hour budget
+  const freeHoursUsed = user.freeHoursUsed ?? 0;
+  const courseHours = courseObj.ceHours || courseObj.ceuHours || 1;
+
+  if (freeHoursUsed < FREE_CE_HOUR_LIMIT) {
+    const courseWithMeta = courseObj.toObject ? courseObj.toObject() : { ...courseObj };
+    courseWithMeta._freeHoursRemaining = FREE_CE_HOUR_LIMIT - freeHoursUsed;
+    courseWithMeta._freeHoursUsed = freeHoursUsed;
+    return courseWithMeta;
+  }
+
+  // Exhausted free hours + no subscription → strip
+  const stripped = stripContent(courseObj);
+  stripped._freeHoursExhausted = true;
+  stripped._freeHoursUsed = freeHoursUsed;
+  return stripped;
+}
+
+// Export for testing
+export { gateContent as _gateContent, stripContent as _stripContent };
+
+// Helper: record gamification activity (non-blocking)
+async function recordGamification(userId, type, metadata = {}) {
+  try {
+    let profile = await Gamification.findOne({ userId });
+    if (!profile) profile = await Gamification.create({ userId });
+    
+    profile.recordActivity();
+    
+    const XP = { course_complete: 100, quiz_pass: 25, daily_login: 5, streak_milestone: 50, certificate_earned: 75 };
+    profile.xp += XP[type] || 5;
+    profile.level = profile.calculateLevel();
+    
+    if (type === 'course_complete') {
+      profile.totalCoursesCompleted += 1;
+      if (metadata.ceHours) {
+        profile.totalCEHoursEarned += metadata.ceHours;
+        profile.weeklyHoursCompleted += metadata.ceHours;
+      }
+    } else if (type === 'quiz_pass') {
+      profile.totalQuizzesPassed += 1;
+    }
+    
+    // Check badges
+    const BADGES = {
+      first_course: { check: () => profile.totalCoursesCompleted >= 1, name: 'First Steps', description: 'Completed your first course', icon: 'trophy' },
+      five_courses: { check: () => profile.totalCoursesCompleted >= 5, name: 'Dedicated Learner', description: 'Completed 5 courses', icon: 'star' },
+      ten_courses: { check: () => profile.totalCoursesCompleted >= 10, name: 'CE Champion', description: 'Completed 10 courses', icon: 'crown' },
+      twenty_five_courses: { check: () => profile.totalCoursesCompleted >= 25, name: 'Master Practitioner', description: 'Completed 25 courses', icon: 'gem' },
+      streak_7: { check: () => profile.currentStreak >= 7, name: 'Week Warrior', description: '7-day learning streak', icon: 'flame' },
+      streak_30: { check: () => profile.currentStreak >= 30, name: 'Monthly Maven', description: '30-day learning streak', icon: 'fire' },
+      ten_hours: { check: () => profile.totalCEHoursEarned >= 10, name: '10 Hour Club', description: 'Earned 10+ CE hours', icon: 'clock' },
+      fifty_hours: { check: () => profile.totalCEHoursEarned >= 50, name: 'Half Century', description: 'Earned 50+ CE hours', icon: 'zap' },
+      quiz_ace: { check: () => profile.totalQuizzesPassed >= 10, name: 'Quiz Ace', description: 'Passed 10 quizzes', icon: 'check-circle' },
+      first_cert: { check: () => type === 'certificate_earned', name: 'Certified', description: 'Earned your first certificate', icon: 'award' }
+    };
+    
+    for (const [key, def] of Object.entries(BADGES)) {
+      if (def.check() && !profile.badges.some(b => b.key === key)) {
+        profile.badges.push({ key, name: def.name, description: def.description, icon: def.icon });
+      }
+    }
+    
+    await profile.save();
+  } catch (err) {
+    console.error('Gamification error (non-fatal):', err.message);
+  }
 }
 
 // ============================================================================
@@ -131,78 +178,45 @@ function stripContent(courseObj) {
  * GET /api/interactive-courses
  * List all published courses with optional filtering
  */
-router.get('/', optionalAuth, async (req, res) => {
+router.get('/', async (req, res) => {
   try {
-    const {
-      category,
-      tag,
-      search,
+    const { 
+      category, 
+      tag, 
+      search, 
       status = 'published',
-      page = 1,
-      limit = 10
+      page = 1, 
+      limit = 10 
     } = req.query;
 
     const query = {};
-    // Allow status=all to return everything (needed by admin dashboard)
-    if (status && status !== 'all') {
-      query.status = status;
-    }
-
+    if (status && status !== 'all') query.status = status;
+    
     if (category) query.categories = category;
     if (tag) query.tags = tag;
-
-    const conditions = [];
-
-    // Search filter
     if (search) {
-      conditions.push({
-        $or: [
-          { title: { $regex: search, $options: 'i' } },
-          { description: { $regex: search, $options: 'i' } }
-        ]
-      });
+      query.$or = [
+        { title: { $regex: search, $options: 'i' } },
+        { description: { $regex: search, $options: 'i' } }
+      ];
     }
 
-    // Tenant scoping via middleware — partner users see platform + own courses
-    if (req.tenantFilter?.partnerId) {
-      conditions.push({
-        $or: [
-          { partnerId: { $exists: false } },
-          { partnerId: null },
-          { partnerId: req.tenantFilter.partnerId }
-        ]
-      });
-    }
+    const courses = await Course.find(query)
+      .select('title slug description thumbnail ceHours totalEstimatedTime categories tags wordCount sectionCount moduleCount assessmentQuestionCount ceuCategories accessType price pricingTier status ceuHours ceuApprovalNumber')
+      .sort({ publishedAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(parseInt(limit));
 
-    if (conditions.length > 0) {
-      query.$and = conditions;
-    }
-
-    const isAdmin = req.user?.role === 'admin';
-
-    const pageNum = parseInt(page);
-    const limitNum = parseInt(limit);
-
-    const selectFields = 'title slug description thumbnail ceHours totalEstimatedTime categories tags wordCount totalContentBlocks totalQuizQuestions acepNumber accessType price pricingTier status courseCode';
-
-    const [courses, total] = await Promise.all([
-      Course.find(query)
-        .select(selectFields)
-        .sort({ publishedAt: -1 })
-        .skip((pageNum - 1) * limitNum)
-        .limit(limitNum)
-        .lean(),
-      Course.countDocuments(query)
-    ]);
+    const total = await Course.countDocuments(query);
 
     res.json({
       success: true,
       data: courses,
       pagination: {
-        page: pageNum,
-        limit: limitNum,
+        page: parseInt(page),
+        limit: parseInt(limit),
         total,
-        pages: Math.ceil(total / limitNum)
+        pages: Math.ceil(total / limit)
       }
     });
   } catch (error) {
@@ -212,78 +226,38 @@ router.get('/', optionalAuth, async (req, res) => {
 });
 
 /**
- * GET /api/interactive-courses/slug/:slug
- * Get full course details by slug
+ * GET /api/interactive-courses/admin/all
+ * Admin: list all courses (all statuses) for migration/management
  */
-router.get('/slug/:slug', optionalAuth, async (req, res) => {
+router.get('/admin/all', protect, requireAdmin, async (req, res) => {
   try {
-    const course = await findCourseByIdOrSlug(req.params.slug, req.tenantFilter);
-
-    if (!course) {
-      return res.status(404).json({ success: false, error: 'Course not found' });
-    }
-
-    // Content gating: check if user has access to full content
-    const courseObj = course.toObject ? course.toObject() : { ...course };
-    const gatedResponse = await gateContent(courseObj, req.user);
-    res.json({ success: true, data: gatedResponse });
+    const courses = await Course.find({})
+      .select('title slug description status ceHours categories tags wordCount createdAt updatedAt')
+      .sort({ createdAt: -1 });
+    res.json({ success: true, data: courses, total: courses.length });
   } catch (error) {
-    console.error('Error fetching course:', error);
-    res.status(500).json({ success: false, error: 'Failed to fetch course' });
-  }
-});
-
-/**
- * GET /api/interactive-courses/user/my-courses
- * Get all courses user is enrolled in with progress
- * NOTE: Must be defined BEFORE /:id catch-all route
- */
-router.get('/user/my-courses', ...protectAndScope, async (req, res) => {
-  try {
-    const { status } = req.query;
-
-    const query = { userId: req.user._id };
-    if (status) query.status = status;
-
-    const progressList = await CourseProgress.find(query)
-      .populate('courseId', 'title slug description thumbnail ceHours totalEstimatedTime')
-      .sort({ lastAccessedAt: -1 });
-
-    const courses = progressList.map(p => ({
-      course: p.courseId,
-      progress: p.overallProgress,
-      status: p.status,
-      currentSection: p.currentSectionIndex,
-      totalTimeSpent: p.totalTimeSpent,
-      enrolledAt: p.enrolledAt,
-      lastAccessedAt: p.lastAccessedAt,
-      completedAt: p.completedAt,
-      certificateId: p.certificateId
-    }));
-
-    res.json({ success: true, data: courses });
-  } catch (error) {
-    console.error('Error fetching user courses:', error);
+    console.error('Error fetching all courses for admin:', error);
     res.status(500).json({ success: false, error: 'Failed to fetch courses' });
   }
 });
 
 /**
- * GET /api/interactive-courses/:id
- * Get full course details by ID
+ * GET /api/interactive-courses/slug/:slug
+ * Get course details by slug — content gated by auth/subscription
  */
-router.get('/:id', optionalAuth, async (req, res) => {
+router.get('/slug/:slug', optionalAuth, async (req, res) => {
   try {
-    const course = await findCourseByIdOrSlug(req.params.id, req.tenantFilter);
+    const course = await Course.findOne({ 
+      slug: req.params.slug,
+      status: 'published'
+    });
 
     if (!course) {
       return res.status(404).json({ success: false, error: 'Course not found' });
     }
 
-    // Content gating: check if user has access to full content
-    const courseObj = course.toObject ? course.toObject() : { ...course };
-    const gatedResponse = await gateContent(courseObj, req.user);
-    res.json({ success: true, data: gatedResponse });
+    const gated = await gateContent(course, req.user);
+    res.json({ success: true, data: gated });
   } catch (error) {
     console.error('Error fetching course:', error);
     res.status(500).json({ success: false, error: 'Failed to fetch course' });
@@ -291,44 +265,22 @@ router.get('/:id', optionalAuth, async (req, res) => {
 });
 
 /**
- * PUT /api/interactive-courses/:id
- * Update course fields (publish/unpublish, metadata, etc.)
- * Syncs status and isPublished to prevent dual-field desync
+ * GET /api/interactive-courses/:id
+ * Get course details by ID — content gated by auth/subscription
  */
-router.put('/:id', ...protectAndScope, async (req, res) => {
+router.get('/:id', optionalAuth, async (req, res) => {
   try {
-    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
-      return res.status(400).json({ success: false, error: 'Invalid ID' });
-    }
-    const course = await Course.findById(req.params.id);
+    const course = await findCourseByIdOrSlug(req.params.id);
+
     if (!course) {
       return res.status(404).json({ success: false, error: 'Course not found' });
     }
 
-    const updates = req.body;
-
-    // Sync dual publish fields — if either is set, sync the other
-    if (updates.status === 'published' || updates.isPublished === true) {
-      updates.status = 'published';
-      updates.isPublished = true;
-      if (!course.publishedAt) updates.publishedAt = new Date();
-    } else if (updates.status === 'draft' || updates.isPublished === false) {
-      updates.status = 'draft';
-      updates.isPublished = false;
-    }
-
-    updates.updatedAt = new Date();
-
-    const updated = await Course.findByIdAndUpdate(
-      req.params.id,
-      { $set: updates },
-      { new: true, runValidators: true }
-    );
-
-    res.json({ success: true, data: updated });
+    const gated = await gateContent(course, req.user);
+    res.json({ success: true, data: gated });
   } catch (error) {
-    console.error('Error updating course:', error);
-    res.status(500).json({ success: false, error: 'Failed to update course' });
+    console.error('Error fetching course:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch course' });
   }
 });
 
@@ -340,9 +292,9 @@ router.put('/:id', ...protectAndScope, async (req, res) => {
  * GET /api/interactive-courses/:id/progress
  * Get user's progress for a specific course
  */
-router.get('/:id/progress', ...protectAndScope, async (req, res) => {
+router.get('/:id/progress', protect, async (req, res) => {
   try {
-    const course = await findCourseByIdOrSlug(req.params.id, req.tenantFilter);
+    const course = await findCourseByIdOrSlug(req.params.id);
     if (!course) {
       return res.status(404).json({ success: false, error: 'Course not found' });
     }
@@ -379,14 +331,11 @@ router.get('/:id/progress', ...protectAndScope, async (req, res) => {
 
 /**
  * POST /api/interactive-courses/:id/enroll
- * Enroll user in a course
+ * Enroll user in a course — enforces subscription/payment/free-hour limits
  */
-router.post('/:id/enroll', ...protectAndScope, async (req, res) => {
+router.post('/:id/enroll', protect, async (req, res) => {
   try {
-    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
-      return res.status(400).json({ success: false, error: 'Invalid ID' });
-    }
-    const course = await Course.findOne({ _id: req.params.id, status: 'published' });
+    const course = await findCourseByIdOrSlug(req.params.id);
     if (!course) {
       return res.status(404).json({ success: false, error: 'Course not found' });
     }
@@ -401,11 +350,49 @@ router.post('/:id/enroll', ...protectAndScope, async (req, res) => {
       return res.json({ success: true, message: 'Already enrolled', data: progress });
     }
 
-    // Create new enrollment (include partnerId from course or user for analytics scoping)
+    // ── ACCESS CHECK ──
+    const user = req.user;
+    const subPlan = user.subscription?.plan || 'free';
+    const subStatus = user.subscription?.status || 'free';
+    const isActiveSub = ['active', 'trial', 'lifetime'].includes(subStatus);
+    const isAdmin = user.role === 'admin';
+    const isFree = course.accessType === 'free';
+    const hasPurchased = user.purchasedCourses?.some(
+      id => id.toString() === course._id.toString()
+    );
+
+    let accessGranted = false;
+    let usedFreeHours = false;
+
+    if (isAdmin || isFree || hasPurchased) {
+      accessGranted = true;
+    } else if (isActiveSub && subPlan !== 'free') {
+      accessGranted = true;
+    } else {
+      // Free-tier: check CE hour budget
+      const freeHoursUsed = user.freeHoursUsed ?? 0;
+      const courseHours = course.ceHours || course.ceuHours || 1;
+      if (freeHoursUsed + courseHours <= FREE_CE_HOUR_LIMIT) {
+        accessGranted = true;
+        usedFreeHours = true;
+      }
+    }
+
+    if (!accessGranted) {
+      return res.status(403).json({
+        success: false,
+        error: 'Subscription required',
+        code: 'SUBSCRIPTION_REQUIRED',
+        message: `You've used your ${FREE_CE_HOUR_LIMIT} free CE hours. Subscribe for unlimited access.`,
+        freeHoursUsed: user.freeHoursUsed ?? 0,
+        freeHoursLimit: FREE_CE_HOUR_LIMIT
+      });
+    }
+
+    // Create new enrollment
     progress = new CourseProgress({
       userId: req.user._id,
       courseId: course._id,
-      partnerId: course.partnerId || req.user.partnerId || undefined,
       sectionProgress: course.sections.map((section, index) => ({
         sectionId: section._id,
         sectionIndex: index,
@@ -419,18 +406,34 @@ router.post('/:id/enroll', ...protectAndScope, async (req, res) => {
     });
 
     await progress.save();
-    sendEnrollmentSMS(req.user, course).catch(e => console.error('[SMS]', e.message));
 
+    // Increment free hours used (fire-and-forget)
+    if (usedFreeHours) {
+      const courseHours = course.ceHours || course.ceuHours || 1;
+      User.findByIdAndUpdate(user._id, { $inc: { freeHoursUsed: courseHours } }).catch(() => {});
+    }
+
+    // Log enrollment to admin activity feed (fire-and-forget)
     logActivity(ACTIVITY_TYPES.USER_ENROLLED, {
-      courseName: course.title,
       courseId: course._id,
+      courseName: course.title,
       ceHours: course.ceHours
     }, {
       userId: req.user._id,
-      userName: `${req.user.profile?.firstName || ''} ${req.user.profile?.lastName || ''}`.trim(),
-      userEmail: req.user.email,
-      notifyAdmin: true
-    }).catch(() => {});
+      userName: req.user.profile?.firstName
+        ? `${req.user.profile.firstName} ${req.user.profile.lastName || ''}`.trim()
+        : req.user.email,
+      userEmail: req.user.email
+    }).catch(err => console.error('Activity log error:', err));
+
+    // SMS notification (fire-and-forget)
+    if (twilioClient && process.env.ADMIN_PHONE) {
+      twilioClient.messages.create({
+        body: `CounselorReady: New enrollment\n${req.user.email} enrolled in "${course.title}"`,
+        from: process.env.TWILIO_PHONE_NUMBER,
+        to: process.env.ADMIN_PHONE
+      }).catch(e => console.error('SMS error:', e));
+    }
 
     res.status(201).json({ success: true, message: 'Enrolled successfully', data: progress });
   } catch (error) {
@@ -444,48 +447,28 @@ router.post('/:id/enroll', ...protectAndScope, async (req, res) => {
 // ============================================================================
 
 /**
- * POST /api/interactive-courses/:id/progress/assessment
- * POST /api/interactive-courses/:id/assessment  (alias — legacy client path)
+ * POST /api/interactive-courses/:id/assessment
  * Submit final assessment attempt
  */
-router.post(['/:id/progress/assessment', '/:id/assessment'], ...protectAndScope, async (req, res) => {
+router.post('/:id/assessment', protect, async (req, res) => {
   try {
-    const { answers, timeUsed, questionOrder } = req.body;
+    const { answers, score, passed, attempt, timeSpent } = req.body;
 
-    const course = await findCourseByIdOrSlug(req.params.id, req.tenantFilter);
+    const course = await findCourseByIdOrSlug(req.params.id);
     if (!course) {
       return res.status(404).json({ success: false, error: 'Course not found' });
     }
-    // Normalize: extract assessment from inline isExam content blocks if top-level is empty
-    if (!course.assessment || !course.assessment.questions || course.assessment.questions.length === 0) {
-      const inlineQuestions = [];
-      let inlineSettings = {};
-      const sections = course.sections || course.modules || [];
-      for (const section of sections) {
-        const blocks = section.contentBlocks || section.blocks || section.lessons || [];
-        for (const block of blocks) {
-          if (block.isExam === true) {
-            if (block.questions) inlineQuestions.push(...block.questions);
-            if (block.passingScore) inlineSettings.passingScore = block.passingScore;
-            if (block.passThreshold) inlineSettings.passThreshold = block.passThreshold;
-            if (block.maxAttempts) inlineSettings.maxAttempts = block.maxAttempts;
-          }
-        }
+
+    // Normalize assessment — prefer top-level, fall back to inline isExam block
+    if (!course.assessment || !course.assessment.questions?.length) {
+      const inlineExam = course.sections
+        ?.flatMap(s => s.contentBlocks || [])
+        .find(b => b.type === 'quiz' && b.isExam === true);
+      if (inlineExam) {
+        course.assessment = inlineExam;
+      } else {
+        return res.status(404).json({ success: false, error: 'Assessment not found' });
       }
-      if (inlineQuestions.length > 0) {
-        console.warn(`[Assessment Fallback] Course "${course.title || course._id}" has no top-level assessment. Extracted ${inlineQuestions.length} questions from inline isExam blocks.`);
-        course.assessment = {
-          questions: inlineQuestions,
-          passingScore: inlineSettings.passingScore || course.assessment?.passingScore || 80,
-          passThreshold: inlineSettings.passThreshold || course.assessment?.passThreshold || 0.8,
-          maxAttempts: inlineSettings.maxAttempts || course.assessment?.maxAttempts || 3,
-          attemptsAllowed: inlineSettings.maxAttempts || course.assessment?.attemptsAllowed || 3,
-          isExam: true
-        };
-      }
-    }
-    if (!course.assessment || !course.assessment.questions || course.assessment.questions.length === 0) {
-      return res.status(404).json({ success: false, error: 'Assessment not found' });
     }
 
     let progress = await CourseProgress.findOne({
@@ -504,7 +487,7 @@ router.post(['/:id/progress/assessment', '/:id/assessment'], ...protectAndScope,
           viewedBlocks: [],
           completedBlocks: [],
           quizAttempts: [],
-          status: 'completed'
+          status: 'completed' // Mark as completed since they're taking assessment
         })),
         assessmentAttemptsRemaining: course.assessment?.attemptsAllowed || 3
       });
@@ -515,93 +498,105 @@ router.post(['/:id/progress/assessment', '/:id/assessment'], ...protectAndScope,
       return res.status(400).json({ success: false, error: 'No attempts remaining' });
     }
 
-    // Calculate score — answers is always an object { "0": optIdx, "1": optIdx }
-    let correctCount = 0;
-    const questions = course.assessment.questions;
-
-    if (answers && typeof answers === 'object') {
-      const entries = Array.isArray(answers)
-        ? answers.map((a, i) => [String(a.questionIndex ?? i), a.selectedOption ?? a])
-        : Object.entries(answers);
-
-      for (const [qIdx, selectedOpt] of entries) {
-        const actualIndex = questionOrder ? questionOrder[qIdx] : parseInt(qIdx);
-        const question = questions[actualIndex];
-        if (!question) continue;
-
-        if (question.type === 'multiSelect' || question.type === 'multiple_select') {
-          const correctIndices = question.options.map((o, idx) => o.isCorrect ? idx : -1).filter(x => x >= 0);
-          const selectedIndices = Array.isArray(selectedOpt) ? selectedOpt : [selectedOpt];
+    // Calculate score from answers if not provided
+    let calculatedScore = score;
+    let calculatedPassed = passed;
+    
+    if (answers && Array.isArray(answers)) {
+      let correctCount = 0;
+      const questions = course.assessment.questions;
+      
+      answers.forEach((answer, index) => {
+        const question = questions[answer.questionIndex] || questions[index];
+        if (!question) return;
+        
+        if (question.type === 'multiSelect') {
+          const correctIndices = question.options
+            .map((o, idx) => o.isCorrect ? idx : -1)
+            .filter(x => x >= 0);
+          const selectedIndices = answer.selectedOptions || [];
           const isCorrect = correctIndices.length === selectedIndices.length &&
             correctIndices.every(idx => selectedIndices.includes(idx));
           if (isCorrect) correctCount++;
         } else {
-          // multipleChoice / trueFalse — check by index
-          if (question.options[selectedOpt]?.isCorrect) correctCount++;
+          // multipleChoice
+          const correctIndex = question.options.findIndex(o => o.isCorrect);
+          if (answer.selectedOption === correctIndex) correctCount++;
         }
-      }
-    }
+      });
 
-    const totalQuestions = questions.length;
-    const percentage = totalQuestions > 0 ? correctCount / totalQuestions : 0;
-    const passed = percentage >= (course.assessment.passThreshold || 0.8);
+      calculatedScore = correctCount / questions.length;
+      const threshold = course.assessment.passThreshold ?? (course.assessment.passingScore != null ? course.assessment.passingScore / 100 : 0.75);
+      calculatedPassed = calculatedScore >= threshold;
+    }
 
     // Record attempt
     progress.assessmentAttempts.push({
       attemptedAt: new Date(),
       answers,
-      score: correctCount,
-      totalQuestions,
-      percentage: Math.round(percentage * 100),
-      passed,
-      timeUsed,
-      questionOrder
+      score: Math.round(calculatedScore * 100),
+      totalQuestions: course.assessment.questions.length,
+      percentage: Math.round(calculatedScore * 100),
+      passed: calculatedPassed,
+      timeUsed: timeSpent
     });
 
     progress.assessmentAttemptsRemaining--;
 
-    if (passed) {
+    if (calculatedPassed) {
       progress.assessmentPassed = true;
+      // Don't mark as fully completed yet - need evaluation + attestation
+      recordGamification(req.user._id, 'quiz_pass');
+
+      // Log assessment passed
+      logActivity(ACTIVITY_TYPES.QUIZ_PASSED, {
+        courseId: course._id,
+        courseName: course.title,
+        score: Math.round(calculatedScore * 100),
+        passingScore: Math.round((course.assessment.passThreshold ?? 0.75) * 100),
+        isAssessment: true
+      }, {
+        userId: req.user._id,
+        userName: req.user.profile?.firstName ? `${req.user.profile.firstName} ${req.user.profile.lastName || ''}`.trim() : req.user.email,
+        userEmail: req.user.email
+      }).catch(() => {});
+    } else {
+      // Log assessment failed
+      logActivity(ACTIVITY_TYPES.QUIZ_FAILED, {
+        courseId: course._id,
+        courseName: course.title,
+        score: Math.round(calculatedScore * 100),
+        passingScore: Math.round((course.assessment.passThreshold ?? 0.75) * 100),
+        isAssessment: true,
+        attemptsRemaining: progress.assessmentAttemptsRemaining - 1
+      }, {
+        userId: req.user._id,
+        userName: req.user.profile?.firstName ? `${req.user.profile.firstName} ${req.user.profile.lastName || ''}`.trim() : req.user.email,
+        userEmail: req.user.email
+      }).catch(() => {});
     }
 
     // Update best score
-    if (!progress.bestAssessmentScore || correctCount > progress.bestAssessmentScore) {
-      progress.bestAssessmentScore = correctCount;
-    }
-
-    // Recalculate overall progress
-    if (progress.calculateOverallProgress) {
-      progress.overallProgress = progress.calculateOverallProgress();
+    const currentScore = Math.round(calculatedScore * course.assessment.questions.length);
+    if (!progress.bestAssessmentScore || currentScore > progress.bestAssessmentScore) {
+      progress.bestAssessmentScore = currentScore;
     }
 
     await progress.save();
 
-    logActivity(passed ? ACTIVITY_TYPES.QUIZ_PASSED : ACTIVITY_TYPES.QUIZ_FAILED, {
-      courseName: course.title,
-      courseId: course._id,
-      score: Math.round(percentage * 100),
-      passingScore: Math.round((course.assessment.passThreshold || 0.8) * 100)
-    }, {
-      userId: req.user._id,
-      userName: `${req.user.profile?.firstName || ''} ${req.user.profile?.lastName || ''}`.trim(),
-      userEmail: req.user.email,
-      notifyAdmin: passed
-    }).catch(() => {});
-
     res.json({
       success: true,
       data: {
-        score: correctCount,
-        percentage: Math.round(percentage * 100),
-        totalQuestions,
-        passed,
+        score: Math.round(calculatedScore * 100),
+        totalQuestions: course.assessment.questions.length,
+        passed: calculatedPassed,
         attemptsRemaining: progress.assessmentAttemptsRemaining,
         bestScore: progress.bestAssessmentScore
       }
     });
   } catch (error) {
-    console.error('Error submitting assessment:', error.message, error.stack);
-    res.status(500).json({ success: false, error: 'Failed to submit assessment', debug: error.message });
+    console.error('Error submitting assessment:', error);
+    res.status(500).json({ success: false, error: 'Failed to submit assessment' });
   }
 });
 
@@ -613,11 +608,11 @@ router.post(['/:id/progress/assessment', '/:id/assessment'], ...protectAndScope,
  * POST /api/interactive-courses/:id/evaluation
  * Submit course evaluation (required for NBCC compliance)
  */
-router.post('/:id/evaluation', ...protectAndScope, async (req, res) => {
+router.post('/:id/evaluation', protect, async (req, res) => {
   try {
     const { responses } = req.body;
     
-    const course = await findCourseByIdOrSlug(req.params.id, req.tenantFilter);
+    const course = await findCourseByIdOrSlug(req.params.id);
     if (!course) {
       return res.status(404).json({ success: false, error: 'Course not found' });
     }
@@ -731,7 +726,7 @@ router.post('/:id/evaluation', ...protectAndScope, async (req, res) => {
  * POST /api/interactive-courses/:id/attestation
  * Submit attestation statement (required before certificate)
  */
-router.post('/:id/attestation', ...protectAndScope, async (req, res) => {
+router.post('/:id/attestation', protect, async (req, res) => {
   try {
     const { agreed } = req.body;
     
@@ -742,7 +737,7 @@ router.post('/:id/attestation', ...protectAndScope, async (req, res) => {
       });
     }
 
-    const course = await findCourseByIdOrSlug(req.params.id, req.tenantFilter);
+    const course = await findCourseByIdOrSlug(req.params.id);
     if (!course) {
       return res.status(404).json({ success: false, error: 'Course not found' });
     }
@@ -789,6 +784,21 @@ router.post('/:id/attestation', ...protectAndScope, async (req, res) => {
     
     await progress.save();
 
+    // Log course completed
+    logActivity(ACTIVITY_TYPES.COURSE_COMPLETED, {
+      courseId: course._id,
+      courseName: course.title,
+      ceHours: course.ceHours || course.ceuHours,
+      completedAt: progress.completedAt
+    }, {
+      userId: req.user._id,
+      userName: req.user.profile?.firstName ? `${req.user.profile.firstName} ${req.user.profile.lastName || ''}`.trim() : req.user.email,
+      userEmail: req.user.email
+    }).catch(() => {});
+
+    // Gamification
+    recordGamification(req.user._id, 'course_complete');
+
     res.json({
       success: true,
       message: 'Attestation recorded successfully',
@@ -811,9 +821,9 @@ router.post('/:id/attestation', ...protectAndScope, async (req, res) => {
  * POST /api/interactive-courses/:id/certificate
  * Generate and return certificate PDF
  */
-router.post('/:id/certificate', ...protectAndScope, async (req, res) => {
+router.post('/:id/certificate', protect, async (req, res) => {
   try {
-    const course = await findCourseByIdOrSlug(req.params.id, req.tenantFilter);
+    const course = await findCourseByIdOrSlug(req.params.id);
     if (!course) {
       return res.status(404).json({ success: false, error: 'Course not found' });
     }
@@ -869,6 +879,20 @@ router.post('/:id/certificate', ...protectAndScope, async (req, res) => {
       return res.status(404).json({ success: false, error: 'User not found' });
     }
 
+    // Payment / access check — free courses always allowed; paid courses require purchase, subscription, or admin
+    if (course.accessType !== 'free') {
+      const hasPurchased = user.purchasedCourses && user.purchasedCourses.some(id => id.toString() === course._id.toString());
+      const hasSubscription = user.subscription && (user.subscription.status === 'active' || user.subscription.status === 'lifetime');
+      const isAdmin = user.role === 'admin';
+      if (!hasPurchased && !hasSubscription && !isAdmin) {
+        return res.status(403).json({
+          success: false,
+          code: 'PAYMENT_REQUIRED',
+          message: 'Please complete your purchase to receive your certificate.'
+        });
+      }
+    }
+
     // Check if certificate already exists
     let certificate = await Certificate.findOne({
       userId: req.user._id,
@@ -877,22 +901,46 @@ router.post('/:id/certificate', ...protectAndScope, async (req, res) => {
     });
 
     // Generate certificate number if needed
-    const certificateNumber = certificate?.certificateNumber || 
-      generateCertificateNumber(course._id, req.user._id);
+    const certificateNumber = certificate?.certificateNumber ||
+      await generateCertificateNumber(course._id, req.user._id);
 
-    // Generate PDF
+    // Generate certificate PDF buffer via ../utils/certificate.js
+    const userName =
+      (user.profile?.certificateName?.trim()) ||
+      `${(user.profile?.firstName || '')} ${(user.profile?.lastName || '')}`.trim() ||
+      user.email;
     const pdfBuffer = await generateCertificate({
-      studentName: `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email,
-      courseTitle: course.title,
-      ceHours: course.ceHours || 1,
-      ceCategory: course.categories?.[0] || 'Core',
+      holderName: userName,
+      courseName: course.title,
       completionDate: progress.completedAt || new Date(),
+      ceHours: course.ceHours || 1,
       certificateNumber,
-      objectives: course.objectives || [],
-      approvingBody: 'NBCC',
-      approvalNumber: course.acepNumber || '#7760',
-      verificationCode: certificate?.verificationCode
+      acepNumber: 'ACEP #7760',
+      ceCategory: course.ceCategory || course.contentArea || course.categories?.[0] || 'Counseling Theory/Practice and the Counseling Relationship',
+      objectives: course.learningObjectives || course.objectives || [],
+      approvingBody: 'NBCC'
     });
+
+    // Upload PDF buffer to Cloudinary
+    const uploadResult = await new Promise((resolve, reject) => {
+      const uploadStream = cloudinary.uploader.upload_stream(
+        {
+          resource_type: 'raw',
+          folder: 'certificates',
+          public_id: `cert_${certificateNumber}_${Date.now()}`,
+          format: 'pdf'
+        },
+        (error, result) => {
+          if (error) return reject(error);
+          resolve(result);
+        }
+      );
+      const readable = new Readable();
+      readable.push(pdfBuffer);
+      readable.push(null);
+      readable.pipe(uploadStream);
+    });
+    const pdfUrl = uploadResult.secure_url;
 
     // Save certificate record if new
     if (!certificate) {
@@ -909,71 +957,104 @@ router.post('/:id/certificate', ...protectAndScope, async (req, res) => {
         approvingBody: 'NBCC',
         approvalNumber: course.acepNumber || '#7760',
         certificateNumber,
-        source: 'platform'
+        source: 'platform',
+        fileUrl: pdfUrl
       });
       await certificate.save();
 
       // Update progress with certificate reference
       progress.certificateId = certificate._id;
+      if (course.bonusResource?.unlockedOnCompletion && course.bonusResource?.type === 'reference_guide') {
+        const toolKey = course.bonusResource.toolKey || course.slug + '-tool';
+        const toolUser = await User.findById(req.user._id);
+        if (toolUser) {
+          const alreadyUnlocked = (toolUser.unlockedTools || []).some(t => t.toolKey === toolKey);
+          if (!alreadyUnlocked) {
+            await User.findByIdAndUpdate(req.user._id, {
+              $push: { unlockedTools: {
+                toolKey,
+                unlockedAt: new Date(),
+                courseId: course._id,
+                expiresAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)
+              }}
+            });
+            console.log(`[ToolUnlock] User ${req.user._id} unlocked tool: ${toolKey}`);
+          }
+        }
+      }
       progress.certificateIssuedAt = new Date();
       progress.status = 'certified';
       await progress.save();
 
-      // Send completion SMS
-      sendCompletionSMS(req.user, course, certificate).catch(e => console.error('[SMS]', e.message));
-
-      // ── AUTO-APPLY CE HOURS TO USER'S CREDENTIALS ──
-      try {
-        const UserCredential = (await import('../models/UserCredential.js')).default;
-        const userCredentials = await UserCredential.find({
-          userId: req.user._id,
-          status: { $in: ['active', 'expiring_soon'] }
-        });
-
-        for (const credential of userCredentials) {
-          try {
-            await credential.addCEU({
-              certificateId: certificate._id,
-              courseId: course._id,
-              hours: course.ceHours || 1,
-              category: course.categories?.[0] || 'General',
-              description: `${course.title} - CounselorReady Course`,
-              provider: 'CounselorReady',
-              date: progress.completedAt || new Date(),
-              source: 'internal'
-            });
-            console.log(`Applied ${course.ceHours || 1} CE hours to credential: ${credential.name || credential._id}`);
-          } catch (credError) {
-            console.error(`Error applying CEUs to credential ${credential._id}:`, credError.message);
-          }
-        }
-      } catch (credentialError) {
-        console.error('Error auto-applying CE hours:', credentialError.message);
-        // Non-fatal — certificate was already generated successfully
-      }
-
-      // Notify admin of certificate generation
-      const certUser = await User.findById(req.user._id).select('email profile.firstName profile.lastName');
+      // Log certificate generated
       logActivity(ACTIVITY_TYPES.CERTIFICATE_GENERATED, {
+        courseId: course._id,
         courseName: course.title,
-        certificateNumber,
-        ceHours: course.ceHours || 1
+        ceHours: course.ceHours || course.ceuHours,
+        certificateNumber
       }, {
         userId: req.user._id,
-        userName: `${certUser?.profile?.firstName || ''} ${certUser?.profile?.lastName || ''}`.trim() || certUser?.email,
-        userEmail: certUser?.email || ''
+        userName: user.firstName ? `${user.firstName} ${user.lastName || ''}`.trim() : user.email,
+        userEmail: user.email
       }).catch(() => {});
+
+      // Auto-allocate CE hours to user's credentials
+      try {
+        const userCredentials = await UserCredential.find({ userId: req.user._id });
+        for (const cred of userCredentials) {
+          const alreadyLogged = cred.ceuLogs.some(log =>
+            log.certificateId && log.certificateId.toString() === certificate._id.toString()
+          );
+          if (alreadyLogged) continue;
+
+          cred.ceuLogs.push({
+            date: certificate.completionDate || new Date(),
+            hours: certificate.ceHours || 0,
+            category: certificate.category || 'General',
+            source: 'internal',
+            certificateId: certificate._id,
+            courseId: course._id,
+            description: certificate.title,
+            provider: 'CounselorReady'
+          });
+
+          // Recalculate totals
+          cred.totalCEUsCompleted = cred.ceuLogs.reduce((sum, log) => sum + (log.hours || 0), 0);
+          for (const req of cred.requirements) {
+            const catLogs = cred.ceuLogs.filter(log =>
+              log.category?.toLowerCase() === req.category?.toLowerCase()
+            );
+            req.hoursCompleted = Math.min(
+              req.hoursRequired,
+              catLogs.reduce((sum, log) => sum + (log.hours || 0), 0)
+            );
+          }
+          await cred.save();
+        }
+      } catch (syncErr) {
+        console.error('CE auto-allocation error (non-fatal):', syncErr.message);
+      }
+
+      // Record gamification: course complete + certificate earned
+      recordGamification(req.user._id, 'course_complete', { ceHours: course.ceHours || 1 });
+      recordGamification(req.user._id, 'certificate_earned');
+
+      // Check and send free-tier limit email
+      checkAndSendFreeLimit(req.user._id).catch(err =>
+        console.error('Free limit email check error (non-fatal):', err.message)
+      );
+    } else {
+      // Existing certificate — update fileUrl
+      certificate.fileUrl = pdfUrl;
+      await certificate.save();
     }
 
-    // Return JSON with certificate info and download URL
+    // Return JSON (PDF is served via GET /certificates/:id/serve)
     res.json({
       success: true,
-      certificateNumber: certificate.certificateNumber,
-      verificationCode: certificate.verificationCode,
-      certificateUrl: `/api/interactive-courses/${course._id}/certificate/download`,
-      pdfUrl: `/api/interactive-courses/${course._id}/certificate/download`,
-      ceHours: course.ceHours || 1,
-      completionDate: progress.completedAt || new Date()
+      certificateId: certificate._id,
+      fileUrl: certificate.fileUrl,
+      message: 'Certificate generated successfully'
     });
 
   } catch (error) {
@@ -983,52 +1064,12 @@ router.post('/:id/certificate', ...protectAndScope, async (req, res) => {
 });
 
 /**
- * GET /api/interactive-courses/:id/certificate/download
- * Download the certificate PDF
- */
-router.get('/:id/certificate/download', ...protectAndScope, async (req, res) => {
-  try {
-    const course = await findCourseByIdOrSlug(req.params.id, req.tenantFilter);
-    if (!course) return res.status(404).json({ error: 'Course not found' });
-
-    const progress = await CourseProgress.findOne({ userId: req.user._id, courseId: course._id });
-    if (!progress || !progress.attestationAgreed) {
-      return res.status(400).json({ error: 'Course completion required' });
-    }
-
-    const certificate = await Certificate.findOne({ userId: req.user._id, courseId: course._id, source: 'platform' });
-    if (!certificate) return res.status(404).json({ error: 'Certificate not found' });
-
-    const user = await User.findById(req.user._id);
-    const pdfBuffer = await generateCertificate({
-      studentName: `${user.firstName || user.profile?.firstName || ''} ${user.lastName || user.profile?.lastName || ''}`.trim() || user.email,
-      courseTitle: course.title,
-      ceHours: course.ceHours || 1,
-      ceCategory: course.categories?.[0] || 'Core',
-      completionDate: progress.completedAt || new Date(),
-      certificateNumber: certificate.certificateNumber,
-      objectives: course.objectives || [],
-      approvingBody: 'NBCC',
-      approvalNumber: course.acepNumber || '#7760',
-      verificationCode: certificate.verificationCode
-    });
-
-    res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `attachment; filename="${course.slug || course._id}_certificate.pdf"`);
-    res.send(pdfBuffer);
-  } catch (error) {
-    console.error('Error downloading certificate:', error);
-    res.status(500).json({ error: 'Failed to download certificate' });
-  }
-});
-
-/**
  * GET /api/interactive-courses/:id/certificate/check
  * Check certificate eligibility status
  */
-router.get('/:id/certificate/check', ...protectAndScope, async (req, res) => {
+router.get('/:id/certificate/check', protect, async (req, res) => {
   try {
-    const course = await findCourseByIdOrSlug(req.params.id, req.tenantFilter);
+    const course = await findCourseByIdOrSlug(req.params.id);
     if (!course) {
       return res.status(404).json({ success: false, error: 'Course not found' });
     }
@@ -1080,12 +1121,12 @@ router.get('/:id/certificate/check', ...protectAndScope, async (req, res) => {
  * PUT /api/interactive-courses/:id/progress/section/:sectionIndex
  * Update section progress
  */
-router.put('/:id/progress/section/:sectionIndex', ...protectAndScope, async (req, res) => {
+router.put('/:id/progress/section/:sectionIndex', protect, async (req, res) => {
   try {
     const { sectionIndex } = req.params;
     const { viewedBlocks, completedBlocks, timeSpent } = req.body;
 
-    const course = await findCourseByIdOrSlug(req.params.id, req.tenantFilter);
+    const course = await findCourseByIdOrSlug(req.params.id);
     if (!course) {
       return res.status(404).json({ success: false, error: 'Course not found' });
     }
@@ -1123,8 +1164,22 @@ router.put('/:id/progress/section/:sectionIndex', ...protectAndScope, async (req
     // Update status
     if (!sectionProgress.startedAt) {
       sectionProgress.startedAt = new Date();
+      const isFirstStart = !progress.startedAt;
       progress.startedAt = progress.startedAt || new Date();
       progress.status = 'in_progress';
+
+      // Log course started on very first section access
+      if (isFirstStart) {
+        logActivity(ACTIVITY_TYPES.COURSE_STARTED, {
+          courseId: course._id,
+          courseName: course.title,
+          ceHours: course.ceHours || course.ceuHours
+        }, {
+          userId: req.user._id,
+          userName: req.user.profile?.firstName ? `${req.user.profile.firstName} ${req.user.profile.lastName || ''}`.trim() : req.user.email,
+          userEmail: req.user.email
+        }).catch(() => {});
+      }
     }
     sectionProgress.status = 'in_progress';
 
@@ -1137,6 +1192,19 @@ router.put('/:id/progress/section/:sectionIndex', ...protectAndScope, async (req
     if (allBlocksViewed || explicitComplete) {
       sectionProgress.status = 'completed';
       sectionProgress.completedAt = sectionProgress.completedAt || new Date();
+
+      // Log section completion (fire-and-forget)
+      logActivity(ACTIVITY_TYPES.LESSON_COMPLETED, {
+        courseId: course._id,
+        courseName: course.title,
+        lessonName: section.title || `Section ${parseInt(sectionIndex) + 1}`,
+        sectionIndex: parseInt(sectionIndex)
+      }, {
+        notifyAdmin: false,
+        userId: req.user._id,
+        userName: req.user.profile?.firstName ? `${req.user.profile.firstName} ${req.user.profile.lastName || ''}`.trim() : req.user.email,
+        userEmail: req.user.email
+      }).catch(() => {});
     }
 
     progress.lastAccessedAt = new Date();
@@ -1163,12 +1231,12 @@ router.put('/:id/progress/section/:sectionIndex', ...protectAndScope, async (req
  * POST /api/interactive-courses/:id/progress/section/:sectionIndex/quiz
  * Submit section quiz attempt
  */
-router.post('/:id/progress/section/:sectionIndex/quiz', ...protectAndScope, async (req, res) => {
+router.post('/:id/progress/section/:sectionIndex/quiz', protect, async (req, res) => {
   try {
     const { sectionIndex } = req.params;
     const { answers, timeSpent } = req.body;
 
-    const course = await findCourseByIdOrSlug(req.params.id, req.tenantFilter);
+    const course = await findCourseByIdOrSlug(req.params.id);
     if (!course) {
       return res.status(404).json({ success: false, error: 'Course not found' });
     }
@@ -1221,6 +1289,33 @@ router.post('/:id/progress/section/:sectionIndex/quiz', ...protectAndScope, asyn
 
     if (passed) {
       sectionProgress.quizPassed = true;
+      recordGamification(req.user._id, 'quiz_pass');
+
+      // Log quiz passed
+      logActivity(ACTIVITY_TYPES.QUIZ_PASSED, {
+        courseId: course._id,
+        courseName: course.title,
+        sectionName: section.title || `Section ${parseInt(sectionIndex) + 1}`,
+        score: Math.round(score * 100),
+        passingScore: Math.round((section.quizPassThreshold || 0.8) * 100)
+      }, {
+        userId: req.user._id,
+        userName: req.user.profile?.firstName ? `${req.user.profile.firstName} ${req.user.profile.lastName || ''}`.trim() : req.user.email,
+        userEmail: req.user.email
+      }).catch(() => {});
+    } else {
+      // Log quiz failed
+      logActivity(ACTIVITY_TYPES.QUIZ_FAILED, {
+        courseId: course._id,
+        courseName: course.title,
+        sectionName: section.title || `Section ${parseInt(sectionIndex) + 1}`,
+        score: Math.round(score * 100),
+        passingScore: Math.round((section.quizPassThreshold || 0.8) * 100)
+      }, {
+        userId: req.user._id,
+        userName: req.user.profile?.firstName ? `${req.user.profile.firstName} ${req.user.profile.lastName || ''}`.trim() : req.user.email,
+        userEmail: req.user.email
+      }).catch(() => {});
     }
 
     // Update best score
@@ -1271,11 +1366,11 @@ router.post('/:id/progress/section/:sectionIndex/quiz', ...protectAndScope, asyn
  * POST /api/interactive-courses/:id/progress/interaction
  * Log content interaction for analytics
  */
-router.post('/:id/progress/interaction', ...protectAndScope, async (req, res) => {
+router.post('/:id/progress/interaction', protect, async (req, res) => {
   try {
     const { sectionIndex, blockIndex, blockType, action, isCorrect, selectedOptions, score, timeSpent } = req.body;
 
-    const course = await findCourseByIdOrSlug(req.params.id, req.tenantFilter);
+    const course = await findCourseByIdOrSlug(req.params.id);
     if (!course) {
       return res.status(404).json({ success: false, error: 'Course not found' });
     }
@@ -1311,7 +1406,123 @@ router.post('/:id/progress/interaction', ...protectAndScope, async (req, res) =>
   }
 });
 
-export default router;
+/**
+ * GET /api/interactive-courses/user/my-courses
+ * Get all courses user is enrolled in with progress
+ */
+router.get('/user/my-courses', protect, async (req, res) => {
+  try {
+    const { status } = req.query;
 
-// Test-only exports
-export { gateContent as _gateContent, stripContent as _stripContent };
+    const query = { userId: req.user._id };
+    if (status) query.status = status;
+
+    const progressList = await CourseProgress.find(query)
+      .populate('courseId', 'title slug description thumbnail ceHours totalEstimatedTime')
+      .sort({ lastAccessedAt: -1 });
+
+    const courses = progressList.map(p => ({
+      course: p.courseId,
+      progress: p.overallProgress,
+      status: p.status,
+      currentSection: p.currentSectionIndex,
+      totalTimeSpent: p.totalTimeSpent,
+      enrolledAt: p.enrolledAt,
+      lastAccessedAt: p.lastAccessedAt,
+      completedAt: p.completedAt,
+      certificateId: p.certificateId
+    }));
+
+    res.json({ success: true, data: courses });
+  } catch (error) {
+    console.error('Error fetching user courses:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch courses' });
+  }
+});
+
+// ============================================================================
+// ADMIN: Update course metadata (delivery format, content areas, access type)
+// ============================================================================
+router.patch('/:id/metadata', protect, async (req, res) => {
+  try {
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ success: false, error: 'Admin access required' });
+    }
+
+    const allowedFields = [
+      'deliveryFormat', 'nbccContentAreas', 'accessType', 
+      'approvalBody', 'price', 'level', 'targetAudience'
+    ];
+    const updates = {};
+    allowedFields.forEach(field => {
+      if (req.body[field] !== undefined) updates[field] = req.body[field];
+    });
+
+    if (Object.keys(updates).length === 0) {
+      return res.status(400).json({ success: false, error: 'No valid fields to update' });
+    }
+
+    const course = await Course.findByIdAndUpdate(
+      req.params.id,
+      { $set: updates },
+      { new: true, runValidators: true }
+    );
+
+    if (!course) {
+      return res.status(404).json({ success: false, error: 'Course not found' });
+    }
+
+    res.json({ success: true, data: course });
+  } catch (error) {
+    console.error('Error updating course metadata:', error);
+    res.status(500).json({ success: false, error: 'Failed to update course metadata' });
+  }
+});
+
+// Admin-only middleware
+const adminOnly = async (req, res, next) => {
+  if (req.user?.role !== 'admin') {
+    return res.status(403).json({ error: 'Admin access required' });
+  }
+  next();
+};
+
+// Duplicate a course (admin only)
+router.post('/:id/duplicate', protect, adminOnly, async (req, res) => {
+  try {
+    const original = await Course.findById(req.params.id).lean();
+    if (!original) {
+      return res.status(404).json({ error: 'Course not found' });
+    }
+
+    const { _id, __v, createdAt, updatedAt, slug, enrollmentCount, ...courseData } = original;
+
+    let baseSlug = (original.slug || original.title.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')) + '-copy';
+    let newSlug = baseSlug;
+    let counter = 1;
+    while (await Course.exists({ slug: newSlug })) {
+      counter++;
+      newSlug = `${baseSlug}-${counter}`;
+    }
+
+    const duplicate = await Course.create({
+      ...courseData,
+      title: `${original.title} (Copy)`,
+      slug: newSlug,
+      status: 'draft',
+      isPublished: false,
+      enrollmentCount: 0,
+    });
+
+    res.status(201).json({
+      success: true,
+      data: duplicate,
+      message: `Duplicated as "${duplicate.title}"`
+    });
+  } catch (error) {
+    console.error('Duplicate course error:', error);
+    res.status(500).json({ error: 'Failed to duplicate course', details: error.message });
+  }
+});
+
+export default router;

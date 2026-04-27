@@ -4,6 +4,7 @@
  * Unauthorized copying or distribution is strictly prohibited.
  */
 import express from 'express';
+import mongoose from 'mongoose';
 import Stripe from 'stripe';
 import User from '../models/User.js';
 import Course from '../models/Course.js';
@@ -11,6 +12,11 @@ import Partner from '../models/Partner.js';
 import { protect } from '../middleware/auth.js';
 import { logActivity, ACTIVITY_TYPES } from '../services/activityTrackingService.js';
 import { sendPaymentFailedEmail, sendPaymentRecoveredEmail } from '../services/hardshipEmailService.js';
+import twilio from 'twilio';
+
+const twilioClient = process.env.TWILIO_ACCOUNT_SID
+  ? twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN)
+  : null;
 
 const router = express.Router();
 
@@ -545,6 +551,84 @@ router.get('/billing-history', protect, async (req, res) => {
 });
 
 // ============================================
+// COURSE CHECKOUT (one-time purchase)
+// ============================================
+
+// @route   POST /api/payments/create-course-checkout
+// @desc    Create a one-time Stripe checkout for a paid course
+// @access  Private
+router.post('/create-course-checkout', protect, async (req, res) => {
+  if (!stripe) {
+    return res.status(503).json({ error: 'Payment system not configured' });
+  }
+
+  try {
+    const { courseId } = req.body;
+    if (!courseId) {
+      return res.status(400).json({ error: 'courseId is required' });
+    }
+
+    const course = await mongoose.connection.db
+      .collection('interactivecourses')
+      .findOne({ _id: new mongoose.Types.ObjectId(courseId) });
+
+    if (!course) {
+      return res.status(404).json({ error: 'Course not found' });
+    }
+
+    if (course.accessType === 'free') {
+      return res.status(400).json({ error: 'Course is free' });
+    }
+
+    const user = await User.findById(req.user._id);
+
+    // Create or get Stripe customer
+    let customerId = user.stripeCustomerId;
+    if (!customerId) {
+      const customer = await stripe.customers.create({
+        email: user.email,
+        name: `${user.firstName || ''} ${user.lastName || ''}`.trim(),
+        metadata: {
+          userId: user._id.toString()
+        }
+      });
+      customerId = customer.id;
+      await User.findByIdAndUpdate(user._id, { stripeCustomerId: customerId });
+    }
+
+    const session = await stripe.checkout.sessions.create({
+      customer: customerId,
+      payment_method_types: ['card'],
+      line_items: [{
+        price_data: {
+          currency: 'usd',
+          unit_amount: Math.round(course.price * 100),
+          product_data: {
+            name: course.title,
+            description: course.ceHours + ' CE Hours'
+          }
+        },
+        quantity: 1
+      }],
+      mode: 'payment',
+      success_url: `https://counselorready.com/course-success.html?session_id={CHECKOUT_SESSION_ID}&courseId=${course._id.toString()}`,
+      cancel_url: 'https://counselorready.com/catalog.html',
+      metadata: {
+        type: 'course_purchase',
+        courseId: course._id.toString(),
+        userId: req.user._id.toString(),
+        slug: course.slug || ''
+      }
+    });
+
+    res.json({ sessionId: session.id, url: session.url });
+  } catch (error) {
+    console.error('Create course checkout error:', error);
+    res.status(500).json({ error: 'Failed to create course checkout session' });
+  }
+});
+
+// ============================================
 // STRIPE WEBHOOK
 // ============================================
 
@@ -590,24 +674,42 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
           break;
         }
 
-        // Handle individual course purchase
-        if (purchaseType === 'course_purchase') {
-          const courseId = session.metadata?.courseId;
-          if (userId && courseId) {
-            await User.findByIdAndUpdate(userId, {
-              $addToSet: { purchasedCourses: courseId }
-            });
-            const buyer = await User.findById(userId).select('email profile.firstName');
-            logActivity(ACTIVITY_TYPES.PAYMENT_SUCCEEDED, {
-              courseId,
-              amount: session.amount_total,
-              type: 'course_purchase'
-            }, {
-              userId,
-              userName: buyer?.profile?.firstName || '',
-              userEmail: buyer?.email || ''
-            }).catch(() => {});
-            console.log(`Course ${courseId} purchased by user ${userId}`);
+        // Handle individual course purchases
+        if (session.metadata?.type === 'course_purchase') {
+          const { courseId, userId: purchaseUserId, slug } = session.metadata;
+
+          await User.findByIdAndUpdate(purchaseUserId, {
+            $addToSet: {
+              purchasedCourses: {
+                courseId: new mongoose.Types.ObjectId(courseId),
+                slug: slug,
+                purchasedAt: new Date(),
+                amount: session.amount_total / 100,
+                stripeSessionId: session.id
+              }
+            }
+          });
+
+          console.log(`✓ Course purchase recorded: user=${purchaseUserId} course=${slug}`);
+
+          const buyer = await User.findById(purchaseUserId).select('email profile.firstName');
+          logActivity(ACTIVITY_TYPES.PAYMENT_SUCCEEDED, {
+            courseId,
+            amount: session.amount_total,
+            type: 'course_purchase'
+          }, {
+            userId: purchaseUserId,
+            userName: buyer?.profile?.firstName || '',
+            userEmail: buyer?.email || ''
+          }).catch(() => {});
+
+          // SMS notification (fire-and-forget)
+          if (twilioClient && process.env.ADMIN_PHONE) {
+            twilioClient.messages.create({
+              body: `CounselorReady: Payment\n${buyer?.email} paid for "${slug}"`,
+              from: process.env.TWILIO_PHONE_NUMBER,
+              to: process.env.ADMIN_PHONE
+            }).catch(e => console.error('SMS error:', e));
           }
           break;
         }
@@ -831,133 +933,166 @@ router.post('/apply-promo', protect, async (req, res) => {
 // INDIVIDUAL COURSE PURCHASE ROUTES
 // ============================================
 
-// @route   POST /api/payments/purchase-course
-// @desc    Create Stripe checkout session for individual course purchase
+// @route   POST /api/payments/validate-coupon
+// @desc    Validate a coupon/promo code and return discount info for course purchase
 // @access  Private
-router.post('/purchase-course', protect, async (req, res) => {
+router.post('/validate-coupon', protect, async (req, res) => {
   if (!stripe) {
-    return res.status(503).json({ error: 'Payment system not configured' });
+    return res.status(503).json({ valid: false, error: 'Payment system not configured' });
   }
-  
+
   try {
-    const { courseId } = req.body;
-    
-    if (!courseId) {
-      return res.status(400).json({ error: 'Course ID is required' });
+    const { code, courseId, price } = req.body;
+
+    if (!code) {
+      return res.status(400).json({ valid: false, error: 'No code provided' });
     }
-    
-    // Get the course
-    const course = await Course.findById(courseId);
+
+    // Look up promotion code in Stripe
+    const promotionCodes = await stripe.promotionCodes.list({
+      code: code.toUpperCase(),
+      active: true,
+      limit: 1
+    });
+
+    if (!promotionCodes.data.length) {
+      return res.status(400).json({ valid: false, error: 'Invalid or expired code' });
+    }
+
+    const promo = promotionCodes.data[0];
+    const coupon = promo.coupon;
+
+    // Calculate discount
+    let discountDescription = '';
+    let finalPrice = price || 0;
+
+    if (coupon.percent_off) {
+      discountDescription = `${coupon.percent_off}% off`;
+      finalPrice = price * (1 - coupon.percent_off / 100);
+    } else if (coupon.amount_off) {
+      const amountOff = coupon.amount_off / 100; // Stripe stores in cents
+      discountDescription = `$${amountOff} off`;
+      finalPrice = Math.max(0, price - amountOff);
+    }
+
+    res.json({
+      valid: true,
+      message: 'Discount code applied!',
+      discountDescription,
+      finalPrice: Math.round(finalPrice * 100) / 100,
+      couponId: coupon.id
+    });
+  } catch (error) {
+    console.error('Validate coupon error:', error);
+    res.status(500).json({ valid: false, error: 'Failed to validate code' });
+  }
+});
+
+// POST /purchase-course — Stripe Checkout for one-time course purchase
+router.post('/purchase-course', protect, async (req, res) => {
+  try {
+    const { courseId, couponCode } = req.body;
+    if (!courseId) {
+      return res.status(400).json({ error: 'courseId is required' });
+    }
+
+    const course = await mongoose.connection.db
+      .collection('interactivecourses')
+      .findOne({ _id: new mongoose.Types.ObjectId(courseId) });
+
     if (!course) {
       return res.status(404).json({ error: 'Course not found' });
     }
-    
+
     if (!course.price || course.price <= 0) {
-      return res.status(400).json({ error: 'This course is not available for individual purchase' });
+      return res.status(400).json({ error: 'This course is free — no purchase needed' });
     }
-    
+
     const user = await User.findById(req.user._id);
-    
-    // Check if user already purchased this course
-    if (user.purchasedCourses && user.purchasedCourses.includes(courseId)) {
-      return res.status(400).json({ error: 'You have already purchased this course' });
+    const alreadyPurchased = (user.purchasedCourses || []).some(
+      pc => pc.courseId?.toString() === courseId
+    );
+    if (alreadyPurchased) {
+      return res.status(400).json({ error: 'You already own this course' });
     }
-    
-    // Create or get Stripe customer
+
     let customerId = user.stripeCustomerId;
     if (!customerId) {
       const customer = await stripe.customers.create({
         email: user.email,
         name: `${user.firstName || ''} ${user.lastName || ''}`.trim(),
-        metadata: {
-          userId: user._id.toString()
-        }
+        metadata: { userId: user._id.toString() }
       });
       customerId = customer.id;
-      await User.findByIdAndUpdate(user._id, { stripeCustomerId: customerId });
+      user.stripeCustomerId = customerId;
+      await user.save();
     }
-    
-    // Determine URLs based on environment
-    const baseUrl = process.env.FRONTEND_URL || 'https://counselorready.com';
-    
-    // Create checkout session for one-time payment
-    const session = await stripe.checkout.sessions.create({
+
+    const sessionParams = {
       customer: customerId,
-      payment_method_types: ['card'],
       mode: 'payment',
-      line_items: [
-        {
-          price_data: {
-            currency: 'usd',
-            product_data: {
-              name: course.title,
-              description: `${course.ceuHours || 0} CE Hours - ${course.ceuCategories?.[0]?.category || 'Continuing Education'}`,
-              images: course.thumbnail ? [course.thumbnail] : [],
-            },
-            unit_amount: Math.round(course.price * 100), // Convert to cents
-          },
-          quantity: 1,
+      payment_method_types: ['card'],
+      line_items: [{
+        price_data: {
+          currency: 'usd',
+          unit_amount: Math.round(course.price * 100),
+          product_data: {
+            name: course.title,
+            description: course.description || `${course.ceHours || 0} CE Hours`,
+            metadata: { courseId: courseId, slug: course.slug }
+          }
         },
-      ],
+        quantity: 1
+      }],
       metadata: {
+        type: 'course_purchase',
+        courseId: courseId,
         userId: user._id.toString(),
-        courseId: course._id.toString(),
-        type: 'course_purchase'
+        slug: course.slug
       },
-      success_url: `${baseUrl}/course-player.html?slug=${course.slug}&purchased=true`,
-      cancel_url: `${baseUrl}/course-details.html?slug=${course.slug}&canceled=true`,
-    });
-    
-    res.json({ sessionId: session.id, url: session.url });
+      success_url: req.body.successUrl || `${process.env.CLIENT_URL}/purchase-success.html?session_id={CHECKOUT_SESSION_ID}&slug=${course.slug}`,
+      cancel_url: `${process.env.CLIENT_URL}/course-details.html?slug=${course.slug}&cancelled=true`
+    };
+
+    // Add discount if coupon code provided
+    if (couponCode) {
+      try {
+        const promotionCodes = await stripe.promotionCodes.list({
+          code: couponCode.toUpperCase(),
+          active: true,
+          limit: 1
+        });
+        if (promotionCodes.data.length) {
+          sessionParams.discounts = [{ promotion_code: promotionCodes.data[0].id }];
+        }
+      } catch (err) {
+        console.error('Coupon lookup error:', err);
+        // Continue without discount rather than failing the purchase
+      }
+    }
+
+    const session = await stripe.checkout.sessions.create(sessionParams);
+
+    res.json({ url: session.url, sessionId: session.id });
   } catch (error) {
     console.error('Purchase course error:', error);
     res.status(500).json({ error: 'Failed to create checkout session' });
   }
 });
 
-// @route   GET /api/payments/purchased-courses
-// @desc    Get list of courses user has purchased individually
-// @access  Private
 router.get('/purchased-courses', protect, async (req, res) => {
   try {
-    const user = await User.findById(req.user._id).populate('purchasedCourses', 'title slug thumbnail ceuHours');
-    
-    res.json({
-      purchasedCourses: user.purchasedCourses || []
-    });
+    const user = await User.findById(req.user._id);
+    const purchased = (user.purchasedCourses || []).map(pc => ({
+      courseId: pc.courseId,
+      purchasedAt: pc.purchasedAt,
+      amount: pc.amount
+    }));
+    res.json({ purchased });
   } catch (error) {
     console.error('Get purchased courses error:', error);
-    res.status(500).json({ error: 'Failed to get purchased courses' });
+    res.status(500).json({ error: 'Failed to fetch purchased courses' });
   }
 });
-
-// Handle course purchase webhook (add to your existing webhook handler)
-// This should be called from your webhook route when event.type === 'checkout.session.completed'
-export async function handleCoursePurchase(session) {
-  if (session.metadata?.type !== 'course_purchase') {
-    return false;
-  }
-  
-  const userId = session.metadata.userId;
-  const courseId = session.metadata.courseId;
-  
-  if (!userId || !courseId) {
-    console.error('Missing userId or courseId in session metadata');
-    return false;
-  }
-  
-  try {
-    // Add course to user's purchased courses
-    await User.findByIdAndUpdate(userId, {
-      $addToSet: { purchasedCourses: courseId }
-    });
-    
-    console.log(`Course ${courseId} purchased by user ${userId}`);
-    return true;
-  } catch (error) {
-    console.error('Error processing course purchase:', error);
-    return false;
-  }
-}
 
 export default router;

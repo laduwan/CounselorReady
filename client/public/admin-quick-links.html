@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quick Links - CounselorReady Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="/css/design-tokens.css">
+  <link rel="stylesheet" href="/css/typography.css">
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="/js/tailwind-config.js"></script>
+
+  <style>
+    body { font-family: 'Lato', system-ui, sans-serif; }
+    .font-display { font-family: 'Cormorant Garamond', Georgia, serif; }
+    .toast {
+      position: fixed; bottom: 24px; right: 24px; z-index: 9999;
+      transform: translateY(80px); opacity: 0;
+      transition: transform 0.3s ease, opacity 0.3s ease;
+    }
+    .toast.show { transform: translateY(0); opacity: 1; }
+    .share-menu {
+      display: none; position: absolute; right: 0; top: 100%;
+      z-index: 50; min-width: 200px;
+    }
+    .share-menu.open { display: block; }
+  
+    /* Shared nav styles */
+    .dd{display:none;position:absolute;top:100%;margin-top:6px;background:#fff;border-radius:10px;box-shadow:0 10px 40px rgba(107,29,52,.12);border:1px solid #FAE8EB;z-index:50;padding:6px 0;min-width:210px}
+    .dd.open{display:block}
+    .dd a{display:flex;align-items:center;gap:10px;padding:8px 16px;font-size:13px;color:#284157;text-decoration:none;transition:background .1s}
+    .dd a:hover{background:#F2F7F4}
+    .ov{display:none;position:fixed;inset:0;z-index:40}.ov.open{display:block}
+    .nav-link{padding:6px 12px;border-radius:6px;font-size:13px;font-weight:500;color:#57534e;text-decoration:none;display:flex;align-items:center;gap:4px;transition:all .15s}
+    .nav-link:hover{color:#6B1D34;background:#FDF5F7}
+    .nav-link.active{color:#6B1D34;background:#FDF5F7;font-weight:600;border-bottom:2px solid #6B1D34}
+  </style>
+</head>
+<body class="bg-stone-50 min-h-screen">
+
+  <div id="cr-header"></div>
+  <script src="/shared/nav-footer.js"></script>
+
+  <!-- Admin Header -->
+  <header class="bg-burgundy-900 text-white sticky top-0 z-50" style="background: #4a1524;">
+    <div class="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <a href="admin-courses.html" class="text-white/70 hover:text-white flex items-center gap-2 text-sm">
+          <i class="fas fa-arrow-left"></i> Back to Courses
+        </a>
+      </div>
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 bg-hunter-700 rounded-lg flex items-center justify-center">
+          <span class="text-honey-400 font-display font-bold text-sm">CR</span>
+        </div>
+        <span class="font-display font-semibold text-lg">Quick Links</span>
+        <span class="text-xs bg-gold-500 text-white px-2 py-0.5 rounded-full font-semibold">ADMIN</span>
+      </div>
+      <div class="flex items-center gap-3">
+        <button onclick="copyAllLinks()" class="px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-lg text-sm transition-colors flex items-center gap-2">
+          <i class="fas fa-copy"></i> Copy All Links
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-6 py-8">
+
+    <!-- Stats Row -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+      <div class="bg-white rounded-xl border border-burgundy-100 p-5">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 bg-hunter-100 rounded-lg flex items-center justify-center">
+            <i class="fas fa-link text-hunter-700"></i>
+          </div>
+          <div>
+            <p class="text-2xl font-bold text-burgundy-800" id="statPublished">--</p>
+            <p class="text-xs text-gray-500">Published courses with links</p>
+          </div>
+        </div>
+      </div>
+      <div class="bg-white rounded-xl border border-burgundy-100 p-5">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 bg-honey-100 rounded-lg flex items-center justify-center">
+            <i class="fas fa-clock text-honey-600"></i>
+          </div>
+          <div>
+            <p class="text-2xl font-bold text-burgundy-800" id="statCEHours">--</p>
+            <p class="text-xs text-gray-500">Total CE hours linked</p>
+          </div>
+        </div>
+      </div>
+      <div class="bg-white rounded-xl border border-burgundy-100 p-5">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 bg-burgundy-100 rounded-lg flex items-center justify-center">
+            <i class="fas fa-file-alt text-burgundy-700"></i>
+          </div>
+          <div>
+            <p class="text-2xl font-bold text-burgundy-800" id="statDraft">--</p>
+            <p class="text-xs text-gray-500">Drafts (no link yet)</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Search + Filter -->
+    <div class="flex flex-col sm:flex-row gap-3 mb-6">
+      <div class="relative flex-grow">
+        <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+        <input type="text" id="searchInput" oninput="filterCourses()" placeholder="Search courses by title, code, or category..."
+          class="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-hunter-500 focus:border-hunter-500 outline-none">
+      </div>
+      <select id="categoryFilter" onchange="filterCourses()" class="border border-gray-200 rounded-lg px-4 py-2.5 text-sm bg-white">
+        <option value="">All Categories</option>
+        <option value="published">Published Only</option>
+        <option value="draft">Drafts Only</option>
+      </select>
+      <select id="sortBy" onchange="filterCourses()" class="border border-gray-200 rounded-lg px-4 py-2.5 text-sm bg-white">
+        <option value="title">Sort: Title A-Z</option>
+        <option value="code">Sort: Course Code</option>
+        <option value="hours">Sort: CE Hours</option>
+        <option value="enrollments">Sort: Enrollments</option>
+      </select>
+    </div>
+
+    <!-- Course Links Grid -->
+    <div id="loading" class="text-center py-16">
+      <div class="inline-block w-8 h-8 border-4 border-burgundy-200 border-t-burgundy-700 rounded-full animate-spin"></div>
+      <p class="text-gray-500 mt-2">Loading courses...</p>
+    </div>
+
+    <div id="courseGrid" class="hidden space-y-3"></div>
+
+    <!-- Empty State -->
+    <div id="emptyState" class="hidden text-center py-16">
+      <i class="fas fa-inbox text-gray-300 text-5xl mb-4"></i>
+      <p class="text-gray-500">No courses match your search</p>
+    </div>
+  </main>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="toast bg-hunter-700 text-white px-5 py-3 rounded-xl shadow-lg flex items-center gap-3">
+    <i class="fas fa-check-circle"></i>
+    <span id="toastMsg">Link copied!</span>
+  </div>
+
+  <script>
+    const API_URL = location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://api.counselorready.com';
+    const SITE_URL = location.hostname === 'localhost' ? 'http://localhost:5173' : 'https://counselorready.com';
+    const token = localStorage.getItem('token');
+    let allCourses = [];
+
+    document.addEventListener('DOMContentLoaded', () => {
+      checkAuth();
+      loadCourses();
+    });
+
+    function checkAuth() {
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      if (!token || user.role !== 'admin') {
+        alert('Admin access required');
+        window.location.href = '/dashboard.html';
+      }
+    }
+
+    async function loadCourses() {
+      try {
+        let courses = [];
+
+        // Fetch interactive courses (primary)
+        try {
+          let page = 1;
+          while (true) {
+            const r = await fetch(`${API_URL}/api/interactive-courses?page=${page}&limit=50`, {
+              headers: { Authorization: `Bearer ${token}` }
+            });
+            if (!r.ok) break;
+            const d = await r.json();
+            const batch = (d.data || []).map(c => ({ ...c, _source: 'interactive' }));
+            courses.push(...batch);
+            if (page >= (d.pagination?.pages || 1) || batch.length === 0) break;
+            page++;
+          }
+        } catch(e) { console.error('Interactive courses fetch failed:', e); }
+
+        // Fetch legacy courses (fallback)
+        try {
+          const r = await fetch(`${API_URL}/api/admin/courses`, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          if (r.ok) {
+            const d = await r.json();
+            (d.courses || []).forEach(c => {
+              if (!courses.find(ic => ic.slug === c.slug)) {
+                courses.push({ ...c, _source: 'legacy' });
+              }
+            });
+          }
+        } catch(e) {}
+
+        allCourses = courses.sort((a, b) => (a.title || '').localeCompare(b.title || ''));
+
+        // Stats
+        const published = allCourses.filter(c => c.isPublished || c.status === 'published');
+        const drafts = allCourses.filter(c => !c.isPublished && c.status !== 'published');
+        const totalHours = published.reduce((sum, c) => sum + (c.ceHours || c.ceuHours || 0), 0);
+        document.getElementById('statPublished').textContent = published.length;
+        document.getElementById('statCEHours').textContent = totalHours;
+        document.getElementById('statDraft').textContent = drafts.length;
+
+        document.getElementById('loading').classList.add('hidden');
+        filterCourses();
+      } catch (err) {
+        console.error('Load error:', err);
+        document.getElementById('loading').innerHTML = '<p class="text-red-600">Failed to load courses</p>';
+      }
+    }
+
+    function filterCourses() {
+      const query = document.getElementById('searchInput').value.toLowerCase().trim();
+      const cat = document.getElementById('categoryFilter').value;
+      const sort = document.getElementById('sortBy').value;
+
+      let filtered = [...allCourses];
+
+      // Text search
+      if (query) {
+        filtered = filtered.filter(c =>
+          (c.title || '').toLowerCase().includes(query) ||
+          (c.courseCode || '').toLowerCase().includes(query) ||
+          (c.slug || '').toLowerCase().includes(query) ||
+          (c.category || '').toLowerCase().includes(query)
+        );
+      }
+
+      // Category filter
+      if (cat === 'published') {
+        filtered = filtered.filter(c => c.isPublished || c.status === 'published');
+      } else if (cat === 'draft') {
+        filtered = filtered.filter(c => !c.isPublished && c.status !== 'published');
+      }
+
+      // Sort
+      if (sort === 'code') filtered.sort((a, b) => (a.courseCode || '').localeCompare(b.courseCode || ''));
+      else if (sort === 'hours') filtered.sort((a, b) => (b.ceHours || b.ceuHours || 0) - (a.ceHours || a.ceuHours || 0));
+      else if (sort === 'enrollments') filtered.sort((a, b) => (b.analytics?.enrollments || 0) - (a.analytics?.enrollments || 0));
+      else filtered.sort((a, b) => (a.title || '').localeCompare(b.title || ''));
+
+      renderCourses(filtered);
+    }
+
+    function renderCourses(courses) {
+      const grid = document.getElementById('courseGrid');
+      const empty = document.getElementById('emptyState');
+
+      if (!courses.length) {
+        grid.classList.add('hidden');
+        empty.classList.remove('hidden');
+        return;
+      }
+
+      empty.classList.add('hidden');
+      grid.classList.remove('hidden');
+
+      grid.innerHTML = courses.map((c, i) => {
+        const isPublished = c.isPublished || c.status === 'published';
+        const slug = c.slug || '';
+        const hours = c.ceHours || c.ceuHours || 0;
+        const enrollments = c.analytics?.enrollments || 0;
+        const courseLink = `${SITE_URL}/interactive-course.html?slug=${slug}`;
+        const detailLink = `${SITE_URL}/course-details.html?slug=${slug}`;
+        const statusClass = isPublished
+          ? 'bg-hunter-100 text-hunter-800'
+          : 'bg-amber-100 text-amber-800';
+        const statusLabel = isPublished ? 'Published' : 'Draft';
+
+        return `
+          <div class="bg-white rounded-xl border border-gray-100 hover:border-hunter-200 transition-colors p-4" id="row-${i}">
+            <div class="flex items-start gap-4">
+
+              <!-- Course Info -->
+              <div class="flex-grow min-w-0">
+                <div class="flex items-center gap-2 mb-1">
+                  ${c.courseCode ? `<span class="text-xs font-mono text-burgundy-700 bg-burgundy-50 px-2 py-0.5 rounded">${c.courseCode}</span>` : ''}
+                  <span class="text-xs px-2 py-0.5 rounded-full font-medium ${statusClass}">${statusLabel}</span>
+                  ${hours ? `<span class="text-xs text-gray-500">${hours} CE</span>` : ''}
+                </div>
+                <h3 class="font-semibold text-gray-900 truncate">${c.title || 'Untitled'}</h3>
+                <p class="text-xs text-gray-400 font-mono mt-1 truncate">${isPublished ? courseLink : 'No link — course is in draft'}</p>
+              </div>
+
+              <!-- Enrollment Count -->
+              <div class="text-center px-4 flex-shrink-0">
+                <p class="text-lg font-bold text-burgundy-800">${enrollments}</p>
+                <p class="text-xs text-gray-500">enrolled</p>
+              </div>
+
+              <!-- Actions -->
+              <div class="flex items-center gap-2 flex-shrink-0">
+                ${isPublished ? `
+                  <button onclick="copyLink('${courseLink}', 'Course')" title="Copy course link"
+                    class="px-3 py-2 bg-hunter-50 hover:bg-hunter-100 text-hunter-700 rounded-lg text-sm font-medium transition-colors flex items-center gap-2">
+                    <i class="fas fa-link"></i> Copy Link
+                  </button>
+                  <button onclick="copyLink('${detailLink}', 'Details page')" title="Copy details page link"
+                    class="px-3 py-2 bg-burgundy-50 hover:bg-burgundy-100 text-burgundy-700 rounded-lg text-sm font-medium transition-colors flex items-center gap-2">
+                    <i class="fas fa-info-circle"></i> Details
+                  </button>
+                  <div class="relative">
+                    <button onclick="toggleShareMenu(${i})" title="Share options"
+                      class="px-3 py-2 bg-honey-50 hover:bg-honey-100 text-honey-700 rounded-lg text-sm font-medium transition-colors">
+                      <i class="fas fa-share-alt"></i>
+                    </button>
+                    <div id="share-${i}" class="share-menu bg-white rounded-xl shadow-lg border border-gray-200 py-2 mt-1">
+                      <button onclick="shareEmail('${encodeURIComponent(c.title || '')}', '${courseLink}')" class="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm flex items-center gap-3">
+                        <i class="fas fa-envelope text-gray-400"></i> Email link
+                      </button>
+                      <button onclick="shareLinkedIn('${courseLink}')" class="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm flex items-center gap-3">
+                        <i class="fab fa-linkedin text-blue-600"></i> LinkedIn
+                      </button>
+                      <button onclick="shareFacebook('${courseLink}')" class="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm flex items-center gap-3">
+                        <i class="fab fa-facebook text-blue-700"></i> Facebook
+                      </button>
+                      <button onclick="shareTwitter('${encodeURIComponent(c.title || '')}', '${courseLink}')" class="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm flex items-center gap-3">
+                        <i class="fab fa-x-twitter text-gray-800"></i> X / Twitter
+                      </button>
+                      <button onclick="copyMarkdown('${c.title || ''}', '${courseLink}')" class="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm flex items-center gap-3">
+                        <i class="fas fa-code text-gray-400"></i> Copy as Markdown
+                      </button>
+                      <button onclick="copyHTML('${c.title || ''}', '${courseLink}', ${hours})" class="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm flex items-center gap-3">
+                        <i class="fas fa-code text-gray-400"></i> Copy embed HTML
+                      </button>
+                    </div>
+                  </div>
+                ` : `
+                  <span class="text-xs text-gray-400 italic">Publish to get link</span>
+                `}
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // ========== Actions ==========
+
+    function copyLink(url, label) {
+      navigator.clipboard.writeText(url).then(() => showToast(`${label} link copied!`));
+    }
+
+    function copyAllLinks() {
+      const published = allCourses.filter(c => c.isPublished || c.status === 'published');
+      const text = published.map(c => {
+        const slug = c.slug || '';
+        const hours = c.ceHours || c.ceuHours || 0;
+        return `${c.courseCode || ''} — ${c.title} (${hours} CE)\n${SITE_URL}/interactive-course.html?slug=${slug}`;
+      }).join('\n\n');
+      navigator.clipboard.writeText(text).then(() => showToast(`${published.length} course links copied!`));
+    }
+
+    function toggleShareMenu(idx) {
+      // Close all others
+      document.querySelectorAll('.share-menu').forEach(m => {
+        if (m.id !== `share-${idx}`) m.classList.remove('open');
+      });
+      document.getElementById(`share-${idx}`).classList.toggle('open');
+    }
+
+    // Close share menus on outside click
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.share-menu') && !e.target.closest('[onclick*="toggleShareMenu"]')) {
+        document.querySelectorAll('.share-menu').forEach(m => m.classList.remove('open'));
+      }
+    });
+
+    function shareEmail(title, url) {
+      const subject = encodeURIComponent(`Check out this CE course: ${decodeURIComponent(title)}`);
+      const body = encodeURIComponent(`I thought you might be interested in this continuing education course from CounselorReady:\n\n${decodeURIComponent(title)}\n${url}\n\nEarn CE credits approved by NBCC (ACEP Provider #7760).`);
+      window.open(`mailto:?subject=${subject}&body=${body}`);
+    }
+
+    function shareLinkedIn(url) {
+      window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`, '_blank');
+    }
+
+    function shareFacebook(url) {
+      window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank');
+    }
+
+    function shareTwitter(title, url) {
+      const text = encodeURIComponent(`${decodeURIComponent(title)} — Earn CE credits from CounselorReady (NBCC ACEP #7760)`);
+      window.open(`https://x.com/intent/tweet?text=${text}&url=${encodeURIComponent(url)}`, '_blank');
+    }
+
+    function copyMarkdown(title, url) {
+      navigator.clipboard.writeText(`[${title}](${url})`).then(() => showToast('Markdown link copied!'));
+    }
+
+    function copyHTML(title, url, hours) {
+      const html = `<a href="${url}" target="_blank" rel="noopener">${title} (${hours} CE) — CounselorReady</a>`;
+      navigator.clipboard.writeText(html).then(() => showToast('Embed HTML copied!'));
+    }
+
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      document.getElementById('toastMsg').textContent = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 2500);
+    }
+  </script>
+<script src="/js/cr-icons.js"></script>
+
+  <div id="cr-footer"></div>
+</body>
+</html>
+

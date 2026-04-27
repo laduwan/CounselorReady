@@ -5,43 +5,48 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Help Center - CounselorReady Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="/css/design-tokens.css">
+  <link rel="stylesheet" href="/css/typography.css">
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            burgundy: { 50: '#fdf5f6', 100: '#fae8eb', 200: '#f5d0d6', 700: '#8b2542', 800: '#6b1d34', 900: '#4a1524' },
-            forest: { 50: '#f3f6f4', 100: '#e3ebe5', 500: '#547c5f', 600: '#4A7C59', 700: '#34503d', 800: '#2b4133' },
-            hunter: { 100: '#e8f0ea', 200: '#d1e1d5', 500: '#4A7C59', 600: '#3d6649', 700: '#34503d' },
-            honey: { 100: '#fef3d1', 200: '#fde7a3', 400: '#D4A855', 500: '#c99a4a', 600: '#b8893f' }
-          }
-        }
-      }
-    }
-  </script>
-  <link href="https://fonts.googleapis.com/css2?family=Source+Serif+Pro:wght@400;600;700&family=Source+Sans+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="/js/tailwind-config.js"></script>
+
   <link rel="stylesheet" href="/lib/fontawesome/css/all.min.css">
   <style>
-    body { font-family: 'Source Sans Pro', system-ui, sans-serif; }
-    .font-display { font-family: 'Source Serif Pro', Georgia, serif; }
+    body{background:#F8F7F4; font-family: 'Lato', system-ui, sans-serif; }
+    .font-display { font-family: 'Cormorant Garamond', Georgia, serif; }
     .help-card:hover { transform: translateY(-2px); }
+  
+    /* Shared nav styles */
+    .dd{display:none;position:absolute;top:100%;margin-top:6px;background:#fff;border-radius:10px;box-shadow:0 10px 40px rgba(107,29,52,.12);border:1px solid #FAE8EB;z-index:50;padding:6px 0;min-width:210px}
+    .dd.open{display:block}
+    .dd a{display:flex;align-items:center;gap:10px;padding:8px 16px;font-size:13px;color:#284157;text-decoration:none;transition:background .1s}
+    .dd a:hover{background:#F2F7F4}
+    .ov{display:none;position:fixed;inset:0;z-index:40}.ov.open{display:block}
+    .nav-link{padding:6px 12px;border-radius:6px;font-size:13px;font-weight:500;color:#57534e;text-decoration:none;display:flex;align-items:center;gap:4px;transition:all .15s}
+    .nav-link:hover{color:#6B1D34;background:#FDF5F7}
+    .nav-link.active{color:#6B1D34;background:#FDF5F7;font-weight:600;border-bottom:2px solid #6B1D34}
   </style>
 </head>
 <body class="bg-stone-50 min-h-screen">
+
+  <div id="cr-header"></div>
+  <script src="/shared/nav-footer.js"></script>
 
   <!-- Admin Header -->
   <header class="bg-burgundy-800 text-white sticky top-0 z-50">
     <div class="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
       <div class="flex items-center gap-4">
-        <div class="w-9 h-9 bg-white/10 rounded-lg flex items-center justify-center">
-          <span class="font-display font-bold"><span class="text-honey-400">C</span><span class="text-hunter-500">R</span></span>
+        <div class="w-9 h-9 bg-burgundy-800 rounded-lg flex items-center justify-center relative overflow-hidden">
+          <span class="font-display font-bold text-gold-400 absolute" style="font-size:16px;top:2px;left:5px;">C</span>
+          <span class="font-display font-bold text-forest-400 absolute" style="font-size:16px;bottom:2px;left:13px;">R</span>
         </div>
         <div>
           <span class="font-display font-semibold text-lg">
-            <span class="text-burgundy-200">Counselor</span><span class="text-hunter-500">Ready</span>
+            <span style="color:#f2a8be">Counselor</span><span style="color:#98c3a9">Ready</span>
           </span>
-          <span class="ml-2 text-xs bg-honey-400 text-burgundy-900 px-2 py-0.5 rounded-full font-semibold">ADMIN</span>
+          <span class="ml-2 text-xs bg-gold-500 text-white px-2 py-0.5 rounded-full font-semibold">ADMIN</span>
         </div>
       </div>
       <div class="flex items-center gap-4">
@@ -56,7 +61,7 @@
 
   <div class="flex">
     <!-- Sidebar -->
-    <aside class="w-64 bg-burgundy-800 min-h-[calc(100vh-52px)] sticky top-[52px] p-4">
+    <aside class="w-64 bg-burgundy-800 min-h-[calc(100vh-116px)] sticky top-[116px] p-4">
       <nav class="space-y-1">
         <a href="/admin.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
           <i class="fas fa-th-large w-5"></i>
@@ -73,6 +78,10 @@
         <a href="/admin-courses.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
           <i class="fas fa-book w-5"></i>
           Courses
+        </a>
+        <a href="/admin-course-links.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+          Share Links
         </a>
         <a href="/admin-messages.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
           <i class="fas fa-envelope w-5"></i>
@@ -997,5 +1006,7 @@ STRIPE_PRICE_VIP=price_xxxxx        # $49.99/mo</pre>
       });
     }
   </script>
-<script src="/js/footer.js"></script></body>
+<script src="/js/footer.js"></script>
+  <div id="cr-footer"></div>
+</body>
 </html>

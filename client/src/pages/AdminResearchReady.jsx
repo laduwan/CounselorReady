@@ -1,23 +1,28 @@
 /**
  * AdminResearchReady — Admin queue page for Researched-N-Ready CE courses.
+ * RNR CE body palette + ADA compliance. Error state with Retry button.
  */
 import { useState, useEffect } from 'react';
 import api from '../services/api';
-import { CheckCircle, XCircle, Eye, Clock, AlertTriangle, BookOpen } from 'lucide-react';
+import { CheckCircle, XCircle, Eye, Clock, AlertTriangle, BookOpen, RefreshCw } from 'lucide-react';
 import CEBuildPreview from '../components/researchReady/CEBuildPreview';
 
 const statusStyles = {
-  pending_review: { bg: 'bg-yellow-100', text: 'text-yellow-800', label: 'Pending' },
-  approved: { bg: 'bg-blue-100', text: 'text-blue-800', label: 'Approved' },
-  live: { bg: 'bg-green-100', text: 'text-green-800', label: 'Live' },
-  rejected: { bg: 'bg-red-100', text: 'text-red-800', label: 'Rejected' }
+  pending: { bg: 'bg-[#F8EEDC]', text: 'text-[#8B5E2E]', label: 'Pending' },
+  approved: { bg: 'bg-[#EEF5EA]', text: 'text-[#2A4A18]', label: 'Approved' },
+  generating: { bg: 'bg-[#F8EEDC]', text: 'text-[#A5712E]', label: 'Generating' },
+  test_ready: { bg: 'bg-[#EEF5EA]', text: 'text-[#2A4A18]', label: 'Test Ready' },
+  in_progress: { bg: 'bg-[#FDF8EE]', text: 'text-[#8B5E2E]', label: 'In Progress' },
+  completed: { bg: 'bg-[#EEF5EA]', text: 'text-[#2A4A18]', label: 'Completed' },
+  rejected: { bg: 'bg-[#FAF0ED]', text: 'text-[#7B2D3E]', label: 'Rejected' },
+  error: { bg: 'bg-red-100', text: 'text-red-700', label: 'Error' }
 };
 
 const verdictStyles = {
-  approved: { bg: 'bg-green-100', text: 'text-green-700', label: 'Approved' },
-  approved_with_note: { bg: 'bg-yellow-100', text: 'text-yellow-700', label: 'Note' },
-  hold_for_review: { bg: 'bg-orange-100', text: 'text-orange-700', label: 'Hold' },
-  replace_suggested: { bg: 'bg-red-100', text: 'text-red-700', label: 'Replace' }
+  approved: { bg: 'bg-[#EEF5EA]', text: 'text-[#2A4A18]', label: 'Approved' },
+  approved_with_note: { bg: 'bg-[#F8EEDC]', text: 'text-[#8B5E2E]', label: 'Note' },
+  hold_for_review: { bg: 'bg-[#FBF2E0]', text: 'text-[#A5712E]', label: 'Hold' },
+  replace_suggested: { bg: 'bg-[#FAF0ED]', text: 'text-[#7B2D3E]', label: 'Replace' }
 };
 
 export default function AdminResearchReady() {
@@ -26,6 +31,7 @@ export default function AdminResearchReady() {
   const [previewCourse, setPreviewCourse] = useState(null);
   const [rejectingId, setRejectingId] = useState(null);
   const [rejectNote, setRejectNote] = useState('');
+  const [retrying, setRetrying] = useState(null);
 
   useEffect(() => {
     loadQueue();
@@ -34,7 +40,7 @@ export default function AdminResearchReady() {
   async function loadQueue() {
     try {
       const { data } = await api.get('/research-ready/queue');
-      setCourses(data.courses || []);
+      setCourses(data.requests || []);
     } catch (err) {
       console.error('Failed to load queue:', err);
     } finally {
@@ -44,7 +50,7 @@ export default function AdminResearchReady() {
 
   async function handleApprove(id) {
     try {
-      await api.patch(`/research-ready/queue/${id}/approve`);
+      await api.patch(`/research-ready/request/${id}/approve`);
       loadQueue();
     } catch (err) {
       alert('Approve failed: ' + (err.response?.data?.error || err.message));
@@ -53,7 +59,7 @@ export default function AdminResearchReady() {
 
   async function handleReject(id) {
     try {
-      await api.patch(`/research-ready/queue/${id}/reject`, { rejectionNote: rejectNote });
+      await api.patch(`/research-ready/request/${id}/reject`, { rejectionNote: rejectNote });
       setRejectingId(null);
       setRejectNote('');
       loadQueue();
@@ -62,77 +68,91 @@ export default function AdminResearchReady() {
     }
   }
 
+  async function handleRetry(id) {
+    setRetrying(id);
+    try {
+      await api.post(`/research-ready/request/${id}/rebuild`);
+      setTimeout(() => loadQueue(), 2000);
+    } catch (err) {
+      alert('Retry failed: ' + (err.response?.data?.error || err.message));
+    } finally {
+      setRetrying(null);
+    }
+  }
+
   if (loading) {
     return (
       <div className="flex justify-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-burgundy-700"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#7B2D3E]"></div>
       </div>
     );
   }
 
   return (
-    <div>
+    <div className="bg-[#FAF5EC] min-h-screen -m-6 p-6">
       <div className="flex items-center gap-3 mb-6">
-        <BookOpen className="w-6 h-6 text-burgundy-700" />
-        <h1 className="text-2xl font-bold text-gray-900">Researched-N-Ready CE Queue</h1>
-        <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-burgundy-100 text-burgundy-800">
-          {courses.filter(c => c.status === 'pending_review').length} pending
+        <BookOpen className="w-6 h-6 text-[#7B2D3E]" />
+        <h1 className="text-2xl font-bold font-[Georgia,serif] text-[#2A1F0E]">Researched-N-Ready CE Queue</h1>
+        <span className="px-2.5 py-1 rounded-full text-xs font-medium font-[Georgia,serif] bg-[#F8EEDC] text-[#8B5E2E]">
+          {courses.filter(c => c.status === 'pending').length} pending
         </span>
       </div>
 
       {courses.length === 0 ? (
-        <div className="bg-white rounded-xl border p-12 text-center">
-          <Clock className="w-12 h-12 mx-auto text-gray-300 mb-4" />
-          <h2 className="text-lg font-semibold text-gray-600 mb-2">No courses in queue</h2>
-          <p className="text-sm text-gray-400">Researched-N-Ready CE courses will appear here after generation.</p>
+        <div className="bg-[#FAF5EC] rounded-xl border border-[#DDD9D3] p-12 text-center">
+          <Clock className="w-12 h-12 mx-auto text-[#C8C3BC] mb-4" />
+          <h2 className="text-lg font-semibold font-[Georgia,serif] text-[#5C4D3A] mb-2">No courses in queue</h2>
+          <p className="text-sm font-[Georgia,serif] text-[#7A6A54]">Researched-N-Ready CE courses will appear here after submission.</p>
         </div>
       ) : (
-        <div className="bg-white rounded-xl border overflow-hidden">
+        <div className="bg-[#FAF5EC] rounded-xl border border-[#DDD9D3] overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="bg-gray-50 border-b">
-                  <th className="text-left px-4 py-3 font-medium text-gray-600">Article</th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-600">Authors / Year</th>
-                  <th className="text-center px-4 py-3 font-medium text-gray-600">CE Hrs</th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-600">Content Areas</th>
-                  <th className="text-center px-4 py-3 font-medium text-gray-600">Currency</th>
-                  <th className="text-center px-4 py-3 font-medium text-gray-600">Words</th>
-                  <th className="text-center px-4 py-3 font-medium text-gray-600">Status</th>
-                  <th className="text-right px-4 py-3 font-medium text-gray-600">Actions</th>
+                <tr className="bg-[#EAE7E2] border-b border-[#DDD9D3]">
+                  <th className="text-left px-4 py-3 font-medium font-[Georgia,serif] text-[#5C4D3A]">Article</th>
+                  <th className="text-left px-4 py-3 font-medium font-[Georgia,serif] text-[#5C4D3A]">Authors / Year</th>
+                  <th className="text-center px-4 py-3 font-medium font-[Georgia,serif] text-[#5C4D3A]">CE Hrs</th>
+                  <th className="text-left px-4 py-3 font-medium font-[Georgia,serif] text-[#5C4D3A]">Content Area</th>
+                  <th className="text-center px-4 py-3 font-medium font-[Georgia,serif] text-[#5C4D3A]">Currency</th>
+                  <th className="text-center px-4 py-3 font-medium font-[Georgia,serif] text-[#5C4D3A]">Words</th>
+                  <th className="text-center px-4 py-3 font-medium font-[Georgia,serif] text-[#5C4D3A]">Status</th>
+                  <th className="text-right px-4 py-3 font-medium font-[Georgia,serif] text-[#5C4D3A]">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {courses.map(course => {
-                  const ss = statusStyles[course.status] || statusStyles.pending_review;
+                  const ss = statusStyles[course.status] || statusStyles.pending;
                   const cv = course.currencyVerdict?.verdict;
                   const vs = cv ? (verdictStyles[cv] || verdictStyles.hold_for_review) : null;
+                  const isAbstractOnly = course.selectedArticles?.some(a => a.abstractOnlyFlag);
 
                   return (
-                    <tr key={course._id} className="border-b last:border-b-0 hover:bg-gray-50">
+                    <tr key={course._id} className="border-b border-[#EAE7E2] last:border-b-0 hover:bg-[#FDF8EE]">
                       <td className="px-4 py-3">
-                        <p className="font-medium text-gray-900 max-w-xs truncate" title={course.title}>
-                          {course.title.length > 60 ? course.title.substring(0, 60) + '...' : course.title}
-                        </p>
+                        {(course.selectedArticles || []).map((a, i) => (
+                          <p key={i} className="font-medium font-[Georgia,serif] text-[#2A1F0E] max-w-xs truncate" title={a.title}>
+                            {a.title.length > 60 ? a.title.substring(0, 60) + '...' : a.title}
+                          </p>
+                        ))}
+                        {isAbstractOnly && (
+                          <span className="inline-block mt-1 px-2 py-0.5 rounded text-[10px] font-medium bg-amber-100 text-amber-800">
+                            Abstract only
+                          </span>
+                        )}
                       </td>
-                      <td className="px-4 py-3 text-gray-500">
-                        <p className="max-w-[150px] truncate">{course.authors}</p>
-                        <p className="text-xs text-gray-400">{course.year}</p>
+                      <td className="px-4 py-3 font-[Georgia,serif] text-[#7A6A54]">
+                        {(course.selectedArticles || []).map((a, i) => (
+                          <p key={i} className="max-w-[150px] truncate">{a.authors} ({a.year})</p>
+                        ))}
                       </td>
                       <td className="px-4 py-3 text-center">
-                        <span className="font-semibold text-burgundy-700">{course.ceHours}</span>
+                        <span className="font-semibold font-[Georgia,serif] text-[#7B2D3E]">{course.totalCeHours}</span>
                       </td>
                       <td className="px-4 py-3">
-                        <div className="flex flex-wrap gap-1 max-w-[180px]">
-                          {(course.contentAreas || []).slice(0, 2).map((area, i) => (
-                            <span key={i} className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-gray-100 text-gray-600">
-                              {area}
-                            </span>
-                          ))}
-                          {course.contentAreas?.length > 2 && (
-                            <span className="text-[10px] text-gray-400">+{course.contentAreas.length - 2}</span>
-                          )}
-                        </div>
+                        <span className="px-1.5 py-0.5 rounded text-[10px] font-medium font-[Georgia,serif] bg-[#F8EEDC] text-[#8B5E2E]">
+                          {course.contentArea}
+                        </span>
                       </td>
                       <td className="px-4 py-3 text-center">
                         {vs ? (
@@ -140,34 +160,53 @@ export default function AdminResearchReady() {
                             {vs.label}
                           </span>
                         ) : (
-                          <span className="text-xs text-gray-400">—</span>
+                          <span className="text-xs text-[#7A6A54]">&mdash;</span>
                         )}
                       </td>
-                      <td className="px-4 py-3 text-center text-gray-500">
-                        {course.wordCount?.toLocaleString()}
+                      <td className="px-4 py-3 text-center font-[Georgia,serif] text-[#7A6A54]">
+                        {(course.generatedWordCount || course.totalWordCount)?.toLocaleString()}
                       </td>
                       <td className="px-4 py-3 text-center">
                         <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${ss.bg} ${ss.text}`}>
                           {ss.label}
                         </span>
+                        {course.status === 'error' && course.adminNote && (
+                          <p className="text-[10px] text-red-600 mt-1 max-w-[150px] truncate" title={course.adminNote}>
+                            {course.adminNote}
+                          </p>
+                        )}
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex items-center justify-end gap-2">
                           <button
                             onClick={() => setPreviewCourse(course)}
-                            className="p-1.5 text-gray-400 hover:text-burgundy-700 rounded-lg hover:bg-burgundy-50"
-                            title="Preview"
+                            className="p-1.5 text-[#7A6A54] hover:text-[#7B2D3E] rounded-lg hover:bg-[#FDF8EE] focus-visible:outline-2 focus-visible:outline-[#8B5E2E] focus-visible:outline-offset-2"
+                            aria-label="Preview course"
                           >
                             <Eye className="w-4 h-4" />
                           </button>
-                          {(course.status === 'pending_review' || course.status === 'approved') && (
+
+                          {/* Error state — Retry button */}
+                          {course.status === 'error' && (
+                            <button
+                              onClick={() => handleRetry(course._id)}
+                              disabled={retrying === course._id}
+                              className="inline-flex items-center gap-1 px-2 py-1 bg-red-100 text-red-700 rounded text-[11px] font-[Georgia,serif] font-medium hover:bg-red-200 disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-[#8B5E2E] focus-visible:outline-offset-2"
+                              aria-label="Retry failed build"
+                            >
+                              <RefreshCw className={`w-3 h-3 ${retrying === course._id ? 'animate-spin' : ''}`} />
+                              {retrying === course._id ? 'Retrying...' : 'Retry'}
+                            </button>
+                          )}
+
+                          {(course.status === 'pending' || course.status === 'approved') && (
                             <>
                               <button
                                 onClick={() => handleApprove(course._id)}
-                                className="p-1.5 text-green-500 hover:text-green-700 rounded-lg hover:bg-green-50"
-                                title="Approve"
+                                className="inline-flex items-center gap-1 px-2 py-1 text-[11px] font-semibold font-[Georgia,serif] text-green-700 bg-green-50 rounded hover:bg-green-100 transition-colors focus-visible:outline-2 focus-visible:outline-[#8B5E2E] focus-visible:outline-offset-2"
+                                aria-label="Approve request"
                               >
-                                <CheckCircle className="w-4 h-4" />
+                                <CheckCircle className="w-3.5 h-3.5" /> Approve
                               </button>
                               {rejectingId === course._id ? (
                                 <div className="flex items-center gap-1">
@@ -176,17 +215,18 @@ export default function AdminResearchReady() {
                                     value={rejectNote}
                                     onChange={e => setRejectNote(e.target.value)}
                                     placeholder="Reason..."
-                                    className="text-xs border rounded px-2 py-1 w-32"
+                                    className="text-xs font-[Georgia,serif] border border-[#DDD9D3] rounded px-2 py-1 w-32 bg-[#FAF5EC]"
+                                    aria-label="Rejection reason"
                                   />
                                   <button
                                     onClick={() => handleReject(course._id)}
-                                    className="text-xs text-red-600 font-medium"
+                                    className="text-xs text-red-600 font-medium font-[Georgia,serif]"
                                   >
                                     Confirm
                                   </button>
                                   <button
                                     onClick={() => { setRejectingId(null); setRejectNote(''); }}
-                                    className="text-xs text-gray-400"
+                                    className="text-xs text-[#7A6A54] font-[Georgia,serif]"
                                   >
                                     Cancel
                                   </button>
@@ -194,10 +234,10 @@ export default function AdminResearchReady() {
                               ) : (
                                 <button
                                   onClick={() => setRejectingId(course._id)}
-                                  className="p-1.5 text-red-400 hover:text-red-700 rounded-lg hover:bg-red-50"
-                                  title="Reject"
+                                  className="inline-flex items-center gap-1 px-2 py-1 text-[11px] font-semibold font-[Georgia,serif] text-[#7B2D3E] bg-[#FAF0ED] rounded hover:bg-red-100 transition-colors focus-visible:outline-2 focus-visible:outline-[#8B5E2E] focus-visible:outline-offset-2"
+                                  aria-label="Reject request"
                                 >
-                                  <XCircle className="w-4 h-4" />
+                                  <XCircle className="w-3.5 h-3.5" /> Reject
                                 </button>
                               )}
                             </>

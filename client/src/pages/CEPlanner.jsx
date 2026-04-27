@@ -7,7 +7,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
-import { Calendar, Clock, Target, AlertTriangle, CheckCircle, BookOpen, ArrowLeft, ArrowRight, TrendingUp, FileText, Award, Beaker } from 'lucide-react';
+import { Calendar, Clock, Target, AlertTriangle, CheckCircle, BookOpen, ArrowLeft, ArrowRight, TrendingUp, FileText, Award, Beaker, Plus } from 'lucide-react';
 
 const urgencyColors = {
   expired: { bg: 'bg-red-50', text: 'text-red-700', border: 'border-red-200', badge: 'bg-red-100 text-red-800' },
@@ -30,13 +30,32 @@ function ResearchReadyRecs({ deficits }) {
     if (deficits.length === 0) return;
     const fetchAll = async () => {
       const results = {};
-      for (const d of deficits.slice(0, 3)) {
-        try {
-          const { data } = await api.get('/research-ready/search', {
-            params: { q: d.category, per_page: 3, desired_hours: d.remaining }
-          });
-          if (data.results?.length > 0) results[d.category] = data.results;
-        } catch { /* non-fatal */ }
+      try {
+        const { data: recData } = await api.get('/research-ready/recommendations');
+        const recs = recData.recommendations || [];
+        for (const rec of recs.slice(0, 3)) {
+          try {
+            const { data } = await api.get('/research-ready/search', {
+              params: { q: rec.suggestedSearch || rec.category, per_page: 3, desired_hours: rec.suggestedHours }
+            });
+            if (data.results?.length > 0) {
+              results[rec.category] = {
+                articles: data.results,
+                deficit: { category: rec.category, remaining: rec.hoursNeeded }
+              };
+            }
+          } catch { /* non-fatal */ }
+        }
+      } catch {
+        // Fallback: use deficits directly if recommendations endpoint fails
+        for (const d of deficits.slice(0, 3)) {
+          try {
+            const { data } = await api.get('/research-ready/search', {
+              params: { q: d.category, per_page: 3, desired_hours: d.remaining }
+            });
+            if (data.results?.length > 0) results[d.category] = { articles: data.results, deficit: d };
+          } catch { /* non-fatal */ }
+        }
       }
       setArticles(results);
       setLoaded(true);
@@ -44,35 +63,67 @@ function ResearchReadyRecs({ deficits }) {
     fetchAll();
   }, [deficits]);
 
-  if (!loaded || Object.keys(articles).length === 0) return null;
+  if (!loaded) return null;
+
+  // If no results at all, show fallback
+  if (Object.keys(articles).length === 0) {
+    return (
+      <div className="p-4 border-t border-[#DDD9D3]">
+        <div className="bg-[#FDF8EE] border-l-[3px] border-l-[#7B2D3E] rounded-r-lg p-4">
+          <p className="font-[Georgia,serif] text-[11px] italic text-[#5C4D3A]">
+            No open-access articles currently matched.{' '}
+            <Link to="/research-ready" className="text-[#7B2D3E] underline hover:text-[#9B3A4E]">
+              Search manually &rarr;
+            </Link>
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="p-4 border-t">
-      {Object.entries(articles).map(([category, arts]) => (
-        <div key={category} className="mb-3">
-          <div className="flex items-center gap-2 mb-2">
-            <Beaker className="w-4 h-4 text-burgundy-600" />
-            <h3 className="text-sm font-medium text-burgundy-800">
-              Researched-N-Ready CE — Fill your {category} deficit
-            </h3>
+    <div className="p-4 border-t border-[#DDD9D3]">
+      <section
+        className="bg-[#FAF5EC] border border-[#DDD9D3] rounded-[10px] p-6 mb-4"
+        aria-label="RNR CE recommendations for your deficit content areas"
+      >
+        <h3 className="font-[Georgia,serif] text-[16px] font-semibold text-[#8B5E2E] mb-4">
+          Researched-N-Ready: Fill Your Gap
+        </h3>
+      {Object.entries(articles).map(([category, { articles: arts, deficit }]) => (
+        <div key={category} className="mb-4 bg-[#FDF8EE] border-l-[3px] border-l-[#7B2D3E] rounded-r-lg p-4">
+          <div className="flex items-center gap-2 mb-1">
+            <Beaker className="w-4 h-4 text-[#7B2D3E]" />
+            <h4 className="font-[Georgia,serif] text-sm font-semibold text-[#8B5E2E]">
+              Fill your {category} deficit
+            </h4>
           </div>
+          <p className="font-[Georgia,serif] text-[10px] italic text-[#5C4D3A] mb-3">
+            {deficit.remaining} hours needed &middot; matched articles below
+          </p>
           <div className="space-y-2">
             {arts.slice(0, 3).map((article, i) => (
-              <a key={i} href={`/research-ready?q=${encodeURIComponent(category)}`}
-                className="flex items-center justify-between p-3 bg-burgundy-50 rounded-lg hover:bg-burgundy-100 transition-colors">
-                <div className="flex items-center gap-3">
-                  <BookOpen className="w-4 h-4 text-burgundy-600" />
-                  <div>
-                    <p className="text-sm font-medium text-gray-900 line-clamp-1">{article.title}</p>
-                    <p className="text-xs text-gray-500">{article.ceHours} CE hours &bull; {article.year} &bull; Researched-N-Ready</p>
+              <Link key={i} to={`/research-ready?q=${encodeURIComponent(category)}&desired_hours=${deficit.remaining}`}
+                className="flex items-center justify-between p-3 bg-[#F8EEDC] rounded-lg hover:bg-[#F5EEE0] transition-colors">
+                <div className="flex items-center gap-3 min-w-0">
+                  <BookOpen className="w-4 h-4 text-[#7B2D3E] flex-shrink-0" />
+                  <div className="min-w-0">
+                    <p className="font-[Georgia,serif] text-[12px] font-medium text-[#2A1F0E] line-clamp-1">{article.title}</p>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <span className="px-1.5 py-0.5 rounded text-[9px] font-medium bg-[#7B2D3E] text-[#FAF5EC]">{article.ceHours} CE hrs</span>
+                      <span className="px-1.5 py-0.5 rounded text-[9px] bg-[#F4F1ED] text-[#5C4D3A]">{category}</span>
+                    </div>
                   </div>
                 </div>
-                <ArrowRight className="w-4 h-4 text-burgundy-600 flex-shrink-0" />
-              </a>
+                <span className="inline-flex items-center gap-1 px-2 py-1 bg-[#7B2D3E] text-[#FAF5EC] rounded text-[9px] font-[Georgia,serif] uppercase tracking-[0.05em] hover:bg-[#9B3A4E] flex-shrink-0 ml-2">
+                  <Plus className="w-3 h-3" /> Create CE
+                </span>
+              </Link>
             ))}
           </div>
         </div>
       ))}
+      </section>
     </div>
   );
 }

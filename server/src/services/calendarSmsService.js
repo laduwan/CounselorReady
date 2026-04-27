@@ -14,111 +14,9 @@ const twilioClient = process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_T
 
 const TWILIO_PHONE = process.env.TWILIO_PHONE_NUMBER;
 
-/**
- * Generate ICS calendar file content for a credential expiration
- */
-export function generateICSFile(credential, user) {
-  const expirationDate = new Date(credential.expirationDate);
-  
-  // Create reminder 30 days before expiration
-  const reminderDate = new Date(expirationDate);
-  reminderDate.setDate(reminderDate.getDate() - 30);
-  
-  // Format dates for ICS (YYYYMMDD format)
-  const formatICSDate = (date) => {
-    return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
-  };
-  
-  const formatICSDateOnly = (date) => {
-    return date.toISOString().split('T')[0].replace(/-/g, '');
-  };
-  
-  const uid = `credential-${credential._id}@counselorready.com`;
-  const now = new Date();
-  
-  const icsContent = `BEGIN:VCALENDAR
-VERSION:2.0
-PRODID:-//CounselorReady//Credential Reminder//EN
-CALSCALE:GREGORIAN
-METHOD:PUBLISH
-BEGIN:VEVENT
-UID:${uid}
-DTSTAMP:${formatICSDate(now)}
-DTSTART;VALUE=DATE:${formatICSDateOnly(expirationDate)}
-DTEND;VALUE=DATE:${formatICSDateOnly(expirationDate)}
-SUMMARY:${credential.name || 'Credential'} Expires${credential.state ? ` (${credential.state})` : ''}
-DESCRIPTION:Your ${credential.name}${credential.state ? ` in ${credential.state}` : ''} expires on this date.\\n\\nLicense Number: ${credential.licenseNumber || 'N/A'}\\n\\nVisit CounselorReady to manage your credentials: https://counselorready.com/credentials.html
-LOCATION:CounselorReady
-STATUS:CONFIRMED
-CATEGORIES:License Renewal,CounselorReady
-BEGIN:VALARM
-TRIGGER:-P30D
-ACTION:DISPLAY
-DESCRIPTION:${credential.name} expires in 30 days
-END:VALARM
-BEGIN:VALARM
-TRIGGER:-P14D
-ACTION:DISPLAY
-DESCRIPTION:${credential.name} expires in 14 days - Action Required
-END:VALARM
-BEGIN:VALARM
-TRIGGER:-P7D
-ACTION:DISPLAY
-DESCRIPTION:URGENT: ${credential.name} expires in 7 days
-END:VALARM
-END:VEVENT
-END:VCALENDAR`;
-
-  return icsContent;
-}
-
-/**
- * Generate ICS file for insurance expiration
- */
-export function generateInsuranceICS(insurance, user) {
-  const expirationDate = new Date(insurance.renewalDate);
-  
-  const formatICSDate = (date) => {
-    return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
-  };
-  
-  const formatICSDateOnly = (date) => {
-    return date.toISOString().split('T')[0].replace(/-/g, '');
-  };
-  
-  const uid = `insurance-${user._id}-${Date.now()}@counselorready.com`;
-  const now = new Date();
-  
-  const icsContent = `BEGIN:VCALENDAR
-VERSION:2.0
-PRODID:-//CounselorReady//Insurance Reminder//EN
-CALSCALE:GREGORIAN
-METHOD:PUBLISH
-BEGIN:VEVENT
-UID:${uid}
-DTSTAMP:${formatICSDate(now)}
-DTSTART;VALUE=DATE:${formatICSDateOnly(expirationDate)}
-DTEND;VALUE=DATE:${formatICSDateOnly(expirationDate)}
-SUMMARY:Malpractice Insurance Renewal - ${insurance.provider || 'Policy'}
-DESCRIPTION:Your malpractice insurance policy${insurance.provider ? ` with ${insurance.provider}` : ''} is due for renewal.\\n\\nPolicy Number: ${insurance.policyNumber || 'N/A'}\\n\\nVisit CounselorReady to manage your insurance: https://counselorready.com/settings.html
-LOCATION:CounselorReady
-STATUS:CONFIRMED
-CATEGORIES:Insurance Renewal,CounselorReady
-BEGIN:VALARM
-TRIGGER:-P30D
-ACTION:DISPLAY
-DESCRIPTION:Insurance renewal due in 30 days
-END:VALARM
-BEGIN:VALARM
-TRIGGER:-P14D
-ACTION:DISPLAY
-DESCRIPTION:Insurance renewal due in 14 days
-END:VALARM
-END:VEVENT
-END:VCALENDAR`;
-
-  return icsContent;
-}
+// ICS calendar generation has been consolidated into calendarService.js
+// Re-export for backward compatibility
+export { generateCredentialICS as generateICSFile, generateInsuranceICS } from './calendarService.js';
 
 /**
  * Send SMS reminder
@@ -233,8 +131,6 @@ export async function checkAndSendSMSReminders() {
 }
 
 export default {
-  generateICSFile,
-  generateInsuranceICS,
   sendSMSReminder,
   sendCredentialExpirationSMS,
   sendTestSMS,

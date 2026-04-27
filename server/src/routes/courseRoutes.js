@@ -12,6 +12,7 @@ import mongoose from 'mongoose';
 import { Course, CourseProgress, ContentInteraction } from '../models/InteractiveCourse.js';
 import { protect } from '../middleware/auth.js';
 import checkCourseAccess from '../middleware/checkCourseAccess.js';
+import { logActivity, ACTIVITY_TYPES } from '../services/activityTrackingService.js';
 
 const router = express.Router();
 
@@ -26,12 +27,12 @@ const router = express.Router();
 router.get('/', async (req, res) => {
   try {
     const { 
-      category, 
-      tag, 
-      search, 
+      category,
+      tag,
+      search,
       status = 'published',
       page = 1, 
-      limit = 10 
+      limit = 10
     } = req.query;
 
     const query = {};
@@ -50,7 +51,7 @@ router.get('/', async (req, res) => {
     }
 
     const courses = await Course.find(query)
-      .select('title slug description thumbnail ceHours ceuHours totalEstimatedTime categories tags status wordCount sectionCount sections.title sections.contentBlocks price accessTier pricingTier publishedAt createdAt')
+      .select('title slug description thumbnail ceHours ceuHours totalEstimatedTime categories tags status wordCount sectionCount price accessTier pricingTier publishedAt createdAt')
       .sort({ publishedAt: -1 })
       .skip((page - 1) * limit)
       .limit(parseInt(limit));
@@ -58,7 +59,8 @@ router.get('/', async (req, res) => {
     const total = await Course.countDocuments(query);
 
     res.json({
-      data: courses,       // ← admin-courses.html reads d.data
+      data: courses,
+      // ← admin-courses.html reads d.data
       courses,             // ← backward compat for public catalog
       pagination: {
         page: parseInt(page),
@@ -209,6 +211,72 @@ router.post('/:slug/enroll', protect, checkCourseAccess, async (req, res) => {
     });
 
     await progress.save();
+
+    // =========================================================
+    // ENROLLMENT WIRING — counter + analytics + PostHog
+    // =========================================================
+
+    // 1. Increment enrollment counter on course document
+    try {
+      await Course.findByIdAndUpdate(course._id, {
+        $inc: { 'analytics.enrollments': 1 },
+        $set: { 'analytics.lastEnrollmentAt': new Date() }
+      });
+    } catch (counterErr) {
+      console.error('Failed to increment enrollment counter:', counterErr);
+    }
+
+    // 2. PostHog server-side event
+    try {
+      if (global.posthog) {
+        global.posthog.capture({
+          distinctId: req.user._id.toString(),
+          event: 'course_enrolled',
+          properties: {
+            courseId: course._id.toString(),
+            courseTitle: course.title,
+            courseCode: course.courseCode || '',
+            ceHours: course.ceHours || course.ceuHours || 0,
+            slug: course.slug,
+            source: 'web',
+            $set: {
+              email: req.user.email,
+              lastEnrollmentDate: new Date().toISOString()
+            }
+          }
+        });
+      }
+    } catch (phErr) {
+      console.error('PostHog enrollment event failed:', phErr);
+    }
+
+    // 3. Console log for Render logs / activity tracking
+    console.log('[ENROLLMENT]', JSON.stringify({
+      type: 'enrollment',
+      user: req.user.email || req.user._id,
+      courseTitle: course.title,
+      courseCode: course.courseCode || '',
+      courseId: course._id,
+      timestamp: new Date().toISOString()
+    }));
+
+    // 4. Activity log entry
+    try {
+      await logActivity(ACTIVITY_TYPES.USER_ENROLLED, {
+        courseId: course._id.toString(),
+        courseName: course.title,
+        ceHours: course.ceHours || course.ceuHours || 0
+      }, {
+        userId: req.user._id,
+        userName: `${req.user.profile?.firstName || ''} ${req.user.profile?.lastName || ''}`.trim() || req.user.email,
+        userEmail: req.user.email
+      });
+    } catch (actErr) {
+      console.error('Activity log for enrollment failed:', actErr);
+    }
+
+    // =========================================================
+
     res.status(201).json({ message: 'Enrolled successfully', progress });
   } catch (error) {
     console.error('Error enrolling in course:', error);
@@ -431,6 +499,28 @@ router.post('/:slug/progress/section/:sectionIndex/quiz', protect, checkCourseAc
     }
     await progress.save();
 
+    // PostHog: quiz attempt
+    try {
+      if (global.posthog) {
+        global.posthog.capture({
+          distinctId: req.user._id.toString(),
+          event: 'quiz_submitted',
+          properties: {
+            courseId: course._id.toString(),
+            courseTitle: course.title,
+            sectionIndex: parseInt(sectionIndex),
+            score: correctCount,
+            totalQuestions,
+            percentage: Math.round(score * 100),
+            passed,
+            attemptNumber: sectionProgress.quizAttempts.length
+          }
+        });
+      }
+    } catch (phErr) {
+      console.error('PostHog quiz event failed:', phErr);
+    }
+
     // Check adaptive learning rules
     let adaptiveAction = null;
     if (settings.adaptiveEnabled && settings.adaptiveRules?.length > 0) {
@@ -493,7 +583,29 @@ router.post('/:slug/progress/assessment', protect, checkCourseAccess, async (req
     const { answers, timeUsed, questionOrder } = req.body;
 
     const course = await Course.findOne({ slug: req.params.slug });
-    if (!course || !course.assessment) {
+    if (!course) {
+      return res.status(404).json({ error: 'Course not found' });
+    }
+
+    // Normalize: if course.assessment is null, look for an exam block in sections
+    if (!course.assessment || !course.assessment.questions?.length) {
+      for (const section of (course.sections || [])) {
+        for (const block of (section.contentBlocks || [])) {
+          if (block.isExam && block.questions?.length) {
+            course.assessment = {
+              questions: block.questions,
+              passThreshold: block.passThreshold || 0.8,
+              attemptsAllowed: block.attemptsAllowed || 3,
+              timeLimit: block.timeLimit || null
+            };
+            break;
+          }
+        }
+        if (course.assessment?.questions?.length) break;
+      }
+    }
+
+    if (!course.assessment || !course.assessment.questions?.length) {
       return res.status(404).json({ error: 'Assessment not found' });
     }
 
@@ -567,6 +679,63 @@ router.post('/:slug/progress/assessment', protect, checkCourseAccess, async (req
     }
 
     await progress.save();
+
+    // =========================================================
+    // PostHog: assessment attempt + course completion
+    // =========================================================
+    try {
+      if (global.posthog) {
+        global.posthog.capture({
+          distinctId: req.user._id.toString(),
+          event: 'assessment_submitted',
+          properties: {
+            courseId: course._id.toString(),
+            courseTitle: course.title,
+            courseCode: course.courseCode || '',
+            ceHours: course.ceHours || course.ceuHours || 0,
+            score: correctCount,
+            totalQuestions,
+            percentage: Math.round(percentage * 100),
+            passed,
+            attemptsRemaining: progress.assessmentAttemptsRemaining,
+            attemptNumber: progress.assessmentAttempts.length
+          }
+        });
+
+        if (passed) {
+          global.posthog.capture({
+            distinctId: req.user._id.toString(),
+            event: 'course_completed',
+            properties: {
+              courseId: course._id.toString(),
+              courseTitle: course.title,
+              courseCode: course.courseCode || '',
+              ceHours: course.ceHours || course.ceuHours || 0,
+              slug: course.slug,
+              totalTimeSpent: progress.totalTimeSpent || 0,
+              assessmentScore: Math.round(percentage * 100),
+              $set: {
+                email: req.user.email,
+                lastCompletionDate: new Date().toISOString()
+              }
+            }
+          });
+        }
+      }
+    } catch (phErr) {
+      console.error('PostHog assessment event failed:', phErr);
+    }
+
+    if (passed) {
+      console.log('[COMPLETION]', JSON.stringify({
+        user: req.user.email || req.user._id,
+        courseTitle: course.title,
+        courseCode: course.courseCode || '',
+        score: Math.round(percentage * 100) + '%',
+        timestamp: new Date().toISOString()
+      }));
+    }
+    // =========================================================
 
     res.json({
       score: correctCount,
@@ -663,3 +832,4 @@ router.get('/user/my-courses', protect, async (req, res) => {
 });
 
 export default router;
+

@@ -1,174 +1,245 @@
-/* ═══════════════════════════════════════════════════════════════════
-   CounselorReady Typography v2.0
-   Depends on: design-tokens.css (must be loaded first)
-   ═══════════════════════════════════════════════════════════════════ */
+/* ============================================================
+   CounselorReady — Typography
+   Authority: CounselorReady_Color_Spec_v1.docx §5
+   Consumes design-tokens.css. Import AFTER design-tokens.css.
+   --------------------------------------------------------------
+   Two families:
+     - Cormorant Garamond  → display headings (H1, H2)
+     - Lato                → everything else
+   ============================================================ */
 
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Lato:wght@300;400;600;700&display=swap');
+/* ---------- FONT IMPORT ----------------------------------- */
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Lato:wght@300;400;500;600;700;900&display=swap');
 
-/* ── Base ─────────────────────────────────────────────────────────── */
-body {
-  font-family: var(--cr-font-body);
-  font-size: var(--cr-text-body);
-  font-weight: var(--cr-weight-body);
-  line-height: var(--cr-leading-normal);
-  color: var(--cr-text);
-  background-color: var(--cr-bg);
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+/* ---------- FONT VARIABLES -------------------------------- */
+:root {
+  --cr-font-display: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+  --cr-font-body:    'Lato', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --cr-font-mono:    ui-monospace, 'SF Mono', Monaco, Consolas, monospace;
 }
 
-/* ── Headings ─────────────────────────────────────────────────────── */
+/* ---------- BASE ------------------------------------------ */
+html {
+  -webkit-text-size-adjust: 100%;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  font-family: var(--cr-font-body);
+  font-size: 1rem;          /* 16px */
+  line-height: 1.6;
+  color: var(--cr-text);
+  font-weight: 400;
+}
+
+/* ---------- DISPLAY HEADINGS (page chrome) ---------------- */
+/* These rules apply outside .cr-content too — they style nav,
+   page titles, marketing hero, dashboards, certificates, etc. */
+
 h1, .cr-h1 {
   font-family: var(--cr-font-display);
-  font-size: var(--cr-text-h1);
-  font-weight: var(--cr-weight-h1);
+  font-weight: 700;
+  font-size: 2.5rem;        /* 40px */
+  line-height: 1.15;
+  letter-spacing: -0.015em; /* Cormorant needs negative tracking at large sizes */
   color: var(--cr-h1);
-  line-height: var(--cr-leading-tight);
-  margin-top: var(--cr-space-2xl);
-  margin-bottom: var(--cr-space-lg);
-  letter-spacing: -0.01em;
+  margin: 0 0 0.5em;
 }
 
 h2, .cr-h2 {
   font-family: var(--cr-font-display);
-  font-size: var(--cr-text-h2);
-  font-weight: var(--cr-weight-h2);
+  font-weight: 600;
+  font-size: 1.75rem;       /* 28px */
+  line-height: 1.25;
+  letter-spacing: -0.01em;
   color: var(--cr-h2);
-  line-height: var(--cr-leading-tight);
-  margin-top: var(--cr-space-xl);
-  margin-bottom: var(--cr-space-md);
+  margin: 1.5em 0 0.5em;
 }
 
 h3, .cr-h3 {
   font-family: var(--cr-font-body);
-  font-size: var(--cr-text-h3);
-  font-weight: var(--cr-weight-h3);
+  font-weight: 700;
+  font-size: 1.25rem;       /* 20px */
+  line-height: 1.35;
+  letter-spacing: 0;
   color: var(--cr-h3);
-  line-height: var(--cr-leading-tight);
-  margin-top: var(--cr-space-lg);
-  margin-bottom: var(--cr-space-sm);
+  margin: 1.25em 0 0.4em;
 }
 
 h4, .cr-h4 {
   font-family: var(--cr-font-body);
-  font-size: var(--cr-text-h4);
-  font-weight: var(--cr-weight-h4);
+  font-weight: 600;
+  font-size: 1.1rem;        /* 17.6px */
+  line-height: 1.4;
   color: var(--cr-h4);
-  line-height: var(--cr-leading-tight);
-  margin-top: var(--cr-space-lg);
-  margin-bottom: var(--cr-space-sm);
+  margin: 1em 0 0.35em;
 }
 
-h1:first-child, h2:first-child, h3:first-child, h4:first-child {
-  margin-top: 0;
-}
-
-/* ── Body Text ────────────────────────────────────────────────────── */
-p {
-  margin-bottom: var(--cr-space-md);
-  line-height: var(--cr-leading-relaxed);
+h5 {
+  font-family: var(--cr-font-body);
+  font-weight: 600;
+  font-size: 1rem;
   color: var(--cr-text);
+  margin: 1em 0 0.25em;
 }
 
-p:last-child {
-  margin-bottom: 0;
-}
-
-strong, b { font-weight: 700; }
-em, i { font-style: italic; }
-
-/* ── Small / Caption ──────────────────────────────────────────────── */
-small, .cr-small, .cr-caption {
-  font-size: var(--cr-text-small);
+h6 {
+  font-family: var(--cr-font-body);
+  font-weight: 700;
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
   color: var(--cr-text-muted);
-  line-height: var(--cr-leading-normal);
+  margin: 1em 0 0.25em;
 }
 
-/* ── Labels ───────────────────────────────────────────────────────── */
+/* ---------- BODY TEXT ------------------------------------- */
+p {
+  margin: 0 0 1em;
+  line-height: 1.65;
+}
+
+small, .cr-small {
+  font-size: 0.875rem;      /* 14px */
+  color: var(--cr-text-muted);
+  line-height: 1.5;
+}
+
 .cr-label {
   font-family: var(--cr-font-body);
-  font-size: var(--cr-text-label);
-  font-weight: var(--cr-weight-label);
-  color: var(--cr-navy-600);
+  font-weight: 600;
+  font-size: 0.75rem;       /* 12px */
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.06em;
+  color: var(--cr-h2);
 }
 
-/* ── Links ────────────────────────────────────────────────────────── */
+strong, b { font-weight: 700; color: var(--cr-text); }
+em, i    { font-style: italic; }
+
+/* ---------- LINKS ----------------------------------------- */
 a {
   color: var(--cr-link);
   text-decoration: underline;
-  text-decoration-color: var(--cr-navy-200);
   text-underline-offset: 2px;
-  transition: color 0.2s ease, text-decoration-color 0.2s ease;
+  text-decoration-thickness: 1px;
+  transition: var(--cr-transition-fast);
 }
-
-a:hover {
-  color: var(--cr-link-hover);
-  text-decoration-color: var(--cr-burgundy-600);
-}
-
+a:hover { color: var(--cr-link-hover); text-decoration-thickness: 2px; }
 a:focus-visible {
-  outline: 2px solid var(--cr-focus);
+  outline: 2px solid var(--cr-accent);
   outline-offset: 2px;
   border-radius: 2px;
 }
 
-/* ── Lists ────────────────────────────────────────────────────────── */
-ul, ol {
-  margin-bottom: var(--cr-space-md);
-  padding-left: var(--cr-space-lg);
+/* ---------- WORDMARK (canonical) -------------------------- */
+/* Use:
+   <span class="cr-wordmark">
+     <span class="cr-wordmark-c">Counselor</span><span class="cr-wordmark-r">Ready</span>
+   </span>
+*/
+.cr-wordmark {
+  font-family: var(--cr-font-display);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
 }
+.cr-wordmark-c { color: var(--cr-burgundy); }
+.cr-wordmark-r { color: var(--cr-hunter); }
 
-li {
-  margin-bottom: var(--cr-space-xs);
-  line-height: var(--cr-leading-relaxed);
+/* On burgundy backgrounds (nav, hero), swap "Counselor" to rose */
+.cr-on-burgundy .cr-wordmark-c,
+.cr-wordmark--on-burgundy .cr-wordmark-c { color: var(--cr-burgundy-400); }
+.cr-on-burgundy .cr-wordmark-r,
+.cr-wordmark--on-burgundy .cr-wordmark-r { color: var(--cr-hunter); }
+
+/* ---------- COURSE-CONTENT SCOPE -------------------------- */
+/* Rendered course HTML (text blocks, accordions, etc.) goes
+   inside .cr-content. This re-asserts the typographic rules
+   so author markup wins over any host page styles. */
+.cr-content {
+  font-family: var(--cr-font-body);
+  font-size: 1rem;
+  line-height: 1.7;
+  color: var(--cr-text);
 }
+.cr-content h1 { font-family: var(--cr-font-display); color: var(--cr-h1); }
+.cr-content h2 { font-family: var(--cr-font-display); color: var(--cr-h2); font-size: 1.75rem; }
+.cr-content h3 { font-family: var(--cr-font-body);    color: var(--cr-h3); font-size: 1.25rem; }
+.cr-content h4 { font-family: var(--cr-font-body);    color: var(--cr-h4); font-size: 1.1rem;  }
 
-li::marker {
-  color: var(--cr-green-600);
-}
+.cr-content ul, .cr-content ol { margin: 0 0 1em 1.5em; line-height: 1.65; }
+.cr-content li { margin-bottom: 0.4em; }
 
-/* ── Blockquotes ──────────────────────────────────────────────────── */
-blockquote {
-  border-left: 4px solid var(--cr-honey-500);
+.cr-content blockquote {
+  border-left: 4px solid var(--cr-honey);
   background: var(--cr-honey-50);
-  padding: var(--cr-space-md) var(--cr-space-lg);
-  margin: var(--cr-space-lg) 0;
-  border-radius: 0 var(--cr-radius-sm) var(--cr-radius-sm) 0;
+  padding: 1em 1.25em;
+  margin: 1.25em 0;
   font-style: italic;
-  color: var(--cr-text-secondary);
+  color: var(--cr-text);
+  border-radius: 0 var(--cr-radius-sm) var(--cr-radius-sm) 0;
 }
 
-blockquote p:last-child { margin-bottom: 0; }
-
-/* ── Tables ───────────────────────────────────────────────────────── */
-table {
+.cr-content table {
   width: 100%;
   border-collapse: collapse;
-  margin: var(--cr-space-lg) 0;
-  font-size: var(--cr-text-small);
+  margin: 1.25em 0;
+  font-size: 0.95rem;
 }
-
-thead th {
-  background: var(--cr-navy-50);
-  color: var(--cr-navy-600);
-  font-weight: var(--cr-weight-label);
+.cr-content th {
+  background: var(--cr-hunter-50);
+  color: var(--cr-h2);
   text-align: left;
-  padding: var(--cr-space-sm) var(--cr-space-md);
-  border-bottom: 2px solid var(--cr-navy-200);
-  font-size: var(--cr-text-label);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  padding: 0.6em 0.85em;
+  border-bottom: 2px solid var(--cr-hunter);
+  font-weight: 700;
 }
-
-tbody td {
-  padding: var(--cr-space-sm) var(--cr-space-md);
+.cr-content td {
+  padding: 0.6em 0.85em;
   border-bottom: 1px solid var(--cr-border-light);
-  color: var(--cr-text-secondary);
-  vertical-align: top;
 }
 
-tbody tr:hover {
-  background: var(--cr-bg-alt);
+.cr-content code {
+  font-family: var(--cr-font-mono);
+  font-size: 0.9em;
+  background: var(--cr-eggshell-100);
+  padding: 0.1em 0.35em;
+  border-radius: var(--cr-radius-sm);
 }
+
+/* ---------- APA REFERENCES (hanging indent) --------------- */
+.cr-reference {
+  font-family: var(--cr-font-body);
+  font-size: 0.95rem;
+  line-height: 1.55;
+  text-indent: -2em;
+  padding-left: 2em;
+  margin-bottom: 0.75em;
+  color: var(--cr-text);
+}
+.cr-reference em { font-style: italic; }
+
+/* ---------- RESPONSIVE TYPE SCALING ----------------------- */
+@media (max-width: 640px) {
+  h1, .cr-h1 { font-size: 2rem;    line-height: 1.2; }
+  h2, .cr-h2 { font-size: 1.5rem;  line-height: 1.3; }
+  h3, .cr-h3 { font-size: 1.15rem; }
+  body, .cr-content { font-size: 0.9375rem; }
+}
+
+/* ---------- ACCESSIBILITY UTILITIES ----------------------- */
+.cr-sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+}
+
+/* Honor reader font-size preference (CReady Viewer a11y) */
+[data-cr-text-size="lg"]  .cr-content { font-size: 1.125rem; }
+[data-cr-text-size="xl"]  .cr-content { font-size: 1.25rem;  }
+[data-cr-text-size="xxl"] .cr-content { font-size: 1.4rem;   }
+[data-cr-line-spacing="loose"] .cr-content { line-height: 1.9; }
+[data-cr-dyslexia="on"] .cr-content,
+[data-cr-dyslexia="on"] body { font-family: 'OpenDyslexic', var(--cr-font-body); }

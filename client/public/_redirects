@@ -59,13 +59,44 @@
 /admin-help          /admin-help.html          200
 /admin-migration     /admin-migration.html     200
 /admin-course-preview /admin-course-preview.html 200
-/admin-course-edit   /admin-course-edit.html    200
+/admin-course-edit   /admin-course-editor.html  200
+/admin-course-editor /admin-course-editor.html  200
 /admin-bulk-upload   /admin-bulk-upload.html    200
 /admin-video-upload  /admin-video-upload.html   200
 /admin-import        /admin-import.html         200
 /admin-help-articles /admin-help-articles.html   200
 /admin-health        /admin-health.html         200
 /admin-funnel        /admin-funnel.html         200
+
+# ── Admin slash-path aliases ──
+/admin/courses        /admin-courses.html       200
+/admin/course-preview /admin-course-preview.html 200
+/admin/course-edit    /admin-course-editor.html  200
+/admin/course-editor  /admin-course-editor.html  200
+/admin/users          /admin-users.html          200
+/admin/analytics      /admin-analytics.html      200
+/admin/credentials    /admin-credentials.html    200
+/admin/coupons        /admin-coupons.html        200
+/admin/messages       /admin-messages.html       200
+/admin/stripe         /admin-stripe.html         200
+/admin/help           /admin-help.html           200
+/admin/health         /admin-health.html         200
+
+# ── Static tools (must precede catch-all) ──
+/tools               /tools/index.html         200
+/tools/*             /tools/:splat             200
+
+/admin-course-links  /admin-course-links.html  200
+/admin-partners      /admin-partners.html      200
+/admin-quick-links   /admin-quick-links.html   200
+/interactive-courses /interactive-courses.html  200
+/landing             /landing.html              200
+/messages            /messages.html             200
+/welcome             /welcome.html              200
+
+# ── React SPA routes (served via Vite-built index.html) ──
+/admin/course-builder  /index.html  200
+/admin-course-builder  /index.html  200
 
 # ── Catch-all: 404 (NOT SPA rewrite) ──
 /*                   /404.html                 404

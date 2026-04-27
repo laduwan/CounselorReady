@@ -5,47 +5,51 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Analytics Dashboard - CounselorReady Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="/css/design-tokens.css">
+  <link rel="stylesheet" href="/css/typography.css">
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="/js/tailwind-config.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            burgundy: { 50: '#fdf5f6', 100: '#fae8eb', 200: '#f5d0d6', 700: '#8b2542', 800: '#6b1d34', 900: '#4a1524' },
-            forest: { 50: '#f3f6f4', 100: '#e3ebe5', 500: '#547c5f', 600: '#4A7C59', 700: '#34503d', 800: '#2b4133' },
-            hunter: { 100: '#e8f0ea', 500: '#4A7C59', 600: '#3d6649' },
-            honey: { 100: '#fef3d1', 400: '#D4A855', 500: '#c99a4a' },
-            gold: { 50: '#fefce8', 100: '#fef9c3', 400: '#facc15', 500: '#d4a012' }
-          }
-        }
-      }
-    }
-  </script>
-  <link href="https://fonts.googleapis.com/css2?family=Source+Serif+Pro:wght@400;600;700&family=Source+Sans+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
   <link rel="stylesheet" href="/lib/fontawesome/css/all.min.css">
   <style>
-    body { font-family: 'Source Sans Pro', system-ui, sans-serif; }
-    .font-display { font-family: 'Source Serif Pro', Georgia, serif; }
+    body{background:#F8F7F4; font-family: 'Lato', system-ui, sans-serif; }
+    .font-display { font-family: 'Cormorant Garamond', Georgia, serif; }
     .nps-promoter { color: #22c55e; }
     .nps-passive { color: #f59e0b; }
     .nps-detractor { color: #ef4444; }
+  
+    /* Shared nav styles */
+    .dd{display:none;position:absolute;top:100%;margin-top:6px;background:#fff;border-radius:10px;box-shadow:0 10px 40px rgba(107,29,52,.12);border:1px solid #FAE8EB;z-index:50;padding:6px 0;min-width:210px}
+    .dd.open{display:block}
+    .dd a{display:flex;align-items:center;gap:10px;padding:8px 16px;font-size:13px;color:#284157;text-decoration:none;transition:background .1s}
+    .dd a:hover{background:#F2F7F4}
+    .ov{display:none;position:fixed;inset:0;z-index:40}.ov.open{display:block}
+    .nav-link{padding:6px 12px;border-radius:6px;font-size:13px;font-weight:500;color:#57534e;text-decoration:none;display:flex;align-items:center;gap:4px;transition:all .15s}
+    .nav-link:hover{color:#6B1D34;background:#FDF5F7}
+    .nav-link.active{color:#6B1D34;background:#FDF5F7;font-weight:600;border-bottom:2px solid #6B1D34}
   </style>
 </head>
 <body class="bg-stone-50 min-h-screen">
+
+  <div id="cr-header"></div>
+  <script src="/shared/nav-footer.js"></script>
 
   <!-- Admin Header -->
   <header class="bg-burgundy-800 text-white sticky top-0 z-50">
     <div class="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
       <div class="flex items-center gap-4">
-        <div class="w-9 h-9 bg-white/10 rounded-lg flex items-center justify-center">
-          <span class="font-display font-bold"><span class="text-honey-400">C</span><span class="text-hunter-500">R</span></span>
+        <div class="w-9 h-9 bg-burgundy-800 rounded-lg flex items-center justify-center relative overflow-hidden">
+          <span class="font-display font-bold text-gold-400 absolute" style="font-size:16px;top:2px;left:5px;">C</span>
+          <span class="font-display font-bold text-forest-400 absolute" style="font-size:16px;bottom:2px;left:13px;">R</span>
         </div>
         <div>
           <span class="font-display font-semibold text-lg">
-            <span class="text-burgundy-200">Counselor</span><span class="text-hunter-500">Ready</span>
+            <span style="color:#f2a8be">Counselor</span><span style="color:#98c3a9">Ready</span>
           </span>
-          <span class="ml-2 text-xs bg-honey-400 text-burgundy-900 px-2 py-0.5 rounded-full font-semibold">ADMIN</span>
+          <span class="ml-2 text-xs bg-gold-500 text-white px-2 py-0.5 rounded-full font-semibold">ADMIN</span>
         </div>
       </div>
       <div class="flex items-center gap-4">
@@ -53,7 +57,7 @@
           <option value="30">Last 30 days</option>
           <option value="90">Last 90 days</option>
           <option value="365">Last year</option>
-          <option value="all">All time</option>
+          <option value="all" selected>All time</option>
         </select>
         <button onclick="exportData()" class="bg-forest-600 hover:bg-forest-700 px-4 py-2 rounded-lg text-sm font-medium">
           Export CSV
@@ -69,7 +73,7 @@
 
   <div class="flex">
     <!-- Sidebar -->
-    <aside class="w-64 bg-burgundy-800 min-h-[calc(100vh-52px)] sticky top-[52px] p-4">
+    <aside class="w-64 bg-burgundy-800 min-h-[calc(100vh-116px)] sticky top-[116px] p-4">
       <nav class="space-y-1">
         <a href="/admin.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
           <i class="fas fa-th-large w-5"></i>
@@ -90,6 +94,10 @@
         <a href="/admin-courses.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
           <i class="fas fa-book w-5"></i>
           Courses
+        </a>
+        <a href="/admin-course-links.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+          Share Links
         </a>
         <a href="/admin-messages.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
           <i class="fas fa-envelope w-5"></i>
@@ -240,6 +248,13 @@
         <div id="feedbackList" class="space-y-4">
           <!-- Loaded dynamically -->
         </div>
+        <div id="feedbackPagination" class="flex items-center justify-between mt-4 pt-4 border-t border-forest-100 hidden">
+          <span id="feedbackPageInfo" class="text-sm text-forest-500"></span>
+          <div class="flex gap-2">
+            <button onclick="changeFeedbackPage(-1)" id="feedbackPrev" class="px-3 py-1.5 text-sm border border-forest-200 rounded-lg hover:bg-forest-50 disabled:opacity-50 disabled:cursor-not-allowed" disabled>Previous</button>
+            <button onclick="changeFeedbackPage(1)" id="feedbackNext" class="px-3 py-1.5 text-sm border border-forest-200 rounded-lg hover:bg-forest-50 disabled:opacity-50 disabled:cursor-not-allowed" disabled>Next</button>
+          </div>
+        </div>
       </div>
       
       <!-- NPS Distribution Chart -->
@@ -259,13 +274,28 @@
             </span>
           </div>
           <div class="flex items-center gap-2">
+            <input id="activityEmail" type="text" placeholder="Search by email..." oninput="loadActivity()" class="text-sm border border-forest-200 rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-forest-600 outline-none w-48">
+            <select id="activityDays" onchange="loadActivity()" class="text-sm border border-forest-200 rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-forest-600 outline-none">
+              <option value="7">Last 7 days</option>
+              <option value="30" selected>Last 30 days</option>
+              <option value="90">Last 90 days</option>
+              <option value="">All time</option>
+            </select>
             <select id="activityFilter" onchange="loadActivity()" class="text-sm border border-forest-200 rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-forest-600 outline-none">
               <option value="">All Activity</option>
               <option value="user_registered">Registrations</option>
+              <option value="user_login">Logins</option>
               <option value="user_enrolled">Enrollments</option>
+              <option value="course_started">Course Started</option>
+              <option value="lesson_completed">Lesson Completed</option>
               <option value="quiz_passed">Quiz Passes</option>
               <option value="quiz_failed">Quiz Fails</option>
-              <option value="course_completed">Completions</option>
+              <option value="course_completed">Course Completed</option>
+              <option value="payment_succeeded">Payments</option>
+              <option value="payment_failed">Payment Failed</option>
+              <option value="subscription_started">New Subscription</option>
+              <option value="subscription_canceled">Subscription Canceled</option>
+              <option value="certificate_generated">Certificate Generated</option>
             </select>
             <button onclick="loadActivity()" class="text-forest-600 hover:text-forest-700 p-1.5 hover:bg-forest-50 rounded-lg" title="Refresh">
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
@@ -276,8 +306,219 @@
         <div id="activityFeed" class="space-y-3 max-h-96 overflow-y-auto">
           <p class="text-center text-forest-500 py-4">Loading activity...</p>
         </div>
+        <div id="activityPagination" class="flex items-center justify-between mt-4 pt-4 border-t border-forest-100 hidden">
+          <span id="activityPageInfo" class="text-sm text-forest-500"></span>
+          <div class="flex gap-2">
+            <button onclick="changeActivityPage(-1)" id="activityPrev" class="px-3 py-1.5 text-sm border border-forest-200 rounded-lg hover:bg-forest-50 disabled:opacity-50 disabled:cursor-not-allowed" disabled>Previous</button>
+            <button onclick="changeActivityPage(1)" id="activityNext" class="px-3 py-1.5 text-sm border border-forest-200 rounded-lg hover:bg-forest-50 disabled:opacity-50 disabled:cursor-not-allowed" disabled>Next</button>
+          </div>
+        </div>
       </div>
-      
+
+      <!-- Recent Course Evaluations -->
+      <div class="bg-white rounded-xl border border-burgundy-100 p-6 mt-6">
+        <h3 class="text-lg font-semibold text-burgundy-900 mb-6">Recent Course Evaluations</h3>
+        <div id="evaluationsList" class="space-y-4">
+          <p class="text-center text-forest-500 py-4">Loading evaluations...</p>
+        </div>
+      </div>
+
+      <!-- Admin Alert Preferences -->
+      <div class="bg-white rounded-xl border border-burgundy-100 p-6 mt-6">
+        <div class="flex items-center justify-between mb-6">
+          <div class="flex items-center gap-3">
+            <h3 class="text-lg font-semibold text-burgundy-900">Admin Alert Preferences</h3>
+            <span class="text-xs text-forest-600 bg-forest-50 px-2 py-1 rounded-full">Emails you directly</span>
+          </div>
+          <button onclick="saveAdminNotifPrefs()"
+            class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white rounded-lg transition-colors"
+            style="background:#6B1D34;" onmouseover="this.style.background='#5a1829'" onmouseout="this.style.background='#6B1D34'">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+            Save Preferences
+          </button>
+        </div>
+
+        <p class="text-sm text-forest-600 mb-5">
+          Choose which platform events send an email alert to
+          <strong id="adminAlertEmail" class="text-burgundy-800">your admin email</strong>.
+        </p>
+
+        <!-- Toggles grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" id="adminNotifToggles">
+
+          <!-- New Registration -->
+          <label class="flex items-center justify-between p-4 rounded-xl border border-stone-200 hover:border-burgundy-200 hover:bg-stone-50 cursor-pointer transition-all">
+            <div class="flex items-center gap-3">
+              <span class="text-xl">🎉</span>
+              <div>
+                <p class="text-sm font-semibold text-forest-900">New Registration</p>
+                <p class="text-xs text-forest-500">User creates an account</p>
+              </div>
+            </div>
+            <div class="relative">
+              <input type="checkbox" id="pref-notifyRegistration" class="sr-only peer" checked>
+              <div class="w-11 h-6 rounded-full transition-colors" id="track-notifyRegistration" style="background-color:#d1d5db;"></div>
+              <div class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform pointer-events-none" id="thumb-notifyRegistration"></div>
+            </div>
+          </label>
+
+          <!-- New Enrollment -->
+          <label class="flex items-center justify-between p-4 rounded-xl border border-stone-200 hover:border-burgundy-200 hover:bg-stone-50 cursor-pointer transition-all">
+            <div class="flex items-center gap-3">
+              <span class="text-xl">📚</span>
+              <div>
+                <p class="text-sm font-semibold text-forest-900">New Enrollment</p>
+                <p class="text-xs text-forest-500">User starts a course</p>
+              </div>
+            </div>
+            <div class="relative">
+              <input type="checkbox" id="pref-notifyEnrollment" class="sr-only peer" checked>
+              <div class="w-11 h-6 rounded-full transition-colors" id="track-notifyEnrollment" style="background-color:#d1d5db;"></div>
+              <div class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform pointer-events-none" id="thumb-notifyEnrollment"></div>
+            </div>
+          </label>
+
+          <!-- Course Completion -->
+          <label class="flex items-center justify-between p-4 rounded-xl border border-stone-200 hover:border-burgundy-200 hover:bg-stone-50 cursor-pointer transition-all">
+            <div class="flex items-center gap-3">
+              <span class="text-xl">✅</span>
+              <div>
+                <p class="text-sm font-semibold text-forest-900">Course Completion</p>
+                <p class="text-xs text-forest-500">User finishes a course</p>
+              </div>
+            </div>
+            <div class="relative">
+              <input type="checkbox" id="pref-notifyCompletion" class="sr-only peer" checked>
+              <div class="w-11 h-6 rounded-full transition-colors" id="track-notifyCompletion" style="background-color:#d1d5db;"></div>
+              <div class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform pointer-events-none" id="thumb-notifyCompletion"></div>
+            </div>
+          </label>
+
+          <!-- Quiz Fail -->
+          <label class="flex items-center justify-between p-4 rounded-xl border border-stone-200 hover:border-burgundy-200 hover:bg-stone-50 cursor-pointer transition-all">
+            <div class="flex items-center gap-3">
+              <span class="text-xl">❌</span>
+              <div>
+                <p class="text-sm font-semibold text-forest-900">Quiz Failed</p>
+                <p class="text-xs text-forest-500">User fails an assessment</p>
+              </div>
+            </div>
+            <div class="relative">
+              <input type="checkbox" id="pref-notifyQuizFail" class="sr-only peer" checked>
+              <div class="w-11 h-6 rounded-full transition-colors" id="track-notifyQuizFail" style="background-color:#d1d5db;"></div>
+              <div class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform pointer-events-none" id="thumb-notifyQuizFail"></div>
+            </div>
+          </label>
+
+          <!-- Quiz Pass (off by default) -->
+          <label class="flex items-center justify-between p-4 rounded-xl border border-stone-200 hover:border-burgundy-200 hover:bg-stone-50 cursor-pointer transition-all">
+            <div class="flex items-center gap-3">
+              <span class="text-xl">🎯</span>
+              <div>
+                <p class="text-sm font-semibold text-forest-900">Quiz Passed</p>
+                <p class="text-xs text-forest-500">High volume — off by default</p>
+              </div>
+            </div>
+            <div class="relative">
+              <input type="checkbox" id="pref-notifyQuizPass" class="sr-only peer">
+              <div class="w-11 h-6 rounded-full transition-colors" id="track-notifyQuizPass" style="background-color:#d1d5db;"></div>
+              <div class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform pointer-events-none" id="thumb-notifyQuizPass"></div>
+            </div>
+          </label>
+
+          <!-- New Subscription -->
+          <label class="flex items-center justify-between p-4 rounded-xl border border-stone-200 hover:border-burgundy-200 hover:bg-stone-50 cursor-pointer transition-all">
+            <div class="flex items-center gap-3">
+              <span class="text-xl">💳</span>
+              <div>
+                <p class="text-sm font-semibold text-forest-900">New Subscription</p>
+                <p class="text-xs text-forest-500">User subscribes to a plan</p>
+              </div>
+            </div>
+            <div class="relative">
+              <input type="checkbox" id="pref-notifySubscriptionStart" class="sr-only peer" checked>
+              <div class="w-11 h-6 rounded-full transition-colors" id="track-notifySubscriptionStart" style="background-color:#d1d5db;"></div>
+              <div class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform pointer-events-none" id="thumb-notifySubscriptionStart"></div>
+            </div>
+          </label>
+
+          <!-- Subscription Canceled -->
+          <label class="flex items-center justify-between p-4 rounded-xl border border-stone-200 hover:border-burgundy-200 hover:bg-stone-50 cursor-pointer transition-all">
+            <div class="flex items-center gap-3">
+              <span class="text-xl">⚠️</span>
+              <div>
+                <p class="text-sm font-semibold text-forest-900">Subscription Canceled</p>
+                <p class="text-xs text-forest-500">User cancels their plan</p>
+              </div>
+            </div>
+            <div class="relative">
+              <input type="checkbox" id="pref-notifySubscriptionCancel" class="sr-only peer" checked>
+              <div class="w-11 h-6 rounded-full transition-colors" id="track-notifySubscriptionCancel" style="background-color:#d1d5db;"></div>
+              <div class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform pointer-events-none" id="thumb-notifySubscriptionCancel"></div>
+            </div>
+          </label>
+
+          <!-- Payment Received -->
+          <label class="flex items-center justify-between p-4 rounded-xl border border-stone-200 hover:border-burgundy-200 hover:bg-stone-50 cursor-pointer transition-all">
+            <div class="flex items-center gap-3">
+              <span class="text-xl">💰</span>
+              <div>
+                <p class="text-sm font-semibold text-forest-900">Payment Received</p>
+                <p class="text-xs text-forest-500">Successful Stripe charge</p>
+              </div>
+            </div>
+            <div class="relative">
+              <input type="checkbox" id="pref-notifyPayment" class="sr-only peer" checked>
+              <div class="w-11 h-6 rounded-full transition-colors" id="track-notifyPayment" style="background-color:#d1d5db;"></div>
+              <div class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform pointer-events-none" id="thumb-notifyPayment"></div>
+            </div>
+          </label>
+
+          <!-- Payment Failed -->
+          <label class="flex items-center justify-between p-4 rounded-xl border border-stone-200 hover:border-burgundy-200 hover:bg-stone-50 cursor-pointer transition-all">
+            <div class="flex items-center gap-3">
+              <span class="text-xl">🚨</span>
+              <div>
+                <p class="text-sm font-semibold text-forest-900">Payment Failed</p>
+                <p class="text-xs text-forest-500">Stripe charge declined</p>
+              </div>
+            </div>
+            <div class="relative">
+              <input type="checkbox" id="pref-notifyPaymentFail" class="sr-only peer" checked>
+              <div class="w-11 h-6 rounded-full transition-colors" id="track-notifyPaymentFail" style="background-color:#d1d5db;"></div>
+              <div class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform pointer-events-none" id="thumb-notifyPaymentFail"></div>
+            </div>
+          </label>
+
+          <!-- Certificate Generated (off by default) -->
+          <label class="flex items-center justify-between p-4 rounded-xl border border-stone-200 hover:border-burgundy-200 hover:bg-stone-50 cursor-pointer transition-all">
+            <div class="flex items-center gap-3">
+              <span class="text-xl">📜</span>
+              <div>
+                <p class="text-sm font-semibold text-forest-900">Certificate Generated</p>
+                <p class="text-xs text-forest-500">High volume — off by default</p>
+              </div>
+            </div>
+            <div class="relative">
+              <input type="checkbox" id="pref-notifyCertificate" class="sr-only peer">
+              <div class="w-11 h-6 rounded-full transition-colors" id="track-notifyCertificate" style="background-color:#d1d5db;"></div>
+              <div class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform pointer-events-none" id="thumb-notifyCertificate"></div>
+            </div>
+          </label>
+
+        </div><!-- /grid -->
+
+        <!-- Save confirmation toast -->
+        <div id="adminNotifToast" class="hidden mt-4 flex items-center gap-2 text-sm text-white px-4 py-3 rounded-lg" style="background:#4A7C59;">
+          <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+          </svg>
+          Alert preferences saved.
+        </div>
+      </div>
+
     </div>
   </main>
 
@@ -334,36 +575,39 @@
       document.getElementById('loading').classList.add('hidden');
       document.getElementById('dashboardContent').classList.remove('hidden');
       
-      const { nps, satisfaction, courses, topCourses, recentFeedback } = analyticsData;
-      
+      const { nps, satisfaction, courses, topCourses, recentFeedback, recentEvaluations } = analyticsData;
+
       // NPS Score
       document.getElementById('npsScore').textContent = nps.nps || 0;
       document.getElementById('npsPromoters').textContent = nps.promoters || 0;
       document.getElementById('npsPassives').textContent = nps.passives || 0;
       document.getElementById('npsDetractors').textContent = nps.detractors || 0;
-      
+
       // Satisfaction
       const avgSat = satisfaction.avgSatisfaction || 0;
       document.getElementById('avgSatisfaction').textContent = avgSat.toFixed(1);
       document.getElementById('satBar').style.width = `${(avgSat / 5) * 100}%`;
-      
+
       // Course stats
       document.getElementById('totalCompletions').textContent = courses.totalCompletions || 0;
       document.getElementById('completionRate').textContent = Math.round(courses.avgCompletionRate || 0);
       document.getElementById('avgCourseRating').textContent = (courses.avgRating || 0).toFixed(1);
       document.getElementById('totalEnrollments').textContent = courses.totalEnrollments || 0;
-      
+
       // Satisfaction breakdown
       renderSatisfactionBreakdown(satisfaction);
-      
+
       // Top courses
       renderTopCourses(topCourses);
-      
+
       // Recent feedback
       renderFeedback(recentFeedback);
-      
+
       // NPS Chart
       renderNPSChart(nps);
+
+      // Recent evaluations
+      renderEvaluations(recentEvaluations);
     }
     
     function renderSatisfactionBreakdown(sat) {
@@ -454,67 +698,219 @@
       document.getElementById('feedbackList').innerHTML = html || '<p class="text-forest-500 text-sm">No feedback yet</p>';
     }
     
+    let npsChartInstance = null;
+
     function renderNPSChart(nps) {
       const ctx = document.getElementById('npsChart').getContext('2d');
-      
-      new Chart(ctx, {
+
+      if (npsChartInstance) npsChartInstance.destroy();
+
+      // Distribute counts across score ranges proportionally
+      const detractors = nps.detractors || 0;
+      const passives = nps.passives || 0;
+      const promoters = nps.promoters || 0;
+
+      // Detractors: scores 0-6 (7 buckets), Passives: 7-8 (2 buckets), Promoters: 9-10 (2 buckets)
+      const detPerBucket = detractors > 0 ? Math.round(detractors / 7) : 0;
+      const detRemainder = detractors - (detPerBucket * 7);
+      const pasPerBucket = passives > 0 ? Math.round(passives / 2) : 0;
+      const pasRemainder = passives - (pasPerBucket * 2);
+      const proPerBucket = promoters > 0 ? Math.round(promoters / 2) : 0;
+      const proRemainder = promoters - (proPerBucket * 2);
+
+      const data = [
+        detPerBucket, detPerBucket, detPerBucket, detPerBucket, detPerBucket, detPerBucket, detPerBucket + detRemainder,
+        pasPerBucket, pasPerBucket + pasRemainder,
+        proPerBucket, proPerBucket + proRemainder
+      ];
+
+      npsChartInstance = new Chart(ctx, {
         type: 'bar',
         data: {
           labels: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10'],
           datasets: [{
             label: 'Responses',
-            data: [0, 0, 0, 0, 0, 0, nps.detractors || 0, 0, nps.passives || 0, nps.promoters || 0, 0],
+            data,
             backgroundColor: [
               '#ef4444', '#ef4444', '#ef4444', '#ef4444', '#ef4444', '#ef4444', '#ef4444',
               '#f59e0b', '#f59e0b',
               '#22c55e', '#22c55e'
-            ]
+            ],
+            borderRadius: 4
           }]
         },
         options: {
           responsive: true,
           plugins: {
-            legend: { display: false }
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                afterLabel: function(ctx) {
+                  const i = ctx.dataIndex;
+                  if (i <= 6) return 'Detractor';
+                  if (i <= 8) return 'Passive';
+                  return 'Promoter';
+                }
+              }
+            }
           },
           scales: {
-            y: { beginAtZero: true }
+            y: { beginAtZero: true, ticks: { stepSize: 1 } }
           }
         }
       });
     }
-    
-    function filterFeedback() {
-      // Would reload with filter - simplified for now
-      loadAnalytics();
-    }
-    
-    function exportData() {
-      const token = localStorage.getItem('token');
-      window.open(`${API_URL}/api/analytics/admin/export?token=${token}`, '_blank');
-    }
-    
+
     // ============================================
-    // ACTIVITY FEED
+    // FEEDBACK WITH FILTERING & PAGINATION
     // ============================================
-    
-    async function loadActivity() {
+
+    let feedbackPage = 1;
+    const FEEDBACK_LIMIT = 20;
+
+    async function filterFeedback() {
+      feedbackPage = 1;
+      await loadFilteredFeedback();
+    }
+
+    function changeFeedbackPage(delta) {
+      feedbackPage += delta;
+      loadFilteredFeedback();
+    }
+
+    async function loadFilteredFeedback() {
       const token = localStorage.getItem('token');
-      const filter = document.getElementById('activityFilter').value;
-      
-      let url = `${API_URL}/api/admin/activity?limit=50`;
-      if (filter) {
-        url += `&type=${filter}`;
-      }
-      
+      const type = document.getElementById('feedbackFilter').value;
+
+      let url = `${API_URL}/api/analytics/admin/feedback?page=${feedbackPage}&limit=${FEEDBACK_LIMIT}`;
+      if (type && type !== 'all') url += `&type=${type}`;
+
       try {
         const response = await fetch(url, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
-        
+        if (!response.ok) throw new Error('Failed to load feedback');
+
+        const data = await response.json();
+        renderFeedback(data.surveys || []);
+
+        // Update pagination
+        const pag = data.pagination || {};
+        const pagEl = document.getElementById('feedbackPagination');
+        if (pag.total > FEEDBACK_LIMIT) {
+          pagEl.classList.remove('hidden');
+          document.getElementById('feedbackPageInfo').textContent = `Page ${pag.page} of ${pag.pages} (${pag.total} total)`;
+          document.getElementById('feedbackPrev').disabled = pag.page <= 1;
+          document.getElementById('feedbackNext').disabled = pag.page >= pag.pages;
+        } else {
+          pagEl.classList.add('hidden');
+        }
+      } catch (error) {
+        console.error('Load filtered feedback error:', error);
+      }
+    }
+
+    function exportData() {
+      const token = localStorage.getItem('token');
+      window.open(`${API_URL}/api/analytics/admin/export?token=${token}`, '_blank');
+    }
+
+    // ============================================
+    // RECENT EVALUATIONS
+    // ============================================
+
+    function renderEvaluations(evaluations) {
+      const container = document.getElementById('evaluationsList');
+
+      if (!evaluations || evaluations.length === 0) {
+        container.innerHTML = '<p class="text-center text-forest-500 py-4">No evaluations yet</p>';
+        return;
+      }
+
+      container.innerHTML = evaluations.map(ev => {
+        const user = ev.userId?.email || 'Unknown';
+        const name = [ev.userId?.profile?.firstName, ev.userId?.profile?.lastName].filter(Boolean).join(' ');
+        const course = ev.courseId?.title || 'Unknown Course';
+        const date = ev.submittedAt
+          ? new Date(ev.submittedAt).toLocaleDateString()
+          : (ev.createdAt ? new Date(ev.createdAt).toLocaleDateString() : '');
+
+        // Build ratings line from ratings object + overallRating
+        let ratingsHtml = '';
+        const r = ev.ratings || {};
+        const parts = [];
+        if (ev.overallRating)   parts.push(`Overall: <strong>${ev.overallRating}/5</strong>`);
+        if (r.contentQuality)   parts.push(`Content: <strong>${r.contentQuality}/5</strong>`);
+        if (r.relevance)        parts.push(`Relevance: <strong>${r.relevance}/5</strong>`);
+        if (r.engagement)       parts.push(`Engagement: <strong>${r.engagement}/5</strong>`);
+        if (parts.length) {
+          ratingsHtml = parts.slice(0, 3)
+            .map(p => `<span class="text-xs text-forest-600">${p}</span>`)
+            .join(' · ');
+        }
+
+        return `
+          <div class="border-b border-forest-100 pb-4">
+            <div class="flex items-center justify-between mb-1">
+              <div class="flex items-center gap-2">
+                <span class="text-sm font-medium text-forest-800">${name || user}</span>
+                <span class="text-xs px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-600">Evaluation</span>
+              </div>
+              <span class="text-xs text-forest-500">${date}</span>
+            </div>
+            <p class="text-sm text-forest-600 mb-1"><span class="font-medium text-forest-700">Course:</span> ${course}</p>
+            ${ratingsHtml ? `<p class="text-sm mt-1">${ratingsHtml}</p>` : ''}
+          </div>
+        `;
+      }).join('');
+    }
+
+    // ============================================
+    // ACTIVITY FEED WITH SEARCH & PAGINATION
+    // ============================================
+
+    let activityPage = 1;
+    const ACTIVITY_LIMIT = 50;
+    let activityDebounce = null;
+
+    async function loadActivity() {
+      // Debounce email search input
+      clearTimeout(activityDebounce);
+      activityDebounce = setTimeout(_loadActivity, 300);
+    }
+
+    async function _loadActivity() {
+      const token = localStorage.getItem('token');
+      const filter = document.getElementById('activityFilter').value;
+      const email = document.getElementById('activityEmail').value.trim();
+      const days = document.getElementById('activityDays').value;
+
+      let url = `${API_URL}/api/analytics/admin/activity/search?limit=${ACTIVITY_LIMIT}&page=${activityPage}`;
+      if (filter) url += `&type=${filter}`;
+      if (email) url += `&email=${encodeURIComponent(email)}`;
+      if (days) url += `&days=${days}`;
+
+      try {
+        const response = await fetch(url, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+
         if (!response.ok) throw new Error('Failed to load activity');
-        
+
         const data = await response.json();
         renderActivityFeed(data.activities || []);
+
+        // Update pagination
+        const pag = data.pagination || {};
+        const pagEl = document.getElementById('activityPagination');
+        if (pag.total > ACTIVITY_LIMIT) {
+          pagEl.classList.remove('hidden');
+          document.getElementById('activityPageInfo').textContent = `Page ${pag.page} of ${pag.pages} (${pag.total} total)`;
+          document.getElementById('activityPrev').disabled = pag.page <= 1;
+          document.getElementById('activityNext').disabled = pag.page >= pag.pages;
+        } else {
+          pagEl.classList.add('hidden');
+        }
       } catch (error) {
         console.error('Load activity error:', error);
         document.getElementById('activityFeed').innerHTML = `
@@ -522,46 +918,64 @@
         `;
       }
     }
-    
+
+    function changeActivityPage(delta) {
+      activityPage += delta;
+      _loadActivity();
+    }
+
     function renderActivityFeed(activities) {
       const container = document.getElementById('activityFeed');
-      
+
       if (activities.length === 0) {
         container.innerHTML = `
           <p class="text-center text-forest-500 py-8">No activity yet. Activities will appear here as users interact with the platform.</p>
         `;
         return;
       }
-      
+
       const activityConfig = {
         user_registered: { emoji: '🎉', color: 'bg-green-100 text-green-700', label: 'New Registration' },
+        user_login: { emoji: '🔑', color: 'bg-indigo-100 text-indigo-700', label: 'Login' },
         user_enrolled: { emoji: '📚', color: 'bg-blue-100 text-blue-700', label: 'Enrolled' },
+        course_started: { emoji: '▶️', color: 'bg-sky-100 text-sky-700', label: 'Course Started' },
+        lesson_completed: { emoji: '📖', color: 'bg-cyan-100 text-cyan-700', label: 'Lesson Completed' },
         course_completed: { emoji: '✅', color: 'bg-emerald-100 text-emerald-700', label: 'Course Completed' },
+        course_failed: { emoji: '🚫', color: 'bg-rose-100 text-rose-700', label: 'Course Failed' },
         quiz_passed: { emoji: '🎯', color: 'bg-teal-100 text-teal-700', label: 'Quiz Passed' },
         quiz_failed: { emoji: '❌', color: 'bg-red-100 text-red-700', label: 'Quiz Failed' },
+        payment_succeeded: { emoji: '💰', color: 'bg-emerald-100 text-emerald-700', label: 'Payment Received' },
+        payment_failed: { emoji: '🚨', color: 'bg-red-100 text-red-700', label: 'Payment Failed' },
         subscription_started: { emoji: '💳', color: 'bg-purple-100 text-purple-700', label: 'New Subscription' },
         subscription_canceled: { emoji: '⚠️', color: 'bg-yellow-100 text-yellow-700', label: 'Subscription Canceled' },
         certificate_generated: { emoji: '📜', color: 'bg-amber-100 text-amber-700', label: 'Certificate Generated' }
       };
-      
+
       container.innerHTML = activities.map(activity => {
         const config = activityConfig[activity.type] || { emoji: '📌', color: 'bg-gray-100 text-gray-700', label: activity.type };
         const timeAgo = getTimeAgo(new Date(activity.timestamp));
-        
+
         let details = '';
         if (activity.data?.courseName) {
           details = `<span class="text-forest-600">${activity.data.courseName}</span>`;
         }
+        if (activity.data?.lessonName) {
+          details += details ? ' · ' : '';
+          details += `<span class="text-forest-600">${activity.data.lessonName}</span>`;
+        }
         if (activity.data?.score !== undefined) {
-          details += ` • Score: <strong>${activity.data.score}%</strong>`;
+          details += ` · Score: <strong>${activity.data.score}%</strong>`;
         }
         if (activity.data?.ceHours) {
-          details += ` • ${activity.data.ceHours} CE hrs`;
+          details += ` · ${activity.data.ceHours} CE hrs`;
         }
         if (activity.data?.plan) {
           details = `<span class="font-medium">${activity.data.plan.toUpperCase()}</span> plan`;
         }
-        
+        if (activity.data?.amount !== undefined) {
+          details += ` · $${(activity.data.amount / 100).toFixed(2)}`;
+        }
+
         return `
           <div class="flex items-start gap-3 p-3 bg-stone-50 rounded-lg hover:bg-stone-100 transition-colors">
             <span class="text-xl">${config.emoji}</span>
@@ -591,16 +1005,110 @@
     }
     
     // Auto-refresh activity every 30 seconds
-    setInterval(loadActivity, 30000);
-    
+    setInterval(_loadActivity, 30000);
+
     // Load admin email
     const user = JSON.parse(localStorage.getItem('user') || '{}');
     if (user.email) {
       document.getElementById('adminEmail').textContent = user.email;
     }
+
+    // ============================================
+    // ADMIN NOTIFICATION PREFERENCES
+    // ============================================
+
+    const ADMIN_PREF_KEYS = [
+      'notifyRegistration',
+      'notifyEnrollment',
+      'notifyCompletion',
+      'notifyQuizPass',
+      'notifyQuizFail',
+      'notifySubscriptionStart',
+      'notifySubscriptionCancel',
+      'notifyPayment',
+      'notifyPaymentFail',
+      'notifyCertificate',
+    ];
+
+    function syncToggleUI(key, checked) {
+      const track = document.getElementById('track-' + key);
+      const thumb = document.getElementById('thumb-' + key);
+      if (!track || !thumb) return;
+      track.style.backgroundColor = checked ? '#4A7C59' : '#d1d5db';
+      thumb.style.transform       = checked ? 'translateX(20px)' : 'translateX(0)';
+    }
+
+    // Wire up each checkbox so the track color syncs live
+    ADMIN_PREF_KEYS.forEach(key => {
+      const cb = document.getElementById('pref-' + key);
+      if (!cb) return;
+      cb.addEventListener('change', () => syncToggleUI(key, cb.checked));
+    });
+
+    async function loadAdminNotifPrefs() {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`${API_URL}/api/admin/notification-prefs`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!res.ok) return;
+        const { prefs, adminEmail } = await res.json();
+
+        if (adminEmail) {
+          const el = document.getElementById('adminAlertEmail');
+          if (el) el.textContent = adminEmail;
+        }
+
+        ADMIN_PREF_KEYS.forEach(key => {
+          const cb = document.getElementById('pref-' + key);
+          if (!cb || prefs[key] === undefined) return;
+          cb.checked = prefs[key];
+          syncToggleUI(key, prefs[key]);
+        });
+      } catch (err) {
+        console.error('Failed to load admin notification prefs:', err);
+      }
+    }
+
+    async function saveAdminNotifPrefs() {
+      const token = localStorage.getItem('token');
+      const prefs = {};
+      ADMIN_PREF_KEYS.forEach(key => {
+        const cb = document.getElementById('pref-' + key);
+        if (cb) prefs[key] = cb.checked;
+      });
+
+      try {
+        const res = await fetch(`${API_URL}/api/admin/notification-prefs`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+          body: JSON.stringify({ prefs }),
+        });
+        if (!res.ok) throw new Error('Save failed');
+        showAdminNotifToast();
+      } catch (err) {
+        console.error('Failed to save admin notification prefs:', err);
+        alert('Failed to save preferences. Please try again.');
+      }
+    }
+
+    function showAdminNotifToast() {
+      const toast = document.getElementById('adminNotifToast');
+      if (!toast) return;
+      toast.classList.remove('hidden');
+      setTimeout(() => toast.classList.add('hidden'), 3000);
+    }
+
+    // Load notification prefs on page init
+    loadAdminNotifPrefs();
   </script>
 
     </main>
   </div>
-<script src="/js/footer.js"></script></body>
+<script src="/js/footer.js"></script>
+  <div id="cr-footer"></div>
+</body>
 </html>

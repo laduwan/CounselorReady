@@ -9,7 +9,6 @@ const userActivitySchema = new mongoose.Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-    required: true,
     index: true
   },
   type: {
@@ -29,7 +28,8 @@ const userActivitySchema = new mongoose.Schema({
       'quiz_failed',
       'course_completed',
       'course_failed',
-      'certificate_generated'
+      'certificate_generated',
+      'tool_used'
     ],
     index: true
   },
@@ -39,14 +39,14 @@ const userActivitySchema = new mongoose.Schema({
   // Contextual data
   courseId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Course',
+    ref: 'InteractiveCourse',
     index: true
   },
   courseName: { type: String },
   data: { type: mongoose.Schema.Types.Mixed },
 
   // Timestamps
-  timestamp: { type: Date, default: Date.now, index: true }
+  timestamp: { type: Date, default: Date.now }
 }, {
   timestamps: false
 });

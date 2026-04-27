@@ -5,64 +5,16 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>About - CounselorReady</title>
+  <link rel="stylesheet" href="/css/design-tokens.css">
+  <link rel="stylesheet" href="/css/typography.css">
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            burgundy: {
-              50: '#fdf5f6',
-              100: '#fae8eb',
-              200: '#f5d0d6',
-              300: '#eba9b5',
-              400: '#dd768a',
-              500: '#c94d65',
-              600: '#a83350',
-              700: '#8b2542',
-              800: '#6b1d34',
-              900: '#4a1524',
-              950: '#2d0a14'
-            },
-            hunter: {
-              50: '#f5f8f5',
-              100: '#eaf0eb',
-              200: '#d5e1d7',
-              300: '#b5ccb9',
-              400: '#8fb096',
-              500: '#6a9472',
-              600: '#4A7C59',
-              700: '#355E3B',
-              800: '#2D4F33',
-              900: '#1F3825',
-              950: '#121f15'
-            },
-            honey: {
-              50: '#fdf9f0',
-              100: '#f9f0db',
-              200: '#f3e0b5',
-              300: '#eacd86',
-              400: '#D4A855',
-              500: '#c49545',
-              600: '#a67936',
-              700: '#865e2c',
-              800: '#6b4a25',
-              900: '#4d351b'
-            }
-          },
-          fontFamily: {
-            'display': ['Cormorant Garamond', 'Georgia', 'serif'],
-            'body': ['Lato', 'system-ui', 'sans-serif']
-          }
-        }
-      }
-    }
-  </script>
+  <script src="/js/tailwind-config.js"></script>
+  
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Source+Serif+Pro:ital,wght@0,400;0,600;0,700;1,400&family=Source+Sans+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    body { 
+    body{background:#F8F7F4; 
       font-family: 'Source Sans Pro', system-ui, sans-serif; 
     }
     .font-display {
@@ -439,48 +391,8 @@
   </section>
 
   <!-- Footer -->
-  <footer class="py-16 px-4 bg-hunter-900">
-    <div class="max-w-6xl mx-auto">
-      <div class="flex flex-col md:flex-row justify-between items-center gap-8 mb-8">
-        <a href="/index.html" class="flex items-center gap-3">
-          <div class="w-11 h-11 rounded-xl flex items-center justify-center shadow-lg" style="background: linear-gradient(135deg, #8b2542, #6b1d34);">
-            <span class="font-display font-bold text-xl" style="position: relative; display: inline-block; width: 28px; height: 28px;"><span style="color: #D4A855; position: absolute; top: -4px; left: 0;">C</span><span style="color: #4A7C59; position: absolute; top: 6px; left: 8px;">R</span></span>
-          </div>
-          <span class="font-display font-semibold text-2xl">
-            <span class="text-white">Counselor</span><span class="text-honey-300">Ready</span>
-          </span>
-        </a>
-        <nav class="flex items-center gap-8">
-          <a href="/index.html#features" class="text-hunter-300 hover:text-white text-sm transition-colors">Features</a>
-          <a href="/index.html#pricing" class="text-hunter-300 hover:text-white text-sm transition-colors">Pricing</a>
-          <a href="/about.html" class="text-white text-sm transition-colors">About</a>
-          <a href="mailto:support@counselorready.com" class="text-hunter-300 hover:text-white text-sm transition-colors">Contact</a>
-        </nav>
-      </div>
-      
-      <!-- NBCC Badge -->
-      <div class="border-t border-hunter-700 py-8 mb-6">
-        <div class="flex flex-col md:flex-row items-center justify-center gap-6 mb-6">
-          <img src="/images/nbcc-acep-logo.jpg" alt="NBCC ACEP Provider" class="h-20 w-auto">
-          <div class="text-center md:text-left">
-            <p class="text-white font-semibold text-sm">NBCC ACEP Provider</p>
-            <p class="text-burgundy-300 text-sm">ACEP #7760</p>
-          </div>
-        </div>
-        <p class="text-burgundy-400 text-xs leading-relaxed text-center max-w-4xl mx-auto">
-          CounselorReady is operated by GA Integrated Therapeutic Perspectives LLC, an NBCC Approved Continuing Education Provider (ACEP #7760). As an ACEP, we provide NBCC-compliant education. Programs that do not qualify for NBCC credit are clearly identified. GA Integrated Therapeutic Perspectives LLC is solely responsible for all aspects of the programs.
-        </p>
-      </div>
-      
-      <div class="border-t border-burgundy-800 pt-6 flex flex-col md:flex-row justify-between items-center gap-4">
-        <p class="text-burgundy-400 text-sm">© 2025 CounselorReady. All rights reserved.</p>
-        <div class="flex items-center gap-6">
-          <a href="/privacy.html" class="text-burgundy-400 hover:text-white text-sm transition-colors">Privacy Policy</a>
-          <a href="/terms.html" class="text-burgundy-400 hover:text-white text-sm transition-colors">Terms of Service</a>
-          <a href="/refund-policy.html" class="text-burgundy-400 hover:text-white text-sm transition-colors">Refund Policy</a>
-        </div>
-      </div>
-    </div>
-  </footer>
-<script src="/js/footer.js"></script></body>
+<script src="/js/footer.js"></script>
+<script src="/shared/nav-footer.js"></script>
+<div id="cr-footer"></div>
+</body>
 </html>

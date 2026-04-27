@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Purchase Complete | CounselorReady</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            burgundy: { 700: '#8B2542', 800: '#6B1D34', 900: '#4A0E1F' },
+            hunter: { 600: '#4A7C59', 700: '#3D6A4A', 800: '#2F5539' },
+            honey: { 400: '#E4C475', 500: '#D4A855' },
+            forest: { 500: '#5A9A6E', 600: '#4A7C59', 700: '#3D6A4A' },
+            stone: { 50: '#F8F7F4' }
+          }
+        }
+      }
+    }
+  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    body { font-family: 'Source Sans 3', sans-serif; background: #F8F7F4; }
+    h1, h2 { font-family: 'Merriweather', serif; }
+  </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4">
+
+  <!-- Loading State -->
+  <div id="loadingState" class="text-center">
+    <div class="animate-spin rounded-full h-12 w-12 border-4 border-hunter-600 border-t-transparent mx-auto mb-4"></div>
+    <p class="text-forest-700 text-lg">Confirming your purchase...</p>
+  </div>
+
+  <!-- Success State -->
+  <div id="successState" class="hidden max-w-md w-full">
+    <div class="bg-white rounded-2xl shadow-lg border border-green-100 overflow-hidden">
+      <!-- Header -->
+      <div class="bg-gradient-to-r from-hunter-600 to-hunter-700 p-6 text-center">
+        <div class="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-3">
+          <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+          </svg>
+        </div>
+        <h1 class="text-xl text-white font-bold">Purchase Complete!</h1>
+      </div>
+
+      <!-- Body -->
+      <div class="p-6 text-center">
+        <p class="text-forest-700 mb-2">You now have access to:</p>
+        <h2 id="courseTitle" class="text-lg font-bold text-burgundy-800 mb-6">--</h2>
+
+        <a id="startCourseBtn" href="#"
+           class="inline-block w-full bg-burgundy-800 hover:bg-burgundy-900 text-white font-semibold py-3 px-6 rounded-xl transition-colors mb-3">
+          Start Course
+        </a>
+
+        <a href="/dashboard.html"
+           class="inline-block w-full border border-forest-600 text-forest-700 hover:bg-forest-600 hover:text-white font-medium py-3 px-6 rounded-xl transition-colors">
+          Go to Dashboard
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Error State -->
+  <div id="errorState" class="hidden max-w-md w-full">
+    <div class="bg-white rounded-2xl shadow-lg border border-red-100 p-6 text-center">
+      <div class="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
+        <svg class="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M12 3a9 9 0 100 18 9 9 0 000-18z"></path>
+        </svg>
+      </div>
+      <h2 class="text-lg font-bold text-red-800 mb-2">Something went wrong</h2>
+      <p id="errorMessage" class="text-red-600 mb-4">We couldn't confirm your purchase.</p>
+      <a href="/catalog.html" class="inline-block bg-burgundy-800 hover:bg-burgundy-900 text-white font-semibold py-3 px-6 rounded-xl transition-colors">
+        Back to Catalog
+      </a>
+    </div>
+  </div>
+
+  <script>
+    const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://api.counselorready.com';
+
+    async function init() {
+      const params = new URLSearchParams(window.location.search);
+      const sessionId = params.get('session_id');
+      const slug = params.get('slug');
+
+      if (!sessionId || !slug) {
+        showError('Missing purchase confirmation details.');
+        return;
+      }
+
+      try {
+        // Fetch course info to display title
+        const courseRes = await fetch(`${API_URL}/api/interactive-courses/slug/${slug}`);
+        const courseData = await courseRes.json();
+        const course = courseData.data || courseData.course || courseData;
+
+        if (course && course.title) {
+          document.getElementById('courseTitle').textContent = course.title;
+          document.getElementById('startCourseBtn').href = `/interactive-course.html?slug=${slug}`;
+        }
+
+        // Auto-enroll the user in the course
+        const token = localStorage.getItem('token');
+        if (token && course._id) {
+          await fetch(`${API_URL}/api/interactive-courses/${course._id}/enroll`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+        }
+
+        showSuccess();
+      } catch (err) {
+        console.error('Purchase confirmation error:', err);
+        // Even if we can't fetch course details, the purchase went through
+        // Show success with fallback
+        document.getElementById('courseTitle').textContent = slug.replace(/-/g, ' ');
+        document.getElementById('startCourseBtn').href = `/interactive-course.html?slug=${slug}`;
+        showSuccess();
+      }
+    }
+
+    function showSuccess() {
+      document.getElementById('loadingState').classList.add('hidden');
+      document.getElementById('successState').classList.remove('hidden');
+    }
+
+    function showError(msg) {
+      document.getElementById('loadingState').classList.add('hidden');
+      document.getElementById('errorMessage').textContent = msg;
+      document.getElementById('errorState').classList.remove('hidden');
+    }
+
+    init();
+  </script>
+</body>
+</html>

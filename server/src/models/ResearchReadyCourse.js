@@ -15,6 +15,7 @@ const questionSchema = new mongoose.Schema({
 
 const researchReadyCourseSchema = new mongoose.Schema({
   title: { type: String, required: true, trim: true },
+  courseTitle: { type: String, default: '' },
   authors: { type: String, required: true },
   journal: { type: String, required: true },
   year: { type: Number, required: true },
@@ -48,6 +49,17 @@ const researchReadyCourseSchema = new mongoose.Schema({
   currencyVerdict: { type: mongoose.Schema.Types.Mixed, default: null },
 
   certificateIdPrefix: { type: String, default: '' },
+
+  // Full-text fields (P1-T5)
+  fullTextSource: { type: String },           // 'pdf' | 'landing_page' | 'pmc' | 'abstract_only'
+  fullTextUrl: { type: String },              // source URL for audit trail
+  abstractOnlyFlag: { type: Boolean, default: false },
+  instructionalWordCount: { type: Number },   // ceWordCount() result
+  rawWordCount: { type: Number },             // raw token count
+  ceCalcFormula: { type: String },            // e.g. "11,234 ÷ 6,000 = 1.872 → 1.5 hrs"
+  researchHours: { type: Number },            // always = ceHours (peer-reviewed = research hours)
+  engagementConfirmed: { type: Boolean, default: false }, // true when Read view accessed before posttest
+  savedBy: { type: [mongoose.Schema.Types.ObjectId], ref: 'User', default: [] },
 
   approvedAt: { type: Date, default: null },
   approvedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null }
