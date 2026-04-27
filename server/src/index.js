@@ -73,6 +73,7 @@ import { initializeScheduler } from './services/notificationScheduler.js';
 import { initializeBoardMonitor } from './services/boardMonitorService.js';
 import cron from 'node-cron';
 import { runDeadlineReminders } from './services/ceDeadlineReminder.js';
+import { runDailyNotificationCheck } from './jobs/dailyNotificationCheck.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -310,6 +311,12 @@ const startServer = async () => {
     runDeadlineReminders().catch(err => console.error('CE deadline reminder error:', err.message));
   }, { timezone: 'America/New_York' });
   console.log('CE deadline reminder cron scheduled (daily 9 AM ET)');
+
+  // Daily notification check — credentials, insurance, stale courses, trial expiry — daily at 10 AM ET
+  cron.schedule('0 10 * * *', () => {
+    runDailyNotificationCheck().catch(err => console.error('Daily notification check error:', err.message));
+  }, { timezone: 'America/New_York' });
+  console.log('Daily notification check cron scheduled (daily 10 AM ET)');
   verifyRoutes();
   app.listen(PORT, () => {
     console.log(`

@@ -11,7 +11,11 @@ import {
   triggerLowHoursAlert,
   triggerCredentialExpiring,
   triggerInsuranceExpiring,
-  triggerCourseReminder
+  triggerCourseReminder,
+  triggerTrialEndingSoon,
+  triggerTrialEndingTomorrow,
+  triggerTrialEnded,
+  triggerNonPaidCheckIn
 } from '../services/notificationTriggerService.js';
 
 /**
@@ -26,7 +30,7 @@ export async function runDailyNotificationCheck() {
     const users = await User.find({
       'notifications.unsubscribeAll': { $ne: true },
       disabled: { $ne: true }
-    }).select('_id notifications liabilityInsurance');
+    }).select('_id notifications liabilityInsurance subscription email profile createdAt');
 
     const now = new Date();
 
@@ -132,6 +136,50 @@ export async function runDailyNotificationCheck() {
           }
         } catch (e) {
           stats.errors++;
+        }
+
+        // 4. Check trial expiry
+        try {
+          if (user.subscription?.status === 'trial' && user.subscription?.trialEndsAt) {
+            const trialEnd = new Date(user.subscription.trialEndsAt);
+            const daysRemaining = Math.ceil((trialEnd - now) / (1000 * 60 * 60 * 24));
+
+            if (daysRemaining === 2) {
+              await triggerTrialEndingSoon(user._id, { trialEndsAt: trialEnd, daysRemaining });
+              stats.remindersSent++;
+            } else if (daysRemaining === 1) {
+              await triggerTrialEndingTomorrow(user._id, { trialEndsAt: trialEnd });
+              stats.remindersSent++;
+            } else if (daysRemaining <= 0) {
+              // Mark expired (passive auth check also does this, but do it proactively)
+              await User.updateOne(
+                { _id: user._id, 'subscription.status': 'trial' },
+                { $set: { 'subscription.status': 'expired' } }
+              );
+              await triggerTrialEnded(user._id);
+              stats.remindersSent++;
+            }
+          }
+        } catch (e) {
+          stats.errors++;
+          console.error(`[DailyNotif] Trial check error for user ${user._id}:`, e.message);
+        }
+
+        // 5. Non-paid user check-in — every ~75 days for free + expired users
+        try {
+          const nonPayingStatuses = ['free', 'expired', 'canceled'];
+          if (nonPayingStatuses.includes(user.subscription?.status) && user.createdAt) {
+            const daysSinceRegistration = Math.floor((now - new Date(user.createdAt)) / (1000 * 60 * 60 * 24));
+            // Fire on day 75, 150, 225, 300, 375... — every ~2.5 months
+            // Skip if too new or if not on a 75-day boundary (±0 days)
+            if (daysSinceRegistration >= 75 && daysSinceRegistration % 75 === 0) {
+              await triggerNonPaidCheckIn(user._id, { daysSinceRegistration });
+              stats.remindersSent++;
+            }
+          }
+        } catch (e) {
+          stats.errors++;
+          console.error(`[DailyNotif] Check-in error for user ${user._id}:`, e.message);
         }
 
       } catch (userErr) {
