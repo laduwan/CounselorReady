@@ -115,11 +115,26 @@ This formula is used in `openAlex.js` and `RNR_CE_UI.js`. Do not alter the formu
 - Always add a timeout + AbortController to frontend fetch calls — never leave a fetch with no timeout.
 ---
 ## Branch Policy
+
+**Default: feature branch.**
+
 Every task should be on its own branch:
 ```
 git checkout -b task/<short-description>
 ```
 Show a diff summary before committing. If you touched a file not in the task list, revert it before committing.
+
+**Direct-to-main exception** is permitted ONLY when ALL of the following are true:
+
+1. **Single file changed.** No multi-file refactors. (Exception: documentation-only commits touching CLAUDE.md plus one related file.)
+2. **Net additive change ≤10 lines.** No deletions, no replacements — only insertions or new files.
+3. **No code logic changed.** Allowed: HTML content edits, CSS additions, copy changes, config additions, new env-var-driven values. Disallowed: any JS function modification, schema changes, route handler edits, webhook handler edits, test changes.
+4. **No protected file touched.** See "Protected Services" section below — those always require explicit authorization regardless of branch policy.
+5. **Ke explicitly states "push to main" in the task prompt.** Default behavior without that explicit instruction is feature branch.
+
+When in doubt: feature branch. The cost of an extra merge step is 30 seconds. The cost of an unauthorized direct push to main is potentially hours of recovery.
+
+If a task prompt says "push to main" but any of conditions 1–4 are violated, STOP and surface the conflict — do not proceed on either path without clarification.
 ---
 ## When In Doubt
 Stop. Ask. Do not guess, do not approximate, do not "make it work" by changing something adjacent. The cost of asking is zero. The cost of unwiring a stable feature is high.
