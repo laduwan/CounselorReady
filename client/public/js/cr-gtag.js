@@ -4,7 +4,7 @@
  * Usage: <script src="/js/cr-gtag.js"></script> in every page <head>
  *
  * Conversion ID: AW-16681104079
- * Subscribe conversion label: tAgdCO_m9qMcEM_llZI-
+ * Sign-up conversion label: 169CCJTQ9qMcEM_llZI-
  */
 
 // 1. Load gtag.js
@@ -26,10 +26,10 @@ window.crTrackConversion = function(type, value, currency) {
   if (typeof gtag !== 'function') return;
 
   var labels = {
-    'subscribe':    'AW-16681104079/tAgdCO_m9qMcEM_llZI-',
-    'signup':       'AW-16681104079/tAgdCO_m9qMcEM_llZI-',  // reuse until separate action created
-    'trial_start':  'AW-16681104079/tAgdCO_m9qMcEM_llZI-',  // reuse until separate action created
-    'purchase':     'AW-16681104079/tAgdCO_m9qMcEM_llZI-'
+    'subscribe':    'AW-16681104079/169CCJTQ9qMcEM_llZI-',
+    'signup':       'AW-16681104079/169CCJTQ9qMcEM_llZI-',  // reuse until separate action created
+    'trial_start':  'AW-16681104079/169CCJTQ9qMcEM_llZI-',  // reuse until separate action created
+    'purchase':     'AW-16681104079/169CCJTQ9qMcEM_llZI-'
   };
 
   var label = labels[type];
