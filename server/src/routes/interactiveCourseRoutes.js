@@ -879,20 +879,6 @@ router.post('/:id/certificate', protect, async (req, res) => {
       return res.status(404).json({ success: false, error: 'User not found' });
     }
 
-    // Payment / access check — free courses always allowed; paid courses require purchase, subscription, or admin
-    if (course.accessType !== 'free') {
-      const hasPurchased = user.purchasedCourses && user.purchasedCourses.some(id => id.toString() === course._id.toString());
-      const hasSubscription = user.subscription && (user.subscription.status === 'active' || user.subscription.status === 'lifetime');
-      const isAdmin = user.role === 'admin';
-      if (!hasPurchased && !hasSubscription && !isAdmin) {
-        return res.status(403).json({
-          success: false,
-          code: 'PAYMENT_REQUIRED',
-          message: 'Please complete your purchase to receive your certificate.'
-        });
-      }
-    }
-
     // Check if certificate already exists
     let certificate = await Certificate.findOne({
       userId: req.user._id,
