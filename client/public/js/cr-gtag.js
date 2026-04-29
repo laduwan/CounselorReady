@@ -53,7 +53,7 @@ window.crTrackConversion = function(type, value, currency) {
   }
 
   // Subscription success — Stripe redirects to /subscription.html?success=true&session_id=...
-  if (path.includes('subscription') && (params.get('success') === 'true' || params.get('session_id'))) {
+  if (path.includes('subscription') && params.get('success') === 'true' && params.get('session_id')) {
     var plan = params.get('plan') || 'starter';
     var prices = { starter: 19.99, professional: 29.99, vip: 49.99, annual_vip: 299.99 };
     var value = prices[plan] || 19.99;
