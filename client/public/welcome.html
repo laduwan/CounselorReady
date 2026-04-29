@@ -5,16 +5,41 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Welcome to CounselorReady - Getting Started</title>
-  <link rel="stylesheet" href="/css/design-tokens.css">
-  <link rel="stylesheet" href="/css/typography.css">
-  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
-  <script src="/js/tailwind-config.js"></script>
-  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            burgundy: {
+              50: '#fdf5f6', 100: '#fae8eb', 200: '#f5d0d6', 300: '#eba9b5',
+              400: '#dd768a', 500: '#c94d65', 600: '#a83350', 700: '#8b2542',
+              800: '#6b1d34', 900: '#4a1524', 950: '#2d0a14'
+            },
+            forest: {
+              50: '#f3f6f4', 100: '#e3ebe5', 200: '#c8d7cc', 300: '#a1bba8',
+              400: '#759a7f', 500: '#547c5f', 600: '#4A7C59', 700: '#34503d',
+              800: '#2b4133', 900: '#1f3025', 950: '#121c16'
+            },
+            gold: {
+              50: '#fefce8', 100: '#fef9c3', 200: '#fef08a', 300: '#fde047',
+              400: '#facc15', 500: '#d4a012', 600: '#a16207', 700: '#854d0e',
+              800: '#713f12', 900: '#5c3210'
+            }
+          },
+          fontFamily: {
+            'display': ['Cormorant Garamond', 'Georgia', 'serif'],
+            'body': ['Lato', 'system-ui', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Lato:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    body{background:#F8F7F4; font-family: 'Lato', system-ui, sans-serif; }
+    body { font-family: 'Lato', system-ui, sans-serif; }
     .font-display { font-family: 'Cormorant Garamond', Georgia, serif; }
     .step-card { transition: all 0.3s ease; }
     .step-card:hover { transform: translateY(-2px); }
@@ -22,7 +47,6 @@
     .step-card.completed .step-number { background: #34503d; }
     .progress-line { height: 4px; transition: width 0.5s ease; }
   </style>
-<script src="/js/cr-gtag.js"></script>
 </head>
 <body class="bg-stone-50 text-gray-900 antialiased min-h-screen">
 
@@ -92,11 +116,25 @@
               </button>
             </div>
             
+            <!-- Why we need this -->
+            <div class="rounded-xl p-4 mb-4 border-l-4 border-gold-500" style="background: #fefce8;">
+              <p class="text-sm text-burgundy-800 font-semibold mb-1">Why we need this</p>
+              <p class="text-sm text-forest-700 mb-3">
+                Your license number is required for the attendance records we submit to boards for compliance.
+              </p>
+              <p class="text-sm text-forest-700">
+                <span class="font-semibold text-burgundy-800">Pre-licensed?</span>
+                Enter <code class="bg-white px-1.5 py-0.5 rounded text-burgundy-700 font-semibold text-xs">PRELICENSED</code>
+                in the license field. Certificates will reflect your status at completion and cannot be changed retroactively &mdash;
+                update your license number as soon as you're licensed.
+              </p>
+            </div>
+
             <div class="bg-stone-50 rounded-xl p-4 mb-4">
               <p class="text-sm text-forest-700 font-medium mb-2">What you'll need:</p>
               <ul class="text-sm text-forest-600 space-y-1">
                 <li>• License type (LPC, LCSW, LMFT, etc.)</li>
-                <li>• License number</li>
+                <li>• License number <span class="text-forest-500">(or "PRELICENSED")</span></li>
                 <li>• Expiration date</li>
                 <li>• State of licensure</li>
               </ul>
@@ -177,11 +215,6 @@
               <div class="flex items-center gap-4 mb-3">
                 <img src="/images/nbcc-acep-logo.jpg" alt="NBCC Approved Continuing Education Provider" class="h-14 w-auto">
                 <p class="text-sm text-forest-600">Courses offered by NBCC Approved Continuing Education Provider (ACEP #7760)</p>
-              </div>
-              <div style="background:#fff;border:1px solid rgba(74,124,89,0.2);border-left:3px solid #4A7C59;border-radius:8px;padding:12px 14px;margin-bottom:12px;">
-                <p style="font-size:12px;color:#284157;margin:0;line-height:1.55;">
-                  <strong style="color:#6B1D34;">GA-licensed counselors:</strong> The Georgia Composite Board of Professional Counselors, Social Workers, and Marriage &amp; Family Therapists accepts NBCC-approved continuing education for license renewal. All CounselorReady courses count toward your GA renewal hours <em>unless otherwise indicated</em>.
-                </p>
               </div>
               <p class="text-sm text-forest-700 font-medium mb-2">Popular topics:</p>
               <div class="flex flex-wrap gap-2">
@@ -353,6 +386,15 @@
   </main>
 
   <!-- Footer -->
+  <footer class="mt-12 py-6 px-4 bg-white border-t border-burgundy-100">
+    <div class="max-w-5xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+      <div class="flex items-center gap-4">
+        <img src="/images/nbcc-acep-logo.jpg" alt="NBCC Approved Continuing Education Provider" class="h-12 w-auto">
+        <p class="text-forest-400 text-xs">NBCC Approved Provider | ACEP #7760</p>
+      </div>
+      <p class="text-forest-500 text-sm">© 2025 CounselorReady. All rights reserved.</p>
+    </div>
+  </footer>
 
   <script>
     const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://api.counselorready.com';
@@ -443,8 +485,5 @@
     }
   </script>
 
-<script src="/js/footer.js"></script>
-<script src="/shared/nav-footer.js"></script>
-<div id="cr-footer"></div>
-</body>
+<script src="/js/footer.js"></script></body>
 </html>
