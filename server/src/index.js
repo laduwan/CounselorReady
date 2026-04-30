@@ -75,6 +75,7 @@ import { initializeBoardMonitor } from './services/boardMonitorService.js';
 import cron from 'node-cron';
 import { runDeadlineReminders } from './services/ceDeadlineReminder.js';
 import { runDailyNotificationCheck } from './jobs/dailyNotificationCheck.js';
+import { runHardshipPauseResume } from './jobs/hardshipPauseResume.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -320,6 +321,14 @@ const startServer = async () => {
     runDailyNotificationCheck().catch(err => console.error('Daily notification check error:', err.message));
   }, { timezone: 'America/New_York' });
   console.log('Daily notification check cron scheduled (daily 10 AM ET)');
+
+  // Hardship pause auto-resume — daily at 8 AM ET
+  cron.schedule('0 8 * * *', () => {
+    runHardshipPauseResume().catch(err =>
+      console.error('Hardship pause resume error:', err.message)
+    );
+  }, { timezone: 'America/New_York' });
+  console.log('Hardship pause auto-resume cron scheduled (daily 8 AM ET)');
   verifyRoutes();
   app.listen(PORT, () => {
     console.log(`
