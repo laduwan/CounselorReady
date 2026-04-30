@@ -65,6 +65,7 @@ import recommendationsRoutes from './routes/recommendations.js';
 import blogRoutes from './routes/blog.js';
 import toolAnalyticsRoutes from './routes/toolAnalytics.js';
 import remediationRoutes from './routes/remediation.js';
+import securityRoutes from './routes/security.js';
 
 // ═══════════════════════════════════════════════════════════════
 // SERVICE IMPORTS
@@ -195,6 +196,7 @@ app.use('/api/recommendations', recommendationsRoutes);
 app.use('/api/blog', blogRoutes);
 app.use('/api/tool-analytics', toolAnalyticsRoutes);
 app.use('/api/remediation', remediationRoutes);
+app.use('/api/security', securityRoutes);
 
 app.use('/templates', express.static(path.join(__dirname, 'templates')));
 
@@ -231,6 +233,7 @@ const REQUIRED_ROUTES = {
   '/api/admin/course-mgmt':   adminCoursesRoutes,
   '/api/blog':                blogRoutes,
   '/api/tool-analytics':      toolAnalyticsRoutes,
+  '/api/security':            securityRoutes,
 };
 
 function verifyRoutes() {
