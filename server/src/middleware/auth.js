@@ -113,6 +113,28 @@ export const generateToken = (userId) => {
   );
 };
 
+// Short-lived JWT used between password verification and 2FA code submission.
+// 5-minute expiry. The 'purpose' claim distinguishes it from real auth tokens.
+export const generateChallengeToken = (userId) => {
+  return jwt.sign(
+    { id: userId, purpose: '2fa-challenge' },
+    process.env.JWT_SECRET,
+    { expiresIn: '5m' }
+  );
+};
+
+// Verify a 2FA challenge token. Returns userId on success, null otherwise.
+// Rejects tokens without the 2fa-challenge purpose claim.
+export const verifyChallengeToken = (token) => {
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    if (decoded?.purpose !== '2fa-challenge') return null;
+    return decoded.id;
+  } catch {
+    return null;
+  }
+};
+
 // Alias for admin middleware (used in course routes)
 export const admin = requireAdmin;
 export const adminOnly = requireAdmin;

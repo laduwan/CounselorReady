@@ -8,9 +8,15 @@ import crypto from 'crypto';
 import { Resend } from 'resend';
 import User from '../models/User.js';
 import Partner from '../models/Partner.js';
-import { protect, generateToken } from '../middleware/auth.js';
+import {
+  protect,
+  generateToken,
+  generateChallengeToken,
+  verifyChallengeToken,
+} from '../middleware/auth.js';
 import { sendPartnerWelcomeEmail } from './partners.js';
 import { logActivity, ACTIVITY_TYPES } from '../services/activityTrackingService.js';
+import { verify2FACode, verifyBackupCode } from '../services/twoFactorService.js';
 import Notification from '../models/Notification.js';
 import { sendRealtimeNotification } from './notifications.js';
 
@@ -173,12 +179,22 @@ router.post('/login', async (req, res) => {
     }
     
     user.lastLoginAt = new Date();
-    
+
     if (user.isTrialExpired()) {
       user.subscription.status = 'expired';
     }
-    
+
     await user.save();
+
+    // 2FA gate — if enabled, do not issue a full token yet.
+    if (user.twoFactorEnabled) {
+      const challengeToken = generateChallengeToken(user._id);
+      return res.json({
+        requiresTwoFactor: true,
+        challengeToken,
+        message: 'Enter the 6-digit code from your authenticator app, or a backup code.',
+      });
+    }
 
     const token = generateToken(user._id);
 
@@ -198,6 +214,75 @@ router.post('/login', async (req, res) => {
   } catch (error) {
     console.error('Login error:', error);
     res.status(500).json({ error: 'Login failed' });
+  }
+});
+
+// POST /api/auth/login/verify-2fa
+// Accepts a challenge token and either a 6-digit TOTP code or an
+// XXXX-XXXX backup code. Returns the full JWT on success.
+router.post('/login/verify-2fa', async (req, res) => {
+  try {
+    const { challengeToken, code } = req.body;
+
+    if (!challengeToken || !code) {
+      return res.status(400).json({ error: 'challengeToken and code are required' });
+    }
+
+    const userId = verifyChallengeToken(challengeToken);
+    if (!userId) {
+      return res.status(401).json({ error: 'Challenge expired or invalid — please log in again' });
+    }
+
+    const user = await User.findById(userId).select('+twoFactorSecret +twoFactorBackupCodes');
+    if (!user || !user.twoFactorEnabled) {
+      return res.status(401).json({ error: 'Account not found or 2FA not enabled' });
+    }
+
+    const submitted = String(code).trim();
+    let success = false;
+    let usedBackup = false;
+
+    // Try TOTP first (6 digits)
+    if (/^\d{6}$/.test(submitted)) {
+      success = verify2FACode(user.twoFactorSecret, submitted);
+    }
+
+    // Fall back to backup code (XXXX-XXXX, case-insensitive)
+    if (!success && /^[A-Za-z0-9]{4}-[A-Za-z0-9]{4}$/.test(submitted)) {
+      const idx = await verifyBackupCode(user.twoFactorBackupCodes, submitted);
+      if (idx >= 0) {
+        // One-time consumption — remove the used code
+        user.twoFactorBackupCodes.splice(idx, 1);
+        await user.save();
+        success = true;
+        usedBackup = true;
+      }
+    }
+
+    if (!success) {
+      return res.status(401).json({ error: 'Invalid code' });
+    }
+
+    const token = generateToken(user._id);
+
+    // Log login activity
+    logActivity(ACTIVITY_TYPES.USER_LOGIN, { twoFactor: usedBackup ? 'backup' : 'totp' }, {
+      notifyAdmin: false,
+      userId: user._id,
+      userName: user.profile?.firstName || '',
+      userEmail: user.email
+    }).catch(() => {});
+
+    return res.json({
+      message: 'Login successful',
+      token,
+      user: user.toJSON(),
+      backupCodeUsed: usedBackup,
+      backupCodesRemaining: usedBackup ? user.twoFactorBackupCodes.length : undefined,
+    });
+  } catch (err) {
+    console.error('[login/verify-2fa] error:', err);
+    return res.status(500).json({ error: '2FA verification failed' });
   }
 });
 
