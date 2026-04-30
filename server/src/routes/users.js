@@ -4,9 +4,13 @@
  * Unauthorized copying or distribution is strictly prohibited.
  */
 import express from 'express';
+import crypto from 'crypto';
 import Stripe from 'stripe';
+import { Resend } from 'resend';
 import User from '../models/User.js';
 import { protect } from '../middleware/auth.js';
+import { generateUserDataExport } from '../services/dataExportService.js';
+import { sendTestSMS } from '../services/calendarSmsService.js';
 
 const stripe = process.env.STRIPE_SECRET_KEY
   ? new Stripe(process.env.STRIPE_SECRET_KEY)
@@ -31,7 +35,8 @@ router.get('/profile', protect, async (req, res) => {
 // @access  Private
 router.put('/profile', protect, async (req, res) => {
   try {
-    const { firstName, lastName, certificateName, state, timezone, phone, fullName } = req.body;
+    const { firstName, lastName, certificateName, state, timezone, phone, fullName,
+            pronouns, npi, specializations, supervisor } = req.body;
 
     const user = await User.findById(req.user._id);
 
@@ -48,7 +53,25 @@ router.put('/profile', protect, async (req, res) => {
     if (state && typeof state === 'string') user.profile.state = state.toUpperCase();
     if (timezone) user.profile.timezone = timezone;
     if (phone !== undefined) user.profile.phone = phone;
-    
+
+    if (pronouns !== undefined) user.profile.pronouns = pronouns;
+    if (npi !== undefined) {
+      if (npi && !/^\d{10}$/.test(npi)) {
+        return res.status(400).json({ error: 'NPI must be exactly 10 digits' });
+      }
+      user.profile.npi = npi;
+    }
+    if (Array.isArray(specializations)) user.profile.specializations = specializations;
+    if (supervisor && typeof supervisor === 'object') {
+      user.profile.supervisor = {
+        name:        supervisor.name        ?? user.profile.supervisor?.name        ?? '',
+        license:     supervisor.license     ?? user.profile.supervisor?.license     ?? '',
+        credentials: supervisor.credentials ?? user.profile.supervisor?.credentials ?? '',
+        startDate:   supervisor.startDate   ? new Date(supervisor.startDate)
+                                            : user.profile.supervisor?.startDate ?? null,
+      };
+    }
+
     await user.save();
     
     res.json({
@@ -840,6 +863,121 @@ router.get('/unlocked-tools', protect, async (req, res) => {
   } catch (error) {
     console.error('List unlocked tools error:', error);
     res.status(500).json({ error: 'Failed to list unlocked tools' });
+  }
+});
+
+// ── POST /notifications/test ──
+router.post('/notifications/test', protect, async (req, res) => {
+  try {
+    const { channel } = req.body;
+    if (!['email', 'sms'].includes(channel)) {
+      return res.status(400).json({ error: 'channel must be "email" or "sms"' });
+    }
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    if (channel === 'email') {
+      if (!user.email) return res.status(400).json({ error: 'No email on file' });
+      const resend = new Resend(process.env.RESEND_API_KEY);
+      await resend.emails.send({
+        from: 'CounselorReady <noreply@counselorready.com>',
+        to: user.email,
+        subject: 'CounselorReady — Test Notification',
+        html: `<p>Hi ${user.profile?.firstName || 'there'},</p>
+               <p>This is a test notification from CounselorReady. If you received this, your email notifications are working.</p>
+               <p>— The CounselorReady Team</p>`,
+      });
+    } else {
+      if (!user.profile?.phone) return res.status(400).json({ error: 'No phone on file' });
+      await sendTestSMS(user.profile.phone);
+    }
+    return res.json({ sent: true, channel });
+  } catch (err) {
+    console.error('[notifications/test] error:', err);
+    return res.status(500).json({ error: 'Failed to send test notification' });
+  }
+});
+
+// ── POST /data-export ──
+router.post('/data-export', protect, async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    if (user.lastDataExportAt && (Date.now() - user.lastDataExportAt.getTime() < 24 * 60 * 60 * 1000)) {
+      return res.status(429).json({ error: 'Data export already requested in the last 24 hours.' });
+    }
+    user.lastDataExportAt = new Date();
+    await user.save();
+    generateUserDataExport(user).catch(err => console.error('[data-export] generation failed:', err));
+    return res.json({ requested: true, message: 'Export will be emailed shortly.' });
+  } catch (err) {
+    console.error('[data-export] error:', err);
+    return res.status(500).json({ error: 'Failed to request data export' });
+  }
+});
+
+// ── PUT /recovery-email ──
+router.put('/recovery-email', protect, async (req, res) => {
+  try {
+    const { recoveryEmail } = req.body;
+    if (!recoveryEmail) {
+      await User.findByIdAndUpdate(req.user._id, {
+        recoveryEmail: '',
+        recoveryEmailVerified: false,
+        recoveryEmailToken: null,
+        recoveryEmailExpires: null,
+      });
+      return res.json({ cleared: true });
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(recoveryEmail)) {
+      return res.status(400).json({ error: 'Invalid email address' });
+    }
+    const user = await User.findById(req.user._id);
+    if (recoveryEmail.toLowerCase() === user.email.toLowerCase()) {
+      return res.status(400).json({ error: 'Recovery email must differ from primary email' });
+    }
+    const token = crypto.randomBytes(32).toString('hex');
+    user.recoveryEmail         = recoveryEmail.toLowerCase();
+    user.recoveryEmailVerified = false;
+    user.recoveryEmailToken    = token;
+    user.recoveryEmailExpires  = new Date(Date.now() + 24 * 60 * 60 * 1000);
+    await user.save();
+    const baseUrl = process.env.PUBLIC_APP_URL || 'https://counselorready.com';
+    const verifyUrl = `${baseUrl}/api/users/recovery-email/verify/${token}`;
+    const resend = new Resend(process.env.RESEND_API_KEY);
+    await resend.emails.send({
+      from: 'CounselorReady <noreply@counselorready.com>',
+      to: recoveryEmail,
+      subject: 'Verify your CounselorReady recovery email',
+      html: `<p>Confirm this address as your CounselorReady recovery email by clicking below:</p>
+             <p><a href="${verifyUrl}">Verify recovery email</a></p>
+             <p>If you did not request this, ignore this message. The link expires in 24 hours.</p>`,
+    });
+    return res.json({ pendingVerification: true });
+  } catch (err) {
+    console.error('[recovery-email] error:', err);
+    return res.status(500).json({ error: 'Failed to update recovery email' });
+  }
+});
+
+// ── GET /recovery-email/verify/:token ──
+router.get('/recovery-email/verify/:token', async (req, res) => {
+  try {
+    const user = await User.findOne({
+      recoveryEmailToken: req.params.token,
+      recoveryEmailExpires: { $gt: new Date() },
+    }).select('+recoveryEmailToken +recoveryEmailExpires');
+    if (!user) {
+      return res.status(400).send('<h1>Link expired or invalid</h1><p>Request a new verification from Settings.</p>');
+    }
+    user.recoveryEmailVerified = true;
+    user.recoveryEmailToken    = null;
+    user.recoveryEmailExpires  = null;
+    await user.save();
+    return res.send('<h1>Recovery email verified</h1><p>You can close this window.</p>');
+  } catch (err) {
+    console.error('[recovery-email verify] error:', err);
+    return res.status(500).send('Server error');
   }
 });
 
