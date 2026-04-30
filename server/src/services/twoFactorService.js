@@ -1,6 +1,7 @@
 import speakeasy from 'speakeasy';
 import qrcode from 'qrcode';
 import crypto from 'crypto';
+import bcrypt from 'bcryptjs';
 
 const ISSUER = 'CounselorReady';
 
@@ -39,8 +40,20 @@ export function generateBackupCodes() {
   return codes;
 }
 
-export function verifyBackupCode(storedCodes, submitted) {
-  if (!Array.isArray(storedCodes) || !submitted) return -1;
+// Hash a list of plaintext codes with bcrypt cost 12
+export async function hashBackupCodes(plaintextCodes) {
+  const salt = await bcrypt.genSalt(12);
+  return Promise.all(plaintextCodes.map(c => bcrypt.hash(c.toUpperCase(), salt)));
+}
+
+// Verify a submitted backup code against bcrypt-hashed stored codes.
+// Returns the index of the matched code (for one-time consumption), or -1.
+export async function verifyBackupCode(storedHashes, submitted) {
+  if (!Array.isArray(storedHashes) || !submitted) return -1;
   const normalized = String(submitted).trim().toUpperCase();
-  return storedCodes.findIndex(c => c === normalized);
+  for (let i = 0; i < storedHashes.length; i++) {
+    const match = await bcrypt.compare(normalized, storedHashes[i]);
+    if (match) return i;
+  }
+  return -1;
 }

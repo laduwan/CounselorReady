@@ -6,6 +6,7 @@ import {
   generate2FASetup,
   verify2FACode,
   generateBackupCodes,
+  hashBackupCodes,
 } from '../services/twoFactorService.js';
 import { hashToken } from '../middleware/sessionTracking.js';
 
@@ -50,15 +51,17 @@ router.post('/2fa/verify', protect, async (req, res) => {
     const valid = verify2FACode(user.twoFactorSecret, code);
     if (!valid) return res.status(400).json({ error: 'Invalid code' });
 
-    const backupCodes = generateBackupCodes();
+    const plaintextBackupCodes = generateBackupCodes();
+    const hashedBackupCodes = await hashBackupCodes(plaintextBackupCodes);
     user.twoFactorEnabled     = true;
     user.twoFactorEnabledAt   = new Date();
-    user.twoFactorBackupCodes = backupCodes;
+    user.twoFactorBackupCodes = hashedBackupCodes;
     await user.save();
 
+    // Return PLAINTEXT codes once — user saves them now or never sees them again
     return res.json({
       enabled: true,
-      backupCodes,
+      backupCodes: plaintextBackupCodes,
     });
   } catch (err) {
     console.error('[2fa/verify] error:', err);
