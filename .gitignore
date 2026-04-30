@@ -80,3 +80,8 @@ public/uploads/
 # SCORM packages (large files)
 *.scorm.zip
 scorm-packages/
+
+# API keys (NEVER commit)
+server/anthropic_api_key
+**/anthropic_api_key
+*.api_key
