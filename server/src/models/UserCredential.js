@@ -49,6 +49,7 @@ const userCredentialSchema = new mongoose.Schema({
   code: { type: String }, // "LPC"
   issuingBody: { type: String, required: true },
   licenseNumber: { type: String },
+  isPrelicensed: { type: Boolean, default: false, index: true },
   state: { type: String, uppercase: true },
   
   // Dates
@@ -278,6 +279,50 @@ userCredentialSchema.methods.recalculateProgress = function() {
   
   return this;
 };
+
+// Normalize licenseNumber and set isPrelicensed flag
+function normalizeLicense(value) {
+  const norm = (value || '').trim();
+  if (norm.toUpperCase() === 'PRELICENSED') {
+    return { licenseNumber: 'PRELICENSED', isPrelicensed: true };
+  }
+  return { licenseNumber: norm, isPrelicensed: false };
+}
+
+userCredentialSchema.pre('save', function(next) {
+  if (this.isModified('licenseNumber')) {
+    const { licenseNumber, isPrelicensed } = normalizeLicense(this.licenseNumber);
+    this.licenseNumber = licenseNumber;
+    this.isPrelicensed = isPrelicensed;
+  }
+  next();
+});
+
+function applyLicenseNormalizationToUpdate(update) {
+  if (!update) return;
+  // Top-level form
+  if (Object.prototype.hasOwnProperty.call(update, 'licenseNumber')) {
+    const { licenseNumber, isPrelicensed } = normalizeLicense(update.licenseNumber);
+    update.licenseNumber = licenseNumber;
+    update.isPrelicensed = isPrelicensed;
+  }
+  // $set form
+  if (update.$set && Object.prototype.hasOwnProperty.call(update.$set, 'licenseNumber')) {
+    const { licenseNumber, isPrelicensed } = normalizeLicense(update.$set.licenseNumber);
+    update.$set.licenseNumber = licenseNumber;
+    update.$set.isPrelicensed = isPrelicensed;
+  }
+}
+
+userCredentialSchema.pre('findOneAndUpdate', function(next) {
+  applyLicenseNormalizationToUpdate(this.getUpdate());
+  next();
+});
+
+userCredentialSchema.pre('updateOne', function(next) {
+  applyLicenseNormalizationToUpdate(this.getUpdate());
+  next();
+});
 
 // Ensure virtuals in JSON
 userCredentialSchema.set('toJSON', { virtuals: true });

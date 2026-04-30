@@ -30,7 +30,23 @@ const userSchema = new mongoose.Schema({
     avatar: { type: String },
     state: { type: String, uppercase: true }, // For CE requirements
     timezone: { type: String, default: 'America/New_York' },
-    phone: { type: String }
+    phone: { type: String },
+    pronouns: { type: String, default: '', maxlength: 50 },
+    npi: {
+      type: String,
+      default: '',
+      validate: {
+        validator: v => !v || /^\d{10}$/.test(v),
+        message: 'NPI must be exactly 10 digits'
+      }
+    },
+    specializations: { type: [String], default: [] },
+    supervisor: {
+      name:        { type: String, default: '', maxlength: 200 },
+      license:     { type: String, default: '', maxlength: 50 },
+      credentials: { type: String, default: '', maxlength: 100 },
+      startDate:   { type: Date,   default: null }
+    }
   },
   
   // Individual course purchases (for à la carte buying)
@@ -253,7 +269,22 @@ const userSchema = new mongoose.Schema({
   // Password reset
   resetPasswordToken: { type: String },
   resetPasswordExpires: { type: Date },
-  
+
+  // Recovery email (separate from primary login email)
+  recoveryEmail:         { type: String, default: '', lowercase: true, trim: true },
+  recoveryEmailVerified: { type: Boolean, default: false },
+  recoveryEmailToken:    { type: String, default: null, select: false },
+  recoveryEmailExpires:  { type: Date,   default: null, select: false },
+
+  // Two-factor authentication
+  twoFactorEnabled:     { type: Boolean, default: false },
+  twoFactorSecret:      { type: String, default: null, select: false },
+  twoFactorBackupCodes: { type: [String], default: [], select: false },
+  twoFactorEnabledAt:   { type: Date, default: null },
+
+  // GDPR / data-export tracking
+  lastDataExportAt: { type: Date, default: null },
+
   // Track membership tenure for loyalty benefits
   memberSince: { type: Date },
   voluntaryCancelDate: { type: Date }, // Track if they voluntarily canceled
