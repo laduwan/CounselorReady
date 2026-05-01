@@ -100,7 +100,6 @@ blogPostSchema.pre('validate', function(next) {
 
 // Index for public queries
 blogPostSchema.index({ status: 1, publishedAt: -1 });
-blogPostSchema.index({ slug: 1 });
 blogPostSchema.index({ category: 1 });
 blogPostSchema.index({ tags: 1 });
 

@@ -554,13 +554,27 @@
           textColor: 'text-forest-800',
           getStatement: (providerNumber) => `GA Integrated Therapeutic Perspectives LLC has been approved by NBCC as an Approved Continuing Education Provider, ACEP No. ${providerNumber || '7760'}. Programs that do not qualify for NBCC credit are clearly identified. GA Integrated Therapeutic Perspectives LLC is solely responsible for all aspects of the programs.`
         },
-        'GCSCW': {
-          title: 'Georgia Composite Board Approved',
-          logo: '/images/gcscw-logo.png',
+        'GSCSW': {
+          title: 'GSCSW Approved Course',
+          logo: null,
           gradient: 'from-blue-50 to-indigo-50',
           borderColor: 'border-blue-200',
           textColor: 'text-blue-800',
-          getStatement: (providerNumber) => `GA Integrated Therapeutic Perspectives LLC is approved by the Georgia Composite Board of Professional Counselors, Social Workers, and Marriage & Family Therapists to provide continuing education.${providerNumber ? ` Provider Number: ${providerNumber}` : ''}`
+          // GSCSW Policy & Procedures (June 2024) page 4 mandates literal
+          // phrase "Approved by GSCSW" + approval number on certificate.
+          getStatement: (providerNumber) => `Approved by GSCSW${providerNumber ? `, Approval #${providerNumber}` : ''}.`
+        },
+        'LPCAGA': {
+          title: 'LPCA-GA Approved Course',
+          logo: null,
+          gradient: 'from-emerald-50 to-green-50',
+          borderColor: 'border-emerald-200',
+          textColor: 'text-emerald-800',
+          // LPCA-GA mandatory full sentence is rendered on the certificate
+          // PDF (with hour-type breakdown and delivery format). The badge
+          // here is a short summary; the full compliant disclosure lives
+          // on the cert.
+          getStatement: (providerNumber) => `Approved by the Licensed Professional Counselors Association of Georgia.${providerNumber ? ` LPCA CE Approval #${providerNumber}` : ''}`
         },
         'GA-LPC-Board': {
           title: 'Georgia LPC Board Approved',

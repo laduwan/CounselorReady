@@ -192,7 +192,7 @@ const courseSchema = new mongoose.Schema({
   approvals: [{
     body: {
       type: String,
-      enum: ['NBCC', 'GCSCW', 'ACA', 'NASW', 'APA', 'ASWB', 'AAMFT', 'GA-LPC-Board', 'GA-LCSW-Board', 'GA-LMFT-Board', 'State Board', 'Other'],
+      enum: ['NBCC', 'ACEP', 'LPCAGA', 'GSCSW', 'ACA', 'NASW', 'APA', 'ASWB', 'AAMFT', 'State Board', 'Other'],
       required: true
     },
     providerNumber: { type: String },
@@ -204,13 +204,33 @@ const courseSchema = new mongoose.Schema({
     },
     approvalDate: { type: Date },
     expirationDate: { type: Date },
-    notes: { type: String }
+    notes: { type: String },
+
+    // Per-approval hour-type breakdown (required for LPCAGA + GSCSW
+    // certificate compliance — boards audit for explicit core/ethics split)
+    coreHours: { type: Number, default: 0, min: 0 },
+    ethicHours: { type: Number, default: 0, min: 0 },
+
+    // Delivery format — feeds the LPCA-GA mandatory disclosure sentence
+    // template at certificate-generation time. AW/LW/MLW/S/C from LPCA-GA's
+    // approval type taxonomy.
+    deliveryFormat: {
+      type: String,
+      enum: [
+        'asynchronous',          // AW — on-demand, 1-year validity
+        'live-webinar',          // LW — single live online date
+        'multi-live-workshop',   // MLW — series of live sessions, 12 mo
+        'in-person-single',      // S — one in-person date
+        'in-person-conference',  // C — multi-day in-person
+      ],
+      default: 'asynchronous'
+    }
   }],
   
   // Legacy fields (retained for backward compatibility)
   approvingBody: {
     type: String,
-    enum: ['NBCC', 'ACEP', 'ACA', 'NASW', 'APA', 'ASWB', 'AAMFT', 'LPCAGA', 'State Board', 'Other'],
+    enum: ['NBCC', 'ACEP', 'LPCAGA', 'GSCSW', 'ACA', 'NASW', 'APA', 'ASWB', 'AAMFT', 'State Board', 'Other'],
     default: 'NBCC'
   },
   approvingBodyOther: { type: String },
@@ -427,7 +447,6 @@ const courseSchema = new mongoose.Schema({
 // INDEXES
 // ============================================
 
-courseSchema.index({ slug: 1 });
 courseSchema.index({ status: 1 });
 courseSchema.index({ accessType: 1 });
 courseSchema.index({ title: 'text', description: 'text', tags: 'text' });
