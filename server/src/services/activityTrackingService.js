@@ -37,7 +37,7 @@ export async function logActivity(type, data, options = {}) {
   const activity = {
     type,
     data,
-    userId,
+    userId: userId || undefined,  // null → undefined; prevents ObjectId cast failure on adminActivityFeed push
     userName,
     userEmail,
     timestamp: new Date()
