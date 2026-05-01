@@ -576,22 +576,6 @@
           // on the cert.
           getStatement: (providerNumber) => `Approved by the Licensed Professional Counselors Association of Georgia.${providerNumber ? ` LPCA CE Approval #${providerNumber}` : ''}`
         },
-        'GA-LPC-Board': {
-          title: 'Georgia LPC Board Approved',
-          logo: null,
-          gradient: 'from-indigo-50 to-purple-50',
-          borderColor: 'border-indigo-200',
-          textColor: 'text-indigo-800',
-          getStatement: (providerNumber) => `This program has been approved by the Georgia Board of Professional Counselors for continuing education credit.${providerNumber ? ` Provider Number: ${providerNumber}` : ''}`
-        },
-        'GA-LCSW-Board': {
-          title: 'Georgia LCSW Board Approved',
-          logo: null,
-          gradient: 'from-purple-50 to-pink-50',
-          borderColor: 'border-purple-200',
-          textColor: 'text-purple-800',
-          getStatement: (providerNumber) => `This program has been approved by the Georgia Board of Licensed Clinical Social Workers for continuing education credit.${providerNumber ? ` Provider Number: ${providerNumber}` : ''}`
-        },
         'ACA': {
           title: 'ACA Approved Provider',
           logo: null,
