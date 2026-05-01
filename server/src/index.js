@@ -66,6 +66,11 @@ import blogRoutes from './routes/blog.js';
 import toolAnalyticsRoutes from './routes/toolAnalytics.js';
 import remediationRoutes from './routes/remediation.js';
 import securityRoutes from './routes/security.js';
+import supervisionRoutes from './routes/supervision.js';
+import insuranceCredentialsRoutes from './routes/insuranceCredentials.js';
+import legacyVaultRoutes from './routes/legacyVault.js';
+import groupLicensesRoutes from './routes/groupLicenses.js';
+import scholarlyArticlesRoutes from './routes/scholarlyArticles.js';
 
 // ═══════════════════════════════════════════════════════════════
 // SERVICE IMPORTS
@@ -198,6 +203,11 @@ app.use('/api/blog', blogRoutes);
 app.use('/api/tool-analytics', toolAnalyticsRoutes);
 app.use('/api/remediation', remediationRoutes);
 app.use('/api/security', securityRoutes);
+app.use('/api/supervision', supervisionRoutes);
+app.use('/api/insurance-credentials', insuranceCredentialsRoutes);
+app.use('/api/legacy-vault', legacyVaultRoutes);
+app.use('/api/group-licenses', groupLicensesRoutes);
+app.use('/api/scholarly-articles', scholarlyArticlesRoutes);
 
 app.use('/templates', express.static(path.join(__dirname, 'templates')));
 
