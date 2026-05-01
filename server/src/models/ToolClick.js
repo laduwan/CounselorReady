@@ -29,7 +29,7 @@ const toolClickSchema = new mongoose.Schema({
   referrer: { type: String },
   ip: { type: String },
   userAgent: { type: String },
-  timestamp: { type: Date, default: Date.now, index: true }
+  timestamp: { type: Date, default: Date.now }
 }, {
   timestamps: false
 });
