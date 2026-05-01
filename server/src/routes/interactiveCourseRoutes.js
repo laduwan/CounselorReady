@@ -891,8 +891,8 @@ router.post('/:id/certificate', protect, async (req, res) => {
       await generateCertificateNumber(course._id, req.user._id);
 
     // Resolve which approval body this certificate is issued under.
-    // Client sends selectedApprovalBody in the POST body; defaults to 'NBCC'.
-    const selectedApprovalBody = req.body.selectedApprovalBody || 'NBCC';
+    // Read from user's profile preference; falls back to 'NBCC'.
+    const selectedApprovalBody = user.profile?.preferredApprovalBody || 'NBCC';
     const approvalBlock = buildApprovalBlock(course.approvals, selectedApprovalBody, course.ceHours || 1);
     const selectedApprovalEntry = Array.isArray(course.approvals)
       ? course.approvals.find(a => a.body === selectedApprovalBody)
