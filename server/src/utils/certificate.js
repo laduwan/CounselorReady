@@ -39,6 +39,78 @@ const NBCC_DISCLAIMER =
 
 const DEFAULT_INSTRUCTOR = 'Kejuiana Johnson, MA, LPC, NCC, CPCS, BC-TMH';
 
+// ── Delivery format label map (LPCA-GA taxonomy → human-readable) ──
+const DELIVERY_FORMAT_LABELS = {
+  'asynchronous':         'Asynchronous',
+  'live-webinar':         'Live Webinar',
+  'multi-live-workshop':  'Multi-Session Live Workshop',
+  'in-person-single':     'In-Person',
+  'in-person-conference': 'In-Person Conference',
+};
+
+// ============================================================================
+// buildApprovalBlock
+// ----------------------------------------------------------------------------
+// Transforms a course's approvals[] array and the user's selectedApprovalBody
+// into the format expected by generateCertificate(data.approvals).
+//
+// Each hourBreakdown entry becomes one approval row on the PDF so multi-type
+// certificates (e.g. 3 Ethics + 3 Core) render as distinct labeled lines.
+//
+// Falls back to a single NBCC row if:
+//   - courseApprovals is empty / not an array
+//   - selectedBody doesn't match any entry
+//
+// Usage (in interactiveCourseRoutes.js cert endpoint):
+//   import { buildApprovalBlock } from '../utils/certificate.js';
+//   const approvals = buildApprovalBlock(course.approvals, selectedApprovalBody, course.ceHours);
+//   const pdf = await generateCertificate({ ...data, approvals });
+// ============================================================================
+export function buildApprovalBlock(courseApprovals, selectedBody, fallbackHours = 1) {
+  const match = Array.isArray(courseApprovals)
+    ? courseApprovals.find(a =>
+        a.body === selectedBody && a.status !== 'expired' && a.status !== 'not-applied'
+      )
+    : null;
+
+  // Fallback — NBCC single row
+  if (!match) {
+    return [{
+      body:     'NBCC',
+      code:     `ACEP #${ACEP_NUMBER}`,
+      hours:    fallbackHours,
+      category: '',
+      deliveryFormat: 'asynchronous'
+    }];
+  }
+
+  const providerNum = match.providerNumber || '';
+  const deliveryFormat = match.deliveryFormat || 'asynchronous';
+
+  // Map provider numbers to display codes
+  const codeMap = {
+    'NBCC':   `ACEP #${providerNum.replace(/[^0-9]/g, '') || ACEP_NUMBER}`,
+    'GSCSW':  providerNum ? `Approval ${providerNum}` : '',
+    'LPCAGA': providerNum ? `Approval ${providerNum}` : '',
+  };
+  const code = codeMap[match.body] ?? (providerNum ? providerNum : '');
+
+  // Build one row per hourBreakdown entry; fall back to total hours if empty
+  const breakdown = Array.isArray(match.hourBreakdown) && match.hourBreakdown.length
+    ? match.hourBreakdown
+    : [{ label: '', hours: fallbackHours }];
+
+  return breakdown.map(({ label, hours }) => ({
+    body:           match.body,
+    code,
+    hours:          Number(hours) || 0,
+    category:       label
+      ? label.charAt(0).toUpperCase() + label.slice(1)
+      : '',
+    deliveryFormat,
+  }));
+}
+
 // ── Filled diamond accent ──
 function drawDiamond(doc, cx, cy, size, color) {
   doc.save().fillColor(color);
@@ -75,14 +147,20 @@ export async function generateCertificate(data) {
   const completionDate    = data.completionDate ? new Date(data.completionDate) : new Date();
 
   // Approvals — data-driven multi-body block. Falls back to NBCC-only.
+  // Callers should use buildApprovalBlock() to populate this from course.approvals[].
   const approvals = Array.isArray(data.approvals) && data.approvals.length
     ? data.approvals
     : [{
         body:     'NBCC',
         code:     `ACEP #${acepNumber}`,
         hours:    ceHours,
-        category: ceCategory
+        category: ceCategory,
+        deliveryFormat: 'asynchronous'
       }];
+
+  // Delivery format label — read from first approval entry (all entries for a
+  // given selectedApprovalBody share the same deliveryFormat)
+  const deliveryLabel = DELIVERY_FORMAT_LABELS[approvals[0]?.deliveryFormat] || 'Asynchronous';
 
   const formattedDate = completionDate.toLocaleDateString('en-US', {
     year: 'numeric', month: 'long', day: 'numeric'
@@ -181,7 +259,7 @@ export async function generateCertificate(data) {
 
       let cursor = doc.y + 8;
 
-      // 9. COMPLETION + INSTRUCTOR + DELIVERY (consistent rhythm, with extra breath after Completed)
+      // 9. COMPLETION + INSTRUCTOR + DELIVERY (dynamic delivery format from approval)
       doc.font('Helvetica').fontSize(11).fillColor(NAVY)
          .text(`Completed ${formattedDate}`, 0, cursor, { align: 'center', width: W });
       cursor += 28;
@@ -189,7 +267,7 @@ export async function generateCertificate(data) {
          .text(`Instructor: ${instructorName}`, 0, cursor, { align: 'center', width: W });
       cursor += 14;
       doc.font('Helvetica-Oblique').fontSize(9).fillColor(BURGUNDY)
-         .text('Asynchronous', 0, cursor, { align: 'center', width: W });
+         .text(deliveryLabel, 0, cursor, { align: 'center', width: W });
       cursor += 22;
 
       // 10. LEARNING OBJECTIVES
@@ -385,5 +463,6 @@ export default {
   generateCertificate,
   generateCertificateNumber,
   generateSignedCertificateUrl,
-  extractPublicIdFromUrl
+  extractPublicIdFromUrl,
+  buildApprovalBlock
 };
