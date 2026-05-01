@@ -1150,6 +1150,18 @@
             <input type="text" class="form-input" id="prof-npi" placeholder="1234567890" maxlength="10" pattern="[0-9]{10}" style="padding-left:0.85rem">
             <p style="margin-top:6px;font-size:13px;color:#6b6b66">National Provider Identifier. Required by some boards on attendance records.</p>
           </div>
+          <div class="form-group" style="margin-bottom:20px">
+            <label class="form-label">Preferred CE Approval Body</label>
+            <select class="form-input" id="prof-preferredApprovalBody" style="padding-left:0.85rem">
+              <option value="NBCC">NBCC (National Board for Certified Counselors)</option>
+              <option value="LPCAGA">LPCA of Georgia (LPCs)</option>
+              <option value="GSCSW">GA Society for Clinical Social Work (LCSWs)</option>
+              <option value="ACA">ACA</option>
+              <option value="NASW">NASW</option>
+              <option value="Other">Other</option>
+            </select>
+            <p style="margin-top:6px;font-size:13px;color:#6b6b66">Used on your CE certificates when a course has multiple approval bodies. Select the body that matches your primary license.</p>
+          </div>
           <button class="btn-primary" onclick="saveProfile()" id="profileSaveBtn">Save Profile</button>
         </div>
       </div>
@@ -1538,7 +1550,7 @@
 
     // Wire dirty tracking on text inputs
     document.addEventListener('DOMContentLoaded', () => {
-      ['prof-firstName','prof-lastName','prof-pronouns','prof-pronounsCustom','prof-certificateName','prof-phone','prof-state','prof-timezone','prof-npi','prof-supName','prof-supLicense','prof-supCreds','prof-supStart','recovery-email','notif-phone','notif-email'].forEach(id => {
+      ['prof-firstName','prof-lastName','prof-pronouns','prof-pronounsCustom','prof-certificateName','prof-phone','prof-state','prof-timezone','prof-npi','prof-preferredApprovalBody','prof-supName','prof-supLicense','prof-supCreds','prof-supStart','recovery-email','notif-phone','notif-email'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.addEventListener('input', markDirty);
       });
@@ -1737,6 +1749,9 @@
         document.getElementById('prof-supLicense').value = user.profile?.supervisor?.license || '';
         document.getElementById('prof-supCreds').value = user.profile?.supervisor?.credentials || '';
         document.getElementById('prof-supStart').value = user.profile?.supervisor?.startDate?.slice(0, 10) || '';
+        const prefBody = user.profile?.preferredApprovalBody || 'NBCC';
+        const prefBodySel = document.getElementById('prof-preferredApprovalBody');
+        if (prefBodySel) prefBodySel.value = prefBody;
 
         // Account
         const plan = user.subscription?.plan || 'free';
@@ -1858,6 +1873,7 @@
             timezone: document.getElementById('prof-timezone').value,
             pronouns,
             npi,
+            preferredApprovalBody: document.getElementById('prof-preferredApprovalBody')?.value || 'NBCC',
           })
         });
         if (res.ok) { showToast('Profile saved!'); clearDirty(); }
