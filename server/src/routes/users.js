@@ -36,7 +36,7 @@ router.get('/profile', protect, async (req, res) => {
 router.put('/profile', protect, async (req, res) => {
   try {
     const { firstName, lastName, certificateName, state, timezone, phone, fullName,
-            pronouns, npi, specializations, supervisor } = req.body;
+            pronouns, npi, specializations, supervisor, preferredApprovalBody } = req.body;
 
     const user = await User.findById(req.user._id);
 
@@ -62,6 +62,7 @@ router.put('/profile', protect, async (req, res) => {
       user.profile.npi = npi;
     }
     if (Array.isArray(specializations)) user.profile.specializations = specializations;
+    if (preferredApprovalBody !== undefined) user.profile.preferredApprovalBody = preferredApprovalBody;
     if (supervisor && typeof supervisor === 'object') {
       user.profile.supervisor = {
         name:        supervisor.name        ?? user.profile.supervisor?.name        ?? '',
