@@ -159,11 +159,14 @@ APPROVING BODY - Look for these and extract exactly:
 - "APA" - American Psychological Association
 - "ASWB" - Association of Social Work Boards
 - "AAMFT" - American Association for Marriage and Family Therapy
-- State boards: "LPCAGA" (Georgia), "Florida Board", "Texas Board", etc.
+- "LPCAGA" - Licensed Professional Counselors Association of Georgia (per-course approval, format YYYY-MM-DD-NNNN[type])
+- "GSCSW" - Georgia Society for Clinical Social Workers (per-course approval, format MMDDYY)
+- State boards: "Florida Board", "Texas Board", etc.
 - If multiple approvals, list the primary/first one
 
 APPLICABILITY RULES:
 - If approved by NBCC, ACEP, ACA, NASW, APA, ASWB, AAMFT → "national" (applies to all states)
+- If approved by LPCAGA or GSCSW → "state-specific" (Georgia)
 - If approved by a state board, analyze the content:
   - If the content discusses STATE-SPECIFIC laws, rules, regulations, or statutes → "state-specific"
   - If the content is general clinical practice, theory, or skills → "national" (even if state-approved)
