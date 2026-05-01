@@ -77,9 +77,31 @@ export async function logActivity(type, data, options = {}) {
     console.error('Failed to log to admin feed:', error);
   }
 
-  // Send branded admin alert if enabled (non-blocking, never throws)
+  // Send branded admin alert — gated by admin's notification preferences
   if (notifyAdmin) {
-    sendAdminAlert(type, { userName, userEmail, ...data });
+    // Maps event types to adminNotifPrefs field names
+    const PREFS_MAP = {
+      user_registered:       'notifyRegistration',
+      user_enrolled:         'notifyEnrollment',
+      course_completed:      'notifyCompletion',
+      quiz_passed:           'notifyQuizPass',
+      quiz_failed:           'notifyQuizFail',
+      subscription_started:  'notifySubscriptionStart',
+      subscription_canceled: 'notifySubscriptionCancel',
+      payment_succeeded:     'notifyPayment',
+      payment_failed:        'notifyPaymentFail',
+      certificate_generated: 'notifyCertificate',
+    };
+    User.findOne({ role: 'admin' }, 'adminNotifPrefs').lean()
+      .then(admin => {
+        const raw = admin?.adminNotifPrefs || {};
+        const prefs = {};
+        for (const [eventType, prefKey] of Object.entries(PREFS_MAP)) {
+          prefs[eventType] = raw[prefKey] !== false; // default true if key absent
+        }
+        sendAdminAlertIfEnabled(prefs, type, { userName, userEmail, ...data });
+      })
+      .catch(() => sendAdminAlert(type, { userName, userEmail, ...data })); // fallback on DB error
   }
 
   return activity;
