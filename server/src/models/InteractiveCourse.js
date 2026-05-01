@@ -239,7 +239,50 @@ const CourseSchema = new mongoose.Schema({
   ceHours: { type: Number, required: true },
   ceProvider: { type: String, default: 'NBCC ACEP #7760' },
   acepNumber: { type: String, default: '7760' },
-  
+
+  // Multi-Approval Body Support — mirrors the structure on Course.js
+  // (PR #384). Each entry tracks one approval letter with hour-type
+  // breakdown and delivery format for audit-compliant certificate
+  // rendering. The legacy `approvalBody` field stays as-is for
+  // backward compat; new courses populate this array.
+  approvals: [{
+    body: {
+      type: String,
+      enum: ['NBCC', 'ACEP', 'LPCAGA', 'GSCSW', 'ACA', 'NASW', 'APA', 'ASWB', 'AAMFT', 'State Board', 'Other'],
+      required: true
+    },
+    providerNumber: { type: String },
+    providerName: { type: String },
+    status: {
+      type: String,
+      enum: ['approved', 'pending', 'expired', 'not-applied'],
+      default: 'approved'
+    },
+    approvalDate: { type: Date },
+    expirationDate: { type: Date },
+    notes: { type: String },
+
+    // Per-approval hour-type breakdown (LPCAGA + GSCSW certificates
+    // must show core/ethics split for audit compliance)
+    coreHours: { type: Number, default: 0, min: 0 },
+    ethicHours: { type: Number, default: 0, min: 0 },
+
+    // Delivery format — feeds the LPCA-GA mandatory disclosure
+    // sentence template at certificate-generation time. AW/LW/MLW/S/C
+    // from LPCA-GA's approval type taxonomy.
+    deliveryFormat: {
+      type: String,
+      enum: [
+        'asynchronous',          // AW — on-demand, 1-year validity
+        'live-webinar',          // LW — single live online date
+        'multi-live-workshop',   // MLW — series of live sessions, 12 mo
+        'in-person-single',      // S — one in-person date
+        'in-person-conference',  // C — multi-day in-person
+      ],
+      default: 'asynchronous'
+    }
+  }],
+
   // Learning objectives (ACEP required)
   objectives: [String],
   
