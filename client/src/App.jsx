@@ -17,6 +17,7 @@ import Layout from './components/Layout';
 import CourseViewer from './components/CourseViewer';
 import CourseBuilder from './components/course-builder/index.jsx';
 import ResearchReadyCE from './pages/ResearchReadyCE';
+import CEPlanner from './pages/CEPlanner';
 import AdminResearchReady from './pages/AdminResearchReady';
 
 // Wrapper to pass slug param to CourseViewer
@@ -144,6 +145,9 @@ function AppRoutes() {
       {/* RNR CE — learner page */}
       <Route path="/research-ready" element={
         <ProtectedRoute><Layout><ResearchReadyCE /></Layout></ProtectedRoute>
+      } />
+      <Route path="/ce-planner" element={
+        <ProtectedRoute><Layout><CEPlanner /></Layout></ProtectedRoute>
       } />
 
       {/* Admin routes */}
