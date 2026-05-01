@@ -363,6 +363,20 @@ const CourseSchema = new mongoose.Schema({
       'Wellness and Prevention'
     ]
   }],
+
+  // ACA Code of Ethics — subsection-level tagging.
+  // Format: section letter A-I + dot + subsection number (e.g. 'A.1', 'B.6').
+  // Section-level rollup is computed in code:
+  //   course.acaCodeSections.map(s => s.split('.')[0])
+  // Powers the platform's content-overlap-prevention feature
+  // (showing users courses that don't repeat content they've already covered).
+  // Full mapping of subsection → topic is in
+  // server/src/reference-taxonomies/aca-code-sections.js
+  acaCodeSections: [{
+    type: String,
+    match: /^[A-I]\.\d+$/
+  }],
+
   accessType: {
     type: String,
     enum: ['free', 'subscription', 'purchase'],
