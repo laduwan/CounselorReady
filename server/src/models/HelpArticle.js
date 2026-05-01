@@ -83,7 +83,6 @@ const helpArticleSchema = new mongoose.Schema({
 });
 
 // Indexes
-helpArticleSchema.index({ slug: 1 });
 helpArticleSchema.index({ category: 1, status: 1, order: 1 });
 helpArticleSchema.index({ audience: 1, status: 1 });
 helpArticleSchema.index({ searchTags: 1 });
