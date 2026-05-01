@@ -109,7 +109,6 @@ const partnerSchema = new mongoose.Schema({
   timestamps: true
 });
 
-partnerSchema.index({ slug: 1 });
 partnerSchema.index({ active: 1 });
 partnerSchema.index({ 'branding.customDomain': 1 });
 

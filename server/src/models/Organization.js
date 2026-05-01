@@ -72,7 +72,6 @@ organizationSchema.pre('save', function(next) {
 organizationSchema.index({ ownerId: 1 });
 organizationSchema.index({ 'seats.userId': 1 });
 organizationSchema.index({ 'seats.email': 1 });
-organizationSchema.index({ slug: 1 });
 
 // Get active seat count
 organizationSchema.methods.getActiveSeatCount = function() {
