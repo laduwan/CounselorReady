@@ -89,6 +89,37 @@ const certificateSchema = new mongoose.Schema({
   applicableStates: [{
     type: String // State codes: "GA", "FL", etc. Empty = all states (national)
   }],
+
+  // ── Platform-issued certificate fields ─────────────────────────────────────
+  // Set at issuance time when user completes a CounselorReady course and
+  // selects which approval body they want the certificate issued under.
+  // Only populated for source: 'platform' certificates.
+
+  // Which approval body the user selected (must match course.approvals[].body)
+  selectedApprovalBody: {
+    type: String,
+    enum: ['NBCC', 'ACEP', 'LPCAGA', 'GSCSW', 'ACA', 'NASW', 'APA', 'ASWB', 'AAMFT', 'State Board', 'Other', null],
+    default: null
+  },
+
+  // Provider/approval number for the selected body
+  // e.g. '#7760' for NBCC, '#092425' for GSCSW, 'A-0426-564' for LPCAGA
+  approvalProviderNumber: {
+    type: String,
+    trim: true,
+    default: null
+  },
+
+  // Hour breakdown credited under the selected approval body.
+  // Copied from course.approvals[selectedBody].hourBreakdown at issuance time
+  // so the PDF is self-contained and doesn't depend on course data staying
+  // unchanged. e.g. [{ label: 'ethics', hours: 3 }, { label: 'core', hours: 3 }]
+  creditedHourTypes: [{
+    label: { type: String, required: true },
+    hours: { type: Number, required: true, min: 0 }
+  }],
+  // ── End platform-issued fields ──────────────────────────────────────────────
+
   certificateNumber: {
     type: String,
     trim: true,
