@@ -14,7 +14,7 @@ import User from '../models/User.js';
 import UserCredential from '../models/UserCredential.js';
 import Gamification from '../models/Gamification.js';
 import { protect, requireAdmin, optionalAuth } from '../middleware/auth.js';
-import { generateCertificate, generateCertificateNumber } from '../utils/certificate.js';
+import { generateCertificate, generateCertificateNumber, buildApprovalBlock } from '../utils/certificate.js';
 import { logActivity, ACTIVITY_TYPES } from '../services/activityTrackingService.js';
 import { checkAndSendFreeLimit } from '../services/freeCourseLimitEmail.js';
 import twilio from 'twilio';
@@ -890,6 +890,18 @@ router.post('/:id/certificate', protect, async (req, res) => {
     const certificateNumber = certificate?.certificateNumber ||
       await generateCertificateNumber(course._id, req.user._id);
 
+    // Resolve which approval body this certificate is issued under.
+    // Client sends selectedApprovalBody in the POST body; defaults to 'NBCC'.
+    const selectedApprovalBody = req.body.selectedApprovalBody || 'NBCC';
+    const approvalBlock = buildApprovalBlock(course.approvals, selectedApprovalBody, course.ceHours || 1);
+    const selectedApprovalEntry = Array.isArray(course.approvals)
+      ? course.approvals.find(a => a.body === selectedApprovalBody)
+      : null;
+    const approvalProviderNumber = selectedApprovalEntry?.providerNumber || '#7760';
+    const creditedHourTypes = Array.isArray(selectedApprovalEntry?.hourBreakdown) && selectedApprovalEntry.hourBreakdown.length
+      ? selectedApprovalEntry.hourBreakdown.map(({ label, hours }) => ({ label, hours }))
+      : [{ label: 'core', hours: course.ceHours || 1 }];
+
     // Generate certificate PDF buffer via ../utils/certificate.js
     const userName =
       (user.profile?.certificateName?.trim()) ||
@@ -904,7 +916,7 @@ router.post('/:id/certificate', protect, async (req, res) => {
       acepNumber: 'ACEP #7760',
       ceCategory: course.ceCategory || course.contentArea || course.categories?.[0] || 'Counseling Theory/Practice and the Counseling Relationship',
       objectives: course.learningObjectives || course.objectives || [],
-      approvingBody: 'NBCC'
+      approvals: approvalBlock
     });
 
     // Upload PDF buffer to Cloudinary
@@ -940,8 +952,11 @@ router.post('/:id/certificate', protect, async (req, res) => {
         category: course.categories?.[0] || 'Core',
         nbccApproved: true,
         acepNumber: course.acepNumber || '7760',
-        approvingBody: 'NBCC',
-        approvalNumber: course.acepNumber || '#7760',
+        approvingBody: selectedApprovalBody,
+        approvalNumber: approvalProviderNumber,
+        selectedApprovalBody,
+        approvalProviderNumber,
+        creditedHourTypes,
         certificateNumber,
         source: 'platform',
         fileUrl: pdfUrl
@@ -1030,8 +1045,11 @@ router.post('/:id/certificate', protect, async (req, res) => {
         console.error('Free limit email check error (non-fatal):', err.message)
       );
     } else {
-      // Existing certificate — update fileUrl
+      // Existing certificate — update fileUrl and approval fields
       certificate.fileUrl = pdfUrl;
+      certificate.selectedApprovalBody = selectedApprovalBody;
+      certificate.approvalProviderNumber = approvalProviderNumber;
+      certificate.creditedHourTypes = creditedHourTypes;
       await certificate.save();
     }
 
