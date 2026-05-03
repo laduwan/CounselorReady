@@ -272,6 +272,7 @@
             localStorage.setItem('user', JSON.stringify(data.user));
             
             // Redirect to dashboard
+            if (window.gtag_report_conversion) { gtag_report_conversion(); }
             window.location.href = '/welcome.html';
           } else {
             // Show error
