@@ -1,5 +1,5 @@
 // CounselorReady Google Ads conversion tracking
-// Conversion: Subscribe (free signup completion)
+// Conversion: Subscribe (free signup completion) — live action label per send_to below
 // Account: AW-16681104079
 (function() {
   if (window.__crGtagLoaded) return;
@@ -23,7 +23,7 @@ window.gtag_report_conversion = function(url) {
     return false;
   }
   gtag('event', 'conversion', {
-    'send_to': 'AW-16681104079/Yp_1CJfQ9qMcEM_llZI-',
+    'send_to': 'AW-16681104079/169CCJTQ9qMcEM_llZI-',
     'value': 1.0,
     'currency': 'USD',
     'event_callback': callback
