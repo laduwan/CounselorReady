@@ -5156,12 +5156,52 @@ function renderReflection(wrap, block, blockIndex) {
   return wrap;
 }
 
+// Tracks block IDs that have already fired the rewards earn-call this session.
+// Server is the source of truth (enforces per-user dedup); this is just to
+// avoid spamming the endpoint on every keystroke after the threshold is hit.
+const crReflectionEarnedThisSession = new Set();
+
 function refCount(id, minLen) {
   const text = document.getElementById(id + '-textarea').value;
   const words = text.trim().split(/\s+/).filter(Boolean).length;
   const countEl = document.getElementById(id + '-count');
   countEl.textContent = `${words} words${words < minLen ? ` (minimum ${minLen})` : ' ✓'}`;
   countEl.style.color = words >= minLen ? 'var(--cr-success)' : 'var(--cr-text-muted)';
+
+  // Reflection earn hook — fire once per block per session when threshold hit.
+  // Block id format is `ref-{sectionIndex}-{blockIndex}` (set in renderReflection).
+  if (words >= minLen && !crReflectionEarnedThisSession.has(id)) {
+    crReflectionEarnedThisSession.add(id);
+    crEarnReflection(id);
+  }
+}
+
+function crEarnReflection(blockDomId) {
+  const token = localStorage.getItem('token');
+  const courseId = crSlugOrId();
+  if (!token || !courseId) return;
+
+  // Parse "ref-{sectionIndex}-{blockIndex}" → numeric indices
+  const m = blockDomId.match(/^ref-(\d+)-(\d+)$/);
+  if (!m) return;
+  const sectionIndex = parseInt(m[1], 10);
+  const blockIndex = parseInt(m[2], 10);
+
+  fetch(crApiBase() + '/api/rewards/earn-reflection', {
+    method: 'POST',
+    headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ courseId, sectionIndex, blockIndex })
+  })
+  .then(r => r.ok ? r.json() : null)
+  .then(data => {
+    // Server returns { earned: true, points: 5 } on first-time award,
+    // { earned: false, reason: 'already_awarded' } otherwise. Both are fine.
+    if (data && data.earned) {
+      // Optional: show a small toast. For MVP, console-only.
+      console.log('[REWARDS] +' + (data.points || 5) + ' CareCredits for reflection');
+    }
+  })
+  .catch(() => {}); // Fire-and-forget; never block the UI on network errors.
 }
 
 // ─── RESOURCES ───
