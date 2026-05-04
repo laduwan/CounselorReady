@@ -52,6 +52,7 @@ import aiRoutes from './routes/ai.js';
 import aiCourseGeneratorRoutes from './routes/aiCourseGenerator.js';
 import gamificationRoutes from './routes/gamification.js';
 import referralsRoutes from './routes/referrals.js';
+import rewardsRoutes from './routes/rewards.js';
 import boardAlertsRoutes from './routes/boardAlerts.js';
 import cePlannerRoutes from './routes/cePlanner.js';
 import imageUploadRoutes from './routes/imageUpload.js';
@@ -192,6 +193,7 @@ app.use('/api/ai', aiRoutes);
 app.use('/api/ai-course-generator', aiCourseGeneratorRoutes);
 app.use('/api/gamification', gamificationRoutes);
 app.use('/api/referrals', referralsRoutes);
+app.use('/api/rewards', rewardsRoutes);
 app.use('/api/board-alerts', boardAlertsRoutes);
 app.use('/api/ce-planner', cePlannerRoutes);
 app.use('/api/images', imageUploadRoutes);
@@ -232,6 +234,7 @@ const REQUIRED_ROUTES = {
   '/api/notifications':       notificationsRoutes,
   '/api/gamification':        gamificationRoutes,
   '/api/referrals':           referralsRoutes,
+  '/api/rewards':             rewardsRoutes,
   '/api/board-alerts':        boardAlertsRoutes,
   '/api/ce-planner':          cePlannerRoutes,
   '/api/scan':                scanRoutes,
