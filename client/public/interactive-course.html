@@ -1724,6 +1724,354 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
     z-index: 99998;
     isolation: isolate;
   }
+
+  /* ============================================================= */
+  /* CR Viewer — Phase 1 refinement (typography + color discipline) */
+  /* ============================================================= */
+/* =============================================================
+   CR Viewer — Phase 1 refinement
+   Typography + color discipline + foundational spacing.
+   CSS only. No JS changes. No dispatcher changes.
+
+   HOW TO APPLY
+   ------------
+   1. Open client/public/interactive-course.html
+   2. Find the existing inline the inline style block block near the top
+   3. Paste this entire file at the END of that block, just before the closing style tag
+   4. Push to main, deploy on Render, refresh viewer
+
+   HOW TO REVERT
+   -------------
+   Delete the lines you pasted. No other files touched. No data risk.
+
+   WHAT THIS DOES (Phase 1 only)
+   -----------------------------
+   - Locks brand tokens as CSS variables
+   - Replaces eggshell #F5F5DC with softer off-white #FAF7F2 in content area
+   - Switches body prose to a serif stack (Iowan Old Style → Charter → Georgia)
+   - Refines heading hierarchy (h2 burgundy, h3 hunter, h4 navy, all serif)
+   - Section/module titles burgundy to separate from body
+   - Adds breathing room between blocks
+   - Refines references (proper APA hanging indent + italic on titles)
+   - Locks wordmark colors (CounselorReady + CReady™ Viewer)
+
+   WHAT THIS DOES NOT DO YET (Phase 2+)
+   ------------------------------------
+   - Activity card chrome (gradient banners on scenario/flashcard/KC)
+   - Knowledge check option redesign (hairline rows)
+   - Drag-and-drop sequencing/cardSort
+   - Section divider numeral rework
+   - Inline callout pills + standalone callout variants
+
+   These come block-by-block in Phase 2 once Phase 1 lands clean.
+   ============================================================= */
+
+
+/* ============ 1. TOKENS ============ */
+
+:root {
+  /* Brand */
+  --cr-burgundy: #6B1D34;
+  --cr-rose:     #D0768A;
+  --cr-hunter:   #4A7C59;
+  --cr-honey:    #D4A855;
+  --cr-navy:     #284157;
+
+  /* Surfaces */
+  --cr-bg-content:   #FAF7F2;     /* refined off-white, replaces #F5F5DC */
+  --cr-bg-card:      #FFFFFF;
+  --cr-bg-sidebar:   #6B1D34;
+
+  /* Text */
+  --cr-text-body:  #2A2620;
+  --cr-text-muted: rgba(40, 65, 87, 0.55);
+  --cr-text-quiet: rgba(40, 65, 87, 0.4);
+
+  /* Borders */
+  --cr-border-hairline: rgba(40, 65, 87, 0.08);
+  --cr-border-subtle:   rgba(40, 65, 87, 0.12);
+
+  /* Type */
+  --cr-font-serif:   'Iowan Old Style', 'Charter', 'Source Serif Pro', Georgia, serif;
+  --cr-font-display: 'Cormorant Garamond', Georgia, serif;
+  --cr-font-sans:    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+
+  /* Tints (for callouts, highlights, hover) */
+  --cr-tint-burg: rgba(107, 29, 52, 0.04);
+  --cr-tint-grn:  rgba(74, 124, 89, 0.05);
+  --cr-tint-navy: rgba(40, 65, 87, 0.04);
+  --cr-tint-gold: rgba(212, 168, 85, 0.09);
+}
+
+
+/* ============ 2. CONTENT BACKGROUND ============ */
+
+/* Drop eggshell saturation in the viewer content area only.
+   Sidebar stays burgundy. Other platform pages stay stone. */
+#crContentArea,
+.cr-content-area,
+[data-cr-content-area],
+.cr-viewer-content {
+  background: var(--cr-bg-content) !important;
+}
+
+
+/* ============ 3. BODY PROSE — SERIF STACK ============ */
+
+/* Body text in any text/imageText block */
+.cr-prose,
+.cr-block[data-block-type="text"],
+.cr-block[data-block-type="imageText"] .cr-imageText-text,
+.cr-block[data-block-type="text"] > div {
+  font-family: var(--cr-font-serif);
+  font-size: 17px;
+  line-height: 1.75;
+  color: var(--cr-text-body);
+}
+
+.cr-prose p,
+.cr-block[data-block-type="text"] p,
+.cr-block[data-block-type="imageText"] p {
+  font-family: var(--cr-font-serif);
+  font-size: 17px;
+  line-height: 1.75;
+  color: var(--cr-text-body);
+  margin: 0 0 1.2em;
+  max-width: 680px;
+}
+
+.cr-prose p:last-child,
+.cr-block[data-block-type="text"] p:last-child {
+  margin-bottom: 0;
+}
+
+/* Inline emphasis */
+.cr-prose strong,
+.cr-block strong {
+  font-weight: 600;
+  color: var(--cr-navy);
+}
+.cr-prose em,
+.cr-block em {
+  font-style: italic;
+}
+
+/* Blockquote (clinical vignettes) */
+.cr-prose blockquote,
+.cr-block blockquote {
+  font-family: var(--cr-font-serif);
+  font-size: 16px;
+  line-height: 1.7;
+  color: var(--cr-text-body);
+  border-left: 3px solid var(--cr-burgundy);
+  padding: 4px 0 4px 18px;
+  margin: 24px 0;
+  font-style: italic;
+  background: transparent;
+  max-width: 660px;
+}
+
+
+/* ============ 4. HEADING HIERARCHY ============ */
+
+.cr-prose h2,
+.cr-block h2,
+.cr-block[data-block-type="text"] h2 {
+  font-family: var(--cr-font-serif);
+  font-size: 24px;
+  font-weight: 500;
+  color: var(--cr-burgundy);
+  line-height: 1.3;
+  letter-spacing: -0.005em;
+  margin: 36px 0 14px;
+}
+
+.cr-prose h3,
+.cr-block h3,
+.cr-block[data-block-type="text"] h3 {
+  font-family: var(--cr-font-serif);
+  font-size: 19px;
+  font-weight: 500;
+  color: var(--cr-hunter);
+  line-height: 1.35;
+  margin: 28px 0 10px;
+}
+
+.cr-prose h4,
+.cr-block h4,
+.cr-block[data-block-type="text"] h4 {
+  font-family: var(--cr-font-serif);
+  font-size: 17px;
+  font-weight: 500;
+  color: var(--cr-navy);
+  line-height: 1.4;
+  margin: 22px 0 8px;
+}
+
+.cr-prose h2:first-child,
+.cr-prose h3:first-child,
+.cr-block h2:first-child,
+.cr-block h3:first-child {
+  margin-top: 0;
+}
+
+/* Section/module title — burgundy to match the italic numeral.
+   The section divider uses its own markup (not h2/h3), so it needs
+   explicit selectors to inherit the H1 brand color. */
+.cr-block[data-block-type="sectionDivider"] h1,
+.cr-block[data-block-type="sectionDivider"] h2,
+.cr-block[data-block-type="sectionDivider"] .cr-section-title,
+.cr-block[data-block-type="sectionDivider"] [data-section-title],
+.cr-section-divider h1,
+.cr-section-divider h2,
+.cr-section-divider .cr-section-title,
+.cr-divider-title {
+  font-family: var(--cr-font-serif);
+  font-size: 24px;
+  font-weight: 500;
+  color: var(--cr-burgundy) !important;
+  line-height: 1.3;
+  margin: 0;
+}
+
+
+/* ============ 5. BLOCK-TO-BLOCK SPACING ============ */
+
+/* Generous breathing room between blocks for long-form reading */
+.cr-block + .cr-block {
+  margin-top: 44px;
+}
+
+/* Tighter spacing for adjacent text blocks (continuous prose) */
+.cr-block[data-block-type="text"] + .cr-block[data-block-type="text"] {
+  margin-top: 18px;
+}
+
+
+/* ============ 6. REFERENCES — APA HANGING INDENT ============ */
+
+.cr-references {
+  margin: 32px 0 0;
+  padding-top: 24px;
+  border-top: 1px solid var(--cr-border-hairline);
+}
+
+.cr-references h2 {
+  font-family: var(--cr-font-serif);
+  font-size: 22px;
+  font-weight: 500;
+  color: var(--cr-navy);
+  margin: 0 0 18px;
+}
+
+.cr-reference {
+  font-family: var(--cr-font-serif);
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--cr-text-body);
+  padding-left: 28px;
+  text-indent: -28px;
+  margin: 0 0 14px;
+  max-width: 720px;
+}
+
+.cr-reference em {
+  font-style: italic;
+  color: var(--cr-navy);
+}
+
+.cr-reference a,
+.cr-reference a:link,
+.cr-reference a:visited {
+  color: var(--cr-hunter);
+  text-decoration: underline;
+  text-decoration-color: rgba(74, 124, 89, 0.4);
+  text-underline-offset: 2px;
+  word-break: break-all;
+}
+
+
+/* ============ 7. WORDMARK COLOR LOCKS ============ */
+
+/* CounselorReady — on light backgrounds (default) */
+.cr-wordmark-counselor,
+.cr-wm-counselor {
+  color: var(--cr-burgundy);
+  font-weight: 500;
+}
+.cr-wordmark-ready,
+.cr-wm-ready {
+  color: var(--cr-hunter);
+  font-weight: 500;
+}
+
+/* CReady™ Viewer — same pattern, single C */
+.cr-wordmark-c,
+.cr-wm-c {
+  color: var(--cr-burgundy);
+  font-weight: 500;
+}
+.cr-wordmark-readylower,
+.cr-wm-readylower {
+  color: var(--cr-hunter);
+  font-weight: 500;
+}
+
+/* On burgundy backgrounds (sidebar, footer overlays):
+   swap burgundy half for rose. Hunter green stays. */
+.cr-bg-burgundy .cr-wordmark-counselor,
+.cr-bg-burgundy .cr-wm-counselor,
+.cr-bg-burgundy .cr-wordmark-c,
+.cr-bg-burgundy .cr-wm-c,
+[data-cr-bg="burgundy"] .cr-wordmark-counselor,
+[data-cr-bg="burgundy"] .cr-wm-counselor,
+[data-cr-bg="burgundy"] .cr-wordmark-c,
+[data-cr-bg="burgundy"] .cr-wm-c {
+  color: var(--cr-rose);
+}
+
+/* Gold is NEVER permitted on either wordmark */
+.cr-wordmark-counselor[style*="D4A855"],
+.cr-wordmark-c[style*="D4A855"],
+.cr-wordmark-ready[style*="D4A855"] {
+  /* This is a defensive rule — if any inline style ever tries to apply gold,
+     this won't catch it (CSS can't override inline). Document only. */
+}
+
+
+/* ============ 8. SMOOTH MICRO-MOTION ============ */
+
+/* Apply easing to common interactive elements.
+   Existing transition declarations on these elements are preserved
+   if they have higher specificity. */
+.cr-block,
+.cr-mc-option,
+.cr-accordion-item button,
+.cr-scenario-option,
+.cr-flashcard,
+.cr-callout,
+.cr-resource-item {
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+
+/* ============ 9. CONTENT MAX-WIDTH (DESKTOP) ============ */
+
+/* Prose stays narrow even when the viewport is wide.
+   Activity blocks remain full-width within their container —
+   they don't get the prose max-width because they're structural. */
+@media (min-width: 1024px) {
+  .cr-prose,
+  .cr-block[data-block-type="text"],
+  .cr-block[data-block-type="imageText"] {
+    max-width: 720px;
+  }
+}
+
+
+/* =============================================================
+   END Phase 1 patch
+   ============================================================= */
 </style>
 <!-- .docx parsing -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
