@@ -3920,8 +3920,7 @@ function csDrop(e, id) {
 
 // Tap-to-place (mobile + keyboard fallback)
 let csSelectedCard = null;
-function csTapCard(e, id) {
-  const card = e.currentTarget;
+function csTapCard(card, id) {
   const container = document.getElementById(id);
   // Deselect previous
   container.querySelectorAll('.cr-cardsort-card').forEach(c => c.style.outline = '');
@@ -3933,9 +3932,8 @@ function csTapCard(e, id) {
   srAnnounce('Card selected. Tap a category to place it.');
 }
 
-function csTapCategory(e, id) {
+function csTapCategory(cat, id) {
   if (!csSelectedCard) return;
-  const cat = e.currentTarget;
   cat.querySelector('.cr-cardsort-category-cards').appendChild(csSelectedCard);
   csSelectedCard.style.outline = '';
   csSelectedCard = null;
@@ -6197,8 +6195,8 @@ document.addEventListener('click', function(e) {
     case 'scenarioRestart': renderScenarioNode(target, el.dataset.node); break;
     
     // ─── Card Sort ───
-    case 'csTapCard': csTapCard(e, target); break;
-    case 'csTapCategory': csTapCategory(e, target); break;
+    case 'csTapCard': csTapCard(el, target); break;
+    case 'csTapCategory': csTapCategory(el, target); break;
     case 'csCheck': csCheck(target); break;
     
     // ─── Sequencing ───
