@@ -2456,18 +2456,23 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
 
 
 /* ═══════════════════════════════════════════════════════════════
-   5. CALLOUTS — eight standalone variants
-      Markup: <aside class="cr-callout cr-callout-{variant}">
-              <h4>...</h4>
-              <p>...</p>
-              </aside>
+   5. STANDALONE CALLOUT BLOCKS — eight variants
+      Markup (from renderCallout):
+        <div class="cr-callout cr-callout-{type}">
+          <h4 class="cr-callout-title">
+            <span class="cr-callout-icon">🩺</span>
+            <span class="cr-callout-label">Title</span>
+          </h4>
+          <div class="cr-callout-body cr-prose">…content…</div>
+          <ul class="cr-callout-list"><li>…</li></ul>
+        </div>
+      Also styles author-written <aside class="cr-callout"> fallback.
    ═══════════════════════════════════════════════════════════════ */
 
 .cr-callout {
-  /* Base — applies to all variants */
   position: relative;
   margin: 24px auto;
-  padding: 18px 22px 18px 24px;
+  padding: 16px 20px;
   border-left: 3px solid var(--cr-border);
   border-radius: 2px;
   background: rgba(0, 0, 0, 0.015);
@@ -2478,130 +2483,148 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
   break-inside: avoid;
 }
 
+.cr-callout-title,
 .cr-callout > h4:first-child {
-  font-family: var(--cr-font-sans, system-ui, sans-serif);
-  font-size: 11px;
+  font-family: var(--cr-font-display, 'Cormorant Garamond', 'Iowan Old Style', Georgia, serif);
+  font-size: 15px;
   font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--cr-text-muted, #6B7280);
+  letter-spacing: 0.01em;
   margin: 0 0 8px;
   padding: 0;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
+  color: var(--cr-text-body);
 }
 
-.cr-callout > h4:first-child::before {
-  /* Variant-specific glyph injected via per-variant override */
-  font-size: 13px;
+.cr-callout-icon {
+  font-size: 16px;
   line-height: 1;
+  display: inline-block;
+  flex-shrink: 0;
 }
 
+.cr-callout-label {
+  flex: 1;
+  letter-spacing: 0.005em;
+}
+
+.cr-callout-body,
 .cr-callout p {
-  margin: 0 0 0.8em;
-  max-width: none !important;  /* override Phase 1 paragraph centering inside callouts */
+  margin: 0 0 0.6em !important;
+  max-width: none !important;
   margin-left: 0 !important;
   margin-right: 0 !important;
+  font-size: 15px;
+  line-height: 1.6;
 }
 
-.cr-callout p:last-child { margin-bottom: 0; }
+.cr-callout-body p:last-child,
+.cr-callout p:last-child { margin-bottom: 0 !important; }
 
+.cr-callout-body em,
 .cr-callout em { font-style: italic; }
+
+.cr-callout-body strong,
 .cr-callout strong { font-weight: 600; }
 
-.cr-callout ul,
-.cr-callout ol {
-  margin: 0.4em 0 0.8em;
+.cr-callout-list {
+  margin: 4px 0 0;
   padding-left: 22px;
 }
 
-.cr-callout li {
-  margin-bottom: 0.3em;
+.cr-callout-list li {
+  font-size: 15px;
+  line-height: 1.6;
+  margin-bottom: 4px;
 }
 
 
-/* — Variant: INFO — neutral framing */
+/* — Variant: INFO — */
 .cr-callout-info {
   border-left-color: var(--cr-navy, #284157);
   background: rgba(40, 65, 87, 0.04);
 }
-.cr-callout-info > h4:first-child { color: var(--cr-navy, #284157); }
-.cr-callout-info > h4:first-child::before { content: "ℹ"; }
+.cr-callout-info .cr-callout-title { color: var(--cr-navy, #284157); }
 
 
-/* — Variant: KEY — high-importance takeaway */
-.cr-callout-key {
-  border-left-color: var(--cr-burgundy, #6B1D34);
-  background: rgba(107, 29, 52, 0.04);
+/* — Variant: WARNING — */
+.cr-callout-warning {
+  border-left-color: #C97A1B;
+  background: rgba(201, 122, 27, 0.05);
 }
-.cr-callout-key > h4:first-child { color: var(--cr-burgundy, #6B1D34); }
-.cr-callout-key > h4:first-child::before { content: "★"; }
+.cr-callout-warning .cr-callout-title { color: #8E5613; }
 
 
-/* — Variant: ETHICS — code/legal flag */
+/* — Variant: ETHICS — */
 .cr-callout-ethics {
-  border-left-color: var(--cr-burgundy, #6B1D34);
-  background: rgba(107, 29, 52, 0.05);
-  border-left-width: 4px;
-}
-.cr-callout-ethics > h4:first-child { color: var(--cr-burgundy, #6B1D34); }
-.cr-callout-ethics > h4:first-child::before { content: "§"; font-weight: 600; }
-
-
-/* — Variant: CLINICAL — pearl from practice */
-.cr-callout-clinical {
-  border-left-color: var(--cr-hunter, #4A7C59);
-  background: rgba(74, 124, 89, 0.05);
-}
-.cr-callout-clinical > h4:first-child { color: var(--cr-hunter, #4A7C59); }
-.cr-callout-clinical > h4:first-child::before { content: "❋"; }
-
-
-/* — Variant: TIP — practical guidance */
-.cr-callout-tip {
   border-left-color: var(--cr-gold, #D4A855);
   background: rgba(212, 168, 85, 0.07);
+  border-left-width: 4px;
 }
-.cr-callout-tip > h4:first-child { color: #8C6A1F; }
-.cr-callout-tip > h4:first-child::before { content: "→"; }
+.cr-callout-ethics .cr-callout-title { color: #8C6A1F; }
 
 
-/* — Variant: DONOT — anti-pattern */
+/* — Variant: CLINICAL — */
+.cr-callout-clinical {
+  border-left-color: var(--cr-navy, #284157);
+  background: rgba(40, 65, 87, 0.05);
+}
+.cr-callout-clinical .cr-callout-title { color: var(--cr-navy, #284157); }
+
+
+/* — Variant: TIP — */
+.cr-callout-tip {
+  border-left-color: var(--cr-hunter, var(--cr-green, #4A7C59));
+  background: rgba(74, 124, 89, 0.05);
+}
+.cr-callout-tip .cr-callout-title { color: var(--cr-hunter, #4A7C59); }
+
+
+/* — Variant: KEY — */
+.cr-callout-key {
+  border-left-color: var(--cr-burgundy, #6B1D34);
+  background: rgba(107, 29, 52, 0.05);
+}
+.cr-callout-key .cr-callout-title { color: var(--cr-burgundy, #6B1D34); }
+
+
+/* — Variant: DONOT — */
 .cr-callout-donot {
   border-left-color: #B91C1C;
   background: rgba(185, 28, 28, 0.04);
 }
-.cr-callout-donot > h4:first-child { color: #B91C1C; }
-.cr-callout-donot > h4:first-child::before { content: "✕"; font-weight: 700; }
+.cr-callout-donot .cr-callout-title { color: #B91C1C; }
 
 
-/* — Variant: PROTOCOL — ordered procedure */
+/* — Variant: PROTOCOL — auto-numbered list */
 .cr-callout-protocol {
-  border-left-color: var(--cr-navy, #284157);
-  background: rgba(40, 65, 87, 0.05);
+  border-left-color: #C97A1B;
+  background: rgba(201, 122, 27, 0.05);
 }
-.cr-callout-protocol > h4:first-child { color: var(--cr-navy, #284157); }
-.cr-callout-protocol > h4:first-child::before { content: "❒"; }
+.cr-callout-protocol .cr-callout-title { color: #8E5613; }
 
+.cr-callout-protocol .cr-callout-list,
 .cr-callout-protocol ol {
-  margin-top: 8px;
   counter-reset: protocol;
   list-style: none;
   padding-left: 0;
+  margin-top: 8px;
 }
+.cr-callout-protocol .cr-callout-list li,
 .cr-callout-protocol ol li {
   counter-increment: protocol;
   position: relative;
   padding-left: 32px;
   margin-bottom: 8px;
 }
+.cr-callout-protocol .cr-callout-list li::before,
 .cr-callout-protocol ol li::before {
   content: counter(protocol);
   position: absolute;
-  left: 0; top: 0;
+  left: 0; top: 1px;
   width: 22px; height: 22px;
-  background: var(--cr-navy, #284157);
+  background: #C97A1B;
   color: #fff;
   border-radius: 50%;
   display: flex;
@@ -2614,73 +2637,84 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
 }
 
 
-/* — Variant: WARNING — risk alert (less alarming than donot) */
-.cr-callout-warning {
-  border-left-color: #C97A1B;
-  background: rgba(201, 122, 27, 0.05);
-}
-.cr-callout-warning > h4:first-child { color: #8E5613; }
-.cr-callout-warning > h4:first-child::before { content: "⚠"; }
-
-
 /* ═══════════════════════════════════════════════════════════════
-   6. INLINE PILLS — vocabulary terms with tap/hover definition
-      Markup: <span class="cr-pill" data-def="...">term</span>
+   6. INLINE PILLS — six variants matching PILL_COLORS in viewer JS
+      Author syntax: {{callout:hipaa}}  (or any CALLOUT_LIBRARY id,
+      or any per-block custom id declared in block.callouts)
+      Renders: <span class="cr-pill cr-pill-{type}" data-def="…"
+                role="button" tabindex="0">📖 Label</span>
+      Variants: definition / clinical / ethics / example / reference / warning
    ═══════════════════════════════════════════════════════════════ */
 
 .cr-pill {
   position: relative;
-  border-bottom: 1px dotted var(--cr-burgundy, #6B1D34);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 1px 8px;
+  border-radius: 20px;
+  border: 1px solid var(--cr-border);
+  background: rgba(0, 0, 0, 0.04);
+  color: var(--cr-text-body);
+  font-family: var(--cr-font-sans, system-ui, sans-serif);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.6;
   cursor: help;
-  color: var(--cr-burgundy, #6B1D34);
-  font-weight: 500;
-  /* Make focusable for keyboard users — caller adds tabindex="0" */
+  vertical-align: middle;
+  transition: filter 0.15s ease;
 }
 
 .cr-pill:hover,
 .cr-pill:focus {
   outline: none;
-  background: rgba(107, 29, 52, 0.06);
+  filter: brightness(0.96);
 }
 
+.cr-pill:focus-visible {
+  outline: 2px solid var(--cr-burgundy, #6B1D34);
+  outline-offset: 2px;
+}
+
+/* Tooltip from data-def */
 .cr-pill::after {
-  /* Tooltip content from data-def, hidden by default */
   content: attr(data-def);
   position: absolute;
-  bottom: calc(100% + 10px);
+  bottom: calc(100% + 8px);
   left: 50%;
   transform: translateX(-50%) translateY(4px);
   background: var(--cr-navy, #284157);
   color: #fff;
-  padding: 10px 14px;
+  padding: 9px 12px;
   border-radius: 6px;
   font-family: var(--cr-font-sans, system-ui, sans-serif);
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 400;
   line-height: 1.45;
+  letter-spacing: 0;
   white-space: normal;
   width: max-content;
-  max-width: 320px;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
+  max-width: 280px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.16);
   pointer-events: none;
   opacity: 0;
   visibility: hidden;
-  transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
+  transition: opacity 0.18s ease, transform 0.18s ease, visibility 0.18s;
   z-index: 50;
+  text-transform: none;
 }
 
 .cr-pill::before {
-  /* Triangle pointer below the tooltip */
-  content: "";
+  content: '';
   position: absolute;
-  bottom: calc(100% + 4px);
+  bottom: calc(100% + 2px);
   left: 50%;
   transform: translateX(-50%);
   border: 6px solid transparent;
   border-top-color: var(--cr-navy, #284157);
   pointer-events: none;
   opacity: 0;
-  transition: opacity 0.2s ease;
+  transition: opacity 0.18s ease;
   z-index: 50;
 }
 
@@ -2696,7 +2730,51 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
   opacity: 1;
 }
 
-/* On narrow screens, anchor tooltip to viewport edges to prevent overflow */
+
+/* — Pill variants — match PILL_COLORS in viewer JS — */
+
+.cr-pill-definition {
+  background: rgba(74, 124, 89, 0.10);
+  border-color: var(--cr-hunter, var(--cr-green, #4A7C59));
+  color: var(--cr-hunter, #4A7C59);
+}
+
+.cr-pill-clinical {
+  background: rgba(40, 65, 87, 0.08);
+  border-color: var(--cr-navy, #284157);
+  color: var(--cr-navy, #284157);
+}
+
+.cr-pill-ethics {
+  background: rgba(212, 168, 85, 0.16);
+  border-color: var(--cr-gold, #D4A855);
+  color: #92600A;
+}
+
+.cr-pill-example {
+  background: rgba(212, 168, 85, 0.16);
+  border-color: var(--cr-gold, #D4A855);
+  color: #8B5E2E;
+}
+
+.cr-pill-reference {
+  background: #F0EAE0;
+  border-color: var(--cr-border);
+  color: var(--cr-navy, #284157);
+}
+
+.cr-pill-warning {
+  background: #FEF2F2;
+  border-color: #DC2626;
+  color: #991B1B;
+}
+
+.cr-pill-unknown {
+  background: #F0F0F0;
+  border-color: #CCC;
+  color: #666;
+}
+
 @media (max-width: 640px) {
   .cr-pill::after {
     max-width: calc(100vw - 32px);
@@ -2715,65 +2793,85 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
 
 
 /* ═══════════════════════════════════════════════════════════════
-   7. INLINE ALERTS — sentence-level emphasis
-      Markup: <span class="cr-alert cr-alert-{variant}">...</span>
+   7. INLINE ALERTS — seven variants matching ALERT_STYLES in viewer JS
+      Author syntax: {{alert:ethics}}
+      Renders: <span class="cr-alert cr-alert-{type}"
+                role="button" tabindex="0">⚖️ Ethics Alert</span>
+      Variants: ethics / mandatory / donot / document / supervisor / legal / protocol
    ═══════════════════════════════════════════════════════════════ */
 
 .cr-alert {
-  display: inline;
-  padding: 1px 6px;
-  border-radius: 3px;
-  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 9px;
+  border-radius: 20px;
+  border: 1.5px solid var(--cr-border);
   background: rgba(0, 0, 0, 0.04);
-  border-bottom: 1.5px solid transparent;
-  transition: background 0.15s ease;
+  color: var(--cr-text-body);
+  font-family: var(--cr-font-sans, system-ui, sans-serif);
+  font-size: 12.5px;
+  font-weight: 700;
+  line-height: 1.7;
+  letter-spacing: 0.01em;
+  vertical-align: middle;
+  cursor: help;
+  transition: filter 0.15s ease;
 }
 
-.cr-alert::before {
-  font-family: var(--cr-font-sans, system-ui, sans-serif);
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  margin-right: 5px;
-  opacity: 0.9;
-  vertical-align: 0.08em;
+.cr-alert:hover,
+.cr-alert:focus {
+  outline: none;
+  filter: brightness(0.96);
+}
+
+.cr-alert:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
+
+.cr-alert-ethics {
+  background: rgba(212, 168, 85, 0.16);
+  border-color: var(--cr-gold, #D4A855);
+  color: #92600A;
+}
+
+.cr-alert-mandatory {
+  background: #FEF2F2;
+  border-color: #DC2626;
+  color: #991B1B;
+}
+
+.cr-alert-donot {
+  background: #FEF2F2;
+  border-color: #DC2626;
+  color: #991B1B;
+}
+
+.cr-alert-document {
+  background: rgba(40, 65, 87, 0.08);
+  border-color: var(--cr-navy, #284157);
+  color: var(--cr-navy, #284157);
 }
 
 .cr-alert-supervisor {
-  background: rgba(40, 65, 87, 0.07);
-  border-bottom-color: var(--cr-navy, #284157);
-  color: var(--cr-navy, #284157);
+  background: #F5F3FF;
+  border-color: #7C3AED;
+  color: #4C1D95;
 }
-.cr-alert-supervisor::before { content: "Consult"; }
-
-.cr-alert-document {
-  background: rgba(74, 124, 89, 0.07);
-  border-bottom-color: var(--cr-hunter, #4A7C59);
-  color: #2F5039;
-}
-.cr-alert-document::before { content: "Document"; }
 
 .cr-alert-legal {
-  background: rgba(107, 29, 52, 0.07);
-  border-bottom-color: var(--cr-burgundy, #6B1D34);
-  color: var(--cr-burgundy, #6B1D34);
+  background: #FEF2F2;
+  border-color: #7F1D1D;
+  color: #7F1D1D;
 }
-.cr-alert-legal::before { content: "Legal"; }
-
-.cr-alert-donot {
-  background: rgba(185, 28, 28, 0.07);
-  border-bottom-color: #B91C1C;
-  color: #8B1A1A;
-}
-.cr-alert-donot::before { content: "Don't"; }
 
 .cr-alert-protocol {
-  background: rgba(212, 168, 85, 0.10);
-  border-bottom-color: var(--cr-gold, #D4A855);
-  color: #8C6A1F;
+  background: #FFF7ED;
+  border-color: #EA580C;
+  color: #C2410C;
 }
-.cr-alert-protocol::before { content: "Protocol"; }
 
 
 /* ═══════════════════════════════════════════════════════════════
@@ -2782,15 +2880,21 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
    ═══════════════════════════════════════════════════════════════ */
 
 @media print {
-  .cr-callout { break-inside: avoid; background: transparent !important; }
+  .cr-callout {
+    break-inside: avoid;
+    background: transparent !important;
+  }
   .cr-pill::after,
   .cr-pill::before { display: none !important; }
   .cr-pill {
-    border-bottom: none;
+    border: none;
+    background: transparent;
     color: inherit;
+    padding: 0;
+    font-weight: 600;
   }
   .cr-pill::after {
-    /* In print, render the definition inline in parentheses */
+    /* In print, show definition inline in parentheses */
     content: " (" attr(data-def) ")";
     position: static;
     display: inline;
@@ -2805,11 +2909,232 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
     max-width: none;
     transform: none;
   }
+  .cr-alert {
+    border: none;
+    background: transparent;
+    padding: 0;
+    color: inherit;
+  }
   .cr-block[data-block-type]::before { display: none; }
 }
 
 
-/* — END PHASE 2 — */
+/* ═══════════════════════════════════════════════════════════════
+   PHASE 3 — KC CONTAINER + REFLECTION EDITORIAL PASS
+   Phase 2 hairline-ified the KC option list but left the chunky
+   burgundy left-border container and the burgundy pill submit.
+   Phase 3 drops both, finishes the editorial treatment, and
+   redesigns reflection from green-faded card to pull-quote.
+   ═══════════════════════════════════════════════════════════════ */
+
+
+/* ─── 9. KC CONTAINER — finish editorial — ────────────────────
+   Phase 2 left a 2px burgundy bar on the left and a 24px indent.
+   Phase 3 swaps that for a hairline rule above the question, so
+   KCs read as a discrete editorial unit instead of a decorated
+   chunk. The activity tag from Phase 2 (".cr-block[data-block-
+   type=multipleChoice]::before" → "Knowledge check") becomes
+   the section anchor; nothing else needs decoration.
+
+   This applies to ALL knowledge check types: multipleChoice,
+   multiSelect, matching, cardSort, sequencing, timeline. Each
+   has its own container class, but the editorial principle
+   is the same — strip the chunk, let the tag and hairline
+   carry the structure.
+   ─────────────────────────────────────────────────────────── */
+
+.cr-kc {
+  background: transparent !important;
+  border: none !important;
+  border-left: none !important;
+  border-radius: 0 !important;
+  padding: 4px 0 8px !important;
+  margin: 0 0 32px !important;
+  position: relative;
+}
+
+/* Hairline rule above the question, anchoring the block */
+.cr-kc::before {
+  content: '';
+  display: block;
+  height: 1px;
+  background: var(--cr-border, #E0DACE);
+  margin-bottom: 22px;
+  opacity: 0.55;
+}
+
+/* Question — editorial, body color, slight letterspacing */
+.cr-kc-question {
+  font-family: 'Iowan Old Style', 'Charter', 'Source Serif Pro', Georgia, serif !important;
+  font-size: 17.5px !important;
+  font-weight: 500 !important;
+  letter-spacing: 0.005em !important;
+  color: var(--cr-text-body, #1F2937) !important;
+  line-height: 1.5 !important;
+  margin: 0 0 18px !important;
+  max-width: 640px;
+}
+
+/* Submit — text button instead of burgundy pill.
+   Hairline outline that fills on hover. */
+.cr-kc-submit {
+  display: inline-block;
+  margin-top: 18px !important;
+  padding: 7px 16px !important;
+  background: transparent !important;
+  color: var(--cr-burgundy, #6B1D34) !important;
+  border: 1px solid var(--cr-burgundy, #6B1D34) !important;
+  border-radius: 2px !important;
+  font-family: var(--cr-font-sans, system-ui, sans-serif) !important;
+  font-size: 11.5px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.06em !important;
+  text-transform: uppercase !important;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.cr-kc-submit:hover:not(:disabled),
+.cr-kc-submit:focus:not(:disabled) {
+  background: var(--cr-burgundy, #6B1D34) !important;
+  color: #fff !important;
+  outline: none;
+}
+
+.cr-kc-submit:disabled {
+  opacity: 0.4 !important;
+  cursor: not-allowed;
+  border-color: var(--cr-text-muted, #9CA3AF) !important;
+  color: var(--cr-text-muted, #6B7280) !important;
+  background: transparent !important;
+}
+
+
+/* ─── 10. REFLECTION — full editorial redesign — ──────────────
+   Drops: green-faded background, full border, 24px padding,
+   chunky green serif heading with 💭 emoji, 2px-bordered
+   rounded textarea, right-aligned count.
+   Adds: hairline rule above, italic navy serif pull-quote
+   prompt, borderless textarea with single hairline base,
+   tiny italic count.
+   The 💭 emoji has been stripped from the JS renderer; the
+   activity tag from Phase 2 supplies the "REFLECTION" label.
+   ─────────────────────────────────────────────────────────── */
+
+.cr-reflection {
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  padding: 4px 0 8px !important;
+  margin: 0 0 32px !important;
+  position: relative;
+}
+
+.cr-reflection::before {
+  content: '';
+  display: block;
+  height: 1px;
+  background: var(--cr-border, #E0DACE);
+  margin-bottom: 24px;
+  opacity: 0.55;
+}
+
+/* Prompt — italic serif pull-quote, navy, no emoji */
+.cr-reflection-prompt {
+  font-family: 'Iowan Old Style', 'Charter', 'Source Serif Pro', Georgia, serif !important;
+  font-size: 19px !important;
+  font-style: italic !important;
+  font-weight: 400 !important;
+  letter-spacing: 0.005em !important;
+  color: var(--cr-navy, #284157) !important;
+  line-height: 1.5 !important;
+  margin: 0 0 22px !important;
+  max-width: 640px;
+  display: block !important;  /* override flex layout from old style */
+  gap: 0 !important;
+}
+
+/* Textarea — minimal: borderless except for hairline bottom */
+.cr-reflection textarea {
+  background: transparent !important;
+  border: none !important;
+  border-bottom: 1.5px solid var(--cr-border, #C4BCAB) !important;
+  border-radius: 0 !important;
+  padding: 12px 4px !important;
+  font-family: 'Iowan Old Style', 'Charter', 'Source Serif Pro', Georgia, serif !important;
+  font-size: 16px !important;
+  line-height: 1.65 !important;
+  color: var(--cr-text-body, #1F2937) !important;
+  min-height: 100px !important;
+  max-width: 640px !important;
+  width: 100% !important;
+  outline: none;
+  resize: vertical;
+  transition: border-bottom-color 0.18s ease;
+  display: block;
+}
+
+.cr-reflection textarea::placeholder {
+  color: var(--cr-text-muted, #9CA3AF) !important;
+  font-style: italic;
+  opacity: 0.7;
+}
+
+.cr-reflection textarea:focus {
+  border-bottom-color: var(--cr-hunter, #4A7C59) !important;
+  border-bottom-width: 2px !important;
+}
+
+/* Word count — small, italic, muted, right-aligned to textarea */
+.cr-reflection-count {
+  font-family: var(--cr-font-sans, system-ui, sans-serif) !important;
+  font-size: 11px !important;
+  font-style: italic !important;
+  color: var(--cr-text-muted, #9CA3AF) !important;
+  margin-top: 8px !important;
+  text-align: right !important;
+  max-width: 640px !important;
+  letter-spacing: 0.025em;
+}
+
+
+/* ─── 11. KC EXPLANATION — refine after Phase 2 — ────────────
+   Phase 2 already shifted explanation to a hairline-bordered
+   footnote. Phase 3 adds an italic intro tag ("WHY →") and
+   slightly tightens the typography for a cleaner read. */
+
+.cr-kc-explanation {
+  margin-top: 22px !important;
+  padding: 12px 16px 12px 18px !important;
+  background: transparent !important;
+  border: none !important;
+  border-left: 2px solid var(--cr-hunter, #4A7C59) !important;
+  border-radius: 0 !important;
+  font-family: 'Iowan Old Style', 'Charter', Georgia, serif !important;
+  font-size: 14.5px !important;
+  font-style: italic !important;
+  line-height: 1.6 !important;
+  color: var(--cr-text-body, #1F2937) !important;
+  max-width: 640px;
+  position: relative;
+}
+
+.cr-kc-explanation::before {
+  content: 'Why →';
+  display: inline-block;
+  margin-right: 8px;
+  font-style: normal;
+  font-family: var(--cr-font-sans, system-ui, sans-serif);
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--cr-hunter, #4A7C59);
+  vertical-align: 0.12em;
+}
+
+
+/* — END PHASE 3 — */
 
 </style>
 <!-- .docx parsing -->
@@ -4228,20 +4553,24 @@ function parseCalloutSyntax(html, blockCallouts) {
   if (!html || typeof html !== 'string') return html;
   const lib = Object.assign({}, CALLOUT_LIBRARY, blockCallouts || {});
 
-  // {{callout:id}} → inline pill with tooltip
+  // {{callout:id}} → inline pill with tooltip (class-based; styled by CSS)
   let out = html.replace(/\{\{callout:([^}]+)\}\}/g, function(_, id) {
     const key = id.trim();
     const def = lib[key];
-    if (!def) return '<span style="display:inline-flex;align-items:center;gap:2px;padding:1px 6px;border-radius:20px;background:#f0f0f0;border:1px solid #ccc;color:#666;font-size:0.78rem;font-weight:600;cursor:help;vertical-align:middle" title="Unknown: ' + esc(key) + '">⬡ ' + esc(key) + '</span>';
-    const ps = PILL_COLORS[def.type] || PILL_COLORS.definition;
-    return '<span title="' + esc(def.body) + '" role="button" tabindex="0" style="display:inline-flex;align-items:center;gap:3px;padding:1px 7px;border-radius:20px;background:' + ps.bg + ';border:1px solid ' + ps.border + ';color:' + ps.text + ';font-size:0.78rem;font-weight:600;cursor:help;vertical-align:middle;line-height:1.6">' + ps.icon + ' ' + esc(def.label) + '</span>';
+    if (!def) {
+      return '<span class="cr-pill cr-pill-unknown" data-def="Unknown reference: ' + esc(key) + '" role="button" tabindex="0">⬡ ' + esc(key) + '</span>';
+    }
+    const type = (PILL_COLORS[def.type] ? def.type : 'definition');
+    const ps = PILL_COLORS[type];
+    return '<span class="cr-pill cr-pill-' + type + '" data-def="' + esc(def.body) + '" role="button" tabindex="0">' + ps.icon + ' ' + esc(def.label) + '</span>';
   });
 
-  // {{alert:type}} → inline alert badge
+  // {{alert:type}} → inline alert badge (class-based; styled by CSS)
   out = out.replace(/\{\{alert:([^}]+)\}\}/g, function(_, type) {
     const key = type.trim();
-    const cfg = ALERT_STYLES[key] || ALERT_STYLES.ethics;
-    return '<span title="Click for details" role="button" tabindex="0" style="display:inline-flex;align-items:center;gap:4px;padding:2px 9px;border-radius:20px;background:' + cfg.bg + ';border:1.5px solid ' + cfg.border + ';color:' + cfg.text + ';font-size:0.78rem;font-weight:700;cursor:help;vertical-align:middle;line-height:1.7">' + cfg.icon + ' ' + cfg.label + '</span>';
+    const validKey = ALERT_STYLES[key] ? key : 'ethics';
+    const cfg = ALERT_STYLES[validKey];
+    return '<span class="cr-alert cr-alert-' + validKey + '" role="button" tabindex="0">' + cfg.icon + ' ' + cfg.label + '</span>';
   });
 
   return out;
@@ -4820,7 +5149,7 @@ function renderReflection(wrap, block, blockIndex) {
   const id = `ref-${currentSectionIndex}-${blockIndex}`;
   const minLen = block.minLength || 50;
   wrap.innerHTML = `<div class="cr-reflection">
-    <div class="cr-reflection-prompt">💭 ${esc(block.question || 'Take a moment to reflect…')}</div>
+    <div class="cr-reflection-prompt">${esc(block.question || 'Take a moment to reflect…')}</div>
     <textarea id="${id}-textarea" data-minlen="${minLen}" placeholder="Write your reflection here…"></textarea>
     <div class="cr-reflection-count" id="${id}-count">0 words (minimum ${minLen})</div>
   </div>`;
@@ -4850,33 +5179,29 @@ function isDownloadable(r) {
 }
 // ─── CALLOUT BLOCK ───
 function renderCallout(wrap, block) {
-  const cfgMap = {
-    info:     { icon: 'ℹ️',  border: 'var(--cr-navy)',    bg: 'var(--cr-navy-faded)'    },
-    warning:  { icon: '⚠️',  border: 'var(--cr-gold)',    bg: 'var(--cr-gold-faded)'    },
-    ethics:   { icon: '⚖️',  border: 'var(--cr-gold)',    bg: 'var(--cr-gold-faded)'    },
-    clinical: { icon: '🩺',  border: 'var(--cr-navy)',    bg: 'var(--cr-navy-faded)'    },
-    tip:      { icon: '💡',  border: 'var(--cr-green)',   bg: 'var(--cr-green-faded)'   },
-    key:      { icon: '🔑',  border: 'var(--cr-gold)',    bg: 'var(--cr-gold-faded)'    },
-    donot:    { icon: '⛔',  border: '#DC2626',           bg: '#FEF2F2'                 },
-    protocol: { icon: '📋',  border: '#EA580C',           bg: '#FFF7ED'                 },
+  const validTypes = { info:1, warning:1, ethics:1, clinical:1, tip:1, key:1, donot:1, protocol:1 };
+  const iconMap = {
+    info:'ℹ️', warning:'⚠️', ethics:'⚖️', clinical:'🩺',
+    tip:'💡', key:'🔑', donot:'⛔', protocol:'📋'
   };
-  const t = block.calloutType || block.variant || 'info';
-  const cfg = cfgMap[t] || cfgMap.info;
+  const raw = (block.calloutType || block.variant || 'info').toString().toLowerCase();
+  const type = validTypes[raw] ? raw : 'info';
+  const icon = iconMap[type];
   const items = block.calloutItems || block.items || [];
 
-  let html = `<div style="border-left:3px solid ${cfg.border};background:${cfg.bg};border-radius:0 8px 8px 0;padding:10px 14px;margin:12px 0">`;
+  let html = '<div class="cr-callout cr-callout-' + type + '">';
   if (block.title) {
-    html += `<div style="display:flex;align-items:center;gap:6px;margin-bottom:${(items.length || block.content) ? '6px' : '0'}">
-      <span style="font-size:0.85rem">${cfg.icon}</span>
-      <span style="font-size:0.82rem;font-weight:700;color:${cfg.border}">${esc(block.title)}</span>
-    </div>`;
+    html += '<h4 class="cr-callout-title">'
+         +   '<span class="cr-callout-icon" aria-hidden="true">' + icon + '</span>'
+         +   '<span class="cr-callout-label">' + esc(block.title) + '</span>'
+         + '</h4>';
   }
   if (block.content) {
-    html += `<div class="cr-prose" style="font-size:0.82rem;line-height:1.6">${block.content}</div>`;
+    html += '<div class="cr-callout-body cr-prose">' + block.content + '</div>';
   }
   if (items.length) {
-    html += '<ul style="margin:4px 0 0;padding-left:16px">';
-    items.forEach(item => { html += `<li style="font-size:0.82rem;line-height:1.6;margin-bottom:2px">${esc(item)}</li>`; });
+    html += '<ul class="cr-callout-list">';
+    items.forEach(item => { html += '<li>' + esc(item) + '</li>'; });
     html += '</ul>';
   }
   html += '</div>';
