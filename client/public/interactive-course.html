@@ -2076,6 +2076,741 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
 /* =============================================================
    END Phase 1 patch
    ============================================================= */
+
+
+/* ═══════════════════════════════════════════════════════════════
+   CREADY VIEWER — PHASE 2 PATCH
+   May 4, 2026 — appends to Phase 1
+   
+   Goals: editorial restraint over chrome.
+   Hairlines over borders. Tags over gradient banners.
+   Italic serif numerals over circle badges. Calm over loud.
+   ═══════════════════════════════════════════════════════════════ */
+
+
+/* ═══════════════════════════════════════════════════════════════
+   1. SECTION DIVIDER — italic burgundy serif numeral
+   ═══════════════════════════════════════════════════════════════ */
+
+.cr-section-divider {
+  display: block;
+  padding: 32px 0 20px;
+  margin-bottom: 28px;
+  border-bottom: 1px solid var(--cr-border);
+}
+
+.cr-section-divider-number {
+  /* Reset the 48px circle gradient from Phase 0 */
+  width: auto !important;
+  height: auto !important;
+  background: transparent !important;
+  border-radius: 0 !important;
+  display: inline-block;
+  font-family: 'Iowan Old Style', 'Charter', 'Source Serif Pro', Georgia, serif;
+  font-style: italic;
+  font-weight: 400;
+  font-size: 64px;
+  line-height: 1;
+  color: var(--cr-burgundy);
+  margin-bottom: 6px;
+  letter-spacing: -0.02em;
+}
+
+.cr-section-divider-number::after {
+  /* Em-dash trailing the numeral */
+  content: " — ";
+  color: var(--cr-border);
+  font-style: normal;
+  font-size: 0.6em;
+  vertical-align: 0.35em;
+  margin-left: 6px;
+}
+
+.cr-section-divider h2 {
+  font-family: 'Cormorant Garamond', 'Iowan Old Style', Georgia, serif;
+  font-size: 28px;
+  font-weight: 600;
+  color: var(--cr-burgundy);
+  line-height: 1.25;
+  margin: 0 0 6px;
+  letter-spacing: -0.005em;
+}
+
+.cr-section-divider p {
+  font-family: 'Iowan Old Style', 'Charter', 'Source Serif Pro', Georgia, serif;
+  font-style: italic;
+  font-size: 17px;
+  color: var(--cr-text-secondary);
+  line-height: 1.5;
+  margin: 0;
+  max-width: 600px;
+}
+
+@media (max-width: 640px) {
+  .cr-section-divider-number { font-size: 48px; }
+  .cr-section-divider h2 { font-size: 22px; }
+  .cr-section-divider p { font-size: 15px; }
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   2. ACTIVITY TAG SYSTEM — small uppercase labels above each
+      activity block, replacing gradient banners.
+      Pure CSS via ::before on .cr-block[data-block-type=...].
+   ═══════════════════════════════════════════════════════════════ */
+
+.cr-block[data-block-type="scenarioTree"]::before,
+.cr-block[data-block-type="cardSort"]::before,
+.cr-block[data-block-type="matching"]::before,
+.cr-block[data-block-type="flashcardDeck"]::before,
+.cr-block[data-block-type="sequencing"]::before,
+.cr-block[data-block-type="hotspot"]::before,
+.cr-block[data-block-type="multipleChoice"]::before,
+.cr-block[data-block-type="multiSelect"]::before,
+.cr-block[data-block-type="reflection"]::before {
+  display: block;
+  font-family: var(--cr-font-sans, system-ui, sans-serif);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--cr-text-muted, #6B7280);
+  margin-bottom: 10px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--cr-border);
+}
+
+.cr-block[data-block-type="scenarioTree"]::before    { content: "Scenario"; }
+.cr-block[data-block-type="cardSort"]::before        { content: "Card sort"; }
+.cr-block[data-block-type="matching"]::before        { content: "Match"; }
+.cr-block[data-block-type="flashcardDeck"]::before   { content: "Flashcards"; }
+.cr-block[data-block-type="sequencing"]::before      { content: "Sequence"; }
+.cr-block[data-block-type="hotspot"]::before         { content: "Identify"; }
+.cr-block[data-block-type="multipleChoice"]::before  { content: "Knowledge check"; }
+.cr-block[data-block-type="multiSelect"]::before     { content: "Select all that apply"; }
+.cr-block[data-block-type="reflection"]::before      { content: "Reflection"; }
+
+
+/* Flatten the scenario tree's gradient banner */
+.cr-scenario {
+  border: none !important;
+  border-radius: 0 !important;
+  overflow: visible !important;
+  margin-bottom: 28px;
+  background: transparent !important;
+}
+
+.cr-scenario-header {
+  background: transparent !important;
+  color: var(--cr-burgundy) !important;
+  padding: 0 0 4px 0 !important;
+  margin-bottom: 16px;
+}
+
+.cr-scenario-header h3 {
+  font-family: 'Cormorant Garamond', 'Iowan Old Style', Georgia, serif !important;
+  color: var(--cr-burgundy) !important;
+  font-size: 22px !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.005em;
+  margin: 0 !important;
+}
+
+.cr-scenario-body {
+  padding: 0 !important;
+}
+
+
+/* Card-sort restyle to match activity-tag system */
+.cr-cardsort-category {
+  border: 1px solid var(--cr-border) !important;
+  border-style: solid !important;
+  background: var(--cr-surface, #fff);
+  border-radius: 6px !important;
+}
+
+.cr-cardsort-category.dragover {
+  border-color: var(--cr-gold) !important;
+  background: var(--cr-gold-faded, rgba(212, 168, 85, 0.12)) !important;
+}
+
+.cr-cardsort-pool {
+  background: transparent !important;
+  border: 1px dashed var(--cr-border);
+  padding: 12px !important;
+}
+
+.cr-cardsort-card {
+  border: 1px solid var(--cr-border) !important;
+  border-radius: 4px !important;
+  background: #fff !important;
+  font-family: 'Iowan Old Style', 'Charter', Georgia, serif !important;
+  font-size: 14px !important;
+  padding: 8px 12px !important;
+}
+
+.cr-cardsort-card:hover {
+  border-color: var(--cr-burgundy) !important;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   3. ACCORDION CHROME REFRESH — hairlines, calmer triggers
+   ═══════════════════════════════════════════════════════════════ */
+
+.cr-accordion {
+  margin-bottom: 24px;
+  border-top: 1px solid var(--cr-border);
+}
+
+.cr-accordion-item {
+  border: none !important;
+  border-bottom: 1px solid var(--cr-border) !important;
+  border-radius: 0 !important;
+  margin-bottom: 0 !important;
+  overflow: visible;
+  transition: none;
+}
+
+.cr-accordion-item:hover {
+  border-color: var(--cr-border) !important;
+}
+
+.cr-accordion-trigger {
+  width: 100%;
+  padding: 18px 4px !important;
+  background: transparent !important;
+  border: none !important;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: space-between;
+  font-family: 'Cormorant Garamond', 'Iowan Old Style', Georgia, serif !important;
+  font-size: 19px !important;
+  font-weight: 600 !important;
+  color: var(--cr-hunter, #4A7C59) !important;
+  text-align: left;
+  letter-spacing: 0;
+  transition: color 0.18s ease;
+}
+
+.cr-accordion-trigger:hover {
+  background: transparent !important;
+  filter: none !important;
+  color: var(--cr-burgundy) !important;
+}
+
+.cr-accordion-trigger .cr-chevron {
+  transition: transform 0.22s ease;
+  font-size: 14px !important;
+  color: var(--cr-text-muted, #6B7280);
+  font-weight: 400;
+}
+
+.cr-accordion-trigger[aria-expanded="true"] .cr-chevron {
+  transform: rotate(180deg);
+}
+
+.cr-accordion-body {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s ease, padding 0.3s ease;
+}
+
+.cr-accordion-body.open {
+  max-height: 2000px;
+  padding: 0 4px 22px 4px !important;
+}
+
+.cr-accordion-body p {
+  font-family: 'Iowan Old Style', 'Charter', 'Source Serif Pro', Georgia, serif;
+  font-size: 16px;
+  line-height: 1.7;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   4. KC OPTION REDESIGN — hairline rows + circle markers
+   ═══════════════════════════════════════════════════════════════ */
+
+.cr-kc {
+  background: transparent !important;
+  border: none !important;
+  border-left: 2px solid var(--cr-burgundy) !important;
+  border-radius: 0 !important;
+  padding: 4px 0 4px 24px !important;
+  margin-bottom: 32px !important;
+}
+
+.cr-kc-question {
+  font-family: 'Iowan Old Style', 'Charter', Georgia, serif !important;
+  font-size: 18px !important;
+  font-weight: 500 !important;
+  color: var(--cr-text-body, #1F2937) !important;
+  line-height: 1.5;
+  margin-bottom: 18px !important;
+}
+
+.cr-kc-options {
+  display: flex;
+  flex-direction: column;
+  gap: 0 !important;
+  border-top: 1px solid var(--cr-border);
+}
+
+.cr-kc-option {
+  display: flex !important;
+  align-items: flex-start !important;
+  gap: 14px !important;
+  padding: 14px 4px !important;
+  border: none !important;
+  border-bottom: 1px solid var(--cr-border) !important;
+  border-radius: 0 !important;
+  cursor: pointer;
+  background: transparent !important;
+  transition: background 0.15s ease, color 0.15s ease;
+  font-family: 'Iowan Old Style', 'Charter', Georgia, serif !important;
+  font-size: 16px !important;
+  line-height: 1.5;
+  min-height: 48px;
+}
+
+.cr-kc-option:hover:not(.answered) {
+  background: var(--cr-burgundy-faded, rgba(107, 29, 52, 0.04)) !important;
+  border-color: var(--cr-border) !important;
+}
+
+.cr-kc-option .cr-kc-radio {
+  width: 18px !important;
+  height: 18px !important;
+  border-radius: 50%;
+  border: 1.5px solid var(--cr-text-muted, #6B7280) !important;
+  flex-shrink: 0;
+  margin-top: 4px !important;
+  background: transparent !important;
+  position: relative;
+  transition: all 0.15s ease;
+}
+
+.cr-kc-option .cr-kc-check {
+  width: 18px !important;
+  height: 18px !important;
+  border-radius: 4px !important;
+  border: 1.5px solid var(--cr-text-muted, #6B7280) !important;
+  flex-shrink: 0;
+  margin-top: 4px !important;
+  background: transparent !important;
+  transition: all 0.15s ease;
+}
+
+/* Selected: filled circle, no row tint */
+.cr-kc-option.selected {
+  background: transparent !important;
+}
+
+.cr-kc-option.selected .cr-kc-radio,
+.cr-kc-option.selected .cr-kc-check {
+  border-color: var(--cr-burgundy) !important;
+  background: var(--cr-burgundy) !important;
+  box-shadow: inset 0 0 0 3px #fff;
+}
+
+.cr-kc-option.selected .cr-kc-check {
+  box-shadow: none;
+}
+
+/* Correct/incorrect — single colored dot, faint left edge */
+.cr-kc-option.correct {
+  background: transparent !important;
+  border-bottom-color: var(--cr-success, #4A7C59) !important;
+}
+
+.cr-kc-option.correct .cr-kc-radio,
+.cr-kc-option.correct .cr-kc-check {
+  border-color: var(--cr-success, #4A7C59) !important;
+  background: var(--cr-success, #4A7C59) !important;
+  box-shadow: inset 0 0 0 3px #fff;
+}
+
+.cr-kc-option.incorrect {
+  background: transparent !important;
+  border-bottom-color: var(--cr-danger, #B91C1C) !important;
+}
+
+.cr-kc-option.incorrect .cr-kc-radio,
+.cr-kc-option.incorrect .cr-kc-check {
+  border-color: var(--cr-danger, #B91C1C) !important;
+  background: var(--cr-danger, #B91C1C) !important;
+  box-shadow: inset 0 0 0 3px #fff;
+}
+
+.cr-kc-explanation {
+  margin-top: 18px !important;
+  padding: 14px 18px !important;
+  background: rgba(74, 124, 89, 0.06) !important;
+  border-left: 2px solid var(--cr-hunter, #4A7C59) !important;
+  border-radius: 0 !important;
+  font-family: 'Iowan Old Style', 'Charter', Georgia, serif;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--cr-text-body, #1F2937);
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   5. CALLOUTS — eight standalone variants
+      Markup: <aside class="cr-callout cr-callout-{variant}">
+              <h4>...</h4>
+              <p>...</p>
+              </aside>
+   ═══════════════════════════════════════════════════════════════ */
+
+.cr-callout {
+  /* Base — applies to all variants */
+  position: relative;
+  margin: 24px auto;
+  padding: 18px 22px 18px 24px;
+  border-left: 3px solid var(--cr-border);
+  border-radius: 2px;
+  background: rgba(0, 0, 0, 0.015);
+  font-family: 'Iowan Old Style', 'Charter', 'Source Serif Pro', Georgia, serif;
+  font-size: 16px;
+  line-height: 1.65;
+  max-width: 720px;
+  break-inside: avoid;
+}
+
+.cr-callout > h4:first-child {
+  font-family: var(--cr-font-sans, system-ui, sans-serif);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--cr-text-muted, #6B7280);
+  margin: 0 0 8px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cr-callout > h4:first-child::before {
+  /* Variant-specific glyph injected via per-variant override */
+  font-size: 13px;
+  line-height: 1;
+}
+
+.cr-callout p {
+  margin: 0 0 0.8em;
+  max-width: none !important;  /* override Phase 1 paragraph centering inside callouts */
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
+.cr-callout p:last-child { margin-bottom: 0; }
+
+.cr-callout em { font-style: italic; }
+.cr-callout strong { font-weight: 600; }
+
+.cr-callout ul,
+.cr-callout ol {
+  margin: 0.4em 0 0.8em;
+  padding-left: 22px;
+}
+
+.cr-callout li {
+  margin-bottom: 0.3em;
+}
+
+
+/* — Variant: INFO — neutral framing */
+.cr-callout-info {
+  border-left-color: var(--cr-navy, #284157);
+  background: rgba(40, 65, 87, 0.04);
+}
+.cr-callout-info > h4:first-child { color: var(--cr-navy, #284157); }
+.cr-callout-info > h4:first-child::before { content: "ℹ"; }
+
+
+/* — Variant: KEY — high-importance takeaway */
+.cr-callout-key {
+  border-left-color: var(--cr-burgundy, #6B1D34);
+  background: rgba(107, 29, 52, 0.04);
+}
+.cr-callout-key > h4:first-child { color: var(--cr-burgundy, #6B1D34); }
+.cr-callout-key > h4:first-child::before { content: "★"; }
+
+
+/* — Variant: ETHICS — code/legal flag */
+.cr-callout-ethics {
+  border-left-color: var(--cr-burgundy, #6B1D34);
+  background: rgba(107, 29, 52, 0.05);
+  border-left-width: 4px;
+}
+.cr-callout-ethics > h4:first-child { color: var(--cr-burgundy, #6B1D34); }
+.cr-callout-ethics > h4:first-child::before { content: "§"; font-weight: 600; }
+
+
+/* — Variant: CLINICAL — pearl from practice */
+.cr-callout-clinical {
+  border-left-color: var(--cr-hunter, #4A7C59);
+  background: rgba(74, 124, 89, 0.05);
+}
+.cr-callout-clinical > h4:first-child { color: var(--cr-hunter, #4A7C59); }
+.cr-callout-clinical > h4:first-child::before { content: "❋"; }
+
+
+/* — Variant: TIP — practical guidance */
+.cr-callout-tip {
+  border-left-color: var(--cr-gold, #D4A855);
+  background: rgba(212, 168, 85, 0.07);
+}
+.cr-callout-tip > h4:first-child { color: #8C6A1F; }
+.cr-callout-tip > h4:first-child::before { content: "→"; }
+
+
+/* — Variant: DONOT — anti-pattern */
+.cr-callout-donot {
+  border-left-color: #B91C1C;
+  background: rgba(185, 28, 28, 0.04);
+}
+.cr-callout-donot > h4:first-child { color: #B91C1C; }
+.cr-callout-donot > h4:first-child::before { content: "✕"; font-weight: 700; }
+
+
+/* — Variant: PROTOCOL — ordered procedure */
+.cr-callout-protocol {
+  border-left-color: var(--cr-navy, #284157);
+  background: rgba(40, 65, 87, 0.05);
+}
+.cr-callout-protocol > h4:first-child { color: var(--cr-navy, #284157); }
+.cr-callout-protocol > h4:first-child::before { content: "❒"; }
+
+.cr-callout-protocol ol {
+  margin-top: 8px;
+  counter-reset: protocol;
+  list-style: none;
+  padding-left: 0;
+}
+.cr-callout-protocol ol li {
+  counter-increment: protocol;
+  position: relative;
+  padding-left: 32px;
+  margin-bottom: 8px;
+}
+.cr-callout-protocol ol li::before {
+  content: counter(protocol);
+  position: absolute;
+  left: 0; top: 0;
+  width: 22px; height: 22px;
+  background: var(--cr-navy, #284157);
+  color: #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--cr-font-sans, system-ui, sans-serif);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+
+/* — Variant: WARNING — risk alert (less alarming than donot) */
+.cr-callout-warning {
+  border-left-color: #C97A1B;
+  background: rgba(201, 122, 27, 0.05);
+}
+.cr-callout-warning > h4:first-child { color: #8E5613; }
+.cr-callout-warning > h4:first-child::before { content: "⚠"; }
+
+
+/* ═══════════════════════════════════════════════════════════════
+   6. INLINE PILLS — vocabulary terms with tap/hover definition
+      Markup: <span class="cr-pill" data-def="...">term</span>
+   ═══════════════════════════════════════════════════════════════ */
+
+.cr-pill {
+  position: relative;
+  border-bottom: 1px dotted var(--cr-burgundy, #6B1D34);
+  cursor: help;
+  color: var(--cr-burgundy, #6B1D34);
+  font-weight: 500;
+  /* Make focusable for keyboard users — caller adds tabindex="0" */
+}
+
+.cr-pill:hover,
+.cr-pill:focus {
+  outline: none;
+  background: rgba(107, 29, 52, 0.06);
+}
+
+.cr-pill::after {
+  /* Tooltip content from data-def, hidden by default */
+  content: attr(data-def);
+  position: absolute;
+  bottom: calc(100% + 10px);
+  left: 50%;
+  transform: translateX(-50%) translateY(4px);
+  background: var(--cr-navy, #284157);
+  color: #fff;
+  padding: 10px 14px;
+  border-radius: 6px;
+  font-family: var(--cr-font-sans, system-ui, sans-serif);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.45;
+  white-space: normal;
+  width: max-content;
+  max-width: 320px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
+  z-index: 50;
+}
+
+.cr-pill::before {
+  /* Triangle pointer below the tooltip */
+  content: "";
+  position: absolute;
+  bottom: calc(100% + 4px);
+  left: 50%;
+  transform: translateX(-50%);
+  border: 6px solid transparent;
+  border-top-color: var(--cr-navy, #284157);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  z-index: 50;
+}
+
+.cr-pill:hover::after,
+.cr-pill:focus::after {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0);
+}
+
+.cr-pill:hover::before,
+.cr-pill:focus::before {
+  opacity: 1;
+}
+
+/* On narrow screens, anchor tooltip to viewport edges to prevent overflow */
+@media (max-width: 640px) {
+  .cr-pill::after {
+    max-width: calc(100vw - 32px);
+    left: 0;
+    transform: translateY(4px);
+  }
+  .cr-pill:hover::after,
+  .cr-pill:focus::after {
+    transform: translateY(0);
+  }
+  .cr-pill::before {
+    left: 16px;
+    transform: none;
+  }
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   7. INLINE ALERTS — sentence-level emphasis
+      Markup: <span class="cr-alert cr-alert-{variant}">...</span>
+   ═══════════════════════════════════════════════════════════════ */
+
+.cr-alert {
+  display: inline;
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-weight: 500;
+  background: rgba(0, 0, 0, 0.04);
+  border-bottom: 1.5px solid transparent;
+  transition: background 0.15s ease;
+}
+
+.cr-alert::before {
+  font-family: var(--cr-font-sans, system-ui, sans-serif);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-right: 5px;
+  opacity: 0.9;
+  vertical-align: 0.08em;
+}
+
+.cr-alert-supervisor {
+  background: rgba(40, 65, 87, 0.07);
+  border-bottom-color: var(--cr-navy, #284157);
+  color: var(--cr-navy, #284157);
+}
+.cr-alert-supervisor::before { content: "Consult"; }
+
+.cr-alert-document {
+  background: rgba(74, 124, 89, 0.07);
+  border-bottom-color: var(--cr-hunter, #4A7C59);
+  color: #2F5039;
+}
+.cr-alert-document::before { content: "Document"; }
+
+.cr-alert-legal {
+  background: rgba(107, 29, 52, 0.07);
+  border-bottom-color: var(--cr-burgundy, #6B1D34);
+  color: var(--cr-burgundy, #6B1D34);
+}
+.cr-alert-legal::before { content: "Legal"; }
+
+.cr-alert-donot {
+  background: rgba(185, 28, 28, 0.07);
+  border-bottom-color: #B91C1C;
+  color: #8B1A1A;
+}
+.cr-alert-donot::before { content: "Don't"; }
+
+.cr-alert-protocol {
+  background: rgba(212, 168, 85, 0.10);
+  border-bottom-color: var(--cr-gold, #D4A855);
+  color: #8C6A1F;
+}
+.cr-alert-protocol::before { content: "Protocol"; }
+
+
+/* ═══════════════════════════════════════════════════════════════
+   8. PRINT — keep callouts intact across page breaks; suppress
+      tooltips and tags that don't translate to print
+   ═══════════════════════════════════════════════════════════════ */
+
+@media print {
+  .cr-callout { break-inside: avoid; background: transparent !important; }
+  .cr-pill::after,
+  .cr-pill::before { display: none !important; }
+  .cr-pill {
+    border-bottom: none;
+    color: inherit;
+  }
+  .cr-pill::after {
+    /* In print, render the definition inline in parentheses */
+    content: " (" attr(data-def) ")";
+    position: static;
+    display: inline;
+    background: transparent;
+    color: inherit;
+    padding: 0;
+    box-shadow: none;
+    opacity: 1;
+    visibility: visible;
+    font-size: inherit;
+    width: auto;
+    max-width: none;
+    transform: none;
+  }
+  .cr-block[data-block-type]::before { display: none; }
+}
+
+
+/* — END PHASE 2 — */
+
 </style>
 <!-- .docx parsing -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
