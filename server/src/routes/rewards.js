@@ -1,13 +1,12 @@
-// server/src/routes/rewardsRoutes.js
+// server/src/routes/rewards.js
 //
 // CounselorReady Self-Care Rewards Program — API routes
 // v1.1 — May 4, 2026
 //
-// Day 1 scope: earn-reflection (the v1.1 addition), balance, referral-link.
-// Day 2 will add: redeem endpoints, redeem-giftcard, admin queue.
+// Mounted at /api/rewards in server/src/index.js (alongside auth.js, courses.js, etc.)
 //
-// Auth: all routes except internal earn hooks require a valid JWT.
-// Mounted at /api/rewards in app.js.
+// Day 1 scope: earn-reflection (the v1.1 addition), balance, referral-link, referrals.
+// Day 2 will add: redeem endpoints, redeem-giftcard, admin queue.
 
 import express from 'express';
 import mongoose from 'mongoose';
@@ -16,11 +15,17 @@ import User from '../models/User.js';
 const router = express.Router();
 
 // ─────────────────────────────────────────────────────────────────
-// Auth middleware — copy from your existing pattern.
-// If the project already exports a `requireAuth` middleware, import that
-// instead of redefining here. Replace the require below if so.
+// AUTH MIDDLEWARE
+//
+// Confirmed against the repo (May 4, 2026):
+//   - File:   server/src/middleware/auth.js
+//   - Export: protect  (named export, defined at line 10)
+//   - Used by: server/src/routes/auth.js (/me, /change-password, etc.)
+//
+// The middleware verifies the Authorization: Bearer {token} JWT, attaches
+// req.user, then calls next() on success or returns 401 on failure.
 // ─────────────────────────────────────────────────────────────────
-import { requireAuth } from '../middleware/auth.js';   // ← adjust path if needed
+import { protect } from '../middleware/auth.js';
 
 // ─────────────────────────────────────────────────────────────────
 // Constants
@@ -79,7 +84,7 @@ async function awardCredits(userId, amount, type, description, relatedCourseId =
 //
 // Idempotent — safe to call repeatedly; only awards once per user × block.
 // ─────────────────────────────────────────────────────────────────
-router.post('/earn-reflection', requireAuth, async (req, res) => {
+router.post('/earn-reflection', protect, async (req, res) => {
   try {
     const { courseId, sectionIndex, blockIndex } = req.body || {};
 
@@ -144,7 +149,7 @@ router.post('/earn-reflection', requireAuth, async (req, res) => {
 // Returns the user's current CareCredits balance + lifetime + last 10 transactions.
 // Powers the dashboard widget.
 // ─────────────────────────────────────────────────────────────────
-router.get('/balance', requireAuth, async (req, res) => {
+router.get('/balance', protect, async (req, res) => {
   try {
     const userId = req.user._id || req.user.id;
     const user = await User.findById(userId).select('careCredits referralCode').lean();
@@ -175,7 +180,7 @@ router.get('/balance', requireAuth, async (req, res) => {
 // Generates referralCode if missing (shouldn't happen post-pre-save-hook,
 // but defensive).
 // ─────────────────────────────────────────────────────────────────
-router.get('/referral-link', requireAuth, async (req, res) => {
+router.get('/referral-link', protect, async (req, res) => {
   try {
     const userId = req.user._id || req.user.id;
     const user = await User.findById(userId).select('referralCode');
@@ -202,7 +207,7 @@ router.get('/referral-link', requireAuth, async (req, res) => {
 //
 // Returns the user's referral history (signed-up / paid / retained).
 // ─────────────────────────────────────────────────────────────────
-router.get('/referrals', requireAuth, async (req, res) => {
+router.get('/referrals', protect, async (req, res) => {
   try {
     const userId = req.user._id || req.user.id;
     const user = await User.findById(userId)
@@ -240,11 +245,11 @@ function tierFromLifetime(lifetime) {
 // ─────────────────────────────────────────────────────────────────
 // Day 2 stubs — fill in next deploy
 // ─────────────────────────────────────────────────────────────────
-router.post('/redeem', requireAuth, (req, res) => {
+router.post('/redeem', protect, (req, res) => {
   return res.status(501).json({ error: 'not_implemented_yet', day: 2 });
 });
 
-router.post('/redeem-giftcard', requireAuth, (req, res) => {
+router.post('/redeem-giftcard', protect, (req, res) => {
   return res.status(501).json({ error: 'not_implemented_yet', day: 2 });
 });
 
@@ -252,12 +257,26 @@ export default router;
 
 // ─────────────────────────────────────────────────────────────────
 // REGISTER THIS ROUTE
-// In server/src/app.js (or wherever routes are mounted), add:
 //
-//   import rewardsRoutes from './routes/rewardsRoutes.js';
+// In server/src/index.js, find the import block at lines ~12–30:
+//   import authRoutes from './routes/auth.js';
+//   import coursesRoutes from './routes/courses.js';
+//   ...
+//
+// Add:
+//   import rewardsRoutes from './routes/rewards.js';
+//
+// Then in the route mount block at lines ~130–148:
+//   app.use('/api/auth', authRoutes);
+//   app.use('/api/interactive-courses', interactiveCourseRoutes);
+//   ...
+//
+// Add:
 //   app.use('/api/rewards', rewardsRoutes);
 //
-// Add to routeManifest.js so the route protection layer recognizes it:
-//
-//   { path: '/api/rewards', router: 'rewardsRoutes', requiresAuth: true },
+// Note on routeManifest.js: confirmed orphaned (May 4, 2026). Two stale
+// copies exist (./routeManifest.js and ./server/src/routeManifest.js,
+// identical, May 1) but neither is imported anywhere. server/src/index.js
+// does not reference it. Do NOT add the rewards route to it; the index.js
+// mount alone is sufficient.
 // ─────────────────────────────────────────────────────────────────

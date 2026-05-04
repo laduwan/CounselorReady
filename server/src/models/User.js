@@ -311,7 +311,63 @@ const userSchema = new mongoose.Schema({
     userName: { type: String },
     userEmail: { type: String },
     timestamp: { type: Date, default: Date.now }
-  }]
+  }],
+
+  // ─── REWARDS: REFERRAL ───
+  referralCode: { type: String, unique: true, sparse: true, index: true },
+  referredBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
+
+  // ─── REWARDS: CARECREDITS ───
+  careCredits: {
+    balance:  { type: Number, default: 0, min: 0 },
+    lifetime: { type: Number, default: 0, min: 0 },
+    transactions: [{
+      amount: { type: Number, required: true },
+      type: {
+        type: String,
+        enum: [
+          'referral_signup','referral_paid','referral_retention_bonus',
+          'course_completion','certificate_earned','course_review',
+          'course_evaluation','social_share','reflection_submitted',
+          'streak_7day','streak_30day',
+          'redemption_stripe_credit','redemption_giftcard',
+          'admin_adjustment',
+        ],
+        required: true,
+      },
+      description: String,
+      relatedCourseId: { type: mongoose.Schema.Types.ObjectId, ref: 'InteractiveCourse', default: null },
+      relatedRedemptionId: String,
+      createdAt: { type: Date, default: Date.now },
+    }],
+    redemptions: [{
+      redemptionId: { type: String, required: true },
+      type: { type: String, enum: ['stripe_credit','gift_card'], required: true },
+      points: { type: Number, required: true },
+      vendor: String,
+      vendorLabel: String,
+      cashValue: { type: Number, required: true },
+      deliveryEmail: String,
+      status: { type: String, enum: ['queued','fulfilled','cancelled'], default: 'queued' },
+      stripeCouponId: String,
+      giftCardCode: String,
+      createdAt: { type: Date, default: Date.now },
+      fulfilledAt: Date,
+      cancelledAt: Date,
+      adminNotes: String,
+    }],
+  },
+
+  // ─── REWARDS: REFERRAL TRACKING ───
+  referrals: [{
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    status: { type: String, enum: ['signed_up','paid','retained_3mo'], default: 'signed_up' },
+    earnedCredits: { type: Number, default: 0 },
+    createdAt: { type: Date, default: Date.now },
+  }],
+
+  // ─── REWARDS: REFLECTION DEDUP (v1.1) ───
+  reflectionsEarned: { type: [String], default: [], index: true },
 }, {
   timestamps: true // Adds createdAt and updatedAt
 });
@@ -321,13 +377,34 @@ userSchema.index({ 'subscription.status': 1 });
 userSchema.index({ 'profile.state': 1 });
 userSchema.index({ 'subscription.paymentFailedAt': 1 });
 
-// Hash password before saving
+// Hash password before saving + generate referralCode if missing
 userSchema.pre('save', async function(next) {
-  if (!this.isModified('passwordHash')) return next();
-  
-  const salt = await bcrypt.genSalt(12);
-  this.passwordHash = await bcrypt.hash(this.passwordHash, salt);
-  next();
+  try {
+    if (this.isModified('passwordHash')) {
+      const salt = await bcrypt.genSalt(12);
+      this.passwordHash = await bcrypt.hash(this.passwordHash, salt);
+    }
+
+    if (!this.referralCode) {
+      const generateCode = () => {
+        const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+        let code = '';
+        for (let i = 0; i < 8; i++) code += alphabet[Math.floor(Math.random() * alphabet.length)];
+        return code;
+      };
+      let assigned = false;
+      for (let attempt = 0; attempt < 5; attempt++) {
+        const candidate = generateCode();
+        const existing = await this.constructor.findOne({ referralCode: candidate }).lean();
+        if (!existing) { this.referralCode = candidate; assigned = true; break; }
+      }
+      if (!assigned) return next(new Error('Failed to generate unique referralCode after 5 attempts'));
+    }
+
+    next();
+  } catch (err) {
+    next(err);
+  }
 });
 
 // Compare password method
