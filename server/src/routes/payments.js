@@ -12,6 +12,7 @@ import Partner from '../models/Partner.js';
 import { protect } from '../middleware/auth.js';
 import { logActivity, ACTIVITY_TYPES } from '../services/activityTrackingService.js';
 import { sendPaymentFailedEmail, sendPaymentRecoveredEmail } from '../services/hardshipEmailService.js';
+import { processReferralPaidConversion } from '../services/rewardsService.js';
 import twilio from 'twilio';
 
 const twilioClient = process.env.TWILIO_ACCOUNT_SID
@@ -702,6 +703,15 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
             userName: buyer?.profile?.firstName || '',
             userEmail: buyer?.email || ''
           }).catch(() => {});
+
+          // [REWARDS] Referral paid conversion — fire-and-forget, dedup'd server-side
+          processReferralPaidConversion(purchaseUserId)
+            .then(r => {
+              if (r.referrerAwarded) {
+                console.log(`[REWARDS] +${r.points} to referrer (paid conversion) for buyer ${purchaseUserId}`);
+              }
+            })
+            .catch(err => console.error('[REWARDS] referral paid conversion failed:', err.message));
 
           // SMS notification (fire-and-forget)
           if (twilioClient && process.env.ADMIN_PHONE) {

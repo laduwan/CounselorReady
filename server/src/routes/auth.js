@@ -19,6 +19,7 @@ import { logActivity, ACTIVITY_TYPES } from '../services/activityTrackingService
 import { verify2FACode, verifyBackupCode } from '../services/twoFactorService.js';
 import Notification from '../models/Notification.js';
 import { sendRealtimeNotification } from './notifications.js';
+import { processReferralSignup } from '../services/rewardsService.js';
 
 const router = express.Router();
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -26,7 +27,7 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 // Register
 router.post('/register', async (req, res) => {
   try {
-    const { email, password, firstName, lastName, state, partnerSlug } = req.body;
+    const { email, password, firstName, lastName, state, partnerSlug, referralCode } = req.body;
     
     if (!email || !password || !firstName) {
       return res.status(400).json({ error: 'Email, password, and first name are required' });
@@ -85,6 +86,17 @@ router.post('/register', async (req, res) => {
       userName: `${firstName} ${lastName || ''}`.trim(),
       userEmail: email.toLowerCase()
     });
+
+    // [REWARDS] Referral signup bonus — fire-and-forget, never blocks registration
+    if (referralCode) {
+      processReferralSignup(user._id, referralCode)
+        .then(r => {
+          if (r.referrerAwarded) {
+            console.log(`[REWARDS] +${r.points} to referrer (signup) for new user ${user._id}`);
+          }
+        })
+        .catch(err => console.error('[REWARDS] referral signup failed:', err.message));
+    }
 
     // Create welcome notification (non-blocking)
     try {
