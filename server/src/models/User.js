@@ -368,6 +368,17 @@ const userSchema = new mongoose.Schema({
 
   // ─── REWARDS: REFLECTION DEDUP (v1.1) ───
   reflectionsEarned: { type: [String], default: [], index: true },
+
+  // ─── REWARDS: UNIVERSAL EARN DEDUP (v2 — Day 2) ───
+  // Tracks dedup keys for course completion, certificate, course
+  // review, referral signup, referral paid. Format: '{type}:{id}'.
+  // Reflection earns live in `reflectionsEarned[]` (Day 1) — kept
+  // separate because reflection is 1:many per course.
+  earnedKeys: {
+    type: [String],
+    default: [],
+    index: true,
+  },
 }, {
   timestamps: true // Adds createdAt and updatedAt
 });
