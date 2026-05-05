@@ -18,6 +18,7 @@ import { generateCertificate, generateCertificateNumber, buildApprovalBlock } fr
 import { logActivity, ACTIVITY_TYPES } from '../services/activityTrackingService.js';
 import { checkAndSendFreeLimit } from '../services/freeCourseLimitEmail.js';
 import twilio from 'twilio';
+import { awardCourseCompletion, awardCertificate, awardCourseEvaluation } from '../services/rewardsService.js';
 
 const twilioClient = process.env.TWILIO_ACCOUNT_SID
   ? twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN)
@@ -707,6 +708,15 @@ router.post('/:id/evaluation', protect, async (req, res) => {
     progress.evaluationSubmittedAt = new Date();
     await progress.save();
 
+    // [REWARDS] Course evaluation submitted — fire-and-forget, 5pt token (mandatory NBCC eval)
+    awardCourseEvaluation(req.user._id, course._id, course.title)
+      .then(r => {
+        if (r.earned) {
+          console.log(`[REWARDS] +${r.points} for evaluation submitted — ${course.title}`);
+        }
+      })
+      .catch(err => console.error('[REWARDS] evaluation award failed:', err.message));
+
     res.json({
       success: true,
       message: 'Evaluation submitted successfully',
@@ -1039,6 +1049,15 @@ router.post('/:id/certificate', protect, async (req, res) => {
       // Record gamification: course complete + certificate earned
       recordGamification(req.user._id, 'course_complete', { ceHours: course.ceHours || 1 });
       recordGamification(req.user._id, 'certificate_earned');
+
+      // [REWARDS] Certificate earned — fire-and-forget, 25pt, dedup'd per user×course
+      awardCertificate(req.user._id, course._id, course.title)
+        .then(r => {
+          if (r.earned) {
+            console.log(`[REWARDS] +${r.points} for certificate earned — ${course.title}`);
+          }
+        })
+        .catch(err => console.error('[REWARDS] certificate award failed:', err.message));
 
       // Check and send free-tier limit email
       checkAndSendFreeLimit(req.user._id).catch(err =>
