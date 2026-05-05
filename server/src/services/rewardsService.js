@@ -1,52 +1,51 @@
 // server/src/services/rewardsService.js
 //
 // CounselorReady Self-Care Rewards Program — Universal Earn Service
-// v2.0 — May 4, 2026 (Day 2)
+// v2.1 — May 5, 2026 (Day 2.5)
 //
-// One module, all earn triggers. Called from:
-//   - routes/auth.js          → processReferralSignup() on registration
-//   - routes/courseRoutes.js  → awardCourseCompletion() on assessment pass
-//   - routes/certificates.js  → awardCertificate() after PDF generation
-//   - routes/credentials.js   → awardCourseReview() on review submit
-//   - routes/payments.js      → processReferralPaidConversion() in Stripe webhook
-//   - routes/rewards.js       → earn-reflection (already wired in Day 1)
+// Changes from v2.0:
+//   - Course completion is now TIERED (25/50/75/100) based on user's
+//     payment relationship to the course, with long-course override
+//   - Added awardCourseEvaluation (5pt token for mandatory NBCC eval)
+//   - Added computeCompletionPoints helper (testable, pure logic)
+//   - Renamed POINTS.COURSE_COMPLETION → POINTS.COMPLETION_TIERS (object)
+//   - awardCourseReview preserved for future standalone review system
 //
-// Design principles:
-//   1. Idempotent — every earn type has a dedupKey; awarding the same key twice is a silent no-op
+// Design principles unchanged from v2.0:
+//   1. Idempotent — every earn type has a dedupKey; double-award is no-op
 //   2. Atomic — findOneAndUpdate with $ne dedup check; no race conditions
-//   3. Fire-and-forget safe — every public function catches its own errors and returns
-//      structured results. Callers never need to wrap in try/catch.
-//   4. No throwing — failures log to console.error but never propagate. Reward awarding
-//      should NEVER cause a primary user action (course completion, payment, etc.) to fail.
-//
-// Mixed module reality: this file is ESM. User.js is also ESM (Day 1 confirmed).
-// emailService.js, Certificate.js are CommonJS — we don't import them here.
+//   3. Fire-and-forget safe — caller never needs to wrap in try/catch
+//   4. No throwing — failures log to console.error but never propagate
 
 import mongoose from 'mongoose';
 import User from '../models/User.js';
 
 // ─────────────────────────────────────────────────────────────────
-// Point values — single source of truth, mirrored in routes/rewards.js
+// Point values
 // ─────────────────────────────────────────────────────────────────
 export const POINTS = {
   REFLECTION: 5,
-  COURSE_COMPLETION: 75,
+  EVALUATION: 5,           // mandatory NBCC eval — token acknowledgment
+  COMPLETION_FREE: 25,     // course consumed via free tier (no payment)
+  COMPLETION_INDIVIDUAL: 50, // user individually purchased this course
+  COMPLETION_SUBSCRIPTION: 75, // user has active subscription/trial
+  COMPLETION_LONG: 100,    // course.ceHours > 4, overrides all others
   CERTIFICATE: 25,
-  COURSE_REVIEW: 25,
+  COURSE_REVIEW: 25,        // reserved for future standalone review system
   REFERRAL_SIGNUP: 50,
   REFERRAL_PAID: 200,
   REFERRAL_RETENTION: 100,
 };
 
 // ─────────────────────────────────────────────────────────────────
-// Transaction type → audit log enum mapping
-// Must match the User schema's careCredits.transactions[].type enum
+// Transaction type → User schema enum mapping
 // ─────────────────────────────────────────────────────────────────
 const TX_TYPE = {
   reflection: 'reflection_submitted',
   courseCompletion: 'course_completion',
   certificate: 'certificate_earned',
   review: 'course_review',
+  evaluation: 'course_evaluation',
   referralSignup: 'referral_signup',
   referralPaid: 'referral_paid',
   referralRetention: 'referral_retention_bonus',
@@ -54,8 +53,56 @@ const TX_TYPE = {
 };
 
 // ─────────────────────────────────────────────────────────────────
-// Internal: low-level credit award. Atomic. Always called by a
-// public helper that has already done dedup.
+// PUBLIC: compute course completion points based on tiered rules
+//
+// Pure function — no DB access. Caller passes course doc and user doc.
+// Tiered rules (highest applicable wins):
+//   1. course.ceHours > 4              → 100 (long-course override)
+//   2. user has active subscription/trial → 75
+//   3. user individually purchased this course → 50
+//   4. else (free tier consumption)    → 25
+//
+// "Active subscription" = user.subscription.status in ['active', 'trial']
+// "Individually purchased" = user.purchasedCourses[] contains this courseId
+//
+// Args:
+//   course — Mongoose course doc (needs at least: ceHours, _id)
+//   user   — Mongoose user doc (needs at least: subscription, purchasedCourses)
+//
+// Returns: { points: number, tier: string }
+// ─────────────────────────────────────────────────────────────────
+export function computeCompletionPoints(course, user) {
+  const ceHours = parseFloat(course?.ceHours) || 0;
+
+  // Long-course override
+  if (ceHours > 4) {
+    return { points: POINTS.COMPLETION_LONG, tier: 'long_course' };
+  }
+
+  // Subscription/trial check
+  const subStatus = user?.subscription?.status;
+  if (subStatus === 'active' || subStatus === 'trial') {
+    return { points: POINTS.COMPLETION_SUBSCRIPTION, tier: 'subscription' };
+  }
+
+  // Individual purchase check
+  const courseIdStr = course?._id?.toString();
+  const hasPurchased = courseIdStr && Array.isArray(user?.purchasedCourses) &&
+    user.purchasedCourses.some(p => {
+      const pid = p?.courseId?.toString();
+      return pid === courseIdStr;
+    });
+
+  if (hasPurchased) {
+    return { points: POINTS.COMPLETION_INDIVIDUAL, tier: 'individual' };
+  }
+
+  // Default: free tier consumption
+  return { points: POINTS.COMPLETION_FREE, tier: 'free' };
+}
+
+// ─────────────────────────────────────────────────────────────────
+// Internal: low-level credit award. Atomic.
 // ─────────────────────────────────────────────────────────────────
 async function _awardCreditsRaw(userId, amount, txType, description, relatedCourseId = null, relatedRedemptionId = null) {
   const update = {
@@ -82,10 +129,7 @@ async function _awardCreditsRaw(userId, amount, txType, description, relatedCour
 }
 
 // ─────────────────────────────────────────────────────────────────
-// Internal: atomic dedup. Returns true if dedupKey was new (caller
-// should award), false if already present (caller should skip).
-//
-// Uses earnedKeys[] array on User doc — see schema patch v2.
+// Internal: atomic dedup claim
 // ─────────────────────────────────────────────────────────────────
 async function _claimDedupKey(userId, dedupKey) {
   const result = await User.findOneAndUpdate(
@@ -97,46 +141,57 @@ async function _claimDedupKey(userId, dedupKey) {
 }
 
 // ─────────────────────────────────────────────────────────────────
-// PUBLIC: course completion earn (75 pts)
+// PUBLIC: course completion earn (TIERED — 25/50/75/100)
 //
 // Call after assessment is passed and saved. Idempotent per user × course.
 //
 // Args:
-//   userId   — Mongoose ObjectId or string
-//   courseId — Mongoose ObjectId or string (the course being completed)
-//   courseTitle — optional, used in transaction description
+//   userId — Mongoose ObjectId or string
+//   course — Mongoose course doc (needs ceHours, _id, optionally title)
+//   user   — Mongoose user doc (needs subscription, purchasedCourses).
+//            Caller passes req.user IF it's the full doc, OR loads via
+//            User.findById if req.user is thinned.
 //
-// Returns: { earned: bool, points?: number, newBalance?: number, error?: string }
+// Returns: { earned: bool, points?: number, tier?: string, newBalance?: number, error?: string }
 // Never throws.
 // ─────────────────────────────────────────────────────────────────
-export async function awardCourseCompletion(userId, courseId, courseTitle = '') {
+export async function awardCourseCompletion(userId, course, user) {
   try {
-    if (!userId || !courseId) return { earned: false, error: 'invalid_input' };
+    if (!userId || !course?._id) return { earned: false, error: 'invalid_input' };
 
-    const cidStr = courseId.toString();
+    const cidStr = course._id.toString();
     const dedupKey = `course_completion:${cidStr}`;
 
     const claimed = await _claimDedupKey(userId, dedupKey);
     if (!claimed) return { earned: false, reason: 'already_awarded' };
 
-    const desc = courseTitle
-      ? `Completed: ${courseTitle}`
-      : `Course completion (${cidStr})`;
+    // If user wasn't passed in (or is thinned), load it for tier calc
+    let userDoc = user;
+    if (!userDoc?.subscription) {
+      userDoc = await User.findById(userId, {
+        subscription: 1,
+        purchasedCourses: 1,
+      });
+    }
 
-    const courseObjectId = mongoose.Types.ObjectId.isValid(cidStr)
-      ? cidStr : null;
+    const { points, tier } = computeCompletionPoints(course, userDoc);
+
+    const desc = course.title
+      ? `Completed: ${course.title} (${tier} tier, ${points}pt)`
+      : `Course completion (${cidStr}, ${tier} tier)`;
 
     const updated = await _awardCreditsRaw(
       userId,
-      POINTS.COURSE_COMPLETION,
+      points,
       TX_TYPE.courseCompletion,
       desc,
-      courseObjectId
+      cidStr
     );
 
     return {
       earned: true,
-      points: POINTS.COURSE_COMPLETION,
+      points,
+      tier,
       newBalance: updated?.careCredits?.balance ?? null,
     };
   } catch (err) {
@@ -148,7 +203,7 @@ export async function awardCourseCompletion(userId, courseId, courseTitle = '') 
 // ─────────────────────────────────────────────────────────────────
 // PUBLIC: certificate earn (25 pts)
 //
-// Call after certificate PDF is generated and saved. Idempotent per user × course.
+// Call after certificate PDF is generated successfully.
 // ─────────────────────────────────────────────────────────────────
 export async function awardCertificate(userId, courseId, courseTitle = '') {
   try {
@@ -164,15 +219,12 @@ export async function awardCertificate(userId, courseId, courseTitle = '') {
       ? `Certificate earned: ${courseTitle}`
       : `Certificate (${cidStr})`;
 
-    const courseObjectId = mongoose.Types.ObjectId.isValid(cidStr)
-      ? cidStr : null;
-
     const updated = await _awardCreditsRaw(
       userId,
       POINTS.CERTIFICATE,
       TX_TYPE.certificate,
       desc,
-      courseObjectId
+      cidStr
     );
 
     return {
@@ -187,9 +239,53 @@ export async function awardCertificate(userId, courseId, courseTitle = '') {
 }
 
 // ─────────────────────────────────────────────────────────────────
-// PUBLIC: course review earn (25 pts)
+// PUBLIC: course evaluation earn (5 pts — TOKEN)
 //
-// Call after a user submits a review. Idempotent per user × course.
+// Call after the NBCC-required course evaluation is submitted.
+// Low value (5pt) because evaluation is mandatory for cert generation —
+// users would do it anyway. This is acknowledgment, not behavior change.
+//
+// Idempotent per user × course.
+// ─────────────────────────────────────────────────────────────────
+export async function awardCourseEvaluation(userId, courseId, courseTitle = '') {
+  try {
+    if (!userId || !courseId) return { earned: false, error: 'invalid_input' };
+
+    const cidStr = courseId.toString();
+    const dedupKey = `course_evaluation:${cidStr}`;
+
+    const claimed = await _claimDedupKey(userId, dedupKey);
+    if (!claimed) return { earned: false, reason: 'already_awarded' };
+
+    const desc = courseTitle
+      ? `Evaluation submitted: ${courseTitle}`
+      : `Course evaluation (${cidStr})`;
+
+    const updated = await _awardCreditsRaw(
+      userId,
+      POINTS.EVALUATION,
+      TX_TYPE.evaluation,
+      desc,
+      cidStr
+    );
+
+    return {
+      earned: true,
+      points: POINTS.EVALUATION,
+      newBalance: updated?.careCredits?.balance ?? null,
+    };
+  } catch (err) {
+    console.error('[REWARDS] awardCourseEvaluation failed:', err.message);
+    return { earned: false, error: 'server_error' };
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────
+// PUBLIC: course review earn (25 pts) — RESERVED, not currently wired
+//
+// Reserved for a future standalone review system (separate from NBCC
+// evaluation). When/if Ke builds public course reviews, wire this from
+// that endpoint. Different dedup key from evaluation, so both can earn.
 // ─────────────────────────────────────────────────────────────────
 export async function awardCourseReview(userId, courseId, courseTitle = '') {
   try {
@@ -205,15 +301,12 @@ export async function awardCourseReview(userId, courseId, courseTitle = '') {
       ? `Reviewed: ${courseTitle}`
       : `Course review (${cidStr})`;
 
-    const courseObjectId = mongoose.Types.ObjectId.isValid(cidStr)
-      ? cidStr : null;
-
     const updated = await _awardCreditsRaw(
       userId,
       POINTS.COURSE_REVIEW,
       TX_TYPE.review,
       desc,
-      courseObjectId
+      cidStr
     );
 
     return {
@@ -229,22 +322,7 @@ export async function awardCourseReview(userId, courseId, courseTitle = '') {
 
 // ─────────────────────────────────────────────────────────────────
 // PUBLIC: referral signup
-//
-// Call from /auth/register AFTER the new user is saved. If `referralCode`
-// is present (came from ?ref=CODE on the registration), this:
-//   1. Finds the referrer user by referralCode
-//   2. Sets newUser.referredBy = referrer._id
-//   3. Adds entry to referrer.referrals[]
-//   4. Awards 50 CareCredits to the REFERRER (not the new user)
-//
-// Idempotent per (referrer, newUser) pair via dedupKey.
-//
-// Args:
-//   newUserId    — the just-created user's _id
-//   referralCode — the code from ?ref=ABC12345 query string (any case, will normalize)
-//
-// Returns: { processed: bool, referrerAwarded?: bool, points?: number, error?: string }
-// Never throws.
+// (unchanged from v2.0)
 // ─────────────────────────────────────────────────────────────────
 export async function processReferralSignup(newUserId, referralCode) {
   try {
@@ -253,23 +331,18 @@ export async function processReferralSignup(newUserId, referralCode) {
     const code = referralCode.trim().toUpperCase();
     if (!/^[A-Z0-9]{8}$/.test(code)) return { processed: false, reason: 'invalid_code_format' };
 
-    // Find referrer
     const referrer = await User.findOne({ referralCode: code }, { _id: 1 });
     if (!referrer) return { processed: false, reason: 'referrer_not_found' };
 
-    // Don't allow self-referral (defensive — backend check on top of frontend block)
     if (referrer._id.toString() === newUserId.toString()) {
       return { processed: false, reason: 'self_referral_blocked' };
     }
 
-    // Set referredBy on the new user (one-shot — only sets if not already set)
     await User.updateOne(
       { _id: newUserId, referredBy: { $exists: false } },
       { $set: { referredBy: referrer._id } }
     );
-    // (Also handles the case where referredBy was set to null — uses $exists:false to allow first-time set only)
 
-    // Add to referrer's referrals[] array (atomic — only if not already there)
     const referralPushed = await User.findOneAndUpdate(
       {
         _id: referrer._id,
@@ -289,11 +362,9 @@ export async function processReferralSignup(newUserId, referralCode) {
     );
 
     if (!referralPushed) {
-      // referral already recorded — idempotent skip
       return { processed: true, referrerAwarded: false, reason: 'already_recorded' };
     }
 
-    // Award 50 pts to the referrer with dedup key
     const dedupKey = `referral_signup:${newUserId.toString()}`;
     const claimed = await _claimDedupKey(referrer._id, dedupKey);
     if (!claimed) {
@@ -322,18 +393,7 @@ export async function processReferralSignup(newUserId, referralCode) {
 
 // ─────────────────────────────────────────────────────────────────
 // PUBLIC: referral paid conversion
-//
-// Call from the Stripe webhook handler when a user's FIRST paid invoice clears.
-//
-// 1. Look up the user — if they have a referredBy, the referrer gets 200 pts
-// 2. Update the referrer's referrals[] entry status from 'signed_up' → 'paid'
-// 3. Award 200 to the referrer (idempotent per referee)
-//
-// Args:
-//   payingUserId — the user whose invoice just cleared
-//
-// Returns: { processed: bool, referrerAwarded?: bool, points?: number, error?: string }
-// Never throws.
+// (unchanged from v2.0)
 // ─────────────────────────────────────────────────────────────────
 export async function processReferralPaidConversion(payingUserId) {
   try {
@@ -346,7 +406,6 @@ export async function processReferralPaidConversion(payingUserId) {
 
     const referrerId = payer.referredBy;
 
-    // Update the referrals[] entry status (idempotent — only updates if status is 'signed_up')
     await User.updateOne(
       {
         _id: referrerId,
@@ -359,7 +418,6 @@ export async function processReferralPaidConversion(payingUserId) {
       }
     );
 
-    // Award 200 pts to referrer with dedup
     const dedupKey = `referral_paid:${payingUserId.toString()}`;
     const claimed = await _claimDedupKey(referrerId, dedupKey);
     if (!claimed) {
@@ -387,8 +445,7 @@ export async function processReferralPaidConversion(payingUserId) {
 }
 
 // ─────────────────────────────────────────────────────────────────
-// PUBLIC: tier helper — kept here as well for routes that need it
-// without importing from rewards.js
+// PUBLIC: tier helper
 // ─────────────────────────────────────────────────────────────────
 export function tierFromLifetime(lifetime) {
   if (lifetime >= 1500) return { name: 'Flourishing', color: 'gold',   multiplier: 2.0,  nextThreshold: null };
