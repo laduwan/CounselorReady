@@ -585,6 +585,18 @@ router.post('/:id/assessment', protect, async (req, res) => {
 
     await progress.save();
 
+    // [REWARDS] Course completion — fire-and-forget, tiered points (25/50/75/100)
+    // Service handles tier calc internally based on user.subscription/purchasedCourses
+    if (calculatedPassed) {
+      awardCourseCompletion(req.user._id, course, req.user)
+        .then(r => {
+          if (r.earned) {
+            console.log(`[REWARDS] +${r.points} for course completion (${r.tier} tier) — ${course.title}`);
+          }
+        })
+        .catch(err => console.error('[REWARDS] course completion failed:', err.message));
+    }
+
     res.json({
       success: true,
       data: {
