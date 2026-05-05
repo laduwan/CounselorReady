@@ -744,6 +744,15 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
             userEmail: subscriber?.email || ''
           }).catch(() => {});
           console.log(`Subscription activated for user ${userId}: ${plan}`);
+
+          // [REWARDS] Referral paid conversion (subscription) — fire-and-forget, dedup'd
+          processReferralPaidConversion(userId)
+            .then(r => {
+              if (r.referrerAwarded) {
+                console.log(`[REWARDS] +${r.points} to referrer (subscription) for buyer ${userId}`);
+              }
+            })
+            .catch(err => console.error('[REWARDS] referral paid (sub) failed:', err.message));
         }
         break;
       }
