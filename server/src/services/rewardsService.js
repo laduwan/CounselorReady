@@ -1,45 +1,40 @@
 // server/src/services/rewardsService.js
 //
-// CounselorReady Self-Care Rewards Program — Universal Earn Service
-// v2.1 — May 5, 2026 (Day 2.5)
+// CounselorReady Mastery Mark Points (MMP) Earn Service
+// v2.2 — Day 3 (May 5, 2026)
 //
-// Changes from v2.0:
-//   - Course completion is now TIERED (25/50/75/100) based on user's
-//     payment relationship to the course, with long-course override
-//   - Added awardCourseEvaluation (5pt token for mandatory NBCC eval)
-//   - Added computeCompletionPoints helper (testable, pure logic)
-//   - Renamed POINTS.COURSE_COMPLETION → POINTS.COMPLETION_TIERS (object)
-//   - awardCourseReview preserved for future standalone review system
+// Changes from v2.1:
+//   - Tier names: Seedling/Grounded/Rooted/Flourishing → Capable/Proficient/Skilled/Seasoned
+//   - Thresholds and colors unchanged (250/750/1500, green/hunter/navy/gold)
+//   - Added 'redemption_stripe_credit' and 'redemption_giftcard' to internal TX_TYPE map
 //
-// Design principles unchanged from v2.0:
-//   1. Idempotent — every earn type has a dedupKey; double-award is no-op
-//   2. Atomic — findOneAndUpdate with $ne dedup check; no race conditions
-//   3. Fire-and-forget safe — caller never needs to wrap in try/catch
-//   4. No throwing — failures log to console.error but never propagate
+// Design principles unchanged:
+//   1. Idempotent — every earn type has a dedupKey
+//   2. Atomic — findOneAndUpdate with $ne dedup check
+//   3. Fire-and-forget safe — caller never wraps in try/catch
+//   4. No throwing — failures log but never propagate
 
 import mongoose from 'mongoose';
 import User from '../models/User.js';
 
 // ─────────────────────────────────────────────────────────────────
-// Point values
+// Point values (display name: Mastery Mark Points / MMPs)
 // ─────────────────────────────────────────────────────────────────
 export const POINTS = {
   REFLECTION: 5,
-  EVALUATION: 5,           // mandatory NBCC eval — token acknowledgment
-  COMPLETION_FREE: 25,     // course consumed via free tier (no payment)
-  COMPLETION_INDIVIDUAL: 50, // user individually purchased this course
-  COMPLETION_SUBSCRIPTION: 75, // user has active subscription/trial
-  COMPLETION_LONG: 100,    // course.ceHours > 4, overrides all others
+  EVALUATION: 5,
+  COMPLETION_FREE: 25,
+  COMPLETION_INDIVIDUAL: 50,
+  COMPLETION_SUBSCRIPTION: 75,
+  COMPLETION_LONG: 100,
   CERTIFICATE: 25,
-  COURSE_REVIEW: 25,        // reserved for future standalone review system
+  COURSE_REVIEW: 25,
   REFERRAL_SIGNUP: 50,
   REFERRAL_PAID: 200,
   REFERRAL_RETENTION: 100,
 };
 
-// ─────────────────────────────────────────────────────────────────
-// Transaction type → User schema enum mapping
-// ─────────────────────────────────────────────────────────────────
+// Transaction types (internal — schema enum)
 const TX_TYPE = {
   reflection: 'reflection_submitted',
   courseCompletion: 'course_completion',
@@ -49,43 +44,26 @@ const TX_TYPE = {
   referralSignup: 'referral_signup',
   referralPaid: 'referral_paid',
   referralRetention: 'referral_retention_bonus',
+  redemptionStripeCredit: 'redemption_stripe_credit',
+  redemptionGiftcard: 'redemption_giftcard',
   adminAdjustment: 'admin_adjustment',
 };
 
 // ─────────────────────────────────────────────────────────────────
-// PUBLIC: compute course completion points based on tiered rules
-//
-// Pure function — no DB access. Caller passes course doc and user doc.
-// Tiered rules (highest applicable wins):
-//   1. course.ceHours > 4              → 100 (long-course override)
-//   2. user has active subscription/trial → 75
-//   3. user individually purchased this course → 50
-//   4. else (free tier consumption)    → 25
-//
-// "Active subscription" = user.subscription.status in ['active', 'trial']
-// "Individually purchased" = user.purchasedCourses[] contains this courseId
-//
-// Args:
-//   course — Mongoose course doc (needs at least: ceHours, _id)
-//   user   — Mongoose user doc (needs at least: subscription, purchasedCourses)
-//
-// Returns: { points: number, tier: string }
+// Compute course completion points (tiered)
 // ─────────────────────────────────────────────────────────────────
 export function computeCompletionPoints(course, user) {
   const ceHours = parseFloat(course?.ceHours || course?.ceuHours) || 0;
 
-  // Long-course override
   if (ceHours > 4) {
     return { points: POINTS.COMPLETION_LONG, tier: 'long_course' };
   }
 
-  // Subscription/trial check
   const subStatus = user?.subscription?.status;
   if (subStatus === 'active' || subStatus === 'trial') {
     return { points: POINTS.COMPLETION_SUBSCRIPTION, tier: 'subscription' };
   }
 
-  // Individual purchase check
   const courseIdStr = course?._id?.toString();
   const hasPurchased = courseIdStr && Array.isArray(user?.purchasedCourses) &&
     user.purchasedCourses.some(p => {
@@ -97,12 +75,11 @@ export function computeCompletionPoints(course, user) {
     return { points: POINTS.COMPLETION_INDIVIDUAL, tier: 'individual' };
   }
 
-  // Default: free tier consumption
   return { points: POINTS.COMPLETION_FREE, tier: 'free' };
 }
 
 // ─────────────────────────────────────────────────────────────────
-// Internal: low-level credit award. Atomic.
+// Internal: low-level credit award
 // ─────────────────────────────────────────────────────────────────
 async function _awardCreditsRaw(userId, amount, txType, description, relatedCourseId = null, relatedRedemptionId = null) {
   const update = {
@@ -141,19 +118,7 @@ async function _claimDedupKey(userId, dedupKey) {
 }
 
 // ─────────────────────────────────────────────────────────────────
-// PUBLIC: course completion earn (TIERED — 25/50/75/100)
-//
-// Call after assessment is passed and saved. Idempotent per user × course.
-//
-// Args:
-//   userId — Mongoose ObjectId or string
-//   course — Mongoose course doc (needs ceHours, _id, optionally title)
-//   user   — Mongoose user doc (needs subscription, purchasedCourses).
-//            Caller passes req.user IF it's the full doc, OR loads via
-//            User.findById if req.user is thinned.
-//
-// Returns: { earned: bool, points?: number, tier?: string, newBalance?: number, error?: string }
-// Never throws.
+// PUBLIC: course completion earn (TIERED)
 // ─────────────────────────────────────────────────────────────────
 export async function awardCourseCompletion(userId, course, user) {
   try {
@@ -165,27 +130,19 @@ export async function awardCourseCompletion(userId, course, user) {
     const claimed = await _claimDedupKey(userId, dedupKey);
     if (!claimed) return { earned: false, reason: 'already_awarded' };
 
-    // If user wasn't passed in (or is thinned), load it for tier calc
     let userDoc = user;
     if (!userDoc?.subscription) {
-      userDoc = await User.findById(userId, {
-        subscription: 1,
-        purchasedCourses: 1,
-      });
+      userDoc = await User.findById(userId, { subscription: 1, purchasedCourses: 1 });
     }
 
     const { points, tier } = computeCompletionPoints(course, userDoc);
 
     const desc = course.title
-      ? `Completed: ${course.title} (${tier} tier, ${points}pt)`
+      ? `Completed: ${course.title} (${tier} tier, ${points} MMP)`
       : `Course completion (${cidStr}, ${tier} tier)`;
 
     const updated = await _awardCreditsRaw(
-      userId,
-      points,
-      TX_TYPE.courseCompletion,
-      desc,
-      cidStr
+      userId, points, TX_TYPE.courseCompletion, desc, cidStr
     );
 
     return {
@@ -201,9 +158,7 @@ export async function awardCourseCompletion(userId, course, user) {
 }
 
 // ─────────────────────────────────────────────────────────────────
-// PUBLIC: certificate earn (25 pts)
-//
-// Call after certificate PDF is generated successfully.
+// PUBLIC: certificate earn (25 MMP)
 // ─────────────────────────────────────────────────────────────────
 export async function awardCertificate(userId, courseId, courseTitle = '') {
   try {
@@ -215,16 +170,10 @@ export async function awardCertificate(userId, courseId, courseTitle = '') {
     const claimed = await _claimDedupKey(userId, dedupKey);
     if (!claimed) return { earned: false, reason: 'already_awarded' };
 
-    const desc = courseTitle
-      ? `Certificate earned: ${courseTitle}`
-      : `Certificate (${cidStr})`;
+    const desc = courseTitle ? `Certificate earned: ${courseTitle}` : `Certificate (${cidStr})`;
 
     const updated = await _awardCreditsRaw(
-      userId,
-      POINTS.CERTIFICATE,
-      TX_TYPE.certificate,
-      desc,
-      cidStr
+      userId, POINTS.CERTIFICATE, TX_TYPE.certificate, desc, cidStr
     );
 
     return {
@@ -239,13 +188,7 @@ export async function awardCertificate(userId, courseId, courseTitle = '') {
 }
 
 // ─────────────────────────────────────────────────────────────────
-// PUBLIC: course evaluation earn (5 pts — TOKEN)
-//
-// Call after the NBCC-required course evaluation is submitted.
-// Low value (5pt) because evaluation is mandatory for cert generation —
-// users would do it anyway. This is acknowledgment, not behavior change.
-//
-// Idempotent per user × course.
+// PUBLIC: course evaluation earn (5 MMP token)
 // ─────────────────────────────────────────────────────────────────
 export async function awardCourseEvaluation(userId, courseId, courseTitle = '') {
   try {
@@ -257,16 +200,10 @@ export async function awardCourseEvaluation(userId, courseId, courseTitle = '') 
     const claimed = await _claimDedupKey(userId, dedupKey);
     if (!claimed) return { earned: false, reason: 'already_awarded' };
 
-    const desc = courseTitle
-      ? `Evaluation submitted: ${courseTitle}`
-      : `Course evaluation (${cidStr})`;
+    const desc = courseTitle ? `Evaluation submitted: ${courseTitle}` : `Course evaluation (${cidStr})`;
 
     const updated = await _awardCreditsRaw(
-      userId,
-      POINTS.EVALUATION,
-      TX_TYPE.evaluation,
-      desc,
-      cidStr
+      userId, POINTS.EVALUATION, TX_TYPE.evaluation, desc, cidStr
     );
 
     return {
@@ -281,11 +218,7 @@ export async function awardCourseEvaluation(userId, courseId, courseTitle = '') 
 }
 
 // ─────────────────────────────────────────────────────────────────
-// PUBLIC: course review earn (25 pts) — RESERVED, not currently wired
-//
-// Reserved for a future standalone review system (separate from NBCC
-// evaluation). When/if Ke builds public course reviews, wire this from
-// that endpoint. Different dedup key from evaluation, so both can earn.
+// PUBLIC: course review earn (25 MMP) — RESERVED for future
 // ─────────────────────────────────────────────────────────────────
 export async function awardCourseReview(userId, courseId, courseTitle = '') {
   try {
@@ -297,16 +230,10 @@ export async function awardCourseReview(userId, courseId, courseTitle = '') {
     const claimed = await _claimDedupKey(userId, dedupKey);
     if (!claimed) return { earned: false, reason: 'already_awarded' };
 
-    const desc = courseTitle
-      ? `Reviewed: ${courseTitle}`
-      : `Course review (${cidStr})`;
+    const desc = courseTitle ? `Reviewed: ${courseTitle}` : `Course review (${cidStr})`;
 
     const updated = await _awardCreditsRaw(
-      userId,
-      POINTS.COURSE_REVIEW,
-      TX_TYPE.review,
-      desc,
-      cidStr
+      userId, POINTS.COURSE_REVIEW, TX_TYPE.review, desc, cidStr
     );
 
     return {
@@ -322,7 +249,6 @@ export async function awardCourseReview(userId, courseId, courseTitle = '') {
 
 // ─────────────────────────────────────────────────────────────────
 // PUBLIC: referral signup
-// (unchanged from v2.0)
 // ─────────────────────────────────────────────────────────────────
 export async function processReferralSignup(newUserId, referralCode) {
   try {
@@ -344,10 +270,7 @@ export async function processReferralSignup(newUserId, referralCode) {
     );
 
     const referralPushed = await User.findOneAndUpdate(
-      {
-        _id: referrer._id,
-        'referrals.userId': { $ne: newUserId },
-      },
+      { _id: referrer._id, 'referrals.userId': { $ne: newUserId } },
       {
         $push: {
           referrals: {
@@ -393,7 +316,6 @@ export async function processReferralSignup(newUserId, referralCode) {
 
 // ─────────────────────────────────────────────────────────────────
 // PUBLIC: referral paid conversion
-// (unchanged from v2.0)
 // ─────────────────────────────────────────────────────────────────
 export async function processReferralPaidConversion(payingUserId) {
   try {
@@ -445,11 +367,11 @@ export async function processReferralPaidConversion(payingUserId) {
 }
 
 // ─────────────────────────────────────────────────────────────────
-// PUBLIC: tier helper
+// PUBLIC: tier helper — Capable / Proficient / Skilled / Seasoned
 // ─────────────────────────────────────────────────────────────────
 export function tierFromLifetime(lifetime) {
-  if (lifetime >= 1500) return { name: 'Flourishing', color: 'gold',   multiplier: 2.0,  nextThreshold: null };
-  if (lifetime >= 750)  return { name: 'Rooted',      color: 'navy',   multiplier: 1.5,  nextThreshold: 1500 };
-  if (lifetime >= 250)  return { name: 'Grounded',    color: 'hunter', multiplier: 1.25, nextThreshold: 750 };
-  return                       { name: 'Seedling',    color: 'green',  multiplier: 1.0,  nextThreshold: 250 };
+  if (lifetime >= 1500) return { name: 'Seasoned',   color: 'gold',   multiplier: 2.0,  nextThreshold: null };
+  if (lifetime >= 750)  return { name: 'Skilled',    color: 'navy',   multiplier: 1.5,  nextThreshold: 1500 };
+  if (lifetime >= 250)  return { name: 'Proficient', color: 'hunter', multiplier: 1.25, nextThreshold: 750 };
+  return                       { name: 'Capable',    color: 'green',  multiplier: 1.0,  nextThreshold: 250 };
 }
