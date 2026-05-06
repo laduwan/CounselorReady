@@ -11,6 +11,13 @@
 import express from 'express';
 import mongoose from 'mongoose';
 import User from '../models/User.js';
+import Redemption from '../models/Redemption.js';
+import Stripe from 'stripe';
+
+const stripe = process.env.STRIPE_SECRET_KEY ? new Stripe(process.env.STRIPE_SECRET_KEY) : null;
+
+import emailService from '../services/emailService.js';
+const { sendRedemptionConfirmation, sendRedemptionAdminAlert } = emailService;
 
 const router = express.Router();
 
@@ -39,6 +46,27 @@ const POINTS = {
   REFERRAL_PAID: 200,
   REFERRAL_RETENTION: 100,
 };
+
+// ─── Day 3: Redemption catalog ───
+const REDEMPTION_OPTIONS = {
+  stripe_credit_10: { pointsCost: 500,  dollarValue: 10, kind: 'stripe' },
+  stripe_credit_25: { pointsCost: 1000, dollarValue: 25, kind: 'stripe' },
+  giftcard_25:      { pointsCost: 1500, dollarValue: 25, kind: 'giftcard' },
+};
+
+const VALID_VENDORS = [
+  'amazon',
+  'doordash',
+  'celestial_spa_atlanta',
+  'wellness_spot_college_park',
+  'noir_pearl_smyrna',
+  'healing_oasis_augusta',
+  'blessed_hands_augusta',
+  'hetep_retreat_columbus',
+  'honey_pot_macon',
+  'culler_massage_macon',
+  'odomi_medical_savannah',
+];
 
 // ─────────────────────────────────────────────────────────────────
 // Helper: build the dedup key for a reflection block
@@ -243,14 +271,187 @@ function tierFromLifetime(lifetime) {
 }
 
 // ─────────────────────────────────────────────────────────────────
-// Day 2 stubs — fill in next deploy
+// POST /api/rewards/redeem
+// Body: { type: 'stripe_credit_10' | 'stripe_credit_25' | 'giftcard_25', vendor?: string }
 // ─────────────────────────────────────────────────────────────────
-router.post('/redeem', protect, (req, res) => {
-  return res.status(501).json({ error: 'not_implemented_yet', day: 2 });
+router.post('/redeem', protect, async (req, res) => {
+  try {
+    const { type, vendor } = req.body || {};
+
+    // Validate type
+    const option = REDEMPTION_OPTIONS[type];
+    if (!option) {
+      return res.status(400).json({ error: 'Invalid redemption type' });
+    }
+
+    // Validate vendor for gift card
+    if (option.kind === 'giftcard') {
+      if (!vendor || !VALID_VENDORS.includes(vendor)) {
+        return res.status(400).json({ error: 'Invalid or missing vendor for gift card' });
+      }
+    }
+
+    const txType = option.kind === 'giftcard' ? 'redemption_giftcard' : 'redemption_stripe_credit';
+    const description = option.kind === 'giftcard'
+      ? `Redeemed ${option.pointsCost} MMP for $${option.dollarValue} gift card (${vendor})`
+      : `Redeemed ${option.pointsCost} MMP for $${option.dollarValue} subscription credit`;
+
+    // Atomic balance check + deduction
+    const updatedUser = await User.findOneAndUpdate(
+      { _id: req.user._id, 'careCredits.balance': { $gte: option.pointsCost } },
+      {
+        $inc: { 'careCredits.balance': -option.pointsCost },
+        $push: {
+          'careCredits.transactions': {
+            amount: -option.pointsCost,
+            type: txType,
+            description,
+            createdAt: new Date(),
+          },
+        },
+      },
+      { new: true, select: 'careCredits.balance email profile stripeCustomerId' }
+    );
+
+    if (!updatedUser) {
+      return res.status(400).json({ error: 'Insufficient balance' });
+    }
+
+    // Create Redemption record (pending)
+    const redemption = await Redemption.create({
+      userId: req.user._id,
+      type,
+      pointsCost: option.pointsCost,
+      dollarValue: option.dollarValue,
+      vendor: vendor || null,
+      stripeCustomerId: updatedUser.stripeCustomerId || null,
+      status: 'pending',
+    });
+
+    // For Stripe credit: process immediately
+    if (option.kind === 'stripe') {
+      // Refund helper (used multiple times below)
+      const refund = async (reason) => {
+        await User.findByIdAndUpdate(req.user._id, {
+          $inc: { 'careCredits.balance': option.pointsCost },
+          $push: {
+            'careCredits.transactions': {
+              amount: option.pointsCost,
+              type: 'admin_adjustment',
+              description: `Refund: ${reason}`,
+              relatedRedemptionId: redemption._id,
+              createdAt: new Date(),
+            },
+          },
+        });
+        await Redemption.findByIdAndUpdate(redemption._id, {
+          status: 'cancelled',
+          cancelledAt: new Date(),
+          cancelReason: reason,
+        });
+      };
+
+      if (!stripe) {
+        await refund('Stripe not configured');
+        return res.status(503).json({ error: 'Payment system unavailable. Points refunded.' });
+      }
+
+      if (!updatedUser.stripeCustomerId) {
+        await refund('No Stripe customer ID');
+        return res.status(400).json({
+          error: 'No active billing account found. Make a purchase first or subscribe to redeem credit. Points refunded.',
+        });
+      }
+
+      try {
+        const txn = await stripe.customers.createBalanceTransaction(
+          updatedUser.stripeCustomerId,
+          {
+            amount: -option.dollarValue * 100, // negative = credit to customer
+            currency: 'usd',
+            description: `CounselorReady MMP redemption (${option.pointsCost} MMP)`,
+            metadata: {
+              redemptionId: redemption._id.toString(),
+              userId: req.user._id.toString(),
+              pointsCost: option.pointsCost.toString(),
+            },
+          }
+        );
+
+        await Redemption.findByIdAndUpdate(redemption._id, {
+          status: 'fulfilled',
+          fulfilledAt: new Date(),
+          stripeBalanceTransactionId: txn.id,
+        });
+
+        // Send confirmation email (fire-and-forget)
+        sendRedemptionConfirmation(updatedUser, {
+          ...redemption.toObject(),
+          status: 'fulfilled',
+          stripeBalanceTransactionId: txn.id,
+        }).catch(err => console.error('[REWARDS] confirmation email failed:', err.message));
+
+        return res.json({
+          success: true,
+          redemption: {
+            id: redemption._id,
+            type,
+            pointsCost: option.pointsCost,
+            dollarValue: option.dollarValue,
+            status: 'fulfilled',
+          },
+          newBalance: updatedUser.careCredits.balance,
+          message: `$${option.dollarValue} credit applied to your account. It will discount your next invoice.`,
+        });
+      } catch (stripeErr) {
+        console.error('[REWARDS] Stripe credit redemption failed:', stripeErr.message);
+        await refund('Stripe API error: ' + stripeErr.message);
+        return res.status(500).json({ error: 'Failed to apply credit. Points refunded.' });
+      }
+    }
+
+    // For gift card: fire emails, leave pending for admin
+    sendRedemptionConfirmation(updatedUser, redemption.toObject())
+      .catch(err => console.error('[REWARDS] user confirmation email failed:', err.message));
+
+    sendRedemptionAdminAlert(redemption.toObject(), updatedUser)
+      .catch(err => console.error('[REWARDS] admin alert email failed:', err.message));
+
+    return res.json({
+      success: true,
+      redemption: {
+        id: redemption._id,
+        type,
+        vendor,
+        pointsCost: option.pointsCost,
+        dollarValue: option.dollarValue,
+        status: 'pending',
+      },
+      newBalance: updatedUser.careCredits.balance,
+      message: `Gift card request received. You'll receive your code via email within 1-2 business days.`,
+    });
+  } catch (err) {
+    console.error('[REWARDS] redemption failed:', err.message);
+    res.status(500).json({ error: 'Server error' });
+  }
 });
 
-router.post('/redeem-giftcard', protect, (req, res) => {
-  return res.status(501).json({ error: 'not_implemented_yet', day: 2 });
+// ─────────────────────────────────────────────────────────────────
+// GET /api/rewards/my-redemptions
+// Returns the user's redemption history (most recent first, last 50)
+// ─────────────────────────────────────────────────────────────────
+router.get('/my-redemptions', protect, async (req, res) => {
+  try {
+    const redemptions = await Redemption.find({ userId: req.user._id })
+      .sort({ createdAt: -1 })
+      .limit(50)
+      .select('-stripeCustomerId -fulfilledBy -cancelledBy -adminNotes')
+      .lean();
+    res.json({ redemptions });
+  } catch (err) {
+    console.error('[REWARDS] my-redemptions failed:', err.message);
+    res.status(500).json({ error: 'Server error' });
+  }
 });
 
 export default router;
