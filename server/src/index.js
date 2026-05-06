@@ -68,6 +68,7 @@ import toolAnalyticsRoutes from './routes/toolAnalytics.js';
 import remediationRoutes from './routes/remediation.js';
 import securityRoutes from './routes/security.js';
 import adminUsersRoutes from './routes/adminUsers.js';
+import adminRewardsRoutes from './routes/adminRewards.js';
 import supervisionRoutes from './routes/supervision.js';
 import insuranceCredentialsRoutes from './routes/insuranceCredentials.js';
 import legacyVaultRoutes from './routes/legacyVault.js';
@@ -207,6 +208,7 @@ app.use('/api/tool-analytics', toolAnalyticsRoutes);
 app.use('/api/remediation', remediationRoutes);
 app.use('/api/security', securityRoutes);
 app.use('/api/admin', adminUsersRoutes);
+app.use('/api/admin/rewards', adminRewardsRoutes);
 app.use('/api/supervision', supervisionRoutes);
 app.use('/api/insurance-credentials', insuranceCredentialsRoutes);
 app.use('/api/legacy-vault', legacyVaultRoutes);
@@ -247,6 +249,7 @@ const REQUIRED_ROUTES = {
   '/api/images':              imageUploadRoutes,
   '/api/admin/courses':       bulkUploadRoutes,
   '/api/admin/course-mgmt':   adminCoursesRoutes,
+  '/api/admin/rewards':       adminRewardsRoutes,
   '/api/blog':                blogRoutes,
   '/api/tool-analytics':      toolAnalyticsRoutes,
   '/api/security':            securityRoutes,

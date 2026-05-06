@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Redeem Mastery Mark Points · CounselorReady</title>
+<link rel="stylesheet" href="/css/design-tokens.css">
+<link rel="stylesheet" href="/css/typography.css">
+<style>
+  body {
+    font-family: 'Lato', system-ui, sans-serif;
+    background: #F8F7F4;
+    color: #2A2620;
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+  }
+  .rd-page {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 32px 20px 60px;
+  }
+  .rd-header {
+    margin-bottom: 24px;
+  }
+  .rd-back {
+    color: #4A7C59;
+    text-decoration: none;
+    font-size: 13px;
+    display: inline-block;
+    margin-bottom: 12px;
+  }
+  .rd-back:hover { text-decoration: underline; }
+  .rd-title {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 32px;
+    color: #6B1D34;
+    font-weight: 600;
+    margin: 0 0 8px;
+  }
+  .rd-subtitle {
+    color: #284157;
+    font-size: 15px;
+    line-height: 1.5;
+    margin: 0;
+  }
+
+  .rd-balance-card {
+    background: #FFFFFF;
+    border: 1px solid rgba(40, 65, 87, 0.12);
+    border-radius: 14px;
+    padding: 20px 24px;
+    margin: 24px 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .rd-balance-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 700;
+    color: rgba(40, 65, 87, 0.55);
+    margin-bottom: 4px;
+  }
+  .rd-balance-value {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 36px;
+    color: #6B1D34;
+    font-weight: 600;
+    line-height: 1;
+  }
+  .rd-balance-unit {
+    font-size: 14px;
+    color: rgba(40, 65, 87, 0.55);
+    font-family: 'Lato', sans-serif;
+    margin-left: 6px;
+  }
+  .rd-tier-badge {
+    display: inline-flex;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .rd-tier-capable    { background: rgba(74,124,89,0.10);  color: #4A7C59; }
+  .rd-tier-proficient { background: rgba(74,124,89,0.18);  color: #2D5238; }
+  .rd-tier-skilled    { background: rgba(40,65,87,0.12);   color: #284157; }
+  .rd-tier-seasoned   { background: rgba(212,168,85,0.20); color: #8C6A1F; }
+
+  .rd-options {
+    display: grid;
+    gap: 16px;
+  }
+  .rd-option {
+    background: #FFFFFF;
+    border: 1px solid rgba(40, 65, 87, 0.12);
+    border-radius: 14px;
+    padding: 24px;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  .rd-option-available { cursor: pointer; }
+  .rd-option-available:hover {
+    border-color: #6B1D34;
+    box-shadow: 0 2px 8px rgba(107, 29, 52, 0.08);
+  }
+  .rd-option-locked {
+    opacity: 0.55;
+  }
+  .rd-option-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 12px;
+  }
+  .rd-option-name {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 22px;
+    color: #6B1D34;
+    font-weight: 600;
+    margin: 0 0 4px;
+  }
+  .rd-option-value {
+    font-size: 14px;
+    color: rgba(40, 65, 87, 0.75);
+    margin: 0;
+  }
+  .rd-option-cost {
+    text-align: right;
+    flex-shrink: 0;
+  }
+  .rd-option-cost-amount {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 24px;
+    color: #4A7C59;
+    font-weight: 600;
+    line-height: 1;
+  }
+  .rd-option-cost-label {
+    font-size: 11px;
+    color: rgba(40, 65, 87, 0.55);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-top: 4px;
+  }
+  .rd-option-desc {
+    color: rgba(40, 65, 87, 0.85);
+    font-size: 14px;
+    line-height: 1.5;
+    margin: 0 0 12px;
+  }
+  .rd-option-status {
+    font-size: 12px;
+    color: rgba(40, 65, 87, 0.55);
+  }
+  .rd-option-status-locked {
+    color: #C0392B;
+    font-weight: 700;
+  }
+  .rd-option-action {
+    margin-top: 16px;
+  }
+  .rd-btn-primary {
+    background: #6B1D34;
+    color: #FFFFFF;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    letter-spacing: 0.02em;
+    transition: background 0.15s;
+  }
+  .rd-btn-primary:hover { background: #4A1424; }
+  .rd-btn-primary:disabled {
+    background: rgba(40, 65, 87, 0.18);
+    color: rgba(40, 65, 87, 0.55);
+    cursor: not-allowed;
+  }
+  .rd-btn-secondary {
+    background: transparent;
+    color: #284157;
+    border: 1px solid rgba(40, 65, 87, 0.24);
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    letter-spacing: 0.02em;
+    transition: background 0.15s;
+  }
+  .rd-btn-secondary:hover { background: rgba(40, 65, 87, 0.04); }
+
+  .rd-vendor-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 8px;
+    margin: 12px 0;
+  }
+  .rd-vendor-option {
+    background: #F8F7F4;
+    border: 1px solid rgba(40, 65, 87, 0.12);
+    border-radius: 6px;
+    padding: 10px 12px;
+    cursor: pointer;
+    font-size: 13px;
+    color: #2A2620;
+    transition: all 0.15s;
+    text-align: left;
+    font-weight: normal;
+  }
+  .rd-vendor-option:hover {
+    border-color: #6B1D34;
+    background: rgba(107, 29, 52, 0.04);
+  }
+  .rd-vendor-option.selected {
+    border-color: #6B1D34;
+    background: rgba(107, 29, 52, 0.06);
+    color: #6B1D34;
+    font-weight: 700;
+  }
+
+  /* Modal */
+  .rd-modal-bg {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(40, 65, 87, 0.55);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .rd-modal-bg.open { display: flex; }
+  .rd-modal {
+    background: #FFFFFF;
+    border-radius: 14px;
+    padding: 28px;
+    max-width: 420px;
+    width: 100%;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.16);
+  }
+  .rd-modal-title {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 22px;
+    color: #6B1D34;
+    margin: 0 0 12px;
+    font-weight: 600;
+  }
+  .rd-modal-text {
+    color: #284157;
+    font-size: 14px;
+    line-height: 1.6;
+    margin: 0 0 20px;
+  }
+  .rd-modal-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+  }
+
+  .rd-toast {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #4A7C59;
+    color: #FFFFFF;
+    padding: 14px 24px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.16);
+    z-index: 1100;
+    font-size: 14px;
+    max-width: calc(100vw - 40px);
+    text-align: center;
+    display: none;
+  }
+  .rd-toast.show { display: block; }
+  .rd-toast-error { background: #C0392B; }
+
+  .rd-history-section {
+    margin-top: 40px;
+  }
+  .rd-history-title {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 22px;
+    color: #6B1D34;
+    margin: 0 0 16px;
+    font-weight: 600;
+  }
+  .rd-history-empty {
+    background: #FFFFFF;
+    border: 1px dashed rgba(40, 65, 87, 0.24);
+    border-radius: 8px;
+    padding: 20px;
+    text-align: center;
+    color: rgba(40, 65, 87, 0.55);
+    font-size: 13px;
+  }
+  .rd-history-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .rd-history-item {
+    background: #FFFFFF;
+    border: 1px solid rgba(40, 65, 87, 0.12);
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .rd-history-meta {
+    flex: 1;
+    min-width: 180px;
+  }
+  .rd-history-name {
+    font-weight: 700;
+    color: #2A2620;
+    margin: 0 0 2px;
+    font-size: 14px;
+  }
+  .rd-history-time {
+    color: rgba(40, 65, 87, 0.55);
+    font-size: 11px;
+  }
+  .rd-history-status {
+    display: inline-flex;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    flex-shrink: 0;
+    align-self: center;
+  }
+  .rd-status-pending   { background: rgba(212,168,85,0.18); color: #8C6A1F; }
+  .rd-status-fulfilled { background: rgba(74,124,89,0.18);  color: #2D5238; }
+  .rd-status-cancelled { background: rgba(40, 65, 87, 0.10); color: #284157; }
+
+  @media (max-width: 480px) {
+    .rd-page { padding: 20px 16px 40px; }
+    .rd-title { font-size: 26px; }
+    .rd-balance-card { flex-direction: column; align-items: flex-start; }
+    .rd-option-header { flex-direction: column; }
+    .rd-option-cost { text-align: left; }
+  }
+</style>
+</head>
+<body>
+<div id="cr-toast" class="rd-toast"></div>
+
+<div class="rd-page">
+  <div class="rd-header">
+    <a href="/achievements.html" class="rd-back">← Back to Achievements</a>
+    <h1 class="rd-title">Redeem your Mastery Mark Points</h1>
+    <p class="rd-subtitle">Trade your earned MMPs for subscription credit or self-care gift cards. Stripe credits apply automatically. Gift cards arrive within 1-2 business days.</p>
+  </div>
+
+  <div id="rd-balance-display" class="rd-balance-card">
+    <div>
+      <div class="rd-balance-label">Available Balance</div>
+      <div class="rd-balance-value">— <span class="rd-balance-unit">MMP</span></div>
+    </div>
+    <div id="rd-tier-display"></div>
+  </div>
+
+  <div id="rd-options" class="rd-options"></div>
+
+  <div class="rd-history-section">
+    <h2 class="rd-history-title">Your redemption history</h2>
+    <div id="rd-history"></div>
+  </div>
+</div>
+
+<!-- Confirm modal -->
+<div id="rd-confirm-modal" class="rd-modal-bg">
+  <div class="rd-modal">
+    <h3 class="rd-modal-title" id="rd-modal-title">Confirm redemption</h3>
+    <p class="rd-modal-text" id="rd-modal-text"></p>
+    <div class="rd-modal-actions">
+      <button class="rd-btn-secondary" id="rd-modal-cancel">Cancel</button>
+      <button class="rd-btn-primary" id="rd-modal-confirm">Confirm Redemption</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  'use strict';
+
+  var API_BASE = location.origin.includes('localhost')
+    ? 'http://localhost:5000'
+    : 'https://api.counselorready.com';
+
+  var TOKEN = localStorage.getItem('token');
+  if (!TOKEN) {
+    location.href = '/login.html?redirect=/redeem.html';
+    return;
+  }
+
+  var REDEMPTION_OPTIONS = [
+    { type: 'stripe_credit_10', name: '$10 Subscription Credit', value: 10, cost: 500, kind: 'stripe',
+      desc: 'Apply $10 toward your next CounselorReady subscription invoice. Auto-applied immediately — no code to enter.' },
+    { type: 'stripe_credit_25', name: '$25 Subscription Credit', value: 25, cost: 1000, kind: 'stripe',
+      desc: 'Apply $25 toward your next subscription invoice. Auto-applied immediately.' },
+    { type: 'giftcard_25', name: '$25 Gift Card', value: 25, cost: 1500, kind: 'giftcard',
+      desc: 'Choose from Amazon, DoorDash, or one of 9 Black-owned Georgia spas. Code arrives via email within 1-2 business days.' },
+  ];
+
+  var VENDORS = [
+    { slug: 'amazon', name: 'Amazon' },
+    { slug: 'doordash', name: 'DoorDash' },
+    { slug: 'celestial_spa_atlanta', name: 'Celestial Spa (Atlanta)' },
+    { slug: 'wellness_spot_college_park', name: 'The Wellness Spot (College Park)' },
+    { slug: 'noir_pearl_smyrna', name: 'Noir Pearl Spa (Smyrna)' },
+    { slug: 'healing_oasis_augusta', name: 'A Healing Oasis (Augusta)' },
+    { slug: 'blessed_hands_augusta', name: 'Blessed Hands (Augusta)' },
+    { slug: 'hetep_retreat_columbus', name: 'Hetep Retreat (Columbus)' },
+    { slug: 'honey_pot_macon', name: 'Honey Pot (Macon)' },
+    { slug: 'culler_massage_macon', name: 'Culler Massage (Macon)' },
+    { slug: 'odomi_medical_savannah', name: 'Odomí Medical Spa (Savannah)' },
+  ];
+
+  var state = {
+    balance: 0,
+    tier: null,
+    pendingType: null,
+    pendingVendor: null,
+  };
+
+  function esc(s) {
+    if (s == null) return '';
+    var d = document.createElement('div');
+    d.textContent = String(s);
+    return d.innerHTML;
+  }
+
+  function toast(msg, isError) {
+    var el = document.getElementById('cr-toast');
+    el.textContent = msg;
+    el.className = 'rd-toast show' + (isError ? ' rd-toast-error' : '');
+    setTimeout(function() { el.className = 'rd-toast'; }, 4500);
+  }
+
+  function timeAgo(dateStr) {
+    if (!dateStr) return '';
+    var diff = Date.now() - new Date(dateStr).getTime();
+    if (diff < 60000) return 'Just now';
+    if (diff < 3600000) return Math.floor(diff / 60000) + 'm ago';
+    if (diff < 86400000) return Math.floor(diff / 3600000) + 'h ago';
+    if (diff < 604800000) return Math.floor(diff / 86400000) + 'd ago';
+    return new Date(dateStr).toLocaleDateString();
+  }
+
+  function formatTypeLabel(type, vendor) {
+    if (type === 'stripe_credit_10') return '$10 subscription credit';
+    if (type === 'stripe_credit_25') return '$25 subscription credit';
+    if (type === 'giftcard_25') {
+      var v = VENDORS.find(function(x) { return x.slug === vendor; });
+      return '$25 ' + (v ? v.name : 'gift card');
+    }
+    return type;
+  }
+
+  function renderBalance(data) {
+    state.balance = data.balance || 0;
+    state.tier = data.tier || { name: 'Capable' };
+
+    var balDiv = document.getElementById('rd-balance-display');
+    balDiv.innerHTML =
+      '<div>' +
+        '<div class="rd-balance-label">Available Balance</div>' +
+        '<div class="rd-balance-value">' + state.balance + '<span class="rd-balance-unit">MMP</span></div>' +
+      '</div>' +
+      '<div id="rd-tier-display">' +
+        '<span class="rd-tier-badge rd-tier-' + (state.tier.name || 'Capable').toLowerCase() + '">' +
+          esc(state.tier.name || 'Capable') + ' Tier' +
+        '</span>' +
+      '</div>';
+  }
+
+  function renderOptions() {
+    var container = document.getElementById('rd-options');
+    container.innerHTML = REDEMPTION_OPTIONS.map(function(opt) {
+      var available = state.balance >= opt.cost;
+      var statusText = available
+        ? (opt.kind === 'stripe' ? '✓ Will auto-apply to next invoice' : '✓ Code arrives via email in 1-2 days')
+        : '🔒 Need ' + (opt.cost - state.balance) + ' more MMP';
+      var statusClass = available ? '' : 'rd-option-status-locked';
+
+      var vendorHtml = '';
+      if (opt.kind === 'giftcard' && available) {
+        vendorHtml =
+          '<div style="margin-top:16px;">' +
+            '<div style="font-size:11px; text-transform:uppercase; letter-spacing:0.06em; color:rgba(40,65,87,0.55); margin-bottom:8px; font-weight:700;">Choose vendor:</div>' +
+            '<div class="rd-vendor-grid" data-type="' + opt.type + '">' +
+              VENDORS.map(function(v) {
+                return '<button class="rd-vendor-option" data-vendor="' + esc(v.slug) + '">' + esc(v.name) + '</button>';
+              }).join('') +
+            '</div>' +
+          '</div>';
+      }
+
+      var actionHtml = '';
+      if (available && opt.kind === 'stripe') {
+        actionHtml = '<div class="rd-option-action"><button class="rd-btn-primary" data-redeem="' + opt.type + '">Redeem ' + opt.cost + ' MMP →</button></div>';
+      } else if (available && opt.kind === 'giftcard') {
+        actionHtml = '<div class="rd-option-action"><button class="rd-btn-primary" data-redeem="' + opt.type + '" disabled>Select a vendor first</button></div>';
+      }
+
+      return '<div class="rd-option ' + (available ? 'rd-option-available' : 'rd-option-locked') + '" data-option="' + opt.type + '">' +
+        '<div class="rd-option-header">' +
+          '<div>' +
+            '<h3 class="rd-option-name">' + esc(opt.name) + '</h3>' +
+            '<p class="rd-option-value">$' + opt.value + ' value</p>' +
+          '</div>' +
+          '<div class="rd-option-cost">' +
+            '<div class="rd-option-cost-amount">' + opt.cost + '</div>' +
+            '<div class="rd-option-cost-label">MMP</div>' +
+          '</div>' +
+        '</div>' +
+        '<p class="rd-option-desc">' + esc(opt.desc) + '</p>' +
+        '<div class="rd-option-status ' + statusClass + '">' + esc(statusText) + '</div>' +
+        vendorHtml +
+        actionHtml +
+      '</div>';
+    }).join('');
+
+    // Wire up vendor pickers
+    container.querySelectorAll('.rd-vendor-option').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var grid = btn.closest('.rd-vendor-grid');
+        var type = grid.dataset.type;
+        grid.querySelectorAll('.rd-vendor-option').forEach(function(b) { b.classList.remove('selected'); });
+        btn.classList.add('selected');
+        // Enable redeem button for that option
+        var optDiv = grid.closest('.rd-option');
+        var redeemBtn = optDiv.querySelector('[data-redeem]');
+        if (redeemBtn) {
+          redeemBtn.disabled = false;
+          redeemBtn.textContent = 'Redeem ' + REDEMPTION_OPTIONS.find(function(o) { return o.type === type; }).cost + ' MMP →';
+          redeemBtn.dataset.vendor = btn.dataset.vendor;
+        }
+      });
+    });
+
+    // Wire redeem buttons
+    container.querySelectorAll('[data-redeem]').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var type = btn.dataset.redeem;
+        var vendor = btn.dataset.vendor || null;
+        showConfirmModal(type, vendor);
+      });
+    });
+  }
+
+  function showConfirmModal(type, vendor) {
+    var opt = REDEMPTION_OPTIONS.find(function(o) { return o.type === type; });
+    if (!opt) return;
+    state.pendingType = type;
+    state.pendingVendor = vendor;
+
+    var label = formatTypeLabel(type, vendor);
+    document.getElementById('rd-modal-title').textContent = 'Confirm redemption';
+    document.getElementById('rd-modal-text').innerHTML =
+      'You\'re about to redeem <strong>' + opt.cost + ' MMP</strong> for <strong>' + esc(label) + '</strong>.<br><br>' +
+      (opt.kind === 'stripe'
+        ? 'The credit will be applied to your account immediately.'
+        : 'Your code will arrive by email within 1-2 business days. Once redeemed, MMPs cannot be returned unless your request is cancelled.');
+    document.getElementById('rd-confirm-modal').classList.add('open');
+  }
+
+  function hideConfirmModal() {
+    document.getElementById('rd-confirm-modal').classList.remove('open');
+    state.pendingType = null;
+    state.pendingVendor = null;
+  }
+
+  document.getElementById('rd-modal-cancel').addEventListener('click', hideConfirmModal);
+
+  document.getElementById('rd-modal-confirm').addEventListener('click', function() {
+    var type = state.pendingType;
+    var vendor = state.pendingVendor;
+    if (!type) return;
+
+    var btn = this;
+    btn.disabled = true;
+    btn.textContent = 'Processing…';
+
+    var body = { type: type };
+    if (vendor) body.vendor = vendor;
+
+    fetch(API_BASE + '/api/rewards/redeem', {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer ' + TOKEN,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(body),
+    })
+      .then(function(res) { return res.json().then(function(d) { return { status: res.status, data: d }; }); })
+      .then(function(r) {
+        btn.disabled = false;
+        btn.textContent = 'Confirm Redemption';
+        hideConfirmModal();
+        if (r.status === 200 && r.data.success) {
+          toast(r.data.message || 'Redemption successful!');
+          // Refresh data
+          fetchData();
+        } else {
+          toast(r.data.error || 'Redemption failed', true);
+        }
+      })
+      .catch(function(err) {
+        btn.disabled = false;
+        btn.textContent = 'Confirm Redemption';
+        hideConfirmModal();
+        toast('Network error. Try again.', true);
+        console.error('[REDEEM]', err);
+      });
+  });
+
+  function renderHistory(redemptions) {
+    var container = document.getElementById('rd-history');
+    if (!redemptions || redemptions.length === 0) {
+      container.innerHTML = '<div class="rd-history-empty">No redemptions yet.</div>';
+      return;
+    }
+    container.innerHTML = '<ul class="rd-history-list">' + redemptions.map(function(r) {
+      var label = formatTypeLabel(r.type, r.vendor);
+      return '<li class="rd-history-item">' +
+        '<div class="rd-history-meta">' +
+          '<div class="rd-history-name">' + esc(label) + '</div>' +
+          '<div class="rd-history-time">' + r.pointsCost + ' MMP · ' + timeAgo(r.createdAt) + '</div>' +
+        '</div>' +
+        '<span class="rd-history-status rd-status-' + r.status + '">' + r.status + '</span>' +
+      '</li>';
+    }).join('') + '</ul>';
+  }
+
+  function fetchData() {
+    Promise.all([
+      fetch(API_BASE + '/api/rewards/balance', { headers: { 'Authorization': 'Bearer ' + TOKEN } }).then(function(r) { return r.json(); }),
+      fetch(API_BASE + '/api/rewards/my-redemptions', { headers: { 'Authorization': 'Bearer ' + TOKEN } }).then(function(r) { return r.json(); }),
+    ])
+      .then(function(results) {
+        renderBalance(results[0]);
+        renderOptions();
+        renderHistory(results[1].redemptions);
+      })
+      .catch(function(err) {
+        toast('Couldn\'t load your data. Refresh to retry.', true);
+        console.error('[REDEEM]', err);
+      });
+  }
+
+  fetchData();
+})();
+</script>
+</body>
+</html>
