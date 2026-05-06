@@ -1,0 +1,546 @@
+<!--
+  ═══════════════════════════════════════════════════════════════
+  CounselorReady Mastery Mark Points (MMP) Widget — v2
+  Day 3 — May 5, 2026
+  
+  PLACEMENT: Drop into client/public/achievements.html between
+  the Level/XP hero block and the Badges grid.
+  
+  STANDALONE: Self-contained CSS + JS. No external deps beyond
+  the API (/api/rewards/balance).
+  
+  REVERT: Delete this entire block.
+  ═══════════════════════════════════════════════════════════════
+-->
+
+<div id="cr-mmp-widget" class="cr-mmp-root" style="display:none">
+  <style>
+    #cr-mmp-widget.cr-mmp-root {
+      font-family: 'Lato', system-ui, sans-serif;
+      max-width: 100%;
+      margin: 24px 0;
+      padding: 0;
+      color: #2A2620;
+    }
+    #cr-mmp-widget .cr-mmp-card {
+      background: #FFFFFF;
+      border: 1px solid rgba(40, 65, 87, 0.12);
+      border-radius: 14px;
+      padding: 24px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+    }
+    #cr-mmp-widget .cr-mmp-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    #cr-mmp-widget .cr-mmp-title {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 22px;
+      font-weight: 600;
+      color: #6B1D34;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    #cr-mmp-widget .cr-mmp-title-icon {
+      font-size: 20px;
+    }
+    #cr-mmp-widget .cr-mmp-tier-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    #cr-mmp-widget .cr-mmp-tier-capable    { background: rgba(74,124,89,0.10);  color: #4A7C59; }
+    #cr-mmp-widget .cr-mmp-tier-proficient { background: rgba(74,124,89,0.18);  color: #2D5238; }
+    #cr-mmp-widget .cr-mmp-tier-skilled    { background: rgba(40,65,87,0.12);   color: #284157; }
+    #cr-mmp-widget .cr-mmp-tier-seasoned   { background: rgba(212,168,85,0.20); color: #8C6A1F; }
+
+    #cr-mmp-widget .cr-mmp-balance-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 18px;
+    }
+    @media (max-width: 480px) {
+      #cr-mmp-widget .cr-mmp-balance-row {
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+    }
+    #cr-mmp-widget .cr-mmp-balance-cell {
+      padding: 14px 18px;
+      background: rgba(107, 29, 52, 0.04);
+      border-left: 3px solid #6B1D34;
+      border-radius: 4px;
+    }
+    #cr-mmp-widget .cr-mmp-balance-cell.cr-mmp-lifetime {
+      background: rgba(74, 124, 89, 0.04);
+      border-left-color: #4A7C59;
+    }
+    #cr-mmp-widget .cr-mmp-balance-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-weight: 700;
+      color: rgba(40, 65, 87, 0.55);
+      margin-bottom: 4px;
+    }
+    #cr-mmp-widget .cr-mmp-balance-value {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 32px;
+      font-weight: 600;
+      line-height: 1;
+      color: #6B1D34;
+    }
+    #cr-mmp-widget .cr-mmp-balance-cell.cr-mmp-lifetime .cr-mmp-balance-value {
+      color: #4A7C59;
+    }
+    #cr-mmp-widget .cr-mmp-balance-unit {
+      font-size: 13px;
+      color: rgba(40, 65, 87, 0.55);
+      margin-left: 4px;
+      font-family: 'Lato', sans-serif;
+    }
+
+    #cr-mmp-widget .cr-mmp-progress {
+      margin-bottom: 18px;
+    }
+    #cr-mmp-widget .cr-mmp-progress-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: rgba(40, 65, 87, 0.55);
+      margin-bottom: 6px;
+    }
+    #cr-mmp-widget .cr-mmp-progress-bar {
+      height: 8px;
+      background: rgba(40, 65, 87, 0.08);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    #cr-mmp-widget .cr-mmp-progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #6B1D34 0%, #4A7C59 100%);
+      border-radius: 4px;
+      transition: width 0.6s ease;
+    }
+    #cr-mmp-widget .cr-mmp-progress-fill.cr-mmp-maxed {
+      background: linear-gradient(90deg, #D4A855 0%, #4A7C59 100%);
+    }
+
+    #cr-mmp-widget .cr-mmp-redeem-cta {
+      padding: 14px 18px;
+      background: rgba(212, 168, 85, 0.10);
+      border: 1px dashed rgba(212, 168, 85, 0.5);
+      border-radius: 8px;
+      margin-bottom: 18px;
+      font-size: 13px;
+      color: rgba(40, 65, 87, 0.75);
+      line-height: 1.5;
+    }
+    #cr-mmp-widget .cr-mmp-redeem-cta strong {
+      color: #6B1D34;
+    }
+    #cr-mmp-widget .cr-mmp-redeem-btn {
+      display: inline-block;
+      padding: 12px 24px;
+      background: #6B1D34;
+      color: #FFFFFF;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      letter-spacing: 0.02em;
+      text-decoration: none;
+      transition: background 0.15s;
+    }
+    #cr-mmp-widget .cr-mmp-redeem-btn:hover {
+      background: #4A1424;
+    }
+    #cr-mmp-widget .cr-mmp-redeem-active {
+      padding: 16px 18px;
+      background: rgba(107, 29, 52, 0.05);
+      border: 1px solid rgba(107, 29, 52, 0.18);
+      border-radius: 8px;
+      margin-bottom: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    #cr-mmp-widget .cr-mmp-redeem-text {
+      font-size: 13px;
+      color: rgba(40, 65, 87, 0.75);
+      line-height: 1.5;
+      flex: 1;
+      min-width: 200px;
+    }
+    #cr-mmp-widget .cr-mmp-redeem-text strong {
+      color: #6B1D34;
+    }
+
+    #cr-mmp-widget .cr-mmp-section-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-weight: 700;
+      color: rgba(40, 65, 87, 0.55);
+      margin-bottom: 10px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid rgba(40, 65, 87, 0.08);
+    }
+
+    #cr-mmp-widget .cr-mmp-tx-list {
+      list-style: none;
+      padding: 0;
+      margin: 0 0 18px 0;
+    }
+    #cr-mmp-widget .cr-mmp-tx-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(40, 65, 87, 0.06);
+      font-size: 14px;
+    }
+    #cr-mmp-widget .cr-mmp-tx-item:last-child {
+      border-bottom: none;
+    }
+    #cr-mmp-widget .cr-mmp-tx-desc {
+      flex: 1;
+      color: #2A2620;
+      padding-right: 12px;
+    }
+    #cr-mmp-widget .cr-mmp-tx-meta {
+      font-size: 11px;
+      color: rgba(40, 65, 87, 0.55);
+      margin-top: 2px;
+    }
+    #cr-mmp-widget .cr-mmp-tx-amount {
+      font-weight: 700;
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 17px;
+      flex-shrink: 0;
+    }
+    #cr-mmp-widget .cr-mmp-tx-amount.cr-mmp-tx-positive { color: #4A7C59; }
+    #cr-mmp-widget .cr-mmp-tx-amount.cr-mmp-tx-negative { color: #C0392B; }
+    #cr-mmp-widget .cr-mmp-tx-empty {
+      padding: 20px 0;
+      text-align: center;
+      font-size: 13px;
+      color: rgba(40, 65, 87, 0.55);
+      font-style: italic;
+    }
+
+    #cr-mmp-widget .cr-mmp-referral {
+      padding: 14px 18px;
+      background: rgba(74, 124, 89, 0.06);
+      border-radius: 8px;
+      border-left: 3px solid #4A7C59;
+    }
+    #cr-mmp-widget .cr-mmp-referral-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-weight: 700;
+      color: #4A7C59;
+      margin-bottom: 8px;
+    }
+    #cr-mmp-widget .cr-mmp-referral-link-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    #cr-mmp-widget .cr-mmp-referral-input {
+      flex: 1;
+      padding: 8px 12px;
+      border: 1px solid rgba(40, 65, 87, 0.16);
+      border-radius: 6px;
+      font-family: 'Lato', monospace;
+      font-size: 12px;
+      color: #2A2620;
+      background: #FFFFFF;
+      min-width: 0;
+    }
+    #cr-mmp-widget .cr-mmp-referral-input:focus {
+      outline: none;
+      border-color: #4A7C59;
+    }
+    #cr-mmp-widget .cr-mmp-copy-btn {
+      padding: 8px 14px;
+      background: #4A7C59;
+      color: #FFFFFF;
+      border: none;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: background 0.15s;
+      letter-spacing: 0.02em;
+    }
+    #cr-mmp-widget .cr-mmp-copy-btn:hover { background: #3D6A4A; }
+    #cr-mmp-widget .cr-mmp-copy-btn.cr-mmp-copied { background: #D4A855; }
+    #cr-mmp-widget .cr-mmp-referral-hint {
+      font-size: 11px;
+      color: rgba(40, 65, 87, 0.55);
+      margin-top: 8px;
+    }
+    #cr-mmp-widget .cr-mmp-referral-hint strong { color: #4A7C59; }
+
+    #cr-mmp-widget .cr-mmp-loading,
+    #cr-mmp-widget .cr-mmp-error {
+      padding: 24px;
+      text-align: center;
+      color: rgba(40, 65, 87, 0.55);
+      font-size: 14px;
+    }
+    #cr-mmp-widget .cr-mmp-error { color: #C0392B; }
+  </style>
+
+  <div class="cr-mmp-card">
+    <div id="cr-mmp-content">
+      <div class="cr-mmp-loading">Loading your Mastery Mark Points…</div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  'use strict';
+
+  function crMmpApiBase() {
+    return location.origin.includes('localhost')
+      ? 'http://localhost:5000'
+      : 'https://api.counselorready.com';
+  }
+
+  function crMmpEsc(str) {
+    if (str == null) return '';
+    var d = document.createElement('div');
+    d.textContent = String(str);
+    return d.innerHTML;
+  }
+
+  function crMmpFormatTxType(type) {
+    var map = {
+      reflection_submitted:     'Reflection submitted',
+      course_completion:        'Course completed',
+      certificate_earned:       'Certificate earned',
+      course_review:            'Course reviewed',
+      course_evaluation:        'Course evaluation',
+      referral_signup:          'Referral signed up',
+      referral_paid:            'Referral subscribed',
+      referral_retention_bonus: 'Referral retained 3+ months',
+      social_share:             'Shared to social',
+      streak_7day:              '7-day streak',
+      streak_30day:             '30-day streak',
+      redemption_stripe_credit: 'Redeemed: subscription credit',
+      redemption_giftcard:      'Redeemed: gift card',
+      admin_adjustment:         'Adjustment',
+    };
+    return map[type] || type;
+  }
+
+  function crMmpFormatTimeAgo(dateStr) {
+    if (!dateStr) return '';
+    var diff = Date.now() - new Date(dateStr).getTime();
+    if (diff < 60000) return 'Just now';
+    if (diff < 3600000) return Math.floor(diff / 60000) + 'm ago';
+    if (diff < 86400000) return Math.floor(diff / 3600000) + 'h ago';
+    if (diff < 604800000) return Math.floor(diff / 86400000) + 'd ago';
+    return new Date(dateStr).toLocaleDateString();
+  }
+
+  function crMmpRender(data) {
+    var content = document.getElementById('cr-mmp-content');
+    if (!content) return;
+
+    var tier = data.tier || { name: 'Capable', color: 'green', nextThreshold: 250 };
+    var balance = data.balance || 0;
+    var lifetime = data.lifetime || 0;
+    var pctToNext = tier.nextThreshold
+      ? Math.min(100, Math.round((lifetime / tier.nextThreshold) * 100))
+      : 100;
+    var pointsToNext = tier.nextThreshold
+      ? Math.max(0, tier.nextThreshold - lifetime)
+      : 0;
+    var maxedTier = !tier.nextThreshold;
+
+    // Redeem CTA
+    var redeemHtml;
+    if (balance >= 500) {
+      redeemHtml =
+        '<div class="cr-mmp-redeem-active">' +
+          '<div class="cr-mmp-redeem-text">' +
+            '<strong>You can redeem your MMPs.</strong> Choose a subscription credit or a gift card.' +
+          '</div>' +
+          '<a href="/redeem.html" class="cr-mmp-redeem-btn">Redeem MMPs →</a>' +
+        '</div>';
+    } else {
+      var pointsTo500 = 500 - balance;
+      redeemHtml =
+        '<div class="cr-mmp-redeem-cta">' +
+        '<strong>Redemption opens at 500 MMPs.</strong> ' +
+        pointsTo500 + ' more to unlock — earn by completing courses, submitting reflections, and referring colleagues.' +
+        '</div>';
+    }
+
+    var referralCode = data.referralCode || '';
+    var referralUrl = referralCode
+      ? location.origin + '/register?ref=' + referralCode
+      : '';
+
+    var referralHtml = '';
+    if (referralCode) {
+      referralHtml =
+        '<div class="cr-mmp-referral">' +
+          '<div class="cr-mmp-referral-label">Your Referral Link</div>' +
+          '<div class="cr-mmp-referral-link-row">' +
+            '<input type="text" class="cr-mmp-referral-input" value="' + crMmpEsc(referralUrl) + '" readonly id="cr-mmp-referral-url">' +
+            '<button class="cr-mmp-copy-btn" id="cr-mmp-copy-btn">Copy</button>' +
+          '</div>' +
+          '<div class="cr-mmp-referral-hint">' +
+            'Earn <strong>50 MMPs</strong> when someone signs up · <strong>200 MMPs</strong> when they subscribe' +
+          '</div>' +
+        '</div>';
+    }
+
+    var txItemsHtml;
+    var txs = (data.recentTransactions || []).slice(0, 5);
+    if (txs.length === 0) {
+      txItemsHtml = '<div class="cr-mmp-tx-empty">No activity yet — submit a reflection in any course to earn your first 5 Mastery Mark Points.</div>';
+    } else {
+      txItemsHtml = '<ul class="cr-mmp-tx-list">' + txs.map(function(tx) {
+        var amount = tx.amount || 0;
+        var sign = amount >= 0 ? '+' : '';
+        var cls = amount >= 0 ? 'cr-mmp-tx-positive' : 'cr-mmp-tx-negative';
+        var label = crMmpFormatTxType(tx.type);
+        var when = crMmpFormatTimeAgo(tx.createdAt);
+        return '<li class="cr-mmp-tx-item">' +
+          '<div>' +
+            '<div class="cr-mmp-tx-desc">' + crMmpEsc(label) + '</div>' +
+            '<div class="cr-mmp-tx-meta">' + crMmpEsc(when) + '</div>' +
+          '</div>' +
+          '<div class="cr-mmp-tx-amount ' + cls + '">' + sign + amount + '</div>' +
+        '</li>';
+      }).join('') + '</ul>';
+    }
+
+    var tierClass = 'cr-mmp-tier-' + (tier.name || 'Capable').toLowerCase();
+    var progressClass = 'cr-mmp-progress-fill' + (maxedTier ? ' cr-mmp-maxed' : '');
+
+    content.innerHTML =
+      '<div class="cr-mmp-header">' +
+        '<h3 class="cr-mmp-title"><span class="cr-mmp-title-icon">✨</span> Mastery Mark Points</h3>' +
+        '<span class="cr-mmp-tier-badge ' + tierClass + '">' + crMmpEsc(tier.name) + ' Tier</span>' +
+      '</div>' +
+      '<div class="cr-mmp-balance-row">' +
+        '<div class="cr-mmp-balance-cell">' +
+          '<div class="cr-mmp-balance-label">Balance</div>' +
+          '<div class="cr-mmp-balance-value">' + balance + '<span class="cr-mmp-balance-unit">MMP</span></div>' +
+        '</div>' +
+        '<div class="cr-mmp-balance-cell cr-mmp-lifetime">' +
+          '<div class="cr-mmp-balance-label">Lifetime Earned</div>' +
+          '<div class="cr-mmp-balance-value">' + lifetime + '<span class="cr-mmp-balance-unit">MMP</span></div>' +
+        '</div>' +
+      '</div>' +
+      (maxedTier
+        ? '<div class="cr-mmp-progress"><div class="cr-mmp-progress-label"><span>Top tier reached</span><span>Seasoned</span></div><div class="cr-mmp-progress-bar"><div class="' + progressClass + '" style="width:100%"></div></div></div>'
+        : '<div class="cr-mmp-progress">' +
+            '<div class="cr-mmp-progress-label">' +
+              '<span>' + lifetime + ' / ' + tier.nextThreshold + ' lifetime</span>' +
+              '<span>' + pointsToNext + ' to next tier</span>' +
+            '</div>' +
+            '<div class="cr-mmp-progress-bar">' +
+              '<div class="' + progressClass + '" style="width:' + pctToNext + '%"></div>' +
+            '</div>' +
+          '</div>'
+      ) +
+      redeemHtml +
+      '<div class="cr-mmp-section-label">Recent Activity</div>' +
+      txItemsHtml +
+      referralHtml;
+
+    // Wire copy button
+    var copyBtn = document.getElementById('cr-mmp-copy-btn');
+    var urlInput = document.getElementById('cr-mmp-referral-url');
+    if (copyBtn && urlInput) {
+      copyBtn.addEventListener('click', function() {
+        try {
+          urlInput.select();
+          urlInput.setSelectionRange(0, 99999);
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(urlInput.value);
+          } else {
+            document.execCommand('copy');
+          }
+          copyBtn.textContent = 'Copied!';
+          copyBtn.classList.add('cr-mmp-copied');
+          setTimeout(function() {
+            copyBtn.textContent = 'Copy';
+            copyBtn.classList.remove('cr-mmp-copied');
+          }, 2000);
+        } catch (e) {
+          copyBtn.textContent = 'Press Ctrl+C';
+        }
+      });
+    }
+  }
+
+  function crMmpInit() {
+    var token = localStorage.getItem('token');
+    if (!token) {
+      var widget = document.getElementById('cr-mmp-widget');
+      if (widget) widget.style.display = 'none';
+      return;
+    }
+
+    var widget = document.getElementById('cr-mmp-widget');
+    if (widget) widget.style.display = 'block';
+
+    fetch(crMmpApiBase() + '/api/rewards/balance', {
+      headers: { 'Authorization': 'Bearer ' + token }
+    })
+      .then(function(res) {
+        if (res.status === 401) {
+          if (widget) widget.style.display = 'none';
+          return null;
+        }
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        return res.json();
+      })
+      .then(function(data) {
+        if (data) crMmpRender(data);
+      })
+      .catch(function(err) {
+        var content = document.getElementById('cr-mmp-content');
+        if (content) {
+          content.innerHTML = '<div class="cr-mmp-error">Couldn\'t load Mastery Mark Points. Refresh to try again.</div>';
+        }
+        console.error('[MMP WIDGET]', err);
+      });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', crMmpInit);
+  } else {
+    crMmpInit();
+  }
+})();
+</script>
+
+<!-- ═══ END Mastery Mark Points Widget ═══ -->
