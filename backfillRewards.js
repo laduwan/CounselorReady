@@ -1,455 +1,392 @@
-// server/src/services/rewardsService.js
+// server/src/scripts/backfillRewards.js
+// v3 — schema-corrected; filters scanner-imported certs (no courseId)
 //
-// CounselorReady Self-Care Rewards Program — Universal Earn Service
-// v2.1 — May 5, 2026 (Day 2.5)
+// Retroactively credits Mastery Mark Points based on:
+//   1. PLATFORM-EARNED Certificates (have courseId — implies completion + cert earned on platform)
+//   2. Completed CourseProgress docs (sweep for edge cases without cert)
 //
-// Changes from v2.0:
-//   - Course completion is now TIERED (25/50/75/100) based on user's
-//     payment relationship to the course, with long-course override
-//   - Added awardCourseEvaluation (5pt token for mandatory NBCC eval)
-//   - Added computeCompletionPoints helper (testable, pure logic)
-//   - Renamed POINTS.COURSE_COMPLETION → POINTS.COMPLETION_TIERS (object)
-//   - awardCourseReview preserved for future standalone review system
+// EXCLUDES: scanner-imported certs (no courseId) — those represent external
+// CE evidence the user uploaded, not platform completions, and should not
+// award MMP.
 //
-// Design principles unchanged from v2.0:
-//   1. Idempotent — every earn type has a dedupKey; double-award is no-op
-//   2. Atomic — findOneAndUpdate with $ne dedup check; no race conditions
-//   3. Fire-and-forget safe — caller never needs to wrap in try/catch
-//   4. No throwing — failures log to console.error but never propagate
+// SAFE TO RUN MULTIPLE TIMES — uses service-level dedup via earnedKeys[].
+//
+// Usage (from ~/project/src/server in Render shell):
+//   node src/scripts/backfillRewards.js --inspect
+//   node src/scripts/backfillRewards.js --dry-run --user-id=USER_ID
+//   node src/scripts/backfillRewards.js --user-id=USER_ID
+//   node src/scripts/backfillRewards.js --dry-run
+//   node src/scripts/backfillRewards.js
+//
+// Skips: reflections, evaluations, reviews, referrals (out of scope for v1)
 
 import mongoose from 'mongoose';
+import dotenv from 'dotenv';
+dotenv.config();
+
 import User from '../models/User.js';
+import { Course as InteractiveCourse, CourseProgress } from '../models/InteractiveCourse.js';
+import {
+  awardCourseCompletion,
+  awardCertificate,
+} from '../services/rewardsService.js';
+
+import certModule from '../models/Certificate.js';
+const Certificate = certModule.default || certModule;
 
 // ─────────────────────────────────────────────────────────────────
-// Point values
+// CLI args
 // ─────────────────────────────────────────────────────────────────
-export const POINTS = {
-  REFLECTION: 5,
-  EVALUATION: 5,           // mandatory NBCC eval — token acknowledgment
-  COMPLETION_FREE: 25,     // course consumed via free tier (no payment)
-  COMPLETION_INDIVIDUAL: 50, // user individually purchased this course
-  COMPLETION_SUBSCRIPTION: 75, // user has active subscription/trial
-  COMPLETION_LONG: 100,    // course.ceHours > 4, overrides all others
-  CERTIFICATE: 25,
-  COURSE_REVIEW: 25,        // reserved for future standalone review system
-  REFERRAL_SIGNUP: 50,
-  REFERRAL_PAID: 200,
-  REFERRAL_RETENTION: 100,
-};
+const args = process.argv.slice(2);
+const INSPECT = args.includes('--inspect');
+const DRY_RUN = args.includes('--dry-run');
+const SPECIFIC_USER = args.find(a => a.startsWith('--user-id='))?.split('=')[1];
+const LIMIT = parseInt(args.find(a => a.startsWith('--limit='))?.split('=')[1]) || 0;
 
 // ─────────────────────────────────────────────────────────────────
-// Transaction type → User schema enum mapping
+// Inspect mode
 // ─────────────────────────────────────────────────────────────────
-const TX_TYPE = {
-  reflection: 'reflection_submitted',
-  courseCompletion: 'course_completion',
-  certificate: 'certificate_earned',
-  review: 'course_review',
-  evaluation: 'course_evaluation',
-  referralSignup: 'referral_signup',
-  referralPaid: 'referral_paid',
-  referralRetention: 'referral_retention_bonus',
-  adminAdjustment: 'admin_adjustment',
-};
+async function runInspect() {
+  console.log('═══════════════════════════════════════════════════════════');
+  console.log('INSPECT MODE — printing sample documents (no writes)');
+  console.log('═══════════════════════════════════════════════════════════\n');
 
-// ─────────────────────────────────────────────────────────────────
-// PUBLIC: compute course completion points based on tiered rules
-//
-// Pure function — no DB access. Caller passes course doc and user doc.
-// Tiered rules (highest applicable wins):
-//   1. course.ceHours > 4              → 100 (long-course override)
-//   2. user has active subscription/trial → 75
-//   3. user individually purchased this course → 50
-//   4. else (free tier consumption)    → 25
-//
-// "Active subscription" = user.subscription.status in ['active', 'trial']
-// "Individually purchased" = user.purchasedCourses[] contains this courseId
-//
-// Args:
-//   course — Mongoose course doc (needs at least: ceHours, _id)
-//   user   — Mongoose user doc (needs at least: subscription, purchasedCourses)
-//
-// Returns: { points: number, tier: string }
-// ─────────────────────────────────────────────────────────────────
-export function computeCompletionPoints(course, user) {
-  const ceHours = parseFloat(course?.ceHours) || 0;
+  const sampleUser = await User.findOne({}, { email: 1, careCredits: 1, earnedKeys: 1, subscription: 1, purchasedCourses: 1 }).lean();
+  console.log('--- Sample User ---');
+  console.log(JSON.stringify(sampleUser, null, 2).slice(0, 500));
+  console.log('\n');
 
-  // Long-course override
-  if (ceHours > 4) {
-    return { points: POINTS.COMPLETION_LONG, tier: 'long_course' };
+  const sampleProgress = await CourseProgress.findOne({}).lean();
+  console.log('--- Sample CourseProgress ---');
+  if (sampleProgress) {
+    console.log('Top-level keys:', Object.keys(sampleProgress));
+    console.log('Sample doc (first 600 chars):');
+    console.log(JSON.stringify(sampleProgress, null, 2).slice(0, 600));
+  } else {
+    console.log('(no CourseProgress documents found)');
   }
+  console.log('\n');
 
-  // Subscription/trial check
-  const subStatus = user?.subscription?.status;
-  if (subStatus === 'active' || subStatus === 'trial') {
-    return { points: POINTS.COMPLETION_SUBSCRIPTION, tier: 'subscription' };
+  const sampleCert = await Certificate.findOne({}).lean();
+  console.log('--- Sample Certificate ---');
+  if (sampleCert) {
+    console.log('Top-level keys:', Object.keys(sampleCert));
+    console.log('Sample doc (first 600 chars):');
+    console.log(JSON.stringify(sampleCert, null, 2).slice(0, 600));
+  } else {
+    console.log('(no Certificate documents found)');
   }
+  console.log('\n');
 
-  // Individual purchase check
-  const courseIdStr = course?._id?.toString();
-  const hasPurchased = courseIdStr && Array.isArray(user?.purchasedCourses) &&
-    user.purchasedCourses.some(p => {
-      const pid = p?.courseId?.toString();
-      return pid === courseIdStr;
-    });
-
-  if (hasPurchased) {
-    return { points: POINTS.COMPLETION_INDIVIDUAL, tier: 'individual' };
-  }
-
-  // Default: free tier consumption
-  return { points: POINTS.COMPLETION_FREE, tier: 'free' };
-}
-
-// ─────────────────────────────────────────────────────────────────
-// Internal: low-level credit award. Atomic.
-// ─────────────────────────────────────────────────────────────────
-async function _awardCreditsRaw(userId, amount, txType, description, relatedCourseId = null, relatedRedemptionId = null) {
-  const update = {
-    $inc: {
-      'careCredits.balance': amount,
-      'careCredits.lifetime': amount > 0 ? amount : 0,
-    },
-    $push: {
-      'careCredits.transactions': {
-        amount,
-        type: txType,
-        description,
-        relatedCourseId,
-        relatedRedemptionId,
-        createdAt: new Date(),
-      },
-    },
-  };
-  const updated = await User.findByIdAndUpdate(userId, update, {
-    new: true,
-    select: 'careCredits.balance careCredits.lifetime',
+  const userCount = await User.countDocuments();
+  const completedProgressCount = await CourseProgress.countDocuments({
+    $or: [
+      { completed: true },
+      { completedAt: { $exists: true, $ne: null } },
+      { status: 'completed' },
+    ],
   });
-  return updated;
+  const certCount = await Certificate.countDocuments();
+  const platformCertCount = await Certificate.countDocuments({
+    courseId: { $exists: true, $ne: null },
+  });
+  const importedCertCount = certCount - platformCertCount;
+
+  console.log('--- Collection Sizes ---');
+  console.log(`Users:                          ${userCount}`);
+  console.log(`Completed CourseProgress docs:  ${completedProgressCount}`);
+  console.log(`Certificate docs (total):       ${certCount}`);
+  console.log(`  Platform-earned (has courseId): ${platformCertCount}  ← will award MMP`);
+  console.log(`  Imported/scanner (no courseId): ${importedCertCount}  ← will be skipped`);
+  console.log('\n');
+
+  console.log('Inspect complete. If field names look right, run --dry-run next.');
 }
 
 // ─────────────────────────────────────────────────────────────────
-// Internal: atomic dedup claim
+// Find completed CourseProgress for a user
 // ─────────────────────────────────────────────────────────────────
-async function _claimDedupKey(userId, dedupKey) {
-  const result = await User.findOneAndUpdate(
-    { _id: userId, earnedKeys: { $ne: dedupKey } },
-    { $addToSet: { earnedKeys: dedupKey } },
-    { select: '_id' }
-  );
-  return result !== null;
+async function findCompletedCourses(userId) {
+  return CourseProgress.find({
+    userId: userId,
+    $or: [
+      { completed: true },
+      { completedAt: { $exists: true, $ne: null } },
+      { status: 'completed' },
+    ],
+  }, { courseId: 1, completed: 1, completedAt: 1, status: 1 }).lean();
 }
 
 // ─────────────────────────────────────────────────────────────────
-// PUBLIC: course completion earn (TIERED — 25/50/75/100)
-//
-// Call after assessment is passed and saved. Idempotent per user × course.
-//
-// Args:
-//   userId — Mongoose ObjectId or string
-//   course — Mongoose course doc (needs ceHours, _id, optionally title)
-//   user   — Mongoose user doc (needs subscription, purchasedCourses).
-//            Caller passes req.user IF it's the full doc, OR loads via
-//            User.findById if req.user is thinned.
-//
-// Returns: { earned: bool, points?: number, tier?: string, newBalance?: number, error?: string }
-// Never throws.
+// Find certificates for a user (production schema: userId + courseId)
 // ─────────────────────────────────────────────────────────────────
-export async function awardCourseCompletion(userId, course, user) {
-  try {
-    if (!userId || !course?._id) return { earned: false, error: 'invalid_input' };
-
-    const cidStr = course._id.toString();
-    const dedupKey = `course_completion:${cidStr}`;
-
-    const claimed = await _claimDedupKey(userId, dedupKey);
-    if (!claimed) return { earned: false, reason: 'already_awarded' };
-
-    // If user wasn't passed in (or is thinned), load it for tier calc
-    let userDoc = user;
-    if (!userDoc?.subscription) {
-      userDoc = await User.findById(userId, {
-        subscription: 1,
-        purchasedCourses: 1,
-      });
-    }
-
-    const { points, tier } = computeCompletionPoints(course, userDoc);
-
-    const desc = course.title
-      ? `Completed: ${course.title} (${tier} tier, ${points}pt)`
-      : `Course completion (${cidStr}, ${tier} tier)`;
-
-    const updated = await _awardCreditsRaw(
-      userId,
-      points,
-      TX_TYPE.courseCompletion,
-      desc,
-      cidStr
-    );
-
-    return {
-      earned: true,
-      points,
-      tier,
-      newBalance: updated?.careCredits?.balance ?? null,
-    };
-  } catch (err) {
-    console.error('[REWARDS] awardCourseCompletion failed:', err.message);
-    return { earned: false, error: 'server_error' };
-  }
+async function findCertificates(userId) {
+  // Only platform-earned certs (have courseId linking to interactivecourses).
+  // Scanner-imported certs (NBCC uploads etc.) lack courseId — those are
+  // external CE evidence, not platform completions, and should NOT award MMP.
+  return Certificate.find(
+    {
+      userId: userId,
+      courseId: { $exists: true, $ne: null },
+    },
+    { userId: 1, courseId: 1, title: 1, ceHours: 1 }
+  ).lean();
 }
 
 // ─────────────────────────────────────────────────────────────────
-// PUBLIC: certificate earn (25 pts)
-//
-// Call after certificate PDF is generated successfully.
+// Build a course-shaped object from cert (avoids extra DB hit)
 // ─────────────────────────────────────────────────────────────────
-export async function awardCertificate(userId, courseId, courseTitle = '') {
-  try {
-    if (!userId || !courseId) return { earned: false, error: 'invalid_input' };
-
-    const cidStr = courseId.toString();
-    const dedupKey = `certificate_earned:${cidStr}`;
-
-    const claimed = await _claimDedupKey(userId, dedupKey);
-    if (!claimed) return { earned: false, reason: 'already_awarded' };
-
-    const desc = courseTitle
-      ? `Certificate earned: ${courseTitle}`
-      : `Certificate (${cidStr})`;
-
-    const updated = await _awardCreditsRaw(
-      userId,
-      POINTS.CERTIFICATE,
-      TX_TYPE.certificate,
-      desc,
-      cidStr
-    );
-
-    return {
-      earned: true,
-      points: POINTS.CERTIFICATE,
-      newBalance: updated?.careCredits?.balance ?? null,
-    };
-  } catch (err) {
-    console.error('[REWARDS] awardCertificate failed:', err.message);
-    return { earned: false, error: 'server_error' };
-  }
+function courseFromCert(cert) {
+  return {
+    _id: cert.courseId,
+    title: cert.title || '',
+    ceHours: cert.ceHours || 0,
+  };
 }
 
 // ─────────────────────────────────────────────────────────────────
-// PUBLIC: course evaluation earn (5 pts — TOKEN)
-//
-// Call after the NBCC-required course evaluation is submitted.
-// Low value (5pt) because evaluation is mandatory for cert generation —
-// users would do it anyway. This is acknowledgment, not behavior change.
-//
-// Idempotent per user × course.
+// Project points for a course completion (mirrors service logic for dry-run)
 // ─────────────────────────────────────────────────────────────────
-export async function awardCourseEvaluation(userId, courseId, courseTitle = '') {
-  try {
-    if (!userId || !courseId) return { earned: false, error: 'invalid_input' };
-
-    const cidStr = courseId.toString();
-    const dedupKey = `course_evaluation:${cidStr}`;
-
-    const claimed = await _claimDedupKey(userId, dedupKey);
-    if (!claimed) return { earned: false, reason: 'already_awarded' };
-
-    const desc = courseTitle
-      ? `Evaluation submitted: ${courseTitle}`
-      : `Course evaluation (${cidStr})`;
-
-    const updated = await _awardCreditsRaw(
-      userId,
-      POINTS.EVALUATION,
-      TX_TYPE.evaluation,
-      desc,
-      cidStr
-    );
-
-    return {
-      earned: true,
-      points: POINTS.EVALUATION,
-      newBalance: updated?.careCredits?.balance ?? null,
-    };
-  } catch (err) {
-    console.error('[REWARDS] awardCourseEvaluation failed:', err.message);
-    return { earned: false, error: 'server_error' };
-  }
+function projectCompletionPoints(course, user) {
+  const ceHours = parseFloat(course?.ceHours || course?.ceuHours) || 0;
+  if (ceHours > 4) return { points: 100, tier: 'long_course' };
+  const subStatus = user?.subscription?.status;
+  if (subStatus === 'active' || subStatus === 'trial') return { points: 75, tier: 'subscription' };
+  const cidStr = course?._id?.toString();
+  const purchased = cidStr && Array.isArray(user?.purchasedCourses) &&
+    user.purchasedCourses.some(p => p?.courseId?.toString() === cidStr);
+  if (purchased) return { points: 50, tier: 'individual' };
+  return { points: 25, tier: 'free' };
 }
 
 // ─────────────────────────────────────────────────────────────────
-// PUBLIC: course review earn (25 pts) — RESERVED, not currently wired
-//
-// Reserved for a future standalone review system (separate from NBCC
-// evaluation). When/if Ke builds public course reviews, wire this from
-// that endpoint. Different dedup key from evaluation, so both can earn.
+// Process one user
 // ─────────────────────────────────────────────────────────────────
-export async function awardCourseReview(userId, courseId, courseTitle = '') {
-  try {
-    if (!userId || !courseId) return { earned: false, error: 'invalid_input' };
+async function processUser(user, summary) {
+  const result = {
+    userId: user._id.toString(),
+    email: user.email,
+    completionsAwarded: 0,
+    completionsSkipped: 0,
+    certsAwarded: 0,
+    certsSkipped: 0,
+    pointsAwarded: 0,
+    errors: [],
+  };
 
-    const cidStr = courseId.toString();
-    const dedupKey = `course_review:${cidStr}`;
+  // Track which courseIds got a completion award via this run, so we don't
+  // double-process when the CourseProgress sweep runs after Cert processing
+  const completionCoursesAwarded = new Set();
 
-    const claimed = await _claimDedupKey(userId, dedupKey);
-    if (!claimed) return { earned: false, reason: 'already_awarded' };
+  // ─── 1. CERTIFICATES (primary driver) ───
+  const certs = await findCertificates(user._id);
 
-    const desc = courseTitle
-      ? `Reviewed: ${courseTitle}`
-      : `Course review (${cidStr})`;
+  for (const cert of certs) {
+    if (!cert.courseId) continue;
 
-    const updated = await _awardCreditsRaw(
-      userId,
-      POINTS.COURSE_REVIEW,
-      TX_TYPE.review,
-      desc,
-      cidStr
+    const courseIdStr = cert.courseId.toString();
+    const completionDedupKey = `course_completion:${courseIdStr}`;
+    const certDedupKey = `certificate_earned:${courseIdStr}`;
+
+    const completionAlreadyAwarded = (user.earnedKeys || []).some(
+      k => (k?.toString ? k.toString() : k) === completionDedupKey
+    );
+    const certAlreadyAwarded = (user.earnedKeys || []).some(
+      k => (k?.toString ? k.toString() : k) === certDedupKey
     );
 
-    return {
-      earned: true,
-      points: POINTS.COURSE_REVIEW,
-      newBalance: updated?.careCredits?.balance ?? null,
-    };
-  } catch (err) {
-    console.error('[REWARDS] awardCourseReview failed:', err.message);
-    return { earned: false, error: 'server_error' };
-  }
-}
+    const courseLike = courseFromCert(cert);
 
-// ─────────────────────────────────────────────────────────────────
-// PUBLIC: referral signup
-// (unchanged from v2.0)
-// ─────────────────────────────────────────────────────────────────
-export async function processReferralSignup(newUserId, referralCode) {
-  try {
-    if (!newUserId || !referralCode) return { processed: false, reason: 'no_referral_code' };
-
-    const code = referralCode.trim().toUpperCase();
-    if (!/^[A-Z0-9]{8}$/.test(code)) return { processed: false, reason: 'invalid_code_format' };
-
-    const referrer = await User.findOne({ referralCode: code }, { _id: 1 });
-    if (!referrer) return { processed: false, reason: 'referrer_not_found' };
-
-    if (referrer._id.toString() === newUserId.toString()) {
-      return { processed: false, reason: 'self_referral_blocked' };
-    }
-
-    await User.updateOne(
-      { _id: newUserId, referredBy: { $exists: false } },
-      { $set: { referredBy: referrer._id } }
-    );
-
-    const referralPushed = await User.findOneAndUpdate(
-      {
-        _id: referrer._id,
-        'referrals.userId': { $ne: newUserId },
-      },
-      {
-        $push: {
-          referrals: {
-            userId: newUserId,
-            status: 'signed_up',
-            earnedCredits: POINTS.REFERRAL_SIGNUP,
-            createdAt: new Date(),
-          },
-        },
-      },
-      { select: '_id' }
-    );
-
-    if (!referralPushed) {
-      return { processed: true, referrerAwarded: false, reason: 'already_recorded' };
-    }
-
-    const dedupKey = `referral_signup:${newUserId.toString()}`;
-    const claimed = await _claimDedupKey(referrer._id, dedupKey);
-    if (!claimed) {
-      return { processed: true, referrerAwarded: false, reason: 'already_awarded' };
-    }
-
-    const updated = await _awardCreditsRaw(
-      referrer._id,
-      POINTS.REFERRAL_SIGNUP,
-      TX_TYPE.referralSignup,
-      `Referral signup bonus (new user joined via your code)`,
-      null
-    );
-
-    return {
-      processed: true,
-      referrerAwarded: true,
-      points: POINTS.REFERRAL_SIGNUP,
-      referrerBalance: updated?.careCredits?.balance ?? null,
-    };
-  } catch (err) {
-    console.error('[REWARDS] processReferralSignup failed:', err.message);
-    return { processed: false, error: 'server_error' };
-  }
-}
-
-// ─────────────────────────────────────────────────────────────────
-// PUBLIC: referral paid conversion
-// (unchanged from v2.0)
-// ─────────────────────────────────────────────────────────────────
-export async function processReferralPaidConversion(payingUserId) {
-  try {
-    if (!payingUserId) return { processed: false, reason: 'invalid_input' };
-
-    const payer = await User.findById(payingUserId, { referredBy: 1 });
-    if (!payer || !payer.referredBy) {
-      return { processed: false, reason: 'no_referrer' };
-    }
-
-    const referrerId = payer.referredBy;
-
-    await User.updateOne(
-      {
-        _id: referrerId,
-        'referrals.userId': payingUserId,
-        'referrals.status': 'signed_up',
-      },
-      {
-        $set: { 'referrals.$.status': 'paid' },
-        $inc: { 'referrals.$.earnedCredits': POINTS.REFERRAL_PAID },
+    // Award completion (if not already)
+    if (completionAlreadyAwarded) {
+      result.completionsSkipped++;
+    } else if (DRY_RUN) {
+      const { points } = projectCompletionPoints(courseLike, user);
+      result.pointsAwarded += points;
+      result.completionsAwarded++;
+      completionCoursesAwarded.add(courseIdStr);
+    } else {
+      const r = await awardCourseCompletion(user._id, courseLike, user);
+      if (r.earned) {
+        result.pointsAwarded += r.points;
+        result.completionsAwarded++;
+        completionCoursesAwarded.add(courseIdStr);
+        if (!user.earnedKeys) user.earnedKeys = [];
+        user.earnedKeys.push(completionDedupKey);
+      } else if (r.reason === 'already_awarded') {
+        result.completionsSkipped++;
+      } else {
+        result.errors.push(`Completion award failed for course ${courseIdStr}: ${r.error || r.reason || 'unknown'}`);
       }
-    );
-
-    const dedupKey = `referral_paid:${payingUserId.toString()}`;
-    const claimed = await _claimDedupKey(referrerId, dedupKey);
-    if (!claimed) {
-      return { processed: true, referrerAwarded: false, reason: 'already_awarded' };
     }
 
-    const updated = await _awardCreditsRaw(
-      referrerId,
-      POINTS.REFERRAL_PAID,
-      TX_TYPE.referralPaid,
-      `Referral conversion bonus (your referral subscribed)`,
-      null
+    // Award certificate (if not already)
+    if (certAlreadyAwarded) {
+      result.certsSkipped++;
+    } else if (DRY_RUN) {
+      result.pointsAwarded += 25;
+      result.certsAwarded++;
+    } else {
+      const r = await awardCertificate(user._id, cert.courseId, cert.title || '');
+      if (r.earned) {
+        result.pointsAwarded += r.points;
+        result.certsAwarded++;
+        if (!user.earnedKeys) user.earnedKeys = [];
+        user.earnedKeys.push(certDedupKey);
+      } else if (r.reason === 'already_awarded') {
+        result.certsSkipped++;
+      } else {
+        result.errors.push(`Cert award failed for course ${courseIdStr}: ${r.error || r.reason || 'unknown'}`);
+      }
+    }
+  }
+
+  // ─── 2. COURSE PROGRESS SWEEP (fallback for completions without certs) ───
+  const completions = await findCompletedCourses(user._id);
+
+  for (const cp of completions) {
+    if (!cp.courseId) continue;
+    const courseIdStr = cp.courseId.toString();
+
+    // Already processed via cert in this run? Skip.
+    if (completionCoursesAwarded.has(courseIdStr)) continue;
+
+    const dedupKey = `course_completion:${courseIdStr}`;
+    const alreadyAwarded = (user.earnedKeys || []).some(
+      k => (k?.toString ? k.toString() : k) === dedupKey
     );
 
-    return {
-      processed: true,
-      referrerAwarded: true,
-      points: POINTS.REFERRAL_PAID,
-      referrerBalance: updated?.careCredits?.balance ?? null,
-    };
-  } catch (err) {
-    console.error('[REWARDS] processReferralPaidConversion failed:', err.message);
-    return { processed: false, error: 'server_error' };
+    if (alreadyAwarded) {
+      result.completionsSkipped++;
+      continue;
+    }
+
+    const course = await InteractiveCourse.findById(cp.courseId, {
+      title: 1, ceHours: 1, ceuHours: 1, _id: 1,
+    });
+    if (!course) {
+      result.errors.push(`Course ${courseIdStr} not found in interactivecourses`);
+      continue;
+    }
+
+    if (DRY_RUN) {
+      const { points } = projectCompletionPoints(course, user);
+      result.pointsAwarded += points;
+      result.completionsAwarded++;
+    } else {
+      const r = await awardCourseCompletion(user._id, course, user);
+      if (r.earned) {
+        result.pointsAwarded += r.points;
+        result.completionsAwarded++;
+      } else if (r.reason === 'already_awarded') {
+        result.completionsSkipped++;
+      } else {
+        result.errors.push(`Completion award failed for course ${courseIdStr}: ${r.error || r.reason || 'unknown'}`);
+      }
+    }
+  }
+
+  // ─── Tally summary ───
+  summary.totalUsers++;
+  if (result.completionsAwarded || result.certsAwarded) summary.usersWithAwards++;
+  summary.totalCompletionsAwarded += result.completionsAwarded;
+  summary.totalCompletionsSkipped += result.completionsSkipped;
+  summary.totalCertsAwarded += result.certsAwarded;
+  summary.totalCertsSkipped += result.certsSkipped;
+  summary.totalPointsAwarded += result.pointsAwarded;
+  summary.totalErrors += result.errors.length;
+
+  if (result.completionsAwarded > 0 || result.certsAwarded > 0 || result.errors.length > 0) {
+    console.log(JSON.stringify({
+      email: result.email,
+      completions: `${result.completionsAwarded}+/${result.completionsSkipped}=`,
+      certs: `${result.certsAwarded}+/${result.certsSkipped}=`,
+      points: result.pointsAwarded,
+      errors: result.errors.length > 0 ? result.errors : undefined,
+    }));
   }
 }
 
 // ─────────────────────────────────────────────────────────────────
-// PUBLIC: tier helper
+// Main
 // ─────────────────────────────────────────────────────────────────
-export function tierFromLifetime(lifetime) {
-  if (lifetime >= 1500) return { name: 'Flourishing', color: 'gold',   multiplier: 2.0,  nextThreshold: null };
-  if (lifetime >= 750)  return { name: 'Rooted',      color: 'navy',   multiplier: 1.5,  nextThreshold: 1500 };
-  if (lifetime >= 250)  return { name: 'Grounded',    color: 'hunter', multiplier: 1.25, nextThreshold: 750 };
-  return                       { name: 'Seedling',    color: 'green',  multiplier: 1.0,  nextThreshold: 250 };
+async function main() {
+  if (!process.env.MONGODB_URI) {
+    console.error('MONGODB_URI env var not set.');
+    process.exit(1);
+  }
+
+  await mongoose.connect(process.env.MONGODB_URI);
+  console.log('✓ Connected to MongoDB\n');
+
+  if (INSPECT) {
+    await runInspect();
+    await mongoose.disconnect();
+    return;
+  }
+
+  console.log('═══════════════════════════════════════════════════════════');
+  console.log(`MODE: ${DRY_RUN ? 'DRY RUN (no writes)' : 'LIVE (writes MMP credits)'}`);
+  if (SPECIFIC_USER) console.log(`USER FILTER: ${SPECIFIC_USER}`);
+  if (LIMIT) console.log(`LIMIT: ${LIMIT} users`);
+  console.log('═══════════════════════════════════════════════════════════\n');
+
+  const userQuery = SPECIFIC_USER ? { _id: SPECIFIC_USER } : {};
+  let userCursor = User.find(userQuery, {
+    _id: 1, email: 1, careCredits: 1, earnedKeys: 1,
+    subscription: 1, purchasedCourses: 1,
+  });
+  if (LIMIT) userCursor = userCursor.limit(LIMIT);
+
+  const users = await userCursor.lean();
+  console.log(`Processing ${users.length} user(s)...\n`);
+  console.log('Format: {email, completions: awarded+/skipped=, certs: awarded+/skipped=, points}\n');
+
+  const summary = {
+    totalUsers: 0,
+    usersWithAwards: 0,
+    totalCompletionsAwarded: 0,
+    totalCompletionsSkipped: 0,
+    totalCertsAwarded: 0,
+    totalCertsSkipped: 0,
+    totalPointsAwarded: 0,
+    totalErrors: 0,
+  };
+
+  for (const user of users) {
+    try {
+      await processUser(user, summary);
+    } catch (err) {
+      summary.totalErrors++;
+      console.error(`Error processing ${user.email}: ${err.message}`);
+    }
+  }
+
+  console.log('\n═══════════════════════════════════════════════════════════');
+  console.log('SUMMARY');
+  console.log('═══════════════════════════════════════════════════════════');
+  console.log(`Mode:                          ${DRY_RUN ? 'DRY RUN' : 'LIVE'}`);
+  console.log(`Users processed:               ${summary.totalUsers}`);
+  console.log(`Users with awards:             ${summary.usersWithAwards}`);
+  console.log(`Course completions awarded:    ${summary.totalCompletionsAwarded}`);
+  console.log(`Course completions skipped:    ${summary.totalCompletionsSkipped}`);
+  console.log(`Certificates awarded:          ${summary.totalCertsAwarded}`);
+  console.log(`Certificates skipped:          ${summary.totalCertsSkipped}`);
+  console.log(`TOTAL MMP ${DRY_RUN ? 'PROJECTED' : 'AWARDED'}:           ${summary.totalPointsAwarded}`);
+  console.log(`Errors:                        ${summary.totalErrors}`);
+  console.log('═══════════════════════════════════════════════════════════');
+
+  if (DRY_RUN) {
+    console.log('\nThis was a dry run. No data changed.');
+    console.log('To execute live: re-run without --dry-run');
+  } else {
+    console.log('\n✓ Backfill complete. Users will see new transactions on /achievements.html');
+  }
+
+  await mongoose.disconnect();
 }
+
+main().catch(err => {
+  console.error('FATAL:', err);
+  process.exit(1);
+});
