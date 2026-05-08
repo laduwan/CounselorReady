@@ -72,7 +72,7 @@ const TX_TYPE = {
 // Returns: { points: number, tier: string }
 // ─────────────────────────────────────────────────────────────────
 export function computeCompletionPoints(course, user) {
-  const ceHours = parseFloat(course?.ceHours || course?.ceuHours) || 0;
+  const ceHours = parseFloat(course?.ceHours) || 0;
 
   // Long-course override
   if (ceHours > 4) {
