@@ -1,19 +1,24 @@
 // server/src/scripts/backfillRewards.js
+// v3 — schema-corrected; filters scanner-imported certs (no courseId)
 //
-// Retroactively credit Mastery Mark Points for course completions and
-// certificates earned before the rewards system shipped.
+// Retroactively credits Mastery Mark Points based on:
+//   1. PLATFORM-EARNED Certificates (have courseId — implies completion + cert earned on platform)
+//   2. Completed CourseProgress docs (sweep for edge cases without cert)
+//
+// EXCLUDES: scanner-imported certs (no courseId) — those represent external
+// CE evidence the user uploaded, not platform completions, and should not
+// award MMP.
 //
 // SAFE TO RUN MULTIPLE TIMES — uses service-level dedup via earnedKeys[].
 //
 // Usage (from ~/project/src/server in Render shell):
-//   node src/scripts/backfillRewards.js --inspect           # show sample docs, no awards
-//   node src/scripts/backfillRewards.js --dry-run           # count what would be awarded
-//   node src/scripts/backfillRewards.js --dry-run --user-id=USER_ID  # one user
-//   node src/scripts/backfillRewards.js --user-id=USER_ID   # live, one user
-//   node src/scripts/backfillRewards.js                     # live, all users
-//   node src/scripts/backfillRewards.js --limit=10          # live, first 10 users
+//   node src/scripts/backfillRewards.js --inspect
+//   node src/scripts/backfillRewards.js --dry-run --user-id=USER_ID
+//   node src/scripts/backfillRewards.js --user-id=USER_ID
+//   node src/scripts/backfillRewards.js --dry-run
+//   node src/scripts/backfillRewards.js
 //
-// Skips: reflections, evaluations, reviews, referrals (intentional — out of scope for v1)
+// Skips: reflections, evaluations, reviews, referrals (out of scope for v1)
 
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
@@ -26,7 +31,6 @@ import {
   awardCertificate,
 } from '../services/rewardsService.js';
 
-// Certificate may be CJS or ESM — handle both
 import certModule from '../models/Certificate.js';
 const Certificate = certModule.default || certModule;
 
@@ -40,7 +44,7 @@ const SPECIFIC_USER = args.find(a => a.startsWith('--user-id='))?.split('=')[1];
 const LIMIT = parseInt(args.find(a => a.startsWith('--limit='))?.split('=')[1]) || 0;
 
 // ─────────────────────────────────────────────────────────────────
-// Inspect mode — show sample docs so we can verify field names
+// Inspect mode
 // ─────────────────────────────────────────────────────────────────
 async function runInspect() {
   console.log('═══════════════════════════════════════════════════════════');
@@ -74,24 +78,33 @@ async function runInspect() {
   }
   console.log('\n');
 
-  // Counts for sizing
   const userCount = await User.countDocuments();
   const completedProgressCount = await CourseProgress.countDocuments({
-    $or: [{ completed: true }, { completedAt: { $exists: true, $ne: null } }],
+    $or: [
+      { completed: true },
+      { completedAt: { $exists: true, $ne: null } },
+      { status: 'completed' },
+    ],
   });
   const certCount = await Certificate.countDocuments();
+  const platformCertCount = await Certificate.countDocuments({
+    courseId: { $exists: true, $ne: null },
+  });
+  const importedCertCount = certCount - platformCertCount;
 
   console.log('--- Collection Sizes ---');
   console.log(`Users:                          ${userCount}`);
   console.log(`Completed CourseProgress docs:  ${completedProgressCount}`);
-  console.log(`Certificate docs:               ${certCount}`);
+  console.log(`Certificate docs (total):       ${certCount}`);
+  console.log(`  Platform-earned (has courseId): ${platformCertCount}  ← will award MMP`);
+  console.log(`  Imported/scanner (no courseId): ${importedCertCount}  ← will be skipped`);
   console.log('\n');
 
   console.log('Inspect complete. If field names look right, run --dry-run next.');
 }
 
 // ─────────────────────────────────────────────────────────────────
-// Find completed courses for a user (defensive — handles either field)
+// Find completed CourseProgress for a user
 // ─────────────────────────────────────────────────────────────────
 async function findCompletedCourses(userId) {
   return CourseProgress.find({
@@ -99,26 +112,58 @@ async function findCompletedCourses(userId) {
     $or: [
       { completed: true },
       { completedAt: { $exists: true, $ne: null } },
+      { status: 'completed' },
     ],
-  }, { courseId: 1, completed: 1, completedAt: 1 }).lean();
+  }, { courseId: 1, completed: 1, completedAt: 1, status: 1 }).lean();
 }
 
 // ─────────────────────────────────────────────────────────────────
-// Find certificates for a user
-// Certificate uses `user` (not `userId`) and `course` (not `courseId`)
+// Find certificates for a user (production schema: userId + courseId)
 // ─────────────────────────────────────────────────────────────────
 async function findCertificates(userId) {
+  // Only platform-earned certs (have courseId linking to interactivecourses).
+  // Scanner-imported certs (NBCC uploads etc.) lack courseId — those are
+  // external CE evidence, not platform completions, and should NOT award MMP.
   return Certificate.find(
-    { user: userId },
-    { user: 1, course: 1, courseTitle: 1 }
+    {
+      userId: userId,
+      courseId: { $exists: true, $ne: null },
+    },
+    { userId: 1, courseId: 1, title: 1, ceHours: 1 }
   ).lean();
+}
+
+// ─────────────────────────────────────────────────────────────────
+// Build a course-shaped object from cert (avoids extra DB hit)
+// ─────────────────────────────────────────────────────────────────
+function courseFromCert(cert) {
+  return {
+    _id: cert.courseId,
+    title: cert.title || '',
+    ceHours: cert.ceHours || 0,
+  };
+}
+
+// ─────────────────────────────────────────────────────────────────
+// Project points for a course completion (mirrors service logic for dry-run)
+// ─────────────────────────────────────────────────────────────────
+function projectCompletionPoints(course, user) {
+  const ceHours = parseFloat(course?.ceHours || course?.ceuHours) || 0;
+  if (ceHours > 4) return { points: 100, tier: 'long_course' };
+  const subStatus = user?.subscription?.status;
+  if (subStatus === 'active' || subStatus === 'trial') return { points: 75, tier: 'subscription' };
+  const cidStr = course?._id?.toString();
+  const purchased = cidStr && Array.isArray(user?.purchasedCourses) &&
+    user.purchasedCourses.some(p => p?.courseId?.toString() === cidStr);
+  if (purchased) return { points: 50, tier: 'individual' };
+  return { points: 25, tier: 'free' };
 }
 
 // ─────────────────────────────────────────────────────────────────
 // Process one user
 // ─────────────────────────────────────────────────────────────────
 async function processUser(user, summary) {
-  const userResult = {
+  const result = {
     userId: user._id.toString(),
     email: user.email,
     completionsAwarded: 0,
@@ -129,19 +174,90 @@ async function processUser(user, summary) {
     errors: [],
   };
 
-  // 1. Course completions
+  // Track which courseIds got a completion award via this run, so we don't
+  // double-process when the CourseProgress sweep runs after Cert processing
+  const completionCoursesAwarded = new Set();
+
+  // ─── 1. CERTIFICATES (primary driver) ───
+  const certs = await findCertificates(user._id);
+
+  for (const cert of certs) {
+    if (!cert.courseId) continue;
+
+    const courseIdStr = cert.courseId.toString();
+    const completionDedupKey = `course_completion:${courseIdStr}`;
+    const certDedupKey = `certificate_earned:${courseIdStr}`;
+
+    const completionAlreadyAwarded = (user.earnedKeys || []).some(
+      k => (k?.toString ? k.toString() : k) === completionDedupKey
+    );
+    const certAlreadyAwarded = (user.earnedKeys || []).some(
+      k => (k?.toString ? k.toString() : k) === certDedupKey
+    );
+
+    const courseLike = courseFromCert(cert);
+
+    // Award completion (if not already)
+    if (completionAlreadyAwarded) {
+      result.completionsSkipped++;
+    } else if (DRY_RUN) {
+      const { points } = projectCompletionPoints(courseLike, user);
+      result.pointsAwarded += points;
+      result.completionsAwarded++;
+      completionCoursesAwarded.add(courseIdStr);
+    } else {
+      const r = await awardCourseCompletion(user._id, courseLike, user);
+      if (r.earned) {
+        result.pointsAwarded += r.points;
+        result.completionsAwarded++;
+        completionCoursesAwarded.add(courseIdStr);
+        if (!user.earnedKeys) user.earnedKeys = [];
+        user.earnedKeys.push(completionDedupKey);
+      } else if (r.reason === 'already_awarded') {
+        result.completionsSkipped++;
+      } else {
+        result.errors.push(`Completion award failed for course ${courseIdStr}: ${r.error || r.reason || 'unknown'}`);
+      }
+    }
+
+    // Award certificate (if not already)
+    if (certAlreadyAwarded) {
+      result.certsSkipped++;
+    } else if (DRY_RUN) {
+      result.pointsAwarded += 25;
+      result.certsAwarded++;
+    } else {
+      const r = await awardCertificate(user._id, cert.courseId, cert.title || '');
+      if (r.earned) {
+        result.pointsAwarded += r.points;
+        result.certsAwarded++;
+        if (!user.earnedKeys) user.earnedKeys = [];
+        user.earnedKeys.push(certDedupKey);
+      } else if (r.reason === 'already_awarded') {
+        result.certsSkipped++;
+      } else {
+        result.errors.push(`Cert award failed for course ${courseIdStr}: ${r.error || r.reason || 'unknown'}`);
+      }
+    }
+  }
+
+  // ─── 2. COURSE PROGRESS SWEEP (fallback for completions without certs) ───
   const completions = await findCompletedCourses(user._id);
 
   for (const cp of completions) {
     if (!cp.courseId) continue;
+    const courseIdStr = cp.courseId.toString();
 
-    const dedupKey = `course_completion:${cp.courseId.toString()}`;
+    // Already processed via cert in this run? Skip.
+    if (completionCoursesAwarded.has(courseIdStr)) continue;
+
+    const dedupKey = `course_completion:${courseIdStr}`;
     const alreadyAwarded = (user.earnedKeys || []).some(
-      k => k === dedupKey || k?.toString() === dedupKey
+      k => (k?.toString ? k.toString() : k) === dedupKey
     );
 
     if (alreadyAwarded) {
-      userResult.completionsSkipped++;
+      result.completionsSkipped++;
       continue;
     }
 
@@ -149,86 +265,44 @@ async function processUser(user, summary) {
       title: 1, ceHours: 1, ceuHours: 1, _id: 1,
     });
     if (!course) {
-      userResult.errors.push(`Course ${cp.courseId} not found`);
+      result.errors.push(`Course ${courseIdStr} not found in interactivecourses`);
       continue;
     }
 
     if (DRY_RUN) {
-      // Replicate computeCompletionPoints inline for dry-run estimation
-      const ceHours = parseFloat(course.ceHours || course.ceuHours) || 0;
-      let projectedPoints;
-      if (ceHours > 4) projectedPoints = 100;
-      else if (user.subscription?.status === 'active' || user.subscription?.status === 'trial') projectedPoints = 75;
-      else if ((user.purchasedCourses || []).some(p => p.courseId?.toString() === cp.courseId.toString())) projectedPoints = 50;
-      else projectedPoints = 25;
-
-      userResult.pointsAwarded += projectedPoints;
-      userResult.completionsAwarded++;
+      const { points } = projectCompletionPoints(course, user);
+      result.pointsAwarded += points;
+      result.completionsAwarded++;
     } else {
-      const result = await awardCourseCompletion(user._id, course, user);
-      if (result.earned) {
-        userResult.pointsAwarded += result.points;
-        userResult.completionsAwarded++;
-      } else if (result.reason === 'already_awarded') {
-        userResult.completionsSkipped++;
+      const r = await awardCourseCompletion(user._id, course, user);
+      if (r.earned) {
+        result.pointsAwarded += r.points;
+        result.completionsAwarded++;
+      } else if (r.reason === 'already_awarded') {
+        result.completionsSkipped++;
       } else {
-        userResult.errors.push(`Completion award failed for course ${cp.courseId}: ${result.error || result.reason || 'unknown'}`);
+        result.errors.push(`Completion award failed for course ${courseIdStr}: ${r.error || r.reason || 'unknown'}`);
       }
     }
   }
 
-  // 2. Certificates
-  const certs = await findCertificates(user._id);
-
-  for (const cert of certs) {
-    if (!cert.course) continue;
-
-    const dedupKey = `certificate_earned:${cert.course.toString()}`;
-    const alreadyAwarded = (user.earnedKeys || []).some(
-      k => k === dedupKey || k?.toString() === dedupKey
-    );
-
-    if (alreadyAwarded) {
-      userResult.certsSkipped++;
-      continue;
-    }
-
-    if (DRY_RUN) {
-      userResult.pointsAwarded += 25; // POINTS.CERTIFICATE
-      userResult.certsAwarded++;
-    } else {
-      const result = await awardCertificate(user._id, cert.course, cert.courseTitle || '');
-      if (result.earned) {
-        userResult.pointsAwarded += result.points;
-        userResult.certsAwarded++;
-      } else if (result.reason === 'already_awarded') {
-        userResult.certsSkipped++;
-      } else {
-        userResult.errors.push(`Cert award failed for course ${cert.course}: ${result.error || result.reason || 'unknown'}`);
-      }
-    }
-  }
-
-  // Track summary
+  // ─── Tally summary ───
   summary.totalUsers++;
-  if (userResult.completionsAwarded || userResult.certsAwarded) {
-    summary.usersWithAwards++;
-  }
-  summary.totalCompletionsAwarded += userResult.completionsAwarded;
-  summary.totalCompletionsSkipped += userResult.completionsSkipped;
-  summary.totalCertsAwarded += userResult.certsAwarded;
-  summary.totalCertsSkipped += userResult.certsSkipped;
-  summary.totalPointsAwarded += userResult.pointsAwarded;
-  summary.totalErrors += userResult.errors.length;
+  if (result.completionsAwarded || result.certsAwarded) summary.usersWithAwards++;
+  summary.totalCompletionsAwarded += result.completionsAwarded;
+  summary.totalCompletionsSkipped += result.completionsSkipped;
+  summary.totalCertsAwarded += result.certsAwarded;
+  summary.totalCertsSkipped += result.certsSkipped;
+  summary.totalPointsAwarded += result.pointsAwarded;
+  summary.totalErrors += result.errors.length;
 
-  // Print only users who got something or had errors
-  if (userResult.completionsAwarded > 0 || userResult.certsAwarded > 0 || userResult.errors.length > 0) {
+  if (result.completionsAwarded > 0 || result.certsAwarded > 0 || result.errors.length > 0) {
     console.log(JSON.stringify({
-      email: userResult.email,
-      completions: `${userResult.completionsAwarded} awarded / ${userResult.completionsSkipped} skipped`,
-      certs: `${userResult.certsAwarded} awarded / ${userResult.certsSkipped} skipped`,
-      points: userResult.pointsAwarded,
-      errors: userResult.errors.length > 0 ? userResult.errors : undefined,
+      email: result.email,
+      completions: `${result.completionsAwarded}+/${result.completionsSkipped}=`,
+      certs: `${result.certsAwarded}+/${result.certsSkipped}=`,
+      points: result.pointsAwarded,
+      errors: result.errors.length > 0 ? result.errors : undefined,
     }));
   }
 }
@@ -238,7 +312,7 @@ async function processUser(user, summary) {
 // ─────────────────────────────────────────────────────────────────
 async function main() {
   if (!process.env.MONGODB_URI) {
-    console.error('MONGODB_URI env var not set. Run from server directory with .env loaded.');
+    console.error('MONGODB_URI env var not set.');
     process.exit(1);
   }
 
@@ -266,6 +340,7 @@ async function main() {
 
   const users = await userCursor.lean();
   console.log(`Processing ${users.length} user(s)...\n`);
+  console.log('Format: {email, completions: awarded+/skipped=, certs: awarded+/skipped=, points}\n');
 
   const summary = {
     totalUsers: 0,
@@ -283,7 +358,7 @@ async function main() {
       await processUser(user, summary);
     } catch (err) {
       summary.totalErrors++;
-      console.error(`Error processing user ${user._id} (${user.email}): ${err.message}`);
+      console.error(`Error processing ${user.email}: ${err.message}`);
     }
   }
 
@@ -294,9 +369,9 @@ async function main() {
   console.log(`Users processed:               ${summary.totalUsers}`);
   console.log(`Users with awards:             ${summary.usersWithAwards}`);
   console.log(`Course completions awarded:    ${summary.totalCompletionsAwarded}`);
-  console.log(`Course completions skipped:    ${summary.totalCompletionsSkipped} (already earned)`);
+  console.log(`Course completions skipped:    ${summary.totalCompletionsSkipped}`);
   console.log(`Certificates awarded:          ${summary.totalCertsAwarded}`);
-  console.log(`Certificates skipped:          ${summary.totalCertsSkipped} (already earned)`);
+  console.log(`Certificates skipped:          ${summary.totalCertsSkipped}`);
   console.log(`TOTAL MMP ${DRY_RUN ? 'PROJECTED' : 'AWARDED'}:           ${summary.totalPointsAwarded}`);
   console.log(`Errors:                        ${summary.totalErrors}`);
   console.log('═══════════════════════════════════════════════════════════');
