@@ -36,4 +36,3 @@ async function main() {
 }
 main().catch(e => { console.error('FATAL:', e.message); process.exit(1); });
 EOF
-node _diag.mjs
