@@ -84,6 +84,7 @@ async function runInspect() {
       { completed: true },
       { completedAt: { $exists: true, $ne: null } },
       { status: 'completed' },
+      { assessmentPassed: true },
     ],
   });
   const certCount = await Certificate.countDocuments();
@@ -113,8 +114,9 @@ async function findCompletedCourses(userId) {
       { completed: true },
       { completedAt: { $exists: true, $ne: null } },
       { status: 'completed' },
+      { assessmentPassed: true },
     ],
-  }, { courseId: 1, completed: 1, completedAt: 1, status: 1 }).lean();
+  }, { courseId: 1, completed: 1, completedAt: 1, status: 1, assessmentPassed: 1 }).lean();
 }
 
 // ─────────────────────────────────────────────────────────────────
