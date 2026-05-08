@@ -53,7 +53,7 @@ const TX_TYPE = {
 // Compute course completion points (tiered)
 // ─────────────────────────────────────────────────────────────────
 export function computeCompletionPoints(course, user) {
-  const ceHours = parseFloat(course?.ceHours || course?.ceuHours) || 0;
+  const ceHours = parseFloat(course?.ceHours) || 0;
 
   if (ceHours > 4) {
     return { points: POINTS.COMPLETION_LONG, tier: 'long_course' };
