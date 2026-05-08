@@ -19,6 +19,8 @@ const stripe = process.env.STRIPE_SECRET_KEY ? new Stripe(process.env.STRIPE_SEC
 import emailService from '../services/emailService.js';
 const { sendRedemptionConfirmation, sendRedemptionAdminAlert } = emailService;
 
+import { tierFromLifetime } from '../services/rewardsService.js';
+
 const router = express.Router();
 
 // ─────────────────────────────────────────────────────────────────
@@ -259,17 +261,6 @@ router.get('/referrals', protect, async (req, res) => {
     return res.status(500).json({ error: 'server_error' });
   }
 });
-
-// ─────────────────────────────────────────────────────────────────
-// Tier calculation — keep in sync with v1.0 §3.1
-// ─────────────────────────────────────────────────────────────────
-// TODO: replace with `import { tierFromLifetime } from '../services/rewardsService.js'` to prevent drift (see PR for v2.2 tier rename)
-function tierFromLifetime(lifetime) {
-  if (lifetime >= 1500) return { name: 'Seasoned', color: 'gold', multiplier: 2.0, nextThreshold: null };
-  if (lifetime >= 750)  return { name: 'Skilled',      color: 'navy', multiplier: 1.5, nextThreshold: 1500 };
-  if (lifetime >= 250)  return { name: 'Proficient',    color: 'hunter', multiplier: 1.25, nextThreshold: 750 };
-  return                       { name: 'Capable',    color: 'green', multiplier: 1.0, nextThreshold: 250 };
-}
 
 // ─────────────────────────────────────────────────────────────────
 // POST /api/rewards/redeem
