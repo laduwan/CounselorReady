@@ -105,6 +105,217 @@
   ═══════════════════════════════════════════════════════════════
 -->
 
+<!--
+  ═══════════════════════════════════════════════════════════════
+  CounselorReady Achievements Page — XP↔MMP Bridge v3
+  Day 3.5 — May 7, 2026
+
+  PLACEMENT: Drop into client/public/achievements.html DIRECTLY ABOVE
+  the existing <div id="cr-mmp-widget" ...> block.
+
+  STANDALONE: Self-contained CSS scoped to .cr-bridge-* prefix.
+  REVERT: Delete this entire block.
+  ═══════════════════════════════════════════════════════════════
+-->
+
+<div class="cr-bridge-root">
+  <style>
+    .cr-bridge-root {
+      max-width: 100%;
+      margin: 24px 0 8px 0;
+      padding: 0 4px;
+      font-family: 'Lato', system-ui, sans-serif;
+    }
+    .cr-bridge-divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+    .cr-bridge-line {
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(
+        to right,
+        rgba(212, 168, 85, 0.0),
+        rgba(212, 168, 85, 0.40) 50%,
+        rgba(212, 168, 85, 0.40) 100%
+      );
+    }
+    .cr-bridge-line-right {
+      background: linear-gradient(
+        to right,
+        rgba(212, 168, 85, 0.40) 0%,
+        rgba(212, 168, 85, 0.40) 50%,
+        rgba(212, 168, 85, 0.0)
+      );
+    }
+    .cr-bridge-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 16px;
+      background: linear-gradient(135deg, rgba(212, 168, 85, 0.16) 0%, rgba(212, 168, 85, 0.08) 100%);
+      border: 1px solid rgba(212, 168, 85, 0.45);
+      border-radius: 24px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.10em;
+      text-transform: uppercase;
+      color: #8C6A1F;
+      white-space: nowrap;
+      box-shadow: 0 1px 3px rgba(212, 168, 85, 0.10);
+    }
+    .cr-bridge-sparkle {
+      font-size: 14px;
+      line-height: 1;
+    }
+
+    .cr-bridge-headline {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 22px;
+      line-height: 1.25;
+      color: #6B1D34;
+      font-weight: 600;
+      text-align: center;
+      margin: 0 auto 8px;
+      max-width: 600px;
+      padding: 0 16px;
+    }
+    .cr-bridge-headline strong {
+      font-style: italic;
+      color: #4A7C59;
+    }
+
+    .cr-bridge-explainer {
+      max-width: 580px;
+      margin: 0 auto 16px;
+      padding: 0 16px;
+      text-align: center;
+      font-size: 13.5px;
+      line-height: 1.6;
+      color: rgba(40, 65, 87, 0.78);
+    }
+    .cr-bridge-explainer .cr-bridge-mmp {
+      color: #6B1D34;
+      font-weight: 700;
+    }
+    .cr-bridge-explainer .cr-bridge-xp {
+      color: #4A7C59;
+      font-weight: 700;
+    }
+
+    .cr-bridge-spendlist {
+      max-width: 460px;
+      margin: 0 auto 14px;
+      padding: 14px 18px;
+      background: linear-gradient(135deg, rgba(245, 245, 220, 0.55) 0%, rgba(255, 255, 255, 0.7) 100%);
+      border: 1px solid rgba(212, 168, 85, 0.30);
+      border-radius: 12px;
+    }
+    .cr-bridge-spendlist-title {
+      font-size: 11px;
+      letter-spacing: 0.10em;
+      text-transform: uppercase;
+      font-weight: 700;
+      color: #8C6A1F;
+      text-align: center;
+      margin-bottom: 10px;
+    }
+    .cr-bridge-spend-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 4px 0;
+      font-size: 13px;
+      color: #284157;
+      line-height: 1.4;
+    }
+    .cr-bridge-spend-row + .cr-bridge-spend-row {
+      border-top: 1px dashed rgba(40, 65, 87, 0.10);
+      margin-top: 4px;
+      padding-top: 8px;
+    }
+    .cr-bridge-spend-icon {
+      flex-shrink: 0;
+      width: 20px;
+      height: 20px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(212, 168, 85, 0.18);
+      border-radius: 50%;
+      color: #8C6A1F;
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .cr-bridge-spend-text {
+      flex: 1;
+    }
+    .cr-bridge-spend-text strong {
+      color: #6B1D34;
+    }
+
+    .cr-bridge-mission {
+      max-width: 540px;
+      margin: 0 auto;
+      padding: 0 16px;
+      text-align: center;
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 16px;
+      font-style: italic;
+      line-height: 1.5;
+      color: rgba(74, 124, 89, 0.85);
+    }
+
+    @media (max-width: 480px) {
+      .cr-bridge-headline { font-size: 19px; }
+      .cr-bridge-explainer { font-size: 13px; }
+      .cr-bridge-mission { font-size: 14.5px; }
+      .cr-bridge-spend-row { font-size: 12.5px; }
+    }
+  </style>
+
+  <div class="cr-bridge-divider">
+    <div class="cr-bridge-line"></div>
+    <span class="cr-bridge-pill">
+      <span class="cr-bridge-sparkle">✨</span>
+      Mastery Has Its Rewards
+    </span>
+    <div class="cr-bridge-line cr-bridge-line-right"></div>
+  </div>
+
+  <h3 class="cr-bridge-headline">
+    Your work, recognized <strong>two ways</strong>.
+  </h3>
+
+  <p class="cr-bridge-explainer">
+    <span class="cr-bridge-xp">XP and Level above</span> map your daily journey &mdash; logins, streaks, sections, badges. <span class="cr-bridge-mmp">Mastery Mark Points below</span> are something different: a real, redeemable currency you earn for the moments that matter most &mdash; finishing courses, claiming certificates, submitting reflections, referring colleagues.
+  </p>
+
+  <div class="cr-bridge-spendlist">
+    <div class="cr-bridge-spendlist-title">What MMP can buy</div>
+    <div class="cr-bridge-spend-row">
+      <span class="cr-bridge-spend-icon">$</span>
+      <span class="cr-bridge-spend-text"><strong>$10 or $25 subscription credit</strong> &mdash; auto-applied to your next invoice</span>
+    </div>
+    <div class="cr-bridge-spend-row">
+      <span class="cr-bridge-spend-icon">🛍</span>
+      <span class="cr-bridge-spend-text"><strong>Amazon or DoorDash</strong> $25 gift cards</span>
+    </div>
+    <div class="cr-bridge-spend-row">
+      <span class="cr-bridge-spend-icon">🌿</span>
+      <span class="cr-bridge-spend-text"><strong>$25 spa gift cards</strong> &mdash; massage, retreats, and wellness at Georgia partner spas</span>
+    </div>
+  </div>
+
+  <p class="cr-bridge-mission">
+    Because the people who care for others deserve real care in return.
+  </p>
+</div>
+
+<!-- ═══ END XP↔MMP Bridge v3 ═══ -->
+
 <div id="cr-mmp-widget" class="cr-mmp-root" style="display:none">
   <style>
     #cr-mmp-widget.cr-mmp-root {
