@@ -1,3 +1,4 @@
+[CLAUDE(10).md](https://github.com/user-attachments/files/27563113/CLAUDE.10.md)
 [CLAUDE(8).md](https://github.com/user-attachments/files/27072766/CLAUDE.8.md)
 # CounselorReady — Claude Code Instructions
 ## GA Integrated Therapeutic Perspectives LLC · NBCC ACEP #7760
@@ -33,6 +34,7 @@ These files are complete and stable. Do NOT open, read, or modify them unless th
 - `server/src/models/Course.js` — do not touch
 - `server/src/models/Certificate.js` — do not touch unless task names it
 - `server/src/models/UserCourseProgress.js` — do not touch
+- `server/src/models/InteractiveCourse.js` — primary content schema. Adding fields requires task-level naming. **Removing or modifying any value in any `enum:` array is a destructive change** — it invalidates existing documents on next save and can silently strip block types from courses (see "PROTECTED ENUM: ContentBlockSchema.type" below).
 ### Frontend — viewers and builders (locked)
 
 **Architecture note:** This platform is **static-HTML-first**. The course player is intentionally a single HTML file, not a React component. CC's default is to suggest React patterns; reject them for anything in the course-playback path.
@@ -291,6 +293,21 @@ This file has been destroyed TWICE by being rewritten from 1518 lines to 388 lin
 6. **Key routes that MUST exist:** GET `/`, GET `/:id`, GET `/slug/:slug`, POST `/:id/enroll`, POST `/:id/assessment`, POST `/:id/evaluation`, POST `/:id/attestation`, GET `/:id/certificate`, PUT `/:id/progress/section/:sectionIndex`
 
 ---
+
+## ⚠️ PROTECTED ENUM: ContentBlockSchema.type (in InteractiveCourse.js)
+
+This enum defines every valid content-block type the platform recognizes. It has been silently stripped at least once — `clinicalVignette` was removed in early May 2026, breaking publish for several existing courses, and the May 9 2026 incident review found that `bulkRebuildCourses.js` carried a stale `VALID_BLOCK_TYPES` Set missing 9 valid types, capable of dropping callout / clinicalVignette / keyTakeaway / deliverables / fillInBlank / references / knowledgeCheck / quiz / video blocks on any course it processed.
+
+### Rules for the ContentBlockSchema.type enum
+1. **NEVER remove an existing value from the enum.** Doing so invalidates every existing document that uses it; saves fail with `\`X\` is not a valid enum value for path \`type\``. If a value is genuinely deprecated, mark it deprecated in a code comment and leave it in the enum.
+2. **The current canonical set (as of May 10, 2026) is 26 values:**
+   `accordion, callout, cardSort, clinicalVignette, deliverables, fillInBlank, flashcardDeck, hotspot, image, imageText, keyTakeaway, knowledgeCheck, matching, multiSelect, multipleChoice, quiz, references, reflection, resources, scenarioTree, sectionDivider, sequencing, text, timeline, video, videoEmbed`
+3. **Adding a value requires** updating ALL of the following in the same PR: (a) the enum in `server/src/models/InteractiveCourse.js`; (b) `VALID_BLOCK_TYPES` in `server/src/scripts/bulkRebuildCourses.js`; (c) the renderer dispatch in `client/public/interactive-course.html` (renderBlock switch around line 4496); (d) the documented type list in `COURSE_SCHEMA_SPEC.md` and Tech Manual §10.
+4. **NEVER drop entries from `VALID_BLOCK_TYPES` in any script.** If a script filters blocks by type, its allow-list must contain at minimum every value above. A drift between the schema enum and a script's filter is a silent data-loss bug.
+5. **Other related enums in the same file** (`approvals[].body`, `nbccContentAreas`, `accessType`, question `type`, `deliveryFormat`, `calloutType`) follow the same rule: removing or renaming a value breaks existing data. If you must rename, write a migration that maps old → new before merging the schema change.
+
+---
+
 ## Protected Services — Do Not Modify Without Explicit Authorization
 
 The following files implement core platform notification, tracking, and webhook infrastructure. Bugs in these files are silent — they don't throw errors, they just stop working. Past incidents (commits 43db65e and 590b68d) demonstrate that "tightening" or "refactoring" these files has broken the entire admin notification pipeline without anyone noticing for weeks.
@@ -313,6 +330,7 @@ If a user-reported issue could be solved by editing one of these files, STOP and
 The following scripts perform mass deletes from production data. They MUST NOT be invoked without an explicit, written instruction from Ke containing the exact script name and the words "run in production":
 
 - `server/src/scripts/selectiveWipe.js`
+- `server/src/scripts/bulkRebuildCourses.js` — **quarantined**. Overwrites course content via the Anthropic API and historically dropped block types whose names weren't in its `VALID_BLOCK_TYPES` Set. The script now refuses to run without `--i-acknowledge-data-risk`. Even with the flag, it overwrites content for whichever courses it processes — back up the collection first.
 - Any script containing `deleteMany` against `interactivecourses`, `interactivecourseprogresses`, `users`, `usercredentials`, `notifications`, `useractivities`, `payments`, or `certificates`
 - Any `cleanup*.js`, `reset*.js`, `purge*.js`, or `wipe*.js` script in `server/src/scripts/`
 
