@@ -29,6 +29,38 @@ import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 dotenv.config();
 
+// ════════════════════════════════════════════════════════════════════════
+// QUARANTINE GUARD (added May 2026 after block-type incident review)
+// ────────────────────────────────────────────────────────────────────────
+// This script overwrites course content via the Anthropic API and writes
+// the result back to MongoDB via $set on `interactivecourses`. It filters
+// AI-generated blocks against VALID_BLOCK_TYPES below — any block type
+// missing from that Set is silently dropped. The Set has been corrected
+// to match the schema enum, but accidental drift is a recurring failure
+// mode, so the script refuses to run without an explicit ack flag.
+//
+// Before running:
+//   1. Re-verify VALID_BLOCK_TYPES below matches the schema enum in
+//      server/src/models/InteractiveCourse.js
+//   2. Back up the interactivecourses collection (Atlas snapshot)
+//   3. Confirm no users are mid-lesson
+//
+// Then run with:  --i-acknowledge-data-risk
+// ════════════════════════════════════════════════════════════════════════
+const ACKNOWLEDGED = process.argv.includes('--i-acknowledge-data-risk');
+if (!ACKNOWLEDGED) {
+  console.error('');
+  console.error('  ⛔ bulkRebuildCourses.js is QUARANTINED.');
+  console.error('');
+  console.error('  This script overwrites course content and has dropped block');
+  console.error('  types in past runs. Verify VALID_BLOCK_TYPES is current,');
+  console.error('  back up the collection, then re-run with:');
+  console.error('');
+  console.error('    --i-acknowledge-data-risk');
+  console.error('');
+  process.exit(1);
+}
+
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PROGRESS_FILE = path.join(__dirname, '.rebuild_progress.json');
 
@@ -136,10 +168,17 @@ function normalizeTextFields(course) {
 
 // Valid block types the course player can render
 const VALID_BLOCK_TYPES = new Set([
-  'text','multipleChoice','multiSelect','matching','reflection',
-  'resources','sectionDivider','accordion','imageText',
-  'flashcards','flashcardDeck','categorization','cardSort','hotspot',
-  'sequencing','timeline','scenarioTree','videoEmbed','imageBlock','image'
+  // Canonical schema enum — kept in sync with server/src/models/InteractiveCourse.js.
+  // If the schema enum changes, update this Set in the same PR.
+  'accordion','callout','cardSort','clinicalVignette','deliverables',
+  'fillInBlank','flashcardDeck','hotspot','image','imageText',
+  'keyTakeaway','knowledgeCheck','matching','multiSelect','multipleChoice',
+  'quiz','references','reflection','resources','scenarioTree',
+  'sectionDivider','sequencing','text','timeline','video','videoEmbed',
+  // Legacy aliases — Tech Manual §10.2 documents these as forgiven by the
+  // viewer. Kept here so the AI filter doesn't strip pre-existing data
+  // that happens to use them.
+  'flashcards','categorization','imageBlock'
 ]);
 
 function targetSectionCount(ceHours) {
