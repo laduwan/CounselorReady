@@ -38,6 +38,7 @@ const ContentBlockSchema = new mongoose.Schema({
       'accordion',
       'callout',
       'cardSort',
+      'clinicalVignette',
       'deliverables',
       'fillInBlank',
       'flashcardDeck',
