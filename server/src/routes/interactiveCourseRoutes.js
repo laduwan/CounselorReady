@@ -1228,6 +1228,21 @@ router.put('/:id/progress/section/:sectionIndex', protect, async (req, res) => {
       sectionProgress.status = 'completed';
       sectionProgress.completedAt = sectionProgress.completedAt || new Date();
 
+      try {
+        if (global.posthog) {
+          global.posthog.capture({
+            distinctId: req.user._id.toString(),
+            event: 'section_completed',
+            properties: {
+              courseId: course._id.toString(),
+              courseTitle: course.title,
+              sectionIndex: parseInt(sectionIndex),
+              sectionTitle: section.title || `Section ${parseInt(sectionIndex) + 1}`,
+              timeSpentSeconds: sectionProgress.timeSpent || 0
+            }
+          });
+        }
+      } catch (phErr) { console.error('PostHog section_completed failed:', phErr); }
       // Log section completion (fire-and-forget)
       logActivity(ACTIVITY_TYPES.LESSON_COMPLETED, {
         courseId: course._id,
