@@ -101,7 +101,7 @@ export async function logActivity(type, data, options = {}) {
         }
         sendAdminAlertIfEnabled(prefs, type, { userName, userEmail, ...data });
       })
-      .catch(() => sendAdminAlert(type, { userName, userEmail, ...data })); // fallback on DB error
+      .catch(() => {}); // swallow DB error — do not send ungated alert
   }
 
   return activity;
