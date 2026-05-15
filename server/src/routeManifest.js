@@ -52,6 +52,18 @@ import toolsRoutes from './routes/tools.js';
 import partnersRoutes from './routes/partners.js';
 import notificationsRoutes from './routes/notifications.js';
 import recommendationsRoutes from './routes/recommendations.js';
+import rewardsRoutes from './routes/rewards.js';
+import blogRoutes from './routes/blog.js';
+import remediationRoutes from './routes/remediation.js';
+import adminRewardsRoutes from './routes/adminRewards.js';
+import securityRoutes from './routes/security.js';
+import supervisionRoutes from './routes/supervision.js';
+import insuranceCredentialsRoutes from './routes/insuranceCredentials.js';
+import legacyVaultRoutes from './routes/legacyVault.js';
+import groupLicensesRoutes from './routes/groupLicenses.js';
+import scholarlyArticlesRoutes from './routes/scholarlyArticles.js';
+import toolRoutes from './routes/toolRoutes.js';
+import toolAnalyticsRoutes from './routes/toolAnalytics.js';
 
 /**
  * Route Manifest — add new routes here.
@@ -72,10 +84,12 @@ const ROUTE_MANIFEST = [
   ['/api/admin',                 adminRoutes,               'Admin (includes courses/users/AI/stripe/coupons)'],
   ['/api/admin/courses',         bulkUploadRoutes,          'Bulk Upload'],
   ['/api/admin/stats',           adminStatsRoutes,          'Admin Stats'],
+  ['/api/admin/rewards',         adminRewardsRoutes,        'Admin Rewards'],
 
   // ── Features ──
   ['/api/gamification',          gamificationRoutes,        'Gamification / Achievements'],
   ['/api/referrals',             referralsRoutes,           'Referrals (Pass the Key)'],
+  ['/api/rewards',               rewardsRoutes,             'Rewards / MMP Points'],
   ['/api/board-alerts',          boardAlertsRoutes,         'Board Alerts'],
   ['/api/ce-planner',            cePlannerRoutes,           'CE Planner'],
   ['/api/recommendations',       recommendationsRoutes,     'Recommendations'],
@@ -86,6 +100,8 @@ const ROUTE_MANIFEST = [
   ['/api/reminders',             remindersRoutes,           'Reminders'],
   ['/api/analytics',             analyticsRoutes,           'Analytics'],
   ['/api/help',                  helpRoutes,                'Help / Articles'],
+  ['/api/blog',                  blogRoutes,                'Blog'],
+  ['/api/remediation',           remediationRoutes,         'Remediation'],
   ['/api/tools',                 toolsRoutes,               'Clinical Tools'],
   ['/api/partners',              partnersRoutes,            'Partners'],
 
@@ -101,6 +117,14 @@ const ROUTE_MANIFEST = [
   ['/api/scorm',                 scormRoutes,               'SCORM'],
   ['/api/lti',                   ltiRoutes,                 'LTI'],
   ['/api/xapi',                  xapiRoutes,                'xAPI'],
+  ['/api/security',              securityRoutes,            'Security / 2FA'],
+  ['/api/supervision',           supervisionRoutes,         'Supervision Logs'],
+  ['/api/insurance-credentials', insuranceCredentialsRoutes,'Insurance Credentials'],
+  ['/api/legacy-vault',          legacyVaultRoutes,         'Legacy Vault'],
+  ['/api/group-licenses',        groupLicensesRoutes,       'Group Licenses'],
+  ['/api/scholarly-articles',    scholarlyArticlesRoutes,   'Scholarly Articles'],
+  ['/api/tool-actions',          toolRoutes,                'Tool Actions'],
+  ['/api/tool-analytics',        toolAnalyticsRoutes,       'Tool Analytics'],
 ];
 
 /**
