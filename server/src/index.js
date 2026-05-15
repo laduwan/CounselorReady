@@ -78,6 +78,7 @@ import scholarlyArticlesRoutes from './routes/scholarlyArticles.js';
 // ═══════════════════════════════════════════════════════════════
 // SERVICE IMPORTS
 // ═══════════════════════════════════════════════════════════════
+import { PostHog } from 'posthog-node';
 import { initializeScheduler } from './services/notificationScheduler.js';
 import { initializeBoardMonitor } from './services/boardMonitorService.js';
 import cron from 'node-cron';
@@ -348,6 +349,10 @@ const startServer = async () => {
   }, { timezone: 'America/New_York' });
   console.log('Hardship pause auto-resume cron scheduled (daily 8 AM ET)');
   verifyRoutes();
+  // PostHog server-side analytics
+  const phKey = process.env.POSTHOG_API_KEY || 'phc_rRGb8TPVl8lDYnD4M2HMGGuBBkL9whGzghD5FEX20Vb';
+  global.posthog = new PostHog(phKey, { host: 'https://us.i.posthog.com' });
+  console.log('PostHog analytics initialized');
   app.listen(PORT, () => {
     console.log(`
 ╔════════════════════════════════════════════════════╗
