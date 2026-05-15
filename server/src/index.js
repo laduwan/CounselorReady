@@ -74,6 +74,7 @@ import insuranceCredentialsRoutes from './routes/insuranceCredentials.js';
 import legacyVaultRoutes from './routes/legacyVault.js';
 import groupLicensesRoutes from './routes/groupLicenses.js';
 import scholarlyArticlesRoutes from './routes/scholarlyArticles.js';
+import adminStatsRoutes from './routes/adminStats.js';
 
 // ═══════════════════════════════════════════════════════════════
 // SERVICE IMPORTS
@@ -171,6 +172,7 @@ app.get('/health', async (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/interactive-courses', interactiveCourseRoutes);
 app.use('/api/courses', coursesRoutes);
+app.use('/api/admin/stats', adminStatsRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/users', usersRoutes);
 app.use('/api/certificates', certificatesRoutes);
