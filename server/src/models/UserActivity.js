@@ -8,8 +8,7 @@ import mongoose from 'mongoose';
 const userActivitySchema = new mongoose.Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    index: true
+    ref: 'User'
   },
   type: {
     type: String,
@@ -30,8 +29,7 @@ const userActivitySchema = new mongoose.Schema({
       'course_failed',
       'certificate_generated',
       'tool_used'
-    ],
-    index: true
+    ]
   },
   userName: { type: String },
   userEmail: { type: String },
@@ -39,8 +37,7 @@ const userActivitySchema = new mongoose.Schema({
   // Contextual data
   courseId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'InteractiveCourse',
-    index: true
+    ref: 'InteractiveCourse'
   },
   courseName: { type: String },
   data: { type: mongoose.Schema.Types.Mixed },
