@@ -790,6 +790,19 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
               userEmail: subUser?.email || ''
             }).catch(() => {});
           }
+          try {
+            if (global.posthog) {
+              global.posthog.capture({
+                distinctId: userId.toString(),
+                event: 'subscription_activated',
+                properties: {
+                  plan: subscription.metadata?.plan || 'unknown',
+                  status: subscription.status,
+                  stripeSubscriptionId: subscription.id
+                }
+              });
+            }
+          } catch (phErr) { console.error('PostHog subscription_activated failed:', phErr); }
           console.log(`Subscription updated for user ${userId}: ${subscription.status}`);
         }
         break;
@@ -826,6 +839,18 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
             userName: canceledUser?.profile?.firstName || '',
             userEmail: canceledUser?.email || ''
           }).catch(() => {});
+          try {
+            if (global.posthog) {
+              global.posthog.capture({
+                distinctId: userId.toString(),
+                event: 'subscription_canceled',
+                properties: {
+                  plan: canceledPlan,
+                  stripeSubscriptionId: subscription.id
+                }
+              });
+            }
+          } catch (phErr) { console.error('PostHog subscription_canceled failed:', phErr); }
           console.log(`Subscription canceled for user ${userId}`);
         }
         break;

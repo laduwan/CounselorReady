@@ -199,6 +199,20 @@ function sendFile(res, fileBuffer, certificate, ext) {
     'Content-Length': fileBuffer.length,
     'Cache-Control': 'private, max-age=3600'
   });
+  try {
+    if (global.posthog) {
+      global.posthog.capture({
+        distinctId: (certificate.userId || certificate.user || 'unknown').toString(),
+        event: 'certificate_downloaded',
+        properties: {
+          certificateId: certificate._id?.toString() || '',
+          courseTitle: certificate.courseTitle || certificate.title || '',
+          ceHours: certificate.ceHours || 0,
+          fileType: contentType
+        }
+      });
+    }
+  } catch (phErr) { console.error('PostHog certificate_downloaded failed:', phErr); }
   return res.send(fileBuffer);
 }
 

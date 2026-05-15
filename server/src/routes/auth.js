@@ -157,7 +157,22 @@ router.post('/register', async (req, res) => {
     }
 
     const token = generateToken(user._id);
-    
+
+    try {
+      if (global.posthog) {
+        global.posthog.capture({
+          distinctId: user._id.toString(),
+          event: 'user_registered',
+          properties: {
+            plan: user.subscription?.plan || 'free',
+            state: user.profile?.licenseState || '',
+            licenseType: user.profile?.licenseType || '',
+            referredBy: user.referredBy ? user.referredBy.toString() : null,
+            $set: { email: user.email, name: `${user.profile?.firstName || ''} ${user.profile?.lastName || ''}`.trim() }
+          }
+        });
+      }
+    } catch (phErr) { console.error('PostHog user_registered failed:', phErr); }
     res.status(201).json({
       message: 'Registration successful. Please check your email to verify your account.',
       token,
@@ -210,6 +225,18 @@ router.post('/login', async (req, res) => {
 
     const token = generateToken(user._id);
 
+    try {
+      if (global.posthog) {
+        global.posthog.capture({
+          distinctId: user._id.toString(),
+          event: 'user_logged_in',
+          properties: {
+            plan: user.subscription?.plan || 'free',
+            $set: { email: user.email }
+          }
+        });
+      }
+    } catch (phErr) { console.error('PostHog user_logged_in failed:', phErr); }
     // Log login activity (fire and forget)
     logActivity(ACTIVITY_TYPES.USER_LOGIN, {}, {
       notifyAdmin: false,
