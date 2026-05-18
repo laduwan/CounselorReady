@@ -165,7 +165,8 @@ async function main() {
 
   for (const course of courses) {
     let totalWc = 0;
-    for (const section of (course.sections || [])) {
+    const containers = [...(course.sections || []), ...(course.modules || [])];
+    for (const section of containers) {
       let sectionWc = 0;
       (section.contentBlocks || []).forEach(b => { sectionWc += countBlock(b); });
       totalWc += sectionWc;
