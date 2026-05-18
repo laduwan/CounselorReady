@@ -41,6 +41,57 @@ await mongoose.connect(MONGODB_URI);
 // schema doesn't expose). All writes go through the canonical model.
 const rawCollection = mongoose.connection.db.collection('interactivecourses');
 
+// Normalize a block so it passes the canonical schema:
+//   • options as string array → [{text, isCorrect}] using correctAnswer index
+//   • nested questions[].options same transform
+//   • hyphen/underscore question types → camelCase
+//   • applied recursively for KC wrapper blocks
+function normalizeOptions(options, correctAnswerIdx) {
+  if (!Array.isArray(options)) return options;
+  return options.map((o, i) => {
+    if (typeof o === 'string') {
+      return { text: o, isCorrect: (typeof correctAnswerIdx === 'number') && i === correctAnswerIdx };
+    }
+    if (o && typeof o === 'object') {
+      // Already in object shape — ensure text + isCorrect are present
+      return {
+        text: o.text || '',
+        isCorrect: typeof o.isCorrect === 'boolean'
+          ? o.isCorrect
+          : (typeof correctAnswerIdx === 'number') && i === correctAnswerIdx,
+      };
+    }
+    return o;
+  });
+}
+
+const TYPE_REMAP = {
+  'multiple-choice': 'multipleChoice', 'multiple_choice': 'multipleChoice',
+  'multi-select':    'multiSelect',    'multi_select':    'multiSelect',
+  'true-false':      'trueFalse',      'true_false':      'trueFalse',
+};
+
+function normalizeQuestion(q) {
+  if (!q || typeof q !== 'object') return;
+  if (q.type && TYPE_REMAP[q.type]) q.type = TYPE_REMAP[q.type];
+  if (Array.isArray(q.options)) {
+    q.options = normalizeOptions(q.options, q.correctAnswer);
+  }
+}
+
+function normalizeBlock(block) {
+  if (!block || typeof block !== 'object') return;
+  if (block.type && TYPE_REMAP[block.type]) block.type = TYPE_REMAP[block.type];
+  // Block-level options + correctAnswer (inline MC blocks)
+  if (Array.isArray(block.options)) {
+    block.options = normalizeOptions(block.options, block.correctAnswer);
+  }
+  // KC wrapper questions
+  if (Array.isArray(block.questions)) {
+    block.questions.forEach(normalizeQuestion);
+  }
+}
+
 console.log('═'.repeat(72));
 console.log('  Sexual-health series: modules[] → sections[] migration');
 console.log('═'.repeat(72));
@@ -79,10 +130,9 @@ for (const slug of TARGET_SLUGS) {
     const contentBlocks = blocks.map((b, bi) => {
       // Strip any old _id from subdoc to avoid collisions; preserve all other fields
       const { _id, ...rest } = b || {};
-      return {
-        ...rest,
-        order: bi + 1, // ensure required order is set
-      };
+      const block = { ...rest, order: bi + 1 };
+      normalizeBlock(block);
+      return block;
     });
     return {
       title: mod.title || `Module ${si + 1}`,
