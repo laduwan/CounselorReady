@@ -413,78 +413,196 @@ const CourseSchema = new mongoose.Schema({
 
 // Pre-save hook to calculate totals
 //
-// wordCount counts every word of educational content that an ACEP/NBCC
-// reviewer would credit toward the seat-time word target — not just the
-// prose in text blocks. That includes knowledge-check stems, options,
-// and explanations; final-assessment questions; and the references list.
-// Block titles and pure metadata (description, objectives, target audience)
-// are deliberately excluded because they're not part of the instructional flow.
+// wordCount counts learner-visible instructional content only.
+// Modeled after server/src/scripts/fixWordCountsFull.js's countAllWords()
+// philosophy: walk every content-bearing field across every block type the
+// CR viewer (client/public/interactive-course.html) renders. Extended to
+// cover fields the viewer renders that fixWordCountsFull missed (KC wrapper
+// questions, instructions, callouts Mixed, video markers, image captions,
+// resources titles).
+//
+// Includes:
+//   • Block content prose: max(textContent, content) + html + body
+//     (Math.max avoids double-counting when both forms hold the same prose,
+//     per fixWordCountsFull.js convention.)
+//   • All interactive block content: accordion items, matching pairs,
+//     flashcards, scenarioTree nodes (recursive walk for Mixed), cardSort
+//     cards + categories, sequencing steps, timeline events, hotspot labels
+//     + info + descriptions, fillInBlank prompts + answers, key takeaways,
+//     callout items.
+//   • Per-block Q&A: question + options (string OR {text} shape) + explanation
+//   • KC wrapper blocks: block.questions[] array
+//   • instructions / matchingInstructions / scenarioTitle / imageDescription
+//   • Image: imageCaption, imageAltText, imageAlt (accessibility-visible)
+//   • Video: videoTitle + markers[].label, .prompt
+//   • Resources/deliverables/files: title only (visible in side-tab)
+//   • block.callouts Mixed (callout-library override for {{callout:id}} pills)
+//   • Top-level assessment.questions[] (final exam — viewer renders to learner)
+//   • Section-level quizQuestions[] (legacy schema location)
+//
+// EXCLUDED per Option B (matches ACEP audit conventions):
+//   • Top-level course.references[] — references do not count toward CE hours
+//   • Block-level references[] arrays — same
+//   • course.objectives[] — pre-course metadata, not instructional flow
+//   • section.title and block.title/subtitle — section headers (metadata)
+//   • course.description, tags, targetAudience, instructor — catalog metadata
 CourseSchema.pre('save', function(next) {
   this.totalEstimatedTime = this.sections.reduce((sum, s) => sum + (s.estimatedTime || 15), 0);
   this.totalContentBlocks = this.sections.reduce((sum, s) => sum + s.contentBlocks.length, 0);
   this.totalQuizQuestions = this.sections.reduce((sum, s) => sum + (s.quizQuestions?.length || 0), 0)
     + (this.assessment?.questions?.length || 0);
 
-  // ── word-count helpers ───────────────────────────────────────────────
+  // ── helpers ──────────────────────────────────────────────────────────
   const wcOf = (s) => {
     if (typeof s !== 'string' || !s) return 0;
     const plain = s.replace(/<[^>]+>/g, ' ').replace(/&\w+;/g, ' ').trim();
     return plain ? plain.split(/\s+/).filter(w => w.length > 0).length : 0;
   };
+  const wcStrings = (arr) => Array.isArray(arr) ? arr.reduce((n, s) => n + wcOf(s), 0) : 0;
+  const wcFields = (arr, fields) => {
+    if (!Array.isArray(arr)) return 0;
+    let n = 0;
+    for (const item of arr) {
+      if (!item || typeof item !== 'object') continue;
+      for (const f of fields) n += wcOf(item[f]);
+    }
+    return n;
+  };
+  // Recursive walk: count every string at any depth (for Mixed-type fields:
+  // scenarioTree.nodes, block.callouts callout-library override).
+  const wcMixed = (val) => {
+    if (val == null) return 0;
+    if (typeof val === 'string') return wcOf(val);
+    if (typeof val !== 'object') return 0;
+    if (Array.isArray(val)) return val.reduce((n, x) => n + wcMixed(x), 0);
+    let n = 0;
+    for (const k of Object.keys(val)) n += wcMixed(val[k]);
+    return n;
+  };
+  // Options accept BOTH shapes the viewer's renderMultipleChoice handles:
+  //   - string:  options: ["A","B","C","D"]
+  //   - object:  options: [{text:"A", isCorrect:false}, ...]
+  const wcOptions = (opts) => {
+    if (!Array.isArray(opts)) return 0;
+    let n = 0;
+    for (const o of opts) {
+      if (typeof o === 'string') n += wcOf(o);
+      else if (o && typeof o === 'object') n += wcOf(o.text);
+    }
+    return n;
+  };
   const wcQuestion = (q) => {
     if (!q || typeof q !== 'object') return 0;
     let n = wcOf(q.question || q.prompt || '');
-    n += (q.options || []).reduce((sum, o) => sum + wcOf(typeof o === 'string' ? o : (o?.text || '')), 0);
+    n += wcOptions(q.options);
     n += wcOf(q.explanation || q.rationale || '');
     return n;
   };
 
+  // ── per-block field map (viewer-aligned) ─────────────────────────────
+  const wcBlock = (b) => {
+    if (!b) return 0;
+    let n = 0;
+
+    // Prose: max(textContent, content) avoids double-counting when seeds
+    // populate both with the plain/HTML versions of the same prose.
+    n += Math.max(wcOf(b.textContent), wcOf(b.content));
+    n += wcOf(b.html);
+    n += wcOf(b.body);
+
+    // Per-block Q&A (multipleChoice, multiSelect, reflection prompt, etc.)
+    n += wcOf(b.question);
+    n += wcOf(b.prompt);
+    n += wcOf(b.explanation);
+    n += wcOf(b.rationale);
+    n += wcOptions(b.options);
+
+    // KC wrapper blocks (viewer renders these even though spec marks deprecated)
+    if (Array.isArray(b.questions)) {
+      for (const q of b.questions) n += wcQuestion(q);
+    }
+
+    // Learner-facing instruction text shown above interactive elements
+    n += wcOf(b.instructions);
+    n += wcOf(b.matchingInstructions);
+
+    // Callout library override (Mixed) — feeds parseCalloutSyntax for inline pills
+    n += wcMixed(b.callouts);
+
+    // accordion
+    n += wcFields(b.accordionItems, ['title', 'content']);
+
+    // matching
+    n += wcFields(b.matchingPairs, ['term', 'definition']);
+
+    // flashcardDeck
+    n += wcFields(b.flashcards, ['front', 'back']);
+
+    // scenarioTree
+    n += wcOf(b.scenarioTitle);
+    n += wcMixed(b.nodes);
+
+    // cardSort
+    n += wcStrings(b.categories);
+    n += wcFields(b.cards, ['text']);
+
+    // sequencing
+    n += wcFields(b.steps, ['text']);
+
+    // timeline
+    n += wcFields(b.events, ['year', 'text']);
+
+    // hotspot
+    n += wcOf(b.imageDescription);
+    n += wcFields(b.hotspots, ['label', 'info', 'description']);
+
+    // callout — viewer accepts calloutItems[] or items[]
+    n += wcStrings(b.calloutItems);
+    n += wcStrings(b.items);  // also serves keyTakeaway
+
+    // fillInBlank
+    n += wcFields(b.blanks, ['prompt', 'answer']);
+
+    // keyTakeaway — viewer accepts takeaways[] or items[] (counted above)
+    n += wcStrings(b.takeaways);
+
+    // video / videoEmbed
+    n += wcOf(b.videoTitle);
+    n += wcFields(b.markers, ['label', 'prompt']);
+
+    // image (standalone) — accessibility text shown to learner
+    n += wcOf(b.imageCaption);
+    n += wcOf(b.imageAltText);
+    n += wcOf(b.imageAlt);
+
+    // resources / deliverables — viewer side-tab aggregates these
+    n += wcFields(b.resources, ['title']);
+    n += wcFields(b.deliverables, ['title']);
+    n += wcFields(b.files, ['title']);
+
+    // EXCLUDED: b.title, b.subtitle (section/block header metadata)
+    // EXCLUDED: b.references[] (not rendered; refs don't count toward CE)
+
+    return n;
+  };
+
+  // ── main accumulation ────────────────────────────────────────────────
   let wc = 0;
 
-  // (1) Prose in content blocks (preserves the original behavior)
+  // (1) Walk every block in every section
   this.sections.forEach(s => {
-    (s.contentBlocks || []).forEach(b => {
-      wc += wcOf(b.textContent || b.content || b.html || b.body || '');
-
-      // (2) Knowledge-check and quiz block questions live inside contentBlocks
-      if (Array.isArray(b.questions)) {
-        b.questions.forEach(q => { wc += wcQuestion(q); });
-      }
-    });
+    (s.contentBlocks || []).forEach(b => { wc += wcBlock(b); });
+    // (2) Section-level quizQuestions (legacy schema location)
+    (s.quizQuestions || []).forEach(q => { wc += wcQuestion(q); });
+    // EXCLUDED: s.title (section header metadata)
   });
 
-  // (3) Final-assessment questions (separate top-level field)
+  // (3) Final-assessment questions — viewer renders these to the learner
   if (this.assessment && Array.isArray(this.assessment.questions)) {
     this.assessment.questions.forEach(q => { wc += wcQuestion(q); });
   }
 
-  // (4) Section-level quizQuestions array (legacy field, still in schema)
-  this.sections.forEach(s => {
-    (s.quizQuestions || []).forEach(q => { wc += wcQuestion(q); });
-  });
-
-  // (5) References list — scholarly attributions are part of the educational record
-  if (Array.isArray(this.references)) {
-    this.references.forEach(r => {
-      wc += wcOf(r.title) + wcOf(r.author) + wcOf(String(r.year || '')) + wcOf(r.source);
-    });
-  }
-
-  // (6) Learning objectives — instructional content shown to the learner at course start
-  if (Array.isArray(this.objectives)) {
-    this.objectives.forEach(o => { wc += wcOf(o); });
-  }
-
-  // (7) Section/module titles and divider title/subtitle — these are visible in the
-  //     reading flow and contribute to the structural instructional content
-  this.sections.forEach(s => {
-    wc += wcOf(s.title || '');
-    (s.contentBlocks || []).forEach(b => {
-      if (b.type === 'sectionDivider') {
-        wc += wcOf(b.title || '') + wcOf(b.subtitle || '');
-      }
-    });
-  });
+  // EXCLUDED: this.references[], this.objectives[], description, tags, etc.
 
   this.wordCount = wc;
   next();
