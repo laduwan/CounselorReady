@@ -119,7 +119,7 @@ const ContentBlockSchema = new mongoose.Schema({
   resources: [{
     title: String,
     url: String,
-    type: { type: String, enum: ['pdf', 'video', 'link', 'article', 'website', 'book', 'xlsx', 'xls', 'csv', 'docx', 'doc', 'pptx', 'ppt', 'zip', 'worksheet', 'toolkit', 'template', 'guide'], default: 'link' }
+    type: { type: String, enum: ['pdf', 'video', 'link', 'article', 'website', 'book', 'xlsx', 'xls', 'csv', 'docx', 'doc', 'pptx', 'ppt', 'zip', 'worksheet', 'toolkit', 'template', 'guide', 'guidelines', 'research', 'organization', 'standards'], default: 'link' }
   }],
 
   // ── callout ──
