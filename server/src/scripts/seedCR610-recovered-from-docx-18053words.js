@@ -18,9 +18,9 @@
  *   node server/src/scripts/seedCR610-recovered-from-docx-18053words.js
  */
 
-const mongoose = require('mongoose');
-const InteractiveCourse = require('../models/InteractiveCourse');
-require('dotenv').config();
+import mongoose from 'mongoose';
+import InteractiveCourse from '../models/InteractiveCourse.js';
+import 'dotenv/config';
 
 const MONGODB_URI = process.env.MONGODB_URI;
 if (!MONGODB_URI) { console.error('MONGODB_URI not set'); process.exit(1); }
