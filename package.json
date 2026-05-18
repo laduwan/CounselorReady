@@ -1,5 +1,9 @@
 {
   "dependencies": {
     "cloudinary": "^2.9.0"
+  },
+  "scripts": {
+    "check:seeds":   "node tools/check-seed.cjs",
+    "audit:courses": "node tools/audit-course-quality.cjs"
   }
 }
