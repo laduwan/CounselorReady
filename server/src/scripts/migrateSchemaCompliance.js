@@ -51,10 +51,127 @@ const VALID_RESOURCE_TYPES = new Set([
 ]);
 
 const QUESTION_TYPE_MAP = {
+  // hyphenated variants
   'multiple-choice': 'multipleChoice',
   'multi-select':    'multiSelect',
   'true-false':      'trueFalse',
+  // underscore variants (used by the sexual-health course seeds)
+  'multiple_choice': 'multipleChoice',
+  'multi_select':    'multiSelect',
+  'true_false':      'trueFalse',
 };
+
+// NBCC content-area name normalization. The schema uses abbreviated names;
+// some seeds stored the full official NBCC content area name.
+const NBCC_FULL_TO_ABBREV = {
+  'Counseling Theory/Practice and the Counseling Relationship': 'Counseling Theory/Practice',
+  'Group Dynamics and Counseling':                              'Group Dynamics',
+  'Career Development and Counseling':                          'Career Development',
+  'Research and Program Evaluation':                            'Research/Program Evaluation',
+  'Counselor Professional Identity and Practice Issues':        'Professional Identity',
+  // Identity mappings (already abbreviated — no change needed but listed for completeness)
+  'Counseling Theory/Practice':       'Counseling Theory/Practice',
+  'Human Growth and Development':     'Human Growth and Development',
+  'Social and Cultural Foundations':  'Social and Cultural Foundations',
+  'Assessment':                       'Assessment',
+  'Wellness and Prevention':          'Wellness and Prevention',
+};
+
+// Map invalid resource.type values to valid enum (including 4 new values just
+// added: guidelines, research, organization, standards).
+const RESOURCE_TYPE_MAP = {
+  // → guidelines (authoritative reference / official guidance)
+  'guideline':                'guidelines',
+  'ethics code':              'guidelines',
+  'treatment guide':          'guidelines',
+  'framework':                'guidelines',
+  'professional development': 'guidelines',
+  'continuing education':     'guidelines',
+  'education':                'guidelines',
+  'ethics':                   'guidelines',
+  'training':                 'guidelines',
+  'professional':             'guidelines',
+  'clinical resource':        'guidelines',
+  // → research (scholarly / written / report content)
+  'publication':              'research',
+  'commentary':               'research',
+  'report':                   'research',
+  'factsheet':                'research',
+  'document':                 'research',
+  // → organization (entities / external sites)
+  'professional organization':'organization',
+  'government':               'organization',
+  'database':                 'organization',
+  'resource center':          'organization',
+  'program':                  'organization',
+  // → standards (regulatory / competency docs)
+  'competencies':             'standards',
+  // → worksheet (downloadable practice tools)
+  'card':                     'worksheet',
+  'checklist':                'worksheet',
+  'clinical tool':            'worksheet',
+  // → link (generic pointers)
+  'resource':                 'link',
+  'reference':                'link',
+  'information':              'link',
+};
+
+// CE-hour-based pricing matrix per Ke's spec.
+//   1 CE   → free,           $0
+//   2 CE   → professional,   $29
+//   3 CE   → professional,   $39
+//   4 CE   → premium,        $78
+//   5 CE   → premium,        $88
+//   6+ CE  → premium,        $98
+//
+// accessType is "subscription" for paid courses because subscriber plans
+// include them based on per-hour inclusion rules. The price field holds the
+// individual-purchase price for non-subscribers.
+function pricingForCEHours(ce) {
+  const h = Math.round(ce || 0);
+  if (h <= 0)  return null;
+  if (h === 1) return { accessType: 'free',         pricingTier: 'free',         price: 0   };
+  if (h === 2) return { accessType: 'subscription', pricingTier: 'professional', price: 29  };
+  if (h === 3) return { accessType: 'subscription', pricingTier: 'professional', price: 39  };
+  if (h === 4) return { accessType: 'subscription', pricingTier: 'premium',      price: 78  };
+  if (h === 5) return { accessType: 'subscription', pricingTier: 'premium',      price: 88  };
+  return       { accessType: 'subscription', pricingTier: 'premium',      price: 98  }; // 6+
+}
+
+// Generate a description draft from title + objectives + tags. Used only when
+// the description field is missing or empty (validation requires it). The draft
+// is suffixed with a marker so you can find these in admin and edit them.
+function draftDescription(course) {
+  const title = (course.title || '').replace(/^(Module|Section)\s+\d+:\s*/i, '').trim();
+  const ce = course.ceHours || course.ceuHours || 0;
+  const objectives = Array.isArray(course.objectives) ? course.objectives : [];
+  const tags = Array.isArray(course.tags) ? course.tags : [];
+
+  // Lowercase the first letter of an objective so it reads naturally after "to ..."
+  const flow = (o) => {
+    if (!o || typeof o !== 'string') return '';
+    const trimmed = o.trim().replace(/\.$/, '');
+    return trimmed.charAt(0).toLowerCase() + trimmed.slice(1);
+  };
+
+  const top = objectives.slice(0, 2).map(flow).filter(Boolean);
+
+  let opener = title
+    ? `${title} is a ${ce}-hour continuing education course for licensed mental health professionals.`
+    : `This ${ce}-hour continuing education course addresses topics relevant to licensed mental health professionals.`;
+
+  let middle = '';
+  if (top.length >= 2) {
+    middle = ` Participants will learn to ${top[0]} and to ${top[1]}.`;
+  } else if (top.length === 1) {
+    middle = ` Participants will learn to ${top[0]}.`;
+  } else if (tags.length > 0) {
+    middle = ` Topics include ${tags.slice(0, 5).join(', ')}.`;
+  }
+
+  return (opener + middle + ' [AUTO-DRAFT — review and edit before publishing.]').trim();
+}
+
 
 // Apply safe fixes in-place. Returns array of human-readable change descriptions.
 function applySafeFixes(c) {
@@ -112,40 +229,74 @@ function applySafeFixes(c) {
     });
   }
 
-  return changes;
-}
+  // nbccContentAreas: normalize full NBCC names to abbreviated schema enum
+  if (Array.isArray(c.nbccContentAreas)) {
+    c.nbccContentAreas.forEach((v, i) => {
+      if (typeof v === 'string' && NBCC_FULL_TO_ABBREV[v] && NBCC_FULL_TO_ABBREV[v] !== v) {
+        const before = v;
+        c.nbccContentAreas[i] = NBCC_FULL_TO_ABBREV[v];
+        changes.push(`nbccContentAreas.${i}: "${before}" → "${c.nbccContentAreas[i]}"`);
+      }
+    });
+    c.markModified('nbccContentAreas');
+  }
 
-// Extract values that need your decision (not auto-fixed).
-function extractDecisionsNeeded(c) {
-  const issues = {};
+  // description: draft from title + objectives + tags if missing/empty
+  if (!c.description || (typeof c.description === 'string' && c.description.trim() === '')) {
+    const draft = draftDescription(c);
+    if (draft) {
+      c.description = draft;
+      changes.push(`description: auto-drafted (${draft.length} chars) — flagged for your review`);
+    }
+  }
 
-  // Invalid resource type values
-  const badResTypes = new Map(); // type → list of paths
+  // resources[].type: map invalid values to the (now-expanded) enum.
+  // Applied platform-wide — same fix everywhere, no risk of overwriting
+  // intentional values since the destination values are semantically equal.
   if (Array.isArray(c.sections)) {
     c.sections.forEach((s, si) => {
       (s.contentBlocks || []).forEach((b, bi) => {
         if (Array.isArray(b.resources)) {
           b.resources.forEach((r, ri) => {
-            if (r && r.type && !VALID_RESOURCE_TYPES.has(r.type)) {
-              if (!badResTypes.has(r.type)) badResTypes.set(r.type, []);
-              badResTypes.get(r.type).push(`s${si}.b${bi}.r${ri}`);
+            if (r && r.type) {
+              const lower = String(r.type).toLowerCase();
+              if (RESOURCE_TYPE_MAP[lower]) {
+                const before = r.type;
+                r.type = RESOURCE_TYPE_MAP[lower];
+                changes.push(`sections.${si}.contentBlocks.${bi}.resources.${ri}.type: "${before}" → "${r.type}"`);
+              }
             }
           });
         }
       });
     });
   }
-  if (badResTypes.size > 0) issues.invalidResourceTypes = badResTypes;
 
-  // accessType: "professional"
-  if (c.accessType === 'professional') issues.accessTypeProfessional = true;
-
-  // Missing description
-  if (!c.description || (typeof c.description === 'string' && c.description.trim() === '')) {
-    issues.missingDescription = true;
+  // Pricing: only re-derive when accessType is currently invalid (i.e., this
+  // course is blocked because of accessType). Scope per your "a" answer:
+  // don't overwrite pricing on courses that are already saving cleanly.
+  const validAccessTypes = new Set(['free', 'subscription', 'purchase']);
+  if (c.accessType && !validAccessTypes.has(c.accessType)) {
+    const ce = c.ceHours || c.ceuHours || 0;
+    const p = pricingForCEHours(ce);
+    if (p) {
+      const before = `${c.accessType}/${c.pricingTier || '?'}/$${c.price || 0}`;
+      c.accessType  = p.accessType;
+      c.pricingTier = p.pricingTier;
+      c.price       = p.price;
+      changes.push(`pricing: ${before} → ${p.accessType}/${p.pricingTier}/$${p.price}  (${ce} CE)`);
+    }
   }
 
-  return issues;
+  return changes;
+}
+
+// Extract values that need your decision (not auto-fixed).
+function extractDecisionsNeeded(c) {
+  // After all safe fixes are applied (resource type mapping, pricing matrix,
+  // description drafting, NBCC normalization, etc.), only truly unexpected
+  // issues should remain. This function is now a catch-all reporter.
+  return {};
 }
 
 async function main() {
@@ -203,75 +354,29 @@ async function main() {
       console.log('  DECISIONS NEEDED');
       console.log('═'.repeat(72));
 
-      // Aggregate
-      const resTypeMap = new Map();          // bad type → list of course codes
-      const profAccessCourses = [];
-      const missingDescCourses = [];
-      const otherErrors = new Map();          // error type → list of {code, path, message}
-
+      // After Phase 2, only truly unexpected errors should remain. List them.
+      const otherErrors = new Map();
       for (const b of blocked) {
-        if (b.decisionIssues.invalidResourceTypes) {
-          for (const t of b.decisionIssues.invalidResourceTypes.keys()) {
-            if (!resTypeMap.has(t)) resTypeMap.set(t, []);
-            resTypeMap.get(t).push(b.code);
-          }
-        }
-        if (b.decisionIssues.accessTypeProfessional) profAccessCourses.push(b.code);
-        if (b.decisionIssues.missingDescription) missingDescCourses.push(b.code);
-
-        // Catch-all: any error path not covered by extractDecisionsNeeded
         for (const [path, err] of Object.entries(b.allErrors)) {
-          const isResource = path.includes('.resources.') && path.endsWith('.type');
-          const isAccessType = path === 'accessType';
-          const isDescription = path === 'description';
-          if (isResource || isAccessType || isDescription) continue;
           const key = `${path}: ${err.kind}`;
           if (!otherErrors.has(key)) otherErrors.set(key, []);
-          otherErrors.get(key).push({ code: b.code, value: err.value, msg: err.message });
+          otherErrors.get(key).push({ code: b.code, value: err.value });
         }
       }
-
-      // (A) Resource types
-      if (resTypeMap.size > 0) {
-        console.log('\n[A]  resources[].type: invalid enum values');
-        console.log('     Valid enum: pdf, video, link, article, website, book,');
-        console.log('                 xlsx, xls, csv, docx, doc, pptx, ppt, zip,');
-        console.log('                 worksheet, toolkit, template, guide');
-        const sortedTypes = [...resTypeMap.entries()].sort((a, b) => b[1].length - a[1].length);
-        for (const [type, codes] of sortedTypes) {
-          console.log(`     "${type}"`.padEnd(36) + ` used by ${codes.length} course${codes.length > 1 ? 's' : ''}:`);
-          for (const c of codes.slice(0, 4)) console.log(`         ${c}`);
-          if (codes.length > 4) console.log(`         (+ ${codes.length - 4} more)`);
-        }
-      }
-
-      // (B) accessType professional
-      if (profAccessCourses.length > 0) {
-        console.log(`\n[B]  accessType: "professional" — ${profAccessCourses.length} course(s)`);
-        console.log('     Valid options: "free", "subscription", "purchase"');
-        for (const c of profAccessCourses) console.log(`     ${c}`);
-      }
-
-      // (C) Missing descriptions
-      if (missingDescCourses.length > 0) {
-        console.log(`\n[C]  description: missing — ${missingDescCourses.length} course(s)`);
-        for (const c of missingDescCourses) console.log(`     ${c}`);
-      }
-
-      // (D) Other errors (nbccContentAreas, anything unexpected)
       if (otherErrors.size > 0) {
-        console.log(`\n[D]  Other validation errors:`);
+        console.log('\nUnexpected remaining errors:');
         for (const [key, items] of otherErrors.entries()) {
-          console.log(`     ${key}  (${items.length} course${items.length > 1 ? 's' : ''})`);
+          console.log(`  ${key}  (${items.length} course${items.length > 1 ? 's' : ''})`);
           for (const i of items.slice(0, 3)) {
             const v = typeof i.value === 'string' ? `"${i.value}"` : JSON.stringify(i.value);
-            console.log(`         ${i.code}  value=${v?.slice(0, 60)}`);
+            console.log(`      ${i.code}  value=${v?.slice(0, 80)}`);
           }
-          if (items.length > 3) console.log(`         (+ ${items.length - 3} more)`);
+          if (items.length > 3) console.log(`      (+ ${items.length - 3} more)`);
         }
+        console.log('\nReport back — these are anomalies I didn\'t plan for.');
+      } else {
+        console.log('\nAll remaining blocks are unexpected anomalies; report any errors above.');
       }
-
-      console.log('\nReport these back. After I know what you want each becomes, Phase 2 finishes the cleanup.');
     }
 
   } finally {
