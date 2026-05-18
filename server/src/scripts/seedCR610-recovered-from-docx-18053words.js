@@ -19,7 +19,7 @@
  */
 
 import mongoose from 'mongoose';
-import InteractiveCourse from '../models/InteractiveCourse.js';
+import { Course as InteractiveCourse } from '../models/InteractiveCourse.js';
 import 'dotenv/config';
 
 const MONGODB_URI = process.env.MONGODB_URI;
