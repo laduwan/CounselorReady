@@ -412,20 +412,80 @@ const CourseSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 // Pre-save hook to calculate totals
+//
+// wordCount counts every word of educational content that an ACEP/NBCC
+// reviewer would credit toward the seat-time word target — not just the
+// prose in text blocks. That includes knowledge-check stems, options,
+// and explanations; final-assessment questions; and the references list.
+// Block titles and pure metadata (description, objectives, target audience)
+// are deliberately excluded because they're not part of the instructional flow.
 CourseSchema.pre('save', function(next) {
   this.totalEstimatedTime = this.sections.reduce((sum, s) => sum + (s.estimatedTime || 15), 0);
   this.totalContentBlocks = this.sections.reduce((sum, s) => sum + s.contentBlocks.length, 0);
-  this.totalQuizQuestions = this.sections.reduce((sum, s) => sum + (s.quizQuestions?.length || 0), 0) 
+  this.totalQuizQuestions = this.sections.reduce((sum, s) => sum + (s.quizQuestions?.length || 0), 0)
     + (this.assessment?.questions?.length || 0);
-  // Calculate word count from all content blocks
+
+  // ── word-count helpers ───────────────────────────────────────────────
+  const wcOf = (s) => {
+    if (typeof s !== 'string' || !s) return 0;
+    const plain = s.replace(/<[^>]+>/g, ' ').replace(/&\w+;/g, ' ').trim();
+    return plain ? plain.split(/\s+/).filter(w => w.length > 0).length : 0;
+  };
+  const wcQuestion = (q) => {
+    if (!q || typeof q !== 'object') return 0;
+    let n = wcOf(q.question || q.prompt || '');
+    n += (q.options || []).reduce((sum, o) => sum + wcOf(typeof o === 'string' ? o : (o?.text || '')), 0);
+    n += wcOf(q.explanation || q.rationale || '');
+    return n;
+  };
+
   let wc = 0;
+
+  // (1) Prose in content blocks (preserves the original behavior)
   this.sections.forEach(s => {
     (s.contentBlocks || []).forEach(b => {
-      const txt = b.textContent || b.content || b.html || b.body || '';
-      const plain = txt.replace(/<[^>]+>/g, ' ').replace(/&\w+;/g, ' ').trim();
-      if (plain) wc += plain.split(/\s+/).filter(w => w.length > 0).length;
+      wc += wcOf(b.textContent || b.content || b.html || b.body || '');
+
+      // (2) Knowledge-check and quiz block questions live inside contentBlocks
+      if (Array.isArray(b.questions)) {
+        b.questions.forEach(q => { wc += wcQuestion(q); });
+      }
     });
   });
+
+  // (3) Final-assessment questions (separate top-level field)
+  if (this.assessment && Array.isArray(this.assessment.questions)) {
+    this.assessment.questions.forEach(q => { wc += wcQuestion(q); });
+  }
+
+  // (4) Section-level quizQuestions array (legacy field, still in schema)
+  this.sections.forEach(s => {
+    (s.quizQuestions || []).forEach(q => { wc += wcQuestion(q); });
+  });
+
+  // (5) References list — scholarly attributions are part of the educational record
+  if (Array.isArray(this.references)) {
+    this.references.forEach(r => {
+      wc += wcOf(r.title) + wcOf(r.author) + wcOf(String(r.year || '')) + wcOf(r.source);
+    });
+  }
+
+  // (6) Learning objectives — instructional content shown to the learner at course start
+  if (Array.isArray(this.objectives)) {
+    this.objectives.forEach(o => { wc += wcOf(o); });
+  }
+
+  // (7) Section/module titles and divider title/subtitle — these are visible in the
+  //     reading flow and contribute to the structural instructional content
+  this.sections.forEach(s => {
+    wc += wcOf(s.title || '');
+    (s.contentBlocks || []).forEach(b => {
+      if (b.type === 'sectionDivider') {
+        wc += wcOf(b.title || '') + wcOf(b.subtitle || '');
+      }
+    });
+  });
+
   this.wordCount = wc;
   next();
 });
