@@ -731,7 +731,8 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
             'subscription.plan': plan,
             'subscription.status': 'active',
             'subscription.currentPeriodStart': new Date(),
-            'subscription.currentPeriodEnd': new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+            'subscription.currentPeriodEnd': new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+            'subscription.monthlyAmountCents': session.amount_total || 0
           });
           const subscriber = await User.findById(userId).select('email profile.firstName');
           logActivity(ACTIVITY_TYPES.PAYMENT_SUCCEEDED, {
@@ -895,7 +896,8 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
           const wasRecovery = user.subscription?.status === 'past_due';
           const updateFields = {
             'subscription.status': 'active',
-            'subscription.currentPeriodEnd': new Date(invoice.lines.data[0]?.period?.end * 1000 || Date.now() + 30 * 24 * 60 * 60 * 1000)
+            'subscription.currentPeriodEnd': new Date(invoice.lines.data[0]?.period?.end * 1000 || Date.now() + 30 * 24 * 60 * 60 * 1000),
+            'subscription.monthlyAmountCents': invoice.amount_paid || 0
           };
 
           if (wasRecovery) {
