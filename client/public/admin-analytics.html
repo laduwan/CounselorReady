@@ -214,6 +214,51 @@
         </div>
       </div>
       
+      <!-- Revenue Row -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8" id="revenueRow">
+        <!-- Est. MRR -->
+        <div class="bg-white rounded-xl border border-burgundy-100 p-6">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-sm font-medium text-forest-600">Est. MRR</h3>
+            <span class="text-xs text-forest-500">From active plans</span>
+          </div>
+          <div class="flex items-end gap-2">
+            <span id="revMRR" class="text-4xl font-bold text-burgundy-800">--</span>
+          </div>
+          <p class="mt-2 text-sm text-forest-500">monthly recurring revenue</p>
+        </div>
+        <!-- Active Subscribers -->
+        <div class="bg-white rounded-xl border border-burgundy-100 p-6">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-sm font-medium text-forest-600">Active Subscribers</h3>
+            <span class="text-xs text-forest-500">Paid plans</span>
+          </div>
+          <div class="flex items-end gap-2">
+            <span id="revActive" class="text-4xl font-bold text-burgundy-800">--</span>
+          </div>
+          <p class="mt-2 text-sm text-forest-500"><span id="revPastDue">--</span> past due</p>
+        </div>
+        <!-- Plan Breakdown -->
+        <div class="bg-white rounded-xl border border-burgundy-100 p-6">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-sm font-medium text-forest-600">Plan Mix</h3>
+            <span class="text-xs text-forest-500">Active only</span>
+          </div>
+          <div id="revPlanMix" class="space-y-1.5 text-sm text-forest-700">--</div>
+        </div>
+        <!-- Stripe Balance -->
+        <div class="bg-white rounded-xl border border-burgundy-100 p-6">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-sm font-medium text-forest-600">Stripe Balance</h3>
+            <span class="text-xs text-forest-500">Available</span>
+          </div>
+          <div class="flex items-end gap-2">
+            <span id="revStripeBalance" class="text-4xl font-bold text-burgundy-800">--</span>
+          </div>
+          <p class="mt-2 text-sm text-forest-500"><span id="revStripePending">--</span> pending</p>
+        </div>
+      </div>
+
       <!-- Detailed Ratings -->
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         
@@ -531,8 +576,35 @@
       checkAuth();
       loadAnalytics();
       loadActivity();
+      loadRevenue();
     });
     
+    async function loadRevenue() {
+      const token = localStorage.getItem('token');
+      try {
+        const r = await fetch(`${API_URL}/api/admin/stripe/overview`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!r.ok) throw new Error('Failed');
+        const { data } = await r.json();
+        document.getElementById('revMRR').textContent = '$' + (data.estimatedMRR || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        document.getElementById('revActive').textContent = data.subscribers?.active ?? '--';
+        document.getElementById('revPastDue').textContent = data.subscribers?.pastDue ?? 0;
+        const planPrices = { starter: 19.99, professional: 29.99, vip: 49.99 };
+        const plans = data.plans || {};
+        document.getElementById('revPlanMix').innerHTML = Object.keys(plans).length
+          ? Object.entries(plans).map(([p, n]) =>
+              `<div class="flex justify-between"><span class="capitalize">${p}</span><span class="font-semibold">${n} × $${planPrices[p] || '?'}</span></div>`
+            ).join('')
+          : '<span class="text-forest-400 text-xs">No active plans</span>';
+        const bal = data.stripeBalance;
+        document.getElementById('revStripeBalance').textContent = bal ? '$' + bal.available.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : 'N/A';
+        document.getElementById('revStripePending').textContent = bal ? '$' + bal.pending.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' pending' : '';
+      } catch (e) {
+        document.getElementById('revenueRow').innerHTML = `<div class="col-span-4 text-sm text-forest-400 text-center py-2">Revenue data unavailable</div>`;
+      }
+    }
+
     function checkAuth() {
       const token = localStorage.getItem('token');
       const user = JSON.parse(localStorage.getItem('user') || '{}');
