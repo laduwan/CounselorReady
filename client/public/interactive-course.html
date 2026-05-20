@@ -3820,6 +3820,12 @@ function loadCourse(data) {
         msgEl.textContent = 'This course requires a subscription. Subscribe for unlimited access to all courses and CE tracking.';
       }
     }
+    if (window.posthog) {
+      posthog.capture('paywall_hit', {
+        course_slug: crSlugOrId(),
+        reason: course._freeHoursExhausted ? 'free_hours_exhausted' : 'subscription_required'
+      });
+    }
     return; // Don't render stripped content
   }
 
@@ -7085,6 +7091,15 @@ function crSyncSection(sectionIndex) {
       timeSpent: 0
     })
   }).catch(() => {});
+
+  if (isComplete && window.posthog) {
+    posthog.capture('section_completed', {
+      course_slug: id,
+      course_title: course?.title,
+      section_index: sectionIndex,
+      section_title: section?.title || section?.sectionTitle || ''
+    });
+  }
 }
 
 function restoreProgress() {
