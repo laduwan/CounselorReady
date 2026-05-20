@@ -65,6 +65,7 @@ body{font-family:'Lato',sans-serif;background:var(--stone);color:#2A2A2A;line-he
 @media print{.hdr,.wiz-card,.output-actions,.privacy,.footer{display:none !important}.output{box-shadow:none;border:1px solid #ccc}.output-hdr{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
 </style>
 <script src="/js/cr-gtag.js"></script>
+<script>!function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(a!==void 0?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return a!="posthog"&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+" (stub)"},o="capture identify alias people.set people.set_once set_config register register_once unregister opt_out_capturing has_opted_out_capturing opt_in_capturing reset isFeatureEnabled onFeatureFlags getFeatureFlag getFeatureFlagPayload reloadFeatureFlags group updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures getActiveMatchingSurveys getSurveys onSessionId".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);posthog.init("phc_rRGb8TPVl8lDYnD4M2HMGGuBBkL9whGzghD5FEX20Vb",{api_host:"https://us.i.posthog.com",autocapture:false});</script>
 </head>
 <body>
 
@@ -215,7 +216,7 @@ function render(){
     :`<button class="btn btn-next" onclick="step++;render()">Next</button>`}`;
 }
 
-function generate(){
+function generate(){if(window.posthog)posthog.capture('tool_used',{tool:'consent-generator'});
   const c=D;
   const name=c.clinName||'[Clinician Name]';
   const creds=c.clinCreds?', '+c.clinCreds:'';
