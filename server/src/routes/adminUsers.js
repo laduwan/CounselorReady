@@ -5,6 +5,7 @@
  */
 // adminUsers.js — Admin user management, stats, activity, hardship
 import express from 'express';
+import mongoose from 'mongoose';
 import User from '../models/User.js';
 import Course from '../models/Course.js';
 import { Course as InteractiveCourse, CourseProgress } from '../models/InteractiveCourse.js';
@@ -925,26 +926,30 @@ router.get('/users/:userId/enrollments', protect, adminOnly, async (req, res) =>
 // POST /users/:userId/enroll — enroll user in a course
 router.post('/users/:userId/enroll', protect, adminOnly, async (req, res) => {
   try {
-    const { userId } = req.params;
+    const userId = new mongoose.Types.ObjectId(req.params.userId);
     const { courseId } = req.body;
     if (!courseId) return res.status(400).json({ error: 'courseId required' });
-    const course = await InteractiveCourse.findById(courseId).select('_id title slug').lean();
+
+    const courseObjId = new mongoose.Types.ObjectId(courseId);
+    const course = await InteractiveCourse.findById(courseObjId).select('_id title slug').lean();
     if (!course) return res.status(404).json({ error: 'Course not found' });
-    const existing = await UserCourseProgress.findOne({ userId, courseId });
+
+    const existing = await UserCourseProgress.findOne({ userId, courseId: courseObjId });
     if (existing) return res.status(400).json({ error: 'User already enrolled in this course' });
+
     await UserCourseProgress.create({
       userId,
-      courseId,
-      status: 'enrolled',
-      enrolledAt: new Date(),
-      sectionsProgress: [],
-      completedSections: []
+      courseId: courseObjId,
+      status: 'not_started',
+      lastAccessedAt: new Date()
     });
+
     console.log(`Admin enrolled user ${userId} in course ${course.slug || courseId}`);
     res.json({ message: `User enrolled in "${course.title}" successfully` });
   } catch (error) {
-    console.error('Admin enroll error:', error);
-    res.status(500).json({ error: 'Failed to enroll user' });
+    console.error('Admin enroll error:', error.message, error.code);
+    if (error.code === 11000) return res.status(400).json({ error: 'User already enrolled in this course' });
+    res.status(500).json({ error: 'Failed to enroll user', detail: error.message });
   }
 });
 
