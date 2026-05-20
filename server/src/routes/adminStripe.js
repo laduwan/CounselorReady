@@ -26,7 +26,8 @@ router.get('/overview', protect, requireAdmin, async (req, res) => {
       pastDueSubscribers,
       canceledSubscribers,
       planCounts,
-      mrrAggregate
+      mrrAggregate,
+      courseSalesAggregate
     ] = await Promise.all([
       User.countDocuments({ 'subscription.plan': { $ne: 'free' } }),
       User.countDocuments({ 'subscription.status': 'active', 'subscription.plan': { $ne: 'free' } }),
@@ -40,6 +41,11 @@ router.get('/overview', protect, requireAdmin, async (req, res) => {
       User.aggregate([
         { $match: { 'subscription.status': 'active', 'subscription.monthlyAmountCents': { $gt: 0 } } },
         { $group: { _id: null, totalCents: { $sum: '$subscription.monthlyAmountCents' } } }
+      ]),
+      // One-time course purchase revenue
+      User.aggregate([
+        { $unwind: '$purchasedCourses' },
+        { $group: { _id: null, total: { $sum: '$purchasedCourses.amount' }, count: { $sum: 1 } } }
       ])
     ]);
 
@@ -81,8 +87,12 @@ router.get('/overview', protect, requireAdmin, async (req, res) => {
           canceled: canceledSubscribers
         },
         plans: planBreakdown,
-        estimatedMRR: realMRR,          // actual charged (post-discount) — use this
-        grossMRR: Math.round(grossMRR * 100) / 100, // pre-discount estimate — for reference only
+        estimatedMRR: realMRR,
+        grossMRR: Math.round(grossMRR * 100) / 100,
+        courseSales: {
+          total: Math.round((courseSalesAggregate[0]?.total || 0) * 100) / 100,
+          count: courseSalesAggregate[0]?.count || 0
+        },
         stripeBalance
       }
     });
