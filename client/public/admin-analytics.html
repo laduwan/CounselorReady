@@ -215,7 +215,7 @@
       </div>
       
       <!-- Revenue Row -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8" id="revenueRow">
+      <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6 mb-8" id="revenueRow">
         <!-- Est. MRR -->
         <div class="bg-white rounded-xl border border-burgundy-100 p-6">
           <div class="flex items-center justify-between mb-4">
@@ -245,6 +245,17 @@
             <span class="text-xs text-forest-500">Active only</span>
           </div>
           <div id="revPlanMix" class="space-y-1.5 text-sm text-forest-700">--</div>
+        </div>
+        <!-- Course Sales -->
+        <div class="bg-white rounded-xl border border-burgundy-100 p-6">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-sm font-medium text-forest-600">Course Sales</h3>
+            <span class="text-xs text-forest-500">One-time</span>
+          </div>
+          <div class="flex items-end gap-2">
+            <span id="revCourseSales" class="text-4xl font-bold text-burgundy-800">--</span>
+          </div>
+          <p class="mt-2 text-sm text-forest-500"><span id="revCourseCount">--</span> purchases</p>
         </div>
         <!-- Stripe Balance -->
         <div class="bg-white rounded-xl border border-burgundy-100 p-6">
@@ -599,6 +610,8 @@
             ).join('')
           : '<span class="text-forest-400 text-xs">No active plans</span>';
         const bal = data.stripeBalance;
+        document.getElementById('revCourseSales').textContent = '$' + (data.courseSales?.total || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        document.getElementById('revCourseCount').textContent = data.courseSales?.count ?? 0;
         document.getElementById('revStripeBalance').textContent = bal ? '$' + bal.available.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : 'N/A';
         document.getElementById('revStripePending').textContent = bal ? '$' + bal.pending.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' pending' : '';
       } catch (e) {
