@@ -746,6 +746,16 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
           }).catch(() => {});
           console.log(`Subscription activated for user ${userId}: ${plan}`);
 
+          // SMS: new subscription
+          if (twilioClient && process.env.ADMIN_PHONE) {
+            const amount = session.amount_total ? `$${(session.amount_total / 100).toFixed(2)}` : 'discounted';
+            twilioClient.messages.create({
+              body: `CounselorReady: New Subscription\n${subscriber?.email}\nPlan: ${plan} · ${amount}/mo`,
+              from: process.env.TWILIO_PHONE_NUMBER,
+              to: process.env.ADMIN_PHONE
+            }).catch(e => console.error('SMS sub error:', e));
+          }
+
           // [REWARDS] Referral paid conversion (subscription) — fire-and-forget, dedup'd
           processReferralPaidConversion(userId)
             .then(r => {
