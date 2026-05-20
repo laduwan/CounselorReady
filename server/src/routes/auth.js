@@ -20,6 +20,11 @@ import { verify2FACode, verifyBackupCode } from '../services/twoFactorService.js
 import Notification from '../models/Notification.js';
 import { sendRealtimeNotification } from './notifications.js';
 import { processReferralSignup } from '../services/rewardsService.js';
+import twilio from 'twilio';
+
+const twilioClient = process.env.TWILIO_ACCOUNT_SID
+  ? twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN)
+  : null;
 
 const router = express.Router();
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -173,6 +178,17 @@ router.post('/register', async (req, res) => {
         });
       }
     } catch (phErr) { console.error('PostHog user_registered failed:', phErr); }
+
+    // SMS: new registration
+    if (twilioClient && process.env.ADMIN_PHONE) {
+      const name = `${user.profile?.firstName || ''} ${user.profile?.lastName || ''}`.trim() || 'Unknown';
+      twilioClient.messages.create({
+        body: `CounselorReady: New Registration\n${name} (${user.email})\n${user.profile?.licenseType || ''} · ${user.profile?.licenseState || ''}`,
+        from: process.env.TWILIO_PHONE_NUMBER,
+        to: process.env.ADMIN_PHONE
+      }).catch(e => console.error('SMS reg error:', e));
+    }
+
     res.status(201).json({
       message: 'Registration successful. Please check your email to verify your account.',
       token,
