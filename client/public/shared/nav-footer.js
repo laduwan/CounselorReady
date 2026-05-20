@@ -266,6 +266,12 @@
           document.getElementById('adminMob')?.classList.remove('hidden');
           const ml = document.getElementById('menuAdminLink');
           if (ml) ml.style.display = 'flex';
+          // Point "Courses" nav tab to admin course management for admins
+          document.querySelectorAll('a.cr-nav-tab, a[href="/courses.html"]').forEach(a => {
+            if (a.textContent.trim() === 'Courses') {
+              a.href = '/admin-courses.html';
+            }
+          });
         }
 
         localStorage.setItem('user', JSON.stringify(u));
