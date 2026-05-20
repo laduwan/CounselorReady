@@ -511,6 +511,42 @@ router.post('/users/:userId/impersonate', protect, adminOnly, async (req, res) =
   }
 });
 
+// @route   POST /api/admin/users/:userId/enroll
+// @desc    Enroll a user in an interactive course
+// @access  Admin only
+router.post('/users/:userId/enroll', protect, adminOnly, async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { courseId } = req.body;
+
+    if (!courseId) {
+      return res.status(400).json({ error: 'courseId is required' });
+    }
+
+    const course = await InteractiveCourse.findById(courseId);
+    if (!course) {
+      return res.status(404).json({ error: 'Course not found' });
+    }
+
+    const existing = await UserCourseProgress.findOne({ userId, courseId });
+    if (existing) {
+      return res.status(400).json({ error: 'User already enrolled in this course' });
+    }
+
+    await UserCourseProgress.create({
+      userId,
+      courseId,
+      status: 'enrolled',
+      enrolledAt: new Date()
+    });
+
+    res.json({ message: 'User enrolled successfully' });
+  } catch (error) {
+    console.error('Admin enroll user error:', error);
+    res.status(500).json({ error: 'Failed to enroll user' });
+  }
+});
+
 // @route   DELETE /api/admin/users/:userId
 // @desc    Delete user account and all related data
 // @access  Admin only
