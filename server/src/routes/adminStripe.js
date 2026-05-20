@@ -25,7 +25,8 @@ router.get('/overview', protect, requireAdmin, async (req, res) => {
       activeSubscribers,
       pastDueSubscribers,
       canceledSubscribers,
-      planCounts
+      planCounts,
+      mrrAggregate
     ] = await Promise.all([
       User.countDocuments({ 'subscription.plan': { $ne: 'free' } }),
       User.countDocuments({ 'subscription.status': 'active', 'subscription.plan': { $ne: 'free' } }),
@@ -34,16 +35,25 @@ router.get('/overview', protect, requireAdmin, async (req, res) => {
       User.aggregate([
         { $match: { 'subscription.plan': { $ne: 'free' }, 'subscription.status': 'active' } },
         { $group: { _id: '$subscription.plan', count: { $sum: 1 } } }
+      ]),
+      // Real MRR from actual charged amounts (post-discount)
+      User.aggregate([
+        { $match: { 'subscription.status': 'active', 'subscription.monthlyAmountCents': { $gt: 0 } } },
+        { $group: { _id: null, totalCents: { $sum: '$subscription.monthlyAmountCents' } } }
       ])
     ]);
 
-    // Calculate estimated MRR from plan counts
+    // Real MRR from actual charged amounts
+    const realMRRCents = mrrAggregate[0]?.totalCents || 0;
+    const realMRR = Math.round(realMRRCents) / 100;
+
+    // Gross estimate (for comparison) from plan counts — includes $0 discount subs
     const planPrices = { starter: 19.99, professional: 29.99, vip: 49.99 };
-    let estimatedMRR = 0;
+    let grossMRR = 0;
     const planBreakdown = {};
     planCounts.forEach(p => {
       planBreakdown[p._id] = p.count;
-      estimatedMRR += (planPrices[p._id] || 0) * p.count;
+      grossMRR += (planPrices[p._id] || 0) * p.count;
     });
 
     // Get Stripe balance if available
@@ -71,7 +81,8 @@ router.get('/overview', protect, requireAdmin, async (req, res) => {
           canceled: canceledSubscribers
         },
         plans: planBreakdown,
-        estimatedMRR: Math.round(estimatedMRR * 100) / 100,
+        estimatedMRR: realMRR,          // actual charged (post-discount) — use this
+        grossMRR: Math.round(grossMRR * 100) / 100, // pre-discount estimate — for reference only
         stripeBalance
       }
     });

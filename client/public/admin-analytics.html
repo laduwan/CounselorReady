@@ -219,13 +219,13 @@
         <!-- Est. MRR -->
         <div class="bg-white rounded-xl border border-burgundy-100 p-6">
           <div class="flex items-center justify-between mb-4">
-            <h3 class="text-sm font-medium text-forest-600">Est. MRR</h3>
-            <span class="text-xs text-forest-500">From active plans</span>
+            <h3 class="text-sm font-medium text-forest-600">Net MRR</h3>
+            <span class="text-xs text-forest-500">After discounts</span>
           </div>
           <div class="flex items-end gap-2">
             <span id="revMRR" class="text-4xl font-bold text-burgundy-800">--</span>
           </div>
-          <p class="mt-2 text-sm text-forest-500">monthly recurring revenue</p>
+          <p class="mt-2 text-sm text-forest-500">Gross: <span id="revGrossMRR" class="text-forest-400">--</span></p>
         </div>
         <!-- Active Subscribers -->
         <div class="bg-white rounded-xl border border-burgundy-100 p-6">
@@ -588,6 +588,7 @@
         if (!r.ok) throw new Error('Failed');
         const { data } = await r.json();
         document.getElementById('revMRR').textContent = '$' + (data.estimatedMRR || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        document.getElementById('revGrossMRR').textContent = '$' + (data.grossMRR || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         document.getElementById('revActive').textContent = data.subscribers?.active ?? '--';
         document.getElementById('revPastDue').textContent = data.subscribers?.pastDue ?? 0;
         const planPrices = { starter: 19.99, professional: 29.99, vip: 49.99 };

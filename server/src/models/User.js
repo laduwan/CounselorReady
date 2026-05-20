@@ -113,6 +113,10 @@ const userSchema = new mongoose.Schema({
     paymentFailureCount: { type: Number, default: 0 },
     paymentRecoveredAt: { type: Date },
 
+    // Actual monthly amount charged after discounts (in cents). Updated on every invoice.paid.
+    // Used for real MRR calculation — never estimate from plan name.
+    monthlyAmountCents: { type: Number, default: 0 },
+
     // Trial conversion email tracking — prevents double-sending
     trialEmailsSent: {
       type: [String],
