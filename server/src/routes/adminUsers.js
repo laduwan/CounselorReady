@@ -511,42 +511,6 @@ router.post('/users/:userId/impersonate', protect, adminOnly, async (req, res) =
   }
 });
 
-// @route   POST /api/admin/users/:userId/enroll
-// @desc    Enroll a user in an interactive course
-// @access  Admin only
-router.post('/users/:userId/enroll', protect, adminOnly, async (req, res) => {
-  try {
-    const { userId } = req.params;
-    const { courseId } = req.body;
-
-    if (!courseId) {
-      return res.status(400).json({ error: 'courseId is required' });
-    }
-
-    const course = await InteractiveCourse.findById(courseId);
-    if (!course) {
-      return res.status(404).json({ error: 'Course not found' });
-    }
-
-    const existing = await UserCourseProgress.findOne({ userId, courseId });
-    if (existing) {
-      return res.status(400).json({ error: 'User already enrolled in this course' });
-    }
-
-    await UserCourseProgress.create({
-      userId,
-      courseId,
-      status: 'enrolled',
-      enrolledAt: new Date()
-    });
-
-    res.json({ message: 'User enrolled successfully' });
-  } catch (error) {
-    console.error('Admin enroll user error:', error);
-    res.status(500).json({ error: 'Failed to enroll user' });
-  }
-});
-
 // @route   DELETE /api/admin/users/:userId
 // @desc    Delete user account and all related data
 // @access  Admin only
@@ -935,6 +899,98 @@ router.get('/hardship-export', protect, adminOnly, async (req, res) => {
   } catch (error) {
     console.error('Hardship export error:', error);
     res.status(500).json({ error: 'Failed to export hardship data' });
+  }
+});
+
+
+// ── ENROLLMENT MANAGEMENT ─────────────────────────────────────────────────────
+
+// GET /users/:userId/enrollments — list available courses for enroll modal
+router.get('/users/:userId/enrollments', protect, adminOnly, async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const [allCourses, enrolled] = await Promise.all([
+      InteractiveCourse.find({ status: 'published' }).select('_id title ceHours ceuHours slug').lean(),
+      UserCourseProgress.find({ userId }).select('courseId').lean()
+    ]);
+    const enrolledIds = new Set(enrolled.map(e => e.courseId?.toString()));
+    const availableCourses = allCourses.filter(c => !enrolledIds.has(c._id.toString()));
+    res.json({ availableCourses });
+  } catch (error) {
+    console.error('Get enrollments error:', error);
+    res.status(500).json({ error: 'Failed to load courses' });
+  }
+});
+
+// POST /users/:userId/enroll — enroll user in a course
+router.post('/users/:userId/enroll', protect, adminOnly, async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { courseId } = req.body;
+    if (!courseId) return res.status(400).json({ error: 'courseId required' });
+    const course = await InteractiveCourse.findById(courseId).select('_id title slug').lean();
+    if (!course) return res.status(404).json({ error: 'Course not found' });
+    const existing = await UserCourseProgress.findOne({ userId, courseId });
+    if (existing) return res.status(400).json({ error: 'User already enrolled in this course' });
+    await UserCourseProgress.create({
+      userId,
+      courseId,
+      status: 'enrolled',
+      enrolledAt: new Date(),
+      sectionsProgress: [],
+      completedSections: []
+    });
+    console.log(`Admin enrolled user ${userId} in course ${course.slug || courseId}`);
+    res.json({ message: `User enrolled in "${course.title}" successfully` });
+  } catch (error) {
+    console.error('Admin enroll error:', error);
+    res.status(500).json({ error: 'Failed to enroll user' });
+  }
+});
+
+// POST /users/:userId/enrollments/:courseId/complete — mark course complete
+router.post('/users/:userId/enrollments/:courseId/complete', protect, adminOnly, async (req, res) => {
+  try {
+    const { userId, courseId } = req.params;
+    const { note } = req.body;
+    const progress = await UserCourseProgress.findOne({ userId, courseId });
+    if (!progress) return res.status(404).json({ error: 'Enrollment not found' });
+    progress.status = 'completed';
+    progress.completedAt = new Date();
+    if (note) progress.adminNote = note;
+    await progress.save();
+    res.json({ message: 'Course marked as complete' });
+  } catch (error) {
+    console.error('Admin mark complete error:', error);
+    res.status(500).json({ error: 'Failed to mark course as complete' });
+  }
+});
+
+// POST /users/:userId/enrollments/:courseId/reset — reset progress
+router.post('/users/:userId/enrollments/:courseId/reset', protect, adminOnly, async (req, res) => {
+  try {
+    const { userId, courseId } = req.params;
+    await UserCourseProgress.findOneAndUpdate(
+      { userId, courseId },
+      { $set: { status: 'enrolled', completedAt: null, sectionsProgress: [], completedSections: [], assessmentAttempts: [] } }
+    );
+    res.json({ message: 'Progress reset successfully' });
+  } catch (error) {
+    console.error('Admin reset progress error:', error);
+    res.status(500).json({ error: 'Failed to reset progress' });
+  }
+});
+
+// DELETE /users/:userId/enrollments/:courseId — unenroll user
+router.delete('/users/:userId/enrollments/:courseId', protect, adminOnly, async (req, res) => {
+  try {
+    const { userId, courseId } = req.params;
+    const result = await UserCourseProgress.findOneAndDelete({ userId, courseId });
+    if (!result) return res.status(404).json({ error: 'Enrollment not found' });
+    res.json({ message: 'User unenrolled successfully' });
+  } catch (error) {
+    console.error('Admin unenroll error:', error);
+    res.status(500).json({ error: 'Failed to unenroll user' });
   }
 });
 
