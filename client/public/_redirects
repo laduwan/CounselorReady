@@ -3,7 +3,7 @@
 # ═══════════════════════════════════════════════════════════════
 
 # ── Root ──
-/                    /landing.html             200
+/                    /index.html               200
 
 # ── User-facing pages ──
 /dashboard           /dashboard.html           200
