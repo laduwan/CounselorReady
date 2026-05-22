@@ -2094,9 +2094,13 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
 
 .cr-section-divider {
   display: block;
-  padding: 32px 0 20px;
+  padding: 36px 28px 28px;
   margin-bottom: 28px;
   border-bottom: 1px solid var(--cr-border);
+  border-left: 4px solid var(--cr-honey);
+  border-radius: var(--cr-radius);
+  background: linear-gradient(180deg, var(--cr-tint-burg) 0%, var(--cr-burgundy-faded) 30%, transparent 100%);
+  box-shadow: 0 1px 0 var(--cr-border-subtle);
 }
 
 .cr-section-divider-number {
@@ -2473,14 +2477,15 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
   position: relative;
   margin: 24px auto;
   padding: 16px 20px;
-  border-left: 3px solid var(--cr-border);
-  border-radius: 2px;
-  background: rgba(0, 0, 0, 0.015);
+  border-left: 4px solid var(--cr-burgundy);
+  border-radius: var(--cr-radius);
+  background: var(--cr-tint-burg);
   font-family: 'Iowan Old Style', 'Charter', 'Source Serif Pro', Georgia, serif;
   font-size: 16px;
   line-height: 1.65;
   max-width: 720px;
   break-inside: avoid;
+  box-shadow: 0 1px 0 var(--cr-border-subtle);
 }
 
 .cr-callout-title,
@@ -3135,6 +3140,111 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
 
 
 /* — END PHASE 3 — */
+
+
+/* ═══════════════════════════════════════════════════════════════
+   CREADY VIEWER — PHASE 4 COSMETIC POLISH
+   May 22, 2026
+   Goals: Mindsmith-tier richness — section hero bands ready for
+   banner images, image presence (radius + shadow + caption),
+   callout accent bars + faint tints. CSS only.
+   ═══════════════════════════════════════════════════════════════ */
+
+
+/* ---- Section divider: banner-image-ready hero band variant ---- */
+.cr-section-divider.has-banner {
+  position: relative;
+  padding: 0;
+  overflow: hidden;
+  min-height: 180px;
+  display: block;
+  border-radius: var(--cr-radius);
+  border-left: 4px solid var(--cr-honey);
+  background: var(--cr-navy);
+}
+
+.cr-section-divider-banner {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.cr-section-divider-banner-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(40, 65, 87, 0.12), rgba(40, 65, 87, 0.78));
+}
+
+.cr-section-divider.has-banner .cr-section-divider-inner {
+  position: relative;
+  z-index: 2;
+  padding: 24px;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.cr-section-divider.has-banner h2,
+.cr-section-divider.has-banner p {
+  color: #fff;
+}
+
+
+/* ---- Image presence: radius + soft navy-tinted shadow ---- */
+.cr-image-block {
+  border-radius: var(--cr-radius);
+  box-shadow: 0 4px 14px rgba(40, 65, 87, 0.12);
+}
+
+.cr-image-block img {
+  border-radius: var(--cr-radius) var(--cr-radius) 0 0;
+  transition: transform var(--cr-transition);
+}
+
+.cr-image-block:hover img {
+  transform: scale(1.015);
+}
+
+.cr-image-block figcaption {
+  font-size: 0.8em;
+  font-style: italic;
+  color: var(--cr-text-secondary);
+}
+
+.cr-image-text img {
+  border-radius: var(--cr-radius);
+  box-shadow: 0 4px 14px rgba(40, 65, 87, 0.12);
+}
+
+/* Standalone figcaption inside image-text (no .cr-image-block wrapper) */
+.cr-image-text figcaption {
+  font-size: 0.8em;
+  font-style: italic;
+  color: var(--cr-text-secondary);
+  margin-top: 6px;
+}
+
+
+/* ---- Key Takeaway block: gold accent + faint tint ----
+   (Base .cr-callout was upgraded in-place above so its
+   variant rules — info/warning/ethics/clinical/tip/key —
+   continue to override the burgundy default cleanly.) */
+.cr-key-takeaway {
+  position: relative;
+  margin: 24px auto;
+  padding: 18px 22px;
+  max-width: 720px;
+  border-left: 4px solid var(--cr-gold);
+  border-radius: var(--cr-radius);
+  background: var(--cr-tint-gold);
+  box-shadow: 0 1px 0 var(--cr-border-subtle);
+}
+
+
+/* — END PHASE 4 — */
 
 </style>
 <!-- .docx parsing -->
