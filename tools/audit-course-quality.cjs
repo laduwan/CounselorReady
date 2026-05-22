@@ -39,7 +39,7 @@ const args = {
 };
 
 const MONGODB_URI       = process.env.MONGODB_URI;
-const MIN_WPCE          = Number(process.env.MIN_WPCE || 6000);
+const MIN_WPCE          = Number(process.env.MIN_WPCE || 5820);
 const AUDIT_COLLECTION  = process.env.AUDIT_COLLECTION || 'interactivecourses';
 
 if (!MONGODB_URI) {
