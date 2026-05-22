@@ -235,7 +235,15 @@ const CourseSchema = new mongoose.Schema({
   slug: { type: String, required: true, unique: true },
   description: { type: String, required: true },
   thumbnail: String,
-  
+
+  // Course-level header (CReady viewer hero banner). Phase A presentation
+  // editor writes these via PATCH /api/admin/course-presentation/:courseCode/header.
+  // CourseSchema is strict, so these MUST be declared here or Mongoose drops them.
+  headerImage: String,
+  headerImageAlt: String,
+  headerTitle: String,
+  headerSubtitle: String,
+
   // CE/Accreditation info
   ceHours: { type: Number, required: true },
   ceProvider: { type: String, default: 'NBCC ACEP #7760' },
