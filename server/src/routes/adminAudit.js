@@ -9,7 +9,7 @@ import { protect, requireAdmin } from '../middleware/auth.js';
 
 const router = express.Router();
 
-const MIN_WPCE = Number(process.env.MIN_WPCE || 6000);
+const MIN_WPCE = Number(process.env.MIN_WPCE || 5820);
 const CACHE_TTL = 60 * 60 * 1000; // 1 hour
 
 let cache = null;
