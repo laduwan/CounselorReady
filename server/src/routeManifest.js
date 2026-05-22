@@ -64,6 +64,11 @@ import groupLicensesRoutes from './routes/groupLicenses.js';
 import scholarlyArticlesRoutes from './routes/scholarlyArticles.js';
 import toolRoutes from './routes/toolRoutes.js';
 import toolAnalyticsRoutes from './routes/toolAnalytics.js';
+import adminStripeRoutes from './routes/adminStripe.js';
+import adminCouponsRoutes from './routes/adminCoupons.js';
+import organizationsRoutes from './routes/organizations.js';
+import auditKitRoutes from './routes/auditKit.js';
+import uploadsRoutes from './routes/uploads.js';
 
 /**
  * Route Manifest — add new routes here.
@@ -85,6 +90,8 @@ const ROUTE_MANIFEST = [
   ['/api/admin/courses',         bulkUploadRoutes,          'Bulk Upload'],
   ['/api/admin/stats',           adminStatsRoutes,          'Admin Stats'],
   ['/api/admin/rewards',         adminRewardsRoutes,        'Admin Rewards'],
+  ['/api/admin/stripe',          adminStripeRoutes,         'Admin Stripe'],
+  ['/api/admin/coupons',         adminCouponsRoutes,        'Admin Coupons'],
 
   // ── Features ──
   ['/api/gamification',          gamificationRoutes,        'Gamification / Achievements'],
@@ -125,6 +132,9 @@ const ROUTE_MANIFEST = [
   ['/api/scholarly-articles',    scholarlyArticlesRoutes,   'Scholarly Articles'],
   ['/api/tool-actions',          toolRoutes,                'Tool Actions'],
   ['/api/tool-analytics',        toolAnalyticsRoutes,       'Tool Analytics'],
+  ['/api/organizations',         organizationsRoutes,       'Organizations'],
+  ['/api/audit-kit',             auditKitRoutes,            'Audit Kit'],
+  ['/api/uploads',               uploadsRoutes,             'Uploads'],
 ];
 
 /**
