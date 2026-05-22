@@ -11,7 +11,7 @@
   <link rel="stylesheet" href="/css/typography.css">
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
   <script src="/js/tailwind-config.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 
   <link rel="stylesheet" href="/lib/fontawesome/css/all.min.css">
   <style>
@@ -576,6 +576,61 @@
         </div>
       </div>
 
+      <!-- Course Quality Audit -->
+      <div class="bg-white rounded-xl border p-6 mb-8">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h2 class="text-base font-semibold text-burgundy-800">Course Quality Audit</h2>
+            <p id="auditCachedAt" class="text-xs text-gray-400 mt-0.5"></p>
+          </div>
+          <button onclick="loadAudit(true)" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-burgundy-700 hover:bg-burgundy-800 text-white text-xs font-medium rounded-lg transition-colors">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h5M20 20v-5h-5M4 9a9 9 0 0114.13-3.87M20 15a9 9 0 01-14.13 3.87"/></svg>
+            Run Audit
+          </button>
+        </div>
+
+        <!-- Summary cards -->
+        <div id="auditSummary" class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6" style="display:none!important">
+          <div class="bg-stone-50 rounded-lg p-4 text-center">
+            <div id="auditTotal" class="text-3xl font-bold text-burgundy-800">--</div>
+            <div class="text-xs text-gray-500 mt-1">Total Courses</div>
+          </div>
+          <div class="bg-green-50 rounded-lg p-4 text-center">
+            <div id="auditPassing" class="text-3xl font-bold text-green-700">--</div>
+            <div class="text-xs text-gray-500 mt-1">Passing</div>
+          </div>
+          <div class="bg-red-50 rounded-lg p-4 text-center">
+            <div id="auditFailing" class="text-3xl font-bold text-red-600">--</div>
+            <div class="text-xs text-gray-500 mt-1">Failing</div>
+          </div>
+          <div class="bg-honey-50 rounded-lg p-4 text-center">
+            <div id="auditFloor" class="text-3xl font-bold text-honey-700">--</div>
+            <div class="text-xs text-gray-500 mt-1">Min Words/CE Hr</div>
+          </div>
+        </div>
+
+        <!-- Failures table -->
+        <div id="auditFailures" style="display:none">
+          <h3 class="text-sm font-semibold text-red-600 mb-2">Failing Courses</h3>
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead>
+                <tr class="border-b border-gray-100 text-left text-xs text-gray-500 uppercase tracking-wide">
+                  <th class="pb-2 pr-4">Course</th>
+                  <th class="pb-2 pr-4">CE Hrs</th>
+                  <th class="pb-2 pr-4">Words</th>
+                  <th class="pb-2">Violations</th>
+                </tr>
+              </thead>
+              <tbody id="auditFailuresBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div id="auditEmpty" class="text-sm text-gray-400 text-center py-4" style="display:none">All courses passing ✓</div>
+        <div id="auditLoading" class="text-sm text-gray-400 text-center py-4">Click "Run Audit" to check course quality</div>
+      </div>
+
     </div>
   </main>
 
@@ -616,6 +671,52 @@
         document.getElementById('revStripePending').textContent = bal ? '$' + bal.pending.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' pending' : '';
       } catch (e) {
         document.getElementById('revenueRow').innerHTML = `<div class="col-span-4 text-sm text-forest-400 text-center py-2">Revenue data unavailable</div>`;
+      }
+    }
+
+    async function loadAudit(force = false) {
+      const token = localStorage.getItem('token');
+      document.getElementById('auditLoading').textContent = 'Running audit…';
+      document.getElementById('auditLoading').style.display = '';
+      document.getElementById('auditSummary').style.cssText = 'display:none!important';
+      document.getElementById('auditFailures').style.display = 'none';
+      document.getElementById('auditEmpty').style.display = 'none';
+      try {
+        const r = await fetch(`${API_URL}/api/admin/audit${force ? '?refresh=1' : ''}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!r.ok) throw new Error('Failed');
+        const { data, cachedAt } = await r.json();
+        const { summary, failures } = data;
+
+        document.getElementById('auditCachedAt').textContent =
+          `Last run: ${new Date(cachedAt).toLocaleString()} · ${summary.total} courses checked`;
+        document.getElementById('auditTotal').textContent = summary.total;
+        document.getElementById('auditPassing').textContent = summary.passing;
+        document.getElementById('auditFailing').textContent = summary.failing;
+        document.getElementById('auditFloor').textContent = summary.minWpce.toLocaleString();
+        document.getElementById('auditSummary').style.cssText = '';
+
+        if (failures.length === 0) {
+          document.getElementById('auditEmpty').style.display = '';
+        } else {
+          document.getElementById('auditFailuresBody').innerHTML = failures.map(f => `
+            <tr class="border-b border-gray-50 hover:bg-red-50">
+              <td class="py-2 pr-4">
+                <div class="font-medium text-gray-800">${f.title}</div>
+                <div class="text-xs text-gray-400">${f.courseCode || f.slug}</div>
+              </td>
+              <td class="py-2 pr-4 text-gray-600">${f.ceHours || '--'}</td>
+              <td class="py-2 pr-4 text-gray-600">${f.wordCount ? f.wordCount.toLocaleString() : '--'}</td>
+              <td class="py-2">
+                ${f.fails.map(v => `<span class="inline-block text-xs bg-red-100 text-red-700 rounded px-1.5 py-0.5 mr-1 mb-1">${v.rule}</span>`).join('')}
+              </td>
+            </tr>`).join('');
+          document.getElementById('auditFailures').style.display = '';
+        }
+        document.getElementById('auditLoading').style.display = 'none';
+      } catch (e) {
+        document.getElementById('auditLoading').textContent = 'Audit unavailable — ' + e.message;
       }
     }
 
