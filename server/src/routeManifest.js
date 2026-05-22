@@ -1,27 +1,31 @@
 /**
  * CounselorReady Route Manifest
  * ═══════════════════════════════
- * SINGLE SOURCE OF TRUTH for all route registrations.
- * 
- * WHY THIS EXISTS:
- * Routes were being lost every time index.js was edited — imports would
- * get dropped, features would silently break. This manifest file ensures
- * that ALL routes survive any edit to index.js. 
- * 
- * index.js just calls: mountAllRoutes(app)
- * 
+ * SINGLE SOURCE OF TRUTH for declared API route registrations.
+ *
+ * NOTE — mountAllRoutes() is NOT currently used. index.js mounts manually.
+ * The manifest is consumed by verifyRoutes() in index.js as the declared
+ * set, which is cross-checked against the paths actually mounted at boot.
+ *
+ * If anyone ever adopts mountAllRoutes() to replace the manual mounts,
+ * sub-paths (e.g. '/api/admin/stats') MUST precede catch-alls
+ * (e.g. '/api/admin') in this array — otherwise the catch-all is
+ * registered first and Express will shadow the sub-paths.
+ *
  * TO ADD A NEW ROUTE:
- * 1. Create the route file in server/src/routes/
- * 2. Add it to the ROUTE_MANIFEST array below
- * 3. That's it. It auto-mounts on next deploy.
- * 
- * DO NOT mount routes directly in index.js — add them here instead.
+ *   1. Create the route file in server/src/routes/
+ *   2. Add an import + an entry to ROUTE_MANIFEST below
+ *   3. Add the matching app.use(...) to index.js
+ *   4. Boot the server — the integrity check will confirm everything mounts.
  */
 
 import authRoutes from './routes/auth.js';
 import interactiveCourseRoutes from './routes/interactiveCourseRoutes.js';
 import coursesRoutes from './routes/courses.js';
 import adminRoutes from './routes/admin.js';
+import adminAuditRoutes from './routes/adminAudit.js';
+import adminCoursesRoutes from './routes/adminCourses.js';
+import adminUsersRoutes from './routes/adminUsers.js';
 import usersRoutes from './routes/users.js';
 import certificatesRoutes from './routes/certificates.js';
 import credentialsRoutes from './routes/credentials.js';
@@ -71,10 +75,13 @@ import auditKitRoutes from './routes/auditKit.js';
 import uploadsRoutes from './routes/uploads.js';
 
 /**
- * Route Manifest — add new routes here.
+ * Route Manifest — declared route registrations.
  * Format: [mountPath, routeHandler, label]
+ *
+ * Ordering rule: all '/api/admin/<subpath>' entries MUST appear before
+ * the bare '/api/admin' catch-all entries. Sub-paths first, catch-alls last.
  */
-const ROUTE_MANIFEST = [
+export const ROUTE_MANIFEST = [
   // ── Core ──
   ['/api/auth',                  authRoutes,                'Auth'],
   ['/api/interactive-courses',   interactiveCourseRoutes,   'Interactive Courses (full pipeline)'],
@@ -85,13 +92,18 @@ const ROUTE_MANIFEST = [
   ['/api/payments',              paymentsRoutes,            'Payments'],
   ['/api/notifications',         notificationsRoutes,       'Notifications'],
 
-  // ── Admin ──
-  ['/api/admin',                 adminRoutes,               'Admin (includes courses/users/AI/stripe/coupons)'],
-  ['/api/admin/courses',         bulkUploadRoutes,          'Bulk Upload'],
+  // ── Admin sub-paths (MUST come before the '/api/admin' catch-alls) ──
   ['/api/admin/stats',           adminStatsRoutes,          'Admin Stats'],
-  ['/api/admin/rewards',         adminRewardsRoutes,        'Admin Rewards'],
   ['/api/admin/stripe',          adminStripeRoutes,         'Admin Stripe'],
   ['/api/admin/coupons',         adminCouponsRoutes,        'Admin Coupons'],
+  ['/api/admin/audit',           adminAuditRoutes,          'Admin Audit'],
+  ['/api/admin/courses',         bulkUploadRoutes,          'Admin Bulk Upload'],
+  ['/api/admin/rewards',         adminRewardsRoutes,        'Admin Rewards'],
+
+  // ── Admin catch-alls (stacked on '/api/admin') ──
+  ['/api/admin',                 adminRoutes,               'Admin (core)'],
+  ['/api/admin',                 adminCoursesRoutes,        'Admin Courses (catch-all stack)'],
+  ['/api/admin',                 adminUsersRoutes,          'Admin Users (catch-all stack)'],
 
   // ── Features ──
   ['/api/gamification',          gamificationRoutes,        'Gamification / Achievements'],
@@ -139,6 +151,10 @@ const ROUTE_MANIFEST = [
 
 /**
  * Mount all routes and log the manifest on startup.
+ *
+ * NOTE: This function is NOT currently used by index.js. index.js mounts
+ * manually. If adopting mountAllRoutes(), sub-paths MUST precede catch-alls
+ * in ROUTE_MANIFEST or they will be shadowed.
  */
 export function mountAllRoutes(app) {
   let mounted = 0;
