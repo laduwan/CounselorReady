@@ -76,6 +76,11 @@ import legacyVaultRoutes from './routes/legacyVault.js';
 import groupLicensesRoutes from './routes/groupLicenses.js';
 import scholarlyArticlesRoutes from './routes/scholarlyArticles.js';
 import adminStatsRoutes from './routes/adminStats.js';
+import adminStripeRoutes from './routes/adminStripe.js';
+import adminCouponsRoutes from './routes/adminCoupons.js';
+import organizationsRoutes from './routes/organizations.js';
+import auditKitRoutes from './routes/auditKit.js';
+import uploadsRoutes from './routes/uploads.js';
 
 // ═══════════════════════════════════════════════════════════════
 // SERVICE IMPORTS
@@ -174,6 +179,8 @@ app.use('/api/auth', authRoutes);
 app.use('/api/interactive-courses', interactiveCourseRoutes);
 app.use('/api/courses', coursesRoutes);
 app.use('/api/admin/stats', adminStatsRoutes);
+app.use('/api/admin/stripe', adminStripeRoutes);
+app.use('/api/admin/coupons', adminCouponsRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/admin/audit', adminAuditRoutes);
 app.use('/api/users', usersRoutes);
@@ -219,6 +226,9 @@ app.use('/api/insurance-credentials', insuranceCredentialsRoutes);
 app.use('/api/legacy-vault', legacyVaultRoutes);
 app.use('/api/group-licenses', groupLicensesRoutes);
 app.use('/api/scholarly-articles', scholarlyArticlesRoutes);
+app.use('/api/organizations', organizationsRoutes);
+app.use('/api/audit-kit', auditKitRoutes);
+app.use('/api/uploads', uploadsRoutes);
 
 app.use('/templates', express.static(path.join(__dirname, 'templates')));
 
