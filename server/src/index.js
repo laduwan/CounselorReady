@@ -1,14 +1,16 @@
 /**
  * CounselorReady API Server — index.js
  * ═══════════════════════════════════════════════════════════════
- * CRITICAL: This file is the single source of truth for all API
- * route registrations. DO NOT rewrite this file without including
- * ALL routes listed in the REQUIRED_ROUTES array below.
+ * CRITICAL: This file is the canonical place where API routes are
+ * MOUNTED. The declared set lives in ./routeManifest.js (ROUTE_MANIFEST).
+ * The boot-time verifyRoutes() cross-checks the two and reports any
+ * declared-but-not-mounted (forgotten app.use) or import-broken routers.
  *
  * If you are an AI assistant (Claude Code or otherwise):
  *   - NEVER remove or comment out any import or app.use() line
  *   - NEVER rewrite this file from scratch
  *   - Only ADD new routes — never subtract existing ones
+ *   - When adding a route: add the app.use here AND an entry in routeManifest.js
  *   - The startup integrity check will catch regressions
  *
  * Last verified: 2026-03-25 — 37 route mounts, all confirmed
@@ -93,9 +95,18 @@ import { runDeadlineReminders } from './services/ceDeadlineReminder.js';
 import { runDailyNotificationCheck } from './jobs/dailyNotificationCheck.js';
 import { runHardshipPauseResume } from './jobs/hardshipPauseResume.js';
 
+import { ROUTE_MANIFEST } from './routeManifest.js';
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const app = express();
+
+// Mount recorder — records every '/api/...' path passed to app.use so
+// verifyRoutes() can detect routers that were imported but never mounted.
+// Must be installed BEFORE any app.use() calls below.
+const __mountedApiPaths = new Set();
+const __origUse = app.use.bind(app);
+app.use = (...args) => { if (typeof args[0] === 'string' && args[0].startsWith('/api')) __mountedApiPaths.add(args[0]); return __origUse(...args); };
 
 // ═══════════════════════════════════════════════════════════════
 // MIDDLEWARE
@@ -163,7 +174,7 @@ app.get('/health', async (req, res) => {
       mongodb: dbStatus[dbState] || 'unknown',
       environment: process.env.NODE_ENV || 'development',
       version: '1.0.0',
-      requiredRoutes: REQUIRED_ROUTES.length
+      requiredRoutes: ROUTE_MANIFEST.length
     });
   } catch (error) {
     res.status(500).json({ status: 'error', error: error.message });
@@ -237,65 +248,61 @@ app.use('/templates', express.static(path.join(__dirname, 'templates')));
 // Runs on every startup. Catches regressions from file overwrites.
 // ═══════════════════════════════════════════════════════════════
 
-const REQUIRED_ROUTES = {
-  '/api/auth':                authRoutes,
-  '/api/interactive-courses': interactiveCourseRoutes,
-  '/api/courses':             coursesRoutes,
-  '/api/admin':               adminRoutes,
-  '/api/users':               usersRoutes,
-  '/api/certificates':        certificatesRoutes,
-  '/api/credentials':         credentialsRoutes,
-  '/api/payments':            paymentsRoutes,
-  '/api/analytics':           analyticsRoutes,
-  '/api/announcements':       announcementsRoutes,
-  '/api/notifications':       notificationsRoutes,
-  '/api/gamification':        gamificationRoutes,
-  '/api/referrals':           referralsRoutes,
-  '/api/rewards':             rewardsRoutes,
-  '/api/board-alerts':        boardAlertsRoutes,
-  '/api/ce-planner':          cePlannerRoutes,
-  '/api/scan':                scanRoutes,
-  '/api/help':                helpRoutes,
-  '/api/course-builder':      courseBuilderRoutes,
-  '/api/research-ready':      researchReadyRoutes,
-  '/api/tools':               toolsRoutes,
-  '/api/partners':            partnersRoutes,
-  '/api/recommendations':     recommendationsRoutes,
-  '/api/images':              imageUploadRoutes,
-  '/api/admin/courses':       bulkUploadRoutes,
-  '/api/admin/course-mgmt':   adminCoursesRoutes,
-  '/api/admin/rewards':       adminRewardsRoutes,
-  '/api/blog':                blogRoutes,
-  '/api/tool-analytics':      toolAnalyticsRoutes,
-  '/api/security':            securityRoutes,
-};
-
 function verifyRoutes() {
-  let passed = 0;
-  let failed = 0;
-  const errors = [];
+  try {
+    const brokenImports = [];
+    const notMounted = [];
+    const manifestPaths = new Set();
 
-  Object.entries(REQUIRED_ROUTES).forEach(([path, router]) => {
-    if (!router || typeof router !== 'function') {
-      errors.push(path);
-      failed++;
-    } else {
-      passed++;
+    for (const entry of ROUTE_MANIFEST) {
+      const [path, router, label] = entry;
+      manifestPaths.add(path);
+      if (!router || typeof router !== 'function') {
+        brokenImports.push({ path, label });
+      }
+      if (!__mountedApiPaths.has(path)) {
+        notMounted.push({ path, label });
+      }
     }
-  });
 
-  if (failed > 0) {
-    console.error('');
-    console.error('╔══════════════════════════════════════════════════╗');
-    console.error('║  ❌ ROUTE INTEGRITY CHECK FAILED                ║');
-    console.error('╚══════════════════════════════════════════════════╝');
-    errors.forEach(p => console.error(`  ✗ ${p} — import is undefined/broken`));
-    console.error(`  ${passed} passed, ${failed} FAILED`);
-    console.error('');
-  } else {
-    console.log(`✅ Route integrity: ${passed}/${Object.keys(REQUIRED_ROUTES).length} required routes verified`);
+    const untracked = [];
+    for (const path of __mountedApiPaths) {
+      if (path === '/api/payments/webhook') continue; // raw-body parser, not a router
+      if (!manifestPaths.has(path)) untracked.push(path);
+    }
+
+    if (brokenImports.length > 0 || notMounted.length > 0) {
+      console.error('');
+      console.error('╔══════════════════════════════════════════════════╗');
+      console.error('║  ❌ ROUTE INTEGRITY CHECK FAILED                ║');
+      console.error('╚══════════════════════════════════════════════════╝');
+      if (brokenImports.length > 0) {
+        console.error(`  Broken imports (router is not a function): ${brokenImports.length}`);
+        brokenImports.forEach(({ path, label }) => console.error(`    ✗ ${path}  [${label}]`));
+      }
+      if (notMounted.length > 0) {
+        console.error(`  Declared but NOT MOUNTED (forgotten app.use): ${notMounted.length}`);
+        notMounted.forEach(({ path, label }) => console.error(`    ✗ ${path}  [${label}]`));
+      }
+      console.error('');
+    } else {
+      console.log(`✅ Route integrity: ${ROUTE_MANIFEST.length} routes declared, all mounted & valid`);
+    }
+
+    if (untracked.length > 0) {
+      console.warn(`⚠️  Route integrity: ${untracked.length} mounted path(s) not in manifest (drift):`);
+      untracked.forEach(p => console.warn(`    • ${p}`));
+    }
+  } catch (err) {
+    console.error('Route integrity check threw — continuing boot:', err && err.message ? err.message : err);
   }
 }
+
+// Run the integrity check now — all top-level app.use(...) mounts above
+// have already been registered (and recorded by __mountedApiPaths) by the
+// time module evaluation reaches this line. Doing it here (rather than
+// inside startServer) ensures it runs even if connectDB later exits.
+verifyRoutes();
 
 // ═══════════════════════════════════════════════════════════════
 // ERROR HANDLING
@@ -362,7 +369,6 @@ const startServer = async () => {
     );
   }, { timezone: 'America/New_York' });
   console.log('Hardship pause auto-resume cron scheduled (daily 8 AM ET)');
-  verifyRoutes();
   // PostHog server-side analytics
   const phKey = process.env.POSTHOG_API_KEY || 'phc_rRGb8TPVl8lDYnD4M2HMGGuBBkL9whGzghD5FEX20Vb';
   global.posthog = new PostHog(phKey, { host: 'https://us.i.posthog.com' });
@@ -378,7 +384,7 @@ const startServer = async () => {
 ║   MongoDB: Connected                               ║
 ║   Scheduler: Active                                ║
 ║   Board Monitor: Active                            ║
-║   Routes: ${String(Object.keys(REQUIRED_ROUTES).length).padEnd(2)} required, verified               ║
+║   Routes: ${String(ROUTE_MANIFEST.length).padEnd(2)} declared, verified               ║
 ║                                                    ║
 ║   Health: http://localhost:${PORT}/health              ║
 ║                                                    ║
