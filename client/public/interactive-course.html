@@ -4622,6 +4622,17 @@ function renderBlock(block, index) {
 
 // ─── SECTION DIVIDER ───
 function renderSectionDivider(wrap, block) {
+  if (typeof block.bannerImage === 'string' && block.bannerImage) {
+    wrap.innerHTML = `<div class="cr-section-divider has-banner">
+      <img class="cr-section-divider-banner" src="${esc(block.bannerImage)}" alt="${esc(block.bannerAlt || block.title || '')}">
+      <div class="cr-section-divider-banner-overlay"></div>
+      <div class="cr-section-divider-inner">
+        <div class="cr-section-divider-number">${block.sectionNumber || ''}</div>
+        <div><h2>${esc(block.title || '')}</h2>${block.subtitle ? '<p>' + esc(block.subtitle) + '</p>' : ''}</div>
+      </div>
+    </div>`;
+    return wrap;
+  }
   wrap.innerHTML = `<div class="cr-section-divider">
     <div class="cr-section-divider-number">${block.sectionNumber || ''}</div>
     <div>
