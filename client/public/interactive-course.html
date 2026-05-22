@@ -3192,6 +3192,49 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
   color: #fff;
 }
 
+/* ---- Course-level hero (top of section 1, when course.headerImage is set) ---- */
+.cr-course-hero {
+  position: relative;
+  width: 100%;
+  min-height: 220px;
+  border-radius: var(--cr-radius);
+  overflow: hidden;
+  margin-bottom: 1.75rem;
+  display: flex;
+  align-items: flex-end;
+}
+.cr-course-hero-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.cr-course-hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(40,65,87,0.10), rgba(40,65,87,0.82));
+}
+.cr-course-hero-inner {
+  position: relative;
+  z-index: 2;
+  padding: 1.75rem 2rem;
+  color: #fff;
+}
+.cr-course-hero-inner h1 {
+  font-family: var(--cr-font-display);
+  font-size: 2rem;
+  font-weight: 700;
+  color: #fff;
+  margin: 0 0 0.25rem;
+  line-height: 1.15;
+}
+.cr-course-hero-inner p {
+  font-size: 1.05rem;
+  color: rgba(255,255,255,0.92);
+  margin: 0;
+}
+
 
 /* ---- Image presence: radius + soft navy-tinted shadow ---- */
 .cr-image-block {
@@ -4493,6 +4536,20 @@ function renderCurrentSection() {
   
   const area = document.getElementById('crContentArea');
   area.innerHTML = '';
+  
+  // Course-level hero — only on the first section, only when set (additive; absent = unchanged)
+  if (currentSectionIndex === 0 && course.headerImage) {
+    const heroTitle = course.headerTitle || course.title || '';
+    const heroSub = course.headerSubtitle || '';
+    area.innerHTML += `<div class="cr-course-hero">
+      <img class="cr-course-hero-img" src="${esc(course.headerImage)}" alt="${esc(course.headerImageAlt || heroTitle)}">
+      <div class="cr-course-hero-overlay"></div>
+      <div class="cr-course-hero-inner">
+        ${heroTitle ? `<h1>${esc(heroTitle)}</h1>` : ''}
+        ${heroSub ? `<p>${esc(heroSub)}</p>` : ''}
+      </div>
+    </div>`;
+  }
   
   // Section title if no sectionDivider block
   const blocks = section.contentBlocks || [];
