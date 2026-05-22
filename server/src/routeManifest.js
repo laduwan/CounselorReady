@@ -70,6 +70,7 @@ import toolRoutes from './routes/toolRoutes.js';
 import toolAnalyticsRoutes from './routes/toolAnalytics.js';
 import adminStripeRoutes from './routes/adminStripe.js';
 import adminCouponsRoutes from './routes/adminCoupons.js';
+import adminCoursePresentationRoutes from './routes/adminCoursePresentation.js';
 import organizationsRoutes from './routes/organizations.js';
 import auditKitRoutes from './routes/auditKit.js';
 import uploadsRoutes from './routes/uploads.js';
@@ -99,6 +100,7 @@ export const ROUTE_MANIFEST = [
   ['/api/admin/audit',           adminAuditRoutes,          'Admin Audit'],
   ['/api/admin/courses',         bulkUploadRoutes,          'Admin Bulk Upload'],
   ['/api/admin/rewards',         adminRewardsRoutes,        'Admin Rewards'],
+  ['/api/admin/course-presentation', adminCoursePresentationRoutes, 'Admin Course Presentation'],
 
   // ── Admin catch-alls (stacked on '/api/admin') ──
   ['/api/admin',                 adminRoutes,               'Admin (core)'],
