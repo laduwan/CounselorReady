@@ -7,7 +7,7 @@
  * populateCourseImages.js
  * ───────────────────────
  * Populates a hero banner image on the FIRST sectionDivider block of every
- * section in a course. Sources images from Unsplash, uploads to Cloudinary,
+ * section in a course. Sources images from Pexels, uploads to Cloudinary,
  * and writes bannerImage + bannerAlt onto each sectionDivider block in the
  * `interactivecourses` collection.
  *
@@ -17,7 +17,7 @@
  * Required env vars:
  *   MONGODB_URI
  *   CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET
- *   UNSPLASH_ACCESS_KEY   (free Unsplash API access key)
+ *   PEXELS_API_KEY   (free Pexels API key)
  *
  * The viewer (PR #419) already renders block.bannerImage. ContentBlockSchema
  * is strict:false so bannerImage / bannerAlt persist without a schema change.
@@ -25,10 +25,7 @@
 
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
-import { createRequire } from 'module';
-
-const require = createRequire(import.meta.url);
-const cloudinary = require('cloudinary').v2;
+import cloudinary from 'cloudinary';
 
 dotenv.config();
 
@@ -54,16 +51,16 @@ requireEnv('MONGODB_URI');
 requireEnv('CLOUDINARY_CLOUD_NAME');
 requireEnv('CLOUDINARY_API_KEY');
 requireEnv('CLOUDINARY_API_SECRET');
-requireEnv('UNSPLASH_ACCESS_KEY');
+requireEnv('PEXELS_API_KEY');
 
-cloudinary.config({
+cloudinary.v2.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
 // ─── Query mapping ──────────────────────────────────────────────────────
-// Map a section title to a calm, clinically-appropriate Unsplash query.
+// Map a section title to a calm, clinically-appropriate Pexels query.
 // Strategy: strip noise from the title, then pick a neutral concept based
 // on keywords. Avoid faces / identifiable people / clinical-graphic imagery.
 const SAFE_QUERIES = {
@@ -118,26 +115,27 @@ function pickAlt(rawTitle, query) {
   return `${base} — ${query}`;
 }
 
-// ─── Unsplash ────────────────────────────────────────────────────────────
-async function fetchUnsplashImage(query) {
-  const url = `https://api.unsplash.com/search/photos?query=${encodeURIComponent(query)}&orientation=landscape&content_filter=high&per_page=1`;
+// ─── Pexels ──────────────────────────────────────────────────────────────
+async function fetchPexelsImage(query) {
+  const url = `https://api.pexels.com/v1/search?query=${encodeURIComponent(query)}&orientation=landscape&per_page=1`;
   const res = await fetch(url, {
     headers: {
-      Authorization: `Client-ID ${process.env.UNSPLASH_ACCESS_KEY}`,
-      'Accept-Version': 'v1',
+      Authorization: process.env.PEXELS_API_KEY,
     },
   });
   if (!res.ok) {
     const txt = await res.text().catch(() => '');
-    throw new Error(`Unsplash ${res.status}: ${txt.slice(0, 200)}`);
+    throw new Error(`Pexels ${res.status}: ${txt.slice(0, 200)}`);
   }
   const data = await res.json();
-  const first = data?.results?.[0];
-  if (!first?.urls?.regular) return null;
+  const first = data?.photos?.[0];
+  if (!first) return null;
+  const imageUrl = first.src?.large2x || first.src?.large;
+  if (!imageUrl) return null;
   return {
-    url: first.urls.regular,
-    credit: first.user?.name || '',
-    unsplashId: first.id,
+    url: imageUrl,
+    credit: first.photographer || '',
+    pexelsId: first.id,
   };
 }
 
@@ -145,7 +143,7 @@ async function fetchUnsplashImage(query) {
 async function uploadToCloudinary(imageUrl, courseCode, sectionIndex) {
   const folder = `counselorready/course-resources/${courseCode}/banners`;
   const publicId = `${courseCode}-sec${sectionIndex + 1}`;
-  const result = await cloudinary.uploader.upload(imageUrl, {
+  const result = await cloudinary.v2.uploader.upload(imageUrl, {
     folder,
     public_id: publicId,
     overwrite: true,
@@ -223,20 +221,20 @@ async function main() {
 
     let imageUrl = null;
     try {
-      const found = await fetchUnsplashImage(query);
+      const found = await fetchPexelsImage(query);
       if (!found) {
-        console.log(`      → no Unsplash result, skipping this section`);
+        console.log(`      → no Pexels result, skipping this section`);
         stats.skipped++;
         rows.push({ n: i + 1, title, status: 'skip (no result)', detail: query });
         await sleep(1200);
         continue;
       }
       imageUrl = found.url;
-      console.log(`      unsplash: ${found.unsplashId} (by ${found.credit || 'unknown'})`);
+      console.log(`      pexels: ${found.pexelsId} (by ${found.credit || 'unknown'})`);
     } catch (err) {
-      console.log(`      ✖ Unsplash error: ${err.message}`);
+      console.log(`      ✖ Pexels error: ${err.message}`);
       stats.failed++;
-      rows.push({ n: i + 1, title, status: 'fail (unsplash)', detail: err.message });
+      rows.push({ n: i + 1, title, status: 'fail (pexels)', detail: err.message });
       await sleep(1200);
       continue;
     }
@@ -284,7 +282,7 @@ async function main() {
       rows.push({ n: i + 1, title, status: 'fail (save)', detail: err.message });
     }
 
-    await sleep(1200); // Unsplash demo tier ~50/hr; this keeps us well under
+    await sleep(1200); // Pexels free tier ~200/hr; this keeps us well under
   }
 
   // ─── Summary ───────────────────────────────────────────────────────────
