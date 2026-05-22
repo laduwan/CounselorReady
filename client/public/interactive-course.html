@@ -3246,6 +3246,59 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
 
 /* — END PHASE 4 — */
 
+
+/* ═══════════════════════════════════════════════════════════════
+   CREADY VIEWER — PHASE 5 WITHIN-SECTION SCROLLSPY
+   May 22, 2026
+   Nested sub-nav rendered under the active .cr-nav-item, listing
+   sub-headings inside the current section. Highlights whichever
+   anchor is currently on screen as the learner scrolls.
+   CSS uses only existing --cr-* tokens.
+   ═══════════════════════════════════════════════════════════════ */
+
+.cr-subnav {
+  list-style: none;
+  margin: 2px 0 8px;
+  padding: 0;
+  border-left: 1px solid var(--cr-border);
+  margin-left: 28px;
+}
+
+.cr-subnav-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  border-left: 2px solid transparent;
+  padding: 5px 10px 5px 12px;
+  margin-left: -1px;
+  font-size: 12px;
+  line-height: 1.35;
+  color: var(--cr-text-muted);
+  cursor: pointer;
+  transition: color var(--cr-transition), border-color var(--cr-transition), background var(--cr-transition);
+}
+
+.cr-subnav-item:hover {
+  color: var(--cr-burgundy);
+}
+
+.cr-subnav-item:focus-visible {
+  outline: 2px solid var(--cr-honey);
+  outline-offset: 1px;
+}
+
+.cr-subnav-item.active {
+  color: var(--cr-burgundy);
+  border-left-color: var(--cr-honey);
+  font-weight: 600;
+  background: var(--cr-tint-burg);
+}
+
+
+/* — END PHASE 5 — */
+
 </style>
 <!-- .docx parsing -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
@@ -4514,6 +4567,144 @@ function renderCurrentSection() {
   restoreHighlights();
   const _toolbar = document.getElementById('crToolbar');
   if (_toolbar) _toolbar.style.display = (section && !section._isOverview && currentView === 'section') ? 'flex' : 'none';
+}
+
+// ═══════════════════════════════════════════════════════════════
+// WITHIN-SECTION SCROLLSPY (Phase 5)
+// Builds a nested sub-nav under the active .cr-nav-item, listing
+// sub-headings (section dividers + h2/h3 inside text/imageText)
+// in the current section. An IntersectionObserver highlights the
+// heading nearest the top as the learner scrolls. Degrades to a
+// no-op when fewer than 2 anchors exist or required APIs are
+// unavailable. Pure additive — does not touch renderBlock,
+// renderSectionDivider, makeNavItem internals, or goToSection.
+// ═══════════════════════════════════════════════════════════════
+let _crSubnavObserver = null;
+
+function getSectionSubAnchors() {
+  const area = document.getElementById('crContentArea');
+  if (!area) return [];
+  const out = [];
+  const seen = new Set();
+  // (a) section dividers — already rendered by renderSectionDivider
+  area.querySelectorAll('.cr-section-divider').forEach(el => {
+    const h = el.querySelector('h1, h2, h3') || el;
+    const raw = (h.textContent || '').trim();
+    if (!raw || seen.has(el)) return;
+    seen.add(el);
+    out.push({ el: el, label: raw.length > 40 ? raw.slice(0, 38).trim() + '…' : raw });
+  });
+  // (b) h2/h3 inside text / imageText blocks
+  area.querySelectorAll('.cr-block[data-block-type="text"] h2, .cr-block[data-block-type="text"] h3, .cr-block[data-block-type="imageText"] h2, .cr-block[data-block-type="imageText"] h3').forEach(h => {
+    if (seen.has(h)) return;
+    const raw = (h.textContent || '').trim();
+    if (!raw) return;
+    seen.add(h);
+    out.push({ el: h, label: raw.length > 40 ? raw.slice(0, 38).trim() + '…' : raw });
+  });
+  // Preserve document order
+  out.sort((a, b) => {
+    if (a.el === b.el) return 0;
+    return (a.el.compareDocumentPosition(b.el) & Node.DOCUMENT_POSITION_FOLLOWING) ? -1 : 1;
+  });
+  return out;
+}
+
+function initSectionScrollspy() {
+  try {
+    // Tear down any previous observer to prevent leaks across re-renders
+    if (_crSubnavObserver && typeof _crSubnavObserver.disconnect === 'function') {
+      _crSubnavObserver.disconnect();
+    }
+    _crSubnavObserver = null;
+
+    // Remove any stale sub-nav from a prior render
+    document.querySelectorAll('.cr-subnav').forEach(n => n.remove());
+
+    if (typeof window === 'undefined' || typeof window.IntersectionObserver !== 'function') return;
+
+    const anchors = getSectionSubAnchors();
+    if (!anchors || anchors.length < 2) return; // short sections → no clutter
+
+    const activeNavBtn = document.querySelector('#crSectionNav .cr-nav-item.active');
+    if (!activeNavBtn) return;
+
+    // Tag each anchor so the observer callback can map back to the sub-item
+    anchors.forEach((a, i) => { a.el.dataset.crSubspyIdx = String(i); });
+
+    const reducedMotion = document.documentElement.getAttribute('data-reduced-motion') === 'true';
+    const scrollBehavior = reducedMotion ? 'auto' : 'smooth';
+
+    const nav = document.createElement('nav');
+    nav.setAttribute('aria-label', 'Within this section');
+    const ul = document.createElement('ul');
+    ul.className = 'cr-subnav';
+
+    anchors.forEach((a, i) => {
+      const li = document.createElement('li');
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'cr-subnav-item';
+      btn.textContent = a.label;
+      btn.setAttribute('data-cr-subspy-idx', String(i));
+      btn.addEventListener('click', function (ev) {
+        ev.preventDefault();
+        ev.stopPropagation();
+        try {
+          a.el.scrollIntoView({ behavior: scrollBehavior, block: 'start' });
+        } catch (_) {
+          a.el.scrollIntoView();
+        }
+      });
+      li.appendChild(btn);
+      ul.appendChild(li);
+    });
+    nav.appendChild(ul);
+
+    // Insert directly after the active section nav item so it nests visually
+    if (activeNavBtn.parentNode) {
+      activeNavBtn.parentNode.insertBefore(nav, activeNavBtn.nextSibling);
+    }
+
+    const items = ul.querySelectorAll('.cr-subnav-item');
+    const setActive = (idx) => {
+      items.forEach(it => {
+        const on = it.getAttribute('data-cr-subspy-idx') === String(idx);
+        it.classList.toggle('active', on);
+        if (on) it.setAttribute('aria-current', 'location');
+        else it.removeAttribute('aria-current');
+      });
+    };
+    setActive(0);
+
+    _crSubnavObserver = new IntersectionObserver((entries) => {
+      // Pick the visible entry closest to the top of the viewport
+      const visible = entries
+        .filter(e => e.isIntersecting)
+        .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+      if (visible.length > 0) {
+        const idx = visible[0].target.dataset.crSubspyIdx;
+        if (idx != null) setActive(idx);
+      }
+    }, { rootMargin: '-10% 0px -80% 0px', threshold: 0 });
+
+    anchors.forEach(a => _crSubnavObserver.observe(a.el));
+  } catch (err) {
+    // Scrollspy is purely cosmetic — never let it break the viewer
+    try { console && console.warn && console.warn('[cr-subnav] init failed:', err); } catch (_) {}
+  }
+}
+
+// Wrap renderCurrentSection so the scrollspy rebuilds on every section
+// render without editing the function body. renderCurrentSection is a
+// top-level function declaration (sloppy mode) and is reassignable.
+if (typeof renderCurrentSection === 'function') {
+  const _origRenderCurrentSection = renderCurrentSection;
+  renderCurrentSection = function () {
+    const _ret = _origRenderCurrentSection.apply(this, arguments);
+    try { initSectionScrollspy(); } catch (_) {}
+    return _ret;
+  };
 }
 
 // ═══════════════════════════════════════════════════════════════
