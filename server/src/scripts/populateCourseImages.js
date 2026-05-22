@@ -61,33 +61,72 @@ cloudinary.v2.config({
 
 // ─── Query mapping ──────────────────────────────────────────────────────
 // Map a section title to a calm, clinically-appropriate Pexels query.
-// Strategy: strip noise from the title, then pick a neutral concept based
-// on keywords. Avoid faces / identifiable people / clinical-graphic imagery.
-const SAFE_QUERIES = {
-  office:   'calm therapy office',
-  desk:     'notebook desk',
-  texture:  'soft abstract texture',
-  nature:   'quiet nature path',
-};
-
+// Strategy: clean the title, then match against a curated keyword map
+// keyed to counseling themes. Each entry returns a richer multi-word
+// query so different sections don't collapse to the same generic photo.
+// Avoids faces / identifiable people / clinical-graphic imagery.
 const KEYWORD_MAP = [
-  // wellness / self-care
-  { match: /\b(self[-\s]?care|wellness|burnout|fatigue|resilience|mindful|grounding|breathing|recovery)\b/i, q: SAFE_QUERIES.nature },
-  // ethics / law / compliance / consent / documentation
-  { match: /\b(ethic|legal|law|regulation|rule|compliance|consent|policy|polic(y|ies)|documentation|record|hipaa|privacy|confidential)\b/i, q: SAFE_QUERIES.desk },
+  // HIPAA / privacy / data protection
+  { match: /\b(hipaa|privacy|confidential|data\s*protect|encryption)\b/i, q: 'data privacy laptop' },
   // crisis / risk / safety
-  { match: /\b(crisis|risk|suicid|safety|emergenc|harm|trauma)\b/i, q: SAFE_QUERIES.texture },
-  // assessment / evaluation / screening / diagnosis
-  { match: /\b(assess|evaluat|screen|diagnos|intake|measure|outcome)\b/i, q: SAFE_QUERIES.desk },
+  { match: /\b(crisis|suicid|risk|safety|harm|emergenc)\b/i, q: 'calm supportive conversation' },
   // culture / diversity / identity
-  { match: /\b(cultur|diversity|equity|inclusion|identity|multicultural|bias)\b/i, q: SAFE_QUERIES.texture },
-  // technology / platform / telehealth modality
-  { match: /\b(technolog|platform|telehealth|telemental|video|digital|software|hardware)\b/i, q: SAFE_QUERIES.desk },
-  // session / practice / rapport / therapeutic
-  { match: /\b(session|practice|rapport|therap|counsel|alliance|relation)\b/i, q: SAFE_QUERIES.office },
-  // intro / overview / foundation / conclusion / wrap
-  { match: /\b(intro|overview|foundation|background|conclusion|summary|wrap|closing)\b/i, q: SAFE_QUERIES.office },
+  { match: /\b(cultur|diversity|equity|inclusion|multicultural|bias|identity)\b/i, q: 'diverse people community' },
+  // consent / documentation / forms
+  { match: /\b(consent|documentation|record|form|note|chart|paperwork)\b/i, q: 'signing document desk' },
+  // assessment / screening / outcomes
+  { match: /\b(assess|evaluat|intake|screen|measure|outcome|diagnos)\b/i, q: 'clipboard notebook desk' },
+  // telehealth modality
+  { match: /\b(telehealth|telemental|virtual\s*session|remote\s*session|video\s*visit)\b/i, q: 'home office video call setup' },
+  // technology / platform / infrastructure
+  { match: /\b(technolog|platform|software|hardware|digital|infrastructure|device)\b/i, q: 'minimalist desk laptop' },
+  // ethics / law / regulation / board
+  { match: /\b(ethic|law|legal|regulation|rule|compliance|board\s*rule|statute)\b/i, q: 'open book wooden desk' },
+  // self-care / wellness / burnout
+  { match: /\b(self[-\s]?care|wellness|burnout|fatigue|resilience|recovery)\b/i, q: 'quiet nature path' },
+  // mindfulness / grounding
+  { match: /\b(mindful|grounding|breathing|meditation|relaxation)\b/i, q: 'still lake morning mist' },
+  // trauma
+  { match: /\b(trauma|ptsd|posttraumatic|post[-\s]?traumatic)\b/i, q: 'soft window light interior' },
+  // substance use / addiction
+  { match: /\b(substance|addiction|sober|alcohol|opioid)\b/i, q: 'morning forest path' },
+  // mood / anxiety
+  { match: /\b(depression|anxiety|mood|stress|panic)\b/i, q: 'soft natural light window' },
+  // couples / family
+  { match: /\b(famil|couple|marriage|partner|relational)\b/i, q: 'two empty armchairs' },
+  // child / adolescent / play
+  { match: /\b(child|adolescent|youth|teen|play\s*therapy|pediatric)\b/i, q: 'soft natural light playroom' },
+  // group / peer
+  { match: /\b(group\s*therap|peer\s*support|community\s*support)\b/i, q: 'warm cozy living room circle' },
+  // supervision / training / professional development
+  { match: /\b(supervis|consultation|training|professional\s*development|career)\b/i, q: 'warm bookshelf reading' },
+  // billing / insurance
+  { match: /\b(billing|insurance|cpt|reimburs|payment|fee\s*schedule)\b/i, q: 'calculator pen desk' },
+  // mandated reporting / abuse / neglect
+  { match: /\b(mandated|reporter|abuse|neglect|child\s*protect)\b/i, q: 'soft window light interior' },
+  // existential / meaning / spiritual
+  { match: /\b(existential|meaning|purpose|spiritual|values)\b/i, q: 'quiet horizon landscape' },
+  // sexuality / intimacy
+  { match: /\b(sex|sexuality|intimacy|sexual\s*health)\b/i, q: 'soft abstract texture neutral' },
+  // neuroscience / biology
+  { match: /\b(neuro|brain|biolog|nervous\s*system)\b/i, q: 'soft abstract pattern' },
+  // boundaries / dual relationships
+  { match: /\b(boundary|boundaries|dual\s*relationship)\b/i, q: 'open book wooden desk' },
+  // session / rapport / therapeutic alliance
+  { match: /\b(rapport|alliance|therap|counsel|session|practice)\b/i, q: 'two empty armchairs by window' },
+  // intro / foundations
+  { match: /\b(intro|overview|foundation|background|orientation)\b/i, q: 'calm therapy office morning light' },
+  // conclusion / wrap-up
+  { match: /\b(conclusion|summary|wrap|closing|future|next\s*step|integration)\b/i, q: 'open window soft morning light' },
+  // jurisdiction / state law
+  { match: /\b(georgia|jurisdiction|interstate|licens|portability)\b/i, q: 'state capitol architecture' },
 ];
+
+const FALLBACK_QUERY = 'calm professional workspace';
+
+// Clinical-graphic terms we never want surfacing in alt text or used as
+// query material — strip them from the cleaned title.
+const GRAPHIC_STRIP = /\b(needle|syringe|wound|blood|injury|scar|surgical|graphic|explicit)\b/gi;
 
 function cleanTitle(raw) {
   if (!raw) return '';
@@ -96,6 +135,7 @@ function cleanTitle(raw) {
   // and surrounding punctuation. Examples: "Section 1: Foundations" → "Foundations"
   t = t.replace(/^\s*(section|module|part|chapter|unit)\s*[\divxlcDIVXLC]+\s*[:\-–—.)]?\s*/i, '');
   t = t.replace(/^\s*[\divxlcDIVXLC]+\s*[:\-–—.)]\s*/i, '');
+  t = t.replace(GRAPHIC_STRIP, ' ');
   t = t.replace(/[^\w\s'-]/g, ' ');
   t = t.replace(/\s+/g, ' ').trim();
   return t;
@@ -106,7 +146,7 @@ function pickQuery(rawTitle) {
   for (const rule of KEYWORD_MAP) {
     if (rule.match.test(cleaned)) return rule.q;
   }
-  return SAFE_QUERIES.texture;
+  return FALLBACK_QUERY;
 }
 
 function pickAlt(rawTitle, query) {
@@ -116,26 +156,66 @@ function pickAlt(rawTitle, query) {
 }
 
 // ─── Pexels ──────────────────────────────────────────────────────────────
-async function fetchPexelsImage(query) {
-  const url = `https://api.pexels.com/v1/search?query=${encodeURIComponent(query)}&orientation=landscape&per_page=1`;
-  const res = await fetch(url, {
-    headers: {
-      Authorization: process.env.PEXELS_API_KEY,
-    },
-  });
+// One raw call to the Pexels search API. Throws on network errors and on
+// any non-2xx response; sets `__transient = true` on errors that should
+// be retried (network errors, HTTP 5xx, HTTP 429).
+async function pexelsSearchCall(query) {
+  const url = `https://api.pexels.com/v1/search?query=${encodeURIComponent(query)}&orientation=landscape&per_page=10`;
+  let res;
+  try {
+    res = await fetch(url, {
+      headers: { Authorization: process.env.PEXELS_API_KEY },
+    });
+  } catch (err) {
+    const e = new Error(`Pexels network error: ${err.message}`);
+    e.__transient = true;
+    throw e;
+  }
   if (!res.ok) {
     const txt = await res.text().catch(() => '');
-    throw new Error(`Pexels ${res.status}: ${txt.slice(0, 200)}`);
+    const e = new Error(`Pexels ${res.status}: ${txt.slice(0, 200)}`);
+    if (res.status >= 500 || res.status === 429) e.__transient = true;
+    throw e;
   }
-  const data = await res.json();
-  const first = data?.photos?.[0];
-  if (!first) return null;
-  const imageUrl = first.src?.large2x || first.src?.large;
+  return await res.json();
+}
+
+// Retry transient failures (network + HTTP 5xx + 429) up to `attempts`
+// times with exponential backoff (1s, 2s, 4s). An empty `photos` array
+// is NOT an error and is NOT retried — that's a clean "no result".
+async function fetchPexelsResults(query, { attempts = 3, baseMs = 1000 } = {}) {
+  let lastErr;
+  for (let attempt = 1; attempt <= attempts; attempt++) {
+    try {
+      return await pexelsSearchCall(query);
+    } catch (err) {
+      lastErr = err;
+      const transient = err.__transient === true;
+      if (!transient || attempt === attempts) throw err;
+      const wait = baseMs * Math.pow(2, attempt - 1); // 1s, 2s, 4s
+      console.log(`      ⟳ pexels retry ${attempt}/${attempts - 1} in ${wait}ms: ${err.message}`);
+      await sleep(wait);
+    }
+  }
+  throw lastErr;
+}
+
+// Pick a photo from a Pexels response. Prefers a photo whose id is not
+// already in `usedPhotoIds` (so two sections don't get the same image
+// when avoidable). Falls back to `sectionIndex % photos.length` if every
+// returned photo has already been used this run.
+function pickPhotoFromResults(data, usedPhotoIds, sectionIndex) {
+  const photos = Array.isArray(data?.photos) ? data.photos : [];
+  if (photos.length === 0) return null;
+  let chosen = photos.find(p => p && p.id && !usedPhotoIds.has(p.id));
+  if (!chosen) chosen = photos[sectionIndex % photos.length];
+  if (!chosen) return null;
+  const imageUrl = chosen.src?.large2x || chosen.src?.large;
   if (!imageUrl) return null;
   return {
     url: imageUrl,
-    credit: first.photographer || '',
-    pexelsId: first.id,
+    credit: chosen.photographer || '',
+    pexelsId: chosen.id,
   };
 }
 
@@ -188,6 +268,7 @@ async function main() {
 
   const stats = { processed: 0, set: 0, skipped: 0, failed: 0 };
   const rows = []; // for the summary table
+  const usedPhotoIds = new Set(); // dedupe Pexels photos across sections
 
   for (let i = 0; i < sections.length; i++) {
     const section = sections[i];
@@ -221,7 +302,8 @@ async function main() {
 
     let imageUrl = null;
     try {
-      const found = await fetchPexelsImage(query);
+      const data = await fetchPexelsResults(query);
+      const found = pickPhotoFromResults(data, usedPhotoIds, i);
       if (!found) {
         console.log(`      → no Pexels result, skipping this section`);
         stats.skipped++;
@@ -230,6 +312,7 @@ async function main() {
         continue;
       }
       imageUrl = found.url;
+      usedPhotoIds.add(found.pexelsId);
       console.log(`      pexels: ${found.pexelsId} (by ${found.credit || 'unknown'})`);
     } catch (err) {
       console.log(`      ✖ Pexels error: ${err.message}`);
