@@ -50,6 +50,7 @@ import referralsRoutes from './routes/referrals.js';
 import boardAlertsRoutes from './routes/boardAlerts.js';
 import cePlannerRoutes from './routes/cePlanner.js';
 import imageUploadRoutes from './routes/imageUpload.js';
+import fileUploadRoutes from './routes/fileUpload.js';
 import adminStatsRoutes from './routes/adminStats.js';
 import researchReadyRoutes from './routes/researchReady.js';
 import toolsRoutes from './routes/tools.js';
@@ -117,6 +118,7 @@ export const ROUTE_MANIFEST = [
   ['/api/research-ready',        researchReadyRoutes,       'Researched & Ready'],
   ['/api/scan',                  scanRoutes,                'Credential Scanner'],
   ['/api/images',                imageUploadRoutes,         'Image Upload'],
+  ['/api/files',                 fileUploadRoutes,          'Course File Upload'],
   ['/api/announcements',         announcementsRoutes,       'Announcements'],
   ['/api/reminders',             remindersRoutes,           'Reminders'],
   ['/api/analytics',             analyticsRoutes,           'Analytics'],
