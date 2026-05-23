@@ -7432,27 +7432,52 @@ let checkedObjectives = new Set();
 function renderObjectivesTracker() {
   const tracker = document.getElementById('crObjectivesTracker');
   if (!tracker || !course?.objectives?.length) { if (tracker) tracker.innerHTML = ''; return; }
-  
+
   // Only show on content sections (not overview, not assessment)
   const section = course.sections[currentSectionIndex];
   if (section?._isOverview || currentView === 'assessment') { tracker.innerHTML = ''; return; }
-  
-  // Load from localStorage
-  const saved = loadState('objectives');
-  if (saved) checkedObjectives = new Set(saved);
-  
-  const pct = Math.round((checkedObjectives.size / course.objectives.length) * 100);
-  
+
+  // AUTO mode: when the course provides objectiveSections (a parallel array mapping
+  // each objective to the section index(es) that satisfy it), objectives check
+  // themselves as the learner reaches those sections. Falls back to MANUAL (tap to
+  // check) for courses without a map, preserving the original behavior.
+  const map = course.objectiveSections;
+  const autoMode = Array.isArray(map) && map.length > 0;
+  let checkedSet;
+
+  if (autoMode) {
+    checkedSet = new Set();
+    course.objectives.forEach((obj, i) => {
+      const raw = map[i];
+      if (raw === undefined || raw === null) return;
+      const secs = Array.isArray(raw) ? raw : [raw];
+      const allReached = secs.length > 0 && secs.every(s => typeof s === 'number' && (visitedSections.has(s) || completedSections.has(s)));
+      if (allReached) checkedSet.add(i);
+    });
+  } else {
+    const saved = loadState('objectives');
+    if (saved) checkedObjectives = new Set(saved);
+    checkedSet = checkedObjectives;
+  }
+
+  const pct = Math.round((checkedSet.size / course.objectives.length) * 100);
+  const hint = autoMode
+    ? '<span style="font-weight:400;font-size:0.72em;color:var(--cr-text-muted);display:block;margin-top:2px">Checks off automatically as you progress</span>'
+    : '';
+
   tracker.innerHTML = `<div class="cr-objectives-panel">
-    <div class="cr-objectives-title">🎯 Learning Objectives <span style="font-weight:400;font-size:0.8em;color:var(--cr-text-muted);margin-left:auto">${checkedObjectives.size}/${course.objectives.length} (${pct}%)</span></div>
-    ${course.objectives.map((obj, i) => `<div class="cr-obj-item ${checkedObjectives.has(i) ? 'checked' : ''}" data-action="toggleObjective" data-idx="${i}">
-      <span class="cr-obj-check">${checkedObjectives.has(i) ? '✓' : ''}</span>
+    <div class="cr-objectives-title">🎯 Learning Objectives <span style="font-weight:400;font-size:0.8em;color:var(--cr-text-muted);margin-left:auto">${checkedSet.size}/${course.objectives.length} (${pct}%)</span></div>
+    ${hint}
+    ${course.objectives.map((obj, i) => `<div class="cr-obj-item ${checkedSet.has(i) ? 'checked' : ''}"${autoMode ? '' : ` data-action="toggleObjective" data-idx="${i}"`}>
+      <span class="cr-obj-check">${checkedSet.has(i) ? '✓' : ''}</span>
       <span>${esc(obj)}</span>
     </div>`).join('')}
   </div>`;
 }
 
 function toggleObjective(idx) {
+  // Manual toggle only applies when the course has no auto-tracking map.
+  if (Array.isArray(course?.objectiveSections) && course.objectiveSections.length > 0) return;
   if (checkedObjectives.has(idx)) checkedObjectives.delete(idx);
   else checkedObjectives.add(idx);
   saveState('objectives', [...checkedObjectives]);
