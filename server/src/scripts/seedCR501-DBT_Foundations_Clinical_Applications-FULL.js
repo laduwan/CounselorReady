@@ -267,14 +267,6 @@ const COURSE = {
           }
         },
         {
-          "type": "reflection",
-          "question": "Consider your current caseload and clinical setting. Which client presentations do you encounter that involve significant emotional dysregulation? As you begin this course, what specific knowledge or skills are you hoping to develop that would enhance your effectiveness with these clients? Take a moment to identify two or three specific learning goals that you can revisit as you progress through the modules.",
-          "accessibility": {
-            "role": "note",
-            "ariaLabel": "Reflection: personal learning goals"
-          }
-        },
-        {
           "type": "text",
           "content": "<h3>The Significance of DBT in Modern Mental Health Practice</h3>\n<p>The impact of Dialectical Behavior Therapy on the field of mental health cannot be overstated. Before Linehan's pioneering work, clinicians working with chronically suicidal individuals and those diagnosed with Borderline Personality Disorder often experienced a profound sense of helplessness and frustration. Treatment dropout rates exceeded fifty percent in many settings, and the prevailing clinical culture frequently blamed clients for their own treatment failures—characterizing them as manipulative, attention-seeking, or fundamentally untreatable. This clinical nihilism had devastating consequences for both clients and therapists. Clients internalized the message that they were beyond help, reinforcing the very hopelessness that drove their suicidal behavior. Therapists burned out at alarming rates, with many abandoning work with this population entirely.</p>\n<p>DBT fundamentally transformed this landscape by providing a structured, evidence-based framework that gave clinicians a clear roadmap for treatment and gave clients a tangible set of skills for managing their emotional pain. The treatment's emphasis on the dialectical balance between acceptance and change offered a philosophical resolution to the clinical impasse that had stymied the field for decades. By explicitly acknowledging that clients were doing the best they could while simultaneously insisting that they needed to do better, DBT created a therapeutic environment in which change became possible without the experience of invalidation that had undermined previous treatment approaches.</p>\n<p>The ripple effects of DBT's success have extended far beyond the treatment of Borderline Personality Disorder. The skills-based approach that Linehan developed has influenced the broader field of psychotherapy in ways that continue to expand. Mindfulness-based interventions, which were relatively obscure in Western clinical practice before DBT brought them to mainstream attention, are now integrated into dozens of evidence-based treatments for conditions ranging from depression to chronic pain to substance use disorders. The concept of emotional validation as a clinical intervention—rather than merely a relational nicety—has permeated therapeutic training programs across orientations. And the structured approach to skills training that DBT pioneered has been adapted for use in schools, correctional facilities, primary care settings, and corporate wellness programs.</p>\n<p>For the practicing clinician, understanding DBT is no longer optional—it is an essential component of clinical competence. Even if you never implement a comprehensive DBT program, the theoretical frameworks, clinical strategies, and specific skills that you will learn in this course will enhance your effectiveness with any client who presents with emotional dysregulation, interpersonal difficulties, or self-destructive behavioral patterns. These presentations are among the most common in clinical practice, cutting across diagnostic categories and appearing in virtually every treatment setting. The investment you are making in this continuing education course will pay dividends across your entire caseload and throughout your career.</p>",
           "accessibility": {
@@ -335,6 +327,11 @@ const COURSE = {
         {
           "type": "text",
           "content": "This module examines the two theoretical pillars that provide the intellectual foundation for every aspect of DBT: biosocial theory, which explains how emotional dysregulation develops through the transaction between biological vulnerability and environmental invalidation, and dialectical philosophy, which provides the framework for integrating acceptance and change in the therapeutic process."
+        },
+        {
+          "type": "keyTakeaway",
+          "title": "The Biosocial Transaction",
+          "content": "<p>Emotion dysregulation arises from the <strong>transaction</strong> between a biological predisposition toward emotional vulnerability and an <strong>invalidating environment</strong>. Neither factor alone is sufficient — it is the ongoing interaction between the two that produces pervasive dysregulation.</p>"
         },
         {
           "type": "text",
@@ -565,14 +562,6 @@ const COURSE = {
           }
         },
         {
-          "type": "reflection",
-          "question": "Consider a client you have worked with (or a hypothetical client) who exhibits significant emotional dysregulation. Using the biosocial model, how would you conceptualize their difficulties? Can you identify aspects of both biological vulnerability (high sensitivity, high reactivity, slow return to baseline) and environmental invalidation (dismissal, minimization, intermittent reinforcement of extreme emotion) in their history? How might sharing this conceptualization with the client serve a therapeutic function?",
-          "accessibility": {
-            "role": "note",
-            "ariaLabel": "Reflection: applying biosocial theory"
-          }
-        },
-        {
           "type": "text",
           "content": "<h3>Applying Biosocial Theory in Clinical Formulation</h3>\n<p>Understanding biosocial theory at a conceptual level is essential, but the true clinical value of the model lies in its application to individualized case formulation. When a new client presents with patterns of emotional dysregulation, self-harm, or chronic interpersonal conflict, the DBT-informed clinician uses biosocial theory as a lens for understanding the client's specific history and current functioning. This process involves identifying the particular manifestations of biological vulnerability in this individual—for example, does the client show heightened sensitivity primarily to interpersonal cues, to perceived rejection, to situations involving performance evaluation, or to a broader range of emotional stimuli? The specificity of the vulnerability pattern informs which skills and interventions will be most relevant.</p>\n<p>Equally important is the assessment of the specific forms of invalidation the client experienced and continues to experience. Was the invalidation primarily emotional dismissal within the family of origin? Was it related to cultural expectations about gender roles and emotional expression? Did it occur in the context of more severe experiences such as abuse or neglect? Is the client currently in an invalidating environment—a workplace that punishes emotional expression, a romantic relationship characterized by dismissal, a social context that stigmatizes mental health struggles? Understanding the specific texture of the invalidation experience helps the therapist tailor validation interventions to address the precise wounds the client carries.</p>\n<p>The biosocial formulation also helps the therapist anticipate where the therapeutic relationship itself may become a site of unintentional invalidation. If the client's history includes repeated experiences of being told that their emotions are wrong or excessive, the therapist must be especially attuned to moments when standard therapeutic interventions—cognitive restructuring, behavioral homework assignments, even well-intentioned encouragement—might inadvertently replicate the invalidating pattern. The biosocial lens keeps the therapist alert to these dynamics and provides a framework for repairing ruptures when they inevitably occur.</p>\n<p>Perhaps most importantly, sharing the biosocial formulation with the client is itself a therapeutic intervention of considerable power. When a therapist says to a client, \"Based on what you've told me about your history, it sounds like you were born with a nervous system that experiences emotions more intensely than most people, and you grew up in an environment that didn't know how to respond to that intensity effectively. The combination of those two things explains a lot of what you're struggling with now—and it also means that your struggles are not your fault and that there are specific, learnable skills that can help,\" the client often experiences this as the first time anyone has made sense of their suffering without blaming them for it. This moment of felt understanding can be transformative and frequently marks the beginning of genuine therapeutic engagement.</p>",
           "accessibility": {
@@ -624,6 +613,12 @@ const COURSE = {
             "role": "article",
             "ariaLabel": "Overview of comprehensive DBT structure"
           }
+        },
+        {
+          "type": "callout",
+          "calloutType": "protocol",
+          "title": "The Four Components of Comprehensive DBT",
+          "content": "<p>Comprehensive DBT is a single treatment system of four interdependent components, each serving a distinct function: <strong>individual therapy</strong> (weekly, applies skills to the client's targets), <strong>group skills training</strong> (weekly, teaches the four modules), <strong>between-session phone coaching</strong> (real-time skill generalization), and the <strong>therapist consultation team</strong> (supports fidelity and prevents burnout).</p>"
         },
         {
           "type": "text",
@@ -786,15 +781,6 @@ const COURSE = {
           }
         },
         {
-          "type": "reflection",
-          "question": "Consider your current practice setting. Which of the four components of comprehensive DBT would be most feasible for you to implement? Which would face the greatest barriers? If you could only integrate one component into your existing practice, which would you choose and why? Think about how you might adapt DBT principles to work within your current professional constraints while still honoring the therapeutic logic of the model.",
-          "minLength": 50,
-          "accessibility": {
-            "role": "textbox",
-            "ariaLabel": "Reflection: DBT components in your practice"
-          }
-        },
-        {
           "type": "text",
           "content": "<h3>The Treatment Target Hierarchy: Organizing Clinical Priorities</h3>\n<p>One of the most distinctive and clinically valuable features of comprehensive DBT is its explicit treatment target hierarchy, which provides therapists with a clear framework for prioritizing clinical issues within and across sessions. In many therapeutic orientations, the question of what to focus on in a given session is left largely to clinical judgment, and clinicians working with complex, multi-problem clients can find themselves overwhelmed by the sheer number of issues competing for attention. The DBT target hierarchy resolves this problem by establishing a fixed order of priorities that applies to every session of individual therapy.</p>\n<p>The hierarchy consists of four levels, arranged in descending order of urgency. The first and highest priority is always life-threatening behaviors. If the client has engaged in any suicidal behavior, self-harm, or homicidal behavior since the last session, this becomes the focus of the session regardless of what other issues may be present. The therapist conducts a detailed behavioral chain analysis of the life-threatening episode, identifies the factors that contributed to it, and works with the client to develop a plan for using skills differently the next time a similar situation arises. This unwavering prioritization communicates a clear message to the client: your life matters more than any other therapeutic goal, and we will not proceed to other topics until we have addressed threats to your safety.</p>\n<p>The second level of the hierarchy is therapy-interfering behaviors—any behaviors by the client or the therapist that threaten the integrity or continuity of the treatment itself. For clients, therapy-interfering behaviors include missing sessions, arriving late, not completing homework assignments, dissociating during sessions, or engaging in behaviors that make it difficult for the therapist to provide effective treatment. For therapists, therapy-interfering behaviors include being unprepared for sessions, canceling appointments, failing to return phone calls within agreed-upon timeframes, or losing the balance between validation and change strategies. The inclusion of therapist behaviors in the hierarchy is a distinctive feature of DBT that reflects Linehan's recognition that treatment failure is never solely the client's responsibility.</p>\n<p>The third level addresses quality of life interfering behaviors—patterns of behavior that do not threaten the client's life or the therapy itself but that significantly diminish the client's ability to function and experience well-being. These include substance abuse, eating disorder behaviors, financial mismanagement, housing instability, unemployment, dysfunctional relationship patterns, and untreated medical conditions. The fourth level focuses on increasing behavioral skills—systematically building the client's repertoire of effective coping strategies across all four skill modules.</p>",
           "accessibility": {
@@ -854,6 +840,53 @@ const COURSE = {
         {
           "type": "text",
           "content": "This module provides an in-depth examination of the Mindfulness skill module, the foundational skill set of DBT. You will learn the three states of mind, the three 'What' skills, the three 'How' skills, and the concept of Wise Mind. Clinical applications and practice strategies are integrated throughout."
+        },
+        {
+          "type": "flashcardDeck",
+          "instructions": "Flip each card to review the mindfulness skills.",
+          "flashcards": [
+            {
+              "id": "fcm-1",
+              "front": "Observe (What skill)",
+              "back": "Attend to events, emotions, and sensations in the present moment without trying to change them."
+            },
+            {
+              "id": "fcm-2",
+              "front": "Describe (What skill)",
+              "back": "Put words on experience — label thoughts as thoughts and feelings as feelings, without interpretation."
+            },
+            {
+              "id": "fcm-3",
+              "front": "Participate (What skill)",
+              "back": "Enter fully into the present activity without self-consciousness."
+            },
+            {
+              "id": "fcm-4",
+              "front": "Non-Judgmentally (How skill)",
+              "back": "Observe without evaluating as good or bad — a quality of attention applied to the What skills."
+            },
+            {
+              "id": "fcm-5",
+              "front": "One-Mindfully (How skill)",
+              "back": "Do one thing at a time with complete attention."
+            },
+            {
+              "id": "fcm-6",
+              "front": "Effectively (How skill)",
+              "back": "Focus on what works in the situation rather than on what is fair or 'right' — be strategic in pursuing your values."
+            },
+            {
+              "id": "fcm-7",
+              "front": "Wise Mind",
+              "back": "The synthesis of Reasonable Mind and Emotion Mind — the dialectical integration of logic and emotion."
+            }
+          ]
+        },
+        {
+          "type": "callout",
+          "calloutType": "key",
+          "title": "The Three States of Mind",
+          "content": "<p><strong>Reasonable Mind</strong> (logic) and <strong>Emotion Mind</strong> (feeling) are integrated in <strong>Wise Mind</strong> — the state where a person honors both rational understanding and emotional experience without being dominated by either.</p>"
         },
         {
           "type": "text",
@@ -917,6 +950,47 @@ const COURSE = {
             "role": "article",
             "ariaLabel": "The How skills: Non-Judgmentally, One-Mindfully, Effectively"
           }
+        },
+        {
+          "type": "cardSort",
+          "instructions": "Sort each mindfulness skill into 'What' skills (what you do) or 'How' skills (the manner in which you do it).",
+          "categories": [
+            "'What' Skills",
+            "'How' Skills"
+          ],
+          "cards": [
+            {
+              "id": "csm-1",
+              "text": "Observe",
+              "correctCategory": "'What' Skills"
+            },
+            {
+              "id": "csm-2",
+              "text": "Describe",
+              "correctCategory": "'What' Skills"
+            },
+            {
+              "id": "csm-3",
+              "text": "Participate",
+              "correctCategory": "'What' Skills"
+            },
+            {
+              "id": "csm-4",
+              "text": "Non-Judgmentally",
+              "correctCategory": "'How' Skills"
+            },
+            {
+              "id": "csm-5",
+              "text": "One-Mindfully",
+              "correctCategory": "'How' Skills"
+            },
+            {
+              "id": "csm-6",
+              "text": "Effectively",
+              "correctCategory": "'How' Skills"
+            }
+          ],
+          "explanation": "The 'What' skills (Observe, Describe, Participate) are what you do; the 'How' skills (Non-Judgmentally, One-Mindfully, Effectively) describe the manner in which the What skills are practiced."
         },
         {
           "type": "imageText",
@@ -1116,12 +1190,90 @@ const COURSE = {
           "content": "This module provides a comprehensive examination of the Distress Tolerance skill module, which equips clients with strategies for surviving emotional crises without resorting to self-destructive behaviors. You will learn crisis survival skills including TIPP, ACCEPTS, and IMPROVE, as well as reality acceptance skills including Radical Acceptance and Turning the Mind."
         },
         {
+          "type": "flashcardDeck",
+          "instructions": "Flip each card to review the distress-tolerance skill sets from this module.",
+          "flashcards": [
+            {
+              "id": "fcd-1",
+              "front": "TIPP",
+              "back": "Temperature, Intense Exercise, Paced Breathing, Progressive Muscle Relaxation — the fastest-acting crisis survival skills. They rapidly alter the body's physiological state to lower emotional intensity."
+            },
+            {
+              "id": "fcd-2",
+              "front": "ACCEPTS",
+              "back": "A set of distraction strategies for getting through a crisis without making it worse — used when emotional intensity is too high for problem-solving."
+            },
+            {
+              "id": "fcd-3",
+              "front": "IMPROVE the Moment",
+              "back": "Techniques for tolerating and improving the present moment when the situation cannot yet be solved."
+            },
+            {
+              "id": "fcd-4",
+              "front": "Radical Acceptance",
+              "back": "Fully acknowledging reality as it is, without fighting it — a reality-acceptance skill for pain that cannot be changed. Not approval, not resignation."
+            },
+            {
+              "id": "fcd-5",
+              "front": "Willingness vs. Willfulness",
+              "back": "Willingness is the behavioral expression of radical acceptance — doing the next effective thing. Willfulness is the refusal to tolerate the moment."
+            }
+          ]
+        },
+        {
+          "type": "callout",
+          "calloutType": "clinical",
+          "title": "Radical Acceptance ≠ Approval",
+          "content": "<p>Radical acceptance means fully acknowledging reality as it is, without fighting it — it is <strong>not</strong> approval and <strong>not</strong> resignation. <em>Willingness</em> is its behavioral expression: showing up and doing the next effective thing. <em>Willfulness</em> is the opposite stance — refusing to tolerate the moment and insisting reality should be different.</p>"
+        },
+        {
           "type": "text",
           "content": "<h3>The Purpose of Distress Tolerance</h3>\n<p>Distress tolerance is the DBT skill module most directly concerned with the management of emotional crises. While emotion regulation skills (Module 6) aim to reduce the frequency and intensity of unwanted emotions over time, distress tolerance skills are designed for the immediate, acute moments when emotional pain feels unbearable and the risk of self-destructive behavior is highest. The fundamental premise of distress tolerance is that pain is an inevitable part of life, that not all painful situations can be immediately changed or resolved, and that the ability to tolerate distress without making it worse is a critically important skill that can be taught and learned.</p>\n<p>For individuals with emotional dysregulation, the experience of intense emotional pain often triggers a frantic search for immediate relief. This search can lead to impulsive behaviors that provide short-term relief but create long-term problems: substance use, self-harm, binge eating, reckless spending, impulsive relationship decisions, verbal aggression, and other crisis-driven actions. Distress tolerance skills provide an alternative pathway—a set of strategies that acknowledge the reality of the pain while preventing the escalation of the crisis into a catastrophe.</p>\n<p>It is important to understand that distress tolerance is not about eliminating pain, achieving serenity, or learning to enjoy suffering. It is about developing the capacity to experience intense emotional pain without engaging in behaviors that will make the situation worse. This is a pragmatic, achievable goal that can be taught even to clients who have spent years relying on maladaptive coping strategies. The skills do not require the client to feel better—they require the client to not make things worse while the emotional storm passes.</p>",
           "accessibility": {
             "role": "article",
             "ariaLabel": "Purpose of distress tolerance"
           }
+        },
+        {
+          "type": "cardSort",
+          "instructions": "Sort each distress-tolerance skill into its DBT category.",
+          "categories": [
+            "Crisis Survival",
+            "Reality Acceptance"
+          ],
+          "cards": [
+            {
+              "id": "csd-1",
+              "text": "TIPP",
+              "correctCategory": "Crisis Survival"
+            },
+            {
+              "id": "csd-2",
+              "text": "ACCEPTS",
+              "correctCategory": "Crisis Survival"
+            },
+            {
+              "id": "csd-3",
+              "text": "IMPROVE the Moment",
+              "correctCategory": "Crisis Survival"
+            },
+            {
+              "id": "csd-4",
+              "text": "Radical Acceptance",
+              "correctCategory": "Reality Acceptance"
+            },
+            {
+              "id": "csd-5",
+              "text": "Turning the Mind",
+              "correctCategory": "Reality Acceptance"
+            },
+            {
+              "id": "csd-6",
+              "text": "Willingness",
+              "correctCategory": "Reality Acceptance"
+            }
+          ],
+          "explanation": "Crisis survival skills (TIPP, ACCEPTS, IMPROVE) are short-term tactical tools to get through acute distress without self-destructive behavior. Reality acceptance skills (Radical Acceptance, Turning the Mind, Willingness) address accepting painful realities that cannot be changed."
         },
         {
           "type": "imageText",
@@ -1349,12 +1501,75 @@ const COURSE = {
           "content": "This module provides a thorough examination of the Emotion Regulation skill module, which targets the understanding, management, and proactive reduction of unwanted emotional experiences. You will learn the model of emotions, Check the Facts, Opposite Action, Problem Solving, ABC PLEASE, and the Wave Skill."
         },
         {
+          "type": "flashcardDeck",
+          "instructions": "Flip each card to review the core emotion-regulation skills.",
+          "flashcards": [
+            {
+              "id": "fce-1",
+              "front": "Check the Facts",
+              "back": "Pause and systematically examine whether your interpretation of the situation is accurate — the skill targets the interpretation stage of the emotional model."
+            },
+            {
+              "id": "fce-2",
+              "front": "Opposite Action",
+              "back": "When an emotion is unjustified (the interpretation doesn't fit the facts, or the intensity is disproportionate), act counter to the emotion's urge."
+            },
+            {
+              "id": "fce-3",
+              "front": "Problem Solving",
+              "back": "When an emotion is justified and fits the facts, change the situation that is generating the emotion."
+            },
+            {
+              "id": "fce-4",
+              "front": "ABC PLEASE",
+              "back": "Skills that reduce vulnerability to negative emotions over time and help build a life worth living."
+            }
+          ]
+        },
+        {
+          "type": "callout",
+          "calloutType": "tip",
+          "title": "Does the Emotion Fit the Facts?",
+          "content": "<p>This is the central decision in emotion regulation. <strong>Check the Facts</strong> first. If the emotion <em>fits</em> the facts → use <strong>Problem Solving</strong> to change the situation. If it <em>doesn't fit</em> (or is disproportionate) → use <strong>Opposite Action</strong>.</p>"
+        },
+        {
           "type": "text",
           "content": "<h3>The Goals of Emotion Regulation</h3>\n<p>The Emotion Regulation module operates at a fundamentally different level than Distress Tolerance. While distress tolerance focuses on surviving acute emotional crises—getting through the moment without making things worse—emotion regulation aims to change the emotional experience itself. The goals of the emotion regulation module are to understand emotions and their function, reduce emotional vulnerability, decrease the frequency of unwanted emotions, and decrease emotional suffering. These are ambitious goals, but they are achievable through the systematic application of specific, learnable skills.</p>\n<p>A critical starting point for emotion regulation is understanding that emotions are not the enemy. Emotions have evolved to serve essential functions: fear protects us from danger, anger motivates us to address injustice, sadness signals loss and elicits support from others, joy reinforces behaviors that promote wellbeing. The problem is not that emotionally dysregulated individuals have emotions—it is that their emotions are experienced with such intensity, frequency, and duration that they overwhelm the individual's capacity to function effectively. Emotion regulation skills do not aim to eliminate emotions; they aim to bring the emotional system back into balance so that emotions serve their intended functions without dominating and derailing the person's life.</p>\n<p>This distinction between healthy emotional experience and emotional dysregulation is clinically important because many clients have been told—directly or indirectly—that their emotions are the problem. They may have internalized the message that they are \"too emotional,\" \"too sensitive,\" or \"too much.\" The emotion regulation module begins by validating the legitimacy of emotional experience and educating clients about the adaptive functions of every emotion. From this foundation of understanding, the specific regulation skills are introduced not as tools for suppressing emotion but as tools for gaining greater choice over how emotions are experienced and expressed.</p>",
           "accessibility": {
             "role": "article",
             "ariaLabel": "Goals of emotion regulation"
           }
+        },
+        {
+          "type": "cardSort",
+          "instructions": "Check the Facts first, then sort: which skill fits when the emotion does — or does not — fit the facts?",
+          "categories": [
+            "Emotion FITS the facts",
+            "Emotion does NOT fit the facts"
+          ],
+          "cards": [
+            {
+              "id": "cse-1",
+              "text": "Problem Solving",
+              "correctCategory": "Emotion FITS the facts"
+            },
+            {
+              "id": "cse-2",
+              "text": "Change the situation",
+              "correctCategory": "Emotion FITS the facts"
+            },
+            {
+              "id": "cse-3",
+              "text": "Opposite Action",
+              "correctCategory": "Emotion does NOT fit the facts"
+            },
+            {
+              "id": "cse-4",
+              "text": "Act counter to the emotion's urge",
+              "correctCategory": "Emotion does NOT fit the facts"
+            }
+          ],
+          "explanation": "Check the Facts comes first. If the emotion fits the facts, change the situation (Problem Solving). If it doesn't fit, use Opposite Action — act counter to the emotion's urge."
         },
         {
           "type": "imageText",
@@ -1582,6 +1797,27 @@ const COURSE = {
           "content": "This module provides a comprehensive examination of the Interpersonal Effectiveness skill module, which addresses three types of effectiveness in relationships: getting what you need (DEAR MAN), maintaining relationships (GIVE), and preserving self-respect (FAST). You will also explore Walking the Middle Path and the factors that interfere with interpersonal effectiveness."
         },
         {
+          "type": "flashcardDeck",
+          "instructions": "Flip each card to review the interpersonal-effectiveness skill sets and the goal each serves.",
+          "flashcards": [
+            {
+              "id": "fci-1",
+              "front": "DEAR MAN",
+              "back": "Objectives effectiveness — getting what you want or need. A structured request/refusal sequence: Describe, Express, Assert, Reinforce, (stay) Mindful, Appear confident, Negotiate."
+            },
+            {
+              "id": "fci-2",
+              "front": "GIVE",
+              "back": "Relationship effectiveness — maintaining or improving the relationship: be Gentle, act Interested, Validate, use an Easy manner."
+            },
+            {
+              "id": "fci-3",
+              "front": "FAST",
+              "back": "Self-respect effectiveness — keeping your own self-respect and values: be Fair, (no) Apologies, Stick to values, (be) Truthful."
+            }
+          ]
+        },
+        {
           "type": "text",
           "content": "<h3>The Challenge of Interpersonal Effectiveness</h3>\n<p>For individuals with emotional dysregulation, interpersonal relationships are often simultaneously the greatest source of meaning and the greatest source of suffering. The intense emotional sensitivity that characterizes biological vulnerability in the biosocial model means that interpersonal cues—a change in tone of voice, a delayed text message response, a perceived slight in a meeting—can trigger emotional reactions of an intensity that others find confusing or overwhelming. The history of invalidation that constitutes the social side of the biosocial equation means that many of these individuals never learned effective strategies for communicating their needs, resolving conflicts, setting boundaries, or managing the complex give-and-take of close relationships.</p>\n<p>The Interpersonal Effectiveness module addresses these challenges directly by teaching specific, structured communication skills that help clients pursue three distinct types of interpersonal goals. The module recognizes that any interpersonal interaction involves a complex balancing act: the person wants to get their needs met (objective effectiveness), they want to maintain or improve the relationship (relationship effectiveness), and they want to preserve their self-respect (self-respect effectiveness). These goals sometimes align, but they often pull in different directions, requiring the individual to make deliberate, Wise Mind decisions about which priority is most important in a given interaction.</p>\n<p>This framework is liberating for many clients because it makes explicit what is often implicit and confusing: you cannot always maximize all three goals simultaneously, and choosing to prioritize one goal over another in a specific situation is not a failure—it is a skill. A client who decides to let a minor boundary violation go in order to preserve a valued relationship is not being weak; they are making a strategic interpersonal decision. A client who asserts a firm boundary knowing it may damage a relationship is not being aggressive; they are prioritizing self-respect in a situation that demands it.</p>",
           "accessibility": {
@@ -1635,6 +1871,48 @@ const COURSE = {
             "role": "article",
             "ariaLabel": "GIVE and FAST skills"
           }
+        },
+        {
+          "type": "cardSort",
+          "instructions": "Match each skill and aim to the interpersonal goal it serves.",
+          "categories": [
+            "Objectives Effectiveness",
+            "Relationship Effectiveness",
+            "Self-Respect Effectiveness"
+          ],
+          "cards": [
+            {
+              "id": "csi-1",
+              "text": "DEAR MAN",
+              "correctCategory": "Objectives Effectiveness"
+            },
+            {
+              "id": "csi-2",
+              "text": "GIVE",
+              "correctCategory": "Relationship Effectiveness"
+            },
+            {
+              "id": "csi-3",
+              "text": "FAST",
+              "correctCategory": "Self-Respect Effectiveness"
+            },
+            {
+              "id": "csi-4",
+              "text": "Getting what you want or need from the interaction",
+              "correctCategory": "Objectives Effectiveness"
+            },
+            {
+              "id": "csi-5",
+              "text": "Maintaining or improving the relationship",
+              "correctCategory": "Relationship Effectiveness"
+            },
+            {
+              "id": "csi-6",
+              "text": "Keeping your own self-respect and values",
+              "correctCategory": "Self-Respect Effectiveness"
+            }
+          ],
+          "explanation": "DBT distinguishes three interpersonal goals: objectives (DEAR MAN), relationship (GIVE), and self-respect (FAST). They often pull in different directions, requiring Wise Mind decisions about which to prioritize."
         },
         {
           "type": "imageText",
@@ -1823,6 +2101,11 @@ const COURSE = {
           }
         },
         {
+          "type": "keyTakeaway",
+          "title": "What the Evidence Shows",
+          "content": "<p>DBT is among the most extensively researched psychotherapies. Its <strong>strongest</strong> evidence is in Borderline Personality Disorder, where multiple RCTs show reduced self-harm and suicide attempts, fewer psychiatric hospitalizations, lower treatment dropout, and improved global functioning — with growing support for transdiagnostic emotion dysregulation.</p>"
+        },
+        {
           "type": "accordion",
           "accordionItems": [
             {
@@ -1954,49 +2237,6 @@ const COURSE = {
           "accessibility": {
             "role": "group",
             "ariaLabel": "Knowledge check: Recognized limitations of DBT"
-          }
-        },
-        {
-          "type": "reflection",
-          "question": "Having reviewed the evidence base and limitations of DBT, develop a preliminary plan for how you will integrate DBT-informed strategies into your current clinical practice. Identify specific DBT skills or principles you plan to use, the client population or presenting concerns they will be most relevant for, any modifications you may need to make for your specific setting or cultural context, and how you will be transparent with clients about the level of DBT you are providing. What is one concrete step you will take within the next two weeks to begin this integration?",
-          "minLength": 75,
-          "accessibility": {
-            "role": "textbox",
-            "ariaLabel": "Reflection: Your DBT integration plan"
-          }
-        },
-        {
-          "type": "resources",
-          "resources": [
-            {
-              "title": "DBT Skills Training Manual, Second Edition (Linehan, 2015)",
-              "url": "#",
-              "type": "reference"
-            },
-            {
-              "title": "Cognitive-Behavioral Treatment of Borderline Personality Disorder (Linehan, 1993)",
-              "url": "#",
-              "type": "reference"
-            },
-            {
-              "title": "Dialectical Behavior Therapy: Current Indications and Unique Elements (Chapman, 2006)",
-              "url": "#",
-              "type": "reference"
-            },
-            {
-              "title": "Behavioral Tech, LLC — Official DBT Training Organization",
-              "url": "https://behavioraltech.org",
-              "type": "website"
-            },
-            {
-              "title": "DBT-Linehan Board of Certification",
-              "url": "https://dbt-lbc.org",
-              "type": "website"
-            }
-          ],
-          "accessibility": {
-            "role": "list",
-            "ariaLabel": "Additional resources for further study"
           }
         },
         {
@@ -2377,30 +2617,6 @@ const COURSE = {
             "role": "textbox",
             "ariaLabel": "Reflection: Applying DBT skills to your clinical work"
           }
-        },
-        {
-          "type": "references",
-          "title": "References",
-          "content": "<ul class=\"cr-references\"><li class=\"cr-reference\">American Psychiatric Association. (2022). Diagnostic and statistical manual of mental disorders (5th ed., text rev.). https://doi.org/10.1176/appi.books.9780890425787</li><li class=\"cr-reference\">Chapman, A. L. (2006). Dialectical behavior therapy: Current indications and unique elements. Psychiatry (Edgmont), 3(9), 62–68.</li><li class=\"cr-reference\">Crowell, S. E., Beauchaine, T. P., & Linehan, M. M. (2009). A biosocial developmental model of borderline personality: Elaborating and extending Linehan's theory. Psychological Bulletin, 135(3), 495–510. https://doi.org/10.1037/a0015616</li><li class=\"cr-reference\">DeCou, C. R., Comtois, K. A., & Landes, S. J. (2019). Dialectical behavior therapy is effective for the treatment of suicidal behavior: A meta-analysis. Behavior Therapy, 50(1), 60–72. https://doi.org/10.1016/j.beth.2018.03.009</li><li class=\"cr-reference\">Kliem, S., Kröger, C., & Kosfelder, J. (2010). Dialectical behavior therapy for borderline personality disorder: A meta-analysis using mixed-effects modeling. Journal of Consulting and Clinical Psychology, 78(6), 936–951. https://doi.org/10.1037/a0021015</li><li class=\"cr-reference\">Koons, C. R., Robins, C. J., Tweed, J. L., Lynch, T. R., Gonzalez, A. M., Morse, J. Q., Bishop, G. K., Butterfield, M. I., & Bastian, L. A. (2001). Efficacy of dialectical behavior therapy in women veterans with borderline personality disorder. Behavior Therapy, 32(2), 371–390. https://doi.org/10.1016/S0005-7894(01)80009-5</li><li class=\"cr-reference\">Linehan, M. M. (1993). Cognitive-behavioral treatment of borderline personality disorder. Guilford Press.</li><li class=\"cr-reference\">Linehan, M. M. (2015). DBT skills training manual (2nd ed.). Guilford Press.</li><li class=\"cr-reference\">Linehan, M. M. (2015). DBT skills training handouts and worksheets (2nd ed.). Guilford Press.</li><li class=\"cr-reference\">Linehan, M. M. (2020). Building a life worth living: A memoir. Random House.</li><li class=\"cr-reference\">Linehan, M. M., Armstrong, H. E., Suarez, A., Allmon, D., & Heard, H. L. (1991). Cognitive-behavioral treatment of chronically parasuicidal borderline patients. Archives of General Psychiatry, 48(12), 1060–1064. https://doi.org/10.1001/archpsyc.1991.01810360024003</li><li class=\"cr-reference\">Linehan, M. M., Comtois, K. A., Murray, A. M., Brown, M. Z., Gallop, R. J., Heard, H. L., Korslund, K. E., Tutek, D. A., Reynolds, S. K., & Lindenboim, N. (2006). Two-year randomized controlled trial and follow-up of dialectical behavior therapy vs therapy by experts for suicidal behaviors and borderline personality disorder. Archives of General Psychiatry, 63(7), 757–766. https://doi.org/10.1001/archpsyc.63.7.757</li><li class=\"cr-reference\">Linehan, M. M., Korslund, K. E., Harned, M. S., Gallop, R. J., Lungu, A., Neacsiu, A. D., McDavid, J., Comtois, K. A., & Murray-Gregory, A. M. (2015). Dialectical behavior therapy for high suicide risk in individuals with borderline personality disorder: A randomized clinical trial and component analysis. JAMA Psychiatry, 72(5), 475–482. https://doi.org/10.1001/jamapsychiatry.2014.3039</li><li class=\"cr-reference\">Neacsiu, A. D., Eberle, J. W., Kramer, R., Wiesmann, T., & Linehan, M. M. (2014). Dialectical behavior therapy skills for transdiagnostic emotion dysregulation: A pilot randomized controlled trial. Behaviour Research and Therapy, 59, 40–51. https://doi.org/10.1016/j.brat.2014.05.005</li><li class=\"cr-reference\">Panos, P. T., Jackson, J. W., Hasan, O., & Panos, A. (2014). Meta-analysis and systematic review assessing the efficacy of dialectical behavior therapy (DBT). Research on Social Work Practice, 24(2), 213–223. https://doi.org/10.1177/1049731513503047</li><li class=\"cr-reference\">Rizvi, S. L., Steffel, L. M., & Carson-Wong, A. (2013). An overview of dialectical behavior therapy for professional psychologists. Professional Psychology: Research and Practice, 44(2), 73–80. https://doi.org/10.1037/a0029808</li><li class=\"cr-reference\">Stoffers-Winterling, J. M., Völlm, B. A., Rücker, G., Timmer, A., Huband, N., & Lieb, K. (2012). Psychological therapies for people with borderline personality disorder. Cochrane Database of Systematic Reviews, (8), CD005652. https://doi.org/10.1002/14651858.CD005652.pub2</li></ul>",
-          "references": [
-            "American Psychiatric Association. (2022). Diagnostic and statistical manual of mental disorders (5th ed., text rev.). https://doi.org/10.1176/appi.books.9780890425787",
-            "Chapman, A. L. (2006). Dialectical behavior therapy: Current indications and unique elements. Psychiatry (Edgmont), 3(9), 62–68.",
-            "Crowell, S. E., Beauchaine, T. P., & Linehan, M. M. (2009). A biosocial developmental model of borderline personality: Elaborating and extending Linehan's theory. Psychological Bulletin, 135(3), 495–510. https://doi.org/10.1037/a0015616",
-            "DeCou, C. R., Comtois, K. A., & Landes, S. J. (2019). Dialectical behavior therapy is effective for the treatment of suicidal behavior: A meta-analysis. Behavior Therapy, 50(1), 60–72. https://doi.org/10.1016/j.beth.2018.03.009",
-            "Kliem, S., Kröger, C., & Kosfelder, J. (2010). Dialectical behavior therapy for borderline personality disorder: A meta-analysis using mixed-effects modeling. Journal of Consulting and Clinical Psychology, 78(6), 936–951. https://doi.org/10.1037/a0021015",
-            "Koons, C. R., Robins, C. J., Tweed, J. L., Lynch, T. R., Gonzalez, A. M., Morse, J. Q., Bishop, G. K., Butterfield, M. I., & Bastian, L. A. (2001). Efficacy of dialectical behavior therapy in women veterans with borderline personality disorder. Behavior Therapy, 32(2), 371–390. https://doi.org/10.1016/S0005-7894(01)80009-5",
-            "Linehan, M. M. (1993). Cognitive-behavioral treatment of borderline personality disorder. Guilford Press.",
-            "Linehan, M. M. (2015). DBT skills training manual (2nd ed.). Guilford Press.",
-            "Linehan, M. M. (2015). DBT skills training handouts and worksheets (2nd ed.). Guilford Press.",
-            "Linehan, M. M. (2020). Building a life worth living: A memoir. Random House.",
-            "Linehan, M. M., Armstrong, H. E., Suarez, A., Allmon, D., & Heard, H. L. (1991). Cognitive-behavioral treatment of chronically parasuicidal borderline patients. Archives of General Psychiatry, 48(12), 1060–1064. https://doi.org/10.1001/archpsyc.1991.01810360024003",
-            "Linehan, M. M., Comtois, K. A., Murray, A. M., Brown, M. Z., Gallop, R. J., Heard, H. L., Korslund, K. E., Tutek, D. A., Reynolds, S. K., & Lindenboim, N. (2006). Two-year randomized controlled trial and follow-up of dialectical behavior therapy vs therapy by experts for suicidal behaviors and borderline personality disorder. Archives of General Psychiatry, 63(7), 757–766. https://doi.org/10.1001/archpsyc.63.7.757",
-            "Linehan, M. M., Korslund, K. E., Harned, M. S., Gallop, R. J., Lungu, A., Neacsiu, A. D., McDavid, J., Comtois, K. A., & Murray-Gregory, A. M. (2015). Dialectical behavior therapy for high suicide risk in individuals with borderline personality disorder: A randomized clinical trial and component analysis. JAMA Psychiatry, 72(5), 475–482. https://doi.org/10.1001/jamapsychiatry.2014.3039",
-            "Neacsiu, A. D., Eberle, J. W., Kramer, R., Wiesmann, T., & Linehan, M. M. (2014). Dialectical behavior therapy skills for transdiagnostic emotion dysregulation: A pilot randomized controlled trial. Behaviour Research and Therapy, 59, 40–51. https://doi.org/10.1016/j.brat.2014.05.005",
-            "Panos, P. T., Jackson, J. W., Hasan, O., & Panos, A. (2014). Meta-analysis and systematic review assessing the efficacy of dialectical behavior therapy (DBT). Research on Social Work Practice, 24(2), 213–223. https://doi.org/10.1177/1049731513503047",
-            "Rizvi, S. L., Steffel, L. M., & Carson-Wong, A. (2013). An overview of dialectical behavior therapy for professional psychologists. Professional Psychology: Research and Practice, 44(2), 73–80. https://doi.org/10.1037/a0029808",
-            "Stoffers-Winterling, J. M., Völlm, B. A., Rücker, G., Timmer, A., Huband, N., & Lieb, K. (2012). Psychological therapies for people with borderline personality disorder. Cochrane Database of Systematic Reviews, (8), CD005652. https://doi.org/10.1002/14651858.CD005652.pub2"
-          ]
         }
       ]
     }
@@ -3274,6 +3490,33 @@ const COURSE = {
     "Panos, P. T., Jackson, J. W., Hasan, O., & Panos, A. (2014). Meta-analysis and systematic review assessing the efficacy of dialectical behavior therapy (DBT). Research on Social Work Practice, 24(2), 213–223. https://doi.org/10.1177/1049731513503047",
     "Rizvi, S. L., Steffel, L. M., & Carson-Wong, A. (2013). An overview of dialectical behavior therapy for professional psychologists. Professional Psychology: Research and Practice, 44(2), 73–80. https://doi.org/10.1037/a0029808",
     "Stoffers-Winterling, J. M., Völlm, B. A., Rücker, G., Timmer, A., Huband, N., & Lieb, K. (2012). Psychological therapies for people with borderline personality disorder. Cochrane Database of Systematic Reviews, (8), CD005652. https://doi.org/10.1002/14651858.CD005652.pub2"
+  ],
+  "resources": [
+    {
+      "title": "DBT Skills Training Manual, Second Edition (Linehan, 2015)",
+      "url": "#",
+      "type": "reference"
+    },
+    {
+      "title": "Cognitive-Behavioral Treatment of Borderline Personality Disorder (Linehan, 1993)",
+      "url": "#",
+      "type": "reference"
+    },
+    {
+      "title": "Dialectical Behavior Therapy: Current Indications and Unique Elements (Chapman, 2006)",
+      "url": "#",
+      "type": "reference"
+    },
+    {
+      "title": "Behavioral Tech, LLC — Official DBT Training Organization",
+      "url": "https://behavioraltech.org",
+      "type": "website"
+    },
+    {
+      "title": "DBT-Linehan Board of Certification",
+      "url": "https://dbt-lbc.org",
+      "type": "website"
+    }
   ]
 };
 
