@@ -398,7 +398,14 @@
           });
           if (r.ok) {
             const d = await r.json();
-            courses = (d.courses || []).map(c => ({ ...c, _source: 'courses' }));
+            // Use _collection from backend to correctly identify InteractiveCourse docs.
+            // Without this, draft InteractiveCourses (not returned by /api/interactive-courses
+            // which filters to published only) keep _source:'courses' and route to the wrong
+            // publish endpoint, returning 404.
+            courses = (d.courses || []).map(c => ({
+              ...c,
+              _source: c._collection === 'interactivecourses' ? 'interactivecourses' : 'courses'
+            }));
           }
         } catch(e) {}
 
