@@ -194,9 +194,19 @@ function renderEditor() {
   const sections = c.sections || [];
   const wrap = document.getElementById('sectionList');
   wrap.innerHTML = sections.map((s, i) => {
-    const div = (s.contentBlocks || []).find(b => b && b.type === 'sectionDivider') || {};
-    const title = div.title || s.title || `Section ${i + 1}`;
-    const banner = div.bannerImage || '';
+    const blocks = s.contentBlocks || [];
+    const div = blocks.find(b => b && b.type === 'sectionDivider');
+    const hasDivider = !!div;
+    const dv = div || {};
+    const title = dv.title || s.title || `Section ${i + 1}`;
+    const banner = dv.bannerImage || '';
+    if (!hasDivider) {
+      return `<div class="bg-white rounded-xl border border-burgundy-800/30 p-4 shadow-sm opacity-80">
+        <p class="text-xs text-stone-400 mb-1">Section ${i + 1}</p>
+        <p class="text-sm font-semibold text-navy-500">${esc(title)}</p>
+        <p class="text-xs text-burgundy-800 mt-1">⚠ No header block — this section can't take a banner. Fix in the course seed (add a sectionDivider).</p>
+      </div>`;
+    }
     return `<div class="bg-white rounded-xl border border-stone-100 p-4 shadow-sm">
       <div class="flex gap-4 items-start flex-wrap">
         <div class="w-40 h-24 rounded-lg bg-stone-100 overflow-hidden flex items-center justify-center text-stone-400 text-xs flex-shrink-0" id="secThumb${i}">
@@ -205,7 +215,7 @@ function renderEditor() {
         <div class="flex-1 min-w-[240px]">
           <p class="text-xs text-stone-400 mb-1">Section ${i + 1}</p>
           <input id="secTitle${i}" value="${esc(title)}" class="w-full border border-stone-100 rounded-lg px-2 py-1.5 text-sm font-semibold mb-1">
-          <input id="secSub${i}" value="${esc(div.subtitle || '')}" placeholder="Subtitle (optional)" class="w-full border border-stone-100 rounded-lg px-2 py-1.5 text-sm mb-2">
+          <input id="secSub${i}" value="${esc(dv.subtitle || '')}" placeholder="Subtitle (optional)" class="w-full border border-stone-100 rounded-lg px-2 py-1.5 text-sm mb-2">
           <div class="flex gap-2 flex-wrap">
             <button onclick="openPicker('section',${i})" class="px-2.5 py-1.5 text-xs rounded-lg bg-hunter-700 text-white hover:bg-hunter-800">Choose banner</button>
             <button onclick="saveSection(${i})" class="px-2.5 py-1.5 text-xs rounded-lg bg-navy-500 text-white hover:bg-navy-600">Save section</button>
@@ -441,6 +451,11 @@ async function candidateForSection(i) {
   return null;
 }
 
+function sectionHasDivider(i) {
+  const s = (currentCourse.sections || [])[i];
+  return !!(s && (s.contentBlocks || []).some(b => b && b.type === 'sectionDivider'));
+}
+
 async function autoFillAll() {
   if (!currentCourse) return;
   const btn = document.getElementById('autoFillBtn');
@@ -449,8 +464,9 @@ async function autoFillAll() {
   btn.disabled = true; btn.textContent = 'Filling…';
   status.style.display = 'block';
   currentCourse._pendingBanner = currentCourse._pendingBanner || {};
-  let filled = 0, skipped = 0, missed = 0;
+  let filled = 0, skipped = 0, missed = 0, noDivider = 0;
   for (let i = 0; i < sections.length; i++) {
+    if (!sectionHasDivider(i)) { noDivider++; continue; }   // can't hold a banner
     const div = (sections[i].contentBlocks || []).find(b => b && b.type === 'sectionDivider') || {};
     if (div.bannerImage || (currentCourse._pendingBanner && currentCourse._pendingBanner[i])) { skipped++; continue; }
     status.textContent = `Finding images… section ${i + 1} of ${sections.length} (filled ${filled})`;
@@ -461,10 +477,14 @@ async function autoFillAll() {
       if (thumb) thumb.innerHTML = `<img src="${esc(cand.url)}" style="width:100%;height:100%;object-fit:cover">`;
       filled++;
     } else { missed++; }
-    await new Promise(r => setTimeout(r, 400)); // gentle pacing
+    await new Promise(r => setTimeout(r, 400));
   }
   btn.disabled = false; btn.textContent = '✨ Auto-fill all banners';
-  status.textContent = `Done — staged ${filled} banner${filled === 1 ? '' : 's'}${skipped ? `, skipped ${skipped} already set` : ''}${missed ? `, ${missed} found nothing` : ''}. Review the thumbnails, then click “Save all”.`;
+  status.textContent = `Done — staged ${filled} banner${filled === 1 ? '' : 's'}` +
+    `${skipped ? `, skipped ${skipped} already set` : ''}` +
+    `${missed ? `, ${missed} found nothing` : ''}` +
+    `${noDivider ? `, ${noDivider} section${noDivider === 1 ? '' : 's'} can't take a banner (no header block — needs a seed fix)` : ''}` +
+    `. Review the thumbnails, then click “Save all”.`;
   toast(`Staged ${filled} banners — review, then Save all`);
 }
 
@@ -476,7 +496,7 @@ async function saveAll() {
   const sections = currentCourse.sections || [];
   const btn = document.getElementById('saveAllBtn');
   btn.disabled = true; btn.textContent = 'Saving…';
-  let saved = 0, failed = 0;
+  let saved = 0, failed = 0, noDivider = 0;
   for (let i = 0; i < sections.length; i++) {
     const banner = pending[i];
     const title = document.getElementById('secTitle' + i)?.value;
@@ -487,6 +507,7 @@ async function saveAll() {
     if (title) body.title = title;
     if (subtitle) body.subtitle = subtitle;
     if (!Object.keys(body).length) continue;
+    if (!sectionHasDivider(i)) { noDivider++; continue; }   // no header block — skip, don't error
     try {
       const r = await fetch(`${API_URL}/api/admin/course-presentation/${currentCourse._id}/section/${i}`, {
         method: 'PATCH', headers: { ...authHeaders, 'Content-Type': 'application/json' }, body: JSON.stringify(body),
@@ -498,7 +519,8 @@ async function saveAll() {
     } catch (e) { failed++; }
   }
   btn.disabled = false; btn.textContent = 'Save all';
-  toast(`Saved ${saved} section${saved === 1 ? '' : 's'}${failed ? `, ${failed} failed` : ''}`, failed === 0);
+  const extra = noDivider ? `, skipped ${noDivider} with no header block` : '';
+  toast(`Saved ${saved} section${saved === 1 ? '' : 's'}${failed ? `, ${failed} failed` : ''}${extra}`, failed === 0);
 }
 async function clearBanner(i) {
   await patch(`/api/admin/course-presentation/${currentCourse._id}/section/${i}`, { bannerImage: null }, () => {
