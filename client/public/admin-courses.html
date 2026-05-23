@@ -498,6 +498,27 @@
       document.getElementById('courseCards').innerHTML = items.length === 0
         ? '<div class="text-center py-12 text-forest-500 bg-white rounded-xl border border-burgundy-100">No courses found</div>'
         : items.map(courseCard).join('');
+      wireCardActions();
+    }
+
+    // Delegated handler for card action buttons. Replaces inline onclick="" so that
+    // course titles containing apostrophes/quotes can't break the handler (the old
+    // inline pattern silently failed on such titles — clicks did nothing).
+    let _cardActionsWired = false;
+    function wireCardActions() {
+      if (_cardActionsWired) return;
+      _cardActionsWired = true;
+      document.getElementById('courseCards').addEventListener('click', (e) => {
+        const btn = e.target.closest('[data-cr-act]');
+        if (!btn) return;
+        const d = btn.dataset;
+        switch (d.crAct) {
+          case 'publish':   togglePublish(d.id, d.status, d.title, d.src); break;
+          case 'meta':      openMetaModal(d.id, d.title, d.src, btn); break;
+          case 'duplicate': duplicateCourse(d.id, d.title); break;
+          case 'delete':    deleteCourse(d.id, d.title, d.src); break;
+        }
+      });
     }
 
     function courseCard(c) {
@@ -531,7 +552,7 @@
               </div>
             </div>
             <div class="flex gap-1.5 shrink-0">
-              <button onclick="togglePublish('${c._id}','${c.status}','${esc(c.title)}','${src}')"
+              <button data-cr-act="publish" data-id="${c._id}" data-status="${c.status}" data-title="${esc(c.title)}" data-src="${src}"
                 class="w-8 h-8 rounded-lg flex items-center justify-center text-sm transition-colors ${pub ? 'bg-yellow-50 hover:bg-yellow-100 text-yellow-700' : 'bg-green-50 hover:bg-green-100 text-green-700'}"
                 title="${pub ? 'Unpublish' : 'Publish'}">
                 ${pub ? '📤' : '📥'}
@@ -546,11 +567,11 @@
                 class="w-8 h-8 rounded-lg flex items-center justify-center text-sm bg-forest-50 hover:bg-forest-100 text-forest-700 transition-colors" title="Quick edit">⚡</button>
               <a href="/admin-course-editor.html?id=${c._id}"
                 class="w-8 h-8 rounded-lg flex items-center justify-center text-sm bg-burgundy-50 hover:bg-burgundy-100 text-burgundy-700 transition-colors" title="Full editor">✏️</a>
-              <button onclick="openMetaModal('${c._id}','${esc(c.title)}','${src}',this)"
+              <button data-cr-act="meta" data-id="${c._id}" data-title="${esc(c.title)}" data-src="${src}"
                 class="w-8 h-8 rounded-lg flex items-center justify-center text-sm bg-gold-50 hover:bg-gold-100 text-gold-700 transition-colors" title="Meta & content areas">🏷️</button>
-              <button onclick="duplicateCourse('${c._id}','${esc(c.title)}')"
+              <button data-cr-act="duplicate" data-id="${c._id}" data-title="${esc(c.title)}"
                 class="w-8 h-8 rounded-lg flex items-center justify-center text-sm bg-gold-50 hover:bg-gold-100 text-gold-700 transition-colors" title="Duplicate">📋</button>
-              <button onclick="deleteCourse('${c._id}','${esc(c.title)}','${src}')"
+              <button data-cr-act="delete" data-id="${c._id}" data-title="${esc(c.title)}" data-src="${src}"
                 class="w-8 h-8 rounded-lg flex items-center justify-center text-sm bg-red-50 hover:bg-red-100 text-red-700 transition-colors" title="Delete">🗑️</button>
             </div>
           </div>
