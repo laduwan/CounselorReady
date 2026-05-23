@@ -4,46 +4,57 @@
 //   - course-level header (hero) image + alt + title + subtitle
 //   - per-section banner image + alt, and section header title/subtitle
 //
-// Writes go through mongoose.connection.db.collection('interactivecourses') with
-// updateOne $set/$unset on exact paths (reliable for nested arrays; avoids any
-// strict-schema edge cases). The course-level header fields are also declared on
-// CourseSchema so they read cleanly via the model.
+// Courses are identified by Mongo _id (the codebase convention; falls back to
+// slug). Writes use collection('interactivecourses').updateOne $set/$unset on
+// exact paths. Course-level header fields are declared on CourseSchema so they
+// read cleanly via the model.
 //
 // Mounted at /api/admin/course-presentation (BEFORE the /api/admin catch-all).
+// Endpoints:
+//   PATCH /:id/header
+//   PATCH /:id/section/:sectionIndex
 
 import express from 'express';
 import mongoose from 'mongoose';
 import { protect, requireAdmin } from '../middleware/auth.js';
 
 const router = express.Router();
-
 const COLLECTION = 'interactivecourses';
 
-// Helper: is a value an explicit "clear" request (null or empty string)?
 const isClear = (v) => v === null || v === '';
 
+// Resolve a course by _id (preferred) or slug. Returns { query, course } or null.
+async function resolveCourse(col, id) {
+  let course = null;
+  let query = null;
+  if (mongoose.Types.ObjectId.isValid(id)) {
+    query = { _id: new mongoose.Types.ObjectId(id) };
+    course = await col.findOne(query);
+  }
+  if (!course) {
+    query = { slug: id };
+    course = await col.findOne(query);
+  }
+  return course ? { query, course } : null;
+}
+
 // ─── Course-level header (hero) ────────────────────────────────────────────
-// PATCH /api/admin/course-presentation/:courseCode/header
+// PATCH /api/admin/course-presentation/:id/header
 // Body (any subset): { headerImage, headerImageAlt, headerTitle, headerSubtitle }
-router.patch('/:courseCode/header', protect, requireAdmin, async (req, res) => {
+router.patch('/:id/header', protect, requireAdmin, async (req, res) => {
   try {
-    const { courseCode } = req.params;
     const col = mongoose.connection.db.collection(COLLECTION);
-    const course = await col.findOne({ courseCode });
-    if (!course) {
-      return res.status(404).json({ success: false, error: `Course not found (courseCode="${courseCode}").` });
-    }
+    const found = await resolveCourse(col, req.params.id);
+    if (!found) return res.status(404).json({ success: false, error: `Course not found (id="${req.params.id}").` });
 
     const FIELDS = ['headerImage', 'headerImageAlt', 'headerTitle', 'headerSubtitle'];
-    const $set = {};
-    const $unset = {};
+    const $set = {}, $unset = {};
     for (const f of FIELDS) {
-      if (!(f in req.body)) continue;          // not provided → leave as-is
+      if (!(f in req.body)) continue;
       const v = req.body[f];
       if (isClear(v)) $unset[f] = '';
       else $set[f] = String(v);
     }
-
     if (!Object.keys($set).length && !Object.keys($unset).length) {
       return res.status(400).json({ success: false, error: 'No header fields provided.' });
     }
@@ -52,18 +63,12 @@ router.patch('/:courseCode/header', protect, requireAdmin, async (req, res) => {
     if (Object.keys($set).length) update.$set = $set;
     if (Object.keys($unset).length) update.$unset = $unset;
 
-    const result = await col.updateOne({ courseCode }, update);
-    if (!result.matchedCount) {
-      return res.status(404).json({ success: false, error: 'Course matched 0 documents on update.' });
-    }
+    const result = await col.updateOne(found.query, update);
+    if (!result.matchedCount) return res.status(404).json({ success: false, error: 'Course matched 0 documents on update.' });
 
-    const updated = await col.findOne(
-      { courseCode },
-      { projection: { headerImage: 1, headerImageAlt: 1, headerTitle: 1, headerSubtitle: 1 } }
-    );
+    const updated = await col.findOne(found.query, { projection: { headerImage: 1, headerImageAlt: 1, headerTitle: 1, headerSubtitle: 1 } });
     return res.json({
       success: true,
-      courseCode,
       header: {
         headerImage: updated.headerImage || null,
         headerImageAlt: updated.headerImageAlt || null,
@@ -78,23 +83,20 @@ router.patch('/:courseCode/header', protect, requireAdmin, async (req, res) => {
 });
 
 // ─── Per-section divider (banner + header text) ─────────────────────────────
-// PATCH /api/admin/course-presentation/:courseCode/section/:sectionIndex
-// sectionIndex is 0-based.
+// PATCH /api/admin/course-presentation/:id/section/:sectionIndex   (0-based)
 // Body (any subset): { bannerImage, bannerAlt, title, subtitle }
-//   - bannerImage explicitly null/"" → clears bannerImage + bannerAlt
-router.patch('/:courseCode/section/:sectionIndex', protect, requireAdmin, async (req, res) => {
+//   bannerImage null/"" → clears bannerImage + bannerAlt
+router.patch('/:id/section/:sectionIndex', protect, requireAdmin, async (req, res) => {
   try {
-    const { courseCode } = req.params;
     const sectionIndex = Number(req.params.sectionIndex);
     if (!Number.isInteger(sectionIndex) || sectionIndex < 0) {
       return res.status(400).json({ success: false, error: 'sectionIndex must be a non-negative integer (0-based).' });
     }
 
     const col = mongoose.connection.db.collection(COLLECTION);
-    const course = await col.findOne({ courseCode });
-    if (!course) {
-      return res.status(404).json({ success: false, error: `Course not found (courseCode="${courseCode}").` });
-    }
+    const found = await resolveCourse(col, req.params.id);
+    if (!found) return res.status(404).json({ success: false, error: `Course not found (id="${req.params.id}").` });
+    const course = found.course;
 
     const sections = Array.isArray(course.sections) ? course.sections : [];
     if (sectionIndex >= sections.length) {
@@ -108,25 +110,20 @@ router.patch('/:courseCode/section/:sectionIndex', protect, requireAdmin, async 
     }
 
     const base = `sections.${sectionIndex}.contentBlocks.${dividerIdx}`;
-    const $set = {};
-    const $unset = {};
+    const $set = {}, $unset = {};
 
-    // bannerImage / bannerAlt
     if ('bannerImage' in req.body) {
       if (isClear(req.body.bannerImage)) {
         $unset[`${base}.bannerImage`] = '';
         $unset[`${base}.bannerAlt`] = '';
       } else {
         $set[`${base}.bannerImage`] = String(req.body.bannerImage);
-        if ('bannerAlt' in req.body && !isClear(req.body.bannerAlt)) {
-          $set[`${base}.bannerAlt`] = String(req.body.bannerAlt);
-        }
+        if ('bannerAlt' in req.body && !isClear(req.body.bannerAlt)) $set[`${base}.bannerAlt`] = String(req.body.bannerAlt);
       }
     } else if ('bannerAlt' in req.body && !isClear(req.body.bannerAlt)) {
       $set[`${base}.bannerAlt`] = String(req.body.bannerAlt);
     }
 
-    // header text: title / subtitle
     for (const f of ['title', 'subtitle']) {
       if (!(f in req.body)) continue;
       const v = req.body[f];
@@ -142,16 +139,13 @@ router.patch('/:courseCode/section/:sectionIndex', protect, requireAdmin, async 
     if (Object.keys($set).length) update.$set = $set;
     if (Object.keys($unset).length) update.$unset = $unset;
 
-    const result = await col.updateOne({ courseCode }, update);
-    if (!result.matchedCount) {
-      return res.status(404).json({ success: false, error: 'Course matched 0 documents on update.' });
-    }
+    const result = await col.updateOne(found.query, update);
+    if (!result.matchedCount) return res.status(404).json({ success: false, error: 'Course matched 0 documents on update.' });
 
-    const fresh = await col.findOne({ courseCode }, { projection: { sections: 1 } });
+    const fresh = await col.findOne(found.query, { projection: { sections: 1 } });
     const d = fresh.sections?.[sectionIndex]?.contentBlocks?.[dividerIdx] || {};
     return res.json({
       success: true,
-      courseCode,
       sectionIndex,
       divider: {
         bannerImage: d.bannerImage || null,
