@@ -11,6 +11,10 @@ If a file is not listed in the task, do not open it, do not edit it, do not refa
 > **Fix what is broken. Nothing else.**
 Do not change colors, fonts, components, emojis, sizing, layout, variable names, or file structure unless explicitly asked. Do not refactor working code. Do not rename things for consistency. Do not reorganize imports. Do not upgrade patterns. If it works, leave it alone.
 ---
+## Seed & Course Authoring
+**Before creating or editing any interactive-course seed, read `docs/SEED_AUTHORING_AND_VIEWER_GUIDE.md`** — verified block-type shapes, the references/resources drawer mechanism, validation gates, and engagement rules. The code (`InteractiveCourse.js`, `interactive-course.html`) overrides any spec doc.
+
+---
 ## Hard Off-Limits Files
 These files are complete and stable. Do NOT open, read, or modify them unless the task prompt explicitly names them:
 ### Backend services — locked
