@@ -423,6 +423,31 @@ function sectionQueryTerm(i) {
   return t.replace(/^section\s*\d+[:.\-]?\s*/i, '').split(/\s+/).slice(0, 4).join(' ');
 }
 
+async function heroCandidate(term) {
+  const ca = (currentCourse.nbccContentAreas || []).join(',');
+  const cat = (currentCourse.categories || []).join(',');
+  try {
+    const r = await fetch(`${API_URL}/api/images/suggest-images?title=${encodeURIComponent(term)}&contentAreas=${encodeURIComponent(ca)}&categories=${encodeURIComponent(cat)}`, { headers: authHeaders });
+    const d = await r.json();
+    const top = d.success && d.data && d.data.images && d.data.images[0];
+    if (top && top.url) return { url: top.url };
+  } catch (_) {}
+  if (!term) return null;
+  try {
+    const r = await fetch(`${API_URL}/api/images/pexels-search?q=${encodeURIComponent(term)}&page=1`, { headers: authHeaders });
+    const d = await r.json();
+    const pick = d.success && d.data && d.data.images && d.data.images[0];
+    if (!pick || !pick.url) return null;
+    const up = await fetch(`${API_URL}/api/images/upload-from-url`, {
+      method: 'POST', headers: { ...authHeaders, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url: pick.url, folder: BANNER_FOLDER, alt: pick.alt || term }),
+    });
+    const ud = await up.json();
+    if (ud.success && ud.data && ud.data.url) return { url: ud.data.url };
+  } catch (_) {}
+  return null;
+}
+
 async function candidateForSection(i) {
   const term = sectionQueryTerm(i);
   const ca = (currentCourse.nbccContentAreas || []).join(',');
@@ -465,6 +490,19 @@ async function autoFillAll() {
   status.style.display = 'block';
   currentCourse._pendingBanner = currentCourse._pendingBanner || {};
   let filled = 0, skipped = 0, missed = 0, noDivider = 0;
+
+  // Course hero first (if not already set)
+  if (!currentCourse.headerImage && !currentCourse._pendingHero) {
+    status.textContent = 'Finding a course header image…';
+    const heroTerm = (document.getElementById('heroTitle').value || currentCourse.title || '')
+      .replace(/[:\-—].*$/, '').split(/\s+/).slice(0, 4).join(' ');
+    const cand = await heroCandidate(heroTerm);
+    if (cand) {
+      currentCourse._pendingHero = cand.url;
+      setHeroPreview(cand.url);
+    }
+    await new Promise(r => setTimeout(r, 400));
+  }
   for (let i = 0; i < sections.length; i++) {
     if (!sectionHasDivider(i)) { noDivider++; continue; }   // can't hold a banner
     const div = (sections[i].contentBlocks || []).find(b => b && b.type === 'sectionDivider') || {};
@@ -497,6 +535,28 @@ async function saveAll() {
   const btn = document.getElementById('saveAllBtn');
   btn.disabled = true; btn.textContent = 'Saving…';
   let saved = 0, failed = 0, noDivider = 0;
+
+  // Save staged hero first (if any)
+  if (currentCourse._pendingHero) {
+    const heroBody = {
+      headerImage: currentCourse._pendingHero,
+      headerTitle: document.getElementById('heroTitle').value || undefined,
+      headerSubtitle: document.getElementById('heroSubtitle').value || undefined,
+    };
+    try {
+      const r = await fetch(`${API_URL}/api/admin/course-presentation/${currentCourse._id}/header`, {
+        method: 'PATCH', headers: { ...authHeaders, 'Content-Type': 'application/json' }, body: JSON.stringify(heroBody),
+      });
+      const d = await r.json();
+      if (r.ok && d.success) {
+        currentCourse.headerImage = heroBody.headerImage;
+        tagImage(heroBody.headerImage, heroBody.headerTitle || currentCourse.title || '');
+        delete currentCourse._pendingHero;
+        saved++;
+      } else { failed++; }
+    } catch (e) { failed++; }
+  }
+
   for (let i = 0; i < sections.length; i++) {
     const banner = pending[i];
     const title = document.getElementById('secTitle' + i)?.value;
