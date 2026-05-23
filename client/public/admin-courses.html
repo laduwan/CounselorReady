@@ -211,6 +211,19 @@
               <option value="needs">⚠️ Needs Attention</option>
             </select>
           </div>
+          <div class="flex items-center gap-2">
+            <label class="text-xs font-medium text-forest-500 uppercase tracking-wide">CE Hrs</label>
+            <select id="ceHoursFilter" onchange="renderCourses()" class="px-2.5 py-2 border border-forest-200 rounded-lg text-sm bg-white">
+              <option value="">All</option>
+              <option value="1">1 hr</option>
+              <option value="2">2 hrs</option>
+              <option value="3">3 hrs</option>
+              <option value="4">4 hrs</option>
+              <option value="5">5 hrs</option>
+              <option value="6">6 hrs</option>
+              <option value="6+">6+ hrs</option>
+            </select>
+          </div>
           <div class="h-8 w-px bg-forest-200"></div>
           <div class="flex items-center gap-1.5">
             <button onclick="bulkPublish(true)" class="inline-flex items-center gap-1 bg-green-50 hover:bg-green-100 text-green-700 font-medium px-3 py-2 rounded-lg text-xs transition-colors">
@@ -463,12 +476,15 @@
       const q = document.getElementById('searchInput').value.toLowerCase();
       const st = document.getElementById('statusFilter').value;
       const ct = document.getElementById('contentFilter').value;
+      const ch = document.getElementById('ceHoursFilter').value;
 
       filtered = allCourses.filter(c => {
         const mQ = !q || (c.title || '').toLowerCase().includes(q) || (c.slug || '').includes(q);
         const mS = !st || c.status === st;
         const mC = !ct || c._health === ct;
-        return mQ && mS && mC;
+        const hrs = c.ceHours || c.ceuHours || 0;
+        const mH = !ch || (ch === '6+' ? hrs > 6 : Math.round(hrs) === parseInt(ch));
+        return mQ && mS && mC && mH;
       });
 
       // Sort: published first, then by health status priority, then title
