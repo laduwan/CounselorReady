@@ -528,6 +528,7 @@
         const btn = e.target.closest('[data-cr-act]');
         if (!btn) return;
         const d = btn.dataset;
+        console.log('[admin-courses] action click:', d.crAct, d.id);
         switch (d.crAct) {
           case 'publish':   togglePublish(d.id, d.status, d.title, d.src); break;
           case 'meta':      openMetaModal(d.id, d.title, d.src, btn); break;
@@ -633,7 +634,11 @@
                 body: JSON.stringify({ publish: pub })
               });
             }
-            if (!r.ok) throw new Error('Update failed');
+            if (!r.ok) {
+              let detail = `HTTP ${r.status}`;
+              try { const j = await r.json(); if (j && (j.error || j.message)) detail = j.error || j.message; } catch(_) {}
+              throw new Error(detail);
+            }
             showToast(pub ? '✓ Published' : '✓ Unpublished', pub ? '#4A7C59' : '#b8893f');
             loadCourses();
           } catch(e) { showToast('Error: ' + e.message, '#dc2626'); }
@@ -646,24 +651,20 @@
       confirm2(`${pub ? 'Publish' : 'Unpublish'} ${targets.length} Courses`,
         `This will ${pub ? 'publish' : 'unpublish'} ${targets.length} courses currently shown.`,
         async () => {
-          let done = 0;
+          let done = 0, failed = 0, lastErr = '';
           for (const c of targets) {
             try {
-              if (c._source === 'courses') {
-                await fetch(`${API_URL}/api/admin/courses/${c._id}/publish`, {
-                  method: 'PATCH', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ publish: pub })
-                });
-              } else {
-                await fetch(`${API_URL}/api/admin/course-presentation/${c._id}/status`, {
-                  method: 'PATCH', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ publish: pub })
-                });
-              }
-              done++;
-            } catch(e) {}
+              const r = (c._source === 'courses')
+                ? await fetch(`${API_URL}/api/admin/courses/${c._id}/publish`, { method: 'PATCH', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ publish: pub }) })
+                : await fetch(`${API_URL}/api/admin/course-presentation/${c._id}/status`, { method: 'PATCH', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ publish: pub }) });
+              if (!r.ok) {
+                failed++;
+                try { const j = await r.json(); if (j && (j.error || j.message)) lastErr = j.error || j.message; } catch(_) { lastErr = `HTTP ${r.status}`; }
+              } else { done++; }
+            } catch(e) { failed++; lastErr = e.message; }
           }
-          showToast(`✓ ${done} courses updated`, '#4A7C59');
+          if (failed === 0) showToast(`✓ ${done} courses updated`, '#4A7C59');
+          else showToast(`${done} updated, ${failed} failed: ${lastErr}`, '#dc2626');
           loadCourses();
         });
     }
