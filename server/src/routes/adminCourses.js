@@ -1305,21 +1305,43 @@ router.put('/courses/:courseId', protect, adminOnly, async (req, res) => {
 });
 
 // @route   PATCH /api/admin/courses/:courseId/publish
-// @desc    Publish or unpublish a course
+// @desc    Publish or unpublish a course (handles both Course and InteractiveCourse)
 // @access  Admin only
 router.patch('/courses/:courseId/publish', protect, adminOnly, async (req, res) => {
   try {
     const { publish } = req.body;
-    
-    const course = await Course.findById(req.params.courseId);
-    
-    if (!course) {
-      return res.status(404).json({ error: 'Course not found' });
+    const courseId = req.params.courseId;
+    const newStatus = publish ? 'published' : 'draft';
+    const newPublishedAt = publish ? new Date() : null;
+
+    // Try legacy Course collection first
+    let course = await Course.findById(courseId).lean();
+    let collection = 'courses';
+
+    if (course) {
+      // Use updateOne to avoid full-document validation on save (protects against
+      // nested subdoc required-field errors in old lesson data)
+      await Course.updateOne(
+        { _id: courseId },
+        { $set: { status: newStatus, publishedAt: newPublishedAt } }
+      );
+    } else {
+      // Fall back to InteractiveCourse (Architecture A) collection
+      course = await InteractiveCourse.findById(courseId).lean();
+      if (!course) {
+        return res.status(404).json({ error: 'Course not found' });
+      }
+      await InteractiveCourse.updateOne(
+        { _id: courseId },
+        { $set: { status: newStatus, publishedAt: newPublishedAt } }
+      );
+      collection = 'interactivecourses';
     }
-    
-    course.status = publish ? 'published' : 'draft';
-    course.publishedAt = publish ? new Date() : null;
-    await course.save();
+
+    // Return refreshed doc
+    const updated = collection === 'interactivecourses'
+      ? await InteractiveCourse.findById(courseId).lean()
+      : await Course.findById(courseId).lean();
 
     // Send new course announcement when publishing
     if (publish) {
@@ -1334,7 +1356,7 @@ router.patch('/courses/:courseId/publish', protect, adminOnly, async (req, res) 
 
     res.json({
       success: true,
-      course,
+      course: updated,
       message: publish ? 'Course published' : 'Course unpublished'
     });
   } catch (error) {
