@@ -4,11 +4,17 @@
  *
  * seedCR501-DBT_Foundations_Clinical_Applications-FULL.js
  *
- * Canonical 6 CE DBT course (CR-501) -> interactivecourses, sections[] schema.
+ * Canonical 5 CE DBT course (CR-501) -> interactivecourses, sections[] schema.
  * Rebuilt from the full course export (modules[] content preserved verbatim).
- * Fixes vs the stripped DB version: full content restored, modules->sections,
- * dead placeholder.com images removed, navy #34495E->#284157, APA references
- * added, maxAttempts:3. Ships as DRAFT (isPublished:false) for review.
+ * Restructured: the Introduction/Overview module (orientation + logistics, not
+ * instruction) was moved to the details page via course fields (description,
+ * objectives, targetAudience); its two substantive blocks (DBT origins + the core
+ * dialectic) were folded into Foundations. Duplicate objectives accordion and the
+ * S1 mini key-terms glossary were dropped (covered by the S9 glossary + inline pills).
+ * CE adjusted 6 -> 5 to reflect lean instructional word count.
+ * Other fixes: modules->sections, dead placeholder.com images removed,
+ * navy #34495E->#284157, APA references in course.references[], maxAttempts:3.
+ * Ships as DRAFT (isPublished:false) for review.
  *
  * Run: node src/scripts/seedCR501-DBT_Foundations_Clinical_Applications-FULL.js
  */
@@ -26,11 +32,12 @@ const COURSE = {
   "slug": "dbt-skills-training-comprehensive",
   "courseCode": "CR-501",
   "subtitle": "A Comprehensive 6-Hour CE Course for Mental Health Professionals",
-  "description": "This comprehensive 6-hour continuing education course provides mental health professionals with a thorough understanding of Dialectical Behavior Therapy (DBT). From its theoretical foundations in biosocial theory and dialectical philosophy to practical applications of the four core skill modules—Mindfulness, Distress Tolerance, Emotion Regulation, and Interpersonal Effectiveness—this course equips clinicians with evidence-based strategies for working with clients who experience emotional dysregulation, self-destructive behaviors, and interpersonal difficulties.",
-  "ceHours": 6,
-  "ceuHours": 6,
+  "description": "A comprehensive educational overview of Dialectical Behavior Therapy (DBT) for licensed mental health professionals. Developed by Marsha Linehan to treat chronically suicidal clients and Borderline Personality Disorder, DBT balances acceptance and change and is now applied across emotion-dysregulation, self-harm, substance-use, eating-disorder, and trauma presentations. This course covers DBT's theoretical foundations, the four core skill modules (Mindfulness, Distress Tolerance, Emotion Regulation, Interpersonal Effectiveness), the structure of comprehensive DBT, the evidence base, and limitations. It provides foundational, DBT-informed knowledge and earns five continuing education hours; it is not DBT-intensive training or certification. Designed for LPCs, LCSWs, LMFTs, psychologists, psychiatric nurse practitioners, and supervised counselors-in-training.",
+  "overview": "A comprehensive educational overview of Dialectical Behavior Therapy (DBT) for licensed mental health professionals. Developed by Marsha Linehan to treat chronically suicidal clients and Borderline Personality Disorder, DBT balances acceptance and change and is now applied across emotion-dysregulation, self-harm, substance-use, eating-disorder, and trauma presentations. This course covers DBT's theoretical foundations, the four core skill modules (Mindfulness, Distress Tolerance, Emotion Regulation, Interpersonal Effectiveness), the structure of comprehensive DBT, the evidence base, and limitations. It provides foundational, DBT-informed knowledge and earns five continuing education hours; it is not DBT-intensive training or certification. Designed for LPCs, LCSWs, LMFTs, psychologists, psychiatric nurse practitioners, and supervised counselors-in-training.",
+  "ceHours": 5,
+  "ceuHours": 5,
   "ceuEligible": true,
-  "credits": 6,
+  "credits": 5,
   "ceCategory": "Clinical Practice",
   "category": "Clinical Practice",
   "contentArea": "Evidence-Based Treatment",
@@ -54,13 +61,12 @@ const COURSE = {
     "Analyze limitations, criticisms, and cultural considerations related to DBT implementation"
   ],
   "targetAudience": [
-    "Licensed Professional Counselors (LPC/LPCC)",
-    "Licensed Mental Health Counselors (LMHC)",
-    "Licensed Clinical Social Workers (LCSW)",
-    "Licensed Marriage and Family Therapists (LMFT)",
+    "Licensed Professional Counselors (LPCs)",
+    "Licensed Clinical Social Workers (LCSWs)",
+    "Licensed Marriage and Family Therapists (LMFTs)",
     "Psychologists",
     "Psychiatric Nurse Practitioners",
-    "Counselors-in-Training under supervision"
+    "Counselors-in-training under supervision"
   ],
   "accessibility": {
     "wcagLevel": "AA",
@@ -71,247 +77,8 @@ const COURSE = {
   },
   "sections": [
     {
-      "title": "Introduction and Course Overview",
-      "order": 1,
-      "contentBlocks": [
-        {
-          "type": "sectionDivider",
-          "sectionNumber": 1,
-          "title": "Introduction and Course Overview",
-          "subtitle": "Understanding the Origins, Purpose, and Scope of Dialectical Behavior Therapy",
-          "accessibility": {
-            "role": "heading",
-            "ariaLevel": 2,
-            "ariaLabel": "Module 1: Introduction and Course Overview"
-          }
-        },
-        {
-          "type": "text",
-          "content": "This introductory module provides a comprehensive overview of Dialectical Behavior Therapy, its origins, its place within the broader landscape of evidence-based psychotherapies, and the structure of this continuing education course. You will explore the historical context that gave rise to DBT, understand who created it and why, and preview the clinical competencies you will develop across all nine modules."
-        },
-        {
-          "type": "text",
-          "content": "<h3>Welcome to the Course</h3>\n<p>Dialectical Behavior Therapy (DBT) has become one of the most widely researched and implemented psychotherapeutic treatments in the mental health field. Originally developed by Marsha M. Linehan in the late 1980s and early 1990s at the University of Washington, DBT was created to address a clinical problem that had long frustrated therapists: the treatment of chronically suicidal individuals, particularly those diagnosed with Borderline Personality Disorder (BPD). What emerged from that effort was not simply a new set of therapeutic techniques, but an entirely new framework for understanding emotional suffering and for balancing the seemingly contradictory therapeutic goals of acceptance and change.</p>\n<p>This six-hour continuing education course is designed for licensed mental health professionals who wish to develop a thorough, clinically grounded understanding of DBT. Whether you are encountering DBT for the first time or deepening knowledge you have acquired through previous training, this course will provide you with the theoretical foundations, practical skills, and evidence-based context you need to integrate DBT-informed strategies into your clinical practice. The course has been developed in accordance with the standards of the National Board for Certified Counselors (NBCC) Approved Continuing Education Provider (ACEP) program, and successful completion will earn you six continuing education credits.</p>\n<p>Throughout this course, you will engage with interactive content including clinical vignettes, decision-point exercises, accordion panels with detailed explanations, knowledge check questions with rationales, matching exercises, and reflective prompts. These elements are designed not merely to transmit information but to facilitate the kind of active, applied learning that translates into improved clinical practice. Research in adult learning consistently demonstrates that interactive engagement with material produces superior retention and transfer compared to passive reading alone. Accordingly, you are encouraged to take your time with each module, expand every accordion panel, consider each reflection prompt carefully, and attempt all knowledge checks before reviewing the explanations provided.</p>",
-          "accessibility": {
-            "role": "article",
-            "ariaLabel": "Welcome to the course"
-          }
-        },
-        {
-          "type": "imageText",
-          "imageAlt": "Conceptual illustration representing the origins of Dialectical Behavior Therapy and its development at the University of Washington",
-          "title": "The Historical Context of DBT",
-          "content": "<p>To fully appreciate DBT, it is essential to understand the clinical problem it was designed to solve. In the 1970s and 1980s, individuals with Borderline Personality Disorder were widely regarded as among the most difficult clients to treat. Standard cognitive-behavioral interventions frequently proved insufficient, and many therapists found themselves caught in a painful cycle: pushing for behavioral change triggered emotional crises in clients, while focusing solely on validation and acceptance failed to produce meaningful progress. Dropout rates were extraordinarily high, therapist burnout was endemic, and the therapeutic relationship itself often became a source of distress for both parties.</p>\n<p>Marsha Linehan, then a young researcher at the University of Washington, began experimenting with standard CBT approaches for chronically suicidal women. She quickly discovered that a purely change-oriented approach was experienced by clients as invalidating—as if the therapist were saying that the client's pain was not real or not important. But when Linehan shifted to a purely acceptance-oriented approach, clients felt validated but made no behavioral progress. The core insight that would eventually define DBT emerged from this clinical impasse: effective treatment required both acceptance AND change, held simultaneously in dialectical tension.</p>\n<p>This insight drew Linehan to the philosophical tradition of dialectics—the idea that reality is composed of opposing forces that can be synthesized into a higher truth—and to the contemplative practices of Zen Buddhism, which emphasize radical acceptance of the present moment. By integrating these perspectives with the empirical rigor of cognitive-behavioral therapy, Linehan created a treatment that could validate a client's experience of unbearable suffering while simultaneously teaching them the skills to build a life worth living.</p>",
-          "imagePosition": "left",
-          "highlight": false,
-          "accessibility": {
-            "role": "article",
-            "ariaLabel": "Historical context of DBT development"
-          }
-        },
-        {
-          "type": "text",
-          "content": "<h3>Who Is This Course For?</h3>\n<p>This course is designed for a broad audience of mental health professionals, including Licensed Professional Counselors (LPCs), Licensed Clinical Social Workers (LCSWs), Licensed Marriage and Family Therapists (LMFTs), Psychologists, Psychiatric Nurse Practitioners, and counselors-in-training under supervision. You do not need prior DBT training to benefit from this course, though professionals with some exposure to DBT concepts may find that the course deepens and contextualizes their existing knowledge in valuable ways.</p>\n<p>The clinical skills and conceptual frameworks presented in this course are applicable across a wide range of practice settings. Whether you work in an outpatient private practice, a community mental health center, an intensive outpatient program, an inpatient psychiatric unit, a residential treatment facility, or a school-based counseling setting, the principles and techniques of DBT can enhance your therapeutic effectiveness. DBT-informed strategies are particularly relevant for clinicians who work with clients presenting with emotional dysregulation, chronic suicidality, self-harm behaviors, substance use disorders, eating disorders, treatment-resistant depression, and complex trauma.</p>\n<p>It is important to note that this course provides a comprehensive overview of DBT and equips you with foundational knowledge and DBT-informed clinical strategies. It does not constitute DBT-intensive training or certification. Clinicians who wish to identify themselves as DBT therapists or to implement a comprehensive DBT program should pursue additional training through organizations such as Behavioral Tech, LLC, or seek certification through the DBT-Linehan Board of Certification (DBT-LBC). This course will, however, provide you with the knowledge base to make informed decisions about whether and how to pursue that additional training.</p>",
-          "accessibility": {
-            "role": "article",
-            "ariaLabel": "Target audience for this course"
-          }
-        },
-        {
-          "type": "accordion",
-          "accordionItems": [
-            {
-              "title": "Course Learning Objectives",
-              "content": "<p>Upon successful completion of this course, you will be able to:</p>\n<p><strong>1. Articulate the Theoretical Foundations of DBT:</strong> You will understand biosocial theory, dialectical philosophy, and the transaction model of emotion dysregulation. You will be able to explain how these theoretical pillars inform every aspect of DBT treatment, from the therapeutic stance to the specific skills taught.</p>\n<p><strong>2. Identify and Describe the Four Core Skill Modules:</strong> You will have a thorough understanding of Mindfulness, Distress Tolerance, Emotion Regulation, and Interpersonal Effectiveness. For each module, you will know the key skills, their clinical applications, and how they interrelate.</p>\n<p><strong>3. Differentiate DBT from Standard CBT:</strong> You will understand the specific structural and philosophical differences between DBT and standard cognitive-behavioral therapy, and you will be able to identify clinical presentations where DBT is indicated over other approaches.</p>\n<p><strong>4. Describe the Components of Comprehensive DBT:</strong> You will understand the four modes of comprehensive DBT—individual therapy, group skills training, phone coaching, and the therapist consultation team—and the specific function each serves.</p>\n<p><strong>5. Apply DBT Techniques to Clinical Scenarios:</strong> You will practice matching specific DBT skills and strategies to realistic clinical presentations through interactive exercises and decision-point activities.</p>\n<p><strong>6. Evaluate the Empirical Evidence Base:</strong> You will be able to discuss the research evidence supporting DBT for various populations and conditions, and you will understand where the evidence is strongest and where it is more preliminary.</p>\n<p><strong>7. Analyze Limitations and Cultural Considerations:</strong> You will critically evaluate the limitations, criticisms, and cultural considerations related to DBT implementation, positioning you to use DBT responsibly and thoughtfully in diverse practice contexts.</p>"
-            },
-            {
-              "title": "Course Structure and Navigation",
-              "content": "<p>This course consists of nine modules organized in a progressive sequence that builds knowledge from foundational theory to applied clinical skills to critical evaluation:</p>\n<p><strong>Module 1 (current):</strong> Introduction and Course Overview — Provides historical context, course objectives, and navigation guidance.</p>\n<p><strong>Module 2:</strong> Biosocial Theory and the Dialectical Worldview — Examines the theoretical pillars of DBT including biosocial theory, dialectical philosophy, and the transaction model of emotion dysregulation.</p>\n<p><strong>Module 3:</strong> The Structure of Comprehensive DBT — Explores the four components of comprehensive DBT treatment: individual therapy, group skills training, phone coaching, and the consultation team.</p>\n<p><strong>Modules 4-7:</strong> The Four Core Skill Modules — Dedicated modules for Mindfulness, Distress Tolerance, Emotion Regulation, and Interpersonal Effectiveness, each with detailed skill instruction and clinical application exercises.</p>\n<p><strong>Module 8:</strong> Evidence Base, Limitations, and Integration — Evaluates the empirical research supporting DBT, examines criticisms and limitations, and provides practical strategies for integration into existing practice.</p>\n<p><strong>Module 9:</strong> Glossary and Clinical Application Exercise — A comprehensive 35-term DBT glossary and a 12-scenario clinical application exercise to consolidate your learning.</p>\n<p>After completing all nine modules, you will take a 20-question final assessment. A score of 80% or higher is required to pass, and you have up to three attempts. Upon passing, you will complete a course evaluation and attestation before receiving your certificate of completion for six continuing education hours.</p>"
-            },
-            {
-              "title": "How to Get the Most from This Course",
-              "content": "<p><strong>Expand Every Panel:</strong> Accordion panels contain essential content that contributes to your learning. Do not skip them. The course tracking system monitors your engagement with all interactive elements.</p>\n<p><strong>Attempt Knowledge Checks Before Reading Explanations:</strong> Each module contains knowledge check questions designed to reinforce key concepts. Try to answer each question based on your understanding before reading the explanation. This retrieval practice strengthens memory encoding and helps you identify areas where you may need to review.</p>\n<p><strong>Engage with Reflection Prompts:</strong> Reflection prompts ask you to connect course content to your own clinical practice. Taking even two or three minutes to genuinely consider each prompt will significantly enhance your ability to transfer what you learn to your work with clients.</p>\n<p><strong>Complete the Matching Exercises:</strong> Scenario-based matching exercises help you practice the applied skill of selecting appropriate DBT interventions for specific clinical presentations. This is the kind of decision-making you will engage in regularly when using DBT-informed strategies with clients.</p>\n<p><strong>Take Notes:</strong> Research on learning consistently shows that the act of taking notes—particularly notes written in your own words—enhances retention and understanding. Consider keeping a notebook or digital document alongside this course where you can record key insights, questions, and ideas for how to apply what you are learning.</p>\n<p><strong>Plan Your Time:</strong> This is a six-hour course. While you can complete it at your own pace, we recommend completing no more than two to three modules per sitting to allow adequate time for processing and reflection. Many learners find it helpful to spread the course over two or three sessions.</p>"
-            }
-          ],
-          "accessibility": {
-            "role": "region",
-            "ariaLabel": "Course objectives and structure accordion"
-          }
-        },
-        {
-          "type": "multipleChoice",
-          "question": "What clinical problem was DBT originally developed to address?",
-          "options": [
-            {
-              "text": "Generalized anxiety disorder in adolescents",
-              "isCorrect": false
-            },
-            {
-              "text": "Chronically suicidal individuals, particularly those with Borderline Personality Disorder",
-              "isCorrect": true
-            },
-            {
-              "text": "Treatment-resistant major depressive disorder in older adults",
-              "isCorrect": false
-            },
-            {
-              "text": "Substance use disorders in outpatient community mental health settings",
-              "isCorrect": false
-            }
-          ],
-          "explanation": "DBT was originally developed by Marsha Linehan at the University of Washington to treat chronically suicidal individuals, most of whom met criteria for Borderline Personality Disorder. The treatment emerged from the clinical observation that standard CBT alone was insufficient for this population because a purely change-oriented approach was experienced as invalidating.",
-          "accessibility": {
-            "role": "form",
-            "ariaLabel": "Knowledge check: DBT origins"
-          }
-        },
-        {
-          "type": "imageText",
-          "imageAlt": "Illustration of the dialectical balance between acceptance and change in DBT",
-          "title": "The Core Dialectic: Acceptance and Change",
-          "content": "<p>The single most important concept in DBT—the idea that unifies every aspect of the treatment—is the dialectical tension between acceptance and change. This is not merely a therapeutic technique; it is a fundamental philosophical stance that shapes how the DBT therapist understands human suffering, constructs the therapeutic relationship, and delivers every intervention.</p>\n<p>In standard CBT, the emphasis is primarily on change: identifying maladaptive cognitions, challenging distorted thinking, modifying dysfunctional behaviors, and building new skills. While these change-oriented strategies are powerful and well-supported by research, Linehan discovered that for individuals with severe emotional dysregulation, change-focused interventions alone could be experienced as deeply invalidating. When a therapist says, in effect, \"Let's change the way you think about this,\" the client may hear, \"The way you think about this is wrong,\" which can trigger shame, emotional escalation, and withdrawal from treatment.</p>\n<p>Conversely, acceptance-oriented approaches—such as those found in person-centered therapy or in certain applications of mindfulness—validate the client's experience and communicate that their pain is real and understandable. However, acceptance alone does not help the client develop the concrete skills they need to manage crises, regulate emotions, and build a life that feels worth living. A therapist who only validates may inadvertently communicate that there is nothing the client can do to improve their situation.</p>\n<p>DBT resolves this tension not by choosing one side over the other, but by holding both simultaneously. The DBT therapist communicates: \"Your pain is real and makes sense given your history AND you need to learn new skills to manage that pain more effectively.\" This dialectical synthesis—the \"and\" rather than \"but\"—is what distinguishes DBT from both standard CBT and purely acceptance-based approaches. It permeates every aspect of the treatment, from the individual therapy session to the skills training group to the phone coaching call.</p>",
-          "imagePosition": "right",
-          "highlight": true,
-          "accessibility": {
-            "role": "article",
-            "ariaLabel": "Core dialectic of acceptance and change"
-          }
-        },
-        {
-          "type": "multipleChoice",
-          "question": "Which three intellectual traditions does DBT integrate?",
-          "options": [
-            {
-              "text": "Psychoanalysis, humanistic psychology, and behaviorism",
-              "isCorrect": false
-            },
-            {
-              "text": "Cognitive-behavioral therapy, dialectical philosophy, and Zen Buddhist contemplative practices",
-              "isCorrect": true
-            },
-            {
-              "text": "Attachment theory, systems theory, and motivational interviewing",
-              "isCorrect": false
-            },
-            {
-              "text": "Existential philosophy, Gestalt therapy, and neuroscience",
-              "isCorrect": false
-            }
-          ],
-          "explanation": "DBT uniquely integrates three intellectual traditions: (1) cognitive-behavioral therapy, which provides the empirical framework and change-oriented strategies; (2) dialectical philosophy, which provides the overarching framework for synthesizing opposites—particularly acceptance and change; and (3) Zen Buddhist contemplative practices, which inform the mindfulness skills and the stance of radical acceptance.",
-          "accessibility": {
-            "role": "form",
-            "ariaLabel": "Knowledge check: DBT intellectual traditions"
-          }
-        },
-        {
-          "type": "text",
-          "content": "<h3>DBT in the Contemporary Mental Health Landscape</h3>\n<p>Since its initial development in the early 1990s, DBT has grown from a specialized treatment for a single disorder into one of the most widely practiced evidence-based psychotherapies in the world. The treatment has been adapted for use with adolescents, older adults, forensic populations, individuals with intellectual disabilities, and clients presenting with a wide range of conditions beyond BPD, including eating disorders, substance use disorders, treatment-resistant depression, and post-traumatic stress disorder. DBT programs now operate in virtually every type of clinical setting, from private practices to state psychiatric hospitals, from university counseling centers to veterans' affairs medical centers, and from community mental health agencies to correctional facilities.</p>\n<p>The growth of DBT has been accompanied by the development of a robust training infrastructure. Organizations such as Behavioral Tech, LLC (founded by Linehan herself) and the DBT-Linehan Board of Certification (DBT-LBC) provide training, consultation, and certification programs that help ensure treatment fidelity. At the same time, research on DBT continues to expand, with new studies exploring adaptations for diverse populations, mechanisms of change, optimal treatment duration, and the comparative effectiveness of full comprehensive DBT versus specific DBT components used in isolation or in combination with other treatments.</p>\n<p>For practicing clinicians, this expanding landscape presents both opportunities and challenges. The opportunities are clear: DBT offers a powerful set of tools for working with some of the most distressed and difficult-to-treat clients in mental health care. The challenges include the resource intensity of comprehensive DBT, the need for ongoing training and consultation, and the importance of distinguishing between evidence-based DBT and the many informal or incomplete adaptations that sometimes carry the DBT label without meeting the standards of the treatment as it was designed and researched. This course will help you navigate these challenges by providing a thorough understanding of what DBT actually is, what the evidence supports, and how you can most responsibly integrate DBT-informed strategies into your own practice.</p>",
-          "accessibility": {
-            "role": "article",
-            "ariaLabel": "DBT in contemporary mental health"
-          }
-        },
-        {
-          "type": "multipleChoice",
-          "question": "This course provides which of the following?",
-          "options": [
-            {
-              "text": "Certification as a DBT therapist through the DBT-Linehan Board of Certification",
-              "isCorrect": false
-            },
-            {
-              "text": "A comprehensive overview of DBT foundations with six continuing education credits",
-              "isCorrect": true
-            },
-            {
-              "text": "Supervised clinical practice in delivering DBT skills groups",
-              "isCorrect": false
-            },
-            {
-              "text": "Authorization to market yourself as a certified DBT practitioner",
-              "isCorrect": false
-            }
-          ],
-          "explanation": "This course provides a comprehensive overview of DBT and earns six continuing education credits upon successful completion. It does not constitute DBT-intensive training or certification. Clinicians wishing to identify as DBT therapists should pursue additional training through Behavioral Tech, LLC, or certification through the DBT-Linehan Board of Certification.",
-          "accessibility": {
-            "role": "form",
-            "ariaLabel": "Knowledge check: course scope"
-          }
-        },
-        {
-          "type": "multiSelect",
-          "question": "Which of the following clinical populations can benefit from DBT-informed interventions? Select all that apply.",
-          "options": [
-            {
-              "text": "Individuals with Borderline Personality Disorder",
-              "isCorrect": true
-            },
-            {
-              "text": "Clients with eating disorders such as bulimia nervosa and binge eating disorder",
-              "isCorrect": true
-            },
-            {
-              "text": "Adolescents with self-harm behaviors and emotional dysregulation",
-              "isCorrect": true
-            },
-            {
-              "text": "Individuals with substance use disorders and co-occurring emotional dysregulation",
-              "isCorrect": true
-            }
-          ],
-          "explanation": "All four populations can benefit from DBT-informed interventions. While DBT was originally developed for adults with BPD, it has been successfully adapted for adolescents, individuals with eating disorders, substance use disorders, and many other conditions characterized by emotional dysregulation and behavioral dysfunction.",
-          "accessibility": {
-            "role": "form",
-            "ariaLabel": "Knowledge check: DBT populations"
-          }
-        },
-        {
-          "type": "text",
-          "content": "<h3>The Significance of DBT in Modern Mental Health Practice</h3>\n<p>The impact of Dialectical Behavior Therapy on the field of mental health cannot be overstated. Before Linehan's pioneering work, clinicians working with chronically suicidal individuals and those diagnosed with Borderline Personality Disorder often experienced a profound sense of helplessness and frustration. Treatment dropout rates exceeded fifty percent in many settings, and the prevailing clinical culture frequently blamed clients for their own treatment failures—characterizing them as manipulative, attention-seeking, or fundamentally untreatable. This clinical nihilism had devastating consequences for both clients and therapists. Clients internalized the message that they were beyond help, reinforcing the very hopelessness that drove their suicidal behavior. Therapists burned out at alarming rates, with many abandoning work with this population entirely.</p>\n<p>DBT fundamentally transformed this landscape by providing a structured, evidence-based framework that gave clinicians a clear roadmap for treatment and gave clients a tangible set of skills for managing their emotional pain. The treatment's emphasis on the dialectical balance between acceptance and change offered a philosophical resolution to the clinical impasse that had stymied the field for decades. By explicitly acknowledging that clients were doing the best they could while simultaneously insisting that they needed to do better, DBT created a therapeutic environment in which change became possible without the experience of invalidation that had undermined previous treatment approaches.</p>\n<p>The ripple effects of DBT's success have extended far beyond the treatment of Borderline Personality Disorder. The skills-based approach that Linehan developed has influenced the broader field of psychotherapy in ways that continue to expand. Mindfulness-based interventions, which were relatively obscure in Western clinical practice before DBT brought them to mainstream attention, are now integrated into dozens of evidence-based treatments for conditions ranging from depression to chronic pain to substance use disorders. The concept of emotional validation as a clinical intervention—rather than merely a relational nicety—has permeated therapeutic training programs across orientations. And the structured approach to skills training that DBT pioneered has been adapted for use in schools, correctional facilities, primary care settings, and corporate wellness programs.</p>\n<p>For the practicing clinician, understanding DBT is no longer optional—it is an essential component of clinical competence. Even if you never implement a comprehensive DBT program, the theoretical frameworks, clinical strategies, and specific skills that you will learn in this course will enhance your effectiveness with any client who presents with emotional dysregulation, interpersonal difficulties, or self-destructive behavioral patterns. These presentations are among the most common in clinical practice, cutting across diagnostic categories and appearing in virtually every treatment setting. The investment you are making in this continuing education course will pay dividends across your entire caseload and throughout your career.</p>",
-          "accessibility": {
-            "role": "article",
-            "ariaLabel": "Significance of DBT in modern practice"
-          }
-        },
-        {
-          "type": "accordion",
-          "accordionItems": [
-            {
-              "title": "Key Terminology You Will Encounter in This Course",
-              "content": "<p>Before proceeding to the theoretical and clinical content, it is helpful to familiarize yourself with several key terms that will appear throughout the course:</p>\n<p><strong>Dialectics:</strong> A philosophical framework holding that reality is composed of opposing forces whose synthesis produces growth and change. In DBT, the primary dialectic is between acceptance and change.</p>\n<p><strong>Biosocial Theory:</strong> DBT's explanatory model for the development of emotional dysregulation, positing that it arises from the transaction between biological emotional vulnerability and an invalidating social environment.</p>\n<p><strong>Emotional Dysregulation:</strong> A pattern of emotional responding characterized by heightened sensitivity to emotional stimuli, intense emotional reactions, and a slow return to emotional baseline, resulting in difficulty managing emotional experiences effectively.</p>\n<p><strong>Validation:</strong> A therapeutic intervention in which the clinician communicates that the client's emotional experience is understandable and makes sense within its context—without necessarily agreeing with the client's interpretations or behaviors.</p>\n<p><strong>Skills Training:</strong> The structured, educational component of DBT in which clients learn and practice specific behavioral skills organized into four modules: Mindfulness, Distress Tolerance, Emotion Regulation, and Interpersonal Effectiveness.</p>\n<p><strong>Chain Analysis:</strong> A detailed, step-by-step examination of the sequence of events, thoughts, emotions, and behaviors leading up to a problematic behavior, used to identify points of intervention and alternative responses.</p>\n<p><strong>Wise Mind:</strong> The dialectical synthesis of emotional experience (Emotion Mind) and rational analysis (Reasonable Mind), representing an intuitive state of knowing that integrates both logic and feeling.</p>\n<p><strong>Radical Acceptance:</strong> The practice of fully acknowledging reality as it is, without fighting, denying, or judging it—while remaining committed to working toward change where change is possible.</p>"
-            },
-            {
-              "title": "How This Course Differs from DBT Certification Training",
-              "content": "<p>It is important to set clear expectations about what this continuing education course provides and what it does not. This course is a comprehensive educational overview of Dialectical Behavior Therapy designed to earn you six continuing education credits toward the maintenance of your professional license. It will give you a thorough understanding of DBT's theoretical foundations, clinical strategies, skills modules, evidence base, and limitations.</p>\n<p>This course does NOT constitute DBT-intensive training, nor does it qualify you for certification as a DBT therapist. Comprehensive DBT training typically involves a multi-day intensive workshop followed by an extended period of supervised practice and consultation, often spanning twelve to eighteen months. Certification through the DBT-Linehan Board of Certification (DBT-LBC) requires documented evidence of training, supervision, and adherence to specific practice standards.</p>\n<p>What this course DOES provide is the foundational knowledge you need to begin integrating DBT-informed strategies into your existing practice, to make informed decisions about whether to pursue additional DBT training, and to better serve clients whose clinical presentations involve emotional dysregulation. Many clinicians find that even a solid educational overview of DBT significantly enhances their clinical effectiveness, particularly in the areas of validation skills, mindfulness-based interventions, and structured approaches to crisis management.</p>\n<p>If you complete this course and wish to deepen your DBT skills, we recommend exploring training opportunities through Behavioral Tech, LLC (the organization founded by Marsha Linehan), the DBT-Linehan Board of Certification, or other training programs that adhere to the standards of adherent DBT practice. Your regional professional associations may also offer DBT-focused workshops and consultation groups.</p>"
-            }
-          ],
-          "accessibility": {
-            "role": "region",
-            "ariaLabel": "Key terminology and course scope accordion"
-          }
-        },
-        {
-          "type": "text",
-          "content": "<h3>The Continuing Evolution of DBT: Where the Field Is Heading</h3>\n<p>As you begin this course, it is worth noting that DBT is not a static treatment frozen in the form Linehan first described in 1993. The treatment continues to evolve in response to new research findings, clinical innovations, and the changing landscape of mental health care. Several developments are particularly noteworthy for practicing clinicians.</p>\n<p>First, there is growing interest in the mechanisms of change in DBT—the specific processes through which the treatment produces its effects. Early research focused primarily on whether DBT works (efficacy trials), but the field is now increasingly asking how and why it works (mechanism research). Preliminary findings suggest that improvements in emotion regulation skills and reductions in experiential avoidance may be key mechanisms, but much work remains to be done. Understanding the mechanisms of change has practical implications for clinicians because it can help identify which components of DBT are most essential and which can be adapted or abbreviated without losing therapeutic effectiveness.</p>\n<p>Second, technology-enhanced DBT is an active area of development. Mobile applications that prompt skills use, virtual skills training groups, online coaching platforms, and digital diary card systems are being developed and evaluated. These innovations have the potential to address some of the access barriers associated with comprehensive DBT by making skills training available to clients who cannot attend in-person groups, providing real-time coaching support between sessions, and facilitating more detailed monitoring of skill use and symptom patterns. The COVID-19 pandemic accelerated the adoption of telehealth-delivered DBT, and emerging research suggests that virtual delivery can be effective, though questions remain about whether certain components such as group skills training lose efficacy in a virtual format.</p>\n<p>Third, the transdiagnostic application of DBT skills continues to expand. Rather than adapting DBT for specific diagnostic categories one at a time, some researchers and clinicians are advocating for a unified DBT skills approach that targets the underlying process of emotional dysregulation regardless of its diagnostic expression. This approach aligns with the broader movement in mental health toward transdiagnostic treatment models that focus on shared mechanisms rather than disorder-specific interventions. For the practicing clinician, this trend is encouraging because it suggests that a solid grounding in DBT skills—the grounding this course aims to provide—will be applicable across an increasingly wide range of clinical presentations.</p>",
-          "accessibility": {
-            "role": "article",
-            "ariaLabel": "Continuing evolution of DBT"
-          }
-        },
-        {
-          "type": "text",
-          "content": "<h3>Module Summary</h3>\n<p>In this introductory module, you established the foundation for your study of Dialectical Behavior Therapy. You learned that DBT was developed by Marsha Linehan in the late 1980s and early 1990s to address the treatment of chronically suicidal individuals with Borderline Personality Disorder—a population for whom standard CBT approaches proved insufficient. You explored the core insight that effective treatment requires the simultaneous pursuit of both acceptance and change, held in dialectical tension. You learned that DBT integrates three intellectual traditions: cognitive-behavioral therapy, dialectical philosophy, and Zen Buddhist contemplative practices. You reviewed the course learning objectives, the nine-module structure, and the final assessment requirements. And you identified your personal learning goals for the course. In the next module, you will examine the theoretical foundations of DBT in depth, beginning with biosocial theory and the dialectical worldview.</p>",
-          "accessibility": {
-            "role": "article",
-            "ariaLabel": "Module 1 summary"
-          }
-        }
-      ]
-    },
-    {
       "title": "Biosocial Theory and the Dialectical Worldview",
-      "order": 2,
+      "order": 1,
       "contentBlocks": [
         {
           "type": "sectionDivider",
@@ -325,8 +92,58 @@ const COURSE = {
           }
         },
         {
+          "type": "imageText",
+          "imageAlt": "Conceptual illustration representing the origins of Dialectical Behavior Therapy and its development at the University of Washington",
+          "title": "The Historical Context of DBT",
+          "content": "<p>To fully appreciate DBT, it is essential to understand the clinical problem it was designed to solve. In the 1970s and 1980s, individuals with Borderline Personality Disorder were widely regarded as among the most difficult clients to treat. Standard cognitive-behavioral interventions frequently proved insufficient, and many therapists found themselves caught in a painful cycle: pushing for behavioral change triggered emotional crises in clients, while focusing solely on {{callout:validation}} and acceptance failed to produce meaningful progress. Dropout rates were extraordinarily high, therapist burnout was endemic, and the therapeutic relationship itself often became a source of distress for both parties.</p>\n<p>Marsha Linehan, then a young researcher at the University of Washington, began experimenting with standard CBT approaches for chronically suicidal women. She quickly discovered that a purely change-oriented approach was experienced by clients as invalidating—as if the therapist were saying that the client's pain was not real or not important. But when Linehan shifted to a purely acceptance-oriented approach, clients felt validated but made no behavioral progress. The core insight that would eventually define DBT emerged from this clinical impasse: effective treatment required both acceptance AND change, held simultaneously in dialectical tension.</p>\n<p>This insight drew Linehan to the philosophical tradition of {{callout:dialectics}}—the idea that reality is composed of opposing forces that can be synthesized into a higher truth—and to the contemplative practices of Zen Buddhism, which emphasize radical acceptance of the present moment. By integrating these perspectives with the empirical rigor of cognitive-behavioral therapy, Linehan created a treatment that could validate a client's experience of unbearable suffering while simultaneously teaching them the skills to build a life worth living.</p>",
+          "imagePosition": "left",
+          "highlight": false,
+          "accessibility": {
+            "role": "article",
+            "ariaLabel": "Historical context of DBT development"
+          },
+          "callouts": {
+            "dialectics": {
+              "label": "Dialectics",
+              "body": "A philosophical approach involving the synthesis of opposing forces. In DBT, the fundamental dialectic is between acceptance and change. Dialectical thinking rejects rigid…",
+              "type": "definition"
+            },
+            "validation": {
+              "label": "Validation",
+              "body": "The communication that an individual's responses make sense and are understandable within their current context. In DBT, validation is a core therapeutic strategy that…",
+              "type": "definition"
+            }
+          }
+        },
+        {
+          "type": "imageText",
+          "imageAlt": "Illustration of the dialectical balance between acceptance and change in DBT",
+          "title": "The Core Dialectic: Acceptance and Change",
+          "content": "<p>The single most important concept in DBT—the idea that unifies every aspect of the treatment—is the dialectical tension between acceptance and change. This is not merely a therapeutic technique; it is a fundamental philosophical stance that shapes how the DBT therapist understands human suffering, constructs the therapeutic relationship, and delivers every intervention.</p>\n<p>In standard CBT, the emphasis is primarily on change: identifying maladaptive cognitions, challenging distorted thinking, modifying dysfunctional behaviors, and building new skills. While these change-oriented strategies are powerful and well-supported by research, Linehan discovered that for individuals with severe emotional dysregulation, change-focused interventions alone could be experienced as deeply invalidating. When a therapist says, in effect, \"Let's change the way you think about this,\" the client may hear, \"The way you think about this is wrong,\" which can trigger shame, emotional escalation, and withdrawal from treatment.</p>\n<p>Conversely, acceptance-oriented approaches—such as those found in person-centered therapy or in certain applications of mindfulness—validate the client's experience and communicate that their pain is real and understandable. However, acceptance alone does not help the client develop the concrete skills they need to manage crises, regulate emotions, and build a life that feels worth living. A therapist who only validates may inadvertently communicate that there is nothing the client can do to improve their situation.</p>\n<p>DBT resolves this tension not by choosing one side over the other, but by holding both simultaneously. The DBT therapist communicates: \"Your pain is real and makes sense given your history AND you need to learn new skills to manage that pain more effectively.\" This dialectical synthesis—the \"and\" rather than \"but\"—is what distinguishes DBT from both standard CBT and purely acceptance-based approaches. It permeates every aspect of the treatment, from the individual therapy session to the skills training group to the {{callout:phonecoaching}} call.</p>",
+          "imagePosition": "right",
+          "highlight": true,
+          "accessibility": {
+            "role": "article",
+            "ariaLabel": "Core dialectic of acceptance and change"
+          },
+          "callouts": {
+            "phonecoaching": {
+              "label": "Phone Coaching",
+              "body": "The third component of comprehensive DBT. Brief (5–15 minute), focused, between-session contacts designed to help clients apply DBT skills in real-time. Not crisis counseling…",
+              "type": "definition"
+            }
+          }
+        },
+        {
           "type": "text",
-          "content": "This module examines the two theoretical pillars that provide the intellectual foundation for every aspect of DBT: biosocial theory, which explains how emotional dysregulation develops through the transaction between biological vulnerability and environmental invalidation, and dialectical philosophy, which provides the framework for integrating acceptance and change in the therapeutic process."
+          "content": "This module examines the two theoretical pillars that provide the intellectual foundation for every aspect of DBT: {{callout:biosocial}}, which explains how emotional dysregulation develops through the transaction between biological vulnerability and environmental invalidation, and dialectical philosophy, which provides the framework for integrating acceptance and change in the therapeutic process.",
+          "callouts": {
+            "biosocial": {
+              "label": "Biosocial Theory",
+              "body": "DBT's foundational theoretical model explaining the development of emotion dysregulation through the transaction between biological vulnerability (heightened emotional…",
+              "type": "definition"
+            }
+          }
         },
         {
           "type": "keyTakeaway",
@@ -355,10 +172,17 @@ const COURSE = {
         },
         {
           "type": "text",
-          "content": "<h3>The Social Component: The Invalidating Environment</h3>\n<p>The second element of biosocial theory is the invalidating environment. An invalidating environment is one in which the individual's private experiences—their emotions, thoughts, sensations, and beliefs—are persistently dismissed, minimized, punished, or responded to erratically. Invalidation can take many forms, ranging from overt abuse and neglect to subtler patterns of emotional dismissal that may occur even in well-intentioned families.</p>\n<p>Linehan identifies several specific patterns of invalidation that are particularly damaging when they interact with biological emotional vulnerability. The first is the direct dismissal of emotional experience: telling a child who is crying that they have nothing to cry about, that they are overreacting, or that they need to toughen up. The second is the intermittent reinforcement of extreme emotional expression: ignoring moderate expressions of distress while responding only to escalated or crisis-level behavior, which teaches the individual that only extreme emotional displays are taken seriously. The third is the oversimplification of problem-solving: communicating that emotional problems are easy to solve and that the individual's inability to solve them reflects a personal deficiency rather than a genuine difficulty.</p>\n<p>It is essential to understand that the concept of the invalidating environment does not assign blame to families or caregivers. Many invalidating environments arise from caregivers who are doing their best with limited resources, limited understanding of emotional sensitivity, or their own histories of invalidation. A well-meaning parent who tells an emotionally sensitive child to \"just calm down\" is not intentionally causing harm—they may genuinely believe that this instruction is helpful. But for the biologically vulnerable child, the repeated experience of having their emotional reality denied or minimized has cumulative and profound effects on their developing capacity for emotion regulation, self-understanding, and interpersonal trust.</p>\n<p>Furthermore, cultural context plays a significant role in what constitutes invalidation. Cultural norms around emotional expression, gender expectations, stoicism, and family communication patterns can all create invalidating dynamics for emotionally vulnerable individuals, even in the absence of any intent to cause harm. A DBT therapist must understand these cultural dimensions to avoid the trap of applying a narrowly Western, middle-class framework to the assessment of invalidation across diverse populations.</p>",
+          "content": "<h3>The Social Component: The {{callout:invalidatingenv}}</h3>\n<p>The second element of biosocial theory is the invalidating environment. An invalidating environment is one in which the individual's private experiences—their emotions, thoughts, sensations, and beliefs—are persistently dismissed, minimized, punished, or responded to erratically. Invalidation can take many forms, ranging from overt abuse and neglect to subtler patterns of emotional dismissal that may occur even in well-intentioned families.</p>\n<p>Linehan identifies several specific patterns of invalidation that are particularly damaging when they interact with biological emotional vulnerability. The first is the direct dismissal of emotional experience: telling a child who is crying that they have nothing to cry about, that they are overreacting, or that they need to toughen up. The second is the intermittent reinforcement of extreme emotional expression: ignoring moderate expressions of distress while responding only to escalated or crisis-level behavior, which teaches the individual that only extreme emotional displays are taken seriously. The third is the oversimplification of problem-solving: communicating that emotional problems are easy to solve and that the individual's inability to solve them reflects a personal deficiency rather than a genuine difficulty.</p>\n<p>It is essential to understand that the concept of the invalidating environment does not assign blame to families or caregivers. Many invalidating environments arise from caregivers who are doing their best with limited resources, limited understanding of emotional sensitivity, or their own histories of invalidation. A well-meaning parent who tells an emotionally sensitive child to \"just calm down\" is not intentionally causing harm—they may genuinely believe that this instruction is helpful. But for the biologically vulnerable child, the repeated experience of having their emotional reality denied or minimized has cumulative and profound effects on their developing capacity for emotion regulation, self-understanding, and interpersonal trust.</p>\n<p>Furthermore, cultural context plays a significant role in what constitutes invalidation. Cultural norms around emotional expression, gender expectations, stoicism, and family communication patterns can all create invalidating dynamics for emotionally vulnerable individuals, even in the absence of any intent to cause harm. A DBT therapist must understand these cultural dimensions to avoid the trap of applying a narrowly Western, middle-class framework to the assessment of invalidation across diverse populations.</p>",
           "accessibility": {
             "role": "article",
             "ariaLabel": "The invalidating environment"
+          },
+          "callouts": {
+            "invalidatingenv": {
+              "label": "Invalidating Environment",
+              "body": "An environment that persistently communicates that the individual's internal experiences—emotions, thoughts, desires, needs—are wrong, inaccurate, inappropriate, or not to be…",
+              "type": "definition"
+            }
           }
         },
         {
@@ -589,7 +413,7 @@ const COURSE = {
     },
     {
       "title": "The Structure of Comprehensive DBT",
-      "order": 3,
+      "order": 2,
       "contentBlocks": [
         {
           "type": "sectionDivider",
@@ -604,14 +428,34 @@ const COURSE = {
         },
         {
           "type": "text",
-          "content": "This module examines the four components of comprehensive DBT: individual therapy, group skills training, phone coaching, and the therapist consultation team. You will learn the treatment target hierarchy, the function of diary cards and behavioral chain analysis, and the key structural differences between DBT and standard CBT."
+          "content": "This module examines the four components of comprehensive DBT: individual therapy, group skills training, phone coaching, and the therapist consultation team. You will learn the treatment target hierarchy, the function of diary cards and {{callout:chainanalysis}}, and the key structural differences between DBT and standard CBT.",
+          "callouts": {
+            "chainanalysis": {
+              "label": "Behavioral Chain Analysis",
+              "body": "A detailed, step-by-step examination of the sequence of events, thoughts, emotions, body sensations, and behaviors that led to a specific problem behavior. Chain analysis…",
+              "type": "definition"
+            }
+          }
+        },
+        {
+          "type": "callout",
+          "calloutType": "ethics",
+          "title": "Ethical Consideration: Scope & Competence",
+          "content": "<p>This course builds the framework and <strong>DBT-informed</strong> strategies you can integrate into practice — it is not certification to deliver comprehensive DBT. Practice within your competence and scope, and pursue intensive training and supervision before representing yourself as a comprehensive DBT provider.</p>"
         },
         {
           "type": "text",
-          "content": "<h3>A Multi-Modal Treatment System</h3>\n<p>Comprehensive DBT is not a single intervention; it is an integrated treatment system composed of four distinct but interdependent components. Each component serves a specific therapeutic function, and the model was designed so that the components work together synergistically to address the complex needs of clients with pervasive emotion dysregulation. Understanding the role of each component is essential even for clinicians who plan to implement only DBT-informed interventions, because it illuminates the therapeutic logic behind the full model and helps clinicians identify which elements may be most beneficial for their specific practice contexts.</p>\n<p>Standard comprehensive DBT was originally designed as a one-year outpatient treatment program, though the duration may be extended based on clinical need. During this year, clients typically attend weekly individual therapy sessions (approximately 50–60 minutes), weekly group skills training sessions (approximately 2–2.5 hours), and have access to between-session phone coaching with their individual therapist. Simultaneously, therapists participate in a weekly consultation team meeting. This level of treatment intensity reflects Linehan's recognition that clients with severe emotion dysregulation need more than a single weekly therapy hour to acquire, practice, and generalize new behavioral skills.</p>",
+          "content": "<h3>A Multi-Modal Treatment System</h3>\n<p>Comprehensive DBT is not a single intervention; it is an integrated treatment system composed of four distinct but interdependent components. Each component serves a specific therapeutic function, and the model was designed so that the components work together synergistically to address the complex needs of clients with pervasive emotion dysregulation. Understanding the role of each component is essential even for clinicians who plan to implement only DBT-informed interventions, because it illuminates the therapeutic logic behind the full model and helps clinicians identify which elements may be most beneficial for their specific practice contexts.</p>\n<p>Standard comprehensive DBT was originally designed as a one-year outpatient treatment program, though the duration may be extended based on clinical need. During this year, clients typically attend weekly individual therapy sessions (approximately 50–60 minutes), weekly group skills training sessions (approximately 2–2.5 hours), and have access to between-session phone coaching with their individual therapist. Simultaneously, therapists participate in a weekly {{callout:consultteam}} meeting. This level of treatment intensity reflects Linehan's recognition that clients with severe emotion dysregulation need more than a single weekly therapy hour to acquire, practice, and generalize new behavioral skills.</p>",
           "accessibility": {
             "role": "article",
             "ariaLabel": "Overview of comprehensive DBT structure"
+          },
+          "callouts": {
+            "consultteam": {
+              "label": "Consultation Team",
+              "body": "The fourth component of comprehensive DBT, often described as 'therapy for the therapist.' A weekly meeting of all therapists within a DBT program that provides clinical case…",
+              "type": "definition"
+            }
           }
         },
         {
@@ -622,10 +466,22 @@ const COURSE = {
         },
         {
           "type": "text",
-          "content": "<h3>Component 1: Individual Therapy</h3>\n<p>Individual therapy is the primary arena for applying DBT skills to the specific problems in a client's life. Unlike some therapeutic approaches where the content of sessions is driven primarily by what the client wants to discuss, DBT individual therapy follows a structured hierarchy of treatment targets. This hierarchy ensures that the most dangerous and life-threatening behaviors are addressed first, followed by therapy-interfering behaviors, followed by quality-of-life-interfering behaviors, and finally by the acquisition of behavioral skills.</p>\n<p>The treatment target hierarchy in standard DBT is organized as follows. The first priority is always life-threatening behaviors, including suicidal ideation, suicide attempts, self-harm, and homicidal ideation or behavior. If a client has engaged in or is at imminent risk of life-threatening behavior, this becomes the focus of the session regardless of what other issues the client or therapist might prefer to discuss. The second priority is therapy-interfering behaviors—actions by either the client or the therapist that undermine the therapeutic process. For the client, this might include missing sessions, coming late, not completing homework assignments, or behaving in ways that push the therapist toward burnout. For the therapist, this might include being late, being unprepared, or failing to return phone calls. The third priority is quality-of-life-interfering behaviors, such as substance use, financial mismanagement, unsafe sexual behavior, housing instability, or other patterns that prevent the client from building a life worth living. The fourth priority is increasing behavioral skills—helping the client apply the skills learned in group training to their daily life.</p>\n<p>Within each session, the DBT individual therapist uses a structured tool called the diary card to identify which treatment targets are active. The diary card is a daily self-monitoring form that clients complete between sessions, tracking emotions, urges (including urges to self-harm or use substances), specific target behaviors, and use of DBT skills. Reviewing the diary card at the beginning of each session allows the therapist and client to quickly identify the highest-priority targets and ensures that treatment stays focused and goal-directed rather than drifting into less critical material.</p>\n<p>A core skill of the DBT individual therapist is behavioral chain analysis—a detailed, step-by-step examination of the sequence of events, thoughts, emotions, and behaviors that led to a specific problem behavior. Chain analysis is not interrogation; it is a collaborative investigation conducted with validation and curiosity. The therapist and client trace the chain from the prompting event through vulnerability factors, links in the chain, the problem behavior itself, and the consequences. The goal is to identify points in the chain where a different skill or behavioral response could have changed the outcome.</p>",
+          "content": "<h3>Component 1: Individual Therapy</h3>\n<p>Individual therapy is the primary arena for applying DBT skills to the specific problems in a client's life. Unlike some therapeutic approaches where the content of sessions is driven primarily by what the client wants to discuss, DBT individual therapy follows a structured hierarchy of treatment targets. This hierarchy ensures that the most dangerous and life-threatening behaviors are addressed first, followed by therapy-interfering behaviors, followed by quality-of-life-interfering behaviors, and finally by the acquisition of behavioral skills.</p>\n<p>The {{callout:targethierarchy}} in standard DBT is organized as follows. The first priority is always life-threatening behaviors, including suicidal ideation, suicide attempts, self-harm, and homicidal ideation or behavior. If a client has engaged in or is at imminent risk of life-threatening behavior, this becomes the focus of the session regardless of what other issues the client or therapist might prefer to discuss. The second priority is therapy-interfering behaviors—actions by either the client or the therapist that undermine the therapeutic process. For the client, this might include missing sessions, coming late, not completing homework assignments, or behaving in ways that push the therapist toward burnout. For the therapist, this might include being late, being unprepared, or failing to return phone calls. The third priority is quality-of-life-interfering behaviors, such as substance use, financial mismanagement, unsafe sexual behavior, housing instability, or other patterns that prevent the client from building a life worth living. The fourth priority is increasing behavioral skills—helping the client apply the skills learned in group training to their daily life.</p>\n<p>Within each session, the DBT individual therapist uses a structured tool called the {{callout:diarycard}} to identify which treatment targets are active. The diary card is a daily self-monitoring form that clients complete between sessions, tracking emotions, urges (including urges to self-harm or use substances), specific target behaviors, and use of DBT skills. Reviewing the diary card at the beginning of each session allows the therapist and client to quickly identify the highest-priority targets and ensures that treatment stays focused and goal-directed rather than drifting into less critical material.</p>\n<p>A core skill of the DBT individual therapist is behavioral chain analysis—a detailed, step-by-step examination of the sequence of events, thoughts, emotions, and behaviors that led to a specific problem behavior. Chain analysis is not interrogation; it is a collaborative investigation conducted with validation and curiosity. The therapist and client trace the chain from the prompting event through vulnerability factors, links in the chain, the problem behavior itself, and the consequences. The goal is to identify points in the chain where a different skill or behavioral response could have changed the outcome.</p>",
           "accessibility": {
             "role": "article",
             "ariaLabel": "Component 1: Individual Therapy in DBT"
+          },
+          "callouts": {
+            "diarycard": {
+              "label": "Diary Card",
+              "body": "A daily self-monitoring form that clients complete between sessions, tracking emotions, urges (including self-harm and substance use urges), specific target behaviors, and…",
+              "type": "definition"
+            },
+            "targethierarchy": {
+              "label": "Treatment Target Hierarchy",
+              "body": "The structured priority system guiding DBT individual therapy sessions: (1) life-threatening behaviors (always first priority), (2) therapy-interfering behaviors (by client…",
+              "type": "definition"
+            }
           }
         },
         {
@@ -790,10 +646,17 @@ const COURSE = {
         },
         {
           "type": "text",
-          "content": "<h3>Behavioral Chain Analysis and Solution Analysis</h3>\n<p>Behavioral chain analysis is the primary assessment and intervention tool used in DBT individual therapy. When a client reports engaging in a target behavior—particularly a life-threatening or therapy-interfering behavior—the therapist guides the client through a detailed, moment-by-moment reconstruction of the entire sequence of events that led to the behavior. This reconstruction begins with the identification of the prompting event (the external or internal event that initiated the behavioral chain) and proceeds through every link in the chain: the thoughts that arose, the emotions that were triggered, the physical sensations that accompanied those emotions, the action urges that developed, any skills that were attempted, and the ultimate behavior along with its immediate and delayed consequences.</p>\n<p>The purpose of chain analysis is not to assign blame or to make the client feel guilty about their behavior. Rather, it serves three essential clinical functions. First, it helps both the therapist and the client understand the specific factors that contributed to the behavior in this particular instance. Emotional dysregulation rarely follows a simple, direct path from trigger to behavior; the chain typically reveals a complex sequence of escalating cognitive, emotional, and behavioral events, each of which influenced the next. By making this sequence explicit, chain analysis transforms a confusing and shame-inducing experience into a comprehensible process that can be analyzed and modified.</p>\n<p>Second, chain analysis identifies multiple potential points of intervention along the chain. At any link in the sequence, the client could potentially have used a skill to interrupt the escalation and redirect toward a more effective response. Perhaps the client could have used Check the Facts when the initial interpretation of the prompting event set the chain in motion. Perhaps they could have used TIPP skills when physiological arousal began to escalate. Perhaps they could have used DEAR MAN when an interpersonal conflict intensified. By identifying these intervention points, the therapist and client can develop a specific, concrete plan for responding differently when similar chains begin to unfold in the future.</p>\n<p>Third, chain analysis is followed by solution analysis, in which the therapist and client collaboratively generate and evaluate potential solutions for each link in the chain. Solutions may include skills training (teaching a specific skill the client lacked), cognitive modification (examining and restructuring problematic interpretations), exposure-based strategies (confronting avoided emotions or situations), contingency management (modifying the environmental reinforcement patterns that maintain the behavior), or environmental intervention (changing aspects of the client's situation that contribute to the problematic chain). The result is a detailed, individualized action plan that prepares the client for the next time they encounter a similar triggering event.</p>",
+          "content": "<h3>Behavioral Chain Analysis and Solution Analysis</h3>\n<p>Behavioral chain analysis is the primary assessment and intervention tool used in DBT individual therapy. When a client reports engaging in a target behavior—particularly a life-threatening or therapy-interfering behavior—the therapist guides the client through a detailed, moment-by-moment reconstruction of the entire sequence of events that led to the behavior. This reconstruction begins with the identification of the prompting event (the external or internal event that initiated the behavioral chain) and proceeds through every link in the chain: the thoughts that arose, the emotions that were triggered, the physical sensations that accompanied those emotions, the action urges that developed, any skills that were attempted, and the ultimate behavior along with its immediate and delayed consequences.</p>\n<p>The purpose of chain analysis is not to assign blame or to make the client feel guilty about their behavior. Rather, it serves three essential clinical functions. First, it helps both the therapist and the client understand the specific factors that contributed to the behavior in this particular instance. Emotional dysregulation rarely follows a simple, direct path from trigger to behavior; the chain typically reveals a complex sequence of escalating cognitive, emotional, and behavioral events, each of which influenced the next. By making this sequence explicit, chain analysis transforms a confusing and shame-inducing experience into a comprehensible process that can be analyzed and modified.</p>\n<p>Second, chain analysis identifies multiple potential points of intervention along the chain. At any link in the sequence, the client could potentially have used a skill to interrupt the escalation and redirect toward a more effective response. Perhaps the client could have used Check the Facts when the initial interpretation of the prompting event set the chain in motion. Perhaps they could have used TIPP skills when physiological arousal began to escalate. Perhaps they could have used {{callout:dearman}} when an interpersonal conflict intensified. By identifying these intervention points, the therapist and client can develop a specific, concrete plan for responding differently when similar chains begin to unfold in the future.</p>\n<p>Third, chain analysis is followed by solution analysis, in which the therapist and client collaboratively generate and evaluate potential solutions for each link in the chain. Solutions may include skills training (teaching a specific skill the client lacked), cognitive modification (examining and restructuring problematic interpretations), exposure-based strategies (confronting avoided emotions or situations), contingency management (modifying the environmental reinforcement patterns that maintain the behavior), or environmental intervention (changing aspects of the client's situation that contribute to the problematic chain). The result is a detailed, individualized action plan that prepares the client for the next time they encounter a similar triggering event.</p>",
           "accessibility": {
             "role": "article",
             "ariaLabel": "Behavioral chain analysis and solution analysis"
+          },
+          "callouts": {
+            "dearman": {
+              "label": "DEAR MAN",
+              "body": "The primary interpersonal effectiveness skill set for objective effectiveness—getting what you want or saying no. Describe the situation factually, Express feelings using 'I'…",
+              "type": "definition"
+            }
           }
         },
         {
@@ -824,7 +687,7 @@ const COURSE = {
     },
     {
       "title": "Core Skill Module: Mindfulness",
-      "order": 4,
+      "order": 3,
       "contentBlocks": [
         {
           "type": "sectionDivider",
@@ -839,7 +702,14 @@ const COURSE = {
         },
         {
           "type": "text",
-          "content": "This module provides an in-depth examination of the Mindfulness skill module, the foundational skill set of DBT. You will learn the three states of mind, the three 'What' skills, the three 'How' skills, and the concept of Wise Mind. Clinical applications and practice strategies are integrated throughout."
+          "content": "This module provides an in-depth examination of the Mindfulness skill module, the foundational skill set of DBT. You will learn the three states of mind, the three 'What' skills, the three 'How' skills, and the concept of {{callout:wisemind}}. Clinical applications and practice strategies are integrated throughout.",
+          "callouts": {
+            "wisemind": {
+              "label": "Wise Mind",
+              "body": "The dialectical synthesis of Reasonable Mind and Emotion Mind. Integrates logical analysis with emotional experience to produce balanced, effective decision-making. A central…",
+              "type": "definition"
+            }
+          }
         },
         {
           "type": "flashcardDeck",
@@ -900,12 +770,24 @@ const COURSE = {
           "type": "imageText",
           "imageAlt": "Venn diagram showing Reasonable Mind, Emotion Mind, and their overlap forming Wise Mind",
           "title": "The Three States of Mind",
-          "content": "<p>DBT organizes mindfulness around a central conceptual model: the three states of mind. Understanding these states provides clients with a framework for recognizing where they are at any given moment and for understanding where they want to be.</p>\n<p><strong>Reasonable Mind</strong> is the state governed by logic, facts, evidence, and rational analysis. When you are in Reasonable Mind, you approach situations intellectually, weighing pros and cons, analyzing data, and making decisions based on factual information. Reasonable Mind is task-oriented and analytical. It is the state that allows you to balance a checkbook, follow a recipe, or analyze a research study. The limitation of Reasonable Mind is that it can be disconnected from emotional experience, leading to decisions that are logical but fail to account for the emotional realities of a situation.</p>\n<p><strong>Emotion Mind</strong> is the state governed by feelings, moods, and emotional impulses. When you are in Emotion Mind, your thinking and behavior are controlled by your current emotional state. Emotions feel like facts—if you feel rejected, the relationship must be over; if you feel anxious, the situation must be dangerous. Emotion Mind is passionate, creative, and deeply connected to personal values and desires. Its limitation is that it can lead to impulsive, poorly considered actions that create additional problems.</p>\n<p><strong>Wise Mind</strong> is the synthesis of Reasonable Mind and Emotion Mind—the dialectical integration of logic and emotion. Wise Mind is the state in which a person can access both their rational understanding and their emotional experience, honoring both without being dominated by either. Linehan describes Wise Mind as the \"still, calm place\" within each person that knows what is true and what is needed. It is not a passive state but an active integration—a way of knowing that draws on the full range of human experience. In clinical terms, Wise Mind is the state from which effective, values-consistent decisions are made.</p>",
+          "content": "<p>DBT organizes mindfulness around a central conceptual model: the three states of mind. Understanding these states provides clients with a framework for recognizing where they are at any given moment and for understanding where they want to be.</p>\n<p><strong>{{callout:reasonablemind}}</strong> is the state governed by logic, facts, evidence, and rational analysis. When you are in Reasonable Mind, you approach situations intellectually, weighing pros and cons, analyzing data, and making decisions based on factual information. Reasonable Mind is task-oriented and analytical. It is the state that allows you to balance a checkbook, follow a recipe, or analyze a research study. The limitation of Reasonable Mind is that it can be disconnected from emotional experience, leading to decisions that are logical but fail to account for the emotional realities of a situation.</p>\n<p><strong>{{callout:emotionmind}}</strong> is the state governed by feelings, moods, and emotional impulses. When you are in Emotion Mind, your thinking and behavior are controlled by your current emotional state. Emotions feel like facts—if you feel rejected, the relationship must be over; if you feel anxious, the situation must be dangerous. Emotion Mind is passionate, creative, and deeply connected to personal values and desires. Its limitation is that it can lead to impulsive, poorly considered actions that create additional problems.</p>\n<p><strong>Wise Mind</strong> is the synthesis of Reasonable Mind and Emotion Mind—the dialectical integration of logic and emotion. Wise Mind is the state in which a person can access both their rational understanding and their emotional experience, honoring both without being dominated by either. Linehan describes Wise Mind as the \"still, calm place\" within each person that knows what is true and what is needed. It is not a passive state but an active integration—a way of knowing that draws on the full range of human experience. In clinical terms, Wise Mind is the state from which effective, values-consistent decisions are made.</p>",
           "imagePosition": "left",
           "highlight": true,
           "accessibility": {
             "role": "article",
             "ariaLabel": "Three states of mind in DBT mindfulness"
+          },
+          "callouts": {
+            "reasonablemind": {
+              "label": "Reasonable Mind",
+              "body": "One of three states of mind in DBT. In Reasonable Mind, thinking is governed by logic, facts, data, and rational analysis. Emotions are largely excluded from decision-making.…",
+              "type": "definition"
+            },
+            "emotionmind": {
+              "label": "Emotion Mind",
+              "body": "One of three states of mind in DBT. In Emotion Mind, thinking and behavior are controlled by the current emotional state. Facts, logic, and consequences are distorted or…",
+              "type": "definition"
+            }
           }
         },
         {
@@ -1172,7 +1054,7 @@ const COURSE = {
     },
     {
       "title": "Core Skill Module: Distress Tolerance",
-      "order": 5,
+      "order": 4,
       "contentBlocks": [
         {
           "type": "sectionDivider",
@@ -1187,7 +1069,14 @@ const COURSE = {
         },
         {
           "type": "text",
-          "content": "This module provides a comprehensive examination of the Distress Tolerance skill module, which equips clients with strategies for surviving emotional crises without resorting to self-destructive behaviors. You will learn crisis survival skills including TIPP, ACCEPTS, and IMPROVE, as well as reality acceptance skills including Radical Acceptance and Turning the Mind."
+          "content": "This module provides a comprehensive examination of the Distress Tolerance skill module, which equips clients with strategies for surviving emotional crises without resorting to self-destructive behaviors. You will learn crisis survival skills including TIPP, ACCEPTS, and IMPROVE, as well as reality acceptance skills including {{callout:radicalacceptance}} and Turning the Mind.",
+          "callouts": {
+            "radicalacceptance": {
+              "label": "Radical Acceptance",
+              "body": "The complete and total acceptance of reality exactly as it is, from the depths of one's being. Not approval, agreement, endorsement, or passivity. Linehan's formula: Pain +…",
+              "type": "definition"
+            }
+          }
         },
         {
           "type": "flashcardDeck",
@@ -1279,12 +1168,19 @@ const COURSE = {
           "type": "imageText",
           "imageAlt": "Infographic showing the four TIPP skills: Temperature, Intense Exercise, Paced Breathing, and Progressive Muscle Relaxation",
           "title": "TIPP Skills: Rapid Physiological Crisis Intervention",
-          "content": "<p>The TIPP skills are the fastest-acting crisis survival strategies in the DBT toolkit. They work by directly altering the body's physiological state, which in turn reduces the intensity of the emotional experience. TIPP is particularly valuable in acute crises because the skills can produce measurable physiological changes within seconds to minutes, providing enough relief for the client to access higher-level coping strategies.</p>\n<p><strong>Temperature:</strong> Applying cold to the face—particularly submerging the face in cold water or holding a cold pack against the eyes and cheeks for 30 seconds—activates the mammalian dive reflex, which triggers an automatic parasympathetic nervous system response. Heart rate slows, blood pressure adjusts, and the intensity of emotional arousal decreases. This is not a metaphorical calming technique—it is a hardwired physiological response that works reliably across individuals.</p>\n<p><strong>Intense Exercise:</strong> Engaging in brief, vigorous physical activity (running, jumping jacks, fast walking up stairs) for 10 to 20 minutes metabolizes the stress hormones (cortisol, adrenaline) that are fueling the emotional crisis. The exercise must be intense enough to significantly elevate heart rate. This skill is particularly effective when the emotional crisis involves anger or agitation, as it provides a physical outlet for the energy generated by the fight-or-flight response.</p>\n<p><strong>Paced Breathing:</strong> Deliberately slowing the breath to approximately five to six breath cycles per minute (inhaling for about four seconds, exhaling for about six to eight seconds) activates the parasympathetic nervous system and reduces physiological arousal. The emphasis on extending the exhalation is key, as the vagus nerve is primarily stimulated during exhalation. Paced breathing can be practiced anywhere, at any time, without anyone else knowing you are doing it.</p>\n<p><strong>Progressive Muscle Relaxation (or Paired Muscle Relaxation):</strong> Systematically tensing and then releasing muscle groups throughout the body produces a physiological relaxation response that is incompatible with the tension and arousal of emotional crisis. The practice also redirects attention from distressing thoughts to physical sensations, providing a grounding effect.</p>",
+          "content": "<p>The {{callout:tippsk}} skills are the fastest-acting crisis survival strategies in the DBT toolkit. They work by directly altering the body's physiological state, which in turn reduces the intensity of the emotional experience. TIPP is particularly valuable in acute crises because the skills can produce measurable physiological changes within seconds to minutes, providing enough relief for the client to access higher-level coping strategies.</p>\n<p><strong>Temperature:</strong> Applying cold to the face—particularly submerging the face in cold water or holding a cold pack against the eyes and cheeks for 30 seconds—activates the mammalian dive reflex, which triggers an automatic parasympathetic nervous system response. Heart rate slows, blood pressure adjusts, and the intensity of emotional arousal decreases. This is not a metaphorical calming technique—it is a hardwired physiological response that works reliably across individuals.</p>\n<p><strong>Intense Exercise:</strong> Engaging in brief, vigorous physical activity (running, jumping jacks, fast walking up stairs) for 10 to 20 minutes metabolizes the stress hormones (cortisol, adrenaline) that are fueling the emotional crisis. The exercise must be intense enough to significantly elevate heart rate. This skill is particularly effective when the emotional crisis involves anger or agitation, as it provides a physical outlet for the energy generated by the fight-or-flight response.</p>\n<p><strong>Paced Breathing:</strong> Deliberately slowing the breath to approximately five to six breath cycles per minute (inhaling for about four seconds, exhaling for about six to eight seconds) activates the parasympathetic nervous system and reduces physiological arousal. The emphasis on extending the exhalation is key, as the vagus nerve is primarily stimulated during exhalation. Paced breathing can be practiced anywhere, at any time, without anyone else knowing you are doing it.</p>\n<p><strong>Progressive Muscle Relaxation (or Paired Muscle Relaxation):</strong> Systematically tensing and then releasing muscle groups throughout the body produces a physiological relaxation response that is incompatible with the tension and arousal of emotional crisis. The practice also redirects attention from distressing thoughts to physical sensations, providing a grounding effect.</p>",
           "imagePosition": "left",
           "highlight": false,
           "accessibility": {
             "role": "article",
             "ariaLabel": "TIPP crisis survival skills"
+          },
+          "callouts": {
+            "tippsk": {
+              "label": "TIPP",
+              "body": "Crisis survival skills that alter body chemistry to reduce extreme emotional arousal. Temperature (cold water on face to activate dive reflex), Intense exercise (vigorous…",
+              "type": "definition"
+            }
           }
         },
         {
@@ -1333,10 +1229,17 @@ const COURSE = {
         },
         {
           "type": "text",
-          "content": "<h3>Reality Acceptance Skills: Radical Acceptance and Turning the Mind</h3>\n<p>While crisis survival skills address the acute, short-term management of emotional distress, the reality acceptance skills address a deeper and more challenging dimension of distress tolerance: the capacity to accept painful realities that cannot be changed. This is the dimension of distress tolerance that most clearly reflects the acceptance side of DBT's core dialectic.</p>\n<p><strong>Radical Acceptance</strong> is the practice of fully accepting reality as it is in this moment, without fighting it, without denying it, and without judging it as something that should not be. The word \"radical\" means \"at the root\"—radical acceptance goes all the way to the root of reality, leaving no part of the truth unacknowledged. It is important to understand what radical acceptance is NOT: it is not approval, endorsement, or passivity. Accepting that something has happened does not mean agreeing that it should have happened or giving up on working to change future circumstances. A person who radically accepts a cancer diagnosis is not saying, \"This is fine and I don't care.\" They are saying, \"This is the reality I face, and I will respond to it from a place of clarity rather than denial.\"</p>\n<p>For many clients, radical acceptance is the single most difficult skill in the entire DBT curriculum. The idea of accepting a painful reality—an abusive childhood, a devastating loss, a chronic illness, an act of injustice—can feel morally repugnant, as if acceptance equates to condoning what happened. The DBT therapist must carefully and repeatedly clarify that acceptance is not agreement. Refusing to accept reality does not change reality; it only adds a layer of suffering—the suffering of fighting against what has already occurred. Linehan expresses this principle concisely: \"Pain plus non-acceptance equals suffering.\"</p>\n<p><strong>Turning the Mind</strong> is the bridge between non-acceptance and radical acceptance. It acknowledges that acceptance is not a one-time decision but an ongoing, repeated choice that must be made again and again, often many times in a single day. Turning the Mind means choosing, in this moment, to orient yourself toward acceptance rather than away from it. It does not mean you have achieved acceptance—it means you are choosing the direction of acceptance. When you find yourself back in non-acceptance (which is inevitable), you simply turn the mind again. And again. And again. Each time you turn the mind, you strengthen the neural and behavioral pathways associated with acceptance, making it slightly more accessible the next time.</p>",
+          "content": "<h3>Reality Acceptance Skills: Radical Acceptance and {{callout:turningmind}}</h3>\n<p>While crisis survival skills address the acute, short-term management of emotional distress, the reality acceptance skills address a deeper and more challenging dimension of distress tolerance: the capacity to accept painful realities that cannot be changed. This is the dimension of distress tolerance that most clearly reflects the acceptance side of DBT's core dialectic.</p>\n<p><strong>Radical Acceptance</strong> is the practice of fully accepting reality as it is in this moment, without fighting it, without denying it, and without judging it as something that should not be. The word \"radical\" means \"at the root\"—radical acceptance goes all the way to the root of reality, leaving no part of the truth unacknowledged. It is important to understand what radical acceptance is NOT: it is not approval, endorsement, or passivity. Accepting that something has happened does not mean agreeing that it should have happened or giving up on working to change future circumstances. A person who radically accepts a cancer diagnosis is not saying, \"This is fine and I don't care.\" They are saying, \"This is the reality I face, and I will respond to it from a place of clarity rather than denial.\"</p>\n<p>For many clients, radical acceptance is the single most difficult skill in the entire DBT curriculum. The idea of accepting a painful reality—an abusive childhood, a devastating loss, a chronic illness, an act of injustice—can feel morally repugnant, as if acceptance equates to condoning what happened. The DBT therapist must carefully and repeatedly clarify that acceptance is not agreement. Refusing to accept reality does not change reality; it only adds a layer of suffering—the suffering of fighting against what has already occurred. Linehan expresses this principle concisely: \"Pain plus non-acceptance equals suffering.\"</p>\n<p><strong>Turning the Mind</strong> is the bridge between non-acceptance and radical acceptance. It acknowledges that acceptance is not a one-time decision but an ongoing, repeated choice that must be made again and again, often many times in a single day. Turning the Mind means choosing, in this moment, to orient yourself toward acceptance rather than away from it. It does not mean you have achieved acceptance—it means you are choosing the direction of acceptance. When you find yourself back in non-acceptance (which is inevitable), you simply turn the mind again. And again. And again. Each time you turn the mind, you strengthen the neural and behavioral pathways associated with acceptance, making it slightly more accessible the next time.</p>",
           "accessibility": {
             "role": "article",
             "ariaLabel": "Radical acceptance and turning the mind"
+          },
+          "callouts": {
+            "turningmind": {
+              "label": "Turning The Mind",
+              "body": "A distress tolerance skill that serves as the bridge between non-acceptance and radical acceptance. Involves making a conscious, deliberate choice to accept reality—standing…",
+              "type": "definition"
+            }
           }
         },
         {
@@ -1457,10 +1360,17 @@ const COURSE = {
         },
         {
           "type": "text",
-          "content": "<h3>The Relationship Between Distress Tolerance and Radical Acceptance</h3>\n<p>Understanding the relationship between crisis survival skills and reality acceptance skills is important for both clinicians and clients. These two categories of distress tolerance skills operate at different levels and serve complementary functions. Crisis survival skills—TIPP, ACCEPTS, IMPROVE—are tactical interventions designed for the short term. They help the client get through the next hour, the next day, the next wave of intense emotion without engaging in self-destructive behavior. They are not meant to be used indefinitely; they are bridges that carry the client from the acute crisis to a place of sufficient emotional stability that higher-level coping becomes possible.</p>\n<p>Reality acceptance skills—Radical Acceptance, Turning the Mind, Willingness—operate at a deeper, more strategic level. They address the client's relationship with painful realities that cannot be changed through any amount of crisis intervention. The death of a loved one, a chronic medical condition, a history of abuse, the end of a relationship, the consequences of past decisions—these are realities that no amount of TIPP skills or ACCEPTS distraction can alter. They require a fundamentally different kind of coping: the willingness to acknowledge what is true without adding the suffering of resistance and denial.</p>\n<p>In clinical practice, clients often need to cycle between these two levels of distress tolerance. A client grieving a significant loss may use crisis survival skills to manage the acute waves of anguish that arise unpredictably throughout the day, while simultaneously working on the longer-term project of radically accepting the reality of the loss. Neither level of skill replaces the other; they work together as complementary layers of emotional resilience. The crisis survival skills provide immediate relief; the reality acceptance skills provide the foundation for long-term healing and adaptation.</p>\n<p>Therapists should be attentive to clients who rely exclusively on one level while neglecting the other. A client who uses only crisis survival skills without developing reality acceptance may become trapped in an endless cycle of emotional fires that never fully resolve. A client who attempts to jump directly to radical acceptance without adequate crisis survival skills may become overwhelmed during acute episodes and revert to self-destructive coping. The most effective approach integrates both levels, with the balance shifting over time as the client's overall emotional resilience increases.</p>",
+          "content": "<h3>The Relationship Between Distress Tolerance and Radical Acceptance</h3>\n<p>Understanding the relationship between crisis survival skills and reality acceptance skills is important for both clinicians and clients. These two categories of distress tolerance skills operate at different levels and serve complementary functions. Crisis survival skills—TIPP, {{callout:acceptssk}}, IMPROVE—are tactical interventions designed for the short term. They help the client get through the next hour, the next day, the next wave of intense emotion without engaging in self-destructive behavior. They are not meant to be used indefinitely; they are bridges that carry the client from the acute crisis to a place of sufficient emotional stability that higher-level coping becomes possible.</p>\n<p>Reality acceptance skills—Radical Acceptance, Turning the Mind, Willingness—operate at a deeper, more strategic level. They address the client's relationship with painful realities that cannot be changed through any amount of crisis intervention. The death of a loved one, a chronic medical condition, a history of abuse, the end of a relationship, the consequences of past decisions—these are realities that no amount of TIPP skills or ACCEPTS distraction can alter. They require a fundamentally different kind of coping: the willingness to acknowledge what is true without adding the suffering of resistance and denial.</p>\n<p>In clinical practice, clients often need to cycle between these two levels of distress tolerance. A client grieving a significant loss may use crisis survival skills to manage the acute waves of anguish that arise unpredictably throughout the day, while simultaneously working on the longer-term project of radically accepting the reality of the loss. Neither level of skill replaces the other; they work together as complementary layers of emotional resilience. The crisis survival skills provide immediate relief; the reality acceptance skills provide the foundation for long-term healing and adaptation.</p>\n<p>Therapists should be attentive to clients who rely exclusively on one level while neglecting the other. A client who uses only crisis survival skills without developing reality acceptance may become trapped in an endless cycle of emotional fires that never fully resolve. A client who attempts to jump directly to radical acceptance without adequate crisis survival skills may become overwhelmed during acute episodes and revert to self-destructive coping. The most effective approach integrates both levels, with the balance shifting over time as the client's overall emotional resilience increases.</p>",
           "accessibility": {
             "role": "article",
             "ariaLabel": "Relationship between crisis survival and radical acceptance"
+          },
+          "callouts": {
+            "acceptssk": {
+              "label": "ACCEPTS",
+              "body": "A distress tolerance acronym for distraction-based crisis survival strategies: Activities, Contributing, Comparisons, Emotions (generating opposite emotions), Pushing Away…",
+              "type": "definition"
+            }
           }
         },
         {
@@ -1473,17 +1383,24 @@ const COURSE = {
         },
         {
           "type": "text",
-          "content": "<h3>Module Summary</h3>\n<p>In this module, you examined the Distress Tolerance skill module, which addresses the management of emotional crises and the development of the capacity to bear pain without making it worse. You learned the fundamental premise that pain is inevitable but that the ability to tolerate distress without engaging in self-destructive behavior is a learnable skill. You explored the TIPP skills—Temperature, Intense Exercise, Paced Breathing, and Progressive Muscle Relaxation—as rapid physiological interventions for acute crisis. You learned the ACCEPTS distraction strategies and the IMPROVE the moment techniques for getting through crises when the emotional intensity is too high for problem-solving. You examined the reality acceptance skills—Radical Acceptance, Turning the Mind, Willingness and Willfulness—and understood how they address the deeper challenge of accepting painful realities that cannot be changed. You practiced matching these skills to clinical scenarios and reflected on how to apply them in your own clinical work. In the next module, you will explore the Emotion Regulation skill module, which aims to reduce the frequency and intensity of unwanted emotions over time.</p>",
+          "content": "<h3>Module Summary</h3>\n<p>In this module, you examined the Distress Tolerance skill module, which addresses the management of emotional crises and the development of the capacity to bear pain without making it worse. You learned the fundamental premise that pain is inevitable but that the ability to tolerate distress without engaging in self-destructive behavior is a learnable skill. You explored the TIPP skills—Temperature, Intense Exercise, Paced Breathing, and Progressive Muscle Relaxation—as rapid physiological interventions for acute crisis. You learned the ACCEPTS distraction strategies and the {{callout:improvesk}} the moment techniques for getting through crises when the emotional intensity is too high for problem-solving. You examined the reality acceptance skills—Radical Acceptance, Turning the Mind, Willingness and Willfulness—and understood how they address the deeper challenge of accepting painful realities that cannot be changed. You practiced matching these skills to clinical scenarios and reflected on how to apply them in your own clinical work. In the next module, you will explore the Emotion Regulation skill module, which aims to reduce the frequency and intensity of unwanted emotions over time.</p>",
           "accessibility": {
             "role": "article",
             "ariaLabel": "Module 5 summary"
+          },
+          "callouts": {
+            "improvesk": {
+              "label": "IMPROVE",
+              "body": "A distress tolerance crisis survival strategy: Imagery (visualizing a safe or peaceful scene), Meaning (finding purpose or meaning in the pain), Prayer (connecting with a…",
+              "type": "definition"
+            }
           }
         }
       ]
     },
     {
       "title": "Core Skill Module: Emotion Regulation",
-      "order": 6,
+      "order": 5,
       "contentBlocks": [
         {
           "type": "sectionDivider",
@@ -1498,7 +1415,14 @@ const COURSE = {
         },
         {
           "type": "text",
-          "content": "This module provides a thorough examination of the Emotion Regulation skill module, which targets the understanding, management, and proactive reduction of unwanted emotional experiences. You will learn the model of emotions, Check the Facts, Opposite Action, Problem Solving, ABC PLEASE, and the Wave Skill."
+          "content": "This module provides a thorough examination of the Emotion Regulation skill module, which targets the understanding, management, and proactive reduction of unwanted emotional experiences. You will learn the model of emotions, Check the Facts, Opposite Action, Problem Solving, {{callout:abcplease}}, and the Wave Skill.",
+          "callouts": {
+            "abcplease": {
+              "label": "ABC PLEASE",
+              "body": "A set of emotion regulation skills designed to reduce vulnerability to Emotion Mind. ABC stands for Accumulate Positive Experiences (building pleasant events and long-term…",
+              "type": "definition"
+            }
+          }
         },
         {
           "type": "flashcardDeck",
@@ -1779,7 +1703,7 @@ const COURSE = {
     },
     {
       "title": "Core Skill Module: Interpersonal Effectiveness",
-      "order": 7,
+      "order": 6,
       "contentBlocks": [
         {
           "type": "sectionDivider",
@@ -1794,7 +1718,14 @@ const COURSE = {
         },
         {
           "type": "text",
-          "content": "This module provides a comprehensive examination of the Interpersonal Effectiveness skill module, which addresses three types of effectiveness in relationships: getting what you need (DEAR MAN), maintaining relationships (GIVE), and preserving self-respect (FAST). You will also explore Walking the Middle Path and the factors that interfere with interpersonal effectiveness."
+          "content": "This module provides a comprehensive examination of the Interpersonal Effectiveness skill module, which addresses three types of effectiveness in relationships: getting what you need (DEAR MAN), maintaining relationships ({{callout:givesk}}), and preserving self-respect (FAST). You will also explore Walking the Middle Path and the factors that interfere with interpersonal effectiveness.",
+          "callouts": {
+            "givesk": {
+              "label": "GIVE",
+              "body": "An interpersonal effectiveness skill set for relationship effectiveness—maintaining or strengthening the relationship during interactions. Gentle (no attacks, threats, or…",
+              "type": "definition"
+            }
+          }
         },
         {
           "type": "flashcardDeck",
@@ -1866,10 +1797,17 @@ const COURSE = {
         },
         {
           "type": "text",
-          "content": "<h3>GIVE: Relationship Effectiveness</h3>\n<p>The GIVE skills focus on relationship effectiveness—maintaining or improving the relationship during an interpersonal interaction, even when you are making a request or saying no. GIVE is particularly important in close relationships where the long-term quality of the connection matters at least as much as any specific outcome.</p>\n<p><strong>G — Gentle:</strong> Be gentle in your approach. Do not attack, threaten, judge, or engage in contemptuous behavior. Avoid sarcasm, eye-rolling, and dismissive body language. Gentleness does not mean weakness—it means communicating with respect for the other person's dignity, even when you disagree or are upset.</p>\n<p><strong>I — Interested:</strong> Show genuine interest in the other person's perspective. Listen actively. Ask questions. Demonstrate that you care about understanding their point of view, not just about winning the argument. Interest is both a skill and a stance—it communicates that you see the other person as a full human being whose experience matters.</p>\n<p><strong>V — Validate:</strong> Validate the other person's feelings, thoughts, and experiences. Validation does not mean agreement—it means acknowledging that the other person's experience makes sense given their perspective and circumstances. \"I can see why you'd feel overwhelmed given everything on your plate right now.\" Validation reduces defensiveness and creates the conditions for productive dialogue.</p>\n<p><strong>E — Easy Manner:</strong> Use a light, easy manner when possible. Humor, warmth, and a relaxed tone can defuse tension and keep the interaction from escalating. An easy manner communicates that the relationship is strong enough to handle disagreement, which is itself reassuring to both parties.</p>\n\n<h3>FAST: Self-Respect Effectiveness</h3>\n<p>The FAST skills focus on self-respect effectiveness—maintaining your own self-respect and values during interpersonal interactions. FAST is the counterbalance to GIVE: while GIVE focuses on honoring the relationship, FAST focuses on honoring yourself.</p>\n<p><strong>F — Fair:</strong> Be fair to both yourself and the other person. Do not sacrifice your own needs entirely to please someone else, and do not dismiss the other person's needs to get what you want. Fairness is a dialectical skill—it requires holding your needs and the other person's needs simultaneously.</p>\n<p><strong>A — (no) Apologies:</strong> Do not over-apologize or apologize for existing, having needs, or making reasonable requests. Excessive apologizing communicates that your needs are not legitimate and undermines your credibility. Apologize when you have genuinely wronged someone, but do not apologize for having boundaries, needs, or opinions.</p>\n<p><strong>S — Stick to Values:</strong> Do not compromise your core values to please someone else or to avoid conflict. Know what you believe, what you stand for, and what you are unwilling to do, and maintain those positions even under interpersonal pressure. This does not mean being rigid—it means being clear about where your genuine boundaries lie.</p>\n<p><strong>T — Truthful:</strong> Be honest. Do not lie, exaggerate, or manipulate to get what you want. Truthfulness builds trust and self-respect over time, even when it is uncomfortable in the moment. A truthful person can look at themselves in the mirror without shame, which is a form of emotional regulation in itself.</p>",
+          "content": "<h3>GIVE: Relationship Effectiveness</h3>\n<p>The GIVE skills focus on relationship effectiveness—maintaining or improving the relationship during an interpersonal interaction, even when you are making a request or saying no. GIVE is particularly important in close relationships where the long-term quality of the connection matters at least as much as any specific outcome.</p>\n<p><strong>G — Gentle:</strong> Be gentle in your approach. Do not attack, threaten, judge, or engage in contemptuous behavior. Avoid sarcasm, eye-rolling, and dismissive body language. Gentleness does not mean weakness—it means communicating with respect for the other person's dignity, even when you disagree or are upset.</p>\n<p><strong>I — Interested:</strong> Show genuine interest in the other person's perspective. Listen actively. Ask questions. Demonstrate that you care about understanding their point of view, not just about winning the argument. Interest is both a skill and a stance—it communicates that you see the other person as a full human being whose experience matters.</p>\n<p><strong>V — Validate:</strong> Validate the other person's feelings, thoughts, and experiences. Validation does not mean agreement—it means acknowledging that the other person's experience makes sense given their perspective and circumstances. \"I can see why you'd feel overwhelmed given everything on your plate right now.\" Validation reduces defensiveness and creates the conditions for productive dialogue.</p>\n<p><strong>E — Easy Manner:</strong> Use a light, easy manner when possible. Humor, warmth, and a relaxed tone can defuse tension and keep the interaction from escalating. An easy manner communicates that the relationship is strong enough to handle disagreement, which is itself reassuring to both parties.</p>\n\n<h3>{{callout:fastsk}}: Self-Respect Effectiveness</h3>\n<p>The FAST skills focus on self-respect effectiveness—maintaining your own self-respect and values during interpersonal interactions. FAST is the counterbalance to GIVE: while GIVE focuses on honoring the relationship, FAST focuses on honoring yourself.</p>\n<p><strong>F — Fair:</strong> Be fair to both yourself and the other person. Do not sacrifice your own needs entirely to please someone else, and do not dismiss the other person's needs to get what you want. Fairness is a dialectical skill—it requires holding your needs and the other person's needs simultaneously.</p>\n<p><strong>A — (no) Apologies:</strong> Do not over-apologize or apologize for existing, having needs, or making reasonable requests. Excessive apologizing communicates that your needs are not legitimate and undermines your credibility. Apologize when you have genuinely wronged someone, but do not apologize for having boundaries, needs, or opinions.</p>\n<p><strong>S — Stick to Values:</strong> Do not compromise your core values to please someone else or to avoid conflict. Know what you believe, what you stand for, and what you are unwilling to do, and maintain those positions even under interpersonal pressure. This does not mean being rigid—it means being clear about where your genuine boundaries lie.</p>\n<p><strong>T — Truthful:</strong> Be honest. Do not lie, exaggerate, or manipulate to get what you want. Truthfulness builds trust and self-respect over time, even when it is uncomfortable in the moment. A truthful person can look at themselves in the mirror without shame, which is a form of emotional regulation in itself.</p>",
           "accessibility": {
             "role": "article",
             "ariaLabel": "GIVE and FAST skills"
+          },
+          "callouts": {
+            "fastsk": {
+              "label": "FAST",
+              "body": "An interpersonal effectiveness skill set for self-respect effectiveness—maintaining self-respect during interactions. Fair (be fair to yourself and others), no Apologies…",
+              "type": "definition"
+            }
           }
         },
         {
@@ -2056,6 +1994,12 @@ const COURSE = {
           }
         },
         {
+          "type": "callout",
+          "calloutType": "ethics",
+          "title": "Ethical Consideration: Cultural Responsiveness",
+          "content": "<p>The interpersonal effectiveness skills reflect particular cultural assumptions about directness, communication, and relationships. Applying them uniformly can be invalidating. Adapt them to each client's cultural context, communication norms, and values rather than treating one style as universally 'effective.'</p>"
+        },
+        {
           "type": "text",
           "content": "<h3>Applying Interpersonal Effectiveness in the Therapeutic Relationship</h3>\n<p>An often-overlooked dimension of the interpersonal effectiveness module is that the therapeutic relationship itself serves as a laboratory for practicing interpersonal skills. The relationship between the DBT therapist and the client is not merely the context in which skills are taught—it is an active, real-time interpersonal interaction that provides constant opportunities for the application of DEAR MAN, GIVE, FAST, and Walking the Middle Path. The therapist models these skills in every interaction, and the client is encouraged to practice them within the safety of the therapeutic relationship before generalizing them to more challenging interpersonal contexts.</p>\n<p>For example, when a client disagrees with the therapist's assessment of a situation, the client can practice using DEAR MAN to assert their perspective: describing what the therapist said, expressing their disagreement, asserting their own interpretation, and reinforcing the value of being heard accurately. The therapist validates this assertion using GIVE skills—demonstrating genuine interest in the client's perspective, validating the logic of their position, and maintaining a gentle, easy manner even when the disagreement is substantive. This exchange models a healthy interpersonal interaction in which disagreement is expressed directly, received respectfully, and resolved collaboratively—an experience that many clients with histories of invalidation have rarely if ever encountered.</p>\n<p>The therapeutic relationship also provides opportunities to practice FAST skills in a supported environment. When a client apologizes excessively for expressing a need (\"I'm sorry to bother you with this\"), the therapist can gently point out the over-apologizing pattern and encourage the client to restate the request without unnecessary apologies. When a client compromises their values to please the therapist (\"I'll do whatever you think is best\"), the therapist can redirect by asking the client to identify and articulate their own preferences. When a client is tempted to be dishonest about their behavior (minimizing substance use, denying self-harm), the therapist can create an environment in which truthfulness is reinforced rather than punished, making it incrementally easier for the client to practice the T in FAST.</p>\n<p>Perhaps most importantly, the therapeutic relationship provides a context for practicing the repair of interpersonal ruptures—moments when the connection between two people is strained by misunderstanding, hurt feelings, or conflicting needs. Ruptures are inevitable in any meaningful relationship, and the ability to repair them skillfully is one of the most important interpersonal competencies a person can develop. In DBT, the therapist intentionally addresses ruptures when they occur, modeling the combination of validation (\"I understand why that felt hurtful to you\"), accountability (\"I could have communicated that differently\"), and problem-solving (\"Let's talk about how we can handle similar situations better in the future\") that characterizes effective rupture repair. Over time, the client internalizes this repair process and becomes increasingly able to apply it in their relationships outside of therapy.</p>",
           "accessibility": {
@@ -2075,7 +2019,7 @@ const COURSE = {
     },
     {
       "title": "Evidence Base, Limitations, and Clinical Integration",
-      "order": 8,
+      "order": 7,
       "contentBlocks": [
         {
           "type": "sectionDivider",
@@ -2257,19 +2201,31 @@ const COURSE = {
         },
         {
           "type": "text",
-          "content": "<h3>Practical Strategies for Clinical Integration</h3>\n<p>For clinicians who are not in a position to implement a full comprehensive DBT program—which is the reality for the majority of practicing therapists—the question of how to responsibly integrate DBT-informed strategies into existing practice is both practically important and ethically complex. The DBT community has engaged in considerable debate about the distinction between comprehensive DBT (adherent to the full treatment model as developed by Linehan) and DBT-informed practice (the selective use of DBT concepts and skills within a different therapeutic framework). Understanding this distinction is important for clinical integrity and for honest communication with clients about what you are offering.</p>\n<p>If you are practicing DBT-informed therapy rather than comprehensive DBT, you should be transparent about this with your clients. Saying \"I integrate some DBT skills into my work\" is accurate and appropriate. Saying \"I do DBT\" when you are not providing all four modes of treatment (individual therapy, skills group, phone coaching, and consultation team) is misleading, even if unintentionally so. This distinction matters because clients who seek out DBT-specific treatment may have expectations about the structure and intensity of the treatment that a DBT-informed approach cannot meet.</p>\n<p>That said, there are many ways to responsibly integrate DBT-informed strategies into diverse practice settings. Teaching specific DBT skills to individual clients—particularly mindfulness skills, distress tolerance skills, and the Check the Facts emotion regulation strategy—can be done within virtually any therapeutic framework. Using validation as a deliberate, structured therapeutic intervention (rather than simply as a component of empathic listening) can enhance the therapeutic alliance and reduce client dropout. Applying the dialectical framework to case conceptualization—holding the simultaneous truths of acceptance and change, understanding the client's behavior as both the problem and the client's best attempt at a solution—can deepen therapeutic understanding and guide intervention selection.</p>\n<p>When integrating DBT skills into existing practice, consider focusing on the skills most relevant to your specific client population. If you work primarily with anxiety, the mindfulness and distress tolerance modules may be most immediately applicable. If your clients struggle with chronic interpersonal conflict, the interpersonal effectiveness skills may be the most valuable starting point. If emotion dysregulation is pervasive across your caseload, a thorough grounding in all four skill modules will serve you best. The key principle is that any integration of DBT-informed strategies should be grounded in a solid understanding of the theoretical rationale behind the skills, not merely a superficial adoption of techniques divorced from their conceptual context.</p>",
+          "content": "{{alert:ethics}} <h3>Practical Strategies for Clinical Integration</h3>\n<p>For clinicians who are not in a position to implement a full comprehensive DBT program—which is the reality for the majority of practicing therapists—the question of how to responsibly integrate DBT-informed strategies into existing practice is both practically important and ethically complex. The DBT community has engaged in considerable debate about the distinction between comprehensive DBT (adherent to the full treatment model as developed by Linehan) and DBT-informed practice (the selective use of DBT concepts and skills within a different therapeutic framework). Understanding this distinction is important for clinical integrity and for honest communication with clients about what you are offering.</p>\n<p>If you are practicing DBT-informed therapy rather than comprehensive DBT, you should be transparent about this with your clients. Saying \"I integrate some DBT skills into my work\" is accurate and appropriate. Saying \"I do DBT\" when you are not providing all four modes of treatment (individual therapy, skills group, phone coaching, and consultation team) is misleading, even if unintentionally so. This distinction matters because clients who seek out DBT-specific treatment may have expectations about the structure and intensity of the treatment that a DBT-informed approach cannot meet.</p>\n<p>That said, there are many ways to responsibly integrate DBT-informed strategies into diverse practice settings. Teaching specific DBT skills to individual clients—particularly mindfulness skills, distress tolerance skills, and the Check the Facts emotion regulation strategy—can be done within virtually any therapeutic framework. Using validation as a deliberate, structured therapeutic intervention (rather than simply as a component of empathic listening) can enhance the therapeutic alliance and reduce client dropout. Applying the dialectical framework to case conceptualization—holding the simultaneous truths of acceptance and change, understanding the client's behavior as both the problem and the client's best attempt at a solution—can deepen therapeutic understanding and guide intervention selection.</p>\n<p>When integrating DBT skills into existing practice, consider focusing on the skills most relevant to your specific client population. If you work primarily with anxiety, the mindfulness and distress tolerance modules may be most immediately applicable. If your clients struggle with chronic interpersonal conflict, the interpersonal effectiveness skills may be the most valuable starting point. If emotion dysregulation is pervasive across your caseload, a thorough grounding in all four skill modules will serve you best. The key principle is that any integration of DBT-informed strategies should be grounded in a solid understanding of the theoretical rationale behind the skills, not merely a superficial adoption of techniques divorced from their conceptual context.</p>",
           "accessibility": {
             "role": "article",
             "ariaLabel": "Practical strategies for clinical integration"
           }
         },
         {
+          "type": "callout",
+          "calloutType": "ethics",
+          "title": "Ethical Consideration: Be Transparent About What You Provide",
+          "content": "<p>Be honest about whether you deliver <strong>comprehensive DBT</strong> (all four modes, adherent to the model) or <strong>DBT-informed</strong> therapy. Describing DBT-informed work as 'doing DBT' misrepresents the treatment to clients, referrers, and payers. Name what you actually provide.</p>"
+        },
+        {
           "type": "text",
-          "content": "<h3>Critical Limitations and the Ongoing Evolution of DBT</h3>\n<p>A balanced clinical education requires honest engagement with the limitations and criticisms of any treatment approach, and DBT is no exception. While the evidence base for DBT is substantial and growing, several significant limitations warrant careful consideration by clinicians who are integrating DBT-informed strategies into their practice.</p>\n<p>The most frequently cited limitation is the resource intensity of comprehensive DBT. A full DBT program requires a minimum of two therapists (for skills group co-facilitation), weekly individual therapy sessions, weekly skills group sessions, between-session phone coaching availability, and weekly consultation team meetings. For many clinical settings—particularly solo practices, under-resourced community mental health centers, and rural areas with limited staffing—implementing comprehensive DBT is simply not feasible. This resource intensity raises important questions about access and equity: if the most effective version of DBT requires a team-based approach that is only available in well-funded urban settings, what are the implications for clients in less-resourced environments? The research on stand-alone DBT skills groups and DBT-informed individual therapy partially addresses this concern, but the evidence for these abbreviated models is less robust than for comprehensive DBT.</p>\n<p>A second limitation concerns the cultural applicability of DBT. The treatment was developed primarily with white, female clients in the Pacific Northwest of the United States, and the research samples in most DBT studies have been predominantly white and female. While the theoretical framework of DBT—particularly the biosocial model and the emphasis on validation—appears to have cross-cultural relevance, the specific skills and their manner of presentation may require adaptation for clients from diverse cultural backgrounds. For example, the emphasis on direct emotional expression and assertive communication in the interpersonal effectiveness module may not align with the communication norms of collectivist cultures. Similarly, the concept of radical acceptance may resonate differently with individuals whose suffering is rooted in systemic oppression—accepting the reality of systemic injustice is fundamentally different from accepting the reality of a personal loss, and the clinical application of radical acceptance must be sensitive to this distinction.</p>\n<p>A third limitation involves the risk of diagnostic stigma. DBT was originally developed for Borderline Personality Disorder, and the association between DBT and BPD remains strong in the professional community. Some clients may resist a referral for DBT because they associate it with a diagnosis they find stigmatizing, and some clinicians may inadvertently reinforce this stigma by referring only clients with personality disorder diagnoses for DBT services. The expanding evidence base for DBT across multiple diagnostic categories is gradually eroding this association, but it remains a practical barrier to treatment access in many settings.</p>\n<p>Finally, the question of treatment duration and long-term outcomes deserves attention. Standard comprehensive DBT is designed as a one-year treatment, and most research studies evaluate outcomes at the end of this treatment period or at relatively short follow-up intervals. Less is known about the long-term durability of treatment gains, the optimal duration of treatment for different client populations, and whether some clients require ongoing or intermittent DBT to maintain their progress. Emerging research on DBT alumni groups and booster sessions is beginning to address these questions, but the field would benefit from more longitudinal research tracking client outcomes over years rather than months following treatment completion.</p>",
+          "content": "{{alert:ethics}} <h3>Critical Limitations and the Ongoing Evolution of DBT</h3>\n<p>A balanced clinical education requires honest engagement with the limitations and criticisms of any treatment approach, and DBT is no exception. While the evidence base for DBT is substantial and growing, several significant limitations warrant careful consideration by clinicians who are integrating DBT-informed strategies into their practice.</p>\n<p>The most frequently cited limitation is the resource intensity of comprehensive DBT. A full DBT program requires a minimum of two therapists (for skills group co-facilitation), weekly individual therapy sessions, weekly skills group sessions, between-session phone coaching availability, and weekly consultation team meetings. For many clinical settings—particularly solo practices, under-resourced community mental health centers, and rural areas with limited staffing—implementing comprehensive DBT is simply not feasible. This resource intensity raises important questions about access and equity: if the most effective version of DBT requires a team-based approach that is only available in well-funded urban settings, what are the implications for clients in less-resourced environments? The research on stand-alone DBT skills groups and DBT-informed individual therapy partially addresses this concern, but the evidence for these abbreviated models is less robust than for comprehensive DBT.</p>\n<p>A second limitation concerns the cultural applicability of DBT. The treatment was developed primarily with white, female clients in the Pacific Northwest of the United States, and the research samples in most DBT studies have been predominantly white and female. While the theoretical framework of DBT—particularly the biosocial model and the emphasis on validation—appears to have cross-cultural relevance, the specific skills and their manner of presentation may require adaptation for clients from diverse cultural backgrounds. For example, the emphasis on direct emotional expression and assertive communication in the interpersonal effectiveness module may not align with the communication norms of collectivist cultures. Similarly, the concept of radical acceptance may resonate differently with individuals whose suffering is rooted in systemic oppression—accepting the reality of systemic injustice is fundamentally different from accepting the reality of a personal loss, and the clinical application of radical acceptance must be sensitive to this distinction.</p>\n<p>A third limitation involves the risk of diagnostic stigma. DBT was originally developed for Borderline Personality Disorder, and the association between DBT and BPD remains strong in the professional community. Some clients may resist a referral for DBT because they associate it with a diagnosis they find stigmatizing, and some clinicians may inadvertently reinforce this stigma by referring only clients with personality disorder diagnoses for DBT services. The expanding evidence base for DBT across multiple diagnostic categories is gradually eroding this association, but it remains a practical barrier to treatment access in many settings.</p>\n<p>Finally, the question of treatment duration and long-term outcomes deserves attention. Standard comprehensive DBT is designed as a one-year treatment, and most research studies evaluate outcomes at the end of this treatment period or at relatively short follow-up intervals. Less is known about the long-term durability of treatment gains, the optimal duration of treatment for different client populations, and whether some clients require ongoing or intermittent DBT to maintain their progress. Emerging research on DBT alumni groups and booster sessions is beginning to address these questions, but the field would benefit from more longitudinal research tracking client outcomes over years rather than months following treatment completion.</p>",
           "accessibility": {
             "role": "article",
             "ariaLabel": "Critical limitations and evolution of DBT"
           }
+        },
+        {
+          "type": "callout",
+          "calloutType": "ethics",
+          "title": "Ethical Consideration: Cultural Applicability of the Evidence",
+          "content": "<p>DBT was developed and initially validated primarily with white, female clients in the Pacific Northwest. Weigh how well the evidence base generalizes to the populations you serve, and adapt delivery thoughtfully for diverse clients rather than assuming uniform applicability.</p>"
         },
         {
           "type": "text",
@@ -2291,7 +2247,7 @@ const COURSE = {
     },
     {
       "title": "Glossary and Clinical Application Exercise",
-      "order": 9,
+      "order": 8,
       "contentBlocks": [
         {
           "type": "sectionDivider",
