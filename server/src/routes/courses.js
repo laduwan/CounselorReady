@@ -408,6 +408,33 @@ router.post('/:id/enroll', protect, async (req, res) => {
       return res.status(400).json({ error: 'Already enrolled in this course' });
     }
     
+    // Enrollment cap — staggered by subscription tier:
+    //   free    → 1 active course at a time
+    //   trial   → 1 active course at a time
+    //   active / lifetime → unlimited
+    const subStatus = req.user.subscription?.status;
+    const enrollCap = subStatus === 'active' || subStatus === 'lifetime'
+      ? Infinity
+      : 1;  // free and trial = 1 active course at a time
+
+    if (enrollCap !== Infinity) {
+      const activeEnrollments = await UserCourseProgress.countDocuments({
+        userId: req.user._id,
+        status: { $in: ['not_started', 'in_progress'] }
+      });
+      if (activeEnrollments >= enrollCap) {
+        const capMsg = enrollCap === 1
+          ? 'Free accounts can only have 1 course in progress at a time. Finish it before enrolling in another.'
+          : `You have ${enrollCap} courses in progress. Finish one before enrolling in another.`;
+        return res.status(403).json({
+          error: capMsg,
+          code: 'ENROLLMENT_LIMIT_REACHED',
+          activeEnrollments,
+          cap: enrollCap
+        });
+      }
+    }
+
     // Check access requirements based on subscription tier
     if (!req.user.canAccessCourse(course)) {
       // Determine what tier is needed
