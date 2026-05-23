@@ -211,16 +211,7 @@ const COURSE_DATA = {
       title: "Introduction",
       contentBlocks: [
         { type: "sectionDivider", sectionNumber: 1, title: "Introduction", subtitle: "Clinical concepts through the lens of A Beautiful Mind" },
-        { type: "text", content: `<h2>A Beautiful Mind: Understanding and Treating Serious Mental Illness</h2>
-<p>CounselorReady Continuing Education Course</p>
-<p>1 CE Hour | NBCC Approved Provider #7760</p>
-<p>Upon completion of this course, participants will be able to:</p>
-<p>1. Differentiate between various psychotic disorders including schizophrenia spectrum disorders and mood disorders with psychotic features, applying DSM-5-TR diagnostic criteria accurately in clinical assessment.</p>
-<p>2. Identify at least five positive symptoms and five negative symptoms of schizophrenia, understanding their differential impact on functioning and treatment planning.</p>
-<p>3. Describe evidence-based psychosocial interventions for serious mental illness, including Cognitive Behavioral Therapy for Psychosis (CBTp), family psychoeducation, and supported employment approaches.</p>
-<p>4. Analyze the role of therapeutic alliance and recovery-oriented care in working with individuals experiencing psychosis, incorporating trauma-informed perspectives.</p>
-<p>5. Evaluate ethical considerations and clinical decision-making processes when working with clients experiencing symptoms of psychosis, including issues of autonomy, capacity, and collaboration with treatment teams.</p>
-<h2>Introduction: The Clinical Reality Behind the Silver Screen</h2>
+        { type: "text", content: `<h2>Introduction: The Clinical Reality Behind the Silver Screen</h2>
 <p>The 2001 Academy Award-winning film A Beautiful Mind brought the experience of schizophrenia into public consciousness through its portrayal of mathematician John Nash's struggles with the disorder. While the film took creative liberties with Nash's actual experiences—notably depicting visual hallucinations when Nash primarily experienced auditory ones—it nonetheless provided audiences with a visceral glimpse into the confusion, terror, and profound disruption that psychotic experiences can bring to an individual's life. For mental health clinicians, the film serves as a launching point for deeper exploration of serious mental illness—not as Hollywood portrays it, but as we encounter it in clinical practice.</p>
 <p>Serious mental illness (SMI) is defined by the Substance Abuse and Mental Health Services Administration (SAMHSA) as a mental, behavioral, or emotional disorder resulting in serious functional impairment that substantially interferes with or limits one or more major life activities. The category includes schizophrenia spectrum disorders, bipolar disorder, and major depressive disorder with psychotic features, among others. According to SAMHSA's 2022 National Survey on Drug Use and Health, approximately 14.1 million adults in the United States—roughly 5.5% of the adult population—lived with SMI in the past year.</p>
 <p>The economic and social burden of serious mental illness extends far beyond the individual. SMI is associated with reduced life expectancy of 10-25 years compared to the general population, largely due to cardiovascular disease, metabolic conditions, and suicide. Employment rates among individuals with schizophrenia remain below 20% in most studies, despite many individuals expressing desire to work. Housing instability and homelessness disproportionately affect this population. The World Health Organization ranks schizophrenia among the top ten causes of disability worldwide. Understanding and effectively treating serious mental illness is thus not only a clinical imperative but a matter of social justice and public health priority.</p>
@@ -263,10 +254,7 @@ const COURSE_DATA = {
 <p>In A Beautiful Mind, Nash's cognitive abilities—his mathematical brilliance—coexist with his psychotic symptoms, illustrating that serious mental illness affects individuals across the spectrum of intellectual functioning. The film also shows how Nash's cognitive functioning fluctuated over time and how he learned to compensate for difficulties by developing strategies to test reality, such as asking others whether they could see the people he perceived.</p>
 <p>Assessment of cognitive symptoms should be part of comprehensive evaluation in schizophrenia. Brief cognitive screening instruments can identify areas of impairment that may benefit from targeted intervention. Understanding a client's cognitive profile helps in treatment planning—for example, simplifying instructions, providing written reminders, or breaking tasks into smaller steps for those with working memory or executive function difficulties.</p>
 ` },
-        { type: "accordion", title: "Positive vs. negative symptoms at a glance", items: [
-          { heading: "Positive symptoms", body: "<p>Hallucinations, delusions, disorganized thought and speech — experiences <em>added</em> to normal functioning.</p>" },
-          { heading: "Negative symptoms", body: "<p>Affective flattening, avolition, alogia, anhedonia, social withdrawal — capacities <em>diminished</em> or absent.</p>" }
-        ] },
+        { type: "callout", calloutType: "clinical", title: "Clinical pearl", content: "<p>Positive symptoms tend to respond to antipsychotics and draw the most attention — but <strong>negative and cognitive symptoms</strong> are the stronger predictors of long-term functioning. When a client is &ldquo;stable&rdquo; on medication yet not recovering, look here.</p>" },
         { type: "multipleChoice", question: "Auditory hallucinations are an example of a:", options: ["Negative symptom", "Positive symptom", "Cognitive symptom", "Mood symptom"], correctAnswer: 1, explanation: "Hallucinations are positive symptoms — experiences added to normal functioning." }
       ]
     },
@@ -302,9 +290,11 @@ const COURSE_DATA = {
 <p>Research demonstrates that early intervention programs improve outcomes compared to standard care, including reduced symptoms, improved functioning, higher rates of employment and education, and reduced hospitalization. The effects appear to persist even after transition to standard services, suggesting that the early intervention period represents a window of opportunity for influencing long-term course.</p>
 <p>The RAISE (Recovery After an Initial Schizophrenia Episode) study, a large NIMH-funded trial, demonstrated the effectiveness of coordinated specialty care for first-episode psychosis in U.S. community mental health settings. Following this research, SAMHSA now supports first-episode psychosis programs across the country. Clinicians working with young people experiencing first-episode psychosis should be aware of these specialized services and facilitate appropriate referrals.</p>
 ` },
-        { type: "flashcards", cards: [
-          { id: "fc1", front: "First-line pharmacological treatment for schizophrenia?", back: "Antipsychotic medication; second-generation (atypical) agents are common first-line choices." },
-          { id: "fc2", front: "Name a key psychosocial intervention.", back: "Assertive Community Treatment, supported employment, CBT for psychosis, or family psychoeducation." }
+        { type: "flashcardDeck", instructions: "Tap each card to reveal the answer.", flashcards: [
+          { front: "First-line pharmacological treatment for schizophrenia?", back: "Antipsychotic medication; second-generation (atypical) agents are common first-line choices." },
+          { front: "Name a key psychosocial intervention.", back: "Assertive Community Treatment, supported employment, CBT for psychosis, or family psychoeducation." },
+          { front: "Approximate relapse reduction from family psychoeducation?", back: "About 50% compared to standard treatment." },
+          { front: "IPS supported-employment outcome vs. traditional vocational services?", back: "50–60% competitive employment vs. ~20–25%." }
         ] },
         { type: "reflection", prompt: "How do you balance medication adherence concerns with respect for a client's autonomy and lived experience of side effects?" }
       ]
@@ -427,10 +417,7 @@ SAMHSA National Helpline: 1-800-662-4357</p>
 <p>• What boundaries help you sustain this work long-term? Are there boundaries you struggle to maintain?</p>
 <p>• How do you process the grief and loss that can accompany this work (e.g., client hospitalizations, deterioration, or death)?</p>
 ` },
-        { type: "accordion", title: "Capacity vs. autonomy — key distinctions", items: [
-          { heading: "Decisional capacity", body: "<p>A clinical determination about a person's ability to understand, appreciate, reason, and express a choice regarding a <em>specific</em> decision.</p>" },
-          { heading: "Autonomy", body: "<p>The ethical principle of respecting a person's right to self-determination — which persists even when capacity for a specific decision is impaired.</p>" }
-        ] },
+        { type: "callout", calloutType: "ethics", title: "Holding the tension", content: "<p>Capacity is <strong>decision-specific and can fluctuate</strong>; autonomy <strong>endures</strong> even when capacity for one decision is impaired. The clinical task is rarely &ldquo;capable or not&rdquo; — it is to involve the person to the fullest extent their current capacity allows, and to plan ahead (e.g., psychiatric advance directives) for the times it dips.</p>" },
         { type: "reflection", prompt: "Recall a case involving involuntary treatment or capacity questions. What tension between beneficence and autonomy did you navigate?" }
       ]
     },
