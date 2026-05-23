@@ -1303,6 +1303,42 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
   display: flex; flex-direction: column;
 }
 .cr-glossary-panel.open { transform: translateX(0); }
+
+/* References drawer — mirrors glossary, burgundy accent */
+.cr-refs-btn {
+  position: fixed; bottom: 24px; right: 148px;
+  width: 52px; height: 52px;
+  border-radius: 50%;
+  background: var(--cr-burgundy);
+  color: #fff; border: none; cursor: pointer;
+  display: none; align-items: center; justify-content: center;
+  box-shadow: 0 4px 16px rgba(107,29,52,0.35);
+  z-index: 50; font-size: 20px;
+  transition: transform var(--cr-transition);
+}
+.cr-refs-btn:hover { transform: scale(1.1); }
+.cr-refs-btn.visible { display: flex; }
+.cr-refs-panel {
+  position: fixed; top: 0; right: 0; bottom: 0;
+  width: 420px; max-width: 92vw;
+  background: var(--cr-surface);
+  border-left: 1px solid var(--cr-border);
+  box-shadow: -4px 0 24px rgba(0,0,0,0.12);
+  z-index: 55; transform: translateX(100%);
+  transition: transform var(--cr-transition);
+  display: flex; flex-direction: column;
+}
+.cr-refs-panel.open { transform: translateX(0); }
+.cr-refs-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 18px 20px; border-bottom: 1px solid var(--cr-border);
+}
+.cr-refs-header h3 { margin: 0; font-family: var(--cr-font-display); color: var(--cr-burgundy); font-size: 1.2em; }
+.cr-refs-list { overflow-y: auto; padding: 16px 20px; }
+.cr-refs-list .cr-reference {
+  font-size: 0.9em; line-height: 1.5; margin: 0 0 14px;
+  padding-left: 1.4em; text-indent: -1.4em; color: var(--cr-text);
+}
 .cr-glossary-header {
   padding: 16px 20px;
   border-bottom: 1px solid var(--cr-border);
@@ -3619,6 +3655,16 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
   <div class="cr-glossary-list" id="crGlossaryList"></div>
 </div>
 
+<!-- REFERENCES BUTTON + PANEL -->
+<button class="cr-refs-btn" id="crRefsBtn" data-action="toggleReferences" aria-label="References" title="References">📚</button>
+<div class="cr-refs-panel" id="crRefsPanel">
+  <div class="cr-refs-header">
+    <h3>📚 References</h3>
+    <button data-action="toggleReferences" style="width:36px;height:36px;border:none;background:none;cursor:pointer;font-size:18px;min-height:36px;min-width:36px" aria-label="Close references">✕</button>
+  </div>
+  <div class="cr-refs-list" id="crRefsList"></div>
+</div>
+
 <!-- HIGHLIGHT TOOLBAR (appears on text selection) -->
 <div class="cr-highlight-toolbar" id="crHighlightToolbar">
   <button data-action="highlightSelection" title="Highlight">🖍️</button>
@@ -4074,6 +4120,7 @@ function loadCourse(data) {
   // ── Feature hooks + initial render ──
   restoreProgress();
   buildGlossary();
+  buildReferences();
   initTranslation();
   buildSectionNav();
   renderCurrentSection();
@@ -4567,30 +4614,9 @@ function renderCurrentSection() {
     if (el) area.appendChild(el);
   });
   
-  // Render APA 7th references on last section
+  // References now live in the collapsible References drawer (buildReferences()),
+  // not inline. Intentionally not appended to the section body.
   const isLast = currentSectionIndex === course.sections.length - 1;
-  if (isLast && course.references?.length > 0) {
-    const refsDiv = document.createElement('div');
-    refsDiv.className = 'cr-references';
-    let refsHtml = '<h3 style="text-align:center;font-family:var(--cr-font-display);font-size:1.3em;font-weight:700;color:var(--cr-burgundy);margin-bottom:1em">References</h3>';
-    course.references.forEach(ref => {
-      if (ref.citation) {
-        // Pre-formatted citation string
-        refsHtml += `<p class="cr-reference">${esc(ref.citation)}</p>`;
-      } else {
-        // Build APA 7th: Author (Year). Title. Source.
-        let apa = '';
-        if (ref.author) apa += esc(ref.author);
-        if (ref.year) apa += ` (${ref.year}).`;
-        else apa += '.';
-        if (ref.title) apa += ` <em>${esc(ref.title)}</em>.`;
-        if (ref.source) apa += ` ${esc(ref.source)}.`;
-        refsHtml += `<p class="cr-reference">${apa.trim()}</p>`;
-      }
-    });
-    refsDiv.innerHTML = refsHtml;
-    area.appendChild(refsDiv);
-  }
   
   // Update navigation buttons
   const onOverview = section._isOverview;
@@ -7370,6 +7396,34 @@ function toggleGlossary() {
   document.getElementById('crGlossaryPanel').classList.toggle('open');
 }
 
+function toggleReferences() {
+  document.getElementById('crRefsPanel').classList.toggle('open');
+}
+
+// Build the references drawer from course.references[] (APA 7th). Mirrors buildGlossary.
+function buildReferences() {
+  const btn = document.getElementById('crRefsBtn');
+  const list = document.getElementById('crRefsList');
+  if (!btn || !list) return;
+  const refs = (course && course.references) || [];
+  if (!refs.length) { btn.classList.remove('visible'); list.innerHTML = ''; return; }
+  let html = '';
+  refs.forEach(ref => {
+    if (ref.citation) {
+      html += `<p class="cr-reference">${esc(ref.citation)}</p>`;
+    } else {
+      let apa = '';
+      if (ref.author) apa += esc(ref.author);
+      if (ref.year) apa += ` (${ref.year}).`; else apa += '.';
+      if (ref.title) apa += ` <em>${esc(ref.title)}</em>.`;
+      if (ref.source) apa += ` ${esc(ref.source)}.`;
+      html += `<p class="cr-reference">${apa.trim()}</p>`;
+    }
+  });
+  list.innerHTML = html;
+  btn.classList.add('visible');
+}
+
 // ═══════════════════════════════════════════════════════════════
 // FEATURE: LEARNING OBJECTIVES TRACKER
 // ═══════════════════════════════════════════════════════════════
@@ -7731,6 +7785,7 @@ document.addEventListener('click', function(e) {
     
     // ─── New Features ───
     case 'toggleGlossary': toggleGlossary(); break;
+    case 'toggleReferences': toggleReferences(); break;
     case 'toggleObjective': toggleObjective(idx); break;
     case 'highlightSelection': highlightSelection(); break;
     case 'annotateSelection': annotateSelection(); break;
