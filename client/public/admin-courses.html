@@ -902,10 +902,9 @@
 
     try {
       const course = allCourses.find(c => c._id === courseId);
-      const src = course?._source || 'interactivecourses';
-      const endpoint = src === 'courses'
-        ? `${API_URL}/api/admin/courses/${courseId}`
-        : `${API_URL}/api/interactive-courses/${courseId}`;
+      // Both course types use the admin PUT endpoint.
+      // PUT /api/interactive-courses/:id doesn't exist; /api/admin/courses/:id handles both.
+      const endpoint = `${API_URL}/api/admin/courses/${courseId}`;
       const r = await fetch(endpoint, {
         method: 'PUT',
         headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
@@ -983,9 +982,9 @@
     if (payload.status === 'draft') payload.isPublished = false;
 
     try {
-      const endpoint = qeSrc !== 'courses'
-        ? `${API_URL}/api/interactive-courses/${qeCourseId}`
-        : `${API_URL}/api/admin/courses/${qeCourseId}`;
+      // Both course types use the admin PUT endpoint.
+      // PUT /api/interactive-courses/:id doesn't exist; /api/admin/courses/:id handles both.
+      const endpoint = `${API_URL}/api/admin/courses/${qeCourseId}`;
       const r = await fetch(endpoint, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
