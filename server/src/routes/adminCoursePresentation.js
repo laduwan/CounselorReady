@@ -160,4 +160,38 @@ router.patch('/:id/section/:sectionIndex', protect, requireAdmin, async (req, re
   }
 });
 
+// ─── Publish / unpublish an interactive course ──────────────────────────────
+// PATCH /api/admin/course-presentation/:id/status   body: { publish: true|false }
+// Sets status to 'published' or 'draft' (interactive courses have no isPublished
+// field — status is the source of truth, enum: draft|published|archived).
+router.patch('/:id/status', protect, requireAdmin, async (req, res) => {
+  try {
+    const publish = req.body && req.body.publish === true;
+    const col = mongoose.connection.db.collection(COLLECTION);
+    const found = await resolveCourse(col, req.params.id);
+    if (!found) return res.status(404).json({ success: false, error: `Course not found (id="${req.params.id}").` });
+
+    const update = {
+      $set: {
+        status: publish ? 'published' : 'draft',
+        publishedAt: publish ? new Date() : null,
+        updatedAt: new Date(),
+      },
+    };
+    const result = await col.updateOne(found.query, update);
+    if (!result.matchedCount) return res.status(404).json({ success: false, error: 'Course matched 0 documents on update.' });
+
+    const updated = await col.findOne(found.query, { projection: { title: 1, slug: 1, status: 1, publishedAt: 1 } });
+    return res.json({
+      success: true,
+      status: updated.status,
+      publishedAt: updated.publishedAt || null,
+      message: publish ? 'Course published' : 'Course unpublished',
+    });
+  } catch (err) {
+    console.error('[course-presentation] status error:', err.message);
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 export default router;
