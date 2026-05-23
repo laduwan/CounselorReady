@@ -168,4 +168,96 @@ router.post('/upload-from-url', protect, requireAdmin, async (req, res) => {
   }
 });
 
+// ─── Smart library: theme tagging + suggestion ──────────────────────────────
+// Derive normalized theme tokens from a section title + course content areas.
+// Stored as Cloudinary tags so images accumulate "use case" meaning and can be
+// matched to similar sections in other courses.
+
+const STOPWORDS = new Set(['the','and','for','with','of','in','to','a','an','on','at','by','from','your','our','their','this','that','into','across','within','using','about']);
+
+// Map common counseling concepts to a small controlled tag vocabulary so that
+// "HIPAA Compliance and Technology Infrastructure" and "Digital Security" both
+// land on theme:privacy etc. Extend freely.
+const CONCEPT_MAP = [
+  { re: /\b(hipaa|privacy|confidential|security|encryption|data)\b/i, tag: 'privacy' },
+  { re: /\b(ethic|boundary|boundaries|consent|legal|liability|regulat|compliance)\b/i, tag: 'ethics' },
+  { re: /\b(telehealth|telemental|virtual|remote|video|online|digital)\b/i, tag: 'telehealth' },
+  { re: /\b(crisis|risk|suicide|safety|emergency|harm)\b/i, tag: 'crisis' },
+  { re: /\b(assess|diagnos|evaluat|screening|intake)\b/i, tag: 'assessment' },
+  { re: /\b(cultur|divers|equity|inclusion|multicultural|identity)\b/i, tag: 'culture' },
+  { re: /\b(trauma|ptsd|grief|loss|abuse)\b/i, tag: 'trauma' },
+  { re: /\b(family|couple|relationship|group|systemic)\b/i, tag: 'relationships' },
+  { re: /\b(wellness|self.?care|burnout|prevention|resilience|mindful)\b/i, tag: 'wellness' },
+  { re: /\b(career|vocational|workforce|employment)\b/i, tag: 'career' },
+  { re: /\b(child|adolescent|teen|youth|geriatric|aging|elder|development)\b/i, tag: 'lifespan' },
+  { re: /\b(intro|overview|foundation|background|orientation|principle)\b/i, tag: 'foundations' },
+];
+
+function deriveThemeTags(title = '', contentAreas = [], categories = []) {
+  const tags = new Set();
+  const text = String(title);
+  for (const c of CONCEPT_MAP) if (c.re.test(text)) tags.add('theme:' + c.tag);
+  // a couple of distinctive title keywords as fallback tags
+  String(title).toLowerCase().replace(/[^a-z0-9\s]/g, ' ').split(/\s+/)
+    .filter(w => w.length > 4 && !STOPWORDS.has(w)).slice(0, 3)
+    .forEach(w => tags.add('kw:' + w));
+  (contentAreas || []).forEach(a => tags.add('nbcc:' + String(a).toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 30)));
+  (categories || []).forEach(c => tags.add('cat:' + String(c).toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 24)));
+  return [...tags];
+}
+
+// POST /api/images/tag-image  body: { publicId, title?, contentAreas?, categories?, extraTags? }
+// Writes derived theme tags onto an existing library image (the "auto-tag on use").
+router.post('/tag-image', protect, requireAdmin, async (req, res) => {
+  try {
+    const { publicId, title, contentAreas, categories, extraTags } = req.body || {};
+    if (!publicId) return res.status(400).json({ success: false, error: 'Missing publicId.' });
+    const tags = deriveThemeTags(title, contentAreas, categories);
+    (extraTags || []).forEach(t => { if (t) tags.push(String(t)); });
+    if (!tags.length) return res.json({ success: true, tags: [] });
+    await cloudinary.v2.uploader.add_tag(tags.join(','), [publicId]);
+    res.json({ success: true, publicId, tags });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// GET /api/images/suggest-images?title=...&contentAreas=a,b&categories=c,d
+// Returns library images ranked by how many theme tags they share with this section.
+router.get('/suggest-images', protect, requireAdmin, async (req, res) => {
+  try {
+    const title = (req.query.title || '').toString();
+    const contentAreas = (req.query.contentAreas || '').toString().split(',').map(s => s.trim()).filter(Boolean);
+    const categories = (req.query.categories || '').toString().split(',').map(s => s.trim()).filter(Boolean);
+    const wanted = deriveThemeTags(title, contentAreas, categories);
+    if (!wanted.length) return res.json({ success: true, data: { images: [], wantedTags: [] } });
+
+    // Pull tagged images from the banner library, then rank by tag overlap.
+    const expr = `folder:counselorready/banner-library/* AND (${wanted.map(t => `tags:"${t}"`).join(' OR ')})`;
+    const result = await cloudinary.v2.search
+      .expression(expr)
+      .with_field('tags')
+      .max_results(40)
+      .execute();
+
+    const wantedSet = new Set(wanted);
+    const images = (result.resources || []).map(r => {
+      const overlap = (r.tags || []).filter(t => wantedSet.has(t));
+      return {
+        url: r.secure_url,
+        publicId: r.public_id,
+        thumbnailUrl: cloudinary.v2.url(r.public_id, { width: 200, height: 200, crop: 'fill', quality: 'auto' }),
+        tags: r.tags || [],
+        score: overlap.length,
+        matched: overlap,
+      };
+    }).filter(i => i.score > 0).sort((a, b) => b.score - a.score);
+
+    res.json({ success: true, data: { images, wantedTags: wanted } });
+  } catch (error) {
+    // Empty (no matches / no tagged images yet) is not an error for the caller.
+    res.json({ success: true, data: { images: [], wantedTags: [], note: error.message } });
+  }
+});
+
 export default router;
