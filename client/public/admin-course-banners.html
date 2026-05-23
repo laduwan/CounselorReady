@@ -142,12 +142,15 @@ function toast(msg, ok = true) {
 async function loadCourses() {
   const sel = document.getElementById('courseSelect');
   try {
-    const r = await fetch(`${API_URL}/api/interactive-courses?page=1&limit=200`, { headers: authHeaders });
+    const r = await fetch(`${API_URL}/api/interactive-courses?page=1&limit=200&status=all`, { headers: authHeaders });
     const d = await r.json();
     const list = (d.data || d.courses || []).filter(Boolean);
     if (!list.length) { sel.innerHTML = '<option value="">No courses found</option>'; return; }
     sel.innerHTML = '<option value="">— select a course —</option>' +
-      list.map(c => `<option value="${c._id}">${esc(c.courseCode || '')} — ${esc(c.title || 'Untitled')}</option>`).join('');
+      list.map(c => {
+        const tag = c.status && c.status !== 'published' ? `[${c.status}] ` : '';
+        return `<option value="${c._id}">${tag}${esc(c.title || 'Untitled')}</option>`;
+      }).join('');
   } catch (e) {
     sel.innerHTML = '<option value="">Failed to load courses</option>';
     toast('Could not load courses', false);
@@ -294,7 +297,7 @@ async function saveHero() {
     headerSubtitle: document.getElementById('heroSubtitle').value || undefined,
   };
   if (!body.headerImage) { toast('Choose a header image first', false); return; }
-  await patch(`/api/admin/course-presentation/${currentCourse.courseCode}/header`, body, () => {
+  await patch(`/api/admin/course-presentation/${currentCourse._id}/header`, body, () => {
     currentCourse.headerImage = body.headerImage;
     currentCourse.headerTitle = body.headerTitle || null;
     currentCourse.headerSubtitle = body.headerSubtitle || null;
@@ -303,7 +306,7 @@ async function saveHero() {
   });
 }
 async function clearHero() {
-  await patch(`/api/admin/course-presentation/${currentCourse.courseCode}/header`, { headerImage: null, headerTitle: null, headerSubtitle: null }, () => {
+  await patch(`/api/admin/course-presentation/${currentCourse._id}/header`, { headerImage: null, headerTitle: null, headerSubtitle: null }, () => {
     currentCourse.headerImage = null; delete currentCourse._pendingHero;
     setHeroPreview(null);
     document.getElementById('heroTitle').value = ''; document.getElementById('heroSubtitle').value = '';
@@ -317,13 +320,13 @@ async function saveSection(i) {
     subtitle: document.getElementById('secSub' + i).value || undefined,
   };
   if (banner) body.bannerImage = banner;
-  await patch(`/api/admin/course-presentation/${currentCourse.courseCode}/section/${i}`, body, () => {
+  await patch(`/api/admin/course-presentation/${currentCourse._id}/section/${i}`, body, () => {
     if (currentCourse._pendingBanner) delete currentCourse._pendingBanner[i];
     toast(`Section ${i + 1} saved`);
   });
 }
 async function clearBanner(i) {
-  await patch(`/api/admin/course-presentation/${currentCourse.courseCode}/section/${i}`, { bannerImage: null }, () => {
+  await patch(`/api/admin/course-presentation/${currentCourse._id}/section/${i}`, { bannerImage: null }, () => {
     document.getElementById('secThumb' + i).innerHTML = 'No banner';
     if (currentCourse._pendingBanner) delete currentCourse._pendingBanner[i];
     toast(`Section ${i + 1} banner removed`);
