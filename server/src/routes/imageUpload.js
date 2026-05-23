@@ -113,4 +113,59 @@ router.get('/browse', protect, requireAdmin, async (req, res) => {
   } catch (error) { res.status(500).json({ success: false, error: error.message }); }
 });
 
+// ─── Search Pexels (admin) — proxies the Pexels API using the server-side key ─
+// GET /api/images/pexels-search?q=<query>&page=<n>
+router.get('/pexels-search', protect, requireAdmin, async (req, res) => {
+  try {
+    if (!process.env.PEXELS_API_KEY) {
+      return res.status(503).json({ success: false, error: 'PEXELS_API_KEY not configured on the server.' });
+    }
+    const q = (req.query.q || '').toString().trim();
+    if (!q) return res.status(400).json({ success: false, error: 'Missing search query (q).' });
+    const page = Math.max(1, parseInt(req.query.page) || 1);
+    const url = `https://api.pexels.com/v1/search?query=${encodeURIComponent(q)}&orientation=landscape&per_page=15&page=${page}`;
+    const r = await fetch(url, { headers: { Authorization: process.env.PEXELS_API_KEY } });
+    if (!r.ok) {
+      const detail = await r.text().catch(() => '');
+      return res.status(502).json({ success: false, error: `Pexels ${r.status}: ${detail.slice(0, 150)}` });
+    }
+    const data = await r.json();
+    const images = (data.photos || []).map((p) => ({
+      id: p.id,
+      url: (p.src && (p.src.large2x || p.src.large)) || p.src?.original,
+      thumbnailUrl: (p.src && (p.src.medium || p.src.small)) || p.src?.tiny,
+      photographer: p.photographer || '',
+      alt: p.alt || q,
+    })).filter((x) => x.url);
+    res.json({ success: true, data: { images, page, totalCount: data.total_results || 0 } });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// ─── Upload an image from a remote URL into Cloudinary (admin) ───────────────
+// POST /api/images/upload-from-url   body: { url, folder?, alt? }
+// Used by the editor to persist a chosen Pexels image into the banner library.
+router.post('/upload-from-url', protect, requireAdmin, async (req, res) => {
+  try {
+    const { url, folder, alt } = req.body || {};
+    if (!url || typeof url !== 'string') {
+      return res.status(400).json({ success: false, error: 'Missing image url.' });
+    }
+    const targetFolder = folder || 'counselorready/banner-library';
+    const result = await cloudinary.v2.uploader.upload(url, {
+      folder: targetFolder,
+      transformation: [{ width: 1600, crop: 'limit', quality: 'auto', fetch_format: 'auto' }],
+      context: alt ? `alt=${String(alt).replace(/[|=]/g, ' ')}` : undefined,
+    });
+    res.json({ success: true, data: {
+      url: result.secure_url,
+      publicId: result.public_id,
+      thumbnailUrl: cloudinary.v2.url(result.public_id, { width: 200, height: 200, crop: 'fill', quality: 'auto' }),
+    }});
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 export default router;
