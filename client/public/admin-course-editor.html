@@ -86,6 +86,7 @@
   <button class="ed-tab px-5 py-3 text-sm font-semibold text-stone-500 hover:text-burgundy-800 transition-colors" onclick="switchTab('sections',this)">Sections &amp; Content</button>
   <button class="ed-tab px-5 py-3 text-sm font-semibold text-stone-500 hover:text-burgundy-800 transition-colors" onclick="switchTab('assessment',this)">Assessment</button>
   <button class="ed-tab px-5 py-3 text-sm font-semibold text-stone-500 hover:text-burgundy-800 transition-colors" onclick="switchTab('references',this)">References</button>
+  <button class="ed-tab px-5 py-3 text-sm font-semibold text-stone-500 hover:text-burgundy-800 transition-colors" onclick="switchTab('supplements',this)">Supplements</button>
 </div>
 
 <div class="max-w-5xl mx-auto p-6">
@@ -231,6 +232,28 @@
     </div>
   </div>
 
+  <div class="panel" id="panel-supplements">
+    <div class="bg-white border border-stone-200 rounded-xl overflow-hidden mb-4">
+      <div class="bg-stone-50 border-b border-stone-200 px-5 py-3 flex items-center justify-between">
+        <div>
+          <h3 class="font-display text-lg font-bold text-burgundy-800">Supplements</h3>
+          <p class="text-xs text-stone-400 mt-0.5">Downloadable files &amp; links shown in the course Resources drawer. Saved with the course (use the Save button above).</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="document.getElementById('suppFileInput').click()" id="suppUploadBtn" class="px-3 py-1.5 bg-forest-600 text-white rounded-lg text-xs font-bold hover:bg-forest-700 transition-colors"><i class="fas fa-upload mr-1"></i> Upload file</button>
+          <button onclick="suppBrowse()" class="px-3 py-1.5 bg-stone-50 border border-stone-300 rounded-lg text-xs font-bold text-navy-800 hover:border-forest-500 hover:text-forest-600 transition-colors"><i class="fas fa-folder-open mr-1"></i> Browse uploaded</button>
+          <button onclick="addSupplementLink()" class="px-3 py-1.5 bg-stone-50 border border-stone-300 rounded-lg text-xs font-bold text-navy-800 hover:border-forest-500 hover:text-forest-600 transition-colors">+ Add link</button>
+        </div>
+      </div>
+      <div class="p-5">
+        <input type="file" id="suppFileInput" class="hidden" accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt,.csv" onchange="suppUpload(this)">
+        <div id="suppBrowsePanel" class="hidden mb-4 border border-stone-200 rounded-lg bg-stone-50 p-3"></div>
+        <div id="suppList"></div>
+        <p class="text-xs text-stone-400 mt-3">Uploads go to Cloudinary under <code>course-resources/{courseCode}</code>. Files appear in the learner Resources drawer once the course is published.</p>
+      </div>
+    </div>
+  </div>
+
 </div>
 <div class="toast" id="toast"></div>
 
@@ -295,6 +318,7 @@ function populateForm() {
   setVal('f-maxAttempts2', c.assessment?.maxAttempts || 3);
   renderQuestions(c.assessment?.questions || []);
   renderReferences(c.references || []);
+  renderSupplements(c.resources || []);
 }
 
 function setVal(id, val) { const el = document.getElementById(id); if (!el || val === undefined || val === null) return; el.value = val; }
@@ -357,6 +381,51 @@ function makeRefEl(r, i) {
 function addReference() { if (!courseData.references) courseData.references = []; courseData.references.push({author:'',year:'',title:'',source:''}); renderReferences(courseData.references); }
 function removeRef(i) { courseData.references.splice(i,1); renderReferences(courseData.references); }
 function updateRef(i, f, v) { courseData.references[i][f] = v; }
+
+// ── Supplements (course.resources[]) — saved with the course via saveAll() ─────
+const SUPP_TYPES = ['pdf','docx','doc','worksheet','template','pptx','xlsx','video','website','link','book'];
+const SUPP_ICON = { pdf:'fa-file-pdf', docx:'fa-file-word', doc:'fa-file-word', worksheet:'fa-file-lines', template:'fa-file-lines', pptx:'fa-file-powerpoint', xlsx:'fa-file-excel', video:'fa-video', website:'fa-globe', link:'fa-link', book:'fa-book' };
+function renderSupplements(list) { const l = document.getElementById('suppList'); l.innerHTML = ''; if (!list.length) { l.innerHTML = '<p class="text-sm text-stone-400 py-4">No supplements yet. Upload a file or add a link.</p>'; return; } list.forEach((r,i) => l.appendChild(makeSuppEl(r,i))); }
+function makeSuppEl(r, i) {
+  const d = document.createElement('div'); d.className = 'border border-stone-200 rounded-lg p-4 mb-3 bg-white';
+  const icon = SUPP_ICON[r.type] || 'fa-paperclip';
+  const opts = SUPP_TYPES.map(t => `<option value="${t}"${(SUPP_TYPES.includes(r.type)?r.type:'link')===t?' selected':''}>${t}</option>`).join('');
+  d.innerHTML = `<div class="flex items-center gap-3 mb-2"><i class="fas ${icon} text-burgundy-800"></i><input class="flex-1 border border-stone-300 rounded-lg px-3 py-2 text-sm font-semibold focus:outline-none focus:border-forest-500" value="${escHtml(r.title||'')}" placeholder="Title" oninput="updateSupp(${i},'title',this.value)"><select class="border border-stone-300 rounded-lg px-2 py-2 text-xs focus:outline-none focus:border-forest-500" onchange="updateSupp(${i},'type',this.value)">${opts}</select><button class="px-3 py-1.5 text-xs font-bold border border-stone-300 rounded" onclick="moveSupp(${i},-1)" title="Up">&uarr;</button><button class="px-3 py-1.5 text-xs font-bold border border-stone-300 rounded" onclick="moveSupp(${i},1)" title="Down">&darr;</button><button class="px-2 py-1.5 text-xs font-bold border border-red-300 text-red-600 rounded hover:bg-red-50" onclick="removeSupp(${i})">Remove</button></div><input class="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm mb-2 focus:outline-none focus:border-forest-500" value="${escHtml(r.description||'')}" placeholder="Short description (optional)" oninput="updateSupp(${i},'description',this.value)"><input class="w-full border border-stone-300 rounded-lg px-3 py-2 text-xs text-stone-500 focus:outline-none focus:border-forest-500" value="${escHtml(r.url||'')}" placeholder="https://..." oninput="updateSupp(${i},'url',this.value)">`;
+  return d;
+}
+function addSupplementLink() { if (!courseData.resources) courseData.resources = []; courseData.resources.push({title:'',url:'',type:'website',description:''}); renderSupplements(courseData.resources); }
+function removeSupp(i) { courseData.resources.splice(i,1); renderSupplements(courseData.resources); }
+function updateSupp(i, f, v) { courseData.resources[i][f] = v; }
+function moveSupp(i, dir) { const a = courseData.resources, j = i+dir; if (j<0||j>=a.length) return; [a[i],a[j]]=[a[j],a[i]]; renderSupplements(a); }
+async function suppUpload(input) {
+  const file = input.files && input.files[0]; if (!file) return;
+  if (file.size > 25*1024*1024) { showToast('File must be under 25MB','error'); input.value=''; return; }
+  const btn = document.getElementById('suppUploadBtn'); const orig = btn.innerHTML; btn.disabled=true; btn.innerHTML='<i class="fas fa-spinner fa-spin mr-1"></i> Uploading...';
+  try {
+    const token = localStorage.getItem('token');
+    const fd = new FormData(); fd.append('file', file); fd.append('courseCode', courseData.courseCode || 'general'); fd.append('context','deliverable'); fd.append('title', file.name.replace(/\.[^.]+$/,''));
+    const res = await fetch(`${API}/files/upload`, { method:'POST', headers:{ 'Authorization':`Bearer ${token}` }, body: fd });
+    const d = await res.json(); if (!res.ok || !d.success) throw new Error(d.error || `HTTP ${res.status}`);
+    if (!courseData.resources) courseData.resources = [];
+    courseData.resources.push({ title: d.data.title, url: d.data.url, type: d.data.type || 'worksheet', description: '' });
+    renderSupplements(courseData.resources); showToast('Uploaded — remember to Save','success');
+  } catch (e) { showToast('Upload failed: ' + e.message, 'error'); }
+  finally { btn.disabled=false; btn.innerHTML=orig; input.value=''; }
+}
+async function suppBrowse() {
+  const panel = document.getElementById('suppBrowsePanel');
+  if (!panel.classList.contains('hidden')) { panel.classList.add('hidden'); return; }
+  panel.classList.remove('hidden'); panel.innerHTML = '<p class="text-xs text-stone-400">Loading...</p>';
+  try {
+    const token = localStorage.getItem('token');
+    const res = await fetch(`${API}/files/browse?courseCode=${encodeURIComponent(courseData.courseCode||'')}`, { headers:{ 'Authorization':`Bearer ${token}` } });
+    const d = await res.json(); if (!res.ok || !d.success) throw new Error(d.error || `HTTP ${res.status}`);
+    if (!d.data.length) { panel.innerHTML = '<p class="text-xs text-stone-400">No files uploaded for this course yet.</p>'; return; }
+    panel.innerHTML = `<div class="flex items-center justify-between mb-2"><strong class="text-xs text-navy-800">Uploaded for ${escHtml(courseData.courseCode||'')} (${d.data.length})</strong></div>` +
+      d.data.map(f => `<div class="flex items-center gap-2 py-1.5 border-t border-stone-200"><i class="fas ${SUPP_ICON[f.type]||'fa-paperclip'} text-burgundy-800 text-xs"></i><span class="flex-1 text-xs">${escHtml(f.title)} <span class="text-stone-400">(${escHtml(f.fileType||'')})</span></span><button class="px-2 py-1 text-xs font-bold bg-honey-700 text-navy-900 rounded" onclick='addSuppFromBrowse(${JSON.stringify({title:f.title,url:f.url,type:f.type}).replace(/'/g,"&#39;")})'>Add</button></div>`).join('');
+  } catch (e) { panel.innerHTML = `<p class="text-xs text-red-600">Browse failed: ${escHtml(e.message)}</p>`; }
+}
+function addSuppFromBrowse(f) { if (!courseData.resources) courseData.resources = []; courseData.resources.push({ title:f.title, url:f.url, type:f.type||'document', description:'' }); renderSupplements(courseData.resources); document.getElementById('suppBrowsePanel').classList.add('hidden'); showToast('Added — remember to Save','success'); }
 
 async function saveAll() {
   const btn = document.getElementById('saveBtn'); btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Saving...';

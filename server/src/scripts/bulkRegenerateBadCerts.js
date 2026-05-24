@@ -15,7 +15,7 @@ dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 // Import models directly — standalone scripts don't auto-register
 import Certificate from '../models/Certificate.js';
 import User from '../models/User.js';
-import InteractiveCourse from '../models/InteractiveCourse.js';
+import { Course as InteractiveCourse } from '../models/InteractiveCourse.js';
 import certificateService from '../services/certificateService.js';
 
 // Also import Course.js for legacy certs
