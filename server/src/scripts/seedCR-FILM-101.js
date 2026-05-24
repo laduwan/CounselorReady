@@ -193,24 +193,26 @@ const COURSE_DATA = {
   },
   sections: [
     {
+      order: 1,
       title: "Introduction",
       contentBlocks: [
-        { type: "sectionDivider", sectionNumber: 1, title: "Introduction", subtitle: "Clinical concepts through the lens of A Beautiful Mind" },
-        { type: "text", content: `<h2>Introduction: The Clinical Reality Behind the Silver Screen</h2>
+        { order: 1, type: "sectionDivider", sectionNumber: 1, title: "Introduction", subtitle: "Clinical concepts through the lens of A Beautiful Mind" },
+        { order: 2, type: "text", content: `<h2>Introduction: The Clinical Reality Behind the Silver Screen</h2>
 <p>The 2001 Academy Award-winning film A Beautiful Mind brought the experience of schizophrenia into public consciousness through its portrayal of mathematician John Nash's struggles with the disorder. While the film took creative liberties with Nash's actual experiences—notably depicting visual hallucinations when Nash primarily experienced auditory ones—it nonetheless provided audiences with a visceral glimpse into the confusion, terror, and profound disruption that psychotic experiences can bring to an individual's life. For mental health clinicians, the film serves as a launching point for deeper exploration of serious mental illness—not as Hollywood portrays it, but as we encounter it in clinical practice.</p>
 <p>Serious mental illness (SMI) is defined by the Substance Abuse and Mental Health Services Administration (SAMHSA) as a mental, behavioral, or emotional disorder resulting in serious functional impairment that substantially interferes with or limits one or more major life activities. The category includes schizophrenia spectrum disorders, bipolar disorder, and major depressive disorder with psychotic features, among others. According to SAMHSA's 2022 National Survey on Drug Use and Health, approximately 14.1 million adults in the United States—roughly 5.5% of the adult population—lived with SMI in the past year.</p>
 <p>The economic and social burden of serious mental illness extends far beyond the individual. SMI is associated with reduced life expectancy of 10-25 years compared to the general population, largely due to cardiovascular disease, metabolic conditions, and suicide. Employment rates among individuals with schizophrenia remain below 20% in most studies, despite many individuals expressing desire to work. Housing instability and homelessness disproportionately affect this population. The World Health Organization ranks schizophrenia among the top ten causes of disability worldwide. Understanding and effectively treating serious mental illness is thus not only a clinical imperative but a matter of social justice and public health priority.</p>
 <p>This course will provide clinicians with comprehensive knowledge about psychotic disorders, evidence-based treatment approaches, and practical strategies for building therapeutic relationships with individuals whose reality testing is impaired. Throughout our exploration, we will return to themes illuminated by A Beautiful Mind: the intersection of brilliance and illness, the importance of supportive relationships, and the possibility of meaningful recovery even in the face of severe psychiatric symptoms.</p>
 ` },
-        { type: "callout", calloutType: "tip", title: "How to use this course", content: "<p>Each section pairs a clinical concept with its portrayal in film — and the ways film diverges from clinical reality. Use the reflection prompts to connect the material to your own practice.</p>" },
-        { type: "reflection", prompt: "Before beginning: what assumptions about schizophrenia have you absorbed from media portrayals? Note them now and revisit at the end." }
+        { order: 3, type: "callout", calloutType: "tip", title: "How to use this course", content: "<p>Each section pairs a clinical concept with its portrayal in film — and the ways film diverges from clinical reality. Use the reflection prompts to connect the material to your own practice.</p>" },
+        { order: 4, type: "reflection", prompt: "Before beginning: what assumptions about schizophrenia have you absorbed from media portrayals? Note them now and revisit at the end." }
       ]
     },
     {
+      order: 2,
       title: "Understanding Psychosis and Schizophrenia Spectrum Disorders",
       contentBlocks: [
-        { type: "sectionDivider", sectionNumber: 2, title: "Understanding Psychosis and Schizophrenia Spectrum Disorders", subtitle: "Defining psychosis, positive and negative symptoms, and the clinical reality behind the film" },
-        { type: "text", content: `<h2>Defining Psychosis</h2>
+        { order: 1, type: "sectionDivider", sectionNumber: 2, title: "Understanding Psychosis and Schizophrenia Spectrum Disorders", subtitle: "Defining psychosis, positive and negative symptoms, and the clinical reality behind the film" },
+        { order: 2, type: "text", content: `<h2>Defining Psychosis</h2>
 <p>Psychosis refers to a cluster of symptoms characterized by a loss of contact with external reality. The term encompasses experiences including hallucinations, delusions, disorganized thinking, and grossly disorganized or abnormal motor behavior. It is crucial to understand that psychosis is a symptom presentation rather than a diagnosis itself—psychotic symptoms can occur across numerous psychiatric conditions, medical illnesses, and substance-induced states. This distinction has important implications for assessment and treatment planning.</p>
 <p>Hallucinations are perceptual experiences that occur in the absence of external stimuli. While auditory hallucinations—particularly hearing voices—are most commonly associated with schizophrenia, occurring in approximately 60-80% of individuals with the disorder, hallucinations can occur in any sensory modality. Auditory hallucinations in schizophrenia typically involve hearing voices that comment on behavior, converse with each other, or issue commands. The voices may be recognized or unfamiliar, perceived as coming from inside or outside the head, and experienced as distressing or neutral.</p>
 <p>Visual hallucinations, while less common in primary psychotic disorders, should prompt consideration of medical etiology, substance use, or delirium. Visual hallucinations are more characteristic of delirium, Lewy body dementia, and substance intoxication or withdrawal than of schizophrenia. When visual hallucinations do occur in schizophrenia, they are often accompanied by auditory hallucinations. Tactile hallucinations, such as the sensation of insects crawling on or under the skin (formication), are often associated with substance use, particularly stimulants. Olfactory and gustatory hallucinations, while rare, may occur in temporal lobe epilepsy or certain psychotic presentations.</p>
@@ -239,8 +241,8 @@ const COURSE_DATA = {
 <p>In A Beautiful Mind, Nash's cognitive abilities—his mathematical brilliance—coexist with his psychotic symptoms, illustrating that serious mental illness affects individuals across the spectrum of intellectual functioning. The film also shows how Nash's cognitive functioning fluctuated over time and how he learned to compensate for difficulties by developing strategies to test reality, such as asking others whether they could see the people he perceived.</p>
 <p>Assessment of cognitive symptoms should be part of comprehensive evaluation in schizophrenia. Brief cognitive screening instruments can identify areas of impairment that may benefit from targeted intervention. Understanding a client's cognitive profile helps in treatment planning—for example, simplifying instructions, providing written reminders, or breaking tasks into smaller steps for those with working memory or executive function difficulties.</p>
 ` },
-        { type: "callout", calloutType: "clinical", title: "Clinical pearl", content: "<p>Positive symptoms tend to respond to antipsychotics and draw the most attention — but <strong>negative and cognitive symptoms</strong> are the stronger predictors of long-term functioning. When a client is &ldquo;stable&rdquo; on medication yet not recovering, look here.</p>" },
-        { type: "multipleChoice", question: "Auditory hallucinations are an example of a:", options: [
+        { order: 3, type: "callout", calloutType: "clinical", title: "Clinical pearl", content: "<p>Positive symptoms tend to respond to antipsychotics and draw the most attention — but <strong>negative and cognitive symptoms</strong> are the stronger predictors of long-term functioning. When a client is &ldquo;stable&rdquo; on medication yet not recovering, look here.</p>" },
+        { order: 4, type: "multipleChoice", question: "Auditory hallucinations are an example of a:", options: [
               { text: "Negative symptom", isCorrect: false },
               { text: "Positive symptom", isCorrect: true },
               { text: "Cognitive symptom", isCorrect: false },
@@ -249,10 +251,11 @@ const COURSE_DATA = {
       ]
     },
     {
+      order: 3,
       title: "Evidence-Based Treatment Approaches",
       contentBlocks: [
-        { type: "sectionDivider", sectionNumber: 3, title: "Evidence-Based Treatment Approaches", subtitle: "Medication, psychosocial interventions, and integrated care for serious mental illness" },
-        { type: "text", content: `<h2>The Role of Medication</h2>
+        { order: 1, type: "sectionDivider", sectionNumber: 3, title: "Evidence-Based Treatment Approaches", subtitle: "Medication, psychosocial interventions, and integrated care for serious mental illness" },
+        { order: 2, type: "text", content: `<h2>The Role of Medication</h2>
 <p>Antipsychotic medications remain the cornerstone of treatment for schizophrenia and other psychotic disorders. These medications are generally effective at reducing positive symptoms, with response rates of 60-70% for first-generation and second-generation antipsychotics. However, they are less effective for negative symptoms and cognitive impairment, which may require additional psychosocial interventions.</p>
 <p>First-generation (typical) antipsychotics, such as haloperidol and chlorpromazine, primarily work by blocking dopamine D2 receptors. While effective for positive symptoms, they carry significant risk of extrapyramidal side effects including dystonia, akathisia, parkinsonism, and tardive dyskinesia. Second-generation (atypical) antipsychotics, including risperidone, olanzapine, quetiapine, and clozapine, affect both dopamine and serotonin systems and generally have lower risk of extrapyramidal effects but carry their own side effect profiles including metabolic syndrome, weight gain, and diabetes risk.</p>
 <p>Clozapine deserves special mention as the only antipsychotic with demonstrated superiority for treatment-resistant schizophrenia. Approximately 30% of individuals with schizophrenia do not respond adequately to standard antipsychotics; clozapine can be effective in many of these cases. Clozapine also appears to reduce suicide risk in schizophrenia. However, the requirement for regular blood monitoring due to risk of agranulocytosis limits its use.</p>
@@ -280,7 +283,7 @@ const COURSE_DATA = {
 <p>Research demonstrates that early intervention programs improve outcomes compared to standard care, including reduced symptoms, improved functioning, higher rates of employment and education, and reduced hospitalization. The effects appear to persist even after transition to standard services, suggesting that the early intervention period represents a window of opportunity for influencing long-term course.</p>
 <p>The RAISE (Recovery After an Initial Schizophrenia Episode) study, a large NIMH-funded trial, demonstrated the effectiveness of coordinated specialty care for first-episode psychosis in U.S. community mental health settings. Following this research, SAMHSA now supports first-episode psychosis programs across the country. Clinicians working with young people experiencing first-episode psychosis should be aware of these specialized services and facilitate appropriate referrals.</p>
 ` },
-        { type: "flashcardDeck", instructions: "Tap each card to reveal the answer.", flashcards: [
+        { order: 3, type: "flashcardDeck", instructions: "Tap each card to reveal the answer.", flashcards: [
           { front: "First-line pharmacological treatment for schizophrenia?", back: "Antipsychotic medication; second-generation (atypical) agents are common first-line choices." },
           { front: "Name a key psychosocial intervention.", back: "Assertive Community Treatment, supported employment, CBT for psychosis, or family psychoeducation." },
           { front: "Approximate relapse reduction from family psychoeducation?", back: "About 50% compared to standard treatment." },
@@ -290,10 +293,11 @@ const COURSE_DATA = {
       ]
     },
     {
+      order: 4,
       title: "Building Therapeutic Alliance with Individuals Experiencing Psychosis",
       contentBlocks: [
-        { type: "sectionDivider", sectionNumber: 4, title: "Building Therapeutic Alliance with Individuals Experiencing Psychosis", subtitle: "Engagement, trust, and working with reduced insight" },
-        { type: "text", content: `<h2>Challenges to Alliance Building</h2>
+        { order: 1, type: "sectionDivider", sectionNumber: 4, title: "Building Therapeutic Alliance with Individuals Experiencing Psychosis", subtitle: "Engagement, trust, and working with reduced insight" },
+        { order: 2, type: "text", content: `<h2>Challenges to Alliance Building</h2>
 <p>Developing therapeutic alliance with individuals experiencing psychosis presents unique challenges. Reality testing impairment may lead clients to incorporate the therapist into delusional systems—viewing them with suspicion or attributing special powers to them. Negative symptoms including asociality and affective flattening may make it difficult to establish emotional connection. Cognitive impairment may affect the client's ability to engage in talk therapy. And medication side effects may contribute to low energy and reduced engagement.</p>
 <p>Despite these challenges, therapeutic alliance is possible and important. Research demonstrates that alliance with individuals with schizophrenia predicts treatment outcomes including symptom reduction, functioning, and quality of life. Alliance may be particularly important when other predictors of engagement (such as insight) are limited.</p>
 <h2>Strategies for Building Alliance</h2>
@@ -302,7 +306,7 @@ const COURSE_DATA = {
 <p>Recovery-oriented language emphasizes hope, strengths, and the possibility of meaningful life. Rather than focusing solely on symptom reduction, recovery-oriented care attends to what the person wants their life to be and how treatment can support those goals. This approach is exemplified in A Beautiful Mind by Alicia Nash's unwavering belief in her husband's capacity for meaningful life despite his illness.</p>
 <p>Working with ambivalence about treatment is often necessary. Many individuals with psychosis have mixed feelings about medication, therapy, or the mental health system in general. Motivational interviewing techniques can help explore ambivalence without confrontation. The goal is to understand the client's perspective, validate their concerns, and support their autonomy in making decisions about their care.</p>
 ` },
-        { type: "multipleChoice", question: "When a client has limited insight into their illness, the clinician should first prioritize:", options: [
+        { order: 3, type: "multipleChoice", question: "When a client has limited insight into their illness, the clinician should first prioritize:", options: [
               { text: "Confronting the delusion directly to correct it", isCorrect: false },
               { text: "Building rapport and trust before challenging beliefs", isCorrect: true },
               { text: "Immediately recommending hospitalization", isCorrect: false },
@@ -311,10 +315,11 @@ const COURSE_DATA = {
       ]
     },
     {
+      order: 5,
       title: "Ethical Considerations and Special Topics",
       contentBlocks: [
-        { type: "sectionDivider", sectionNumber: 5, title: "Ethical Considerations and Special Topics", subtitle: "Capacity, autonomy, involuntary treatment, and stigma" },
-        { type: "text", content: `<h2>Capacity and Autonomy</h2>
+        { order: 1, type: "sectionDivider", sectionNumber: 5, title: "Ethical Considerations and Special Topics", subtitle: "Capacity, autonomy, involuntary treatment, and stigma" },
+        { order: 2, type: "text", content: `<h2>Capacity and Autonomy</h2>
 <p>Working with individuals whose reality testing is impaired raises complex questions about capacity and autonomy. When does psychosis impair capacity to make treatment decisions? How do we balance respect for autonomy with protection from harm? How do we collaborate with clients who refuse recommended treatment?</p>
 <p>Capacity is decision-specific and can fluctuate over time. An individual experiencing acute psychosis may lack capacity for certain decisions but retain capacity for others. Capacity assessments evaluate the ability to understand relevant information, appreciate how it applies to one's situation, reason about options, and express a choice. Even when capacity is impaired, involving the individual in decisions to the greatest extent possible respects their dignity and may improve outcomes.</p>
 <p>The tension between autonomy and protection is particularly acute when individuals refuse medication that could reduce their suffering and improve their functioning. Coercive interventions such as involuntary hospitalization or court-ordered treatment carry significant costs including trauma, loss of trust, and damage to the therapeutic relationship. Such interventions may be necessary in situations of imminent danger but should be used sparingly and thoughtfully.</p>
@@ -412,16 +417,17 @@ SAMHSA National Helpline: 1-800-662-4357</p>
 <p>• What boundaries help you sustain this work long-term? Are there boundaries you struggle to maintain?</p>
 <p>• How do you process the grief and loss that can accompany this work (e.g., client hospitalizations, deterioration, or death)?</p>
 ` },
-        { type: "callout", calloutType: "ethics", title: "Holding the tension", content: "<p>Capacity is <strong>decision-specific and can fluctuate</strong>; autonomy <strong>endures</strong> even when capacity for one decision is impaired. The clinical task is rarely &ldquo;capable or not&rdquo; — it is to involve the person to the fullest extent their current capacity allows, and to plan ahead (e.g., psychiatric advance directives) for the times it dips.</p>" },
-        { type: "reflection", prompt: "Recall a case involving involuntary treatment or capacity questions. What tension between beneficence and autonomy did you navigate?" }
+        { order: 3, type: "callout", calloutType: "ethics", title: "Holding the tension", content: "<p>Capacity is <strong>decision-specific and can fluctuate</strong>; autonomy <strong>endures</strong> even when capacity for one decision is impaired. The clinical task is rarely &ldquo;capable or not&rdquo; — it is to involve the person to the fullest extent their current capacity allows, and to plan ahead (e.g., psychiatric advance directives) for the times it dips.</p>" },
+        { order: 4, type: "reflection", prompt: "Recall a case involving involuntary treatment or capacity questions. What tension between beneficence and autonomy did you navigate?" }
       ]
     },
     {
+      order: 6,
       title: "Conclusion & Key Takeaways",
       contentBlocks: [
-        { type: "sectionDivider", sectionNumber: 6, title: "Conclusion & Key Takeaways", subtitle: "Bringing the clinical lens back to practice" },
-        { type: "text", content: `<h2>Key Takeaways</h2><p>Serious mental illness, and schizophrenia in particular, is far more nuanced than its cinematic portrayals. Effective clinical work rests on accurate understanding of positive and negative symptoms, evidence-based pharmacological and psychosocial treatment, a patiently built therapeutic alliance that respects reduced insight, and careful ethical navigation of capacity, autonomy, and stigma. The film A Beautiful Mind offers a cultural touchstone — but the clinician's task is to see past the dramatization to the person.</p>` },
-        { type: "callout", calloutType: "key", title: "Carry this into practice", calloutItems: [
+        { order: 1, type: "sectionDivider", sectionNumber: 6, title: "Conclusion & Key Takeaways", subtitle: "Bringing the clinical lens back to practice" },
+        { order: 2, type: "text", content: `<h2>Key Takeaways</h2><p>Serious mental illness, and schizophrenia in particular, is far more nuanced than its cinematic portrayals. Effective clinical work rests on accurate understanding of positive and negative symptoms, evidence-based pharmacological and psychosocial treatment, a patiently built therapeutic alliance that respects reduced insight, and careful ethical navigation of capacity, autonomy, and stigma. The film A Beautiful Mind offers a cultural touchstone — but the clinician's task is to see past the dramatization to the person.</p>` },
+        { order: 3, type: "callout", calloutType: "key", title: "Carry this into practice", calloutItems: [
           "Distinguish positive from negative symptoms when assessing and planning treatment.",
           "Pair medication with psychosocial supports; treat adherence as a collaborative, not coercive, goal.",
           "Build alliance before challenging beliefs; insight often follows trust.",
