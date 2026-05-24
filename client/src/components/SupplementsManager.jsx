@@ -83,7 +83,7 @@ export default function SupplementsManager({ courseId }) {
       const d = await r.json();
       if (!d.success) throw new Error(d.error || 'Upload failed');
       setItems((prev) => [...prev, {
-        title: d.data.title, url: d.data.url, type: d.data.type || 'document', description: '',
+        title: d.data.title, url: d.data.url, type: d.data.type || 'worksheet', description: '',
       }]);
       flash('Uploaded — remember to Save');
     } catch (e2) { setErr(e2.message); }
@@ -103,7 +103,7 @@ export default function SupplementsManager({ courseId }) {
     } catch (e) { setErr(e.message); }
   };
   const addFromBrowse = (f) => {
-    setItems((prev) => [...prev, { title: f.title, url: f.url, type: f.type || 'document', description: '' }]);
+    setItems((prev) => [...prev, { title: f.title, url: f.url, type: f.type || 'worksheet', description: '' }]);
     setBrowse(null); flash('Added — remember to Save');
   };
 
