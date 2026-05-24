@@ -3,7 +3,6 @@
  * All rights reserved. Proprietary and confidential.
  * Unauthorized copying or distribution is strictly prohibited.
  */
-#!/usr/bin/env node
 /**
  * CR-613: "Seasoned & Struggling" — Substance Use Disorders in Older Adults
  * CE Hours: 2.0 | NBCC ACEP #7760
@@ -31,7 +30,7 @@ const COURSE = {
   ceCategory: "Clinical",
   contentArea: "Addiction Counseling",
   level: "Intermediate",
-  accessType: "paid",
+  accessType: 'subscription',
   price: 39.99,
   pricingTier: "standard",
   status: "draft",
@@ -107,36 +106,33 @@ const COURSE = {
               question: "The NIAAA defines low-risk drinking for adults over 65 as no more than:",
               type: "multipleChoice",
               options: [
-                "14 standard drinks per week and no more than 4 drinks per occasion, equivalent to the standard adult threshold",
-                "7 standard drinks per week and no more than 3 drinks on any single occasion",
-                "5 standard drinks per week with no single-occasion limit",
-                "1 standard drink per day with no weekly limit"
-              ],
-              correctAnswer: 1,
+              { text: "14 standard drinks per week and no more than 4 drinks per occasion, equivalent to the standard adult threshold", isCorrect: false },
+              { text: "7 standard drinks per week and no more than 3 drinks on any single occasion", isCorrect: true },
+              { text: "5 standard drinks per week with no single-occasion limit", isCorrect: false },
+              { text: "1 standard drink per day with no weekly limit", isCorrect: false }
+            ], correctAnswer: 1,
               explanation: "NIAAA sets age-specific thresholds for older adults that are significantly lower than for younger adults — a maximum of 7 drinks per week and 3 drinks per occasion — reflecting the altered physiology of aging that produces greater and longer-lasting effects from alcohol even when consumption remains stable over time."
             },
             {
               question: "An older adult who has maintained stable drinking patterns for 30 years may now be experiencing alcohol-related harm for which primary physiological reason?",
               type: "multipleChoice",
               options: [
-                "Psychological tolerance has increased their desire for alcohol without changing physiological response",
-                "Aging reduces total body water and liver enzyme activity, producing higher blood alcohol concentration per unit consumed and slower metabolism — generating more effect from the same amount",
-                "Social isolation amplifies the emotional effects of alcohol",
-                "Chronic use has permanently damaged liver function in ways that suddenly become symptomatic in late life"
-              ],
-              correctAnswer: 1,
+              { text: "Psychological tolerance has increased their desire for alcohol without changing physiological response", isCorrect: false },
+              { text: "Aging reduces total body water and liver enzyme activity, producing higher blood alcohol concentration per unit consumed and slower metabolism — generating more effect from the same amount", isCorrect: true },
+              { text: "Social isolation amplifies the emotional effects of alcohol", isCorrect: false },
+              { text: "Chronic use has permanently damaged liver function in ways that suddenly become symptomatic in late life", isCorrect: false }
+            ], correctAnswer: 1,
               explanation: "The physiological changes of aging — reduced total body water, decreased liver enzyme activity, reduced renal clearance, and increased CNS receptor sensitivity — produce greater and longer-lasting effects from the same amount of alcohol. This 'pharmacological aging' effect means that an older adult who has not increased their drinking may be experiencing clinically significant harm that they did not experience at a younger age."
             },
             {
               question: "Late-onset alcohol use disorder (onset after age 65) is MOST commonly associated with:",
               type: "multipleChoice",
               options: [
-                "Genetic vulnerability to addiction that has remained dormant until late life",
-                "Lifelong, progressively escalating use that finally crosses diagnostic thresholds in late life",
-                "Identifiable stressors — retirement, bereavement, chronic illness, loneliness — and carries a relatively positive prognosis with appropriate intervention",
-                "Comorbid personality disorders that emerge in late life"
-              ],
-              correctAnswer: 2,
+              { text: "Genetic vulnerability to addiction that has remained dormant until late life", isCorrect: false },
+              { text: "Lifelong, progressively escalating use that finally crosses diagnostic thresholds in late life", isCorrect: false },
+              { text: "Identifiable stressors — retirement, bereavement, chronic illness, loneliness — and carries a relatively positive prognosis with appropriate intervention", isCorrect: true },
+              { text: "Comorbid personality disorders that emerge in late life", isCorrect: false }
+            ], correctAnswer: 2,
               explanation: "Late-onset presentations are frequently triggered by identifiable late-life stressors and are associated with fewer comorbidities, better social support, and relatively positive treatment outcomes. Brief interventions are often highly effective because the individual has not organized their identity around substance use and has decades of controlled use as a reference point for recovery."
             }
           ]
@@ -185,7 +181,11 @@ const COURSE = {
 <h2>Family Involvement and System-Level Considerations</h2>
 <p>Family members play a critical role in both the identification and the treatment of geriatric substance use disorders. Adult children who have observed a parent's drinking pattern for years may be simultaneously aware of the problem, emotionally conflicted about addressing it, practically uncertain about how to help, and burdened by their own responses to the parent's behavior. Family psychoeducation — explaining the physiological realities of age-related sensitivity to alcohol, the medical consequences of continued use, and the availability of effective treatment — can shift family members from helpless observers to active participants in the treatment process.</p>
 
-<p>Family members' own codependent patterns — enabling behaviors including purchasing alcohol for the older adult, excusing consequences, or protecting the older adult from the natural outcomes of their use — require direct clinical attention. Al-Anon and similar family support resources offer peer-based support for family members that complements professional clinical intervention and provides sustained community that extends beyond the treatment episode.</p>`,
+<p>Family members' own codependent patterns — enabling behaviors including purchasing alcohol for the older adult, excusing consequences, or protecting the older adult from the natural outcomes of their use — require direct clinical attention. Al-Anon and similar family support resources offer peer-based support for family members that complements professional clinical intervention and provides sustained community that extends beyond the treatment episode.</p>
+
+<p>The integration of substance use treatment into geriatric care requires sustained attention to the ways that aging concentrates clinical complexity. Older adults with substance use disorders frequently present with a constellation of needs that exceeds what any single service system is designed to address: the medical demands of age-related chronic illness, the psychological weight of accumulated loss, the practical challenges of diminished mobility and social isolation, and the specific pharmacological risks that aging physiology creates. Effective clinical practice requires not only competence in evidence-based addiction treatment but genuine familiarity with the developmental context of later life — an understanding that the meaning of substance use for an older adult may be inseparable from the larger story of who they have been, what they have lost, and what they are still trying to hold onto.</p>
+
+<p>Clinicians who work with this population carry a particular responsibility to examine their own assumptions about aging, recovery, and what constitutes a meaningful treatment outcome. The recovery framework dominant in addiction treatment was largely developed with younger adults in mind, and its emphasis on abstinence, social reintegration, and long-term goals may require thoughtful adaptation when applied to an 80-year-old with moderate dementia and six months of life expectancy. Harm reduction, comfort-focused care, and the preservation of autonomy and dignity may be as clinically meaningful as abstinence in some older adult contexts — and clinicians who approach this work with flexibility, humility, and genuine respect for the complexity of older adult lives will be better equipped to offer care that actually helps.</p>`,
         },
         {
           type: "knowledgeCheck",
@@ -196,36 +196,33 @@ const COURSE = {
               question: "The FRAMES model for brief intervention with older adults who engage in at-risk drinking includes which of the following core components?",
               type: "multipleChoice",
               options: [
-                "Feedback, Restriction, Abstinence, Medical referral, Education, and Support",
-                "Feedback, Responsibility, Advice, Menu of options, Empathy, and Self-efficacy",
-                "Facts, Relationships, Assessment, Motivation, Education, and Support",
-                "Functional assessment, Referral, Addiction education, Medical collaboration, Empathy, and Safety planning"
-              ],
-              correctAnswer: 1,
+              { text: "Feedback, Restriction, Abstinence, Medical referral, Education, and Support", isCorrect: false },
+              { text: "Feedback, Responsibility, Advice, Menu of options, Empathy, and Self-efficacy", isCorrect: true },
+              { text: "Facts, Relationships, Assessment, Motivation, Education, and Support", isCorrect: false },
+              { text: "Functional assessment, Referral, Addiction education, Medical collaboration, Empathy, and Safety planning", isCorrect: false }
+            ], correctAnswer: 1,
               explanation: "FRAMES stands for Feedback (personalized information about current use and consequences), Responsibility (emphasizing the client's autonomy and personal responsibility for change), Advice (clear clinical guidance about recommended behavior change), Menu (a range of options for making change), Empathy (a warm, non-judgmental therapeutic style), and Self-efficacy (support for the client's belief in their capacity to change)."
             },
             {
               question: "Cognitive Behavioral Therapy for Insomnia (CBT-I) is preferred over continued benzodiazepine prescription for older adults with chronic insomnia because:",
               type: "multipleChoice",
               options: [
-                "CBT-I is faster to implement and requires fewer clinical sessions than medication management",
-                "CBT-I has demonstrated superiority to medication for chronic insomnia in older adults, while benzodiazepines carry significant risks including falls, cognitive impairment, and delirium",
-                "Benzodiazepines are not approved for insomnia treatment in any age group",
-                "CBT-I eliminates the need for any future mental health treatment"
-              ],
-              correctAnswer: 1,
+              { text: "CBT-I is faster to implement and requires fewer clinical sessions than medication management", isCorrect: false },
+              { text: "CBT-I has demonstrated superiority to medication for chronic insomnia in older adults, while benzodiazepines carry significant risks including falls, cognitive impairment, and delirium", isCorrect: true },
+              { text: "Benzodiazepines are not approved for insomnia treatment in any age group", isCorrect: false },
+              { text: "CBT-I eliminates the need for any future mental health treatment", isCorrect: false }
+            ], correctAnswer: 1,
               explanation: "CBT-I has demonstrated efficacy that equals or exceeds pharmacotherapy for chronic insomnia in older adults, with the significant advantage of not carrying the risks associated with benzodiazepines — including falls, hip fractures, delirium, and cognitive impairment that are specifically identified in the Beers Criteria as potentially inappropriate for older adults."
             },
             {
               question: "Age-specific substance use treatment groups consistently outperform mixed-age programs for older adults primarily because:",
               type: "multipleChoice",
               options: [
-                "Older adults learn better in smaller group formats",
-                "Mixed-age programs do not accept clients over 65",
-                "Same-generation peer cohesion reduces shame, allows discussion of age-specific issues, and is experienced as more culturally appropriate by older adult clients",
-                "Older adults are distracted by younger clients' technology use in mixed-age groups"
-              ],
-              correctAnswer: 2,
+              { text: "Older adults learn better in smaller group formats", isCorrect: false },
+              { text: "Mixed-age programs do not accept clients over 65", isCorrect: false },
+              { text: "Same-generation peer cohesion reduces shame, allows discussion of age-specific issues, and is experienced as more culturally appropriate by older adult clients", isCorrect: true },
+              { text: "Older adults are distracted by younger clients", isCorrect: false }
+            ], correctAnswer: 2,
               explanation: "Age-specific treatment groups generate higher engagement, lower dropout, and superior outcomes for older adults by providing culturally appropriate peer context, reducing shame through normalization among peers, and allowing discussion of the specific losses, health concerns, and meaning-deficits that characterize late-life substance use — topics that may feel irrelevant or inappropriate in mixed-age settings."
             }
           ]
@@ -243,21 +240,96 @@ const COURSE = {
           showExplanations: false,
           title: "Final Assessment — CR-613: Seasoned and Struggling",
           questions: [
-            { question: "The SMAST-G (Short Michigan Alcoholism Screening Test — Geriatric Version) is preferred over standard adult screening tools for older adults because:", type: "multipleChoice", options: ["It is shorter and faster to administer", "It includes items specific to geriatric presentations such as drinking to cope with loneliness and bereavement, and avoids occupational consequence items that are irrelevant for retired older adults", "It produces legally defensible diagnostic determinations", "It includes neuropsychological testing items"], correctAnswer: 1, explanation: "The SMAST-G was specifically developed and validated for older adults, capturing the social and psychological dimensions of geriatric alcohol misuse — including drinking to cope with grief and isolation — that general adult instruments miss. Standard tools asking about occupational and social consequences are less relevant for retired, socially reduced older adults." },
-            { question: "The Beers Criteria specifically identifies benzodiazepines as potentially inappropriate for older adults primarily because of:", type: "multipleChoice", options: ["Their potential for abuse and diversion to illegal markets", "Their association with falls, hip fractures, delirium, cognitive impairment, and motor vehicle accidents in older adult populations", "Their high cost relative to other anxiolytic medications", "Their documented ineffectiveness for anxiety after age 65"], correctAnswer: 1, explanation: "The Beers Criteria, maintained by the American Geriatrics Society, lists benzodiazepines as potentially inappropriate for older adults due to their association with significant adverse outcomes including falls, hip fractures, delirium, cognitive impairment, and motor vehicle accidents — all of which are amplified by the increased CNS sensitivity and reduced drug clearance of aging." },
-            { question: "Which of the following physiological changes of aging MOST directly explains why older adults achieve higher blood alcohol concentrations from the same amount of alcohol compared to younger adults?", type: "multipleChoice", options: ["Increased gastric absorption of alcohol due to reduced stomach acid", "Reduced total body water, so the same amount of alcohol is distributed through a smaller water compartment", "Increased liver enzyme activity that paradoxically converts more alcohol to acetaldehyde", "Reduced sensitivity of brain receptors that requires higher blood levels to achieve equivalent intoxication"], correctAnswer: 1, explanation: "Reduced total body water with aging means that the same amount of alcohol is distributed through a smaller aqueous compartment, producing a higher blood alcohol concentration per standard drink. Combined with reduced liver metabolism and increased receptor sensitivity, this produces greater effect from the same consumption." },
-            { question: "Project GOAL (Guiding Older Adult Lifestyles) demonstrated that:", type: "multipleChoice", options: ["Intensive residential treatment is required for older adult alcohol use disorder", "Even two brief counseling visits with at-risk drinking older adults produced significant, sustained reductions in alcohol consumption", "Brief interventions are ineffective for older adults and must be supplemented with pharmacotherapy", "Older adults require specialized neuropsychological testing before any substance use intervention"], correctAnswer: 1, explanation: "Fleming et al.'s Project GOAL demonstrated that two brief counseling visits with at-risk drinking older adults in primary care produced significant reductions in alcohol consumption maintained at 12-month follow-up — establishing that even minimal intervention is effective for this population when delivered with age-appropriate framing." },
-            { question: "Abrupt discontinuation of long-term benzodiazepine use should be avoided in older adults primarily because:", type: "multipleChoice", options: ["It causes immediate cognitive improvement that can be psychologically destabilizing", "It can cause life-threatening withdrawal seizures, requiring medically supervised gradual tapering", "It violates the prescribing physician's authority to manage medications", "It causes irreversible neurological damage in older adults"], correctAnswer: 1, explanation: "Long-term benzodiazepine dependence requires gradual, medically supervised tapering — abrupt discontinuation can precipitate life-threatening withdrawal seizures. Mental health clinicians should never advise or facilitate abrupt discontinuation but should coordinate with medical providers to ensure safe deprescription." },
-            { question: "The primary motivation most effective for engaging older adults in reducing alcohol use is:", type: "multipleChoice", options: ["Abstract concern about long-term liver damage", "Desire to be a good role model for grandchildren", "Concrete connection between reduced use and specific health goals they already value — better sleep, reduced fall risk, improved cognitive clarity, maintained independence", "Social pressure from family members"], correctAnswer: 2, explanation: "Older adults are highly motivated by health and independence. Connecting reduced drinking to specific health outcomes they are already experiencing and concerned about — sleep improvement, reduced fall risk, better cognitive clarity, maintained independence — leverages existing motivations effectively and is more persuasive than abstract or future-oriented health concerns." },
-            { question: "An older adult client who has been prescribed opioids for chronic arthritis pain requests prescription refills significantly before they are due and reports the medication was 'lost.' The MOST appropriate clinical response includes:", type: "multipleChoice", options: ["Accept the explanation at face value and provide a referral for the next refill", "Terminate the client from treatment for drug-seeking behavior", "Conduct a thorough opioid misuse assessment including the CAGE-AID, coordinate with prescribing physician, and explore the client's pain management and potential misuse in a non-judgmental clinical framework", "Report the client to law enforcement for potential prescription fraud"], correctAnswer: 2, explanation: "Repeated early refill requests and reports of lost medication are indicators of potential opioid misuse that warrant formal assessment, coordination with prescribing providers, and a careful clinical exploration in a non-judgmental framework. Unilateral termination or legal reporting without thorough assessment is clinically inappropriate." },
-            { question: "Motivational Interviewing (MI) is particularly well-suited to geriatric substance use treatment because:", type: "multipleChoice", options: ["It is faster than other evidence-based approaches and requires fewer sessions", "Its non-confrontational, autonomy-respecting spirit aligns with older adults' need for non-judgment in discussing stigmatized behavior, and it effectively engages ambivalence", "It is the only evidence-based approach validated specifically for older adult populations", "It requires no specialized training and can be implemented immediately by any clinician"], correctAnswer: 1, explanation: "The MI spirit of compassion, partnership, evocation, and acceptance is particularly congruent with the clinical needs of older adults who carry significant stigma about substance use and require a non-judgmental space to disclose and explore problematic behavior. MI's respect for autonomy is also important for a population that highly values independence." },
-            { question: "Late-onset substance use disorder in older adults carries a relatively positive prognosis because:", type: "multipleChoice", options: ["Older adults are more biologically resilient to substance effects than younger adults", "The disorder has not had decades to develop entrenched patterns, identity organization, or severe comorbidities — and the individual has a long reference history of controlled use", "Late-onset presentations respond better to pharmacotherapy than psychosocial intervention", "Family members are more involved and supportive in late-onset cases"], correctAnswer: 1, explanation: "Late-onset presentations are associated with fewer psychiatric comorbidities, better social support, no longstanding identity organization around substance use, and the older adult's own reference experience of decades of controlled or absent use — factors that support positive treatment outcomes, particularly with appropriate brief intervention and motivational approaches." },
-            { question: "Relapse prevention with older adult clients is MOST effectively oriented toward:", type: "multipleChoice", options: ["Identifying and avoiding the social and environmental cues that trigger use in younger adults", "Addressing the depression, loneliness, grief, and meaning-deficits that typically drive late-life substance use", "Developing contingency management systems with family member reinforcement", "Residential monitoring in sober living communities designed for older adults"], correctAnswer: 1, explanation: "The late-life drivers of substance use — grief, loneliness, loss of purpose, depression, and pain — must be directly treated as part of relapse prevention. Treating substance use without treating its underlying drivers leaves the clinical cause unaddressed and greatly increases relapse risk." },
-            { question: "Which statement BEST describes the ethical framing of substance use assessment with older adult clients who carry significant generational stigma?", type: "multipleChoice", options: ["Clinicians should confront the stigma directly by explaining that addiction is not a moral failing", "Assessment should be framed in moralistic terms that resonate with the client's own value system", "Assessment should be approached with non-judgmental curiosity that acknowledges the cultural context while creating safety for honest disclosure", "Clinicians should avoid the topic entirely until the client spontaneously raises it"], correctAnswer: 2, explanation: "Older adults shaped by cohort norms that equate substance use with moral failure require clinical engagement that explicitly creates non-judgmental space for disclosure. This does not mean ignoring the cultural context — which should be acknowledged — but rather ensuring that the clinical frame communicates that the clinician is an ally in the client's health, not a moral arbiter." },
-            { question: "Family psychoeducation in geriatric substance use treatment MOST appropriately focuses on:", type: "multipleChoice", options: ["Providing detailed clinical records from the treatment sessions to family members", "Explaining the physiological realities of age-related sensitivity, medical consequences of continued use, and availability of effective treatment — shifting family from helpless observers to active supporters", "Encouraging family members to implement consequences for continued use without clinical guidance", "Excluding family members from the treatment process to protect client autonomy"], correctAnswer: 1, explanation: "Effective family involvement in geriatric substance use treatment includes psychoeducation about the physiological dimensions of aging and substance use, guidance on supportive (rather than enabling) responses, and referral to family support resources like Al-Anon — transforming family members from helpless or inadvertently enabling bystanders into active therapeutic allies." },
-            { question: "Cognitive Behavioral Therapy for Insomnia (CBT-I) addresses the underlying mechanisms of insomnia in older adults through which primary approach?", type: "multipleChoice", options: ["Pharmacological modulation of sleep architecture", "Modification of dysfunctional sleep-related cognitions and behaviors — including sleep restriction, stimulus control, and cognitive restructuring about sleep expectations", "Relaxation training exclusively, without addressing cognitive factors", "Hypnotic induction techniques that restore natural sleep patterns"], correctAnswer: 1, explanation: "CBT-I addresses the cognitive and behavioral factors that perpetuate insomnia — including dysfunctional beliefs about sleep, behaviors that undermine sleep homeostasis, and conditioned arousal associated with the sleep environment — through techniques including sleep restriction, stimulus control, relaxation training, and cognitive restructuring." },
-            { question: "The CAGE-AID instrument is used in geriatric practice to screen for:", type: "multipleChoice", options: ["Cognitive impairment associated with alcohol use", "Alcohol and drug use disorders, adapted to include prescription drug misuse", "Geriatric depression associated with substance use", "Withdrawal severity in older adults discontinuing alcohol"], correctAnswer: 1, explanation: "The CAGE-AID (CAGE Adapted to Include Drugs) extends the classic CAGE alcohol screening questions to include prescription and illicit drug misuse, making it particularly useful in older adult populations where prescription medication misuse is a significant clinical concern alongside alcohol." },
-            { question: "Which barrier to treatment MOST commonly prevents older adults with substance use disorders from accessing appropriate care?", type: "multipleChoice", options: ["Cost of treatment programs, which insurance typically does not cover for older adults", "Lack of available treatment programs in most geographic areas", "Generational stigma, programs not designed for older adult needs, and clinicians who fail to screen or refer", "Physical inability to attend treatment due to advanced age"], correctAnswer: 2, explanation: "The most significant barriers are generational stigma that prevents disclosure and help-seeking; substance use treatment programs that were designed for younger adults and are experienced as inappropriate by older clients; and systematic under-screening and under-referral by healthcare providers who do not routinely assess for substance use in older adult patients." }
+            { question: "The SMAST-G (Short Michigan Alcoholism Screening Test — Geriatric Version) is preferred over standard adult screening tools for older adults because:", type: "multipleChoice", options: [
+              { text: "It is shorter and faster to administer", isCorrect: false },
+              { text: "It includes items specific to geriatric presentations such as drinking to cope with loneliness and bereavement, and avoids occupational consequence items that are irrelevant for retired older adults", isCorrect: true },
+              { text: "It produces legally defensible diagnostic determinations", isCorrect: false },
+              { text: "It includes neuropsychological testing items", isCorrect: false }
+            ], correctAnswer: 1, explanation: "The SMAST-G was specifically developed and validated for older adults, capturing the social and psychological dimensions of geriatric alcohol misuse — including drinking to cope with grief and isolation — that general adult instruments miss. Standard tools asking about occupational and social consequences are less relevant for retired, socially reduced older adults." },
+            { question: "The Beers Criteria specifically identifies benzodiazepines as potentially inappropriate for older adults primarily because of:", type: "multipleChoice", options: [
+              { text: "Their potential for abuse and diversion to illegal markets", isCorrect: false },
+              { text: "Their association with falls, hip fractures, delirium, cognitive impairment, and motor vehicle accidents in older adult populations", isCorrect: true },
+              { text: "Their high cost relative to other anxiolytic medications", isCorrect: false },
+              { text: "Their documented ineffectiveness for anxiety after age 65", isCorrect: false }
+            ], correctAnswer: 1, explanation: "The Beers Criteria, maintained by the American Geriatrics Society, lists benzodiazepines as potentially inappropriate for older adults due to their association with significant adverse outcomes including falls, hip fractures, delirium, cognitive impairment, and motor vehicle accidents — all of which are amplified by the increased CNS sensitivity and reduced drug clearance of aging." },
+            { question: "Which of the following physiological changes of aging MOST directly explains why older adults achieve higher blood alcohol concentrations from the same amount of alcohol compared to younger adults?", type: "multipleChoice", options: [
+              { text: "Increased gastric absorption of alcohol due to reduced stomach acid", isCorrect: false },
+              { text: "Reduced total body water, so the same amount of alcohol is distributed through a smaller water compartment", isCorrect: true },
+              { text: "Increased liver enzyme activity that paradoxically converts more alcohol to acetaldehyde", isCorrect: false },
+              { text: "Reduced sensitivity of brain receptors that requires higher blood levels to achieve equivalent intoxication", isCorrect: false }
+            ], correctAnswer: 1, explanation: "Reduced total body water with aging means that the same amount of alcohol is distributed through a smaller aqueous compartment, producing a higher blood alcohol concentration per standard drink. Combined with reduced liver metabolism and increased receptor sensitivity, this produces greater effect from the same consumption." },
+            { question: "Project GOAL (Guiding Older Adult Lifestyles) demonstrated that:", type: "multipleChoice", options: [
+              { text: "Intensive residential treatment is required for older adult alcohol use disorder", isCorrect: false },
+              { text: "Even two brief counseling visits with at-risk drinking older adults produced significant, sustained reductions in alcohol consumption", isCorrect: true },
+              { text: "Brief interventions are ineffective for older adults and must be supplemented with pharmacotherapy", isCorrect: false },
+              { text: "Older adults require specialized neuropsychological testing before any substance use intervention", isCorrect: false }
+            ], correctAnswer: 1, explanation: "Fleming et al.'s Project GOAL demonstrated that two brief counseling visits with at-risk drinking older adults in primary care produced significant reductions in alcohol consumption maintained at 12-month follow-up — establishing that even minimal intervention is effective for this population when delivered with age-appropriate framing." },
+            { question: "Abrupt discontinuation of long-term benzodiazepine use should be avoided in older adults primarily because:", type: "multipleChoice", options: [
+              { text: "It causes immediate cognitive improvement that can be psychologically destabilizing", isCorrect: false },
+              { text: "It can cause life-threatening withdrawal seizures, requiring medically supervised gradual tapering", isCorrect: true },
+              { text: "It violates the prescribing physician", isCorrect: false },
+              { text: ", ", isCorrect: false }
+            ], correctAnswer: 1, explanation: "Long-term benzodiazepine dependence requires gradual, medically supervised tapering — abrupt discontinuation can precipitate life-threatening withdrawal seizures. Mental health clinicians should never advise or facilitate abrupt discontinuation but should coordinate with medical providers to ensure safe deprescription." },
+            { question: "The primary motivation most effective for engaging older adults in reducing alcohol use is:", type: "multipleChoice", options: [
+              { text: "Abstract concern about long-term liver damage", isCorrect: false },
+              { text: "Desire to be a good role model for grandchildren", isCorrect: false },
+              { text: "Concrete connection between reduced use and specific health goals they already value — better sleep, reduced fall risk, improved cognitive clarity, maintained independence", isCorrect: true },
+              { text: "Social pressure from family members", isCorrect: false }
+            ], correctAnswer: 2, explanation: "Older adults are highly motivated by health and independence. Connecting reduced drinking to specific health outcomes they are already experiencing and concerned about — sleep improvement, reduced fall risk, better cognitive clarity, maintained independence — leverages existing motivations effectively and is more persuasive than abstract or future-oriented health concerns." },
+            { question: "An older adult client who has been prescribed opioids for chronic arthritis pain requests prescription refills significantly before they are due and reports the medication was 'lost.' The MOST appropriate clinical response includes:", type: "multipleChoice", options: [
+              { text: "Accept the explanation at face value and provide a referral for the next refill", isCorrect: false },
+              { text: "Terminate the client from treatment for drug-seeking behavior", isCorrect: false },
+              { text: "Conduct a thorough opioid misuse assessment including the CAGE-AID, coordinate with prescribing physician, and explore the client", isCorrect: true },
+              { text: ", ", isCorrect: false }
+            ], correctAnswer: 2, explanation: "Repeated early refill requests and reports of lost medication are indicators of potential opioid misuse that warrant formal assessment, coordination with prescribing providers, and a careful clinical exploration in a non-judgmental framework. Unilateral termination or legal reporting without thorough assessment is clinically inappropriate." },
+            { question: "Motivational Interviewing (MI) is particularly well-suited to geriatric substance use treatment because:", type: "multipleChoice", options: [
+              { text: "It is faster than other evidence-based approaches and requires fewer sessions", isCorrect: false },
+              { text: "Its non-confrontational, autonomy-respecting spirit aligns with older adults", isCorrect: true },
+              { text: ", ", isCorrect: false },
+              { text: ", ", isCorrect: false }
+            ], correctAnswer: 1, explanation: "The MI spirit of compassion, partnership, evocation, and acceptance is particularly congruent with the clinical needs of older adults who carry significant stigma about substance use and require a non-judgmental space to disclose and explore problematic behavior. MI's respect for autonomy is also important for a population that highly values independence." },
+            { question: "Late-onset substance use disorder in older adults carries a relatively positive prognosis because:", type: "multipleChoice", options: [
+              { text: "Older adults are more biologically resilient to substance effects than younger adults", isCorrect: false },
+              { text: "The disorder has not had decades to develop entrenched patterns, identity organization, or severe comorbidities — and the individual has a long reference history of controlled use", isCorrect: true },
+              { text: "Late-onset presentations respond better to pharmacotherapy than psychosocial intervention", isCorrect: false },
+              { text: "Family members are more involved and supportive in late-onset cases", isCorrect: false }
+            ], correctAnswer: 1, explanation: "Late-onset presentations are associated with fewer psychiatric comorbidities, better social support, no longstanding identity organization around substance use, and the older adult's own reference experience of decades of controlled or absent use — factors that support positive treatment outcomes, particularly with appropriate brief intervention and motivational approaches." },
+            { question: "Relapse prevention with older adult clients is MOST effectively oriented toward:", type: "multipleChoice", options: [
+              { text: "Identifying and avoiding the social and environmental cues that trigger use in younger adults", isCorrect: false },
+              { text: "Addressing the depression, loneliness, grief, and meaning-deficits that typically drive late-life substance use", isCorrect: true },
+              { text: "Developing contingency management systems with family member reinforcement", isCorrect: false },
+              { text: "Residential monitoring in sober living communities designed for older adults", isCorrect: false }
+            ], correctAnswer: 1, explanation: "The late-life drivers of substance use — grief, loneliness, loss of purpose, depression, and pain — must be directly treated as part of relapse prevention. Treating substance use without treating its underlying drivers leaves the clinical cause unaddressed and greatly increases relapse risk." },
+            { question: "Which statement BEST describes the ethical framing of substance use assessment with older adult clients who carry significant generational stigma?", type: "multipleChoice", options: [
+              { text: "Clinicians should confront the stigma directly by explaining that addiction is not a moral failing", isCorrect: false },
+              { text: "Assessment should be framed in moralistic terms that resonate with the client", isCorrect: false },
+              { text: ", ", isCorrect: true },
+              { text: ", ", isCorrect: false }
+            ], correctAnswer: 2, explanation: "Older adults shaped by cohort norms that equate substance use with moral failure require clinical engagement that explicitly creates non-judgmental space for disclosure. This does not mean ignoring the cultural context — which should be acknowledged — but rather ensuring that the clinical frame communicates that the clinician is an ally in the client's health, not a moral arbiter." },
+            { question: "Family psychoeducation in geriatric substance use treatment MOST appropriately focuses on:", type: "multipleChoice", options: [
+              { text: "Providing detailed clinical records from the treatment sessions to family members", isCorrect: false },
+              { text: "Explaining the physiological realities of age-related sensitivity, medical consequences of continued use, and availability of effective treatment — shifting family from helpless observers to active supporters", isCorrect: true },
+              { text: "Encouraging family members to implement consequences for continued use without clinical guidance", isCorrect: false },
+              { text: "Excluding family members from the treatment process to protect client autonomy", isCorrect: false }
+            ], correctAnswer: 1, explanation: "Effective family involvement in geriatric substance use treatment includes psychoeducation about the physiological dimensions of aging and substance use, guidance on supportive (rather than enabling) responses, and referral to family support resources like Al-Anon — transforming family members from helpless or inadvertently enabling bystanders into active therapeutic allies." },
+            { question: "Cognitive Behavioral Therapy for Insomnia (CBT-I) addresses the underlying mechanisms of insomnia in older adults through which primary approach?", type: "multipleChoice", options: [
+              { text: "Pharmacological modulation of sleep architecture", isCorrect: false },
+              { text: "Modification of dysfunctional sleep-related cognitions and behaviors — including sleep restriction, stimulus control, and cognitive restructuring about sleep expectations", isCorrect: true },
+              { text: "Relaxation training exclusively, without addressing cognitive factors", isCorrect: false },
+              { text: "Hypnotic induction techniques that restore natural sleep patterns", isCorrect: false }
+            ], correctAnswer: 1, explanation: "CBT-I addresses the cognitive and behavioral factors that perpetuate insomnia — including dysfunctional beliefs about sleep, behaviors that undermine sleep homeostasis, and conditioned arousal associated with the sleep environment — through techniques including sleep restriction, stimulus control, relaxation training, and cognitive restructuring." },
+            { question: "The CAGE-AID instrument is used in geriatric practice to screen for:", type: "multipleChoice", options: [
+              { text: "Cognitive impairment associated with alcohol use", isCorrect: false },
+              { text: "Alcohol and drug use disorders, adapted to include prescription drug misuse", isCorrect: true },
+              { text: "Geriatric depression associated with substance use", isCorrect: false },
+              { text: "Withdrawal severity in older adults discontinuing alcohol", isCorrect: false }
+            ], correctAnswer: 1, explanation: "The CAGE-AID (CAGE Adapted to Include Drugs) extends the classic CAGE alcohol screening questions to include prescription and illicit drug misuse, making it particularly useful in older adult populations where prescription medication misuse is a significant clinical concern alongside alcohol." },
+            { question: "Which barrier to treatment MOST commonly prevents older adults with substance use disorders from accessing appropriate care?", type: "multipleChoice", options: [
+              { text: "Cost of treatment programs, which insurance typically does not cover for older adults", isCorrect: false },
+              { text: "Lack of available treatment programs in most geographic areas", isCorrect: false },
+              { text: "Generational stigma, programs not designed for older adult needs, and clinicians who fail to screen or refer", isCorrect: true },
+              { text: "Physical inability to attend treatment due to advanced age", isCorrect: false }
+            ], correctAnswer: 2, explanation: "The most significant barriers are generational stigma that prevents disclosure and help-seeking; substance use treatment programs that were designed for younger adults and are experienced as inappropriate by older clients; and systematic under-screening and under-referral by healthcare providers who do not routinely assess for substance use in older adult patients." }
           ]
         }
       ]
