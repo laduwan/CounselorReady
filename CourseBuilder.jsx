@@ -15,7 +15,7 @@ const C = {
   burgundy: "#6B1D34", burgundyLight: "#8B2D4A", burgundyFaded: "rgba(107,29,52,0.08)",
   green: "#4A7C59", greenLight: "#5A9469", greenFaded: "rgba(74,124,89,0.08)",
   gold: "#D4A855", goldLight: "#E0BC72", goldFaded: "rgba(212,168,85,0.12)",
-  navy: "#34495E", navyLight: "#4A6278",
+  navy: "#284157", navyLight: "#4A6278",
   bg: "#FAFAF8", card: "#FFFFFF",
   border: "#E8E4DF", borderLight: "#F0EDE8",
   text: "#2C2C2C", textMuted: "#6B7280", textLight: "#9CA3AF",
