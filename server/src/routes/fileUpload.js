@@ -45,6 +45,16 @@ const EXT_LABELS = {
   'text/csv': 'CSV',
 };
 
+// Map a file label/format to a resources[].type value that is VALID per the
+// InteractiveCourse schema enum. Anything unrecognized (txt, file, unknown
+// Cloudinary formats) becomes 'worksheet' so course.save() never throws on a
+// bad enum. Keep in sync with the enum in models/InteractiveCourse.js.
+const VALID_RESOURCE_TYPES = ['pdf','video','link','article','website','book','xlsx','xls','csv','docx','doc','pptx','ppt','zip','worksheet','toolkit','template','guide','guidelines','research','organization','standards'];
+function toResourceType(label) {
+  const t = String(label || '').toLowerCase().trim();
+  return VALID_RESOURCE_TYPES.includes(t) ? t : 'worksheet';
+}
+
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 25 * 1024 * 1024 }, // 25MB
@@ -107,7 +117,7 @@ router.post('/upload', protect, requireAdmin, upload.single('file'), async (req,
         fileName:    req.file.originalname,
         title,
         fileType:    fileLabel,
-        type:        fileLabel.toLowerCase(),
+        type:        toResourceType(fileLabel),
         mimeType:    req.file.mimetype,
         bytes:       result.bytes,
         folder:      result.folder,
@@ -143,7 +153,7 @@ router.get('/browse', protect, requireAdmin, async (req, res) => {
         createdAt: r.created_at,
         title:     r.context?.custom?.title || r.public_id.split('/').pop(),
         fileType:  r.context?.custom?.fileType || r.format?.toUpperCase() || 'FILE',
-        type:      (r.context?.custom?.fileType || r.format || 'file').toLowerCase(),
+        type:      toResourceType(r.context?.custom?.fileType || r.format),
       })),
     });
   } catch (err) {
