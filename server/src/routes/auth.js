@@ -203,7 +203,7 @@ router.post('/register', async (req, res) => {
 // Login
 router.post('/login', async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { email, password, remember } = req.body;
     
     if (!email || !password) {
       return res.status(400).json({ error: 'Email and password are required' });
@@ -239,7 +239,7 @@ router.post('/login', async (req, res) => {
       });
     }
 
-    const token = generateToken(user._id);
+    const token = generateToken(user._id, !!remember);
 
     try {
       if (global.posthog) {
@@ -277,7 +277,7 @@ router.post('/login', async (req, res) => {
 // XXXX-XXXX backup code. Returns the full JWT on success.
 router.post('/login/verify-2fa', async (req, res) => {
   try {
-    const { challengeToken, code } = req.body;
+    const { challengeToken, code, remember } = req.body;
 
     if (!challengeToken || !code) {
       return res.status(400).json({ error: 'challengeToken and code are required' });
@@ -318,7 +318,7 @@ router.post('/login/verify-2fa', async (req, res) => {
       return res.status(401).json({ error: 'Invalid code' });
     }
 
-    const token = generateToken(user._id);
+    const token = generateToken(user._id, !!remember);
 
     // Log login activity
     logActivity(ACTIVITY_TYPES.USER_LOGIN, { twoFactor: usedBackup ? 'backup' : 'totp' }, {

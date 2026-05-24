@@ -104,12 +104,19 @@ export const optionalAuth = async (req, res, next) => {
   }
 };
 
-// Generate JWT token
-export const generateToken = (userId) => {
+// Generate JWT token.
+// `remember` is optional: when explicitly true the session is long-lived (30d),
+// when explicitly false it is short-lived (1d). When omitted (undefined) the
+// behavior is unchanged from before — JWT_EXPIRES_IN or the 7d default — so
+// existing callers (2FA verify, admin impersonation) are unaffected.
+export const generateToken = (userId, remember) => {
+  let expiresIn = process.env.JWT_EXPIRES_IN || '7d';
+  if (remember === true) expiresIn = '30d';
+  else if (remember === false) expiresIn = '1d';
   return jwt.sign(
     { id: userId },
     process.env.JWT_SECRET,
-    { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
+    { expiresIn }
   );
 };
 
