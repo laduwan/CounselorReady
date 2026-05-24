@@ -455,6 +455,12 @@ const CourseSchema = new mongoose.Schema({
 //   • section.title and block.title/subtitle — section headers (metadata)
 //   • course.description, tags, targetAudience, instructor — catalog metadata
 CourseSchema.pre('save', function(next) {
+  (this.sections || []).forEach((sec, si) => {
+    if (sec.order === undefined || sec.order === null) sec.order = si;
+    (sec.contentBlocks || []).forEach((blk, bi) => {
+      if (blk && (blk.order === undefined || blk.order === null)) blk.order = bi;
+    });
+  });
   this.totalEstimatedTime = this.sections.reduce((sum, s) => sum + (s.estimatedTime || 15), 0);
   this.totalContentBlocks = this.sections.reduce((sum, s) => sum + s.contentBlocks.length, 0);
   this.totalQuizQuestions = this.sections.reduce((sum, s) => sum + (s.quizQuestions?.length || 0), 0)
