@@ -5,7 +5,7 @@
  */
 import Partner from '../models/Partner.js';
 import User from '../models/User.js';
-import InteractiveCourse from '../models/InteractiveCourse.js';
+import { Course as InteractiveCourse } from '../models/InteractiveCourse.js';
 import { PLAN_LIMITS } from '../utils/planLimits.js';
 
 /**
