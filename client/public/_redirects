@@ -1,5 +1,10 @@
 # ═══════════════════════════════════════════════════════════════
-# CounselorReady _redirects — fully static, no React SPA
+# CounselorReady _redirects
+# Static-HTML-first (most routes -> .html), PLUS a few React SPA routes
+# (see the "React SPA routes" block near the bottom) that rewrite to
+# /index.html — which is the Vite React entry (client/index.html), NOT the
+# marketing homepage (client/public/index.html). See CLAUDE.md
+# ("Two index.html files") before editing either index.html.
 # ═══════════════════════════════════════════════════════════════
 
 # ── Root ──
