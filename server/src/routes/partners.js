@@ -11,7 +11,7 @@ import Stripe from 'stripe';
 import { Resend } from 'resend';
 import Partner from '../models/Partner.js';
 import User from '../models/User.js';
-import InteractiveCourse from '../models/InteractiveCourse.js';
+import { Course as InteractiveCourse } from '../models/InteractiveCourse.js';
 import { protect, requireAdmin, requirePartnerAdmin } from '../middleware/auth.js';
 import { enforceCourseQuota, enforceUserQuota, enforceCustomDomainFeature, enforceBulkUploadFeature, getPartnerUsage } from '../middleware/quotaEnforcement.js';
 import { PARTNER_PLANS, getPlanLimits } from '../utils/planLimits.js';
