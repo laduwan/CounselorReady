@@ -1,41 +1,52 @@
-fixMissingCorrectAnswers.js# Fix: KC correctAnswer + CR-614 syntax error
-## Push to GitHub first, then run on Render shell
+/**
+ * fixMissingCorrectAnswers.js
+ * Sets correctAnswer: 1 on all multipleChoice blocks missing it.
+ * Run: node src/scripts/fixMissingCorrectAnswers.js
+ */
 
-## Files changed
-- `server/src/scripts/fixMissingCorrectAnswers.js` — NEW
-- `server/src/scripts/seedCR614-The_Final_Chapter_End_of_Life_Death_Anxiety_Meaning-18037words.js` — shebang removed
-- `server/src/scripts/seedCR614-recovered-from-docx.js` — shebang removed
+import mongoose from 'mongoose';
+import dotenv from 'dotenv';
+dotenv.config();
 
----
+const CODES = ['CR-303', 'CR-401', 'CR-402', 'CR-NEU', 'CR-PHY', 'CR-TIC'];
 
-## Render shell commands (from ~/project/src/server)
+async function run() {
+  await mongoose.connect(process.env.MONGODB_URI);
+  const col = mongoose.connection.db.collection('interactivecourses');
 
-### 1. Fix 167 missing correctAnswers across 6 courses
-```
-node src/scripts/fixMissingCorrectAnswers.js
-```
-Expected: 6 courses updated, ~167 KCs total
+  const courses = await col.find({ courseCode: { $in: CODES } }).toArray();
+  console.log(`Found ${courses.length} courses to check\n`);
 
-### 2. Re-run CR-614 (now syntax-clean)
-```
-node src/scripts/seedCR614-The_Final_Chapter_End_of_Life_Death_Anxiety_Meaning-18037words.js
-```
+  let totalFixed = 0;
 
-### 3. Verify
-```
-node src/scripts/diagnoseCourseValidation.js CR-303
-node src/scripts/diagnoseCourseValidation.js CR-401
-node src/scripts/diagnoseCourseValidation.js CR-402
-node src/scripts/diagnoseCourseValidation.js CR-NEU
-node src/scripts/diagnoseCourseValidation.js CR-PHY
-node src/scripts/diagnoseCourseValidation.js CR-TIC
-node src/scripts/diagnoseCourseValidation.js CR-614
-```
-All should return `0 would fail save`.
+  for (const course of courses) {
+    let fixed = 0;
+    const sections = course.sections || [];
 
----
+    for (const section of sections) {
+      for (const block of (section.contentBlocks || [])) {
+        if (block.type === 'multipleChoice' &&
+            (block.correctAnswer === undefined || block.correctAnswer === null)) {
+          block.correctAnswer = 1;
+          fixed++;
+        }
+      }
+    }
 
-## Note
-correctAnswer defaults to index 1 (second option) — matches the authoring
-pattern in these seeds where the substantive answer is position 1.
-Confirm in CourseBuilder before publishing each course.
+    if (fixed > 0) {
+      await col.updateOne({ _id: course._id }, { $set: { sections } });
+      console.log(`✓ ${course.courseCode} — ${course.title.slice(0, 50)}`);
+      console.log(`  Fixed ${fixed} KCs (correctAnswer set to 1)\n`);
+      totalFixed += fixed;
+    } else {
+      console.log(`✓ ${course.courseCode} — no missing correctAnswers\n`);
+    }
+  }
+
+  console.log('────────────────────────────────');
+  console.log(`Total KCs fixed: ${totalFixed}`);
+  console.log('\nNote: correctAnswer defaulted to index 1. Verify in CourseBuilder before publishing.');
+  process.exit(0);
+}
+
+run().catch(e => { console.error(e); process.exit(1); });
