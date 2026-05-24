@@ -41,7 +41,7 @@ const COURSE_DATA = {
     questions: [
     {
       question: "Schizophrenia spectrum disorders are primarily characterized by:",
-      type: "multiple-choice",
+      type: "multipleChoice",
       options: [
               { text: "Persistent low mood and anhedonia", isCorrect: false },
               { text: "Disturbances in thought, perception, behavior, and affect including hallucinations and delusions", isCorrect: true },
@@ -51,7 +51,7 @@ const COURSE_DATA = {
     },
     {
       question: "'Positive symptoms' of schizophrenia include:",
-      type: "multiple-choice",
+      type: "multipleChoice",
       options: [
               { text: "Social withdrawal and flat affect", isCorrect: false },
               { text: "Hallucinations, delusions, disorganized speech, and abnormal motor behavior", isCorrect: true },
@@ -61,7 +61,7 @@ const COURSE_DATA = {
     },
     {
       question: "'Negative symptoms' of schizophrenia include all EXCEPT:",
-      type: "multiple-choice",
+      type: "multipleChoice",
       options: [
               { text: "Diminished emotional expression", isCorrect: false },
               { text: "Avolition", isCorrect: false },
@@ -71,7 +71,7 @@ const COURSE_DATA = {
     },
     {
       question: "CBTp differs from standard CBT in that:",
-      type: "multiple-choice",
+      type: "multipleChoice",
       options: [
               { text: "It does not use thought records", isCorrect: false },
               { text: "It does not aim to eliminate symptoms but helps clients develop alternative interpretations and coping strategies", isCorrect: true },
@@ -81,7 +81,7 @@ const COURSE_DATA = {
     },
     {
       question: "Recovery-oriented care for serious mental illness emphasizes:",
-      type: "multiple-choice",
+      type: "multipleChoice",
       options: [
               { text: "Symptom elimination as the primary goal", isCorrect: false },
               { text: "Client autonomy, hope, meaningful life roles, and personal empowerment beyond symptom management", isCorrect: true },
@@ -91,31 +91,27 @@ const COURSE_DATA = {
     },
     {
       question: "The therapeutic alliance with clients experiencing psychosis requires:",
-      type: "multiple-choice",
+      type: "multipleChoice",
       options: [
-              { text: "Directly challenging delusional beliefs", isCorrect: false },
-              { text: "Validation of the client", isCorrect: true },
-              { text: ", isCorrect: true },
-        { text: ", isCorrect: false },
-              { text: "s perceptions", isCorrect: false },
-              { text: "Avoiding discussion of psychotic symptoms", isCorrect: false }
-            ], correctAnswer: 1
+        { text: "Directly challenging delusional beliefs", isCorrect: false },
+        { text: "Validation of the client's experience while gently exploring alternative perspectives", isCorrect: true },
+        { text: "Avoidance of any discussion that might reinforce delusions", isCorrect: false },
+        { text: "Avoiding discussion of psychotic symptoms", isCorrect: false }
+      ], correctAnswer: 1
     },
     {
       question: "Anosognosia in schizophrenia refers to:",
-      type: "multiple-choice",
+      type: "multipleChoice",
       options: [
-              { text: "A type of hallucination", isCorrect: false },
-              { text: "Lack of awareness or insight into one", isCorrect: true },
-              { text: ", isCorrect: true },
-        { text: ", isCorrect: false },
-              { text: ", isCorrect: false },
-        { text: ", isCorrect: false }
-            ], correctAnswer: 1
+        { text: "A type of hallucination", isCorrect: false },
+        { text: "Lack of awareness or insight into one's own illness, distinct from denial", isCorrect: true },
+        { text: "A side effect of antipsychotic medication", isCorrect: false },
+        { text: "Difficulty with expressive language", isCorrect: false }
+      ], correctAnswer: 1
     },
     {
       question: "Cultural considerations in assessing psychosis include:",
-      type: "multiple-choice",
+      type: "multipleChoice",
       options: [
               { text: "Applying the same diagnostic criteria universally", isCorrect: false },
               { text: "Recognizing that cultural and spiritual beliefs may resemble psychotic symptoms and require culturally informed assessment", isCorrect: true },
@@ -125,17 +121,17 @@ const COURSE_DATA = {
     },
     {
       question: "Violence risk assessment with SMI should:",
-      type: "multiple-choice",
+      type: "multipleChoice",
       options: [
-              { text: "Assume all individuals with psychosis are dangerous", isCorrect: false },
-              { text: "Use structured professional judgment without stereotyping based on diagnosis alone", isCorrect: true },
-              { text: "Only be conducted after a violent incident", isCorrect: false },
-              { text: "Be based solely on the client", isCorrect: false }
-            ], correctAnswer: 1
+        { text: "Assume all individuals with psychosis are dangerous", isCorrect: false },
+        { text: "Use structured professional judgment without stereotyping based on diagnosis alone", isCorrect: true },
+        { text: "Only be conducted after a violent incident", isCorrect: false },
+        { text: "Be based solely on the client's self-report", isCorrect: false }
+      ], correctAnswer: 1
     },
     {
       question: "Stigma reduction in clinical practice involves:",
-      type: "multiple-choice",
+      type: "multipleChoice",
       options: [
               { text: "Avoiding the diagnostic label entirely", isCorrect: false },
               { text: "Using person-first language, examining personal biases, and advocating for clients", isCorrect: true },
@@ -145,19 +141,17 @@ const COURSE_DATA = {
     },
     {
       question: "A clinician notices a new client with schizophrenia minimizes medication side effects to avoid being told to continue a drug they dislike. The most therapeutic initial response is to:",
-      type: "multiple-choice",
+      type: "multipleChoice",
       options: [
-              { text: "Insist on adherence for the client", isCorrect: false },
-              { text: ", isCorrect: false },
-        { text: ", isCorrect: true },
-              { text: "s experience and collaborate on the treatment decision", isCorrect: false },
-              { text: "Document non-adherence and notify the prescriber only", isCorrect: false },
-              { text: "Reduce session frequency until adherence improves", isCorrect: false }
-            ], correctAnswer: 1
+        { text: "Insist on adherence for the client's safety", isCorrect: false },
+        { text: "Explore ambivalence, validate the client's experience and collaborate on the treatment decision", isCorrect: true },
+        { text: "Document non-adherence and notify the prescriber only", isCorrect: false },
+        { text: "Reduce session frequency until adherence improves", isCorrect: false }
+      ], correctAnswer: 1
     },
     {
       question: "Negative symptoms of schizophrenia are best described as:",
-      type: "multiple-choice",
+      type: "multipleChoice",
       options: [
               { text: "Experiences added to normal functioning, such as hallucinations", isCorrect: false },
               { text: "Capacities diminished or absent, such as avolition and flat affect", isCorrect: true },
@@ -167,7 +161,7 @@ const COURSE_DATA = {
     },
     {
       question: "Decisional capacity is best understood as:",
-      type: "multiple-choice",
+      type: "multipleChoice",
       options: [
               { text: "A permanent, global trait a person either has or lacks", isCorrect: false },
               { text: "Specific to a particular decision and able to fluctuate", isCorrect: true },
@@ -177,7 +171,7 @@ const COURSE_DATA = {
     },
     {
       question: "Which is an evidence-based psychosocial intervention for serious mental illness?",
-      type: "multiple-choice",
+      type: "multipleChoice",
       options: [
               { text: "Confrontational reality-testing", isCorrect: false },
               { text: "Assertive Community Treatment (ACT)", isCorrect: true },
@@ -187,7 +181,7 @@ const COURSE_DATA = {
     },
     {
       question: "The film A Beautiful Mind is clinically notable in part because it:",
-      type: "multiple-choice",
+      type: "multipleChoice",
       options: [
               { text: "Accurately depicts the typical course of all psychotic disorders", isCorrect: false },
               { text: "Portrays visual hallucinations though Nash primarily experienced auditory ones", isCorrect: true },
