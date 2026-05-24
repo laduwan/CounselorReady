@@ -407,7 +407,7 @@ async function suppUpload(input) {
     const res = await fetch(`${API}/files/upload`, { method:'POST', headers:{ 'Authorization':`Bearer ${token}` }, body: fd });
     const d = await res.json(); if (!res.ok || !d.success) throw new Error(d.error || `HTTP ${res.status}`);
     if (!courseData.resources) courseData.resources = [];
-    courseData.resources.push({ title: d.data.title, url: d.data.url, type: d.data.type || 'document', description: '' });
+    courseData.resources.push({ title: d.data.title, url: d.data.url, type: d.data.type || 'worksheet', description: '' });
     renderSupplements(courseData.resources); showToast('Uploaded — remember to Save','success');
   } catch (e) { showToast('Upload failed: ' + e.message, 'error'); }
   finally { btn.disabled=false; btn.innerHTML=orig; input.value=''; }
