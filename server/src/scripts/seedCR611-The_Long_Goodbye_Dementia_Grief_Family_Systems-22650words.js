@@ -105,11 +105,9 @@ const COURSE = {
               type: "multipleChoice",
               options: [
               { text: "Frontotemporal dementia with behavioral variant presentation", isCorrect: false },
-              { text: "Early Alzheimer", isCorrect: true },
-              { text: ",
-                ", isCorrect: false },
-              { text: ",
-                ", isCorrect: false }
+              { text: "Early Alzheimer's disease, in which recent episodic memory is impaired while older autobiographical memories are relatively preserved", isCorrect: true },
+              { text: "Lewy body dementia with fluctuating cognitive presentation", isCorrect: false },
+              { text: "Vascular dementia following a discrete stroke event", isCorrect: false }
             ], correctAnswer: 1,
               explanation: "Alzheimer's disease classically presents with an amnestic pattern that disproportionately affects recent episodic memory while leaving older autobiographical memories relatively intact in early stages. The hippocampus — where recent memories are encoded — is among the first regions affected. This is clinically important as it preserves access to life history, emotion-laden memories, and identity-relevant content that can be therapeutically utilized."
             },
@@ -117,13 +115,10 @@ const COURSE = {
               question: "A 58-year-old client is brought for evaluation because of dramatic personality changes — disinhibition, loss of empathy, and compulsive behaviors — while his memory appears relatively intact. This presentation is MOST suggestive of:",
               type: "multipleChoice",
               options: [
-              { text: "Early Alzheimer", isCorrect: false },
-              { text: ",
-                ", isCorrect: false },
-              { text: ",
-                ", isCorrect: true },
-              { text: ",
-                ", isCorrect: false }
+              { text: "Early Alzheimer's disease with atypical presentation", isCorrect: false },
+              { text: "Major Depressive Disorder with psychomotor features", isCorrect: false },
+              { text: "Frontotemporal dementia, behavioral variant", isCorrect: true },
+              { text: "Lewy body dementia with prominent psychiatric features", isCorrect: false }
             ], correctAnswer: 2,
               explanation: "The behavioral variant of frontotemporal dementia (bvFTD) presents with personality change, disinhibition, loss of empathy, and compulsive behaviors — often with relatively preserved memory in early stages. It frequently affects adults between 45 and 65. This presentation challenges families who may attribute changes to psychological or moral causes before the neurological diagnosis is made."
             },
@@ -211,11 +206,9 @@ const COURSE = {
               type: "multipleChoice",
               options: [
               { text: "Uncertainty about the dementia diagnosis due to incomplete neurological evaluation", isCorrect: false },
-              { text: "The family", isCorrect: false },
-              { text: ",
-                ", isCorrect: true },
-              { text: ",
-                ", isCorrect: false }
+              { text: "The family's uncertainty about how to distribute caregiving responsibilities", isCorrect: false },
+              { text: "The experience of grieving a person who is physically present but psychologically increasingly absent", isCorrect: true },
+              { text: "The ambiguity of prognosis and illness trajectory in neurocognitive disorders", isCorrect: false }
             ], correctAnswer: 2,
               explanation: "Boss's ambiguous loss framework describes the experience of grief for someone who is physically present but psychologically absent — the paradigmatic experience of family members of people with dementia. There is no social ritual, no acknowledged mourning period, and no resolution — the person is still there, but the relationship as it existed is progressively lost. Naming this experience is itself therapeutically valuable for caregivers."
             },
@@ -311,13 +304,10 @@ const COURSE = {
               question: "Under what circumstances may a clinician appropriately share clinical information about a client with dementia with family members?",
               type: "multipleChoice",
               options: [
-              { text: "Any time a family member expresses genuine concern about the client", isCorrect: false },
-              { text: ",
-                ", isCorrect: false },
-              { text: ",
-                ", isCorrect: true },
-              { text: "s explicit consent (obtained while capacity existed), or when a specific legal exception applies such as mandatory reporting", isCorrect: false },
-              { text: "When the client", isCorrect: false }
+              { text: "Any time a family member expresses genuine concern about the client's welfare", isCorrect: false },
+              { text: "Whenever the clinician judges that information-sharing would improve care coordination", isCorrect: false },
+              { text: "Only with the client's explicit consent (obtained while capacity existed), or when a specific legal exception applies such as mandatory reporting", isCorrect: true },
+              { text: "When the client's cognitive impairment makes their confidentiality rights legally moot", isCorrect: false }
             ], correctAnswer: 2,
               explanation: "HIPAA confidentiality protections apply fully to persons with dementia. Information may be shared with family members only with the client's explicit informed consent (ideally obtained while capacity was intact), or when a specific legal exception applies — such as mandatory reporting of abuse or neglect. The person's cognitive impairment does not eliminate their privacy rights."
             },
@@ -326,8 +316,7 @@ const COURSE = {
               type: "multipleChoice",
               options: [
               { text: "Uncomplicated bereavement that resolves quickly because grief work was done during the illness", isCorrect: false },
-              { text: "A distinct clinical experience shaped by years of anticipatory mourning, potential relief, and exhaustion from caregiving — sometimes involving ", isCorrect: true },
-              { text: " requiring specific therapeutic support", isCorrect: false },
+              { text: "A distinct clinical experience shaped by years of anticipatory mourning, potential relief, and exhaustion from caregiving — sometimes involving 'second grief' requiring specific therapeutic support", isCorrect: true },
               { text: "A straightforward grief response identical to other bereavement experiences", isCorrect: false },
               { text: "Primarily focused on guilt and should be treated with CBT-based cognitive restructuring", isCorrect: false }
             ], correctAnswer: 1,
@@ -355,10 +344,10 @@ const COURSE = {
               { text: "90 to 95 percent", isCorrect: false }
             ], correctAnswer: 2, explanation: "Alzheimer's disease is the most common cause of dementia, accounting for 60–80% of cases." },
             { question: "The stepwise deterioration pattern — with abrupt declines following vascular events interspersed with relative stability — is MOST characteristic of:", type: "multipleChoice", options: [
-              { text: "Alzheimer", isCorrect: false },
-              { text: ", ", isCorrect: false },
-              { text: ", ", isCorrect: false },
-              { text: ", ", isCorrect: true }
+              { text: "Alzheimer's disease", isCorrect: false },
+              { text: "Frontotemporal dementia", isCorrect: false },
+              { text: "Lewy body dementia", isCorrect: false },
+              { text: "Vascular dementia", isCorrect: true }
             ], correctAnswer: 3, explanation: "Vascular dementia typically follows a stepwise pattern, with declines linked to discrete cerebrovascular events rather than the gradual progression of Alzheimer's disease." },
             { question: "A person with Lewy body dementia must be carefully monitored for adverse reactions to which category of medication?", type: "multipleChoice", options: [
               { text: "NSAIDs and blood thinners", isCorrect: false },
@@ -380,11 +369,11 @@ const COURSE = {
             ], correctAnswer: 1, explanation: "Validation Therapy, developed by Naomi Feil, involves entering the subjective world of the person with dementia and acknowledging the emotional truth of their experience, rather than correcting temporal or factual misperceptions. This approach reduces distress and conflict, particularly in moderate to late-stage dementia." },
             { question: "According to Boss's ambiguous loss framework, the grief of family members of people with dementia is particularly difficult because:", type: "multipleChoice", options: [
               { text: "The care recipient", isCorrect: false },
-              { text: "s", isCorrect: true },
-              { text: "There is no social ritual, acknowledged mourning period, or resolution — the person is physically present but psychologically increasingly absent", isCorrect: false },
+              { text: "s", isCorrect: false },
+              { text: "There is no social ritual, acknowledged mourning period, or resolution — the person is physically present but psychologically increasingly absent", isCorrect: true },
               { text: "Families are not entitled to grieve until the care recipient has died", isCorrect: false },
               { text: "The grief is primarily anticipatory and does not reflect actual loss", isCorrect: false }
-            ], correctAnswer: 1, explanation: "Ambiguous loss in dementia lacks the social recognition, ritual, and resolution of conventional bereavement. The care recipient is physically present while psychologically increasingly absent — creating grief that has no clear beginning, no clear end, and no social scripts for mourning." },
+            ], correctAnswer: 2, explanation: "Ambiguous loss in dementia lacks the social recognition, ritual, and resolution of conventional bereavement. The care recipient is physically present while psychologically increasingly absent — creating grief that has no clear beginning, no clear end, and no social scripts for mourning." },
             { question: "The REACH (Resources for Enhancing Alzheimer's Caregiver Health) intervention demonstrated effectiveness through:", type: "multipleChoice", options: [
               { text: "Pharmacological management of caregiver anxiety and depression", isCorrect: false },
               { text: "Institutionalization of care recipients to relieve caregiver burden", isCorrect: false },
@@ -398,10 +387,10 @@ const COURSE = {
               { text: "Respite care is only indicated when the caregiver has been formally diagnosed with depression", isCorrect: false }
             ], correctAnswer: 2, explanation: "Despite its documented benefits for caregiver wellbeing, respite care is dramatically underutilized due to caregiver guilt and financial and access barriers. Clinicians play an important role in normalizing respite as essential maintenance of the caregiver's capacity to continue providing care." },
             { question: "When a sibling conflict arises over caregiving responsibilities for a parent with dementia, the clinician's MOST appropriate role is:", type: "multipleChoice", options: [
-              { text: "Advocate for the caregiving sibling", isCorrect: false },
-              { text: ", ", isCorrect: true },
-              { text: ", ", isCorrect: false },
-              { text: ", ", isCorrect: false }
+              { text: "Advocate for the caregiving sibling's perspective, as they have greater clinical insight into the care situation", isCorrect: false },
+              { text: "Facilitate family communication and collaborative problem-solving while maintaining neutrality regarding family dynamics", isCorrect: true },
+              { text: "Remain uninvolved in family dynamics, limiting the clinical focus to the identified client", isCorrect: false },
+              { text: "Provide a formal clinical opinion about the appropriate distribution of caregiving responsibilities", isCorrect: false }
             ], correctAnswer: 1, explanation: "Sibling conflict over caregiving is extremely common and clinically significant. The clinician's appropriate role is to facilitate communication, validate the experiences of all parties, and support collaborative problem-solving — maintaining therapeutic neutrality rather than aligning with any particular sibling's perspective." },
             { question: "Hospice care is underutilized for persons with advanced dementia primarily because:", type: "multipleChoice", options: [
               { text: "Hospice is not legally permitted for non-cancer diagnoses", isCorrect: false },
@@ -431,7 +420,7 @@ const COURSE = {
               { text: "Defer all clinical intervention until cognitive decline is more advanced and the care situation is clearer", isCorrect: false },
               { text: "Focus exclusively on caregiver support for the spouse, as the person with dementia cannot benefit from psychotherapy", isCorrect: false },
               { text: "Individual and/or couples counseling addressing emotional processing of the diagnosis, advance care planning, identity maintenance, and communication — while the client still has sufficient capacity to meaningfully engage", isCorrect: true },
-              { text: "Pharmacological referral only, as psychotherapy cannot benefit persons with Alzheimer", isCorrect: false }
+              { text: "Pharmacological referral only, as psychotherapy cannot benefit persons with Alzheimer's disease", isCorrect: false }
             ], correctAnswer: 2, explanation: "Early-stage dementia is the optimal time for direct therapeutic engagement with the person with cognitive decline — while insight is relatively intact and capacity for meaningful participation in counseling, advance care planning, and identity-affirming work is preserved. Both individual and couples/family sessions are appropriate and beneficial." },
             { question: "What does 'second grief' refer to in the context of post-dementia bereavement?", type: "multipleChoice", options: [
               { text: "A second bereavement following the death of another family member", isCorrect: false },
