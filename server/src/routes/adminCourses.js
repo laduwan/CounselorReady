@@ -1291,6 +1291,28 @@ router.put('/courses/:courseId', protect, adminOnly, async (req, res) => {
     });
     
     course.updatedAt = new Date();
+
+    // Validate the whole document BEFORE saving. course.save() validates the
+    // entire course; a single drifted legacy field (e.g. a stale enum on an
+    // assessment question type, an approval body, a content-block calloutType)
+    // would otherwise surface as a generic 500 with no clue which field failed.
+    // Returning the precise offending paths turns "save failed" into something
+    // an admin can actually act on.
+    const validationError = course.validateSync();
+    if (validationError) {
+      const fields = Object.entries(validationError.errors || {}).map(([path, e]) => ({
+        path,
+        kind: e.kind,
+        value: e.value,
+        message: e.message,
+      }));
+      console.error('Update course validation failed:', JSON.stringify(fields, null, 2));
+      return res.status(400).json({
+        error: 'Course has fields that fail validation',
+        fields,
+      });
+    }
+
     await course.save();
     
     res.json({ 
@@ -1300,7 +1322,12 @@ router.put('/courses/:courseId', protect, adminOnly, async (req, res) => {
     });
   } catch (error) {
     console.error('Update course error:', error);
-    res.status(500).json({ error: 'Failed to update course' });
+    // Surface real detail (validation/cast) instead of a blind 500.
+    res.status(500).json({
+      error: 'Failed to update course',
+      detail: error.message,
+      ...(error.errors ? { fields: Object.keys(error.errors) } : {}),
+    });
   }
 });
 
