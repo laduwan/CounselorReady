@@ -1,5 +1,3 @@
-[CLAUDE(10).md](https://github.com/user-attachments/files/27563113/CLAUDE.10.md)
-[CLAUDE(8).md](https://github.com/user-attachments/files/27072766/CLAUDE.8.md)
 # CounselorReady — Claude Code Instructions
 ## GA Integrated Therapeutic Perspectives LLC · NBCC ACEP #7760
 ---
@@ -10,6 +8,45 @@ If a file is not listed in the task, do not open it, do not edit it, do not refa
 ## The Golden Rule
 > **Fix what is broken. Nothing else.**
 Do not change colors, fonts, components, emojis, sizing, layout, variable names, or file structure unless explicitly asked. Do not refactor working code. Do not rename things for consistency. Do not reorganize imports. Do not upgrade patterns. If it works, leave it alone.
+---
+## Architecture: Two `index.html` files (READ BEFORE TOUCHING EITHER)
+CounselorReady is **static-HTML-first** (82 `.html` pages in `client/public/`), but a
+few routes are **React** — most importantly the **course-builder**. This creates a
+trap that has broken production **three times**, so it is documented here permanently.
+
+There are two different files both named `index.html`. They are NOT interchangeable:
+
+| File | What it is | Must contain |
+| --- | --- | --- |
+| `client/index.html` | **Vite's React entry.** Built and emitted as the deployed `/index.html`. | `<div id="root">` + `<script type="module" src="/src/main.jsx">` |
+| `client/public/index.html` | **The public marketing homepage** (Features/Pricing/Sign in). Copied verbatim to the build root. | marketing markup (no `#root`) |
+
+`client/public/_redirects` maps the SPA routes to the React entry:
+```
+
+/admin/course-builder /index.html 200 # the React shell (client/index.html, after build) /admin-course-builder /index.html 200
+
+```
+**The trap:** Vite copies `public/` verbatim, so if `client/index.html` is ever
+overwritten with marketing HTML (no `#root`, no `main.jsx`), the build ships a
+marketing page as `/index.html`. Then `/admin/course-builder` serves the marketing
+homepage — with a "Sign in" button — instead of booting React, which looks exactly
+like the course-builder "logging you out." (`/auth/me` still returns 200; the React
+app simply never loads.)
+
+**Rules:**
+- Never paste marketing/static HTML into `client/index.html`. Edit the marketing
+  homepage in `client/public/index.html` only.
+- `client/vite.config.js` has a `verify-react-entry` build guard that FAILS the build
+  if `client/index.html` loses `#root` or `/src/main.jsx`. Do not remove it.
+- If a course-builder "can't load / logs me out" report comes in, check this first:
+  `grep 'id="root"' client/index.html` — if missing, the entry was clobbered again.
+
+History: broken/restored at commits `268e190`, `2875c7e`, then re-broken at `53797f2`.
+---
+## Seed & Course Authoring
+**Before creating or editing any interactive-course seed, read `docs/SEED_AUTHORING_AND_VIEWER_GUIDE.md`** — verified block-type shapes, the references/resources drawer mechanism, validation gates, and engagement rules. The code (`InteractiveCourse.js`, `interactive-course.html`) overrides any spec doc.
+
 ---
 ## Hard Off-Limits Files
 These files are complete and stable. Do NOT open, read, or modify them unless the task prompt explicitly names them:

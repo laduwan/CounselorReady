@@ -48,8 +48,11 @@ import aiCourseGeneratorRoutes from './routes/aiCourseGenerator.js';
 import gamificationRoutes from './routes/gamification.js';
 import referralsRoutes from './routes/referrals.js';
 import boardAlertsRoutes from './routes/boardAlerts.js';
+import boardSourcesRoutes from './routes/boardSources.js';
+import googleCalendarRoutes from './routes/googleCalendar.js';
 import cePlannerRoutes from './routes/cePlanner.js';
 import imageUploadRoutes from './routes/imageUpload.js';
+import fileUploadRoutes from './routes/fileUpload.js';
 import adminStatsRoutes from './routes/adminStats.js';
 import researchReadyRoutes from './routes/researchReady.js';
 import toolsRoutes from './routes/tools.js';
@@ -112,11 +115,14 @@ export const ROUTE_MANIFEST = [
   ['/api/referrals',             referralsRoutes,           'Referrals (Pass the Key)'],
   ['/api/rewards',               rewardsRoutes,             'Rewards / MMP Points'],
   ['/api/board-alerts',          boardAlertsRoutes,         'Board Alerts'],
+  ['/api/board-sources',         boardSourcesRoutes,        'Board Sources (admin monitor mgmt)'],
+  ['/api/google-calendar',       googleCalendarRoutes,      'Google Calendar (OAuth + sync)'],
   ['/api/ce-planner',            cePlannerRoutes,           'CE Planner'],
   ['/api/recommendations',       recommendationsRoutes,     'Recommendations'],
   ['/api/research-ready',        researchReadyRoutes,       'Researched & Ready'],
   ['/api/scan',                  scanRoutes,                'Credential Scanner'],
   ['/api/images',                imageUploadRoutes,         'Image Upload'],
+  ['/api/files',                 fileUploadRoutes,          'Course File Upload'],
   ['/api/announcements',         announcementsRoutes,       'Announcements'],
   ['/api/reminders',             remindersRoutes,           'Reminders'],
   ['/api/analytics',             analyticsRoutes,           'Analytics'],

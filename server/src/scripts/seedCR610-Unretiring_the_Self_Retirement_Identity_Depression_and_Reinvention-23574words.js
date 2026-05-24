@@ -3,7 +3,6 @@
  * All rights reserved. Proprietary and confidential.
  * Unauthorized copying or distribution is strictly prohibited.
  */
-#!/usr/bin/env node
 /**
  * seedGeriatricSeries_CR610.js
  * CR-610: "Unretiring the Self" — Identity, Purpose & Depression in Later Life
@@ -34,7 +33,7 @@ const COURSE = {
   ceCategory: "Clinical",
   contentArea: "Geriatric Mental Health",
   level: "Intermediate",
-  accessType: "paid",
+  accessType: 'subscription',
   price: 54.99,
   pricingTier: "standard",
   status: "draft",
@@ -145,36 +144,33 @@ const COURSE = {
               question: "A 74-year-old retired physician presents to your practice complaining of fatigue, appetite loss, and difficulty concentrating. He denies feeling 'sad' and attributes his symptoms to 'just getting old.' What is the most clinically appropriate response?",
               type: "multipleChoice",
               options: [
-                "Accept his explanation and focus on psychoeducation about healthy aging",
-                "Administer a validated geriatric depression screening tool and conduct a thorough clinical interview exploring somatic symptoms as possible depressive equivalents",
-                "Refer immediately to his primary care physician, as these are exclusively medical concerns",
-                "Begin supportive counseling without formal assessment, as older adults often resist diagnostic labels"
-              ],
-              correctAnswer: 1,
+              { text: "Accept his explanation and focus on psychoeducation about healthy aging", isCorrect: false },
+              { text: "Administer a validated geriatric depression screening tool and conduct a thorough clinical interview exploring somatic symptoms as possible depressive equivalents", isCorrect: true },
+              { text: "Refer immediately to his primary care physician, as these are exclusively medical concerns", isCorrect: false },
+              { text: "Begin supportive counseling without formal assessment, as older adults often resist diagnostic labels", isCorrect: false }
+            ], correctAnswer: 1,
               explanation: "Late-life depression frequently presents with somatic symptoms rather than emotional distress, particularly in older adult men and in cohorts socialized toward stoicism. Fatigue, appetite change, and cognitive difficulties are common presentations of depression in older adults. The clinical response is to use a validated screening tool (such as the GDS-15 or PHQ-9) and conduct a thorough clinical interview, not to dismiss symptoms as age-related without assessment."
             },
             {
               question: "According to Erikson's psychosocial theory, the central developmental task of late life involves:",
               type: "multipleChoice",
               options: [
-                "Autonomy vs. shame and doubt, focused on developing independence from caregivers",
-                "Generativity vs. stagnation, focused on contributing to future generations",
-                "Integrity vs. despair, focused on accepting one's life as it was actually lived",
-                "Identity vs. role confusion, focused on establishing a coherent sense of self"
-              ],
-              correctAnswer: 2,
+              { text: "Autonomy vs. shame and doubt, focused on developing independence from caregivers", isCorrect: false },
+              { text: "Generativity vs. stagnation, focused on contributing to future generations", isCorrect: false },
+              { text: "Integrity vs. despair, focused on accepting one's life as it was actually lived", isCorrect: true },
+              { text: "Identity vs. role confusion, focused on establishing a coherent sense of self", isCorrect: false }
+            ], correctAnswer: 2,
               explanation: "Erikson's eighth stage, integrity vs. despair, is the central psychosocial task of late life. Successful navigation yields a sense of meaning and acceptance of one's lived experience. Failed navigation yields despair — the sense that life was wasted and that it is too late to find meaning. This framework is particularly useful for understanding the existential dimensions of late-life depression."
             },
             {
               question: "Which screening tool was specifically developed for older adult populations and is particularly useful for clients with comorbid medical conditions because it minimizes somatic items?",
               type: "multipleChoice",
               options: [
-                "Beck Depression Inventory-II (BDI-II)",
-                "Patient Health Questionnaire-9 (PHQ-9)",
-                "Geriatric Depression Scale (GDS)",
-                "Hamilton Rating Scale for Depression (HAM-D)"
-              ],
-              correctAnswer: 2,
+              { text: "Beck Depression Inventory-II (BDI-II)", isCorrect: false },
+              { text: "Patient Health Questionnaire-9 (PHQ-9)", isCorrect: false },
+              { text: "Geriatric Depression Scale (GDS)", isCorrect: true },
+              { text: "Hamilton Rating Scale for Depression (HAM-D)", isCorrect: false }
+            ], correctAnswer: 2,
               explanation: "The Geriatric Depression Scale (GDS) was designed specifically for older adults. Its yes/no response format is accessible for clients with mild cognitive impairment, and it avoids the somatic items (appetite, sleep, fatigue) that can produce false positives when older adults have comorbid physical health conditions. The GDS-15 (short form) is widely used in clinical and research settings."
             }
           ]
@@ -277,36 +273,33 @@ const COURSE = {
               question: "A 70-year-old retired engineer is reluctant to engage in 'talk therapy,' stating he prefers practical solutions to 'wallowing in feelings.' Which evidence-based intervention would MOST align with his stated preferences while effectively targeting his depressive symptoms?",
               type: "multipleChoice",
               options: [
-                "Psychodynamic therapy focusing on early developmental experiences",
-                "Problem-Solving Therapy (PST), which uses a structured approach to resolving life challenges",
-                "Non-directive supportive counseling emphasizing emotional reflection",
-                "Psychoeducational group therapy focused on CBT concepts"
-              ],
-              correctAnswer: 1,
+              { text: "Psychodynamic therapy focusing on early developmental experiences", isCorrect: false },
+              { text: "Problem-Solving Therapy (PST), which uses a structured approach to resolving life challenges", isCorrect: true },
+              { text: "Non-directive supportive counseling emphasizing emotional reflection", isCorrect: false },
+              { text: "Psychoeducational group therapy focused on CBT concepts", isCorrect: false }
+            ], correctAnswer: 1,
               explanation: "Problem-Solving Therapy is highly suitable for clients who are skeptical of emotional processing and who prefer practical, structured approaches. PST's seven-stage methodology emphasizes defining problems, generating solutions, and implementing strategies — a framework that many older adults, particularly those from professional or technical backgrounds, find compatible with their preferred problem-solving style. It is empirically supported for late-life depression and widely used in primary care settings."
             },
             {
               question: "Life Review Therapy is grounded primarily in which theoretical framework?",
               type: "multipleChoice",
               options: [
-                "Aaron Beck's cognitive model of depression",
-                "Erik Erikson's integrity vs. despair stage and Robert Butler's life review concept",
-                "Carl Rogers' person-centered theory of unconditional positive regard",
-                "Viktor Frankl's logotherapy and existential philosophy"
-              ],
-              correctAnswer: 1,
+              { text: "Aaron Beck's cognitive model of depression", isCorrect: false },
+              { text: "Erik Erikson's integrity vs. despair stage and Robert Butler's life review concept", isCorrect: true },
+              { text: "Carl Rogers' person-centered theory of unconditional positive regard", isCorrect: false },
+              { text: "Viktor Frankl's logotherapy and existential philosophy", isCorrect: false }
+            ], correctAnswer: 1,
               explanation: "Life Review Therapy draws from Erik Erikson's eighth psychosocial stage (integrity vs. despair) and Robert Butler's foundational work on therapeutic reminiscence. Butler proposed that life review — the natural process by which older adults reflect on and evaluate their lives — could be guided therapeutically to facilitate integration, resolve regrets, and promote a sense of meaning and acceptance. The approach was manualized by Barbara Haight and has strong empirical support for late-life depression."
             },
             {
               question: "When implementing Behavioral Activation with an 82-year-old client who used to enjoy hiking but now has significant arthritis, the MOST therapeutically appropriate approach is:",
               type: "multipleChoice",
               options: [
-                "Encourage the client to push through the pain and attempt shorter hikes to maintain continuity with valued activities",
-                "Focus exclusively on indoor, sedentary activities to prevent physical injury",
-                "Identify what specifically the client valued about hiking — fresh air, movement, nature, solitude, achievement — and collaboratively identify alternative activities that provide similar rewards within current functional capacity",
-                "Defer activity planning until the arthritis is better managed medically"
-              ],
-              correctAnswer: 2,
+              { text: "Encourage the client to push through the pain and attempt shorter hikes to maintain continuity with valued activities", isCorrect: false },
+              { text: "Focus exclusively on indoor, sedentary activities to prevent physical injury", isCorrect: false },
+              { text: "Identify what specifically the client valued about hiking — fresh air, movement, nature, solitude, achievement — and collaboratively identify alternative activities that provide similar rewards within current functional capacity", isCorrect: true },
+              { text: "Defer activity planning until the arthritis is better managed medically", isCorrect: false }
+            ], correctAnswer: 2,
               explanation: "Effective Behavioral Activation requires understanding what the client actually valued in specific activities, not just the activity itself. For a client with arthritis who valued hiking, the clinician should explore whether what was most meaningful was the physical exertion, outdoor environment, sense of accomplishment, or solitude — and then collaboratively identify alternative activities that deliver those specific rewards within current functional constraints. Deferring activation or forcing painful activities both undermine the therapeutic goals."
             }
           ]
@@ -394,36 +387,33 @@ const COURSE = {
               question: "The IMPACT collaborative care model for geriatric depression demonstrated which of the following outcomes compared to usual care?",
               type: "multipleChoice",
               options: [
-                "Equivalent outcomes to usual care but at lower cost",
-                "Higher rates of depression treatment, more complete treatment response, and sustained improvement over follow-up periods",
-                "Better outcomes only in the immediate post-treatment period with no long-term differences",
-                "Significant improvement only for clients with mild, not moderate, depression"
-              ],
-              correctAnswer: 1,
+              { text: "Equivalent outcomes to usual care but at lower cost", isCorrect: false },
+              { text: "Higher rates of depression treatment, more complete treatment response, and sustained improvement over follow-up periods", isCorrect: true },
+              { text: "Better outcomes only in the immediate post-treatment period with no long-term differences", isCorrect: false },
+              { text: "Significant improvement only for clients with mild, not moderate, depression", isCorrect: false }
+            ], correctAnswer: 1,
               explanation: "The IMPACT (Improving Mood: Promoting Access to Collaborative Treatment) study demonstrated significantly superior outcomes for the collaborative care model compared to usual primary care — including higher rates of active depression treatment, more complete symptom response, and sustained improvement at two-year follow-up. The model integrated a depression care manager into primary care settings with consultant psychiatrist support."
             },
             {
               question: "When working with an older adult client who has impaired decision-making capacity, the ethically appropriate default position is:",
               type: "multipleChoice",
               options: [
-                "Transfer all decision-making authority to the client's next of kin",
-                "Pursue legal guardianship to ensure the client's safety",
-                "Support the client's autonomous decision-making to the greatest extent possible using the least restrictive means available",
-                "Defer all major decisions until the client is evaluated by a geriatric psychiatrist"
-              ],
-              correctAnswer: 2,
+              { text: "Transfer all decision-making authority to the client's next of kin", isCorrect: false },
+              { text: "Pursue legal guardianship to ensure the client's safety", isCorrect: false },
+              { text: "Support the client's autonomous decision-making to the greatest extent possible using the least restrictive means available", isCorrect: true },
+              { text: "Defer all major decisions until the client is evaluated by a geriatric psychiatrist", isCorrect: false }
+            ], correctAnswer: 2,
               explanation: "The ethical default in working with cognitively impaired older adults is always to support autonomous decision-making to the greatest possible extent, using the least restrictive means. Capacity is situation-specific, not global. Supported decision-making frameworks, family involvement (with client consent), simplified communication, and repeated information provision should all be pursued before legal mechanisms like guardianship, which represents a significant restriction of civil rights and should be a last resort."
             },
             {
               question: "According to the biopsychosocial-spiritual assessment model for geriatric depression, which of the following is categorized in the SPIRITUAL domain?",
               type: "multipleChoice",
               options: [
-                "History of previous depressive episodes",
-                "Current medication list and potential depressogenic side effects",
-                "Family dynamics and caregiver involvement",
-                "Beliefs about life's purpose and framework for understanding suffering"
-              ],
-              correctAnswer: 3,
+              { text: "History of previous depressive episodes", isCorrect: false },
+              { text: "Current medication list and potential depressogenic side effects", isCorrect: false },
+              { text: "Family dynamics and caregiver involvement", isCorrect: false },
+              { text: "Beliefs about life's purpose and framework for understanding suffering", isCorrect: true }
+            ], correctAnswer: 3,
               explanation: "The spiritual domain of comprehensive geriatric assessment encompasses beliefs about meaning and purpose, religious and spiritual practices, existential concerns about mortality and legacy, and the client's framework for understanding suffering. This domain is often omitted from conventional psychiatric assessment but is profoundly important for older adults confronting their own mortality and seeking to understand the meaning of their lives."
             }
           ]
@@ -446,176 +436,166 @@ const COURSE = {
             {
               question: "Approximately what percentage of community-dwelling older adults experience clinically significant depressive symptoms?",
               type: "multipleChoice",
-              options: ["3 to 5 percent", "15 to 20 percent", "35 to 40 percent", "50 to 60 percent"],
-              correctAnswer: 1,
+              options: [
+              { text: "3 to 5 percent", isCorrect: false },
+              { text: "15 to 20 percent", isCorrect: true },
+              { text: "35 to 40 percent", isCorrect: false },
+              { text: "50 to 60 percent", isCorrect: false }
+            ], correctAnswer: 1,
               explanation: "Research estimates that 15–20% of community-dwelling older adults experience clinically significant depressive symptoms, rising to 25–40% in nursing home and long-term care settings."
             },
             {
               question: "Which of the following is the MOST common reason older adults under-report depressive symptoms to healthcare providers?",
               type: "multipleChoice",
               options: [
-                "Older adults genuinely experience less severe depression than younger adults",
-                "Cultural cohort norms of stoicism lead older adults to express distress through somatic channels rather than emotional language",
-                "Older adults are better at regulating emotions and therefore experience less distress",
-                "Most older adults are satisfied with their lives and do not develop clinical depression"
-              ],
-              correctAnswer: 1,
+              { text: "Older adults genuinely experience less severe depression than younger adults", isCorrect: false },
+              { text: "Cultural cohort norms of stoicism lead older adults to express distress through somatic channels rather than emotional language", isCorrect: true },
+              { text: "Older adults are better at regulating emotions and therefore experience less distress", isCorrect: false },
+              { text: "Most older adults are satisfied with their lives and do not develop clinical depression", isCorrect: false }
+            ], correctAnswer: 1,
               explanation: "Many older adults were socialized in cohorts that valued emotional stoicism and self-reliance. They are more likely to express depressive distress through somatic complaints (fatigue, appetite change, pain) than through emotional language, leading to under-recognition by providers relying on emotional self-report."
             },
             {
               question: "The Geriatric Depression Scale (GDS) is preferred over other depression measures in older adults primarily because:",
               type: "multipleChoice",
               options: [
-                "It provides a diagnosis rather than a symptom severity rating",
-                "It has a longer format with more comprehensive coverage of depressive symptoms",
-                "It minimizes somatic items that can produce false positives in medically complex older adults and uses an accessible yes/no response format",
-                "It is the only depression measure validated in older adult populations"
-              ],
-              correctAnswer: 2,
+              { text: "It provides a diagnosis rather than a symptom severity rating", isCorrect: false },
+              { text: "It has a longer format with more comprehensive coverage of depressive symptoms", isCorrect: false },
+              { text: "It minimizes somatic items that can produce false positives in medically complex older adults and uses an accessible yes/no response format", isCorrect: true },
+              { text: "It is the only depression measure validated in older adult populations", isCorrect: false }
+            ], correctAnswer: 2,
               explanation: "The GDS was designed specifically for older adults and avoids somatic items (sleep, appetite, fatigue) that can reflect physical illness rather than depression, reducing false positives. The yes/no format is also more accessible for older adults with mild cognitive impairment."
             },
             {
               question: "An older adult client presents with nihilistic delusions — believing that her internal organs are rotting and that she has irreparably harmed her family — alongside severe depression. This presentation is MOST consistent with:",
               type: "multipleChoice",
               options: [
-                "Generalized Anxiety Disorder with somatic features",
-                "Early-onset Alzheimer's disease",
-                "Depression with psychotic features, which occurs at elevated rates in older adults",
-                "Somatic Symptom Disorder"
-              ],
-              correctAnswer: 2,
+              { text: "Generalized Anxiety Disorder with somatic features", isCorrect: false },
+              { text: "Early-onset Alzheimer's disease", isCorrect: false },
+              { text: "Depression with psychotic features, which occurs at elevated rates in older adults", isCorrect: true },
+              { text: "Somatic Symptom Disorder", isCorrect: false }
+            ], correctAnswer: 2,
               explanation: "Depression with psychotic features — particularly nihilistic delusions about physical decay, personal culpability, or family harm — occurs at higher rates in older adults than in younger populations. This is a psychiatric emergency requiring intensive treatment and should not be attributed to cognitive decline."
             },
             {
               question: "The protective factor with the strongest research support for preventing late-life depression is:",
               type: "multipleChoice",
               options: [
-                "Financial wealth",
-                "Living in a urban rather than rural environment",
-                "Strong social support network and meaningful social connection",
-                "Having adult children involved in the older adult's care"
-              ],
-              correctAnswer: 2,
+              { text: "Financial wealth", isCorrect: false },
+              { text: "Living in a urban rather than rural environment", isCorrect: false },
+              { text: "Strong social support network and meaningful social connection", isCorrect: true },
+              { text: "Having adult children involved in the older adult's care", isCorrect: false }
+            ], correctAnswer: 2,
               explanation: "Strong social support and meaningful social connection consistently emerge as the most robust protective factors against late-life depression across multiple research designs and populations. Subjective loneliness — feeling disconnected even in the presence of others — is a stronger predictor of adverse outcomes than objective social isolation."
             },
             {
               question: "Behavioral Activation (BA) is effective for late-life depression primarily because it:",
               type: "multipleChoice",
               options: [
-                "Requires cognitive restructuring of depressive beliefs before behavioral change can occur",
-                "Interrupts the depression-maintaining cycle of behavioral avoidance and disengagement from rewarding activities",
-                "Focuses on resolving early childhood trauma that underlies adult depression",
-                "Uses medication to restore neurochemical balance before behavioral interventions can work"
-              ],
-              correctAnswer: 1,
+              { text: "Requires cognitive restructuring of depressive beliefs before behavioral change can occur", isCorrect: false },
+              { text: "Interrupts the depression-maintaining cycle of behavioral avoidance and disengagement from rewarding activities", isCorrect: true },
+              { text: "Focuses on resolving early childhood trauma that underlies adult depression", isCorrect: false },
+              { text: "Uses medication to restore neurochemical balance before behavioral interventions can work", isCorrect: false }
+            ], correctAnswer: 1,
               explanation: "BA is grounded in the finding that depression is maintained by behavioral avoidance and withdrawal from value-consistent activities. Systematically increasing engagement with meaningful activities interrupts this cycle and improves mood, regardless of whether cognitive content has changed. It is particularly well-suited to older adults because it is practical, culturally flexible, and accessible without sophisticated psychological mindedness."
             },
             {
               question: "Which intervention specifically targets the integration of one's life narrative to achieve acceptance and meaning in late life?",
               type: "multipleChoice",
               options: [
-                "Cognitive Behavioral Therapy (CBT)",
-                "Life Review Therapy (LRT)",
-                "Problem-Solving Therapy (PST)",
-                "Motivational Interviewing (MI)"
-              ],
-              correctAnswer: 1,
+              { text: "Cognitive Behavioral Therapy (CBT)", isCorrect: false },
+              { text: "Life Review Therapy (LRT)", isCorrect: true },
+              { text: "Problem-Solving Therapy (PST)", isCorrect: false },
+              { text: "Motivational Interviewing (MI)", isCorrect: false }
+            ], correctAnswer: 1,
               explanation: "Life Review Therapy, developed from Robert Butler's work on therapeutic reminiscence and Erikson's integrity vs. despair stage, uses structured autobiographical narrative to help clients integrate their life story, reconcile regrets, and discover meaning in the life they actually lived — the core psychosocial task of late life."
             },
             {
               question: "When working with an older Latino client experiencing depression, the clinician's awareness that familismo may affect treatment engagement MOST appropriately leads to:",
               type: "multipleChoice",
               options: [
-                "Automatically involving family members in all treatment sessions without the client's explicit consent",
-                "Exploring with the client how family values and relationships factor into their depression and preferred support strategies",
-                "Assuming the client's family will serve as an adequate substitute for professional treatment",
-                "Avoiding discussion of family dynamics to maintain a focus on individual cognitive and behavioral targets"
-              ],
-              correctAnswer: 1,
+              { text: "Automatically involving family members in all treatment sessions without the client's explicit consent", isCorrect: false },
+              { text: "Exploring with the client how family values and relationships factor into their depression and preferred support strategies", isCorrect: true },
+              { text: "Assuming the client's family will serve as an adequate substitute for professional treatment", isCorrect: false },
+              { text: "Avoiding discussion of family dynamics to maintain a focus on individual cognitive and behavioral targets", isCorrect: false }
+            ], correctAnswer: 1,
               explanation: "Familismo — the strong family orientation prevalent in many Latino cultures — can be both a protective resource and a barrier to individual treatment-seeking. The clinically appropriate response is to explore with the client how family relationships factor into their experience and preferences, neither automatically involving family without consent nor ignoring this central cultural value."
             },
             {
               question: "The Cornell Scale for Depression in Dementia (CSDD) is preferred over self-report measures like the GDS when:",
               type: "multipleChoice",
               options: [
-                "The client is over age 85",
-                "The client has a neurocognitive disorder that impairs reliable self-report",
-                "The client is in long-term care rather than community settings",
-                "The clinician wants to compare results with medical records"
-              ],
-              correctAnswer: 1,
+              { text: "The client is over age 85", isCorrect: false },
+              { text: "The client has a neurocognitive disorder that impairs reliable self-report", isCorrect: true },
+              { text: "The client is in long-term care rather than community settings", isCorrect: false },
+              { text: "The clinician wants to compare results with medical records", isCorrect: false }
+            ], correctAnswer: 1,
               explanation: "The CSDD integrates clinician observation and caregiver-provided collateral information to assess depression in individuals whose cognitive impairment compromises reliable self-report. It was specifically designed for this clinical population and is preferred when the individual cannot reliably describe their own mood and experience."
             },
             {
               question: "Which of the following physical health conditions is MOST strongly associated with late-life depression?",
               type: "multipleChoice",
               options: [
-                "Osteoporosis without functional limitation",
-                "Managed hypertension with no cardiovascular events",
-                "Cardiovascular disease, stroke, chronic pain, and Parkinson's disease",
-                "Well-controlled type 2 diabetes without complications"
-              ],
-              correctAnswer: 2,
+              { text: "Osteoporosis without functional limitation", isCorrect: false },
+              { text: "Managed hypertension with no cardiovascular events", isCorrect: false },
+              { text: "Cardiovascular disease, stroke, chronic pain, and Parkinson's disease", isCorrect: true },
+              { text: "Well-controlled type 2 diabetes without complications", isCorrect: false }
+            ], correctAnswer: 2,
               explanation: "Conditions including cardiovascular disease, stroke, Parkinson's disease, and chronic pain are among those most strongly associated with late-life depression, through both inflammatory pathways and the psychological impact of functional limitation, loss of independence, and confrontation with mortality."
             },
             {
               question: "The IMPACT collaborative care model for geriatric depression is BEST characterized as:",
               type: "multipleChoice",
               options: [
-                "A hospital-based intensive outpatient program for severe geriatric depression",
-                "Integration of a depression care manager into primary care settings with psychiatrist consultation support",
-                "A telehealth-only program for older adults with transportation barriers",
-                "A pharmacological-first protocol emphasizing antidepressant optimization"
-              ],
-              correctAnswer: 1,
+              { text: "A hospital-based intensive outpatient program for severe geriatric depression", isCorrect: false },
+              { text: "Integration of a depression care manager into primary care settings with psychiatrist consultation support", isCorrect: true },
+              { text: "A telehealth-only program for older adults with transportation barriers", isCorrect: false },
+              { text: "A pharmacological-first protocol emphasizing antidepressant optimization", isCorrect: false }
+            ], correctAnswer: 1,
               explanation: "IMPACT integrated a trained depression care manager (typically a social worker or nurse) into primary care settings, who provided active care coordination, brief psychosocial interventions, and consultation with a supervising psychiatrist. This collaborative model significantly outperformed usual primary care in multiple outcomes."
             },
             {
               question: "Older adult male clients present particular clinical risks regarding depression because:",
               type: "multipleChoice",
               options: [
-                "They experience depression at higher rates than older adult women",
-                "They are more likely to use alcohol to manage emotional distress, less likely to seek treatment, and at dramatically higher risk of completed suicide when depression is present",
-                "Their depression is more treatment-resistant than that of older women",
-                "They tend to over-report symptoms, making accurate assessment difficult"
-              ],
-              correctAnswer: 1,
+              { text: "They experience depression at higher rates than older adult women", isCorrect: false },
+              { text: "They are more likely to use alcohol to manage emotional distress, less likely to seek treatment, and at dramatically higher risk of completed suicide when depression is present", isCorrect: true },
+              { text: "Their depression is more treatment-resistant than that of older women", isCorrect: false },
+              { text: "They tend to over-report symptoms, making accurate assessment difficult", isCorrect: false }
+            ], correctAnswer: 1,
               explanation: "Older men — particularly older White men — are less likely to seek mental health treatment, more likely to use alcohol as a coping mechanism, and represent the highest-risk demographic for completed suicide in the United States. Their socialization toward stoicism makes depression more likely to go undetected and more dangerous when present."
             },
             {
               question: "In Meaning-Centered Psychotherapy for older adults, 'attitudinal values' refers to:",
               type: "multipleChoice",
               options: [
-                "The client's positive attitudes toward treatment and clinician",
-                "The freedom to choose one's attitude toward unavoidable suffering",
-                "Cognitive attitudes that maintain depressive episodes",
-                "Cultural values that shape the expression of distress"
-              ],
-              correctAnswer: 1,
+              { text: "The client's positive attitudes toward treatment and clinician", isCorrect: false },
+              { text: "The freedom to choose one's attitude toward unavoidable suffering", isCorrect: true },
+              { text: "Cognitive attitudes that maintain depressive episodes", isCorrect: false },
+              { text: "Cultural values that shape the expression of distress", isCorrect: false }
+            ], correctAnswer: 1,
               explanation: "Drawing from Viktor Frankl's logotherapy, MCP identifies attitudinal values as one of four primary sources of meaning. Attitudinal values refer to the inherent human freedom to choose one's attitude toward unavoidable circumstances — exemplified by Frankl's own experience in Nazi concentration camps. Even when suffering cannot be eliminated, meaning can be found in how it is faced."
             },
             {
               question: "A clinician who normalizes an older client's depression as 'just part of getting old' is demonstrating:",
               type: "multipleChoice",
               options: [
-                "Culturally responsive care that honors the client's explanatory model",
-                "Ageism that pathologizes normal aging without adequate clinical assessment",
-                "Person-centered reflection of the client's own self-understanding",
-                "Ageism that normalizes pathology without adequate clinical assessment"
-              ],
-              correctAnswer: 3,
+              { text: "Culturally responsive care that honors the client's explanatory model", isCorrect: false },
+              { text: "Ageism that pathologizes normal aging without adequate clinical assessment", isCorrect: false },
+              { text: "Person-centered reflection of the client's own self-understanding", isCorrect: false },
+              { text: "Ageism that normalizes pathology without adequate clinical assessment", isCorrect: true }
+            ], correctAnswer: 3,
               explanation: "Ageism — the implicit assumption that depression, sadness, and loss of interest are 'natural' in old age — is arguably the single greatest barrier to adequate geriatric mental health care. When a clinician normalizes clinical depression as aging, they fail to offer available, effective treatments to a client who is suffering unnecessarily. Depression is not a normal part of aging; it is a treatable condition at any age."
             },
             {
               question: "Which of the following is the MOST clinically appropriate approach to caregiver involvement in the treatment of a depressed older adult?",
               type: "multipleChoice",
               options: [
-                "Exclude family members entirely to protect client confidentiality",
-                "Involve family members in all decisions, as older adults with depression cannot make autonomous choices",
-                "Establish explicit confidentiality agreements with the client, assess caregiver wellbeing and provide referrals when needed, and engage family as treatment allies with the client's informed consent",
-                "Rely on family members' perceptions as the primary clinical data source, as they are most reliable"
-              ],
-              correctAnswer: 2,
+              { text: "Exclude family members entirely to protect client confidentiality", isCorrect: false },
+              { text: "Involve family members in all decisions, as older adults with depression cannot make autonomous choices", isCorrect: false },
+              { text: "Establish explicit confidentiality agreements with the client, assess caregiver wellbeing and provide referrals when needed, and engage family as treatment allies with the client's informed consent", isCorrect: true },
+              { text: "Rely on family members' perceptions as the primary clinical data source, as they are most reliable", isCorrect: false }
+            ], correctAnswer: 2,
               explanation: "Effective, ethical geriatric depression treatment requires clear confidentiality agreements with the client about what can be shared with family, active screening of family caregivers for their own depression and burnout, and engagement of family as informed treatment allies — all with the older adult's informed consent and in a manner that preserves their autonomy."
             }
           ]
