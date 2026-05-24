@@ -3,7 +3,6 @@
  * All rights reserved. Proprietary and confidential.
  * Unauthorized copying or distribution is strictly prohibited.
  */
-#!/usr/bin/env node
 /**
  * CR-612: "Still Standing" — Geriatric Suicide Risk Assessment & Safety Planning
  * CE Hours: 2.0 | NBCC ACEP #7760
@@ -31,7 +30,7 @@ const COURSE = {
   ceCategory: "Clinical",
   contentArea: "Crisis Intervention",
   level: "Intermediate",
-  accessType: "paid",
+  accessType: 'subscription',
   price: 39.99,
   pricingTier: "standard",
   status: "draft",
@@ -99,36 +98,33 @@ const COURSE = {
               question: "Compared to younger adults, older adults who attempt suicide are characterized by which of the following?",
               type: "multipleChoice",
               options: [
-                "Higher rates of non-lethal attempts and greater use of communication before an attempt",
-                "Lower intent and lower method lethality, making older adult suicidality less clinically urgent",
-                "A much lower ratio of attempts to completed suicides, reflecting greater method lethality and fewer non-lethal attempts",
-                "Similar epidemiological profiles to younger adults, with equivalent attempt-to-completion ratios"
-              ],
-              correctAnswer: 2,
+              { text: "Higher rates of non-lethal attempts and greater use of communication before an attempt", isCorrect: false },
+              { text: "Lower intent and lower method lethality, making older adult suicidality less clinically urgent", isCorrect: false },
+              { text: "A much lower ratio of attempts to completed suicides, reflecting greater method lethality and fewer non-lethal attempts", isCorrect: true },
+              { text: "Similar epidemiological profiles to younger adults, with equivalent attempt-to-completion ratios", isCorrect: false }
+            ], correctAnswer: 2,
               explanation: "The ratio of attempted to completed suicide falls from approximately 25:1 in adolescents and young adults to approximately 4:1 in older adults. This reflects the greater lethality of methods chosen (particularly firearms), reduced physiological resilience, and the fact that older adults are less likely to communicate intent before an attempt. The compressed ratio means the assessment margin for error is dramatically smaller with older adult clients."
             },
             {
               question: "Thomas Joiner's Interpersonal Theory of Suicide identifies 'thwarted belongingness' as a core component of suicidal desire. In the context of geriatric suicide, thwarted belongingness is MOST likely to be precipitated by:",
               type: "multipleChoice",
               options: [
-                "Financial losses in retirement accounts",
-                "Bereavement, retirement, mobility limitation, and family relocation — all of which can progressively reduce social network size and quality",
-                "Generational differences in attitudes toward mental health treatment",
-                "Physical health conditions themselves, independent of their social consequences"
-              ],
-              correctAnswer: 1,
+              { text: "Financial losses in retirement accounts", isCorrect: false },
+              { text: "Bereavement, retirement, mobility limitation, and family relocation — all of which can progressively reduce social network size and quality", isCorrect: true },
+              { text: "Generational differences in attitudes toward mental health treatment", isCorrect: false },
+              { text: "Physical health conditions themselves, independent of their social consequences", isCorrect: false }
+            ], correctAnswer: 1,
               explanation: "Thwarted belongingness — the subjective experience of social disconnection — is particularly prevalent in older adults because the processes of aging systematically reduce social networks through bereavement, retirement, mobility limitation, and geographic dispersion of family. The subjective experience of loneliness that results is a powerful contributor to suicidal desire."
             },
             {
               question: "An older adult client who has been visibly distressed for several sessions presents today appearing suddenly calm and expressing that she has 'made peace with things.' What is the MOST clinically appropriate interpretation of this sudden calm?",
               type: "multipleChoice",
               options: [
-                "A positive prognostic indicator suggesting that coping has improved",
-                "Evidence of successful cognitive restructuring from previous interventions",
-                "A potential warning sign that may reflect a decision to act on suicidal thoughts, which has temporarily resolved the distress of ambivalence",
-                "Resolution of the underlying depression, which should be noted in the clinical record"
-              ],
-              correctAnswer: 2,
+              { text: "A positive prognostic indicator suggesting that coping has improved", isCorrect: false },
+              { text: "Evidence of successful cognitive restructuring from previous interventions", isCorrect: false },
+              { text: "A potential warning sign that may reflect a decision to act on suicidal thoughts, which has temporarily resolved the distress of ambivalence", isCorrect: true },
+              { text: "Resolution of the underlying depression, which should be noted in the clinical record", isCorrect: false }
+            ], correctAnswer: 2,
               explanation: "Sudden calm in a previously distressed suicidal client is a recognized warning sign, not a reassuring clinical development. The calm can reflect a decision to act — which resolves the painful ambivalence of suicidal ideation without resolving the ideation itself. Direct assessment of suicidal ideation and intent is clinically imperative when this presentation occurs."
             }
           ]
@@ -200,36 +196,33 @@ const COURSE = {
               question: "Which evidence-based instrument is MOST appropriate for structured suicide risk assessment across clinical settings, including with older adult clients?",
               type: "multipleChoice",
               options: [
-                "The Beck Depression Inventory (BDI-II)",
-                "The Geriatric Depression Scale (GDS)",
-                "The Columbia Suicide Severity Rating Scale (C-SSRS)",
-                "The Montreal Cognitive Assessment (MoCA)"
-              ],
-              correctAnswer: 2,
+              { text: "The Beck Depression Inventory (BDI-II)", isCorrect: false },
+              { text: "The Geriatric Depression Scale (GDS)", isCorrect: false },
+              { text: "The Columbia Suicide Severity Rating Scale (C-SSRS)", isCorrect: true },
+              { text: "The Montreal Cognitive Assessment (MoCA)", isCorrect: false }
+            ], correctAnswer: 2,
               explanation: "The Columbia Suicide Severity Rating Scale (C-SSRS) provides a validated, structured framework for assessing suicidal ideation and behavior, distinguishing passive ideation from active ideation with and without plan and intent, and tracking preparatory behavior. It has been tested across diverse populations and age groups and provides clinically meaningful stratification that informs intervention planning."
             },
             {
               question: "The MOST evidence-based framing for firearms counseling with an older adult at elevated suicide risk is:",
               type: "multipleChoice",
               options: [
-                "Permanent gun confiscation, which is the only intervention with demonstrated efficacy",
-                "Avoidance of the topic to preserve therapeutic alliance with gun-owning clients",
-                "Temporary, protective, collaborative means restriction — asking who could hold onto the firearms during the period of elevated risk",
-                "Referral to a firearms educator to discuss safe storage options"
-              ],
-              correctAnswer: 2,
+              { text: "Permanent gun confiscation, which is the only intervention with demonstrated efficacy", isCorrect: false },
+              { text: "Avoidance of the topic to preserve therapeutic alliance with gun-owning clients", isCorrect: false },
+              { text: "Temporary, protective, collaborative means restriction — asking who could hold onto the firearms during the period of elevated risk", isCorrect: true },
+              { text: "Referral to a firearms educator to discuss safe storage options", isCorrect: false }
+            ], correctAnswer: 2,
               explanation: "Effective firearms counseling frames means restriction as temporary and protective rather than permanent and punitive. Options include having a trusted person secure firearms outside the home, using a safe with a combination held by someone else, or temporary storage with a licensed dealer. The framing preserves the therapeutic alliance while achieving the safety goal of creating distance between the client and lethal means during the risk period."
             },
             {
               question: "Which of the following is the STRONGEST protective factor against geriatric suicide identified in the research literature?",
               type: "multipleChoice",
               options: [
-                "Financial security and stable retirement income",
-                "Physical health and absence of chronic disease",
-                "Social connection and a subjective sense of belonging",
-                "Cognitive integrity and absence of neurocognitive impairment"
-              ],
-              correctAnswer: 2,
+              { text: "Financial security and stable retirement income", isCorrect: false },
+              { text: "Physical health and absence of chronic disease", isCorrect: false },
+              { text: "Social connection and a subjective sense of belonging", isCorrect: true },
+              { text: "Cognitive integrity and absence of neurocognitive impairment", isCorrect: false }
+            ], correctAnswer: 2,
               explanation: "Social connection and a subjective sense of belonging — directly counteracting the thwarted belongingness identified as a core driver of suicidal desire — is the most robustly documented protective factor against geriatric suicide. The therapeutic relationship itself provides meaningful protective connection, while clinical work that expands social networks addresses the risk at its source."
             }
           ]
@@ -248,21 +241,98 @@ const COURSE = {
           showExplanations: false,
           title: "Final Assessment — CR-612: Still Standing",
           questions: [
-            { question: "Adults over 65 account for approximately what percentage of all suicide deaths in the United States?", type: "multipleChoice", options: ["5 percent", "18 percent", "35 percent", "50 percent"], correctAnswer: 1, explanation: "Despite representing approximately 13% of the population, adults over 65 account for approximately 18% of all suicide deaths — reflecting the elevated suicide rate in this demographic." },
-            { question: "Which demographic group has the highest age-specific suicide rate in the United States?", type: "multipleChoice", options: ["Adolescent females aged 15 to 19", "Men aged 45 to 54", "Men over age 85", "Women over age 75"], correctAnswer: 2, explanation: "Men over 85 have the highest age-specific suicide rate of any demographic group — approximately 55 per 100,000 — reflecting the convergence of depression, physical illness, isolation, and access to lethal means in this population." },
-            { question: "The case fatality rate for firearms as a suicide method exceeds:", type: "multipleChoice", options: ["30 percent", "55 percent", "70 percent", "85 percent"], correctAnswer: 3, explanation: "Firearms have a case fatality rate exceeding 85% — the highest of any suicide method. This is clinically critical for older adult populations, who have high rates of gun ownership and low rates of non-lethal attempts, making means restriction an urgent clinical priority." },
-            { question: "The 'perceived burdensomeness' construct from Joiner's Interpersonal Theory of Suicide is particularly relevant in geriatric practice because:", type: "multipleChoice", options: ["Older adults exaggerate their dependence as a way to seek attention", "Many older adults genuinely experience increasing dependence and may believe their existence imposes unacceptable costs on family members", "Older adults are legally less responsible for their own care than younger adults", "The burden construct applies only to caregivers, not to care recipients"], correctAnswer: 1, explanation: "Perceived burdensomeness — the subjective belief that one's existence imposes unacceptable costs on others — is a specific, empirically supported driver of suicidal desire. In older adults, this belief often coexists with genuine increasing dependence, making it both clinically powerful and difficult to challenge without first engaging the reality it partially reflects." },
-            { question: "A no-harm contract differs from a Safety Planning Intervention (SPI) primarily in that:", type: "multipleChoice", options: ["A no-harm contract is legally binding while an SPI is clinical in nature", "An SPI provides a detailed collaborative crisis plan with specific coping strategies, contacts, and means restriction; a no-harm contract lacks both theoretical basis and empirical support for suicide prevention", "A no-harm contract involves family members while an SPI is an individual intervention", "An SPI is appropriate only for inpatient settings"], correctAnswer: 1, explanation: "The Safety Planning Intervention is evidence-based and provides a personalized, collaborative crisis management plan including warning signs, coping strategies, social contacts, and means restriction. No-harm contracts have no empirical support for reducing suicide and may create false reassurance in both clinician and client." },
-            { question: "When an older adult client who has been suicidal suddenly appears calm and says they have 'made peace with things,' the clinician should:", type: "multipleChoice", options: ["Accept this as positive progress and reduce the frequency of sessions", "Document the improvement and continue current treatment", "Conduct an immediate direct suicide risk assessment, as the sudden calm may reflect a decision to act that has resolved the distress of ambivalence", "Refer to psychiatry for medication evaluation, as the improvement may reflect a hypomanic state"], correctAnswer: 2, explanation: "Sudden calm in a previously distressed suicidal client is a recognized warning sign. The resolution of visible distress may reflect a decision to act that has temporarily eliminated the painful ambivalence of suicidal ideation — not genuine clinical improvement. Immediate, direct assessment of suicidal ideation and intent is required." },
-            { question: "Which of the following approaches to asking about firearms is MOST likely to preserve therapeutic alliance while achieving means restriction goals?", type: "multipleChoice", options: ["Explaining that you are legally required to report firearms possession to law enforcement", "Framing temporary means restriction as a protective measure — asking collaboratively who could hold onto the guns temporarily during the period of elevated risk", "Avoiding the topic and addressing means restriction only if the client spontaneously raises it", "Requesting that the client permanently surrender all firearms as a condition of continued treatment"], correctAnswer: 1, explanation: "Effective means restriction counseling frames temporary storage as protective and collaborative, not punitive or permanent. This framing maintains the therapeutic alliance while achieving the critical safety goal. Direct inquiry about firearms must occur with all older adult clients expressing suicidal ideation." },
-            { question: "The Beck Hopelessness Scale assesses hopeless thinking, which is clinically significant in geriatric suicide risk assessment because:", type: "multipleChoice", options: ["Hopelessness is a trait measure that indicates the client's long-term personality characteristics", "Hopelessness has demonstrated predictive validity for suicide risk that may be independent of the severity of depressive symptoms", "Hopelessness is primarily relevant in younger adult populations and less predictive in older adults", "Hopelessness indicates that the client lacks capacity for safety planning"], correctAnswer: 1, explanation: "Hopelessness — the expectation that things will not improve — has robust predictive validity for suicide risk across multiple studies. In older adults, hopelessness may reflect both a cognitive style and the real accumulation of losses, making it a clinically important target for both assessment and intervention." },
-            { question: "Religious and spiritual engagement protects against geriatric suicide through which mechanisms?", type: "multipleChoice", options: ["By providing access to pharmacological support through faith-based healthcare ministries", "By providing social connection, meaning-making frameworks, religious sanctions against suicide, and ritualized community engagement", "By reducing the older adult's awareness of their physical limitations through distraction", "By ensuring that older adults have legal documentation of end-of-life preferences"], correctAnswer: 1, explanation: "Religious and spiritual engagement is a well-documented protective factor against geriatric suicide, operating through multiple pathways including social connection, frameworks for meaning-making and suffering, explicit religious prohibitions against suicide, and the community structure provided by faith practice." },
-            { question: "Clinicians avoid asking older adult clients about suicidal ideation because they fear 'planting the idea.' What does the evidence say about this concern?", type: "multipleChoice", options: ["The concern is valid; research shows that asking about suicide increases risk in older adults more than in younger populations", "The concern is clinically important and should guide how directly clinicians ask about suicide", "The concern is not supported by evidence; direct inquiry about suicidal ideation does not increase risk and is clinically essential for accurate assessment", "Research is mixed, so clinicians should follow their clinical judgment about when to ask"], correctAnswer: 2, explanation: "The evidence consistently demonstrates that asking directly about suicidal ideation does not plant the idea or increase risk. Clinicians who avoid direct questioning out of this unfounded concern provide inadequate care. Direct inquiry is the clinical gateway to accurate risk assessment and appropriate intervention." },
-            { question: "For older adult clients, hospitalization for suicidal ideation should be considered:", type: "multipleChoice", options: ["Automatically whenever suicidal ideation is expressed, regardless of severity or circumstances", "Only when mandated by law enforcement", "Thoughtfully as part of a clinical plan, considering the specific risks of hospitalization for older adults — including delirium, functional decline, and disruption of care relationships — weighed against protective benefits", "Rarely, as older adults rarely require acute psychiatric care"], correctAnswer: 2, explanation: "Hospitalization carries specific risks for older adults including delirium, functional decline, and disruption of established care relationships. The ethical standard is the least restrictive clinically appropriate level of care. Intensive outpatient options should be considered before inpatient placement when the clinical picture permits." },
-            { question: "The first year following spousal bereavement represents a period of elevated suicide risk, particularly for:", type: "multipleChoice", options: ["Older women who had primary responsibility for household management", "Older men who had few social connections outside the marital relationship", "Adults in the 50 to 65 age range who are newly widowed", "Older adults of any gender who have dependent children"], correctAnswer: 1, explanation: "Older bereaved men — particularly those who had narrow social networks centered on the marital relationship — are at particularly elevated suicide risk in the first year of bereavement. Men's socialization toward self-reliance and emotional privatization means they are less likely to seek support and more likely to experience profound isolation following spousal loss." },
-            { question: "Documenting suicide risk assessments in clinical records serves which of the following functions?", type: "multipleChoice", options: ["It eliminates the clinician's legal liability if a client dies by suicide", "It provides a legally protected record of clinical reasoning, risk and protective factors identified, safety planning, and means restriction discussions — supporting both continuity of care and professional accountability", "It is only required when the client poses imminent risk and a safety plan has been developed", "It transfers responsibility for the client's safety to the receiving clinical team"], correctAnswer: 1, explanation: "Thorough documentation of suicide risk assessments serves multiple clinical and legal functions: it records the clinical reasoning supporting risk stratification, facilitates communication across providers, supports continuity of care, and provides a record of due diligence that is essential in the event of clinical review or legal proceedings. Documentation does not eliminate liability but demonstrates appropriate standard of care." },
-            { question: "Which element of the Safety Planning Intervention MOST commonly requires modification when working with isolated older adult clients?", type: "multipleChoice", options: ["Warning signs, which are the same for all populations", "The crisis line phone numbers, which differ for older adults", "Social contacts and coping strategies, which must be realistically calibrated to the client's actual social circumstances and physical capacity", "The client's signature, which may require family member co-signature for older adults"], correctAnswer: 2, explanation: "Safety planning is only as effective as its realism. Coping strategies that require physical capacity the client doesn't have and social contacts that don't exist are clinically useless. With isolated older adult clients, therapeutic work to expand social contacts may be required as a prerequisite to effective safety planning." },
-            { question: "The concept of 'reasons for living' is therapeutically relevant in geriatric suicide risk management because:", type: "multipleChoice", options: ["Reasons for living legally obligate clients not to act on suicidal ideation", "Identifying specific, personally meaningful reasons to remain alive counteracts perceived burdensomeness and thwarted belongingness, and provides a crisis management resource", "Reasons for living are relevant only for younger adults whose future-orientation is stronger", "Documenting reasons for living transfers clinical liability to the client"], correctAnswer: 1, explanation: "The Reasons for Living Inventory and related clinical tools help older adult clients identify specific, personally meaningful reasons to remain alive — directly counteracting the perceived burdensomeness and thwarted belongingness that drive suicidal desire. This material also provides a crisis management resource and a vehicle for exploring meaning and purpose in the therapeutic relationship." }
+            { question: "Adults over 65 account for approximately what percentage of all suicide deaths in the United States?", type: "multipleChoice", options: [
+              { text: "5 percent", isCorrect: false },
+              { text: "18 percent", isCorrect: true },
+              { text: "35 percent", isCorrect: false },
+              { text: "50 percent", isCorrect: false }
+            ], correctAnswer: 1, explanation: "Despite representing approximately 13% of the population, adults over 65 account for approximately 18% of all suicide deaths — reflecting the elevated suicide rate in this demographic." },
+            { question: "Which demographic group has the highest age-specific suicide rate in the United States?", type: "multipleChoice", options: [
+              { text: "Adolescent females aged 15 to 19", isCorrect: false },
+              { text: "Men aged 45 to 54", isCorrect: false },
+              { text: "Men over age 85", isCorrect: true },
+              { text: "Women over age 75", isCorrect: false }
+            ], correctAnswer: 2, explanation: "Men over 85 have the highest age-specific suicide rate of any demographic group — approximately 55 per 100,000 — reflecting the convergence of depression, physical illness, isolation, and access to lethal means in this population." },
+            { question: "The case fatality rate for firearms as a suicide method exceeds:", type: "multipleChoice", options: [
+              { text: "30 percent", isCorrect: false },
+              { text: "55 percent", isCorrect: false },
+              { text: "70 percent", isCorrect: false },
+              { text: "85 percent", isCorrect: true }
+            ], correctAnswer: 3, explanation: "Firearms have a case fatality rate exceeding 85% — the highest of any suicide method. This is clinically critical for older adult populations, who have high rates of gun ownership and low rates of non-lethal attempts, making means restriction an urgent clinical priority." },
+            { question: "The 'perceived burdensomeness' construct from Joiner's Interpersonal Theory of Suicide is particularly relevant in geriatric practice because:", type: "multipleChoice", options: [
+              { text: "Older adults exaggerate their dependence as a way to seek attention", isCorrect: false },
+              { text: "Many older adults genuinely experience increasing dependence and may believe their existence imposes unacceptable costs on family members", isCorrect: true },
+              { text: "Older adults are legally less responsible for their own care than younger adults", isCorrect: false },
+              { text: "The burden construct applies only to caregivers, not to care recipients", isCorrect: false }
+            ], correctAnswer: 1, explanation: "Perceived burdensomeness — the subjective belief that one's existence imposes unacceptable costs on others — is a specific, empirically supported driver of suicidal desire. In older adults, this belief often coexists with genuine increasing dependence, making it both clinically powerful and difficult to challenge without first engaging the reality it partially reflects." },
+            { question: "A no-harm contract differs from a Safety Planning Intervention (SPI) primarily in that:", type: "multipleChoice", options: [
+              { text: "A no-harm contract is legally binding while an SPI is clinical in nature", isCorrect: false },
+              { text: "An SPI provides a detailed collaborative crisis plan with specific coping strategies, contacts, and means restriction; a no-harm contract lacks both theoretical basis and empirical support for suicide prevention", isCorrect: true },
+              { text: "A no-harm contract involves family members while an SPI is an individual intervention", isCorrect: false },
+              { text: "An SPI is appropriate only for inpatient settings", isCorrect: false }
+            ], correctAnswer: 1, explanation: "The Safety Planning Intervention is evidence-based and provides a personalized, collaborative crisis management plan including warning signs, coping strategies, social contacts, and means restriction. No-harm contracts have no empirical support for reducing suicide and may create false reassurance in both clinician and client." },
+            { question: "When an older adult client who has been suicidal suddenly appears calm and says they have 'made peace with things,' the clinician should:", type: "multipleChoice", options: [
+              { text: "Accept this as positive progress and reduce the frequency of sessions", isCorrect: false },
+              { text: "Document the improvement and continue current treatment", isCorrect: false },
+              { text: "Conduct an immediate direct suicide risk assessment, as the sudden calm may reflect a decision to act that has resolved the distress of ambivalence", isCorrect: true },
+              { text: "Refer to psychiatry for medication evaluation, as the improvement may reflect a hypomanic state", isCorrect: false }
+            ], correctAnswer: 2, explanation: "Sudden calm in a previously distressed suicidal client is a recognized warning sign. The resolution of visible distress may reflect a decision to act that has temporarily eliminated the painful ambivalence of suicidal ideation — not genuine clinical improvement. Immediate, direct assessment of suicidal ideation and intent is required." },
+            { question: "Which of the following approaches to asking about firearms is MOST likely to preserve therapeutic alliance while achieving means restriction goals?", type: "multipleChoice", options: [
+              { text: "Explaining that you are legally required to report firearms possession to law enforcement", isCorrect: false },
+              { text: "Framing temporary means restriction as a protective measure — asking collaboratively who could hold onto the guns temporarily during the period of elevated risk", isCorrect: true },
+              { text: "Avoiding the topic and addressing means restriction only if the client spontaneously raises it", isCorrect: false },
+              { text: "Requesting that the client permanently surrender all firearms as a condition of continued treatment", isCorrect: false }
+            ], correctAnswer: 1, explanation: "Effective means restriction counseling frames temporary storage as protective and collaborative, not punitive or permanent. This framing maintains the therapeutic alliance while achieving the critical safety goal. Direct inquiry about firearms must occur with all older adult clients expressing suicidal ideation." },
+            { question: "The Beck Hopelessness Scale assesses hopeless thinking, which is clinically significant in geriatric suicide risk assessment because:", type: "multipleChoice", options: [
+              { text: "Hopelessness is a trait measure that indicates the client", isCorrect: false },
+              { text: ", ", isCorrect: true },
+              { text: ", ", isCorrect: false },
+              { text: ", ", isCorrect: false }
+            ], correctAnswer: 1, explanation: "Hopelessness — the expectation that things will not improve — has robust predictive validity for suicide risk across multiple studies. In older adults, hopelessness may reflect both a cognitive style and the real accumulation of losses, making it a clinically important target for both assessment and intervention." },
+            { question: "Religious and spiritual engagement protects against geriatric suicide through which mechanisms?", type: "multipleChoice", options: [
+              { text: "By providing access to pharmacological support through faith-based healthcare ministries", isCorrect: false },
+              { text: "By providing social connection, meaning-making frameworks, religious sanctions against suicide, and ritualized community engagement", isCorrect: true },
+              { text: "By reducing the older adult", isCorrect: false },
+              { text: ", ", isCorrect: false }
+            ], correctAnswer: 1, explanation: "Religious and spiritual engagement is a well-documented protective factor against geriatric suicide, operating through multiple pathways including social connection, frameworks for meaning-making and suffering, explicit religious prohibitions against suicide, and the community structure provided by faith practice." },
+            { question: "Clinicians avoid asking older adult clients about suicidal ideation because they fear 'planting the idea.' What does the evidence say about this concern?", type: "multipleChoice", options: [
+              { text: "The concern is valid; research shows that asking about suicide increases risk in older adults more than in younger populations", isCorrect: false },
+              { text: "The concern is clinically important and should guide how directly clinicians ask about suicide", isCorrect: false },
+              { text: "The concern is not supported by evidence; direct inquiry about suicidal ideation does not increase risk and is clinically essential for accurate assessment", isCorrect: true },
+              { text: "Research is mixed, so clinicians should follow their clinical judgment about when to ask", isCorrect: false }
+            ], correctAnswer: 2, explanation: "The evidence consistently demonstrates that asking directly about suicidal ideation does not plant the idea or increase risk. Clinicians who avoid direct questioning out of this unfounded concern provide inadequate care. Direct inquiry is the clinical gateway to accurate risk assessment and appropriate intervention." },
+            { question: "For older adult clients, hospitalization for suicidal ideation should be considered:", type: "multipleChoice", options: [
+              { text: "Automatically whenever suicidal ideation is expressed, regardless of severity or circumstances", isCorrect: false },
+              { text: "Only when mandated by law enforcement", isCorrect: false },
+              { text: "Thoughtfully as part of a clinical plan, considering the specific risks of hospitalization for older adults — including delirium, functional decline, and disruption of care relationships — weighed against protective benefits", isCorrect: true },
+              { text: "Rarely, as older adults rarely require acute psychiatric care", isCorrect: false }
+            ], correctAnswer: 2, explanation: "Hospitalization carries specific risks for older adults including delirium, functional decline, and disruption of established care relationships. The ethical standard is the least restrictive clinically appropriate level of care. Intensive outpatient options should be considered before inpatient placement when the clinical picture permits." },
+            { question: "The first year following spousal bereavement represents a period of elevated suicide risk, particularly for:", type: "multipleChoice", options: [
+              { text: "Older women who had primary responsibility for household management", isCorrect: false },
+              { text: "Older men who had few social connections outside the marital relationship", isCorrect: true },
+              { text: "Adults in the 50 to 65 age range who are newly widowed", isCorrect: false },
+              { text: "Older adults of any gender who have dependent children", isCorrect: false }
+            ], correctAnswer: 1, explanation: "Older bereaved men — particularly those who had narrow social networks centered on the marital relationship — are at particularly elevated suicide risk in the first year of bereavement. Men's socialization toward self-reliance and emotional privatization means they are less likely to seek support and more likely to experience profound isolation following spousal loss." },
+            { question: "Documenting suicide risk assessments in clinical records serves which of the following functions?", type: "multipleChoice", options: [
+              { text: "It eliminates the clinician", isCorrect: false },
+              { text: ", ", isCorrect: true },
+              { text: ", ", isCorrect: false },
+              { text: ", ", isCorrect: false },
+              { text: "s safety to the receiving clinical team", isCorrect: false }
+            ], correctAnswer: 1, explanation: "Thorough documentation of suicide risk assessments serves multiple clinical and legal functions: it records the clinical reasoning supporting risk stratification, facilitates communication across providers, supports continuity of care, and provides a record of due diligence that is essential in the event of clinical review or legal proceedings. Documentation does not eliminate liability but demonstrates appropriate standard of care." },
+            { question: "Which element of the Safety Planning Intervention MOST commonly requires modification when working with isolated older adult clients?", type: "multipleChoice", options: [
+              { text: "Warning signs, which are the same for all populations", isCorrect: false },
+              { text: "The crisis line phone numbers, which differ for older adults", isCorrect: false },
+              { text: "Social contacts and coping strategies, which must be realistically calibrated to the client", isCorrect: true },
+              { text: ", ", isCorrect: false },
+              { text: "s signature, which may require family member co-signature for older adults", isCorrect: false }
+            ], correctAnswer: 2, explanation: "Safety planning is only as effective as its realism. Coping strategies that require physical capacity the client doesn't have and social contacts that don't exist are clinically useless. With isolated older adult clients, therapeutic work to expand social contacts may be required as a prerequisite to effective safety planning." },
+            { question: "The concept of 'reasons for living' is therapeutically relevant in geriatric suicide risk management because:", type: "multipleChoice", options: [
+              { text: "Reasons for living legally obligate clients not to act on suicidal ideation", isCorrect: false },
+              { text: "Identifying specific, personally meaningful reasons to remain alive counteracts perceived burdensomeness and thwarted belongingness, and provides a crisis management resource", isCorrect: true },
+              { text: "Reasons for living are relevant only for younger adults whose future-orientation is stronger", isCorrect: false },
+              { text: "Documenting reasons for living transfers clinical liability to the client", isCorrect: false }
+            ], correctAnswer: 1, explanation: "The Reasons for Living Inventory and related clinical tools help older adult clients identify specific, personally meaningful reasons to remain alive — directly counteracting the perceived burdensomeness and thwarted belongingness that drive suicidal desire. This material also provides a crisis management resource and a vehicle for exploring meaning and purpose in the therapeutic relationship." }
           ]
         }
       ]

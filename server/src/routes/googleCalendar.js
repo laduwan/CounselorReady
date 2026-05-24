@@ -21,10 +21,10 @@ import {
 
 const router = express.Router();
 
-// @route   GET /api/auth/google/calendar
+// @route   GET /api/google-calendar/oauth/connect
 // @desc    Redirect to Google OAuth consent screen
 // @access  Private
-router.get('/auth/google/calendar', protect, (req, res) => {
+router.get('/oauth/connect', protect, (req, res) => {
   try {
     if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
       return res.status(503).json({ error: 'Google Calendar integration is not configured' });
@@ -37,10 +37,10 @@ router.get('/auth/google/calendar', protect, (req, res) => {
   }
 });
 
-// @route   GET /api/auth/google/callback
+// @route   GET /api/google-calendar/oauth/callback
 // @desc    Handle Google OAuth callback, save tokens, redirect to settings
 // @access  Public (state param contains userId)
-router.get('/auth/google/callback', async (req, res) => {
+router.get('/oauth/callback', async (req, res) => {
   try {
     const { code, state: userId } = req.query;
 
@@ -65,7 +65,7 @@ router.get('/auth/google/callback', async (req, res) => {
 // @route   POST /api/google-calendar/sync
 // @desc    Sync all credentials + insurance to Google Calendar
 // @access  Private
-router.post('/google-calendar/sync', protect, async (req, res) => {
+router.post('/sync', protect, async (req, res) => {
   try {
     const user = await User.findById(req.user._id);
     if (!user.googleCalendar?.connected) {
@@ -89,7 +89,7 @@ router.post('/google-calendar/sync', protect, async (req, res) => {
 // @route   POST /api/google-calendar/sync/:credId
 // @desc    Sync a single credential to Google Calendar
 // @access  Private
-router.post('/google-calendar/sync/:credId', protect, async (req, res) => {
+router.post('/sync/:credId', protect, async (req, res) => {
   try {
     const user = await User.findById(req.user._id);
     if (!user.googleCalendar?.connected) {
@@ -121,7 +121,7 @@ router.post('/google-calendar/sync/:credId', protect, async (req, res) => {
 // @route   DELETE /api/google-calendar/disconnect
 // @desc    Disconnect Google Calendar, revoke tokens
 // @access  Private
-router.delete('/google-calendar/disconnect', protect, async (req, res) => {
+router.delete('/disconnect', protect, async (req, res) => {
   try {
     const user = await User.findById(req.user._id);
     await disconnectGoogleCalendar(user);
@@ -136,7 +136,7 @@ router.delete('/google-calendar/disconnect', protect, async (req, res) => {
 // @route   GET /api/google-calendar/status
 // @desc    Get Google Calendar connection status
 // @access  Private
-router.get('/google-calendar/status', protect, async (req, res) => {
+router.get('/status', protect, async (req, res) => {
   try {
     const user = await User.findById(req.user._id);
     const gcal = user.googleCalendar || {};
