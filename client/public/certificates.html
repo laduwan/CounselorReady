@@ -72,7 +72,7 @@
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
         <div class="stat-card">
             <div class="text-xs font-semibold uppercase tracking-wide mb-1" style="color:#4A7C59">Certificates Stored</div>
-            <div class="text-4xl font-bold font-display" style="color:#8B2542" id="certificatesStored">11</div>
+            <div class="text-4xl font-bold font-display" style="color:#8B2542" id="certificatesStored">—</div>
         </div>
         <div class="stat-card">
             <div class="text-xs font-semibold uppercase tracking-wide mb-1" style="color:#4A7C59">Total CE Hours</div>
@@ -293,9 +293,7 @@
             const res = await fetch(`${API_URL}/api/users/dashboard`, { headers: { 'Authorization': `Bearer ${token}` } });
             if (!res.ok) return;
             const data = await res.json();
-            document.getElementById('certificatesStored').textContent = data.certificatesCount || '0';
             document.getElementById('totalCeHours').textContent = data.totalHours || '0';
-            document.getElementById('fromNbccAceps').textContent = data.certificatesCount || '0';
         } catch(e) { console.error(e); }
     }
 
@@ -304,9 +302,17 @@
         try {
             const res = await fetch(`${API_URL}/api/certificates/`, { headers: { 'Authorization': `Bearer ${token}` } });
             if (!res.ok) return;
-            allCerts = await res.json();
+            const d = await res.json();
+            allCerts = Array.isArray(d) ? d : (d.certificates || []);
+            updateCertStats();
             renderCertificates(allCerts);
         } catch(e) { console.error(e); }
+    }
+
+    function updateCertStats() {
+        document.getElementById('certificatesStored').textContent = allCerts.length;
+        const nbcc = allCerts.filter(c => c.nbccApproved || c.selectedApprovalBody === 'NBCC' || c.approvingBody === 'NBCC').length;
+        document.getElementById('fromNbccAceps').textContent = nbcc;
     }
 
     function renderCertificates(certs) {
