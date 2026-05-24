@@ -11,7 +11,7 @@ import multer from 'multer';
 import cloudinary from 'cloudinary';
 import { Readable } from 'stream';
 import { protect, adminOnly as requireAdmin } from '../middleware/auth.js';
-import InteractiveCourse from '../models/InteractiveCourse.js';
+import { Course as InteractiveCourse } from '../models/InteractiveCourse.js';
 
 const router = express.Router();
 
