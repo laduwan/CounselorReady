@@ -157,9 +157,8 @@ const COURSE = {
               options: [
               { text: "Autonomy vs. shame and doubt, focused on developing independence from caregivers", isCorrect: false },
               { text: "Generativity vs. stagnation, focused on contributing to future generations", isCorrect: false },
-              { text: "Integrity vs. despair, focused on accepting one", isCorrect: true },
-              { text: ",
-                ", isCorrect: false }
+              { text: "Integrity vs. despair, focused on accepting one's life as it was actually lived", isCorrect: true },
+              { text: "Identity vs. role confusion, focused on establishing a coherent sense of self", isCorrect: false }
             ], correctAnswer: 2,
               explanation: "Erikson's eighth stage, integrity vs. despair, is the central psychosocial task of late life. Successful navigation yields a sense of meaning and acceptance of one's lived experience. Failed navigation yields despair — the sense that life was wasted and that it is too late to find meaning. This framework is particularly useful for understanding the existential dimensions of late-life depression."
             },
@@ -285,14 +284,10 @@ const COURSE = {
               question: "Life Review Therapy is grounded primarily in which theoretical framework?",
               type: "multipleChoice",
               options: [
-              { text: "Aaron Beck", isCorrect: false },
-              { text: ",
-                ", isCorrect: true },
-              { text: "s integrity vs. despair stage and Robert Butler", isCorrect: false },
-              { text: ",
-                ", isCorrect: false },
-              { text: " person-centered theory of unconditional positive regard", isCorrect: false },
-              { text: "Viktor Frankl", isCorrect: false }
+              { text: "Aaron Beck's cognitive model of depression", isCorrect: false },
+              { text: "Erik Erikson's integrity vs. despair stage and Robert Butler's life review concept", isCorrect: true },
+              { text: "Carl Rogers' person-centered theory of unconditional positive regard", isCorrect: false },
+              { text: "Viktor Frankl's logotherapy and existential philosophy", isCorrect: false }
             ], correctAnswer: 1,
               explanation: "Life Review Therapy draws from Erik Erikson's eighth psychosocial stage (integrity vs. despair) and Robert Butler's foundational work on therapeutic reminiscence. Butler proposed that life review — the natural process by which older adults reflect on and evaluate their lives — could be guided therapeutically to facilitate integration, resolve regrets, and promote a sense of meaning and acceptance. The approach was manualized by Barbara Haight and has strong empirical support for late-life depression."
             },
@@ -403,13 +398,10 @@ const COURSE = {
               question: "When working with an older adult client who has impaired decision-making capacity, the ethically appropriate default position is:",
               type: "multipleChoice",
               options: [
-              { text: "Transfer all decision-making authority to the client", isCorrect: false },
-              { text: ",
-                ", isCorrect: false },
-              { text: "s safety", isCorrect: true },
-              { text: "Support the client", isCorrect: false },
-              { text: ",
-                ", isCorrect: false }
+              { text: "Transfer all decision-making authority to the client's next of kin", isCorrect: false },
+              { text: "Pursue legal guardianship to ensure the client's safety", isCorrect: false },
+              { text: "Support the client's autonomous decision-making to the greatest extent possible using the least restrictive means available", isCorrect: true },
+              { text: "Defer all major decisions until the client is evaluated by a geriatric psychiatrist", isCorrect: false }
             ], correctAnswer: 2,
               explanation: "The ethical default in working with cognitively impaired older adults is always to support autonomous decision-making to the greatest possible extent, using the least restrictive means. Capacity is situation-specific, not global. Supported decision-making frameworks, family involvement (with client consent), simplified communication, and repeated information provision should all be pursued before legal mechanisms like guardianship, which represents a significant restriction of civil rights and should be a last resort."
             },
@@ -420,7 +412,7 @@ const COURSE = {
               { text: "History of previous depressive episodes", isCorrect: false },
               { text: "Current medication list and potential depressogenic side effects", isCorrect: false },
               { text: "Family dynamics and caregiver involvement", isCorrect: false },
-              { text: "Beliefs about life", isCorrect: true }
+              { text: "Beliefs about life's purpose and framework for understanding suffering", isCorrect: true }
             ], correctAnswer: 3,
               explanation: "The spiritual domain of comprehensive geriatric assessment encompasses beliefs about meaning and purpose, religious and spiritual practices, existential concerns about mortality and legacy, and the client's framework for understanding suffering. This domain is often omitted from conventional psychiatric assessment but is profoundly important for older adults confronting their own mortality and seeking to understand the meaning of their lives."
             }
@@ -479,11 +471,9 @@ const COURSE = {
               type: "multipleChoice",
               options: [
               { text: "Generalized Anxiety Disorder with somatic features", isCorrect: false },
-              { text: "Early-onset Alzheimer", isCorrect: false },
-              { text: ",
-                ", isCorrect: true },
-              { text: ",
-                ", isCorrect: false }
+              { text: "Early-onset Alzheimer's disease", isCorrect: false },
+              { text: "Depression with psychotic features, which occurs at elevated rates in older adults", isCorrect: true },
+              { text: "Somatic Symptom Disorder", isCorrect: false }
             ], correctAnswer: 2,
               explanation: "Depression with psychotic features — particularly nihilistic delusions about physical decay, personal culpability, or family harm — occurs at higher rates in older adults than in younger populations. This is a psychiatric emergency requiring intensive treatment and should not be attributed to cognitive decline."
             },
@@ -494,7 +484,7 @@ const COURSE = {
               { text: "Financial wealth", isCorrect: false },
               { text: "Living in a urban rather than rural environment", isCorrect: false },
               { text: "Strong social support network and meaningful social connection", isCorrect: true },
-              { text: "Having adult children involved in the older adult", isCorrect: false }
+              { text: "Having adult children involved in the older adult's care", isCorrect: false }
             ], correctAnswer: 2,
               explanation: "Strong social support and meaningful social connection consistently emerge as the most robust protective factors against late-life depression across multiple research designs and populations. Subjective loneliness — feeling disconnected even in the presence of others — is a stronger predictor of adverse outcomes than objective social isolation."
             },
@@ -524,12 +514,9 @@ const COURSE = {
               question: "When working with an older Latino client experiencing depression, the clinician's awareness that familismo may affect treatment engagement MOST appropriately leads to:",
               type: "multipleChoice",
               options: [
-              { text: "Automatically involving family members in all treatment sessions without the client", isCorrect: false },
-              { text: ",
-                ", isCorrect: true },
-              { text: ",
-                ", isCorrect: false },
-              { text: "s family will serve as an adequate substitute for professional treatment", isCorrect: false },
+              { text: "Automatically involving family members in all treatment sessions without the client's explicit consent", isCorrect: false },
+              { text: "Exploring with the client how family values and relationships factor into their depression and preferred support strategies", isCorrect: true },
+              { text: "Assuming the client's family will serve as an adequate substitute for professional treatment", isCorrect: false },
               { text: "Avoiding discussion of family dynamics to maintain a focus on individual cognitive and behavioral targets", isCorrect: false }
             ], correctAnswer: 1,
               explanation: "Familismo — the strong family orientation prevalent in many Latino cultures — can be both a protective resource and a barrier to individual treatment-seeking. The clinically appropriate response is to explore with the client how family relationships factor into their experience and preferences, neither automatically involving family without consent nor ignoring this central cultural value."
@@ -551,9 +538,8 @@ const COURSE = {
               options: [
               { text: "Osteoporosis without functional limitation", isCorrect: false },
               { text: "Managed hypertension with no cardiovascular events", isCorrect: false },
-              { text: "Cardiovascular disease, stroke, chronic pain, and Parkinson", isCorrect: true },
-              { text: ",
-                ", isCorrect: false }
+              { text: "Cardiovascular disease, stroke, chronic pain, and Parkinson's disease", isCorrect: true },
+              { text: "Well-controlled type 2 diabetes without complications", isCorrect: false }
             ], correctAnswer: 2,
               explanation: "Conditions including cardiovascular disease, stroke, Parkinson's disease, and chronic pain are among those most strongly associated with late-life depression, through both inflammatory pathways and the psychological impact of functional limitation, loss of independence, and confrontation with mortality."
             },
@@ -583,10 +569,8 @@ const COURSE = {
               question: "In Meaning-Centered Psychotherapy for older adults, 'attitudinal values' refers to:",
               type: "multipleChoice",
               options: [
-              { text: "The client", isCorrect: false },
-              { text: ",
-                ", isCorrect: true },
-              { text: "s attitude toward unavoidable suffering", isCorrect: false },
+              { text: "The client's positive attitudes toward treatment and clinician", isCorrect: false },
+              { text: "The freedom to choose one's attitude toward unavoidable suffering", isCorrect: true },
               { text: "Cognitive attitudes that maintain depressive episodes", isCorrect: false },
               { text: "Cultural values that shape the expression of distress", isCorrect: false }
             ], correctAnswer: 1,
@@ -596,13 +580,10 @@ const COURSE = {
               question: "A clinician who normalizes an older client's depression as 'just part of getting old' is demonstrating:",
               type: "multipleChoice",
               options: [
-              { text: "Culturally responsive care that honors the client", isCorrect: false },
-              { text: ",
-                ", isCorrect: false },
-              { text: ",
-                ", isCorrect: false },
-              { text: "s own self-understanding", isCorrect: true },
-              { text: "Ageism that normalizes pathology without adequate clinical assessment", isCorrect: false }
+              { text: "Culturally responsive care that honors the client's explanatory model", isCorrect: false },
+              { text: "Ageism that pathologizes normal aging without adequate clinical assessment", isCorrect: false },
+              { text: "Person-centered reflection of the client's own self-understanding", isCorrect: false },
+              { text: "Ageism that normalizes pathology without adequate clinical assessment", isCorrect: true }
             ], correctAnswer: 3,
               explanation: "Ageism — the implicit assumption that depression, sadness, and loss of interest are 'natural' in old age — is arguably the single greatest barrier to adequate geriatric mental health care. When a clinician normalizes clinical depression as aging, they fail to offer available, effective treatments to a client who is suffering unnecessarily. Depression is not a normal part of aging; it is a treatable condition at any age."
             },
@@ -612,10 +593,8 @@ const COURSE = {
               options: [
               { text: "Exclude family members entirely to protect client confidentiality", isCorrect: false },
               { text: "Involve family members in all decisions, as older adults with depression cannot make autonomous choices", isCorrect: false },
-              { text: "Establish explicit confidentiality agreements with the client, assess caregiver wellbeing and provide referrals when needed, and engage family as treatment allies with the client", isCorrect: true },
-              { text: ",
-                ", isCorrect: false },
-              { text: " perceptions as the primary clinical data source, as they are most reliable", isCorrect: false }
+              { text: "Establish explicit confidentiality agreements with the client, assess caregiver wellbeing and provide referrals when needed, and engage family as treatment allies with the client's informed consent", isCorrect: true },
+              { text: "Rely on family members' perceptions as the primary clinical data source, as they are most reliable", isCorrect: false }
             ], correctAnswer: 2,
               explanation: "Effective, ethical geriatric depression treatment requires clear confidentiality agreements with the client about what can be shared with family, active screening of family caregivers for their own depression and burnout, and engagement of family as informed treatment allies — all with the older adult's informed consent and in a manner that preserves their autonomy."
             }
