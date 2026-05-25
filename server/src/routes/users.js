@@ -52,7 +52,10 @@ router.put('/profile', protect, async (req, res) => {
     if (certificateName !== undefined) user.profile.certificateName = certificateName;
     if (state && typeof state === 'string') user.profile.state = state.toUpperCase();
     if (timezone) user.profile.timezone = timezone;
-    if (phone !== undefined) user.profile.phone = phone;
+    if (phone !== undefined) {
+      user.profile.phone = phone;
+      user.phone = phone; // keep top-level in sync — SMS/Twilio services read user.phone
+    }
 
     if (pronouns !== undefined) user.profile.pronouns = pronouns;
     if (npi !== undefined) {
