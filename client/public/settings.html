@@ -1860,6 +1860,10 @@
         if (npi && !/^\d{10}$/.test(npi)) {
           showToast('NPI must be 10 digits', true); btn.textContent = 'Save Profile'; btn.disabled = false; return;
         }
+        const phoneVal = document.getElementById('prof-phone').value.trim();
+        if (phoneVal && (phoneVal.replace(/\D/g, '').length < 10 || phoneVal.replace(/\D/g, '').length > 15)) {
+          showToast('Enter a valid phone number', true); btn.textContent = 'Save Profile'; btn.disabled = false; return;
+        }
         const token = localStorage.getItem('token');
         const res = await fetch(`${API_BASE}/users/profile`, {
           method: 'PUT',
