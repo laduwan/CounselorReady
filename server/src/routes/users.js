@@ -53,8 +53,15 @@ router.put('/profile', protect, async (req, res) => {
     if (state && typeof state === 'string') user.profile.state = state.toUpperCase();
     if (timezone) user.profile.timezone = timezone;
     if (phone !== undefined) {
-      user.profile.phone = phone;
-      user.phone = phone; // keep top-level in sync — SMS/Twilio services read user.phone
+      const trimmedPhone = String(phone).trim();
+      if (trimmedPhone !== '') {
+        const digits = trimmedPhone.replace(/\D/g, '');
+        if (digits.length < 10 || digits.length > 15) {
+          return res.status(400).json({ error: 'Phone must be a valid number (10–15 digits)' });
+        }
+      }
+      user.profile.phone = trimmedPhone;
+      user.phone = trimmedPhone; // keep top-level in sync — SMS/Twilio services read user.phone
     }
 
     if (pronouns !== undefined) user.profile.pronouns = pronouns;
