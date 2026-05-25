@@ -1,0 +1,2309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Settings | CounselorReady</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Lato:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="/js/tailwind-config.js"></script>
+  <style>
+    :root {
+      --burgundy: #6B1D34;
+      --burgundy-light: #8B2542;
+      --hunter: #4A7C59;
+      --hunter-light: #5A9A6E;
+      --honey: #D4A855;
+      --honey-light: #E4C475;
+      --navy: #284157;
+      --navy-light: #4A6580;
+      --moss-600: #4A7C59;
+      --moss-700: #3D6A4A;
+      --dustyrose-600: #8B2542;
+      --dustyrose-700: #6B1D34;
+      --bg: #F8F7F4;
+      --card-bg: #FFFFFF;
+      --border: #E5E2DC;
+      --text-primary: #2C2C2C;
+      --text-secondary: #6B7280;
+      --text-muted: #9CA3AF;
+      --success-bg: #ECFDF5;
+      --success-text: #065F46;
+      --success-border: #A7F3D0;
+      --warning-bg: #FFFBEB;
+      --warning-text: #92400E;
+      --warning-border: #FDE68A;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Lato', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text-primary);
+      line-height: 1.6;
+    }
+
+    /* -- Navigation Bar -- */
+    .navbar {
+      background: linear-gradient(135deg, var(--burgundy) 0%, var(--burgundy-light) 100%);
+      padding: 0 2rem;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 2px 8px rgba(107, 29, 52, 0.2);
+    }
+    .navbar-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+    }
+    .logo-mark {
+      width: 42px; height: 42px;
+      background: linear-gradient(145deg, #7d2340, #5a1829);
+      border: 1.5px solid rgba(255,255,255,0.15);
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      position: relative;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+    .logo-mark .c { color: #D0768A; font-family: 'Cormorant Garamond', Georgia, serif; font-weight: 700; font-size: 19px; position: absolute; top: 6px; left: 9px; }
+    .logo-mark .r { color: #4A7C59; font-family: 'Cormorant Garamond', Georgia, serif; font-weight: 700; font-size: 16px; position: absolute; top: 13px; left: 15px; }
+    .navbar-title {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 1.4rem;
+      letter-spacing: 0.01em;
+    }
+    .navbar-title .counselor { color: #D0768A; font-weight: 700; }
+    .navbar-title .ready { color: #7EB88E; font-weight: 700; }
+    .navbar-links {
+      display: flex; align-items: center; gap: 1.25rem;
+    }
+    .navbar-links a {
+      color: rgba(255,255,255,0.8); text-decoration: none;
+      font-size: 0.9rem; font-weight: 500;
+      transition: color 0.2s;
+    }
+    .navbar-links a:hover, .navbar-links a.active { color: #fff; }
+
+    /* -- Page Layout -- */
+    .page-container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem 4rem;
+    }
+    .page-header {
+      margin-bottom: 2rem;
+    }
+    .page-header h1 {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 1.75rem;
+      color: var(--burgundy);
+      margin-bottom: 0.25rem;
+    }
+    .page-header p {
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+    }
+
+    /* -- Settings Tabs -- */
+    .settings-tabs {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 2rem;
+      background: #F0EDEA;
+      border-radius: 12px;
+      padding: 4px;
+      width: fit-content;
+    }
+    .settings-tab {
+      padding: 10px 24px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      font-family: 'Lato', sans-serif;
+      color: var(--text-secondary);
+      background: none;
+      border: none;
+      cursor: pointer;
+      border-radius: 10px;
+      transition: all 0.2s;
+      letter-spacing: 0.01em;
+    }
+    .settings-tab:hover { color: var(--burgundy); background: rgba(255,255,255,0.6); }
+    .settings-tab.active {
+      color: var(--burgundy);
+      background: #fff;
+      box-shadow: 0 1px 4px rgba(107,29,52,0.1);
+    }
+
+    /* -- Cards -- */
+    .card {
+      background: var(--card-bg);
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+      margin-bottom: 1.5rem;
+      overflow: hidden;
+    }
+    .card-header {
+      padding: 1.25rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .card-header-icon {
+      width: 40px; height: 40px;
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .card-header-icon.green { background: #ECFDF5; color: var(--hunter); }
+    .card-header-icon.burgundy { background: #FDF2F8; color: var(--burgundy); }
+    .card-header-icon.honey { background: #FFFBEB; color: #B8860B; }
+    .card-header-icon.navy { background: #EFF6FF; color: var(--navy); }
+    .card-header h2 {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 1.1rem;
+      color: var(--text-primary);
+    }
+    .card-header p {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      margin-top: 2px;
+    }
+    .card-body { padding: 1.5rem; }
+
+    /* -- Toggle Switch -- */
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 1.25rem;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      margin-bottom: 0.75rem;
+      transition: border-color 0.2s, background 0.2s;
+      cursor: pointer;
+    }
+    .toggle-row:hover {
+      border-color: #C5C0B8;
+      background: #F8F7F4;
+    }
+    .toggle-row.active {
+      border-color: var(--hunter);
+      background: #F0FAF3;
+    }
+    .toggle-info {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+      flex: 1;
+    }
+    .toggle-icon {
+      width: 36px; height: 36px;
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      font-size: 1.1rem;
+    }
+    .toggle-icon.email { background: #EFF6FF; color: var(--navy); }
+    .toggle-icon.sms { background: #F0FAF3; color: var(--hunter); }
+    .toggle-icon.weekly { background: #FDF4FF; color: #7C3AED; }
+    .toggle-icon.alert { background: #FFF7ED; color: #EA580C; }
+    .toggle-icon.milestone { background: #FFFBEB; color: #B8860B; }
+    .toggle-icon.progress { background: #FDF2F8; color: var(--burgundy); }
+    .toggle-label { font-weight: 600; color: var(--text-primary); font-size: 0.95rem; }
+    .toggle-desc { font-size: 0.82rem; color: var(--text-secondary); margin-top: 2px; }
+    .toggle-switch {
+      position: relative;
+      width: 48px; height: 26px;
+      flex-shrink: 0;
+    }
+    .toggle-switch input { opacity: 0; width: 0; height: 0; }
+    .toggle-slider {
+      position: absolute;
+      inset: 0;
+      background: #D1D5DB;
+      border-radius: 13px;
+      transition: background 0.25s;
+      cursor: pointer;
+    }
+    .toggle-slider::before {
+      content: '';
+      position: absolute;
+      left: 3px; top: 3px;
+      width: 20px; height: 20px;
+      background: white;
+      border-radius: 50%;
+      transition: transform 0.25s;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+    }
+    .toggle-switch input:checked + .toggle-slider {
+      background: var(--hunter);
+    }
+    .toggle-switch input:checked + .toggle-slider::before {
+      transform: translateX(22px);
+    }
+    .vip-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: linear-gradient(135deg, var(--honey), #C4943F);
+      color: #fff;
+      font-size: 0.65rem;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-left: 6px;
+    }
+
+    /* -- Form Fields -- */
+    .form-group { margin-bottom: 1.25rem; }
+    .form-label {
+      display: block;
+      font-weight: 600;
+      font-size: 0.88rem;
+      color: var(--text-primary);
+      margin-bottom: 0.4rem;
+    }
+    .form-input {
+      width: 100%;
+      padding: 0.65rem 0.85rem 0.65rem 2.5rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 0.92rem;
+      font-family: inherit;
+      color: var(--text-primary);
+      background: var(--card-bg);
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .form-input:focus {
+      outline: none;
+      border-color: var(--hunter);
+      box-shadow: 0 0 0 3px rgba(74, 124, 89, 0.12);
+    }
+    .input-wrapper {
+      position: relative;
+    }
+    .input-icon {
+      position: absolute;
+      left: 0.85rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      pointer-events: none;
+    }
+
+    /* -- Buttons -- */
+    .btn-primary {
+      background: var(--hunter);
+      color: white;
+      border: none;
+      padding: 0.7rem 1.75rem;
+      border-radius: 8px;
+      font-size: 0.92rem;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+    }
+    .btn-primary:hover { background: var(--moss-700); }
+    .btn-primary:active { transform: scale(0.98); }
+    .btn-secondary {
+      background: transparent;
+      color: var(--hunter);
+      border: 1.5px solid var(--hunter);
+      padding: 0.6rem 1.25rem;
+      border-radius: 8px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-secondary:hover {
+      background: #F0FAF3;
+    }
+
+    /* -- Reminder Schedule -- */
+    .schedule-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+    }
+    .schedule-item {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.65rem 0.85rem;
+      background: #F8F7F4;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+    }
+    .schedule-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .schedule-dot.red { background: #EF4444; }
+    .schedule-dot.orange { background: #F59E0B; }
+    .schedule-dot.blue { background: #3B82F6; }
+    .schedule-dot.green { background: var(--hunter); }
+
+    /* -- CE Tracker Banner -- */
+    .tracker-banner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.15rem 1.5rem;
+      background: linear-gradient(135deg, #F0FAF3, #EFF6FF);
+      border: 1px solid #C6E7D0;
+      border-radius: 10px;
+      margin-top: 0.5rem;
+    }
+    .tracker-banner-text {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .tracker-banner-text span {
+      font-size: 1.3rem;
+    }
+    .tracker-banner-text p {
+      font-size: 0.9rem;
+      color: var(--navy);
+    }
+    .tracker-banner-text p strong {
+      color: var(--hunter);
+    }
+
+    /* -- Toast -- */
+    .toast {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      background: var(--hunter);
+      color: white;
+      padding: 0.85rem 1.5rem;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      box-shadow: 0 6px 20px rgba(74, 124, 89, 0.3);
+      transform: translateY(80px);
+      opacity: 0;
+      transition: all 0.35s ease;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    /* -- Section Divider -- */
+    .section-divider {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin: 1.25rem 0 0.85rem;
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--text-muted);
+    }
+    .section-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    /* -- Tab Panels -- */
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* -- Pre-licensed banner -- */
+    .pre-licensed-banner {
+      background: linear-gradient(135deg, #FFFBEB, #FEF3C7);
+      border: 1px solid var(--warning-border);
+      border-left: 4px solid var(--honey);
+      border-radius: 10px;
+      padding: 0.95rem 1.15rem;
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+    }
+    .pre-licensed-banner-icon {
+      flex-shrink: 0;
+      color: #B8860B;
+      margin-top: 2px;
+    }
+    .pre-licensed-banner-text { flex: 1; font-size: 0.88rem; color: var(--warning-text); line-height: 1.5; }
+    .pre-licensed-banner-text strong { color: var(--burgundy); }
+
+    /* -- Credential mini-card -- */
+    .cred-mini {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+      padding: 0.85rem 1rem;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      margin-bottom: 0.6rem;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .cred-mini:hover { border-color: #C5C0B8; background: #FAFAF7; }
+    .cred-mini-icon {
+      width: 36px; height: 36px;
+      background: linear-gradient(135deg, var(--burgundy), var(--burgundy-light));
+      color: #fff;
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 0.78rem; letter-spacing: 0.5px;
+      flex-shrink: 0;
+    }
+    .cred-mini-info { flex: 1; min-width: 0; }
+    .cred-mini-name { font-weight: 600; color: var(--text-primary); font-size: 0.92rem; }
+    .cred-mini-meta { font-size: 0.78rem; color: var(--text-secondary); margin-top: 1px; }
+    .cred-mini-status {
+      flex-shrink: 0;
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .cred-mini-status.active { background: var(--success-bg); color: var(--success-text); }
+    .cred-mini-status.pre-licensed { background: var(--warning-bg); color: var(--warning-text); }
+    .cred-mini-status.expired { background: #FEF2F2; color: #991B1B; }
+
+    /* -- Chip multi-select -- */
+    .chip-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 6px 12px;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      font-size: 0.82rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+      background: #fff;
+      cursor: pointer;
+      transition: all 0.15s;
+      user-select: none;
+    }
+    .chip:hover { border-color: var(--hunter); color: var(--hunter); }
+    .chip.selected {
+      background: var(--hunter);
+      border-color: var(--hunter);
+      color: #fff;
+    }
+    .chip.selected:hover { background: var(--moss-700); border-color: var(--moss-700); }
+
+    /* -- Inline test button on toggle row -- */
+    .toggle-test-btn {
+      background: none;
+      border: none;
+      color: var(--hunter);
+      font-size: 0.72rem;
+      font-weight: 700;
+      cursor: pointer;
+      padding: 2px 6px;
+      margin-left: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+    .toggle-test-btn:hover { color: var(--moss-700); }
+    .toggle-test-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    /* -- Hardship pause card -- */
+    .pause-card {
+      background: linear-gradient(135deg, #FFFBEB, #FEF6E0);
+      border: 1px solid var(--honey);
+      border-radius: 10px;
+      padding: 1rem 1.25rem;
+      margin-top: 1rem;
+    }
+    .pause-stats { display: flex; gap: 1.5rem; margin: 0.75rem 0; }
+    .pause-stat { font-size: 0.82rem; color: var(--text-secondary); }
+    .pause-stat strong { display: block; color: var(--burgundy); font-size: 1.1rem; font-weight: 700; }
+
+    /* -- Session row -- */
+    .session-row {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+      padding: 0.85rem 1rem;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      margin-bottom: 0.6rem;
+    }
+    .session-row.current { border-color: var(--hunter); background: #F0FAF3; }
+    .session-icon {
+      width: 36px; height: 36px;
+      background: #EFF6FF;
+      color: var(--navy);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .session-info { flex: 1; min-width: 0; }
+    .session-device { font-weight: 600; color: var(--text-primary); font-size: 0.92rem; }
+    .session-meta { font-size: 0.78rem; color: var(--text-secondary); margin-top: 1px; }
+    .session-revoke {
+      background: none;
+      border: 1px solid #fca5a5;
+      color: #991B1B;
+      padding: 5px 12px;
+      border-radius: 6px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .session-revoke:hover { background: #FEF2F2; }
+    .session-current-tag {
+      flex-shrink: 0;
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 12px;
+      background: var(--success-bg);
+      color: var(--success-text);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* -- 2FA card states -- */
+    .twofa-status {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.85rem 1rem;
+      border-radius: 10px;
+      background: #F8F7F4;
+      margin-bottom: 1rem;
+    }
+    .twofa-status.enabled { background: var(--success-bg); }
+    .twofa-status-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      background: #9CA3AF;
+      flex-shrink: 0;
+    }
+    .twofa-status.enabled .twofa-status-dot { background: var(--hunter); }
+    .twofa-status-text { font-size: 0.9rem; color: var(--text-primary); flex: 1; }
+    .twofa-status-text strong { font-weight: 700; }
+
+    /* -- Quiet hours range -- */
+    .time-range {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+    }
+    .time-range .form-input { padding-left: 0.85rem; }
+
+    /* -- Referral code -- */
+    .referral-code-box {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.65rem 0.85rem;
+      background: linear-gradient(135deg, #F0FAF3, #E5F5EA);
+      border: 1px dashed var(--hunter);
+      border-radius: 10px;
+    }
+    .referral-code {
+      flex: 1;
+      font-family: 'Courier New', monospace;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      color: var(--hunter);
+      font-size: 1rem;
+    }
+    .referral-copy-btn {
+      background: var(--hunter);
+      color: #fff;
+      border: none;
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      cursor: pointer;
+      letter-spacing: 0.4px;
+      text-transform: uppercase;
+    }
+    .referral-copy-btn:hover { background: var(--moss-700); }
+
+    /* -- Unsaved indicator -- */
+    .unsaved-dot {
+      display: inline-block;
+      width: 8px; height: 8px;
+      background: var(--honey);
+      border-radius: 50%;
+      margin-left: 6px;
+      vertical-align: middle;
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 0.7; }
+      50% { opacity: 1; transform: scale(1.15); }
+    }
+
+    /* -- Hidden by default -- */
+    .conditional-section { display: none; }
+    .conditional-section.show { display: block; }
+
+    /* -- Responsive -- */
+    @media (max-width: 640px) {
+      .page-container { padding: 1.25rem 1rem 3rem; }
+      .schedule-grid { grid-template-columns: 1fr; }
+      .tracker-banner { flex-direction: column; gap: 0.75rem; text-align: center; }
+      .navbar-links { gap: 0.75rem; }
+      .navbar-links a { font-size: 0.82rem; }
+      .settings-tabs {
+        overflow-x: auto;
+        max-width: 100%;
+        flex-wrap: nowrap;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+      }
+      .settings-tabs::-webkit-scrollbar { display: none; }
+      .settings-tab { white-space: nowrap; padding: 9px 16px; font-size: 0.85rem; }
+      .pause-stats { flex-direction: column; gap: 0.5rem; }
+      .time-range { grid-template-columns: 1fr; }
+    }
+  
+    /* Shared nav styles */
+    .dd{display:none;position:absolute;top:100%;margin-top:6px;background:#fff;border-radius:10px;box-shadow:0 10px 40px rgba(107,29,52,.12);border:1px solid #FAE8EB;z-index:50;padding:6px 0;min-width:210px}
+    .dd.open{display:block}
+    .dd a{display:flex;align-items:center;gap:10px;padding:8px 16px;font-size:13px;color:#284157;text-decoration:none;transition:background .1s}
+    .dd a:hover{background:#F2F7F4}
+    .ov{display:none;position:fixed;inset:0;z-index:40}.ov.open{display:block}
+    .nav-link{padding:6px 12px;border-radius:6px;font-size:13px;font-weight:500;color:#57534e;text-decoration:none;display:flex;align-items:center;gap:4px;transition:all .15s}
+    .nav-link:hover{color:#6B1D34;background:#FDF5F7}
+    .nav-link.active{color:#6B1D34;background:#FDF5F7;font-weight:600;border-bottom:2px solid #6B1D34}
+  </style>
+<script src="/js/cr-gtag.js"></script>
+</head>
+<body>
+
+  <!-- Navigation -->
+  <div id="cr-header"></div>
+  <script src="/shared/nav-footer.js"></script>
+
+  <div class="page-container">
+    <!-- Page Header -->
+    <div class="page-header" style="display:flex;align-items:baseline;gap:12px;margin-bottom:2rem">
+      <h1>Settings</h1>
+      <span style="color:#D4A855;font-size:13px;letter-spacing:0.03em">Account &middot; Notifications &middot; Billing</span>
+    </div>
+
+    <!-- Settings Tabs -->
+    <div class="settings-tabs">
+      <button class="settings-tab active" data-tab="notifications" onclick="switchTab('notifications')">
+        Notifications
+      </button>
+      <button class="settings-tab" data-tab="profile" onclick="switchTab('profile')">
+        Profile
+      </button>
+      <button class="settings-tab" data-tab="security" onclick="switchTab('security')">
+        Security
+      </button>
+      <button class="settings-tab" data-tab="account" onclick="switchTab('account')">
+         Account
+      </button>
+    </div>
+
+    <!-- -- -->
+    <!-- NOTIFICATIONS TAB                      -->
+    <!-- -- -->
+    <div class="tab-panel active" id="tab-notifications">
+
+      <!-- Contact Information -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-header-icon green">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          </div>
+          <div>
+            <h2>Contact Information</h2>
+            <p>Where should we send your reminders?</p>
+          </div>
+        </div>
+        <div class="card-body">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem;">
+            <div class="form-group" style="margin-bottom:0">
+              <label class="form-label">Email Address</label>
+              <div class="input-wrapper">
+                <span class="input-icon">
+                  <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                </span>
+                <input type="email" id="notif-email" class="form-input" placeholder="you@example.com" />
+              </div>
+            </div>
+            <div class="form-group" style="margin-bottom:0">
+              <label class="form-label">Phone Number</label>
+              <div class="input-wrapper">
+                <span class="input-icon">
+                  <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
+                </span>
+                <input type="tel" id="notif-phone" class="form-input" placeholder="(555) 555-5555" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Notification Channels -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-header-icon burgundy">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+          </div>
+          <div>
+            <h2>How Should We Reach You?</h2>
+            <p>Choose your preferred notification channels</p>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="section-divider">Compliance &amp; Account</div>
+          <p style="font-size:0.82rem;color:var(--text-secondary);margin-bottom:0.85rem;line-height:1.5">
+            Renewal reminders, receipts, and security alerts. These are required for the service and cannot be turned off, but you can choose the channel.
+          </p>
+
+          <!-- Email transactional toggle -->
+          <label class="toggle-row active" id="row-email">
+            <div class="toggle-info">
+              <div class="toggle-icon email">
+                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+              </div>
+              <div>
+                <div class="toggle-label">
+                  Email <span style="font-weight:400;color:var(--text-secondary);font-size:0.8rem">— Required</span>
+                  <button type="button" class="toggle-test-btn" onclick="event.preventDefault();sendTest('email')">Send test</button>
+                </div>
+                <div class="toggle-desc">Renewal reminders, receipts, security alerts</div>
+              </div>
+            </div>
+            <div class="toggle-switch">
+              <input type="checkbox" id="toggle-email" checked disabled />
+              <span class="toggle-slider"></span>
+            </div>
+          </label>
+
+          <!-- SMS transactional toggle -->
+          <label class="toggle-row" id="row-sms">
+            <div class="toggle-info">
+              <div class="toggle-icon sms">
+                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+              </div>
+              <div>
+                <div class="toggle-label">
+                  SMS Reminders <span class="vip-badge">VIP</span>
+                  <button type="button" class="toggle-test-btn" onclick="event.preventDefault();sendTest('sms')">Send test</button>
+                </div>
+                <div class="toggle-desc">Text alerts for upcoming credential deadlines (msg &amp; data rates may apply)</div>
+              </div>
+            </div>
+            <div class="toggle-switch">
+              <input type="checkbox" id="toggle-sms" onchange="updateToggleRow('row-sms', this.checked);autosaveNotif()" />
+              <span class="toggle-slider"></span>
+            </div>
+          </label>
+
+          <div class="section-divider">Marketing &amp; Updates</div>
+          <p style="font-size:0.82rem;color:var(--text-secondary);margin-bottom:0.85rem;line-height:1.5">
+            New course launches, promotions, and platform announcements. Opt-in.
+          </p>
+
+          <!-- Marketing email -->
+          <label class="toggle-row" id="row-marketing-email">
+            <div class="toggle-info">
+              <div class="toggle-icon email">
+                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg>
+              </div>
+              <div>
+                <div class="toggle-label">Course launches &amp; promotions (Email)</div>
+                <div class="toggle-desc">New courses, seasonal discounts, platform announcements</div>
+              </div>
+            </div>
+            <div class="toggle-switch">
+              <input type="checkbox" id="toggle-marketing-email" onchange="updateToggleRow('row-marketing-email', this.checked);autosaveNotif()" />
+              <span class="toggle-slider"></span>
+            </div>
+          </label>
+
+          <!-- Marketing SMS removed: nested schema has no SMS marketing field. Add notifications.sms.marketing to schema later if desired. -->
+
+          <div class="section-divider">Reminder Types</div>
+
+          <!-- Weekly Summary -->
+          <label class="toggle-row" id="row-weekly">
+            <div class="toggle-info">
+              <div class="toggle-icon weekly">
+                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              </div>
+              <div>
+                <div class="toggle-label">Weekly Progress Summary</div>
+                <div class="toggle-desc">Every Monday — see your CE progress across all credentials</div>
+              </div>
+            </div>
+            <div class="toggle-switch">
+              <input type="checkbox" id="toggle-weekly" checked onchange="updateToggleRow('row-weekly', this.checked);autosaveNotif()" />
+              <span class="toggle-slider"></span>
+            </div>
+          </label>
+
+          <!-- Falling Behind Alert -->
+          <label class="toggle-row" id="row-alert">
+            <div class="toggle-info">
+              <div class="toggle-icon alert">
+                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+              </div>
+              <div>
+                <div class="toggle-label">Falling Behind Alert</div>
+                <div class="toggle-desc">Notify me if I need more than 5 CE hours/week to stay on track</div>
+              </div>
+            </div>
+            <div class="toggle-switch">
+              <input type="checkbox" id="toggle-alert" checked onchange="updateToggleRow('row-alert', this.checked);autosaveNotif()" />
+              <span class="toggle-slider"></span>
+            </div>
+          </label>
+
+          <!-- CE Milestones -->
+          <label class="toggle-row" id="row-milestone">
+            <div class="toggle-info">
+              <div class="toggle-icon milestone">
+                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>
+              </div>
+              <div>
+                <div class="toggle-label">CE Milestone Celebrations</div>
+                <div class="toggle-desc">Get notified when you hit 10, 25, 50, or 100+ CE hours</div>
+              </div>
+            </div>
+            <div class="toggle-switch">
+              <input type="checkbox" id="toggle-milestone" checked onchange="updateToggleRow('row-milestone', this.checked);autosaveNotif()" />
+              <span class="toggle-slider"></span>
+            </div>
+          </label>
+
+          <!-- Course Progress -->
+          <label class="toggle-row" id="row-progress">
+            <div class="toggle-info">
+              <div class="toggle-icon progress">
+                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
+              </div>
+              <div>
+                <div class="toggle-label">Course Progress Reminders</div>
+                <div class="toggle-desc">Nudges at 3, 7, 14, and 30 days if a course is incomplete</div>
+              </div>
+            </div>
+            <div class="toggle-switch">
+              <input type="checkbox" id="toggle-progress" checked onchange="updateToggleRow('row-progress', this.checked);autosaveNotif()" />
+              <span class="toggle-slider"></span>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <!-- Quiet Hours -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-header-icon navy">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+          </div>
+          <div>
+            <h2>Quiet Hours</h2>
+            <p>Don't send SMS notifications during these hours</p>
+          </div>
+        </div>
+        <div class="card-body">
+          <label class="toggle-row" id="row-quiet" style="margin-bottom:1rem">
+            <div class="toggle-info">
+              <div class="toggle-icon" style="background:#EEF2FF;color:#4338CA">
+                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              </div>
+              <div>
+                <div class="toggle-label">Enable quiet hours</div>
+                <div class="toggle-desc">Pauses non-urgent SMS alerts during your set window</div>
+              </div>
+            </div>
+            <div class="toggle-switch">
+              <input type="checkbox" id="toggle-quiet" onchange="updateToggleRow('row-quiet', this.checked);toggleQuietRange();autosaveNotif()" />
+              <span class="toggle-slider"></span>
+            </div>
+          </label>
+          <div id="quiet-range" class="conditional-section">
+            <div class="time-range">
+              <div class="form-group" style="margin-bottom:0">
+                <label class="form-label">From</label>
+                <input type="time" class="form-input" id="quiet-from" value="22:00" style="padding-left:0.85rem" onchange="autosaveNotif()">
+              </div>
+              <div class="form-group" style="margin-bottom:0">
+                <label class="form-label">To</label>
+                <input type="time" class="form-input" id="quiet-to" value="07:00" style="padding-left:0.85rem" onchange="autosaveNotif()">
+              </div>
+            </div>
+            <p style="margin-top:0.75rem;font-size:0.82rem;color:var(--text-secondary)">
+              Times are in your profile timezone. Critical security alerts (login from new device, password changes) will still send.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Credential Renewal Schedule -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-header-icon honey">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          </div>
+          <div>
+            <h2>Renewal Reminder Schedule</h2>
+            <p>Automatic alerts before your credentials expire</p>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="schedule-grid">
+            <div class="schedule-item">
+              <span class="schedule-dot green"></span>
+              <strong>6 months</strong>&nbsp;before expiration
+            </div>
+            <div class="schedule-item">
+              <span class="schedule-dot blue"></span>
+              <strong>3 months</strong>&nbsp;before expiration
+            </div>
+            <div class="schedule-item">
+              <span class="schedule-dot orange"></span>
+              <strong>1 month</strong>&nbsp;before expiration
+            </div>
+            <div class="schedule-item">
+              <span class="schedule-dot red"></span>
+              <strong>1 week</strong>&nbsp;before expiration
+            </div>
+          </div>
+          <p style="margin-top: 1rem; font-size: 0.84rem; color: var(--text-secondary);">
+            These reminders are sent automatically based on the expiration dates in your 
+            <a href="/credentials" style="color: var(--hunter); font-weight: 600; text-decoration: none;">Credentials</a> page. 
+            Keep your license dates updated for accurate reminders.
+          </p>
+        </div>
+      </div>
+
+      <!-- CE Tracker Link -->
+      <div class="card">
+        <div class="card-body" style="padding: 1rem 1.5rem;">
+          <div class="tracker-banner">
+            <div class="tracker-banner-text">
+              <span></span>
+              <p>Want to see a <strong>preview of your upcoming reminders</strong> and manage detailed CE tracking? Visit the CE Tracker on your dashboard.</p>
+            </div>
+            <a href="/dashboard#ce-tracker" class="btn-secondary" style="white-space: nowrap; text-decoration: none;">
+              Open CE Tracker →
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Save Button -->
+      <div style="display: flex; justify-content: flex-end; gap: 1rem; margin-top: 0.5rem;">
+        <button class="btn-primary" onclick="saveNotificationSettings()">
+          Save Notification Preferences
+        </button>
+      </div>
+
+    </div>
+
+    <!-- -- -->
+    <!-- PROFILE TAB                            -->
+    <!-- -- -->
+    <div class="tab-panel" id="tab-profile">
+
+      <!-- Pre-licensed banner (conditional) -->
+      <div id="prelicensedBanner" class="pre-licensed-banner conditional-section">
+        <div class="pre-licensed-banner-icon">
+          <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 9v2m0 4h.01M5.07 19h13.86a2 2 0 001.74-3L13.74 4a2 2 0 00-3.48 0l-6.93 12a2 2 0 001.74 3z"/></svg>
+        </div>
+        <div class="pre-licensed-banner-text">
+          <strong>You have a pre-licensed credential on file.</strong>
+          Update your license number anytime from the
+          <a href="/credentials.html" style="color:var(--burgundy);font-weight:700;text-decoration:underline">Credentials</a>
+          page. Certificates earned under pre-licensed status reflect your status at completion and cannot be changed retroactively.
+        </div>
+      </div>
+
+      <!-- Credentials Summary -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-header-icon burgundy">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 8h10M7 12h10M7 16h6"/></svg>
+          </div>
+          <div>
+            <h2>Your Credentials</h2>
+            <p>Licenses and certifications used for CE attendance records</p>
+          </div>
+        </div>
+        <div class="card-body">
+          <div id="credentials-summary"></div>
+          <a href="/credentials.html" class="btn-secondary" style="display:inline-block;margin-top:8px;text-decoration:none">Manage Credentials →</a>
+        </div>
+      </div>
+
+      <!-- Profile Info -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-header-icon navy">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          </div>
+          <div>
+            <h2>Profile Information</h2>
+            <p>Your name, location, and contact details</p>
+          </div>
+        </div>
+        <div class="card-body">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
+            <div class="form-group">
+              <label class="form-label">First Name</label>
+              <input type="text" class="form-input" id="prof-firstName" placeholder="First name" style="padding-left:0.85rem">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Last Name</label>
+              <input type="text" class="form-input" id="prof-lastName" placeholder="Last name" style="padding-left:0.85rem">
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
+            <div class="form-group">
+              <label class="form-label">Pronouns <span style="font-weight:400;color:var(--text-muted);font-size:0.78rem">(optional)</span></label>
+              <select class="form-input" id="prof-pronouns" style="padding-left:0.85rem">
+                <option value="">Prefer not to say</option>
+                <option value="she/her">she/her</option>
+                <option value="he/him">he/him</option>
+                <option value="they/them">they/them</option>
+                <option value="she/they">she/they</option>
+                <option value="he/they">he/they</option>
+                <option value="custom">Custom...</option>
+              </select>
+            </div>
+            <div class="form-group" id="prof-pronounsCustomWrap" style="display:none">
+              <label class="form-label">Custom Pronouns</label>
+              <input type="text" class="form-input" id="prof-pronounsCustom" placeholder="e.g. xe/xem" style="padding-left:0.85rem">
+            </div>
+          </div>
+          <div class="form-group" style="margin-bottom:20px">
+            <label class="form-label">Name on Certificate</label>
+            <input type="text" class="form-input" id="prof-certificateName" placeholder="e.g. Dr. Jane M. Doe, LPC, NCC" maxlength="200" style="padding-left:0.85rem">
+            <p style="margin-top:6px;font-size:13px;color:#6b6b66">Name as it should appear on your CE certificates. Match your license name to ensure board acceptance. Leave blank to use your first and last name.</p>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
+            <div class="form-group">
+              <label class="form-label">Email</label>
+              <input type="email" class="form-input" id="prof-email" disabled style="background:#f3f3f0;cursor:not-allowed;padding-left:0.85rem">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Phone</label>
+              <input type="tel" class="form-input" id="prof-phone" placeholder="(555) 555-5555" style="padding-left:0.85rem">
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
+            <div class="form-group">
+              <label class="form-label">Primary State (for CE requirements)</label>
+              <select class="form-input" id="prof-state" style="padding-left:0.85rem">
+                <option value="">Select state...</option>
+                <option>AL</option><option>AK</option><option>AZ</option><option>AR</option><option>CA</option><option>CO</option><option>CT</option><option>DE</option><option>FL</option><option>GA</option><option>HI</option><option>ID</option><option>IL</option><option>IN</option><option>IA</option><option>KS</option><option>KY</option><option>LA</option><option>ME</option><option>MD</option><option>MA</option><option>MI</option><option>MN</option><option>MS</option><option>MO</option><option>MT</option><option>NE</option><option>NV</option><option>NH</option><option>NJ</option><option>NM</option><option>NY</option><option>NC</option><option>ND</option><option>OH</option><option>OK</option><option>OR</option><option>PA</option><option>RI</option><option>SC</option><option>SD</option><option>TN</option><option>TX</option><option>UT</option><option>VT</option><option>VA</option><option>WA</option><option>WV</option><option>WI</option><option>WY</option><option>DC</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Timezone</label>
+              <select class="form-input" id="prof-timezone" style="padding-left:0.85rem">
+                <option value="America/New_York">Eastern (ET)</option>
+                <option value="America/Chicago">Central (CT)</option>
+                <option value="America/Denver">Mountain (MT)</option>
+                <option value="America/Los_Angeles">Pacific (PT)</option>
+                <option value="America/Anchorage">Alaska (AKT)</option>
+                <option value="Pacific/Honolulu">Hawaii (HT)</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group" style="margin-bottom:20px">
+            <label class="form-label">NPI Number <span style="font-weight:400;color:var(--text-muted);font-size:0.78rem">(optional, 10 digits)</span></label>
+            <input type="text" class="form-input" id="prof-npi" placeholder="1234567890" maxlength="10" pattern="[0-9]{10}" style="padding-left:0.85rem">
+            <p style="margin-top:6px;font-size:13px;color:#6b6b66">National Provider Identifier. Required by some boards on attendance records.</p>
+          </div>
+          <div class="form-group" style="margin-bottom:20px">
+            <label class="form-label">Preferred CE Approval Body</label>
+            <select class="form-input" id="prof-preferredApprovalBody" style="padding-left:0.85rem">
+              <option value="NBCC">NBCC (National Board for Certified Counselors)</option>
+              <option value="LPCAGA">LPCA of Georgia (LPCs)</option>
+              <option value="GSCSW">GA Society for Clinical Social Work (LCSWs)</option>
+              <option value="ACA">ACA</option>
+              <option value="NASW">NASW</option>
+              <option value="Other">Other</option>
+            </select>
+            <p style="margin-top:6px;font-size:13px;color:#6b6b66">Used on your CE certificates when a course has multiple approval bodies. Select the body that matches your primary license.</p>
+          </div>
+          <button class="btn-primary" onclick="saveProfile()" id="profileSaveBtn">Save Profile</button>
+        </div>
+      </div>
+
+      <!-- Specializations -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-header-icon green">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 11H5a2 2 0 00-2 2v7h18v-7a2 2 0 00-2-2h-4M9 11V7a3 3 0 016 0v4"/></svg>
+          </div>
+          <div>
+            <h2>Clinical Focus Areas</h2>
+            <p>Helps us recommend relevant courses and CE planning</p>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="chip-group" id="specializations-chips">
+            <button type="button" class="chip" data-spec="trauma">Trauma &amp; PTSD</button>
+            <button type="button" class="chip" data-spec="addictions">Addictions / SUD</button>
+            <button type="button" class="chip" data-spec="anxiety">Anxiety</button>
+            <button type="button" class="chip" data-spec="depression">Depression / Mood</button>
+            <button type="button" class="chip" data-spec="couples">Couples / Family</button>
+            <button type="button" class="chip" data-spec="children">Children &amp; Adolescents</button>
+            <button type="button" class="chip" data-spec="geriatric">Geriatric</button>
+            <button type="button" class="chip" data-spec="lgbtq">LGBTQ+ Affirmative</button>
+            <button type="button" class="chip" data-spec="multicultural">Multicultural</button>
+            <button type="button" class="chip" data-spec="grief">Grief &amp; Loss</button>
+            <button type="button" class="chip" data-spec="eating">Eating Disorders</button>
+            <button type="button" class="chip" data-spec="telehealth">Telehealth</button>
+            <button type="button" class="chip" data-spec="supervision">Clinical Supervision</button>
+            <button type="button" class="chip" data-spec="ethics">Ethics</button>
+            <button type="button" class="chip" data-spec="assessment">Assessment</button>
+            <button type="button" class="chip" data-spec="crisis">Crisis / Suicide</button>
+          </div>
+          <button class="btn-primary" onclick="saveSpecializations()" id="specsSaveBtn" style="margin-top:1.25rem">Save Focus Areas</button>
+        </div>
+      </div>
+
+      <!-- Supervision Info (conditional, shown only if pre-licensed) -->
+      <div id="supervisionCard" class="card conditional-section">
+        <div class="card-header">
+          <div class="card-header-icon honey">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+          </div>
+          <div>
+            <h2>Supervision Information</h2>
+            <p>For pre-licensed clinicians — boards request this during audits</p>
+          </div>
+        </div>
+        <div class="card-body">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
+            <div class="form-group">
+              <label class="form-label">Supervisor Name</label>
+              <input type="text" class="form-input" id="prof-supName" placeholder="Full name" style="padding-left:0.85rem">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Supervisor License #</label>
+              <input type="text" class="form-input" id="prof-supLicense" placeholder="e.g. LPC012345" style="padding-left:0.85rem">
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
+            <div class="form-group">
+              <label class="form-label">Supervisor Credentials</label>
+              <input type="text" class="form-input" id="prof-supCreds" placeholder="e.g. LPC, CPCS" style="padding-left:0.85rem">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Supervision Start Date</label>
+              <input type="date" class="form-input" id="prof-supStart" style="padding-left:0.85rem">
+            </div>
+          </div>
+          <button class="btn-primary" onclick="saveSupervision()" id="supSaveBtn">Save Supervision Info</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- -- -->
+    <!-- SECURITY TAB                           -->
+    <!-- -- -->
+    <div class="tab-panel" id="tab-security">
+
+      <!-- Two-Factor Auth -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-header-icon green">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </div>
+          <div>
+            <h2>Two-Factor Authentication</h2>
+            <p>Add a second layer of security to your account</p>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="twofa-status" id="twofaStatus">
+            <div class="twofa-status-dot"></div>
+            <div class="twofa-status-text"><strong>Status:</strong> <span id="twofaStatusText">Not enabled</span></div>
+          </div>
+          <p style="font-size:0.88rem;color:var(--text-secondary);margin-bottom:1rem;line-height:1.55">
+            Use an authenticator app (Google Authenticator, Authy, 1Password) to generate time-based codes. Required for HIPAA-aligned workflows and recommended for all clinicians handling protected health information.
+          </p>
+          <div id="twofaSetupSection" style="display:none;padding:1rem;background:#F8F7F4;border-radius:10px;margin-bottom:1rem">
+            <p style="font-size:0.85rem;color:var(--text-primary);font-weight:600;margin-bottom:0.5rem">Scan this QR code with your authenticator app:</p>
+            <div id="twofaQrCode" style="background:#fff;padding:1rem;border-radius:8px;text-align:center;margin-bottom:0.75rem;border:1px solid var(--border)">
+              <p style="font-size:0.78rem;color:var(--text-muted)">QR code will appear here after setup is initiated</p>
+            </div>
+            <p style="font-size:0.78rem;color:var(--text-secondary);margin-bottom:0.5rem">Or enter this secret manually: <code id="twofaSecret" style="background:#fff;padding:2px 6px;border-radius:3px;font-family:monospace">—</code></p>
+            <div class="form-group" style="margin-top:0.75rem;margin-bottom:0.75rem">
+              <label class="form-label">Verification Code</label>
+              <input type="text" class="form-input" id="twofa-code" placeholder="6-digit code from app" maxlength="6" inputmode="numeric" style="padding-left:0.85rem;letter-spacing:0.3em;font-family:monospace">
+            </div>
+            <button class="btn-primary" onclick="confirm2FA()" id="twofaConfirmBtn">Verify &amp; Enable</button>
+          </div>
+          <button class="btn-primary" onclick="setup2FA()" id="twofaSetupBtn">Enable Two-Factor Auth</button>
+          <button class="btn-secondary" onclick="disable2FA()" id="twofaDisableBtn" style="display:none;border-color:#fca5a5;color:#991B1B">Disable 2FA</button>
+        </div>
+      </div>
+
+      <!-- Active Sessions -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-header-icon navy">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+          </div>
+          <div>
+            <h2>Active Sessions</h2>
+            <p>Devices currently signed in to your account</p>
+          </div>
+        </div>
+        <div class="card-body">
+          <div id="sessions-list">
+            <p style="color:var(--text-secondary);font-size:0.88rem;padding:1rem 0">Loading sessions...</p>
+          </div>
+          <button class="btn-secondary" onclick="signOutEverywhere()" style="border-color:#fca5a5;color:#991B1B;margin-top:0.5rem">Sign Out of All Other Devices</button>
+        </div>
+      </div>
+
+      <!-- Recovery Email -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-header-icon honey">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/><path d="M9 9h6M9 13h4"/></svg>
+          </div>
+          <div>
+            <h2>Recovery Email</h2>
+            <p>Backup email for account recovery if your primary email is compromised</p>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="form-group" style="margin-bottom:1rem">
+            <label class="form-label">Recovery Email Address</label>
+            <input type="email" class="form-input" id="recovery-email" placeholder="backup@example.com" style="padding-left:0.85rem">
+          </div>
+          <button class="btn-primary" onclick="saveRecoveryEmail()" id="recoverySaveBtn">Save Recovery Email</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ACCOUNT TAB -->
+    <div class="tab-panel" id="tab-account">
+      <!-- Change Password -->
+      <div class="card" style="margin-bottom:20px">
+        <div class="card-header">
+          <div class="card-header-icon burgundy">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+          </div>
+          <div>
+            <h2>Change Password</h2>
+            <p>Update your account password</p>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="form-group" style="margin-bottom:16px">
+            <label class="form-label">Current Password</label>
+            <input type="password" class="form-input" id="pw-current" placeholder="Enter current password" style="padding-left:0.85rem">
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
+            <div class="form-group">
+              <label class="form-label">New Password</label>
+              <input type="password" class="form-input" id="pw-new" placeholder="At least 8 characters" style="padding-left:0.85rem">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Confirm New Password</label>
+              <input type="password" class="form-input" id="pw-confirm" placeholder="Repeat new password" style="padding-left:0.85rem">
+            </div>
+          </div>
+          <p id="pw-error" style="color:#dc2626;font-size:13px;margin-bottom:12px;display:none"></p>
+          <button class="btn-primary" onclick="changePassword()" id="pwSaveBtn">Update Password</button>
+        </div>
+      </div>
+
+      <!-- Subscription -->
+      <div class="card" style="margin-bottom:20px">
+        <div class="card-header">
+          <div class="card-header-icon" style="background:var(--success-bg);color:var(--success-text)">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          </div>
+          <div>
+            <h2>Subscription</h2>
+            <p id="acct-plan-desc">Manage your plan and billing</p>
+          </div>
+        </div>
+        <div class="card-body">
+          <div style="display:flex;align-items:center;gap:16px;margin-bottom:16px">
+            <div>
+              <span style="font-weight:700;color:var(--burgundy);font-size:1.1rem" id="acct-plan-name">Loading...</span>
+              <span id="acct-plan-badge" style="display:inline-block;margin-left:8px;padding:2px 10px;border-radius:20px;font-size:11px;font-weight:600;background:var(--success-bg);color:var(--success-text)"></span>
+            </div>
+          </div>
+          <a href="/subscription.html" style="color:var(--hunter);font-weight:600;font-size:14px;text-decoration:none">Manage Subscription →</a>
+
+          <!-- VIP Hardship Pause (conditional, only for VIP plans) -->
+          <div id="hardshipPauseCard" class="pause-card conditional-section">
+            <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.5rem">
+              <svg width="18" height="18" fill="none" stroke="#B8860B" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              <strong style="color:var(--burgundy);font-size:0.92rem">VIP Hardship Pause</strong>
+            </div>
+            <p style="font-size:0.84rem;color:var(--text-primary);line-height:1.5;margin-bottom:0">
+              Pause your subscription for life events (illness, deployment, leave). 1 month free per year, unused months roll over.
+            </p>
+            <div class="pause-stats">
+              <div class="pause-stat">
+                <strong id="pauseAvailable">—</strong>
+                Months available
+              </div>
+              <div class="pause-stat">
+                <strong id="pauseLastUsed">—</strong>
+                Last paused
+              </div>
+              <div class="pause-stat">
+                <strong id="pauseNextEligible">—</strong>
+                Loyalty banked
+              </div>
+            </div>
+            <button class="btn-primary" onclick="initiateHardshipPause()" id="pauseBtn" style="background:var(--honey);color:#fff">Pause My Subscription</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Billing History -->
+      <div class="card" style="margin-bottom:20px">
+        <div class="card-header">
+          <div class="card-header-icon honey">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+          </div>
+          <div>
+            <h2>Billing History</h2>
+            <p>Your last 12 months of invoices</p>
+          </div>
+        </div>
+        <div class="card-body">
+          <div id="billing-list">
+            <p style="color:var(--text-secondary);font-size:0.88rem;padding:0.5rem 0">Loading invoices...</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Referral Code -->
+      <div class="card" style="margin-bottom:20px">
+        <div class="card-header">
+          <div class="card-header-icon green">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 110-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 114 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+          </div>
+          <div>
+            <h2>Refer a Colleague</h2>
+            <p>Share CounselorReady — both of you save</p>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="referral-code-box">
+            <span class="referral-code" id="referralCode">LOADING</span>
+            <button class="referral-copy-btn" onclick="copyReferralCode()">Copy Link</button>
+          </div>
+          <div style="display:flex;gap:1.25rem;margin-top:1rem">
+            <div>
+              <div style="font-size:1.4rem;font-weight:700;color:var(--burgundy)" id="refCount">0</div>
+              <div style="font-size:0.78rem;color:var(--text-secondary)">Referrals</div>
+            </div>
+            <div>
+              <div style="font-size:1.4rem;font-weight:700;color:var(--hunter)" id="refRewards">$0</div>
+              <div style="font-size:0.78rem;color:var(--text-secondary)">Rewards earned</div>
+            </div>
+          </div>
+          <a href="/referrals.html" style="color:var(--hunter);font-weight:600;font-size:14px;text-decoration:none;margin-top:0.85rem;display:inline-block">View referral details →</a>
+        </div>
+      </div>
+
+      <!-- Download Data -->
+      <div class="card" style="margin-bottom:20px">
+        <div class="card-header">
+          <div class="card-header-icon navy">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          </div>
+          <div>
+            <h2>Download Your Data</h2>
+            <p>Export a complete copy of your account data</p>
+          </div>
+        </div>
+        <div class="card-body">
+          <p style="font-size:0.88rem;color:var(--text-secondary);margin-bottom:1rem;line-height:1.55">
+            We'll email you a JSON file with your profile, credentials, certificates, CE log, and course completion records. Useful for personal records or transferring to another platform.
+          </p>
+          <button class="btn-secondary" onclick="requestDataExport()" id="exportBtn">Request Data Export</button>
+        </div>
+      </div>
+
+      <!-- Delete Account -->
+      <div class="card" style="border-color:#fca5a5">
+        <div class="card-header">
+          <div class="card-header-icon" style="background:#FEF2F2;color:#991B1B">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+          </div>
+          <div>
+            <h2 style="color:#991B1B">Delete Account</h2>
+            <p>Permanently delete your account and all data</p>
+          </div>
+        </div>
+        <div class="card-body">
+          <p style="color:var(--text-secondary);font-size:13px;margin-bottom:16px">This action cannot be undone. All your courses, certificates, credentials, and CE records will be permanently removed.</p>
+          <div id="delete-confirm-section" style="display:none;margin-bottom:16px">
+            <label class="form-label" style="color:#991B1B">Type your email to confirm</label>
+            <input type="email" class="form-input" id="delete-email" placeholder="your@email.com" style="border-color:#fca5a5;margin-bottom:12px;padding-left:0.85rem">
+            <button onclick="deleteAccount()" style="background:#991B1B;color:#fff;border:none;padding:10px 20px;border-radius:10px;font-weight:600;font-size:14px;cursor:pointer">Permanently Delete My Account</button>
+          </div>
+          <button onclick="document.getElementById('delete-confirm-section').style.display='block';this.style.display='none'" style="background:none;border:1px solid #fca5a5;color:#991B1B;padding:8px 16px;border-radius:10px;font-weight:600;font-size:13px;cursor:pointer" id="delete-show-btn">Delete Account...</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Toast notification -->
+  <div class="toast" id="toast">
+    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+    <span>Preferences saved successfully!</span>
+  </div>
+
+  <script>
+    const API_BASE = window.location.hostname === 'localhost' 
+      ? 'http://localhost:5000/api' 
+      : 'https://api.counselorready.com/api';
+
+    // -- State --
+    let isDirty = false;
+    let selectedSpecs = new Set();
+    let autosaveTimer = null;
+
+    // -- Tab Switching with URL persistence --
+    function switchTab(tabName, skipUrl) {
+      document.querySelectorAll('.settings-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      const tabBtn = document.querySelector(`[data-tab="${tabName}"]`);
+      const tabPanel = document.getElementById(`tab-${tabName}`);
+      if (!tabBtn || !tabPanel) return;
+      tabBtn.classList.add('active');
+      tabPanel.classList.add('active');
+      if (!skipUrl) {
+        const url = new URL(window.location);
+        url.searchParams.set('tab', tabName);
+        history.replaceState(null, '', url);
+      }
+    }
+
+    // -- Toggle Row Active State --
+    function updateToggleRow(rowId, isChecked) {
+      const row = document.getElementById(rowId);
+      if (!row) return;
+      if (isChecked) row.classList.add('active');
+      else row.classList.remove('active');
+    }
+
+    // -- Quiet hours range visibility --
+    function toggleQuietRange() {
+      const enabled = document.getElementById('toggle-quiet').checked;
+      document.getElementById('quiet-range').classList.toggle('show', enabled);
+    }
+
+    // -- Dirty-state tracking + beforeunload --
+    function markDirty() { isDirty = true; }
+    function clearDirty() { isDirty = false; }
+    window.addEventListener('beforeunload', (e) => {
+      if (isDirty) {
+        e.preventDefault();
+        e.returnValue = 'You have unsaved changes. Leave anyway?';
+        return e.returnValue;
+      }
+    });
+
+    // Wire dirty tracking on text inputs
+    document.addEventListener('DOMContentLoaded', () => {
+      ['prof-firstName','prof-lastName','prof-pronouns','prof-pronounsCustom','prof-certificateName','prof-phone','prof-state','prof-timezone','prof-npi','prof-preferredApprovalBody','prof-supName','prof-supLicense','prof-supCreds','prof-supStart','recovery-email','notif-phone','notif-email'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener('input', markDirty);
+      });
+      // Pronouns custom field reveal
+      const pronounSel = document.getElementById('prof-pronouns');
+      if (pronounSel) {
+        pronounSel.addEventListener('change', () => {
+          document.getElementById('prof-pronounsCustomWrap').style.display =
+            pronounSel.value === 'custom' ? 'block' : 'none';
+        });
+      }
+      // Specialization chips
+      document.querySelectorAll('#specializations-chips .chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+          const spec = chip.dataset.spec;
+          if (selectedSpecs.has(spec)) {
+            selectedSpecs.delete(spec);
+            chip.classList.remove('selected');
+          } else {
+            selectedSpecs.add(spec);
+            chip.classList.add('selected');
+          }
+          markDirty();
+        });
+      });
+      // Initial active states for toggles
+      document.querySelectorAll('.toggle-row').forEach(row => {
+        const input = row.querySelector('input[type="checkbox"]');
+        if (input && input.checked) row.classList.add('active');
+      });
+      // Restore tab from URL
+      const params = new URLSearchParams(window.location.search);
+      const tab = params.get('tab');
+      if (tab && document.querySelector(`[data-tab="${tab}"]`)) {
+        switchTab(tab, true);
+      }
+      loadAllSettings();
+    });
+
+    // -- Autosave on notification toggles (debounced) --
+    function autosaveNotif() {
+      clearTimeout(autosaveTimer);
+      autosaveTimer = setTimeout(saveNotificationSettings, 600);
+    }
+
+    // -- Save Notification Settings --
+    // Writes nested shape to PUT /api/auth/update-notifications.
+    // This is the endpoint that production consumers (notificationTriggerService,
+    // calendarService) actually read from. The flat-shape PUT /api/users/notifications
+    // endpoint is orphaned and writes dead keys — do not use it.
+    async function saveNotificationSettings() {
+      const quietEnabled = document.getElementById('toggle-quiet').checked;
+      const marketingEmail = document.getElementById('toggle-marketing-email').checked;
+
+      const payload = {
+        email: {
+          // Reminder types
+          weeklyDigest:           document.getElementById('toggle-weekly').checked,
+          lowHoursAlert:          document.getElementById('toggle-alert').checked,
+          ceMilestones:           document.getElementById('toggle-milestone').checked,
+          courseReminder:         document.getElementById('toggle-progress').checked,
+          // Marketing
+          newCourseAnnouncements: marketingEmail,
+          promotions:             marketingEmail,
+        },
+        sms: {
+          enabled:                document.getElementById('toggle-sms').checked,
+          ceRenewalReminders:     document.getElementById('toggle-sms').checked,
+          credentialExpiring:     document.getElementById('toggle-sms').checked,
+        },
+        timing: {
+          quietHoursStart: quietEnabled ? document.getElementById('quiet-from').value : null,
+          quietHoursEnd:   quietEnabled ? document.getElementById('quiet-to').value   : null,
+        },
+      };
+
+      try {
+        const token = localStorage.getItem('token');
+        const phone = document.getElementById('notif-phone').value;
+        if (phone) {
+          await fetch(`${API_BASE}/users/profile`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify({ phone })
+          });
+        }
+        const res = await fetch(`${API_BASE}/auth/update-notifications`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify(payload)
+        });
+        if (res.ok) { showToast('Saved!'); clearDirty(); }
+        else {
+          const err = await res.json().catch(() => ({}));
+          showToast('Save failed: ' + (err.error || res.status), true);
+        }
+      } catch (err) {
+        console.error('Save error:', err);
+        showToast('Network error', true);
+      }
+    }
+
+    // -- Send test notification --
+    async function sendTest(channel) {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`${API_BASE}/users/notifications/test`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({ channel })
+        });
+        if (res.ok) showToast(`Test ${channel} sent!`);
+        else showToast(`Test ${channel} failed`, true);
+      } catch (err) { showToast('Network error', true); }
+    }
+
+    // -- Load all settings on page load --
+    async function loadAllSettings() {
+      const token = localStorage.getItem('token');
+      if (!token) { window.location.href = '/login.html'; return; }
+      try {
+        const res = await fetch(`${API_BASE}/auth/me`, { headers: { 'Authorization': `Bearer ${token}` } });
+        if (!res.ok) { window.location.href = '/login.html'; return; }
+        const data = await res.json();
+        const user = data.user || data;
+
+        // Notifications — read NESTED shape (production schema)
+        if (user.email) document.getElementById('notif-email').value = user.email;
+        if (user.profile?.phone) document.getElementById('notif-phone').value = user.profile.phone;
+        const prefs   = user.notifications || {};
+        const prefsE  = prefs.email  || {};
+        const prefsS  = prefs.sms    || {};
+        const prefsT  = prefs.timing || {};
+
+        const setToggle = (id, val, defaultVal) => {
+          const el = document.getElementById(id);
+          if (!el) return;
+          el.checked = (typeof val === 'boolean') ? val : !!defaultVal;
+          updateToggleRow(id.replace('toggle-', 'row-'), el.checked);
+        };
+
+        // SMS master toggle (reads sms.enabled)
+        setToggle('toggle-sms', prefsS.enabled, false);
+        // Marketing email — derived: ON if either promotions or newCourseAnnouncements is true
+        const marketingOn = !!(prefsE.promotions || prefsE.newCourseAnnouncements);
+        setToggle('toggle-marketing-email', marketingOn, false);
+        // Reminder type toggles
+        setToggle('toggle-weekly',    prefsE.weeklyDigest,   true);
+        setToggle('toggle-alert',     prefsE.lowHoursAlert,  true);
+        setToggle('toggle-milestone', prefsE.ceMilestones,   true);
+        setToggle('toggle-progress',  prefsE.courseReminder, true);
+
+        // Quiet hours — derived: enabled if both timing fields are non-null
+        const quietActive = !!(prefsT.quietHoursStart && prefsT.quietHoursEnd);
+        setToggle('toggle-quiet', quietActive, false);
+        if (prefsT.quietHoursStart) document.getElementById('quiet-from').value = prefsT.quietHoursStart;
+        if (prefsT.quietHoursEnd)   document.getElementById('quiet-to').value   = prefsT.quietHoursEnd;
+        toggleQuietRange();
+
+        // Profile
+        document.getElementById('prof-firstName').value = user.profile?.firstName || '';
+        document.getElementById('prof-lastName').value = user.profile?.lastName || '';
+        document.getElementById('prof-certificateName').value = user.profile?.certificateName || '';
+        document.getElementById('prof-email').value = user.email || '';
+        document.getElementById('prof-phone').value = user.profile?.phone || '';
+        document.getElementById('prof-npi').value = user.profile?.npi || '';
+        // Pronouns
+        const pronouns = user.profile?.pronouns || '';
+        const standardPronouns = ['she/her','he/him','they/them','she/they','he/they'];
+        const pronounSel = document.getElementById('prof-pronouns');
+        if (standardPronouns.includes(pronouns)) {
+          pronounSel.value = pronouns;
+        } else if (pronouns) {
+          pronounSel.value = 'custom';
+          document.getElementById('prof-pronounsCustom').value = pronouns;
+          document.getElementById('prof-pronounsCustomWrap').style.display = 'block';
+        }
+        if (user.profile?.state) {
+          const sel = document.getElementById('prof-state');
+          for (let i = 0; i < sel.options.length; i++) {
+            if (sel.options[i].value === user.profile.state || sel.options[i].text === user.profile.state) {
+              sel.selectedIndex = i; break;
+            }
+          }
+        }
+        if (user.profile?.timezone) document.getElementById('prof-timezone').value = user.profile.timezone;
+
+        // Specializations
+        selectedSpecs = new Set(user.profile?.specializations || []);
+        document.querySelectorAll('#specializations-chips .chip').forEach(chip => {
+          if (selectedSpecs.has(chip.dataset.spec)) chip.classList.add('selected');
+        });
+
+        // Supervision
+        document.getElementById('prof-supName').value = user.profile?.supervisor?.name || '';
+        document.getElementById('prof-supLicense').value = user.profile?.supervisor?.license || '';
+        document.getElementById('prof-supCreds').value = user.profile?.supervisor?.credentials || '';
+        document.getElementById('prof-supStart').value = user.profile?.supervisor?.startDate?.slice(0, 10) || '';
+        const prefBody = user.profile?.preferredApprovalBody || 'NBCC';
+        const prefBodySel = document.getElementById('prof-preferredApprovalBody');
+        if (prefBodySel) prefBodySel.value = prefBody;
+
+        // Account
+        const plan = user.subscription?.plan || 'free';
+        const status = user.subscription?.status || 'free';
+        const planNames = { free: 'Free', starter: 'Starter', professional: 'Professional', vip: 'VIP', annual_vip: 'Annual VIP', lifetime: 'Lifetime' };
+        document.getElementById('acct-plan-name').textContent = planNames[plan] || plan;
+        const badge = document.getElementById('acct-plan-badge');
+        badge.textContent = status.charAt(0).toUpperCase() + status.slice(1);
+        if (status === 'active' || status === 'lifetime') {
+          badge.style.background = 'var(--success-bg)'; badge.style.color = 'var(--success-text)';
+        } else if (status === 'trial') {
+          badge.style.background = 'var(--warning-bg)'; badge.style.color = 'var(--warning-text)';
+        } else {
+          badge.style.background = '#FEF2F2'; badge.style.color = '#991B1B';
+        }
+
+        // Hardship pause (VIP only)
+        if (plan === 'vip' || plan === 'annual_vip') {
+          document.getElementById('hardshipPauseCard').classList.add('show');
+          loadHardshipPauseStatus();
+        }
+
+        // Recovery email
+        document.getElementById('recovery-email').value = user.recoveryEmail || '';
+
+        // 2FA status
+        if (user.twoFactorEnabled) {
+          const statusEl = document.getElementById('twofaStatus');
+          statusEl.classList.add('enabled');
+          document.getElementById('twofaStatusText').textContent = 'Enabled';
+          document.getElementById('twofaSetupBtn').style.display = 'none';
+          document.getElementById('twofaDisableBtn').style.display = 'inline-block';
+        }
+
+        // Load secondary data
+        loadCredentialsSummary();
+        loadSessions();
+        loadBilling();
+        loadReferralInfo();
+      } catch (err) {
+        console.error('Failed to load settings:', err);
+      }
+    }
+
+    // -- Credentials summary --
+    async function loadCredentialsSummary() {
+      const container = document.getElementById('credentials-summary');
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`${API_BASE}/credentials`, { headers: { 'Authorization': `Bearer ${token}` } });
+        if (!res.ok) {
+          container.innerHTML = '<p style="color:var(--text-secondary);font-size:0.88rem">No credentials yet. <a href="/credentials.html" style="color:var(--hunter);font-weight:600">Add your first →</a></p>';
+          return;
+        }
+        const creds = await res.json();
+        const list = Array.isArray(creds) ? creds : (creds.credentials || []);
+        if (list.length === 0) {
+          container.innerHTML = '<p style="color:var(--text-secondary);font-size:0.88rem">No credentials yet. <a href="/credentials.html" style="color:var(--hunter);font-weight:600">Add your first →</a></p>';
+          return;
+        }
+        let hasPrelicensed = false;
+        const html = list.map(c => {
+          const isPre = c.isPrelicensed || c.licenseNumber === 'PRELICENSED';
+          if (isPre) hasPrelicensed = true;
+          const expDate = c.expirationDate ? new Date(c.expirationDate) : null;
+          const isExpired = expDate && expDate < new Date();
+          const statusClass = isPre ? 'pre-licensed' : (isExpired ? 'expired' : 'active');
+          const statusText = isPre ? 'Pre-Licensed' : (isExpired ? 'Expired' : 'Active');
+          const expStr = expDate ? expDate.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : '—';
+          const code = c.code || c.credentialType || '—';
+          const licDisplay = isPre ? 'PRELICENSED' : `#${c.licenseNumber || '—'}`;
+          return `
+            <div class="cred-mini">
+              <div class="cred-mini-icon">${escapeHtml(code).slice(0,4)}</div>
+              <div class="cred-mini-info">
+                <div class="cred-mini-name">${escapeHtml(c.name || c.credentialType || 'Credential')}</div>
+                <div class="cred-mini-meta">${escapeHtml(c.state || '')} · ${escapeHtml(licDisplay)} · Expires ${expStr}</div>
+              </div>
+              <span class="cred-mini-status ${statusClass}">${statusText}</span>
+            </div>`;
+        }).join('');
+        container.innerHTML = html;
+        // Show pre-licensed banner if any credential is pre-licensed
+        if (hasPrelicensed) document.getElementById('prelicensedBanner').classList.add('show');
+        // Show supervision card if pre-licensed
+        if (hasPrelicensed) document.getElementById('supervisionCard').classList.add('show');
+      } catch (err) {
+        container.innerHTML = '<p style="color:var(--text-secondary);font-size:0.88rem">Could not load credentials.</p>';
+      }
+    }
+
+    function escapeHtml(s) {
+      return String(s || '').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+    }
+
+    // -- Save Profile --
+    async function saveProfile() {
+      const btn = document.getElementById('profileSaveBtn');
+      btn.textContent = 'Saving...'; btn.disabled = true;
+      try {
+        const pronounSel = document.getElementById('prof-pronouns');
+        const pronouns = pronounSel.value === 'custom'
+          ? document.getElementById('prof-pronounsCustom').value.trim()
+          : pronounSel.value;
+        const npi = document.getElementById('prof-npi').value.trim();
+        if (npi && !/^\d{10}$/.test(npi)) {
+          showToast('NPI must be 10 digits', true); btn.textContent = 'Save Profile'; btn.disabled = false; return;
+        }
+        const phoneVal = document.getElementById('prof-phone').value.trim();
+        if (phoneVal && (phoneVal.replace(/\D/g, '').length < 10 || phoneVal.replace(/\D/g, '').length > 15)) {
+          showToast('Enter a valid phone number', true); btn.textContent = 'Save Profile'; btn.disabled = false; return;
+        }
+        const token = localStorage.getItem('token');
+        const res = await fetch(`${API_BASE}/users/profile`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({
+            firstName: document.getElementById('prof-firstName').value,
+            lastName: document.getElementById('prof-lastName').value,
+            certificateName: document.getElementById('prof-certificateName').value,
+            phone: document.getElementById('prof-phone').value,
+            state: document.getElementById('prof-state').value,
+            timezone: document.getElementById('prof-timezone').value,
+            pronouns,
+            npi,
+            preferredApprovalBody: document.getElementById('prof-preferredApprovalBody')?.value || 'NBCC',
+          })
+        });
+        if (res.ok) { showToast('Profile saved!'); clearDirty(); }
+        else {
+          const err = await res.json();
+          showToast('Failed: ' + (err.error || 'Unknown'), true);
+        }
+      } catch (err) { showToast('Network error', true); }
+      finally { btn.textContent = 'Save Profile'; btn.disabled = false; }
+    }
+
+    // -- Save Specializations --
+    async function saveSpecializations() {
+      const btn = document.getElementById('specsSaveBtn');
+      btn.textContent = 'Saving...'; btn.disabled = true;
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`${API_BASE}/users/profile`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({ specializations: Array.from(selectedSpecs) })
+        });
+        if (res.ok) { showToast('Focus areas saved!'); clearDirty(); }
+        else showToast('Failed to save', true);
+      } catch (err) { showToast('Network error', true); }
+      finally { btn.textContent = 'Save Focus Areas'; btn.disabled = false; }
+    }
+
+    // -- Save Supervision --
+    async function saveSupervision() {
+      const btn = document.getElementById('supSaveBtn');
+      btn.textContent = 'Saving...'; btn.disabled = true;
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`${API_BASE}/users/profile`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({
+            supervisor: {
+              name: document.getElementById('prof-supName').value,
+              license: document.getElementById('prof-supLicense').value,
+              credentials: document.getElementById('prof-supCreds').value,
+              startDate: document.getElementById('prof-supStart').value || null,
+            }
+          })
+        });
+        if (res.ok) { showToast('Supervision info saved!'); clearDirty(); }
+        else showToast('Failed to save', true);
+      } catch (err) { showToast('Network error', true); }
+      finally { btn.textContent = 'Save Supervision Info'; btn.disabled = false; }
+    }
+
+    // -- Save Recovery Email --
+    async function saveRecoveryEmail() {
+      const email = document.getElementById('recovery-email').value.trim();
+      if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        showToast('Invalid email address', true); return;
+      }
+      const btn = document.getElementById('recoverySaveBtn');
+      btn.textContent = 'Saving...'; btn.disabled = true;
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`${API_BASE}/users/recovery-email`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({ recoveryEmail: email })
+        });
+        if (res.ok) { showToast('Recovery email saved! Check your inbox to verify.'); clearDirty(); }
+        else showToast('Failed to save', true);
+      } catch (err) { showToast('Network error', true); }
+      finally { btn.textContent = 'Save Recovery Email'; btn.disabled = false; }
+    }
+
+    // -- 2FA Setup --
+    async function setup2FA() {
+      const btn = document.getElementById('twofaSetupBtn');
+      btn.textContent = 'Generating...'; btn.disabled = true;
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`${API_BASE}/security/2fa/setup`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!res.ok) { showToast('2FA setup not yet available', true); btn.textContent = 'Enable Two-Factor Auth'; btn.disabled = false; return; }
+        const data = await res.json();
+        document.getElementById('twofaQrCode').innerHTML = data.qrCodeDataUrl
+          ? `<img src="${data.qrCodeDataUrl}" alt="2FA QR Code" style="max-width:200px">`
+          : '<p style="color:var(--text-muted)">QR code unavailable</p>';
+        document.getElementById('twofaSecret').textContent = data.secret || '—';
+        document.getElementById('twofaSetupSection').style.display = 'block';
+        btn.style.display = 'none';
+      } catch (err) {
+        showToast('Network error', true);
+        btn.textContent = 'Enable Two-Factor Auth'; btn.disabled = false;
+      }
+    }
+    async function confirm2FA() {
+      const code = document.getElementById('twofa-code').value.trim();
+      if (!/^\d{6}$/.test(code)) { showToast('Enter the 6-digit code', true); return; }
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`${API_BASE}/security/2fa/verify`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({ code })
+        });
+        if (res.ok) {
+          showToast('2FA enabled!');
+          document.getElementById('twofaStatus').classList.add('enabled');
+          document.getElementById('twofaStatusText').textContent = 'Enabled';
+          document.getElementById('twofaSetupSection').style.display = 'none';
+          document.getElementById('twofaDisableBtn').style.display = 'inline-block';
+        } else { showToast('Invalid code', true); }
+      } catch (err) { showToast('Network error', true); }
+    }
+    async function disable2FA() {
+      if (!confirm('Disable two-factor authentication? Your account will be less secure.')) return;
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`${API_BASE}/security/2fa/disable`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+          showToast('2FA disabled');
+          document.getElementById('twofaStatus').classList.remove('enabled');
+          document.getElementById('twofaStatusText').textContent = 'Not enabled';
+          document.getElementById('twofaSetupBtn').style.display = 'inline-block';
+          document.getElementById('twofaSetupBtn').textContent = 'Enable Two-Factor Auth';
+          document.getElementById('twofaSetupBtn').disabled = false;
+          document.getElementById('twofaDisableBtn').style.display = 'none';
+        }
+      } catch (err) { showToast('Network error', true); }
+    }
+
+    // -- Active Sessions --
+    async function loadSessions() {
+      const container = document.getElementById('sessions-list');
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`${API_BASE}/security/sessions`, { headers: { 'Authorization': `Bearer ${token}` } });
+        if (!res.ok) {
+          container.innerHTML = '<p style="color:var(--text-secondary);font-size:0.88rem;padding:0.5rem 0">Session tracking not yet available.</p>';
+          return;
+        }
+        const data = await res.json();
+        const sessions = Array.isArray(data) ? data : (data.sessions || []);
+        if (sessions.length === 0) {
+          container.innerHTML = '<p style="color:var(--text-secondary);font-size:0.88rem;padding:0.5rem 0">No active sessions found.</p>';
+          return;
+        }
+        container.innerHTML = sessions.map(s => `
+          <div class="session-row${s.current ? ' current' : ''}">
+            <div class="session-icon">
+              <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+            </div>
+            <div class="session-info">
+              <div class="session-device">${escapeHtml(s.browser || 'Unknown')} on ${escapeHtml(s.os || 'Unknown')}</div>
+              <div class="session-meta">${escapeHtml(s.location || 'Unknown location')} · ${s.lastActive ? 'Last active ' + new Date(s.lastActive).toLocaleString() : ''}</div>
+            </div>
+            ${s.current
+              ? '<span class="session-current-tag">This device</span>'
+              : `<button class="session-revoke" onclick="revokeSession('${escapeHtml(s.id)}')">Revoke</button>`}
+          </div>
+        `).join('');
+      } catch (err) {
+        container.innerHTML = '<p style="color:var(--text-secondary);font-size:0.88rem;padding:0.5rem 0">Could not load sessions.</p>';
+      }
+    }
+    async function revokeSession(id) {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`${API_BASE}/security/sessions/${id}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) { showToast('Session revoked'); loadSessions(); }
+      } catch (err) { showToast('Network error', true); }
+    }
+    async function signOutEverywhere() {
+      if (!confirm('Sign out of all other devices? You will stay signed in here.')) return;
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`${API_BASE}/security/sessions`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) { showToast('Signed out everywhere else'); loadSessions(); }
+      } catch (err) { showToast('Network error', true); }
+    }
+
+    // -- Hardship Pause (uses existing /api/users/hardship-* endpoints) --
+    // Response shape: { isVip, totalMonths, available, banked, usedTotal,
+    //                   history, isActive, pauseStartDate, pauseEndDate,
+    //                   gracePeriodDays, paymentFailed, graceDaysRemaining,
+    //                   memberSince }
+    async function loadHardshipPauseStatus() {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`${API_BASE}/users/hardship-status`, { headers: { 'Authorization': `Bearer ${token}` } });
+        if (!res.ok) return;
+        const data = await res.json();
+
+        if (!data.isVip) {
+          document.getElementById('hardshipPauseCard').classList.remove('show');
+          return;
+        }
+        document.getElementById('hardshipPauseCard').classList.add('show');
+
+        document.getElementById('pauseAvailable').textContent = data.available ?? 0;
+
+        // "Last used" = most recent history entry's usedDate
+        const lastEntry = (data.history || []).slice().sort((a,b) =>
+          new Date(b.usedDate || 0) - new Date(a.usedDate || 0)
+        )[0];
+        document.getElementById('pauseLastUsed').textContent = lastEntry?.usedDate
+          ? new Date(lastEntry.usedDate).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
+          : 'Never';
+
+        // "Banked" months from loyalty rollover (replaces the old "next eligible" stat)
+        document.getElementById('pauseNextEligible').textContent = `${data.banked ?? 0} banked`;
+
+        const btn = document.getElementById('pauseBtn');
+        if (data.isActive) {
+          // Currently paused — show resume button
+          btn.textContent = `Resume (paused until ${data.pauseEndDate ? new Date(data.pauseEndDate).toLocaleDateString() : '—'})`;
+          btn.style.background = '#4A7C59';
+          btn.disabled = false;
+          btn.onclick = resumeHardshipPause;
+        } else if ((data.available ?? 0) <= 0) {
+          btn.disabled = true;
+          btn.textContent = 'No pause months available';
+          btn.style.opacity = '0.5';
+        } else {
+          btn.textContent = 'Pause My Subscription';
+          btn.style.background = 'var(--honey)';
+          btn.style.opacity = '1';
+          btn.disabled = false;
+          btn.onclick = initiateHardshipPause;
+        }
+      } catch (err) {
+        console.warn('Hardship status load failed:', err);
+      }
+    }
+
+    async function initiateHardshipPause() {
+      const reason = window.prompt('Optional reason for pause (helps us improve support — leave blank to skip):') || '';
+      if (reason === null) return; // user cancelled
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`${API_BASE}/users/hardship-pause`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({ reason })
+        });
+        const data = await res.json().catch(() => ({}));
+        if (res.ok) {
+          showToast(data.message || 'Subscription paused');
+          loadHardshipPauseStatus();
+        } else {
+          showToast(data.error || data.message || 'Could not pause', true);
+        }
+      } catch (err) { showToast('Network error', true); }
+    }
+
+    async function resumeHardshipPause() {
+      if (!confirm('Resume your subscription now? Billing will restart on its normal cycle.')) return;
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`${API_BASE}/users/end-hardship-pause`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json().catch(() => ({}));
+        if (res.ok) {
+          showToast(data.message || 'Subscription resumed');
+          loadHardshipPauseStatus();
+        } else {
+          showToast(data.error || 'Could not resume', true);
+        }
+      } catch (err) { showToast('Network error', true); }
+    }
+
+    // -- Billing History (uses existing /api/payments/invoices) --
+    async function loadBilling() {
+      const container = document.getElementById('billing-list');
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`${API_BASE}/payments/invoices`, { headers: { 'Authorization': `Bearer ${token}` } });
+        if (!res.ok) {
+          container.innerHTML = '<p style="color:var(--text-secondary);font-size:0.88rem;padding:0.5rem 0">No invoices yet.</p>';
+          return;
+        }
+        const data = await res.json();
+        const invoices = Array.isArray(data) ? data : (data.invoices || []);
+        if (invoices.length === 0) {
+          container.innerHTML = '<p style="color:var(--text-secondary);font-size:0.88rem;padding:0.5rem 0">No invoices yet.</p>';
+          return;
+        }
+        container.innerHTML = `
+          <div style="display:grid;gap:0.4rem">
+            ${invoices.slice(0,12).map(inv => `
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:0.65rem 0.85rem;border:1px solid var(--border);border-radius:8px;font-size:0.88rem">
+                <div>
+                  <div style="font-weight:600;color:var(--text-primary)">${new Date(inv.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</div>
+                  <div style="font-size:0.78rem;color:var(--text-secondary)">${escapeHtml(inv.description || 'Subscription')}</div>
+                </div>
+                <div style="display:flex;align-items:center;gap:0.85rem">
+                  <span style="font-weight:700;color:var(--burgundy)">$${(inv.amount/100).toFixed(2)}</span>
+                  ${inv.url ? `<a href="${escapeHtml(inv.url)}" target="_blank" rel="noopener" style="color:var(--hunter);font-weight:600;font-size:0.82rem;text-decoration:none">PDF →</a>` : ''}
+                </div>
+              </div>`).join('')}
+          </div>`;
+      } catch (err) {
+        container.innerHTML = '<p style="color:var(--text-secondary);font-size:0.88rem;padding:0.5rem 0">Could not load billing history.</p>';
+      }
+    }
+
+    // -- Referral (uses existing /api/referrals/my) --
+    async function loadReferralInfo() {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`${API_BASE}/referrals/my`, { headers: { 'Authorization': `Bearer ${token}` } });
+        if (!res.ok) return;
+        const data = await res.json();
+        // Defensive — referrals.js may return slightly different field names
+        const code = data.code || data.referralCode || data.referral?.referralCode || '—';
+        const count = data.referralsCount ?? data.count ?? data.referrals?.length ?? 0;
+        const rewards = data.rewards ?? data.totalEarned ?? 0;
+        document.getElementById('referralCode').textContent = code;
+        document.getElementById('refCount').textContent = count;
+        // rewards may be in cents OR dollars depending on impl — handle both
+        const rewardsDollars = (typeof rewards === 'number' && rewards > 100) ? rewards / 100 : rewards;
+        document.getElementById('refRewards').textContent = `$${Number(rewardsDollars || 0).toFixed(0)}`;
+      } catch (err) { /* silent */ }
+    }
+    function copyReferralCode() {
+      const code = document.getElementById('referralCode').textContent;
+      const link = `https://counselorready.com/?ref=${code}`;
+      navigator.clipboard.writeText(link).then(() => showToast('Referral link copied!'))
+        .catch(() => showToast('Could not copy', true));
+    }
+
+    // -- Data Export --
+    async function requestDataExport() {
+      const btn = document.getElementById('exportBtn');
+      btn.textContent = 'Requesting...'; btn.disabled = true;
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`${API_BASE}/users/data-export`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) showToast('Export requested! Check your email shortly.');
+        else showToast('Could not request export', true);
+      } catch (err) { showToast('Network error', true); }
+      finally { btn.textContent = 'Request Data Export'; btn.disabled = false; }
+    }
+
+    // -- Change Password --
+    async function changePassword() {
+      const current = document.getElementById('pw-current').value;
+      const newPw = document.getElementById('pw-new').value;
+      const confirmPw = document.getElementById('pw-confirm').value;
+      const errEl = document.getElementById('pw-error');
+      errEl.style.display = 'none';
+      if (!current || !newPw) { errEl.textContent = 'All fields are required'; errEl.style.display = 'block'; return; }
+      if (newPw.length < 8) { errEl.textContent = 'New password must be at least 8 characters'; errEl.style.display = 'block'; return; }
+      if (newPw !== confirmPw) { errEl.textContent = 'Passwords do not match'; errEl.style.display = 'block'; return; }
+      const btn = document.getElementById('pwSaveBtn');
+      btn.textContent = 'Updating...'; btn.disabled = true;
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`${API_BASE}/auth/change-password`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({ currentPassword: current, newPassword: newPw })
+        });
+        if (res.ok) {
+          showToast('Password updated!');
+          ['pw-current','pw-new','pw-confirm'].forEach(id => document.getElementById(id).value = '');
+        } else {
+          const err = await res.json();
+          errEl.textContent = err.error || 'Failed to update password';
+          errEl.style.display = 'block';
+        }
+      } catch (err) {
+        errEl.textContent = 'Network error \u2014 please try again.';
+        errEl.style.display = 'block';
+      } finally { btn.textContent = 'Update Password'; btn.disabled = false; }
+    }
+
+    // -- Delete Account --
+    async function deleteAccount() {
+      const email = document.getElementById('delete-email').value;
+      if (!email) { alert('Please enter your email to confirm.'); return; }
+      if (!window.confirm('This will permanently delete your account, all courses, certificates, and CE records. This cannot be undone. Are you sure?')) return;
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`${API_BASE}/users/account`, {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({ confirmEmail: email })
+        });
+        if (res.ok) {
+          localStorage.removeItem('token');
+          alert('Your account has been deleted.');
+          window.location.href = '/';
+        } else {
+          const err = await res.json();
+          alert(err.error || 'Failed to delete account.');
+        }
+      } catch (err) { alert('Network error \u2014 please try again.'); }
+    }
+
+    // -- Toast --
+    function showToast(msg, isError) {
+      const toast = document.getElementById('toast');
+      if (msg) toast.querySelector('span').textContent = msg;
+      toast.style.background = isError ? '#991B1B' : 'var(--hunter)';
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+  </script>
+
+  <div id="cr-footer"></div>
+</body>
+</html>
+
