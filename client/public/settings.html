@@ -733,6 +733,9 @@
       <button class="settings-tab" data-tab="account" onclick="switchTab('account')">
          Account
       </button>
+      <button class="settings-tab" data-tab="calendar" onclick="switchTab('calendar')">
+        Calendar
+      </button>
     </div>
 
     <!-- -- -->
@@ -1491,6 +1494,60 @@
 
   </div>
 
+    <!-- ── CALENDAR TAB ─────────────────────────────────────────────── -->
+    <div class="tab-panel" id="tab-calendar">
+      <div class="settings-section">
+        <h2 class="section-title">Google Calendar Sync</h2>
+        <p class="section-desc">Sync your CE deadline reminders and credential renewal dates directly to Google Calendar.</p>
+
+        <!-- Connected state -->
+        <div id="cal-connected" style="display:none">
+          <div style="display:flex;align-items:center;gap:12px;padding:16px;background:var(--bg-secondary);border-radius:12px;border:1px solid var(--border-color);margin-bottom:20px">
+            <div style="width:40px;height:40px;background:#4A7C59;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+              <svg width="20" height="20" fill="none" stroke="#fff" stroke-width="2.5" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            </div>
+            <div>
+              <div style="font-weight:600;color:var(--text-primary)" id="cal-email-display">Connected</div>
+              <div style="font-size:13px;color:var(--text-secondary)">Google Calendar is syncing your CE reminders</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px">
+            <button onclick="syncCalendar()" id="cal-sync-btn" style="background:var(--primary);color:#fff;border:none;padding:10px 20px;border-radius:10px;font-weight:600;font-size:14px;cursor:pointer;display:flex;align-items:center;gap:8px">
+              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 4v6h6"/><path d="M23 20v-6h-6"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/></svg>
+              Sync Now
+            </button>
+            <button onclick="disconnectCalendar()" style="background:none;border:1px solid var(--border-color);color:var(--text-secondary);padding:10px 20px;border-radius:10px;font-weight:600;font-size:14px;cursor:pointer">
+              Disconnect
+            </button>
+          </div>
+          <div id="cal-last-sync" style="font-size:13px;color:var(--text-secondary)"></div>
+        </div>
+
+        <!-- Disconnected state -->
+        <div id="cal-disconnected">
+          <div style="padding:24px;background:var(--bg-secondary);border-radius:12px;border:1px dashed var(--border-color);text-align:center;margin-bottom:20px">
+            <svg width="48" height="48" fill="none" stroke="var(--text-tertiary)" stroke-width="1.5" viewBox="0 0 24 24" style="margin:0 auto 12px"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            <p style="color:var(--text-secondary);font-size:14px;margin:0 0 16px">Connect Google Calendar to receive CE deadline and credential renewal reminders directly in your calendar.</p>
+            <button onclick="connectCalendar()" id="cal-connect-btn" style="background:#6B1D34;color:#fff;border:none;padding:12px 24px;border-radius:10px;font-weight:600;font-size:14px;cursor:pointer;display:inline-flex;align-items:center;gap:8px">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+              Connect Google Calendar
+            </button>
+          </div>
+          <div style="background:var(--bg-secondary);border-radius:10px;padding:16px;border:1px solid var(--border-color)">
+            <p style="font-size:13px;font-weight:600;color:var(--text-primary);margin:0 0 8px">What gets synced:</p>
+            <ul style="font-size:13px;color:var(--text-secondary);margin:0;padding-left:20px;line-height:1.8">
+              <li>CE renewal deadlines (30 and 7-day reminders)</li>
+              <li>License renewal dates</li>
+              <li>Credential expiration reminders</li>
+              <li>Course completion milestones</li>
+            </ul>
+          </div>
+        </div>
+
+        <div id="cal-error" style="display:none;padding:12px 16px;background:#FEF2F2;border:1px solid #FECACA;border-radius:10px;color:#991B1B;font-size:14px;margin-top:12px"></div>
+      </div>
+    </div>
+
   <!-- Toast notification -->
   <div class="toast" id="toast">
     <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
@@ -1859,10 +1916,6 @@
         const npi = document.getElementById('prof-npi').value.trim();
         if (npi && !/^\d{10}$/.test(npi)) {
           showToast('NPI must be 10 digits', true); btn.textContent = 'Save Profile'; btn.disabled = false; return;
-        }
-        const phoneVal = document.getElementById('prof-phone').value.trim();
-        if (phoneVal && (phoneVal.replace(/\D/g, '').length < 10 || phoneVal.replace(/\D/g, '').length > 15)) {
-          showToast('Enter a valid phone number', true); btn.textContent = 'Save Profile'; btn.disabled = false; return;
         }
         const token = localStorage.getItem('token');
         const res = await fetch(`${API_BASE}/users/profile`, {
@@ -2301,7 +2354,96 @@
       toast.classList.add('show');
       setTimeout(() => toast.classList.remove('show'), 3000);
     }
-  </script>
+  
+    // ── GOOGLE CALENDAR ─────────────────────────────────────────────────
+    async function loadCalendarStatus() {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) return;
+        const res = await fetch(`${API_BASE}/google-calendar/status`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+        if (data.connected) {
+          document.getElementById('cal-connected').style.display = 'block';
+          document.getElementById('cal-disconnected').style.display = 'none';
+          if (data.email) document.getElementById('cal-email-display').textContent = data.email;
+          if (data.lastSynced) {
+            const d = new Date(data.lastSynced);
+            document.getElementById('cal-last-sync').textContent = `Last synced: ${d.toLocaleDateString()} at ${d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}`;
+          }
+        } else {
+          document.getElementById('cal-connected').style.display = 'none';
+          document.getElementById('cal-disconnected').style.display = 'block';
+        }
+      } catch (e) { /* silent */ }
+    }
+
+    function connectCalendar() {
+      const token = localStorage.getItem('token');
+      if (!token) { showCalError('Please log in to connect Google Calendar.'); return; }
+      // Open OAuth flow — backend will redirect to Google consent screen
+      const w = window.open(`${API_BASE}/google-calendar/oauth/connect?token=${token}`, '_blank', 'width=600,height=700');
+      // Poll for completion
+      const poll = setInterval(() => {
+        if (w && w.closed) {
+          clearInterval(poll);
+          loadCalendarStatus();
+        }
+      }, 1000);
+    }
+
+    async function syncCalendar() {
+      const btn = document.getElementById('cal-sync-btn');
+      const token = localStorage.getItem('token');
+      btn.disabled = true; btn.textContent = 'Syncing...';
+      try {
+        const res = await fetch(`${API_BASE}/google-calendar/sync`, {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const data = await res.json();
+        if (res.ok) {
+          showToast('Calendar synced successfully!');
+          loadCalendarStatus();
+        } else {
+          showCalError(data.error || 'Sync failed. Please try again.');
+        }
+      } catch (e) {
+        showCalError('Network error. Please try again.');
+      } finally {
+        btn.disabled = false; btn.textContent = 'Sync Now';
+      }
+    }
+
+    async function disconnectCalendar() {
+      if (!confirm('Disconnect Google Calendar? Your existing calendar events will not be deleted.')) return;
+      const token = localStorage.getItem('token');
+      try {
+        await fetch(`${API_BASE}/google-calendar/disconnect`, {
+          method: 'DELETE',
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        document.getElementById('cal-connected').style.display = 'none';
+        document.getElementById('cal-disconnected').style.display = 'block';
+        showToast('Google Calendar disconnected.');
+      } catch (e) {
+        showCalError('Could not disconnect. Please try again.');
+      }
+    }
+
+    function showCalError(msg) {
+      const el = document.getElementById('cal-error');
+      el.textContent = msg;
+      el.style.display = 'block';
+      setTimeout(() => { el.style.display = 'none'; }, 5000);
+    }
+
+    // Load calendar status when tab opens
+    document.querySelector('[data-tab="calendar"]').addEventListener('click', loadCalendarStatus);
+
+</script>
 
   <div id="cr-footer"></div>
 </body>
