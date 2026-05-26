@@ -59,7 +59,9 @@ const certificateSchema = new mongoose.Schema({
       'clinical',
       'assessment',
       'treatment',
-      'professional-development'
+      'professional-development',
+      'Crisis',
+      'crisis'
     ],
     default: 'General'
   },
@@ -185,6 +187,17 @@ const certificateSchema = new mongoose.Schema({
   }
 }, {
   timestamps: true
+});
+
+// Safety net: never let an unexpected course category block certificate issuance.
+// Enum validation runs on 'validate' (before 'save'), so coerce here.
+certificateSchema.pre('validate', function(next) {
+  const allowed = certificateSchema.path('category').enumValues || [];
+  if (this.category && allowed.length && !allowed.includes(this.category)) {
+    console.warn(`[Certificate] Unrecognized category "${this.category}" -> coercing to "Other"`);
+    this.category = 'Other';
+  }
+  next();
 });
 
 // Generate verification code before saving
