@@ -41,9 +41,12 @@ export async function sendSMSReminder(phoneNumber, message) {
   }
   
   try {
+    const fromNumber = TWILIO_PHONE && !TWILIO_PHONE.startsWith('+')
+      ? '+' + TWILIO_PHONE.replace(/\D/g, '')
+      : TWILIO_PHONE;
     const result = await twilioClient.messages.create({
       body: message,
-      from: TWILIO_PHONE,
+      from: fromNumber,
       to: formattedPhone
     });
     

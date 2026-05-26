@@ -890,7 +890,7 @@ router.post('/notifications/test', protect, async (req, res) => {
     if (channel === 'email') {
       if (!user.email) return res.status(400).json({ error: 'No email on file' });
       const resend = new Resend(process.env.RESEND_API_KEY);
-      await resend.emails.send({
+      const { error: resendError } = await resend.emails.send({
         from: 'CounselorReady <noreply@counselorready.com>',
         to: user.email,
         subject: 'CounselorReady — Test Notification',
@@ -898,9 +898,17 @@ router.post('/notifications/test', protect, async (req, res) => {
                <p>This is a test notification from CounselorReady. If you received this, your email notifications are working.</p>
                <p>— The CounselorReady Team</p>`,
       });
+      if (resendError) {
+        console.error('[notifications/test] resend error:', resendError);
+        return res.status(502).json({ error: resendError.message || 'Email send failed' });
+      }
     } else {
       if (!user.profile?.phone) return res.status(400).json({ error: 'No phone on file' });
-      await sendTestSMS(user.profile.phone);
+      const smsResult = await sendTestSMS(user.profile.phone);
+      if (!smsResult?.success) {
+        console.error('[notifications/test] sms error:', smsResult?.error);
+        return res.status(502).json({ error: smsResult?.error || 'SMS send failed' });
+      }
     }
     return res.json({ sent: true, channel });
   } catch (err) {

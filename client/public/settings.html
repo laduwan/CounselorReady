@@ -1720,7 +1720,10 @@
           body: JSON.stringify({ channel })
         });
         if (res.ok) showToast(`Test ${channel} sent!`);
-        else showToast(`Test ${channel} failed`, true);
+        else {
+          const err = await res.json().catch(() => ({}));
+          showToast(`Test ${channel} failed: ${err.error || res.status}`, true);
+        }
       } catch (err) { showToast('Network error', true); }
     }
 
