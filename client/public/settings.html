@@ -2372,8 +2372,8 @@
           document.getElementById('cal-connected').style.display = 'block';
           document.getElementById('cal-disconnected').style.display = 'none';
           if (data.email) document.getElementById('cal-email-display').textContent = data.email;
-          if (data.lastSynced) {
-            const d = new Date(data.lastSynced);
+          if (data.lastSyncAt) {
+            const d = new Date(data.lastSyncAt);
             document.getElementById('cal-last-sync').textContent = `Last synced: ${d.toLocaleDateString()} at ${d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}`;
           }
         } else {
