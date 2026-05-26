@@ -23,13 +23,30 @@ const router = express.Router();
 
 // @route   GET /api/google-calendar/oauth/connect
 // @desc    Redirect to Google OAuth consent screen
-// @access  Private
-router.get('/oauth/connect', protect, (req, res) => {
+// @access  Private (token via Authorization header OR ?token= query param for popup flow)
+router.get('/oauth/connect', async (req, res) => {
   try {
+    let token = null;
+    if (req.headers.authorization?.startsWith('Bearer')) {
+      token = req.headers.authorization.split(' ')[1];
+    } else if (req.query.token) {
+      token = req.query.token;
+    }
+    if (!token) {
+      return res.status(401).json({ error: 'Not authorized, no token' });
+    }
+    let userId;
+    try {
+      const { default: jwt } = await import('jsonwebtoken');
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      userId = decoded.id;
+    } catch {
+      return res.status(401).json({ error: 'Not authorized, token invalid' });
+    }
     if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
       return res.status(503).json({ error: 'Google Calendar integration is not configured' });
     }
-    const url = getAuthURL(req.user._id);
+    const url = getAuthURL(userId);
     res.redirect(url);
   } catch (error) {
     console.error('Google Calendar auth error:', error);
