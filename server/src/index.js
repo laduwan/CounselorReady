@@ -59,6 +59,7 @@ import rewardsRoutes from './routes/rewards.js';
 import boardAlertsRoutes from './routes/boardAlerts.js';
 import boardSourcesRoutes from './routes/boardSources.js';
 import googleCalendarRoutes from './routes/googleCalendar.js';
+import resendWebhookRoutes from './routes/webhooksResend.js';
 import cePlannerRoutes from './routes/cePlanner.js';
 import imageUploadRoutes from './routes/imageUpload.js';
 import fileUploadRoutes from './routes/fileUpload.js';
@@ -139,6 +140,7 @@ app.use(cors({
 }));
 
 app.use('/api/payments/webhook', express.raw({ type: 'application/json' }));
+app.use('/api/webhooks/resend', express.raw({ type: 'application/json' }));
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
@@ -226,6 +228,7 @@ app.use('/api/rewards', rewardsRoutes);
 app.use('/api/board-alerts', boardAlertsRoutes);
 app.use('/api/board-sources', boardSourcesRoutes);
 app.use('/api/google-calendar', googleCalendarRoutes);
+app.use('/api/webhooks/resend', resendWebhookRoutes);
 app.use('/api/ce-planner', cePlannerRoutes);
 app.use('/api/images', imageUploadRoutes);
 app.use('/api/files', fileUploadRoutes);
