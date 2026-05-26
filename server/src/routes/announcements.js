@@ -947,7 +947,7 @@ async function sendAdminNotificationEmail(user, message) {
               ${attachmentInfo}
               
               <center>
-                <a href="https://counselorready.com/admin/messages.html" class="cta-button">View & Reply</a>
+                <a href="https://counselorready.com/admin-messages.html" class="cta-button">View & Reply</a>
               </center>
             </div>
             <div class="footer">
