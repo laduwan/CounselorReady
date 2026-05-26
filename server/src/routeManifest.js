@@ -50,6 +50,7 @@ import referralsRoutes from './routes/referrals.js';
 import boardAlertsRoutes from './routes/boardAlerts.js';
 import boardSourcesRoutes from './routes/boardSources.js';
 import googleCalendarRoutes from './routes/googleCalendar.js';
+import resendWebhookRoutes from './routes/webhooksResend.js';
 import cePlannerRoutes from './routes/cePlanner.js';
 import imageUploadRoutes from './routes/imageUpload.js';
 import fileUploadRoutes from './routes/fileUpload.js';
@@ -117,6 +118,7 @@ export const ROUTE_MANIFEST = [
   ['/api/board-alerts',          boardAlertsRoutes,         'Board Alerts'],
   ['/api/board-sources',         boardSourcesRoutes,        'Board Sources (admin monitor mgmt)'],
   ['/api/google-calendar',       googleCalendarRoutes,      'Google Calendar (OAuth + sync)'],
+  ['/api/webhooks/resend',       resendWebhookRoutes,       'Resend email webhook (open/click tracking)'],
   ['/api/ce-planner',            cePlannerRoutes,           'CE Planner'],
   ['/api/recommendations',       recommendationsRoutes,     'Recommendations'],
   ['/api/research-ready',        researchReadyRoutes,       'Researched & Ready'],
