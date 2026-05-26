@@ -21,6 +21,9 @@ import {
 
 const router = express.Router();
 
+// Frontend base URL for post-OAuth redirects (the API host does not serve static HTML).
+const CLIENT_URL = process.env.CLIENT_URL || 'https://counselorready.com';
+
 // @route   GET /api/google-calendar/oauth/connect
 // @desc    Redirect to Google OAuth consent screen
 // @access  Private (token via Authorization header OR ?token= query param for popup flow)
@@ -62,20 +65,20 @@ router.get('/oauth/callback', async (req, res) => {
     const { code, state: userId } = req.query;
 
     if (!code || !userId) {
-      return res.redirect('/settings.html#calendar&error=missing_params');
+      return res.redirect(`${CLIENT_URL}/settings.html#calendar&error=missing_params`);
     }
 
     const user = await User.findById(userId);
     if (!user) {
-      return res.redirect('/settings.html#calendar&error=user_not_found');
+      return res.redirect(`${CLIENT_URL}/settings.html#calendar&error=user_not_found`);
     }
 
     await handleCallback(code, user);
 
-    res.redirect('/settings.html#calendar&gcal=connected');
+    res.redirect(`${CLIENT_URL}/settings.html#calendar&gcal=connected`);
   } catch (error) {
     console.error('Google Calendar callback error:', error);
-    res.redirect('/settings.html#calendar&error=auth_failed');
+    res.redirect(`${CLIENT_URL}/settings.html#calendar&error=auth_failed`);
   }
 });
 
