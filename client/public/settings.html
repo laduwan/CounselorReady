@@ -2356,11 +2356,14 @@
     }
   
     // ── GOOGLE CALENDAR ─────────────────────────────────────────────────
+    const CAL_API = window.location.hostname === 'localhost'
+      ? 'http://localhost:5000/api'
+      : 'https://api.counselorready.com/api';
     async function loadCalendarStatus() {
       try {
         const token = localStorage.getItem('token');
         if (!token) return;
-        const res = await fetch(`${API_BASE}/google-calendar/status`, {
+        const res = await fetch(`${CAL_API}/google-calendar/status`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (!res.ok) return;
@@ -2384,7 +2387,7 @@
       const token = localStorage.getItem('token');
       if (!token) { showCalError('Please log in to connect Google Calendar.'); return; }
       // Open OAuth flow — backend will redirect to Google consent screen
-      const w = window.open(`${API_BASE}/google-calendar/oauth/connect?token=${token}`, '_blank', 'width=600,height=700');
+      const w = window.open(`${CAL_API}/google-calendar/oauth/connect?token=${token}`, '_blank', 'width=600,height=700');
       // Poll for completion
       const poll = setInterval(() => {
         if (w && w.closed) {
@@ -2399,7 +2402,7 @@
       const token = localStorage.getItem('token');
       btn.disabled = true; btn.textContent = 'Syncing...';
       try {
-        const res = await fetch(`${API_BASE}/google-calendar/sync`, {
+        const res = await fetch(`${CAL_API}/google-calendar/sync`, {
           method: 'POST',
           headers: { Authorization: `Bearer ${token}` }
         });
@@ -2421,7 +2424,7 @@
       if (!confirm('Disconnect Google Calendar? Your existing calendar events will not be deleted.')) return;
       const token = localStorage.getItem('token');
       try {
-        await fetch(`${API_BASE}/google-calendar/disconnect`, {
+        await fetch(`${CAL_API}/google-calendar/disconnect`, {
           method: 'DELETE',
           headers: { Authorization: `Bearer ${token}` }
         });
