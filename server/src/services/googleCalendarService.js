@@ -15,7 +15,11 @@
  */
 import { google } from 'googleapis';
 
-const SCOPES = ['https://www.googleapis.com/auth/calendar.events'];
+const SCOPES = [
+  'https://www.googleapis.com/auth/calendar.events',
+  'https://www.googleapis.com/auth/userinfo.email',
+  'openid'
+];
 
 /**
  * Create an OAuth2 client
@@ -52,8 +56,21 @@ export async function handleCallback(code, user) {
   const oauth2Client = getOAuth2Client();
   const { tokens } = await oauth2Client.getToken(code);
 
+  oauth2Client.setCredentials(tokens);
+
+  // Fetch the connected Google account email. Non-blocking — connection still succeeds if this fails.
+  let googleEmail = user.googleCalendar?.email || null;
+  try {
+    const oauth2 = google.oauth2({ version: 'v2', auth: oauth2Client });
+    const { data: profile } = await oauth2.userinfo.get();
+    if (profile?.email) googleEmail = profile.email;
+  } catch (err) {
+    console.error('Google Calendar: failed to fetch account email (non-fatal):', err.message);
+  }
+
   user.googleCalendar = {
     connected: true,
+    email: googleEmail,
     accessToken: tokens.access_token,
     refreshToken: tokens.refresh_token || user.googleCalendar?.refreshToken,
     tokenExpiry: tokens.expiry_date ? new Date(tokens.expiry_date) : null,
@@ -355,6 +372,7 @@ export async function disconnectGoogleCalendar(user) {
 
   user.googleCalendar = {
     connected: false,
+    email: null,
     accessToken: null,
     refreshToken: null,
     tokenExpiry: null,

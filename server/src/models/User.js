@@ -190,6 +190,7 @@ const userSchema = new mongoose.Schema({
   // Google Calendar Integration
   googleCalendar: {
     connected: { type: Boolean, default: false },
+    email: { type: String, default: null },
     accessToken: { type: String, default: null },
     refreshToken: { type: String, default: null },
     tokenExpiry: { type: Date, default: null },

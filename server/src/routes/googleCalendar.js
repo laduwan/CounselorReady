@@ -160,6 +160,7 @@ router.get('/status', protect, async (req, res) => {
 
     res.json({
       connected: gcal.connected || false,
+      email: gcal.email || null,
       syncEnabled: gcal.syncEnabled || false,
       lastSyncAt: gcal.lastSyncAt || null,
       eventCount: gcal.eventIds?.length || 0
