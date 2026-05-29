@@ -331,6 +331,26 @@
         return;
       }
 
+    // Handle Stripe redirect params
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('success') === 'true') {
+      const banner = document.createElement('div');
+      banner.className = 'mb-6 p-4 bg-hunter-50 border border-hunter-200 rounded-xl text-hunter-700 text-sm font-medium text-center';
+      banner.textContent = 'Your subscription is now active! Welcome aboard.';
+      const main = document.querySelector('main') || document.querySelector('.max-w-4xl') || document.body.firstElementChild;
+      if (main) main.prepend(banner);
+      // Clean URL
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+    if (urlParams.get('canceled') === 'true') {
+      const banner = document.createElement('div');
+      banner.className = 'mb-6 p-4 bg-burgundy-50 border border-burgundy-200 rounded-xl text-burgundy-700 text-sm font-medium text-center';
+      banner.textContent = 'Checkout was canceled. No charges were made.';
+      const main = document.querySelector('main') || document.querySelector('.max-w-4xl') || document.body.firstElementChild;
+      if (main) main.prepend(banner);
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+
       await
     await loadSubscription();
       await loadBillingHistory();
