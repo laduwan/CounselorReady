@@ -20,6 +20,7 @@
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
+import compression from 'compression';
 import rateLimit from 'express-rate-limit';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
@@ -110,6 +111,7 @@ const __dirname = path.dirname(__filename);
 const app = express();
 app.set('trust proxy', 1);
 app.use(helmet({ contentSecurityPolicy: false }));
+app.use(compression());
 
 // Mount recorder — records every '/api/...' path passed to app.use so
 // verifyRoutes() can detect routers that were imported but never mounted.
