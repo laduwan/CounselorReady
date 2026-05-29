@@ -91,7 +91,7 @@ async function gateContent(courseObj, user) {
 
   // Individual purchase → full content
   const hasPurchased = user.purchasedCourses?.some(
-    id => id.toString() === courseObj._id.toString()
+    pc => pc.courseId?.toString() === courseObj._id.toString()
   );
   if (hasPurchased) return courseObj;
 
@@ -359,7 +359,7 @@ router.post('/:id/enroll', protect, async (req, res) => {
     const isAdmin = user.role === 'admin';
     const isFree = course.accessType === 'free';
     const hasPurchased = user.purchasedCourses?.some(
-      id => id.toString() === course._id.toString()
+      pc => pc.courseId?.toString() === course._id.toString()
     );
 
     let accessGranted = false;
