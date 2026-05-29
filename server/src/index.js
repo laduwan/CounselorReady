@@ -25,6 +25,7 @@ import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { requestId } from './middleware/requestId.js';
 
 dotenv.config();
 
@@ -150,9 +151,11 @@ app.use('/api/webhooks/resend', express.raw({ type: 'application/json' }));
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
+app.use(requestId);
+
 if (process.env.NODE_ENV !== 'production') {
   app.use((req, res, next) => {
-    console.log(`${new Date().toISOString()} ${req.method} ${req.path}`);
+    console.log(`${new Date().toISOString()} [${req.requestId}] ${req.method} ${req.path}`);
     next();
   });
 }
@@ -352,7 +355,7 @@ app.use((req, res, next) => {
 });
 
 app.use((err, req, res, next) => {
-  console.error('Error:', err);
+  console.error(`Error [${req.requestId}]:`, err);
 
   if (err.name === 'ValidationError') {
     const messages = Object.values(err.errors).map(e => e.message);
