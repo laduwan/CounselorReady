@@ -1,20 +1,20 @@
 import { Resend } from 'resend';
+import mongoose from 'mongoose';
 import UserCredential from '../models/UserCredential.js';
 import Certificate from '../models/Certificate.js';
-// TODO: model not found — CELog
-// TODO: model not found — InteractiveCourseProgress
+import { CourseProgress } from '../models/InteractiveCourse.js';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 async function compileUserData(user) {
   const userId = user._id;
 
-  const [credentials, certificates] = await Promise.all([
+  const [credentials, certificates, courseProgress, ceLogs] = await Promise.all([
     UserCredential.find({ userId }).lean(),
     Certificate.find({ userId }).lean(),
+    CourseProgress.find({ userId }).lean(),
+    mongoose.connection.collection('celogs').find({ user: userId }).toArray(),
   ]);
-  const ceLogs = []; // TODO: model not found — CELog
-  const courseProgress = []; // TODO: model not found — InteractiveCourseProgress
 
   return {
     exportedAt: new Date().toISOString(),
