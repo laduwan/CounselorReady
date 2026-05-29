@@ -76,10 +76,23 @@
         }
         const token = localStorage.getItem('token');
         if (token && course._id) {
-          await fetch(`${API_URL}/api/interactive-courses/${course._id}/enroll`, {
-            method: 'POST',
-            headers: { 'Authorization': `Bearer ${token}` }
-          });
+          // Retry enrollment — webhook may not have fired yet
+          for (let attempt = 0; attempt < 3; attempt++) {
+            try {
+              const enrollRes = await fetch(`${API_URL}/api/interactive-courses/${course._id}/enroll`, {
+                method: 'POST',
+                headers: {
+                  'Authorization': `Bearer ${token}`,
+                  'Content-Type': 'application/json'
+                }
+              });
+              const enrollData = await enrollRes.json();
+              if (enrollRes.ok || enrollData.message === 'Already enrolled') break;
+              if (attempt < 2) await new Promise(r => setTimeout(r, 2000));
+            } catch (e) {
+              if (attempt < 2) await new Promise(r => setTimeout(r, 2000));
+            }
+          }
         }
         showSuccess();
       } catch (err) {
