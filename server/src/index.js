@@ -20,6 +20,7 @@
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import path from 'path';
@@ -196,6 +197,24 @@ app.get('/health', async (req, res) => {
 // NEVER REMOVE ANY LINE. ONLY ADD.
 // ═══════════════════════════════════════════════════════════════
 
+const globalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many requests, please try again later' }
+});
+
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many authentication attempts, please try again later' }
+});
+
+app.use('/api/', globalLimiter);
+app.use('/api/auth', authLimiter);
 app.use('/api/auth', authRoutes);
 app.use('/api/interactive-courses', interactiveCourseRoutes);
 app.use('/api/courses', coursesRoutes);
