@@ -15,6 +15,7 @@ import User from '../models/User.js';
 import Course from '../models/Course.js';
 import { Course as InteractiveCourse, CourseProgress } from '../models/InteractiveCourse.js';
 import { logActivity, ACTIVITY_TYPES } from '../services/activityTrackingService.js';
+import logger from '../utils/logger.js';
 
 // Use native fetch (Node 18+) — no need for node-fetch
 
@@ -54,7 +55,7 @@ router.get('/:id/serve', protect, async (req, res) => {
     }
     const userId = req.user._id;
 
-    console.log(`Certificate serve request: ${id} from user: ${userId}`);
+    logger.info({ certificateId: id, userId, requestId: req.requestId }, 'Certificate serve request');
 
     const certificate = await Certificate.findById(id);
     
@@ -70,13 +71,13 @@ router.get('/:id/serve', protect, async (req, res) => {
       return res.status(404).json({ error: 'Certificate file not available' });
     }
 
-    console.log(`Serving certificate ${certificate.certificateNumber || id} from: ${certificate.fileUrl}`);
+    logger.info({ certificateId: id, certificateNumber: certificate.certificateNumber, fileUrl: certificate.fileUrl, requestId: req.requestId }, 'Serving certificate');
 
     // Extract public_id from the Cloudinary URL
     const urlMatch = certificate.fileUrl.match(/\/upload\/(?:v\d+\/)?(.+)$/);
     
     if (!urlMatch) {
-      console.log('Could not parse Cloudinary URL');
+      logger.info({ certificateId: id, requestId: req.requestId }, 'Could not parse Cloudinary URL');
       return res.status(404).json({ error: 'Certificate file URL is malformed' });
     }
 
@@ -84,7 +85,7 @@ router.get('/:id/serve', protect, async (req, res) => {
     const publicId = fullPath.replace(/\.[^.]+$/, '');
     const ext = fullPath.match(/\.([^.]+)$/)?.[1] || 'pdf';
     
-    console.log(`Extracted public_id: ${publicId}, format: ${ext}`);
+    logger.info({ publicId, ext, requestId: req.requestId }, 'Extracted Cloudinary public_id');
 
     // Use Cloudinary's private_download_url API - this generates an authenticated
     // API-based download URL that bypasses CDN delivery restrictions
@@ -95,25 +96,25 @@ router.get('/:id/serve', protect, async (req, res) => {
         expires_at: Math.floor(Date.now() / 1000) + 3600
       });
       
-      console.log(`Generated private download URL: ${downloadUrl.substring(0, 80)}...`);
+      logger.info({ downloadUrl: downloadUrl.substring(0, 80), requestId: req.requestId }, 'Generated private download URL');
       
       const response = await fetch(downloadUrl);
       
       if (response.ok) {
         const arrayBuffer = await response.arrayBuffer();
         const fileBuffer = Buffer.from(arrayBuffer);
-        console.log(`✅ Private download worked! Size: ${fileBuffer.length} bytes`);
+        logger.info({ size: fileBuffer.length, requestId: req.requestId }, 'Private download worked');
         return sendFile(res, fileBuffer, certificate, ext);
       }
       
-      console.log(`Private download returned ${response.status}: ${await response.text()}`);
+      logger.info({ status: response.status, body: await response.text(), requestId: req.requestId }, 'Private download returned non-OK');
     } catch (dlErr) {
-      console.log(`Private download URL failed: ${dlErr.message}`);
+      logger.info({ err: dlErr, requestId: req.requestId }, 'Private download URL failed');
     }
 
     // Strategy 2: Use Admin API to get raw content via explicit download
     try {
-      console.log('Trying Admin API download...');
+      logger.info({ requestId: req.requestId }, 'Trying Admin API download');
       // Generate a URL using the Cloudinary API endpoint directly
       const timestamp = Math.floor(Date.now() / 1000);
       const apiKey = process.env.CLOUDINARY_API_KEY;
@@ -132,20 +133,20 @@ router.get('/:id/serve', protect, async (req, res) => {
         `signature=${signature}&` +
         `format=${ext}`;
       
-      console.log(`Trying API download endpoint...`);
+      logger.info({ requestId: req.requestId }, 'Trying API download endpoint');
       
       const apiResponse = await fetch(apiDownloadUrl);
       
       if (apiResponse.ok) {
         const arrayBuffer = await apiResponse.arrayBuffer();
         const fileBuffer = Buffer.from(arrayBuffer);
-        console.log(`✅ API download worked! Size: ${fileBuffer.length} bytes`);
+        logger.info({ size: fileBuffer.length, requestId: req.requestId }, 'API download worked');
         return sendFile(res, fileBuffer, certificate, ext);
       }
       
-      console.log(`API download returned ${apiResponse.status}`);
+      logger.info({ status: apiResponse.status, requestId: req.requestId }, 'API download returned non-OK');
     } catch (apiErr) {
-      console.log(`API download failed: ${apiErr.message}`);
+      logger.info({ err: apiErr, requestId: req.requestId }, 'API download failed');
     }
 
     // Strategy 3: Use cloudinary.url with auth token
@@ -157,30 +158,30 @@ router.get('/:id/serve', protect, async (req, res) => {
         secure: true,
         type: 'upload'
       });
-      console.log(`Trying signed URL: ${signedUrl}`);
+      logger.info({ signedUrl, requestId: req.requestId }, 'Trying signed URL');
       
       const signedResult = await fetch(signedUrl);
       if (signedResult.ok) {
         const arrayBuffer = await signedResult.arrayBuffer();
         const fileBuffer = Buffer.from(arrayBuffer);
-        console.log(`✅ Signed URL worked! Size: ${fileBuffer.length} bytes`);
+        logger.info({ size: fileBuffer.length, requestId: req.requestId }, 'Signed URL worked');
         return sendFile(res, fileBuffer, certificate, ext);
       }
-      console.log(`Signed URL returned ${signedResult.status}`);
+      logger.info({ status: signedResult.status, requestId: req.requestId }, 'Signed URL returned non-OK');
     } catch (signErr) {
-      console.log(`Signed URL failed: ${signErr.message}`);
+      logger.info({ err: signErr, requestId: req.requestId }, 'Signed URL failed');
     }
 
     // All strategies exhausted
-    console.error('❌ All Cloudinary access methods failed. Check Cloudinary security settings.');
-    console.error('Go to Cloudinary Dashboard → Settings → Security → Disable "Restrict unsigned delivery"');
+    logger.error({ certificateId: id, requestId: req.requestId }, 'All Cloudinary access methods failed. Check Cloudinary security settings.');
+    logger.error({ certificateId: id, requestId: req.requestId }, 'Go to Cloudinary Dashboard → Settings → Security → Disable "Restrict unsigned delivery"');
     return res.status(503).json({ 
       error: 'Certificate file cannot be accessed. Cloudinary delivery is restricted.',
       hint: 'Admin: Check Cloudinary security settings'
     });
 
   } catch (error) {
-    console.error('Certificate serving error:', error);
+    logger.error({ err: error, userId: req.user?._id, requestId: req.requestId }, 'Certificate serving error');
     res.status(500).json({ error: 'Failed to serve certificate' });
   }
 });
@@ -212,7 +213,7 @@ function sendFile(res, fileBuffer, certificate, ext) {
         }
       });
     }
-  } catch (phErr) { console.error('PostHog certificate_downloaded failed:', phErr); }
+  } catch (phErr) { logger.error({ err: phErr, certificateId: certificate._id }, 'PostHog certificate_downloaded failed'); }
   return res.send(fileBuffer);
 }
 
@@ -223,7 +224,7 @@ router.get('/my', protect, async (req, res) => {
       .sort({ completionDate: -1 });
     res.json({ certificates });
   } catch (error) {
-    console.error('Get my certificates error:', error);
+    logger.error({ err: error, userId: req.user?._id, requestId: req.requestId }, 'Get my certificates error');
     res.status(500).json({ error: 'Failed to fetch certificates' });
   }
 });
@@ -234,10 +235,10 @@ router.get('/', protect, async (req, res) => {
     const certificates = await Certificate.find({ userId: req.user._id })
       .sort({ createdAt: -1 });
     
-    console.log(`Retrieved ${certificates.length} certificates for user ${req.user._id}`);
+    logger.info({ userId: req.user._id, count: certificates.length, requestId: req.requestId }, 'Retrieved certificates');
     res.json({ certificates });
   } catch (error) {
-    console.error('Get certificates error:', error);
+    logger.error({ err: error, userId: req.user?._id, requestId: req.requestId }, 'Get certificates error');
     res.status(500).json({ error: 'Failed to fetch certificates' });
   }
 });
@@ -271,7 +272,7 @@ router.post('/upload', protect, upload.single('certificate'), async (req, res) =
       });
     }
 
-    console.log(`Uploading certificate: ${title} for user: ${req.user._id}`);
+    logger.info({ userId: req.user._id, title, requestId: req.requestId }, 'Uploading certificate');
 
     // Generate certificate number
     const timestamp = Date.now();
@@ -297,7 +298,7 @@ router.post('/upload', protect, upload.single('certificate'), async (req, res) =
       ).end(req.file.buffer);
     });
 
-    console.log(`File uploaded to Cloudinary: ${uploadResult.secure_url}`);
+    logger.info({ userId: req.user._id, secureUrl: uploadResult.secure_url, requestId: req.requestId }, 'File uploaded to Cloudinary');
 
     // Create certificate record
     const certificate = new Certificate({
@@ -322,7 +323,7 @@ router.post('/upload', protect, upload.single('certificate'), async (req, res) =
     });
 
     await certificate.save();
-    console.log(`Certificate saved with ID: ${certificate._id}`);
+    logger.info({ userId: req.user._id, certificateId: certificate._id, requestId: req.requestId }, 'Certificate saved');
 
     res.status(201).json({
       success: true,
@@ -331,7 +332,7 @@ router.post('/upload', protect, upload.single('certificate'), async (req, res) =
     });
 
   } catch (error) {
-    console.error('Certificate upload error:', error);
+    logger.error({ err: error, userId: req.user?._id, requestId: req.requestId }, 'Certificate upload error');
     res.status(500).json({ 
       success: false,
       error: 'Failed to upload certificate: ' + error.message 
@@ -348,7 +349,7 @@ router.post('/generate/:courseId', protect, async (req, res) => {
     }
     const userId = req.user._id;
 
-    console.log(`Certificate generation request for course ${courseId} by user ${userId}`);
+    logger.info({ courseId, userId, requestId: req.requestId }, 'Certificate generation request');
 
     // Check if certificate already exists
     const existingCert = await Certificate.findOne({
@@ -477,7 +478,7 @@ router.post('/generate/:courseId', protect, async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Certificate generation error:', error);
+    logger.error({ err: error, userId: req.user?._id, requestId: req.requestId }, 'Certificate generation error');
     res.status(500).json({
       success: false,
       error: 'Failed to generate certificate'
@@ -503,21 +504,21 @@ router.delete('/:id', protect, async (req, res) => {
       return res.status(404).json({ error: 'Certificate not found' });
     }
 
-    console.log(`Deleted certificate: ${certificate.certificateNumber || id}`);
+    logger.info({ certificateId: id, certificateNumber: certificate.certificateNumber, userId, requestId: req.requestId }, 'Deleted certificate');
 
     // Optionally delete from Cloudinary
     if (certificate.fileKey) {
       try {
         await cloudinary.uploader.destroy(certificate.fileKey, { resource_type: 'image' });
-        console.log(`Deleted file from Cloudinary: ${certificate.fileKey}`);
+        logger.info({ fileKey: certificate.fileKey, requestId: req.requestId }, 'Deleted file from Cloudinary');
       } catch (cloudinaryError) {
-        console.error('Failed to delete from Cloudinary:', cloudinaryError);
+        logger.error({ err: cloudinaryError, fileKey: certificate.fileKey, requestId: req.requestId }, 'Failed to delete from Cloudinary');
       }
     }
 
     res.json({ message: 'Certificate deleted successfully' });
   } catch (error) {
-    console.error('Delete certificate error:', error);
+    logger.error({ err: error, userId: req.user?._id, requestId: req.requestId }, 'Delete certificate error');
     res.status(500).json({ error: 'Failed to delete certificate' });
   }
 });
@@ -565,7 +566,7 @@ router.get('/download-all', protect, async (req, res) => {
           }
         }
       } catch (fetchErr) {
-        console.error(`Failed to fetch certificate ${cert._id}:`, fetchErr.message);
+        logger.error({ err: fetchErr, certificateId: cert._id, requestId: req.requestId }, 'Failed to fetch certificate for bulk download');
       }
     }
 
@@ -579,7 +580,7 @@ router.get('/download-all', protect, async (req, res) => {
     res.setHeader('Content-Length', zipBuffer.length);
     res.send(zipBuffer);
   } catch (error) {
-    console.error('Bulk certificate download error:', error);
+    logger.error({ err: error, userId: req.user?._id, requestId: req.requestId }, 'Bulk certificate download error');
     res.status(500).json({ error: 'Failed to create certificate bundle' });
   }
 });
@@ -787,7 +788,7 @@ router.get('/transcript', protect, async (req, res) => {
     doc.end();
     
   } catch (error) {
-    console.error('Transcript generation error:', error);
+    logger.error({ err: error, userId: req.user?._id, requestId: req.requestId }, 'Transcript generation error');
     res.status(500).json({ error: 'Failed to generate transcript' });
   }
 });
