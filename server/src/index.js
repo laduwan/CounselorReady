@@ -28,6 +28,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { requestId } from './middleware/requestId.js';
 import { apiVersioning } from './middleware/apiVersioning.js';
+import logger from './utils/logger.js';
 
 dotenv.config();
 
@@ -156,12 +157,10 @@ app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 app.use(requestId);
 
-if (process.env.NODE_ENV !== 'production') {
-  app.use((req, res, next) => {
-    console.log(`${new Date().toISOString()} [${req.requestId}] ${req.method} ${req.path}`);
-    next();
-  });
-}
+app.use((req, res, next) => {
+  logger.debug({ method: req.method, path: req.path, requestId: req.requestId }, 'request');
+  next();
+});
 
 app.use(apiVersioning);
 
@@ -172,10 +171,10 @@ app.use(apiVersioning);
 const connectDB = async () => {
   try {
     const conn = await mongoose.connect(process.env.MONGODB_URI);
-    console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
+    logger.info({ host: conn.connection.host }, 'MongoDB connected');
     return conn;
   } catch (error) {
-    console.error('❌ MongoDB connection error:', error.message);
+    logger.fatal({ error: error.message }, 'MongoDB connection failed');
     process.exit(1);
   }
 };
@@ -361,7 +360,7 @@ app.use((req, res, next) => {
 });
 
 app.use((err, req, res, next) => {
-  console.error(`Error [${req.requestId}]:`, err);
+  logger.error({ err, requestId: req.requestId, method: req.method, path: req.path }, 'unhandled error');
 
   if (err.name === 'ValidationError') {
     const messages = Object.values(err.errors).map(e => e.message);
@@ -398,13 +397,13 @@ const startServer = async () => {
   cron.schedule('0 9 * * *', () => {
     runDeadlineReminders().catch(err => console.error('CE deadline reminder error:', err.message));
   }, { timezone: 'America/New_York' });
-  console.log('CE deadline reminder cron scheduled (daily 9 AM ET)');
+  logger.info('CE deadline reminder cron scheduled (daily 9 AM ET)');
 
   // Daily notification check — credentials, insurance, stale courses, trial expiry — daily at 10 AM ET
   cron.schedule('0 10 * * *', () => {
     runDailyNotificationCheck().catch(err => console.error('Daily notification check error:', err.message));
   }, { timezone: 'America/New_York' });
-  console.log('Daily notification check cron scheduled (daily 10 AM ET)');
+  logger.info('Daily notification check cron scheduled (daily 10 AM ET)');
 
   // Hardship pause auto-resume — daily at 8 AM ET
   cron.schedule('0 8 * * *', () => {
@@ -412,28 +411,13 @@ const startServer = async () => {
       console.error('Hardship pause resume error:', err.message)
     );
   }, { timezone: 'America/New_York' });
-  console.log('Hardship pause auto-resume cron scheduled (daily 8 AM ET)');
+  logger.info('Hardship pause auto-resume cron scheduled (daily 8 AM ET)');
   // PostHog server-side analytics
   const phKey = process.env.POSTHOG_API_KEY || 'phc_rRGb8TPVl8lDYnD4M2HMGGuBBkL9whGzghD5FEX20Vb';
   global.posthog = new PostHog(phKey, { host: 'https://us.i.posthog.com' });
-  console.log('PostHog analytics initialized');
+  logger.info('PostHog analytics initialized');
   const server = app.listen(PORT, () => {
-    console.log(`
-╔════════════════════════════════════════════════════╗
-║                                                    ║
-║   🎓 CounselorReady API Server                     ║
-║                                                    ║
-║   Port: ${PORT}                                       ║
-║   Environment: ${(process.env.NODE_ENV || 'development').padEnd(26)}║
-║   MongoDB: Connected                               ║
-║   Scheduler: Active                                ║
-║   Board Monitor: Active                            ║
-║   Routes: ${String(ROUTE_MANIFEST.length).padEnd(2)} declared, verified               ║
-║                                                    ║
-║   Health: http://localhost:${PORT}/health              ║
-║                                                    ║
-╚════════════════════════════════════════════════════╝
-    `);
+    logger.info({ port: PORT, env: process.env.NODE_ENV || 'development', routes: ROUTE_MANIFEST.length }, 'CounselorReady API server started');
   });
 
   // Graceful shutdown — let in-flight requests finish on SIGTERM/SIGINT
