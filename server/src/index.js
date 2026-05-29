@@ -121,6 +121,8 @@ const allowedOrigins = [
   'http://localhost:5173',
   'http://localhost:3000',
   'http://127.0.0.1:5173',
+  'https://counselorready.com',
+  'https://www.counselorready.com',
   process.env.CLIENT_URL
 ].filter(Boolean);
 
@@ -131,7 +133,7 @@ app.use(cors({
       callback(null, true);
     } else {
       console.log('Blocked by CORS:', origin);
-      callback(null, true);
+      callback(null, false);
     }
   },
   credentials: true,
