@@ -21,6 +21,7 @@ import Notification from '../models/Notification.js';
 import { sendRealtimeNotification } from './notifications.js';
 import { processReferralSignup } from '../services/rewardsService.js';
 import twilio from 'twilio';
+import logger from '../utils/logger.js';
 
 const twilioClient = process.env.TWILIO_ACCOUNT_SID
   ? twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN)
@@ -97,10 +98,10 @@ router.post('/register', async (req, res) => {
       processReferralSignup(user._id, referralCode)
         .then(r => {
           if (r.referrerAwarded) {
-            console.log(`[REWARDS] +${r.points} to referrer (signup) for new user ${user._id}`);
+            logger.info({ userId: user._id, points: r.points, action: 'referral_signup_bonus' }, '[REWARDS] referrer awarded signup bonus');
           }
         })
-        .catch(err => console.error('[REWARDS] referral signup failed:', err.message));
+        .catch(err => logger.error({ err, userId: user._id, requestId: req.requestId }, '[REWARDS] referral signup failed'));
     }
 
     // Create welcome notification (non-blocking)
@@ -116,7 +117,7 @@ router.post('/register', async (req, res) => {
       });
       sendRealtimeNotification(user._id, welcomeNotification);
     } catch (notifErr) {
-      console.error('Welcome notification failed (non-blocking):', notifErr.message);
+      logger.error({ err: notifErr, userId: user._id, requestId: req.requestId }, 'Welcome notification failed (non-blocking)');
     }
 
     // Send verification email (non-blocking — don't fail registration if email fails)
@@ -148,7 +149,7 @@ router.post('/register', async (req, res) => {
         `
       });
     } catch (emailErr) {
-      console.error('Verification email failed (non-blocking):', emailErr.message);
+      logger.error({ err: emailErr, userId: user._id, requestId: req.requestId }, 'Verification email failed (non-blocking)');
     }
 
     // Send partner welcome email if user registered via partner
@@ -158,7 +159,7 @@ router.post('/register', async (req, res) => {
         if (partnerDoc) {
           sendPartnerWelcomeEmail(user, partnerDoc);
         }
-      } catch (err) { console.error('Partner welcome email failed:', err.message); }
+      } catch (err) { logger.error({ err, userId: user._id, requestId: req.requestId }, 'Partner welcome email failed'); }
     }
 
     const token = generateToken(user._id);
@@ -177,7 +178,7 @@ router.post('/register', async (req, res) => {
           }
         });
       }
-    } catch (phErr) { console.error('PostHog user_registered failed:', phErr); }
+    } catch (phErr) { logger.error({ err: phErr, userId: user._id, requestId: req.requestId }, 'PostHog user_registered failed'); }
 
     // SMS: new registration
     if (twilioClient && process.env.ADMIN_PHONE) {
@@ -186,7 +187,7 @@ router.post('/register', async (req, res) => {
         body: `CounselorReady: New Registration\n${name} (${user.email})\n${user.profile?.licenseType || ''} · ${user.profile?.licenseState || ''}`,
         from: process.env.TWILIO_PHONE_NUMBER,
         to: process.env.ADMIN_PHONE
-      }).catch(e => console.error('SMS reg error:', e));
+      }).catch(e => logger.error({ err: e, userId: user._id, requestId: req.requestId }, 'SMS registration notification error'));
     }
 
     res.status(201).json({
@@ -195,7 +196,7 @@ router.post('/register', async (req, res) => {
       user: user.toJSON()
     });
   } catch (error) {
-    console.error('Registration error:', error);
+    logger.error({ err: error, requestId: req.requestId }, 'Registration error');
     res.status(500).json({ error: 'Registration failed' });
   }
 });
@@ -252,7 +253,7 @@ router.post('/login', async (req, res) => {
           }
         });
       }
-    } catch (phErr) { console.error('PostHog user_logged_in failed:', phErr); }
+    } catch (phErr) { logger.error({ err: phErr, userId: user._id, requestId: req.requestId }, 'PostHog user_logged_in failed'); }
     // Log login activity (fire and forget)
     logActivity(ACTIVITY_TYPES.USER_LOGIN, {}, {
       notifyAdmin: false,
@@ -267,7 +268,7 @@ router.post('/login', async (req, res) => {
       user: user.toJSON()
     });
   } catch (error) {
-    console.error('Login error:', error);
+    logger.error({ err: error, requestId: req.requestId }, 'Login error');
     res.status(500).json({ error: 'Login failed' });
   }
 });
@@ -336,7 +337,7 @@ router.post('/login/verify-2fa', async (req, res) => {
       backupCodesRemaining: usedBackup ? user.twoFactorBackupCodes.length : undefined,
     });
   } catch (err) {
-    console.error('[login/verify-2fa] error:', err);
+    logger.error({ err, requestId: req.requestId }, '[login/verify-2fa] error');
     return res.status(500).json({ error: '2FA verification failed' });
   }
 });
@@ -347,7 +348,7 @@ router.get('/me', protect, async (req, res) => {
     res.set('Cache-Control', 'no-store');
     res.json({ user: req.user.toJSON() });
   } catch (error) {
-    console.error('Get user error:', error);
+    logger.error({ err: error, userId: req.user?._id, requestId: req.requestId }, 'Get user error');
     res.status(500).json({ error: 'Failed to get user' });
   }
 });
@@ -401,7 +402,7 @@ router.post('/forgot-password', async (req, res) => {
     
     res.json({ message: 'If an account exists, a reset email has been sent' });
   } catch (error) {
-    console.error('Forgot password error:', error);
+    logger.error({ err: error, requestId: req.requestId }, 'Forgot password error');
     res.status(500).json({ error: 'Failed to process request' });
   }
 });
@@ -456,12 +457,12 @@ router.post('/reset-password', async (req, res) => {
         `
       });
     } catch (emailErr) {
-      console.error('Password reset confirmation email failed (non-blocking):', emailErr.message);
+      logger.error({ err: emailErr, userId: user._id, requestId: req.requestId }, 'Password reset confirmation email failed (non-blocking)');
     }
 
     res.json({ message: 'Password reset successful' });
   } catch (error) {
-    console.error('Reset password error:', error);
+    logger.error({ err: error, requestId: req.requestId }, 'Reset password error');
     res.status(500).json({ error: 'Failed to reset password' });
   }
 });
@@ -491,7 +492,7 @@ router.post('/change-password', protect, async (req, res) => {
     
     res.json({ message: 'Password changed successfully' });
   } catch (error) {
-    console.error('Change password error:', error);
+    logger.error({ err: error, userId: req.user?._id, requestId: req.requestId }, 'Change password error');
     res.status(500).json({ error: 'Failed to change password' });
   }
 });
@@ -523,7 +524,7 @@ router.post('/verify-email', async (req, res) => {
     
     res.json({ message: 'Email verified successfully' });
   } catch (error) {
-    console.error('Email verification error:', error);
+    logger.error({ err: error, requestId: req.requestId }, 'Email verification error');
     res.status(500).json({ error: 'Verification failed' });
   }
 });
@@ -578,7 +579,7 @@ router.post('/resend-verification', protect, async (req, res) => {
     
     res.json({ message: 'Verification email sent' });
   } catch (error) {
-    console.error('Resend verification error:', error);
+    logger.error({ err: error, userId: req.user?._id, requestId: req.requestId }, 'Resend verification error');
     res.status(500).json({ error: 'Failed to resend verification email' });
   }
 });
@@ -594,7 +595,7 @@ router.get('/notification-preferences', protect, async (req, res) => {
       phone: user.phone || user.profile?.phone || null
     });
   } catch (error) {
-    console.error('Get notification preferences error:', error);
+    logger.error({ err: error, userId: req.user?._id, requestId: req.requestId }, 'Get notification preferences error');
     res.status(500).json({ error: 'Failed to get notification preferences' });
   }
 });
@@ -680,7 +681,7 @@ router.put('/update-notifications', protect, async (req, res) => {
       notifications: user.notifications
     });
   } catch (error) {
-    console.error('Update notifications error:', error);
+    logger.error({ err: error, userId: req.user?._id, requestId: req.requestId }, 'Update notifications error');
     res.status(500).json({ error: 'Failed to update notification preferences' });
   }
 });
