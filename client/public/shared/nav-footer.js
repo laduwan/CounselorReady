@@ -34,7 +34,6 @@
     { label: 'Referrals', href: '/referrals.html' },
     { label: 'Partner Portal', href: '/partner-dashboard.html' },
     { label: 'Legacy Vault', href: '/legacy-vault.html' },
-    { label: 'Blog (Admin)', href: '/admin-blog.html' },
   ];
 
   // ── POLICY LINKS (footer) ────────────────────────────────
