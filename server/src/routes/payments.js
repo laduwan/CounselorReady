@@ -14,6 +14,7 @@ import { logActivity, ACTIVITY_TYPES } from '../services/activityTrackingService
 import { sendPaymentFailedEmail, sendPaymentRecoveredEmail } from '../services/hardshipEmailService.js';
 import { processReferralPaidConversion } from '../services/rewardsService.js';
 import twilio from 'twilio';
+import logger from '../utils/logger.js';
 
 const twilioClient = process.env.TWILIO_ACCOUNT_SID
   ? twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN)
@@ -67,7 +68,7 @@ router.get('/subscription', protect, async (req, res) => {
           };
         }
       } catch (e) {
-        console.log('Could not fetch payment method:', e.message);
+        logger.info({ err: e, userId: req.user?._id, requestId: req.requestId }, 'Could not fetch payment method');
       }
     }
     
@@ -76,7 +77,7 @@ router.get('/subscription', protect, async (req, res) => {
       paymentMethod
     });
   } catch (error) {
-    console.error('Get subscription error:', error);
+    logger.error({ err: error, userId: req.user?._id, requestId: req.requestId }, 'Get subscription error');
     res.status(500).json({ error: 'Failed to get subscription' });
   }
 });
@@ -114,7 +115,7 @@ router.get('/invoices', protect, async (req, res) => {
     
     res.json({ invoices: formattedInvoices });
   } catch (error) {
-    console.error('Get invoices error:', error);
+    logger.error({ err: error, userId: req.user?._id, requestId: req.requestId }, 'Get invoices error');
     res.status(500).json({ error: 'Failed to get invoices' });
   }
 });
@@ -175,7 +176,7 @@ router.post('/create-checkout-session', protect, async (req, res) => {
     
     res.json({ sessionId: session.id, url: session.url });
   } catch (error) {
-    console.error('Create checkout session error:', error);
+    logger.error({ err: error, userId: req.user?._id, requestId: req.requestId }, 'Create checkout session error');
     res.status(500).json({ error: 'Failed to create checkout session' });
   }
 });
@@ -277,7 +278,7 @@ router.post('/create-subscription', protect, async (req, res) => {
           }
         }
       } catch (couponErr) {
-        console.log('Coupon lookup error:', couponErr.message);
+        logger.info({ err: couponErr, userId: req.user?._id, requestId: req.requestId }, 'Coupon lookup error');
         // Continue without coupon
       }
     }
@@ -321,7 +322,7 @@ router.post('/create-subscription', protect, async (req, res) => {
     return res.status(400).json({ error: 'Payment failed. Please try again.' });
     
   } catch (error) {
-    console.error('Create subscription error:', error);
+    logger.error({ err: error, userId: req.user?._id, requestId: req.requestId }, 'Create subscription error');
     
     // Handle specific Stripe errors
     if (error.type === 'StripeCardError') {
@@ -354,7 +355,7 @@ router.post('/create-portal-session', protect, async (req, res) => {
     
     res.json({ url: session.url });
   } catch (error) {
-    console.error('Create portal session error:', error);
+    logger.error({ err: error, userId: req.user?._id, requestId: req.requestId }, 'Create portal session error');
     res.status(500).json({ error: 'Failed to create portal session' });
   }
 });
@@ -408,7 +409,7 @@ router.post('/change-plan', protect, async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('Change plan error:', error);
+    logger.error({ err: error, userId: req.user?._id, requestId: req.requestId }, 'Change plan error');
     res.status(500).json({ error: 'Failed to change plan' });
   }
 });
@@ -442,7 +443,7 @@ router.post('/cancel-subscription', protect, async (req, res) => {
       cancelAt: new Date(subscription.current_period_end * 1000)
     });
   } catch (error) {
-    console.error('Cancel subscription error:', error);
+    logger.error({ err: error, userId: req.user?._id, requestId: req.requestId }, 'Cancel subscription error');
     res.status(500).json({ error: 'Failed to cancel subscription' });
   }
 });
@@ -476,7 +477,7 @@ router.post('/cancel', protect, async (req, res) => {
       cancelAt: new Date(subscription.current_period_end * 1000)
     });
   } catch (error) {
-    console.error('Cancel subscription error:', error);
+    logger.error({ err: error, userId: req.user?._id, requestId: req.requestId }, 'Cancel subscription error');
     res.status(500).json({ error: 'Failed to cancel subscription' });
   }
 });
@@ -507,7 +508,7 @@ router.post('/reactivate', protect, async (req, res) => {
     
     res.json({ message: 'Subscription reactivated successfully' });
   } catch (error) {
-    console.error('Reactivate subscription error:', error);
+    logger.error({ err: error, userId: req.user?._id, requestId: req.requestId }, 'Reactivate subscription error');
     res.status(500).json({ error: 'Failed to reactivate subscription' });
   }
 });
@@ -546,7 +547,7 @@ router.get('/billing-history', protect, async (req, res) => {
     
     res.json({ invoices: formattedInvoices });
   } catch (error) {
-    console.error('Get billing history error:', error);
+    logger.error({ err: error, userId: req.user?._id, requestId: req.requestId }, 'Get billing history error');
     res.status(500).json({ error: 'Failed to get billing history' });
   }
 });
@@ -624,7 +625,7 @@ router.post('/create-course-checkout', protect, async (req, res) => {
 
     res.json({ sessionId: session.id, url: session.url });
   } catch (error) {
-    console.error('Create course checkout error:', error);
+    logger.error({ err: error, userId: req.user?._id, requestId: req.requestId }, 'Create course checkout error');
     res.status(500).json({ error: 'Failed to create course checkout session' });
   }
 });
@@ -649,7 +650,7 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
   try {
     event = stripe.webhooks.constructEvent(req.body, sig, webhookSecret);
   } catch (err) {
-    console.error('Webhook signature verification failed:', err.message);
+    logger.error({ err, requestId: req.requestId }, 'Webhook signature verification failed');
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
   
@@ -671,7 +672,7 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
             'billing.status': 'active',
             'billing.currentPeriodEnd': new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
           });
-          console.log(`Partner subscription activated for ${partnerId}: ${plan}`);
+          logger.info({ partnerId, plan, requestId: req.requestId }, 'Partner subscription activated');
           break;
         }
 
@@ -691,7 +692,7 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
             }
           });
 
-          console.log(`✓ Course purchase recorded: user=${purchaseUserId} course=${slug}`);
+          logger.info({ userId: purchaseUserId, slug, requestId: req.requestId, action: 'course_purchase_recorded' }, 'Course purchase recorded');
 
           const buyer = await User.findById(purchaseUserId).select('email profile.firstName');
           logActivity(ACTIVITY_TYPES.PAYMENT_SUCCEEDED, {
@@ -708,10 +709,10 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
           processReferralPaidConversion(purchaseUserId)
             .then(r => {
               if (r.referrerAwarded) {
-                console.log(`[REWARDS] +${r.points} to referrer (paid conversion) for buyer ${purchaseUserId}`);
+                logger.info({ userId: purchaseUserId, points: r.points, action: 'referral_paid_conversion' }, '[REWARDS] referrer awarded paid conversion');
               }
             })
-            .catch(err => console.error('[REWARDS] referral paid conversion failed:', err.message));
+            .catch(err => logger.error({ err, userId: purchaseUserId, requestId: req.requestId }, '[REWARDS] referral paid conversion failed'));
 
           // SMS notification (fire-and-forget)
           if (twilioClient && process.env.ADMIN_PHONE) {
@@ -719,7 +720,7 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
               body: `CounselorReady: Payment\n${buyer?.email} paid for "${slug}"`,
               from: process.env.TWILIO_PHONE_NUMBER,
               to: process.env.ADMIN_PHONE
-            }).catch(e => console.error('SMS error:', e));
+            }).catch(e => logger.error({ err: e, userId: purchaseUserId, requestId: req.requestId }, 'SMS course purchase notification error'));
           }
           break;
         }
@@ -744,7 +745,7 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
             userName: subscriber?.profile?.firstName || '',
             userEmail: subscriber?.email || ''
           }).catch(() => {});
-          console.log(`Subscription activated for user ${userId}: ${plan}`);
+          logger.info({ userId, plan, requestId: req.requestId, action: 'subscription_activated' }, 'Subscription activated');
 
           // SMS: new subscription
           if (twilioClient && process.env.ADMIN_PHONE) {
@@ -753,17 +754,17 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
               body: `CounselorReady: New Subscription\n${subscriber?.email}\nPlan: ${plan} · ${amount}/mo`,
               from: process.env.TWILIO_PHONE_NUMBER,
               to: process.env.ADMIN_PHONE
-            }).catch(e => console.error('SMS sub error:', e));
+            }).catch(e => logger.error({ err: e, userId, requestId: req.requestId }, 'SMS subscription notification error'));
           }
 
           // [REWARDS] Referral paid conversion (subscription) — fire-and-forget, dedup'd
           processReferralPaidConversion(userId)
             .then(r => {
               if (r.referrerAwarded) {
-                console.log(`[REWARDS] +${r.points} to referrer (subscription) for buyer ${userId}`);
+                logger.info({ userId, points: r.points, action: 'referral_subscription_conversion' }, '[REWARDS] referrer awarded subscription conversion');
               }
             })
-            .catch(err => console.error('[REWARDS] referral paid (sub) failed:', err.message));
+            .catch(err => logger.error({ err, userId, requestId: req.requestId }, '[REWARDS] referral paid (sub) failed'));
         }
         break;
       }
@@ -779,7 +780,7 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
             'billing.status': subscription.status === 'active' ? 'active' : subscription.status,
             'billing.currentPeriodEnd': new Date(subscription.current_period_end * 1000)
           });
-          console.log(`Partner subscription updated for ${partnerId}: ${subscription.status}`);
+          logger.info({ partnerId, status: subscription.status, requestId: req.requestId }, 'Partner subscription updated');
         }
 
         // User subscription update
@@ -813,8 +814,8 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
                 }
               });
             }
-          } catch (phErr) { console.error('PostHog subscription_activated failed:', phErr); }
-          console.log(`Subscription updated for user ${userId}: ${subscription.status}`);
+          } catch (phErr) { logger.error({ err: phErr, userId, requestId: req.requestId }, 'PostHog subscription_activated failed'); }
+          logger.info({ userId, status: subscription.status, requestId: req.requestId, action: 'subscription_updated' }, 'Subscription updated');
         }
         break;
       }
@@ -831,7 +832,7 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
             'billing.status': 'canceled',
             'billing.stripeSubscriptionId': null
           });
-          console.log(`Partner subscription canceled for ${partnerId}`);
+          logger.info({ partnerId, requestId: req.requestId }, 'Partner subscription canceled');
         }
 
         // User subscription canceled
@@ -861,8 +862,8 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
                 }
               });
             }
-          } catch (phErr) { console.error('PostHog subscription_canceled failed:', phErr); }
-          console.log(`Subscription canceled for user ${userId}`);
+          } catch (phErr) { logger.error({ err: phErr, userId, requestId: req.requestId }, 'PostHog subscription_canceled failed'); }
+          logger.info({ userId, requestId: req.requestId, action: 'subscription_canceled' }, 'Subscription canceled');
         }
         break;
       }
@@ -878,7 +879,7 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
             'subscription.paymentFailedAt': new Date(),
             $inc: { 'subscription.paymentFailureCount': 1 }
           });
-          console.log(`Payment failed for user ${user._id}`);
+          logger.info({ userId: user._id, requestId: req.requestId, action: 'payment_failed' }, 'Payment failed');
           // Notify admin of payment failure
           logActivity(ACTIVITY_TYPES.PAYMENT_FAILED, {
             plan: user.subscription?.plan || 'unknown'
@@ -891,7 +892,7 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
           try {
             await sendPaymentFailedEmail(user._id);
           } catch (emailErr) {
-            console.error('Failed to send payment failure email:', emailErr.message);
+            logger.error({ err: emailErr, userId: user._id, requestId: req.requestId }, 'Failed to send payment failure email');
           }
         }
         break;
@@ -917,7 +918,7 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
           }
 
           await User.findByIdAndUpdate(user._id, updateFields);
-          console.log(`Invoice paid for user ${user._id}${wasRecovery ? ' (recovered from past_due)' : ''}`);
+          logger.info({ userId: user._id, wasRecovery, requestId: req.requestId, action: 'invoice_paid' }, 'Invoice paid');
 
           if (wasRecovery) {
             await sendPaymentRecoveredEmail(user._id);
@@ -927,12 +928,12 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
       }
       
       default:
-        console.log(`Unhandled event type: ${event.type}`);
+        logger.info({ eventType: event.type, requestId: req.requestId }, 'Unhandled Stripe event type');
     }
     
     res.json({ received: true });
   } catch (error) {
-    console.error('Webhook handler error:', error);
+    logger.error({ err: error, requestId: req.requestId }, 'Webhook handler error');
     res.status(500).json({ error: 'Webhook handler failed' });
   }
 });
@@ -980,7 +981,7 @@ router.post('/apply-promo', protect, async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('Apply promo code error:', error);
+    logger.error({ err: error, userId: req.user?._id, requestId: req.requestId }, 'Apply promo code error');
     res.status(500).json({ error: 'Failed to apply promo code' });
   }
 });
@@ -1039,7 +1040,7 @@ router.post('/validate-coupon', protect, async (req, res) => {
       couponId: coupon.id
     });
   } catch (error) {
-    console.error('Validate coupon error:', error);
+    logger.error({ err: error, userId: req.user?._id, requestId: req.requestId }, 'Validate coupon error');
     res.status(500).json({ valid: false, error: 'Failed to validate code' });
   }
 });
@@ -1122,7 +1123,7 @@ router.post('/purchase-course', protect, async (req, res) => {
           sessionParams.discounts = [{ promotion_code: promotionCodes.data[0].id }];
         }
       } catch (err) {
-        console.error('Coupon lookup error:', err);
+        logger.error({ err, userId: req.user?._id, requestId: req.requestId }, 'Coupon lookup error');
         // Continue without discount rather than failing the purchase
       }
     }
@@ -1131,7 +1132,7 @@ router.post('/purchase-course', protect, async (req, res) => {
 
     res.json({ url: session.url, sessionId: session.id });
   } catch (error) {
-    console.error('Purchase course error:', error);
+    logger.error({ err: error, userId: req.user?._id, requestId: req.requestId }, 'Purchase course error');
     res.status(500).json({ error: 'Failed to create checkout session' });
   }
 });
@@ -1146,7 +1147,7 @@ router.get('/purchased-courses', protect, async (req, res) => {
     }));
     res.json({ purchased });
   } catch (error) {
-    console.error('Get purchased courses error:', error);
+    logger.error({ err: error, userId: req.user?._id, requestId: req.requestId }, 'Get purchased courses error');
     res.status(500).json({ error: 'Failed to fetch purchased courses' });
   }
 });
