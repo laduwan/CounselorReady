@@ -613,8 +613,8 @@ router.post('/create-course-checkout', protect, async (req, res) => {
         quantity: 1
       }],
       mode: 'payment',
-      success_url: `https://counselorready.com/course-success.html?session_id={CHECKOUT_SESSION_ID}&courseId=${course._id.toString()}`,
-      cancel_url: 'https://counselorready.com/catalog.html',
+      success_url: `${process.env.CLIENT_URL || 'https://counselorready.com'}/checkout-success.html?session_id={CHECKOUT_SESSION_ID}&slug=${course.slug || ''}&name=${encodeURIComponent(course.title || '')}`,
+      cancel_url: `${process.env.CLIENT_URL || 'https://counselorready.com'}/course-details.html?slug=${course.slug || ''}&cancelled=true`,
       metadata: {
         type: 'course_purchase',
         courseId: course._id.toString(),
