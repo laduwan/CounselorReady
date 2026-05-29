@@ -19,6 +19,7 @@
 
 import express from 'express';
 import cors from 'cors';
+import helmet from 'helmet';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import path from 'path';
@@ -105,6 +106,7 @@ import { ROUTE_MANIFEST } from './routeManifest.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const app = express();
+app.use(helmet({ contentSecurityPolicy: false }));
 
 // Mount recorder — records every '/api/...' path passed to app.use so
 // verifyRoutes() can detect routers that were imported but never mounted.
@@ -121,6 +123,8 @@ const allowedOrigins = [
   'http://localhost:5173',
   'http://localhost:3000',
   'http://127.0.0.1:5173',
+  'https://counselorready.com',
+  'https://www.counselorready.com',
   process.env.CLIENT_URL
 ].filter(Boolean);
 
@@ -131,7 +135,7 @@ app.use(cors({
       callback(null, true);
     } else {
       console.log('Blocked by CORS:', origin);
-      callback(null, true);
+      callback(null, false);
     }
   },
   credentials: true,
