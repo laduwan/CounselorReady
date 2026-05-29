@@ -87,7 +87,7 @@
   </div>
 
   <script>
-    const API = 'https://api.counselorready.com/api/auth';
+    const API = (window.location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://api.counselorready.com') + '/api/auth';
 
     async function verifyEmail() {
       const params = new URLSearchParams(window.location.search);
@@ -100,7 +100,11 @@
       }
 
       try {
-        const res = await fetch(`${API}/verify-email?token=${token}`);
+        const res = await fetch(`${API}/verify-email`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token })
+        });
         const data = await res.json();
 
         document.getElementById('loading-state').classList.add('hidden');
