@@ -21,6 +21,7 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import compression from 'compression';
+import rateLimit from 'express-rate-limit';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import path from 'path';
@@ -107,6 +108,7 @@ import { ROUTE_MANIFEST } from './routeManifest.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const app = express();
+app.set('trust proxy', 1);
 app.use(helmet({ contentSecurityPolicy: false }));
 app.use(compression());
 
@@ -198,6 +200,24 @@ app.get('/health', async (req, res) => {
 // NEVER REMOVE ANY LINE. ONLY ADD.
 // ═══════════════════════════════════════════════════════════════
 
+const globalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 300,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many requests, please try again later' }
+});
+
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 15,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many authentication attempts, please try again later' }
+});
+
+app.use('/api/', globalLimiter);
+app.use('/api/auth', authLimiter);
 app.use('/api/auth', authRoutes);
 app.use('/api/interactive-courses', interactiveCourseRoutes);
 app.use('/api/courses', coursesRoutes);
@@ -390,7 +410,7 @@ const startServer = async () => {
   const phKey = process.env.POSTHOG_API_KEY || 'phc_rRGb8TPVl8lDYnD4M2HMGGuBBkL9whGzghD5FEX20Vb';
   global.posthog = new PostHog(phKey, { host: 'https://us.i.posthog.com' });
   console.log('PostHog analytics initialized');
-  app.listen(PORT, () => {
+  const server = app.listen(PORT, () => {
     console.log(`
 ╔════════════════════════════════════════════════════╗
 ║                                                    ║
@@ -408,6 +428,26 @@ const startServer = async () => {
 ╚════════════════════════════════════════════════════╝
     `);
   });
+
+  // Graceful shutdown — let in-flight requests finish on SIGTERM/SIGINT
+  const shutdown = async (signal) => {
+    console.log(`\n${signal} received — shutting down gracefully...`);
+    server.close(() => {
+      console.log('HTTP server closed');
+      mongoose.connection.close(false).then(() => {
+        console.log('MongoDB connection closed');
+        process.exit(0);
+      });
+    });
+    // Force exit after 10 seconds if graceful shutdown hangs
+    setTimeout(() => {
+      console.error('Forced shutdown after timeout');
+      process.exit(1);
+    }, 10000);
+  };
+
+  process.on('SIGTERM', () => shutdown('SIGTERM'));
+  process.on('SIGINT', () => shutdown('SIGINT'));
 };
 
 startServer().catch(err => {

@@ -274,7 +274,9 @@
             // Standard login — token issued.
             localStorage.setItem('token', data.token);
             localStorage.setItem('user', JSON.stringify(data.user));
-            window.location.href = '/dashboard.html';
+            const params = new URLSearchParams(window.location.search);
+            const redirect = params.get('redirect');
+            window.location.href = (redirect && redirect.startsWith('/') && !redirect.startsWith('//')) ? redirect : '/dashboard.html';
           } else {
             // Show error
             showError(data.error || data.message || 'Invalid email or password.');
@@ -315,7 +317,9 @@
           if (response.ok && data.token) {
             localStorage.setItem('token', data.token);
             localStorage.setItem('user', JSON.stringify(data.user));
-            window.location.href = '/dashboard.html';
+            const params = new URLSearchParams(window.location.search);
+            const redirect = params.get('redirect');
+            window.location.href = (redirect && redirect.startsWith('/') && !redirect.startsWith('//')) ? redirect : '/dashboard.html';
             return;
           }
           showError(data.error || 'Invalid code. Please try again.');
