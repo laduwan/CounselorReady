@@ -5,16 +5,45 @@
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-// Mock all dependencies before importing (same pattern as contentGating.test.js)
-vi.mock('mongoose', () => ({
-  default: { Schema: class { constructor() {} }, model: () => ({}), Types: { ObjectId: { isValid: () => true } } },
-  Schema: class { constructor() {} }
-}));
+// Mock all dependencies before importing (same approach as contentGating.test.js).
+// The mongoose stub is slightly fuller than that file's: interactiveCourseRoutes.js
+// now also imports models (Gamification, UserCredential) whose schemas reference
+// mongoose.Schema.Types.ObjectId and call chainable schema methods at load time.
+// The bare-class stub in contentGating.test.js throws on those, so we provide
+// Schema.Types and no-op chainable methods to let the import chain load.
+vi.mock('mongoose', () => {
+  class Schema {
+    constructor() {}
+    pre() { return this; }
+    post() { return this; }
+    index() { return this; }
+    set() { return this; }
+    plugin() { return this; }
+    method() { return this; }
+    static() { return this; }
+    add() { return this; }
+    virtual() { return { get() { return this; }, set() { return this; } }; }
+  }
+  Schema.Types = { ObjectId: String, Mixed: Object, Decimal128: Number, Map };
+  const mongoose = {
+    Schema,
+    model: () => ({}),
+    models: {},
+    Types: { ObjectId: { isValid: () => true } }
+  };
+  return { default: mongoose, Schema };
+});
 vi.mock('../models/InteractiveCourse.js', () => ({
   Course: { findOne: vi.fn() },
   CourseProgress: { findOne: vi.fn() },
   ContentInteraction: {}
 }));
+// interactiveCourseRoutes.js also imports these two models at module load.
+// Their real schemas reference mongoose.Schema.Types.ObjectId, which the
+// lightweight mongoose mock above does not provide — so they must be mocked
+// too (the original contentGating.test.js predates these imports).
+vi.mock('../models/Gamification.js', () => ({ default: {} }));
+vi.mock('../models/UserCredential.js', () => ({ default: {} }));
 vi.mock('../models/Certificate.js', () => ({ default: {} }));
 vi.mock('../models/Evaluation.js', () => ({ default: {} }));
 vi.mock('../models/User.js', () => ({ default: {} }));
@@ -31,7 +60,35 @@ vi.mock('../services/activityTrackingService.js', () => ({
 }));
 vi.mock('../utils/certificate.js', () => ({
   generateCertificate: vi.fn(),
-  generateCertificateNumber: vi.fn()
+  generateCertificateNumber: vi.fn(),
+  buildApprovalBlock: vi.fn()
+}));
+// interactiveCourseRoutes.js imports a cascade of service/config/util modules
+// at load time, several of which instantiate external clients on import
+// (e.g. freeCourseLimitEmail.js → `new Resend(process.env.RESEND_API_KEY)`,
+// config/twilio.js → a Twilio client). Mocking the wrapper modules keeps the
+// real clients — and their required API keys — out of the test. The original
+// contentGating.test.js predates these imports, which is why it currently
+// fails to load on main.
+vi.mock('../services/freeCourseLimitEmail.js', () => ({ checkAndSendFreeLimit: vi.fn() }));
+vi.mock('../services/rewardsService.js', () => ({
+  awardCourseCompletion: vi.fn(),
+  awardCertificate: vi.fn(),
+  awardCourseEvaluation: vi.fn()
+}));
+vi.mock('../services/emailNotifications.js', () => ({ sendCertificateEmail: vi.fn() }));
+vi.mock('../config/sms.js', () => ({ smsConfig: {} }));
+vi.mock('../config/twilio.js', () => ({ default: {} }));
+vi.mock('../utils/sms.js', () => ({ sendSMS: vi.fn() }));
+vi.mock('../utils/email.js', () => ({ sendEmail: vi.fn() }));
+vi.mock('../utils/certificatePdf.js', () => ({ generateCertificatePDF: vi.fn() }));
+vi.mock('../utils/approvalText.js', () => ({ buildApprovalText: vi.fn() }));
+vi.mock('twilio', () => ({ default: () => ({}) }));
+// Depth-independent guards: several modules in the import tree construct these
+// external clients at load time and throw without API keys. Mocking the
+// packages themselves covers every importer regardless of how deep it sits.
+vi.mock('resend', () => ({
+  Resend: class { constructor() { this.emails = { send: vi.fn() }; } }
 }));
 
 const { CourseProgress } = await import('../models/InteractiveCourse.js');
