@@ -6,21 +6,46 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 // Mock all dependencies before importing
-vi.mock('mongoose', () => ({
-  default: { Schema: class { constructor() {} }, model: () => ({}), Types: { ObjectId: { isValid: () => true } } },
-  Schema: class { constructor() {} }
-}));
+// interactiveCourseRoutes.js now imports models (Gamification, UserCredential)
+// whose schemas reference mongoose.Schema.Types.ObjectId and call chainable
+// schema methods at load time, so the mongoose stub provides Schema.Types and
+// no-op chainable methods to let the import chain load.
+vi.mock('mongoose', () => {
+  class Schema {
+    constructor() {}
+    pre() { return this; }
+    post() { return this; }
+    index() { return this; }
+    set() { return this; }
+    plugin() { return this; }
+    method() { return this; }
+    static() { return this; }
+    add() { return this; }
+    virtual() { return { get() { return this; }, set() { return this; } }; }
+  }
+  Schema.Types = { ObjectId: String, Mixed: Object, Decimal128: Number, Map };
+  const mongoose = {
+    Schema,
+    model: () => ({}),
+    models: {},
+    Types: { ObjectId: { isValid: () => true } }
+  };
+  return { default: mongoose, Schema };
+});
 vi.mock('../models/InteractiveCourse.js', () => ({
   Course: { findOne: vi.fn() },
   CourseProgress: { findOne: vi.fn() },
   ContentInteraction: {}
 }));
+vi.mock('../models/Gamification.js', () => ({ default: {} }));
+vi.mock('../models/UserCredential.js', () => ({ default: {} }));
 vi.mock('../models/Certificate.js', () => ({ default: {} }));
 vi.mock('../models/Evaluation.js', () => ({ default: {} }));
 vi.mock('../models/User.js', () => ({ default: {} }));
 vi.mock('../middleware/auth.js', () => ({
   protect: (req, res, next) => next(),
-  optionalAuth: (req, res, next) => next()
+  optionalAuth: (req, res, next) => next(),
+  requireAdmin: (req, res, next) => next()
 }));
 vi.mock('../middleware/tenantScope.js', () => ({
   attachTenantScope: (req, res, next) => next()
@@ -31,7 +56,30 @@ vi.mock('../services/activityTrackingService.js', () => ({
 }));
 vi.mock('../utils/certificate.js', () => ({
   generateCertificate: vi.fn(),
-  generateCertificateNumber: vi.fn()
+  generateCertificateNumber: vi.fn(),
+  buildApprovalBlock: vi.fn()
+}));
+// interactiveCourseRoutes.js imports a cascade of service/config/util modules
+// at load time, several of which instantiate external clients on import
+// (e.g. freeCourseLimitEmail.js → `new Resend(...)`). Mock the wrapper modules
+// and the resend/twilio packages so the real clients (and their API keys) stay
+// out of the test.
+vi.mock('../services/freeCourseLimitEmail.js', () => ({ checkAndSendFreeLimit: vi.fn() }));
+vi.mock('../services/rewardsService.js', () => ({
+  awardCourseCompletion: vi.fn(),
+  awardCertificate: vi.fn(),
+  awardCourseEvaluation: vi.fn()
+}));
+vi.mock('../services/emailNotifications.js', () => ({ sendCertificateEmail: vi.fn() }));
+vi.mock('../config/sms.js', () => ({ smsConfig: {} }));
+vi.mock('../config/twilio.js', () => ({ default: {} }));
+vi.mock('../utils/sms.js', () => ({ sendSMS: vi.fn() }));
+vi.mock('../utils/email.js', () => ({ sendEmail: vi.fn() }));
+vi.mock('../utils/certificatePdf.js', () => ({ generateCertificatePDF: vi.fn() }));
+vi.mock('../utils/approvalText.js', () => ({ buildApprovalText: vi.fn() }));
+vi.mock('twilio', () => ({ default: () => ({}) }));
+vi.mock('resend', () => ({
+  Resend: class { constructor() { this.emails = { send: vi.fn() }; } }
 }));
 
 const { CourseProgress } = await import('../models/InteractiveCourse.js');

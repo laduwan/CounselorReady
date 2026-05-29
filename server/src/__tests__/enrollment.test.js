@@ -49,7 +49,8 @@ vi.mock('../models/Evaluation.js', () => ({ default: {} }));
 vi.mock('../models/User.js', () => ({ default: {} }));
 vi.mock('../middleware/auth.js', () => ({
   protect: (req, res, next) => next(),
-  optionalAuth: (req, res, next) => next()
+  optionalAuth: (req, res, next) => next(),
+  requireAdmin: (req, res, next) => next()
 }));
 vi.mock('../middleware/tenantScope.js', () => ({
   attachTenantScope: (req, res, next) => next()
