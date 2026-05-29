@@ -371,7 +371,7 @@ router.post('/forgot-password', async (req, res) => {
     user.passwordResetExpires = Date.now() + 3600000;
     await user.save();
     
-    const resetUrl = `https://counselorready.com/reset-password.html?token=${resetToken}`;
+    const resetUrl = `${process.env.CLIENT_URL || 'https://counselorready.com'}/reset-password.html?token=${resetToken}`;
     
     await resend.emails.send({
       from: 'CounselorReady <noreply@counselorready.com>',
