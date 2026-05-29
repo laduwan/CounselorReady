@@ -26,6 +26,7 @@ import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { requestId } from './middleware/requestId.js';
+import { apiVersioning } from './middleware/apiVersioning.js';
 
 dotenv.config();
 
@@ -160,6 +161,8 @@ if (process.env.NODE_ENV !== 'production') {
   });
 }
 
+app.use(apiVersioning);
+
 // ═══════════════════════════════════════════════════════════════
 // DATABASE
 // ═══════════════════════════════════════════════════════════════
@@ -189,6 +192,7 @@ app.get('/health', async (req, res) => {
       mongodb: dbStatus[dbState] || 'unknown',
       environment: process.env.NODE_ENV || 'development',
       version: '1.0.0',
+      apiVersions: ['v1'],
       requiredRoutes: ROUTE_MANIFEST.length
     });
   } catch (error) {
