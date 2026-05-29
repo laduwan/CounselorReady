@@ -146,10 +146,14 @@ function expectFullContent(result) {
   expect(result.assessment.questions).toHaveLength(2);
 }
 
-// Assert the caller received the stripped preview.
+// Assert the caller received the stripped preview. stripContent() sets
+// _isPreview and rewrites each section to a single truncated text preview block
+// flagged with _stripped (it does NOT empty assessment.questions), so the
+// reliable signal that gating stripped the content is the section shape.
 function expectStripped(result) {
   expect(result._isPreview).toBe(true);
-  expect(result.assessment.questions).toEqual([]);
+  expect(result.sections[0]._stripped).toBe(true);
+  expect(result.sections[0].contentBlocks).toHaveLength(1);
 }
 
 describe('gateContent — purchasedCourses access check', () => {
