@@ -81,7 +81,8 @@ router.post('/register', async (req, res) => {
       },
       ...(partnerId && { partnerId }),
       emailVerified: false,
-      emailVerificationToken: verificationTokenHash
+      emailVerificationToken: verificationTokenHash,
+      emailVerificationExpires: Date.now() + 24 * 60 * 60 * 1000,
     });
     
     // Log activity for admin notification
@@ -508,7 +509,10 @@ router.post('/verify-email', async (req, res) => {
     
     const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
     
-    const user = await User.findOne({ emailVerificationToken: tokenHash });
+    const user = await User.findOne({
+      emailVerificationToken: tokenHash,
+      emailVerificationExpires: { $gt: Date.now() }
+    });
     
     if (!user) {
       return res.status(400).json({ error: 'Invalid or expired verification link' });
@@ -547,6 +551,7 @@ router.post('/resend-verification', protect, async (req, res) => {
     const verificationTokenHash = crypto.createHash('sha256').update(verificationToken).digest('hex');
     
     user.emailVerificationToken = verificationTokenHash;
+    user.emailVerificationExpires = Date.now() + 24 * 60 * 60 * 1000;
     await user.save();
     
     const verifyUrl = `${process.env.CLIENT_URL || 'https://counselorready.com'}/verify-email.html?token=${verificationToken}`;
