@@ -43,7 +43,6 @@ const gamificationSchema = new mongoose.Schema({
   timestamps: true
 });
 
-gamificationSchema.index({ userId: 1 }, { unique: true });
 gamificationSchema.index({ xp: -1 }); // for leaderboard
 
 // XP thresholds for levels
