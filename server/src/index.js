@@ -311,6 +311,7 @@ function verifyRoutes() {
     const untracked = [];
     for (const path of __mountedApiPaths) {
       if (path === '/api/payments/webhook') continue; // raw-body parser, not a router
+      if (path === '/api/') continue; // global rate limiter, not a route handler
       if (!manifestPaths.has(path)) untracked.push(path);
     }
 
