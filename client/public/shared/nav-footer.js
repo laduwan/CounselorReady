@@ -239,7 +239,19 @@
 
   if (T) {
     fetch(`${API}/api/auth/me`, { headers: { Authorization: `Bearer ${T}` } })
-      .then(r => { if (!r.ok) throw 0; return r.json(); })
+      .then(r => {
+        if (r.status === 401) {
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+          const pub = ['/', '/landing.html', '/courses.html', '/course-details.html', '/login.html', '/register.html', '/verify-email.html', '/reset-password.html', '/forgot-password.html', '/blog.html'];
+          if (!pub.includes(location.pathname)) {
+            location.href = '/login.html?redirect=' + encodeURIComponent(location.pathname + location.search);
+          }
+          throw 0;
+        }
+        if (!r.ok) throw 0;
+        return r.json();
+      })
       .then(d => {
         const u = d.user || d;
         const f = u.profile?.firstName || u.firstName || '';
