@@ -174,7 +174,6 @@ referralSchema.methods.convertRegistrationCredit = function (referralEntryId) {
 };
 
 referralSchema.index({ referrerId: 1 }, { unique: true });
-referralSchema.index({ referralCode: 1 }, { unique: true });
 referralSchema.index({ 'referrals.referredEmail': 1 });
 referralSchema.index({ 'referrals.referredUserId': 1 });
 
