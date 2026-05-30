@@ -257,6 +257,7 @@ const userSchema = new mongoose.Schema({
   // Metadata
   emailVerified: { type: Boolean, default: false },
   emailVerificationToken: { type: String },
+  emailVerificationExpires: { type: Date },
   passwordResetToken: { type: String },
   passwordResetExpires: { type: Date },
   role: {
