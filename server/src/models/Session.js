@@ -18,7 +18,7 @@ const sessionSchema = new mongoose.Schema({
   ip:       { type: String, default: '' },
   location: { type: String, default: '' },
   createdAt:  { type: Date, default: Date.now, index: true },
-  lastActive: { type: Date, default: Date.now, index: true },
+  lastActive: { type: Date, default: Date.now },
   revoked:   { type: Boolean, default: false },
   revokedAt: { type: Date,    default: null },
 }, { timestamps: false });

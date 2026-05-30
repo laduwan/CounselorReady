@@ -76,7 +76,6 @@ const scholarlyArticleSchema = new mongoose.Schema({
   timestamps: true
 });
 
-scholarlyArticleSchema.index({ doi: 1 });
 scholarlyArticleSchema.index({ title: 'text', journal: 'text' });
 
 // ============================================
