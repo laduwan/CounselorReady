@@ -511,7 +511,10 @@ router.post('/verify-email', async (req, res) => {
     
     const user = await User.findOne({
       emailVerificationToken: tokenHash,
-      emailVerificationExpires: { $gt: Date.now() }
+      $or: [
+        { emailVerificationExpires: { $gt: Date.now() } },
+        { emailVerificationExpires: { $exists: false } }
+      ]
     });
     
     if (!user) {
