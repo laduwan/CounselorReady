@@ -444,6 +444,27 @@
       
       // Set page title
       document.title = `${currentCourse.title} - CounselorReady`;
+
+      // Dynamic SEO meta tags
+      const ceHours = currentCourse.ceHours || currentCourse.ceuHours || '';
+      const seoDesc = currentCourse.description
+        ? currentCourse.description.substring(0, 155) + (currentCourse.description.length > 155 ? '...' : '')
+        : `${ceHours} CE hour${ceHours !== 1 ? 's' : ''} — NBCC-approved continuing education course for licensed counselors.`;
+
+      function setMeta(name, content, property) {
+        const attr = property ? 'property' : 'name';
+        const val = property || name;
+        let el = document.querySelector(`meta[${attr}="${val}"]`);
+        if (!el) { el = document.createElement('meta'); el.setAttribute(attr, val); document.head.appendChild(el); }
+        el.setAttribute('content', content);
+      }
+
+      setMeta('description', seoDesc);
+      setMeta(null, currentCourse.title + ' — CounselorReady CE Course', 'og:title');
+      setMeta(null, seoDesc, 'og:description');
+      setMeta(null, 'article', 'og:type');
+      setMeta(null, window.location.href, 'og:url');
+      if (currentCourse.thumbnail) setMeta(null, currentCourse.thumbnail, 'og:image');
       
       // Basic info
       document.getElementById('courseTitle').textContent = currentCourse.title;
