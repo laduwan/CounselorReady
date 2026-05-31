@@ -159,7 +159,17 @@
 
       // Courses completed
       if(pR?.ok){const p=await pR.json();const list=p.data||(Array.isArray(p)?p:[]);document.getElementById('coursesCompleted').textContent=list.filter(x=>x.status==='completed'||x.status==='certified').length;renderCourses(list);}
-    }catch(e){console.error('Dashboard loadStats error:',e);}}
+    }catch(e){
+    console.error('Dashboard loadStats error:',e);
+    const main = document.querySelector('main');
+    if (main) {
+      const banner = document.createElement('div');
+      banner.className = 'mb-6 p-4 rounded-xl text-center';
+      banner.style.cssText = 'background:#FDF5F7;border:1px solid #F5D0D6;color:#6B1D34';
+      banner.innerHTML = '<p class="text-sm font-medium">Unable to load your data right now. <button onclick="location.reload()" class="underline font-semibold">Try again</button></p>';
+      main.prepend(banner);
+    }
+  }}
 
     function credLabel(x){
       const generic=['state_license','national_cert','specialty_cert','training','custom','other'];
