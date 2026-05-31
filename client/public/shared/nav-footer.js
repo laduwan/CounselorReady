@@ -21,7 +21,7 @@
     { label: 'Dashboard', href: '/dashboard.html' },
     { label: 'Courses', href: '/courses.html' },
     { label: 'Credentials', href: '/credentials.html' },
-    { label: 'CE Certificates', href: '/certificates.html' },
+    { label: 'CE Certificates', href: '/credentials.html#certifications' },
     { label: 'Blog', href: '/blog.html' },
     { label: 'Messages', href: '/messages.html' },
   ];
@@ -172,7 +172,7 @@
             <a href="/courses.html" style="display:block;font-size:12px;color:rgba(255,255,255,0.75);text-decoration:none;padding:3px 0;transition:color .15s" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(255,255,255,0.75)'">Browse courses</a>
             <a href="/research-ready.html" style="display:block;font-size:12px;color:rgba(255,255,255,0.75);text-decoration:none;padding:3px 0;transition:color .15s" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(255,255,255,0.75)'">Researched-N-Ready</a>
             <a href="/credentials.html" style="display:block;font-size:12px;color:rgba(255,255,255,0.75);text-decoration:none;padding:3px 0;transition:color .15s" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(255,255,255,0.75)'">Credentials</a>
-            <a href="/certificates.html" style="display:block;font-size:12px;color:rgba(255,255,255,0.75);text-decoration:none;padding:3px 0;transition:color .15s" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(255,255,255,0.75)'">CE certificates</a>
+            <a href="/credentials.html#certifications" style="display:block;font-size:12px;color:rgba(255,255,255,0.75);text-decoration:none;padding:3px 0;transition:color .15s" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(255,255,255,0.75)'">CE certificates</a>
           </div>
           <div>
             <h4 style="font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#D4A855;margin:0 0 10px">Support</h4>
