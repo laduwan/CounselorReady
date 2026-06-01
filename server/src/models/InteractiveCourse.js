@@ -448,11 +448,10 @@ const CourseSchema = new mongoose.Schema({
 //   • Top-level assessment.questions[] (final exam — viewer renders to learner)
 //   • Section-level quizQuestions[] (legacy schema location)
 //
-// EXCLUDED per Option B (matches ACEP audit conventions):
+// INCLUDED per locked word count policy — count titles, headers, activity content, options, explanations. Exclude only resources/deliverables/files and references.
 //   • Top-level course.references[] — references do not count toward CE hours
 //   • Block-level references[] arrays — same
 //   • course.objectives[] — pre-course metadata, not instructional flow
-//   • section.title and block.title/subtitle — section headers (metadata)
 //   • course.description, tags, targetAudience, instructor — catalog metadata
 CourseSchema.pre('save', function(next) {
   (this.sections || []).forEach((sec, si) => {
@@ -594,7 +593,9 @@ CourseSchema.pre('save', function(next) {
     n += wcFields(b.deliverables, ['title']);
     n += wcFields(b.files, ['title']);
 
-    // EXCLUDED: b.title, b.subtitle (section/block header metadata)
+    // INCLUDED per locked word count policy: titles, headers count toward CE
+    n += wcOf(b.title);
+    n += wcOf(b.subtitle);
     // EXCLUDED: b.references[] (not rendered; refs don't count toward CE)
 
     return n;
@@ -608,7 +609,8 @@ CourseSchema.pre('save', function(next) {
     (s.contentBlocks || []).forEach(b => { wc += wcBlock(b); });
     // (2) Section-level quizQuestions (legacy schema location)
     (s.quizQuestions || []).forEach(q => { wc += wcQuestion(q); });
-    // EXCLUDED: s.title (section header metadata)
+    // INCLUDED per locked word count policy: section titles count toward CE
+    wc += wcOf(s.title);
   });
 
   // (3) Final-assessment questions — viewer renders these to the learner
