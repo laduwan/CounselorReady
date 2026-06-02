@@ -101,11 +101,11 @@
               </span>
               <span class="flex items-center gap-1">
                 <svg class="w-5 h-5 text-forest-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
-                <span id="courseModuleCount">0</span> Modules
+                <span id="courseModuleCount">0</span> Sections
               </span>
               <span class="flex items-center gap-1">
                 <svg class="w-5 h-5 text-forest-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
-                <span id="courseLessonCount">0</span> Lessons
+                <span id="courseLessonCount">0</span> Activities
               </span>
               <span id="courseInstructorContainer" class="flex items-center gap-1">
                 <svg class="w-5 h-5 text-forest-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
@@ -473,11 +473,19 @@
       document.getElementById('courseCEHours').textContent = currentCourse.ceuHours || 0;
       document.getElementById('courseInstructor').textContent = currentCourse.instructor || 'CounselorReady';
       
-      // Module and lesson counts
-      const modules = currentCourse.modules || [];
-      const lessonCount = modules.reduce((sum, m) => sum + (m.lessons?.length || 0), 0);
-      document.getElementById('courseModuleCount').textContent = modules.length;
-      document.getElementById('courseLessonCount').textContent = lessonCount;
+      // Section and activity counts
+      // Interactive courses store sections/contentBlocks; older data used modules/lessons.
+      const sections = currentCourse.sections || [];
+      const legacyModules = currentCourse.modules || [];
+      const sectionCount = sections.length || legacyModules.length;
+      // Prefer the stored total (accurate even when section content is gated/stripped to a
+      // single preview block); fall back to summing visible blocks, then legacy lessons.
+      const activityCount = (typeof currentCourse.totalContentBlocks === 'number' && currentCourse.totalContentBlocks > 0)
+        ? currentCourse.totalContentBlocks
+        : (sections.reduce((sum, s) => sum + (s.contentBlocks?.length || 0), 0)
+            || legacyModules.reduce((sum, m) => sum + (m.lessons?.length || 0), 0));
+      document.getElementById('courseModuleCount').textContent = sectionCount;
+      document.getElementById('courseLessonCount').textContent = activityCount;
       
       // Thumbnail
       if (currentCourse.thumbnail) {
@@ -764,16 +772,42 @@
       }).join('');
     }
     
-    // Render course modules
+    // Render course outline (sections for interactive courses; modules for legacy data)
     function renderModules() {
-      const modules = currentCourse.modules || [];
+      const sections = currentCourse.sections || [];
       const container = document.getElementById('modulesList');
-      
+
+      if (sections.length > 0) {
+        container.innerHTML = sections.map((sec, si) => {
+          // Gated previews replace section content with a single placeholder block,
+          // so only show a per-section activity count when the content is real.
+          const blockCount = sec._stripped ? null : (sec.contentBlocks?.length || 0);
+          const meta = [];
+          if (blockCount !== null) meta.push(`${blockCount} ${blockCount === 1 ? 'activity' : 'activities'}`);
+          if (sec.estimatedTime) meta.push(`${sec.estimatedTime} min`);
+          return `
+            <div class="border border-forest-200 rounded-lg overflow-hidden">
+              <div class="bg-forest-50 px-4 py-3 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                  <span class="w-8 h-8 rounded-full bg-burgundy-100 text-burgundy-700 flex items-center justify-center font-semibold text-sm">${si + 1}</span>
+                  <h3 class="font-semibold text-forest-800">${escapeHtml(sec.title)}</h3>
+                </div>
+                ${meta.length ? `<span class="text-sm text-forest-500">${meta.join(' · ')}</span>` : ''}
+              </div>
+              ${sec.description ? `<div class="px-4 py-2 text-sm text-forest-600">${escapeHtml(sec.description)}</div>` : ''}
+            </div>`;
+        }).join('');
+        return;
+      }
+
+      // Legacy module/lesson fallback
+      const modules = currentCourse.modules || [];
+
       if (modules.length === 0) {
         container.innerHTML = '<p class="text-forest-500">Course content is being prepared...</p>';
         return;
       }
-      
+
       container.innerHTML = modules.map((mod, mi) => `
         <div class="border border-forest-200 rounded-lg overflow-hidden">
           <div class="bg-forest-50 px-4 py-3 flex items-center justify-between">
