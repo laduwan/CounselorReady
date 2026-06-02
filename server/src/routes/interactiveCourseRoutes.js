@@ -266,6 +266,40 @@ router.get('/slug/:slug', optionalAuth, async (req, res) => {
 });
 
 /**
+ * GET /api/interactive-courses/user/my-courses
+ * Get all courses user is enrolled in with progress
+ */
+router.get('/user/my-courses', protect, async (req, res) => {
+  try {
+    const { status } = req.query;
+
+    const query = { userId: req.user._id };
+    if (status) query.status = status;
+
+    const progressList = await CourseProgress.find(query)
+      .populate('courseId', 'title slug description thumbnail ceHours totalEstimatedTime')
+      .sort({ lastAccessedAt: -1 });
+
+    const courses = progressList.map(p => ({
+      course: p.courseId,
+      progress: p.overallProgress,
+      status: p.status,
+      currentSection: p.currentSectionIndex,
+      totalTimeSpent: p.totalTimeSpent,
+      enrolledAt: p.enrolledAt,
+      lastAccessedAt: p.lastAccessedAt,
+      completedAt: p.completedAt,
+      certificateId: p.certificateId
+    }));
+
+    res.json({ success: true, data: courses });
+  } catch (error) {
+    console.error('Error fetching user courses:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch courses' });
+  }
+});
+
+/**
  * GET /api/interactive-courses/:id
  * Get course details by ID — content gated by auth/subscription
  */
@@ -1469,40 +1503,6 @@ router.post('/:id/progress/interaction', protect, async (req, res) => {
   } catch (error) {
     console.error('Error logging interaction:', error);
     res.status(500).json({ success: false, error: 'Failed to log interaction' });
-  }
-});
-
-/**
- * GET /api/interactive-courses/user/my-courses
- * Get all courses user is enrolled in with progress
- */
-router.get('/user/my-courses', protect, async (req, res) => {
-  try {
-    const { status } = req.query;
-
-    const query = { userId: req.user._id };
-    if (status) query.status = status;
-
-    const progressList = await CourseProgress.find(query)
-      .populate('courseId', 'title slug description thumbnail ceHours totalEstimatedTime')
-      .sort({ lastAccessedAt: -1 });
-
-    const courses = progressList.map(p => ({
-      course: p.courseId,
-      progress: p.overallProgress,
-      status: p.status,
-      currentSection: p.currentSectionIndex,
-      totalTimeSpent: p.totalTimeSpent,
-      enrolledAt: p.enrolledAt,
-      lastAccessedAt: p.lastAccessedAt,
-      completedAt: p.completedAt,
-      certificateId: p.certificateId
-    }));
-
-    res.json({ success: true, data: courses });
-  } catch (error) {
-    console.error('Error fetching user courses:', error);
-    res.status(500).json({ success: false, error: 'Failed to fetch courses' });
   }
 });
 
