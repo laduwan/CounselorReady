@@ -451,6 +451,19 @@ const startServer = async () => {
   process.on('SIGINT', () => shutdown('SIGINT'));
 };
 
+// Guard against unhandled promise rejections and uncaught exceptions.
+// Prevents a stray async throw from silently killing the process (and causing 502s).
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('[process] Unhandled Rejection at:', promise, 'reason:', reason);
+  // Do not exit — log and continue. Render will restart on true crashes.
+});
+
+process.on('uncaughtException', (err) => {
+  console.error('[process] Uncaught Exception:', err);
+  // Exit so Render restarts cleanly rather than running in a broken state.
+  process.exit(1);
+});
+
 startServer().catch(err => {
   console.error('Failed to start server:', err);
   process.exit(1);
