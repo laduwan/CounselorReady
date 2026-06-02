@@ -410,7 +410,7 @@ router.get('/admin/users', protect, requireAdmin, async (req, res) => {
     
     if (search) {
       query.$or = [
-        { name: { $regex: search, $options: 'i' } },
+        { 'profile.name': { $regex: search, $options: 'i' } },
         { email: { $regex: search, $options: 'i' } }
       ];
     }
@@ -420,7 +420,7 @@ router.get('/admin/users', protect, requireAdmin, async (req, res) => {
     }
     
     let users = await User.find(query)
-      .select('name email subscription.plan primaryState createdAt')
+      .select('profile.name email subscription.plan primaryState createdAt')
       .sort({ createdAt: -1 })
       .limit(parseInt(limit));
     
@@ -430,7 +430,15 @@ router.get('/admin/users', protect, requireAdmin, async (req, res) => {
       users = users.filter(u => userIdsInState.some(id => id.toString() === u._id.toString()));
     }
     
-    res.json({ users });
+    const normalized = users.map(u => ({
+      _id: u._id,
+      name: u.profile?.name || '',
+      email: u.email,
+      plan: u.subscription?.plan,
+      primaryState: u.primaryState
+    }));
+
+    res.json({ users: normalized });
   } catch (error) {
     console.error('Get users error:', error);
     res.status(500).json({ error: 'Failed to get users' });
