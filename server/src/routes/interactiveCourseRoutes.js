@@ -390,6 +390,22 @@ router.post('/:id/enroll', protect, async (req, res) => {
       });
     }
 
+    // Free-tier concurrent course limit: 1 active course at a time
+    if (!isAdmin && (subPlan === 'free' || !isActiveSub)) {
+      const activeCount = await CourseProgress.countDocuments({
+        userId: req.user._id,
+        status: { $in: ['not_started', 'in_progress'] }
+      });
+      if (activeCount >= 1) {
+        return res.status(403).json({
+          success: false,
+          error: 'Free plan allows one active course at a time.',
+          code: 'CONCURRENT_LIMIT',
+          message: 'Complete your current course before starting a new one, or subscribe for unlimited access.'
+        });
+      }
+    }
+
     // Create new enrollment
     progress = new CourseProgress({
       userId: req.user._id,
