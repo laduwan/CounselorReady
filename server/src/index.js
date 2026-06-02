@@ -105,6 +105,7 @@ import cron from 'node-cron';
 import { runDeadlineReminders } from './services/ceDeadlineReminder.js';
 import { runDailyNotificationCheck } from './jobs/dailyNotificationCheck.js';
 import { runHardshipPauseResume } from './jobs/hardshipPauseResume.js';
+import { runCertificateSelfHeal } from './jobs/certificateSelfHeal.js';
 
 import { ROUTE_MANIFEST } from './routeManifest.js';
 
@@ -413,6 +414,14 @@ const startServer = async () => {
     );
   }, { timezone: 'America/New_York' });
   logger.info('Hardship pause auto-resume cron scheduled (daily 8 AM ET)');
+
+  // Certificate self-heal — every 6 hours
+  cron.schedule('0 */6 * * *', () => {
+    runCertificateSelfHeal().catch(err =>
+      console.error('Certificate self-heal error:', err.message)
+    );
+  }, { timezone: 'America/New_York' });
+  logger.info('Certificate self-heal cron scheduled (every 6 hours)');
   // PostHog server-side analytics
   const phKey = process.env.POSTHOG_API_KEY || 'phc_rRGb8TPVl8lDYnD4M2HMGGuBBkL9whGzghD5FEX20Vb';
   global.posthog = new PostHog(phKey, { host: 'https://us.i.posthog.com' });
