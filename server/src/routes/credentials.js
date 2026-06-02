@@ -595,6 +595,144 @@ router.get('/board-alerts', protect, async (req, res) => {
   }
 });
 
+// @route   GET /api/credentials/templates
+// @desc    Get all credential templates
+// @access  Public
+router.get('/templates/all', async (req, res) => {
+  try {
+    const templates = await CredentialTemplate.find({ isActive: true })
+      .sort({ type: 1, state: 1, code: 1 });
+    
+    // Group by type
+    const grouped = {
+      state_license: templates.filter(t => t.type === 'state_license'),
+      national_cert: templates.filter(t => t.type === 'national_cert'),
+      specialty_cert: templates.filter(t => t.type === 'specialty_cert')
+    };
+    
+    res.json({ templates: grouped });
+  } catch (error) {
+    console.error('Get templates error:', error);
+    res.status(500).json({ error: 'Failed to get templates' });
+  }
+});
+
+
+// @route   GET /api/credentials/templates/:state
+// @desc    Get templates for a specific state
+// @access  Public
+router.get('/templates/state/:state', async (req, res) => {
+  try {
+    const templates = await CredentialTemplate.find({
+      isActive: true,
+      state: req.params.state.toUpperCase()
+    }).sort({ code: 1 });
+    
+    res.json({ templates });
+  } catch (error) {
+    console.error('Get state templates error:', error);
+    res.status(500).json({ error: 'Failed to get templates' });
+  }
+});
+
+
+// @route   GET /api/credentials/dashboard
+// @desc    Get credential dashboard summary
+// @access  Private
+router.get('/user/dashboard', protect, async (req, res) => {
+  try {
+    const credentials = await UserCredential.find({ userId: req.user._id })
+      .sort({ expirationDate: 1 });
+    
+    // Calculate summary
+    const summary = {
+      totalCredentials: credentials.length,
+      expiringSoon: 0,
+      expired: 0,
+      upcomingDeadlines: [],
+      overallProgress: {
+        totalRequired: 0,
+        totalCompleted: 0,
+        percentComplete: 0
+      }
+    };
+    
+    credentials.forEach(cred => {
+      cred.updateStatus();
+      
+      if (cred.status === 'expired') {
+        summary.expired++;
+      } else if (cred.status === 'expiring_soon') {
+        summary.expiringSoon++;
+      }
+      
+      // Add to upcoming deadlines
+      if (cred.daysUntilExpiration > 0 && cred.daysUntilExpiration <= 180) {
+        summary.upcomingDeadlines.push({
+          credentialId: cred._id,
+          name: cred.name,
+          expirationDate: cred.expirationDate,
+          daysRemaining: cred.daysUntilExpiration,
+          ceusRemaining: cred.totalCEUsRequired - cred.totalCEUsCompleted
+        });
+      }
+      
+      // Overall progress
+      summary.overallProgress.totalRequired += cred.totalCEUsRequired;
+      summary.overallProgress.totalCompleted += cred.totalCEUsCompleted;
+    });
+    
+    if (summary.overallProgress.totalRequired > 0) {
+      summary.overallProgress.percentComplete = Math.round(
+        (summary.overallProgress.totalCompleted / summary.overallProgress.totalRequired) * 100
+      );
+    }
+    
+    res.json({
+      summary,
+      credentials
+    });
+  } catch (error) {
+    console.error('Get dashboard error:', error);
+    res.status(500).json({ error: 'Failed to get dashboard' });
+  }
+});
+
+
+// @route   POST /api/credentials/book-consult
+// @desc    Book a VIP consultation (1 per quarter)
+// @access  Private (VIP only)
+router.post('/book-consult', protect, async (req, res) => {
+  try {
+    const { topic } = req.body;
+    
+    // Check if can book
+    const canBook = req.user.canBookConsultation();
+    if (!canBook.allowed) {
+      return res.status(403).json({
+        error: canBook.reason,
+        nextQuarter: canBook.nextQuarter,
+        code: 'CONSULT_LIMIT'
+      });
+    }
+    
+    // Book the consultation
+    await req.user.bookConsultation(topic || 'General consultation');
+    
+    res.json({
+      message: 'Consultation requested successfully',
+      quarter: req.user.getCurrentQuarter(),
+      // You'll receive an email to schedule your session
+      nextSteps: 'Check your email for scheduling instructions'
+    });
+  } catch (error) {
+    console.error('Book consult error:', error);
+    res.status(500).json({ error: error.message || 'Failed to book consultation' });
+  }
+});
+
+
+
 // @route   GET /api/credentials/:id
 // @desc    Get single credential
 // @access  Private
@@ -749,139 +887,6 @@ router.post('/:id/log-ceu', protect, async (req, res) => {
   } catch (error) {
     console.error('Log CEU error:', error);
     res.status(500).json({ error: 'Failed to log CEU' });
-  }
-});
-
-// @route   GET /api/credentials/templates
-// @desc    Get all credential templates
-// @access  Public
-router.get('/templates/all', async (req, res) => {
-  try {
-    const templates = await CredentialTemplate.find({ isActive: true })
-      .sort({ type: 1, state: 1, code: 1 });
-    
-    // Group by type
-    const grouped = {
-      state_license: templates.filter(t => t.type === 'state_license'),
-      national_cert: templates.filter(t => t.type === 'national_cert'),
-      specialty_cert: templates.filter(t => t.type === 'specialty_cert')
-    };
-    
-    res.json({ templates: grouped });
-  } catch (error) {
-    console.error('Get templates error:', error);
-    res.status(500).json({ error: 'Failed to get templates' });
-  }
-});
-
-// @route   GET /api/credentials/templates/:state
-// @desc    Get templates for a specific state
-// @access  Public
-router.get('/templates/state/:state', async (req, res) => {
-  try {
-    const templates = await CredentialTemplate.find({
-      isActive: true,
-      state: req.params.state.toUpperCase()
-    }).sort({ code: 1 });
-    
-    res.json({ templates });
-  } catch (error) {
-    console.error('Get state templates error:', error);
-    res.status(500).json({ error: 'Failed to get templates' });
-  }
-});
-
-// @route   GET /api/credentials/dashboard
-// @desc    Get credential dashboard summary
-// @access  Private
-router.get('/user/dashboard', protect, async (req, res) => {
-  try {
-    const credentials = await UserCredential.find({ userId: req.user._id })
-      .sort({ expirationDate: 1 });
-    
-    // Calculate summary
-    const summary = {
-      totalCredentials: credentials.length,
-      expiringSoon: 0,
-      expired: 0,
-      upcomingDeadlines: [],
-      overallProgress: {
-        totalRequired: 0,
-        totalCompleted: 0,
-        percentComplete: 0
-      }
-    };
-    
-    credentials.forEach(cred => {
-      cred.updateStatus();
-      
-      if (cred.status === 'expired') {
-        summary.expired++;
-      } else if (cred.status === 'expiring_soon') {
-        summary.expiringSoon++;
-      }
-      
-      // Add to upcoming deadlines
-      if (cred.daysUntilExpiration > 0 && cred.daysUntilExpiration <= 180) {
-        summary.upcomingDeadlines.push({
-          credentialId: cred._id,
-          name: cred.name,
-          expirationDate: cred.expirationDate,
-          daysRemaining: cred.daysUntilExpiration,
-          ceusRemaining: cred.totalCEUsRequired - cred.totalCEUsCompleted
-        });
-      }
-      
-      // Overall progress
-      summary.overallProgress.totalRequired += cred.totalCEUsRequired;
-      summary.overallProgress.totalCompleted += cred.totalCEUsCompleted;
-    });
-    
-    if (summary.overallProgress.totalRequired > 0) {
-      summary.overallProgress.percentComplete = Math.round(
-        (summary.overallProgress.totalCompleted / summary.overallProgress.totalRequired) * 100
-      );
-    }
-    
-    res.json({
-      summary,
-      credentials
-    });
-  } catch (error) {
-    console.error('Get dashboard error:', error);
-    res.status(500).json({ error: 'Failed to get dashboard' });
-  }
-});
-
-// @route   POST /api/credentials/book-consult
-// @desc    Book a VIP consultation (1 per quarter)
-// @access  Private (VIP only)
-router.post('/book-consult', protect, async (req, res) => {
-  try {
-    const { topic } = req.body;
-    
-    // Check if can book
-    const canBook = req.user.canBookConsultation();
-    if (!canBook.allowed) {
-      return res.status(403).json({
-        error: canBook.reason,
-        nextQuarter: canBook.nextQuarter,
-        code: 'CONSULT_LIMIT'
-      });
-    }
-    
-    // Book the consultation
-    await req.user.bookConsultation(topic || 'General consultation');
-    
-    res.json({
-      message: 'Consultation requested successfully',
-      quarter: req.user.getCurrentQuarter(),
-      // You'll receive an email to schedule your session
-      nextSteps: 'Check your email for scheduling instructions'
-    });
-  } catch (error) {
-    console.error('Book consult error:', error);
-    res.status(500).json({ error: error.message || 'Failed to book consultation' });
   }
 });
 
