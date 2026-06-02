@@ -4928,16 +4928,75 @@ function renderSectionDivider(wrap, block) {
 
 // ─── INLINE CALLOUT + ALERT SYNTAX ───
 const CALLOUT_LIBRARY = {
-  'hipaa':            { label: 'HIPAA',              type: 'definition', body: 'Health Insurance Portability and Accountability Act (1996). Protects patient health information from disclosure without consent.' },
-  'aca-code':         { label: 'ACA Code of Ethics', type: 'reference',  body: 'American Counseling Association Code of Ethics. Primary ethical framework for licensed counselors.' },
-  'duty-to-warn':     { label: 'Duty to Warn',       type: 'ethics',     body: 'Tarasoff obligation — clinicians must protect identifiable third parties from credible, serious client threats.' },
-  'informed-consent': { label: 'Informed Consent',    type: 'definition', body: 'Client must understand treatment, fees, limits of confidentiality, and risks before services begin.' },
-  'telehealth-rule':  { label: 'GA Rule 135',         type: 'reference',  body: 'Georgia Composite Board Rule 135-11-.01. Governs telemental health delivery and disclosures.' },
-  'mandatory-report': { label: 'Mandatory Reporting', type: 'warning',    body: 'Georgia law requires reporting known/suspected abuse of a child, elder, or person with a disability.' },
-  'lpc-a-note':       { label: 'LPC-A Note',          type: 'clinical',   body: 'Pre-licensed associates must obtain supervisor approval before this intervention.' },
-  'nbcc-standard':    { label: 'NBCC Standard',       type: 'reference',  body: 'National Board for Certified Counselors standard. Applies to NCC credential holders and NBCC-approved CE providers.' },
-  'phi':              { label: 'PHI',                  type: 'definition', body: 'Protected Health Information — any health data that can identify a patient.' },
-  'gcscw':            { label: 'GCSCW',                type: 'reference',  body: 'Georgia Composite Board of Social Work — licensing authority for social workers in Georgia.' },
+  // ── Existing entries ─────────────────────────────────────────────────────
+  'hipaa':              { label: 'HIPAA',                     type: 'definition', body: 'Health Insurance Portability and Accountability Act (1996). Protects patient health information from disclosure without consent.' },
+  'aca-code':           { label: 'ACA Code of Ethics',        type: 'reference',  body: 'American Counseling Association Code of Ethics. Primary ethical framework for licensed counselors.' },
+  'duty-to-warn':       { label: 'Duty to Warn',              type: 'ethics',     body: 'Tarasoff obligation — clinicians must protect identifiable third parties from credible, serious client threats.' },
+  'informed-consent':   { label: 'Informed Consent',          type: 'definition', body: 'Client must understand treatment, fees, limits of confidentiality, and risks before services begin.' },
+  'telehealth-rule':    { label: 'GA Rule 135',               type: 'reference',  body: 'Georgia Composite Board Rule 135-11-.01. Governs telemental health delivery and disclosures.' },
+  'mandatory-report':   { label: 'Mandatory Reporting',       type: 'warning',    body: 'Georgia law requires reporting known/suspected abuse of a child, elder, or person with a disability.' },
+  'lpc-a-note':         { label: 'LPC-A Note',                type: 'clinical',   body: 'Pre-licensed associates must obtain supervisor approval before this intervention.' },
+  'nbcc-standard':      { label: 'NBCC Standard',             type: 'reference',  body: 'National Board for Certified Counselors standard. Applies to NCC credential holders and NBCC-approved CE providers.' },
+  'phi':                { label: 'PHI',                        type: 'definition', body: 'Protected Health Information — any health data that can identify a patient.' },
+  'gcscw':              { label: 'GCSCW',                      type: 'reference',  body: 'Georgia Composite Board of Social Work — licensing authority for social workers in Georgia.' },
+
+  // ── Regulatory & Legal ───────────────────────────────────────────────────
+  'dsm-5':              { label: 'DSM-5-TR',                  type: 'reference',  body: 'Diagnostic and Statistical Manual of Mental Disorders, 5th Edition, Text Revision (APA, 2022). Standard diagnostic reference for mental health clinicians.' },
+  'icd-11':             { label: 'ICD-11',                    type: 'reference',  body: 'International Classification of Diseases, 11th Revision (WHO, 2019). Required for insurance billing in clinical practice.' },
+  'baa':                { label: 'BAA',                        type: 'definition', body: 'Business Associate Agreement — required HIPAA contract when sharing PHI with third-party vendors (e.g., telehealth platforms, EHRs).' },
+  'counseling-compact': { label: 'Counseling Compact',        type: 'reference',  body: 'Interstate compact allowing licensed professional counselors to practice across member states without additional licensure.' },
+  '1013-form':          { label: 'GA 1013',                   type: 'warning',    body: 'Georgia Form 1013 — certificate for involuntary examination. Authorizes emergency psychiatric evaluation when imminent danger is present.' },
+  'nasw-code':          { label: 'NASW Code',                 type: 'reference',  body: 'National Association of Social Workers Code of Ethics — primary ethical framework for licensed social workers.' },
+  'ferpa':              { label: 'FERPA',                     type: 'definition', body: 'Family Educational Rights and Privacy Act — protects education records. Applies when counselors work in school settings.' },
+
+  // ── Clinical Assessment Tools ────────────────────────────────────────────
+  'c-ssrs':             { label: 'C-SSRS',                    type: 'clinical',   body: 'Columbia Suicide Severity Rating Scale — validated tool for assessing suicidal ideation and behavior. Evidence-based standard for suicide risk stratification.' },
+  'phq-9':              { label: 'PHQ-9',                     type: 'clinical',   body: 'Patient Health Questionnaire-9 — validated depression screening tool. Scores 0–27; ≥10 suggests moderate depression.' },
+  'pcl-5':              { label: 'PCL-5',                     type: 'clinical',   body: 'PTSD Checklist for DSM-5 — 20-item self-report measure of PTSD symptom severity. Score ≥33 suggests probable PTSD.' },
+  'gad-7':              { label: 'GAD-7',                     type: 'clinical',   body: 'Generalized Anxiety Disorder 7-item scale. Scores 5/10/15 = mild/moderate/severe.' },
+  'safety-plan':        { label: 'Safety Plan',               type: 'clinical',   body: 'Collaborative Safety Planning — structured intervention co-created with the client to identify warning signs, coping strategies, and crisis contacts.' },
+  'stanley-brown':      { label: 'Stanley-Brown',             type: 'clinical',   body: 'Stanley-Brown Safety Planning Intervention — six-step evidence-based safety plan model widely adopted in crisis and inpatient settings.' },
+  'cams':               { label: 'CAMS',                      type: 'clinical',   body: 'Collaborative Assessment and Management of Suicidality — therapeutic framework for assessing and treating suicidal risk.' },
+  'lethal-means':       { label: 'Lethal Means Counseling',   type: 'clinical',   body: 'Evidence-based suicide prevention practice of discussing and reducing client access to lethal means. Associated with significant reduction in suicide mortality.' },
+
+  // ── Trauma & Clinical Frameworks ─────────────────────────────────────────
+  'emdr':               { label: 'EMDR',                      type: 'clinical',   body: 'Eye Movement Desensitization and Reprocessing — trauma-focused psychotherapy using bilateral stimulation; APA-designated effective treatment for PTSD.' },
+  'cpt':                { label: 'CPT',                       type: 'clinical',   body: 'Cognitive Processing Therapy — evidence-based CBT treatment for PTSD that targets stuck points and trauma-related cognitions.' },
+  'tf-cbt':             { label: 'TF-CBT',                    type: 'clinical',   body: 'Trauma-Focused Cognitive Behavioral Therapy — evidence-based model for children and adolescents with PTSD and their caregivers.' },
+  'polyvagal':          { label: 'Polyvagal Theory',          type: 'clinical',   body: "Porges' Polyvagal Theory — explains the autonomic nervous system's three-circuit hierarchy (ventral vagal, sympathetic, dorsal vagal) and its role in trauma response." },
+  'window-tolerance':   { label: 'Window of Tolerance',       type: 'clinical',   body: "Siegel's concept describing the optimal arousal zone for learning and processing. Hyper- or hypoarousal outside this window impairs therapeutic work." },
+  'ace-score':          { label: 'ACE Score',                 type: 'clinical',   body: 'Adverse Childhood Experiences score (0–10) from the CDC-Kaiser study. Higher scores correlate with increased risk of physical and mental health conditions.' },
+  'vicarious-trauma':   { label: 'Vicarious Trauma',          type: 'clinical',   body: "Cumulative transformation of the clinician's inner world from empathic engagement with client trauma narratives. Requires systemic response." },
+  'countertransference':{ label: 'Countertransference',       type: 'clinical',   body: "Clinician's emotional reactions to the client, shaped by the clinician's own history. Requires ongoing self-awareness and supervision." },
+
+  // ── DBT Skills ───────────────────────────────────────────────────────────
+  'wise-mind':          { label: 'Wise Mind',                 type: 'clinical',   body: 'DBT concept integrating Reasonable Mind (rational) and Emotion Mind into balanced, intuitive wisdom. Core foundation of DBT skills.' },
+  'dear-man':           { label: 'DEAR MAN',                  type: 'clinical',   body: 'DBT interpersonal effectiveness skill: Describe, Express, Assert, Reinforce, Mindful, Appear confident, Negotiate.' },
+  'tipp':               { label: 'TIPP',                      type: 'clinical',   body: 'DBT crisis survival skill: Temperature, Intense exercise, Paced breathing, Progressive relaxation. Rapidly reduces emotional vulnerability.' },
+  'radical-acceptance': { label: 'Radical Acceptance',        type: 'clinical',   body: "DBT distress tolerance skill — fully accepting reality without judgment. Doesn't mean approval; means stopping the fight against what is." },
+  'opposite-action':    { label: 'Opposite Action',           type: 'clinical',   body: 'DBT emotion regulation skill — acting opposite to the urge driven by an unjustified emotion to reduce its intensity.' },
+
+  // ── Motivational Interviewing ─────────────────────────────────────────────
+  'change-talk':        { label: 'Change Talk',               type: 'clinical',   body: "Client language favoring change (DARN-CAT). Strengthening change talk is the primary mechanism of MI's effect." },
+  'sustain-talk':       { label: 'Sustain Talk',              type: 'clinical',   body: "Client language favoring the status quo. Distinguishing it from change talk guides the MI clinician's reflective response." },
+  'oars':               { label: 'OARS',                      type: 'clinical',   body: 'Core MI microskills: Open questions, Affirmations, Reflections, Summaries. Foundation of motivational interviewing.' },
+
+  // ── Multicultural & Social Justice ───────────────────────────────────────
+  'cultural-humility':  { label: 'Cultural Humility',         type: 'ethics',     body: 'Lifelong process of self-reflection on power imbalances in the therapeutic relationship — contrasted with cultural competence as a fixed endpoint.' },
+  'microaggression':    { label: 'Microaggression',           type: 'ethics',     body: 'Brief everyday exchanges sending denigrating messages to marginalized groups, often by well-intentioned individuals unaware of their impact (Sue et al., 2007).' },
+  'racial-trauma':      { label: 'Racial Trauma',             type: 'clinical',   body: 'Cumulative psychological harm from racism and discrimination. May present similarly to PTSD; requires culturally responsive treatment.' },
+  'intersectionality':  { label: 'Intersectionality',         type: 'ethics',     body: "Crenshaw's framework: race, class, gender, ability, and other identities overlap to create distinct forms of privilege and oppression." },
+
+  // ── Documentation & Practice ─────────────────────────────────────────────
+  'treatment-plan':     { label: 'Treatment Plan',            type: 'definition', body: "Individualized document identifying client's diagnosis, goals, objectives, interventions, and target dates. Required for insurance reimbursement." },
+  'soap-note':          { label: 'SOAP Note',                 type: 'definition', body: 'Progress note format: Subjective, Objective, Assessment, Plan. Standard in mental health documentation.' },
+  'roi':                { label: 'ROI',                        type: 'definition', body: 'Release of Information — written authorization required before sharing PHI with any third party. Must specify recipient, purpose, and expiration.' },
+  'dual-relationship':  { label: 'Dual Relationship',         type: 'ethics',     body: 'Concurrent professional + personal role with a client. ACA Code A.6.a prohibits relationships that impair objectivity or harm the client.' },
+
+  // ── Telehealth & Technology ───────────────────────────────────────────────
+  'hipaa-compliant':    { label: 'HIPAA-Compliant Platform',  type: 'definition', body: 'Platform with a signed BAA and technical safeguards (encryption, access controls, audit logs) meeting HIPAA Security Rule requirements.' },
+  'bc-tmh':             { label: 'BC-TMH',                    type: 'reference',  body: 'Board Certified-TeleMental Health Provider credential from CCE. Validates competency in telehealth delivery.' },
+  'psypact':            { label: 'PSYPACT',                   type: 'reference',  body: 'Psychology Interjurisdictional Compact — allows licensed psychologists to practice across member states. Separate from the Counseling Compact.' },
 };
 
 const PILL_COLORS = {
