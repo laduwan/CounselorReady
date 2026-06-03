@@ -4,6 +4,7 @@
  * Unauthorized copying or distribution is strictly prohibited.
  */
 import mongoose from "mongoose";
+import { countCourseWords, requiredWordsFor } from "../utils/courseWordCount.js";
 
 /**
  * CounselorReady Course Validator
@@ -69,19 +70,13 @@ async function main() {
     const issues = [];
     const warnings = [];
 
-    // Word count check
-    let wordCount = 0;
-    (course.modules || []).forEach(m => {
-      (m.lessons || []).forEach(l => {
-        wordCount += countWords(l.content);
-        wordCount += countWords(l.textContent);
-      });
-      (m.contentBlocks || []).forEach(b => {
-        wordCount += countWords(b.content);
-        if (b.accordionItems) b.accordionItems.forEach(a => { wordCount += countWords(a.content); });
-      });
-    });
-    const requiredWords = (course.ceHours || course.ceuHours || 1) * WORDS_PER_CE_HOUR;
+    // Word count check via canonical counter (single source of truth).
+    // Fixes a long-standing bug: this script previously walked course.modules,
+    // but live interactive courses use course.sections — so every interactive
+    // course counted 0 words and false-failed. countCourseWords reads sections,
+    // assessment, and all interactive blocks, matching the DB and publish gate.
+    const wordCount = countCourseWords(course);
+    const requiredWords = requiredWordsFor(course.ceHours || course.ceuHours || 1);
     if (wordCount < requiredWords) {
       issues.push(`Word count: ${wordCount.toLocaleString()} / ${requiredWords.toLocaleString()} required (${Math.round(wordCount/requiredWords*100)}%)`);
     }
