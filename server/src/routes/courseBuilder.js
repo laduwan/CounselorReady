@@ -10,6 +10,7 @@
 import express from 'express';
 import Anthropic from '@anthropic-ai/sdk';
 import { protect } from '../middleware/auth.js';
+import { countCourseWords, requiredWordsFor } from '../utils/courseWordCount.js';
 
 // Admin-only middleware (inline)
 const adminOnly = (req, res, next) => {
@@ -914,18 +915,9 @@ router.post('/save', protect, adminOnly, async (req, res) => {
       delete courseData.acepProvider;
     }
 
-    // Compute wordCount: strip HTML, sum chars ÷ 5
-    let totalChars = 0;
-    if (courseData.sections && Array.isArray(courseData.sections)) {
-      courseData.sections.forEach(section => {
-        (section.contentBlocks || []).forEach(block => {
-          const raw = block.textContent || block.content || block.text || block.html || block.body || '';
-          const plain = raw.replace(/<[^>]+>/g, ' ').replace(/&\w+;/g, ' ').trim();
-          totalChars += plain.length;
-        });
-      });
-    }
-    courseData.wordCount = Math.round(totalChars / 5);
+    // Compute wordCount via canonical counter (single source of truth).
+    // Matches the DB pre-save hook exactly so the saved value never drifts.
+    courseData.wordCount = countCourseWords(courseData);
 
     // Extract _id for upsert logic
     const courseId = courseData._id;
@@ -999,19 +991,9 @@ router.post('/publish', protect, adminOnly, async (req, res) => {
     if (!courseData.sections || courseData.sections.length === 0) errors.push('At least one section is required');
     if (!courseData.objectives || courseData.objectives.length === 0) errors.push('At least one learning objective is required');
 
-    // Word count check
-    let totalChars = 0;
-    if (courseData.sections && Array.isArray(courseData.sections)) {
-      courseData.sections.forEach(section => {
-        (section.contentBlocks || []).forEach(block => {
-          const raw = block.textContent || block.content || block.text || block.html || block.body || '';
-          const plain = raw.replace(/<[^>]+>/g, ' ').replace(/&\w+;/g, ' ').trim();
-          totalChars += plain.length;
-        });
-      });
-    }
-    const wordCount = Math.round(totalChars / 5);
-    const targetWords = (courseData.ceHours || 0) * 6000;
+    // Word count check via canonical counter (single source of truth)
+    const wordCount = countCourseWords(courseData);
+    const targetWords = requiredWordsFor(courseData.ceHours);
     if (wordCount < targetWords * 0.8) {
       errors.push(`Word count ${wordCount} is below 80% of target ${targetWords} (NBCC ACEP requirement)`);
     }
@@ -1096,17 +1078,9 @@ router.post('/validate', protect, adminOnly, async (req, res) => {
     const sections = courseData.sections || [];
     if (sections.length === 0) errors.push({ field: 'sections', message: 'At least one content section is required' });
 
-    // Word count
-    let totalChars = 0;
-    sections.forEach(section => {
-      (section.contentBlocks || []).forEach(block => {
-        const raw = block.textContent || block.content || block.text || block.html || block.body || '';
-        const plain = raw.replace(/<[^>]+>/g, ' ').replace(/&\w+;/g, ' ').trim();
-        totalChars += plain.length;
-      });
-    });
-    const wordCount = Math.round(totalChars / 5);
-    const targetWords = (courseData.ceHours || 0) * 6000;
+    // Word count via canonical counter (single source of truth)
+    const wordCount = countCourseWords(courseData);
+    const targetWords = requiredWordsFor(courseData.ceHours);
     if (wordCount < targetWords) {
       errors.push({ field: 'wordCount', message: `${wordCount} words — need ${targetWords} (${courseData.ceHours} CE × 6,000 words)` });
     } else if (wordCount < targetWords * 1.1) {

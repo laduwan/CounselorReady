@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import { countCourseWords } from '../utils/courseWordCount.js';
 
 // ============================================================================
 // REMEDIATION SUB-SCHEMA
@@ -419,40 +420,16 @@ const CourseSchema = new mongoose.Schema({
   
 }, { timestamps: true });
 
-// Pre-save hook to calculate totals
+// Pre-save hook: normalize order, roll up totals, and compute wordCount.
 //
-// wordCount counts learner-visible instructional content only.
-// Modeled after server/src/scripts/fixWordCountsFull.js's countAllWords()
-// philosophy: walk every content-bearing field across every block type the
-// CR viewer (client/public/interactive-course.html) renders. Extended to
-// cover fields the viewer renders that fixWordCountsFull missed (KC wrapper
-// questions, instructions, callouts Mixed, video markers, image captions,
-// resources titles).
-//
-// Includes:
-//   • Block content prose: max(textContent, content) + html + body
-//     (Math.max avoids double-counting when both forms hold the same prose,
-//     per fixWordCountsFull.js convention.)
-//   • All interactive block content: accordion items, matching pairs,
-//     flashcards, scenarioTree nodes (recursive walk for Mixed), cardSort
-//     cards + categories, sequencing steps, timeline events, hotspot labels
-//     + info + descriptions, fillInBlank prompts + answers, key takeaways,
-//     callout items.
-//   • Per-block Q&A: question + options (string OR {text} shape) + explanation
-//   • KC wrapper blocks: block.questions[] array
-//   • instructions / matchingInstructions / scenarioTitle / imageDescription
-//   • Image: imageCaption, imageAltText, imageAlt (accessibility-visible)
-//   • Video: videoTitle + markers[].label, .prompt
-//   • Resources/deliverables/files: title only (visible in side-tab)
-//   • block.callouts Mixed (callout-library override for {{callout:id}} pills)
-//   • Top-level assessment.questions[] (final exam — viewer renders to learner)
-//   • Section-level quizQuestions[] (legacy schema location)
-//
-// INCLUDED per locked word count policy — count titles, headers, activity content, options, explanations. Exclude only resources/deliverables/files and references.
-//   • Top-level course.references[] — references do not count toward CE hours
-//   • Block-level references[] arrays — same
-//   • course.objectives[] — pre-course metadata, not instructional flow
-//   • course.description, tags, targetAudience, instructor — catalog metadata
+// wordCount is delegated to the canonical counter in
+// server/src/utils/courseWordCount.js (countCourseWords). That module is the
+// SINGLE SOURCE OF TRUTH — the same function is imported by the publish gate
+// (routes/courseBuilder.js), the validators (utils/contentValidator.js,
+// scripts/validateCourses.js), and the recompute scripts, so a course counts
+// identically everywhere. Do not re-implement counting here or in any consumer;
+// edit courseWordCount.js instead. See that file for the locked include/exclude
+// policy.
 CourseSchema.pre('save', function(next) {
   (this.sections || []).forEach((sec, si) => {
     if (sec.order === undefined || sec.order === null) sec.order = si;
@@ -465,162 +442,10 @@ CourseSchema.pre('save', function(next) {
   this.totalQuizQuestions = this.sections.reduce((sum, s) => sum + (s.quizQuestions?.length || 0), 0)
     + (this.assessment?.questions?.length || 0);
 
-  // ── helpers ──────────────────────────────────────────────────────────
-  const wcOf = (s) => {
-    if (typeof s !== 'string' || !s) return 0;
-    const plain = s.replace(/<[^>]+>/g, ' ').replace(/&\w+;/g, ' ').trim();
-    return plain ? plain.split(/\s+/).filter(w => w.length > 0).length : 0;
-  };
-  const wcStrings = (arr) => Array.isArray(arr) ? arr.reduce((n, s) => n + wcOf(s), 0) : 0;
-  const wcFields = (arr, fields) => {
-    if (!Array.isArray(arr)) return 0;
-    let n = 0;
-    for (const item of arr) {
-      if (!item || typeof item !== 'object') continue;
-      for (const f of fields) n += wcOf(item[f]);
-    }
-    return n;
-  };
-  // Recursive walk: count every string at any depth (for Mixed-type fields:
-  // scenarioTree.nodes, block.callouts callout-library override).
-  const wcMixed = (val) => {
-    if (val == null) return 0;
-    if (typeof val === 'string') return wcOf(val);
-    if (typeof val !== 'object') return 0;
-    if (Array.isArray(val)) return val.reduce((n, x) => n + wcMixed(x), 0);
-    let n = 0;
-    for (const k of Object.keys(val)) n += wcMixed(val[k]);
-    return n;
-  };
-  // Options accept BOTH shapes the viewer's renderMultipleChoice handles:
-  //   - string:  options: ["A","B","C","D"]
-  //   - object:  options: [{text:"A", isCorrect:false}, ...]
-  const wcOptions = (opts) => {
-    if (!Array.isArray(opts)) return 0;
-    let n = 0;
-    for (const o of opts) {
-      if (typeof o === 'string') n += wcOf(o);
-      else if (o && typeof o === 'object') n += wcOf(o.text);
-    }
-    return n;
-  };
-  const wcQuestion = (q) => {
-    if (!q || typeof q !== 'object') return 0;
-    let n = wcOf(q.question || q.prompt || '');
-    n += wcOptions(q.options);
-    n += wcOf(q.explanation || q.rationale || '');
-    return n;
-  };
-
-  // ── per-block field map (viewer-aligned) ─────────────────────────────
-  const wcBlock = (b) => {
-    if (!b) return 0;
-    let n = 0;
-
-    // Prose: max(textContent, content) avoids double-counting when seeds
-    // populate both with the plain/HTML versions of the same prose.
-    n += Math.max(wcOf(b.textContent), wcOf(b.content));
-    n += wcOf(b.html);
-    n += wcOf(b.body);
-
-    // Per-block Q&A (multipleChoice, multiSelect, reflection prompt, etc.)
-    n += wcOf(b.question);
-    n += wcOf(b.prompt);
-    n += wcOf(b.explanation);
-    n += wcOf(b.rationale);
-    n += wcOptions(b.options);
-
-    // KC wrapper blocks (viewer renders these even though spec marks deprecated)
-    if (Array.isArray(b.questions)) {
-      for (const q of b.questions) n += wcQuestion(q);
-    }
-
-    // Learner-facing instruction text shown above interactive elements
-    n += wcOf(b.instructions);
-    n += wcOf(b.matchingInstructions);
-
-    // Callout library override (Mixed) — feeds parseCalloutSyntax for inline pills
-    n += wcMixed(b.callouts);
-
-    // accordion
-    n += wcFields(b.accordionItems, ['title', 'content']);
-
-    // matching
-    n += wcFields(b.matchingPairs, ['term', 'definition']);
-
-    // flashcardDeck
-    n += wcFields(b.flashcards, ['front', 'back']);
-
-    // scenarioTree
-    n += wcOf(b.scenarioTitle);
-    n += wcMixed(b.nodes);
-
-    // cardSort
-    n += wcStrings(b.categories);
-    n += wcFields(b.cards, ['text']);
-
-    // sequencing
-    n += wcFields(b.steps, ['text']);
-
-    // timeline
-    n += wcFields(b.events, ['year', 'text']);
-
-    // hotspot
-    n += wcOf(b.imageDescription);
-    n += wcFields(b.hotspots, ['label', 'info', 'description']);
-
-    // callout — viewer accepts calloutItems[] or items[]
-    n += wcStrings(b.calloutItems);
-    n += wcStrings(b.items);  // also serves keyTakeaway
-
-    // fillInBlank
-    n += wcFields(b.blanks, ['prompt', 'answer']);
-
-    // keyTakeaway — viewer accepts takeaways[] or items[] (counted above)
-    n += wcStrings(b.takeaways);
-
-    // video / videoEmbed
-    n += wcOf(b.videoTitle);
-    n += wcFields(b.markers, ['label', 'prompt']);
-
-    // image (standalone) — accessibility text shown to learner
-    n += wcOf(b.imageCaption);
-    n += wcOf(b.imageAltText);
-    n += wcOf(b.imageAlt);
-
-    // resources / deliverables — viewer side-tab aggregates these
-    n += wcFields(b.resources, ['title']);
-    n += wcFields(b.deliverables, ['title']);
-    n += wcFields(b.files, ['title']);
-
-    // INCLUDED per locked word count policy: titles, headers count toward CE
-    n += wcOf(b.title);
-    n += wcOf(b.subtitle);
-    // EXCLUDED: b.references[] (not rendered; refs don't count toward CE)
-
-    return n;
-  };
-
-  // ── main accumulation ────────────────────────────────────────────────
-  let wc = 0;
-
-  // (1) Walk every block in every section
-  this.sections.forEach(s => {
-    (s.contentBlocks || []).forEach(b => { wc += wcBlock(b); });
-    // (2) Section-level quizQuestions (legacy schema location)
-    (s.quizQuestions || []).forEach(q => { wc += wcQuestion(q); });
-    // INCLUDED per locked word count policy: section titles count toward CE
-    wc += wcOf(s.title);
-  });
-
-  // (3) Final-assessment questions — viewer renders these to the learner
-  if (this.assessment && Array.isArray(this.assessment.questions)) {
-    this.assessment.questions.forEach(q => { wc += wcQuestion(q); });
-  }
-
-  // EXCLUDED: this.references[], this.objectives[], description, tags, etc.
-
-  this.wordCount = wc;
+  // Word count via canonical counter (server/src/utils/courseWordCount.js).
+  // Single source of truth shared by validators, publish gate, and recompute
+  // scripts so a course counts identically everywhere it is measured.
+  this.wordCount = countCourseWords(this);
   next();
 });
 
