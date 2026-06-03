@@ -270,8 +270,10 @@
         const slug = c.slug || '';
         const hours = c.ceHours || c.ceuHours || 0;
         const enrollments = c.analytics?.enrollments || 0;
-        const courseLink = `${SITE_URL}/interactive-course.html?slug=${slug}`;
-        const detailLink = `${SITE_URL}/course-details.html?slug=${slug}`;
+        // Shareable link → course-details (price + buy/subscribe; correct for prospects)
+        const courseLink = `${SITE_URL}/course-details.html?slug=${slug}`;
+        // Direct viewer link (for already-enrolled students)
+        const viewerLink = `${SITE_URL}/interactive-course.html?slug=${slug}`;
         const statusClass = isPublished
           ? 'bg-hunter-100 text-hunter-800'
           : 'bg-amber-100 text-amber-800';
@@ -305,9 +307,9 @@
                     class="px-3 py-2 bg-hunter-50 hover:bg-hunter-100 text-hunter-700 rounded-lg text-sm font-medium transition-colors flex items-center gap-2">
                     <i class="fas fa-link"></i> Copy Link
                   </button>
-                  <button onclick="copyLink('${detailLink}', 'Details page')" title="Copy details page link"
+                  <button onclick="copyLink('${viewerLink}', 'Direct course link')" title="Copy direct viewer link (enrolled students)"
                     class="px-3 py-2 bg-burgundy-50 hover:bg-burgundy-100 text-burgundy-700 rounded-lg text-sm font-medium transition-colors flex items-center gap-2">
-                    <i class="fas fa-info-circle"></i> Details
+                    <i class="fas fa-play"></i> Open
                   </button>
                   <div class="relative">
                     <button onclick="toggleShareMenu(${i})" title="Share options"
@@ -356,7 +358,7 @@
       const text = published.map(c => {
         const slug = c.slug || '';
         const hours = c.ceHours || c.ceuHours || 0;
-        return `${c.courseCode || ''} — ${c.title} (${hours} CE)\n${SITE_URL}/interactive-course.html?slug=${slug}`;
+        return `${c.courseCode || ''} — ${c.title} (${hours} CE)\n${SITE_URL}/course-details.html?slug=${slug}`;
       }).join('\n\n');
       navigator.clipboard.writeText(text).then(() => showToast(`${published.length} course links copied!`));
     }
