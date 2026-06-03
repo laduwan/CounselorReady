@@ -41,7 +41,7 @@ const VALID_ACCESS = new Set(['free', 'subscription', 'purchase']);
 const VALID_STATUS = new Set(['draft', 'published', 'archived']);
 
 // ── the audit ───────────────────────────────────────────────────────────────
-export function auditCourse(course) {
+export async function auditCourse(course) {
   const issues = [];   // hard failures (block publish)
   const warnings = []; // soft (worth a look)
 
@@ -104,6 +104,21 @@ export function auditCourse(course) {
   if (emptyText)      warnings.push(`${emptyText} text block(s) count as 0 words (empty/placeholder?)`);
   if (!course.assessment || !Array.isArray(course.assessment.questions) || !course.assessment.questions.length)
     warnings.push('no top-level assessment.questions — final exam missing?');
+
+  // Model validation — the InteractiveCourse schema is the ultimate authority on
+  // shapes. Running its own validateSync catches anything the lint above misses
+  // (e.g. block-level 'references' must be objects, not strings; bad enums; missing
+  // required fields). Skipped gracefully if mongoose/model can't be imported
+  // (e.g. a dependency-free local run), in which case the lint above still applies.
+  try {
+    const { Course } = await import('../models/InteractiveCourse.js');
+    const verr = new Course(course).validateSync();
+    if (verr && verr.errors) {
+      for (const k of Object.keys(verr.errors)) {
+        issues.push(`MODEL: ${k}: ${verr.errors[k].message}`);
+      }
+    }
+  } catch { /* model/mongoose unavailable — lint-only mode */ }
 
   return {
     code: course.courseCode || course.slug || '(unknown)',
@@ -175,7 +190,7 @@ async function main() {
 
   if (!courses.length) { console.log('No matching course(s) found.'); process.exit(1); }
 
-  const results = courses.map(auditCourse).sort((a, b) => Number(a.pass) - Number(b.pass));
+  const results = (await Promise.all(courses.map(auditCourse))).sort((a, b) => Number(a.pass) - Number(b.pass));
   results.forEach(printReport);
 
   const failed = results.filter(r => !r.pass);
