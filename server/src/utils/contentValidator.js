@@ -12,6 +12,8 @@
  * Use before saving to DB to ensure ACEP compliance and content integrity.
  */
 
+import { countCourseWords, countBlockWords } from './courseWordCount.js';
+
 /**
  * Strip HTML tags and return plain text word count
  */
@@ -54,18 +56,16 @@ export function validateCourseContent(course, options = {}) {
     for (const section of course.sections) {
       let sectionWords = 0;
       for (const block of (section.contentBlocks || [])) {
-        const text = block.textContent || block.content || '';
-        sectionWords += countWords(text);
-        // Also count accordion content
-        if (block.accordionItems) {
-          for (const item of block.accordionItems) {
-            sectionWords += countWords(item.content);
-          }
-        }
+        // Per-section subtotal uses the same per-block counter as the canonical
+        // total, so section warnings agree with the course total.
+        sectionWords += countBlockWords(block);
       }
       sectionWordCounts.push({ title: section.title, words: sectionWords });
-      totalWords += sectionWords;
     }
+    // Course total via canonical counter — includes section titles, final
+    // assessment, and every interactive block type. Single source of truth,
+    // identical to the DB pre-save hook and the publish gate.
+    totalWords = countCourseWords(course);
   } else if (course.modules) {
     for (const mod of course.modules) {
       let modWords = 0;
