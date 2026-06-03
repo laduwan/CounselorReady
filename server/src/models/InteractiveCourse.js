@@ -412,6 +412,25 @@ const CourseSchema = new mongoose.Schema({
   certificateEnabled: { type: Boolean, default: true },
   maxAttempts: { type: Number, default: 3 },
 
+  // ── Catalog / accreditation metadata ──
+  // Declared so model-based seeds (doc.save) persist them. Previously only raw
+  // collection inserts stored these; under strict mode the model dropped them.
+  courseCode: { type: String },
+  pricingTier: String,
+  ceCategory: String,
+  contentArea: String,
+  ceuHours: Number,
+  credits: Number,
+  level: String,
+  deliveryMethod: String,
+  approvingBody: String,
+  approvalNumber: String,
+  instructor: String,
+  isPublished: { type: Boolean, default: false },
+  isActive: { type: Boolean, default: true },
+  passingScore: { type: Number, default: 80 },
+  settings: mongoose.Schema.Types.Mixed,
+
   // Calculated fields
   totalEstimatedTime: Number, // in minutes
   totalContentBlocks: Number,
