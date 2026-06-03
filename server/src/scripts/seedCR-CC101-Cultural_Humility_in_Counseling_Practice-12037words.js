@@ -358,6 +358,8 @@ const COURSE = {
     'Shelton, K., & Delgado-Romero, E. A. (2011). Sexual orientation microaggressions. Journal of Counseling Psychology, 58(2), 210–221.',
     'National Alliance on Mental Illness. (2017). Cultural competency: Mental health resources for minorities. NAMI.',
     'Waters, A., & Asbill, L. (2013). Reflections on cultural humility. CYF News, American Psychological Association.',
+  
+    'Hook, J. N., Davis, D. E., Owen, J., Worthington, E. L., & Utsey, S. O. (2013). Cultural humility: Measuring openness to culturally diverse clients. Journal of Counseling Psychology, 60(3), 353–366.',
   ],
 
   resources: [
