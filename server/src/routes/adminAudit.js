@@ -6,6 +6,7 @@
 import express from 'express';
 import mongoose from 'mongoose';
 import { protect, requireAdmin } from '../middleware/auth.js';
+import { requiredWordsFor } from '../utils/courseWordCount.js';
 
 const router = express.Router();
 
@@ -19,8 +20,8 @@ function auditCourse(course) {
   const sectionsLen = Array.isArray(course.sections) ? course.sections.length : 0;
   const modulesLen  = Array.isArray(course.modules)  ? course.modules.length  : 0;
   const wc  = Number(course.wordCount || 0);
-  const ce  = Number(course.ceHours   || 0);
-  const floor = Math.floor(ce * MIN_WPCE);
+  const ce  = Number(course.ceHours || course.ceuHours || 0);
+  const floor = requiredWordsFor(ce);   // = ce * 6000 (the real ACEP minimum)
 
   const fails = [];
   if (!ce || ce <= 0)
@@ -28,7 +29,7 @@ function auditCourse(course) {
   if (!wc || wc <= 0)
     fails.push({ rule: 'R1-wordCount-missing', detail: `wordCount=${course.wordCount}` });
   if (ce > 0 && wc > 0 && wc < floor)
-    fails.push({ rule: 'R2-wordCount-below-floor', detail: `${wc} < ${ce}×${MIN_WPCE}=${floor}` });
+    fails.push({ rule: 'R2-wordCount-below-floor', detail: `${wc} < ${ce}×6000=${floor}` });
   if (sectionsLen + modulesLen === 0)
     fails.push({ rule: 'R3-no-content', detail: 'sections=0 AND modules=0' });
 
@@ -57,7 +58,7 @@ router.get('/', protect, requireAdmin, async (req, res) => {
   try {
     const db = mongoose.connection.db;
     const courses = await db.collection('interactivecourses')
-      .find({}, { projection: { slug: 1, title: 1, courseCode: 1, status: 1, ceHours: 1, wordCount: 1, sections: 1, modules: 1 } })
+      .find({}, { projection: { slug: 1, title: 1, courseCode: 1, status: 1, ceHours: 1, ceuHours: 1, wordCount: 1, sections: 1, modules: 1 } })
       .toArray();
 
     const results = courses.map(auditCourse);
