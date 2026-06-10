@@ -94,6 +94,8 @@ import adminCoursePresentationRoutes from './routes/adminCoursePresentation.js';
 import organizationsRoutes from './routes/organizations.js';
 import auditKitRoutes from './routes/auditKit.js';
 import uploadsRoutes from './routes/uploads.js';
+import videoAuditRoutes from './routes/videoAudit.js';
+import { runVideoLinkAudit } from './jobs/videoLinkAuditJob.js';
 
 // ═══════════════════════════════════════════════════════════════
 // SERVICE IMPORTS
@@ -284,6 +286,7 @@ app.use('/api/scholarly-articles', scholarlyArticlesRoutes);
 app.use('/api/organizations', organizationsRoutes);
 app.use('/api/audit-kit', auditKitRoutes);
 app.use('/api/uploads', uploadsRoutes);
+app.use('/api/admin/video-audit', videoAuditRoutes);
 
 app.use('/templates', express.static(path.join(__dirname, 'templates')));
 
@@ -422,6 +425,13 @@ const startServer = async () => {
     );
   }, { timezone: 'America/New_York' });
   logger.info('Certificate self-heal cron scheduled (every 6 hours)');
+
+  // Video link audit — every Monday at 3 AM ET
+  cron.schedule('0 3 * * 1', () => {
+    runVideoLinkAudit({ writeResults: true, verbose: true })
+      .catch(err => console.error('[VideoAudit] Weekly cron error:', err.message));
+  }, { timezone: 'America/New_York' });
+  logger.info('Video link audit cron scheduled (Mondays 3 AM ET)');
   // PostHog server-side analytics
   const phKey = process.env.POSTHOG_API_KEY || 'phc_rRGb8TPVl8lDYnD4M2HMGGuBBkL9whGzghD5FEX20Vb';
   global.posthog = new PostHog(phKey, { host: 'https://us.i.posthog.com' });
