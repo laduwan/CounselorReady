@@ -21,7 +21,7 @@
 
 import 'dotenv/config';
 import mongoose from 'mongoose';
-import InteractiveCourse from '../models/InteractiveCourse.js';
+import { Course as InteractiveCourse } from '../models/InteractiveCourse.js';
 
 const DRY_RUN = process.env.APPLY !== '1';
 const DELAY_MS = 650; // between YouTube checks — avoids rate-limiting
